@@ -1,7 +1,7 @@
 soccer_ipm:
   ros__parameters:
     balls:
-      ball_diameter: 0.153  # IMPORTANT: Ball diameter for visualization is ALSO defined in the launch file
+      ball_diameter: 0.22  # IMPORTANT: Ball diameter for visualization is ALSO defined in the launch file
 
     goalposts:
       footpoint_out_of_image_threshold: 0.8

@@ -39,6 +39,7 @@ class AnimationCapsule(AbstractBlackboardCapsule):
         :param from_hcm: Marks the action call as a call from the hcm
         :returns: True if the animation was successfully dispatched
         """
+        return True
         if self.active:
             return False
 

@@ -12,6 +12,7 @@ from geometry_msgs.msg import (
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.time import Time
+from builtin_interfaces.msg import Time as TimeMsg
 from ros2_numpy import msgify, numpify
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
@@ -66,7 +67,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
 
         # Ball state
         self._ball: PointStamped = PointStamped(
-            header=Header(stamp=Time(clock_type=ClockType.ROS_TIME), frame_id=self.map_frame)
+            header=Header(stamp=TimeMsg(), frame_id=self.map_frame)
         )  # The ball in the map frame (default to the center of the field if ball is not seen yet)
         self._ball_covariance: np.ndarray = np.zeros((2, 2))  # Covariance of the ball
 

@@ -21,10 +21,10 @@ $DoOnce
 @ChangeAction + action:waiting + r:false, @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @GetWalkready + r:false, @WalkInPlace
 
 #PerformKickLeft
-@ChangeAction + action:kicking, @LookAtFront, @WalkKick + foot:left + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
+@ChangeAction + action:kicking, @LookAtFront, @GoToRelativePosition + x:0.5 + y:0 + t:0, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
 
 #PerformKickRight
-@ChangeAction + action:kicking, @LookAtFront, @WalkKick + foot:right + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
+@ChangeAction + action:kicking, @LookAtFront, @GoToRelativePosition + x:0.5 + y:0 + t:0, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
 
 #Dribble
 @ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtBall, @LookAtFront, @DribbleForward
@@ -59,11 +59,9 @@ $GoalScoreRecently
     NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
 
 #GoalieBehavior
-$ClosestToBall
-    NO --> $BallInOwnPercent + p:40
-        YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
-        NO --> #RolePositionWithPause
-    YES --> #KickWithAvoidance
+$BallInOwnPercent + p:40
+    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
+    NO --> #RolePositionWithPause
 
 #StrikerRole
 $GoalieHandlingBall

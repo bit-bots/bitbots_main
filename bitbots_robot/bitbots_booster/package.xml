@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+    <name>bitbots_booster</name>
+    <version>2.1.0</version>
+    <description>Interface to run with the Booster robotics robot</description>
+
+    <maintainer email="florian.vahl@uni-hamburg.de">Florian Vahl</maintainer>
+    <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+    <license>MIT</license>
+
+    <author email="florian.vahl@uni-hamburg.de">Florian Vahl</author>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+
+    <depend>backward_ros</depend>
+    <depend>booster_msgs</depend>
+    <depend>booster_interface</depend>
+    <depend>tf2_ros</depend>
+    <depend>tf2</depend>
+
+    <export>
+        <bitbots_documentation>
+            <language>c++</language>
+            <status>tested_robot</status>
+        </bitbots_documentation>
+        <rosdoc config="rosdoc.yaml"/>
+        <build_type>ament_cmake</build_type>
+    </export>
+</package>

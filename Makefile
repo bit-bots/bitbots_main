@@ -92,7 +92,7 @@ rosdep:
 	[ -f /etc/ros/rosdep/sources.list.d/20-default.list ] || sudo rosdep init
 	# Update rosdep and install dependencies from meta directory
 	rosdep update --include-eol-distros
-	rosdep install --from-paths . --ignore-src --rosdistro iron -y
+	rosdep install --from-paths . --ignore-src --rosdistro humble -y
 
 status:
 	# Show status of all repositories

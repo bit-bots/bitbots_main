@@ -11,6 +11,7 @@ from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.time import Time
+from builtin_interfaces.msg import Time as TimeMsg
 from ros2_numpy import msgify, numpify
 from sensor_msgs.msg import CameraInfo
 from soccer_vision_3d_msgs.msg import Ball, BallArray
@@ -146,7 +147,7 @@ class BallFilter(Node):
         # Get our estimate in the base footprint frame for easier distance calculation
         # We use the 0 time to get the newest transform
         estimate_relative = self._get_transform(
-            Header(stamp=Time(), frame_id=self.config.filter.frame),
+            Header(stamp=TimeMsg(), frame_id=self.config.filter.frame),
             msgify(Point, self.ball_state_position),
             "base_footprint",
         )

@@ -2,7 +2,7 @@ bitbots_ball_filter:
   ros:
     camera_info_subscribe_topic:
       type: string
-      default_value: 'camera/camera_info'
+      default_value: '/camera/camera/color/camera_info'
       description: 'Topic of the camera info'
       read_only: True
 
@@ -17,8 +17,8 @@ bitbots_ball_filter:
       default_value: 'ball_position_relative_filtered'
       read_only: true
       description: 'Topic to publish the filtered ball position'
-    
-    ball_filter_reset_service_name: 
+
+    ball_filter_reset_service_name:
       type: string
       default_value: 'ball_filter_reset'
       read_only: true
@@ -38,11 +38,11 @@ bitbots_ball_filter:
       default_value: 62
       description: 'Filtering rate in Hz'
       read_only: true
-      validation: 
-        bounds<>: [0, 100]  
+      validation:
+        bounds<>: [0, 100]
 
     covariance:
-      process_noise: 
+      process_noise:
         type: double
         default_value: 0.002
         description: 'Noise which is added to the estimated position without new measurements'
@@ -55,14 +55,14 @@ bitbots_ball_filter:
         description: 'Ball measurement certainty in filter'
         validation:
           bounds<>: [0.0, 1.0]
-      
-      distance_factor: 
+
+      distance_factor:
         type: double
         default_value: 0.02
         description: 'Factor to increase the noise if the ball measurement is further away. This also depends on the reference distance.'
         validation:
           bounds<>: [0.0, 1.0]
-  
+
       negative_observation:
         value:
           type: double

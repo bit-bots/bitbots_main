@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="audio" default="true" description="Whether the audio system should be started" />
+    <arg name="audio" default="false" description="Whether the audio system should be started" />
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
-    <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
+    <arg name="game_controller" default="false" description="Whether the Gamecontroller module should be started" />
     <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
     <arg name="localization" default="true" description="Whether the localization system should be started" />
-    <arg name="motion" default="true" description="Whether the motion control system should be started" />
+    <arg name="motion" default="false" description="Whether the motion control system should be started" />
     <arg name="path_planning" default="true" description="Whether the path planning should be started"/>
     <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
-    <arg name="teamcom" default="true" description="Whether the team communication system should be started" />
+    <arg name="teamcom" default="false" description="Whether the team communication system should be started" />
     <arg name="vision" default="true" description="Whether the vision system should be started" />
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
-    <arg name="monitoring" default="true" description="Whether the system monitor and udp bridge should be started" />
+    <arg name="monitoring" default="false" description="Whether the system monitor and udp bridge should be started" />
     <arg name="record" default="false" description="Whether the ros bag recording should be started" />
-    <arg name="tts" default="true" description="Whether to speak" />
+    <arg name="tts" default="false" description="Whether to speak" />
 
 
     <!-- load the global parameters -->
@@ -23,12 +23,8 @@
     </include>
 
     <!-- load the diagnostic aggregator -->
-    <include file="$(find-pkg-share bitbots_diagnostic)/launch/aggregator.launch" />
 
     <!-- load the robot description -->
-    <include file="$(find-pkg-share bitbots_robot_description)/launch/load_robot_description.launch">
-        <arg name="sim" value="$(var sim)"/>
-    </include>
 
     <!-- load the motion -->
     <group if="$(var motion)">

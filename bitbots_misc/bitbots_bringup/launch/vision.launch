@@ -2,7 +2,7 @@
 <launch>
     <!-- Get launch params-->
     <arg name="sim" default="false" description="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
-    <arg name="camera" default="true" description="true: launches an image provider to get images from a camera (unless sim:=true)" />
+    <arg name="camera" default="false" description="true: launches an image provider to get images from a camera (unless sim:=true)" />
     <arg name="debug" default="false" description="true: activates publishing of several debug images" />
 
     <!-- Start the vision-->

@@ -14,7 +14,6 @@
 
   <license>MIT</license>
 
-  <exec_depend>bitbots_hcm</exec_depend>
   <exec_depend>python3-pyqt5</exec_depend>
   <exec_depend>python3-rospkg</exec_depend>
   <exec_depend>rclpy</exec_depend>

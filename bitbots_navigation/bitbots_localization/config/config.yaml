@@ -3,8 +3,8 @@ bitbots_localization:
     misc:
       init_mode: 0
       percentage_best_particles: 100
-      max_motion_linear: 0.5
-      max_motion_angular: 3.14
+      max_motion_linear: 5.0
+      max_motion_angular: 10.0
     ros:
       line_pointcloud_topic: 'line_mask_relative_pc'
       goal_topic: 'goals_simulated'
@@ -17,17 +17,17 @@ bitbots_localization:
       diffusion:
         x_std_dev: 0.8
         y_std_dev: 0.8
-        t_std_dev: 0.9
+        t_std_dev: 5.0
         multiplier: 0.001
         starting_multiplier: 0.05
         starting_steps_with_higher_diffusion: 40
       drift:
-        distance_to_direction: 1.0
+        distance_to_direction: 0.2
         rotation_to_direction: 0.0
         distance_to_distance: 0.1
-        rotation_to_distance: 0.2
-        distance_to_rotation: 0.2
-        rotation_to_rotation: 1.5
+        rotation_to_distance: 0.1
+        distance_to_rotation: 0.00
+        rotation_to_rotation: 0.0
         max_rotation: 0.45
         max_translation: 0.09
       weighting:

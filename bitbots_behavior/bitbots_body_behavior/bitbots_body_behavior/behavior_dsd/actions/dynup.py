@@ -53,6 +53,7 @@ class PlayAnimationDynup(AbstractActionElement):
 
         :return: True if the animation was started, False if not
         """
+        return True
         server_running = self.blackboard.animation.dynup_action_client.wait_for_server(timeout_sec=1.0)
         if not server_running:
             while not server_running and rclpy.ok():

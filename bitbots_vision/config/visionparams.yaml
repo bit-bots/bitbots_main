@@ -8,7 +8,7 @@ bitbots_vision:
     component_line_detection_active: true           # activate the line detection
     component_robot_detection_active: true       # activate the robot detection
 
-    ROS_img_msg_topic: "camera/image_proc" # ROS topic of the image message
+    ROS_img_msg_topic: "/camera/camera/color/image_raw" # ROS topic of the image message
     ROS_ball_msg_topic: "balls_in_image" # ROS topic of the ball message
     ROS_goal_posts_msg_topic: "goal_posts_in_image" # ROS topic of the goal posts message
     ROS_robot_msg_topic: "robots_in_image" # ROS topic of the robots message
@@ -20,7 +20,7 @@ bitbots_vision:
     yoeo_model_path: '2022_10_07_flo_torso21_yoeox'
     yoeo_nms_threshold: 0.4  # Non-maximum suppression threshold
     yoeo_conf_threshold: 0.5  # YOEO confidence threshold
-    yoeo_framework: 'tvm'  # The neural network framework that should be used ['openvino', 'onnx', 'pytorch', 'tvm']
+    yoeo_framework: 'pytorch'  # The neural network framework that should be used ['openvino', 'onnx', 'pytorch', 'tvm']
 
     ball_candidate_rating_threshold: 0.5 # A threshold for the minimum candidate rating
     ball_candidate_max_count: 1 # The maximum number of balls that should be published

@@ -2,11 +2,11 @@
 <launch>
     <arg name="sim" default="false"/>
     <arg name="full_image" default="false" description="Whether to project the full-size RGB image for debugging or showcasing"/>
-    <arg name="markers" default="true" description="Whether to publish markers for visualization of the detected objects in RViz"/>
+    <arg name="markers" default="false" description="Whether to publish markers for visualization of the detected objects in RViz"/>
     <arg name="rviz" default="false" description="Whether to start RViz with the ipm configuration"/>
 
     <node pkg="ipm_image_node" exec="ipm" name="ipm_line_mask" output="screen">
-        <remap to="/camera/camera_info" from="camera_info"/>
+        <remap to="/camera/camera/color/camera_info" from="camera_info"/>
         <remap to="/line_mask_in_image" from="input"/>
         <remap to="/line_mask_relative_pc" from="projected_point_cloud"/>
         <param name="output_frame" value="base_footprint"/>
@@ -16,14 +16,14 @@
         <param name="use_sim_time" value="$(var sim)"/>
     </node>
     <node pkg="soccer_ipm" exec="ipm" name="soccer_ipm" output="screen">
-        <remap to="/camera/camera_info" from="camera_info"/>
+        <remap to="/camera/camera/color/camera_info" from="camera_info"/>
         <param from="$(find-pkg-share bitbots_ipm)/config/soccer_ipm.yaml" />
         <param name="use_sim_time" value="$(var sim)"/>
     </node>
 
     <group if="$(var full_image)">
         <node pkg="ipm_image_node" exec="ipm" name="ipm_image" output="screen">
-            <remap to="/camera/camera_info" from="camera_info"/>
+            <remap to="/camera/camera/color/camera_info" from="camera_info"/>
             <remap to="/camera/image_proc" from="input"/>
             <remap to="/projected_camera_image" from="projected_point_cloud"/>
             <param name="output_frame" value="base_footprint"/>
@@ -43,7 +43,7 @@
             <remap to="/obstacles_relative" from="soccer_vision_3d/obstacles"/>
             <remap to="/markings_relative" from="soccer_vision_3d/markings"/>
             <!-- IMPORTANT: Ball diameter is ALSO defined in the soccer_ipm config file -->
-            <param name="ball_diameter" value="0.153"/>
+            <param name="ball_diameter" value="0.22"/>
             <param name="use_sim_time" value="$(var sim)"/>
         </node>
     </group>
