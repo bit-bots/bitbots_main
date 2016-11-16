@@ -1,0 +1,135 @@
+#!/usr/bin/env python
+#-*- coding:utf-8 -*-
+
+import subprocess
+import threading
+import random
+import os
+import time
+import socket
+from bitbots_common.util.config import get_config
+import rospy
+from std_msgs.msg import Sting
+
+class SpeakerServer(object):
+    def __init__(self):
+        rospy.init_node('bitbots_speaker_server', anonymous=False)
+        self.saylog = []
+        self.config = get_config()['speaker']
+        #self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        #self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        #self.socket.bind(("",self.config['server-port']))
+        self.__start_speaker()
+        self.__start_listen()
+
+    def msg_callback(self, msg):
+            text = msg.text
+            if self.config['server-print']:
+                print(text)
+            command = ("espeak", text)
+            self._to_saylog(
+                (
+                    command,
+                    [(addr, number)]
+                ))
+
+    def __start_listen(self):
+        rospy.Subscriber("/speaker", String, self.msg_callback)
+
+    def __start_speaker(self):
+        #self.debug.log("Starte Speaker main loop")
+        speak_thread = threading.Thread(target=self.__run_speaker,
+                                        name="Speaker-Thread",
+                                        args=(threading.currentThread(),))
+        speak_thread.deamon = False
+        speak_thread.start()
+
+    def __say(self, args):
+        """
+        Diese methode gibt es letzendlich aus
+
+        :param args: parameter für den subprozessaufruff
+        """
+        try:
+            process = subprocess.Popen(args, stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE)
+            try:
+                process.communicate()
+            finally:
+                try:
+                    process.terminate()
+                except Exception:  # pylint: disable=W0703
+                    pass
+        except OSError:
+            pass
+
+    def __callback(self, calbacks):
+        for addr, number in calbacks:
+            try:
+                # nur antworten wenn ne returnnummer angegeben ist
+                if number:
+                    self.socket.sendto(bytes(number + "顶", 'utf-8'), addr)
+            except:
+                pass
+
+    def __run_speaker(self, main_thread):
+        """
+        Die Hauptschleife die Prüft ob es etwas zu sagen gibt.
+
+        Wird in einem eigenem Thread ausgeführt
+        """
+        i = 0
+        while True:
+            if self.saylog and not "espeak " in os.popen("ps xa").read():
+                cal = self.saylog.pop(0)
+                self.speaking = cal
+                cal3 = cal[0]
+                """
+                Hack um die möglichkeit zu Schaffen, dass auf einem Laptop die Stimme der jeweiligen Roboter ausgegeben wird
+                Es Überprüft von welcher IP man die Nachrichten bekommt und hängt dann die entsprechenden Parameter ran
+                if cal[1][0][0][0] == '192.168.8.14':
+                    cal3 = ('espeak',"-ven+f3", "-s180" ,cal[0][1])
+                if cal[1][0][0][0] == '192.168.8.15':
+                    cal3 = ('espeak', "-p20" ,  "-ven-sc", "-s140" ,cal[0][1])
+                print cal3 , cal[0]
+                """
+                self.__say(cal3)
+                self.speaking = None
+                #callback ausführen
+                self.__callback(cal[1])
+            else:
+                if self.saylog and i < 120:
+                    # höchstens 50 sekunden!
+                    #self.__say(("espeak","Warte auf exit von espeak"))
+                    pass
+                elif not main_thread.is_alive():
+                    raise SystemExit()
+                else:
+                    if self.saylog:
+                        print "2", self.saylog.pop(0)
+                        self.__say(("espeak", "Espeak: %s" % self.saylog.pop(0)))
+                    i = 0
+                time.sleep(0.5)
+
+    def _to_saylog(self, cal):
+        """
+        Gibt enen aufruff in den backlog der auszugebenen sachen
+        """
+        #duplikate vermeiden
+        speak = True
+        for text in self.saylog:
+            if text[0] == cal[0]:
+                # es ist das gleiche element schon drinn
+                # callbacknumbers übertragen
+                text[1].append(cal[1][0])
+                speak = False
+                break
+        if speak:
+            self.saylog.append(cal)
+            return True
+        else:
+            return False
+
+if __name__ == "__main__":
+    print("Start Speaker Server")
+    SpeakerServer()
