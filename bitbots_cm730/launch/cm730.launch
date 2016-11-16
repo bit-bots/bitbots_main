@@ -1,0 +1,4 @@
+<launch>
+  <node name="cm730" pkg="bitbots_cm730"
+        type="talker.py" output="screen" />
+</launch>

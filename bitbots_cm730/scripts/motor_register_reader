@@ -1,0 +1,56 @@
+#! /usr/bin/env python
+# -*- coding: utf8 -*-
+
+from bitbots.lowlevel.serial import Serial
+
+from bitbots_motion.lowlevel.controller.controller import Controller
+from bitbots_motion.lowlevel.controller.controller import Register, ByteConverter, WordConverter, SpeedConverter, AngleConverter
+from bitbots_motion.lowlevel.controller.controller import get_mx28_register_table, get_cm730_register_table
+
+MX28 = get_mx28_register_table()
+CM730 = get_cm730_register_table()
+ID_CM730 = 200
+
+import time
+
+from bitbots_common.debug import Scope
+
+debug = Scope("Motorsetter")
+
+ctrl = Controller(Serial("/dev/ttyUSB0"))
+try:
+    ctrl.write_register(ID_CM730, CM730.dxl_power, 1)
+    # Augenfarbe setzen
+    ctrl.write_register(ID_CM730, CM730.led_eye, (255, 0, 255))
+    ctrl.write_register(ID_CM730, CM730.led_head, (0, 255, 255))
+    time.sleep(1)
+    en = int(raw_input("Torque enable (0/1)? "))
+    i = int(raw_input("Register ID: "))
+    word = int(raw_input("Byte (0) /Word (1)/ Speed(2)/ Angle(3)?"))
+    if word == 0:
+        converter = ByteConverter()
+        co = 2
+    elif word == 1:
+        converter = WordConverter()
+        co=4
+    elif word == 2:
+        converter = SpeedConverter()
+        co=4
+    elif word == 3:
+        converter = AngleConverter()
+        co=4
+    if en:
+        for cid in range(1,21):
+            ctrl.write_register(cid, MX28.torque_enable, 1)
+    bla = " %"+str(co)+"x"
+    while True:
+        for cid in range(1,21):
+                print bla %  ctrl.read_register(cid, Register(i, converter)),
+        time.sleep(0.1)
+        print "\r"
+except KeyboardInterrupt:
+    pass
+finally:
+    ctrl.write_register(ID_CM730, CM730.dxl_power, 0)
+    ctrl.write_register(ID_CM730, CM730.led_eye, (255, 0, 255))
+    ctrl.write_register(ID_CM730, CM730.led_head, (0, 255, 255))

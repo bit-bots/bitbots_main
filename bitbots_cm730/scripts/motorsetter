@@ -1,0 +1,88 @@
+#! /usr/bin/env python
+# -*- coding: utf8 -*-
+
+
+import time
+
+from bitbots_common.debug import Scope
+from bitbots.lowlevel.serial import Serial
+from bitbots_motion.lowlevel.controller.controller import Controller
+from bitbots_motion.lowlevel.controller.controller import Register, ByteConverter
+from bitbots_motion.lowlevel.controller.controller import get_mx28_register_table, get_cm730_register_table
+
+MX28 = get_mx28_register_table()
+CM730 = get_cm730_register_table()
+ID_CM730 = 200
+
+debug = Scope("Motorsetter")
+
+ctrl = Controller(Serial("/dev/ttyUSB0"))
+ctrl.write_register(ID_CM730, CM730.dxl_power, 1)
+# Augenfarbe setzen
+ctrl.write_register(ID_CM730, CM730.led_eye, (255, 0, 0))
+ctrl.write_register(ID_CM730, CM730.led_head, (0, 255, 255))
+time.sleep(1)
+
+
+i = 1
+out = ""
+for i in range(1,21):
+    ctrl.write_register(i, MX28.goal_position, 90)
+time.sleep(5)
+for i in range(1,21):
+    ctrl.write_register(i, MX28.goal_position, 0)
+for item in MX28.__class__.__dict__:
+    if item[0] == '_':
+        continue
+    out += " %4s" % item[:4]
+print out
+out = ""
+try:
+    for item in MX28.__class__.__dict__:
+        if item[0] == '_':
+            continue
+        out += " %s" % eval("MX28.%s" % item).get_start()
+except:
+    pass
+print out
+for i in [18, 19]:
+    out = ""
+    for item in MX28.__class__.__dict__:
+        if item[0] == '_':
+            continue
+        try:
+            out += " %4d" % ctrl.read_register(i, eval("MX28.%s" % item))
+        except:
+            out += "     "
+    print out
+
+for i in range(0,255):
+    out = "Register %3d:" % i
+    for cid in range(1,21):
+        try:
+            out += " %2x" %  ctrl.read_register(cid, Register(i, ByteConverter()))
+        except:
+            out += "  ?"
+    print out
+
+"""
+
+for i in range(1,21):
+    ctrl.write_register(i,MX28.led, 1)
+    debug << "Motor %02i P: %02i" % (i, ctrl.read_register(i, MX28.p))
+    debug << "Motor %02i I: %02i" % (i, ctrl.read_register(i, MX28.i))
+    debug << "Motor %02i D: %02i" % (i, ctrl.read_register(i, MX28.d))
+    ctrl.write_register(i,MX28.limit_voltage_high, 180)
+    ctrl.write_register(i,MX28.limit_temperatur, 65)
+    ctrl.write_register(i,MX28.i, 35)
+    time.sleep(1)
+    debug << "Motor %02i P: %02i" % (i, ctrl.read_register(i, MX28.p))
+    debug << "Motor %02i I: %02i" % (i, ctrl.read_register(i, MX28.i))
+    debug << "Motor %02i D: %02i" % (i, ctrl.read_register(i, MX28.d))
+    ctrl.write_register(i,MX28.led, 1)
+    debug << "Set Motor %i" % i
+"""
+time.sleep(1)
+ctrl.write_register(ID_CM730, CM730.led_head, (0, 255, 0))
+ctrl.write_register(ID_CM730, CM730.dxl_power, 0)
+debug << "Ready"

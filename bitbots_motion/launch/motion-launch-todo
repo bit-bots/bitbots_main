@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+#-*- coding:utf-8 -*-
+
+import argparse
+import sys
+
+from bitbots_common.debug.debug import Scope
+
+debug = Scope("Motion")
+try:
+    import bitbots_motion.motionserver
+except Exception as e:
+    debug.error(e, "Error wihile importing Motion: ")
+
+from bitbots_motion.lowlevel.controller.controller import MultiMotorError
+from bitbots_common.util.speaker import say
+
+def motion(args, device):
+    bitbots_motion.motionserver.bootstrap(device,
+                                                                 dieflag=args.dieflag, standupflag=args.standup,
+                                                                 softoff=args.soft, softstart=args.softstart,
+                                                                 starttest=args.starttest, cm_370=(not args.no_cm_370))
+
+def main():
+    parser = argparse.ArgumentParser(description='Startet den Motionserver für den Darwin, und stellt das IPC bereit')
+    parser.add_argument('--no', dest='dieflag', action='store_false',
+                        help='Unterdrückt das automatische abschalten der Motion wenn 60 Sekunden keine Updates gekommen sind')
+    parser.add_argument('--nostandup', dest='standup', action='store_false',
+                        help='Unterdrückt das automatische aufstehen')
+    parser.add_argument('--softoff', dest='soft', action='store_true',
+                        help='Stellt nur die Motoren bei nichtbenutzung aus')
+    parser.add_argument('--softstart', dest='softstart', action='store_true',
+                        help='Bei Softoff gleich im Soft Modus starten')
+    parser.add_argument('--starttest', dest='starttest', action='store_true',
+                        help='Beim Starten der Motion Motoren anpingen')
+    parser.add_argument('--simulate', dest='simulate',
+                        help='Ip to witch connect instand of hardware',
+                        default=None, metavar="IP")
+    parser.add_argument('--no-cm-370',
+                        help='The robot has no cm370',
+                        default=False, dest="no_cm_370", action='store_true')
+    args = parser.parse_args()
+    if args.simulate:
+        try:
+            motion(args, (args.simulate, 0)) #TODO: Spielernummer übergeben
+            sys.exit(0)
+        except KeyboardInterrupt:
+            sys.exit(0)
+    else:
+        for _try in range(3):
+            for i in range(4):
+                try:
+                    debug << "Öffne /dev/ttyUSB%d..." % i
+                    motion(args, "/dev/ttyUSB%d" % i)
+                    sys.exit(0)
+
+                except IOError:
+                    pass
+                except KeyboardInterrupt:
+                    sys.exit(0)
+                except MultiMotorError:
+                    sys.exit(2)
+                except Exception as e:
+                    debug.error(e, "Error in Motion: ")
+                    sys.exit(1)
+    debug.warning("Konnte keine Verbindung zum CM730 herstellen!")
+    say("Could not connect to CM-730.")
+    debug.warning("Gebe Auf!")
+
+if __name__ == "__main__":
+    main()
+
