@@ -106,7 +106,6 @@ catkin_package(
   DEPENDS Eigen
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/message/support)
 
 add_subdirectory(src/bitbots_common)
 

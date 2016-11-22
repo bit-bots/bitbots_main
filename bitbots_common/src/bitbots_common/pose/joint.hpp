@@ -141,7 +141,6 @@ inline void Joint::reset() {
     this->p = -1;
     this->i = -1;
     this->d = -1;
-    this->speed = 702;
     this->changed = false;
 }
 
