@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 import time
+from std_msgs.msg import String
+
 from sensor_msgs.msg import JointState
 
 import rospy
-
-from ros.src.bitbots_common.src.bitbots_common.utilCython.datavector import IntDataVector
-
-from ros.src.bitbots_common.src.bitbots_common.utilCython.datavector import DataVector
-
 
 class cm730(object):
     """
@@ -18,31 +15,40 @@ class cm730(object):
 
     def __init__(self):
         rospy.init_node('bitbots_cm730', anonymous=False)
-        rospy.Subscriber("/MotorGoals", JointState, self.update_motor_goals)
+        rospy.Subscriber("/MotorGoals", JointTrajectory, self.update_motor_goals)
         self.joint_publisher = rospy.Publisher('/joint_states', JointState, queue_size=10)
+        self.speak_publisher = rospy.Publisher('/speak', String, queue_size=10)
+        self.temp_publisher = rospy.Publisher('/temperatur', Temperature, queue_size=10)
 
         self.raw_gyro = IntDataVector(0, 0, 0)
         self.smooth_accel = DataVector(0, 0, 0)
         self.smooth_gyro = DataVector(0, 0, 0)
 
-        joints =  self.config['joints']
+        joints =  rospy.get_param("/joints")
+        robot_type_name = rospy.get_param("/RobotTypeName")
+        self.motors = rospy.get_param(robot_type_name + "/motors")
+
+        self.init_read_packet()
+
         rospy.loginfo("Set Motor min/max Values")
-        with self.ipc: #todo fragen ob das so hier sinn macht
-            for motor in joints:
-                if not str(motor['name']) in self.ipc.get_pose_ref().names:
-                    debug.warning("Joints.json: unknown motor %s" % str(motor))
-                    continue
-                if 'max' in motor['limits']:
-                    self.ipc.get_pose_ref()[str(motor['name'])].maximum = motor['limits']['max']
-                if 'min' in motor['limits']:
-                    self.ipc.get_pose_ref()[str(motor['name'])].minimum = motor['limits']['min']
+        for motor in joints:
+            min_value = -180
+            max_value = 180
+            if 'max' in motor['limits']:
+                max_value = motor['limits']['max']
+            if 'min' in motor['limits']:
+                min_value = motor['limits']['min']
+            rospy.set_param(str(motor['name']), {'min': min_value, 'max': max_value})
+
+        #todo testen ob werte die man in den motor setzt in den maximas liegen
 
         self.update_forever()
 
 
     def update_motor_goals(self):
         """ Callback for subscription on motorgoals topic """
-        # save motor values locally to get them updated during the update_forever loop
+        #todo save motor values locally to get them updated during the update_forever loop
+        #todo irgendwie das handeln, falls die motion falsche winkel sendet (außerhalb von maxima)
 
 
     cdef set_motor_ram(self):
@@ -50,7 +56,7 @@ class cm730(object):
         Diese Methode setzt die Werte im Ram der Motoren, je nach wert aus
         der Configdatei
         """
-        if self.config['setMXRam']:
+        if rospy.get_param('/cm730/setMXRam', False):
             rospy.loginfo("setze MX28 RAM")
             if self.cm_370:
                 self.ctrl.write_register(ID_CM730, CM730.led_head, (255, 0, 0))
@@ -299,7 +305,7 @@ class cm730(object):
                         self.low_voltage_counter += 1
                         if self.low_voltage_counter > 10:
                             # we delay the low voltag shutdown because sometimes the hardware is telling lies
-                            say("Warning: Low Voltage! System Exit!") #todo publish on speaker topic
+                            self.speak_publisher.publish("Warning: Low Voltage! System Exit!")
                             rospy.logerr("SYSTEM EXIT: LOW VOLTAGE")
                             raise SystemExit("SYSTEM EXIT: LOW VOLTAGE (%d V)" % voltage/10)
                     else:
@@ -315,7 +321,6 @@ class cm730(object):
                 position = position - self.joint_offsets[cid]
                 joint.set_position(position)
 
-
                 # Debug Informationen senden (nur alle 40, wegen der Datenmenge)
                 if cid_all_Values == cid:  # etwa alle halbe sekunde
                     #todo in publishing ändern
@@ -326,7 +331,7 @@ class cm730(object):
                 if temperature > 60:
                     fmt = "Motor cid=%d hat eine Temperatur von %1.1f°C: Notabschaltung!"
                     rospy.logwarn(fmt % (cid, temperature))
-                    say("An Motor has a Temperatur over %.1f°C" % temperature) #todo in publish ändern
+                    self.speak_publisher.publish("An Motor has a Temperatur over %.1f°C" % temperature)
                     raise SystemExit(fmt % (cid, temperature))
 
         return button, gyro, accel
@@ -386,10 +391,10 @@ class cm730(object):
         # rot werden, und ob sie ansonsten überhaupt genutzt werden
         if self.cm_370:
             packet = SyncWritePacket((CM730.led_head, CM730.led_eye))
-            if self.state == STATE_PENALTY and self.config["EyesPenalty"]:
+            if self.state == STATE_PENALTY and rospy.get_param("/cm730/EyesPenalty", false):
                 packet.add(ID_CM730, ((255, 0, 0), (0, 0, 0)))
             else:
-                if self.config["EyesOff"]:
+                if rospy.get_param("/cm730/EyesOff", False):
                     packet.add(ID_CM730, ((0, 0, 0), (0, 0, 0)))
                 else:
                     packet.add(ID_CM730, (self.led_head, self.led_eye))
@@ -414,21 +419,6 @@ class cm730(object):
                 self.update_sensor_data()
                 # hier abbrechen um Zuckungen zu vermeiden
                 return
-
-            # TODO: Hardcoded Stuff (ganz doof)
-            # momentan veraltet 30.3.15 @Nils
-            #joint = pose.get_joint_by_cid(30)
-            #joint2 = pose.get_joint_by_cid(27)
-            #joint2.p = joint.p
-            #joint2.goal = joint.goal * -1
-            #joint2.speed = joint.speed
-            #joint2.active = joint.active
-            #joint2 = pose.get_joint_by_cid(28)
-            #joint2.p = joint.p
-            #joint2.goal = joint.goal
-            #joint2.speed = joint.speed
-            #joint2.active = joint.active
-            #joint.reset()
 
             goal_packet = SyncWritePacket((MX28.goal_position, MX28.moving_speed))
             for name, joint in pose.joints:
@@ -490,11 +480,11 @@ class cm730(object):
     cpdef switch_motor_power(self, state):
         # wir machen nur etwas be änderungen des aktuellen statusses
         if not self.cm_370:
-            # without the cm370 we cant switch the motor power # TODO muss hier noch was gemacht werden????
+            # without the cm370 we cant switch the motor power
             return
         if state and not self.dxl_power:
             # anschalten
-            debug << "Switch dxl_power back on"
+            rospy.loginfo("Switch dxl_power back on")
             self.ctrl.write_register(ID_CM730, CM730.dxl_power, 1)
             # wir warten einen Augenblick bis die Motoeren auch wirklich wieder
             # wieder an und gebootet sind
@@ -503,7 +493,7 @@ class cm730(object):
             self.dxl_power = True
         elif (not state) and self.dxl_power:
             # ausschalten
-            debug << "Switch off dxl_power"
+            rospy.loginfo("Switch off dxl_power")
             # das sleep hier ist nötig da es sonst zu fehlern in der
             # firmware der Motoren kommt!
             # Vermutete ursache:

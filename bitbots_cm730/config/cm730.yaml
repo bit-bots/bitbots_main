@@ -1,0 +1,10 @@
+cm730:
+
+  #Setzen der PID register im MX28 Ram
+  setMXRam: true
+  setMXRom: true
+
+  # Augen unterdrücken
+  "EyesOff": false
+  # Penalty durch augen signalisieren? (Auch bei EysOff=true!)
+  "EyesPenalty": true

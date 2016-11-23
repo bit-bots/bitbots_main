@@ -35,6 +35,7 @@ cdef class Motion(object):
         rospy.Subscriber("/Gamestate", Gamestate, self.update_gamestate)
         self.joint_goal_publisher = rospy.Publisher('/MotorGoals', JointState, queue_size=10)
         self.state_publisher = rospy.Publisher('/MotionState', JointState, queue_size=10)
+        self.speak_publisher = rospy.Publisher('/speak', String, queue_size=10)
 
         self.accel = DataVector(0,0,0)
         self.gyro = DataVector(0,0,0)
@@ -161,11 +162,11 @@ cdef class Motion(object):
                     return
                 # sonst hinsetzen, aber nur wenn wir das nicht sowieso schon tun
                 if self.state != STATE_PENALTY_ANIMANTION:
-                    debug << "Penalized, sit down!"
+                    rospy.logwarn("Penalized, sit down!")
                     self.animate(
-                        self.config["animations"]["motion"]["penalized"], STATE_PENALTY)
+                        rospy.get_param("/animations/motion/penalized", STATE_PENALTY)
                     self.set_state(STATE_PENALTY_ANIMANTION)
-                    debug << "Motion wird danach nichts mehr tun, penalized"
+                    rospy.logwarn("Motion wird danach nichts mehr tun, penalized")
 
             if self.state == STATE_PENALTY:
                 # Die Motion ist noch im State Penalty, der Client nicht mehr,
@@ -185,8 +186,7 @@ cdef class Motion(object):
                 if self.state == STATE_SOFT_OFF:
                     #wenn im softoff erstmal aufstehen (Ist besser)
                     self.animate(
-                        self.config["animations"]["motion"]["walkready"],
-                            STATE_RECORD)
+                        rospy.get_param("/animations/motion/walkready", STATE_RECORD)
                 elif self.state not in (
                         STATE_RECORD,
                         STATE_ANIMATION_RUNNING ,
@@ -269,7 +269,7 @@ cdef class Motion(object):
                 return
 
             # Animation ist zuende
-            debug("End of Animation")
+            rospy.loginfo("End of Animation")
             self.animfunc = None
             self.last_version = self.ipc.get_version()
             # TODO: Use config
@@ -316,9 +316,9 @@ cdef class Motion(object):
                 # etwas anderes zu tun (z.B. Aufstehn/Hinfallen)
                 # Dann reseten Wir das Walking und stoppen dabei.
                 self.walking_reset()
-                p = self.config["mx28config"]["RAM"]["p"]
-                i = self.config["mx28config"]["RAM"]["i"]
-                d = self.config["mx28config"]["RAM"]["d"]
+                p = rospy.get_param("/mx28config/RAM/p")
+                i = rospy.get_param("/mx28config/RAM/i")
+                d = rospy.get_param("/mx28config/RAM/d")
                 for name, joint in self.goal_pose.joints:
                     joint.p = p
                     joint.i = i
@@ -352,9 +352,9 @@ cdef class Motion(object):
                 # wir setzen das p value aller motoren neu, da das
                 # walking hier rumspielt, es für das meiste andere
                 # (auch stehen) nicht gut ist wenn die reduziert sind
-                p = self.config["mx28config"]["RAM"]["p"]
-                i = self.config["mx28config"]["RAM"]["i"]
-                d = self.config["mx28config"]["RAM"]["d"]
+                p = rospy.get_param("/mx28config/RAM/p")
+                i = rospy.get_param("/mx28config/RAM/i")
+                d = rospy.get_param("/mx28config/RAM/d")
                 for name, joint in self.goal_pose.joints:
                     joint.p = p
                     joint.i = i
@@ -397,7 +397,7 @@ cdef class Motion(object):
             if self.softoff:
                 if self.state != STATE_SOFT_OFF:
                     # wir sind schon im Soft-Off
-                    debug.log("Gehe in soft-off status")
+                    rospy.logwarn("Gehe in soft-off status")
                     say("Switch to soft-off")
                     if self.state != STATE_CONTROLABLE:
                         # Wenn wir nicht Controllabel sind können wir uns
@@ -408,19 +408,19 @@ cdef class Motion(object):
                         # Wir setzen hier auf Busy da es sonst passieren
                         # könnte das die Animation nicht abgespielt wird
                         self.set_state(STATE_BUSY)
-                        self.animate(self.config["animations"]["motion"]["sit-down"], STATE_SOFT_OFF)
+                        self.animate(rospy.get_param("/animations/motion/sit-down", STATE_SOFT_OFF)
             else:
                 # wenn wir hierher kommen und softoff sind, dann ist es wohl
                 # ein softstart ohne softoff, also ok
                 if self.state != STATE_SOFT_OFF:
                     # es soll nur aus gemacht werden
-                    debug.warning("Kein Update vom Client in 60 Sekunden")
-                    say("No update in the last 60 Seconds")
-                    debug.log("Bye")
+                    rospy.logwarn("Kein Update vom Client in 60 Sekunden")
+                    self.speak_publisher.publish("No update in the last 60 Seconds")
+                    rospy.loginfo("Bye")
                     raise SystemExit()
         elif self.state == STATE_SOFT_OFF:
             # Pose resetten um versehentliche sprünge zu vermeiden
             # wir wollen jetzt erstmal aufstehen
             self.goal_pose.reset()
-            debug.log("Update nach Softoff eingetroffen reaktivieren")
+            rospy.loginfo("Update nach Softoff eingetroffen reaktivieren")
             self.set_state(STATE_STARTUP)
