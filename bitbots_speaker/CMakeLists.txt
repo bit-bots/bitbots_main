@@ -10,6 +10,7 @@ include(BitBotsIncludes)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
 
+ #todo
  ## @Robert having bitbots_common in find package results in an error, when bitbots_common is not build or installed
  ## as it is after checking out and try to compile the project initially.
  ## we should handle the via the add_dependencies(target bitbots_common) catkin_make command
@@ -17,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   rospy
   std_msgs
+  dynamic_reconfigure
 )
 
 ## System dependencies are found with CMake's conventions
@@ -93,10 +95,10 @@ generate_messages(
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+   cfg/speaker_params.cfg
+   cfg/node_example_params.cfg
+)
 
 ###################################
 ## catkin specific configuration ##

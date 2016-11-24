@@ -7,8 +7,8 @@ import subprocess
 import os
 import time
 
-#from dynamic_reconfigure.server import Server
-#from bitbots_speaker.cfg import speaker_params
+from dynamic_reconfigure.server import Server
+from bitbots_speaker.cfg import speaker_paramsConfig as ConfigType
 
 from bitbots_speaker.msg import Speak
 

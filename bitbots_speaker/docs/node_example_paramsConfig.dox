@@ -1,0 +1,8 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~message" : \b [str] The message. min: , default: hello, max: 
+- \b "~a" : \b [int] First number. min: -100, default: 1, max: 100
+- \b "~b" : \b [int] First number. min: -100, default: 2, max: 100
+

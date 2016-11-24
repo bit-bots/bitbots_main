@@ -1,0 +1,8 @@
+\subsubsection usage Usage
+\verbatim
+<node name="bitbots_speaker" pkg="bitbots_speaker" type="bitbots_speaker">
+  <param name="print" type="bool" value="False" />
+  <param name="talk" type="bool" value="True" />
+</node>
+\endverbatim
+
