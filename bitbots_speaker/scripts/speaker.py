@@ -3,12 +3,18 @@
 from Queue import Queue
 
 import rospy
-import threading
 import subprocess
 import os
+import time
+
+#from dynamic_reconfigure.server import Server
+#from bitbots_speaker.cfg import speaker_params
+
+from bitbots_speaker.msg import Speak
 
 
-class speaker(object):
+
+class Speaker(object):
     """ Uses espeak to say all messages from the speak topic
     """
 
@@ -18,7 +24,7 @@ class speaker(object):
 
     def __init__(self):
         rospy.init_node('bitbots_speaker', anonymous=False)
-        rospy.Subscriber("/speak", Speak, self.incoming_text)
+        #rospy.Subscriber("speak", Speak, self.incoming_text)
 
         self.speak_enabled = rospy.get_param("/speaker/speak_enabled", True)  # todo dynamic regonfigure
         self.print_say = rospy.get_param("/speaker/print_say", False)  # todo dynamic regonfigure
@@ -31,8 +37,8 @@ class speaker(object):
 
     def __run_speaker(self):
         """ Runs continuisly to wait for messages and speak them"""
-
-        while True:
+        # wait for messages. while true doesn't work well in ROS
+        while not rospy.is_shutdown():
             # test if espeak is already running
             if not "espeak " in os.popen("ps xa").read():
                 if len(self.high_prio_queue) > 0:
@@ -41,6 +47,7 @@ class speaker(object):
                     self.__say(self.mid_prio_queue.pop(0))
                 elif len(self.low_prio_queue) > 0:
                     self.__say(self.low_prio_queue.pop(0))
+            time.sleep(0.5)
 
     def __say(self, text):
         """ Speak this specific text"""
@@ -94,3 +101,8 @@ class speaker(object):
 
         if self.print_say:
             rospy.loginfo(text)
+
+
+if __name__ == "__main__":
+    print("Starting Speaker")
+    Speaker()
