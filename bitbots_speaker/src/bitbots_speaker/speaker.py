@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-from Queue import Queue
 
 import rospy
 import subprocess
@@ -101,8 +100,3 @@ class Speaker(object):
 
         if self.print_say:
             rospy.loginfo(text)
-
-
-if __name__ == "__main__":
-    print("Starting Speaker")
-    Speaker()
