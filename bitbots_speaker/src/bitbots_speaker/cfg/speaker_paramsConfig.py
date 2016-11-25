@@ -34,3 +34,7 @@ for param in extract_params(config_description):
     type[param['name']] = param['type']
     all_level = all_level | param['level']
 
+class test():
+
+    def __init__(self):
+        pass

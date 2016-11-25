@@ -4,13 +4,12 @@
 import rospy
 import subprocess
 import os
-import time
 
 from dynamic_reconfigure.server import Server
-from bitbots_speaker.cfg import speaker_paramsConfig as ConfigType
+#from bitbots_speaker.cfg import speaker_paramsConfig
+# todo fix this to make params with dyn_reconf
 
 from bitbots_speaker.msg import Speak
-
 
 
 class Speaker(object):
@@ -23,10 +22,12 @@ class Speaker(object):
 
     def __init__(self):
         rospy.init_node('bitbots_speaker', anonymous=False)
-        #rospy.Subscriber("speak", Speak, self.incoming_text)
+        rospy.Subscriber("speak", Speak, self.incoming_text)
 
         self.speak_enabled = rospy.get_param("/speaker/speak_enabled", True)  # todo dynamic regonfigure
         self.print_say = rospy.get_param("/speaker/print_say", False)  # todo dynamic regonfigure
+
+#todo        self.server = Server(speaker_paramsConfig, self.reconfigure)
 
         self.low_prio_queue = []
         self.mid_prio_queue = []
@@ -46,7 +47,7 @@ class Speaker(object):
                     self.__say(self.mid_prio_queue.pop(0))
                 elif len(self.low_prio_queue) > 0:
                     self.__say(self.low_prio_queue.pop(0))
-            time.sleep(0.5)
+            rospy.sleep(0.5)
 
     def __say(self, text):
         """ Speak this specific text"""
@@ -100,3 +101,10 @@ class Speaker(object):
 
         if self.print_say:
             rospy.loginfo(text)
+
+    def reconfigure(self, config, level):
+        # Fill in local variables with values received from dynamic reconfigure clients (typically the GUI).
+        self.print_say = config["print"]
+        self.speak_enabled = config["talk"]
+        # Return the new variables.
+        return config
