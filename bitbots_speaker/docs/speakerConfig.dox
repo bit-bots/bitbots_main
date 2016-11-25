@@ -1,7 +1,0 @@
-\subsubsection parameters ROS parameters
-
-Reads and maintains the following parameters on the ROS server
-
-- \b "~print" : \b [bool] If the node shall write all messages also on the console min: False, default: False, max: True
-- \b "~talk" : \b [bool] If the node shall talk min: False, default: True, max: True
-

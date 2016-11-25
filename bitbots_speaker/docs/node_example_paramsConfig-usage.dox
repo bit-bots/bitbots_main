@@ -1,9 +1,0 @@
-\subsubsection usage Usage
-\verbatim
-<node name="node_example" pkg="bitbots_speaker" type="node_example">
-  <param name="message" type="str" value="hello" />
-  <param name="a" type="int" value="1" />
-  <param name="b" type="int" value="2" />
-</node>
-\endverbatim
-

@@ -73,7 +73,6 @@ class Speaker(object):
             return
 
         text = msg.text
-        rospy.logerr(text)  # todo nur zum testen
         prio = msg.priority
         new = True
 
