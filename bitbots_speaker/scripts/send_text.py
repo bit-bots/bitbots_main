@@ -7,10 +7,12 @@ from bitbots_speaker.msg import Speak
 def sender():
     pub = rospy.Publisher('speak', Speak, queue_size=10)
     rospy.init_node('send_text', anonymous=False)
-    if rospy.has_param("~text"):
-        text = rospy.get_param("~text")
+    if rospy.has_param("~text") or rospy.has_param("~filename"):
         msg = Speak()
-        msg.text = text
+        if rospy.has_param("~text"):
+            msg.text = rospy.get_param("~text")
+        if rospy.has_param("~filename"):
+            msg.filename = rospy.get_param("~filename")
         if rospy.has_param("~prio"):
             msg.priority = rospy.get_param("~prio")
         else:
@@ -23,5 +25,6 @@ def sender():
 if __name__ == '__main__':
     # run with "rosrun bitbots_speaker send_text.py _text:=TEXT"
     # you can add _prio:=NUMBER with a number between 0 and 2 to set the priority level
+    # if you use _filename instead of _text you can give out a file with the corresponding path
     print("Sending Message")
     sender()

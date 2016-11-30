@@ -228,11 +228,15 @@ class DEFAULT
 
         if("print"==(*_i)->name){print = boost::any_cast<bool>(val);}
         if("talk"==(*_i)->name){talk = boost::any_cast<bool>(val);}
+        if("msg_level"==(*_i)->name){msg_level = boost::any_cast<int>(val);}
+        if("amplitude"==(*_i)->name){amplitude = boost::any_cast<int>(val);}
       }
     }
 
     bool print;
 bool talk;
+int msg_level;
+int amplitude;
 
     bool state;
     std::string name;
@@ -246,6 +250,10 @@ bool talk;
       bool print;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       bool talk;
+//#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
+      int msg_level;
+//#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
+      int amplitude;
 //#line 218 "/opt/ros/kinetic/share/dynamic_reconfigure/templates/ConfigType.h.template"
 
     bool __fromMessage__(dynamic_reconfigure::Config &msg)
@@ -401,6 +409,26 @@ speaker_paramsConfig::GroupDescription<speaker_paramsConfig::DEFAULT, speaker_pa
       Default.abstract_parameters.push_back(speaker_paramsConfig::AbstractParamDescriptionConstPtr(new speaker_paramsConfig::ParamDescription<bool>("talk", "bool", 0, "If the node shall talk", "", &speaker_paramsConfig::talk)));
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       __param_descriptions__.push_back(speaker_paramsConfig::AbstractParamDescriptionConstPtr(new speaker_paramsConfig::ParamDescription<bool>("talk", "bool", 0, "If the node shall talk", "", &speaker_paramsConfig::talk)));
+//#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
+      __min__.msg_level = 0;
+//#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
+      __max__.msg_level = 2;
+//#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
+      __default__.msg_level = 0;
+//#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
+      Default.abstract_parameters.push_back(speaker_paramsConfig::AbstractParamDescriptionConstPtr(new speaker_paramsConfig::ParamDescription<int>("msg_level", "int", 0, "The minimal priority level, that should be spoken by the speaker", "", &speaker_paramsConfig::msg_level)));
+//#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
+      __param_descriptions__.push_back(speaker_paramsConfig::AbstractParamDescriptionConstPtr(new speaker_paramsConfig::ParamDescription<int>("msg_level", "int", 0, "The minimal priority level, that should be spoken by the speaker", "", &speaker_paramsConfig::msg_level)));
+//#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
+      __min__.amplitude = 0;
+//#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
+      __max__.amplitude = 20;
+//#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
+      __default__.amplitude = 10;
+//#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
+      Default.abstract_parameters.push_back(speaker_paramsConfig::AbstractParamDescriptionConstPtr(new speaker_paramsConfig::ParamDescription<int>("amplitude", "int", 0, "The amplitude with should be used for espeak.", "", &speaker_paramsConfig::amplitude)));
+//#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
+      __param_descriptions__.push_back(speaker_paramsConfig::AbstractParamDescriptionConstPtr(new speaker_paramsConfig::ParamDescription<int>("amplitude", "int", 0, "The amplitude with should be used for espeak.", "", &speaker_paramsConfig::amplitude)));
 //#line 233 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       Default.convertParams();
 //#line 233 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"

@@ -3,18 +3,11 @@ project(bitbots_speaker)
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../bitbots_common/cmake) #  TODO: das mus dynamisch
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake) #  TODO: das mus dynamisch
 
-include(BitBotsIncludes)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-
- #todo
- ## @Robert having bitbots_common in find package results in an error, when bitbots_common is not build or installed
- ## as it is after checking out and try to compile the project initially.
- ## we should handle the via the add_dependencies(target bitbots_common) catkin_make command
- # bitbots_common # @Robert 03.09.2016
   message_generation
   rospy
   std_msgs
