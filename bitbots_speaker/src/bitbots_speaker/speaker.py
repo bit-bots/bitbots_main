@@ -38,11 +38,8 @@ class Speaker(object):
         """ Runs continuisly to wait for messages and speak them"""
         # wait for messages. while true doesn't work well in ROS
         while not rospy.is_shutdown():
-            # only talk if enabled
-            if not self.speak_enabled:
-                return
-            # test if espeak is already running
-            if not "espeak " in os.popen("ps xa").read():
+            # test if espeak is already running and speak is enabled
+            if not "espeak " in os.popen("ps xa").read() and self.speak_enabled:
                 if len(self.high_prio_queue) > 0:
                     text, is_file = self.high_prio_queue.pop(0)
                     self.__say(text, is_file)
@@ -75,10 +72,6 @@ class Speaker(object):
     def incoming_text(self, msg):
         """ Handles incoming msg on speak topic."""
 
-        if not self.speak_enabled:
-            # don't accept new messages
-            return
-
         is_file = False
         text = msg.text
         if text is None:
@@ -88,6 +81,13 @@ class Speaker(object):
                 return
         prio = msg.priority
         new = True
+
+        if self.print_say and not is_file:
+            rospy.loginfo(text)
+
+        if not self.speak_enabled:
+            # don't accept new messages
+            return
 
         if prio == msg.LOW_PRIORITY:
             for queued_text in self.low_prio_queue:
@@ -110,9 +110,6 @@ class Speaker(object):
                     break
             if new:
                 self.high_prio_queue.append((text, is_file))
-
-        if self.print_say and not is_file:
-            rospy.loginfo(text)
 
     def reconfigure(self, config, level):
         # Fill in local variables with values received from dynamic reconfigure clients (typically the GUI).
