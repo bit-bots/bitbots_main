@@ -124,7 +124,7 @@ class TeamCommunication(object):
 
         self.publisher.publish(message)
 
-    def role_callback(self, msg): 
+    def role_callback(self, msg):
         self.role = msg.role
 
     def action_callback(self, msg):
