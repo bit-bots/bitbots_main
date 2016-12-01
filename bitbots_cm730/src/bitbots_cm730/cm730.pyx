@@ -30,6 +30,8 @@ class cm730(object):
 
         self.init_read_packet()
 
+        #todo make min/max dynamically reconfigurable
+        #problem is, that the number of motors is not known at build time
         rospy.loginfo("Set Motor min/max Values")
         for motor in joints:
             min_value = -180
