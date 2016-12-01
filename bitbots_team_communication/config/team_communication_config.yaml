@@ -1,0 +1,12 @@
+# Should something be transmitted
+enabled: True
+
+# The port to be used
+port: 12321
+
+team: 7
+
+player: 99
+
+# Rate of published messages in Hz
+rate: 1
