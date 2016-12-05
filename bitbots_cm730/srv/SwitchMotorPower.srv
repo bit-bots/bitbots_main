@@ -1,0 +1,10 @@
+#request
+
+# true:on
+# false: off
+bool power
+
+---
+#response
+
+bool success

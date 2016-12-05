@@ -8,6 +8,8 @@ import rospy
 import time
 
 from .standuphandler cimport StandupHandler
+from bitbots_cm730.srv import SwitchMotorPower
+
 
 
 cdef state_to_string(int state):
@@ -72,7 +74,6 @@ cdef class Motion(object):
         self.animation_requested = False # animation request from animation server
 
         self.standupHandler = StandupHandler()
-        self.standupHandler.load_falling_data()
 
         if self.state == STATE_RECORD: #todo check if still needed
             rospy.logwarn("Recordflag gesetzt, bleibe im record modus")
@@ -88,12 +89,19 @@ cdef class Motion(object):
             # das muss hgier schon, sonst geht die src sofort aus,
             # weil er merkt das noch kein update gekommen ist
             self.set_state(STATE_SOFT_OFF)
-            #todo service call
             self.switch_motor_power(False)
         else:
             self.last_client_update = time.time()
-            #todo service call
             self.switch_motor_power(True)
+
+    def switch_motor_power(self, state):
+        """ Calling service from CM730 to turn motor power on or off"""
+        rospy.wait_for_service("switch_motor_power")
+        power_switch = rospy.ServiceProxy("switch_motor_power", SwitchMotorPower)
+        try:
+            response = power_switch(state)
+        except rospy.ServiceException as exc:
+            print("Service did not process request: " + str(exc))
 
     def update_imu(self):
 
@@ -202,7 +210,6 @@ cdef class Motion(object):
             if self.state == STATE_PENALTY:
                 # Already penealized
                 # turn of motors and wait
-                #todo service call
                 self.switch_motor_power(False)
                 rospy.sleep(0.05)
                 # update last_cliente time to prohibit shutdown of motion while beeing penalized
@@ -222,7 +229,6 @@ cdef class Motion(object):
             # we want to stand up and get into STATE_CONTROLABLE
 
             # First turn on the motors
-            #todo service
             self.switch_motor_power(True)
             # Update the state
             self.set_state(STATE_PENALTY_ANIMANTION)

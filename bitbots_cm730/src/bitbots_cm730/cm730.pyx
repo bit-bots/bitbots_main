@@ -9,6 +9,7 @@ from trajectory_msgs.msg import JointTrajectory
 from std_msgs.msg import String
 from sensor_msgs.msg import JointState, Temperature
 from bitbots_speaker.msg import Speak
+from bitbots_cm730.srv import SwitchMotorPower
 
 
 import rospy
@@ -29,6 +30,7 @@ class cm730(object):
         self.joint_publisher = rospy.Publisher('/joint_states', JointState, queue_size=10)
         self.speak_publisher = rospy.Publisher('/speak', String, queue_size=10)
         self.temp_publisher = rospy.Publisher('/temperatur', Temperature, queue_size=10)
+        self.motor_power_service = rospy.Service("switch_motor_power", SwitchMotorPower, self.switch_motor_power_service_call)
 
         self.raw_gyro = IntDataVector(0, 0, 0)
         self.smooth_accel = DataVector(0, 0, 0)
@@ -481,7 +483,7 @@ class cm730(object):
             if self.dxl_power:
                 self.switch_motor_power(False)
 
-    #todo make this a service
+
     cpdef switch_motor_power(self, state):
         # wir machen nur etwas be änderungen des aktuellen statusses
         if not self.cm_370:
@@ -509,7 +511,8 @@ class cm730(object):
             self.ctrl.write_register(ID_CM730, CM730.dxl_power, 0)
             self.dxl_power = False
 
-
+    def switch_motor_power_service_call(self, req):
+        return self.switch_motor_power(req.power)
 
 
     cdef void send_joints_ros(self):
