@@ -1,11 +1,21 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 import time
-from std_msgs.msg import String
 
-from sensor_msgs.msg import JointState
+import math
+from Cython.Includes.cpython.exc import PyErr_CheckSignals
+
+from trajectory_msgs.msg import JointTrajectory
+from std_msgs.msg import String
+from sensor_msgs.msg import JointState, Temperature
+from bitbots_speaker.msg import Speak
+
 
 import rospy
+
+from .pose.pose import Joint, Pose
+from .lowlevel.controller.controller import CM730, ID_CM730, MX28, BulkReadPacket, MultiMotorError, SyncWritePacket
+
 
 class cm730(object):
     """
@@ -24,10 +34,13 @@ class cm730(object):
         self.smooth_accel = DataVector(0, 0, 0)
         self.smooth_gyro = DataVector(0, 0, 0)
 
-        joints =  rospy.get_param("/joints")
+        joints = rospy.get_param("/joints")
         robot_type_name = rospy.get_param("/RobotTypeName")
         self.motors = rospy.get_param(robot_type_name + "/motors")
 
+        self.read_packet_stub = list()
+        self.read_packet2 = BulkReadPacket()
+        self.read_packet3_stub = list()
         self.init_read_packet()
 
         #todo make min/max dynamically reconfigurable
@@ -55,11 +68,10 @@ class cm730(object):
 
     cdef set_motor_ram(self):
         """
-        Diese Methode setzt die Werte im Ram der Motoren, je nach wert aus
-        der Configdatei
+        This method sets the values in the RAM of the motors, dependent on the values in the config.
         """
         if rospy.get_param('/cm730/setMXRam', False):
-            rospy.loginfo("setze MX28 RAM")
+            rospy.loginfo("setting MX RAM")
             if self.cm_370:
                 self.ctrl.write_register(ID_CM730, CM730.led_head, (255, 0, 0))
             for motor in self.motors:
@@ -72,15 +84,11 @@ class cm730(object):
 
     cdef init_read_packet(self):
         """
-        Initiallisiert die :class:`BulkReadPacket` für die Kommunikation mit
-        den Motoren
+        Initiallise the :class:`BulkReadPacket` for communcation with the motors
 
-        Wichtig: Der Motor in self.read_packet[i] muss gleich dem self.read_packet3[i] sein, da beim Lesen einzelne
-        packete aus 1 in 3 eingefügt werden.
+        Important: The motor in self.read_packet[i] has to be the same like in self.read_packet3[i], because
+         while reading, single packages from 1 are inserted to 3.
         """
-        self.read_packet_stub = list()
-        self.read_packet2 = BulkReadPacket()
-        self.read_packet3_stub = list()
         for cid in self.motors:
             # if robot has this motor
             self.read_packet_stub.append((
@@ -124,7 +132,7 @@ class cm730(object):
                 )))
 
         if len(self.read_packet_stub)!= len(self.read_packet3_stub):
-            raise AssertionError("self.read_packet und self.read_packet3 müssen gleich lang sein")
+            raise AssertionError("self.read_packet and self.read_packet3 have to be the same size")
 
     cpdef update_forever(self):
         """ Calls :func:`update_once` in an infite loop """
@@ -134,10 +142,10 @@ class cm730(object):
         while True:
             self.update_once()
 
-            # Signale prüfen
+            # Signal check
             PyErr_CheckSignals()
 
-            # Mitzählen, damit wir eine ungefäre Update-Frequenz bekommen
+            # Count to get the update frequency
             iteration += 1
             if iteration < 100:
                 continue
@@ -154,23 +162,22 @@ class cm730(object):
     cpdef update_once(self):
         """ Updates sensor data with :func:`update_sensor_data`, publishes the data and sends the motor commands.
 
-            Die Sensordaten der letzten Iterationen werden in
-            einem geglätteten Mittelwert als :attr:`smooth_accel` und
-            :attr:`smooth_gyro` zur Verfügung gestellt.
+            The sensordata from the last iteration will be provided as smoothed values in
+            :attr:`smooth_accel` and :attr:`smooth_gyro`.
         """
         # get sensor data
         self.update_sensor_data()
 
 
-        # Gyrowerte geglättet merken
-        #wird zur Fallerkennung genutzt, smooth_gyro ist dafür zu spät aber peaks muessen trotzdem geglaettet werden
-        #glättung erhöhen -->  spätere erkennung
-        #glättung verringern --> häufigeres Fehlverhalten, zb.: auslösen des Fallens beim Laufen
+        # Remember smoothed gyro values
+        # Used for falling detectiont, smooth_gyro is to late but peaks have to be smoothed anyway
+        # increasing smoothing -->  later detection
+        # decreasing smoothing --> more false positives
         self.smooth_gyro = self.smooth_gyro * 0.9 + self.raw_gyro * 0.1 ###gyro
         self.smooth_accel = self.smooth_accel * 0.9 + self.robo_accel * 0.1 ###accel
 
 
-        # Send Joint Messages to Ros
+        # Send Messages to ROS
         self.publish_joints()
         self.publish_temperatures()
         self.publish_raw_IMU()
@@ -222,15 +229,17 @@ class cm730(object):
             else:
                 result = self.ctrl.process(self.read_packet2)
         except IOError, e:
-            rospy.logdebug("Lesefehler: %s", str(e))
+            rospy.logdebug("Reading error: %s", str(e))
             if self.last_io_success > 0 and time.time() - self.last_io_success > 2:
-                rospy.logwarn("Motion hängt!")
-                raise SystemExit("Motion hängt!")
+                rospy.logwarn("Motion stuck!")
+                msg = Speak()
+                msg.text = "Motion stuck"
+                self.speak_publisher.publish(msg)
+                raise SystemExit("Motion stuck!")
             elif not  self.last_io_success > 0:
                 self.last_io_success = time.time() + 5
-                # Das sieht komisch aus, ist aber absicht:
-                # Wenn er nimals daten bekommt soll er _irgentwann_ auch
-                # aufhören es zu versuchen
+                # This looks strange but is on purpose:
+                # If it doesn't get any data, it should stop at _sometime_
             return (None, None)
 
         except MultiMotorError as errors:
@@ -239,7 +248,7 @@ class cm730(object):
                 say_error = True
                 err = e.get_error()
                 if (err >> 0 & 1) == 1: # Imput Voltage Error
-                    pass # die sind meist sowieso mist
+                    pass # mostly bullshit, ignore
                 if (err >> 1 & 1) == 1: # Angel Limit Error
                     is_ok = False
                 if (err >> 2 & 1) == 1: # Overheating Error
@@ -255,11 +264,11 @@ class cm730(object):
                         self.overload_count[e.get_motor()] += 1
                         if self.overload_count[e.get_motor()] > 60:
                             rospy.logwarn("Raise long holding overload error")
-                            is_ok = False # dann wirds jetzt weitergegen
+                            is_ok = False # will be forwared
                     else:
                         # resetten, der letzte ist schon ne weile her
                         self.overload_count[e.get_motor()] = 0
-                        rospy.logwarn("Motor %d hat einen Overloaderror, "
+                        rospy.logwarn("Motor %d has a Overloaderror, "
                             % e.get_motor() + " ignoring 60 updates")
                     self.last_overload[e.get_motor()] = time.time()
                 if (err >> 6 & 1) == 1: # Instruction Error
@@ -269,12 +278,11 @@ class cm730(object):
                 if say_error:
                     rospy.logerr(err, "A Motor has had an error:")
             if not is_ok:
-                # wenn es nicht alles behandelt wurde wollen wir es
-                # weiterreichen (führt zum beenden der Motion)
+                # If not everything was handled, we want to forward it
+                # leads to shuting down the node
                 raise
-            # wenn der fehler ignoriert wurde müssen wir prüfen ob ein packet
-            # angekommen ist, wenn nicht abbrechen da
-            # sonst ein unvollständiges packet verarbeitet wird
+            # If an error was ignored, we have to test if a packed arrived
+            # If not, we have to cancel, otherwise a uncomplete package will be handled
             result = errors.get_packets()
         return result, cid_all_Values
 
@@ -331,9 +339,11 @@ class cm730(object):
                     debug.log("MX28.%d.Load" % cid, load)
 
                 if temperature > 60:
-                    fmt = "Motor cid=%d hat eine Temperatur von %1.1f°C: Notabschaltung!"
+                    fmt = "Motor cid=%d has a temperature of %1.1f°C: EMERGENCY SHUT DOWN!"
                     rospy.logwarn(fmt % (cid, temperature))
-                    self.speak_publisher.publish("An Motor has a Temperatur over %.1f°C" % temperature)
+                    msg = Speak()
+                    msg.text = fmt % temperature
+                    self.speak_publisher.publish(msg)
                     raise SystemExit(fmt % (cid, temperature))
 
         return button, gyro, accel
@@ -412,7 +422,7 @@ class cm730(object):
         cdef SyncWritePacket d_packet = None
         cdef int joint_value = 0
 
-        if self.state != STATE_SOFT_OFF:
+        if self.state != STATE_SOFT_OFF: #todo soft off existiert nicht mehr
 
             if not self.dxl_power:
                 self.switch_motor_power(True)
