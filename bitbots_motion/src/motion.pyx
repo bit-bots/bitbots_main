@@ -55,6 +55,10 @@ cdef class Motion(object):
         self.smooth_accel = DataVector(0, 0, 0)
         self.smooth_gyro = DataVector(0, 0, 0)
         self.not_much_smoothed_gyro = DataVector(0, 0, 0)
+
+        #todo chek what it is and if it is used rightly
+        self.robo_angle = DataVector(0, 0, 0)
+
         self.motor_current_position =
         self.motor_goal_position =
         self.startup_time = time.time()
@@ -260,7 +264,7 @@ cdef class Motion(object):
             ## Falling detection
             ##
             # check if robot is falling
-            falling_pose = self.standupHandler.check_is_falling()
+            falling_pose = self.standupHandler.check_falling(self.not_much_smoothed_gyro)
             if falling_pose:
                 self.standupHandler.set_falling_pose(falling_pose, goal_pose)
                 self.set_state(STATE_FALLING)
@@ -271,7 +275,7 @@ cdef class Motion(object):
             ###
             if self.state == STATE_FALLING:
                 # maybe the robot is now finished with falling and is lying on the floor
-                direction_animation = self.standupHandler.check_fallen(self.goal_pose, self.smooth_gyro, self.robo_angle, self.smooth_accel)
+                direction_animation = self.standupHandler.check_fallen(self.gyro, self.smooth_gyro, self.robo_angle)
                 if direction_animation is not None:
                     self.set_state(STATE_FALLEN)
                     # directly starting to get up. Sending STATE_FALLEN before is still important, e.g. localisation

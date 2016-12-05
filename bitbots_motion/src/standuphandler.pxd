@@ -2,12 +2,6 @@
 from libcpp cimport bool
 from bitbots_common.utilCython.pydatavector cimport PyDataVector as DataVector
 from bitbots_common.utilCython.pydatavector cimport PyIntDataVector as IntDataVector
-cdef public enum:
-    FALLEN_BOTTOM_UP = 1
-    FALLEN_FRONT_UP
-    FALLEN_BEND_FORWARD
-    FALLEN_SQUATTED
-    FALLEN_UPRIGHT
 
 
 
@@ -16,16 +10,10 @@ cdef class StandupHandler(object):
     cdef float falling_ground_coefficient
     cdef object falling_motor_degrees_front, falling_motor_degrees_back, falling_motor_degrees_left, falling_motor_degrees_right
     cdef float falling_threshold_front, falling_threshold_back, falling_threshold_left, falling_threshold_right
-    cdef int fallState
-    cdef dict config
-    cdef DataVector not_much_smoothed_gyro
-    cdef IntDataVector raw_gyro
 
     cdef update_sensor_data(self, raw_gyro)
-    cdef get_up(self, set_state)
-    cdef load_falling_data(self, config)
-    cdef check_fallen(self, object goal_pose , object set_state, state, smooth_gyro, robo_angle, smooth_accel)
-    cdef check_fallen_forwardAndBackward(self, set_state, state)
-    cdef check_fallen_sideways(self, set_state , state)
+    cdef check_falling(self, not_much_smoothed_gyro)
+    cdef check_falling_front_back(self, not_much_smoothed_gyro)
+    cdef check_falling_sideways(self, not_much_smoothed_gyro)
+    cdef check_fallen(self, raw_gyro, smooth_gyro, robo_angle)
     cdef set_falling_pose(self, object falling_motor_degrees, object goal_pose)
-    cdef info(self, text)
