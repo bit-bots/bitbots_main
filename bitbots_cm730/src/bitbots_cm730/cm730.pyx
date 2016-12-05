@@ -33,6 +33,9 @@ class cm730(object):
         self.raw_gyro = IntDataVector(0, 0, 0)
         self.smooth_accel = DataVector(0, 0, 0)
         self.smooth_gyro = DataVector(0, 0, 0)
+        self.button1 = 0
+        self.button2 = 0
+        self.last_io_success = 0
 
         joints = rospy.get_param("/joints")
         robot_type_name = rospy.get_param("/RobotTypeName")
@@ -64,6 +67,7 @@ class cm730(object):
         """ Callback for subscription on motorgoals topic """
         #todo save motor values locally to get them updated during the update_forever loop
         #todo irgendwie das handeln, falls die motion falsche winkel sendet (außerhalb von maxima)
+        #todo is this not already in the other method
 
 
     cdef set_motor_ram(self):
@@ -80,7 +84,7 @@ class cm730(object):
                         self.motor_ram_config[conf])
             if self.cm_370:
                 self.ctrl.write_register(ID_CM730, CM730.led_head, (0, 0, 0))
-            rospy.loginfo("Setze Ram Fertig")
+            rospy.loginfo("Setting RAM Finished")
 
     cdef init_read_packet(self):
         """
@@ -155,7 +159,7 @@ class cm730(object):
             else:
                 duration_avg = (time.time() - start)
 
-            rospy.loginfo("Updates/Sec %d", iteration / duration_avg)
+            rospy.loginfo("Updates/Sec %f", iteration / duration_avg)
             iteration = 0
             start = time.time()
 
@@ -168,14 +172,10 @@ class cm730(object):
         # get sensor data
         self.update_sensor_data()
 
-
-        # Remember smoothed gyro values
-        # Used for falling detectiont, smooth_gyro is to late but peaks have to be smoothed anyway
-        # increasing smoothing -->  later detection
-        # decreasing smoothing --> more false positives
-        self.smooth_gyro = self.smooth_gyro * 0.9 + self.raw_gyro * 0.1 ###gyro
-        self.smooth_accel = self.smooth_accel * 0.9 + self.robo_accel * 0.1 ###accel
-
+        #todo irgendwas damit tun
+        # Farbwerte für den Kopf holen
+        self.led_eye = self.ipc.get_eye_color().xyz
+        self.led_head = self.ipc.get_forehead_color().xyz
 
         # Send Messages to ROS
         self.publish_joints()
@@ -184,7 +184,8 @@ class cm730(object):
         self.publish_smooth_IMU()
         self.publish_buttons()
 
-        #todo motorwerte setzen
+        # send new position to servos
+        self.update_motor_goals()
 
     cpdef update_sensor_data(self):
         result , cid_all_Values = self.sensor_data_read()
@@ -357,21 +358,10 @@ class cm730(object):
             dt = t - self.last_gyro_update_time
             self.last_gyro_update_time = t
 
-            # Das ist veraltet (zumindest momentan @Nils 30.3.15
-            #if self.config["RobotTypeName"] == "Hambot":
-            #    # Goal hat den Gyro verdreht eingebaut
-            #    accel = IntDataVector(accel.y, 1024 - accel.z, 1024 - accel.x)
-            #    gyro = IntDataVector(gyro.z, gyro.x, gyro.y)
-
             self.robo_accel = accel - IntDataVector(512, 512, 512)
-            #print "Accel ungedreht %s" % self.robo_accel
-            #self.robo_accel = verdrehe_bla(self.robo_accel)
-            #print "Accel gedreht %s" % self.robo_accel
             self.raw_gyro = gyro - IntDataVector(512, 512, 512)
 
             angles = calculate_robot_angles(deref(self.robo_accel.get_data_vector()))
-            #TODO Das verdrehe bla ist teil eines Features um Hambot momentan verdrehen Gyro zu fixen
-            #angles = self.gyro_kalman.get_angles_pvv(angles, verdrehe_bla(gyro - IntDataVector(512, 512, 512)), dt)
             angles = self.gyro_kalman.get_angles_pvv(angles, gyro - IntDataVector(512, 512, 512), dt)
             self.robo_angle = wrap_data_vector(angles)
             self.robo_gyro = self.raw_gyro #self.gyro_kalman.get_rates_v()
@@ -403,6 +393,7 @@ class cm730(object):
         # rot werden, und ob sie ansonsten überhaupt genutzt werden
         if self.cm_370:
             packet = SyncWritePacket((CM730.led_head, CM730.led_eye))
+            #todo make this a service
             if self.state == STATE_PENALTY and rospy.get_param("/cm730/EyesPenalty", false):
                 packet.add(ID_CM730, ((255, 0, 0), (0, 0, 0)))
             else:
@@ -422,6 +413,7 @@ class cm730(object):
         cdef SyncWritePacket d_packet = None
         cdef int joint_value = 0
 
+        #todo make this a service?
         if self.state != STATE_SOFT_OFF: #todo soft off existiert nicht mehr
 
             if not self.dxl_power:
@@ -489,6 +481,7 @@ class cm730(object):
             if self.dxl_power:
                 self.switch_motor_power(False)
 
+    #todo make this a service
     cpdef switch_motor_power(self, state):
         # wir machen nur etwas be änderungen des aktuellen statusses
         if not self.cm_370:

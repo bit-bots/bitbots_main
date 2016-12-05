@@ -1,6 +1,14 @@
 # -*- coding: utf8 -*-
+from std_msgs.msg import String
+
+from sensor_msgs.msg import JointState
+from bitbots_common.utilCython.pydatavector cimport PyDataVector as DataVector
+
 import rospy
 import time
+
+from .standuphandler cimport StandupHandler
+
 
 cdef state_to_string(int state):
     return {
@@ -32,7 +40,7 @@ cdef class Motion(object):
         rospy.Subscriber("/IMU", JointState, self.update_imu)
         rospy.Subscriber("/MotorCurrentPosition", JointState, self.update_current_position)
         rospy.Subscriber("/Buttons", Buttons, self.update_buttons)
-        rospy.Subscriber("/Gamestate", Gamestate, self.update_gamestate)
+        rospy.Subscriber("/Gamestate", GameState, self.update_gamestate)
         self.joint_goal_publisher = rospy.Publisher('/MotorGoals', JointState, queue_size=10)
         self.state_publisher = rospy.Publisher('/MotionState', JointState, queue_size=10)
         self.speak_publisher = rospy.Publisher('/speak', String, queue_size=10)
@@ -40,10 +48,14 @@ cdef class Motion(object):
         self.accel = DataVector(0,0,0)
         self.gyro = DataVector(0,0,0)
         self.motor_current_position =
-        self.button1 = 0
-        self.buttons2 = 0
+        self.motor_goal_position =
+        self.startup_time = time.time()
+
+
         self.gamestate =
-        self.state = STARTUP #todo über launch startwert setzen
+        self.state = STATE_STARTUP
+        self.penalized = False # penalized from game controller
+        self.recording = False # record UI in use
 
         self.standupHandler = StandupHandler()
         self.standupHandler.load_falling_data(self.config)
@@ -59,22 +71,26 @@ cdef class Motion(object):
             rospy.loginfo ("Softstart")
             # time -120 damit softoff wieder anstellen nicht anspringt
             self.last_client_update = time.time() - 120
-            self.last_version = self.ipc.get_version()
             # das muss hgier schon, sonst geht die src sofort aus,
             # weil er merkt das noch kein update gekommen ist
             self.set_state(STATE_SOFT_OFF)
+            #todo service call
             self.switch_motor_power(False)
         else:
             self.last_client_update = time.time()
+            #todo service call
             self.switch_motor_power(True)
 
     def update_imu(self):
 
     def update_current_position(self):
+        self.last_client_update = #todo message timestamp
+        self.motor_current_position =
 
     def update_buttons(self):
 
     def update_gamestate(self):
+        self.penalized =
 
     def publish_motion_state(self):
 
@@ -84,7 +100,7 @@ cdef class Motion(object):
             ihn zum Clienten
         """
         #Wenn die Motion aus einem State kommt, in dem sie Aufsteht soll der Gyro resettet werden
-        #todo kalman scheint nicht mehr benutzt zu werden, löschen?
+        #todo kalman scheint nicht mehr benutzt zu werden, löschen? ne wird eigentlich noch bentuzt oder
         if self.state in [
                 STATE_FALLEN,
                 STATE_FALLING,
@@ -94,6 +110,7 @@ cdef class Motion(object):
                 STATE_STARTUP,
                 STATE_BUSY,
                 STATE_GETTING_UP_Second]:
+            #todo service!
             self.gyro_kalman.reset()
         self.state = state
         # unterdrücke state_soft_off nach außen, das sich clients noch trauen die src anzusprechen
@@ -113,9 +130,9 @@ cdef class Motion(object):
             # im Softoff passiert nichts geschwindigkeit Kritisches, da brauchen
             # wir nicht ständig alles aktuallisieren, entlastet den cpu
             if self.state == STATE_SOFT_OFF:
-                time.sleep(0.05)
+                rospy.sleep(0.05)
 
-            # Mitzählen, damit wir eine ungefäre Update-Frequenz bekommen
+            # Count to get the update frequency
             iteration += 1
             if iteration < 100:
                 continue
@@ -131,27 +148,42 @@ cdef class Motion(object):
 
     cpdef update_once(self):
 
+        #todo look where this block has to be placed
+        # Remember smoothed gyro values
+        # Used for falling detectiont, smooth_gyro is to late but peaks have to be smoothed anyway
+        # increasing smoothing -->  later detection
+        # decreasing smoothing --> more false positives
+        self.smooth_gyro = self.smooth_gyro * 0.9 + self.gyro * 0.1 ###gyro
+        self.smooth_accel = self.smooth_accel * 0.9 + self.accel * 0.1 ###accel
+
+
+        #### STATE STARTUP
+
+
+
+
         #Warten, bis Startup erreicht ist.
         if self.startup_time is None or time.time() - self.startup_time > 1:
             if self.startup_time is not None:
                 # Wenn wir das erste mal starten, alles initialisieren
                 self.startup_time = None
-                self.last_version = self.ipc.get_version()
-                self.goal_pose.goals = self.robo_pose.positions
+                #self.goal_pose.goals = self.robo_pose.positions changeto
+                self.motor_goal_position = self.motor_current_position
                 if self.state != STATE_RECORD:
                     #wenn wir in record sind wollen wir da auch bleiben
-                    self.ipc.set_state(STATE_CONTROLABLE)
+                    self.set_state(STATE_CONTROLABLE)
 
             # wenn der Client neu in Penalized ist, setzen wir uns noch hin
             # sonst wollen wir nichts machen
-            if self.ipc.get_state() == STATE_PENALTY:
+            if self.penalized:
                 # Wenn der Roboter schon penalized ist, hören wir hier auf.
                 if self.state == STATE_PENALTY:
                     # Motoren Abstellen, sind nicht nötig, um das interne
                     # handling kümmert sich die implementation (sensor_update
                     # wird weiterhin aufgeruffen)
+                    #todo service call
                     self.switch_motor_power(False)
-                    time.sleep(0.05)
+                    rospy.sleep(0.05)
                     # wir tuen so als wenn es noch updates vom client gibt
                     # um dafür zu sorgen das es nach dem aufwachen vom
                     # penalty nicht sofort nach softoff oder off aufgrund
@@ -163,12 +195,13 @@ cdef class Motion(object):
                 # sonst hinsetzen, aber nur wenn wir das nicht sowieso schon tun
                 if self.state != STATE_PENALTY_ANIMANTION:
                     rospy.logwarn("Penalized, sit down!")
+                    #todo service call
                     self.animate(
-                        rospy.get_param("/animations/motion/penalized", STATE_PENALTY)
+                        rospy.get_param("/animations/motion/penalized"), STATE_PENALTY)
                     self.set_state(STATE_PENALTY_ANIMANTION)
                     rospy.logwarn("Motion wird danach nichts mehr tun, penalized")
 
-            if self.state == STATE_PENALTY:
+            elif self.state == STATE_PENALTY:
                 # Die Motion ist noch im State Penalty, der Client nicht mehr,
                 # wir stehen auf und stehen wieder auf und setzen uns 'steuerbar'.
 
@@ -180,13 +213,13 @@ cdef class Motion(object):
                 # Aufstehen
                 self.animate("Automatische Walkready", STATE_CONTROLABLE, self.walkready_animation)
 
-            if self.ipc.get_state() == STATE_RECORD:
+            if self.recording and not self.state == STATE_RECORD:
                 # wenn der Client im Record ist, wollen wir nicht "Controlabel"
                 #sein da sonst andere Clienten die Steuerung übernehmen könnten
                 if self.state == STATE_SOFT_OFF:
                     #wenn im softoff erstmal aufstehen (Ist besser)
                     self.animate(
-                        rospy.get_param("/animations/motion/walkready", STATE_RECORD)
+                        rospy.get_param("/animations/motion/walkready"), STATE_RECORD)
                 elif self.state not in (
                         STATE_RECORD,
                         STATE_ANIMATION_RUNNING ,
@@ -197,14 +230,10 @@ cdef class Motion(object):
                     # gerade zum record
                     self.set_state(STATE_RECORD)
 
-            elif self.state == STATE_RECORD:
+            elif not self.recording and self.state == STATE_RECORD:
                 # nach abgeschlossener aufnahme wieder in den normalzustand
                 # zurückkehren
                 self.set_state(STATE_CONTROLABLE)
-
-            # Farbwerte für den Kopf holen
-            self.led_eye = self.ipc.get_eye_color().xyz
-            self.led_head = self.ipc.get_forehead_color().xyz
 
             if self.state not in (STATE_RECORD, STATE_SOFT_OFF) and self.ipc.get_state() != STATE_ANIMATION_RUNNING:
                 # nur evaluieren, wenn der Client keine Animation spielt und
@@ -230,6 +259,28 @@ cdef class Motion(object):
             if anim:
                 self.animate(anim)
 
+    cpdef check_queued_animations(self):
+        """ Wenn möglich mit der nächsten Animation beginnen """
+        if self.state == STATE_FALLING:
+            # Animation abbrechen, wenn wir hinfallen
+            self.animfunc = None
+            return
+
+        cdef Animator amator
+        if self.next_animation is not None and self.robo_pose is not None:
+            if self.state == STATE_SOFT_OFF:
+                # Wir setzen den timestamp, um dem Softoff mitzuteilen
+                # das wir etwas tu wollen.
+                self.last_client_update = time.time()
+                # warten bis es Aufgewacht ist, dann erst loslegen
+                return
+            amator = Animator(self.next_animation, self.robo_pose)
+            self.animfunc = amator.playfunc(0.025)
+            self.next_animation = None
+
+            if self.state == STATE_CONTROLABLE:
+                # Ab jetzt spielen wir die Animation
+                self.set_state(STATE_ANIMATION_RUNNING)
 
      cpdef update_goal_pose(self):
         """ Updated :attr:`goal_pose`. Wenn eine Animation läuft, spielt
@@ -271,7 +322,6 @@ cdef class Motion(object):
             # Animation ist zuende
             rospy.loginfo("End of Animation")
             self.animfunc = None
-            self.last_version = self.ipc.get_version()
             # TODO: Use config
             if self.state is STATE_GETTING_UP:
                 anim = self.standupHandler.get_up(self.set_state)
@@ -424,3 +474,29 @@ cdef class Motion(object):
             self.goal_pose.reset()
             rospy.loginfo("Update nach Softoff eingetroffen reaktivieren")
             self.set_state(STATE_STARTUP)
+
+
+    cpdef animate(self, name, post_anim_state=None, dict animation=None):
+        """ Spielt eine Animation aus einer Datei ab. Dabei werden Befehle
+            von einem IPC Client ignoriert, bis die Animation durchgelaufen
+            ist.
+
+            Die Animation wird in dieser Methode geladen und als
+            :attr:`next_animation` gespeichert, um bei nächster Gelegenheit
+            abgespielt zu werden. Wenn die Animation zuende ist, wird der Status
+            auf post_anim_status gesetzt, bei NONE auf STATE_CONTROLABLE
+        """
+        debug.log("Lade Animation '%s'" % name)
+        cdef Animation anim
+        try:
+            if animation is None or not self.dynamic_animation:
+                with open(find_animation(name)) as fp:
+                    anim = parse(json.load(fp))
+            else:
+                anim = parse(animation)
+        except IOError:
+            debug.warning("Animation '%s' nicht gefunden" % name)
+            raise
+
+        self.next_animation = anim
+        self.post_anim_state = post_anim_state
