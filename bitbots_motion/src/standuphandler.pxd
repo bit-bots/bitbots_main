@@ -29,7 +29,3 @@ cdef class StandupHandler(object):
     cdef check_fallen_sideways(self, set_state , state)
     cdef set_falling_pose(self, object falling_motor_degrees, object goal_pose)
     cdef info(self, text)
-
-    #STATE_CONTROLABLE, STATE_FALLING, STATE_FALLEN, STATE_GETTING_UP, \
-    #STATE_ANIMATION_RUNNING, STATE_BUSY, STATE_STARTUP, STATE_PENALTY, STATE_PENALTY_ANIMANTION, STATE_RECORD, \
-    #STATE_SOFT_OFFSTATE_WALKING

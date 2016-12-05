@@ -35,7 +35,7 @@ MOVING_STATES = (STATE_CONTROLABLE,
 
 cdef class Motion(object):
 
-    def __init__(self):
+    def __init__(self, dieflag, standupflag, softoff, softstart):
         rospy.init_node('bitbots_motion', anonymous=False)
         rospy.Subscriber("/IMU", JointState, self.update_imu)
         rospy.Subscriber("/MotorCurrentPosition", JointState, self.update_current_position)
@@ -43,24 +43,34 @@ cdef class Motion(object):
         rospy.Subscriber("/Gamestate", GameState, self.update_gamestate)
         self.joint_goal_publisher = rospy.Publisher('/MotorGoals', JointState, queue_size=10)
         self.state_publisher = rospy.Publisher('/MotionState', JointState, queue_size=10)
-        self.speak_publisher = rospy.Publisher('/speak', String, queue_size=10)
+        self.speak_publisher = rospy.Publisher('/Speak', String, queue_size=10)
+
+        self.dieflag = dieflag
+        self.softoff = softoff
+        self.standupflag = standupflag
+        self.softstart = softstart
 
         self.accel = DataVector(0,0,0)
         self.gyro = DataVector(0,0,0)
+        self.smooth_accel = DataVector(0, 0, 0)
+        self.smooth_gyro = DataVector(0, 0, 0)
+        self.not_much_smoothed_gyro = DataVector(0, 0, 0)
         self.motor_current_position =
         self.motor_goal_position =
         self.startup_time = time.time()
+        self.first_run = True
 
 
         self.gamestate =
         self.state = STATE_STARTUP
-        self.penalized = False # penalized from game controller
-        self.recording = False # record UI in use
+        self.penalize_active = False # penalized from game controller
+        self.record_active = False # record UI in use
+        self.animation_requested = False # animation request from animation server
 
         self.standupHandler = StandupHandler()
-        self.standupHandler.load_falling_data(self.config)
+        self.standupHandler.load_falling_data()
 
-        if self.state == STATE_RECORD: #todo check if stil needed
+        if self.state == STATE_RECORD: #todo check if still needed
             rospy.logwarn("Recordflag gesetzt, bleibe im record modus")
             rospy.logwarn("Wenn das falsch gesetzt ist, starte einmal das record script und beende es wieder")
             self.set_state(STATE_RECORD)
@@ -90,7 +100,7 @@ cdef class Motion(object):
     def update_buttons(self):
 
     def update_gamestate(self):
-        self.penalized =
+        self.penalize_active =
 
     def publish_motion_state(self):
 
@@ -125,12 +135,15 @@ cdef class Motion(object):
         cdef double duration_avg = 0, start = time.time()
 
         while True:
-            self.update_once()
+            # Remember smoothed gyro values
+            # Used for falling detectiont, smooth_gyro is to late but peaks have to be smoothed anyway
+            # increasing smoothing -->  later detection
+            # decreasing smoothing --> more false positives
+            self.smooth_gyro = self.smooth_gyro * 0.9 + self.gyro * 0.1 ###gyro
+            self.smooth_accel = self.smooth_accel * 0.9 + self.accel * 0.1 ###accel
+            self.not_much_smoothed_gyro = self.not_much_smoothed_gyro * 0.5 + self.gyro * 0.5
 
-            # im Softoff passiert nichts geschwindigkeit Kritisches, da brauchen
-            # wir nicht ständig alles aktuallisieren, entlastet den cpu
-            if self.state == STATE_SOFT_OFF:
-                rospy.sleep(0.05)
+            self.update_once()
 
             # Count to get the update frequency
             iteration += 1
@@ -148,124 +161,145 @@ cdef class Motion(object):
 
     cpdef update_once(self):
 
-        #todo look where this block has to be placed
-        # Remember smoothed gyro values
-        # Used for falling detectiont, smooth_gyro is to late but peaks have to be smoothed anyway
-        # increasing smoothing -->  later detection
-        # decreasing smoothing --> more false positives
-        self.smooth_gyro = self.smooth_gyro * 0.9 + self.gyro * 0.1 ###gyro
-        self.smooth_accel = self.smooth_accel * 0.9 + self.accel * 0.1 ###accel
-
-
-        #### STATE STARTUP
-
-
-
-
-        #Warten, bis Startup erreicht ist.
-        if self.startup_time is None or time.time() - self.startup_time > 1:
-            if self.startup_time is not None:
-                # Wenn wir das erste mal starten, alles initialisieren
-                self.startup_time = None
-                #self.goal_pose.goals = self.robo_pose.positions changeto
-                self.motor_goal_position = self.motor_current_position
-                if self.state != STATE_RECORD:
-                    #wenn wir in record sind wollen wir da auch bleiben
-                    self.set_state(STATE_CONTROLABLE)
-
-            # wenn der Client neu in Penalized ist, setzen wir uns noch hin
-            # sonst wollen wir nichts machen
-            if self.penalized:
-                # Wenn der Roboter schon penalized ist, hören wir hier auf.
-                if self.state == STATE_PENALTY:
-                    # Motoren Abstellen, sind nicht nötig, um das interne
-                    # handling kümmert sich die implementation (sensor_update
-                    # wird weiterhin aufgeruffen)
-                    #todo service call
-                    self.switch_motor_power(False)
-                    rospy.sleep(0.05)
-                    # wir tuen so als wenn es noch updates vom client gibt
-                    # um dafür zu sorgen das es nach dem aufwachen vom
-                    # penalty nicht sofort nach softoff oder off aufgrund
-                    # der lange zeit (genzwungenen) keine updates geht
-                    # (in STATE_PENALTY ist es unmöglich updates and die
-                    # notion zu liefern)
-                    self.last_client_update = time.time()
-                    return
-                # sonst hinsetzen, aber nur wenn wir das nicht sowieso schon tun
-                if self.state != STATE_PENALTY_ANIMANTION:
-                    rospy.logwarn("Penalized, sit down!")
-                    #todo service call
-                    self.animate(
-                        rospy.get_param("/animations/motion/penalized"), STATE_PENALTY)
-                    self.set_state(STATE_PENALTY_ANIMANTION)
-                    rospy.logwarn("Motion wird danach nichts mehr tun, penalized")
-
-            elif self.state == STATE_PENALTY:
-                # Die Motion ist noch im State Penalty, der Client nicht mehr,
-                # wir stehen auf und stehen wieder auf und setzen uns 'steuerbar'.
-
-                # Als erstes stellen wir die Motoren wieder an
-                self.switch_motor_power(True)
-                # Aktuelle Pose hohlen um Zuckungen zu vermeiden
-                self.update_sensor_data()
-                self.set_state(STATE_PENALTY_ANIMANTION)
-                # Aufstehen
-                self.animate("Automatische Walkready", STATE_CONTROLABLE, self.walkready_animation)
-
-            if self.recording and not self.state == STATE_RECORD:
-                # wenn der Client im Record ist, wollen wir nicht "Controlabel"
-                #sein da sonst andere Clienten die Steuerung übernehmen könnten
-                if self.state == STATE_SOFT_OFF:
-                    #wenn im softoff erstmal aufstehen (Ist besser)
-                    self.animate(
-                        rospy.get_param("/animations/motion/walkready"), STATE_RECORD)
-                elif self.state not in (
-                        STATE_RECORD,
-                        STATE_ANIMATION_RUNNING ,
-                        STATE_GETTING_UP,
-                        STATE_STARTUP,
-                        STATE_GETTING_UP_Second):
-                    # wenn wir gerade ne animation spielen gehen wir vermutlich
-                    # gerade zum record
-                    self.set_state(STATE_RECORD)
-
-            elif not self.recording and self.state == STATE_RECORD:
-                # nach abgeschlossener aufnahme wieder in den normalzustand
-                # zurückkehren
-                self.set_state(STATE_CONTROLABLE)
-
-            if self.state not in (STATE_RECORD, STATE_SOFT_OFF) and self.ipc.get_state() != STATE_ANIMATION_RUNNING:
-                # nur evaluieren, wenn der Client keine Animation spielt und
-                # nicht im Record Modus ist (den prüfen wir bei uns da wir
-                # bevor wir endgültig nach record gehen unter umständen
-                # noch eigene dinge tun, danach uns selber m it state
-                # record sperren). Im SOFT_OFF können wir sowieso nicht aufstehen,
-                # und wenn man da drinn eine animation setzt kann es zu Problemen kommen
-                self.evaluate_state()
-
-    cpdef evaluate_state(self):
-        """ :func:`evaluate_state` ermittelt aus dem zuletzt in
-            :func:`update_sensor_data` gespeicherten Zustand die nötigsten
-            Aktionen wie *Aufstehen* oder die
-            *Gelenke weichstellen*, wenn der Roboter umgefallen ist. Dafür
-            ruft sie Funktionen wie :func:`check_queued_animations`
-            oder :func:`checked_fallen` auf.
-        """
-        self.check_queued_animations()
-        if self.standupflag:
-            anim = self.standupHandler.check_fallen(self.goal_pose , self.set_state, self.state,
-                              self.smooth_gyro, self.robo_angle, self.smooth_accel)
-            if anim:
-                self.animate(anim)
-
-    cpdef check_queued_animations(self):
-        """ Wenn möglich mit der nächsten Animation beginnen """
-        if self.state == STATE_FALLING:
-            # Animation abbrechen, wenn wir hinfallen
-            self.animfunc = None
+        ###
+        ### STATE STARTUP
+        ###
+        if time.time() - self.startup_time < 1:
+            # we're still starting up, do nothing
+            rospy.sleep(0.1)
             return
 
+        ###
+        ### First run
+        ###
+        if self.first_run:
+            self.first_run = False
+            if self.record_active:
+                # recording could have already been set by service
+                self.set_state(STATE_RECORD)
+            else:
+                # Play the start up animation and then go to controlable
+                self.set_state(STATE_GETTING_UP)
+                self.animate(rospy.get_param("/animations/motion/start_up_animation"), STATE_CONTROLABLE)
+
+
+        ###
+        ### Soft off
+        ###
+        if self.state == STATE_SOFT_OFF:
+            # nothing important is happening, get some rest for the CPU
+            rospy.sleep(0.05)
+            return
+
+        ###
+        ### Penalizing
+        ###
+        if self.penalize_active:
+            if self.state == STATE_PENALTY:
+                # Already penealized
+                # turn of motors and wait
+                #todo service call
+                self.switch_motor_power(False)
+                rospy.sleep(0.05)
+                # update last_cliente time to prohibit shutdown of motion while beeing penalized
+                self.last_client_update = time.time()
+                return
+            if self.state != STATE_PENALTY_ANIMANTION:
+                # We are not yet sitting down, we should start the animation
+                rospy.logwarn("Penalized, sitting down!")
+                self.set_state(STATE_PENALTY_ANIMANTION)
+                #todo service call
+                self.animate(
+                    rospy.get_param("/animations/motion/penalized"), STATE_PENALTY)
+                rospy.logwarn("Motion will not move, I'm penalized")
+                return
+        elif self.state == STATE_PENALTY:
+            # We are not penalized by the gamecontroler anymore, but we are still in STATE_PENALIZED
+            # we want to stand up and get into STATE_CONTROLABLE
+
+            # First turn on the motors
+            #todo service
+            self.switch_motor_power(True)
+            # Update the state
+            self.set_state(STATE_PENALTY_ANIMANTION)
+            # Stand up and get into STATE_CONTROLABLE afterwards
+            self.animate("Automatische Walkready", STATE_CONTROLABLE, self.walkready_animation)
+            return
+
+        ###
+        ### Recording
+        ###
+        if self.record_active and not self.state == STATE_RECORD:
+            # Recording is requested, but we are not already in this state
+            if self.state == STATE_SOFT_OFF:
+                # If coming from STATE_SOFT_OFF we want to stand up first
+                self.animate(
+                    rospy.get_param("/animations/motion/walkready"), STATE_RECORD)
+            elif self.state not in (
+                    STATE_RECORD,
+                    STATE_ANIMATION_RUNNING ,
+                    STATE_GETTING_UP,
+                    STATE_STARTUP,
+                    STATE_GETTING_UP_Second):
+                # simply set the new state
+                self.set_state(STATE_RECORD)
+            return
+        elif not self.record_active and self.state == STATE_RECORD:
+            # Recording finished, go back to normal
+            self.set_state(STATE_CONTROLABLE)
+            return
+
+
+        ###
+        ### Fall-handling
+        ###
+        # only do if activated on start
+        if self.standupflag:
+
+            ##
+            ## Falling detection
+            ##
+            # check if robot is falling
+            falling_pose = self.standupHandler.check_is_falling()
+            if falling_pose:
+                self.standupHandler.set_falling_pose(falling_pose, goal_pose)
+                self.set_state(STATE_FALLING)
+                return
+
+            ###
+            ### Standing up
+            ###
+            if self.state == STATE_FALLING:
+                # maybe the robot is now finished with falling and is lying on the floor
+                direction_animation = self.standupHandler.check_fallen(self.goal_pose, self.smooth_gyro, self.robo_angle, self.smooth_accel)
+                if direction_animation is not None:
+                    self.set_state(STATE_FALLEN)
+                    # directly starting to get up. Sending STATE_FALLEN before is still important, e.g. localisation
+                    self.set_state(STATE_GETTING_UP)
+                    #todo run direction animaiton
+
+        ###
+        ### Animation
+        ###
+        if self.animation_requested:
+            if self.state == STATE_ANIMATION_RUNNING:
+                # Currently we are running an animation
+            elif self.state == STATE_WALKING:
+                # We have to stop walking first
+            elif  self.state == STATE_CONTROLABLE:
+                # we can directly begin to play the animation
+
+
+
+        ###
+        ### Walking
+        ###
+
+        ###
+        ### Shuting down?
+        ###
+
+    cpdef check_queued_animations(self):
         cdef Animator amator
         if self.next_animation is not None and self.robo_pose is not None:
             if self.state == STATE_SOFT_OFF:
@@ -500,3 +534,7 @@ cdef class Motion(object):
 
         self.next_animation = anim
         self.post_anim_state = post_anim_state
+
+    def reconfigure(self, config, level):
+        # just pass on to the StandupHandler, as the variables are located there
+        self.standupHandler.update_reconfigurable_values(config, level)
