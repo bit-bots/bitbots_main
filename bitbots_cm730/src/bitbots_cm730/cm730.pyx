@@ -7,7 +7,8 @@ from Cython.Includes.cpython.exc import PyErr_CheckSignals
 
 from trajectory_msgs.msg import JointTrajectory
 from std_msgs.msg import String
-from sensor_msgs.msg import JointState, Temperature
+from sensor_msgs.msg import JointState, Temperature, Imu
+from humanoid_league_msgs.msg import AdditionalServoData
 from bitbots_speaker.msg import Speak
 from bitbots_cm730.srv import SwitchMotorPower
 
@@ -30,11 +31,11 @@ class cm730(object):
         self.joint_publisher = rospy.Publisher('/joint_states', JointState, queue_size=10)
         self.speak_publisher = rospy.Publisher('/speak', String, queue_size=10)
         self.temp_publisher = rospy.Publisher('/temperatur', Temperature, queue_size=10)
+        self.imu_publisher = rospy.Publisher('/imu', Imu, queue_size=10)
         self.motor_power_service = rospy.Service("switch_motor_power", SwitchMotorPower, self.switch_motor_power_service_call)
 
+        self.raw_accel = IntDataVector(0, 0, 0)
         self.raw_gyro = IntDataVector(0, 0, 0)
-        self.smooth_accel = DataVector(0, 0, 0)
-        self.smooth_gyro = DataVector(0, 0, 0)
         self.button1 = 0
         self.button2 = 0
         self.last_io_success = 0
@@ -65,11 +66,21 @@ class cm730(object):
         self.update_forever()
 
 
-    def update_motor_goals(self):
-        """ Callback for subscription on motorgoals topic """
-        #todo save motor values locally to get them updated during the update_forever loop
-        #todo irgendwie das handeln, falls die motion falsche winkel sendet (außerhalb von maxima)
-        #todo is this not already in the other method
+    def update_motor_goals(self, msg):
+        """ Callback for subscription on motorgoals topic.
+        We can only handle the first point of a JointTrajectory :( """
+        joints = msg.joint_names
+        #we can handle only one position, no real trajectory
+        positions = msg.points[0].position
+        for joint in joints:
+            if positions[joint] > joint.max:
+                self.motor_goals[joint] = joint.max
+                rospy.logwarn("Joint command over max. Joint: %s Position: %f", (joint, positions[joint]))
+            elif positions[joint] < joint.min:
+                self.motor_goals[joint] = joint.max
+                rospy.logwarn("Joint command under min. Joint: %s Position: %f", (joint, positions[joint]))
+            else:
+                self.motor_goals[joint] = positions[joint]
 
 
     cdef set_motor_ram(self):
@@ -181,9 +192,8 @@ class cm730(object):
 
         # Send Messages to ROS
         self.publish_joints()
-        self.publish_temperatures()
-        self.publish_raw_IMU()
-        self.publish_smooth_IMU()
+        self.publish_additional_servo_data()
+        self.publish_IMU()
         self.publish_buttons()
 
         # send new position to servos
@@ -333,13 +343,14 @@ class cm730(object):
 
                 position = position - self.joint_offsets[cid]
                 joint.set_position(position)
+                joint.set_load(load)
+                joint.set_speed(speed)
 
-                # Debug Informationen senden (nur alle 40, wegen der Datenmenge)
+                # Get aditional servo data, not everytime cause its not so important
                 if cid_all_Values == cid:  # etwa alle halbe sekunde
                     #todo in publishing ändern
                     debug.log("MX28.%d.Temperatur" % cid, temperature)
                     debug.log("MX28.%d.Voltage" % cid, voltage)
-                    debug.log("MX28.%d.Load" % cid, load)
 
                 if temperature > 60:
                     fmt = "Motor cid=%d has a temperature of %1.1f°C: EMERGENCY SHUT DOWN!"
@@ -515,18 +526,46 @@ class cm730(object):
         return self.switch_motor_power(req.power)
 
 
-    cdef void send_joints_ros(self):
+    cdef void send_joints(self):
         """
         Sends the Joint States to ROS
         """
         cdef object ids = []
-        cdef object values = []
-        cdef packet = JointState()
+        cdef object positions = []
+        cdef object speeds = []
+        cdef object loads = []
+        cdef msg = JointState()
         for name, joint in self.robo_pose.joints:
             ids.append(name)
-            values.append(math.radians(joint.position))
-        packet.header.stamp = rospy.Time.now()
-        packet.name = ids
-        packet.position = values
-        self.joint_publisher.publish(packet)
+            positions.append(math.radians(joint.position))
+            speeds.append(joint.load)
+            loads.append(joint.load)
+        msg.header.stamp = rospy.Time.now()
+        msg.name = ids
+        msg.position = positions
+        msg.velocity = speeds
+        msg.effort = loads
+        self.joint_publisher.publish(msg)
 
+    def publish_additional_servo_data(self):
+        msg = AdditionalServoData()
+        cdef object temperatures = []
+        for temp in self.temps:
+            ros_temp = Temperature()
+            ros_temp.header.stamp = rospy.Time.now()
+            ros_temp.temperature = temp
+            ros_temp.variance = 0
+            temperatures.append(ros_temp)
+        msg.temperature = temperatures
+        msg.voltage = self.voltages
+        self.temp_publisher(msg)
+
+    def publish_IMU(self):
+        msg = Imu()
+        #todo check if this is realy linear and not angular acceleration
+        msg.linear_acceleration = self.raw_accel
+        # todo conversation to quaternion :(
+        msg.orientation = self.raw_gyro
+        self.imu_publisher(msg)
+
+    def publish_buttons(self):

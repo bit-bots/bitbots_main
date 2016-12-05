@@ -10,6 +10,8 @@ import time
 from .standuphandler cimport StandupHandler
 from bitbots_cm730.srv import SwitchMotorPower
 
+from dynamic_reconfigure.server import Server
+from .cfg import bitbots_motion_params
 
 
 cdef state_to_string(int state):
@@ -46,6 +48,7 @@ cdef class Motion(object):
         self.joint_goal_publisher = rospy.Publisher('/MotorGoals', JointState, queue_size=10)
         self.state_publisher = rospy.Publisher('/MotionState', JointState, queue_size=10)
         self.speak_publisher = rospy.Publisher('/Speak', String, queue_size=10)
+        self.dyn_reconf = Server(bitbots_motion_params, self.reconfigure)
 
         self.dieflag = dieflag
         self.softoff = softoff
@@ -66,21 +69,15 @@ cdef class Motion(object):
         self.startup_time = time.time()
         self.first_run = True
 
-
         self.gamestate =
-        self.state = STATE_STARTUP
         self.penalize_active = False # penalized from game controller
         self.record_active = False # record UI in use
         self.animation_requested = False # animation request from animation server
 
-        self.standupHandler = StandupHandler()
+        self.state = None
+        self.set_state(STATE_STARTUP)
+        self.stand_up_handler = StandupHandler()
 
-        if self.state == STATE_RECORD: #todo check if still needed
-            rospy.logwarn("Recordflag gesetzt, bleibe im record modus")
-            rospy.logwarn("Wenn das falsch gesetzt ist, starte einmal das record script und beende es wieder")
-            self.set_state(STATE_RECORD)
-        else:
-            self.set_state(STATE_STARTUP)
 
         if softstart and not self.state == STATE_RECORD:
             rospy.loginfo ("Softstart")
@@ -270,9 +267,9 @@ cdef class Motion(object):
             ## Falling detection
             ##
             # check if robot is falling
-            falling_pose = self.standupHandler.check_falling(self.not_much_smoothed_gyro)
+            falling_pose = self.stand_up_handler.check_falling(self.not_much_smoothed_gyro)
             if falling_pose:
-                self.standupHandler.set_falling_pose(falling_pose, goal_pose)
+                self.stand_up_handler.set_falling_pose(falling_pose, goal_pose)
                 self.set_state(STATE_FALLING)
                 return
 
@@ -281,7 +278,7 @@ cdef class Motion(object):
             ###
             if self.state == STATE_FALLING:
                 # maybe the robot is now finished with falling and is lying on the floor
-                direction_animation = self.standupHandler.check_fallen(self.gyro, self.smooth_gyro, self.robo_angle)
+                direction_animation = self.stand_up_handler.check_fallen(self.gyro, self.smooth_gyro, self.robo_angle)
                 if direction_animation is not None:
                     self.set_state(STATE_FALLEN)
                     # directly starting to get up. Sending STATE_FALLEN before is still important, e.g. localisation
@@ -368,12 +365,12 @@ cdef class Motion(object):
             self.animfunc = None
             # TODO: Use config
             if self.state is STATE_GETTING_UP:
-                anim = self.standupHandler.get_up(self.set_state)
+                anim = self.stand_up_handler.get_up(self.set_state)
                 if anim:
                     self.animate(anim)
                 if self.state is STATE_FALLEN:
-                    anim = self.standupHandler.check_fallen(self.goal_pose , self.set_state, self.state,
-                              self.smooth_gyro, self.robo_angle, self.smooth_accel)
+                    anim = self.stand_up_handler.check_fallen(self.goal_pose, self.set_state, self.state,
+                                                              self.smooth_gyro, self.robo_angle, self.smooth_accel)
                     if anim:
                         self.animate(anim)
             # Status setzen
@@ -547,4 +544,4 @@ cdef class Motion(object):
 
     def reconfigure(self, config, level):
         # just pass on to the StandupHandler, as the variables are located there
-        self.standupHandler.update_reconfigurable_values(config, level)
+        self.stand_up_handler.update_reconfigurable_values(config, level)
