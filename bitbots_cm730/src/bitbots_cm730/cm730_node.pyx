@@ -94,57 +94,7 @@ class cm730(object):
                 self.ctrl.write_register(ID_CM730, CM730.led_head, (0, 0, 0))
             rospy.loginfo("Setting RAM Finished")
 
-    cdef init_read_packet(self):
-        """
-        Initialise the :class:`BulkReadPacket` for communication with the motors
 
-        Important: The motor in self.read_packet[i] has to be the same like in self.read_packet3[i], because
-         while reading, single packages from 1 are inserted to 3.
-        """
-        for cid in self.motors:
-            # if robot has this motor
-            self.read_packet_stub.append((
-                cid,
-                (
-                    MX28.present_position,
-                    MX28.present_speed,
-                    MX28.present_load,
-                    MX28.present_voltage,
-                    MX28.present_temperature
-                )))
-            self.read_packet3_stub.append((
-                cid,
-                (
-                    MX28.present_position,
-                )))
-        if self.cm_370:
-            self.read_packet_stub.append((
-                ID_CM730,
-                (
-                    CM730.button,
-                    CM730.padding31_37,
-                    CM730.gyro,
-                    CM730.accel,
-                    CM730.voltage
-                )))
-            self.read_packet2.add(
-                ID_CM730,
-                (
-                    CM730.button,
-                    CM730.padding31_37,
-                    CM730.gyro,
-                    CM730.accel,
-                    CM730.voltage
-                ))
-            self.read_packet3_stub.append((
-                ID_CM730,
-                (
-                    CM730.gyro,
-                    CM730.accel
-                )))
-
-        if len(self.read_packet_stub)!= len(self.read_packet3_stub):
-            raise AssertionError("self.read_packet and self.read_packet3 have to be the same size")
 
     cpdef update_forever(self):
         """ Calls :func:`update_once` in an infite loop """
