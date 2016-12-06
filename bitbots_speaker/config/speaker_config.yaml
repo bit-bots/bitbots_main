@@ -1,2 +1,6 @@
 speaker:
-  server-print: true
+  print_say: true
+  speak_enabled: true
+  message_level: 0
+  amplitude: 10
+

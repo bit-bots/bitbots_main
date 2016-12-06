@@ -33,15 +33,15 @@ class TeamCommunication(object):
         self.role = ROLE_IDLING
         self.action = ACTION_UNDEFINED
         self.state = STATE_INACTIVE
-        self.absolute_x = -100  # todo: better start value
-        self.absolute_y = -100
+        self.absolute_x = 100  # todo: better start value
+        self.absolute_y = 100
         self.absolute_orientation = 0
         self.absolute_belief = 0
         self.ball_relative_x = 100
         self.ball_relative_y = 0
         self.ball_certainty = 0
 
-        self.avg_walking_speed = 0
+        self.avg_walking_speed = rospy.get_param("/team_communication/avg_walking_speed")
         self.time_to_position_at_ball = 0
         self.max_kicking_distance = 0
 
@@ -138,12 +138,12 @@ class TeamCommunication(object):
 
     def motion_state_callback(self, msg):
         state = msg.state
-        if state == PENALTY or state == PENALTY_ANIMATION:
+        if state == MotionState.PENALTY or state == MotionState.PENALTY_ANIMATION:
             self.state = STATE_PENALIZED
-        elif state == STARTUP or state == SHUTDOWN or state == RECORD:
+        elif state == MotionState.STARTUP or state == MotionState.SHUTDOWN or state == MotionState.RECORD:
             self.state = STATE_INACTIVE
         else:
-            self.state = STATE_ACTIVE
+            self.state = MotionState.STATE_ACTIVE
 
     def ball_callback(self, msg):
         # todo check if conversion from mm to m

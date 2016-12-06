@@ -10,3 +10,6 @@ player: 99
 
 # Rate of published messages in Hz
 rate: 1
+
+# avarange walking speed in mm / s !!!
+avg_walking_speed: 10

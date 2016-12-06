@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 import rospy
-from bitbots_speaker.msg import Speak
+from humanoid_league_msgs.msg import Speak
 
 
 def sender():

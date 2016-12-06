@@ -6,9 +6,10 @@ import subprocess
 import os
 
 from dynamic_reconfigure.server import Server
-from .cfg import speaker_paramsConfig
+#todo find the problem with this import
+from bitbots_speaker.cfg import speaker_paramsConfig
 
-from bitbots_speaker.msg import Speak
+from humanoid_league_msgs.msg import Speak
 
 
 class Speaker(object):
@@ -38,15 +39,16 @@ class Speaker(object):
         """ Runs continuisly to wait for messages and speak them"""
         # wait for messages. while true doesn't work well in ROS
         while not rospy.is_shutdown():
+            print self.message_level
             # test if espeak is already running and speak is enabled
             if not "espeak " in os.popen("ps xa").read() and self.speak_enabled:
                 if len(self.high_prio_queue) > 0:
                     text, is_file = self.high_prio_queue.pop(0)
                     self.__say(text, is_file)
-                elif len(self.mid_prio_queue) > 0:
+                elif len(self.mid_prio_queue) > 0 and self.message_level <= 1:
                     text, is_file = self.mid_prio_queue.pop(0)
                     self.__say(text, is_file)
-                elif len(self.low_prio_queue) > 0:
+                elif len(self.low_prio_queue) > 0 and self.message_level == 0:
                     text, is_file = self.low_prio_queue.pop(0)
                     self.__say(text)
             rospy.sleep(0.5)
@@ -55,6 +57,7 @@ class Speaker(object):
         """ Speak this specific text"""
         # todo make volume adjustable, some how like this
 #        command = ("espeak", "-a", self.amplitude, text)
+        print "text:" + text
         command = ("espeak", text)
         try:
             process = subprocess.Popen(command, stdout=subprocess.PIPE,
@@ -89,14 +92,14 @@ class Speaker(object):
             # don't accept new messages
             return
 
-        if prio == msg.LOW_PRIORITY:
+        if prio == msg.LOW_PRIORITY and self.message_level == 0:
             for queued_text in self.low_prio_queue:
                 if queued_text == (text, is_file):
                     new = False
                     break
             if new:
                 self.low_prio_queue.append((text, is_file))
-        elif prio == msg.MID_PRIORITY:
+        elif prio == msg.MID_PRIORITY and self.message_level <= 1:
             for queued_text in self.mid_prio_queue:
                 if queued_text == (text, is_file):
                     new = False
@@ -119,7 +122,15 @@ class Speaker(object):
             self.low_prio_queue = []
             self.mid_prio_queue = []
             self.high_prio_queue = []
-        self.message_level = config["msg_level"]
+        message_level = config["msg_level"]
+        if self.message_level != message_level:
+            # delete old lower prio msgs
+            if message_level == 2:
+                self.mid_prio_queue = []
+                self.low_prio_queue = []
+            elif message_level == 1:
+                self.low_prio_queue = []
+            self.message_level = config["msg_level"]
         self.amplitude = config["amplitude"]
         # Return the new variables.
         return config

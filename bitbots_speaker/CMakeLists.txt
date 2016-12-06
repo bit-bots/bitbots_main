@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   dynamic_reconfigure
+  humanoid_league_msgs
 )
 
 ## System dependencies are found with CMake's conventions
