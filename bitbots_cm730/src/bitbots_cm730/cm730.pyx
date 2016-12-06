@@ -21,8 +21,8 @@ from .lowlevel.controller.controller import CM730, ID_CM730, MX28, BulkReadPacke
 
 class cm730(object):
     """
-    update forever updated alle hardware daten und published die. schreibt local gespeicherte motorgoals
-    wenn motor goals kommen werden die local gespeichert und dann von update_forever geschrieben, wenn der zyklus da angekommen ist
+    Takes core of the communication with the CM730 (and therefore with the servos). Constantly updates servo data
+    and sets goal values to the servos.
     """
 
     def __init__(self):
@@ -49,9 +49,7 @@ class cm730(object):
         self.read_packet3_stub = list()
         self.init_read_packet()
 
-        #todo make min/max dynamically reconfigurable
-        #problem is, that the number of motors is not known at build time
-        rospy.loginfo("Set Motor min/max Values")
+        #problem is, that the number of motors is not known at build time, so write them into params now
         for motor in joints:
             min_value = -180
             max_value = 180
@@ -60,13 +58,11 @@ class cm730(object):
             if 'min' in motor['limits']:
                 min_value = motor['limits']['min']
             rospy.set_param(str(motor['name']), {'min': min_value, 'max': max_value})
-
-        #todo testen ob werte die man in den motor setzt in den maximas liegen
-
+        #start the endless loop
         self.update_forever()
 
 
-    def update_motor_goals(self, msg):
+    cdef update_motor_goals(self, msg):
         """ Callback for subscription on motorgoals topic.
         We can only handle the first point of a JointTrajectory :( """
         joints = msg.joint_names
@@ -81,7 +77,6 @@ class cm730(object):
                 rospy.logwarn("Joint command under min. Joint: %s Position: %f", (joint, positions[joint]))
             else:
                 self.motor_goals[joint] = positions[joint]
-
 
     cdef set_motor_ram(self):
         """
@@ -101,7 +96,7 @@ class cm730(object):
 
     cdef init_read_packet(self):
         """
-        Initiallise the :class:`BulkReadPacket` for communcation with the motors
+        Initialise the :class:`BulkReadPacket` for communication with the motors
 
         Important: The motor in self.read_packet[i] has to be the same like in self.read_packet3[i], because
          while reading, single packages from 1 are inserted to 3.
@@ -218,7 +213,7 @@ class cm730(object):
     cdef sensor_data_read(self):
         """
         This Method is part of update_sensor_data,
-                it communicates withe the CM370-Board and extract its answer to a directly readble format
+                it communicates with the CM730-Board and extract its answer to a directly readable format
         """
         cdef dict result
         cdef int say_error
