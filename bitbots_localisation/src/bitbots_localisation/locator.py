@@ -1,35 +1,33 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 import math
 import collections
 import numpy as np
 import rospy
-from typing import List
-from bitbots_common.util.config import get_config
-from std_msgs.msg import String
-from bitbots_walking.msg import Movement
-from bitbots_vision_transformed.msg import Goals
-from bitbots_localisation.msg import position
 from bitbots_localisation.localization_objects import Particle, Field
+from humanoid_league_msgs.msg import Position, GoalRelative
+from nav_msgs.msg import Odometry
 
 
-class ParticleLocator:
+class Locator:
 
     def __init__(self):
-        rospy.init_node('bitbots_loaclisation_particlefilter', anonymous=False)
+        rospy.logdebug("Init Localisation")
+        rospy.init_node('bitbots_localisation', anonymous=False)
 
-        self.pub = rospy.Publisher("/localization/position", position)
+        self.pub = rospy.Publisher("/local_position", Position)
 
-        rospy.Subscriber("/walking/movement", Movement, self.update_position)
-        rospy.Subscriber("/vision_tranformed/goal", Goals, self.perform)
+        rospy.Subscriber("/odometry", Odometry, self.update_position)
+        rospy.Subscriber("/goal_relative", GoalRelative, self.perform)
 
         self.conf__nr_particle = rospy.get_param("/localisation/nr_particle")
+        self.debug = rospy.get_param("/debug_active", False)
 
         # Setup variables
         self._setup()
 
         # Get data and update model
-        rospy.spin()  # todo callbacks auf messages werden ausgeführt?
+        rospy.spin()
 
     def _setup(self):
         self.fieldmodel = Field()
@@ -53,8 +51,10 @@ class ParticleLocator:
         self.last_movement_approx = (0, 0)
         self.field = Field()
 
-    def update_position(self, move: Movement)->None:
-        self.last_movement_approx = move.forward, move.angular
+    #def update_position(self, odoemetry: Odometry)->None:
+    def update_position(self, odometry):
+
+        self.last_movement_approx = odometry.pose.pose.position.x , odometry.twist.twist.angular[0] #todo correct access
 
         # update Position for all particle:
 
@@ -69,7 +69,8 @@ class ParticleLocator:
         self.particlem[:, 1] += fy(self.particlem[:, 2])
         # Todo ros_transform?
 
-    def perform(self, goals: Goals)->None:
+    #def perform(self, goals: GoalsRealtive)->None:
+    def perform(self, goals):
         nr_particle = self.conf__nr_particle
         # Measurment for all Particles
         #r_mes = self.sensor_data()
@@ -100,8 +101,14 @@ class ParticleLocator:
         best_index = weights.index(max(weights))
         x, y, r = self.particlem[best_index, :]
 
+        msg = Position()
+        msg.pose.x = x
+        msg.pose.y = y
+        msg.pose.theta = r
+        msg.confidence = weights[best_index]
+
         # Publish information
-        self.pub.publish(x, y, r)
+        self.pub.publish(msg)
 
 
         # Recalculate distribution
@@ -165,7 +172,8 @@ class ParticleLocator:
         self.particlem = new_particles
 
     @staticmethod
-    def mes_dist(r_mes: List[float], p_mes: tuple)-> int:
+    # def mes_dist(r_mes: List[float], p_mes: tuple)-> int:
+    def mes_dist(r_mes, p_mes):
         """
         Measures the ditance between two mesurements
         :param r_mes:

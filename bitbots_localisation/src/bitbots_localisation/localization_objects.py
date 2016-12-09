@@ -4,7 +4,6 @@ import random
 
 import itertools
 import timeit
-from typing import Tuple
 
 import numpy as np
 import time
@@ -14,13 +13,13 @@ class Particle:
     """
     Particle which determine possible robot localisation
     """
-    def __init__(self, x: int, y: int, r: int):
+    def __init__(self, x, y, r):
         self.x = x
         self.y = y
         self.r = r
         self.weight = 0
 
-    def rotate(self, r: int):
+    def rotate(self, r):
         self.r += r
 
     def move_forward(self, dist):
@@ -28,7 +27,7 @@ class Particle:
         self.y += dist * math.sin(math.radians(self.r))
 
     @staticmethod
-    def create_n_random(nr, lbx, lby, ubx, uby)->list:
+    def create_n_random(nr, lbx, lby, ubx, uby):
         ret = []
         for x in range(nr):
             x = random.randint(lbx, ubx)
@@ -68,7 +67,7 @@ class Field:
         # todo add optional
         # -> SLAM
 
-    def get_dimensions(self)->tuple:
+    def get_dimensions(self):
         """
         Returns the size of the current field
         :return:
@@ -76,7 +75,7 @@ class Field:
         """
         return -(self.x_size / 2), -(self.y_size / 2),  (self.x_size / 2), (self.y_size / 2)
 
-    def mes_goals(self, prtkl: list)->tuple:
+    def mes_goals(self, prtkl):
         """
         Get all goal distances for one particle
         :param prtkl: list with particle
@@ -96,7 +95,7 @@ class Field:
         return ret
 
     @staticmethod
-    def uv(x: int, y: int, ang: int, xo: int, yo: int)->Tuple[float, float]:
+    def uv(x, y, ang, xo, yo):
         """
         :param x: x position of the robot
         :param y: y position of the robot
