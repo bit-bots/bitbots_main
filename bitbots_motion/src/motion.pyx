@@ -101,6 +101,10 @@ cdef class Motion(object):
             print("Service did not process request: " + str(exc))
 
     def update_imu(self):
+        #todo update robo_angle with this
+        angles = calculate_robot_angles(deref(self.robo_accel.get_data_vector()))
+        angles = self.gyro_kalman.get_angles_pvv(angles, gyro - IntDataVector(512, 512, 512), dt)
+        self.robo_angle = wrap_data_vector(angles)
 
     def update_current_position(self):
         self.last_client_update = #todo message timestamp

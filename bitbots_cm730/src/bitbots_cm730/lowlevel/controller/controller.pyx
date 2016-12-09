@@ -104,8 +104,8 @@ class MotorError(EnvironmentError):
         return self.motor
 
 
-MX28 = MX28RegisterTable()
-CM730 = CM730RegisterTable()
+MX28_REGISTER = MX28RegisterTable()
+CM730_REGISTER = CM730RegisterTable()
 
 def get_mx28_register_table():
     """

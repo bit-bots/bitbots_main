@@ -15,8 +15,8 @@ from bitbots_cm730.srv import SwitchMotorPower
 
 import rospy
 
+from bitbots_cm730.src.bitbots_cm730.cm730 import CM730
 from .pose.pose import Joint, Pose
-from .lowlevel.controller.controller import CM730, ID_CM730, MX28, BulkReadPacket, MultiMotorError, SyncWritePacket
 
 
 class cm730_node(object):
@@ -35,11 +35,6 @@ class cm730_node(object):
         self.motor_power_service = rospy.Service("switch_motor_power", SwitchMotorPower, self.switch_motor_power_service_call)
 
         self.cm_730_object = CM730()
-
-        self.raw_accel = IntDataVector(0, 0, 0)
-        self.raw_gyro = IntDataVector(0, 0, 0)
-        self.button1 = 0
-        self.button2 = 0
 
         joints = rospy.get_param("/joints")
         robot_type_name = rospy.get_param("/RobotTypeName")
@@ -106,55 +101,27 @@ class cm730_node(object):
             :attr:`smooth_accel` and :attr:`smooth_gyro`.
         """
         # get sensor data
-        self.cm_730_object.update_sensor_data()
+        robo_pose, gyro, accel, buttons= self.cm_730_object.update_sensor_data()
 
         #todo irgendwas damit tun
         # Farbwerte für den Kopf holen
-        self.led_eye = self.ipc.get_eye_color().xyz
-        self.led_head = self.ipc.get_forehead_color().xyz
+        #self.led_eye = self.ipc.get_eye_color().xyz
+        #self.led_head = self.ipc.get_forehead_color().xyz
 
         # Send Messages to ROS
-        self.publish_joints()
+        self.publish_joints(robo_pose)
         self.publish_additional_servo_data()
-        self.publish_IMU()
-        self.publish_buttons()
+        self.publish_IMU(gyro, accel)
+        self.publish_buttons(buttons)
 
         # send new position to servos
         self.update_motor_goals()
 
-
-    cpdef switch_motor_power(self, state):
-        # wir machen nur etwas be änderungen des aktuellen statusses
-        if not self.cm_370:
-            # without the cm370 we cant switch the motor power
-            return
-        if state and not self.dxl_power:
-            # anschalten
-            rospy.loginfo("Switch dxl_power back on")
-            self.ctrl.write_register(ID_CM730, CM730.dxl_power, 1)
-            # wir warten einen Augenblick bis die Motoeren auch wirklich wieder
-            # wieder an und gebootet sind
-            time.sleep(0.3)
-            self.set_motor_ram()
-            self.dxl_power = True
-        elif (not state) and self.dxl_power:
-            # ausschalten
-            rospy.loginfo("Switch off dxl_power")
-            # das sleep hier ist nötig da es sonst zu fehlern in der
-            # firmware der Motoren kommt!
-            # Vermutete ursache:
-            # Schreiben der ROM area der Register mit sofortigen
-            # abschalten des Stromes führt auf den motoren einen
-            # vollst#ndigen Reset durch!
-            time.sleep(0.3) # WICHTIGE CODEZEILE! (siehe oben)
-            self.ctrl.write_register(ID_CM730, CM730.dxl_power, 0)
-            self.dxl_power = False
-
-    def switch_motor_power_service_call(self, req):
-        return self.switch_motor_power(req.power)
+    cpdef switch_motor_power_service_call(self, req):
+        return self.cm_730_object.switch_motor_power(req.power)
 
 
-    cdef void send_joints(self):
+    cpdef void send_joints(self):
         """
         Sends the Joint States to ROS
         """
@@ -197,6 +164,8 @@ class cm730_node(object):
         self.imu_publisher(msg)
 
     def publish_buttons(self):
+        #todo impelement
+        return
 
     def say(self, text):
         msg = Speak()
