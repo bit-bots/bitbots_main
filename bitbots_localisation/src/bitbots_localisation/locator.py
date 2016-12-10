@@ -15,12 +15,12 @@ class Locator:
         rospy.logdebug("Init Localisation")
         rospy.init_node('bitbots_localisation', anonymous=False)
 
-        self.pub = rospy.Publisher("/local_position", Position)
+        self.pub = rospy.Publisher("/local_position", Position, queue_size=1)
 
         rospy.Subscriber("/odometry", Odometry, self.update_position)
         rospy.Subscriber("/goal_relative", GoalRelative, self.perform)
 
-        self.conf__nr_particle = rospy.get_param("/localisation/nr_particle")
+        self.conf__nr_particle = 100 # rospy.get_param("/localisation/nr_particle")
         self.debug = rospy.get_param("/debug_active", False)
 
         # Setup variables
@@ -67,7 +67,7 @@ class Locator:
         fy = np.vectorize(lambda xm:  self.last_movement_approx[0] * math.sin(math.radians(xm)))
         self.particlem[:, 0] += fx(self.particlem[:, 2])
         self.particlem[:, 1] += fy(self.particlem[:, 2])
-        # Todo ros_transform?
+
 
     #def perform(self, goals: GoalsRealtive)->None:
     def perform(self, goals):
@@ -189,4 +189,5 @@ class Locator:
         return sum(goaldistances)  # todo weitere features
 
 
-
+if __name__ == "__main__":
+    Locator()
