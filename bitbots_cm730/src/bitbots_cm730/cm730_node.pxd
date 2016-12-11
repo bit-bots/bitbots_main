@@ -7,7 +7,7 @@ from bitbots_common.utilCython.datavector cimport IntDataVector as CIntDataVecto
 from bitbots_common.utilCython.datavector cimport DataVector as CDataVector
 from bitbots_common.utilCython.pydatavector cimport PyIntDataVector as IntDataVector
 from bitbots_common.utilCython.pydatavector cimport PyDataVector as DataVector
-from .robot.kinematics cimport Robot
+from bitbots_common.robot.kinematics cimport Robot
 
 cdef class cm730_node(object):
 

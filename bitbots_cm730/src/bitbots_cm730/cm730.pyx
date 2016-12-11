@@ -5,9 +5,6 @@ import time
 
 from .lowlevel.controller.controller import BulkReadPacket, MultiMotorError, MX28_REGISTER, ID_CM730, CM730_REGISTER, SyncWritePacket
 from .pose.pose import Joint, Pose
-from cython.operator cimport dereference as deref
-from bitbots.util.pydatavector cimport wrap_int_data_vector, wrap_data_vector
-from bitbots.util.kinematicutil cimport kinematic_robot_angle
 
 
 class CM730(object):
