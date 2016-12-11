@@ -14,7 +14,11 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   rospy
   std_msgs
+  humanoid_league_msgs
+#  bitbots_common
 )
+
+find_package(Eigen REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -105,11 +109,12 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES bitbots_cm730
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
-   CATKIN_DEPENDS message_runtime
+  LIBRARIES bitbots_cm730
+  CATKIN_DEPENDS bitbots_common message_runtime
+  DEPENDS eigen
 )
+
+add_subdirectory(src/bitbots_cm730)
 
 ###########
 ## Build ##

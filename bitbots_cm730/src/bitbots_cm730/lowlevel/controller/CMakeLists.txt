@@ -12,7 +12,7 @@ cython_add_module(register_tables  register_tables.pyx)
 
 
 # Controller linken
-target_link_libraries(controller debug-common)
+target_link_libraries(controller)
 
 set_target_properties(controller converter register_tables
   PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}/lowlevel/controller)
@@ -20,6 +20,6 @@ set_target_properties(controller converter register_tables
 
 install(
     TARGETS controller converter register_tables
-    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/bitbots_motion/lowlevel/controller
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/bitbots_cm730/lowlevel/controller
 )
 

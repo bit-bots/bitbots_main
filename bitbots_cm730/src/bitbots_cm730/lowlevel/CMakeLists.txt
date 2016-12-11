@@ -14,7 +14,7 @@ add_subdirectory(controller)
 # 'serial' linken
 target_link_libraries(serial
     ${Boost_SYSTEM_LIBRARY}
-    debug-common
+    #debug-common
 )
 
 set_target_properties(serial
