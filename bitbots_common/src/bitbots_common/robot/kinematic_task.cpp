@@ -6,7 +6,7 @@
 #include "kinematic_joint.hpp"
 #include "chain_member.hpp"
 #include "jointids.hpp"
-#include "../debug/debugmacro.h"
+#include "ros/console.h"
 
 #define STATIC
 

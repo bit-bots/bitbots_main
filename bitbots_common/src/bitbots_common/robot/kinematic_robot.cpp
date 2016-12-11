@@ -139,7 +139,7 @@ inline static unsigned num_set_bits(T bitvector) {
                 return bitvector;
             ++idx;
             shift = shift << 1;
-            L_DEBUG(if(idx > sizeof(masks))throw runtime_error("Something strange happened on counting bits"));
+            //ROS_DEBUG_STREAM(if(idx > sizeof(masks))throw runtime_error("Something strange happened on counting bits"));
         }
 }
 
@@ -177,7 +177,7 @@ void KRobot::init_chains(const ChainsTemplate& chains_template, const int max_id
             bool missing_joits = false;
             if((unsigned)mem->get_id() >= m_joint_chain_mapping.size()) {
                 missing_joits = true;
-                L_DEBUG(std::cerr<<mem->get_id()<<std::endl);
+                //ROS_DEBUG_STREAM(std::cerr<<mem->get_id()<<std::endl);
             } else {
                 if(num_set_bits(((uint16_t)m_joint_chain_mapping[mem->get_id()].second)) > 1) {
                     mem.set_option(KJointChainMember::SingleOptions::is_in_multiple_chains);
@@ -206,7 +206,7 @@ void KRobot::create_chain_template_and_init_chains(const KRobot& other) {
 
 template<AngleCheck checked, unsigned update_flags, bool skip_static_start>
 BITBOTS_INLINE void KRobot::update_chain(Chain& chain) {
-    //L_DEBUG(std::cout<<(update_flags?"Update flags ":"")<< (update_flags & reset_start_chain_matrix? "Reset Start ":"")
+    ////ROS_DEBUG_STREAM(std::cout<<(update_flags?"Update flags ":"")<< (update_flags & reset_start_chain_matrix? "Reset Start ":"")
     //<<(update_flags & update_masses? "Update Masses":"")<<(update_flags?"\n":""));
     // I think, first I need the positional update for every joint. Then I can perform the mass updates
     if(update_flags & reset_start_chain_matrix)
@@ -436,7 +436,7 @@ void Kin::fill_jacobi_matrix(Eigen::Block<KRobot::JacobiType> jacobi, const KRob
             gradient = -gradient;
         jacobi.col(id - offset).noalias() = current.get_chain_matrix().linear() * gradient;
     }
-    P_DEBUG("Jacobi for Debug"<<endl<<jacobi);
+    //ROS_DEBUG_STREAM("Jacobi for Debug"<<endl<<jacobi);
 }
 
 void Kin::fill_jacobi_matrix_l(KRobot::JacobiType& jacobi, const KRobot::Chain& chain, const AxisType axis) {
@@ -467,10 +467,10 @@ int KRobot::inverse_chain(KinematicTask& task, int it, double positional_scaling
     else
         angleOff = AngleMatrixType::Zero(range, 1);
     MultipleTargetType delta(params->m_target.rows(), 1);
-    P_DEBUG("Diff");
+    //ROS_DEBUG_STREAM("Diff");
     for(int i = 0; 3 * i < jacobi.rows(); ++i)
         params->update_func(*this, chain, params->m_axis(i));
-    //P_DEBUG((delta<<params->m_target.block<3, 1>(3 * 0, 0) - chain.back()->get_endpoint<3>(params->m_axis(0)),
+    ////ROS_DEBUG_STREAM((delta<<params->m_target.block<3, 1>(3 * 0, 0) - chain.back()->get_endpoint<3>(params->m_axis(0)),
     //                params->m_target.block<3, 1>(3 * 1, 0) - chain.back()->get_endpoint<3>(params->m_axis(1)),
     //                params->m_target.block<3, 1>(3 * 2, 0) - chain.back()->get_endpoint<3>(params->m_axis(2)),
     //                params->m_target.block<3, 1>(3 * 3, 0) - chain.back()->get_endpoint<3>(params->m_axis(3))
@@ -499,7 +499,7 @@ int KRobot::inverse_chain(KinematicTask& task, int it, double positional_scaling
         }
         if(N) {
             deltaQ.noalias() = (*N) * pseudo_inverse * delta;
-            P_DEBUG("Inverse :\n"<<pseudo_inverse<<"\nN: \n"<<(*N));
+            //ROS_DEBUG_STREAM("Inverse :\n"<<pseudo_inverse<<"\nN: \n"<<(*N));
         } else
             deltaQ.noalias() = pseudo_inverse * delta;
 
@@ -519,12 +519,12 @@ int KRobot::inverse_chain(KinematicTask& task, int it, double positional_scaling
             if(id && !chain[i]->is_static_joint())
                 chain[i]->m_angle += deltaQ(id - ranging_ids.first, 0);
         }
-        P_DEBUG("Winkeländerungen");
-        P_DEBUG(deltaQ.transpose() * rad_to_degree);
-        P_DEBUG("Target: From: " << ranging_ids.first << " To: " << ranging_ids.second);
-        P_DEBUG(params->m_target.transpose());
-        P_DEBUG("Diff");
-        P_DEBUG(delta.transpose()<<" Sum: "<<delta.array().abs().sum());
+        //ROS_DEBUG_STREAM("Winkeländerungen");
+        //ROS_DEBUG_STREAM(deltaQ.transpose() * rad_to_degree);
+        //ROS_DEBUG_STREAM("Target: From: " << ranging_ids.first << " To: " << ranging_ids.second);
+        //ROS_DEBUG_STREAM(params->m_target.transpose());
+        //ROS_DEBUG_STREAM("Diff");
+        //ROS_DEBUG_STREAM(delta.transpose()<<" Sum: "<<delta.array().abs().sum());
         //Force the kinematic to have a legal pose
         params->update_func(*this,chain, 0);
         for(uint i = 0; i < (unsigned)params->m_axis.rows(); ++i) delta.block<3, 1>(3 * i, 0) = params->m_target.block<3, 1>(3 * i, 0) - chain.back()->get_endpoint<3>(params->m_axis(i));
@@ -583,7 +583,7 @@ void KRobot::set_angles_to_pose(Pose& pose, const int chain_id, const float time
         #undef UPDATE_JOINT_IN_POSE
     }
     if(!success) {
-        L_DEBUG(cerr<<"Konnte nicht alle Winkel schreiben"<<endl);
+        //ROS_DEBUG_STREAM(cerr<<"Konnte nicht alle Winkel schreiben"<<endl);
     }
 }
 
@@ -594,7 +594,7 @@ bool KRobot::plausibility_check(const KRobot::Chain& chain, const Vector3d& targ
     while(chain[i].ignore_for_axis(KJoint::AxisType::Position)) {
         last_inactive_joint = chain[i].ptr();
         ++i;
-        L_DEBUG(if(chain.size() == i)throw runtime_error("Chain must contain non inactive members"));
+        //ROS_DEBUG_STREAM(if(chain.size() == i)throw runtime_error("Chain must contain non inactive members"));
     }
     Vector3d static_target_part = last_inactive_joint->template get_endpoint<3>();
     double dynamic_length = 0;

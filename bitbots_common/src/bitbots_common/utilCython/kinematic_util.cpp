@@ -3,11 +3,12 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include "ros/console.h"
 #include "kinematic_util.hpp"
 #include "math_constants.h"
 #include "../robot/jointids.hpp"
 #include "../robot/kinematic_task.hpp"
-#include "../debug/debugmacro.h"
+
 
 using namespace Util;
 using namespace Kinematics;
@@ -104,7 +105,7 @@ SupportLeg KinematicUtil::determine_support_leg(const KRobot& robot, const doubl
         return SupportLeg::right;
     else if(fabs(left_based_height) < threshold && fabs(right_based_height) < threshold)
         return SupportLeg::both;
-    L_DEBUG(std::cerr<<"Unknown support Foot"<<std::endl);
+    //ROS_DEBUG_STREAM(std::cerr<<"Unknown support Foot"<<std::endl);
     return SupportLeg::unknown;
 }
 
@@ -129,27 +130,27 @@ inline void KinematicUtil::get_head_angles_for_distance_intern(KRobot& robot, co
         Vector3d y_orthogonal, x_orthogonal;
         //Calculate an orthogonal vector to have a rotation axis when rotating the target vector, so that y-angle has the given distance
         y_orthogonal = diff.cross(Vector3d::UnitZ()).normalized();
-        L_DEBUG(cout<<"Orthogonale:\n"<<y_orthogonal.transpose()<<endl);
+        //ROS_DEBUG_STREAM(cout<<"Orthogonale:\n"<<y_orthogonal.transpose()<<endl);
         //Creating the rotation type
         AngleAxisd y_turn( - y_angle, y_orthogonal);
-        L_DEBUG(cout<<"Turn Matrix:\n"<<(Matrix3d()<<(Matrix3d::Identity() * y_turn)).finished()<<endl);
+        //ROS_DEBUG_STREAM(cout<<"Turn Matrix:\n"<<(Matrix3d()<<(Matrix3d::Identity() * y_turn)).finished()<<endl);
         //rotating
         target = y_turn * target;
         if(additional_parameter > 1) {
             //same as for y-axis now for x-axis, y-axis first because of "dependencies"
             x_orthogonal = diff.cross(y_orthogonal).normalized();
-            L_DEBUG(cout<<"Orthogonale:\n"<<x_orthogonal.transpose()<<endl);
+            //ROS_DEBUG_STREAM(cout<<"Orthogonale:\n"<<x_orthogonal.transpose()<<endl);
             AngleAxisd x_turn(x_angle, x_orthogonal);
-            L_DEBUG(cout<<"Turn Matrix:\n"<<(Matrix3d()<<(Matrix3d::Identity() * x_turn)).finished()<<endl);
+            //ROS_DEBUG_STREAM(cout<<"Turn Matrix:\n"<<(Matrix3d()<<(Matrix3d::Identity() * x_turn)).finished()<<endl);
             target = x_turn * target;
         }
     }
     Kin::KinematicTask kt(robot);
     kt.set_target_values(Kin::KJoint::XAxis, JointIds::Root, JointIds::Camera, target, 1e-3);
     robot.inverse_chain(kt, 100);
-    L_DEBUG(cout<<"angles: y_angle:" << y_angle << " x_angle: "<< x_angle<<endl);
-    L_DEBUG(cout<< "Target"<<endl<<target.transpose()<<endl);
-    L_DEBUG(cout<<"Head"<<endl<<(robot.get_joint_by_id(JointIds::LFootEndpoint).get_chain_matrix_inverse() * robot.get_joint_by_id(JointIds::Camera).get_chain_matrix()).matrix()<<endl);
+    //ROS_DEBUG_STREAM(cout<<"angles: y_angle:" << y_angle << " x_angle: "<< x_angle<<endl);
+    //ROS_DEBUG_STREAM(cout<< "Target"<<endl<<target.transpose()<<endl);
+    //ROS_DEBUG_STREAM(cout<<"Head"<<endl<<(robot.get_joint_by_id(JointIds::LFootEndpoint).get_chain_matrix_inverse() * robot.get_joint_by_id(JointIds::Camera).get_chain_matrix()).matrix()<<endl);
 }
 
 void KinematicUtil::get_head_angles_for_distance(KRobot& robot, const Vector2d& pos, bool left_leg){

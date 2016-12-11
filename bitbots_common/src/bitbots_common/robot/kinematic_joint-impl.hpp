@@ -9,7 +9,7 @@
 #include <Eigen/Geometry>
 #include <Eigen/StdVector>
 
-#include "../debug/debugmacro.h"
+#include "ros/console.h"
 
 #include "kinematic_joint.hpp"
 

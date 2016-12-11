@@ -39,7 +39,6 @@ class Speaker(object):
         """ Runs continuisly to wait for messages and speak them"""
         # wait for messages. while true doesn't work well in ROS
         while not rospy.is_shutdown():
-            print self.message_level
             # test if espeak is already running and speak is enabled
             if not "espeak " in os.popen("ps xa").read() and self.speak_enabled:
                 if len(self.high_prio_queue) > 0:

@@ -5,8 +5,13 @@
 
 #include "../robot/forward.hpp"
 #include "../robot/jointids.hpp"
-#include "../../../../bitbots_motion/src/bitbots_motion/walking/zmp_math_basics.h"  //TODO: Diese abhängikkeit ist mist (was hat die kinematik mit dem walking zu schaffen?)
+#include "../util/math_constants.h"
 #include "eigen_util.hpp"
+
+namespace ZMPFootPhaseDefinition {
+enum FootPhase{both, left, right, unknown};
+} //namespace
+
 
 namespace Util{
 namespace Kinematics {

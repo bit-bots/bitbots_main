@@ -5,8 +5,8 @@
 #include <Eigen/Core>
 #include <Eigen/LU>
 
+#include "ros/console.h"
 #include "kinematic_robot.hpp"
-#include "../debug/debugmacro.h"
 
 namespace Robot {
 namespace Kinematics {
@@ -102,7 +102,7 @@ static BITBOTS_INLINE MatrixReturnType pseudo_inverse_r(const JacobiType& j, con
         ++tries;
         epsilon *= epsilon_increase_factor;
     }
-    L_DEBUG(if(tries != 0)std::cout<<"Inverse not computed on first try: "<<tries<<std::endl);
+    //ROS_DEBUG_STREAM(if(tries != 0)std::cout<<"Inverse not computed on first try: "<<tries<<std::endl);
     return j.transpose() * inverse;
 }
 
@@ -127,7 +127,7 @@ static BITBOTS_INLINE MatrixReturnType pseudo_inverse_l(const JacobiType& j, dou
         ++tries;
         inverse_small_matrix_with_check<MatrixType>(to_inverse, inverse, success);
     }
-    L_DEBUG(if(tries != 0)std::cout<<"Inverse not computed on first try: "<<tries<<std::endl);
+    //ROS_DEBUG_STREAM(if(tries != 0)std::cout<<"Inverse not computed on first try: "<<tries<<std::endl);
     return inverse * j.transpose();
 }
 
