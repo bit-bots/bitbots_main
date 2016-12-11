@@ -1,4 +1,4 @@
-from bitbots_motion.lowlevel.controller.converter cimport Converter
+from .converter cimport Converter
 
 from libc.stdint cimport uint8_t
 ctypedef uint8_t ubyte

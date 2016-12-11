@@ -1,8 +1,7 @@
-#todo vom alten basemotion und motion server holen
+from trajectory_msgs.msg import JointTrajectory
 
 from bitbots_common.eigen cimport *
 
-from bitbots_motion.lowlevel.controller.controller cimport Controller, BulkReadPacket
 from bitbots_common.utilCython.datavector cimport IntDataVector as CIntDataVector
 from bitbots_common.utilCython.datavector cimport DataVector as CDataVector
 from bitbots_common.utilCython.pydatavector cimport PyIntDataVector as IntDataVector
@@ -15,7 +14,7 @@ cdef class cm730_node(object):
 
     cpdef update_forever(self)
     cpdef update_once(self)
-    cdef update_motor_goals(self, msg)
+    cpdef update_motor_goals(self, object msg)
     cpdef switch_motor_power_service_call(self, req)
     cpdef void send_joints(self)
 
@@ -23,6 +22,10 @@ cdef class cm730_node(object):
 cdef extern from "cmath" namespace "std":
     double asin(double)
     double acos(double)
+
+cdef double pi = 3.1415926535897932384626433832795028841971693993751058209749445923078164;
+cdef double degree_to_rad = pi / 180;
+cdef double rad_to_degree = 180 / pi;
 
 cdef inline double calc_sin_angle(const Vector3d& fst, const Vector3d& sec):
     if(fst.norm() == 0 or sec.norm() == 0):

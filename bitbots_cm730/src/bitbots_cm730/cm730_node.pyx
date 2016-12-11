@@ -53,7 +53,7 @@ class cm730_node(object):
         self.update_forever()
 
 
-    cdef update_motor_goals(self, msg):
+    cpdef update_motor_goals(self, object msg):
         """ Callback for subscription on motorgoals topic.
         We can only handle the first point of a JointTrajectory :( """
         joints = msg.joint_names

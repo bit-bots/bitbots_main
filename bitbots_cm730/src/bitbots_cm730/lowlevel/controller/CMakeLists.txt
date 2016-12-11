@@ -4,6 +4,7 @@ set_source_files_properties(
     PROPERTIES CYTHON_IS_CXX TRUE
 )
 
+include_directories(../../../..bitbots_misc/bitbots_common/src/bitbots_common/utilCython)
 
 # Modul für die LowLevel-Kommunikation mit dem cm730 und mx28
 cython_add_module(controller controller.pyx)

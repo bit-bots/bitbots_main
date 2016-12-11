@@ -1,4 +1,4 @@
-from bitbots_motion.lowlevel.controller.converter cimport ByteConverter, WordConverter, LoadConverter, SignedSpeedConverter, \
+from .converter cimport ByteConverter, WordConverter, LoadConverter, SignedSpeedConverter, \
     SpeedConverter, AngleConverter, ColorConverter, RawBytesConverter, VectorConverter
 
 

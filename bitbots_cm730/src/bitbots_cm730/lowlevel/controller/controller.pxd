@@ -1,10 +1,11 @@
 from libc.stdint cimport uint8_t
-#from bitbots.lowlevel.controller.converter cimport Converter
-from bitbots_motion.lowlevel.controller.register_tables cimport Register
+
+from .register_tables cimport Register
 from libcpp cimport bool
 
-from bitbots_motion.lowlevel.serial cimport AbsSerial
-from bitbots_motion.lowlevel.controller.register_tables cimport MX28RegisterTable, CM730RegisterTable
+
+from ..serial cimport AbsSerial
+from .register_tables cimport MX28RegisterTable, CM730RegisterTable
 
 ctypedef uint8_t ubyte
 

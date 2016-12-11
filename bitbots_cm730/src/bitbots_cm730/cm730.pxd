@@ -1,10 +1,12 @@
 from bitbots_common.utilCython.pydatavector cimport PyIntDataVector as IntDataVector
 from bitbots_common.utilCython.pydatavector cimport PyDataVector as DataVector
 from bitbots_common.utilCython.datavector cimport DataVector as CDataVector
-from bitbots.util.datavector cimport IntDataVector as CIntDataVector
-from bitbots.util.datavector cimport DataVector as CDataVector
+from bitbots_common.utilCython.datavector cimport IntDataVector as CIntDataVector
+from bitbots_common.utilCython.datavector cimport DataVector as CDataVector
 
 from .lowlevel.controller.controller import BulkReadPacket
+from libcpp cimport bool
+
 
 cdef class CM730(object):
     cdef list read_packet_stub

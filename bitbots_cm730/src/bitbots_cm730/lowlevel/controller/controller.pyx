@@ -13,14 +13,10 @@ History:
 
 This Module handles the communication with the Hardware
 """
+import rospy
+from .register_tables cimport MX28RegisterTable, CM730RegisterTable
+from .register_tables cimport Register
 
-
-from bitbots_common.debug.debug cimport Scope
-from bitbots_motion.lowlevel.controller.register_tables cimport MX28RegisterTable, CM730RegisterTable
-from bitbots_motion.lowlevel.controller.register_tables cimport Register
-
-
-cdef Scope debug = Scope("Controller")
 
 # Flag for debug prints in processing
 DEBUG = False
@@ -171,7 +167,7 @@ cdef StatusPacket make_status_packet(ubyte *bytes, int n, bool corrupt_start=Fal
         raise IOError("Can not decode Packet")
 
     if (not corrupt_start and bytes[0] != 0xff) or bytes[1] != 0xff:
-        debug << "StatusPacket must begin with 0xffff DATA:"<< repr((<char*>bytes)[0:n])
+        rospy.logdebug("StatusPacket must begin with 0xffff DATA:"<< repr((<char*>bytes)[0:n]))
         raise IOError("StatusPacket must begin with 0xffff")
 
     cdef StatusPacket sp = StatusPacket()
@@ -318,7 +314,7 @@ cdef class PingPacket(BytePacket):
 cdef class PingProcessor(Processor):
     cdef process(self, list packets):
         if len(packets) == 0:
-            debug.warning("PingPacket: Got an emty response")
+            rospy.logwarn("PingPacket: Got an emty response")
             return False
         return (<StatusPacket?>packets[0]).is_success()
 
@@ -428,7 +424,7 @@ cdef class BulkReadProcessor(Processor):
 
         for idx in range(256):
             if self.registers[idx] and not idx in result:
-                debug.warning("No answer for CID: " + str(idx) + " (BulkRead)")
+                rospy.logwarn("No answer for CID: " + str(idx) + " (BulkRead)")
 
         return result
 
@@ -520,10 +516,10 @@ cdef class Controller:
                 error = MotorError(statuspacket.cid, statuspacket.err)
                 msg = ("Packet from %d has Error-Bits: %s" %
                     (error.get_motor(), error.get_error_str()))
-                debug.log(msg)
+                rospy.logerr(msg)
                 err = error.get_error()
                 # wir machen da mal ein packet draus (bitschifting ist toll)
-                debug.log("LastError", (statuspacket.err << 8) + statuspacket.cid)
+                rospy.logerr("LastError", (statuspacket.err << 8) + statuspacket.cid)
                 errors.add_motor_error(error)
         if errors:
             # antwort trotzdem verarbeiten
@@ -554,7 +550,7 @@ cdef class Controller:
         cdef int orig_bytecount = bytecount
         pystr, bytecount = self.serial.read(bytecount)
         if bytecount != orig_bytecount:
-            debug.warning("Got only %d of %d bytes, trying to interpret anyway!" % (bytecount, orig_bytecount))
+            rospy.logwarn("Got only %d of %d bytes, trying to interpret anyway!" % (bytecount, orig_bytecount))
         cdef ubyte* data = <ubyte*><char*>pystr
 
         #print "Data: ", hex(data[0]), hex(data[1]), hex(data[2]),hex(data[3]),hex(data[4]),hex(data[5])
@@ -586,7 +582,7 @@ cdef class Controller:
                         if bytecount != orig_bytecount:#
                             # if there are less bytes that it should be, we try recovering via strategy shift
                             viewstart -= 1
-                            debug.warning("Possible corrupted Haedder, try to interpret with an imaginarry 0xff in front")
+                            rospy.logwarn("Possible corrupted Haedder, try to interpret with an imaginarry 0xff in front")
                         else:
                             # Alternate recovery strategy found by observing that if the haedder is corrupt, an
                             # additional byte is found after the haedder
@@ -595,9 +591,9 @@ cdef class Controller:
                             data[viewstart + 2] = data[viewstart + 1]
                             data[viewstart + 1] = data[viewstart + 0]
                             data[viewstart + 0] = 0xff
-                            debug.warning("Possible corrupted Haedder, try to interpret with a shift off the haedder")
+                            rospy.logwarn("Possible corrupted Haedder, try to interpret with a shift off the haedder")
                         break
-                debug << "Search packetstart!!, drop byte: %s" % hex(data[viewstart])
+                rospy.loginfo("Search packetstart!!, drop byte: %s" % hex(data[viewstart]))
                 # We drop the first byte and try to get a new one, as it is possible
                 # that the byte is stray byte from a former invalid read/write
                 viewstart += 1
@@ -610,21 +606,21 @@ cdef class Controller:
                         pystr += self.serial.read(1)[0]
                         data = <ubyte*><char*>pystr
                         bytecount += 1
-                        debug("additional byte read!")
+                        rospy.loginfo("additional byte read!")
                     except IOError:
                         # if we reach this point it is very likely that the package header was corrupt as if
                         # it was a stray byte in front of our packet there should be a byte in the que, if it is not
                         # it is highly probable that one of the 0xff bytes in the package were corrupted
-                        debug.warning("Could not read a byte from bus after dropping a byte, likely a corrupt packet header")
+                        rospy.logwarn("Could not read a byte from bus after dropping a byte, likely a corrupt packet header")
                         pass
                     if DEBUG:
                         print "Data (header): ", (hex(data[viewstart+0]), hex(data[viewstart+1]), hex(data[viewstart+2]),
                                          hex(data[viewstart+3]), hex(data[viewstart+4]), hex(data[viewstart+5]))
-                        debug << "Data Langth %d " % bytecount
+                        rospy.loginfo("Data Langth %d " % bytecount)
 
             if not(viewstart + 6 <= bytecount):
                 # we have reached the end of the data (-6 bytes as the header of one packet is 6 bytes)
-                debug.warning("Unexpected end of packet")
+                rospy.logwarn("Unexpected end of packet")
                 break
 
             size = 4 + data[viewstart+3]
@@ -635,7 +631,7 @@ cdef class Controller:
             if checksum(data + viewstart, size) != 0:
                 # We calculate the checksum over the data plus the original checksum the result should be zero
                 # as the checksum is the complement of the data
-                debug.warning("Checksum mismatch for CID %s (propably), this will lead to search of package start!" % hex(data[viewstart +3]))
+                rospy.logwarn("Checksum mismatch for CID %s (propably), this will lead to search of package start!" % hex(data[viewstart +3]))
                 print "Data: ", [hex(ord(x)) for x in data[viewstart:viewstart+size]]
                 viewstart += 1 if not corrupt_start else 2
                 # we increment viewstart twice on corrupt start because of the decrement in case of an missing 0xff
@@ -649,7 +645,7 @@ cdef class Controller:
             raise IOError("No packets received")
 
         if len(packets) < count:
-            debug.warning("Got only %d of %d packets" % (len(packets) ,count))
+            rospy.logwarn("Got only %d of %d packets" % (len(packets) ,count))
 
         return packets
 
