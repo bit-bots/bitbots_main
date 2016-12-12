@@ -3,13 +3,18 @@
 import rospy
 import time
 
-from .lowlevel.controller.controller import BulkReadPacket, MultiMotorError, MX28_REGISTER, ID_CM730, CM730_REGISTER, SyncWritePacket
-from .pose.pose import Joint, Pose
+from .lowlevel.controller.controller cimport BulkReadPacket, SyncWritePacket, Controller
+from .lowlevel.controller.controller import MultiMotorError, MX28_REGISTER, ID_CM730, CM730_REGISTER
+
+from bitbots_common.pose.pypose cimport PyJoint as Joint
+from bitbots_common.util import Joints as JointManager
 
 
-class CM730(object):
+cdef class CM730(object):
 
     def __init__(self):
+        self.using_cm_730 = True
+        self.ctrl = Controller()
         self.read_packet_stub = list()
         self.read_packet2 = BulkReadPacket()
         self.read_packet3_stub = list()
@@ -17,6 +22,8 @@ class CM730(object):
 
         self.low_voltage_counter = 0
         self.last_io_success = 0
+        self.last_overload = {}
+        self.overload_count = {}
 
         self.button1 = 0
         self.button2 = 0
@@ -24,9 +31,19 @@ class CM730(object):
         self.robo_pose = Pose()
         self.dxl_power = False
         self.sensor_all_cid = 0
-        self.last_gyro_update_time = time.time()
         self.raw_gyro = IntDataVector(0, 0, 0)
         self.robo_accel = IntDataVector(0, 0, 0)
+
+        robot_type_name = rospy.get_param("/RobotTypeName")
+        self.motors = rospy.get_param(robot_type_name + "/motors")
+        self.motor_ram_config = rospy.get_param("/mx28config/RAM")
+        offsets = rospy.get_param("/offsets")
+
+        self.joint_offsets =  {}
+        joint_manager = JointManager()
+        for i in range(1,31):
+            self.joint_offsets[i] = offsets[joint_manager.get_motor_name(i)]
+
 
     cdef init_read_packet(self):
         """
@@ -51,7 +68,7 @@ class CM730(object):
                 (
                     MX28_REGISTER.present_position,
                 )))
-        if self.cm_370:
+        if self.using_cm_730:
             self.read_packet_stub.append((
                 ID_CM730,
                 (
@@ -79,29 +96,6 @@ class CM730(object):
 
         if len(self.read_packet_stub)!= len(self.read_packet3_stub):
             raise AssertionError("self.read_packet and self.read_packet3 have to be the same size")
-
-    cpdef update_sensor_data(self):
-        result , cid_all_values = self.sensor_data_read()
-        if not result:
-            return
-        if result == -1:
-            #motion stuck
-            rospy.logwarn("motion stuck!")
-            self.say("motion stuck")
-        self.last_io_success = time.time()
-
-        button, gyro, accel = self.parse_sensor_data(result, cid_all_values)
-
-        self.sensor_all_cid += 1
-
-        self.robo_accel = accel - IntDataVector(512, 512, 512)
-        self.raw_gyro = gyro - IntDataVector(512, 512, 512)
-
-        if button is not None:
-            self.button1 = button & 1
-            self.button2 = (button & 2) >> 1
-
-        return self.robo_pose, self.raw_gyro, self.robo_accel, self.button1, self.button2
 
     cdef sensor_data_read(self):
         """
@@ -182,10 +176,12 @@ class CM730(object):
             # If an error was ignored, we have to test if a packed arrived
             # If not, we have to cancel, otherwise a uncomplete package will be handled
             result = errors.get_packets()
+
+        self.last_io_success = time.time()
         return result, cid_all_values
 
 
-    cdef parse_sensor_data(self, object sensor_data, object cid_all_values):
+    cdef parse_sensor_data(self, object sensor_data, int cid_all_values):
         """
         This Method is part of update_sensor_data,
                 it takes the data which we just read from the CM370 Board and parse it into the right variables
@@ -216,9 +212,7 @@ class CM730(object):
                         self.low_voltage_counter += 1
                         if self.low_voltage_counter > 10:
                             # we delay the low voltag shutdown because sometimes the hardware is telling lies
-                            self.speak_publisher.publish("Warning: Low Voltage! System Exit!")
-                            rospy.logerr("SYSTEM EXIT: LOW VOLTAGE")
-                            raise SystemExit("SYSTEM EXIT: LOW VOLTAGE (%d V)" % voltage/10)
+                            return -1, voltage, -1
                     else:
                         self.low_voltage_counter = 0
             else:
@@ -243,7 +237,7 @@ class CM730(object):
                     fmt = "Motor cid=%d has a temperature of %1.1f°C: EMERGENCY SHUT DOWN!"
                     rospy.logwarn(fmt % (cid, temperature))
                     raise SystemExit(fmt % (cid, temperature))
-
+        self.sensor_all_cid += 1
         return button, gyro, accel
 
 
@@ -253,18 +247,18 @@ class CM730(object):
         """
         if rospy.get_param('/cm730/setMXRam', False):
             rospy.loginfo("setting MX RAM")
-            if self.cm_370:
+            if self.using_cm_730:
                 self.ctrl.write_register(ID_CM730, CM730_REGISTER.led_head, (255, 0, 0))
             for motor in self.motors:
                 for conf in self.motor_ram_config:
                     self.ctrl.write_register(motor, MX28_REGISTER.get_register_by_name(conf),
                         self.motor_ram_config[conf])
-            if self.cm_370:
+            if self.using_cm_730:
                 self.ctrl.write_register(ID_CM730, CM730_REGISTER.led_head, (0, 0, 0))
             rospy.loginfo("Setting RAM Finished")
 
-    cpdef apply_goal_pose(self):
-        cdef Pose pose = self.goal_pose
+    cdef apply_goal_pose(self, object goal_pose):
+        cdef Pose pose = goal_pose
         cdef SyncWritePacket packet
 
         if pose is None:
@@ -273,7 +267,7 @@ class CM730(object):
         # Hier werden die Augenfarben gesetzt.
         # Dabei kann in der Config angegeben werden ob die Augen bei Penalty
         # rot werden, und ob sie ansonsten überhaupt genutzt werden
-        if self.cm_370:
+        if self.using_cm_730:
             packet = SyncWritePacket((CM730_REGISTER.led_head, CM730_REGISTER.led_eye))
             #todo make this a service
             #if self.state == STATE_PENALTY and rospy.get_param("/cm730/EyesPenalty", false):
@@ -282,7 +276,9 @@ class CM730(object):
             if rospy.get_param("/cm730/EyesOff", False):
                 packet.add(ID_CM730, ((0, 0, 0), (0, 0, 0)))
             else:
-                packet.add(ID_CM730, (self.led_head, self.led_eye))
+                #todo this looks like it even didnt work before
+                #packet.add(ID_CM730, (self.led_head, self.led_eye))
+                pass
 
             self.ctrl.process(packet)
 
@@ -298,10 +294,7 @@ class CM730(object):
 
         if not self.dxl_power:
             self.switch_motor_power(True)
-            # Aktuallisieren der Pose, da die Motoren mit hoher
-            # warscheinlichkeit anders liegen als beim ausstellen
-            self.update_sensor_data()
-            # hier abbrechen um Zuckungen zu vermeiden
+            # We do nothing, so the pose gets updated before acting
             return
 
         goal_packet = SyncWritePacket((MX28_REGISTER.goal_position, MX28_REGISTER.moving_speed))
@@ -358,9 +351,9 @@ class CM730(object):
         if d_packet is not None:
             self.ctrl.process(d_packet)
 
-    cpdef switch_motor_power(self, state):
+    cdef switch_motor_power(self, bool state):
         # wir machen nur etwas be änderungen des aktuellen statusses
-        if not self.cm_370:
+        if not self.using_cm_730:
             # without the cm370 we cant switch the motor power
             return
         if state and not self.dxl_power:

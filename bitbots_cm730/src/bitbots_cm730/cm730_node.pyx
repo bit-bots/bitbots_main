@@ -15,11 +15,9 @@ from bitbots_cm730.srv import SwitchMotorPower
 
 import rospy
 
-from bitbots_cm730.src.bitbots_cm730.cm730 import CM730
-from .pose.pose import Joint, Pose
 
 
-class cm730_node(object):
+cdef class cm730_node(object):
     """
     Takes core of the communication with the CM730 (and therefore with the servos). Constantly updates servo data
     and sets goal values to the servos.
@@ -34,11 +32,11 @@ class cm730_node(object):
         self.imu_publisher = rospy.Publisher('/imu', Imu, queue_size=10)
         self.motor_power_service = rospy.Service("switch_motor_power", SwitchMotorPower, self.switch_motor_power_service_call)
 
+        self.goal_pose = Pose()
+
         self.cm_730_object = CM730()
 
         joints = rospy.get_param("/joints")
-        robot_type_name = rospy.get_param("/RobotTypeName")
-        self.motors = rospy.get_param(robot_type_name + "/motors")
 
         #problem is, that the number of motors is not known at build time, so write them into params now
         for motor in joints:
@@ -56,18 +54,21 @@ class cm730_node(object):
     cpdef update_motor_goals(self, object msg):
         """ Callback for subscription on motorgoals topic.
         We can only handle the first point of a JointTrajectory :( """
+        motor_goals = []
         joints = msg.joint_names
         #we can handle only one position, no real trajectory
         positions = msg.points[0].position
         for joint in joints:
             if positions[joint] > joint.max:
-                self.motor_goals[joint] = joint.max
+                motor_goals[joint] = joint.max
                 rospy.logwarn("Joint command over max. Joint: %s Position: %f", (joint, positions[joint]))
             elif positions[joint] < joint.min:
-                self.motor_goals[joint] = joint.max
+                motor_goals[joint] = joint.min
                 rospy.logwarn("Joint command under min. Joint: %s Position: %f", (joint, positions[joint]))
             else:
-                self.motor_goals[joint] = positions[joint]
+                motor_goals[joint] = positions[joint]
+        # todo something like this
+        # self.goal_pose =
 
     cpdef update_forever(self):
         """ Calls :func:`update_once` in an infite loop """
@@ -101,7 +102,10 @@ class cm730_node(object):
             :attr:`smooth_accel` and :attr:`smooth_gyro`.
         """
         # get sensor data
-        robo_pose, gyro, accel, buttons= self.cm_730_object.update_sensor_data()
+        robo_pose, gyro, accel, button1, button2= self.update_sensor_data()
+
+        # send new position to servos
+        self.cm_730_object.apply_goal_pose(self.goal_pose)
 
         #todo irgendwas damit tun
         # Farbwerte für den Kopf holen
@@ -110,18 +114,48 @@ class cm730_node(object):
 
         # Send Messages to ROS
         self.publish_joints(robo_pose)
-        self.publish_additional_servo_data()
+        # todo self.publish_additional_servo_data()
         self.publish_IMU(gyro, accel)
-        self.publish_buttons(buttons)
+        self.publish_buttons(button1, button2)
 
-        # send new position to servos
-        self.update_motor_goals()
+    cpdef update_sensor_data(self):
+        robo_pose= Pose()
+        # first get data
+        result , cid_all_values = self.cm_730_object.sensor_data_read()
+        if not result:
+            return
+        if result == -1:
+            #this means the motion is stuck
+            rospy.logerr("motion stuck!")
+            self.say("motion stuck")
+            exit("Motion stuck")
+            exit("Motion stuck")
 
-    cpdef switch_motor_power_service_call(self, req):
+        #todo get temps and voltages
+        #todo parse pose
+        # parse data
+        button, gyro, accel = self.cm_730_object.parse_sensor_data(result, cid_all_values)
+        if button == -1:
+            #low voltage error
+            self.say("Warning: Low Voltage! System Exit!")
+            rospy.logerr("SYSTEM EXIT: LOW VOLTAGE")
+            raise SystemExit("SYSTEM EXIT: LOW VOLTAGE (%d V)" % gyro/10)
+
+        raw_accel = accel - IntDataVector(512, 512, 512)
+        raw_gyro = gyro - IntDataVector(512, 512, 512)
+
+        if button is not None:
+            button1 = button & 1
+            button2 = (button & 2) >> 1
+
+        return robo_pose, raw_gyro, raw_accel, button1, button2
+
+
+    cpdef switch_motor_power_service_call(self, object req):
         return self.cm_730_object.switch_motor_power(req.power)
 
 
-    cpdef void send_joints(self):
+    cpdef publish_joints(self, Pose robo_pose):
         """
         Sends the Joint States to ROS
         """
@@ -130,7 +164,7 @@ class cm730_node(object):
         cdef object speeds = []
         cdef object loads = []
         cdef msg = JointState()
-        for name, joint in self.robo_pose.joints:
+        for name, joint in robo_pose.joints:
             ids.append(name)
             positions.append(math.radians(joint.position))
             speeds.append(joint.load)
@@ -142,32 +176,32 @@ class cm730_node(object):
         msg.effort = loads
         self.joint_publisher.publish(msg)
 
-    def publish_additional_servo_data(self):
+    cpdef publish_additional_servo_data(self, list temps, list voltages):
         msg = AdditionalServoData()
         cdef object temperatures = []
-        for temp in self.temps:
+        for temp in temps:
             ros_temp = Temperature()
             ros_temp.header.stamp = rospy.Time.now()
             ros_temp.temperature = temp
             ros_temp.variance = 0
             temperatures.append(ros_temp)
         msg.temperature = temperatures
-        msg.voltage = self.voltages
+        msg.voltage = voltages
         self.temp_publisher(msg)
 
-    def publish_IMU(self):
+    cpdef publish_IMU(self, double gyro, double accel):
         msg = Imu()
         #todo check if this is realy linear and not angular acceleration
-        msg.linear_acceleration = self.raw_accel
+        msg.linear_acceleration = accel
         # todo conversation to quaternion :(
-        msg.orientation = self.raw_gyro
+        msg.orientation = gyro
         self.imu_publisher(msg)
 
-    def publish_buttons(self):
+    cpdef publish_buttons(self, bool button1, bool button2):
         #todo impelement
         return
 
-    def say(self, text):
+    cpdef say(self, text):
         msg = Speak()
         msg.text = text
         self.speak_publisher.publish(msg)

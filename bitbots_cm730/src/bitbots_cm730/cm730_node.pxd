@@ -7,16 +7,33 @@ from bitbots_common.utilCython.datavector cimport DataVector as CDataVector
 from bitbots_common.utilCython.pydatavector cimport PyIntDataVector as IntDataVector
 from bitbots_common.utilCython.pydatavector cimport PyDataVector as DataVector
 from bitbots_common.robot.kinematics cimport Robot
+from libcpp cimport bool
+from bitbots_common.pose.pypose cimport PyPose as Pose
+
+
+from .cm730 cimport CM730
 
 cdef class cm730_node(object):
 
+    cdef object joint_publisher
+    cdef object speak_publisher
+    cdef object tem_publisher
+    cdef object imu_publisher
+    cdef object motor_power_service
 
+    cdef list motor_goals
+    cdef CM730 cm_730_object
 
     cpdef update_forever(self)
     cpdef update_once(self)
     cpdef update_motor_goals(self, object msg)
-    cpdef switch_motor_power_service_call(self, req)
-    cpdef void send_joints(self)
+    cpdef update_sensor_data(self)
+    cpdef switch_motor_power_service_call(self, object req)
+    cpdef publish_joints(self, Pose robo_pose)
+    cpdef publish_additional_servo_data(self, list temps, list voltages)
+    cpdef publish_IMU(self, double gyro, double accel)
+    cpdef publish_buttons(self, bool button1, bool button2)
+    cpdef say(self, text)
 
 
 cdef extern from "cmath" namespace "std":

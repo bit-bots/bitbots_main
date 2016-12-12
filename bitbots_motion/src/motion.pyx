@@ -36,6 +36,9 @@ MOVING_STATES = (STATE_CONTROLABLE,
                     STATE_RECORD,
                     STATE_SOFT_OFF)
 
+#todo
+#todo DAS SOLL NUR NOCH PYTHON SEIN
+#todo
 
 cdef class Motion(object):
 
