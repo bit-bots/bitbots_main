@@ -1,4 +1,5 @@
 # -*- coding: utf8 -*-
+from humanoid_league_msgs.msg import MotionState
 from humanoid_league_msgs.msg import Speak
 from std_msgs.msg import String
 
@@ -8,7 +9,7 @@ import rospy
 import time
 
 from bitbots_common.pose.pypose import PyPose as Pose
-from trajectory_msgs.msg import JointTrajectory
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 from .standuphandler import StandupHandler
 from bitbots_cm730.srv import SwitchMotorPower
@@ -23,19 +24,22 @@ from bitbots_motion.srv import ManualPenalize
 from enum import Enum
 
 
-STATE_CONTROLABLE = 1
-STATE_FALLING =2
-STATE_FALLEN=3
-STATE_GETTING_UP=4
-STATE_ANIMATION_RUNNING=5
-STATE_BUSY=6
-STATE_STARTUP=7
-STATE_PENALTY=8
-STATE_PENALTY_ANIMANTION=9
-STATE_RECORD=10
+STATE_CONTROLABLE = 0
+STATE_FALLING =1
+STATE_FALLEN=2
+STATE_GETTING_UP=3
+STATE_ANIMATION_RUNNING=4
+STATE_STARTUP=5
+STATE_SHUT_DOWN=6
+STATE_PENALTY=7
+STATE_PENALTY_ANIMANTION=8
+STATE_RECORD=9
+STATE_WALKING=10
+
+#todo check if these states can be replaced or add them to the MotionState.msg
 STATE_SOFT_OFF=11
-STATE_WALKING=12
-STATE_GETTING_UP_Second=13
+STATE_GETTING_UP_Second=12
+STATE_BUSY=13
 
 MOTION_STATES = (STATE_CONTROLABLE, STATE_FALLING, STATE_FALLEN, STATE_GETTING_UP, STATE_ANIMATION_RUNNING,
                  STATE_BUSY, STATE_STARTUP, STATE_PENALTY, STATE_PENALTY_ANIMANTION, STATE_RECORD,
@@ -68,14 +72,13 @@ class Motion(object):
     def __init__(self, dieflag, standupflag, softoff, softstart):
         rospy.init_node('bitbots_motion', anonymous=False)
         rospy.Subscriber("/IMU", Imu, self.update_imu)
-        rospy.Subscriber("/MotorCurrentPosition", JointState, self.update_current_position)
-        rospy.Subscriber("/Gamestate", GameState, self.update_gamestate)
+        rospy.Subscriber("/MotorCurrentPosition", JointState, self.update_current_pose)
         rospy.Subscriber("/MotorGoals", JointTrajectory, self.update_goal_position)
+        rospy.Subscriber("/pause", bool, self.pause)
         self.joint_goal_publisher = rospy.Publisher('/MotionMotorGoals', JointState, queue_size=10)
         self.state_publisher = rospy.Publisher('/MotionState', JointState, queue_size=10)
         self.speak_publisher = rospy.Publisher('/Speak', Speak, queue_size=10)
         self.dyn_reconf = Server(bitbots_motion_params, self.reconfigure)
-        self.manual_penalize_service = rospy.Service("manual_penalize", ManualPenalize, self.manual_penalize_call)
 
         self.dieflag = dieflag
         self.softoff = softoff
@@ -93,19 +96,14 @@ class Motion(object):
         self.startup_time = time.time()
         self.first_run = True
 
-        self.button1 = False
-        self.button2 = False
-
-        self.gamestate = STATE_STARTUP
-        self.penalize_active = False # penalized from game controller
-        self.penality_is_manual = False # if penalty
+        self.penalized = False # paused
         self.record_active = False # record UI in use
         self.animation_requested = False # animation request from animation server
 
         self.state = None
         self.set_state(STATE_STARTUP)
-        self.stand_up_handler = StandupHandler()
 
+        self.stand_up_handler = StandupHandler()
 
         if softstart and not self.state == STATE_RECORD:
             rospy.loginfo ("Softstart")
@@ -119,41 +117,16 @@ class Motion(object):
             self.last_client_update = time.time()
             self.switch_motor_power(True)
 
-    def switch_motor_power(self, state):
-        """ Calling service from CM730 to turn motor power on or off"""
-        rospy.wait_for_service("switch_motor_power")
-        power_switch = rospy.ServiceProxy("switch_motor_power", SwitchMotorPower)
-        try:
-            response = power_switch(state)
-        except rospy.ServiceException as exc:
-            print("Service did not process request: " + str(exc))
-
-    def manual_penalize_call(self, req):
-        if req == 0:
-            # off
-            self.penality_is_manual = False
-            self.penalize_active = False
-        elif req == 1:
-            # on
-            self.penalize_active = True
-            self.penality_is_manual = True
-        elif req == 2:
-            # switch
-            if self.penality_is_manual:
-                #off
-                self.penality_is_manual = False
-                self.penalize_active = False
-            else:
-                #on
-                self.penality_is_manual = True
-                self.penalize_active = True
-        else:
-            rospy.logerr("Manual penalize call with unspecefied request")
+    def pause(self, msg):
+        self.penalized = msg
 
     def update_imu(self, msg):
         #todo check if this is not switched
         self.gyro = msg.linear_velocity
         self.accel = msg.angular_velocity
+
+        #todo check if this is needed by something else in the software
+        #todo make smoothing factors reconfigurable
         # Remember smoothed gyro values
         # Used for falling detectiont, smooth_gyro is to late but peaks have to be smoothed anyway
         # increasing smoothing -->  later detection
@@ -162,53 +135,53 @@ class Motion(object):
         self.smooth_accel = self.smooth_accel * 0.9 + self.accel * 0.1  ###accel
         self.not_much_smoothed_gyro = self.not_much_smoothed_gyro * 0.5 + self.gyro * 0.5
 
-    def update_current_position(self, msg):
+    def update_current_pose(self, msg):
         self.last_client_update = msg.header.stamp
         self.robo_pose.setPositions(msg.positions)
         self.robo_pose.setSpeed(msg.velocities)
 
-    def update_gamestate(self):
-        self.penalize_active =
-
     def publish_motion_state(self):
+        msg = MotionState()
+        # todo those ifs are hacks, remove when possible
+        if self.state is STATE_BUSY:
+            msg.state = STATE_ANIMATION_RUNNING
+        elif self.state is STATE_GETTING_UP_Second:
+            msg.state = STATE_GETTING_UP
+        elif self.state is STATE_SOFT_OFF:
+            msg.state = STATE_CONTROLABLE
+        else:
+            msg.state = self.state
+        self.state_publisher.publish(msg)
 
     def reconfigure(self, config, level):
         # just pass on to the StandupHandler, as the variables are located there
         self.stand_up_handler.update_reconfigurable_values(config, level)
 
     def update_goal_position(self):
-        pass
+        # we can only handle one point and not a full trajectory
+        msg = JointTrajectoryPoint()
+        msg.positions = self.goal_pose.get_positions()
+        msg.velocities = self.goal_pose.get_speeds()
+        traj_msg = JointTrajectory()
+        traj_msg.points = []
+        traj_msg.points.append(msg)
+        traj_msg.header.stamp = rospy.Time.now()
+        self.joint_goal_publisher.publish(traj_msg)
 
     def set_state(self, state):
         """ Updatet den internen Status des MotionServers und publiziert
             ihn zum Clienten
         """
-        #Wenn die Motion aus einem State kommt, in dem sie Aufsteht soll der Gyro resettet werden
-        #todo kalman scheint nicht mehr benutzt zu werden, löschen? ne wird eigentlich noch bentuzt oder
-        if self.state in [
-                STATE_FALLEN,
-                STATE_FALLING,
-                STATE_GETTING_UP,
-                STATE_PENALTY,
-                STATE_PENALTY_ANIMANTION,
-                STATE_STARTUP,
-                STATE_BUSY,
-                STATE_GETTING_UP_Second]:
-            #todo service!
-            self.gyro_kalman.reset()
         self.state = state
         # unterdrücke state_soft_off nach außen, das sich clients noch trauen die src anzusprechen
-        self.publish_motion_state(state if state != STATE_SOFT_OFF else STATE_CONTROLABLE)
-
-        rospy.loginfo("Setze Status auf '%s'" % state_to_string(state))
-        rospy.loginfo("Status", state_to_string(state))
+        self.publish_motion_state()
+        rospy.loginfo("Setting motion state to '%s'" % state_to_string(state))
 
     def update_forever(self):
         """ Ruft :func:`update_once` in einer Endlosschleife auf """
         iteration = 0
-        errors = 0
         duration_avg = 0
-        start = time.time()
+        start = rospy.Time.now()
 
         while True:
             self.update_once()
@@ -219,9 +192,9 @@ class Motion(object):
                 continue
 
             if duration_avg > 0:
-                duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
+                duration_avg = 0.5 * duration_avg + 0.5 * (rospy.Time.now() - start)
             else:
-                duration_avg = (time.time() - start)
+                duration_avg = (rospy.Time.now() - start)
 
             rospy.loginfo("Updates/Sec %f", iteration / duration_avg)
             iteration = 0
@@ -599,3 +572,13 @@ class Motion(object):
 
         self.next_animation = anim
         self.post_anim_state = post_anim_state
+
+
+    def switch_motor_power(self, state):
+        """ Calling service from CM730 to turn motor power on or off"""
+        rospy.wait_for_service("switch_motor_power")
+        power_switch = rospy.ServiceProxy("switch_motor_power", SwitchMotorPower)
+        try:
+            response = power_switch(state)
+        except rospy.ServiceException as exc:
+            print("Service did not process request: " + str(exc))

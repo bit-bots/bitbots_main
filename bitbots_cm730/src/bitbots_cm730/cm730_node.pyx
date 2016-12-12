@@ -129,7 +129,6 @@ cdef class cm730_node(object):
             rospy.logerr("motion stuck!")
             speak("motion stuck")
             exit("Motion stuck")
-            exit("Motion stuck")
 
         #todo get temps and voltages
         #todo parse pose

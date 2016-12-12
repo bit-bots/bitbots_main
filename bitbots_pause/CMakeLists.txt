@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(bitbots_motion)
+project(bitbots_pause)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED std_msgs humanoid_league_msgs rospy)
+find_package(catkin REQUIRED message_generation std_msgs humanoid_league_msgs rospy)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -47,11 +47,11 @@ catkin_python_setup()
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   ManualPenalize.srv
+ add_service_files(
+   FILES
+   ManualPenalize.srv
 #   Service2.srv
-#)
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -61,10 +61,10 @@ catkin_python_setup()
 # )
 
 ## Generate added messages and services with any dependencies listed here
-#generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-#)
+generate_messages(
+   DEPENDENCIES
+   std_msgs  # Or other packages containing msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
