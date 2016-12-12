@@ -13,6 +13,20 @@ from bitbots_cm730.srv import SwitchMotorPower
 from dynamic_reconfigure.server import Server
 from .cfg import bitbots_motion_params
 
+cdef public enum MOTION_STATES:
+    STATE_CONTROLABLE = 1
+    STATE_FALLING
+    STATE_FALLEN
+    STATE_GETTING_UP
+    STATE_ANIMATION_RUNNING
+    STATE_BUSY
+    STATE_STARTUP
+    STATE_PENALTY
+    STATE_PENALTY_ANIMANTION
+    STATE_RECORD
+    STATE_SOFT_OFF
+    STATE_WALKING
+    STATE_GETTING_UP_Second
 
 cdef state_to_string(int state):
     return {

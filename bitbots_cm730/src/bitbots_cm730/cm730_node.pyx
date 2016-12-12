@@ -9,7 +9,7 @@ from trajectory_msgs.msg import JointTrajectory
 from std_msgs.msg import String
 from sensor_msgs.msg import JointState, Temperature, Imu
 from humanoid_league_msgs.msg import AdditionalServoData
-from bitbots_speaker.msg import Speak
+from humanoid_league_msgs.msg import Speak
 from bitbots_cm730.srv import SwitchMotorPower
 
 
