@@ -3,10 +3,12 @@
 import math
 import collections
 import numpy as np
+import tf.transformations
 import rospy
 from bitbots_localisation.localization_objects import Particle, Field
 from humanoid_league_msgs.msg import Position, GoalRelative
 from nav_msgs.msg import Odometry
+from typing import List, Tuple
 
 
 class Locator:
@@ -51,10 +53,9 @@ class Locator:
         self.last_movement_approx = (0, 0)
         self.field = Field()
 
-    #def update_position(self, odoemetry: Odometry)->None:
-    def update_position(self, odometry):
-
-        self.last_movement_approx = odometry.pose.pose.position.x , odometry.twist.twist.angular[0] #todo correct access
+    def update_position(self, odometry: Odometry)->None:
+        yaw = tf.transformations.euler_from_quaternion(odometry.pose.pose.orientation.quaternion)[2]
+        self.last_movement_approx = odometry.pose.pose.position.x, yaw
 
         # update Position for all particle:
 
@@ -68,15 +69,13 @@ class Locator:
         self.particlem[:, 0] += fx(self.particlem[:, 2])
         self.particlem[:, 1] += fy(self.particlem[:, 2])
 
-
-    #def perform(self, goals: GoalsRealtive)->None:
-    def perform(self, goals):
+    def perform(self, goals: GoalRelative)->None:
         nr_particle = self.conf__nr_particle
         # Measurment for all Particles
         #r_mes = self.sensor_data()
 
         # real meassurment
-        mesgoal_r = goals
+        mesgoal_r = [(x.x, x.y) for x in goals.positions]
 
         #mesgoal_p = np.zeros((nr_particle, 8), np.int)
         # Create performant Weightlist
@@ -172,8 +171,7 @@ class Locator:
         self.particlem = new_particles
 
     @staticmethod
-    # def mes_dist(r_mes: List[float], p_mes: tuple)-> int:
-    def mes_dist(r_mes, p_mes):
+    def mes_dist(r_mes: List[Tuple[float, float]], p_mes: tuple)-> int:
         """
         Measures the ditance between two mesurements
         :param r_mes:
