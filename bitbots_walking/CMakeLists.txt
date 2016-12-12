@@ -5,8 +5,8 @@ project(bitbots_walking)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  bitbots_common
-  bitbots_motion
+  roscpp
+#  bitbots_common
 )
 
 ## System dependencies are found with CMake's conventions
@@ -101,7 +101,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES bitbots_walking
-#  CATKIN_DEPENDS bitbots_common bitbots_motion
+  CATKIN_DEPENDS bitbots_common
 #  DEPENDS system_lib
 )
 

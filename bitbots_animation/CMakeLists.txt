@@ -4,9 +4,8 @@ project(bitbots_animation)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  bitbots_common
-  bitbots_motion
+find_package(catkin REQUIRED COMPONENTS rospy humanoid_league_msgs
+#bitbots_common
 )
 
 ## System dependencies are found with CMake's conventions
@@ -16,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -101,7 +100,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES bitbots_animation
-#  CATKIN_DEPENDS bitbots_common bitbots_motion
+  CATKIN_DEPENDS bitbots_common
 #  DEPENDS system_lib
 )
 

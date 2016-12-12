@@ -1,10 +1,14 @@
 #-*- coding:utf-8 -*-
 
 import warnings
-from bitbots_common.pose.pypose cimport PyPose as Pose
-from bitbots_common.pose.pypose cimport PyJoint as Joint
 
-cdef class Keyframe:
+import time
+from bitbots_common.pose.pypose import PyPose as Pose
+from numpy import basestring
+
+from bitbots_common.pose.pypose import PyJoint as Joint
+
+class Keyframe:
     '''
     Eine Pose, die vom Roboter innerhalb einer Animation zu einem
     Zeitpunkt :attr:`duration` Sekunden in der Zukunft eingenommen wird.
@@ -14,10 +18,6 @@ cdef class Keyframe:
     :attr:`pause` Sekunden inne. Es werden die P-Gains auf die entsprechenden
     p werte gesetzt, sodenn vorhanden.
     '''
-    cdef public float duration
-    cdef public float pause
-    cdef public dict goals
-    cdef public dict p
 
     def __init__(self, goals, duration=1.0, pause=0.0, p={}):
         self.duration = float(duration)
@@ -25,7 +25,7 @@ cdef class Keyframe:
         self.goals = goals
         self.p = p
 
-cdef class Animation:
+class Animation:
     '''
     Eine Animation besteht aus einer Reihe von Zielposen (:class:`Keyframe`)
     für die einzelnen Gelenke des Roboters, die nacheinander
@@ -42,33 +42,23 @@ cdef class Animation:
     des :class:`LinearInterpolator` verwendet.
     '''
 
-    #cdef readonly object name
-
-    #cdef public list keyframes
-    #cdef public dict interpolators
-    #cdef public object default_interpolator
-
     def __init__(self, name, keyframes, default_interpolator=None):
         self.name = name
         self.interpolators = {}
-        self.keyframes = list(keyframes)
-        self.default_interpolator = default_interpolator or <object> LinearInterpolator
+        self.keyframes = keyframes
+        self.default_interpolator = default_interpolator or LinearInterpolator
 
-    cpdef get_interpolator(self, bytes name):
+    def get_interpolator(self, name):
         """ Gibt die Klasse des für das Gelenk *name* verwendeten
             Interpolators zurück. Ist für das Gelenk speziell keiner gesetzt,
             wird der Wert von :attr:`default_interpolator` zurück gegeben.
         """
         return self.interpolators.get(name, self.default_interpolator)
 
-    cpdef list get_steps(self, bytes name):
+    def get_steps(self, name):
         """ Gibt ein Liste von :class:`Step` Objekten für das Gelenk *name*
             zurück.
         """
-        cdef list steps
-        cdef float time
-        cdef Keyframe keyframe
-
         time = 0
         steps = []
         for keyframe in self.keyframes:
@@ -103,16 +93,11 @@ cdef class Animation:
         return steps
 
 
-cdef class Step:
+class Step:
     '''
     Einfache Klasse zum Speichern der Stützstellen und Stützwerte
     für die Interpolation.
     '''
-    cdef public int off, hold
-    cdef public float time
-    cdef public float value
-    cdef public float m
-    cdef public int p
 
     def __init__(self, time, value, p=-1):
         self.time = time
@@ -135,7 +120,7 @@ cdef class Step:
         return "<Step time=%1.2f, value=%1.2f, p=%d>" % (self.time, self.value, self.p)
 
 
-cdef class Interpolator:
+class Interpolator:
     """
     Dies ist die Basisklasse für alle Interpolatoren. Ein Interpolator
     bekommt im Konstruktor eine Liste von :class:`Step`-Objekten.
@@ -148,18 +133,13 @@ cdef class Interpolator:
     erfragt werden.
     """
 
-    cdef readonly tuple steps
-    cdef readonly float time_min, time_max
-
-    def __init__(self, steps not None):
-        self.steps = tuple(steps)
+    def __init__(self, steps):
+        self.steps = steps
         if not self.steps:
             raise ValueError("'steps' cannot be empty")
 
         # Den Wert für deaktivierte Stützstellen auf den Wert der vorigen
         # Stützstelle setzen
-        cdef int idx
-        cdef Step next, prev
         for idx in range(1, len(self.steps)):
             next = self.steps[idx]
             prev = self.steps[idx - 1]
@@ -167,19 +147,19 @@ cdef class Interpolator:
                 next.value = prev.value
 
         # kleinster und größster Zeitpunkt der Stützstellen
-        self.time_min = (<Step?>self.steps[0]).time
-        self.time_max = (<Step?>self.steps[-1]).time
+        self.time_min = (self.steps[0]).time
+        self.time_max = (self.steps[-1]).time
 
         self.prepare()
 
-    cpdef prepare(self):
+    def prepare(self):
         ''' Diese Methode kann überladen werden, um die im Konstruktor
             übergebenen Daten für die
             :func:`interpolate`-Methode vorzubereiten.
         '''
         pass
 
-    cpdef tuple interpolate(self, float t):
+    def interpolate(self, t):
         ''' Interpoliert einen Wert an der Stelle *t*
             Gibt ein Tupel mit vier Elementen zurück:
             # Zielwinkel
@@ -187,18 +167,16 @@ cdef class Interpolator:
             # Boolscher Wert, ob das Gelenk den aktuellen Wert halten soll
             # Integer, p value, -1=nicht ändern
         '''
-        return (0, False, False, -1)
+        return 0, False, False, -1
 
 
-cdef class LinearInterpolator(Interpolator):
+class LinearInterpolator(Interpolator):
     '''
     Implementierung von :class:`Interpolator` für eine einfache lineare
     Interpolation der Stützwerte
     '''
-    cpdef tuple interpolate(self, float t):
-        cdef int idx
-        cdef float dt, dv
-        cdef Step next, last = None
+    def interpolate(self, t):
+        last = None
         for next in self.steps:
             if last is None:
                 # Wir sind vor dem Anfang
@@ -221,8 +199,8 @@ cdef class LinearInterpolator(Interpolator):
         return (last.value, last.off, last.hold, -1)
 
 
-cdef float cubic_hermite_interpolate(Step a, Step b, float t):
-    cdef float dt = float(b.time - a.time)
+def cubic_hermite_interpolate(a, b, t):
+    dt = b.time - a.time
     t = (t - a.time) / dt
     return (2*t*t*t - 3*t*t + 1)*a.value \
         + (t*t*t - 2*t*t + t)*dt*a.m \
@@ -230,15 +208,15 @@ cdef float cubic_hermite_interpolate(Step a, Step b, float t):
         + (t*t * (t-1))*dt*b.m
 
 
-cdef class CubicHermiteInterpolator(Interpolator):
+class CubicHermiteInterpolator(Interpolator):
     """
     Basisklasse für
     `Cubic-Hermite <http://en.wikipedia.org/wiki/Cubic_Hermite_spline>`_-Splines.
     Es müssen die Tangenten mit der :func:`prepare`-Methode berechnet und
     in :attr:`Step.m` gespeichert werden.
     """
-    cpdef tuple interpolate(self, float t):
-        cdef Step next, last = None
+    def interpolate(self, t):
+        last = None
         for next in self.steps:
             if last is None:
                 # Wir sind vor dem Anfang
@@ -259,12 +237,11 @@ cdef class CubicHermiteInterpolator(Interpolator):
         return (last.value, last.off, last.hold, -1)
 
 
-cdef class CatmullRomInterpolator(CubicHermiteInterpolator):
+class CatmullRomInterpolator(CubicHermiteInterpolator):
     """
     Berechnet die Tangenten nachdem `Catmull-Rom <http://en.wikipedia.org/wiki/Cubic_Hermite_spline#Catmull.E2.80.93Rom_spline>`_ Verfahren.
     """
-    cdef float m(self, int idx):
-        cdef Step a, b
+    def m(self, idx):
         if idx == 0 or idx == len(self.steps)-1:
             return 0
 
@@ -272,16 +249,11 @@ cdef class CatmullRomInterpolator(CubicHermiteInterpolator):
         b = self.steps[idx+1]
         return (b.value - a.value) / float(b.time - a.time)
 
-    cpdef prepare(self):
-        cdef int idx
+    def prepare(self):
         for idx in range(len(self.steps)):
-            (<Step?>self.steps[idx]).m = self.m(idx)
+            (self.steps[idx]).m = self.m(idx)
 
-import time
-from bitbots_ipc.ipc cimport AbstractIPC
-from bitbots_ipc.ipc import NotControlableError
-
-cdef class Animator:
+class Animator:
     """
     Die :class:`Animator`-Klasse dient zum Abspielen einer Animation.
     Dem Konstruktor wird ein fertig konfiguriertes :class:`Animation`-Objekt
@@ -295,15 +267,7 @@ cdef class Animator:
     Pose der :class:`Animation` befindet.
     """
 
-    #cdef dict interpolators
-    #cdef readonly object name
-    #cdef readonly float time_min
-    #cdef readonly float time_max
-    #cdef readonly float duration
-
-    def __init__(self, anim not None, first_pose=None):
-        cdef bytes joint
-
+    def __init__(self, anim, first_pose=None):
         self.name = anim.name
         self.interpolators = {}
         for joint in Pose().names:
@@ -318,24 +282,20 @@ cdef class Animator:
             self.interpolators[joint] = ip(steps)
 
         # Start und Endzeit
-        cdef list values = self.interpolators.values()
+        values = self.interpolators.values()
         self.time_min = min(ip.time_min for ip in values)
         self.time_max = max(ip.time_max for ip in values)
         self.duration = self.time_max - self.time_min
 
-    cpdef get_pose(self, float t, Pose pose = None):
+    def get_pose(self, t, pose=None):
         ''' Interpoliert eine Pose zum Zeitpunkt *t*. Es wird entweder ein
             neues :class:`~bitbots.robot.pypose.PyPose` Objekt zurück gegeben oder das
             optional in *pose* übergebene Objekt verändert.
         '''
-        cdef float goal
-        cdef int off, hold, p
-        cdef Joint joint
 
         if pose is None:
             pose = Pose()
 
-        cdef Interpolator ip
         for name, joint in pose.joints:
             if name in self.interpolators:
                 # Werte interpolieren
@@ -355,11 +315,9 @@ cdef class Animator:
 
                     if p != -1:
                         joint.set_p(p)
-
-
         return pose
 
-    def playfunc(self, float stepsize):
+    def playfunc(self, stepsize):
         """ Diese Funktion generiert eine anonyme Funktion, die bei jedem
             Aufruf einen neue Pose erzeugt.
             Die zurückgegebene Funktion sollte mindestens alle
@@ -368,17 +326,13 @@ cdef class Animator:
 
             Ist die Animation beendet, wird *None* zurückgegeben.
         """
-        cdef float pre
-        cdef object t_start
         pre = stepsize * 1.5
 
         t_start = time.time()
 
-        def update(Pose current):
-            cdef float t_pose, t_robo = (time.time() - t_start) + self.time_min
-            cdef Pose next
-            cdef Joint joint, curjoint
-            cdef name
+        def update(current):
+            t_pose, t_robo = (time.time() - t_start) + self.time_min
+
             if t_robo > self.time_max:
                 return None
 
@@ -394,7 +348,7 @@ cdef class Animator:
 
         return update
 
-    cpdef play(self, AbstractIPC ipc, float stepsize=0.02, sleep=None, recordflag=False):
+    def play(self, ipc, stepsize=0.02, sleep=None, recordflag=False):
         ''' Spielt die Animation in Schritten von *stepsize*-Sekunden ab.
             Dafür wird einee IPC-Implementierung benötigt, z.B.
             eine Instanz der Klasse :class:`~bitbots.ipc.ipc.SharedMemoryIPC`.
@@ -405,8 +359,7 @@ cdef class Animator:
             wenn *recordflag* auf True gesetzt ist, dann wird die annimation auch
             abgespielt wenn ipc.status == RECORD ist und nicht CONTROLABLE
         '''
-        cdef Pose pose, oldpose
-        cdef posefunc = self.playfunc(stepsize)
+        posefunc = self.playfunc(stepsize)
         while True:
             pose = posefunc(ipc.get_pose())
             if pose is None:
@@ -424,17 +377,16 @@ cdef class Animator:
     def __str__(self):
         return "<Animator '%s' duration=%1.2fsek>" % (self.name, self.duration)
 
-cdef dict INTERPOLATORS = {
+INTERPOLATORS = {
     "LinearInterpolator": LinearInterpolator,
     "CatmullRomInterpolator": CatmullRomInterpolator
 }
 
-cpdef parse(dict info):
+def parse(info):
     ''' Diese Methode parst eine Animation aus
         einer :class:`dict` Instanz *info*, wie sie mit
         :func:`as_dict` erzeugt wurde.
     '''
-    cdef Animation anim
     anim = Animation(info["name"], ())
 
     if "default_interpolator" in info:
@@ -448,7 +400,7 @@ cpdef parse(dict info):
 
     return anim
 
-def as_dict(Animation anim):
+def as_dict(anim):
     ''' Wandelt die Animation in Standard Python Typen um, damit sie in einem
         Datenformat wie ``.json`` serialisierbar ist.
     '''
