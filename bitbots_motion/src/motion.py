@@ -1,34 +1,52 @@
 # -*- coding: utf8 -*-
+from humanoid_league_msgs.msg import Speak
 from std_msgs.msg import String
 
 from sensor_msgs.msg import JointState
-from bitbots_common.utilCython.pydatavector cimport PyDataVector as DataVector
 
 import rospy
 import time
 
-from .standuphandler cimport StandupHandler
+from bitbots_common.pose.pypose import PyPose as Pose
+from trajectory_msgs.msg import JointTrajectory
+
+from .standuphandler import StandupHandler
 from bitbots_cm730.srv import SwitchMotorPower
+from bitbots_cm730.msg import Buttons
+from humanoid_league_msgs.msg import GameState
+from sensor_msgs.msg import Imu
 
 from dynamic_reconfigure.server import Server
 from .cfg import bitbots_motion_params
+from bitbots_motion.srv import ManualPenalize
 
-cdef public enum MOTION_STATES:
-    STATE_CONTROLABLE = 1
-    STATE_FALLING
-    STATE_FALLEN
-    STATE_GETTING_UP
-    STATE_ANIMATION_RUNNING
-    STATE_BUSY
-    STATE_STARTUP
-    STATE_PENALTY
-    STATE_PENALTY_ANIMANTION
-    STATE_RECORD
-    STATE_SOFT_OFF
-    STATE_WALKING
-    STATE_GETTING_UP_Second
+from enum import Enum
 
-cdef state_to_string(int state):
+
+STATE_CONTROLABLE = 1
+STATE_FALLING =2
+STATE_FALLEN=3
+STATE_GETTING_UP=4
+STATE_ANIMATION_RUNNING=5
+STATE_BUSY=6
+STATE_STARTUP=7
+STATE_PENALTY=8
+STATE_PENALTY_ANIMANTION=9
+STATE_RECORD=10
+STATE_SOFT_OFF=11
+STATE_WALKING=12
+STATE_GETTING_UP_Second=13
+
+MOTION_STATES = (STATE_CONTROLABLE, STATE_FALLING, STATE_FALLEN, STATE_GETTING_UP, STATE_ANIMATION_RUNNING,
+                 STATE_BUSY, STATE_STARTUP, STATE_PENALTY, STATE_PENALTY_ANIMANTION, STATE_RECORD,
+                 STATE_SOFT_OFF, STATE_WALKING, STATE_GETTING_UP_Second)
+
+MOVING_STATES = (STATE_CONTROLABLE,
+                 STATE_WALKING,
+                 STATE_RECORD,
+                 STATE_SOFT_OFF)
+
+def state_to_string(state):
     return {
         STATE_CONTROLABLE: "controlable",
         STATE_FALLING: "falling",
@@ -45,49 +63,42 @@ cdef state_to_string(int state):
         STATE_GETTING_UP_Second: "getting up2",
     }.get(state, "unknown state %d" % state)
 
-MOVING_STATES = (STATE_CONTROLABLE,
-                    STATE_WALKING,
-                    STATE_RECORD,
-                    STATE_SOFT_OFF)
-
-#todo
-#todo DAS SOLL NUR NOCH PYTHON SEIN
-#todo
-
-cdef class Motion(object):
+class Motion(object):
 
     def __init__(self, dieflag, standupflag, softoff, softstart):
         rospy.init_node('bitbots_motion', anonymous=False)
-        rospy.Subscriber("/IMU", JointState, self.update_imu)
+        rospy.Subscriber("/IMU", Imu, self.update_imu)
         rospy.Subscriber("/MotorCurrentPosition", JointState, self.update_current_position)
-        rospy.Subscriber("/Buttons", Buttons, self.update_buttons)
         rospy.Subscriber("/Gamestate", GameState, self.update_gamestate)
-        self.joint_goal_publisher = rospy.Publisher('/MotorGoals', JointState, queue_size=10)
+        rospy.Subscriber("/MotorGoals", JointTrajectory, self.update_goal_position)
+        self.joint_goal_publisher = rospy.Publisher('/MotionMotorGoals', JointState, queue_size=10)
         self.state_publisher = rospy.Publisher('/MotionState', JointState, queue_size=10)
-        self.speak_publisher = rospy.Publisher('/Speak', String, queue_size=10)
+        self.speak_publisher = rospy.Publisher('/Speak', Speak, queue_size=10)
         self.dyn_reconf = Server(bitbots_motion_params, self.reconfigure)
+        self.manual_penalize_service = rospy.Service("manual_penalize", ManualPenalize, self.manual_penalize_call)
 
         self.dieflag = dieflag
         self.softoff = softoff
         self.standupflag = standupflag
         self.softstart = softstart
 
-        self.accel = DataVector(0,0,0)
-        self.gyro = DataVector(0,0,0)
-        self.smooth_accel = DataVector(0, 0, 0)
-        self.smooth_gyro = DataVector(0, 0, 0)
-        self.not_much_smoothed_gyro = DataVector(0, 0, 0)
+        self.accel = (0,0,0)
+        self.gyro = (0,0,0)
+        self.smooth_accel = (0, 0, 0)
+        self.smooth_gyro = (0, 0, 0)
+        self.not_much_smoothed_gyro = (0, 0, 0)
 
-        #todo chek what it is and if it is used rightly
-        self.robo_angle = DataVector(0, 0, 0)
-
-        self.motor_current_position =
-        self.motor_goal_position =
+        self.robo_pose = Pose()
+        self.goal_pose = Pose()
         self.startup_time = time.time()
         self.first_run = True
 
-        self.gamestate =
+        self.button1 = False
+        self.button2 = False
+
+        self.gamestate = STATE_STARTUP
         self.penalize_active = False # penalized from game controller
+        self.penality_is_manual = False # if penalty
         self.record_active = False # record UI in use
         self.animation_requested = False # animation request from animation server
 
@@ -117,25 +128,58 @@ cdef class Motion(object):
         except rospy.ServiceException as exc:
             print("Service did not process request: " + str(exc))
 
-    def update_imu(self):
-        #todo update robo_angle with this
-        angles = calculate_robot_angles(deref(self.robo_accel.get_data_vector()))
-        angles = self.gyro_kalman.get_angles_pvv(angles, gyro - IntDataVector(512, 512, 512), dt)
-        self.robo_angle = wrap_data_vector(angles)
+    def manual_penalize_call(self, req):
+        if req == 0:
+            # off
+            self.penality_is_manual = False
+            self.penalize_active = False
+        elif req == 1:
+            # on
+            self.penalize_active = True
+            self.penality_is_manual = True
+        elif req == 2:
+            # switch
+            if self.penality_is_manual:
+                #off
+                self.penality_is_manual = False
+                self.penalize_active = False
+            else:
+                #on
+                self.penality_is_manual = True
+                self.penalize_active = True
+        else:
+            rospy.logerr("Manual penalize call with unspecefied request")
 
-    def update_current_position(self):
-        self.last_client_update = #todo message timestamp
-        self.motor_current_position =
+    def update_imu(self, msg):
+        #todo check if this is not switched
+        self.gyro = msg.linear_velocity
+        self.accel = msg.angular_velocity
+        # Remember smoothed gyro values
+        # Used for falling detectiont, smooth_gyro is to late but peaks have to be smoothed anyway
+        # increasing smoothing -->  later detection
+        # decreasing smoothing --> more false positives
+        self.smooth_gyro = self.smooth_gyro * 0.9 + self.gyro * 0.1  ###gyro
+        self.smooth_accel = self.smooth_accel * 0.9 + self.accel * 0.1  ###accel
+        self.not_much_smoothed_gyro = self.not_much_smoothed_gyro * 0.5 + self.gyro * 0.5
 
-    def update_buttons(self):
+    def update_current_position(self, msg):
+        self.last_client_update = msg.header.stamp
+        self.robo_pose.setPositions(msg.positions)
+        self.robo_pose.setSpeed(msg.velocities)
 
     def update_gamestate(self):
         self.penalize_active =
 
     def publish_motion_state(self):
 
+    def reconfigure(self, config, level):
+        # just pass on to the StandupHandler, as the variables are located there
+        self.stand_up_handler.update_reconfigurable_values(config, level)
 
-    cpdef set_state(self, int state):
+    def update_goal_position(self):
+        pass
+
+    def set_state(self, state):
         """ Updatet den internen Status des MotionServers und publiziert
             ihn zum Clienten
         """
@@ -159,20 +203,14 @@ cdef class Motion(object):
         rospy.loginfo("Setze Status auf '%s'" % state_to_string(state))
         rospy.loginfo("Status", state_to_string(state))
 
-    cpdef update_forever(self):
+    def update_forever(self):
         """ Ruft :func:`update_once` in einer Endlosschleife auf """
-        cdef int iteration = 0, errors = 0
-        cdef double duration_avg = 0, start = time.time()
+        iteration = 0
+        errors = 0
+        duration_avg = 0
+        start = time.time()
 
         while True:
-            # Remember smoothed gyro values
-            # Used for falling detectiont, smooth_gyro is to late but peaks have to be smoothed anyway
-            # increasing smoothing -->  later detection
-            # decreasing smoothing --> more false positives
-            self.smooth_gyro = self.smooth_gyro * 0.9 + self.gyro * 0.1 ###gyro
-            self.smooth_accel = self.smooth_accel * 0.9 + self.accel * 0.1 ###accel
-            self.not_much_smoothed_gyro = self.not_much_smoothed_gyro * 0.5 + self.gyro * 0.5
-
             self.update_once()
 
             # Count to get the update frequency
@@ -189,7 +227,7 @@ cdef class Motion(object):
             iteration = 0
             start = time.time()
 
-    cpdef update_once(self):
+    def update_once(self):
 
         ###
         ### STATE STARTUP
@@ -327,7 +365,7 @@ cdef class Motion(object):
         ### Shuting down?
         ###
 
-    cpdef check_queued_animations(self):
+    def check_queued_animations(self):
         cdef Animator amator
         if self.next_animation is not None and self.robo_pose is not None:
             if self.state == STATE_SOFT_OFF:
@@ -344,7 +382,7 @@ cdef class Motion(object):
                 # Ab jetzt spielen wir die Animation
                 self.set_state(STATE_ANIMATION_RUNNING)
 
-     cpdef update_goal_pose(self):
+    def update_goal_pose(self):
         """ Updated :attr:`goal_pose`. Wenn eine Animation läuft, spielt
             die mit hinein. Sonst kommt sie vermutlich vom Client. Außerdem
             werden hier alle anderen Befehle vom Client verarbeitet (walking,
@@ -537,8 +575,7 @@ cdef class Motion(object):
             rospy.loginfo("Update nach Softoff eingetroffen reaktivieren")
             self.set_state(STATE_STARTUP)
 
-
-    cpdef animate(self, name, post_anim_state=None, dict animation=None):
+    def animate(self, name, post_anim_state=None, dict animation=None):
         """ Spielt eine Animation aus einer Datei ab. Dabei werden Befehle
             von einem IPC Client ignoriert, bis die Animation durchgelaufen
             ist.
@@ -562,7 +599,3 @@ cdef class Motion(object):
 
         self.next_animation = anim
         self.post_anim_state = post_anim_state
-
-    def reconfigure(self, config, level):
-        # just pass on to the StandupHandler, as the variables are located there
-        self.stand_up_handler.update_reconfigurable_values(config, level)

@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import rospy
 
-cdef class StandupHandler(object):
+class StandupHandler(object):
 
     def __init__(self):
         robot_type_name = rospy.get_param("/RobotTypeName")
@@ -28,7 +28,7 @@ cdef class StandupHandler(object):
         self.falling_threshold_right     *= self.ground_coefficient
         self.falling_threshold_left      *= self.ground_coefficient
 
-    cdef update_reconfigurable_values(self, config, level):
+    def update_reconfigurable_values(self, config, level):
         self.dyn_falling_active = config["dyn_falling_active"]
         self.ground_coefficient = config["ground_coefficient"]
         self.falling_threshold_front = config["threshold_gyro_y_front"]
@@ -36,7 +36,7 @@ cdef class StandupHandler(object):
         self.falling_threshold_right = config["threshold_gyro_x_right"]
         self.falling_threshold_left = config["threshold_gyro_x_left"]
 
-    cdef set_falling_pose(self, object falling_motor_degrees, object goal_pose):
+    def set_falling_pose(self, falling_motor_degrees, goal_pose):
         #todo doe something with this
         if self.dyn_falling_active:
             for i in range(1,20):
@@ -47,7 +47,7 @@ cdef class StandupHandler(object):
             goal_pose.set_active(False)
 
 
-    cdef check_falling(self, not_much_smoothed_gyro):
+    def check_falling(self, not_much_smoothed_gyro):
         """Checks if the robot is currently falling and in which direction. """
 
         # First decide if we fall more sidewards or more front-back-wards. Then decide if we fall badly enough
@@ -58,7 +58,7 @@ cdef class StandupHandler(object):
             falling_pose = self.check_falling_sideways(not_much_smoothed_gyro)
         return falling_pose
 
-    cdef check_falling_front_back(self, not_much_smoothed_gyro):
+    def check_falling_front_back(self, not_much_smoothed_gyro):
         # Am I falling backwards
         if self.falling_threshold_back < not_much_smoothed_gyro.get_y():
             rospy.logdebug("FALLING BACKWARDS ")
@@ -68,7 +68,7 @@ cdef class StandupHandler(object):
             rospy.logdebug("FALLING TO THE FRONT")
             return self.falling_motor_degrees_front
 
-    cdef check_falling_sideways(self, not_much_smoothed_gyro):
+    def check_falling_sideways(self, not_much_smoothed_gyro):
         # Am I falling to the right
         if not_much_smoothed_gyro.get_x() < self.falling_threshold_right:
             rospy.logdebug("FALLING TO THE RIGHT")
@@ -78,8 +78,7 @@ cdef class StandupHandler(object):
             rospy.logdebug("FALLING TO THE LEFT")
             return self.falling_motor_degrees_left
 
-
-    cdef check_fallen(self, raw_gyro, smooth_gyro):
+    def check_fallen(self, raw_gyro, smooth_gyro):
         #todo where the fuck comes robo_angle from and what is this magic
         """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""
         if raw_gyro.norm() < 5 and smooth_gyro.norm() < 5 and robo_angle.y > 80: ###gyro

@@ -33,8 +33,6 @@ cdef class cm730_node(object):
     cpdef publish_additional_servo_data(self, list temps, list voltages)
     cpdef publish_IMU(self, double gyro, double accel)
     cpdef publish_buttons(self, bool button1, bool button2)
-    cpdef say(self, text)
-
 
 cdef extern from "cmath" namespace "std":
     double asin(double)

@@ -11,7 +11,7 @@ from sensor_msgs.msg import JointState, Temperature, Imu
 from humanoid_league_msgs.msg import AdditionalServoData
 from humanoid_league_msgs.msg import Speak
 from bitbots_cm730.srv import SwitchMotorPower
-
+from bitbots_speaker.speaker import speak
 
 import rospy
 
@@ -127,7 +127,7 @@ cdef class cm730_node(object):
         if result == -1:
             #this means the motion is stuck
             rospy.logerr("motion stuck!")
-            self.say("motion stuck")
+            speak("motion stuck")
             exit("Motion stuck")
             exit("Motion stuck")
 
@@ -137,7 +137,7 @@ cdef class cm730_node(object):
         button, gyro, accel = self.cm_730_object.parse_sensor_data(result, cid_all_values)
         if button == -1:
             #low voltage error
-            self.say("Warning: Low Voltage! System Exit!")
+            speak("Warning: Low Voltage! System Exit!")
             rospy.logerr("SYSTEM EXIT: LOW VOLTAGE")
             raise SystemExit("SYSTEM EXIT: LOW VOLTAGE (%d V)" % gyro/10)
 
@@ -200,8 +200,3 @@ cdef class cm730_node(object):
     cpdef publish_buttons(self, bool button1, bool button2):
         #todo impelement
         return
-
-    cpdef say(self, text):
-        msg = Speak()
-        msg.text = text
-        self.speak_publisher.publish(msg)
