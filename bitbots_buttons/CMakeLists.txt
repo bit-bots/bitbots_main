@@ -1,20 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(bitbots_common)
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake) #  TODO: das mus dynamisch
-
-include(BitBotsIncludes)
+project(bitbots_motion)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp rosconsole rospy humanoid_league_msgs)
-find_package(Eigen REQUIRED)
-## System dependencies are found with CMake's conventions
-find_package(Boost REQUIRED COMPONENTS system thread date_time iostreams)
+find_package(catkin REQUIRED message_generation humanoid_league_msgs rospy)
 
-include_directories(${catkin_INCLUDE_DIRS})
-link_directories(${catkin_LIBRARY_DIRS})
+## System dependencies are found with CMake's conventions
+# find_package(Boost REQUIRED COMPONENTS system)
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -46,18 +40,18 @@ catkin_python_setup()
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
+ add_message_files(
+   FILES
+   Buttons.msg
 #   Message2.msg
-# )
+)
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
+ add_service_files(
+   FILES
+   ManualPenalize.srv
 #   Service2.srv
-# )
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -67,10 +61,10 @@ catkin_python_setup()
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   std_msgs  # Or other packages containing msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -103,13 +97,10 @@ catkin_python_setup()
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-  LIBRARIES bitbots_common
+#  LIBRARIES bitbots_motion
 #  CATKIN_DEPENDS other_catkin_pkg
-  DEPENDS Eigen
+#  DEPENDS system_lib
 )
-
-
-add_subdirectory(src/bitbots_common)
 
 ###########
 ## Build ##
@@ -120,24 +111,24 @@ add_subdirectory(src/bitbots_common)
 # include_directories(include)
 
 ## Declare a C++ library
-# add_library(bitbots_common
-#   src/${PROJECT_NAME}/bitbots_common.cpp
+# add_library(bitbots_motion
+#   src/${PROJECT_NAME}/bitbots_motion.cpp
 # )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(bitbots_common ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(bitbots_motion ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(bitbots_common_node src/bitbots_common_node.cpp)
+# add_executable(bitbots_motion_node src/bitbots_motion_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(bitbots_common_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(bitbots_motion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(bitbots_common_node
+# target_link_libraries(bitbots_motion_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -156,7 +147,7 @@ add_subdirectory(src/bitbots_common)
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS bitbots_common bitbots_common_node
+# install(TARGETS bitbots_motion bitbots_motion_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -181,7 +172,7 @@ add_subdirectory(src/bitbots_common)
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_bitbots_common.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_bitbots_motion.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

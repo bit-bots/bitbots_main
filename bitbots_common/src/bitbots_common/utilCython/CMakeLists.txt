@@ -38,9 +38,5 @@ set_target_properties(${INSTALL_TARGETS}
 
 #install(
 #    TARGETS ${INSTALL_TARGETS}
-#    LIBRARY DESTINATION ${PYLIB_INSTALL_PATH}/bitbots/util
+#    LIBRARY DESTINATION ${PYLIB_INSTALL_PATH}/bitbots_common/util
 #)
-
-if(ENABLE_GTESTS)
-    #add_subdirectory(test)
-endif(ENABLE_GTESTS)

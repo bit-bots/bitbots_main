@@ -11,6 +11,13 @@ from bitbots_speaker.cfg import speaker_paramsConfig
 
 from humanoid_league_msgs.msg import Speak
 
+def speak(text, publisher, priority=Speak.MID_PRIORITY, speaking_active=True):
+    if speaking_active:
+        msg = Speak
+        msg.priority = priority
+        msg.text = text
+        publisher.publish(msg)
+
 
 class Speaker(object):
     """ Uses espeak to say all messages from the speak topic
@@ -56,7 +63,6 @@ class Speaker(object):
         """ Speak this specific text"""
         # todo make volume adjustable, some how like this
 #        command = ("espeak", "-a", self.amplitude, text)
-        print "text:" + text
         command = ("espeak", text)
         try:
             process = subprocess.Popen(command, stdout=subprocess.PIPE,
