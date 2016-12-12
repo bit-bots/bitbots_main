@@ -22,7 +22,7 @@ class Locator:
         rospy.Subscriber("/odometry", Odometry, self.update_position)
         rospy.Subscriber("/goal_relative", GoalRelative, self.perform)
 
-        self.conf__nr_particle = 100 # rospy.get_param("/localisation/nr_particle")
+        self.conf__nr_particle = rospy.get_param("/localisation/nr_particle")
         self.debug = rospy.get_param("/debug_active", False)
 
         # Setup variables
