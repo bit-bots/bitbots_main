@@ -4,7 +4,7 @@ project(bitbots_animation)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS rospy humanoid_league_msgs
+find_package(catkin REQUIRED COMPONENTS rospy humanoid_league_msgs message_generation actionlib trajectory_msgs genmsg std_msgs
 #bitbots_common
 )
 
@@ -49,24 +49,26 @@ catkin_python_setup()
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
+add_service_files(
+   FILES
+   AnimationFrame.srv
 #   Service2.srv
-# )
+)
 
 ## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
+add_action_files(
+  FILES
+   PlayAnimation.action
 #   Action2.action
-# )
+)
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   std_msgs  # Or other packages containing msgs
+   trajectory_msgs
+   actionlib_msgs
+ )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##

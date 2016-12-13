@@ -1,0 +1,14 @@
+#request
+
+# telling that this is a new animation
+bool first_frame
+# after this the animation is finished
+bool last_frame
+
+# motor positions
+trajectory_msgs/JointTrajectoryPoint positions
+
+---
+#response
+
+bool success

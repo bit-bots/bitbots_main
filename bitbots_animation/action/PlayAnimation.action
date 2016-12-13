@@ -1,0 +1,15 @@
+# goal definition
+
+# name of the animation
+std_msgs/String animation
+
+# should the animation be played directly, interrupting other animations and walking
+bool force
+
+---
+#result definition
+bool successful
+
+---
+#feedback
+uint8 percent_done
