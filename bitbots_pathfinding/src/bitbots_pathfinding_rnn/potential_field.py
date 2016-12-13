@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-An implementation for apotential filed
+An implementation for a potential filed
 
 1.12.2014 (Martin Popppinga) adapted from bachelor thesis
 """
 
 import math
+from typing import Tuple, List
 
 
-class PotentialField(object):
+class PotentialField:
     def __init__(self, attract):
         self.vector = [0, 0]
         self.attract = attract
@@ -40,15 +41,13 @@ class PotentialField(object):
                     self.vector = [0, 0]
 
 
-class PotentialMap(object):
+class PotentialMap:
     """
-    Definiert die Potential Fields
+    Defines the potential fields
     """
 
-    def __init__(self, (nr_r, nr_a)):
-        """
-        :param nr_r: number of obstacles to build a potential field
-        """
+    def __init__(self, t: Tuple[int, int]):
+        (nr_r, nr_a) = t
         self.p_activated_attractors = False  # TODO config
         self.p_ball_repulsor = True  # todo config
 
@@ -59,13 +58,13 @@ class PotentialMap(object):
         for i2 in range(nr_a):
             self.fields.append(PotentialField(True))
 
-    def compute(self, oblist):
+    def compute(self, oblist: List[Tuple[float, float]])->Tuple[float, float, float]:
         """
         :return the 3-Tupel vektor
         """
         if len(oblist) == 0:
             return 0, 0, 0
-        
+
         x = 0
         for field in self.fields:
             field.update(oblist[x])
@@ -74,9 +73,9 @@ class PotentialMap(object):
         vectorx, vectory = (0, 0)
         x = 0
         for field in self.fields:
-            if (self.p_ball_repulsor and not self.p_activated_attractors and x == (len(oblist)-1)) or \
-                    (self.p_ball_repulsor and self.p_activated_attractors and x == (len(oblist)-2)):
-                #its a ball repulsor, reduced force
+            if (self.p_ball_repulsor and not self.p_activated_attractors and x == (len(oblist) - 1)) or \
+                    (self.p_ball_repulsor and self.p_activated_attractors and x == (len(oblist) - 2)):
+                # its a ball repulsor, reduced force
                 vectorx += field.vector[0] / 3.0
                 vectory += field.vector[1] / 3.0
 

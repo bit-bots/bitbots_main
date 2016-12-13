@@ -8,7 +8,7 @@ def sig(x):
     return x / (1 + abs(x))  # ((1.0 / (1.0 + math.e**-x))-0.5)*2
 
 
-class Neuron(object):
+class Neuron:
     def __init__(self):
         self.b = 0  # p_random_ev()
         self.output = 0
@@ -35,7 +35,7 @@ class Neuron(object):
         self.sigmoid = sig(output)
 
 
-class Network(object):
+class Network:
     def __init__(self):
         """
         Creates the network
