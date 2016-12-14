@@ -13,6 +13,7 @@ from typing import List, Tuple
 from geometry_msgs.msg import Pose2D
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Vector3
+from humanoid_league_msgs.msg import GoalRelative
 from humanoid_league_msgs.msg import ObstaclesRelative
 
 
@@ -26,7 +27,7 @@ class Pathfinding:
 
         rospy.Subscriber("/navigation_goal", Pose2D, self._update_naviagtiongoal)
         rospy.Subscriber("/obstacles_relative", ObstaclesRelative, self._update_obstacle)
-        rospy.Subscriber("/goal_relative", PostsRelative, self._update_orientationobjective)  # TODO Aus localisation holen oder netz ändern, sodass schon im verhalten
+        rospy.Subscriber("/goal_relative", GoalRelative, self._update_orientationobjective)  # TODO Aus localisation holen oder netz ändern, sodass schon im verhalten und dann pose relvandt
 
         self.last_vel = namedtuple("LastVel", ["forward", "turn", "sideward"])
         self.goalpos = namedtuple("GoalPosition", ["x", "y"])
@@ -78,14 +79,18 @@ class Pathfinding:
         self.publish_walking.publish(msg)
 
     def _update_naviagtiongoal(self, pos: Pose2D):
-        self.goalpos = pos  # todo reformat pose to tuple etc
+        self.goalpos = (pos.x, pos.y)
 
     def _update_obstacle(self, obs: ObstaclesRelative):
-        self.obstacles = obs
-        self.obstacles.append((self.goalpos.x, self.goalpos.y))
+        olist = [(o.position.x, o.position.y) for o in obs.obstacles]
+        self.obstacles = olist
+        self.obstacles.append(self.goalpos)
 
-    def _update_orientationobjective(self, go):
-        self.goalobjective = go
+    def _update_orientationobjective(self, go: GoalRelative):
+        if self.align_to_goal:
+            self.goalobjective = (go.positions[0].x, go.positions[0].y)
+        else:
+            self.goalobjective = (0, 0)
 
 if __name__ == "__main__":
     Pathfinding()
