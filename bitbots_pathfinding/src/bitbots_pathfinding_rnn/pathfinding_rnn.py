@@ -21,7 +21,8 @@ class Pathfinding:
     def __init__(self):
         rospy.logdebug("Init Pathfinding")
         rospy.init_node("bitbots_pathfinding_rnn")
-        self.align_to_goal = rospy.get_param("/pathfinding/align_to_goal") #todo unused
+        self.conf_align_to_goal = rospy.get_param("/pathfinding/conf_align_to_goal")
+        self.conf_refreshRate = rospy.get_param("/pathfinding/refreshRate")
 
         self.publish_walking = rospy.Publisher("/cmd_vel", Twist)
 
@@ -37,7 +38,7 @@ class Pathfinding:
         self.network_path = rospy.get_param("", "")
         self.network = pickle.load(open(self.network_path, "r"))
 
-        r = rospy.Rate(5)  # Evalute with 5 Hz
+        r = rospy.Rate(self.conf_refreshRate)  # Evalute with 5 Hz
 
         while not rospy.is_shutdown():
             self.perform()
@@ -87,7 +88,7 @@ class Pathfinding:
         self.obstacles.append(self.goalpos)
 
     def _update_orientationobjective(self, go: GoalRelative):
-        if self.align_to_goal:
+        if self.conf_align_to_goal:
             self.goalobjective = (go.positions[0].x, go.positions[0].y)
         else:
             self.goalobjective = (0, 0)
