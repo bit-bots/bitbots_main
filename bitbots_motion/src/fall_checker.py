@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import rospy
 
-class StandupHandler(object):
+class FallChecker(object):
 
     def __init__(self):
         robot_type_name = rospy.get_param("/RobotTypeName")

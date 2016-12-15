@@ -6,7 +6,7 @@ from humanoid_league_msgs.msg import MotionState
 
 from bitbots_cm730.srv import SwitchMotorPower
 
-from bitbots_motion.src.standuphandler import StandupHandler
+from bitbots_motion.src.fall_checker import FallChecker
 
 
 STATE_CONTROLABLE = 0
@@ -22,6 +22,10 @@ STATE_RECORD = 9
 STATE_WALKING = 10
 
 class Values(object):
+    """
+    We use this class as a singleton to share these public variables over all
+    different classes of states and with the state machine.
+    """
     def __init__(self):
         self.penalized = False  # paused
         self.record = False
@@ -30,14 +34,26 @@ class Values(object):
         self.softstart = False
         self.dieflag = False
 
-        self.last_hardware_update = 0
-        self.last_request = 0
+        self.last_hardware_update = None
+        self.last_request = None
+        self.start_up_time = rospy.Time.now()
 
-        self.stand_up_handler = StandupHandler()
+        self.raw_gyro = (0,0,0)
+        self.smooth_gyro = (0,0,0)
+        self.not_so_smooth_gyro = (0,0,0)
+
+        self.fall_checker = FallChecker()
+        self.animation_client = None
 
 VALUES = Values()
 
 class AbstractState(object):
+
+    def __init__(self):
+        # bool, is an animation started, where we want to wait for its finish
+        self.animation_started = False
+        self.next_state = None
+
     def entry(self, values):
         msg = "You schuld overrride entry() in %s" % self.__class__.__name__
         raise NotImplementedError(msg)
@@ -53,6 +69,19 @@ class AbstractState(object):
     def motion_state(self):
         msg = "You schuld overrride motion_state() in %s" % self.__class__.__name__
         raise NotImplementedError(msg)
+
+    def start_animation(self, anim, follow_state):
+        """
+        This will NOT wait by itself. You have to check
+        VALUES.animation_client.get_result()
+        in the evaluate method by yourself.
+        :param anim:
+        :param follow_state:
+        :return:
+        """
+        self.animation_started = True
+        play_animation(anim)
+        self.next_state = follow_state
 
 
 class AbstractStateMachine(object):
@@ -119,7 +148,10 @@ class StartupState(AbstractState):
         pass
 
     def evaluate(self, values):
-        if values.get_last_motor_update is not None or time.time() - values.get_startup_time() > 1:
+        #leave this if we got a hardware response, or after some time
+        #todo zeit parameter?
+        if VALUES.last_hardware_update is not None or time.time() - VALUES.start_up_time > 1:
+            # check if we directly go into a special state, if not, got to get up
             if values.get_record():
                 switch_motor_power(True)
                 return Record()
@@ -129,7 +161,7 @@ class StartupState(AbstractState):
                 return Softoff()
             switch_motor_power(True)
             if values.get_penalized():
-                return Penalty()
+                return PenaltyAnimationIn()
             return GettingUp()
 
     def exit(self, values):
@@ -140,20 +172,28 @@ class StartupState(AbstractState):
 
 
 class Softoff(AbstractState):
+
     def entry(self, values):
         switch_motor_power(False)
 
     def evaluate(self, values):
-        if VALUES.record:
-            return Record()
-        if new_move_request:
-            return Controlable()
-        rospy.sleep(0.1)
+        if not self.animation_started:
+            if VALUES.record:
+                switch_motor_power(True)
+                # don't directly change state, we wait for animation to finish
+                self.start_animation(rospy.get_param("/animations/motion/walkready"), Record())
+                return
+            if rospy.Time.now() - VALUES.last_request < 10: #todo param
+                switch_motor_power(True)
+                play_animation(rospy.get_param("/animations/motion/walkready")), Controlable()
+                return
+            rospy.sleep(0.1)
+        else:
+            if VALUES.animation_client.get_result():
+                return self.next_state
 
     def exit(self, values):
-        switch_motor_power(True)
-        self.animate(
-            rospy.get_param("/animations/motion/walkready")
+        pass
 
     def motion_state(self):
         #we want to look controlable to the outside
@@ -165,7 +205,7 @@ class Record(AbstractState):
         pass
 
     def evaluate(self, values):
-        if not values.get_record:
+        if not VALUES.record:
             return Controlable()
 
     def exit(self, values):
@@ -175,17 +215,15 @@ class Record(AbstractState):
         return STATE_RECORD
 
 class PenaltyAnimationIn(AbstractState):
-    def __init__(self):
-        self.animation_finished = False
 
     def entry(self, values):
         rospy.logwarn("Penalized, sitting down!")
-        self.animate(
-            rospy.get_param("/animations/motion/penalized"))
+        self.start_animation(rospy.get_param("/animations/motion/penalized"), Penalty())
 
     def evaluate(self, values):
-        if self.animation_finished:
-            return Penalty()
+        #wait for animation started in entry
+        if VALUES.animation_client.get_result():
+            return self.next_state
 
     def exit(self, values):
         pass
@@ -193,18 +231,16 @@ class PenaltyAnimationIn(AbstractState):
     def motion_state(self):
         return STATE_PENALTY_ANIMANTION
 
-class PenaltyAnimationIn(AbstractState):
-    def __init__(self):
-        self.animation_finished = False
+class PenaltyAnimationOut(AbstractState):
 
     def entry(self, values):
-        rospy.logwarn("Penalized, sitting down!")
-        self.animate(
-            rospy.get_param("/animations/motion/penalized"))
+        rospy.logwarn("Not penalized anymore, getting up!")
+        self.start_animation(rospy.get_param("/animations/motion/penalized_end"), Controlable())
 
     def evaluate(self, values):
-        if self.animation_finished:
-            return Penalty()
+        # wait for animation started in entry
+        if VALUES.animation_client.get_result():
+            return self.next_state
 
     def exit(self, values):
         pass
@@ -218,8 +254,13 @@ class Penalty(AbstractState):
         rospy.loginfo("Im now penalized")
 
     def evaluate(self, values):
-        rospy.sleep(0.05)
-        values.set_last_client_update(rospy.Time.now())
+        if VALUES.penalized:
+            #still penalized, lets wait a bit
+            rospy.sleep(0.05)
+            # prohibit soft off
+            values.set_last_client_update(rospy.Time.now())
+        else:
+            return PenaltyAnimationOut()
 
     def exit(self, values):
         switch_motor_power(True)
@@ -230,10 +271,24 @@ class Penalty(AbstractState):
 
 class GettingUp(AbstractState):
     def entry(self, values):
-        pass
+        rospy.logdebug("Getting up!")
+        self.start_animation(
+            VALUES.fall_checker.check_fallen(VALUES.raw_gyro, VALUES.smooth_gyro),
+            Controlable())
 
     def evaluate(self, values):
-        pass
+        # wait for animation started in entry
+        if VALUES.animation_client.get_result():
+            # we stood up, but are we now really standing correct
+            if VALUES.fall_checker.check_falling(VALUES.not_so_smooth_gyro) is not None:
+                #we're falling, directly going to falling
+                return Falling()
+            elif VALUES.fall_checker.check_fallen(VALUES.raw_gyro, VALUES.smooth_gyro) is None:
+                #we're fallen, directly going to fallen
+                return Fallen()
+            else:
+                #everything is fine, head on
+                return self.next_state
 
     def exit(self, values):
         pass
@@ -341,7 +396,7 @@ class ShutDown(AbstractState):
         return STATE_SHUT_DOWN
 
 
-def switch_motor_power(self, state):
+def switch_motor_power(state):
     """ Calling service from CM730 to turn motor power on or off"""
     rospy.wait_for_service("switch_motor_power")
     power_switch = rospy.ServiceProxy("switch_motor_power", SwitchMotorPower)
@@ -349,3 +404,10 @@ def switch_motor_power(self, state):
         response = power_switch(state)
     except rospy.ServiceException as exc:
         print("Service did not process request: " + str(exc))
+
+def play_animation(anim_name):
+    goal = AnimationActionMsg().anim = anim_name
+    VALUES.animation_client.send_goal(goal)
+
+def check_if_animation_finished():
+    return VALUES.animation_client.get_result()

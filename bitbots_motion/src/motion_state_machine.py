@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import rospy
 
-from bitbots_motion.src.standuphandler import StandupHandler
+from bitbots_motion.src.fall_checker import FallChecker
 
 STATE_CONTROLABLE = 0
 STATE_FALLING = 1
@@ -53,7 +53,7 @@ class MotionStateMachine(object):
         self.state = None
         self.set_state(STATE_STARTUP)
         self.penalized = False  # paused
-        self.stand_up_handler = StandupHandler()
+        self.stand_up_handler = FallChecker()
         self.standupflag = standupflag
 
     def evaluate(self):
