@@ -38,7 +38,7 @@ class Pathfinding:
         self.network_path = rospy.get_param("", "")
         self.network = pickle.load(open(self.network_path, "r"))
 
-        r = rospy.Rate(self.conf_refreshRate)  # Evalute with 5 Hz
+        r = rospy.Rate(self.conf_refreshRate)
 
         while not rospy.is_shutdown():
             self.perform()

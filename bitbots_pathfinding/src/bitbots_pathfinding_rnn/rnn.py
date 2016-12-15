@@ -26,7 +26,7 @@ class Neuron:
         for x, w in input_l:
             input_sum += x * w
 
-        self.output = self.output + (1.0/self.tau) * (-self.output + input_sum + self.b)
+        self.output += (1.0 / self.tau) * (-self.output + input_sum + self.b)
 
         self.sigmoid = sig(self.output)
 

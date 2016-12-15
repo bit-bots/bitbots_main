@@ -33,7 +33,6 @@ class PotentialField:
                 self.vector[0] = -obx
                 self.vector[1] = -oby
 
-            if self.attract:
                 if self.p_activated_attractors:
                     self.vector[0] *= -5.0
                     self.vector[1] *= -5.0
@@ -65,10 +64,8 @@ class PotentialMap:
         if len(oblist) == 0:
             return 0, 0, 0
 
-        x = 0
-        for field in self.fields:
-            field.update(oblist[x])
-            x += 1
+        for x in range(len(self.fields)):
+            self.fields[x].update(oblist[x])
 
         vectorx, vectory = (0, 0)
         x = 0
