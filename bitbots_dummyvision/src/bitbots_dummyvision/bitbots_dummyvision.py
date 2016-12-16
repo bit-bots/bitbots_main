@@ -81,7 +81,7 @@ class DummyVision:
                     # draw the center of the circle
                     #cv2.circle(ra, (i[0], i[1]), 2, (0, 0, 255), 3)
 
-            except cv2.SUBDIV2D_PTLOC_ERROR:
+            except cv2.error:
                 pass
 
         #cv2.imshow("img", ra)
