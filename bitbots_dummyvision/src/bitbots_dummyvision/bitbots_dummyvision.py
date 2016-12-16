@@ -12,8 +12,6 @@ from cv_bridge import CvBridge, CvBridgeError
 
 class DummyVision:
     def __init__(self):
-        rospy.init_node("bitbots_dummyvision")
-        rospy.Subscriber("/raw_image", Image, self._image_callback, queue_size=1)
         self.pub_ball = rospy.Publisher("/ball_in_image", BallInImage, queue_size=1)
         self.bridge = CvBridge()
 
@@ -24,12 +22,17 @@ class DummyVision:
         nem.load_weights("src/bitbots_dmummyvision/src/bitbots_dummyvision/model2.ker")
         self.model = nem
 
-        while not rospy.is_shutdown():
+        """while not rospy.is_shutdown():
             if self.new:
-                self.work(self.last_img)
-                self.new = False
+                #self.work(self.last_img)
+                #self.new = False
             else:
                 rospy.sleep(0.1)
+        """
+        rospy.init_node("bitbots_dummyvision")
+        rospy.Subscriber("/usb_cam/image_raw", Image, self._image_callback, queue_size=1)
+
+        rospy.spin()
 
     def work(self, img):
         """
@@ -87,8 +90,10 @@ class DummyVision:
 
 
     def _image_callback(self, img):
+        print("test")
         self.last_img = img
         self.new = True
+        self.work(img)
 
 
 if __name__ == "__main__":
