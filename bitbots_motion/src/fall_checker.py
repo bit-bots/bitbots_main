@@ -36,8 +36,9 @@ class FallChecker(object):
         self.falling_threshold_right = config["threshold_gyro_x_right"]
         self.falling_threshold_left = config["threshold_gyro_x_left"]
 
-    def set_falling_pose(self, falling_motor_degrees, goal_pose):
+    def get_falling_pose(self, not_so_smooth_gyro):
         #todo doe something with this
+        #todo propably just change it to returning an animation(depending on side)
         if self.dyn_falling_active:
             for i in range(1,20):
                 a = falling_motor_degrees[i-1]

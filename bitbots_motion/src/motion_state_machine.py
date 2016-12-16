@@ -116,7 +116,7 @@ class MotionStateMachine(object):
             # check if robot is falling
             falling_pose = self.stand_up_handler.check_falling(self.not_much_smoothed_gyro)
             if falling_pose:
-                self.stand_up_handler.set_falling_pose(falling_pose, goal_pose)
+                self.stand_up_handler.get_falling_pose(falling_pose, goal_pose)
                 self.set_state(STATE_FALLING)
                 return
 
