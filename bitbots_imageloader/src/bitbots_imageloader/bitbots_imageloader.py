@@ -11,7 +11,7 @@ class Loadimg:
     def __init__(self):
         rospy.init_node("bitbots_imageloader")
         print("started")
-        self.pub_im = rospy.Publisher("/raw_image", Image, queue_size=1)
+        self.pub_im = rospy.Publisher("/usb_cam/image_raw", Image, queue_size=1)
         self.bridge = CvBridge()
         path = rospy.get_param("/imageloader/load_from", "/home/martin/Schreibtisch/ds_x/ds2")
 
