@@ -39,13 +39,15 @@ class DummyVision:
         #print("Recived Image    looking for candidates")
 
         ra = self.bridge.imgmsg_to_cv2(img, "bgr8")
-        img = cv2.bilateralFilter(ra, 14, 100, 100)
+
+        #img = cv2.bilateralFilter(ra, 14, 100, 100)
+        img = cv2.GaussianBlur(ra, (9, 9), 0)
         # mask = cv2.inRange(img, (0, 120, 0), (160, 255, 160))
         # mask = cv2.erode(mask, None, iterations = 2)
         # mask = 255 - mask
         b, g, r = cv2.split(img)
         circles = cv2.HoughCircles(g, cv2.HOUGH_GRADIENT, 1, 100,
-                                   param1=40, param2=39, minRadius=15, maxRadius=200)
+                                   param1=50, param2=43, minRadius=15, maxRadius=200)
 
         #build message
         msg = BallsInImage()
