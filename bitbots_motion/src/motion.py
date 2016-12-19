@@ -48,7 +48,7 @@ class Motion(object):
         self.record_active = False # record UI in use #todo set in constructor or smt
         self.animation_requested = False # animation request from animation server
 
-        self.state_machine = MotionStateMachine(standupflag)
+        self.state_machine = MotionStateMachine(standupflag, softstart)
 
         if softstart and not self.record_active:
             rospy.loginfo ("Softstart")

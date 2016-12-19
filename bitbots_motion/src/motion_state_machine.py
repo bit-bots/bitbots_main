@@ -21,9 +21,13 @@ STATE_WALKING = 10
 
 
 class MotionStateMachine(AbstractStateMachine):
-    def __init__(self, standupflag, state_publiser):
+    def __init__(self, die_flag, standup_flag, soft_off_flag, soft_start, start_test, state_publiser):
         super().__init__()
-        VALUES.standupflag = standupflag
+        VALUES.standup_flag = standup_flag
+        VALUES.die_flag = die_flag
+        VALUES.soft_off_flag = soft_off_flag
+        VALUES.soft_start = soft_start
+        VALUES.start_test = start_test
         self.error_state = ShutDown()
         self.set_state(StartupState())
         self.state_publisher = state_publiser
@@ -43,6 +47,10 @@ class StartupState(AbstractState):
         # todo zeit parameteriesern?
         if VALUES.last_hardware_update is not None or time.time() - VALUES.start_up_time > 1:
             # check if we directly go into a special state, if not, got to get up
+            if VALUES.start_test:
+                #todo
+                pass
+                return
             if VALUES.record:
                 switch_motor_power(True)
                 return Record()
@@ -83,10 +91,13 @@ class Softoff(AbstractState):
                 self.start_animation(rospy.get_param("/animations/motion/walkready"))
                 return
             if rospy.Time.now() - VALUES.last_request < 10:  # todo param
+                #got a new move request
                 switch_motor_power(True)
                 self.next_state = Controlable()
                 self.start_animation(rospy.get_param("/animations/motion/walkready"))
                 return
+            if VALUES.is_die_time():
+                return ShutDown()
             rospy.sleep(0.1)
         else:
             if VALUES.animation_finished():
@@ -213,6 +224,8 @@ class Controlable(AbstractState):
             return PenaltyAnimationIn()
         if VALUES.is_soft_off_time():
             return Softoff()
+        if VALUES.is_die_time():
+            return ShutDownAnimation()
 
         if VALUES.standupflag:
             ## Falling detection
@@ -290,6 +303,8 @@ class Walking(AbstractState):
             return PenaltyAnimationIn()
         if VALUES.is_soft_off_time():
             return Softoff()
+        if VALUES.is_die_time():
+            return ShutDownAnimation()
         if VALUES.standupflag:
             ## Falling detection
             if VALUES.is_falling():

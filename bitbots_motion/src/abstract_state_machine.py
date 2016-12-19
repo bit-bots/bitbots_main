@@ -15,10 +15,11 @@ class Values(object):
         self.record = False
         self.shut_down = False
 
-        self.standupflag = False
-        self.soft_off = True
-        self.softstart = False
-        self.dieflag = False
+        self.standup_flag = False
+        self.soft_off_flag = True
+        self.soft_start = False
+        self.die_flag = False
+        self.start_test = False
 
         self.last_hardware_update = None
         self.last_request = None
@@ -32,6 +33,7 @@ class Values(object):
         self.animation_client = None
 
         self.softoff_time = rospy.get_param("/softofftime")
+        self.die_time = rospy.get_param("/dietime")
 
     def is_falling(self):
         falling_pose = self.fall_checker.check_falling(self.not_so_smooth_gyro)
@@ -47,7 +49,10 @@ class Values(object):
         return False
 
     def is_soft_off_time(self):
-        return self.soft_off and rospy.Time.now() - self.last_hardware_update > self.softoff_time
+        return self.soft_off_flag and rospy.Time.now() - self.last_hardware_update > self.softoff_time
+
+    def is_die_time(self):
+        return self.die_flag and rospy.Time.now() - self.last_hardware_update > self.die_time
 
     def animation_finished(self):
         return self.animation_client.get_result()
