@@ -5,6 +5,10 @@ bool first_frame
 # after this the animation is finished
 bool last_frame
 
+# should the animation be played directly, interrupting other animations and walking
+# will only be checked if first_frame is true
+bool force
+
 # motor positions
 trajectory_msgs/JointTrajectoryPoint positions
 

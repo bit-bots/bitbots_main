@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import rospy
+from std_msgs.msg import String
 
 from bitbots_motion.src.fall_checker import FallChecker
 
@@ -30,7 +31,18 @@ class Values(object):
         self.not_so_smooth_gyro = (0, 0, 0)
 
         self.fall_checker = FallChecker()
+        #for internal animations
         self.animation_client = None
+
+        # we want to play an animation, try to become controlable
+        self.external_animation_requested = False
+        # play now the external animation, go to animation running
+        self.external_animation_play = False
+        # the animation is finished, go back to controlable
+        self.external_animation_finished = False
+
+        # are we walking?
+        self.walking_active = False
 
         self.softoff_time = rospy.get_param("/softofftime")
         self.die_time = rospy.get_param("/dietime")
@@ -109,6 +121,9 @@ class AbstractStateMachine(object):
         self.state = AbstractState()
         self.connections = []
         self.error_state = None
+        self.debug_active = rospy.get_param("/debug_active")
+        if self.debug_active:
+            self.debug_publisher = rospy.Publisher("/motion_state_debug", String)
 
     def set_state(self, state):
         """
@@ -121,6 +136,9 @@ class AbstractStateMachine(object):
                 self.publish_state(state)
                 self.state.exit()
             self.state = state
+            if self.debug_active:
+                #publish name of the current state if debug is active
+                self.debug_publisher.publish(self.state.__class__.__name__)
             entry_switch = self.state.entry()
             if entry_switch is not None:
                 # we directly do another state switch
@@ -154,21 +172,6 @@ class AbstractStateMachine(object):
         return self.state.motion_state()
 
 
-def switch_motor_power(state):
-    """ Calling service from CM730 to turn motor power on or off"""
-    #todo set motor ram here if turned on, bc it lost it
-    rospy.wait_for_service("switch_motor_power")
-    power_switch = rospy.ServiceProxy("switch_motor_power", SwitchMotorPower)
-    try:
-        response = power_switch(state)
-    except rospy.ServiceException as exc:
-        print("Service did not process request: " + str(exc))
-
-
 def play_animation(anim_name):
     goal = AnimationActionMsg().anim = anim_name
     VALUES.animation_client.send_goal(goal)
-
-
-def check_if_animation_finished():
-    return VALUES.animation_client.get_result()

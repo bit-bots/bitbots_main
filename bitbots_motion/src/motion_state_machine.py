@@ -15,7 +15,7 @@ STATE_ANIMATION_RUNNING = 4
 STATE_STARTUP = 5
 STATE_SHUT_DOWN = 6
 STATE_PENALTY = 7
-STATE_PENALTY_ANIMANTION = 8
+STATE_PENALTY_ANIMATION = 8
 STATE_RECORD = 9
 STATE_WALKING = 10
 
@@ -37,6 +37,17 @@ class MotionStateMachine(AbstractStateMachine):
         msg.state = state.motion_state()
         self.state_publisher.publish(msg)
 
+    def is_penalized(self):
+        return self.state.__class__ in (Penalty, PenaltyAnimationIn, PenaltyAnimationOut)
+
+    def is_walking(self):
+        return self.state.__class__ in (Walking, WalkingStopping)
+
+    def is_record(self):
+        return self.state.__class__ in Record
+
+    def is_shutdown(self):
+        return self.state.__class__ in ShutDown
 
 class StartupState(AbstractState):
     def entry(self):
@@ -48,7 +59,7 @@ class StartupState(AbstractState):
         if VALUES.last_hardware_update is not None or time.time() - VALUES.start_up_time > 1:
             # check if we directly go into a special state, if not, got to get up
             if VALUES.start_test:
-                #todo
+                # todo
                 pass
                 return
             if VALUES.record:
@@ -56,6 +67,7 @@ class StartupState(AbstractState):
                 return Record()
             if VALUES.softstart:
                 switch_motor_power(False)
+                # to prohibit getting directly out of softoff
                 VALUES.last_client_update = rospy.Time.now() - 120
                 return Softoff()
             switch_motor_power(True)
@@ -66,7 +78,7 @@ class StartupState(AbstractState):
             if VALUES.standupflag:
                 return GettingUp()
             else:
-                return Controlable()
+                return Controllable()
 
     def exit(self):
         pass
@@ -91,13 +103,16 @@ class Softoff(AbstractState):
                 self.start_animation(rospy.get_param("/animations/motion/walkready"))
                 return
             if rospy.Time.now() - VALUES.last_request < 10:  # todo param
-                #got a new move request
+                # got a new move request
                 switch_motor_power(True)
-                self.next_state = Controlable()
+                self.next_state = Controllable()
                 self.start_animation(rospy.get_param("/animations/motion/walkready"))
                 return
             if VALUES.is_die_time():
                 return ShutDown()
+            if VALUES.external_animation_requested:
+                switch_motor_power(True)
+                return Controllable()
             rospy.sleep(0.1)
         else:
             if VALUES.animation_finished():
@@ -117,7 +132,7 @@ class Record(AbstractState):
 
     def evaluate(self):
         if not VALUES.record:
-            return Controlable()
+            return Controllable()
 
     def exit(self):
         pass
@@ -141,13 +156,13 @@ class PenaltyAnimationIn(AbstractState):
         pass
 
     def motion_state(self):
-        return STATE_PENALTY_ANIMANTION
+        return STATE_PENALTY_ANIMATION
 
 
 class PenaltyAnimationOut(AbstractState):
     def entry(self):
         rospy.logwarn("Not penalized anymore, getting up!")
-        self.next_state = Controlable()
+        self.next_state = Controllable()
         self.start_animation(rospy.get_param("/animations/motion/penalized_end"))
 
     def evaluate(self):
@@ -159,7 +174,7 @@ class PenaltyAnimationOut(AbstractState):
         pass
 
     def motion_state(self):
-        return STATE_PENALTY_ANIMANTION
+        return STATE_PENALTY_ANIMATION
 
 
 class Penalty(AbstractState):
@@ -186,7 +201,7 @@ class Penalty(AbstractState):
 class GettingUp(AbstractState):
     def entry(self):
         rospy.logdebug("Getting up!")
-        self.next_state = Controlable()
+        self.next_state = GettingUpSecond()
         self.start_animation(
             VALUES.fall_checker.check_fallen(VALUES.raw_gyro, VALUES.smooth_gyro))
 
@@ -211,7 +226,32 @@ class GettingUp(AbstractState):
         return STATE_GETTING_UP
 
 
-class Controlable(AbstractState):
+class GettingUpSecond(AbstractState):
+    def entry(self):
+        self.next_state = Controllable()
+        self.start_animation(rospy.get_param("/walkready"))
+
+    def evaluate(self):
+        if VALUES.animation_finished():
+            # we stood up, but are we now really standing correct?
+            if VALUES.is_falling():
+                # we're falling, directly going to falling
+                return Falling()
+            elif VALUES.is_fallen():
+                # we're fallen, directly going to fallen
+                return Fallen()
+            else:
+                # everything is fine, head on
+                return self.next_state
+
+    def exit(self):
+        pass
+
+    def motion_state(self):
+        return STATE_GETTING_UP
+
+
+class Controllable(AbstractState):
     def entry(self):
         pass
 
@@ -238,6 +278,12 @@ class Controlable(AbstractState):
             if direction_animation is not None:
                 return Fallen()
 
+        if VALUES.external_animation_play:
+            return AnimationRunning()
+
+        if VALUES.walking_active:
+            return Walking()
+
     def exit(self):
         pass
 
@@ -258,7 +304,7 @@ class Falling(AbstractState):
                 # go directly to fallen
                 return Fallen()
             else:
-                return Controlable()
+                return Controllable()
 
     def evaluate(self):
         if VALUES.animation_finished():
@@ -290,8 +336,6 @@ class Fallen(AbstractState):
 
 class Walking(AbstractState):
     def entry(self):
-        # todo
-        # walking active
         pass
 
     def evaluate(self):
@@ -313,14 +357,32 @@ class Walking(AbstractState):
             if VALUES.is_fallen():
                 return Fallen()
 
-                # test if animation should be played
-                # stop walking
-                # go to animation
-        # ask walking for next pose
-        pass
+        if VALUES.external_animation_requested:
+            return WalkingStopping()
+
+        if not VALUES.walking_active:
+            return Controllable()
+
+        # todo request walk positions?
 
     def exit(self):
+        VALUES.walking_active = False
+
+    def motion_state(self):
+        return STATE_WALKING
+
+
+class WalkingStopping(AbstractState):
+    def entry(self):
+        # todo walking stop
         pass
+
+    def evaluate(self):
+        # todo if wakling stopped
+        return Controllable()
+
+    def exit(self):
+        VALUES.walking_active = False
 
     def motion_state(self):
         return STATE_WALKING
@@ -328,13 +390,14 @@ class Walking(AbstractState):
 
 class AnimationRunning(AbstractState):
     def entry(self):
-        pass
+        # reset flags
+        VALUES.external_animation_play = False
+        VALUES.external_animation_requested = False
 
     def evaluate(self):
-        # todo
         # if external animation finished
-        return Controlable()
-        pass
+        if not VALUES.external_animation_finished:
+            return Controllable()
 
     def exit(self):
         pass
