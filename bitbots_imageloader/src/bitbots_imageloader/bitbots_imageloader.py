@@ -13,19 +13,24 @@ class Loadimg:
         print("started")
         self.pub_im = rospy.Publisher("/usb_cam/image_raw", Image, queue_size=1)
         self.bridge = CvBridge()
-        path = rospy.get_param("/imageloader/load_from", "/home/martin/Schreibtisch/ds_x/ds2")
-
+        path = rospy.get_param("/imageloader/load_from", "/home/martin/Schreibtisch/ds_x/ds1")
+        nr = 1000
         listdir = list(os.listdir(path))
 
-        for im in sorted(listdir)[:100]:
+        rate = rospy.Rate(30)
+
+        img_id = 3
+        for im in sorted(listdir)[:nr]:
             print(im)
             ra = cv2.imread(os.path.join(path, im))
 
             msg = self.bridge.cv2_to_imgmsg(ra, "bgr8")
-
+            msg.header.seq = img_id
+            msg.header.frame_id = "image_" + str(img_id)
+            img_id += 1
+            msg.header.stamp = rospy.get_rostime()
             self.pub_im.publish(msg)
-
-            rospy.sleep(0.2)
+            rate.sleep()
 
 
 if __name__ == "__main__":
