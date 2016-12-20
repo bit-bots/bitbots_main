@@ -12,14 +12,16 @@ from cv_bridge import CvBridge, CvBridgeError
 class Classifier:
     def __init__(self):
         self.pub_ball = rospy.Publisher("/ball_in_image", BallInImage, queue_size=1)
+        self.pub_rated_ball = rospy.Publisher("/rated_balls_in_image", BallsInImage, queue_size=1)
+
         self.bridge = CvBridge()
         self.last_imgs = OrderedDict()
         self.new_can = False
         self.latest_image_id = None
 
-        with open("src/bitbots_ballclassifier/src/bitbots_ballclassifier/model2.json", "r") as j:
+        with open("src/bitbots_ballclassifier/src/bitbots_ballclassifier/model.json", "r") as j:
             nem = model_from_json(j.read())
-        nem.load_weights("src/bitbots_ballclassifier/src/bitbots_ballclassifier/model2.ker")
+        nem.load_weights("src/bitbots_ballclassifier/src/bitbots_ballclassifier/model.ker")
         self.model = nem
 
         rospy.init_node("bitbots_ball_classifier")
@@ -41,37 +43,36 @@ class Classifier:
         ra = self.bridge.imgmsg_to_cv2(img, "bgr8")
 
         if self.candidates is not None:
-            try:
-                for i in self.candidates:
+            quality = []
+            for i in self.candidates:
+                try:
                     corp = ra[i[1] - i[2]:i[1] + i[2], i[0] - i[2]:i[0] + i[2]]
 
                     corp = cv2.resize(corp, (30, 30), interpolation=cv2.INTER_CUBIC)
                     corp.reshape((1,) + corp.shape)
 
-                    p = self.model.predict_classes(np.array([corp]), verbose=0)
+                    p = self.model.predict(np.array([corp]), verbose=0)
 
-                    if p[0] == 0:
-                        c = (0, 255, 0)
-                        msg = BallInImage()
-                        msg.center.x = i[0]
-                        msg.center.y = i[1]
-                        msg.diameter = i[2] * 2
-                        msg.confidence = p[0]
-                        self.pub_ball.publish(msg)
+                    msg = BallInImage()
+                    msg.center.x = i[0]
+                    msg.center.y = i[1]
+                    msg.diameter = i[2] * 2
+                    msg.confidence = p[0][0]
+                    msg.header.frame_id = img.header.frame_id
+                    quality.append(msg)
+                    print(p[0][0])
 
-                    else:
-                        c = (0, 0, 255)
-                    #print(p)
-                    # draw the outer circle
-                    #cv2.circle(ra, (i[0], i[1]), i[2], c, 2)
-                    # draw the center of the circle
-                    #cv2.circle(ra, (i[0], i[1]), 2, (0, 0, 255), 3)
+                except cv2.error:
+                    pass
 
-            except cv2.error:
-                pass
-
-        #cv2.imshow("img", ra)
-        #cv2.waitKey(1)
+            if len(quality) > 0:
+                self.pub_ball.publish(max(quality, key=lambda x: x.confidence))
+                rb = BallsInImage()
+                rb.candidates = quality
+                self.pub_rated_ball.publish(rb)
+            else:
+                self.pub_ball.publish(BallInImage())
+                self.pub_rated_ball.publish(BallsInImage())
 
     def _image_callback(self, img):
         self.last_imgs[img.header.frame_id] = img
