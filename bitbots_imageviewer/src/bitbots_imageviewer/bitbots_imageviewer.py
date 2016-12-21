@@ -24,7 +24,7 @@ class Loadimg:
             for t in self.images.keys():  # imgages to show
                 if self.ball_candidates.get(t, None) is not None:  # Check if all data to draw is there
 
-                    img = self.images.pop(t)  # get image from que
+                    img = self.images.pop(t)  # get image from queue
                     cans = self.ball_candidates.pop(t)
 
                     ra = self.bridge.imgmsg_to_cv2(img, "bgr8")
@@ -36,7 +36,7 @@ class Loadimg:
                             i[1] = int(can.center.y)
                             i[2] = int(can.diameter / 2.0)
 
-                            if  can == maxcan:
+                            if can == maxcan:
                                 c = (255, 0, 0)
                             elif can.confidence >= 0.5:
                                 c = (0, 255, 0)
@@ -59,8 +59,7 @@ class Loadimg:
             self.images.popitem(last=False)
 
     def _candidates_callback(self, balls):
-        if len(balls.candidates) > 0:
-            self.ball_candidates[balls.candidates[0].header.frame_id] = balls.candidates
+        self.ball_candidates[balls.header.frame_id] = balls.candidates
         if len(self.ball_candidates) > 5:
             self.ball_candidates.popitem(last=False)
 
