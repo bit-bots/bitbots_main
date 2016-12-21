@@ -1,8 +1,8 @@
 #!/usr/bin/env python2.7
 import cv2
 import os
+import sys
 import rospy
-from humanoid_league_msgs.msg import BallInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
@@ -13,7 +13,11 @@ class Loadimg:
         print("started")
         self.pub_im = rospy.Publisher("/usb_cam/image_raw", Image, queue_size=1)
         self.bridge = CvBridge()
-        path = rospy.get_param("/imageloader/load_from", "/home/martin/Schreibtisch/ds_x/ds1")
+
+        if len(sys.argv) > 1:
+            path = sys.argv[1]
+        else:
+            path = rospy.get_param("/imageloader/load_from", "/home/martin/Schreibtisch/ds_x/ds1")
         nr = 1000
         listdir = list(os.listdir(path))
 
