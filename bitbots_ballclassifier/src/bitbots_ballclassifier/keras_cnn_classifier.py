@@ -59,6 +59,7 @@ class Classifier:
                     msg.diameter = i[2] * 2
                     msg.confidence = p[0][0]
                     msg.header.frame_id = img.header.frame_id
+                    msg.header.stamp = img.header.stamp
                     quality.append(msg)
                     print(p[0][0])
 
@@ -69,6 +70,8 @@ class Classifier:
                 self.pub_ball.publish(max(quality, key=lambda x: x.confidence))
                 rb = BallsInImage()
                 rb.candidates = quality
+                rb.header.frame_id = img.header.frame_id
+                rb.header.stamp = img.header.stamp
                 self.pub_rated_ball.publish(rb)
             else:
                 self.pub_ball.publish(BallInImage())

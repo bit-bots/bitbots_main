@@ -1,7 +1,6 @@
 #!/usr/bin/env python2.7
 import cv2
 import numpy as np
-import os
 import rospy
 from humanoid_league_msgs.msg import BallInImage, BallsInImage
 from sensor_msgs.msg import Image
@@ -13,8 +12,8 @@ class DummyVision:
         self.pub_balls = rospy.Publisher("/ball_candidates", BallsInImage, queue_size=1)
         self.bridge = CvBridge()
 
-        rospy.init_node("bitbots_dummyvision")
         rospy.Subscriber("/usb_cam/image_raw", Image, self._image_callback, queue_size=1)
+        rospy.init_node("bitbots_dummyvision")
 
         rospy.spin()
 
@@ -37,7 +36,8 @@ class DummyVision:
 
         #build message
         msg = BallsInImage()
-        msg.candidates = []
+        msg.header.frame_id = img.header.frame_id
+        msg.header.stamp = img.header.stamp
         if circles is not None:
             circles = np.uint16(np.around(circles))
 
@@ -47,8 +47,9 @@ class DummyVision:
                 can.center.x = i[0]
                 can.center.y = i[1]
                 can.diameter = (i[2] * 2) + 3
+                can.header.frame_id = img.header.frame_id
+                can.header.stamp = img.header.stamp
                 msg.candidates.append(can)
-                can.header = img.header
 
         self.pub_balls.publish(msg)
 
