@@ -140,6 +140,10 @@ class Motion(object):
             # this is the last frame, we want to tell the state machine, that we're finished with the animations
             self.animation_running = False
             VALUES.external_animation_finished = True
+            if req.positions is None:
+                # probably this was just to tell us we're finished
+                # we don't need to set another position to the motors
+                return
 
         # sending keyframe positions to hardware
         self.joint_goal_publisher.publish(req.positions)
