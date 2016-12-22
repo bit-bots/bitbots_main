@@ -21,8 +21,10 @@ class Loadimg:
         self.ball_candidates = OrderedDict()
 
         while not rospy.is_shutdown():
-            for t in self.images.keys():  # imgages to show
-                if self.ball_candidates.get(t, None) is not None:  # Check if all data to draw is there
+            #print("Waiting for " + str(self.images.keys()))
+            for t in self.images.keys():  # imgages who are wating
+
+                if t in self.ball_candidates:  # Check if all data to draw is there
 
                     img = self.images.pop(t)  # get image from queue
                     cans = self.ball_candidates.pop(t)
@@ -53,9 +55,8 @@ class Loadimg:
 
     def _image_callback(self, img):
         self.images[img.header.frame_id] = img
-        self.ball_candidates[img.header.frame_id] = None
 
-        if len(self.images) >= 5:
+        if len(self.images) >= 10:
             self.images.popitem(last=False)
 
     def _candidates_callback(self, balls):

@@ -19,9 +19,9 @@ class Classifier:
         self.new_can = False
         self.latest_image_id = None
 
-        with open("src/bitbots_ballclassifier/src/bitbots_ballclassifier/model.json", "r") as j:
+        with open("src/bitbots_ballclassifier/src/bitbots_ballclassifier/model3.json", "r") as j:
             nem = model_from_json(j.read())
-        nem.load_weights("src/bitbots_ballclassifier/src/bitbots_ballclassifier/model.ker")
+        nem.load_weights("src/bitbots_ballclassifier/src/bitbots_ballclassifier/model3.ker")
         self.model = nem
 
         rospy.init_node("bitbots_ball_classifier")
@@ -42,44 +42,47 @@ class Classifier:
             return
         ra = self.bridge.imgmsg_to_cv2(img, "bgr8")
 
-        if self.candidates is not None:
-            quality = []
-            for i in self.candidates:
-                try:
-                    corp = ra[i[1] - i[2]:i[1] + i[2], i[0] - i[2]:i[0] + i[2]]
+        quality = []
+        for i in self.candidates:
+            try:
+                corp = ra[i[1] - i[2]:i[1] + i[2], i[0] - i[2]:i[0] + i[2]]
 
-                    corp = cv2.resize(corp, (30, 30), interpolation=cv2.INTER_CUBIC)
-                    corp.reshape((1,) + corp.shape)
+                corp = cv2.resize(corp, (30, 30), interpolation=cv2.INTER_CUBIC)
+                corp.reshape((1,) + corp.shape)
 
-                    p = self.model.predict(np.array([corp]), verbose=0)
+                p = self.model.predict(np.array([corp]), verbose=0)
 
-                    msg = BallInImage()
-                    msg.center.x = i[0]
-                    msg.center.y = i[1]
-                    msg.diameter = i[2] * 2
-                    msg.confidence = p[0][0]
-                    msg.header.frame_id = img.header.frame_id
-                    msg.header.stamp = img.header.stamp
-                    quality.append(msg)
-                    print(p[0][0])
+                msg = BallInImage()
+                msg.center.x = i[0]
+                msg.center.y = i[1]
+                msg.diameter = i[2] * 2
+                msg.confidence = p[0][0]
+                msg.header.frame_id = img.header.frame_id
+                msg.header.stamp = img.header.stamp
+                quality.append(msg)
+                #print(p[0][0])
 
-                except cv2.error:
-                    pass
+            except cv2.error:
+                pass
 
-            if len(quality) > 0:
-                self.pub_ball.publish(max(quality, key=lambda x: x.confidence))
-                rb = BallsInImage()
-                rb.candidates = quality
-                rb.header.frame_id = img.header.frame_id
-                rb.header.stamp = img.header.stamp
-                self.pub_rated_ball.publish(rb)
-            else:
-                self.pub_ball.publish(BallInImage())
-                self.pub_rated_ball.publish(BallsInImage())
+        if len(quality) > 0:
+            self.pub_ball.publish(max(quality, key=lambda x: x.confidence))
+            rb = BallsInImage()
+            rb.candidates = quality
+            rb.header.frame_id = img.header.frame_id
+            rb.header.stamp = img.header.stamp
+            self.pub_rated_ball.publish(rb)
+        else:
+            b = BallInImage()
+            b.header.frame_id = img.header.frame_id
+            self.pub_ball.publish(b)
+            bs = BallsInImage()
+            bs.header.frame_id = img.header.frame_id
+            self.pub_rated_ball.publish(bs)
 
     def _image_callback(self, img):
         self.last_imgs[img.header.frame_id] = img
-        if len(self.last_imgs) > 10:
+        if len(self.last_imgs) > 15:
             self.last_imgs.popitem(last=False)
 
     def _candidates_callback(self, candidates):
@@ -88,9 +91,7 @@ class Classifier:
             self.candidates.append((int(can.center.x),
                                     int(can.center.y),
                                     int(can.diameter / 2.0)))
-            self.latest_image_id = can.header.frame_id
-        if len(candidates.candidates) == 0:
-            self.latest_image_id = None
+        self.latest_image_id = candidates.header.frame_id
         self.new_can = True
 
 
