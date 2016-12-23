@@ -44,26 +44,28 @@ class Classifier:
 
         quality = []
         for i in self.candidates:
-            try:
-                corp = ra[i[1] - i[2]:i[1] + i[2], i[0] - i[2]:i[0] + i[2]]
 
-                corp = cv2.resize(corp, (30, 30), interpolation=cv2.INTER_CUBIC)
-                corp.reshape((1,) + corp.shape)
+            x_b = max(i[1] - i[2], 0)
+            x_e = min(i[1] + i[2], ra.shape[0])
+            y_b = max(i[0] - i[2], 0)
+            y_e = min(i[0] + i[2], ra.shape[1])
+            corp = ra[x_b:x_e, y_b:y_e]
 
-                p = self.model.predict(np.array([corp]), verbose=0)
+            corp = cv2.resize(corp, (30, 30), interpolation=cv2.INTER_CUBIC)
+            corp.reshape((1,) + corp.shape)
 
-                msg = BallInImage()
-                msg.center.x = i[0]
-                msg.center.y = i[1]
-                msg.diameter = i[2] * 2
-                msg.confidence = p[0][0]
-                msg.header.frame_id = img.header.frame_id
-                msg.header.stamp = img.header.stamp
-                quality.append(msg)
-                #print(p[0][0])
+            p = self.model.predict(np.array([corp]), verbose=0)
 
-            except cv2.error:
-                pass
+            msg = BallInImage()
+            msg.center.x = i[0]
+            msg.center.y = i[1]
+            msg.diameter = i[2] * 2
+            msg.confidence = p[0][0]
+            msg.header.frame_id = img.header.frame_id
+            msg.header.stamp = img.header.stamp
+            quality.append(msg)
+            #print(p[0][0])
+
 
         if len(quality) > 0:
             self.pub_ball.publish(max(quality, key=lambda x: x.confidence))
