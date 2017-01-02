@@ -1,0 +1,74 @@
+# toggles für das Kopfverhalten
+"Head":
+    #Wenn zu lange kein Torpfosten gesehen wurde wird kurz auf die Position an der Tropfosten laut LokalGoalModule
+    #sein sollte geschaut um die daten zu aktualisieren
+    "tryRefreshGoalData": False #unused
+
+    #Uses the Visionnformation to focus the goals, if false it will use the information of the GoalModel
+    "goalVisionTracking": True
+
+    #continous switching between Ball and Goal searching
+    "switchBallGoalSearch": False
+
+    # track goal while going on position
+    track_goal: True
+
+    # try to find the ball on old position
+    look_at_old_position: False
+
+# toggles für den Fieldie
+"Fieldie":
+    # lässt den Defender warten bis der ball bei sich in der nähe ist oder niemand sonst auf dem Feld ist um bis
+    # zum nächsten set ein striker zu werden
+    "oneTimeDefender": True
+
+    # Tries to self positionate at start of the geame
+    "trySelfPositioning" : False
+
+    # Cares about the Kickoff, for example wait for enemies
+    "careAboutKickoff" : False
+
+    # versuche mit dem goalie abzuklären ob wir aufs eigene tor schießen
+    "goalieNoOwnGoal": True
+
+    # versucht sich vor dem Schießen zum Tor auszurichten
+    "alignToGoal" : False
+
+    # hackiges align to goal von dr wm2014
+    "hackAlign": False
+
+    # benutzt den Sidekick im Spiel
+    "useSideKickInGame" : False
+
+    # use one time defender instead real defender for kick off strategy
+    kickOffOneTimeDefender: False
+
+    # use the dynamic kick made by the practica
+    useDynamicKick: False
+
+    # Track Ball and Goal while running to Ball
+    trackBoth: False
+
+
+# Toggles für den Goalie
+Goalie:
+    # Aktiviert das Relocate, das der Torwart sich im Tor richtig dreht, wenn er sich beim Hinwerfen umgedreht hat
+    relocateTurn : True
+    # lässt den goalie zum Fieldie werden
+    goalieGoFieldie: False
+    # ob der Goalie zum Ball hingeht, wenn er in der Nähe liegenbleibt
+    goalieGoToBall: False
+    # Ob der Goalie im Tor nach Rechts und links Läuft
+    walkInGoal : False
+    # ob der goalie beide arme hochnimmt und nich nur einen. Hotfix for to slow arm changings
+    useBothArms: False
+    # if the goalie tries to turn itself to the right direction, facing the opposite goal
+    checkDirection: False
+
+# toggles für elfmeter schütze
+"PenaltyFieldie":
+    #lässt ihn direkt ohne weiteres verhalten schießen
+    "directPenaltyKick": True
+
+    # benutze ein besonderes pathfinding für den penaltykick
+    "useSpecialPathfinding": True

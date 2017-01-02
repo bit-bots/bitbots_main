@@ -1,0 +1,143 @@
+
+# Time after which the robot assumes he lost the ball
+"maxBallTime": 3
+
+# how long a kick off is valid in s
+kickOffValidTime: 30
+
+# how long a drop ball is valid in s
+dropBallValidTime: 30
+
+# threshold at which the current position of the robot is counted as right
+positioningThreshold: 500
+
+"Camera":
+    "minPan": -125
+    "minTilt": -65
+    "maxPan": 125
+    "maxTilt": 0
+
+    #this is only right for 4:3 resolution!
+    "cameraAngle": 66.5
+
+    "horizontalFactor": 1
+    "verticalFactor": 0.5625
+
+"Tracking":
+    #max Speed for tracking
+    "maxPanSpeedTracking": 60
+    "maxTiltSpeedTracking": 60
+
+    # Maximale abweichung bevor gedreht wird
+    "xSensivity": 0.1
+    # Maximale abweichung bevor gedreht wird
+    "ySensivity": 0.1
+
+    # Idealer Ballmittelpunkt auf y-achse (-11)
+    "yCenterDefault": 0
+
+    # Goalie soll das Tracking Center weiter oben im Bild haben
+    "yCenterGoalie": 0.6
+
+    # Time how long to try to track the Ball after we lost it
+    "trackBallLost": 0.25
+
+    # counter were
+    "ballFailCounterMax": 17
+
+Search:
+    #max Speed for searching
+    maxPanSpeedSearch: 60
+    maxTiltSpeedSearch: 60
+
+    # time between steps of the head movement
+    headTurnTime: 1.3
+
+    # how exact the head has to be an the position to be recongized as at this position (in degree)
+    headTurnPrecision: 2
+
+    # Time in Secounds to wait befor turn by Walking
+    turnWaitTime: 20
+
+    #New feature if wew want to use invere kinematics for searching
+    useKinematicTaskForSearching: true
+
+    # Time to confirm an object
+    confirmTime: 2
+
+"Walking":
+    # Forward-Backward
+    "SLOW_BACKWARD": -3
+    "MEDIUM_BACKWARD": -5
+    "FAST_BACKWARD": -7
+
+    "SLOW_FORWARD": 3
+    "MEDIUM_FORWARD": 5
+    "FAST_FORWARD": 7
+
+    # Left-Right
+    "SLOW_SIDEWARDS_LEFT": 1
+    "MEDIUM_SIDEWARDS_LEFT": 3
+    "FAST_SIDEWARDS_LEFT": 5
+
+    "SLOW_SIDEWARDS_RIGHT": -1
+    "MEDIUM_SIDEWARDS_RIGHT": -3
+    "FAST_SIDEWARDS_RIGHT": -5
+
+    # Angular Turn Left, Right
+    "SLOW_ANGULAR_LEFT": 2
+    "MEDIUM_ANGULAR_LEFT": 6
+    "FAST_ANGULAR_LEFT": 12
+
+    "SLOW_ANGULAR_RIGHT": -2
+    "MEDIUM_ANGULAR_RIGHT": -6
+    "FAST_ANGULAR_RIGHT": -12
+
+Positions:
+    help: |
+        All positions are given as per cent of
+        field length, field with
+
+    goalie: (0.95, 0)
+    teamPlayer: (0.1, 0)
+    defender: (0.5, 0.1)
+    center: (0.7, -0.1)
+
+SearchPattern:
+  help: |
+    These are the search pattern for the head behaviour.
+    Each position is a tupel of pan and tilt in degree
+
+  ball:
+        - [0 , -12]
+        -  [90 , -10]
+        -  [50 ,-35]
+        -  [ 0 ,-50]
+        - [-50 ,-35]
+        - [-90 ,-10]
+
+  goalie:
+        - [  0 ,-20]
+        - [ 90 , -5]
+        -  [50 ,-40]
+        -  [ 0 ,-60]
+        - [-50 ,-40]
+        - [-90 ,-20]
+
+
+  defender:
+        - [  0 ,-20]
+        - [ 90 , -5]
+        - [ 50 ,-40]
+        - [  0 ,-60]
+        - [-50 ,-40]
+        - [-90 ,-20]
+
+
+  center:
+        - [  0 ,-20]
+        - [ 90 , -5]
+        - [ 50 ,-40]
+        - [  0 ,-60]
+        - [-50 ,-40]
+        - [-90 ,-20]

@@ -1,0 +1,91 @@
+"Fieldie":
+    # Abstand bei dem der Roboter direkt vorm Ball steht um den ball beim kick zu erreichen(Fieldie)
+    "kickDistance":  200
+    # Mindestabstand bei dem der Roboter direkt vorm Ball steht und den Ball kicken kann (Fieldie)
+    "minKickDistance":  0
+
+    # Mindestwinkel zum tor, bevor er einen Sidekick anstatt einem Normalen Kick probiert
+    "minVSideKick": 1000
+
+    # Seitlicher versatz bei dem er sich noch sitlich zum Ball ausrichten soll
+    "kickAlign": 100
+
+    # Der absolut Wert des angularen Wertes des Walkings mit dem er sich dreht wenn er nach dem Ball sucht.
+    "searchingTurnAngularAbsolute": 8
+
+    # The maximum time the robot tries to align to the goal
+    "maxGoalAlignTime": 15
+
+    # The time the robots does not try to align to the goal after triggering the stopping
+    "stopGoalAlignDuration": 10
+
+    # The max distance to the enemy goal for using a hard kick
+    "maxGoalHardKickDistance": 3000
+
+    # Distance when he starts to track only the ball
+    focusBallDistance: 800
+
+
+    "Defender":
+        # distanz zum ball bei der der defender direkt zum normalen spieler wird
+        "goStrikerRange": 1500
+        # zeit die der defender am nächsten zum ball sein muss bis er denkt das er alleine ist
+        "goStrikerTime": 1000
+        # die wie viel letzte ball entfernenungen betrachtet werden um zu entscheiden ob der defender zum striker wird
+        "ballHistoryLenght": 20
+        # Wie viele Trues in der History sein müssen zum striekr zu werden
+        "requiredNumberTrues": 18
+        # Zeit die der Defender am Anfang nichts macht um nicht zum striker zu werden
+        "waitAtStart": 10
+        # Zeit die der Defender Fieldie sein darf
+        "maxFieldieTime": 60
+
+    KickOff:
+        # Distance to ball, below the robot is the striker, above it is supporter, in mm
+        roleDecisionDistance: 500
+        # time after the supporter ignores the kick off and starts normal behaviour
+        ignoreKickOffTime: 20
+        # Time to decide if a recived strategy was from a kick off before
+        strategyOutdateTime: 30
+
+"Goalie":
+  ### Go To Ball ###
+    # geschwindigkeit, bei der der Torwart denkt, dass der Ball liegt und er zu ihm geht
+    "goToBallVelocity": 100
+    # u distanz bei der er zum Ball läuft
+    "goToBallu" : 450
+
+  ### Sideward walking in goal ###
+    # Winkel ab dem es sich nicht lohnt seitlich im Tor zu laufen in Degree
+    "sidewardMoveAngleThreshold": 20
+    # Distanz ab der wir uns seitwärts ausrichten um den ball zu blocken
+    "sidewardMoveUThreshold": 3000
+    # maximal movement to the the side as percent of the goal width
+    maxSidewardMovement: 0.8
+
+  ### Turn to right direction in goal ###
+    # error in the difference to the wanted facing angle of the robot towards the oppsosite goal
+    directionAngleThreshold: 30
+
+  ### Throw ###
+    # v distance to decide between right, middle and left throw
+    "vThrowDirectionDistance": 100
+    # u estimation distance between befor throwing
+    "uThrowThreshold": 500
+
+# elfemter schütze
+"PenaltyFieldie":
+    # verhaltensrichtung festlegen
+    # -1 zufällig entscheiden lassen
+    # 0 direct kick
+    # 1 etwas nach links
+    # 2 etwas nach rechts
+    # 3 etwas gerade aus
+    "penaltyDirection": -1
+
+"OneTimeKicker":
+    #time in seconds till the one time kicker is reseted to its original duty
+    resetTime: 20
+
+"Common" : !include config/behaviour_common
+"Toggles" : !include config/behaviour_toggles
