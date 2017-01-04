@@ -12,16 +12,15 @@ The Robot repositionates so he is facing the opponent goal to score.
 """
 import time
 
-from bitbots.modules.abstract.abstract_action_module import AbstractActionModule
-from bitbots.util import get_config
-
-config = get_config()
+import rosparam
+import rospy
+from abstract.abstract_action_module import AbstractActionModule
 
 
 class AlignToGoal(AbstractActionModule):
     def __init__(self, _):
         super(AlignToGoal, self).__init__()
-        self.config_max_aligning_time = config["Behaviour"]["Fieldie"]["maxGoalAlignTime"]
+        self.config_max_aligning_time = rospy.get_param("/Behaviour/Fieldie/maxGoalAlignTime")
 
     def perform(self, connector, reevaluate=False):
         connector.blackboard_capsule().schedule_both_tracking()

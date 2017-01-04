@@ -4,22 +4,17 @@ Kick Decision
 ^^^^^^^^^^^^^
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
-
-History:
-* 4.3.14: Created (Martin Poppinga)
 """
 import math
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.plain_walk_action import PlainWalkAction
-from bitbots.modules.behaviour.body.actions.throw_ball import ThrowBall
-from bitbots.modules.behaviour.body.actions.kick_ball import KickBall
-from bitbots.modules.behaviour.body.decisions.common.dynamic_kick import DynamicKick
-from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
-from bitbots.util import get_config
-from bitbots.util.speaker import say
-from bitbots.modules.behaviour.body.decisions.common.dynamic_kick_new import DynamicKickNew
 
-config = get_config()
+import rospy
+from abstract.abstract_decision_module import AbstractDecisionModule
+from body.actions.plain_walk_action import PlainWalkAction
+from body.actions.throw_ball import ThrowBall
+from body.actions.kick_ball import KickBall
+from body.decisions.common.dynamic_kick import DynamicKick
+from modell.capsules.walking_capsule import WalkingCapsule
+from body.decisions.common.dynamic_kick_new import DynamicKickNew
 
 
 class AbstractKickDecision(AbstractDecisionModule):
@@ -29,9 +24,9 @@ class AbstractKickDecision(AbstractDecisionModule):
 
     def __init__(self, _):
         super(AbstractKickDecision, self).__init__()
-        self.max_goal_hard_distance = config["Behaviour"]["Fieldie"]["maxGoalHardKickDistance"]
-        self.toggle_use_side_kick = config["Behaviour"]["Toggles"]["Fieldie"]["useSideKickInGame"]
-        self.use_dynamic_kick_toggle = config["Behaviour"]["Toggles"]["Fieldie"]["useDynamicKick"]
+        self.max_goal_hard_distance = rospy.get_param("Behaviour/Fieldie/maxGoalHardKickDistance")
+        self.toggle_use_side_kick = rospy.get_param("Behaviour/Toggles/Fieldie/useSideKickInGame")
+        self.use_dynamic_kick_toggle = rospy.get_param("Behaviour/Toggles/Fieldie/useDynamicKick")
 
     def perform(self, connector, reevaluate=False):
 

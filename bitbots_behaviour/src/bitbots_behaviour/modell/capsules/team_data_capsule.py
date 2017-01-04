@@ -20,24 +20,29 @@ from bitbots.modules.keys.grid_world_keys import DATA_KEY_OWN_POSITION_GRID
 from bitbots.util import get_config
 from mitecom.mitecom import ROLE_STRIKER, ROLE_DEFENDER, ROLE_SUPPORTER, ROLE_GOALIE
 
+import rospy
+from humanoid_league_msgs.msg import Role
 
 config = get_config()
 
 
-class TeamDataCapsule:
-    def __init__(self, data):
-        self.data = data
-        self.debug = Scope("Connector.Capsule.TeamDataCapsule")
+class TeamDataCapsule: #todo most infortaion now in Worldmodel
+    def __init__(self):
 
         self.my_player_number = config["PLAYER"]
+        self.role_sender: rospy.Publisher
+        self.my_data = dict()
 
     def get_ball_in_own_half(self):
+        raise NotImplementedError
         return self.data.get("Team.BallInOwnHalf", False)
 
     def get_team_goalie_ball_position(self):
+        raise NotImplementedError
         return self.data.get(DATA_KEY_GOALIE_BALL_RELATIVE_POSITION, (999999, 0))
 
     def get_goalie_ball_distance(self):
+        raise NotImplementedError
         try:
             distance = math.sqrt(self.data[DATA_KEY_GOALIE_BALL_RELATIVE_POSITION][0] ** 2 +
                                  self.data[DATA_KEY_GOALIE_BALL_RELATIVE_POSITION][1] ** 2)
@@ -49,6 +54,7 @@ class TeamDataCapsule:
         """
         Returns the position of the current robot of the distance to the ball
         """
+        raise NotImplementedError
         ball_time = 0 if self.data[DATA_KEY_BALL_TIME] == 99999999 else \
             self.data[DATA_KEY_BALL_TIME]
         plist = self.data.get(DATA_KEY_FIELDIE_BALL_TIME_LIST, [])
@@ -67,19 +73,25 @@ class TeamDataCapsule:
     def set_role(self, role):
         """ Set the Team Role - Need to be in data dict for Comm Modules """
         assert role in [ROLE_STRIKER, ROLE_DEFENDER, ROLE_SUPPORTER, ROLE_GOALIE]
-        self.data[DATA_KEY_ROLE] = role
+        r = Role()
+        r.role = role
+        self.role_sender.publish(r)
+        self.my_data["role"] = role
 
     def get_role(self):
-        return self.data.get(DATA_KEY_ROLE, None)
+        return self.my_data.get("role", None)
 
     def get_own_position_in_grid(self):
+        raise NotImplementedError
         return self.data.get(DATA_KEY_OWN_POSITION_GRID, (0, 0))
 
     def publish_kickoff_strategy(self, strategy):
+        raise NotImplementedError
         """ Here needs to be the mitecom setter for kickoff strategy """
         debug_m(3, "Setting Strategy to", strategy)
         self.data[DATA_KEY_KICKOFF_OFFENSE_SIDE] = strategy
 
     def get_kickoff_strategy(self):
+        raise NotImplementedError
         """  Gets you the kick off strategy as a tuple together with the time this information was recived """
         return self.data.get(DATA_KEY_KICKOFF_OFFENSE_SIDE_RECEIVED, 0)

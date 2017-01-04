@@ -5,17 +5,14 @@ RoleDecider
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
-History:
-* 19.3.14: Created (Martin Poppinga)
-
 Decides on witch position our fieldie should play
 """
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.decisions.team_player.center_decision import CenterDecision
-from bitbots.modules.behaviour.body.decisions.team_player.supporter_decision import SupporterDecision
-from bitbots.modules.behaviour.body.decisions.team_player.defender_decision import DefenderDecision
-from mitecom.mitecom import ROLE_STRIKER, ROLE_DEFENDER, ROLE_SUPPORTER, ROLE_OTHER
-from bitbots.modules.behaviour.body.decisions.common.ball_seen import BallSeenFieldie
+from abstract.abstract_decision_module import AbstractDecisionModule
+from body.decisions.team_player.center_decision import CenterDecision
+from body.decisions.team_player.supporter_decision import SupporterDecision
+from body.decisions.team_player.defender_decision import DefenderDecision
+from body.decisions.common.ball_seen import BallSeenFieldie
+from humanoid_league_msgs.msg import Role
 
 
 class RoleDecider(AbstractDecisionModule):
@@ -26,19 +23,19 @@ class RoleDecider(AbstractDecisionModule):
     def perform(self, connector, reevaluate=False):
         if self.forced:
             if self.forced == "Striker":
-                connector.team_data_capsule().set_role(ROLE_STRIKER)
+                connector.team_data.set_role(Role.ROLE_STRIKER)
                 return self.push(BallSeenFieldie)
 
             elif self.forced == "Supporter":
-                connector.team_data_capsule().set_role(ROLE_SUPPORTER)
+                connector.team_data.set_role(Role.ROLE_SUPPORTER)
                 return self.push(SupporterDecision)
 
             elif self.forced == "Center":
-                connector.team_data_capsule().set_role(ROLE_OTHER)
+                connector.team_data.set_role(Role.ROLE_OTHER)
                 return self.push(CenterDecision)
 
             elif self.forced == "Defender":
-                connector.team_data_capsule().set_role(ROLE_DEFENDER)
+                connector.team_data.set_role(Role.ROLE_DEFENDER)
                 return self.push(DefenderDecision)
             else:
                 raise NotImplementedError
@@ -46,6 +43,7 @@ class RoleDecider(AbstractDecisionModule):
             # decide by our own
             # if status_ok() # test if robot is capable
             # Todo richtig machen bitte (Martin 7.11.14)
+            return self.push(BallSeenFieldie)
             rank_to_ball = connector.team_data_capsule().team_rank_to_ball()
             # print "I'm number ", rank_to_ball
             if rank_to_ball == 1:
@@ -65,5 +63,6 @@ class RoleDecider(AbstractDecisionModule):
                 connector.team_data_capsule().set_role(ROLE_DEFENDER)
                 return self.push(DefenderDecision)
 
-    def get_reevaluate(self):
+    @staticmethod
+    def get_reevaluate():
         return True

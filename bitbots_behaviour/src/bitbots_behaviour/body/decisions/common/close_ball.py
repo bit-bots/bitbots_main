@@ -8,18 +8,15 @@ CloseBall
 History:
 * 29.11.13: Created (Martin Poppinga)
 """
-
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.align_on_ball import AlignOnBall
-from bitbots.modules.behaviour.body.actions.go_to_ball_intelligent import GoToBallIntelligent
-from bitbots.modules.behaviour.body.decisions.common.stands_correct_decision import StandsCorrectDecision
-from bitbots.modules.behaviour.body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
-from bitbots.util import get_config
-from bitbots.modules.behaviour.body.decisions.common.kick_decision import KickDecisionPenaltyKick
-from bitbots.modules.behaviour.body.decisions.common.kick_decision import KickDecisionThrowIn
-from bitbots.modules.behaviour.body.actions.go_to_ball import GoToBallPenaltykick
-
-config = get_config()
+import rospy
+from abstract.abstract_decision_module import AbstractDecisionModule
+from body.actions.align_on_ball import AlignOnBall
+from body.actions.go_to_ball_intelligent import GoToBallIntelligent
+from body.decisions.common.stands_correct_decision import StandsCorrectDecision
+from body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
+from body.decisions.common.kick_decision import KickDecisionPenaltyKick
+from body.decisions.common.kick_decision import KickDecisionThrowIn
+from body.actions.go_to_ball import GoToBallPenaltykick
 
 
 class AbstractCloseBall(AbstractDecisionModule):
@@ -31,14 +28,14 @@ class AbstractCloseBall(AbstractDecisionModule):
         super(AbstractCloseBall, self).__init__()
         self.last_goalie_dist = 0
         self.last_goalie_dist_time = 0
-        self.max_kick_distance = config["Behaviour"]["Fieldie"]["kickDistance"]
-        self.min_kick_distance = config["Behaviour"]["Fieldie"]["minKickDistance"]
-        self.config_kickalign_v = config["Behaviour"]["Fieldie"]["kickAlign"]
+        self.max_kick_distance = rospy.get_param("/Behaviour/Fieldie/kickDistance")
+        self.min_kick_distance = rospy.get_param("/Behaviour/Fieldie/minKickDistance")
+        self.config_kickalign_v = rospy.get_param("/Behaviour/Fieldie/kickAlign")
 
     def perform(self, connector, reevaluate=False):
         # if the robot is near to the ball
-        if self.min_kick_distance < connector.raw_vision_capsule().get_ball_info("u") <= self.max_kick_distance \
-                and connector.raw_vision_capsule().get_ball_info("distance") <= self.max_kick_distance * 5.0:
+        if self.min_kick_distance < connector.vision.get_ball_relative[0] <= self.max_kick_distance \
+                and connector.vision.get_ball_distance <= self.max_kick_distance * 5.0:
             # TODO config
             self.action(connector)
         else:
@@ -50,8 +47,8 @@ class AbstractCloseBall(AbstractDecisionModule):
     def go(self):
         return self.push(GoToBallIntelligent)
 
-    def get_reevaluate(self):
-
+    @staticmethod
+    def get_reevaluate():
         return True
 
 

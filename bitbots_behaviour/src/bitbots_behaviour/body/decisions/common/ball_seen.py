@@ -5,20 +5,15 @@ BallSeen
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
-History:
-* 29.11.13: Created (Martin Poppinga)
-* 12.03.14: Changed to use Config (Marc)
 """
 import time
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.decisions.goalie.ball_dangerous import BallDangerous
-from bitbots.modules.behaviour.body.decisions.common.close_ball import CloseBallPenaltyKick, CloseBallCommon
-from bitbots.modules.behaviour.body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
-from bitbots.modules.behaviour.body.actions.search import Search
-from bitbots.modules.behaviour.body.decisions.common.close_ball import CloseBallThrowIn
-from bitbots.util import get_config
-
-config = get_config()
+import rospy
+from abstract.abstract_decision_module import AbstractDecisionModule
+from body.decisions.goalie.ball_dangerous import BallDangerous
+from body.decisions.common.close_ball import CloseBallPenaltyKick, CloseBallCommon
+from body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
+from body.actions.search import Search
+from body.decisions.common.close_ball import CloseBallThrowIn
 
 
 class AbstractBallSeen(AbstractDecisionModule):
@@ -29,8 +24,7 @@ class AbstractBallSeen(AbstractDecisionModule):
 
     def __init__(self, _):
         super(AbstractBallSeen, self).__init__()
-        self.max_ball_time = config["Behaviour"]["Common"]["maxBallTime"]
-        self.anim_goali_walkready = config["animations"]["motion"]["goalie-walkready"]
+        self.max_ball_time = rospy.get_param("/Behaviour/Common/maxBallTime")
 
     def perform(self, connector, reevaluate=False):
 

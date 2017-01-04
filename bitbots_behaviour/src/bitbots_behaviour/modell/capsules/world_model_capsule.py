@@ -5,27 +5,23 @@ WorldModellCapsule
 
 Provides informations about the world model.
 
-History:
-* 05.12.14: Created (Marc Bestmann)
-
 """
 import math
+from humanoid_league_msgs.msg import Position
 
-from bitbots.modules.keys import DATA_KEY_GOAL_MODEL
 
-
-class WorldModelCapsule(object):
-    def __init__(self, data):
-        self.data = data
+class WorldModelCapsule:
+    def __init__(self, ):
+        self.position = Position()
 
     def get_current_position(self):
-        return self.data.get(DATA_KEY_GOAL_MODEL, None).get_robot_absolute_position()
+        return self.position.pose.x, self.position.pose.y, self.position.pose.theta
 
     def get_ball_position_xy(self):
         raise NotImplementedError
 
     def get_ball_position_uv(self):
-        return self.get_uv_from_xy(*self.get_ball_position_xy())
+        raise NotImplementedError
 
     def get_uv_from_xy(self, x, y):
         """ Returns the relativ positions of the robot to this absolute position"""
@@ -44,3 +40,6 @@ class WorldModelCapsule(object):
         dist = math.sqrt(u ** 2 + v ** 2)
 
         return dist
+
+    def position_callback(self, pos: Position):
+        self.position = pos

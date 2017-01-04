@@ -11,23 +11,13 @@ History:
 """
 import time
 import math
-import bitbots
-from bitbots.util import get_config
-import pickle as Pickle
-config = get_config()
+import rosparam
 
 
-class BlackboardCapsule(object):
-    def __init__(self, data):
-        self.data = data
+class BlackboardCapsule:
+    def __init__(self):
         self.my_data = {}
-        self.config_stop_g_align_dur = config["Behaviour"]["Fieldie"]["stopGoalAlignDuration"]
-
-    def get_pathfinding_net(self):
-        if "pathfinding_net" not in self.data:
-            path = bitbots.util.find_resource('network.pickle')
-            self.data["pathfinding_net"] = Pickle.load(open(path, "rb"))
-        return self.data["pathfinding_net"]
+        self.config_stop_g_align_dur = rosparam.get_param("/Behaviour/Fieldie/stopGoalAlignDuration")
 
     def freeze_till(self, ftime):
         self.my_data["freeze"] = ftime
@@ -120,6 +110,18 @@ class BlackboardCapsule(object):
 
     def get_goalie_out_of_goal(self):
         return self.my_data.get("OutOfGoal", False)
+
+    def set_duty(self, duty):
+        self.my_data["Duty"] = duty
+        role = "Other"
+        if duty == "Goalie":
+            role = "Goalie"
+        if duty in ("Fieldie", "TeamPlayer"):
+            role = "Supporter"
+        self.my_data["Duty"] = role
+
+    def get_duty(self):
+        return self.my_data.get("Duty", False)
 
     ####################
     # ## Tacking Part ##

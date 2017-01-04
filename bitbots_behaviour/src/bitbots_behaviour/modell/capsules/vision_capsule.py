@@ -1,64 +1,29 @@
-# -*- coding:utf-8 -*-
-"""
-RawVisionInfoCapsule
-^^^^^^^^^^^^^^^^^^^^
-
-.. moduleauthor:: sheepy <sheepy@informatik.uni-hamburg.de>
-
-History:
-* 5/7/14: Created (sheepy)
-
-"""
-
-from bitbots.modules.keys import DATA_KEY_GOAL_INFO, DATA_KEY_IS_NEW_FRAME, DATA_KEY_GOAL_FOUND, DATA_KEY_BALL_INFO, \
-    DATA_KEY_BALL_FOUND, DATA_KEY_CURRENT_HORIZON_UV, DATA_KEY_CURRENT_HORIZON_ORIENTATION, \
-    DATA_KEY_OBSTACLE_INFO, DATA_KEY_OBSTACLE_FOUND, DATA_KEY_ANY_GOALPOST_LAST_SEEN, \
-    DATA_KEY_ANY_WHOLE_GOAL_LAST_SEEN, DATA_KEY_HORIZON_OBSTACLES
+import time
+from humanoid_league_msgs.msg import ObstacleRelative, BallRelative
 
 
-class RawVisionCapsule:
-    def __init__(self, data):
-        self.data = data
+class VisionCapsule:
+    def __init__(self):
+        self.ball = BallRelative()
+        self.obstacle = ObstacleRelative()
+        self.my_data = dict()
 
     ############
     # ## Ball ##
     ############
 
-    def get_ball_info(self, key):
-        """
-        Gets information about the ball
-        a and b are the positions on the image
-        :type key: str
-        :param key: u, v, a, b, radius, rating, or distance
-        """
-        assert key in ["u", "v", "a", "b", "x", "y", "radius", "rating",
-                       "distance"]  # todo x,y wieder entfernen wenn legacy raus ist
-        if self.get_last_seen("Ball") != 0:
-            # Schaut ob schon Informationen zum Ball da sind
-            return getattr(self.data[DATA_KEY_BALL_INFO], key)
-        else:
-            return None
-
-    def get_ball_info_legacy_wrapper(self, key):  # todo HOTFIX, please change in vision x,y in a,b
-        """
-        Converts the a and b key in x and y
-        :param key:
-        :return:
-        """
-        if key == "a":
-            key = "x"
-        if key == "b":
-            key = "y"
-        return self.get_ball_info(key)
-
     def ball_seen(self):
-        if self.data.get(DATA_KEY_BALL_FOUND, False):
-            return True
-        else:
-            return False
+        return bool(self.ball.ball_relative)
 
     def ball_last_seen(self):
-        return self.data.get("BallLastSeen", 0)
+        return self.my_data.get("BallLastSeen", 0)
+
+    def get_ball_relative(self):
+        return self.ball.ball_relative.x, self.ball.ball_relative.y
+
+    def get_ball_distance(self):
+        x, y = self.get_ball_relative()
+        return (x**2 + y**2)**0.5
 
     ############
     # ## Goal ##
@@ -69,6 +34,7 @@ class RawVisionCapsule:
         :rtype bool
         :return: Has actually seen a (part of a) goal
         """
+        raise NotImplementedError
         return self.data.get(DATA_KEY_GOAL_FOUND, False)
 
     def any_whole_goal_seen(self):
@@ -76,6 +42,7 @@ class RawVisionCapsule:
         :rtype bool
         :return: Has seen two posts wich match to a goal
         """
+        raise NotImplementedError
         return self.data.get(DATA_KEY_ANY_WHOLE_GOAL_LAST_SEEN, False)
 
     def any_goalpost_last_seen(self):
@@ -83,6 +50,7 @@ class RawVisionCapsule:
         :rtype int
         :return: Timestamp of the last time a goalpost was seen
         """
+        raise NotImplementedError
         return self.data.get(DATA_KEY_ANY_GOALPOST_LAST_SEEN, 0)
 
     def own_goal_seen(self):
@@ -95,6 +63,7 @@ class RawVisionCapsule:
         """
         Holds a namedtuple (x, y, u, v) for each of the two goal posts (if found).
         """
+        raise NotImplementedError
         return self.data.get(DATA_KEY_GOAL_INFO, None)
 
     def get_goal_post_count(self):
@@ -109,9 +78,11 @@ class RawVisionCapsule:
     ###############
 
     def get_current_horizon(self):
+        raise NotImplementedError
         return self.data.get(DATA_KEY_CURRENT_HORIZON_UV, [None, None])
 
     def get_current_horizon_orientation(self):
+        raise NotImplementedError
         return self.data.get(DATA_KEY_CURRENT_HORIZON_ORIENTATION, 0)
 
     def get_horizon_obstacles(self):
@@ -119,6 +90,7 @@ class RawVisionCapsule:
 
         :return: [(u,v),...]
         """
+        raise NotImplementedError
         return self.data.get(DATA_KEY_HORIZON_OBSTACLES, None)
 
     #############
@@ -126,18 +98,20 @@ class RawVisionCapsule:
     #############
 
     def is_new_frame(self):
+        raise NotImplementedError
         return self.data[DATA_KEY_IS_NEW_FRAME]
 
     def get_last_seen(self, key):
         """ key: Returns the timestamp for the requested object when it was last seen """
         if key == "Ball":
-            return self.data.get("BallLastSeen", 0)
+            return self.my_data.get("BallLastSeen", 0)
         else:
             raise KeyError
 
     def get_obstacle_found(self):
         """
         """
+        raise NotImplementedError
         return self.data[DATA_KEY_OBSTACLE_FOUND]
 
     def get_obstacle_info(self):
@@ -152,4 +126,13 @@ class RawVisionCapsule:
         h, w: height and width of the Obstacle
         color: 0 nothing, 1 magenta, 2 only magenta, 4 cyan, 8 only cyan, 16 only colored
         """
+        raise NotImplementedError
         return self.data[DATA_KEY_OBSTACLE_INFO]
+
+    def ball_callback(self, ball: BallRelative):
+        self.ball = ball
+        self.my_data["BallLastSeen"] = time.time()
+
+    def obstacle_callback(self, obstacle: ObstacleRelative):
+        self.obstacle = obstacle
+

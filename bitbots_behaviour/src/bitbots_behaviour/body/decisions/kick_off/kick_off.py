@@ -5,30 +5,26 @@ KickOff
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
-History:
-* 29.11.13: Created (Martin Poppinga)
 """
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.decisions.common.role_decider import RoleDecider
-from bitbots.modules.behaviour.body.decisions.kick_off.kick_off_role_decider import KickOffRoleDecider
-from bitbots.modules.behaviour.body.decisions.kick_off.wait_for_enemy_kick_off import WaitForEnemyKickOff
-from bitbots.util import get_config
+from abstract.abstract_decision_module import AbstractDecisionModule
+from body.decisions.common.role_decider import RoleDecider
+from body.decisions.kick_off.kick_off_role_decider import KickOffRoleDecider
+from body.decisions.kick_off.wait_for_enemy_kick_off import WaitForEnemyKickOff
+import rosparam
 
 
 class KickOff(AbstractDecisionModule):
     """
     Decided if there is a kick off
-
     """
 
     def __init__(self, _):
         super(KickOff, self).__init__()
-        config = get_config()["Behaviour"]
-        self.toggle_care_about_kickoff = config["Toggles"]["Fieldie"]["careAboutKickoff"]
+        self.toggle_care_about_kickoff = rosparam.get_param("/Behaviour/Toggles/Fieldie/careAboutKickoff")
 
     def perform(self, connector, reevaluate=False):
-
-        if 0 < connector.gamestatus_capsule().get_seconds_since_last_drop_ball() < 60:
+        return self.push(RoleDecider)
+        if 0 < connector.gamestate.get_seconds_since_last_drop_ball() < 60:
             # there is a drop ball, normal behaviour
             return self.push(RoleDecider)
         else:
