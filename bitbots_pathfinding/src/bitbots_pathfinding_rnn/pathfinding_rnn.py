@@ -41,7 +41,10 @@ class Pathfinding:
         r = rospy.Rate(self.conf_refreshRate)
 
         while not rospy.is_shutdown():
-            self.perform()
+            if self.goalpos:  # New data avaliable
+                self.perform()
+                self.goalpos = None
+
             r.sleep()
 
     def perform(self):
