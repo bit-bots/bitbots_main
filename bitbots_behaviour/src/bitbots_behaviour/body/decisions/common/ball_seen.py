@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 """
 BallSeen
 ^^^^^^^^^^^^^
@@ -7,13 +6,14 @@ BallSeen
 
 """
 import time
+
 import rospy
 from abstract.abstract_decision_module import AbstractDecisionModule
-from body.decisions.goalie.ball_dangerous import BallDangerous
-from body.decisions.common.close_ball import CloseBallPenaltyKick, CloseBallCommon
-from body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
 from body.actions.search import Search
+from body.decisions.common.close_ball import CloseBallPenaltyKick, CloseBallCommon
 from body.decisions.common.close_ball import CloseBallThrowIn
+from body.decisions.goalie.ball_dangerous import BallDangerous
+from body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
 
 
 class AbstractBallSeen(AbstractDecisionModule):
@@ -28,13 +28,13 @@ class AbstractBallSeen(AbstractDecisionModule):
 
     def perform(self, connector, reevaluate=False):
 
-        if connector.raw_vision_capsule().ball_seen() or \
-                ((time.time() - connector.raw_vision_capsule().get_last_seen("Ball")) < self.max_ball_time):
+        if (time.time() - connector.vision.ball_last_seen()) < self.max_ball_time:
             return self.has_ball_seen(connector)
         else:
             return self.ball_not_seen(connector)
 
-    def get_reevaluate(self):
+    @staticmethod
+    def get_reevaluate():
         return True
 
     def has_ball_seen(self, connector):

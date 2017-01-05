@@ -7,24 +7,13 @@ Testing the walking using a fixed pattern
 """
 import time
 
-from bitbots.modules.abstract.abstract_action_module import AbstractActionModule
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.go_to_absolute_position import GoToAbsolutePosition
-from bitbots.modules.behaviour.body.actions.plain_walk_action import PlainWalkAction
-from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
-from bitbots.modules.keys import DATA_VALUE_STATE_READY
-from bitbots.util import get_config
-
-config = get_config()
+from abstract.abstract_action_module import AbstractActionModule
 
 
 class TestWalkingStatic(AbstractActionModule):
     def __init__(self, _):
         super(TestWalkingStatic, self).__init__()
         self.starttime = time.time() - 10
-
-
-
 
     def perform(self, connector, reevaluate=False):
         td = time.time() - self.starttime
@@ -57,7 +46,5 @@ class TestWalkingStatic(AbstractActionModule):
         else:
             connector.walking_capsule().stop_walking()
 
-
     def get_reevaluate(self):
         return True
-

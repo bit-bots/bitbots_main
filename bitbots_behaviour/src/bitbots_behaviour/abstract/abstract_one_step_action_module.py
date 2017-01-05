@@ -12,7 +12,7 @@ History:
 TODOs:
 
 """
-from bitbots.modules.abstract.abstract_action_module import AbstractActionModule
+from abstract.abstract_action_module import AbstractActionModule
 
 
 class AbstractOneStepActionModule(AbstractActionModule):

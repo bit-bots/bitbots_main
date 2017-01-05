@@ -1,21 +1,8 @@
-# -*- coding:utf-8 -*-
 """
 Search
 ^^^^^^
-
-This Module let the Head do its search, and do nothing.
-
-This is a Symantic Module, it does the same as the :module:`Wait`
-
-History:
-''''''''
-
-* ??.??.?? Created (Somebody)
-
-* 06.12.14 Completly changed (Nils Rokita)
-
 """
-from bitbots.modules.abstract.abstract_action_module import AbstractActionModule
+from abstract.abstract_action_module import AbstractActionModule
 
 
 class Search(AbstractActionModule):

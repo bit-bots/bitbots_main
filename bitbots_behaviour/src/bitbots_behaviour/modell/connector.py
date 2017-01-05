@@ -9,7 +9,6 @@ Connector
 import rospy
 from modell.capsules.animation_capsule import AnimationCapsule
 from modell.capsules.blackboard_capsule import BlackboardCapsule
-from modell.capsules.filtered_vision_capsule import FilteredVisionCapsule
 from modell.capsules.game_status_capsule import GameStatusCapsule
 from modell.capsules.world_model_capsule import WorldModelCapsule
 from modell.capsules.vision_capsule import VisionCapsule
@@ -25,7 +24,7 @@ class Connector:
         self.blackboard = BlackboardCapsule()
 
         self.gamestate = GameStatusCapsule()
-        #self.walking = WalkingCapsule()
+        self.walking = WalkingCapsule()
 
         self.team_data = TeamDataCapsule()
         self.animation = AnimationCapsule()

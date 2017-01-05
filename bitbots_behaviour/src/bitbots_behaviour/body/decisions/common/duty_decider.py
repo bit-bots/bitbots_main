@@ -10,7 +10,6 @@ import rospy
 from abstract.abstract_decision_module import AbstractDecisionModule
 from body.actions.focus_goal import FocusEnemyGoal
 from body.actions.go_to_absolute_position import GoToAbsolutePosition
-from body.actions.plain_walk_action import PlainWalkAction
 from body.actions.testing.test_walking_dynamic import TestWalkingDynamic
 from body.actions.testing.test_walking_static import TestWalkingStatic
 from body.actions.wait import Wait
@@ -139,6 +138,5 @@ class DutyDecider(AbstractDecisionModule):
 
             raise NotImplementedError
 
-    @staticmethod
-    def get_reevaluate():
+    def get_reevaluate(self):
         return True

@@ -5,31 +5,22 @@ TeamDataCapsule
 
 .. moduleauthor:: sheepy <sheepy@informatik.uni-hamburg.de>
 
-History:
-* 5/4/14: Created (sheepy)
-
 """
 import math
 
-from bitbots.debug import Scope
-from bitbots.modules.abstract.abstract_module import debug_m
-from bitbots.modules.keys import DATA_KEY_GOALIE_BALL_RELATIVE_POSITION, DATA_KEY_BALL_TIME, \
-    DATA_KEY_FIELDIE_BALL_TIME_LIST, DATA_KEY_ROLE, DATA_KEY_KICKOFF_OFFENSE_SIDE, \
-    DATA_KEY_KICKOFF_OFFENSE_SIDE_RECEIVED
-from bitbots.modules.keys.grid_world_keys import DATA_KEY_OWN_POSITION_GRID
-from bitbots.util import get_config
-from mitecom.mitecom import ROLE_STRIKER, ROLE_DEFENDER, ROLE_SUPPORTER, ROLE_GOALIE
-
 import rospy
+from abstract.abstract_module import debug_m
 from humanoid_league_msgs.msg import Role
+from keys import DATA_KEY_GOALIE_BALL_RELATIVE_POSITION, DATA_KEY_BALL_TIME, \
+    DATA_KEY_FIELDIE_BALL_TIME_LIST, DATA_KEY_KICKOFF_OFFENSE_SIDE, \
+    DATA_KEY_KICKOFF_OFFENSE_SIDE_RECEIVED
+from keys.grid_world_keys import DATA_KEY_OWN_POSITION_GRID
 
-config = get_config()
 
-
-class TeamDataCapsule: #todo most infortaion now in Worldmodel
+class TeamDataCapsule:  # todo most infortaion now in Worldmodel
     def __init__(self):
 
-        self.my_player_number = config["PLAYER"]
+        # self.my_player_number = config["PLAYER"]
         self.role_sender: rospy.Publisher
         self.my_data = dict()
 

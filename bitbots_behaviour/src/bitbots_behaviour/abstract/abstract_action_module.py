@@ -1,6 +1,4 @@
-# -*- coding:utf-8 -*-
-from bitbots.modules.abstract.abstract_stack_element import AbstractStackElement
-from bitbots.modules.abstract.abstract_module import debug_m
+from abstract.abstract_stack_element import AbstractStackElement
 
 
 class AbstractActionModule(AbstractStackElement):

@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*-
-from bitbots.modules.abstract.abstract_stack_element import AbstractStackElement
+from abstract.abstract_stack_element import AbstractStackElement
 
 
 class AbstractDecisionModule(AbstractStackElement):

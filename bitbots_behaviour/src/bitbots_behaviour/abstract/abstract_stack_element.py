@@ -5,22 +5,10 @@ AbstractStackElement
 
 .. moduleauthor:: Nils Rokita <0rokita@informatik.uni-hamburg.de>
 
-History:
-
-* 1.12.13: Created (Nils Rokita)
-
-* 2.12.13: Umstrukturierung mit Action und DecisionModule (Robert Kessler)
-
-* 14.12.13: Umstellung auf Weltmodellschnittstelle (Martin Poppinga)
-
-* 05.12.14: Erweterung um reevaluate (Nils Rokita)
-
-* 03.04.14: Unterdrückung des reevaluate (Nils Rokita)
 """
-from bitbots.debug import Scope
 
 
-class AbstractStackElement(object):
+class AbstractStackElement:
     """
     Das AbstractStackElement ist die Grundlager aller Module welche auf dem
     Stack landen. Es hat dafür einige hilfsfunktionen welche nicht
@@ -28,7 +16,6 @@ class AbstractStackElement(object):
     ausgeführt. Jedes Modul welches von AbstractStackElement erbt kann
     als Startmodul eines Verhaltens gewählt werden.
     """
-    debug = Scope("Missdirected.StackElement")
     _behaviour = None
     reevaluate = False
     _init_data = None

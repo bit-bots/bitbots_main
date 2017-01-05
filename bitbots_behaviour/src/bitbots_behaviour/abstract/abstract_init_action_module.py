@@ -5,14 +5,9 @@ AbstractInitStepActionModule
 
 .. moduleauthor:: Sheepy <sheepy@informatik.uni-hamburg.de>
 
-History:
-
-* 13.12.13: Created (Sheepy)
-
-TODOs:
 
 """
-from bitbots.modules.abstract.abstract_action_module import AbstractActionModule
+from abstract.abstract_action_module import AbstractActionModule
 
 
 class AbstractInitActionModule(AbstractActionModule):

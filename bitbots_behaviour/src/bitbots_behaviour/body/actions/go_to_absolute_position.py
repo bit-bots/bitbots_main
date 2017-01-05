@@ -6,16 +6,11 @@ GoToAbsolutePosition
 This Module is responsible for walking to a specific point with a specific
 orientation within the absolute coordinate system.
 
-History:
-* 8/17/14: Created (sheepy)
-
 """
 import math
 import cmath
 
-from bitbots.modules.abstract.abstract_init_action_module import AbstractInitActionModule
-from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
-from bitbots.util import sign
+from abstract.abstract_init_action_module import AbstractInitActionModule
 
 
 class GoToAbsolutePosition(AbstractInitActionModule):
@@ -57,7 +52,7 @@ class GoToAbsolutePosition(AbstractInitActionModule):
             angular_towards_target_error = self.determine_rotation_from_to_angle(current_o, angle_to_target)
 
             if abs(angular_towards_target_error) > 20:
-                if sign(angular_towards_target_error) > 0:
+                if angular_towards_target_error > 0:
                     connector.walking_capsule().start_walking(WalkingCapsule.ZERO, WalkingCapsule.MEDIUM_ANGULAR_LEFT,
                                                               WalkingCapsule.ZERO)
                     return
