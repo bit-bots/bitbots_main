@@ -99,6 +99,9 @@ class PlayAnimationAction(object):
             # compute next pose
             pose = animfunc(self.current_pose)
             if pose is None:
+                #todo reset pid values if they were changed in animation
+                # see walking node reset
+
                 # animation is finished
                 # tell it to the motion
                 keyframe_service_call(False, True, False, None)

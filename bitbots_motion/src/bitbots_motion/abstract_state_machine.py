@@ -1,8 +1,9 @@
 # -*- coding:utf-8 -*-
 import rospy
+import time
 from std_msgs.msg import String
 
-from bitbots_motion.src.fall_checker import FallChecker
+from .fall_checker import FallChecker
 
 
 class Values(object):
@@ -24,7 +25,7 @@ class Values(object):
 
         self.last_hardware_update = None
         self.last_request = None
-        self.start_up_time = rospy.Time.now()
+        self.start_up_time = time.time()
 
         self.raw_gyro = (0, 0, 0)
         self.smooth_gyro = (0, 0, 0)
@@ -44,8 +45,8 @@ class Values(object):
         # are we walking?
         self.walking_active = False
 
-        self.softoff_time = rospy.get_param("/softofftime")
-        self.die_time = rospy.get_param("/dietime")
+        self.softoff_time = rospy.get_param("/motion/soft_off_time")
+        self.die_time = rospy.get_param("/motion/die_time")
 
     def is_falling(self):
         falling_pose = self.fall_checker.check_falling(self.not_so_smooth_gyro)
@@ -121,7 +122,7 @@ class AbstractStateMachine(object):
         self.state = AbstractState()
         self.connections = []
         self.error_state = None
-        self.debug_active = rospy.get_param("/debug_active")
+        self.debug_active = rospy.get_param("/debug_active", False)
         if self.debug_active:
             self.debug_publisher = rospy.Publisher("/motion_state_debug", String)
 
@@ -144,7 +145,8 @@ class AbstractStateMachine(object):
                 # we directly do another state switch
                 self.set_state(entry_switch)
         except:
-            self.set_state(self.error_state)
+            self.state = self.error_state
+            self.state.entry()
 
     def evaluate(self):
         """

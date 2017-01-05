@@ -5,8 +5,8 @@ from bitbots_common.eigen cimport *
 from bitbots_common.utilCython.datavector cimport IntDataVector as CIntDataVector
 from bitbots_common.utilCython.datavector cimport DataVector as CDataVector
 from bitbots_common.utilCython.pydatavector cimport PyIntDataVector as IntDataVector
-from bitbots_common.utilCython.pydatavector cimport PyDataVector as DataVector
-from bitbots_common.robot.kinematics cimport Robot
+#from bitbots_common.utilCython.pydatavector cimport PyDataVector as DataVector
+#from bitbots_common.robot.kinematics cimport Robot
 from libcpp cimport bool
 from bitbots_common.pose.pypose cimport PyPose as Pose
 
@@ -34,6 +34,7 @@ cdef class cm730_node(object):
     cpdef publish_IMU(self, double gyro, double accel)
     cpdef publish_buttons(self, bool button1, bool button2)
 
+"""
 cdef extern from "cmath" namespace "std":
     double asin(double)
     double acos(double)
@@ -68,3 +69,4 @@ cdef inline CDataVector calculate_robot_angles(const CIntDataVector& rawData):
     #print "pitch %f, roll %f" % (pitch_angle, roll_angle)
 
     return CDataVector(-roll_angle, -pitch_angle, yaw_angle)
+"""

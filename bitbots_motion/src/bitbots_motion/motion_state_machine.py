@@ -2,10 +2,11 @@
 import time
 
 import rospy
+from bitbots_cm730.srv import SwitchMotorPower
 from humanoid_league_msgs.msg import MotionState
 
-from bitbots_motion.src.abstract_state_machine import AbstractState, VALUES, switch_motor_power
-from bitbots_motion.src.abstract_state_machine import AbstractStateMachine
+from .abstract_state_machine import AbstractState, VALUES
+from .abstract_state_machine import AbstractStateMachine
 
 STATE_CONTROLABLE = 0
 STATE_FALLING = 1
@@ -22,7 +23,7 @@ STATE_WALKING = 10
 
 class MotionStateMachine(AbstractStateMachine):
     def __init__(self, die_flag, standup_flag, soft_off_flag, soft_start, start_test, state_publiser):
-        super().__init__()
+        super(MotionStateMachine, self).__init__()
         VALUES.standup_flag = standup_flag
         VALUES.die_flag = die_flag
         VALUES.soft_off_flag = soft_off_flag
@@ -432,10 +433,26 @@ class ShutDown(AbstractState):
         rospy.loginfo("Motion is now off, good bye")
 
     def evaluate(self):
-        pass
+        exit("Motion was shut down")
 
     def exit(self):
         pass
 
     def motion_state(self):
         return STATE_SHUT_DOWN
+
+def switch_motor_power(state):
+    """ Calling service from CM730 to turn motor power on or off"""
+    # todo set motor ram here if turned on, bc it lost it
+    try:
+        rospy.wait_for_service("switch_motor_power", timeout=10)
+    except rospy.ROSException:
+        rospy.logfatal("Can't switch of motorpower, seems like the CM730 is missing.")
+        return
+    power_switch = rospy.ServiceProxy("switch_motor_power", SwitchMotorPower)
+    try:
+        response = power_switch(state)
+    except rospy.ServiceException as exc:
+        print("Service did not process request: " + str(exc))
+    # wait for motors
+    rospy.sleep(1)

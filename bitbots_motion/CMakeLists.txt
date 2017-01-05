@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_motion)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ~/repositories/bitbots_misc/bitbots_common/cmake) #  TODO: das mus dynamisch
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED std_msgs humanoid_league_msgs rospy)
+find_package(catkin REQUIRED std_msgs humanoid_league_msgs rospy dynamic_reconfigure)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -81,10 +83,9 @@ catkin_python_setup()
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+ generate_dynamic_reconfigure_options(
+   cfg/bitbots_motion_params.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -98,7 +99,7 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES bitbots_motion
-#  CATKIN_DEPENDS other_catkin_pkg
+ CATKIN_DEPENDS bitbots_common
 #  DEPENDS system_lib
 )
 

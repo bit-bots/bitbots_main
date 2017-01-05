@@ -1,0 +1,4 @@
+<launch>
+    <node name="motion" pkg="bitbots_motion" type="start_motion"/>
+
+</launch>
