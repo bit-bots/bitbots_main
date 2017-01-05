@@ -32,7 +32,7 @@ class Values(object):
         self.not_so_smooth_gyro = (0, 0, 0)
 
         self.fall_checker = FallChecker()
-        #for internal animations
+        # for internal animations
         self.animation_client = None
 
         # we want to play an animation, try to become controlable
@@ -56,23 +56,24 @@ class Values(object):
 
     def is_fallen(self):
         direction_animation = self.fall_checker.check_fallen(self.raw_gyro, self.smooth_gyro,
-                                                               self.robo_angle)
+                                                             self.robo_angle)
         if direction_animation is not None:
             return True
         return False
 
     def is_soft_off_time(self):
-        return self.soft_off_flag and rospy.Time.now() - self.last_hardware_update > self.softoff_time
+        return self.soft_off_flag and time.time() - self.last_hardware_update > self.softoff_time
 
     def is_die_time(self):
-        return self.die_flag and rospy.Time.now() - self.last_hardware_update > self.die_time
+        return self.die_flag and time.time() - self.last_hardware_update > self.die_time
 
     def animation_finished(self):
         return self.animation_client.get_result()
 
     def say(self, text):
-        #todo
+        # todo
         pass
+
 
 VALUES = Values()
 
@@ -119,12 +120,12 @@ class AbstractState(object):
 
 class AbstractStateMachine(object):
     def __init__(self):
-        self.state = AbstractState()
+        self.state = None
         self.connections = []
         self.error_state = None
         self.debug_active = rospy.get_param("/debug_active", False)
         if self.debug_active:
-            self.debug_publisher = rospy.Publisher("/motion_state_debug", String)
+            self.debug_publisher = rospy.Publisher("/motion_state_debug", String, queue_size=10)
 
     def set_state(self, state):
         """
@@ -138,13 +139,15 @@ class AbstractStateMachine(object):
                 self.state.exit()
             self.state = state
             if self.debug_active:
-                #publish name of the current state if debug is active
+                # publish name of the current state if debug is active
                 self.debug_publisher.publish(self.state.__class__.__name__)
+                print("Current state: " + self.state.__class__.__name__)
             entry_switch = self.state.entry()
             if entry_switch is not None:
                 # we directly do another state switch
                 self.set_state(entry_switch)
-        except:
+        except Exception as exc:
+            rospy.logerr(exc)
             self.state = self.error_state
             self.state.entry()
 
@@ -153,18 +156,16 @@ class AbstractStateMachine(object):
         Evaluates the current state
         :return:
         """
-        switch_state = None
 
-        try:
-            switch_state = self.state.evaluate()
-        except:
-            self.set_state(self.error_state)
+        switch_state = self.state.evaluate()
 
         if switch_state is not None:
             if (self.state.__class__, switch_state.__class__) in self.connections:
                 self.set_state(switch_state)
             else:
-                print("not allowed")
+                print(
+                    "Not allowed transistion from " + self.state.__class__.__name__ + " to " +
+                    switch_state.__class__.__name__)
 
     def publish_state(self, state):
         msg = "You schuld overrride publish_state() in %s" % self.__class__.__name__

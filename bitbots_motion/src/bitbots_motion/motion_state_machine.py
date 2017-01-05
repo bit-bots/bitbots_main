@@ -22,16 +22,51 @@ STATE_WALKING = 10
 
 
 class MotionStateMachine(AbstractStateMachine):
-    def __init__(self, die_flag, standup_flag, soft_off_flag, soft_start, start_test, state_publiser):
+    def __init__(self, die_flag, standup_flag, soft_off_flag, soft_start, start_test, state_publisher):
         super(MotionStateMachine, self).__init__()
         VALUES.standup_flag = standup_flag
         VALUES.die_flag = die_flag
         VALUES.soft_off_flag = soft_off_flag
         VALUES.soft_start = soft_start
         VALUES.start_test = start_test
+        VALUES.last_request = 0
+        VALUES.last_hardware_update = 0
         self.error_state = ShutDown()
-        self.set_state(StartupState())
-        self.state_publisher = state_publiser
+        self.state_publisher = state_publisher
+
+        self.connections = [(Startup, (Controllable, Softoff, GettingUp, Record, PenaltyAnimationIn)),
+
+                            (Softoff, (Controllable, ShutDown, Record)),
+
+                            (Record, Controllable),
+
+                            (PenaltyAnimationIn, Penalty),
+
+                            (Penalty, PenaltyAnimationOut),
+
+                            (PenaltyAnimationOut, Controllable),
+
+                            (GettingUp, (Falling, Fallen, GettingUpSecond)),
+
+                            (GettingUpSecond, (Falling, Fallen, Controllable)),
+
+                            (Controllable, (ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
+                                            AnimationRunning, Walking)),
+
+                            (Falling, (Fallen, Controllable)),
+
+                            (Fallen, GettingUp),
+
+                            (Walking, (ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
+                                       WalkingStopping, Controllable)),
+
+                            (WalkingStopping, Controllable),
+
+                            (AnimationRunning, Controllable),
+
+                            (ShutDownAnimation, ShutDown)]
+
+        self.set_state(Startup())
 
     def publish_state(self, state):
         msg = MotionState()
@@ -45,12 +80,13 @@ class MotionStateMachine(AbstractStateMachine):
         return self.state.__class__ in (Walking, WalkingStopping)
 
     def is_record(self):
-        return self.state.__class__ in Record
+        return self.state.__class__ is Record
 
     def is_shutdown(self):
-        return self.state.__class__ in ShutDown
+        return self.state.__class__ is ShutDown
 
-class StartupState(AbstractState):
+
+class Startup(AbstractState):
     def entry(self):
         pass
 
@@ -66,17 +102,17 @@ class StartupState(AbstractState):
             if VALUES.record:
                 switch_motor_power(True)
                 return Record()
-            if VALUES.softstart:
+            if VALUES.soft_start:
                 switch_motor_power(False)
                 # to prohibit getting directly out of softoff
-                VALUES.last_client_update = rospy.Time.now() - 120
+                VALUES.last_client_update = time.time() - 120
                 return Softoff()
             switch_motor_power(True)
             if VALUES.penalized:
                 return PenaltyAnimationIn()
 
             # normal states
-            if VALUES.standupflag:
+            if VALUES.standup_flag:
                 return GettingUp()
             else:
                 return Controllable()
@@ -103,7 +139,7 @@ class Softoff(AbstractState):
                 # don't directly change state, we wait for animation to finish
                 self.start_animation(rospy.get_param("/animations/motion/walkready"))
                 return
-            if rospy.Time.now() - VALUES.last_request < 10:  # todo param
+            if time.time() - VALUES.last_request < 10:  # todo param
                 # got a new move request
                 switch_motor_power(True)
                 self.next_state = Controllable()
@@ -188,7 +224,7 @@ class Penalty(AbstractState):
             # still penalized, lets wait a bit
             rospy.sleep(0.05)
             # prohibit soft off
-            VALUES.last_client_update = rospy.Time.now()
+            VALUES.last_client_update = time.time()
         else:
             return PenaltyAnimationOut()
 
@@ -364,7 +400,7 @@ class Walking(AbstractState):
         if not VALUES.walking_active:
             return Controllable()
 
-        # todo request walk positions?
+            # todo request walk positions?
 
     def exit(self):
         VALUES.walking_active = False
@@ -441,11 +477,12 @@ class ShutDown(AbstractState):
     def motion_state(self):
         return STATE_SHUT_DOWN
 
+
 def switch_motor_power(state):
     """ Calling service from CM730 to turn motor power on or off"""
     # todo set motor ram here if turned on, bc it lost it
     try:
-        rospy.wait_for_service("switch_motor_power", timeout=10)
+        rospy.wait_for_service("switch_motor_power", timeout=1)
     except rospy.ROSException:
         rospy.logfatal("Can't switch of motorpower, seems like the CM730 is missing.")
         return
