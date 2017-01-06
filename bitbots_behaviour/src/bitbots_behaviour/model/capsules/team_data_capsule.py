@@ -21,7 +21,7 @@ class TeamDataCapsule:  # todo most infortaion now in Worldmodel
     def __init__(self):
 
         # self.my_player_number = config["PLAYER"]
-        self.role_sender: rospy.Publisher
+        self.role_sender: rospy.Publisher = None
         self.my_data = dict()
 
     def get_ball_in_own_half(self):
@@ -63,7 +63,7 @@ class TeamDataCapsule:  # todo most infortaion now in Worldmodel
 
     def set_role(self, role):
         """ Set the Team Role - Need to be in data dict for Comm Modules """
-        assert role in [ROLE_STRIKER, ROLE_DEFENDER, ROLE_SUPPORTER, ROLE_GOALIE]
+        assert role in [Role.ROLE_STRIKER, Role.ROLE_DEFENDER, Role.ROLE_SUPPORTER, Role.ROLE_GOALIE]
         r = Role()
         r.role = role
         self.role_sender.publish(r)

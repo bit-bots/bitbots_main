@@ -95,13 +95,6 @@ class DutyDecider(AbstractDecisionModule):
             return self.push(PenaltyKickerDecision)
 
         ###########################
-        # # Tecnical Chelanges
-        ###########################
-
-        elif connector.blackboard.get_duty() == "ThrowIn":
-            return self.push(ThrowInEntryPoint)
-
-        ###########################
         # # Other TestStuff
         ###########################
 
@@ -126,9 +119,6 @@ class DutyDecider(AbstractDecisionModule):
 
         elif connector.blackboard.get_duty() == "FocusGoal":
             return self.push(FocusEnemyGoal)
-
-        elif connector.blackboard.get_duty() == "CalibrateVision":
-            return self.push(CalibrateVision)
 
         else:
             s = Speak()

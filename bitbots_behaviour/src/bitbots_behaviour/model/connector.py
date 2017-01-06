@@ -7,13 +7,13 @@ Connector
 
 """
 import rospy
-from modell.capsules.animation_capsule import AnimationCapsule
-from modell.capsules.blackboard_capsule import BlackboardCapsule
-from modell.capsules.game_status_capsule import GameStatusCapsule
-from modell.capsules.world_model_capsule import WorldModelCapsule
-from modell.capsules.vision_capsule import VisionCapsule
-from modell.capsules.team_data_capsule import TeamDataCapsule
-from modell.capsules.walking_capsule import WalkingCapsule
+from model.capsules.animation_capsule import AnimationCapsule
+from model.capsules.blackboard_capsule import BlackboardCapsule
+from model.capsules.game_status_capsule import GameStatusCapsule
+from model.capsules.world_model_capsule import WorldModelCapsule
+from model.capsules.vision_capsule import VisionCapsule
+from model.capsules.team_data_capsule import TeamDataCapsule
+from model.capsules.walking_capsule import WalkingCapsule
 
 
 class Connector:

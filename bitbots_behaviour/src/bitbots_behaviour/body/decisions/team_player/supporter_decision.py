@@ -1,20 +1,15 @@
-# -*- coding:utf-8 -*-
 """
 SupporterDecision
 ^^^^^^^^^^^^^^^^^
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
-History:
-* 19.3.14: Created (Martin Poppinga)
-
-Decides what a supported does
 """
 import time
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.go_to_ball import GoToBall
-from bitbots.modules.behaviour.body.actions.search import Search
-from bitbots.modules.behaviour.body.actions.wait import Wait
+from abstract.abstract_decision_module import AbstractDecisionModule
+from body.actions.go_to_ball import GoToBall
+from body.actions.search import Search
+from body.actions.wait import Wait
 
 
 class SupporterDecision(AbstractDecisionModule):
