@@ -14,8 +14,8 @@ History:
 This Module handles the communication with the Hardware
 """
 import rospy
-from .register_tables cimport MX28RegisterTable, CM730RegisterTable
-from .register_tables cimport Register
+from bitbots_cm730.lowlevel.controller.register_tables cimport MX28RegisterTable, CM730RegisterTable
+from bitbots_cm730.lowlevel.controller.register_tables cimport Register
 
 
 # Flag for debug prints in processing

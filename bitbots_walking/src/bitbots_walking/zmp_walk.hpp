@@ -6,10 +6,8 @@
 #include <assert.h>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "zmp_walk_parameter.hpp"
-#include "../robot/pose.hpp"
+#include "bitbots_common/pose/pose.hpp"
 #include "body.hpp"
-#include "../debug/debugmacro.h"
-#include "../debug/debug.hpp"
 #include "zmp_math_basics.h"
 #include "zmp_team_darwin_kinematics.hpp"
 #include "NUBots/message/motion/KinematicsModels.h"

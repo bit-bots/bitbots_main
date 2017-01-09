@@ -3,8 +3,9 @@
 import rospy
 import time
 
-from .lowlevel.controller.controller cimport BulkReadPacket, SyncWritePacket, Controller
-from .lowlevel.controller.controller import MultiMotorError, MX28_REGISTER, ID_CM730, CM730_REGISTER
+from bitbots_cm730.lowlevel.controller.controller cimport BulkReadPacket, SyncWritePacket, Controller
+from bitbots_cm730.lowlevel.controller.controller import MultiMotorError, MX28_REGISTER, CM730_REGISTER
+from bitbots_cm730.lowlevel.controller.controller cimport ID_CM730
 
 from bitbots_common.pose.pypose cimport PyJoint as Joint
 from bitbots_common.util import Joints as JointManager

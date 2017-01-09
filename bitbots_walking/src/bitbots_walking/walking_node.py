@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 import rospy
+from bitbots_common.pose.pypose import PyPose as Pose
+from bitbots_common.util.pose_util import set_joint_state_on_pose
 from geometry_msgs.msg import Twist
 from humanoid_league_msgs.msg import MotionState
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import JointState, Imu
 from trajectory_msgs.msg import JointTrajectory
-from bitbots_common.pose.pypose import PyPose as Pose
-from bitbots_common.util.pose_util import set_joint_state_on_pose
 
-from bitbots_walking.src.zmpwalking import ZMPWalkingEngine
+from bitbots_walking.src.bitbots_walking.zmpwalking import ZMPWalkingEngine
 
 
 class WalkingNode(object):

@@ -3,7 +3,7 @@
 import time
 
 import math
-from Cython.Includes.cpython.exc import PyErr_CheckSignals
+#from Cython.Includes.cpython.exc import PyErr_CheckSignals
 
 from trajectory_msgs.msg import JointTrajectory
 from std_msgs.msg import String
@@ -79,7 +79,7 @@ cdef class cm730_node(object):
             self.update_once()
 
             # Signal check
-            PyErr_CheckSignals()
+            #PyErr_CheckSignals() #todo is this necessary?
 
             # Count to get the update frequency
             iteration += 1

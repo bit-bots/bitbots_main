@@ -18,15 +18,15 @@ set_source_files_properties(
 )
 
 cython_add_module(cm730_node cm730_node.pyx)
-cython_add_module(CM730 cm730.pyx)
+cython_add_module(cm730 cm730.pyx)
 
-set_target_properties(cm730_node CM730
+set_target_properties(cm730_node cm730
   PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION})
 
 # Die kompilierten Module installieren
 install(
     TARGETS ${INSTALL_TARGETS}
     #LIBRARY DESTINATION ${PYLIB_INSTALL_PATH}/bitbots/motion
-    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/python2.7/bitbots_cm730/
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/bitbots_cm730/
 )
 

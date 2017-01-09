@@ -11,7 +11,7 @@ from libcpp cimport bool
 from bitbots_common.pose.pypose cimport PyPose as Pose
 
 
-from .cm730 cimport CM730
+from bitbots_cm730.cm730 cimport CM730
 
 cdef class cm730_node(object):
 

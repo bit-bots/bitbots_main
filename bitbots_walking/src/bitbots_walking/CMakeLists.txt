@@ -1,3 +1,14 @@
+include_directories(../../../../bitbots_misc/bitbots_common/src)
+include_directories(../../../../bitbots_misc/bitbots_common/src/bitbots_common/pose)
+include_directories(../../../../bitbots_misc/bitbots_common/src/bitbots_common/util)
+include_directories(../../../../bitbots_misc/bitbots_common/src/bitbots_common/utilCython)
+include_directories(../../../../bitbots_misc/bitbots_common/src/bitbots_common/robot)
+include_directories(.)
+#include_directories(..)
+include_directories(lowlevel)
+include_directories(lowlevel/controller)
+include_directories(${Eigen_INCLUDE_DIRS})
+
 set_source_files_properties(
     walking.pyx zmpwalking.pyx
     PROPERTIES CYTHON_IS_CXX TRUE
@@ -23,10 +34,11 @@ install(
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/bitbots_motion/walking
 )
 
+add_subdirectory(NUBots/utility)
 
-if(INVERSE_DARWIN_KINEMATICS)
-add_subdirectory(DarwinWalking)
-else()
-add_subdirectory(MinibotWalking)
-endif(INVERSE_DARWIN_KINEMATICS)
+#if(INVERSE_DARWIN_KINEMATICS)
+#add_subdirectory(DarwinWalking)
+#else()
+#add_subdirectory(MinibotWalking)
+#endif(INVERSE_DARWIN_KINEMATICS)
 

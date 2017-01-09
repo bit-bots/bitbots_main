@@ -1,4 +1,5 @@
 # -*- encoding: utf8 -*-
+import rospy
 from bitbots_common.pose.pypose cimport PyPose, wrap_pose
 from libcpp cimport bool
 from libcpp.string cimport string
@@ -7,10 +8,6 @@ from bitbots_common.eigen cimport Vector3d
 from cython.operator cimport dereference as deref
 
 cdef public _ZMPParameter parameter = get_default_parameter()
-
-from bitbots_common.debug.debug cimport Scope
-
-cdef Scope debug = Scope("Motion.Walking")
 
 cdef class ZMPParameter:
 
@@ -230,7 +227,7 @@ cdef class ZMPWalkingEngine:
             if hasattr(params, name):
                 setattr(params, name, zmp_param_config[name])
             else:
-                debug("Konnte ZMPParameter %s nicht setzten. Es scheint ihn nicht zu geben" % name)
+                rospy.logdebug("Konnte ZMPParameter %s nicht setzten. Es scheint ihn nicht zu geben" % name)
         params.pDefault = config["mx28config"]["RAM"]["p"]
 
         self.thisptr = getInstance(deref(params.params))
