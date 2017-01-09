@@ -4,18 +4,19 @@ set_source_files_properties(
 )
 
 include_directories(.)
+include_directories(~/catkin_ws/src/bitbots_misc/bitbots_common/armadillo)
 
 cython_add_module(InverseKinematicsPy InverseKinematicsPy.pyx)
 
 set_target_properties(InverseKinematicsPy PROPERTIES COMPILE_FLAGS -fPIC
                         LINK_FLAGS -fPIC)
 
-set(INSTALL_TARGETS ${INSTALL_TARGETS} InverseKinematicsPy)
+set(INSTALL_TARGETS InverseKinematicsPy)
 
 
 target_link_libraries(InverseKinematicsPy debug-common utility)
 
 install(
     TARGETS ${INSTALL_TARGETS}
-    LIBRARY DESTINATION ${PYLIB_INSTALL_PATH}/NUBots/utility/motion
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/bitbots_walking/
 )

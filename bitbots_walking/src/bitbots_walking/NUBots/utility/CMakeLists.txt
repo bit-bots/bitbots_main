@@ -14,6 +14,6 @@ target_link_libraries(utility ${CMAKE_INSTALL_PREFIX}/lib/libarmadillo.so ${ARMA
 # Put it in an IDE group for shared
 SET_PROPERTY(TARGET utility PROPERTY FOLDER "shared/")
 
-install(TARGETS utility ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS utility LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/bitbots_walking/)
 
 add_subdirectory(motion)

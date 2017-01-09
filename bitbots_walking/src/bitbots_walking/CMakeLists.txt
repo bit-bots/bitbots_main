@@ -31,7 +31,7 @@ set_target_properties(zmpwalking
 # Die kompilierten Module installieren
 install(
     TARGETS ${INSTALL_TARGETS}
-    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/bitbots_motion/walking
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/bitbots_walking/
 )
 
 add_subdirectory(NUBots/utility)
