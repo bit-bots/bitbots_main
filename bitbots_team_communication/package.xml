@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>bitbots_speaker</name>
+  <name>bitbots_team_communication</name>
   <version>0.0.0</version>
-  <description>The bitbots_speaker package</description>
+  <description>The bitbots_team_communication package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->

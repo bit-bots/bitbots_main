@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_team_communication)
 
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -84,9 +85,9 @@ catkin_python_setup()
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-generate_dynamic_reconfigure_options(
-   cfg/speaker_params.cfg
-)
+#generate_dynamic_reconfigure_options(
+#   cfg/speaker_params.cfg
+#)
 
 ###################################
 ## catkin specific configuration ##

@@ -2,7 +2,7 @@
 import rospy
 import time
 
-from humanoid_league_msg.msg import Role, Action, Position, MotionState, BallRelative, TeamData
+from humanoid_league_msgs.msg import Role, Action, Position, MotionState, BallRelative, TeamData
 
 from mitecom.mitecom import MiteCom, STATE_PENALIZED, ROLE_IDLING, ACTION_UNDEFINED,STATE_INACTIVE
 
