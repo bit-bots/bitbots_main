@@ -47,11 +47,11 @@ catkin_python_setup()
 )
 
 ## Generate services in the 'srv' folder
- add_service_files(
-   FILES
-   ManualPenalize.srv
+# add_service_files(
+#   FILES
+#   ManualPenalize.srv
 #   Service2.srv
-)
+#)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
