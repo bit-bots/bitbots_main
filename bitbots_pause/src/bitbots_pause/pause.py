@@ -1,6 +1,8 @@
-# -*- coding: utf8 -*-
+#!/usr/bin/env python
+#-*- coding:utf-8 -*-
 import rospy
 from humanoid_league_msgs.msg import Speak
+from std_msgs.msg import Bool
 
 from bitbots_pause.srv import ManualPenalize
 from humanoid_league_msgs.msg import GameState
@@ -17,7 +19,7 @@ class Pause(object):
         rospy.init_node('bitbots_pause', anonymous=False)
         self.manual_penalize_service = rospy.Service("manual_penalize", ManualPenalize, self.manual_update)
         rospy.Subscriber("/Gamestate", GameState, self.game_controler_update)
-        self.pause_publisher = rospy.Publisher("/pause", bool, queue_size=10)
+        self.pause_publisher = rospy.Publisher("/pause", Bool, queue_size=10)
         self.speak_publisher = rospy.Publisher("/speak", Speak, queue_size=10)
 
         self.talking = rospy.get_param("/pause/talking", True)
@@ -54,3 +56,7 @@ class Pause(object):
         else:
             text = "Pause was removed"
         speak(text, self.speak_publisher, speaking_active=self.talking, priority=Speak.HIGH_PRIORITY)
+
+if __name__ == "__main__":
+    pause = Pause()
+    rospy.spin()

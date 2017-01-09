@@ -2,7 +2,7 @@
 import time
 
 import rospy
-# from bitbots_common.pose.pypose import PyPose as Pose
+from bitbots_common.pose.pypose import PyPose as Pose
 from std_msgs.msg import Bool
 
 from bitbots_cm730.srv import SwitchMotorPower
@@ -18,11 +18,6 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from bitbots_animation.srv import AnimationFrame
 from .abstract_state_machine import VALUES
 from .cfg import motion_paramsConfig
-
-
-class Pose:
-    pass  # todo fix the real import
-
 
 class Motion(object):
     def __init__(self, dieflag, standupflag, softoff_flag, softstart, start_test):

@@ -111,7 +111,7 @@ catkin_package(
 #  INCLUDE_DIRS include
   LIBRARIES bitbots_cm730
   CATKIN_DEPENDS bitbots_common message_runtime
-  DEPENDS eigen
+  DEPENDS Eigen
 )
 
 add_subdirectory(src/bitbots_cm730)

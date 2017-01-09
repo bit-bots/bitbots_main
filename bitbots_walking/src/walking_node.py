@@ -1,4 +1,5 @@
-# -*- coding: utf8 -*-
+#!/usr/bin/env python
+#-*- coding:utf-8 -*-
 import rospy
 from geometry_msgs.msg import Twist
 from humanoid_league_msgs.msg import MotionState
@@ -137,3 +138,7 @@ class WalkingNode(object):
             MotionState.CONTROLABLE, MotionState.WALKING, MotionState.MOTOR_OFF):
                 self.walking_started = rospy.Time.now()
                 self.walking_start()
+
+if __name__ == "__main__":
+    walking = WalkingNode()
+    rospy.spin()

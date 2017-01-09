@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf8 -*-
 import json
 
@@ -5,13 +6,13 @@ import actionlib
 import rospy
 from bitbots_animation.msg import PlayAnimationResult, PlayAnimationFeedback
 
-from bitbots_animation.src.bitbots_animation.animation import Animator, parse
+from bitbots_animation.animation import Animator, parse
 from bitbots_animation.srv import AnimationFrame
 from sensor_msgs.msg import Imu, JointState
-from bitbots_common.util import find_animation  # todo put directly in thins package
+from bitbots_common.util.resource_manager import find_animation  # todo put directly in thins package?
 
 
-class AnimationNode(object):
+class AnimationNode:
     def __init__(self):
         rospy.init_node("bitbots_animation", anonymous=False)
         server = PlayAnimationAction(rospy.get_name())
@@ -99,7 +100,7 @@ class PlayAnimationAction(object):
             # compute next pose
             pose = animfunc(self.current_pose)
             if pose is None:
-                #todo reset pid values if they were changed in animation
+                # todo reset pid values if they were changed in animation
                 # see walking node reset
 
                 # animation is finished
@@ -111,7 +112,11 @@ class PlayAnimationAction(object):
 
             keyframe_service_call(first, False, goal.force, pose)
 
-
     def update_current_pose(self, msg):
         # todo save pose
         self.current_pose = None
+
+
+if __name__ == "__main__":
+    print("starting animation node")
+    animation = AnimationNode()

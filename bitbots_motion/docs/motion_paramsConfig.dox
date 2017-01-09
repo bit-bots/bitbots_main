@@ -1,0 +1,11 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~dyn_falling_active" : \b [bool] False: Servos will be turned of when falling; true: robot tries to fall dynamically min: False, default: False, max: True
+- \b "~ground_coefficient" : \b [double] Hardness of the floor, 1.25 for artificial turf(soft), 1 for hard ground min: 0.0, default: 1.25, max: 2.0
+- \b "~threshold_gyro_y_front" : \b [double] Threshold harder -> earlier reaction, but more false positives. min: -100.0, default: -50.0, max: 0.0
+- \b "~threshold_gyro_y_back" : \b [double] Threshold harder -> earlier reaction, but more false positives. min: 0.0, default: 50.0, max: -100.0
+- \b "~threshold_gyro_x_right" : \b [double] Threshold harder -> earlier reaction, but more false positives. min: -100.0, default: -30.0, max: 0.0
+- \b "~threshold_gyro_x_left" : \b [double] Threshold harder -> earlier reaction, but more false positives. min: 0.0, default: 30.0, max: -100.0
+

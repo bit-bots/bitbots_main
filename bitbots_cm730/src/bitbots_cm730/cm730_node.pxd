@@ -5,7 +5,7 @@ from bitbots_common.eigen cimport *
 from bitbots_common.utilCython.datavector cimport IntDataVector as CIntDataVector
 from bitbots_common.utilCython.datavector cimport DataVector as CDataVector
 from bitbots_common.utilCython.pydatavector cimport PyIntDataVector as IntDataVector
-#from bitbots_common.utilCython.pydatavector cimport PyDataVector as DataVector
+from bitbots_common.utilCython.pydatavector cimport PyDataVector as DataVector
 #from bitbots_common.robot.kinematics cimport Robot
 from libcpp cimport bool
 from bitbots_common.pose.pypose cimport PyPose as Pose

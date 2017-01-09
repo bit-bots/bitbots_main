@@ -34,37 +34,23 @@ class MotionStateMachine(AbstractStateMachine):
         self.error_state = ShutDown()
         self.state_publisher = state_publisher
 
-        self.connections = [(Startup, (Controllable, Softoff, GettingUp, Record, PenaltyAnimationIn)),
-
-                            (Softoff, (Controllable, ShutDown, Record)),
-
-                            (Record, Controllable),
-
-                            (PenaltyAnimationIn, Penalty),
-
-                            (Penalty, PenaltyAnimationOut),
-
-                            (PenaltyAnimationOut, Controllable),
-
-                            (GettingUp, (Falling, Fallen, GettingUpSecond)),
-
-                            (GettingUpSecond, (Falling, Fallen, Controllable)),
-
-                            (Controllable, (ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
-                                            AnimationRunning, Walking)),
-
-                            (Falling, (Fallen, Controllable)),
-
-                            (Fallen, GettingUp),
-
-                            (Walking, (ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
-                                       WalkingStopping, Controllable)),
-
-                            (WalkingStopping, Controllable),
-
-                            (AnimationRunning, Controllable),
-
-                            (ShutDownAnimation, ShutDown)]
+        self.connections = {Startup: (Controllable, Softoff, GettingUp, Record, PenaltyAnimationIn),
+                            Softoff: (Controllable, ShutDown, Record),
+                            Record: Controllable,
+                            PenaltyAnimationIn: Penalty,
+                            Penalty: PenaltyAnimationOut,
+                            PenaltyAnimationOut: Controllable,
+                            GettingUp: (Falling, Fallen, GettingUpSecond),
+                            GettingUpSecond: (Falling, Fallen, Controllable),
+                            Controllable: (ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
+                                            AnimationRunning, Walking),
+                            Falling: (Fallen, Controllable),
+                            Fallen: GettingUp,
+                            Walking: (ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
+                                       WalkingStopping, Controllable),
+                            WalkingStopping: Controllable,
+                            AnimationRunning: Controllable,
+                            ShutDownAnimation: ShutDown}
 
         self.set_state(Startup())
 
@@ -93,7 +79,7 @@ class Startup(AbstractState):
     def evaluate(self):
         # leave this if we got a hardware response, or after some time
         # todo zeit parameteriesern?
-        if VALUES.last_hardware_update is not None or time.time() - VALUES.start_up_time > 1:
+        if VALUES.last_hardware_update is not 0 or time.time() - VALUES.start_up_time > 10:
             # check if we directly go into a special state, if not, got to get up
             if VALUES.start_test:
                 # todo
@@ -116,6 +102,8 @@ class Startup(AbstractState):
                 return GettingUp()
             else:
                 return Controllable()
+        else:
+            rospy.loginfo_throttle(1, "Motion is waiting for data from hardware")
 
     def exit(self):
         pass
