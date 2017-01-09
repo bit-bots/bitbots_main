@@ -7,7 +7,8 @@ Wait
 Just waits fr something (i.e. that preconditions will be fullfilled)
 """
 import time
-from abstract.abstract_action_module import AbstractActionModule
+
+from bitbots_common.stackmachine import AbstractActionModule
 
 
 class Wait(AbstractActionModule):

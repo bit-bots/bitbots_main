@@ -8,7 +8,7 @@ BallSeen
 import time
 
 import rospy
-from abstract.abstract_decision_module import AbstractDecisionModule
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.search import Search
 from body.decisions.common.close_ball import CloseBallPenaltyKick, CloseBallCommon
 from body.decisions.common.close_ball import CloseBallThrowIn

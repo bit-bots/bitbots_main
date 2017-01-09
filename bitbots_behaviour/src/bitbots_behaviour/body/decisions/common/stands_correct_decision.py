@@ -6,13 +6,10 @@ StandsCorrectDecision
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
 """
-import math
 
 import rospy
-from abstract.abstract_decision_module import AbstractDecisionModule
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.align_on_ball import AlignOnBall
-from body.actions.align_to_goal import AlignToGoal
-from body.decisions.common.hack_align import HackAlign
 from body.decisions.common.kick_decision import KickDecisionCommon
 
 

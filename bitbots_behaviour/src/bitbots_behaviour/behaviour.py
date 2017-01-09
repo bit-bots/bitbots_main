@@ -6,12 +6,11 @@ BehaviourModule
 
 Startet das Verhalten
 """
-from abstract.stack_machine_module import StackMachineModule
-from body.decisions.common.duty_decider import DutyDecider
 import rospy
+from bitbots_common.stackmachine.stack_machine_module import StackMachineModule
+from body.decisions.common.duty_decider import DutyDecider
 from geometry_msgs.msg import Twist, Pose2D
 from humanoid_league_msgs.msg import BallRelative, ObstacleRelative, GameState, Speak, Role
-from nav_msgs.msg import Odometry
 
 
 class BehaviourModule(StackMachineModule):

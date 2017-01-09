@@ -7,14 +7,14 @@ Kick Decision
 """
 import math
 
-import rospy
-from abstract.abstract_decision_module import AbstractDecisionModule
-from body.actions.plain_walk_action import PlainWalkAction
 from body.actions.throw_ball import ThrowBall
-from body.actions.kick_ball import KickBall
-from body.decisions.common.dynamic_kick import DynamicKick
-from modell.capsules.walking_capsule import WalkingCapsule
 from body.decisions.common.dynamic_kick_new import DynamicKickNew
+from modell.capsules.walking_capsule import WalkingCapsule
+
+import rospy
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from body.actions.kick_ball import KickBall
+from body.actions.plain_walk_action import PlainWalkAction
 
 
 class AbstractKickDecision(AbstractDecisionModule):

@@ -13,7 +13,7 @@ History:
 * 8/17/14: Created (sheepy)
 
 """
-from abstract.abstract_action_module import AbstractActionModule
+from bitbots_common.stackmachine import AbstractActionModule
 
 
 class AnimationPlayAction(AbstractActionModule):

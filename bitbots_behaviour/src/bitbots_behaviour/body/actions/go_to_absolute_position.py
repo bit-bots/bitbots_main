@@ -7,10 +7,10 @@ This Module is responsible for walking to a specific point with a specific
 orientation within the absolute coordinate system.
 
 """
-import math
 import cmath
+import math
 
-from abstract.abstract_init_action_module import AbstractInitActionModule
+from bitbots_common.stackmachine.abstract_init_action_module import AbstractInitActionModule
 
 
 class GoToAbsolutePosition(AbstractInitActionModule):

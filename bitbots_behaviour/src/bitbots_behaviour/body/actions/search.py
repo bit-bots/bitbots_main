@@ -2,7 +2,7 @@
 Search
 ^^^^^^
 """
-from abstract.abstract_action_module import AbstractActionModule
+from bitbots_common.stackmachine import AbstractActionModule
 
 
 class Search(AbstractActionModule):

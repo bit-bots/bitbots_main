@@ -8,15 +8,16 @@ CloseBall
 History:
 * 29.11.13: Created (Martin Poppinga)
 """
+from body.actions.go_to_ball import GoToBallPenaltykick
+
 import rospy
-from abstract.abstract_decision_module import AbstractDecisionModule
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.align_on_ball import AlignOnBall
 from body.actions.go_to_ball_intelligent import GoToBallIntelligent
-from body.decisions.common.stands_correct_decision import StandsCorrectDecision
-from body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
 from body.decisions.common.kick_decision import KickDecisionPenaltyKick
 from body.decisions.common.kick_decision import KickDecisionThrowIn
-from body.actions.go_to_ball import GoToBallPenaltykick
+from body.decisions.common.stands_correct_decision import StandsCorrectDecision
+from body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
 
 
 class AbstractCloseBall(AbstractDecisionModule):

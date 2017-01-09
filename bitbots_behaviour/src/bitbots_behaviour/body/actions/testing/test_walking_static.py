@@ -7,7 +7,7 @@ Testing the walking using a fixed pattern
 """
 import time
 
-from abstract.abstract_action_module import AbstractActionModule
+from bitbots_common.stackmachine import AbstractActionModule
 
 
 class TestWalkingStatic(AbstractActionModule):

@@ -9,7 +9,7 @@ TeamDataCapsule
 import math
 
 import rospy
-from abstract.abstract_module import debug_m
+from bitbots_common.stackmachine.abstract import debug_m
 from humanoid_league_msgs.msg import Role
 from keys import DATA_KEY_GOALIE_BALL_RELATIVE_POSITION, DATA_KEY_BALL_TIME, \
     DATA_KEY_FIELDIE_BALL_TIME_LIST, DATA_KEY_KICKOFF_OFFENSE_SIDE, \

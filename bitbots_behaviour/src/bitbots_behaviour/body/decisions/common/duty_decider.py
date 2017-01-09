@@ -7,27 +7,21 @@ DutyDecider
 
 """
 import rospy
-from abstract.abstract_decision_module import AbstractDecisionModule
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.focus_goal import FocusEnemyGoal
 from body.actions.go_to_absolute_position import GoToAbsolutePosition
 from body.actions.testing.test_walking_dynamic import TestWalkingDynamic
 from body.actions.testing.test_walking_static import TestWalkingStatic
 from body.actions.wait import Wait
-from body.decisions.calibratevision.calibrate_vision import CalibrateVision
 from body.decisions.common.go_to_duty_position import GoToDutyPosition
 from body.decisions.common.role_decider import RoleDecider
 from body.decisions.goalie.goalie_decision import GoalieDecision
 from body.decisions.kick_off.kick_off import KickOff
 from body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
 from body.decisions.penalty.penalty_kicker_decision import PenaltyKickerDecision
-from body.decisions.technical_challenges.throw_in_entry_point import ThrowInEntryPoint
 from humanoid_league_msgs.msg import Speak
-from modell.capsules.walking_capsule import WalkingCapsule
 from keys import DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_READY, DATA_VALUE_STATE_SET, \
     DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
-
-
-import rosparam
 
 duty = None  # can be overwriten by the startup script (to force a behaviour)
 

@@ -6,7 +6,7 @@ GoToPositionIntelligent
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
 """
-from abstract.abstract_action_module import AbstractActionModule
+from bitbots_common.stackmachine import AbstractActionModule
 from geometry_msgs.msg import Pose2D
 
 

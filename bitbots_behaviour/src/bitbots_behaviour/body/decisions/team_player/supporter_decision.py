@@ -6,8 +6,10 @@ SupporterDecision
 
 """
 import time
-from abstract.abstract_decision_module import AbstractDecisionModule
+
 from body.actions.go_to_ball import GoToBall
+
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.search import Search
 from body.actions.wait import Wait
 
