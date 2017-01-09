@@ -21,8 +21,7 @@ mittels :func:`get_config` kann die Config geholt werden::
 .. automodule:: bitbots.util.math_utils
 
 """
-
-from bitbots_common.util.config import get_config
+import rospy
 from bitbots_common.util.resource_manager import find_resource
 from bitbots_common.util.resource_manager import find_animation  # NOQA
 from bitbots_common.util.resource_manager import find  # NOQA
@@ -94,8 +93,6 @@ class Joints(object):
     def __init__(self):
         self.joints = load_joints_from_yaml(find_resource("config/joints.yaml"))
 
-        self.config = get_config()
-
     def all(self):
         """
         Gibt alle bekannten Joints als JointGroup zurück
@@ -126,7 +123,7 @@ class Joints(object):
         Gibt die Joints zurück die der Roboter nach aktueller Config
         haben sollte
         """
-        if self.config['hands']:
+        if rospy.get_param('/hands', False):
             return self.all()
         else:
             return self.min()

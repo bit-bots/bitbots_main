@@ -29,7 +29,7 @@ class ResourceManager(object):
         self.cache = {}
         self.files = []  # Animations cached for find_all_animations
         self.names = []  # Plain animation names, without filename-extension
-        self.animpath = self._get_animpath()
+        #self.animpath = self._get_animpath()
 
     def search(self, path, ort, datei=""):
         """

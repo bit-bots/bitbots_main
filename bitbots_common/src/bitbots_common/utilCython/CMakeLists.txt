@@ -11,12 +11,12 @@ include_directories(${Eigen_INCLUDE_DIRS})
 
 cython_add_module(joints joints.pyx)
 cython_add_module(kalman kalman.pyx)
-cython_add_module(pydatavectora pydatavector.pyx)
+cython_add_module(pydatavector pydatavector.pyx)
 
 cython_add_module(kinematicutil kinematicutil.pyx)
 #cython_add_module(png png.pyx)
 
-set(INSTALL_TARGETS joints kalman pydatavectora kinematicutil)
+set(INSTALL_TARGETS joints kalman pydatavector kinematicutil)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
