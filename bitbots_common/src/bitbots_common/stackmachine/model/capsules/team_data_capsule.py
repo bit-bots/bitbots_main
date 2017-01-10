@@ -2,14 +2,10 @@
 """
 TeamDataCapsule
 ^^^^^^^^^^^^^^^
-
-.. moduleauthor:: sheepy <sheepy@informatik.uni-hamburg.de>
-
 """
 import math
 
 import rospy
-from bitbots_common.stackmachine.abstract import debug_m
 from humanoid_league_msgs.msg import Role
 from keys import DATA_KEY_GOALIE_BALL_RELATIVE_POSITION, DATA_KEY_BALL_TIME, \
     DATA_KEY_FIELDIE_BALL_TIME_LIST, DATA_KEY_KICKOFF_OFFENSE_SIDE, \
@@ -17,10 +13,8 @@ from keys import DATA_KEY_GOALIE_BALL_RELATIVE_POSITION, DATA_KEY_BALL_TIME, \
 from keys.grid_world_keys import DATA_KEY_OWN_POSITION_GRID
 
 
-class TeamDataCapsule:  # todo most infortaion now in Worldmodel
+class TeamDataCapsule:
     def __init__(self):
-
-        # self.my_player_number = config["PLAYER"]
         self.role_sender: rospy.Publisher = None
         self.my_data = dict()
 
@@ -61,7 +55,7 @@ class TeamDataCapsule:  # todo most infortaion now in Worldmodel
 
         return position
 
-    def set_role(self, role):
+    def set_role(self, role: int):
         """ Set the Team Role - Need to be in data dict for Comm Modules """
         assert role in [Role.ROLE_STRIKER, Role.ROLE_DEFENDER, Role.ROLE_SUPPORTER, Role.ROLE_GOALIE]
         r = Role()

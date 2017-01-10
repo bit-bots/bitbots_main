@@ -1,4 +1,4 @@
-from bitbots_common.stackmachine.abstract import AbstractStackElement
+from bitbots_common.stackmachine.abstract_stack_element import AbstractStackElement
 
 
 class AbstractActionModule(AbstractStackElement):

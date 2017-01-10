@@ -29,5 +29,3 @@ class WalkingCapsule:
 
     def walking_callback(self, od: Odometry):
         self.odometry_data = copy.copy(od)
-
-

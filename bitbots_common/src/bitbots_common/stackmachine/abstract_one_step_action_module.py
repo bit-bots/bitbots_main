@@ -12,7 +12,7 @@ History:
 TODOs:
 
 """
-from bitbots_common.stackmachine.abstract import AbstractActionModule
+from bitbots_common.stackmachine.abstract_action_module import AbstractActionModule
 
 
 class AbstractOneStepActionModule(AbstractActionModule):
