@@ -1,21 +1,12 @@
-# -*- coding:utf-8 -*-
 """
 KickBall
 ^^^^^^^^
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
-
-History:
-* 14.12.13: Created from old behaviour (Martin Poppinga)
-* 5.3.14: Ausgedünnt, führt nurnoch die Animation aus (Martin Poppinga)
-* 10.07.14: Vollschüsse für den elfemterschützen hinzugefügt (Marc)
 """
 import time
 
-from bitbots.modules.abstract.abstract_action_module import AbstractActionModule
-from bitbots.util import get_config
-
-config = get_config()
+from bitbots_common.stackmachine import AbstractActionModule
 
 
 class KickBall(AbstractActionModule):

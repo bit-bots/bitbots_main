@@ -18,4 +18,3 @@ class AlignOnBall(AbstractActionModule):
             0,
             self.sign(connector.raw_vision_capsule().get_ball_info("v") * 2)
         )
-    #todo definieren wann wer dem Walking dinge mitteilt

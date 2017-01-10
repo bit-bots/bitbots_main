@@ -1,19 +1,13 @@
-# -*- coding:utf-8 -*-
 """
 CloseBall
 ^^^^^^^^^
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
-
-History:
-* 29.11.13: Created (Martin Poppinga)
 """
-from body.actions.go_to_ball import GoToBallPenaltykick
-
 import rospy
 from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.align_on_ball import AlignOnBall
-from body.actions.go_to_ball_intelligent import GoToBallIntelligent
+from body.actions.go_to_ball_pathfinding import GoToBallPathfinding
 from body.decisions.common.kick_decision import KickDecisionPenaltyKick
 from body.decisions.common.kick_decision import KickDecisionThrowIn
 from body.decisions.common.stands_correct_decision import StandsCorrectDecision
@@ -46,7 +40,7 @@ class AbstractCloseBall(AbstractDecisionModule):
         return self.push(StandsCorrectDecision)
 
     def go(self):
-        return self.push(GoToBallIntelligent)
+        return self.push(GoToBallPathfinding)
 
     @staticmethod
     def get_reevaluate():
@@ -86,7 +80,7 @@ class CloseBallPenaltyKick(AbstractCloseBall):  # todo not yet refactored 6.12.1
         if self.use_special_pathfinfing:
             return self.push(GoToBallPenaltykick)
         else:
-            return self.push(GoToBallIntelligent)
+            return self.push(GoToBallPathfinding)
 
 
 class CloseBallGoalie(AbstractCloseBall):
