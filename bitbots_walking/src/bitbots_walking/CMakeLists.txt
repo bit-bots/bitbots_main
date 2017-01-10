@@ -34,7 +34,7 @@ install(
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/bitbots_walking/
 )
 
-add_subdirectory(NUBots/utility)
+#add_subdirectory(NUBots/utility)
 
 #if(INVERSE_DARWIN_KINEMATICS)
 #add_subdirectory(DarwinWalking)

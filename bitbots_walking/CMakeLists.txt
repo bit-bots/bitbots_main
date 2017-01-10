@@ -115,7 +115,7 @@ catkin_package(
   DEPENDS Eigen
 )
 
-add_subdirectory(src/bitbots_walking)
+#add_subdirectory(src/bitbots_walking)
 
 ###########
 ## Build ##
