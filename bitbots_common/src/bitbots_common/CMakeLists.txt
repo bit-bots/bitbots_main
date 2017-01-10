@@ -1,4 +1,4 @@
-add_subdirectory(armadillo)
+#add_subdirectory(armadillo)
 add_subdirectory(robot)
 add_subdirectory(pose)
 #add_subdirectory(util)
