@@ -23,14 +23,13 @@ class Connector:
         self.vision = VisionCapsule()
         self.world_model = WorldModelCapsule()
         self.blackboard = BlackboardCapsule()
-
         self.gamestate = GameStatusCapsule()
         self.walking = WalkingCapsule()
 
         self.team_data = TeamDataCapsule()
         self.animation = AnimationCapsule()
 
-        self.speaker: rospy.Publisher
+        self.speaker: rospy.Publisher = None
 
         #self._robot = Robot()
         #self._kinematic_task = KinematicTask(self._robot)

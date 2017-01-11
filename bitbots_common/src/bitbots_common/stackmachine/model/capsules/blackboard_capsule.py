@@ -1,13 +1,8 @@
-# -*- coding:utf-8 -*-
 """
 BehaviourBlackboardCapsule
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. moduleauthor:: sheepy <sheepy@informatik.uni-hamburg.de>
-
-History:
-* 5/4/14: Created (sheepy)
-
 """
 import time
 import math

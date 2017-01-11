@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 """
 WorldModellCapsule
 ^^^^^^^^^^^^^^^^^^
@@ -7,6 +6,8 @@ Provides informations about the world model.
 
 """
 import math
+from typing import Tuple
+
 from humanoid_league_msgs.msg import Position
 
 
@@ -14,16 +15,28 @@ class WorldModelCapsule:
     def __init__(self, ):
         self.position = Position()
 
-    def get_current_position(self):
+    def get_current_position(self)->Tuple[float, float, float]:
         return self.position.pose.x, self.position.pose.y, self.position.pose.theta
 
-    def get_ball_position_xy(self):
+    def get_ball_position_xy(self)->Tuple[float, float]:
         raise NotImplementedError
 
-    def get_ball_position_uv(self):
+    def get_ball_position_uv(self)->Tuple[float, float]:
         raise NotImplementedError
 
-    def get_uv_from_xy(self, x, y):
+    def get_opp_goal_center_uv(self)->Tuple[float, float]:
+        raise NotImplementedError
+
+    def get_own_goal_center_uv(self)->Tuple[float, float]:
+        raise NotImplementedError
+
+    def get_opp_goal_angle(self)->float:
+        raise NotImplementedError
+
+    def get_opp_goal_distance(self)->float:
+        raise NotImplementedError
+
+    def get_uv_from_xy(self, x, y)->Tuple[float, float]:
         """ Returns the relativ positions of the robot to this absolute position"""
         current_position = self.get_current_position()
         x2 = x - current_position[0]
@@ -33,7 +46,7 @@ class WorldModelCapsule:
         v = math.cos(theta) * y2 - math.sin(theta) * x2
         return u, v
 
-    def get_distance_to_xy(self, x, y):
+    def get_distance_to_xy(self, x, y)->float:
         """ Returns distance from robot to given position """
 
         u, v = self.get_uv_from_xy(x, y)

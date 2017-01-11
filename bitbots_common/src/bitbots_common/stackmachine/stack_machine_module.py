@@ -13,6 +13,7 @@ History:
 * 03.04.14: Unterdrückung des reevaluate (Nils Rokita)
 """
 import rospy
+from bitbots_common.stackmachine.abstract_stack_element import AbstractStackElement
 from bitbots_common.stackmachine.model import Connector
 
 
@@ -110,7 +111,7 @@ class StackMachineModule:
 
             rospy.logdebug("Stack1" + " ".join(b))
 
-    def push(self, module, init_data=None):
+    def push(self, module: AbstractStackElement, init_data=None):
         """
         Ein neues Modul auf den Stack legen, es wird sofort ausgeführt
 

@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 """
 AbstractModule
 ^^^^^^^^^^^^^^
@@ -9,7 +8,7 @@ Dieses Modul ist die Basis aller VerhaltensModule
 """
 
 
-class AbstractModule(object):
+class AbstractModule:
     _event_framework = None
 
     def start(self, data):
@@ -58,10 +57,7 @@ class AbstractModule(object):
         Damit stehen in jedem Modul innerhalb von  :func:`start`
         , :func:`pre`, :func:`update` und :func:`post` folgende
         Variablen zur Verfügung:
-
-        self.debug: der debug-Scope dieses Modules
         """
-        self.debug = debug.sub(self.__class__.__name__[0:-6])
         self._event_framework = event_framework
 
     def register_to_event(self, event, function):
@@ -90,11 +86,3 @@ class AbstractModule(object):
 
     def __str__(self):
         return self.__repr__()
-
-
-def debug_m(self, *kargs, **kwargs):
-    """
-    Eine Dummymethode, damit eine Regelung des Debugs über DEBUG und dem daraus
-    Resultierenden zu self.debug keine KeyErrors hervorruft
-    """
-    pass

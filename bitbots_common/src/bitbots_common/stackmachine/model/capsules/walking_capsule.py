@@ -7,7 +7,6 @@ from nav_msgs.msg import Odometry
 class WalkingCapsule:
 
     def __init__(self):
-
         self.odometry_data = Odometry()
         self.pub_walking_objective: rospy.Publisher = None
         self.pub_walkin_params: rospy.Publisher = None

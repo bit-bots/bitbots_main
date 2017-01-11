@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 """
 AbstractStackElement
 ^^^^^^^^^^^^^^^^^^^^
@@ -6,6 +5,7 @@ AbstractStackElement
 .. moduleauthor:: Nils Rokita <0rokita@informatik.uni-hamburg.de>
 
 """
+from bitbots_common.stackmachine.model import Connector
 
 
 class AbstractStackElement:
@@ -34,7 +34,6 @@ class AbstractStackElement:
             ist für das reevaluate
         """
         self._behaviour = behaviour
-        self.debug = behaviour.debug.sub(self.__class__.__name__)
         self._init_data = init_data
 
     def get_init_data(self):
@@ -69,7 +68,7 @@ class AbstractStackElement:
         """
         self._behaviour.push(module, init_data)
 
-    def perform(self, connector, reevaluate=False):
+    def perform(self, connector: Connector, reevaluate: bool=False):
         """
          Diese Methode wird aufgeruffen wenn das Modul im Stack ganz oben
          liegt und drann ist. Diese Methode sollte überladen werden!
