@@ -7,6 +7,7 @@ KickBall
 import time
 
 from bitbots_common.stackmachine import AbstractActionModule
+from bitbots_common.stackmachine.model import Connector
 
 
 class KickBall(AbstractActionModule):
@@ -27,33 +28,33 @@ class KickBall(AbstractActionModule):
         self.side_left = config["animations"]["kicks"]["rko"]
         self.anim_begin = False
 
-    def perform(self, connector, reevaluate=False):
+    def perform(self, connector: Connector, reevaluate=False):
         self.do_not_reevaluate()
-        connector.walking_capsule().stop_walking()
+        connector.walking.stop_walking()
 
         if time.time() - self.begin > 3.5:  # wait one moment
             self.do_not_reevaluate()  # dont interrrupt the kick
 
-            connector.blackboard_capsule().set_one_time_kicked(True)
+            connector.blackboard.set_one_time_kicked(True)
             # todo make a better behaviour that looks if the ball realy moved
 
-            if not connector.animation_capsule().is_animation_busy() and self.anim_begin:
+            if not connector.animation.is_animation_busy() and self.anim_begin:
                 # if the animation was performed, jump one level higher
                 return self.interrupt()
 
             self.anim_begin = True
 
             if self.side == "R":
-                connector.animation_capsule().play_animation(self.rk)
+                connector.animation.play_animation(self.rk)
             elif self.side == "L":
-                connector.animation_capsule().play_animation(self.lk)
+                connector.animation.play_animation(self.lk)
             elif self.side == "RP":
-                connector.animation_capsule().play_animation(self.rkp)
+                connector.animation.play_animation(self.rkp)
             elif self.side == "LP":
-                connector.animation_capsule().play_animation(self.lkp)
+                connector.animation.play_animation(self.lkp)
             elif self.side == "SLK":
-                connector.animation_capsule().play_animation(self.side_left)
+                connector.animation.play_animation(self.side_left)
             elif self.side == "SRK":
-                connector.animation_capsule().play_animation(self.side_right)
+                connector.animation.play_animation(self.side_right)
             else:
                 raise NotImplementedError("This kick does not exist")

@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 """
 TurnToAbsoluteDirection
 ^^^^^^^^^^^^^^
@@ -10,8 +9,8 @@ The threshold determines how precise the robot tries to get to this angle. 10 de
 History:
 * 06.12.14: Created (Marc Bestmann)
 """
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_common.stackmachine.model import Connector
 
 
 class TurnToAbsoluteDirection(AbstractDecisionModule):
@@ -20,18 +19,16 @@ class TurnToAbsoluteDirection(AbstractDecisionModule):
         self.goal_direction = args[0]
         self.threshold = args[1]
 
-    def perform(self, connector, reevaluate=False):
+    def perform(self, connector: Connector, reevaluate=False):
 
-        current_direction = connector.world_model_capsule().get_direction()
+        current_direction = connector.world_model.get_current_position()[2]
 
         if abs(self.goal_direction - current_direction) < self.threshold:
             # we reached the direction exact enough
-            connector.walking_capsule().stop_walking()
+            connector.walking.stop_walking()
             return self.pop()
         else:
             if current_direction < self.goal_direction:
-                connector.walking_capsule().start_walking(WalkingCapsule.ZERO, WalkingCapsule.SLOW_ANGULAR_LEFT,
-                                                          WalkingCapsule.ZERO)
+                connector.walking.start_walking_plain(0, 5, 0)
             else:
-                connector.walking_capsule().start_walking(WalkingCapsule.ZERO, WalkingCapsule.SLOW_ANGULAR_RIGHT,
-                                                          WalkingCapsule.ZERO)
+                connector.walking.start_walking_plain(0, -5, 0)

@@ -63,6 +63,5 @@ class RoleDecider(AbstractDecisionModule):
                 connector.team_data_capsule().set_role(ROLE_DEFENDER)
                 return self.push(DefenderDecision)
 
-    @staticmethod
-    def get_reevaluate():
+    def get_reevaluate(self):
         return True

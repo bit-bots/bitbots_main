@@ -1,19 +1,17 @@
-# -*- coding:utf-8 -*-
 """
 PlainWalkAction
 ^^^^^^^^^^^^^^^
 
 .. moduleauthor:: Sheepy
 
-History:
-* Created (Sheepy)
 
 The robot performs a cretain set of walking parameters. The action expects a list of 4-tuples as first argument.
 
 """
 import time
 
-from bitbots.modules.abstract.abstract_init_action_module import AbstractInitActionModule
+from bitbots_common.stackmachine.abstract_init_action_module import AbstractInitActionModule
+from bitbots_common.stackmachine.model import Connector
 
 
 class PlainWalkAction(AbstractInitActionModule):
@@ -31,19 +29,19 @@ class PlainWalkAction(AbstractInitActionModule):
             yield element
         yield None
 
-    def perform(self, connector, reevaluate=False):
-        if connector.get_duty() in ["ThrowIn", "PenaltyKickFieldie"]:
+    def perform(self, connector: Connector, reevaluate=False):
+        if connector.blackboard.get_duty() in ["ThrowIn", "PenaltyKickFieldie"]:
             self.do_not_reevaluate()
         if not self.active:
             self.current_step = self.walking_steps.next()
             if self.current_step is None:
-                connector.walking_capsule().stop_walking()
+                connector.walking.stop_walking()
                 return self.pop()
             f, a, s, t = self.current_step
             self.active = True
             self.started_time = time.time()
 
-            connector.walking_capsule().start_walking(f, a, s)
+            connector.walking.start_walking(f, a, s)
         else:
             if time.time() > self.current_step[3] + self.started_time:
                 self.active = False

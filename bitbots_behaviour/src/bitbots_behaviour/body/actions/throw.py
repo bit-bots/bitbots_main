@@ -1,20 +1,13 @@
-# -*- coding:utf-8 -*-
 """
 Throw
 ^^^^^
 
 Handling throwing of the goalie.
-
-
-History:
-''''''''
-
-* ??.??.??: Created (Unknown)
 """
 
-from bitbots.modules.abstract.abstract_action_module import AbstractActionModule
 import time
-from bitbots.util import get_config
+
+from bitbots_common.stackmachine.abstract_action_module import AbstractActionModule
 
 LEFT = "LEFT"
 MIDDLE = "MIDDLE"
@@ -29,7 +22,6 @@ class Throw(AbstractActionModule):
 
     def __init__(self, args):
         super(Throw, self).__init__()
-        config = get_config()
         self.richtung = args
         self.initializationTime = time.time()
         self.played = False
@@ -39,21 +31,21 @@ class Throw(AbstractActionModule):
 
     def perform(self, connector, reevaluate=False):
 
-        connector.blackboard_capsule().cancel_ball_tracking()
+        connector.blackboard.cancel_ball_tracking()
         if self.richtung == LEFT:
             # Returns true if can be performed
-            if connector.animation_capsule().play_animation(self.left_animation):
-                connector.blackboard_capsule().set_thrown(LEFT)
+            if connector.animation.play_animation(self.left_animation):
+                connector.blackboard.set_thrown(LEFT)
                 return self.interrupt()
         elif self.richtung == RIGHT:
-            if connector.animation_capsule().play_animation(self.right_animation):
-                connector.blackboard_capsule().set_thrown(RIGHT)
-                connector.blackboard_capsule().freeze_till(time.time() + 4)
+            if connector.animation.play_animation(self.right_animation):
+                connector.blackboard.set_thrown(RIGHT)
+                connector.blackboard.freeze_till(time.time() + 4)
                 return self.interrupt()
         elif self.richtung == MIDDLE:  # MIDDLE
-            if connector.animation_capsule().play_animation(self.middle_animation):
-                connector.blackboard_capsule().set_thrown(MIDDLE)
-                connector.blackboard_capsule().freeze_till(time.time() + 4)
+            if connector.animation.play_animation(self.middle_animation):
+                connector.blackboard.set_thrown(MIDDLE)
+                connector.blackboard.freeze_till(time.time() + 4)
                 return self.interrupt()
         else:
             raise ValueError('%s is not a possible throw direction.' % self.richtung)

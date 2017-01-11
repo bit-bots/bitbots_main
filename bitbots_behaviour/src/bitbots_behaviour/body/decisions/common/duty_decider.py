@@ -14,7 +14,7 @@ from body.actions.testing.test_walking_static import TestWalkingStatic
 from body.actions.wait import Wait
 from body.decisions.common.go_to_duty_position import GoToDutyPosition
 from body.decisions.common.role_decider import RoleDecider
-from body.decisions.goalie.goalie_decision import GoalieDecision
+from body.decisions.goalie.goalie_decision import GoaliePositionDecision
 from body.decisions.kick_off.kick_off import KickOff
 from body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
 from body.decisions.penalty.penalty_kicker_decision import PenaltyKickerDecision
@@ -75,7 +75,7 @@ class DutyDecider(AbstractDecisionModule):
             return self.push(KickOff)
 
         elif connector.blackboard.get_duty() == "Goalie":
-            return self.push(GoalieDecision)
+            return self.push(GoaliePositionDecision)
 
         elif connector.blackboard.get_duty() == "OneTimeKicker":
             return self.push(OneTimeKickerDecision)

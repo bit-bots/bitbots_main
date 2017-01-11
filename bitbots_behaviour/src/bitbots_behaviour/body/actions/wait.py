@@ -4,11 +4,11 @@ Wait
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
-Just waits fr something (i.e. that preconditions will be fullfilled)
+Just waits for something (i.e. that preconditions will be fullfilled)
 """
 import time
 
-from bitbots_common.stackmachine import AbstractActionModule
+from bitbots_common.stackmachine.abstract_action_module import AbstractActionModule
 
 
 class Wait(AbstractActionModule):
@@ -22,6 +22,6 @@ class Wait(AbstractActionModule):
         if connector.vision.ball_seen():
             connector.blackboard.schedule_ball_tracking()
 
-        connector.walking_capsule().stop_walking()
+        connector.walking.stop_walking()
         if self.time > time.time():
             self.pop()

@@ -13,6 +13,8 @@ from bitbots.modules.behaviour.body.actions.go_to_absolute_position import GoToA
 from bitbots.modules.behaviour.body.actions.go_to_ball_intelligent import GoToPositionIntelligent
 from bitbots.util import get_config
 
+from bitbots_common.stackmachine.model import Connector
+
 
 class GoToDutyPosition(AbstractDecisionModule):
     def __init__(self, _):
@@ -26,8 +28,8 @@ class GoToDutyPosition(AbstractDecisionModule):
         self.center_position = config["Behaviour"]["Common"]["Positions"]["center"]
         self.threshold = config["Behaviour"]["Common"]["positioningThreshold"]
 
-    def perform(self, connector, reevaluate=False):
-        duty = connector.get_duty()
+    def perform(self, connector: Connector, reevaluate=False):
+        duty = connector.blackboard.get_duty()
 
         if duty == "Goalie":
             position = (self.goalie_position[0] * self.length, self.goalie_position[1] * self.width)
@@ -40,7 +42,7 @@ class GoToDutyPosition(AbstractDecisionModule):
         else:
             position = (-0.25 * self.length, 0)  # this is the middle point of our own half
 
-        if connector.world_model_capsule().get_distance_to_xy(position[0], position[1]) > self.threshold:
+        if connector.world_model.get_distance_to_xy(position[0], position[1]) > self.threshold:
             say("Go to duty position")
             return self.push(GoToPositionIntelligent, (position, True))
         else:

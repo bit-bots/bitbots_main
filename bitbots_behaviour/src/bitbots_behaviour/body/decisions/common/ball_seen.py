@@ -33,8 +33,7 @@ class AbstractBallSeen(AbstractDecisionModule):
         else:
             return self.ball_not_seen(connector)
 
-    @staticmethod
-    def get_reevaluate():
+    def get_reevaluate(self):
         return True
 
     def has_ball_seen(self, connector):
@@ -88,7 +87,7 @@ class BallSeenThrowIn(AbstractBallSeen):
         return self.push(Search)
 
 
-class BallSeenPenaltyKick(AbstractBallSeen):  # todo not yet refactored 6.12.14.
+class BallSeenPenaltyKick(AbstractBallSeen):
     def has_ball_seen(self, connector):
         return self.push(CloseBallPenaltyKick)
 

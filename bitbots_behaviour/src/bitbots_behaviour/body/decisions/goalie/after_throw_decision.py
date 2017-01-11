@@ -1,20 +1,14 @@
-# -*- coding:utf-8 -*-
 """
 InGoal
 ^^^^^^
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
-History:
-* 29.11.13: Created (Martin Poppinga)
 """
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.animation_play_action import AnimationPlayAction
-from bitbots.modules.behaviour.body.actions.throw import MIDDLE
-from bitbots.modules.behaviour.body.decisions.goalie.turn_after_throw import TurnAfterThrow
-from bitbots.util import get_config
-
-config = get_config()
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_common.stackmachine.model import Connector
+from body.actions.throw import MIDDLE
+from body.decisions.goalie.turn_after_throw import TurnAfterThrow
 
 
 class AfterThrowDecision(AbstractDecisionModule):
@@ -27,15 +21,14 @@ class AfterThrowDecision(AbstractDecisionModule):
         self.relocateTurn = config["Behaviour"]["Toggles"]["Goalie"]["relocateTurn"]
         self.anim_goalie_walkready = config["animations"]["motion"]["goalie-walkready"]
 
-    def perform(self, connector, reevaluate=False):
-
-        richtung = connector.blackboard_capsule().get_throw_direction()
+    def perform(self, connector: Connector, reevaluate=False):
+        richtung = connector.blackboard.get_throw_direction()
         if richtung == MIDDLE:
-            connector.blackboard_capsule().delete_was_thrown()
-            self.push(AnimationPlayAction, self.anim_goalie_walkready)
+            connector.blackboard.delete_was_thrown()
+            connector.animation.play_animation()
 
         if self.relocateTurn:
             return self.push(TurnAfterThrow)
         else:
-            connector.blackboard_capsule().delete_was_thrown()
+            connector.blackboard.delete_was_thrown()
             return self.pop()

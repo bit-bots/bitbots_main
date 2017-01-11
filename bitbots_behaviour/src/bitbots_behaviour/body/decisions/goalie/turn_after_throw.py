@@ -1,17 +1,14 @@
-# -*- coding:utf-8 -*-
 import time
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.abstract.abstract_module import debug_m
-from bitbots.modules.behaviour.body.actions.plain_walk_action import PlainWalkAction
-from bitbots.modules.behaviour.body.actions.throw import LEFT, RIGHT
-from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
-from bitbots.util import get_config
+
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_common.stackmachine.model import WalkingCapsule
+from body.actions.plain_walk_action import PlainWalkAction
+from body.actions.throw import RIGHT, LEFT
 
 
 class TurnAfterThrow(AbstractDecisionModule):
     def __init__(self, _):
         super(TurnAfterThrow, self).__init__()
-        config = get_config()
         self.toggle_relocate_turn = config["Behaviour"]["Toggles"]["Goalie"]["relocateTurn"]
         self.anim_goalie_walkready = config["animations"]["motion"]["goalie-walkready"]
         self.accel_lst = []
@@ -45,7 +42,5 @@ class TurnAfterThrow(AbstractDecisionModule):
         self.accel_lst.append(accel.z)
 
         number_valid = sum(100 < v < 170 for v in self.accel_lst)
-
-        debug_m(3, "Number Valid Accel", number_valid)
 
         return number_valid > 28

@@ -9,7 +9,6 @@ from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisio
 from body.actions.align_on_ball import AlignOnBall
 from body.actions.go_to_ball_pathfinding import GoToBallPathfinding
 from body.decisions.common.kick_decision import KickDecisionPenaltyKick
-from body.decisions.common.kick_decision import KickDecisionThrowIn
 from body.decisions.common.stands_correct_decision import StandsCorrectDecision
 from body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
 
@@ -49,11 +48,6 @@ class AbstractCloseBall(AbstractDecisionModule):
 
 class CloseBallCommon(AbstractCloseBall):
     pass
-
-
-class CloseBallThrowIn(AbstractCloseBall):
-    def action(self, connector):
-        return self.push(KickDecisionThrowIn)
 
 
 class CloseBallPenaltyKick(AbstractCloseBall):  # todo not yet refactored 6.12.14.
