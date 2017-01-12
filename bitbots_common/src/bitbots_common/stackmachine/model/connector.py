@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 """
 Connector
 ^^^^^^^^^
@@ -30,19 +29,3 @@ class Connector:
         self.animation = AnimationCapsule()
 
         self.speaker = None  # type: rospy.Publisher
-
-        #self._robot = Robot()
-        #self._kinematic_task = KinematicTask(self._robot)
-
-
-
-    def get_pose(self):
-        return self.data["Pose"]
-
-    def set_pose(self, pose):
-        self.data["Ipc"].update(pose)
-
-    def get_ipc(self):
-        return self.data["Ipc"]
-
-
