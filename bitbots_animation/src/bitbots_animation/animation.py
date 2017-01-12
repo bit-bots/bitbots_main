@@ -4,7 +4,7 @@ import warnings
 
 import time
 from bitbots_common.pose.pypose import PyPose as Pose
-from numpy import basestring
+from numpy.compat import basestring
 
 from bitbots_common.pose.pypose import PyJoint as Joint
 
