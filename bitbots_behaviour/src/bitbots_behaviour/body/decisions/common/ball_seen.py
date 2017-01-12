@@ -11,7 +11,6 @@ import rospy
 from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.search import Search
 from body.decisions.common.close_ball import CloseBallPenaltyKick, CloseBallCommon
-from body.decisions.common.close_ball import CloseBallThrowIn
 from body.decisions.goalie.ball_dangerous import BallDangerous
 from body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
 
@@ -77,14 +76,6 @@ class BallSeenFieldie(AbstractBallSeen):
 
     def ball_not_seen(self, connector):
         return self.push(FieldieSearchDecision)
-
-
-class BallSeenThrowIn(AbstractBallSeen):
-    def has_ball_seen(self, connector):
-        return self.push(CloseBallThrowIn)
-
-    def ball_not_seen(self, connector):
-        return self.push(Search)
 
 
 class BallSeenPenaltyKick(AbstractBallSeen):
