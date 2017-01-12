@@ -2,7 +2,7 @@
 #
 # This File includes various CMake definition needet for BitBots relatet Code
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") #enable c++11 for all build-types
-
+set(Python_ADDITIONAL_VERSIONS 3.5)
 # Python-Version finden
 include(FindPythonInterp)
 # Cython danach angeben, sonst vcersionskonflikte

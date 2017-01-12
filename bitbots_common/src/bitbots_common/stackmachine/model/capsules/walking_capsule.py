@@ -8,8 +8,8 @@ class WalkingCapsule:
 
     def __init__(self):
         self.odometry_data = Odometry()
-        self.pub_walking_objective: rospy.Publisher = None
-        self.pub_walkin_params: rospy.Publisher = None
+        self.pub_walking_objective = None  # type: rospy.Publisher
+        self.pub_walkin_params = None  # type: rospy.Publisher
 
     def stop_walking(self):
         """ This method stops the walking - note that it could take some time until the robot is standing """

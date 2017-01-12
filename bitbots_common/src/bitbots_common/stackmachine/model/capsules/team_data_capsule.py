@@ -15,7 +15,7 @@ from keys.grid_world_keys import DATA_KEY_OWN_POSITION_GRID
 
 class TeamDataCapsule:
     def __init__(self):
-        self.role_sender: rospy.Publisher = None
+        self.role_sender = None  # type: actionlib.SimpleActionClient
         self.my_data = dict()
 
     def get_ball_in_own_half(self):

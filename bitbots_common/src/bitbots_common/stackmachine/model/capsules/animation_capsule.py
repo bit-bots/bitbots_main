@@ -9,7 +9,7 @@ from bitbots_animation.msg import PlayAnimationGoal
 
 class AnimationCapsule:
     def __init__(self):
-        self.server: actionlib.SimpleActionClient = None
+        self.server = None  # type: actionlib.SimpleActionClient
 
     def play_animation(self, ani: str)->bool:
         """

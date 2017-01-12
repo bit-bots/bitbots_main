@@ -29,7 +29,7 @@ class Connector:
         self.team_data = TeamDataCapsule()
         self.animation = AnimationCapsule()
 
-        self.speaker: rospy.Publisher = None
+        self.speaker = None  # type: rospy.Publisher
 
         #self._robot = Robot()
         #self._kinematic_task = KinematicTask(self._robot)
