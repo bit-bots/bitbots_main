@@ -13,9 +13,6 @@ class GoToBallPathfinding(AbstractActionModule):
     """
     Goes to the ball
     """
-    def __init__(self):
-        pass
-
     def perform(self, connector, reevaluate=False):
         p = Pose2D()
         p.x, p.y = connector.vision.get_ball_relative()

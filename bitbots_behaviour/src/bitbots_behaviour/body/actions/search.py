@@ -8,11 +8,11 @@ from bitbots_common.stackmachine.abstract_action_module import AbstractActionMod
 class Search(AbstractActionModule):
     def perform(self, connector, reevaluate=False):
         # We do nothing here, the head is searching.
-        connector.blackboard_capsule().schedule_ball_tracking()
+        connector.blackboard.schedule_ball_tracking()
         self.pop()
 
 
 class StopAndSearch(Search):
     def perform(self, connector, reevaluate=False):
-        connector.walking_capsule().stop_walking()
+        connector.walking.stop_walking()
         super(StopAndSearch, self).perform(connector, reevaluate)

@@ -6,6 +6,7 @@ CloseBall
 """
 import rospy
 from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_common.stackmachine.model import Connector
 from body.actions.align_on_ball import AlignOnBall
 from body.actions.go_to_ball_pathfinding import GoToBallPathfinding
 from body.decisions.common.kick_decision import KickDecisionPenaltyKick
@@ -26,7 +27,7 @@ class AbstractCloseBall(AbstractDecisionModule):
         self.min_kick_distance = rospy.get_param("/Behaviour/Fieldie/minKickDistance")
         self.config_kickalign_v = rospy.get_param("/Behaviour/Fieldie/kickAlign")
 
-    def perform(self, connector, reevaluate=False):
+    def perform(self, connector: Connector, reevaluate=False):
         # if the robot is near to the ball
         if self.min_kick_distance < connector.vision.get_ball_relative[0] <= self.max_kick_distance \
                 and connector.vision.get_ball_distance <= self.max_kick_distance * 5.0:
@@ -41,8 +42,7 @@ class AbstractCloseBall(AbstractDecisionModule):
     def go(self):
         return self.push(GoToBallPathfinding)
 
-    @staticmethod
-    def get_reevaluate():
+    def get_reevaluate(self):
         return True
 
 

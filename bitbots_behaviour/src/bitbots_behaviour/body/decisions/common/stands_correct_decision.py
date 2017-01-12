@@ -9,6 +9,7 @@ StandsCorrectDecision
 
 import rospy
 from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_common.stackmachine.model import Connector
 from body.actions.align_on_ball import AlignOnBall
 from body.decisions.common.kick_decision import KickDecisionCommon
 
@@ -25,7 +26,7 @@ class StandsCorrectDecision(AbstractDecisionModule):
         self.toggle_hack_align = rospy.get_param("/Behaviour/Toggles/Fieldie/hackAlign")
         self.config_kickalign_v = rospy.get_param("/Behaviour/Fieldie/kickAlign")
 
-    def perform(self, connector, reevaluate=False):
+    def perform(self, connector: Connector, reevaluate=False):
 
         # get data
         #opp_goal_u = connector.filtered_vision_capsule().get_local_goal_model_opp_goal()[0]
@@ -89,5 +90,5 @@ class StandsCorrectDecision(AbstractDecisionModule):
         return self.action_stands_correct(connector)
 
     def action_stands_correct(self, connector):
-        connector.blackboard_capsule().stop_aligning()
+        connector.blackboard.stop_aligning()
         return self.push(KickDecisionCommon)
