@@ -11,12 +11,11 @@ History:
 """
 import time
 
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.plain_walk_action import PlainWalkAction
-from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
-from bitbots.util.math_utils import convert_uv2angular
-from bitbots.modules.behaviour.body.actions.search import Search
-from bitbots.modules.behaviour.body.actions.wait import Wait
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_common.util.math_utils import convert_uv2angular
+from body.actions.plain_walk_action import PlainWalkAction
+from body.actions.search import Search
+from body.actions.wait import Wait
 
 
 class DefenderPositionDecider(AbstractDecisionModule):

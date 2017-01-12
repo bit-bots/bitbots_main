@@ -9,10 +9,7 @@ History:
 * 5/7/14: Created (sheepy)
 * 07.01.15: Complete Refactoring (Marc Bestmann)
 """
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.decisions.kick_off.kick_off_kicker import KickOffKicker
-from bitbots.modules.behaviour.body.decisions.kick_off.kick_off_supporter import KickOffSupporterSideDecision
-from bitbots.util import get_config
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class KickOffRoleDecider(AbstractDecisionModule):

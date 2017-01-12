@@ -11,12 +11,9 @@ History:
 * 10.07.14: Erstellt (Marc)
 """
 import random
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.kick_ball import KickBall
-from bitbots.util import get_config
-from bitbots.util.speaker import say
 
-config = get_config()
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from body.actions.kick_ball import KickBall
 
 
 class PenaltyFirstKick(AbstractDecisionModule):  # todo not yet refactored 6.12.14.
@@ -38,19 +35,16 @@ class PenaltyFirstKick(AbstractDecisionModule):  # todo not yet refactored 6.12.
             self.set_direction()
 
         if self.direction == 0:  # direct shoot
-            say("Direct kick on goal")
             if connector.raw_vision_capsule().get_ball_info("v") <= 0:
                 self.push(KickBall, init_data="RP")
             else:
                 self.push(KickBall, init_data="LP")
         elif self.direction == 1:  # left
-            say("first to left")
             connector.animation_capsule().play_animation(self.first_left_kick)
         elif self.direction == 2:  # right
-            say("first to right")
             connector.animation_capsule().play_animation(self.first_right_kick)
         elif self.direction == 3:  # short to front
-            say("first to front")
+
             if connector.raw_vision_capsule().get_ball_info("v") <= 0:
                 connector.animation_capsule().play_animation(self.first_front_right_kick)
             else:

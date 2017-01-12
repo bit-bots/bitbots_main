@@ -10,10 +10,9 @@ Waits if the other team has kickoff till the ball moves or the 10 seconds are ov
 History:
 * 18.07.14: Created (Marc Bestmann)
 """
-from bitbots.util.speaker import say
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.keys import DATA_VALUE_STATE_PLAYING
-from bitbots.modules.behaviour.body.actions.wait import Wait
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from body.actions.wait import Wait
+from keys import DATA_VALUE_STATE_PLAYING
 
 
 class EnemyKickOff(AbstractDecisionModule):
@@ -33,10 +32,8 @@ class EnemyKickOff(AbstractDecisionModule):
         seconds_remaining = connector.gamestatus_capsule().get_secondary_seconds_remaining()
         ball_distance_now = connector.raw_vision_capsule().get_ball_info("distance")
 
-        say("Wait")
-
         if seconds_remaining == 0 or abs(ball_distance_now - self.ball_distance_saved) > 200:
-            say("Enemy moved ball. Can play myself")
+
             connector.blackboard_capsule().set_enemy_kick_off_done()
             return self.pop()
         else:

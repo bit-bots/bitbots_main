@@ -9,8 +9,8 @@ History:
 * 06.01.15: Created (Marc Bestmann)
 """
 import time
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.wait import Wait
+
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class WaitForEnemyKickOff(AbstractDecisionModule):

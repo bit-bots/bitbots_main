@@ -9,9 +9,8 @@ History:
 * 05.12.14: Created (Marc Bestmann & Nils Rokita)
 """
 import time
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.decisions.common.ball_seen import BallSeenFieldie
-from bitbots.util import get_config
+
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class OneTimeKickerDecision(AbstractDecisionModule):  # todo make this player shoot always with the hard kick

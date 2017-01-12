@@ -14,17 +14,15 @@ History:
 
 """
 import time
-from bitbots.modules.abstract.abstract_action_module import AbstractActionModule
-from bitbots.modules.behaviour.body.actions.plain_walk_action import PlainWalkAction
-from bitbots.modules.behaviour.body.actions.search import StopAndSearch
-from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
-from bitbots.util import get_config
+
+from bitbots_common.stackmachine.abstract_action_module import AbstractActionModule
+from body.actions.plain_walk_action import PlainWalkAction
+from body.actions.search import StopAndSearch
 
 
 class FieldieSearchDecision(AbstractActionModule):
     def __init__(self, _):
         super(FieldieSearchDecision, self).__init__()
-        config = get_config()
         self.start_time = time.time()
         self.turn_wait_time = config["Behaviour"]["Common"]["Search"]["turnWaitTime"]
 

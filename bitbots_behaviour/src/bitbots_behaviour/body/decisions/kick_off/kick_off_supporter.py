@@ -10,11 +10,7 @@ History:
 """
 import time
 
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.plain_walk_action import PlainWalkAction
-from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
-from bitbots.util import get_config
-from bitbots.util.speaker import say
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class KickOffSupporterSideDecision(AbstractDecisionModule):

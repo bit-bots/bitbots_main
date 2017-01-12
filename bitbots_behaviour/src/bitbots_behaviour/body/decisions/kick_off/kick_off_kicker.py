@@ -9,9 +9,8 @@ History:
 * 07.01.15: Created (Marc Bestmann)
 """
 import random
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.kick_ball import KickBall
-from bitbots.util.speaker import say
+
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class KickOffKicker(AbstractDecisionModule):

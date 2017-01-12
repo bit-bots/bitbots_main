@@ -8,10 +8,10 @@ Start of the penalty kicker behaviour.
 History:
 * 06.12.14: Created (Marc Bestmann)
 """
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.plain_walk_action import PlainWalkAction
-from bitbots.modules.behaviour.body.decisions.common.ball_seen import BallSeenPenaltyKick
-from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_common.stackmachine.model import WalkingCapsule
+from body.actions.plain_walk_action import PlainWalkAction
+from body.decisions.common.ball_seen import BallSeenPenaltyKick
 
 
 class PenaltyKickerDecision(AbstractDecisionModule):

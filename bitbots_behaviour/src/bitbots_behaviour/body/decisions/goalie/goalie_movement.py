@@ -10,20 +10,12 @@ History:
 * 20.08.2014: Created(Daniel Speck)
 * 05.12.14: Complete Refactor (Marc Bestmann)
 """
-
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.become_running_goalie import BecomeRunningGoalie
-from bitbots.modules.behaviour.body.actions.become_team_player import BecomeTeamPlayer
-from bitbots.modules.behaviour.body.actions.turn_to_absolute_direction import TurnToAbsoluteDirection
-from bitbots.modules.behaviour.body.decisions.goalie.after_throw_decision import AfterThrowDecision
-from bitbots.modules.behaviour.body.decisions.goalie.position_in_goal import PositionInGoal
-from bitbots.util import get_config
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class GoalieMovement(AbstractDecisionModule):
     def __init__(self, _):
         super(GoalieMovement, self).__init__()
-        config = get_config()["Behaviour"]
         self.toggle_goalie_becomes_fieldie = config["Toggles"]["Goalie"]["goalieGoFieldie"]
         self.toggle_goalie_go_to_ball = config["Toggles"]["Goalie"]["goalieGoToBall"]
         self.toggle_goalie_position_in_goal = config["Toggles"]["Goalie"]["walkInGoal"]

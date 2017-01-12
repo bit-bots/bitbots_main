@@ -11,19 +11,16 @@ History:
 Decides what a defender does
 """
 import time
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.abstract.abstract_module import debug_m
-from bitbots.modules.behaviour.body.actions.wait import Wait
-from bitbots.modules.behaviour.body.decisions.common.corridor import DefenderCorridor
-from bitbots.modules.behaviour.helper import become_one_time_kicker
-from bitbots.util.config import get_config
-from bitbots.util.speaker import say
+
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from body.actions.wait import Wait
+from body.decisions.common.corridor import DefenderCorridor
 
 
 class DefenderDecision(AbstractDecisionModule):
     def __init__(self, _):
         super(DefenderDecision, self).__init__()
-        config = get_config()["Behaviour"]
+
         self.toggle_one_time_defender = config["Toggles"]["Fieldie"]["oneTimeDefender"]
         self.go_striker_range = config["Fieldie"]["Defender"]["goStrikerRange"]
         self.go_striker_time = config["Fieldie"]["Defender"]["goStrikerTime"]
@@ -45,7 +42,6 @@ class DefenderDecision(AbstractDecisionModule):
         if len(self.ball_distance_history) > self.ball_history_length:
             self.ball_distance_history = self.ball_distance_history[1:]
         number_trues = len([e for e in self.ball_distance_history if e])
-        debug_m(3, "DefenderDecision.number_trues", number_trues)
         return number_trues
 
     def perform(self, connector, reevaluate=False):
@@ -54,7 +50,6 @@ class DefenderDecision(AbstractDecisionModule):
             number_of_times_voted_for_yes = self.vote_for_switch_to_striker(connector)
 
         if number_of_times_voted_for_yes > self.required_number:
-            say("Going to Striker! Attack!")
             become_one_time_kicker(connector)
             return self.interrupt()
         else:

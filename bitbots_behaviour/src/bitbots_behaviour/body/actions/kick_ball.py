@@ -6,7 +6,7 @@ KickBall
 """
 import time
 
-from bitbots_common.stackmachine import AbstractActionModule
+from bitbots_common.stackmachine.abstract_action_module import AbstractActionModule
 from bitbots_common.stackmachine.model import Connector
 
 

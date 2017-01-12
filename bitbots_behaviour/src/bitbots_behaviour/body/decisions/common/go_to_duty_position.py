@@ -7,19 +7,14 @@ Go back to the position where a robot with this duty should stand.
 History:
 * 05.12.14: Created (Marc Bestmann & Nils Rokita)
 """
-from bitbots.util.speaker import say
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.go_to_absolute_position import GoToAbsolutePosition
-from bitbots.modules.behaviour.body.actions.go_to_ball_intelligent import GoToPositionIntelligent
-from bitbots.util import get_config
-
+from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from bitbots_common.stackmachine.model import Connector
+from body.actions.go_to_absolute_position import GoToAbsolutePosition
 
 
 class GoToDutyPosition(AbstractDecisionModule):
     def __init__(self, _):
         super(GoToDutyPosition, self).__init__()
-        config = get_config()
         self.length = config["field"]["length"]
         self.width = config["field"]["width"]
         self.goalie_position = config["Behaviour"]["Common"]["Positions"]["goalie"]
@@ -44,7 +39,7 @@ class GoToDutyPosition(AbstractDecisionModule):
 
         if connector.world_model.get_distance_to_xy(position[0], position[1]) > self.threshold:
             say("Go to duty position")
-            return self.push(GoToPositionIntelligent, (position, True))
+            return self.push(GoToAbsolutePosition, (position, True))
         else:
             say("I am at position")
             return self.pop()

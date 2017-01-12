@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 """
 TestWalkingDynamic
 ^^^^^^^^^^^^^^^^
@@ -8,7 +7,7 @@ Testing the walking using a dynamic pattern
 """
 import random
 
-from bitbots_common.stackmachine import AbstractActionModule
+from bitbots_common.stackmachine.abstract_action_module import AbstractActionModule
 
 
 class TestWalkingDynamic(AbstractActionModule):

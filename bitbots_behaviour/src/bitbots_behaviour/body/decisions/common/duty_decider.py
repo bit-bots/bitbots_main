@@ -7,7 +7,6 @@ DutyDecider
 """
 import rospy
 from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
-from body.actions.focus_goal import FocusEnemyGoal
 from body.actions.go_to_absolute_position import GoToAbsolutePosition
 from body.actions.testing.test_walking_dynamic import TestWalkingDynamic
 from body.actions.testing.test_walking_static import TestWalkingStatic
@@ -109,9 +108,6 @@ class DutyDecider(AbstractDecisionModule):
         elif connector.blackboard.get_duty() == "Stay":
             connector.walking_capsule().start_walking_plain(0, 0, 0)
             return
-
-        elif connector.blackboard.get_duty() == "FocusGoal":
-            return self.push(FocusEnemyGoal)
 
         else:
             s = Speak()
