@@ -1,4 +1,6 @@
 #!/usr/bin/env python2.7
+from random import randint
+
 import cv2
 import numpy as np
 import rospy
@@ -31,6 +33,7 @@ class DummyVision:
         # mask = cv2.erode(mask, None, iterations = 2)
         # mask = 255 - mask
 
+        # Horizion
         horizonbase = np.zeros((ra.shape[0] / 30, ra.shape[1] / 30))
         for x in range(ra.shape[0] / 30):
             for y in range(ra.shape[1] / 30):
@@ -45,7 +48,7 @@ class DummyVision:
         circles = cv2.HoughCircles(g, cv2.HOUGH_GRADIENT, 1, 100,
                                    param1=50, param2=43, minRadius=15, maxRadius=200)
 
-        #build message
+        #Ball
         msg = BallsInImage()
         msg.header.frame_id = img.header.frame_id
         msg.header.stamp = img.header.stamp
@@ -53,7 +56,7 @@ class DummyVision:
             circles = np.uint16(np.around(circles))
 
             for i in circles[0, :]:
-                if not horizon[i[0] // 30] < i[1]:
+                if not self.under_horizon(horizon, (i[1], i[0])):
                     #cv2.circle(bimg, (i[0], i[1]), i[2], (0, 0, 255))
                     continue
                 #corp = ra[i[1] - i[2]:i[1] + i[2], i[0] - i[2]:i[0] + i[2]]
@@ -66,12 +69,28 @@ class DummyVision:
                 can.header.stamp = img.header.stamp
                 msg.candidates.append(can)
 
-        #for x in range(len(horizon)-1):
-        #    cv2.line(bimg, (30*x, horizon[x]),(30*(x+1), horizon[x+1]), color=(0,255,0))
+        # Linepoints
+        for x in range(1000):
 
-        #cv2.imshow("Image", bimg)
-        #cv2.waitKey(1)
+            p = randint(0, bimg.shape[0]-1), randint(0, bimg.shape[1]-31)
 
+            if self.under_horizon(horizon, p):
+                if mask[p[0], p[1]] == 0:
+                    pass
+                    #cv2.circle(bimg, (p[1], p[0]), 1, (0, 0, 255))
+
+
+
+
+        # Plotting
+        """
+        for x in range(len(horizon)-1):
+            cv2.line(bimg, (30*x + 15, horizon[x]),(30*(x+1) +15, horizon[x+1]), color=(0,255,0))
+
+        cv2.imshow("Image", bimg)
+        #cv2.imshow("Mask", mask)
+        cv2.waitKey(1)
+        """
         self.pub_balls.publish(msg)
 
     @staticmethod
@@ -79,6 +98,9 @@ class DummyVision:
         m = np.average(np.average(subim, axis=0), axis=0)
         return m > 100
 
+    @staticmethod
+    def under_horizon(horizon, i):
+        return horizon[(i[1] // 30)] < i[0]
 
     def _image_callback(self, img):
         self.work(img)
