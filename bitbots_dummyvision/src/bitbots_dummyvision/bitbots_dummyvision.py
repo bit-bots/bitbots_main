@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 from random import randint
+import math
 
 import cv2
 import numpy as np
@@ -70,13 +71,22 @@ class DummyVision:
                 msg.candidates.append(can)
 
         # Linepoints
+        imagepoints= []
         for x in range(1000):
 
             p = randint(0, bimg.shape[0]-1), randint(0, bimg.shape[1]-31)
 
             if self.under_horizon(horizon, p):
-                if mask[p[0], p[1]] == 0:
-                    pass
+                if mask[p[0], p[1]] == 0 and sum(bimg[p[0], p[1]]) > 400:
+                    is_ball = False
+                    if circles is not None:
+                        for b in circles[0, :]:
+                            if math.sqrt((b[0]-p[1])**2 + (b[1]-p[0])**2) < b[2] + 15:
+                                is_ball = True
+                    if is_ball:
+                        continue
+
+                    imagepoints.append(p)
                     #cv2.circle(bimg, (p[1], p[0]), 1, (0, 0, 255))
 
 
