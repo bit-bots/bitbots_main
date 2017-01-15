@@ -5,7 +5,7 @@ import math
 import cv2
 import numpy as np
 import rospy
-from humanoid_league_msgs.msg import BallInImage, BallsInImage
+from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineSegmentInImage, LineInformationInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
@@ -13,6 +13,7 @@ from cv_bridge import CvBridge, CvBridgeError
 class DummyVision:
     def __init__(self):
         self.pub_balls = rospy.Publisher("/ball_candidates", BallsInImage, queue_size=1)
+        self.pub_lines = rospy.Publisher("/line_in_image", LineInformationInImage)
         self.bridge = CvBridge()
 
         rospy.Subscriber("/usb_cam/image_raw", Image, self._image_callback, queue_size=1)
@@ -71,7 +72,8 @@ class DummyVision:
                 msg.candidates.append(can)
 
         # Linepoints
-        imagepoints= []
+        li = LineInformationInImage()
+
         for x in range(1000):
 
             p = randint(0, bimg.shape[0]-1), randint(0, bimg.shape[1]-31)
@@ -86,7 +88,11 @@ class DummyVision:
                     if is_ball:
                         continue
 
-                    imagepoints.append(p)
+                    ls = LineSegmentInImage()
+                    ls.start.x = p[0]
+                    ls.start.y = p[1]
+                    ls.end = ls.start
+                    li.segments.append(ls)
                     #cv2.circle(bimg, (p[1], p[0]), 1, (0, 0, 255))
 
 
@@ -101,6 +107,7 @@ class DummyVision:
         #cv2.imshow("Mask", mask)
         cv2.waitKey(1)
         """
+        self.pub_lines.publish(li)
         self.pub_balls.publish(msg)
 
     @staticmethod
