@@ -6,7 +6,7 @@ import numpy as np
 import tf.transformations
 import rospy
 from bitbots_localisation.localization_objects import Particle, Field
-from humanoid_league_msgs.msg import Position, GoalRelative
+from humanoid_league_msgs.msg import Position, GoalRelative, LineInformationRelative
 from nav_msgs.msg import Odometry
 from typing import List, Tuple
 
@@ -15,12 +15,13 @@ class Locator:
 
     def __init__(self):
         rospy.logdebug("Init Localisation")
-        rospy.init_node('bitbots_localisation', anonymous=False)
+
 
         self.pub = rospy.Publisher("/local_position", Position, queue_size=1)
 
         rospy.Subscriber("/odometry", Odometry, self.update_position)
-        rospy.Subscriber("/goal_relative", GoalRelative, self.perform)
+        rospy.Subscriber("/goal_relative", GoalRelative, self._callback_goals)
+        rospy.Subscriber("/lines_relative", LineInformationRelative, self._callback_lines)
 
         self.conf__nr_particle = rospy.get_param("/localisation/nr_particle")
         self.debug = rospy.get_param("/debug_active", False)
@@ -28,8 +29,13 @@ class Locator:
         # Setup variables
         self._setup()
 
-        # Get data and update model
-        rospy.spin()
+        rospy.init_node('bitbots_localisation', anonymous=False)
+
+        # update model
+        rate = rospy.Rate(10)
+        while not rospy.is_shutdown():
+            self.perform()
+            rate.sleep()
 
     def _setup(self):
         self.fieldmodel = Field()
@@ -69,29 +75,33 @@ class Locator:
         self.particlem[:, 0] += fx(self.particlem[:, 2])
         self.particlem[:, 1] += fy(self.particlem[:, 2])
 
-    def perform(self, goals: GoalRelative)->None:
+    def perform(self)->None:
         nr_particle = self.conf__nr_particle
         # Measurment for all Particles
         #r_mes = self.sensor_data()
 
         # real meassurment
-        mesgoal_r = [(x.x, x.y) for x in goals.positions]
+        mesgoal_r = [(x.x, x.y) for x in self.goals.positions]
 
         #mesgoal_p = np.zeros((nr_particle, 8), np.int)
         # Create performant Weightlist
         weights = collections.deque([], nr_particle)
 
+        # Set Weights for Goals
         for i in range(nr_particle):
             #mesgoal_p[i, :] =
             # meassurement for all particles
             mes = self.field.mes_goals(self.particlem[i, :].tolist())
-            dist = self.mes_dist(mesgoal_r, mes)
+            dist = self.mes_goal_dist(mesgoal_r, mes)
             weights.append(1.0 / dist if (abs(dist) - 0.5) > 0 else 0)
 
+        # Update Weights for lines
+        for i in range(nr_particle):
+            pass  # todo aufpassen, dass nicht zu langasm
 
         #for particle in self.particles:
             #p_mes = self.particle_mes(particle)
-            #dist = self.mes_dist(r_mes, p_mes)
+            #dist = self.mes_goal_dist(r_mes, p_mes)
 
             #particle.weight = 1/dist
 
@@ -171,7 +181,7 @@ class Locator:
         self.particlem = new_particles
 
     @staticmethod
-    def mes_dist(r_mes: List[Tuple[float, float]], p_mes: tuple)-> int:
+    def mes_goal_dist(r_mes: List[Tuple[float, float]], p_mes: tuple)-> int:
         """
         Measures the ditance between two mesurements
         :param r_mes:
@@ -186,6 +196,12 @@ class Locator:
 
         return sum(goaldistances)  # todo weitere features
 
+
+    def _callback_goals(self, goals: GoalRelative):
+        self.goals = goals
+
+    def _callback_lines(self, lines: LineInformationRelative):
+        self.linepoints = [(x.start.x, x.start.y) for x in lines.segments]
 
 if __name__ == "__main__":
     Locator()
