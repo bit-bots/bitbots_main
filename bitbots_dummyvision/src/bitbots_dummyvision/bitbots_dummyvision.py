@@ -1,13 +1,14 @@
 #!/usr/bin/env python2.7
-from random import randint
 import math
+from random import randint
 
 import cv2
 import numpy as np
+
 import rospy
+from cv_bridge import CvBridge
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineSegmentInImage, LineInformationInImage
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
 
 
 class DummyVision:
@@ -29,7 +30,7 @@ class DummyVision:
         """
 
         ra = self.bridge.imgmsg_to_cv2(img, "bgr8")
-        #bimg = cv2.bilateralFilter(ra, 14, 100, 100)
+        # bimg = cv2.bilateralFilter(ra, 14, 100, 100)
         bimg = cv2.GaussianBlur(ra, (9, 9), 0)
         mask = cv2.inRange(ra, (0, 120, 0), (160, 255, 160))
         # mask = cv2.erode(mask, None, iterations = 2)
@@ -45,12 +46,11 @@ class DummyVision:
         for col in range(horizonbase.shape[1]):
             horizon.append(list(horizonbase[:, col]).index(1) * 30)
 
-
         b, g, r = cv2.split(bimg)
         circles = cv2.HoughCircles(g, cv2.HOUGH_GRADIENT, 1, 100,
                                    param1=50, param2=43, minRadius=15, maxRadius=200)
 
-        #Ball
+        # Ball
         msg = BallsInImage()
         msg.header.frame_id = img.header.frame_id
         msg.header.stamp = img.header.stamp
@@ -59,11 +59,11 @@ class DummyVision:
 
             for i in circles[0, :]:
                 if not self.under_horizon(horizon, (i[1], i[0])):
-                    #cv2.circle(bimg, (i[0], i[1]), i[2], (0, 0, 255))
+                    # cv2.circle(bimg, (i[0], i[1]), i[2], (0, 0, 255))
                     continue
-                #corp = ra[i[1] - i[2]:i[1] + i[2], i[0] - i[2]:i[0] + i[2]]
+                # corp = ra[i[1] - i[2]:i[1] + i[2], i[0] - i[2]:i[0] + i[2]]
                 can = BallInImage()
-                #cv2.circle(bimg, (i[0], i[1]), i[2], (255,0,0))
+                # cv2.circle(bimg, (i[0], i[1]), i[2], (255,0,0))
                 can.center.x = i[0]
                 can.center.y = i[1]
                 can.diameter = (i[2] * 2) + 3
@@ -73,17 +73,18 @@ class DummyVision:
 
         # Linepoints
         li = LineInformationInImage()
-
+        li.header.frame_id = img.header.frame_id
+        li.header.stamp = img.header.stamp
         for x in range(1000):
 
-            p = randint(0, bimg.shape[0]-1), randint(0, bimg.shape[1]-31)
+            p = randint(0, bimg.shape[0] - 1), randint(0, bimg.shape[1] - 31)
 
             if self.under_horizon(horizon, p):
                 if mask[p[0], p[1]] == 0 and sum(bimg[p[0], p[1]]) > 400:
                     is_ball = False
                     if circles is not None:
                         for b in circles[0, :]:
-                            if math.sqrt((b[0]-p[1])**2 + (b[1]-p[0])**2) < b[2] + 15:
+                            if math.sqrt((b[0] - p[1]) ** 2 + (b[1] - p[0]) ** 2) < b[2] + 15:
                                 is_ball = True
                     if is_ball:
                         continue
@@ -93,10 +94,7 @@ class DummyVision:
                     ls.start.y = p[1]
                     ls.end = ls.start
                     li.segments.append(ls)
-                    #cv2.circle(bimg, (p[1], p[0]), 1, (0, 0, 255))
-
-
-
+                    # cv2.circle(bimg, (p[1], p[0]), 1, (0, 0, 255))
 
         # Plotting
         """
@@ -125,4 +123,3 @@ class DummyVision:
 
 if __name__ == "__main__":
     DummyVision()
-
