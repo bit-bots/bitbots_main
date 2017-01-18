@@ -12,9 +12,9 @@ Decides what a defender does
 """
 import time
 
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.wait import Wait
 from body.decisions.common.corridor import DefenderCorridor
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class DefenderDecision(AbstractDecisionModule):

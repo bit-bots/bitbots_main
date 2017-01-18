@@ -10,7 +10,7 @@ History:
 """
 import random
 
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class KickOffKicker(AbstractDecisionModule):

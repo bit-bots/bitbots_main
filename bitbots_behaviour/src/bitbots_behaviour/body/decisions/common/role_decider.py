@@ -7,12 +7,12 @@ RoleDecider
 
 Decides on witch position our fieldie should play
 """
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.decisions.common.ball_seen import BallSeenFieldie
 from body.decisions.team_player.center_decision import CenterDecision
 from body.decisions.team_player.defender_decision import DefenderDecision
 from body.decisions.team_player.supporter_decision import SupporterDecision
 from humanoid_league_msgs.msg import Role
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class RoleDecider(AbstractDecisionModule):

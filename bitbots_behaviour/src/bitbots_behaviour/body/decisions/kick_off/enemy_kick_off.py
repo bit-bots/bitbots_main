@@ -10,9 +10,9 @@ Waits if the other team has kickoff till the ball moves or the 10 seconds are ov
 History:
 * 18.07.14: Created (Marc Bestmann)
 """
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.wait import Wait
 from keys import DATA_VALUE_STATE_PLAYING
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class EnemyKickOff(AbstractDecisionModule):

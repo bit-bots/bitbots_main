@@ -8,8 +8,8 @@ Start of the center player behaviour.
 History:
 * 06.12.14: Created (Marc Bestmann)
 """
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.decisions.common.corridor import CenterCorridor
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class CenterDecision(AbstractDecisionModule):  # todo not yet refactored 6.12.14

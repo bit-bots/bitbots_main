@@ -8,11 +8,11 @@ Startet das Verhalten
 """
 import actionlib
 import rospy
-from bitbots_common.stackmachine.stack_machine_module import StackMachineModule
 from bitbots_animation.animation_node import PlayAnimationAction
 from body.decisions.common.duty_decider import DutyDecider
 from geometry_msgs.msg import Twist, Pose2D
 from humanoid_league_msgs.msg import BallRelative, ObstacleRelative, GameState, Speak, Role
+from stackmachine.stack_machine_module import StackMachineModule
 
 
 class BehaviourModule(StackMachineModule):
@@ -20,7 +20,6 @@ class BehaviourModule(StackMachineModule):
         self.set_start_module(DutyDecider)
         super(BehaviourModule, self).__init__()
 
-        #rospy.Subscriber("/odometry", Odometry, self.connector.walking.walking_callback) # todo vermutlich unnötig
         rospy.Subscriber("/ball_relative", BallRelative, self.connector.vision.ball_callback)
         rospy.Subscriber("/obstacle_relative", ObstacleRelative, self.connector.vision.obstacle_callback)
         rospy.Subscriber("/Gamestate", GameState, self.connector.gamestate.gamestate_callback)

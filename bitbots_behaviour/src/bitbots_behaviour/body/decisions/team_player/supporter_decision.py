@@ -7,9 +7,9 @@ SupporterDecision
 """
 import time
 
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.search import Search
 from body.actions.wait import Wait
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class SupporterDecision(AbstractDecisionModule):

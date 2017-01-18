@@ -4,8 +4,8 @@ RaiseArm
 
 Raising Arms to get ready to throw the goalie.
 """
-from bitbots_common.stackmachine.abstract_action_module import AbstractActionModule
 from body.actions.throw import LEFT, RIGHT, MIDDLE, BOTH_ARMS_HIGH
+from stackmachine import AbstractActionModule
 
 
 class RaiseArm(AbstractActionModule):

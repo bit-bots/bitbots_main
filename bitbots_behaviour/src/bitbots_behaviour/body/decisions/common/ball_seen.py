@@ -8,11 +8,11 @@ BallSeen
 import time
 
 import rospy
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.search import Search
 from body.decisions.common.close_ball import CloseBallPenaltyKick, CloseBallCommon
 from body.decisions.goalie.ball_dangerous import BallDangerous
 from body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class AbstractBallSeen(AbstractDecisionModule):

@@ -6,7 +6,6 @@ DutyDecider
 
 """
 import rospy
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.go_to_absolute_position import GoToAbsolutePosition
 from body.actions.testing.test_walking_dynamic import TestWalkingDynamic
 from body.actions.testing.test_walking_static import TestWalkingStatic
@@ -20,6 +19,7 @@ from body.decisions.penalty.penalty_kicker_decision import PenaltyKickerDecision
 from humanoid_league_msgs.msg import Speak
 from keys import DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_READY, DATA_VALUE_STATE_SET, \
     DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 duty = None  # can be overwriten by the startup script (to force a behaviour)
 

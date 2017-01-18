@@ -7,9 +7,10 @@ orientation within the absolute coordinate system.
 
 """
 
-from bitbots_common.stackmachine.abstract_action_module import AbstractActionModule
-from bitbots_common.stackmachine.model import Connector
+from stackmachine.abstract_action_module import AbstractActionModule
 from geometry_msgs.msg import Pose2D
+
+from stackmachine.model import Connector
 
 
 class GoToAbsolutePosition(AbstractActionModule):

@@ -8,9 +8,9 @@ Handling decsision if we throw ourself or if we just raise a arm.
 History:
 * 29.11.13: Created (Martin Poppinga)
 """
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.raise_arm import RaiseArm
 from body.actions.throw import Throw
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class ThrowOrRaiseArm(AbstractDecisionModule):
