@@ -1,0 +1,8 @@
+<launch>
+<node name="bitbots_dummyvision" pkg="bitbots_dummyvision" type="bitbots_dummyvision.py" />
+<node name="bitbots_ballclassifier" pkg="bitbots_ballclassifier" type="keras_cnn_classifier.py">
+
+<param name="/runpath" value="$(find bitbots_ballclassifier)"/>
+</node>
+
+</launch>

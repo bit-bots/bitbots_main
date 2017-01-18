@@ -1,12 +1,15 @@
 #!/usr/bin/env python2.7
+import os
 from collections import OrderedDict
+
 import cv2
 import numpy as np
+from cv_bridge import CvBridge
 from keras.models import model_from_json
+from sensor_msgs.msg import Image
+
 import rospy
 from humanoid_league_msgs.msg import BallInImage, BallsInImage
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
 
 
 class Classifier:
@@ -14,14 +17,16 @@ class Classifier:
         self.pub_ball = rospy.Publisher("/ball_in_image", BallInImage, queue_size=1)
         self.pub_rated_ball = rospy.Publisher("/rated_balls_in_image", BallsInImage, queue_size=1)
 
+        path = rospy.get_param("/bitbots_ballclassifier/runpath", "")
+
         self.bridge = CvBridge()
         self.last_imgs = OrderedDict()
         self.new_can = False
         self.latest_image_id = None
 
-        with open("src/bitbots_ballclassifier/src/bitbots_ballclassifier/model3.json", "r") as j:
+        with open(os.path.join(path, "models/model3.json"), "r") as j:
             nem = model_from_json(j.read())
-        nem.load_weights("src/bitbots_ballclassifier/src/bitbots_ballclassifier/model3.ker")
+        nem.load_weights(os.path.join(path, "models/model3.ker"))
         self.model = nem
 
         rospy.init_node("bitbots_ball_classifier")
@@ -44,11 +49,10 @@ class Classifier:
 
         quality = []
         for i in self.candidates:
-
-            x_b = max(i[1] - i[2], 0)
-            x_e = min(i[1] + i[2], ra.shape[0])
-            y_b = max(i[0] - i[2], 0)
-            y_e = min(i[0] + i[2], ra.shape[1])
+            x_b = max(i[1] - i[2] - 3, 0)
+            x_e = min(i[1] + i[2] + 3, ra.shape[0])
+            y_b = max(i[0] - i[2] - 3, 0)
+            y_e = min(i[0] + i[2] + 3, ra.shape[1])
             corp = ra[x_b:x_e, y_b:y_e]
 
             corp = cv2.resize(corp, (30, 30), interpolation=cv2.INTER_CUBIC)
@@ -64,8 +68,7 @@ class Classifier:
             msg.header.frame_id = img.header.frame_id
             msg.header.stamp = img.header.stamp
             quality.append(msg)
-            #print(p[0][0])
-
+            print(p[0][0])
 
         if len(quality) > 0:
             self.pub_ball.publish(max(quality, key=lambda x: x.confidence))
@@ -99,4 +102,3 @@ class Classifier:
 
 if __name__ == "__main__":
     Classifier()
-

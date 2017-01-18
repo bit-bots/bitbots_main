@@ -14,14 +14,12 @@ class Loadimg:
         self.pub_im = rospy.Publisher("/usb_cam/image_raw", Image, queue_size=1)
         self.bridge = CvBridge()
 
-        if len(sys.argv) > 1:
-            path = sys.argv[1]
-        else:
-            path = rospy.get_param("/imageloader/load_from", "/home/martin/Schreibtisch/ds_x/ds1")
+        path = rospy.get_param("/bitbots_imageloader/load_from")
+
         nr = 1000
         listdir = list(os.listdir(path))
 
-        rate = rospy.Rate(30)
+        rate = rospy.Rate(25)
 
         img_id = 3
         for im in sorted(listdir)[:nr]:
