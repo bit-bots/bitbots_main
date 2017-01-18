@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find minibot_description)/launch/minibot_robocup.launch" />
+    <include file="$(find bitbots_vision_common)/launch/vision_processing.launch" />
+    <node name="cameraview" pkg="bitbots_imageviewer" type="bitbots_imageviewer.py"/>
+
+</launch>
