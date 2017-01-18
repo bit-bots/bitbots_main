@@ -22,17 +22,18 @@ class Loadimg:
         rate = rospy.Rate(25)
 
         img_id = 3
-        for im in sorted(listdir)[:nr]:
-            print(im)
-            ra = cv2.imread(os.path.join(path, im))
+        while not rospy.is_shutdown():
+            for im in sorted(listdir)[:nr]:
+                print(im)
+                ra = cv2.imread(os.path.join(path, im))
 
-            msg = self.bridge.cv2_to_imgmsg(ra, "bgr8")
-            msg.header.seq = img_id
-            msg.header.frame_id = "image_" + str(img_id)
-            img_id += 1
-            msg.header.stamp = rospy.get_rostime()
-            self.pub_im.publish(msg)
-            rate.sleep()
+                msg = self.bridge.cv2_to_imgmsg(ra, "bgr8")
+                msg.header.seq = img_id
+                msg.header.frame_id = "image_" + str(img_id)
+                img_id += 1
+                msg.header.stamp = rospy.get_rostime()
+                self.pub_im.publish(msg)
+                rate.sleep()
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+import copy
 from collections import OrderedDict
 
 import cv2
@@ -21,12 +22,13 @@ class Loadimg:
         self.ball_candidates = OrderedDict()
 
         while not rospy.is_shutdown():
+            images = copy.copy(self.images)
             #print("Waiting for " + str(self.images.keys()))
-            for t in self.images.keys():  # imgages who are wating
+            for t in images.keys():  # imgages who are wating
 
                 if t in self.ball_candidates:  # Check if all data to draw is there
 
-                    img = self.images.pop(t)  # get image from queue
+                    img = images.pop(t)  # get image from queue
                     cans = self.ball_candidates.pop(t)
 
                     ra = self.bridge.imgmsg_to_cv2(img, "bgr8")
