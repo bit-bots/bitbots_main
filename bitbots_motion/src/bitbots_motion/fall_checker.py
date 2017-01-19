@@ -56,7 +56,6 @@ class FallChecker(object):
 
     def check_falling(self, not_much_smoothed_gyro):
         """Checks if the robot is currently falling and in which direction. """
-        rospy.logerr(not_much_smoothed_gyro.__class__)
         # First decide if we fall more sidewards or more front-back-wards. Then decide if we fall badly enough
         # to do something about it
         if abs(not_much_smoothed_gyro.get_y()) > abs(not_much_smoothed_gyro.get_x()):

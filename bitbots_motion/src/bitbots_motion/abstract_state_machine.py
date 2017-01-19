@@ -82,7 +82,7 @@ class Values(object):
 
     def say(self, text):
         # todo
-        rospy.logwarn("Say not implemented in abstrace state machine")
+        rospy.logwarn("Say not implemented in abstrace state machine: " + text)
         pass
 
 
@@ -125,9 +125,23 @@ class AbstractState(object):
         :param follow_state:
         :return:
         """
-        self.animation_started = True
-        play_animation(anim)
+        started = self.play_animation(anim)
+        self.animation_started = started
 
+    def play_animation(self, anim_name):
+        if anim_name is None or anim_name == "empty":
+            rospy.logwarn("Tried to play an animation with an empty name!")
+            return False
+        try:
+            VALUES.animation_client.wait_for_server()
+        except rospy.ROSException:
+            rospy.logerr(
+                "Animation Action Server not running! Motion can not work without animation action server. "
+                "Will now wait until server is assailable!")
+            VALUES.animation_client.wait_for_server()
+        goal = bitbots_animation.msg.PlayAnimationGoal(animation=anim_name)
+        VALUES.animation_client.send_goal(goal)
+        return True
 
 class AbstractStateMachine(object):
     def __init__(self):
@@ -186,17 +200,3 @@ class AbstractStateMachine(object):
         return self.state.motion_state()
 
 
-def play_animation(anim_name):
-    if anim_name is None or anim_name == "empty":
-        rospy.logwarn("Tried to play an animation with an empty name!")
-        return False
-    try:
-        VALUES.animation_client.wait_for_server()
-    except rospy.ROSException:
-        rospy.logerr(
-            "Animation Action Server not running! Motion can not work without animation action server. "
-            "Will now wait until server is assailable!")
-        VALUES.animation_client.wait_for_server()
-    goal = bitbots_animation.msg.PlayAnimationGoal(animation=anim_name)
-    VALUES.animation_client.send_goal(goal)
-    return True
