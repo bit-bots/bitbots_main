@@ -1,0 +1,3 @@
+[submodule "usb_cam"]
+	path = usb_cam
+	url = https://www.github.com/joshuaeckroth/usb_cam.git
