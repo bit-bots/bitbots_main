@@ -20,9 +20,9 @@ class FallChecker(object):
 
         # Fallerkennungs Grenzwerte laden
         self.falling_threshold_front = rospy.get_param("/motion/falling/" + robot_type_name + "/threshold_gyro_y_front") \
-                                       + rospy.get_param("/ZMPConfig/" + robot_type_name + "/HipPitch")
+                                       + rospy.get_param("/ZMPConfig/" + robot_type_name + "/HipPitch", 0)
         self.falling_threshold_back = rospy.get_param("/motion/falling/" + robot_type_name + "/threshold_gyro_y_back") \
-                                      + rospy.get_param("/ZMPConfig/" + robot_type_name + "/HipPitch")
+                                      + rospy.get_param("/ZMPConfig/" + robot_type_name + "/HipPitch", 0)
         self.falling_threshold_right = rospy.get_param(
             "/motion/falling/" + robot_type_name + "/threshold_gyro_x_right")
         self.falling_threshold_left = rospy.get_param("/motion/falling/" + robot_type_name + "/threshold_gyro_x_left")
@@ -83,7 +83,7 @@ class FallChecker(object):
             rospy.logdebug("FALLING TO THE LEFT")
             return self.falling_motor_degrees_left
 
-    def check_fallen(self, raw_gyro, smooth_gyro):
+    def check_fallen(self, raw_gyro, smooth_gyro, robo_angle):
         # todo where the fuck comes robo_angle from and what is this magic
         """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""
         if raw_gyro.norm() < 5 and smooth_gyro.norm() < 5 and robo_angle.y > 80:  ###gyro

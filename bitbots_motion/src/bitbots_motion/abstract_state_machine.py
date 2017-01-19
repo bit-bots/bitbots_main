@@ -4,6 +4,8 @@ import time
 from std_msgs.msg import String
 
 from .fall_checker import FallChecker
+from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
+from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
 
 
 class Values(object):
@@ -27,9 +29,10 @@ class Values(object):
         self.last_request = None
         self.start_up_time = time.time()
 
-        self.raw_gyro = (0, 0, 0)
-        self.smooth_gyro = (0, 0, 0)
-        self.not_so_smooth_gyro = (0, 0, 0)
+        self.raw_gyro = IntDataVector(0, 0, 0)
+        self.smooth_gyro = IntDataVector(0, 0, 0)
+        self.not_so_smooth_gyro = IntDataVector(0, 0, 0)
+        self.robo_angle = DataVector(0, 0, 0)
 
         self.fall_checker = FallChecker()
         # for internal animations

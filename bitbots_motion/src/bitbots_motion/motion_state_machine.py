@@ -74,12 +74,12 @@ class MotionStateMachine(AbstractStateMachine):
 
 class Startup(AbstractState):
     def entry(self):
-        pass
+        self.start_time = rospy.get_param("/motion/start_time", 10)
 
     def evaluate(self):
         # leave this if we got a hardware response, or after some time
         # todo zeit parameteriesern?
-        if VALUES.last_hardware_update is not 0 or time.time() - VALUES.start_up_time > 10:
+        if VALUES.last_hardware_update is not 0 or time.time() - VALUES.start_up_time > self.start_time:
             # check if we directly go into a special state, if not, got to get up
             if VALUES.start_test:
                 # todo
@@ -228,7 +228,7 @@ class GettingUp(AbstractState):
         rospy.logdebug("Getting up!")
         self.next_state = GettingUpSecond()
         self.start_animation(
-            VALUES.fall_checker.check_fallen(VALUES.raw_gyro, VALUES.smooth_gyro))
+            VALUES.fall_checker.check_fallen(VALUES.raw_gyro, VALUES.smooth_gyro, VALUES.robo_angle))
 
     def evaluate(self):
         # wait for animation started in entry
@@ -467,17 +467,20 @@ class ShutDown(AbstractState):
 
 
 def switch_motor_power(state):
-    """ Calling service from CM730 to turn motor power on or off"""
-    # todo set motor ram here if turned on, bc it lost it
-    try:
-        rospy.wait_for_service("switch_motor_power", timeout=1)
-    except rospy.ROSException:
-        rospy.logfatal("Can't switch of motorpower, seems like the CM730 is missing.")
-        return
-    power_switch = rospy.ServiceProxy("switch_motor_power", SwitchMotorPower)
-    try:
-        response = power_switch(state)
-    except rospy.ServiceException as exc:
-        print("Service did not process request: " + str(exc))
-    # wait for motors
-    rospy.sleep(1)
+    """ Calling service from CM730 to turn motor power on or off. But only if not using simulator"""
+    if rospy.get_param("/simulation_active", False):
+        rospy.loginfo("I'm simulating, not switching of motorpower")
+    else:
+        # todo set motor ram here if turned on, bc it lost it
+        try:
+            rospy.wait_for_service("switch_motor_power", timeout=1)
+        except rospy.ROSException:
+            rospy.logfatal("Can't switch of motorpower, seems like the CM730 is missing.")
+            return
+        power_switch = rospy.ServiceProxy("switch_motor_power", SwitchMotorPower)
+        try:
+            response = power_switch(state)
+        except rospy.ServiceException as exc:
+            print("Service did not process request: " + str(exc))
+        # wait for motors
+        rospy.sleep(1)

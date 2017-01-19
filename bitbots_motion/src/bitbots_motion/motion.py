@@ -1,33 +1,42 @@
-# -*- coding: utf8 -*-
+#!/usr/bin/env python
+#  -*- coding: utf8 -*-
+import argparse
 import time
+from math import asin
 
+import math
 import rospy
 from bitbots_common.pose.pypose import PyPose as Pose
 from std_msgs.msg import Bool
 
 from bitbots_cm730.srv import SwitchMotorPower
 
-from .motion_state_machine import MotionStateMachine, STATE_CONTROLABLE, AnimationRunning
+from bitbots_motion.motion_state_machine import MotionStateMachine, STATE_CONTROLABLE, AnimationRunning
 from dynamic_reconfigure.server import Server
 from humanoid_league_msgs.msg import MotionState
 from humanoid_league_msgs.msg import Speak
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
+from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
 
 from bitbots_animation.srv import AnimationFrame
-from .abstract_state_machine import VALUES
-from .cfg import motion_paramsConfig
+from bitbots_motion.abstract_state_machine import VALUES
+from bitbots_motion.cfg import motion_paramsConfig
+
 
 class Motion(object):
     def __init__(self, dieflag, standupflag, softoff_flag, softstart, start_test):
         rospy.loginfo("Starting motion")
         rospy.init_node('bitbots_motion', anonymous=False)
-        self.accel = (0, 0, 0)
-        self.gyro = (0, 0, 0)
-        self.smooth_accel = (0, 0, 0)
-        self.smooth_gyro = (0, 0, 0)
-        self.not_much_smoothed_gyro = (0, 0, 0)
+        self.accel = IntDataVector(0, 0, 0)
+        self.gyro = IntDataVector(0, 0, 0)
+        self.smooth_accel = IntDataVector(0, 0, 0)
+        self.smooth_gyro = IntDataVector(0, 0, 0)
+        self.not_much_smoothed_gyro = IntDataVector(0, 0, 0)
+
+        self.kinematic_kalman = TripleKalman()
 
         self.robo_pose = Pose()
         self.goal_pose = Pose()
@@ -76,6 +85,17 @@ class Motion(object):
         self.smooth_gyro = self.smooth_gyro * 0.9 + self.gyro * 0.1  ###gyro
         self.smooth_accel = self.smooth_accel * 0.9 + self.accel * 0.1  ###accel
         self.not_much_smoothed_gyro = self.not_much_smoothed_gyro * 0.5 + self.gyro * 0.5
+
+        VALUES.raw_gyro = self.gyro
+        VALUES.smooth_gyro = self.smooth_gyro
+
+        angles = calculate_robot_angles(self.accel.get_data_vector())
+        # TODO Das verdrehe bla ist teil eines Features um Hambot momentan verdrehen Gyro zu fixen
+        # angles = self.gyro_kalman.get_angles_pvv(angles, verdrehe_bla(gyro - IntDataVector(512, 512, 512)), dt)
+        angles = self.gyro_kalman.get_angles_pvv(angles, gyro - IntDataVector(512, 512, 512), dt)
+        self.robo_angle = wrap_data_vector(angles)
+
+        VALUES.robo_angle = self.robo_angle
 
     def update_current_pose(self, msg):
         VALUES.last_client_update = msg.header.stamp
@@ -196,3 +216,49 @@ class Motion(object):
         if self.state_machine.is_shutdown():
             # the motion has to shutdown, we close the node
             exit("Motion shutdown")
+
+
+def calculate_robot_angles(rawData):
+    raw = DataVector(rawData.get_x(), rawData.get_y(), rawData.get_z())
+
+    pitch_angle = calc_sin_angle(raw, DataVector(0, 1, 0))
+    if raw.z() < 0 and raw.y() < 0:
+        pitch_angle = - pitch_angle - 180
+    elif (raw.z() < 0 and raw.y() > 0):
+        pitch_angle = 180 - pitch_angle
+
+    roll_angle = calc_sin_angle(raw, DataVector(1, 0, 0))
+
+    # TODO mir ist noch keiner schlaue Formel für diesen Wingkel eingefallen
+    yaw_angle = 0
+
+    return -roll_angle, -pitch_angle, yaw_angle
+
+
+def calc_sin_angle(fst, sec):
+    if fst.norm() == 0 or sec.norm() == 0:
+        return 0  # TODO Rückgabewert sinvoll?
+    return math.degrees(asin(fst.dot(sec) / (fst.norm() * sec.norm())))
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Start the motion node')
+    parser.add_argument('--no', dest='dieflag', action='store_false',
+                        help='Supress the autmatical deactivating of the motion after some time without updates')
+    parser.add_argument('--nostandup', dest='standup', action='store_false',
+                        help='Surpress automatical stand up')
+    parser.add_argument('--softoff', dest='soft', action='store_true',
+                        help='Only deactivate motors when robot is not moving')
+    parser.add_argument('--softstart', dest='softstart', action='store_true',
+                        help='Direclty start in softoff')
+    parser.add_argument('--starttest', dest='starttest', action='store_true',
+                        help='Ping motors on startup')
+    args, unknown = parser.parse_known_args()
+
+    motion = Motion(dieflag=args.dieflag, standupflag=args.standup,
+                    softoff_flag=args.soft, softstart=args.softstart,
+                    start_test=args.starttest)
+
+
+if __name__ == "__main__":
+    main()

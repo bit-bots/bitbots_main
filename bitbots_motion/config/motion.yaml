@@ -1,72 +1,74 @@
+motion:
 
-soft_off_time: 30
-die_time: 30
+  start_time: 0
+  soft_off_time: 30
+  die_time: 30
 
-falling:
+  falling:
 
-  #Werte erstellt durch 3doerfle, 3bimberg, 3windsor (Praktikum sose 2015)
-  "Darwin":
+    #Werte erstellt durch 3doerfle, 3bimberg, 3windsor (Praktikum sose 2015)
+    "Darwin":
 
-    #Grenzwerte müssen auf härterem boden auch härter eingestellt werden,
-    #dies erfolgt mit dem boden_koeffizient
-    "ground_coefficient": 1.25   #WEICH(kunstrasen Spielfeld)= 1.0 , HART(teppich Spielfeld)= 1.25
+      #Grenzwerte müssen auf härterem boden auch härter eingestellt werden,
+      #dies erfolgt mit dem boden_koeffizient
+      "ground_coefficient": 1.25   #WEICH(kunstrasen Spielfeld)= 1.0 , HART(teppich Spielfeld)= 1.25
 
-    #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
-    #Grenzwerte sanfter --> zu spaete Raktion
-    "threshold_gyro_y_front":  -50.0 # > gyroY
-    "threshold_gyro_y_back":  50.0 # < gyroY
-    "threshold_gyro_x_right": -30.0 # > gyroX
-    "threshold_gyro_x_left":   30.0 # < gyroX
+      #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
+      #Grenzwerte sanfter --> zu spaete Raktion
+      "threshold_gyro_y_front":  -50.0 # > gyroY
+      "threshold_gyro_y_back":  50.0 # < gyroY
+      "threshold_gyro_x_right": -30.0 # > gyroX
+      "threshold_gyro_x_left":   30.0 # < gyroX
 
-    #Es wird genau über die ersten 20 Motoren iteriert
-    "falling_motor_degrees_front":  [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-    "falling_motor_degrees_back": [60.0, -60.0, 0.0, 0.0, -20.0, 20.0, 17.0, -17.0, 0.0, 0.0, -110.0, 110.0, 100.0, -100.0, 0.0, 0.0, 0.0, 0.0, 0.0, -40.0]
-    "falling_motor_degrees_right": [-145.0, 170.0, -10.0, -40.0, -25.0, 60.0, 0.0, 0.0, 30.0, -50.0, 30.0, -30.0, 95.0, 0.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-    "falling_motor_degrees_left":  [-170.0, 145.0, 40.0, 10.0, -60.0, 25.0, 0.0, 0.0, 50.0, -30.0, 30.0, -30.0, 0.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
+      #Es wird genau über die ersten 20 Motoren iteriert
+      "falling_motor_degrees_front":  [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
+      "falling_motor_degrees_back": [60.0, -60.0, 0.0, 0.0, -20.0, 20.0, 17.0, -17.0, 0.0, 0.0, -110.0, 110.0, 100.0, -100.0, 0.0, 0.0, 0.0, 0.0, 0.0, -40.0]
+      "falling_motor_degrees_right": [-145.0, 170.0, -10.0, -40.0, -25.0, 60.0, 0.0, 0.0, 30.0, -50.0, 30.0, -30.0, 95.0, 0.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
+      "falling_motor_degrees_left":  [-170.0, 145.0, 40.0, 10.0, -60.0, 25.0, 0.0, 0.0, 50.0, -30.0, 30.0, -30.0, 0.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
 
-    #false = motoren werden bei fallerkennung abgeschaltet
-    "dyn_falling_active": true
+      #false = motoren werden bei fallerkennung abgeschaltet
+      "dyn_falling_active": true
 
 
-  "Hambot": #Achtung werte nur kopiert und nicht getestet!!!
+    "Hambot": #Achtung werte nur kopiert und nicht getestet!!!
 
-    #Koeffizient wird auch benutzt wenn fallen deaktiviert --> nur dass er die motoren ausmacht
-    "ground_coefficient": 1.25 #--> wert ist gut für HAMBOT, da dieser Wert das laufen nicht beeinträchtigt
+      #Koeffizient wird auch benutzt wenn fallen deaktiviert --> nur dass er die motoren ausmacht
+      "ground_coefficient": 1.25 #--> wert ist gut für HAMBOT, da dieser Wert das laufen nicht beeinträchtigt
 
-    "threshold_gyro_y_front":  -22 # > gyroY
-    "threshold_gyro_y_back":  22 # < gyroY
-    "threshold_gyro_x_right": -30 # > gyroX
-    "threshold_gyro_x_left":   30 # < gyroX
+      "threshold_gyro_y_front":  -22 # > gyroY
+      "threshold_gyro_y_back":  22 # < gyroY
+      "threshold_gyro_x_right": -30 # > gyroX
+      "threshold_gyro_x_left":   30 # < gyroX
 
-    "falling_motor_degrees_front":  [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-    "falling_motor_degrees_back": [60.0, -60.0, -30.0, 30.0, 45.0, -45.0, 17.0, -17.0, 0.0, 0.0, -110.0, 110.0, 110.0, -110.0, 0.0, 0.0, 0.0, 0.0, 0.0, -40.0]
-    "falling_motor_degrees_right": [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-    "falling_motor_degrees_left": [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
+      "falling_motor_degrees_front":  [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
+      "falling_motor_degrees_back": [60.0, -60.0, -30.0, 30.0, 45.0, -45.0, 17.0, -17.0, 0.0, 0.0, -110.0, 110.0, 110.0, -110.0, 0.0, 0.0, 0.0, 0.0, 0.0, -40.0]
+      "falling_motor_degrees_right": [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
+      "falling_motor_degrees_left": [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
 
-    #DEAKTIVIERT lassen, stellungen wurden noch nicht für ihn getestet
-    "dyn_falling_active": false
+      #DEAKTIVIERT lassen, stellungen wurden noch nicht für ihn getestet
+      "dyn_falling_active": false
 
-  "Minibot":
+    "Minibot":
 
-    #Grenzwerte müssen auf härterem boden auch härter eingestellt werden,
-    #dies erfolgt mit dem boden_koeffizient
-    "ground_coefficient": 1.5  #WEICH(kunstrasen Spielfeld)= 1.0 , HART(teppich Spielfeld)= 1.25
+      #Grenzwerte müssen auf härterem boden auch härter eingestellt werden,
+      #dies erfolgt mit dem boden_koeffizient
+      "ground_coefficient": 1.5  #WEICH(kunstrasen Spielfeld)= 1.0 , HART(teppich Spielfeld)= 1.25
 
-    #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
-    #Grenzwerte sanfter --> zu spaete Raktion
-    "threshold_gyro_y_front":  -50.0 # > gyroY
-    "threshold_gyro_y_back":  50.0 # < gyroY
-    "threshold_gyro_x_right": -30.0 # > gyroX
-    "threshold_gyro_x_left":   30.0 # < gyroX
+      #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
+      #Grenzwerte sanfter --> zu spaete Raktion
+      "threshold_gyro_y_front":  -50.0 # > gyroY
+      "threshold_gyro_y_back":  50.0 # < gyroY
+      "threshold_gyro_x_right": -30.0 # > gyroX
+      "threshold_gyro_x_left":   30.0 # < gyroX
 
-    #Es wird genau über die ersten 20 Motoren iteriert
-    "falling_motor_degrees_front":  [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-    "falling_motor_degrees_back": [60.0, -60.0, 0.0, 0.0, -20.0, 20.0, 17.0, -17.0, 0.0, 0.0, -110.0, 110.0, 100.0, -100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    "falling_motor_degrees_right": [-145.0, 170.0, -10.0, -40.0, -25.0, 60.0, 0.0, 0.0, 30.0, -50.0, 30.0, -30.0, 95.0, 0.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-    "falling_motor_degrees_left":  [-170.0, 145.0, 40.0, 10.0, -60.0, 25.0, 0.0, 0.0, 50.0, -30.0, 30.0, -30.0, 0.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
+      #Es wird genau über die ersten 20 Motoren iteriert
+      "falling_motor_degrees_front":  [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
+      "falling_motor_degrees_back": [60.0, -60.0, 0.0, 0.0, -20.0, 20.0, 17.0, -17.0, 0.0, 0.0, -110.0, 110.0, 100.0, -100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+      "falling_motor_degrees_right": [-145.0, 170.0, -10.0, -40.0, -25.0, 60.0, 0.0, 0.0, 30.0, -50.0, 30.0, -30.0, 95.0, 0.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
+      "falling_motor_degrees_left":  [-170.0, 145.0, 40.0, 10.0, -60.0, 25.0, 0.0, 0.0, 50.0, -30.0, 30.0, -30.0, 0.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
 
-    #false = motoren werden bei fallerkennung abgeschaltet
-    "dyn_falling_active": true
+      #false = motoren werden bei fallerkennung abgeschaltet
+      "dyn_falling_active": true
 
 
 
