@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import actionlib
 import rospy
 import time
 from std_msgs.msg import String
@@ -6,6 +7,8 @@ from std_msgs.msg import String
 from .fall_checker import FallChecker
 from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
 from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
+
+import bitbots_animation.msg
 
 
 class Values(object):
@@ -36,7 +39,7 @@ class Values(object):
 
         self.fall_checker = FallChecker()
         # for internal animations
-        self.animation_client = None
+        self.animation_client = actionlib.SimpleActionClient('fibonacci', bitbots_animation.msg.PlayAnimationAction)
 
         # we want to play an animation, try to become controlable
         self.external_animation_requested = False
@@ -71,10 +74,15 @@ class Values(object):
         return self.die_flag and time.time() - self.last_hardware_update > self.die_time
 
     def animation_finished(self):
-        return self.animation_client.get_result()
+        if self.animation_client.get_state() != 9: #the client was started
+            return self.animation_client.get_result()
+        else:
+            rospy.logwarn_throttle(1, "Tried to ask if animation is finished, but no animation was started.")
+            return True #no animation was started, so we won't wait for anything
 
     def say(self, text):
         # todo
+        rospy.logwarn("Say not implemented in abstrace state machine")
         pass
 
 
@@ -111,7 +119,7 @@ class AbstractState(object):
     def start_animation(self, anim):
         """
         This will NOT wait by itself. You have to check
-        VALUES.animation_client.get_result()
+        VALUES.animation_finished()
         in the evaluate method by yourself.
         :param anim:
         :param follow_state:
@@ -179,5 +187,16 @@ class AbstractStateMachine(object):
 
 
 def play_animation(anim_name):
-    goal = AnimationActionMsg().anim = anim_name
+    if anim_name is None or anim_name == "empty":
+        rospy.logwarn("Tried to play an animation with an empty name!")
+        return False
+    try:
+        VALUES.animation_client.wait_for_server()
+    except rospy.ROSException:
+        rospy.logerr(
+            "Animation Action Server not running! Motion can not work without animation action server. "
+            "Will now wait until server is assailable!")
+        VALUES.animation_client.wait_for_server()
+    goal = bitbots_animation.msg.PlayAnimationGoal(animation=anim_name)
     VALUES.animation_client.send_goal(goal)
+    return True

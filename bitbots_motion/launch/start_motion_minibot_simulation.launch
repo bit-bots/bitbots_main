@@ -1,5 +1,6 @@
 <launch>
     <param name="/RobotTypeName" value="Minibot"/>
+    <param name="/simulation_active" value="true"/>
 
     <rosparam file="$(find bitbots_motion)/config/motion.yaml" command="load"/>
 

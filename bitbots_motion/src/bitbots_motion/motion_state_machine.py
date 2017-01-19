@@ -125,13 +125,13 @@ class Softoff(AbstractState):
                 switch_motor_power(True)
                 self.next_state = Record()
                 # don't directly change state, we wait for animation to finish
-                self.start_animation(rospy.get_param("/animations/motion/walkready"))
+                self.start_animation(rospy.get_param("/motion/animations/walkready"))
                 return
             if time.time() - VALUES.last_request < 10:  # todo param
                 # got a new move request
                 switch_motor_power(True)
                 self.next_state = Controllable()
-                self.start_animation(rospy.get_param("/animations/motion/walkready"))
+                self.start_animation(rospy.get_param("/motion/animations/walkready"))
                 return
             if VALUES.is_die_time():
                 return ShutDown()
@@ -192,7 +192,7 @@ class PenaltyAnimationOut(AbstractState):
 
     def evaluate(self):
         # wait for animation started in entry
-        if VALUES.animation_client.get_result():
+        if VALUES.finished():
             return self.next_state
 
     def exit(self):
@@ -227,7 +227,7 @@ class GettingUp(AbstractState):
     def entry(self):
         rospy.logdebug("Getting up!")
         self.next_state = GettingUpSecond()
-        self.start_animation(
+        self.start_animation( #todo this line is just totally wrong
             VALUES.fall_checker.check_fallen(VALUES.raw_gyro, VALUES.smooth_gyro, VALUES.robo_angle))
 
     def evaluate(self):
@@ -254,7 +254,7 @@ class GettingUp(AbstractState):
 class GettingUpSecond(AbstractState):
     def entry(self):
         self.next_state = Controllable()
-        self.start_animation(rospy.get_param("/walkready"))
+        self.start_animation(rospy.get_param("/motion/animations/walkready"))
 
     def evaluate(self):
         if VALUES.animation_finished():
@@ -439,7 +439,7 @@ class ShutDownAnimation(AbstractState):
 
     def evaluate(self):
         if VALUES.animation_finished():
-            return
+            return ShutDown()
 
     def exit(self):
         pass

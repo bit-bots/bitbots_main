@@ -4,6 +4,16 @@ motion:
   soft_off_time: 30
   die_time: 30
 
+  animations:
+    walkready : "empty" # Gibt eine Dynamische Walkready
+    goalie-walkready: "empty " # Gibt eine Dynamische Walkready
+    front-up : "aufrichten-anfang-front-tamara"
+    bottom-up : "aufrichten-anfang-bottom-tamara"
+    toSquat: "aufrichten-hocke-tamara"
+    stand-up: "aufrichten-ende-tamara"
+    penalized : "sit-down"
+    sit-down : "sit-down"
+
   falling:
 
     #Werte erstellt durch 3doerfle, 3bimberg, 3windsor (Praktikum sose 2015)

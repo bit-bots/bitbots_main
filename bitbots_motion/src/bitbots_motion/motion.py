@@ -20,6 +20,7 @@ from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
 from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
+from bitbots_common.utilCython.kalman import TripleKalman
 
 from bitbots_animation.srv import AnimationFrame
 from bitbots_motion.abstract_state_machine import VALUES
@@ -29,7 +30,7 @@ from bitbots_motion.cfg import motion_paramsConfig
 class Motion(object):
     def __init__(self, dieflag, standupflag, softoff_flag, softstart, start_test):
         rospy.loginfo("Starting motion")
-        rospy.init_node('bitbots_motion', anonymous=False)
+        rospy.init_node('bitbots_motion', log_level=rospy.DEBUG, anonymous=False)
         self.accel = IntDataVector(0, 0, 0)
         self.gyro = IntDataVector(0, 0, 0)
         self.smooth_accel = IntDataVector(0, 0, 0)
