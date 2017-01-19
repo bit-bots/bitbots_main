@@ -7,18 +7,26 @@ import numpy as np
 
 import rospy
 from cv_bridge import CvBridge
+from dynamic_reconfigure.server import Server
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineSegmentInImage, LineInformationInImage
 from sensor_msgs.msg import Image
+
+from bitbots_dummyvision.cfg import dummyvision_paramsConfig
 
 
 class DummyVision:
     def __init__(self):
+        self.green_min = (0, 110, 0)
+        self.green_max = (140, 255, 140)
+
         self.pub_balls = rospy.Publisher("/ball_candidates", BallsInImage, queue_size=1)
         self.pub_lines = rospy.Publisher("/line_in_image", LineInformationInImage)
         self.bridge = CvBridge()
 
         rospy.Subscriber("/usb_cam/image_raw", Image, self._image_callback, queue_size=1)
         rospy.init_node("bitbots_dummyvision")
+
+        self.server = Server(dummyvision_paramsConfig, self.reconfigure)
 
         rospy.spin()
 
@@ -32,7 +40,7 @@ class DummyVision:
         ra = self.bridge.imgmsg_to_cv2(img, "bgr8")
         # bimg = cv2.bilateralFilter(ra, 14, 100, 100)
         bimg = cv2.GaussianBlur(ra, (9, 9), 0)
-        mask = cv2.inRange(ra, (0, 120, 0), (160, 255, 160))
+        mask = cv2.inRange(bimg, self.green_min, self.green_max)
         # mask = cv2.erode(mask, None, iterations = 2)
         # mask = 255 - mask
 
@@ -47,7 +55,7 @@ class DummyVision:
             horizon.append(list(horizonbase[:, col]).index(1) * 30)
 
         b, g, r = cv2.split(bimg)
-        circles = cv2.HoughCircles(g, cv2.HOUGH_GRADIENT, 1, 100,
+        circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, 1, 100,
                                    param1=50, param2=43, minRadius=15, maxRadius=200)
 
         # Ball
@@ -59,11 +67,11 @@ class DummyVision:
 
             for i in circles[0, :]:
                 if not self.under_horizon(horizon, (i[1], i[0])):
-                    # cv2.circle(bimg, (i[0], i[1]), i[2], (0, 0, 255))
+                    cv2.circle(bimg, (i[0], i[1]), i[2], (0, 0, 255))
                     continue
                 # corp = ra[i[1] - i[2]:i[1] + i[2], i[0] - i[2]:i[0] + i[2]]
                 can = BallInImage()
-                # cv2.circle(bimg, (i[0], i[1]), i[2], (255,0,0))
+                cv2.circle(bimg, (i[0], i[1]), i[2], (255, 0, 0))
                 can.center.x = i[0]
                 can.center.y = i[1]
                 can.diameter = (i[2] * 2) + 3
@@ -94,17 +102,17 @@ class DummyVision:
                     ls.start.y = p[1]
                     ls.end = ls.start
                     li.segments.append(ls)
-                    # cv2.circle(bimg, (p[1], p[0]), 1, (0, 0, 255))
+                    cv2.circle(bimg, (p[1], p[0]), 1, (0, 0, 255))
 
         # Plotting
-        """
-        for x in range(len(horizon)-1):
-            cv2.line(bimg, (30*x + 15, horizon[x]),(30*(x+1) +15, horizon[x+1]), color=(0,255,0))
+
+        for x in range(len(horizon) - 1):
+            cv2.line(bimg, (30 * x + 15, horizon[x]), (30 * (x + 1) + 15, horizon[x + 1]), color=(0, 255, 0))
 
         cv2.imshow("Image", bimg)
-        #cv2.imshow("Mask", mask)
+        cv2.imshow("Mask", mask)
         cv2.waitKey(1)
-        """
+
         self.pub_lines.publish(li)
         self.pub_balls.publish(msg)
 
@@ -119,6 +127,14 @@ class DummyVision:
 
     def _image_callback(self, img):
         self.work(img)
+
+    def reconfigure(self, config, level):
+        # Fill in local variables with values received from dynamic reconfigure clients (typically the GUI).
+        self.green_min = (config["b_min"], config["g_min"], config["r_min"])
+        self.green_max = (config["b_max"], config["g_max"], config["r_max"])
+
+        # Return the new variables.
+        return config
 
 
 if __name__ == "__main__":
