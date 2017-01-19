@@ -10,8 +10,7 @@ from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineSegmentInImage, LineInformationInImage
 from sensor_msgs.msg import Image
-
-from bitbots_dummyvision.cfg import dummyvision_paramsConfig
+from cfg import dummyvision_paramsConfig
 
 
 class DummyVision:
