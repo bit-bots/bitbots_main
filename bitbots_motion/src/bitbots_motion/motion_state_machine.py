@@ -140,7 +140,7 @@ class Softoff(AbstractState):
                 return Controllable()
             rospy.sleep(0.1)
         else:
-            if VALUES.animation_finished():
+            if self.animation_finished():
                 return self.next_state
 
     def exit(self):
@@ -174,7 +174,7 @@ class PenaltyAnimationIn(AbstractState):
 
     def evaluate(self):
         # wait for animation started in entry
-        if VALUES.animation_finished():
+        if self.animation_finished():
             return self.next_state
 
     def exit(self):
@@ -232,7 +232,7 @@ class GettingUp(AbstractState):
 
     def evaluate(self):
         # wait for animation started in entry
-        if VALUES.animation_finished():
+        if self.animation_finished():
             # we stood up, but are we now really standing correct?
             if VALUES.is_falling():
                 # we're falling, directly going to falling
@@ -257,7 +257,7 @@ class GettingUpSecond(AbstractState):
         self.start_animation(rospy.get_param("/motion/animations/walkready"))
 
     def evaluate(self):
-        if VALUES.animation_finished():
+        if self.animation_finished():
             # we stood up, but are we now really standing correct?
             if VALUES.is_falling():
                 # we're falling, directly going to falling
@@ -332,7 +332,7 @@ class Falling(AbstractState):
                 return Controllable()
 
     def evaluate(self):
-        if VALUES.animation_finished():
+        if self.animation_finished():
             return self.next_state
 
     def exit(self):
@@ -349,7 +349,7 @@ class Fallen(AbstractState):
         self.start_animation(direction_animation)
 
     def evaluate(self):
-        if VALUES.animation_finished():
+        if self.animation_finished():
             return self.next_state
 
     def exit(self):
@@ -438,7 +438,7 @@ class ShutDownAnimation(AbstractState):
         self.start_animation(rospy.get_param("/animations/shut_down"))
 
     def evaluate(self):
-        if VALUES.animation_finished():
+        if self.animation_finished():
             return ShutDown()
 
     def exit(self):
@@ -469,7 +469,7 @@ class ShutDown(AbstractState):
 def switch_motor_power(state):
     """ Calling service from CM730 to turn motor power on or off. But only if not using simulator"""
     if rospy.get_param("/simulation_active", False):
-        rospy.loginfo("I'm simulating, not switching of motorpower")
+        rospy.loginfo("I'm simulating, not switching motorpower to " + state.__str__())
     else:
         # todo set motor ram here if turned on, bc it lost it
         try:
@@ -479,7 +479,7 @@ def switch_motor_power(state):
             return
         power_switch = rospy.ServiceProxy("switch_motor_power", SwitchMotorPower)
         try:
-            response = power_switch(state)
+            response = power_switch(state) #todo do something with respons
         except rospy.ServiceException as exc:
             print("Service did not process request: " + str(exc))
         # wait for motors

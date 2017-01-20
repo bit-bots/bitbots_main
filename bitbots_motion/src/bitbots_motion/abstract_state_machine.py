@@ -73,13 +73,6 @@ class Values(object):
     def is_die_time(self):
         return self.die_flag and time.time() - self.last_hardware_update > self.die_time
 
-    def animation_finished(self):
-        if self.animation_client.get_state() != 9: #the client was started
-            return self.animation_client.get_result()
-        else:
-            rospy.logwarn_throttle(1, "Tried to ask if animation is finished, but no animation was started.")
-            return True #no animation was started, so we won't wait for anything
-
     def say(self, text):
         # todo
         rospy.logwarn("Say not implemented in abstrace state machine: " + text)
@@ -143,6 +136,15 @@ class AbstractState(object):
         VALUES.animation_client.send_goal(goal)
         return True
 
+    def animation_finished(self):
+        if self.animation_started and VALUES.animation_client.get_state() != 9:
+            # We started an animation, let's see if it is finished
+                return VALUES.animation_client.get_result()
+        else:
+            # We didn't actually started an animation, probably due to some error before, print warning and go on
+            rospy.logwarn_throttle(1, "Tried to ask if animation is finished, but no animation was started.")
+            return True
+
 class AbstractStateMachine(object):
     def __init__(self):
         self.state = None
@@ -166,7 +168,7 @@ class AbstractStateMachine(object):
             if self.debug_active:
                 # publish name of the current state if debug is active
                 self.debug_publisher.publish(self.state.__class__.__name__)
-                print("Current state: " + self.state.__class__.__name__)
+                rospy.logdebug("Current state: " + self.state.__class__.__name__)
             entry_switch = self.state.entry()
             if entry_switch is not None:
                 # we directly do another state switch

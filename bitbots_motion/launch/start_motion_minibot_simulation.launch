@@ -1,8 +1,11 @@
 <launch>
     <param name="/RobotTypeName" value="Minibot"/>
     <param name="/simulation_active" value="true"/>
+    <param name="/debug_active" value="true"/>
+
+	<include file="$(find bitbots_speaker)/launch/speaker.launch"/>
+
 
     <rosparam file="$(find bitbots_motion)/config/motion.yaml" command="load"/>
-
     <node name="motion" pkg="bitbots_motion" type="motion.py" args="" respawn="false"/>
 </launch>

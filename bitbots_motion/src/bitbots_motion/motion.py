@@ -7,6 +7,7 @@ from math import asin
 import math
 import rospy
 from bitbots_common.pose.pypose import PyPose as Pose
+from bitbots_speaker.speaker import speak
 from std_msgs.msg import Bool
 
 from bitbots_cm730.srv import SwitchMotorPower
@@ -29,8 +30,7 @@ from bitbots_motion.cfg import motion_paramsConfig
 
 class Motion(object):
     def __init__(self, dieflag, standupflag, softoff_flag, softstart, start_test):
-        rospy.loginfo("Starting motion")
-        rospy.init_node('bitbots_motion', log_level=rospy.DEBUG, anonymous=False)
+
         self.accel = IntDataVector(0, 0, 0)
         self.gyro = IntDataVector(0, 0, 0)
         self.smooth_accel = IntDataVector(0, 0, 0)
@@ -49,10 +49,18 @@ class Motion(object):
         self.animation_running = False  # animation request from animation server
         self.animation_request_time = 0  # time we got the animation request
 
+        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
+        rospy.init_node('bitbots_motion', log_level=log_level, anonymous=False)
+        rospy.sleep(0.5) #This is important! Otherwise alot of messages will get lost, bc the init is not finished
+        rospy.loginfo("Starting motion")
+
         self.joint_goal_publisher = rospy.Publisher('/MotionMotorGoals', JointState, queue_size=10)
         self.joint_state_publisher = rospy.Publisher('/CurrentMotors', JointState, queue_size=10)
         self.motion_state_publisher = rospy.Publisher('/MotionState', MotionState, queue_size=10)
-        self.speak_publisher = rospy.Publisher('/Speak', Speak, queue_size=10)
+        self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
+
+        rospy.sleep(0.5)
+        speak("Starting motion", self.speak_publisher, priority=Speak.HIGH_PRIORITY)
 
         self.state_machine = MotionStateMachine(dieflag, standupflag, softoff_flag, softstart, start_test,
                                                 self.motion_state_publisher)
@@ -177,7 +185,7 @@ class Motion(object):
     def update_forever(self):
         """ Ruft :func:`update_once` in einer Endlosschleife auf """
 
-        while True:
+        while not rospy.is_shutdown():
             self.update_once()
 
     def update_once(self):

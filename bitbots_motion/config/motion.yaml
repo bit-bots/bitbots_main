@@ -5,8 +5,8 @@ motion:
   die_time: 30
 
   animations:
-    walkready : "empty" # Gibt eine Dynamische Walkready
-    goalie-walkready: "empty " # Gibt eine Dynamische Walkready
+    walkready : "walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
+    goalie-walkready: "goalie-walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
     front-up : "aufrichten-anfang-front-tamara"
     bottom-up : "aufrichten-anfang-bottom-tamara"
     toSquat: "aufrichten-hocke-tamara"
