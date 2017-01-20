@@ -457,7 +457,9 @@ class ShutDown(AbstractState):
         rospy.loginfo("Motion is now off, good bye")
 
     def evaluate(self):
-        exit("Motion was shut down")
+        # do nothing, the state machine will see that we're finished
+        pass
+
 
     def exit(self):
         pass

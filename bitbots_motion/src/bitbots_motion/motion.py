@@ -31,51 +31,56 @@ from bitbots_motion.cfg import motion_paramsConfig
 class Motion(object):
     def __init__(self, dieflag, standupflag, softoff_flag, softstart, start_test):
 
+        # --- Class Variables ---
+        # Setup
+        self.startup_time = time.time()
+        self.first_run = True
+
+        # IMU
         self.accel = IntDataVector(0, 0, 0)
         self.gyro = IntDataVector(0, 0, 0)
         self.smooth_accel = IntDataVector(0, 0, 0)
         self.smooth_gyro = IntDataVector(0, 0, 0)
         self.not_much_smoothed_gyro = IntDataVector(0, 0, 0)
-
         self.kinematic_kalman = TripleKalman()
 
+        # Motor Positions
         self.robo_pose = Pose()
         self.goal_pose = Pose()
-        self.startup_time = time.time()
-        self.first_run = True
-        self.walking_goal = None
-        self.head_goal = None
+        self.walking_motor_goal = None
+        self.head_motor_goal = None
 
+        # Animation
         self.animation_running = False  # animation request from animation server
         self.animation_request_time = 0  # time we got the animation request
 
+        # --- Initialize Node ---
         log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_motion', log_level=log_level, anonymous=False)
-        rospy.sleep(0.5) #This is important! Otherwise alot of messages will get lost, bc the init is not finished
+        rospy.sleep(0.1)  # This is important! Otherwise a lot of messages will get lost, bc the init is not finished
         rospy.loginfo("Starting motion")
 
-        self.joint_goal_publisher = rospy.Publisher('/MotionMotorGoals', JointState, queue_size=10)
-        self.joint_state_publisher = rospy.Publisher('/CurrentMotors', JointState, queue_size=10)
-        self.motion_state_publisher = rospy.Publisher('/MotionState', MotionState, queue_size=10)
+        self.joint_goal_publisher = rospy.Publisher('/motion_motor_goals', JointState, queue_size=10)
+        self.motion_state_publisher = rospy.Publisher('/motion_state', MotionState, queue_size=10)
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
 
-        rospy.sleep(0.5)
+        rospy.sleep(0.1)  # important to make sure the connection to the speaker is established, for next line
         speak("Starting motion", self.speak_publisher, priority=Speak.HIGH_PRIORITY)
 
         self.state_machine = MotionStateMachine(dieflag, standupflag, softoff_flag, softstart, start_test,
                                                 self.motion_state_publisher)
 
-        rospy.Subscriber("/IMU", Imu, self.update_imu)
-        rospy.Subscriber("/MotorCurrentPosition", JointState, self.update_current_pose)
-        rospy.Subscriber("/WalkingMotorGoals", JointTrajectory, self.walking_goal_callback)
-        rospy.Subscriber("/HeadMotorGoals", JointTrajectory, self.head_goal_callback)
-        rospy.Subscriber("/RecordMotorGoals", JointTrajectory, self.record_goal_callback)
+        rospy.Subscriber("/imu", Imu, self.update_imu)
+        rospy.Subscriber("/current_motor_positions", JointState, self.update_current_pose)
+        rospy.Subscriber("/walking_motor_goals", JointTrajectory, self.walking_goal_callback)
+        rospy.Subscriber("/head_motor_goals", JointTrajectory, self.head_goal_callback)
+        rospy.Subscriber("/record_motor_goals", JointTrajectory, self.record_goal_callback)
         rospy.Subscriber("/pause", Bool, self.pause)
 
         self.animation_keyframe_service = rospy.Service("animation_key_frame", AnimationFrame, self.keyframe_callback)
         self.dyn_reconf = Server(motion_paramsConfig, self.reconfigure)
 
-        self.update_forever()
+        self.main_loop()
 
     def pause(self, msg):
         VALUES.penalized = msg
@@ -110,10 +115,10 @@ class Motion(object):
         VALUES.last_client_update = msg.header.stamp
         set_joint_state_on_pose(msg, self.robo_pose)
 
-    def publish_motion_state(self):
+    def publish_motion_state(self): #todo i think it's not used
         msg = MotionState()
         msg.state = self.state_machine.get_current_state()
-        self.joint_state_publisher.publish(msg)
+        self.motion_state_publisher.publish(msg)
 
     def reconfigure(self, config, level):
         # just pass on to the StandupHandler, as the variables are located there
@@ -132,11 +137,11 @@ class Motion(object):
         self.joint_goal_publisher.publish(traj_msg)
 
     def walking_goal_callback(self, msg):
-        self.walking_goal = msg
+        self.walking_motor_goal = msg
         VALUES.walking_active = True
 
     def head_goal_callback(self, msg):
-        self.head_goal = msg
+        self.head_motor_goal = msg
 
     def record_goal_callback(self, msg):
         if msg is None:
@@ -182,15 +187,18 @@ class Motion(object):
         self.joint_goal_publisher.publish(req.positions)
         return True
 
-    def update_forever(self):
-        """ Ruft :func:`update_once` in einer Endlosschleife auf """
+    def main_loop(self):
+        """ Calls :func:`update_once` until ROS is shutting down """
 
         while not rospy.is_shutdown():
-            self.update_once()
+            finished = self.update_once()
+            if finished:
+                # Todo maybe do some last shutdown stuff?
+                return
 
     def update_once(self):
         # check if we're still walking
-        if self.walking_goal is None or rospy.Time.now() - self.walking_goal.header.stamp > 0.5:
+        if self.walking_motor_goal is None or rospy.Time.now() - self.walking_motor_goal.header.stamp > 0.5:
             VALUES.walking_active = False
 
         # let statemachine run
@@ -211,21 +219,20 @@ class Motion(object):
         if self.state_machine.is_walking():
             # we're currently walking
             # set positions from first point of trajectory
-            point = self.walking_goal.points[0]
+            point = self.walking_motor_goal.points[0]
             self.goal_pose.set_positions(point.positions)
             self.goal_pose.set_speed(point.velocities)
 
         if not self.state_machine.is_penalized():
             # we can move our head
-            if self.head_goal is not None:
-                point = self.head_goal.points[0]
+            if self.head_motor_goal is not None:
+                point = self.head_motor_goal.points[0]
                 self.goal_pose.set_positions(point.positions)
                 self.goal_pose.set_speed(point.velocities)
 
         if self.state_machine.is_shutdown():
-            # the motion has to shutdown, we close the node
-            exit("Motion shutdown")
-
+            # the motion has to shutdown, we tell main_loop to close the node
+            return True
 
 def calculate_robot_angles(rawData):
     raw = DataVector(rawData.get_x(), rawData.get_y(), rawData.get_z())

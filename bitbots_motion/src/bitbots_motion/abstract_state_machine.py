@@ -195,7 +195,11 @@ class AbstractStateMachine(object):
                     switch_state.__class__.__name__)
 
     def publish_state(self, state):
-        msg = "You schuld overrride publish_state() in %s" % self.__class__.__name__
+        msg = "You should overwrite publish_state() in %s" % self.__class__.__name__
+        raise NotImplementedError(msg)
+
+    def is_shutdown(self):
+        msg = "You should overwrite is_shutdown() in %s" % self.__class__.__name__
         raise NotImplementedError(msg)
 
     def get_current_state(self):
