@@ -1,85 +1,9 @@
 # -*- coding:utf-8 -*-
-import actionlib
 import rospy
-import time
-from std_msgs.msg import String
 
-from .fall_checker import FallChecker
-from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
-from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
-
+from bitbots_motion.values import VALUES
 import bitbots_animation.msg
-
-
-class Values(object):
-    """
-    We use this class as a singleton to share these public variables over all
-    different classes of states and with the state machine.
-    """
-
-    def __init__(self):
-        self.penalized = False  # paused
-        self.record = False
-        self.shut_down = False
-
-        self.standup_flag = False
-        self.soft_off_flag = True
-        self.soft_start = False
-        self.die_flag = False
-        self.start_test = False
-
-        self.last_hardware_update = None
-        self.last_request = None
-        self.start_up_time = time.time()
-
-        self.raw_gyro = IntDataVector(0, 0, 0)
-        self.smooth_gyro = IntDataVector(0, 0, 0)
-        self.not_so_smooth_gyro = IntDataVector(0, 0, 0)
-        self.robo_angle = DataVector(0, 0, 0)
-
-        self.fall_checker = FallChecker()
-        # for internal animations
-        self.animation_client = actionlib.SimpleActionClient('fibonacci', bitbots_animation.msg.PlayAnimationAction)
-
-        # we want to play an animation, try to become controlable
-        self.external_animation_requested = False
-        # play now the external animation, go to animation running
-        self.external_animation_play = False
-        # the animation is finished, go back to controlable
-        self.external_animation_finished = False
-
-        # are we walking?
-        self.walking_active = False
-
-        self.softoff_time = rospy.get_param("/motion/soft_off_time")
-        self.die_time = rospy.get_param("/motion/die_time")
-
-    def is_falling(self):
-        falling_pose = self.fall_checker.check_falling(self.not_so_smooth_gyro)
-        if falling_pose is not None:
-            return True
-        return False
-
-    def is_fallen(self):
-        direction_animation = self.fall_checker.check_fallen(self.raw_gyro, self.smooth_gyro,
-                                                             self.robo_angle)
-        if direction_animation is not None:
-            return True
-        return False
-
-    def is_soft_off_time(self):
-        return self.soft_off_flag and time.time() - self.last_hardware_update > self.softoff_time
-
-    def is_die_time(self):
-        return self.die_flag and time.time() - self.last_hardware_update > self.die_time
-
-    def say(self, text):
-        # todo
-        rospy.logwarn("Say not implemented in abstrace state machine: " + text)
-        pass
-
-
-VALUES = Values()
+from std_msgs.msg import String
 
 
 class AbstractState(object):
@@ -139,11 +63,12 @@ class AbstractState(object):
     def animation_finished(self):
         if self.animation_started and VALUES.animation_client.get_state() != 9:
             # We started an animation, let's see if it is finished
-                return VALUES.animation_client.get_result()
+            return VALUES.animation_client.get_result()
         else:
             # We didn't actually started an animation, probably due to some error before, print warning and go on
             rospy.logwarn_throttle(1, "Tried to ask if animation is finished, but no animation was started.")
             return True
+
 
 class AbstractStateMachine(object):
     def __init__(self):
@@ -204,5 +129,3 @@ class AbstractStateMachine(object):
 
     def get_current_state(self):
         return self.state.motion_state()
-
-

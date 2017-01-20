@@ -24,7 +24,7 @@ from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
 from bitbots_common.utilCython.kalman import TripleKalman
 
 from bitbots_animation.srv import AnimationFrame
-from bitbots_motion.abstract_state_machine import VALUES
+from bitbots_motion.values import VALUES
 from bitbots_motion.cfg import motion_paramsConfig
 
 
