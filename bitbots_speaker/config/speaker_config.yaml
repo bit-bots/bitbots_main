@@ -1,6 +1,6 @@
 speaker:
-  print_say: true
-  speak_enabled: true
-  message_level: 0
-  amplitude: 10
+  print: true
+  talk: true
+  msg_level: 0
+  amplitude: 7
 

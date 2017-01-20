@@ -1,7 +1,7 @@
 \subsubsection usage Usage
 \verbatim
 <node name="bitbots_speaker" pkg="bitbots_speaker" type="bitbots_speaker">
-  <param name="print" type="bool" value="False" />
+  <param name="print" type="bool" value="True" />
   <param name="talk" type="bool" value="True" />
   <param name="msg_level" type="int" value="0" />
   <param name="amplitude" type="int" value="10" />

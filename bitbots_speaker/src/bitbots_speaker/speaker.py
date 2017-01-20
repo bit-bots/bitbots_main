@@ -1,23 +1,24 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-
+import rosparam
 import rospy
 import subprocess
 import os
 
 from dynamic_reconfigure.server import Server
-#todo find the problem with this import
+# todo find the problem with this import
+
 from bitbots_speaker.cfg import speaker_paramsConfig
 
 from humanoid_league_msgs.msg import Speak
 
+
 def speak(text, publisher, priority=Speak.MID_PRIORITY, speaking_active=True):
     if speaking_active:
-        msg = Speak
+        msg = Speak()
         msg.priority = priority
         msg.text = text
         publisher.publish(msg)
-
 
 class Speaker(object):
     """ Uses espeak to say all messages from the speak topic
@@ -26,28 +27,38 @@ class Speaker(object):
     # todo make also a service for demo proposes, which is blocking while talking
 
     def __init__(self):
-        rospy.init_node('bitbots_speaker', anonymous=False)
-        rospy.Subscriber("speak", Speak, self.incoming_text)
-
-        self.speak_enabled = rospy.get_param("/speaker/speak_enabled", True)
-        self.print_say = rospy.get_param("/speaker/print_say", False)
-        self.message_level = rospy.get_param("/speaker/message_level", Speak.LOW_PRIORITY)
-        self.amplitude = rospy.get_param("/speaker/amplitude", 10)
-
-        self.server = Server(speaker_paramsConfig, self.reconfigure)
-
+        #claass variables
         self.low_prio_queue = []
         self.mid_prio_queue = []
         self.high_prio_queue = []
 
+        # if you want to change standard startup, do it in the config yaml
+        self.speak_enabled = None
+        self.print_say = None
+        self.message_level = None
+        self.amplitude = None
+
+        # initialize node
+        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
+        rospy.init_node('bitbots_speaker', log_level=log_level, anonymous=False)
+        rospy.loginfo("Starting speaker")
+
+        # subscribe to whats to say
+        rospy.Subscriber("/speak", Speak, self.incoming_text)
+
+        # dyn reconfigure to turn speaking on/off, set volume and to set priority level
+        # will use values from config/speaker_params as start
+        self.server = Server(speaker_paramsConfig, self.reconfigure)
+
         self.__run_speaker()
 
     def __run_speaker(self):
-        """ Runs continuisly to wait for messages and speak them"""
+        """ Runs continuously to wait for messages and speak them"""
         # wait for messages. while true doesn't work well in ROS
         while not rospy.is_shutdown():
             # test if espeak is already running and speak is enabled
             if not "espeak " in os.popen("ps xa").read() and self.speak_enabled:
+                # take the highest priority message first
                 if len(self.high_prio_queue) > 0:
                     text, is_file = self.high_prio_queue.pop(0)
                     self.__say(text, is_file)
@@ -57,14 +68,16 @@ class Speaker(object):
                 elif len(self.low_prio_queue) > 0 and self.message_level == 0:
                     text, is_file = self.low_prio_queue.pop(0)
                     self.__say(text)
+            # wait a bit to eat not all the performance
             rospy.sleep(0.5)
 
     def __say(self, text, file=False):
         """ Speak this specific text"""
         # todo make volume adjustable, some how like this
-#        command = ("espeak", "-a", self.amplitude, text)
+        #        command = ("espeak", "-a", self.amplitude, text)
         command = ("espeak", text)
         try:
+            # we start a new process for espeak, so this node can recieve more text while speaking
             process = subprocess.Popen(command, stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE)
             try:
@@ -80,18 +93,22 @@ class Speaker(object):
     def incoming_text(self, msg):
         """ Handles incoming msg on speak topic."""
 
+        # first decide if it's a file or a text
         is_file = False
         text = msg.text
         if text is None:
             text = msg.filename
             is_file = True
             if text is None:
+                # message has no content at all
+                rospy.logwarn("Speaker got message without content.")
                 return
         prio = msg.priority
         new = True
 
+        # if printing is enabled and it's a text, print it
         if self.print_say and not is_file:
-            rospy.loginfo(text)
+            rospy.loginfo("Said: " + text)
 
         if not self.speak_enabled:
             # don't accept new messages
@@ -141,7 +158,7 @@ class Speaker(object):
         return config
 
 
-#todo integrate reading of files
+# todo integrate reading of files
 
 """"
     def speak_file(self, filename, blocking=False, callback=noop):
@@ -155,3 +172,6 @@ class Speaker(object):
 
 
 """
+
+if __name__ == "__main__":
+    Speaker()

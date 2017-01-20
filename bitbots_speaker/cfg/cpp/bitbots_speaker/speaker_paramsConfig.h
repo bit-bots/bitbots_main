@@ -394,7 +394,7 @@ speaker_paramsConfig::GroupDescription<speaker_paramsConfig::DEFAULT, speaker_pa
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       __max__.print = 1;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __default__.print = 0;
+      __default__.print = 1;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       Default.abstract_parameters.push_back(speaker_paramsConfig::AbstractParamDescriptionConstPtr(new speaker_paramsConfig::ParamDescription<bool>("print", "bool", 0, "If the node shall write all messages also on the console", "", &speaker_paramsConfig::print)));
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
@@ -416,9 +416,9 @@ speaker_paramsConfig::GroupDescription<speaker_paramsConfig::DEFAULT, speaker_pa
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       __default__.msg_level = 0;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      Default.abstract_parameters.push_back(speaker_paramsConfig::AbstractParamDescriptionConstPtr(new speaker_paramsConfig::ParamDescription<int>("msg_level", "int", 0, "The minimal priority level, that should be spoken by the speaker", "{'enum_description': 'An enum to set the message output level', 'enum': [{'srcline': 16, 'description': 'Lowest priority for information or debug.', 'srcfile': '/homes/10bestman/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg', 'cconsttype': 'const int', 'value': 0, 'ctype': 'int', 'type': 'int', 'name': 'Low'}, {'srcline': 17, 'description': 'Middle priority for more important information.', 'srcfile': '/homes/10bestman/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg', 'cconsttype': 'const int', 'value': 1, 'ctype': 'int', 'type': 'int', 'name': 'Mid'}, {'srcline': 18, 'description': 'High priority for dangerous situations.', 'srcfile': '/homes/10bestman/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg', 'cconsttype': 'const int', 'value': 2, 'ctype': 'int', 'type': 'int', 'name': 'High'}]}", &speaker_paramsConfig::msg_level)));
+      Default.abstract_parameters.push_back(speaker_paramsConfig::AbstractParamDescriptionConstPtr(new speaker_paramsConfig::ParamDescription<int>("msg_level", "int", 0, "The minimal priority level, that should be spoken by the speaker", "{'enum_description': 'An enum to set the message output level', 'enum': [{'srcline': 16, 'description': 'Lowest priority for information or debug.', 'srcfile': '/home/marc/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg', 'cconsttype': 'const int', 'value': 0, 'ctype': 'int', 'type': 'int', 'name': 'Low'}, {'srcline': 17, 'description': 'Middle priority for more important information.', 'srcfile': '/home/marc/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg', 'cconsttype': 'const int', 'value': 1, 'ctype': 'int', 'type': 'int', 'name': 'Mid'}, {'srcline': 18, 'description': 'High priority for dangerous situations.', 'srcfile': '/home/marc/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg', 'cconsttype': 'const int', 'value': 2, 'ctype': 'int', 'type': 'int', 'name': 'High'}]}", &speaker_paramsConfig::msg_level)));
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __param_descriptions__.push_back(speaker_paramsConfig::AbstractParamDescriptionConstPtr(new speaker_paramsConfig::ParamDescription<int>("msg_level", "int", 0, "The minimal priority level, that should be spoken by the speaker", "{'enum_description': 'An enum to set the message output level', 'enum': [{'srcline': 16, 'description': 'Lowest priority for information or debug.', 'srcfile': '/homes/10bestman/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg', 'cconsttype': 'const int', 'value': 0, 'ctype': 'int', 'type': 'int', 'name': 'Low'}, {'srcline': 17, 'description': 'Middle priority for more important information.', 'srcfile': '/homes/10bestman/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg', 'cconsttype': 'const int', 'value': 1, 'ctype': 'int', 'type': 'int', 'name': 'Mid'}, {'srcline': 18, 'description': 'High priority for dangerous situations.', 'srcfile': '/homes/10bestman/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg', 'cconsttype': 'const int', 'value': 2, 'ctype': 'int', 'type': 'int', 'name': 'High'}]}", &speaker_paramsConfig::msg_level)));
+      __param_descriptions__.push_back(speaker_paramsConfig::AbstractParamDescriptionConstPtr(new speaker_paramsConfig::ParamDescription<int>("msg_level", "int", 0, "The minimal priority level, that should be spoken by the speaker", "{'enum_description': 'An enum to set the message output level', 'enum': [{'srcline': 16, 'description': 'Lowest priority for information or debug.', 'srcfile': '/home/marc/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg', 'cconsttype': 'const int', 'value': 0, 'ctype': 'int', 'type': 'int', 'name': 'Low'}, {'srcline': 17, 'description': 'Middle priority for more important information.', 'srcfile': '/home/marc/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg', 'cconsttype': 'const int', 'value': 1, 'ctype': 'int', 'type': 'int', 'name': 'Mid'}, {'srcline': 18, 'description': 'High priority for dangerous situations.', 'srcfile': '/home/marc/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg', 'cconsttype': 'const int', 'value': 2, 'ctype': 'int', 'type': 'int', 'name': 'High'}]}", &speaker_paramsConfig::msg_level)));
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       __min__.amplitude = 0;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
@@ -508,11 +508,11 @@ speaker_paramsConfig::GroupDescription<speaker_paramsConfig::DEFAULT, speaker_pa
     return statics;
   }
 
-//#line 16 "/homes/10bestman/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg"
+//#line 16 "/home/marc/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg"
       const int speaker_params_Low = 0;
-//#line 17 "/homes/10bestman/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg"
+//#line 17 "/home/marc/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg"
       const int speaker_params_Mid = 1;
-//#line 18 "/homes/10bestman/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg"
+//#line 18 "/home/marc/catkin_ws/src/bitbots_misc/bitbots_speaker/cfg/speaker_params.cfg"
       const int speaker_params_High = 2;
 }
 

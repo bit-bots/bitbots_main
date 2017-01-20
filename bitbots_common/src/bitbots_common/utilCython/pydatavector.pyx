@@ -230,13 +230,13 @@ cdef class PyIntDataVector:
         def __get__(self): return self.vec.get_z()
         def __set__(self, int v): self.vec.set_z(v)
 
-    cdef int get_x(self):
+    cpdef int get_x(self):
         return self.vec.get_x()
 
-    cdef int get_y(self):
+    cpdef int get_y(self):
         return self.vec.get_y()
 
-    cdef int get_z(self):
+    cpdef int get_z(self):
         return self.vec.get_z()
 
     cdef void set_x(self, int x):

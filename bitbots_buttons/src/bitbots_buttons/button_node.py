@@ -3,7 +3,7 @@ import time
 from bitbots_cm730.msg import Buttons
 from humanoid_league_msgs.msg import Speak
 
-from bitbots_common.src.bitbots_common.util.speaker import speak
+from bitbots_speaker.speaker import speak
 from bitbots_motion.srv import ManualPenalize
 
 

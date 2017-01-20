@@ -30,9 +30,9 @@ cdef class PyIntDataVector:
     cdef IntDataVector* get_data_vector(self)
 
     cpdef set(self, int x, int y, int z)
-    cdef int get_x(self)
-    cdef int get_y(self)
-    cdef int get_z(self)
+    cpdef int get_x(self)
+    cpdef int get_y(self)
+    cpdef int get_z(self)
 
     cdef void set_x(self, int x)
     cdef void set_y(self, int y)

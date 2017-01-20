@@ -4,7 +4,7 @@ group.0 {
 name=Dynamically Reconfigurable Parameters
 desc=See the [[dynamic_reconfigure]] package for details on dynamically reconfigurable parameters.
 0.name= ~print
-0.default= False
+0.default= True
 0.type= bool
 0.desc=If the node shall write all messages also on the console 
 1.name= ~talk
