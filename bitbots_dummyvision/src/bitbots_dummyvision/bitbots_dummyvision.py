@@ -40,6 +40,7 @@ class DummyVision:
         # bimg = cv2.bilateralFilter(ra, 14, 100, 100)
         bimg = cv2.GaussianBlur(ra, (9, 9), 0)
         mask = cv2.inRange(bimg, self.green_min, self.green_max)
+        maskb = cv2.GaussianBlur(mask, (9,9),0)
         # mask = cv2.erode(mask, None, iterations = 2)
         # mask = 255 - mask
 
@@ -51,10 +52,14 @@ class DummyVision:
 
         horizon = []
         for col in range(horizonbase.shape[1]):
-            horizon.append(list(horizonbase[:, col]).index(1) * 30)
+            hl = list(horizonbase[:, col])
+            if 1 in hl:
+                horizon.append(hl.index(1) * 30)
+            else:
+                horizon.append(len(hl)*30)
 
-        b, g, r = cv2.split(bimg)
-        circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, 1, 100,
+        #b, g, r = cv2.split(bimg)
+        circles = cv2.HoughCircles(maskb, cv2.HOUGH_GRADIENT, 1, 100,
                                    param1=50, param2=43, minRadius=15, maxRadius=200)
 
         # Ball
