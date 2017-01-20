@@ -27,7 +27,7 @@ class Speaker(object):
     # todo make also a service for demo proposes, which is blocking while talking
 
     def __init__(self):
-        #claass variables
+        # --- Class Variables ---
         self.low_prio_queue = []
         self.mid_prio_queue = []
         self.high_prio_queue = []
@@ -38,7 +38,7 @@ class Speaker(object):
         self.message_level = None
         self.amplitude = None
 
-        # initialize node
+        # --- Initialize Node ---
         log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_speaker', log_level=log_level, anonymous=False)
         rospy.loginfo("Starting speaker")
