@@ -43,11 +43,11 @@ class MotionStateMachine(AbstractStateMachine):
                             GettingUp: (Falling, Fallen, GettingUpSecond),
                             GettingUpSecond: (Falling, Fallen, Controllable),
                             Controllable: (ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
-                                            AnimationRunning, Walking),
+                                           AnimationRunning, Walking),
                             Falling: (Fallen, Controllable),
                             Fallen: GettingUp,
                             Walking: (ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
-                                       WalkingStopping, Controllable),
+                                      WalkingStopping, Controllable),
                             WalkingStopping: Controllable,
                             AnimationRunning: Controllable,
                             ShutDownAnimation: ShutDown}
@@ -74,12 +74,12 @@ class MotionStateMachine(AbstractStateMachine):
 
 class Startup(AbstractState):
     def entry(self):
-        self.start_time = rospy.get_param("/motion/start_time", 10)
+        self.start_time_limit = rospy.get_param("/motion/start_time", 10)
 
     def evaluate(self):
         # leave this if we got a hardware response, or after some time
         # todo zeit parameteriesern?
-        if VALUES.last_hardware_update is not 0 or time.time() - VALUES.start_up_time > self.start_time:
+        if VALUES.last_hardware_update is not 0 or time.time() - VALUES.start_up_time > self.start_time_limit:
             # check if we directly go into a special state, if not, got to get up
             if VALUES.start_test:
                 # todo
@@ -111,14 +111,15 @@ class Startup(AbstractState):
     def motion_state(self):
         return STATE_STARTUP
 
+    def shutdown(self):
+        return ShutDown()
+
 
 class Softoff(AbstractState):
     def entry(self):
         switch_motor_power(False)
 
     def evaluate(self):
-        if VALUES.shut_down:
-            return ShutDown()
         if not self.animation_started:
             if VALUES.record:
                 # todo prohibit sudden movement by getting first one time the current motor values
@@ -150,6 +151,9 @@ class Softoff(AbstractState):
         # we want to look controlable to the outside
         return STATE_CONTROLABLE
 
+    def shutdown(self):
+        return ShutDown()
+
 
 class Record(AbstractState):
     def entry(self):
@@ -164,6 +168,9 @@ class Record(AbstractState):
 
     def motion_state(self):
         return STATE_RECORD
+
+    def shutdown(self):
+        return ShutDownAnimation()
 
 
 class PenaltyAnimationIn(AbstractState):
@@ -183,6 +190,9 @@ class PenaltyAnimationIn(AbstractState):
     def motion_state(self):
         return STATE_PENALTY_ANIMATION
 
+    def shutdown(self):
+        return ShutDownAnimation()
+
 
 class PenaltyAnimationOut(AbstractState):
     def entry(self):
@@ -200,6 +210,9 @@ class PenaltyAnimationOut(AbstractState):
 
     def motion_state(self):
         return STATE_PENALTY_ANIMATION
+
+    def shutdown(self):
+        return ShutDownAnimation()
 
 
 class Penalty(AbstractState):
@@ -222,12 +235,15 @@ class Penalty(AbstractState):
     def motion_state(self):
         return STATE_PENALTY
 
+    def shutdown(self):
+        return ShutDown()
+
 
 class GettingUp(AbstractState):
     def entry(self):
         rospy.logdebug("Getting up!")
         self.next_state = GettingUpSecond()
-        self.start_animation( #todo this line is just totally wrong
+        self.start_animation(  # todo this line is just totally wrong
             VALUES.fall_checker.check_fallen(VALUES.raw_gyro, VALUES.smooth_gyro, VALUES.robo_angle))
 
     def evaluate(self):
@@ -249,6 +265,9 @@ class GettingUp(AbstractState):
 
     def motion_state(self):
         return STATE_GETTING_UP
+
+    def shutdown(self):
+        return ShutDownAnimation()
 
 
 class GettingUpSecond(AbstractState):
@@ -275,14 +294,15 @@ class GettingUpSecond(AbstractState):
     def motion_state(self):
         return STATE_GETTING_UP
 
+    def shutdown(self):
+        return ShutDownAnimation()
+
 
 class Controllable(AbstractState):
     def entry(self):
         pass
 
     def evaluate(self):
-        if VALUES.shut_down:
-            return ShutDownAnimation()
         if VALUES.record:
             return Record()
         if VALUES.penalized:
@@ -315,6 +335,9 @@ class Controllable(AbstractState):
     def motion_state(self):
         return STATE_CONTROLABLE
 
+    def shutdown(self):
+        return ShutDownAnimation()
+
 
 class Falling(AbstractState):
     def entry(self):
@@ -341,6 +364,9 @@ class Falling(AbstractState):
     def motion_state(self):
         return STATE_FALLING
 
+    def shutdown(self):
+        return ShutDown()
+
 
 class Fallen(AbstractState):
     def entry(self):
@@ -358,14 +384,15 @@ class Fallen(AbstractState):
     def motion_state(self):
         return STATE_FALLEN
 
+    def shutdown(self):
+        return ShutDown()
+
 
 class Walking(AbstractState):
     def entry(self):
         pass
 
     def evaluate(self):
-        if VALUES.shut_down:
-            return ShutDownAnimation()
         if VALUES.record:
             return Record()
         if VALUES.penalized:
@@ -396,6 +423,9 @@ class Walking(AbstractState):
     def motion_state(self):
         return STATE_WALKING
 
+    def shutdown(self):
+        return ShutDownAnimation()
+
 
 class WalkingStopping(AbstractState):
     def entry(self):
@@ -411,6 +441,9 @@ class WalkingStopping(AbstractState):
 
     def motion_state(self):
         return STATE_WALKING
+
+    def shutdown(self):
+        return ShutDownAnimation()
 
 
 class AnimationRunning(AbstractState):
@@ -430,6 +463,9 @@ class AnimationRunning(AbstractState):
     def motion_state(self):
         return STATE_ANIMATION_RUNNING
 
+    def shutdown(self):
+        return ShutDownAnimation()
+
 
 class ShutDownAnimation(AbstractState):
     def entry(self):
@@ -447,6 +483,10 @@ class ShutDownAnimation(AbstractState):
     def motion_state(self):
         return STATE_SHUT_DOWN
 
+    def shutdown(self):
+        # we are shutting down, don't change
+        return None
+
 
 class ShutDown(AbstractState):
     def entry(self):
@@ -460,12 +500,15 @@ class ShutDown(AbstractState):
         # do nothing, the state machine will see that we're finished
         pass
 
-
     def exit(self):
         pass
 
     def motion_state(self):
         return STATE_SHUT_DOWN
+
+    def shutdown(self):
+        # this is shut down
+        return None
 
 
 def switch_motor_power(state):
@@ -481,7 +524,7 @@ def switch_motor_power(state):
             return
         power_switch = rospy.ServiceProxy("switch_motor_power", SwitchMotorPower)
         try:
-            response = power_switch(state) #todo do something with respons
+            response = power_switch(state)  # todo do something with respons
         except rospy.ServiceException as exc:
             print("Service did not process request: " + str(exc))
         # wait for motors

@@ -13,24 +13,32 @@ class AbstractState(object):
         self.next_state = None
 
     def entry(self):
-        msg = "You schuld overrride entry() in %s" % self.__class__.__name__
+        msg = "You should overwrite entry() in %s" % self.__class__.__name__
         raise NotImplementedError(msg)
 
     def exit(self):
         """
         You can't change states in the exit method
-        :param values:
-        :return:
         """
-        msg = "You schuld overrride exit() in %s" % self.__class__.__name__
+        msg = "You should overwrite exit() in %s" % self.__class__.__name__
         raise NotImplementedError(msg)
 
     def evaluate(self):
-        msg = "You schuld overrride evaluate() in %s" % self.__class__.__name__
+        """
+        Let's the state run one step
+        """
+        msg = "You should overwrite evaluate() in %s" % self.__class__.__name__
         raise NotImplementedError(msg)
 
     def motion_state(self):
-        msg = "You schuld overrride motion_state() in %s" % self.__class__.__name__
+        """Gives back the name that will be displayed in the motion state message to the outside"""
+        msg = "You should overwrite motion_state() in %s" % self.__class__.__name__
+        raise NotImplementedError(msg)
+
+    def shutdown(self):
+        """Tells the state machine to which state it shall go, if there is an external shutdown.
+        Should normally be ShutDown or ShutDownAnimation."""
+        msg = "You should overwrite shutdown() in %s" % self.__class__.__name__
         raise NotImplementedError(msg)
 
     def start_animation(self, anim):
@@ -108,6 +116,18 @@ class AbstractStateMachine(object):
         Evaluates the current state
         :return:
         """
+
+        # do we need to shut down the motion
+        if VALUES.shut_down:
+            # get shutdown state of current state
+            shutdown_state = self.state.shutdown()
+            if shutdown_state is None:
+                # We're already in a shut down state, there is nothing left to do for us
+                return
+            else:
+                #set the state
+                self.set_state(shutdown_state)
+                return
 
         switch_state = self.state.evaluate()
 

@@ -12,22 +12,22 @@ import actionlib
 class Values(object):
     """
     We use this class as a singleton to share these public variables over all
-    different classes of states and with the state machine.
+    different classes of states, the state machine and the motion node.
     """
 
     def __init__(self):
         self.penalized = False  # paused
-        self.record = False
-        self.shut_down = False
+        self.record = False  # record UI running
+        self.shut_down = False  # do we want to shut down
 
-        self.standup_flag = False
-        self.soft_off_flag = True
-        self.soft_start = False
-        self.die_flag = False
-        self.start_test = False
+        self.standup_flag = False  # stand up disabled
+        self.soft_off_flag = True  # soft of enablbed
+        self.soft_start = False  # starting in softoff
+        self.die_flag = False  # stop the motion after some time without command
+        self.start_test = False  # run motor ping on startup
 
-        self.last_hardware_update = None
-        self.last_request = None
+        self.last_hardware_update = None  # time of last update from hardware
+        self.last_request = None  # last request on doing something
         self.start_up_time = time.time()
 
         self.raw_gyro = IntDataVector(0, 0, 0)
@@ -39,11 +39,11 @@ class Values(object):
         # for internal animations
         self.animation_client = actionlib.SimpleActionClient('fibonacci', bitbots_animation.msg.PlayAnimationAction)
 
-        # we want to play an animation, try to become controlable
+        # we want to play an animation, try to become controllable
         self.external_animation_requested = False
         # play now the external animation, go to animation running
         self.external_animation_play = False
-        # the animation is finished, go back to controlable
+        # the animation is finished, go back to controllable
         self.external_animation_finished = False
 
         # are we walking?

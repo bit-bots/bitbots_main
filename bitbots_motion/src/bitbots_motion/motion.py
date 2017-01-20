@@ -21,6 +21,7 @@ from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
 from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
+from bitbots_common.utilCython.pydatavector import wrap_int_data_vector, wrap_data_vector
 from bitbots_common.utilCython.kalman import TripleKalman
 
 from bitbots_animation.srv import AnimationFrame
@@ -42,7 +43,8 @@ class Motion(object):
         self.smooth_accel = IntDataVector(0, 0, 0)
         self.smooth_gyro = IntDataVector(0, 0, 0)
         self.not_much_smoothed_gyro = IntDataVector(0, 0, 0)
-        self.kinematic_kalman = TripleKalman()
+        self.gyro_kalman = TripleKalman()
+        self.last_gyro_update_time = time.time()
 
         # Motor Positions
         self.robo_pose = Pose()
@@ -83,9 +85,12 @@ class Motion(object):
         self.main_loop()
 
     def pause(self, msg):
+        """ Updates the pause state for the state machine"""
         VALUES.penalized = msg
 
     def update_imu(self, msg):
+        """Gets new IMU values and computes the smoothed values of these"""
+        update_time = time.time()
         # todo check if this is not switched
         self.gyro = msg.linear_velocity
         self.accel = msg.angular_velocity
@@ -102,30 +107,31 @@ class Motion(object):
 
         VALUES.raw_gyro = self.gyro
         VALUES.smooth_gyro = self.smooth_gyro
+        VALUES.not_so_smooth_gyro = self.not_much_smoothed_gyro
 
+        # calculate the angle of the robot based on the kalman filter
         angles = calculate_robot_angles(self.accel.get_data_vector())
-        # TODO Das verdrehe bla ist teil eines Features um Hambot momentan verdrehen Gyro zu fixen
-        # angles = self.gyro_kalman.get_angles_pvv(angles, verdrehe_bla(gyro - IntDataVector(512, 512, 512)), dt)
-        angles = self.gyro_kalman.get_angles_pvv(angles, gyro - IntDataVector(512, 512, 512), dt)
+        dt = time.time() - self.last_gyro_update_time
+        angles = self.gyro_kalman.get_angles_pvv(angles, self.gyro - IntDataVector(512, 512, 512), dt)
         self.robo_angle = wrap_data_vector(angles)
 
         VALUES.robo_angle = self.robo_angle
 
-    def update_current_pose(self, msg):
-        VALUES.last_client_update = msg.header.stamp
-        set_joint_state_on_pose(msg, self.robo_pose)
+        self.last_gyro_update_time = update_time
 
-    def publish_motion_state(self): #todo i think it's not used
-        msg = MotionState()
-        msg.state = self.state_machine.get_current_state()
-        self.motion_state_publisher.publish(msg)
+    def update_current_pose(self, msg):
+        """Gets the current motor positions and updates the representing pose accordingly."""
+        VALUES.last_client_update = msg.header.stamp
+        set_joint_state_on_pose(msg, self.robo_pose) #todo implement
 
     def reconfigure(self, config, level):
-        # just pass on to the StandupHandler, as the variables are located there
+        """ Dynamic reconfigure of the fall checker values."""
+        # just pass on to the StandupHandler, as all the variables are located there
         VALUES.fall_checker.update_reconfigurable_values(config, level)
         return config
 
     def publish_motor_goals(self):
+        """ Publish the goal pose as joint message"""
         # we can only handle one point and not a full trajectory
         msg = JointTrajectoryPoint()
         msg.positions = self.goal_pose.get_positions()
@@ -152,7 +158,7 @@ class Motion(object):
             self.joint_goal_publisher.publish(msg)
 
     def keyframe_callback(self, req):
-        # the animation server is sending us goal positions
+        """ The animation server is sending us goal positions for the next keyframe"""
         VALUES.last_request = req.header.stamp
         self.animation_request_time = time.time()
         if req.first_frame:
@@ -193,8 +199,16 @@ class Motion(object):
         while not rospy.is_shutdown():
             finished = self.update_once()
             if finished:
-                # Todo maybe do some last shutdown stuff?
+                # Todo maybe do some last shutdown stuff after internal shutdown?
                 return
+
+        # we got external shutdown, tell it to the state machine, it will handle it
+        VALUES.shut_down = True
+        # now wait for it finishing the shutdown procedure
+        while not self.state_machine.is_shutdown():
+            # we still have to update everything
+            self.update_once()
+
 
     def update_once(self):
         # check if we're still walking
@@ -205,6 +219,10 @@ class Motion(object):
         self.state_machine.evaluate()
 
         # now do corresponding actions depending on state of state machine
+
+        if self.state_machine.is_shutdown():
+            # the motion has to shutdown, we tell main_loop to close the node
+            return True
 
         if self.state_machine.is_record():
             # we are currently in record mode
@@ -230,9 +248,9 @@ class Motion(object):
                 self.goal_pose.set_positions(point.positions)
                 self.goal_pose.set_speed(point.velocities)
 
-        if self.state_machine.is_shutdown():
-            # the motion has to shutdown, we tell main_loop to close the node
-            return True
+        # if we didn't return yet, there are some goals to publish
+        #todo maybe check, if goals are different from the last published ones
+        self.publish_motor_goals()
 
 def calculate_robot_angles(rawData):
     raw = DataVector(rawData.get_x(), rawData.get_y(), rawData.get_z())
