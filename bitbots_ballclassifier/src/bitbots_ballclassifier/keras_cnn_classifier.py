@@ -86,7 +86,7 @@ class Classifier:
             self.pub_rated_ball.publish(bs)
 
     def _image_callback(self, img):
-        self.last_imgs[img.header.frame_id] = img
+        self.last_imgs[img.header.seq] = img
         if len(self.last_imgs) > 15:
             self.last_imgs.popitem(last=False)
 
@@ -96,7 +96,7 @@ class Classifier:
             self.candidates.append((int(can.center.x),
                                     int(can.center.y),
                                     int(can.diameter / 2.0)))
-        self.latest_image_id = candidates.header.frame_id
+        self.latest_image_id = candidates.header.seq
         self.new_can = True
 
 

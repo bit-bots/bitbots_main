@@ -29,7 +29,7 @@ class Loadimg:
 
                 msg = self.bridge.cv2_to_imgmsg(ra, "bgr8")
                 msg.header.seq = img_id
-                msg.header.frame_id = "image_" + str(img_id)
+                msg.header.frame_id = "/camera_link"
                 img_id += 1
                 msg.header.stamp = rospy.get_rostime()
                 self.pub_im.publish(msg)

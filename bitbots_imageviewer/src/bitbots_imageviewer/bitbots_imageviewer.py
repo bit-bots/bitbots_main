@@ -56,13 +56,13 @@ class Loadimg:
             rospy.sleep(0.01)
 
     def _image_callback(self, img):
-        self.images[img.header.frame_id] = img
+        self.images[img.header.seq] = img
 
         if len(self.images) >= 10:
             self.images.popitem(last=False)
 
     def _candidates_callback(self, balls):
-        self.ball_candidates[balls.header.frame_id] = balls.candidates
+        self.ball_candidates[balls.header.seq] = balls.candidates
         if len(self.ball_candidates) > 5:
             self.ball_candidates.popitem(last=False)
 
