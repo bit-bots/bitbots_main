@@ -38,8 +38,9 @@ class FakeLaser(object):
             ps = PointStamped()
             ps.point.x = x
             ps.point.y = y
-            ps.header.frame_id = "L_HEAD_TILT"
-            l = self.tfl.transformPoint("/base_link", ps)
+            ps.header.frame_id = lines.header.frame_id
+            self.tfl.waitForTransform("/map", lines.header.frame_id, rospy.Time.now(), rospy.Duration(4))
+            l = self.tfl.transformPoint("/map", ps)
             relp.append((l.point.x, l.point.y))
 
         for deg in range(360):
