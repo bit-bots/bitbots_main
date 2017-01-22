@@ -22,7 +22,7 @@ class Loadimg:
         self.ball_candidates = OrderedDict()
 
         while not rospy.is_shutdown():
-            images = copy.copy(self.images)
+            images = copy.deepcopy(self.images)
             #print("Waiting for " + str(self.images.keys()))
             for t in images.keys():  # imgages who are wating
 
@@ -56,13 +56,13 @@ class Loadimg:
             rospy.sleep(0.01)
 
     def _image_callback(self, img):
-        self.images[img.header.seq] = img
+        self.images[img.header.stamp] = img
 
         if len(self.images) >= 10:
             self.images.popitem(last=False)
 
     def _candidates_callback(self, balls):
-        self.ball_candidates[balls.header.seq] = balls.candidates
+        self.ball_candidates[balls.header.stamp] = balls.candidates
         if len(self.ball_candidates) > 5:
             self.ball_candidates.popitem(last=False)
 

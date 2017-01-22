@@ -43,7 +43,7 @@ class Classifier:
     def work(self):
         img = self.last_imgs.pop(self.latest_image_id, None)
         if img is None:
-            print(self.latest_image_id + " was late")
+            print(str(self.latest_image_id) + " was late")
             return
         ra = self.bridge.imgmsg_to_cv2(img, "bgr8")
 
@@ -80,13 +80,15 @@ class Classifier:
         else:
             b = BallInImage()
             b.header.frame_id = img.header.frame_id
+            b.header.stamp = img.header.stamp
             self.pub_ball.publish(b)
             bs = BallsInImage()
             bs.header.frame_id = img.header.frame_id
+            bs.header.stamp = img.header.stamp
             self.pub_rated_ball.publish(bs)
 
     def _image_callback(self, img):
-        self.last_imgs[img.header.seq] = img
+        self.last_imgs[img.header.stamp] = img
         if len(self.last_imgs) > 15:
             self.last_imgs.popitem(last=False)
 
@@ -96,7 +98,7 @@ class Classifier:
             self.candidates.append((int(can.center.x),
                                     int(can.center.y),
                                     int(can.diameter / 2.0)))
-        self.latest_image_id = candidates.header.seq
+        self.latest_image_id = candidates.header.stamp
         self.new_can = True
 
 
