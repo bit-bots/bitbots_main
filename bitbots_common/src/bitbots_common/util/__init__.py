@@ -22,10 +22,10 @@ mittels :func:`get_config` kann die Config geholt werden::
 
 """
 import rospy
-from bitbots_common.util.resource_manager import find_resource
-from bitbots_common.util.resource_manager import find_animation  # NOQA
-from bitbots_common.util.resource_manager import find  # NOQA
-from bitbots_common.util.resource_manager import generate_find  # NOQA
+#from bitbots_common.util.resource_manager import find_resource
+#from bitbots_common.util.resource_manager import find_animation  # NOQA
+#from bitbots_common.util.resource_manager import find  # NOQA
+#from bitbots_common.util.resource_manager import generate_find  # NOQA
 
 
 import os
@@ -40,8 +40,8 @@ except ImportError as e:
     # it also happens on crosscompiling
     __has_joints = False  # pylint: disable=C0103
 
-    from bitbots_common.debug import Scope
-    Scope("Util").warning("bitbots_common.utilCython.joints NICHT gefunden" + str(e))
+    #from bitbots_common.debug import Scope
+    #Scope("Util").warning("bitbots_common.utilCython.joints NICHT gefunden" + str(e))
 
 
 ERRORS = [
