@@ -248,6 +248,25 @@ cdef class PyPose:
     cpdef PyJoint get_joint_by_cid(self, int cid):
         return wrap_joint_ptr(self, self.pose.get_joint_by_cid(cid))
 
+    cpdef list get_positions(self):
+        cdef int i
+        cdef vector[string] names = self.pose.get_joint_names()
+        cdef list result =[]
+        for i in range(names.size()):
+            result.append(self.get_joint(names[i]).get_position())
+
+        return result
+
+    cpdef list get_speeds(self):
+        cdef int i
+        cdef vector[string] names = self.pose.get_joint_names()
+        cdef list result =[]
+        for i in range(names.size()):
+            result.append(self.get_joint(names[i]).get_speed())
+
+        return result
+
+
     def __getitem__(self, name):
         return self.get_joint(name)
 
