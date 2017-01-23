@@ -20,8 +20,8 @@ import rosparam
 
 class GameStatusCapsule:
     def __init__(self):
-        self.kick_off_valid_time = rosparam.get_param("/Beahviour/Common/kickOffValidTime")
-        self.drop_ball_valid_time = rosparam.get_param("/Beahviour/Common/dropBallValidTime")
+        self.kick_off_valid_time = rosparam.get_param("/Behaviour/Common/kickOffValidTime")
+        self.drop_ball_valid_time = rosparam.get_param("/Behaviour/Common/dropBallValidTime")
         self.gamestate = GameState()
 
     def is_game_state_equals(self, value):

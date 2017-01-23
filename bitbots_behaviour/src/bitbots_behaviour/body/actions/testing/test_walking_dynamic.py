@@ -7,7 +7,7 @@ Testing the walking using a dynamic pattern
 """
 import random
 
-from stackmachine import AbstractActionModule
+from stackmachine.abstract_action_module import AbstractActionModule
 
 
 class TestWalkingDynamic(AbstractActionModule):

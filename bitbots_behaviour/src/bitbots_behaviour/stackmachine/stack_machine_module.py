@@ -12,9 +12,8 @@ History:
 * 05.02.13: Erweterung um reevaluate von decisions (Nils Rokita)
 * 03.04.14: Unterdrückung des reevaluate (Nils Rokita)
 """
-from bitbots_common.stackmachine.abstract_stack_element import AbstractStackElement
-
 import rospy
+from stackmachine.abstract_stack_element import AbstractStackElement
 from stackmachine.model import Connector
 
 

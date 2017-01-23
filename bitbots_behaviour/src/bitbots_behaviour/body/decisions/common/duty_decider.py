@@ -32,7 +32,7 @@ class DutyDecider(AbstractDecisionModule):
     def __init__(self, _):
         super(DutyDecider, self).__init__()
         self.max_fieldie_time = rospy.get_param("/Behaviour/Fieldie/Defender/maxFieldieTime")
-        self.toggle_self_positioning = rospy.get_param("/Toggles/Fieldie/trySelfPositioning")
+        self.toggle_self_positioning = rospy.get_param("/Behaviour/Toggles/Fieldie/trySelfPositioning")
 
     def perform(self, connector, reevaluate=False):
 

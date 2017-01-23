@@ -10,7 +10,7 @@ History:
 """
 import time
 
-from stackmachine import AbstractDecisionModule
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class OneTimeKickerDecision(AbstractDecisionModule):  # todo make this player shoot always with the hard kick

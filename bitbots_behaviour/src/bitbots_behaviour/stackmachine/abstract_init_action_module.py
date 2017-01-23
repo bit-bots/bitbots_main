@@ -7,7 +7,7 @@ AbstractInitStepActionModule
 
 
 """
-from stackmachine import AbstractActionModule
+from stackmachine.abstract_action_module import AbstractActionModule
 
 
 class AbstractInitActionModule(AbstractActionModule):
