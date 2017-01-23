@@ -3,6 +3,7 @@
 import json
 
 import actionlib
+import traceback
 import rospy
 from bitbots_animation.msg import PlayAnimationResult, PlayAnimationFeedback
 
@@ -14,12 +15,16 @@ from bitbots_common.util.resource_manager import find_animation  # todo put dire
 
 class AnimationNode:
     def __init__(self):
-        rospy.init_node("bitbots_animation", anonymous=False)
+        """Starts a simple action server and waits for requests."""
+        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
+        rospy.init_node("bitbots_animation", log_level=log_level, anonymous=False)
+        rospy.logdebug("Starting Animation Server")
         server = PlayAnimationAction(rospy.get_name())
         rospy.spin()
 
 
 def keyframe_service_call(first, last, force, goals):
+    """Call the keyframe service of the motion node, to transmit the next keyframe."""
     service_goal = AnimationFrame()
     service_goal.first_frame = first
     service_goal.last_frame = last
@@ -27,13 +32,15 @@ def keyframe_service_call(first, last, force, goals):
     service_goal.positions = goals
     timeout = rospy.wait_for_service("animation_key_frame", timeout=1)
     if timeout:
+        rospy.logwarn("Can't access animation key frame service of motion, can't play my animation.")
         return False
-    animation_frame = rospy.ServiceProxy("animation_key_frame", AnimationFrame)
+    animation_frame_srv = rospy.ServiceProxy("animation_key_frame", AnimationFrame)
     try:
-        response = animation_frame(service_goal)
+        response = animation_frame_srv(service_goal)
         return response
     except rospy.ServiceException as exc:
-        print("Service did not process request: " + str(exc))
+        rospy.logerr("Something went wrong calling the keyframe service.")
+        rospy.logerr(traceback.format_exc())
         return False
 
 
@@ -76,7 +83,7 @@ class PlayAnimationAction(object):
         animator = Animator(animation, self.current_pose)
         animfunc = animator.playfunc(0.025)  # todo dynamic reconfigure this value
 
-        while True:
+        while not rospy.is_shutdown():
             # first check if we have another goal
             if self._as.is_new_goal_available():
                 next_goal = self._as.next_goal

@@ -21,7 +21,6 @@ from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
 from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
-from bitbots_common.utilCython.pydatavector import wrap_int_data_vector, wrap_data_vector
 from bitbots_common.utilCython.kalman import TripleKalman
 
 from bitbots_animation.srv import AnimationFrame
@@ -65,6 +64,7 @@ class Motion(object):
         self.joint_goal_publisher = rospy.Publisher('/motion_motor_goals', JointState, queue_size=10)
         self.motion_state_publisher = rospy.Publisher('/motion_state', MotionState, queue_size=10)
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
+        VALUES.speak_publisher = self.speak_publisher
 
         rospy.sleep(0.1)  # important to make sure the connection to the speaker is established, for next line
         speak("Starting motion", self.speak_publisher, priority=Speak.HIGH_PRIORITY)
@@ -113,7 +113,7 @@ class Motion(object):
         angles = calculate_robot_angles(self.accel.get_data_vector())
         dt = time.time() - self.last_gyro_update_time
         angles = self.gyro_kalman.get_angles_pvv(angles, self.gyro - IntDataVector(512, 512, 512), dt)
-        self.robo_angle = wrap_data_vector(angles)
+        self.robo_angle = angles
 
         VALUES.robo_angle = self.robo_angle
 

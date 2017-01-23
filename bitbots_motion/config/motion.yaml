@@ -3,6 +3,7 @@ motion:
   start_time: 0
   soft_off_time: 30
   die_time: 30
+  anim_server_wait_time: 1
 
   animations:
     walkready : "walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before

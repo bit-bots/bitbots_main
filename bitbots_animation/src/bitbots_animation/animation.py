@@ -3,6 +3,8 @@
 import warnings
 
 import time
+
+import rospy
 from bitbots_common.pose.pypose import PyPose as Pose
 from numpy.compat import basestring
 
@@ -360,7 +362,7 @@ class Animator:
             abgespielt wenn ipc.status == RECORD ist und nicht CONTROLABLE
         '''
         posefunc = self.playfunc(stepsize)
-        while True:
+        while not rospy.is_shutdown():
             pose = posefunc(ipc.get_pose())
             if pose is None:
                 # Fertig

@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import traceback
+
 import rospy
 
 from bitbots_motion.values import VALUES
@@ -54,16 +56,17 @@ class AbstractState(object):
         self.animation_started = started
 
     def play_animation(self, anim_name):
+        rospy.loginfo("Playing animation " + anim_name)
         if anim_name is None or anim_name == "empty":
             rospy.logwarn("Tried to play an animation with an empty name!")
             return False
-        try:
-            VALUES.animation_client.wait_for_server()
-        except rospy.ROSException:
+        first_try = VALUES.animation_client.wait_for_server(rospy.Duration(rospy.get_param("/motion/anim_server_wait_time", 10)))
+        if not first_try:
             rospy.logerr(
                 "Animation Action Server not running! Motion can not work without animation action server. "
-                "Will now wait until server is assailable!")
+                "Will now wait until server is accessible!")
             VALUES.animation_client.wait_for_server()
+            rospy.logwarn("Animation server now running, motion will go on.")
         goal = bitbots_animation.msg.PlayAnimationGoal(animation=anim_name)
         VALUES.animation_client.send_goal(goal)
         return True
@@ -107,7 +110,8 @@ class AbstractStateMachine(object):
                 # we directly do another state switch
                 self.set_state(entry_switch)
         except Exception as exc:
-            rospy.logerr(exc)
+            rospy.logerr("Error during changing of state. See stack trace:")
+            rospy.logerr(traceback.format_exc())
             self.state = self.error_state
             self.state.entry()
 

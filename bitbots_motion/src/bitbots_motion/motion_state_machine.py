@@ -7,6 +7,9 @@ from humanoid_league_msgs.msg import MotionState
 
 from .abstract_state_machine import AbstractState, VALUES
 from .abstract_state_machine import AbstractStateMachine
+from bitbots_speaker.speaker import speak
+from humanoid_league_msgs.msg import Speak
+
 
 STATE_CONTROLABLE = 0
 STATE_FALLING = 1
@@ -31,6 +34,7 @@ class MotionStateMachine(AbstractStateMachine):
         VALUES.start_test = start_test
         VALUES.last_request = 0
         VALUES.last_hardware_update = 0
+
         self.error_state = ShutDown()
         self.state_publisher = state_publisher
 
@@ -470,7 +474,7 @@ class AnimationRunning(AbstractState):
 class ShutDownAnimation(AbstractState):
     def entry(self):
         rospy.loginfo("Motion will shut off")
-        VALUES.say("Motion will shut off")
+        speak("Motion will shut off", VALUES.speak_publisher, priority=Speak.HIGH_PRIORITY)
         self.start_animation(rospy.get_param("/animations/shut_down"))
 
     def evaluate(self):
@@ -490,7 +494,7 @@ class ShutDownAnimation(AbstractState):
 
 class ShutDown(AbstractState):
     def entry(self):
-        VALUES.say("Motion says good bye")
+        speak("Motion says good bye", VALUES.speak_publisher, priority=Speak.HIGH_PRIORITY)
         # give humans the chance to hold the robot before turning it off
         rospy.sleep(3)
         switch_motor_power(False)
