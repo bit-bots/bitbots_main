@@ -2,6 +2,8 @@ from bitbots_common.pose.pose cimport Pose, Joint, get_num_joints
 from libcpp cimport bool
 
 from libcpp.string cimport string
+from libcpp.vector cimport vector
+
 
 cdef int num_joints = get_num_joints()
 
@@ -53,6 +55,8 @@ cdef class PyPose:
 
     cpdef list get_positions(self)
     cpdef list get_speeds(self)
+    cpdef set_positions(self, list names, list positions)
+    cpdef set_speeds(self, list names, list speeds)
 
     cpdef reset(self)
     cpdef update(self, PyPose other)

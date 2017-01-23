@@ -252,19 +252,33 @@ cdef class PyPose:
         cdef int i
         cdef vector[string] names = self.pose.get_joint_names()
         cdef list result =[]
-        for i in range(names.size()):
-            result.append(self.get_joint(names[i]).get_position())
-
+        for name in names:
+            result.append(self.get_joint(name).get_position())
         return result
+
+    cpdef set_positions(self, list names, list positions):
+        cdef int i
+        cdef list result =[]
+        cdef string name
+        for name in names:
+            self.get_joint(name).set_position(positions.__getitem__(i))
+            i += 1
 
     cpdef list get_speeds(self):
         cdef int i
         cdef vector[string] names = self.pose.get_joint_names()
         cdef list result =[]
-        for i in range(names.size()):
-            result.append(self.get_joint(names[i]).get_speed())
-
+        for name in names:
+            result.append(self.get_joint(name).get_speed())
         return result
+
+    cpdef set_speeds(self, list names, list speeds):
+        cdef int i
+        cdef list result =[]
+        cdef string name
+        for name in names:
+            self.get_joint(names).set_speed(speeds.__getitem__(i))
+            i += 1
 
 
     def __getitem__(self, name):
