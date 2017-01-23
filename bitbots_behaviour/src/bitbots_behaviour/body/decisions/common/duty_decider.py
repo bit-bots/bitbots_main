@@ -20,6 +20,7 @@ from humanoid_league_msgs.msg import Speak
 from keys import DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_READY, DATA_VALUE_STATE_SET, \
     DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
 from stackmachine.abstract_decision_module import AbstractDecisionModule
+from stackmachine.model import Connector
 
 duty = None  # can be overwriten by the startup script (to force a behaviour)
 
@@ -34,36 +35,36 @@ class DutyDecider(AbstractDecisionModule):
         self.max_fieldie_time = rospy.get_param("/Behaviour/Fieldie/Defender/maxFieldieTime")
         self.toggle_self_positioning = rospy.get_param("/Behaviour/Toggles/Fieldie/trySelfPositioning")
 
-    def perform(self, connector, reevaluate=False):
+    def perform(self, connector: Connector, reevaluate=False):
 
-        if connector.blackboard_capsule.is_frozen():
+        if connector.blackboard.is_frozen():
             return
 
         if not connector.blackboard.get_duty():
             if duty is not None:
                 # get information about his duty which was set by the startup script
-                connector.set_duty(duty)
+                connector.blackboard.set_duty(duty)
             else:
-                connector.set_duty("TeamPlayer")
+                connector.blackboard.set_duty("TeamPlayer")
 
-        if not connector.gamestatus_capsule().is_game_state_equals(DATA_VALUE_STATE_PLAYING):
+        if not connector.gamestate.is_game_state_equals(DATA_VALUE_STATE_PLAYING):
             # resets all behaviours if the gamestate is not playing, because the robots are positioned again
             if duty is not None:
-                connector.set_duty(duty)
+                connector.blackboard.set_duty(duty)
 
         ############################
         # # Gamestate related Stuff#
         ############################
 
         # If we do not Play  or Ready we do nothing
-        if connector.gamestatus_capsule().get_gamestatus() in [DATA_VALUE_STATE_INITIAL,
-                                                               DATA_VALUE_STATE_SET,
-                                                               DATA_VALUE_STATE_FINISHED]:
+        if connector.gamestate.get_gamestatus() in [DATA_VALUE_STATE_INITIAL,
+                                                    DATA_VALUE_STATE_SET,
+                                                    DATA_VALUE_STATE_FINISHED]:
             return self.push(Wait, 0.1)
 
         # Positioning ourself on the Field
         if self.toggle_self_positioning:
-            if connector.gamestatus_capsule().is_game_state_equals(DATA_VALUE_STATE_READY):  # Todo check if working
+            if connector.gamestate.is_game_state_equals(DATA_VALUE_STATE_READY):  # Todo check if working
                 return self.push(GoToDutyPosition)
 
         ################################
@@ -81,7 +82,7 @@ class DutyDecider(AbstractDecisionModule):
 
         # this should be normally not used just for debug or emergency
         elif connector.blackboard.get_duty() in ["Defender", "Striker", "Center", "Supporter"]:
-            return self.push(RoleDecider, connector.get_duty())
+            return self.push(RoleDecider, connector.blackboard.get_duty())
 
         elif connector.blackboard.get_duty() == "PenaltyKickFieldie":
             return self.push(PenaltyKickerDecision)
@@ -106,14 +107,14 @@ class DutyDecider(AbstractDecisionModule):
             return self.push(Wait)
 
         elif connector.blackboard.get_duty() == "Stay":
-            connector.walking_capsule().start_walking_plain(0, 0, 0)
+            connector.walking.start_walking_plain(0, 0, 0)
             return
 
         else:
             s = Speak()
             s.text = "Overridden duty not found: %s" % connector.blackboard.get_duty()
             s.priority = Speak.LOW_PRIORITY
-            connector.speaker.Publish(s)
+            connector.speaker.publish(s)
 
             raise NotImplementedError
 

@@ -13,7 +13,7 @@ class WalkingCapsule:
 
     def stop_walking(self):
         """ This method stops the walking - note that it could take some time until the robot is standing """
-        raise NotImplementedError
+        self.start_walking_plain(0,0,0)
 
     def is_walking(self):
         """ This method returns True if the walking is actually not running """

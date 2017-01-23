@@ -9,6 +9,7 @@ import time
 from stackmachine.abstract_action_module import AbstractActionModule
 
 from stackmachine.model import Connector
+import rospy
 
 
 class KickBall(AbstractActionModule):
@@ -21,12 +22,12 @@ class KickBall(AbstractActionModule):
         super(KickBall, self).__init__()
         self.side = args
         self.begin = time.time()
-        self.rk = config["animations"]["kicks"]["rk"]
-        self.lk = config["animations"]["kicks"]["lk"]
-        self.rkp = config["animations"]["kicks"]["rkp"]
-        self.lkp = config["animations"]["kicks"]["lkp"]
-        self.side_right = config["animations"]["kicks"]["lko"]
-        self.side_left = config["animations"]["kicks"]["rko"]
+        self.rk = rospy.get_param("/animations/kicks/rk")
+        self.lk = rospy.get_param("/animations/kicks/lk")
+        self.rkp = rospy.get_param("/animations/kicks/rkp")
+        self.lkp = rospy.get_param("/animations/kicks/lkp")
+        self.side_right = rospy.get_param("/animations/kicks/lko")
+        self.side_left = rospy.get_param("/animations/kicks/rko")
         self.anim_begin = False
 
     def perform(self, connector: Connector, reevaluate=False):
