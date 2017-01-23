@@ -1,0 +1,69 @@
+{
+    "author": "Unknown", 
+    "description": "Edit me!", 
+    "keyframes": [
+        {
+            "duration": 1.0, 
+            "goals": {
+                "HeadPan": -7.119140625, 
+                "HeadTilt": 85.9765625, 
+                "LAnklePitch": 70.927734375, 
+                "LAnkleRoll": 2.109375, 
+                "LElbow": -67.939453125, 
+                "LElbowRoll": 0.0, 
+                "LHand": 0.0, 
+                "LHipPitch": 18.744140625, 
+                "LHipRoll": -4.427734375, 
+                "LHipYaw": -4.130859375, 
+                "LKnee": -15.1171875, 
+                "LShoulderPitch": 35.15625, 
+                "LShoulderRoll": 34.013671875, 
+                "RAnklePitch": -68.994140625, 
+                "RAnkleRoll": -0.615234375, 
+                "RElbow": 69.873046875, 
+                "RElbowRoll": 0.0, 
+                "RHand": 0.0, 
+                "RHipPitch": -18.6328125, 
+                "RHipRoll": 0.39453125, 
+                "RHipYaw": 0.966796875, 
+                "RKnee": 14.150390625, 
+                "RShoulderPitch": -44.12109375, 
+                "RShoulderRoll": -36.826171875
+            }, 
+            "pause": 0.0
+        }, 
+        {
+            "duration": 1.0, 
+            "goals": {
+                "HeadPan": -7.119140625, 
+                "HeadTilt": 85.9765625, 
+                "LAnklePitch": 70.927734375, 
+                "LAnkleRoll": 2.109375, 
+                "LElbow": 72.94921875, 
+                "LElbowRoll": 0.0, 
+                "LHand": 0.0, 
+                "LHipPitch": 18.83203125, 
+                "LHipRoll": -4.427734375, 
+                "LHipYaw": -4.130859375, 
+                "LKnee": -15.1171875, 
+                "LShoulderPitch": -101.25, 
+                "LShoulderRoll": 42.1875, 
+                "RAnklePitch": -68.90625, 
+                "RAnkleRoll": -0.615234375, 
+                "RElbow": -93.1640625, 
+                "RElbowRoll": 0.0, 
+                "RHand": 0.0, 
+                "RHipPitch": -18.6328125, 
+                "RHipRoll": 0.39453125, 
+                "RHipYaw": 0.966796875, 
+                "RKnee": 14.150390625, 
+                "RShoulderPitch": 113.90625, 
+                "RShoulderRoll": -42.36328125
+            }, 
+            "pause": 0.0
+        }
+    ], 
+    "last_edited": "2014-02-03 16:46:59.132741", 
+    "name": "benchpress", 
+    "version": 4
+}

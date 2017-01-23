@@ -1,0 +1,43 @@
+{
+    "author": "Unknown", 
+    "description": "Edit me!", 
+    "hostname": "wheatley", 
+    "keyframes": [
+        {
+            "duration": "1.000", 
+            "goals": {
+                "HeadPan": 0.352, 
+                "HeadTilt": -5.0, 
+                "LAnklePitch": -10.0, 
+                "LAnkleRoll": 0.352, 
+                "LElbow": -51.152, 
+                "LElbowRoll": 0.0, 
+                "LHand": 0.0, 
+                "LHipPitch": 46.846, 
+                "LHipRoll": 0.967, 
+                "LHipYaw": 0.703, 
+                "LKnee": -33.311, 
+                "LShoulderPitch": 60.381, 
+                "LShoulderRoll": -47.461, 
+                "LShoulderYaw": 0.0, 
+                "RAnklePitch": 10.0, 
+                "RAnkleRoll": -0.703, 
+                "RElbow": 50.449, 
+                "RElbowRoll": 0.0, 
+                "RHand": 0.0, 
+                "RHipPitch": -45.703, 
+                "RHipRoll": -0.264, 
+                "RHipYaw": 0.176, 
+                "RKnee": 34.98, 
+                "RShoulderPitch": -68.467, 
+                "RShoulderRoll": 38.32, 
+                "RShoulderYaw": 0.0
+            }, 
+            "p": {}, 
+            "pause": "0.000"
+        }
+    ], 
+    "last_edited": "2014-11-20 19:46:49.098654", 
+    "name": "wm_pose_normal", 
+    "version": 1
+}

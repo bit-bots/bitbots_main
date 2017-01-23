@@ -1,0 +1,59 @@
+{
+    "keyframes": [
+        {
+            "duration": 0.5,
+            "goals": {
+                "HeadPan": -0.52734375,
+                "HeadTilt": -15.0,
+                "LAnklePitch": -27.59765625,
+                "LAnkleRoll": 0.615234375,
+                "LElbow": -29.00390625,
+                "LHipPitch": 35.33203125,
+                "LHipRoll": -0.966796875,
+                "LHipYaw": -0.703125,
+                "LKnee": -55.72265625,
+                "LShoulderPitch": 40.078125,
+                "LShoulderRoll": 16.962890625,
+                "RAnklePitch": 30.322265625,
+                "RAnkleRoll": -0.439453125,
+                "RElbow": -4.21875,
+                "RHipPitch": -35.419921875,
+                "RHipRoll": 0.615234375,
+                "RHipYaw": -0.703125,
+                "RKnee": 55.01953125,
+                "RShoulderPitch": 73.65234375,
+                "RShoulderRoll": -42.626953125
+            },
+            "pause": 0.0
+        },
+        {
+            "duration": 0.5,
+            "goals": {
+                "HeadPan": 0.087890625,
+                "HeadTilt": -70.0,
+                "LAnklePitch": -84.19921875,
+                "LAnkleRoll": 2.63671875,
+                "LElbow": -29.00390625,
+                "LHipPitch": 45.439453125,
+                "LHipRoll": -1.845703125,
+                "LHipYaw": -0.087890625,
+                "LKnee": -128.408203125,
+                "LShoulderPitch": 40.078125,
+                "LShoulderRoll": 17.138671875,
+                "RAnklePitch": 29.70703125,
+                "RAnkleRoll": 0.615234375,
+                "RElbow": 58.359375,
+                "RHipPitch": -99.4921875,
+                "RHipRoll": -0.52734375,
+                "RHipYaw": 1.7578125,
+                "RKnee": 121.552734375,
+                "RShoulderPitch": 15.205078125,
+                "RShoulderRoll": -35.771484375
+            },
+            "pause": 0.0
+        }
+    ],
+    "name": "Strike",
+    "discription": "Wie das strike-meme mit dem kleinen kind",
+    "hands": "no"
+}

@@ -1,0 +1,44 @@
+{
+    "keyframes": [
+        {
+            "duration": 1,
+            "goals": {
+                "HeadPan": 5.361328125,
+                "HeadTilt": 10.0,
+                "RElbow": 24.169921875,
+                "RElbowRoll": -72.509765625,
+                "RHand": -32.431640625,
+                "RShoulderPitch": 52.998046875,
+                "RShoulderRoll": -28.388671875
+            },
+            "pause": 0.0
+        },
+        {
+            "duration": 1,
+            "goals": {
+                "HeadPan": 5.2734375,
+                "HeadTilt": 10.0,
+                "RElbow": -26.455078125,
+                "RElbowRoll": -65.0390625,
+                "RHand": -32.255859375,
+                "RShoulderPitch": 102.919921875,
+                "RShoulderRoll": -34.453125
+            },
+            "pause": 0.0
+        },
+        {
+            "duration": 1,
+            "goals": {
+                "HeadPan": 5.2734375,
+                "HeadTilt": 10.0,
+                "RElbow": -26.54296875,
+                "RElbowRoll": -65.0390625,
+                "RHand": -34.62890625,
+                "RShoulderPitch": 102.744140625,
+                "RShoulderRoll": -34.189453125
+            },
+            "pause": 0.0
+        }
+    ],
+    "name": "/home/darwin/backup.json"
+}
