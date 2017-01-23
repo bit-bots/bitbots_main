@@ -35,7 +35,7 @@ cdef class CM730(object):
         self.raw_gyro = IntDataVector(0, 0, 0)
         self.robo_accel = IntDataVector(0, 0, 0)
 
-        robot_type_name = rospy.get_param("/RobotTypeName")
+        robot_type_name = rospy.get_param("/robot_type_name")
         self.motors = rospy.get_param(robot_type_name + "/motors")
         self.motor_ram_config = rospy.get_param("/mx28config/RAM")
         offsets = rospy.get_param("/offsets")

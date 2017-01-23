@@ -1,7 +1,7 @@
 # goal definition
 
 # name of the animation
-std_msgs/String animation
+string animation
 
 # should the animation be played directly, interrupting other animations and walking
 bool force

@@ -21,7 +21,7 @@ class WalkingNode(object):
         self.motion_state = None
         self.walking_started = 0
 
-        zmp_config = rospy.get_param("/ZMPConfig" + rospy.get_param("/RobotTypeName"))
+        zmp_config = rospy.get_param("/ZMPConfig" + rospy.get_param("/robot_type_name"))
         self.walking = ZMPWalkingEngine()
         self.walkready_animation = self.walking.create_walkready_pose(duration=1.5)
 

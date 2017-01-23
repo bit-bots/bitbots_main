@@ -31,12 +31,6 @@ motion:
       "threshold_gyro_x_right": -30.0 # > gyroX
       "threshold_gyro_x_left":   30.0 # < gyroX
 
-      #Es wird genau über die ersten 20 Motoren iteriert
-      "falling_motor_degrees_front":  [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-      "falling_motor_degrees_back": [60.0, -60.0, 0.0, 0.0, -20.0, 20.0, 17.0, -17.0, 0.0, 0.0, -110.0, 110.0, 100.0, -100.0, 0.0, 0.0, 0.0, 0.0, 0.0, -40.0]
-      "falling_motor_degrees_right": [-145.0, 170.0, -10.0, -40.0, -25.0, 60.0, 0.0, 0.0, 30.0, -50.0, 30.0, -30.0, 95.0, 0.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-      "falling_motor_degrees_left":  [-170.0, 145.0, 40.0, 10.0, -60.0, 25.0, 0.0, 0.0, 50.0, -30.0, 30.0, -30.0, 0.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-
       #false = motoren werden bei fallerkennung abgeschaltet
       "dyn_falling_active": true
 
@@ -51,12 +45,7 @@ motion:
       "threshold_gyro_x_right": -30 # > gyroX
       "threshold_gyro_x_left":   30 # < gyroX
 
-      "falling_motor_degrees_front":  [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-      "falling_motor_degrees_back": [60.0, -60.0, -30.0, 30.0, 45.0, -45.0, 17.0, -17.0, 0.0, 0.0, -110.0, 110.0, 110.0, -110.0, 0.0, 0.0, 0.0, 0.0, 0.0, -40.0]
-      "falling_motor_degrees_right": [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-      "falling_motor_degrees_left": [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-
-      #DEAKTIVIERT lassen, stellungen wurden noch nicht für ihn getestet
+      #false = motoren werden bei fallerkennung abgeschaltet
       "dyn_falling_active": false
 
     "Minibot":
@@ -71,12 +60,6 @@ motion:
       "threshold_gyro_y_back":  50.0 # < gyroY
       "threshold_gyro_x_right": -30.0 # > gyroX
       "threshold_gyro_x_left":   30.0 # < gyroX
-
-      #Es wird genau über die ersten 20 Motoren iteriert
-      "falling_motor_degrees_front":  [-145.0, 145.0, -10.0, 10.0, -25.0, 25.0, 0.0, 0.0, 30.0, -30.0, 30.0, -30.0, 95.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-      "falling_motor_degrees_back": [60.0, -60.0, 0.0, 0.0, -20.0, 20.0, 17.0, -17.0, 0.0, 0.0, -110.0, 110.0, 100.0, -100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-      "falling_motor_degrees_right": [-145.0, 170.0, -10.0, -40.0, -25.0, 60.0, 0.0, 0.0, 30.0, -50.0, 30.0, -30.0, 95.0, 0.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
-      "falling_motor_degrees_left":  [-170.0, 145.0, 40.0, 10.0, -60.0, 25.0, 0.0, 0.0, 50.0, -30.0, 30.0, -30.0, 0.0, -95.0, 90.0, -90.0, -20.0, 20.0, 0.0, 0.0]
 
       #false = motoren werden bei fallerkennung abgeschaltet
       "dyn_falling_active": true

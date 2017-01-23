@@ -1,5 +1,5 @@
 <launch>
-    <param name="/RobotTypeName" value="Minibot"/>
+    <param name="/robot_type_name" value="Minibot"/>
     <param name="/simulation_active" value="true"/>
     <param name="/debug_active" value="true"/>
 

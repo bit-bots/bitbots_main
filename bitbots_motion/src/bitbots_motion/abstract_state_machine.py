@@ -60,14 +60,16 @@ class AbstractState(object):
         if anim_name is None or anim_name == "empty":
             rospy.logwarn("Tried to play an animation with an empty name!")
             return False
-        first_try = VALUES.animation_client.wait_for_server(rospy.Duration(rospy.get_param("/motion/anim_server_wait_time", 10)))
+        first_try = VALUES.animation_client.wait_for_server(
+            rospy.Duration(rospy.get_param("/motion/anim_server_wait_time", 10)))
         if not first_try:
             rospy.logerr(
                 "Animation Action Server not running! Motion can not work without animation action server. "
                 "Will now wait until server is accessible!")
             VALUES.animation_client.wait_for_server()
             rospy.logwarn("Animation server now running, motion will go on.")
-        goal = bitbots_animation.msg.PlayAnimationGoal(animation=anim_name)
+        goal = bitbots_animation.msg.PlayAnimationGoal()
+        goal.animation = anim_name
         VALUES.animation_client.send_goal(goal)
         return True
 
@@ -96,24 +98,18 @@ class AbstractStateMachine(object):
         :param state:
         :return:
         """
-        try:
-            if self.state is not None:
-                self.publish_state(state)
-                self.state.exit()
-            self.state = state
-            if self.debug_active:
-                # publish name of the current state if debug is active
-                self.debug_publisher.publish(self.state.__class__.__name__)
-                rospy.logdebug("Current state: " + self.state.__class__.__name__)
-            entry_switch = self.state.entry()
-            if entry_switch is not None:
-                # we directly do another state switch
-                self.set_state(entry_switch)
-        except Exception as exc:
-            rospy.logerr("Error during changing of state. See stack trace:")
-            rospy.logerr(traceback.format_exc())
-            self.state = self.error_state
-            self.state.entry()
+        if self.state is not None:
+            self.publish_state(state)
+            self.state.exit()
+        self.state = state
+        if self.debug_active:
+            # publish name of the current state if debug is active
+            self.debug_publisher.publish(self.state.__class__.__name__)
+            rospy.logdebug("Current state: " + self.state.__class__.__name__)
+        entry_switch = self.state.entry()
+        if entry_switch is not None:
+            # we directly do another state switch
+            self.set_state(entry_switch)
 
     def evaluate(self):
         """
@@ -129,7 +125,7 @@ class AbstractStateMachine(object):
                 # We're already in a shut down state, there is nothing left to do for us
                 return
             else:
-                #set the state
+                # set the state
                 self.set_state(shutdown_state)
                 return
 

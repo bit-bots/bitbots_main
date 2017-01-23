@@ -347,7 +347,7 @@ class Falling(AbstractState):
     def entry(self):
 
         # go directly in falling pose
-        falling_pose = VALUES.fall_checker.get_falling_pose(VALUES.not_so_smooth_gyro)
+        falling_pose = VALUES.fall_checker.check_falling(VALUES.not_so_smooth_gyro)
         if falling_pose is not None:
             self.next_state = Falling()
             self.start_animation(falling_pose)

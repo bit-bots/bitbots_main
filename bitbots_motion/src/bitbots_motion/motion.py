@@ -5,11 +5,14 @@ import time
 from math import asin
 
 import math
+
+import actionlib
 import rospy
 from bitbots_common.pose.pypose import PyPose as Pose
 from bitbots_speaker.speaker import speak
 from std_msgs.msg import Bool
 
+import bitbots_animation
 from bitbots_cm730.srv import SwitchMotorPower
 
 from bitbots_motion.motion_state_machine import MotionStateMachine, STATE_CONTROLABLE, AnimationRunning
@@ -61,7 +64,7 @@ class Motion(object):
         rospy.sleep(0.1)  # This is important! Otherwise a lot of messages will get lost, bc the init is not finished
         rospy.loginfo("Starting motion")
 
-        self.joint_goal_publisher = rospy.Publisher('/motion_motor_goals', JointState, queue_size=10)
+        self.joint_goal_publisher = rospy.Publisher('/motion_motor_goals', JointTrajectory, queue_size=10)
         self.motion_state_publisher = rospy.Publisher('/motion_state', MotionState, queue_size=10)
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
         VALUES.speak_publisher = self.speak_publisher
@@ -78,6 +81,9 @@ class Motion(object):
         rospy.Subscriber("/head_motor_goals", JointTrajectory, self.head_goal_callback)
         rospy.Subscriber("/record_motor_goals", JointTrajectory, self.record_goal_callback)
         rospy.Subscriber("/pause", Bool, self.pause)
+
+        self.animation_action_client = actionlib.SimpleActionClient('animation', bitbots_animation.msg.PlayAnimationAction)
+        VALUES.animation_client = self.animation_action_client
 
         self.animation_keyframe_service = rospy.Service("animation_key_frame", AnimationFrame, self.keyframe_callback)
         self.dyn_reconf = Server(motion_paramsConfig, self.reconfigure)

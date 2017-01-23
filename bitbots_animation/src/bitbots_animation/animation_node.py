@@ -6,11 +6,13 @@ import actionlib
 import traceback
 import rospy
 from bitbots_animation.msg import PlayAnimationResult, PlayAnimationFeedback
+from bitbots_animation.msg import PlayAnimationAction as PlayAction
+
 
 from bitbots_animation.animation import Animator, parse
 from bitbots_animation.srv import AnimationFrame
 from sensor_msgs.msg import Imu, JointState
-from bitbots_common.util.resource_manager import find_animation  # todo put directly in thins package?
+from bitbots_animation.resource_manager import find_animation  # todo put directly in thins package?
 
 
 class AnimationNode:
@@ -50,7 +52,7 @@ class PlayAnimationAction(object):
 
     def __init__(self, name):
         self._action_name = name
-        self._as = actionlib.SimpleActionServer(self._action_name, PlayAnimationAction,
+        self._as = actionlib.SimpleActionServer(self._action_name, PlayAction,
                                                 execute_cb=self.execute_cb, auto_start=False)
         rospy.loginfo("Will now wait for keyframe service, before providing actions")
         timeout = rospy.wait_for_service("animation_key_frame", timeout=60)
@@ -61,7 +63,7 @@ class PlayAnimationAction(object):
 
         rospy.Subscriber("/MotorCurrentPosition", JointState, self.update_current_pose)
 
-        self.dynamic_animation = rospy.get_param("/animation/dynamic")
+        self.dynamic_animation = rospy.get_param("/animation/dynamic", False)
         self._as.start()
 
     def execute_cb(self, goal):

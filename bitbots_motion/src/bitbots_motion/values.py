@@ -37,7 +37,7 @@ class Values(object):
 
         self.fall_checker = FallChecker()
         # for internal animations
-        self.animation_client = actionlib.SimpleActionClient('animation_action_client', bitbots_animation.msg.PlayAnimationAction)
+        self.animation_client = None
         self.speak_publisher = None
 
         # we want to play an animation, try to become controllable

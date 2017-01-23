@@ -6,7 +6,7 @@ from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
 
 class FallChecker(object):
     def __init__(self):
-        robot_type_name = rospy.get_param("/RobotTypeName")
+        robot_type_name = rospy.get_param("/robot_type_name")
         self.dyn_falling_active = rospy.get_param("/motion/falling/" + robot_type_name + "/dyn_falling_active")
         self.ground_coefficient = rospy.get_param("/motion/falling/" + robot_type_name + "/ground_coefficient")
 
@@ -42,17 +42,6 @@ class FallChecker(object):
         self.falling_threshold_back = config["threshold_gyro_y_back"]
         self.falling_threshold_right = config["threshold_gyro_x_right"]
         self.falling_threshold_left = config["threshold_gyro_x_left"]
-
-    def get_falling_pose(self, not_so_smooth_gyro):
-        # todo doe something with this
-        # todo propably just change it to returning an animation(depending on side)
-        if self.dyn_falling_active:
-            for i in range(1, 20):
-                a = falling_motor_degrees[i - 1]
-                goal_pose.get_joint_by_cid(i).goal = a
-            pass
-        else:
-            goal_pose.set_active(False)
 
     def check_falling(self, not_much_smoothed_gyro):
         """Checks if the robot is currently falling and in which direction. """
