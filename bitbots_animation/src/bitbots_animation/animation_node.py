@@ -8,8 +8,8 @@ import rospy
 from bitbots_animation.msg import PlayAnimationResult, PlayAnimationFeedback
 from bitbots_animation.msg import PlayAnimationAction as PlayAction
 
-
 from bitbots_animation.animation import Animator, parse
+from bitbots_common.pose.pypose import PyPose as Pose
 from bitbots_animation.srv import AnimationFrame
 from sensor_msgs.msg import Imu, JointState
 from bitbots_animation.resource_manager import find_animation  # todo put directly in thins package?
@@ -22,6 +22,7 @@ class AnimationNode:
         rospy.init_node("bitbots_animation", log_level=log_level, anonymous=False)
         rospy.logdebug("Starting Animation Server")
         server = PlayAnimationAction(rospy.get_name())
+        self.current_pose = Pose()
         rospy.spin()
 
 
@@ -51,6 +52,7 @@ class PlayAnimationAction(object):
     _result = PlayAnimationResult
 
     def __init__(self, name):
+        self.current_pose = Pose()
         self._action_name = name
         self._as = actionlib.SimpleActionServer(self._action_name, PlayAction,
                                                 execute_cb=self.execute_cb, auto_start=False)
@@ -61,7 +63,7 @@ class PlayAnimationAction(object):
             exit("No motion")
         rospy.loginfo("Found animation_key_frame service, can now start action.")
 
-        rospy.Subscriber("/MotorCurrentPosition", JointState, self.update_current_pose)
+        rospy.Subscriber("/current_motor_positions", JointState, self.update_current_pose)
 
         self.dynamic_animation = rospy.get_param("/animation/dynamic", False)
         self._as.start()
@@ -80,8 +82,10 @@ class PlayAnimationAction(object):
             else:
                 animation = parse(goal.animation)
         except IOError:
-            rospy.logwarn("Animation '%s' nicht gefunden" % goal.animation)
-            raise
+            rospy.logwarn("Animation '%s' not found" % goal.animation)
+            self._as.set_aborted(False, "Animation not found")
+            return
+
         animator = Animator(animation, self.current_pose)
         animfunc = animator.playfunc(0.025)  # todo dynamic reconfigure this value
 
@@ -122,8 +126,9 @@ class PlayAnimationAction(object):
             keyframe_service_call(first, False, goal.force, pose)
 
     def update_current_pose(self, msg):
-        # todo save pose
-        self.current_pose = None
+        """Gets the current motor positions and updates the representing pose accordingly."""
+        self.current_pose.set_positions(msg.name, msg.position)
+        self.current_pose.set_speeds(msg.name, msg.velocity)
 
 
 if __name__ == "__main__":

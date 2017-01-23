@@ -12,13 +12,13 @@ class FallChecker(object):
 
         # Fallanimation laden
         self.falling_motor_degrees_front = rospy.get_param(
-            "/motion/falling/" + robot_type_name + "/falling_motor_degrees_front")
+            "/motion/falling/falling_front")
         self.falling_motor_degrees_back = rospy.get_param(
-            "/motion/falling/" + robot_type_name + "/falling_motor_degrees_back")
+            "/motion/falling/falling_back")
         self.falling_motor_degrees_right = rospy.get_param(
-            "/motion/falling/" + robot_type_name + "/falling_motor_degrees_right")
+            "/motion/falling/falling_right")
         self.falling_motor_degrees_left = rospy.get_param(
-            "/motion/falling/" + robot_type_name + "/falling_motor_degrees_left")
+            "/motion/falling/falling_left")
 
         # Fallerkennungs Grenzwerte laden
         self.falling_threshold_front = rospy.get_param("/motion/falling/" + robot_type_name + "/threshold_gyro_y_front") \

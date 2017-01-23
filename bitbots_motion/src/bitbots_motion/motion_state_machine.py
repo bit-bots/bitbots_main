@@ -10,7 +10,6 @@ from .abstract_state_machine import AbstractStateMachine
 from bitbots_speaker.speaker import speak
 from humanoid_league_msgs.msg import Speak
 
-
 STATE_CONTROLABLE = 0
 STATE_FALLING = 1
 STATE_FALLEN = 2
@@ -349,9 +348,11 @@ class Falling(AbstractState):
         # go directly in falling pose
         falling_pose = VALUES.fall_checker.check_falling(VALUES.not_so_smooth_gyro)
         if falling_pose is not None:
+            # we're falling, stay in falling
             self.next_state = Falling()
             self.start_animation(falling_pose)
         else:
+            # we're not falling anymore
             if VALUES.is_fallen():
                 # go directly to fallen
                 return Fallen()
@@ -374,9 +375,14 @@ class Falling(AbstractState):
 
 class Fallen(AbstractState):
     def entry(self):
-        direction_animation = VALUES.fall_checker.get_falling_pose(VALUES.not_so_smooth_gyro)
-        self.next_state = GettingUp()
-        self.start_animation(direction_animation)
+        direction_animation = VALUES.is_fallen()
+        if direction_animation is None:
+            # we don't have to stand up, go directly to controllable
+            return Controllable()
+        else:
+            # do corresponding animation
+            self.next_state = GettingUp()
+            self.start_animation(direction_animation)
 
     def evaluate(self):
         if self.animation_finished():

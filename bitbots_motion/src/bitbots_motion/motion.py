@@ -127,8 +127,8 @@ class Motion(object):
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
-        VALUES.last_client_update = msg.header.stamp
-        set_joint_state_on_pose(msg, self.robo_pose) #todo implement
+        self.robo_pose.set_positions(msg.name, msg.position)
+        self.robo_pose.set_speeds(msg.name, msg.velocity)
 
     def reconfigure(self, config, level):
         """ Dynamic reconfigure of the fall checker values."""

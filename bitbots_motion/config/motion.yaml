@@ -8,14 +8,20 @@ motion:
   animations:
     walkready : "walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
     goalie-walkready: "goalie-walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
-    front-up : "aufrichten-anfang-front-tamara"
-    bottom-up : "aufrichten-anfang-bottom-tamara"
+    front-up : "front-up"
+    bottom-up : "bottom-up"
     toSquat: "aufrichten-hocke-tamara"
-    stand-up: "aufrichten-ende-tamara"
+    stand-up: "stand-up"
     penalized : "sit-down"
     sit-down : "sit-down"
 
   falling:
+
+    #falling animations
+    "falling_front": "falling-front"
+    "falling_back": "falling_back"
+    "falling_left": "falling_left"
+    "falling_right": "falling_right"
 
     #Werte erstellt durch 3doerfle, 3bimberg, 3windsor (Praktikum sose 2015)
     "Darwin":
