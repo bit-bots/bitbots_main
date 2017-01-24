@@ -288,6 +288,7 @@ class Animator:
         self.time_min = min(ip.time_min for ip in values)
         self.time_max = max(ip.time_max for ip in values)
         self.duration = self.time_max - self.time_min
+        self.t_start = None
 
     def get_pose(self, t, pose=None):
         ''' Interpoliert eine Pose zum Zeitpunkt *t*. Es wird entweder ein
@@ -330,10 +331,10 @@ class Animator:
         """
         pre = stepsize * 1.5
 
-        t_start = time.time()
+        self.t_start = time.time()
 
         def update(current):
-            t_robo = (time.time() - t_start) + self.time_min
+            t_robo = (time.time() - self.t_start) + self.time_min
 
             if t_robo > self.time_max:
                 return None
@@ -350,31 +351,11 @@ class Animator:
 
         return update
 
-    def play(self, ipc, stepsize=0.02, sleep=None, recordflag=False):
-        ''' Spielt die Animation in Schritten von *stepsize*-Sekunden ab.
-            Dafür wird einee IPC-Implementierung benötigt, z.B.
-            eine Instanz der Klasse :class:`~bitbots.ipc.ipc.SharedMemoryIPC`.
+    def get_duration(self):
+        return self.duration
 
-            Die Methode blockiert solange, bis die Animation abgeschlossen
-            wurde.
-
-            wenn *recordflag* auf True gesetzt ist, dann wird die annimation auch
-            abgespielt wenn ipc.status == RECORD ist und nicht CONTROLABLE
-        '''
-        posefunc = self.playfunc(stepsize)
-        while not rospy.is_shutdown():
-            pose = posefunc(ipc.get_pose())
-            if pose is None:
-                # Fertig
-                (sleep or time.sleep)(3*stepsize)
-                return None
-
-            if not (ipc.controlable or (recordflag and ipc.is_recording)):
-                raise NotControlableError()
-
-            ipc.update(pose)
-            (sleep or time.sleep)(stepsize)
-
+    def get_start_time(self):
+        return self.t_start
 
     def __str__(self):
         return "<Animator '%s' duration=%1.2fsek>" % (self.name, self.duration)

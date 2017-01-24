@@ -5,6 +5,7 @@ import json
 import actionlib
 import traceback
 import rospy
+import time
 from std_msgs.msg import Header
 from bitbots_animation.msg import PlayAnimationResult, PlayAnimationFeedback
 from bitbots_animation.msg import PlayAnimationAction as PlayAction
@@ -41,7 +42,7 @@ def keyframe_service_call(first, last, force, pose):
     if pose is not None:
         joint_state.position = pose.get_positions()
         joint_state.name = pose.get_joint_names()
-    #else:
+    # else:
     #    joint_state.positions = []
     #    joint_state.name = []
     header = Header()
@@ -136,7 +137,9 @@ class PlayAnimationAction(object):
                 return
 
             keyframe_service_call(first, False, goal.force, pose)
-            self._as.publish_feedback(PlayAnimationFeedback(percent_done=0)) #todo compute feedback in percent, int
+            perc_done = int(((time.time() - animator.get_start_time()) / animator.get_duration()) * 100)
+            perc_done = min(perc_done, 100)
+            self._as.publish_feedback(PlayAnimationFeedback(percent_done=perc_done))
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""

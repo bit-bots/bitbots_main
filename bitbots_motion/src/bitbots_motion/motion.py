@@ -98,7 +98,7 @@ class Motion(object):
         """Gets new IMU values and computes the smoothed values of these"""
         update_time = time.time()
         # todo check if this is not switched
-        self.gyro = msg.linear_velocity
+        self.gyro = msg.linear_acceleration
         self.accel = msg.angular_velocity
 
         # todo check if this is needed by something else in the software
@@ -127,8 +127,8 @@ class Motion(object):
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
-        self.robo_pose.set_positions(msg.name, msg.position)
-        self.robo_pose.set_speeds(msg.name, msg.velocity)
+        self.robo_pose.set_positions(list(msg.name), list(msg.position))
+        self.robo_pose.set_speeds(list(msg.name), list(msg.velocity))
 
     def reconfigure(self, config, level):
         """ Dynamic reconfigure of the fall checker values."""
