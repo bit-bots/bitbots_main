@@ -1,3 +1,4 @@
+import rospy
 from cython.operator cimport address as ref
 from cython.operator cimport dereference as deref
 
@@ -249,51 +250,58 @@ cdef class PyPose:
         return wrap_joint_ptr(self, self.pose.get_joint_by_cid(cid))
 
     cpdef list get_positions(self):
-        cdef int i
         cdef vector[string] names = self.pose.get_joint_names()
         cdef list result =[]
         for name in names:
             result.append(self.get_joint(name).get_position())
         return result
 
-    cpdef set_positions(self, list names, list positions):
-        cdef int i
-        cdef list result =[]
-        cdef string name
-        for name in names:
-            self.get_joint(name).set_position(positions.__getitem__(i))
-            i += 1
-
     cpdef list get_speeds(self):
-        cdef int i
         cdef vector[string] names = self.pose.get_joint_names()
         cdef list result =[]
         for name in names:
             result.append(self.get_joint(name).get_speed())
         return result
 
-    cpdef set_speeds(self, list names, list speeds):
-        cdef int i
-        cdef list result =[]
-        cdef string name
-        for name in names:
-            self.get_joint(names).set_speed(speeds.__getitem__(i))
-            i += 1
-
     cpdef list get_goals(self):
-        cdef int i
+        cdef int i = 0
         cdef vector[string] names = self.pose.get_joint_names()
         cdef list result =[]
         for name in names:
             result.append(self.get_joint(name).get_goal())
         return result
 
-    cpdef set_goals(self, list names, list speeds):
-        cdef int i
+    cpdef set_positions(self, list names, list positions):
+        cdef int i = 0
         cdef list result =[]
         cdef string name
+        rospy.logwarn("names : " + str(names))
+        rospy.logwarn("positions: " + str(positions))
+        if len(names) != len(positions):
+            rospy.logwarn("foo")
+            raise AssertionError("Length of names and positions does not match.")
         for name in names:
-            self.get_joint(names).set_goal(speeds.__getitem__(i))
+            self.get_joint(name).set_position(positions[i])
+            i += 1
+
+    cpdef set_speeds(self, list names, list speeds):
+        cdef int i = 0
+        cdef list result =[]
+        cdef string name
+        if len(names) != len(speeds):
+            raise AssertionError("Length of names and speeds does not match.")
+        for name in names:
+            self.get_joint(name).set_speed(speeds[i])
+            i += 1
+
+    cpdef set_goals(self, list names, list goals):
+        cdef int i = 0
+        cdef list result =[]
+        cdef string name
+        if len(names) != len(goals):
+            raise AssertionError("Length of names and goals does not match.")
+        for name in names:
+            self.get_joint(name).set_goal(goals[i])
             i += 1
 
 
