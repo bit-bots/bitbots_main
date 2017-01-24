@@ -68,6 +68,7 @@ add_action_files(
    std_msgs  # Or other packages containing msgs
    trajectory_msgs
    actionlib_msgs
+   sensor_msgs
  )
 
 ################################################

@@ -60,11 +60,7 @@ class Values(object):
         return False
 
     def is_fallen(self):
-        direction_animation = self.fall_checker.check_fallen(self.raw_gyro, self.smooth_gyro,
-                                                             self.robo_angle)
-        if direction_animation is not None:
-            return True
-        return False
+        return self.fall_checker.check_fallen(self.raw_gyro, self.smooth_gyro, self.robo_angle)
 
     def is_soft_off_time(self):
         return self.soft_off_flag and time.time() - self.last_hardware_update > self.softoff_time

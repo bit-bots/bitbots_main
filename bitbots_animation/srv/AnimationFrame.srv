@@ -1,4 +1,5 @@
 #request
+Header header
 
 # telling that this is a new animation
 bool first_frame
@@ -10,7 +11,7 @@ bool last_frame
 bool force
 
 # motor positions
-trajectory_msgs/JointTrajectoryPoint positions
+sensor_msgs/JointState state
 
 ---
 #response

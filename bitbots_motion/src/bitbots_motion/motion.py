@@ -139,14 +139,29 @@ class Motion(object):
     def publish_motor_goals(self):
         """ Publish the goal pose as joint message"""
         # we can only handle one point and not a full trajectory
+        traj_msg = self.pose_to_traj_msg(self.goal_pose)
+        self.joint_goal_publisher.publish(traj_msg)
+
+    def pose_to_traj_msg(self, pose):
         msg = JointTrajectoryPoint()
-        msg.positions = self.goal_pose.get_positions()
-        msg.velocities = self.goal_pose.get_speeds()
+        msg.positions = pose.get_positions()
+        msg.velocities = pose.get_speeds()
         traj_msg = JointTrajectory()
         traj_msg.points = []
         traj_msg.points.append(msg)
         traj_msg.header.stamp = rospy.Time.now()
-        self.joint_goal_publisher.publish(traj_msg)
+        return traj_msg
+
+    def joint_state_to_traj_msg(self, state):
+        msg = JointTrajectoryPoint()
+        msg.positions = state.position
+        msg.velocities = state.velocity
+        traj_msg = JointTrajectory()
+        traj_msg.points = []
+        traj_msg.points.append(msg)
+        traj_msg.header.stamp = rospy.Time.now()
+        return traj_msg
+
 
     def walking_goal_callback(self, msg):
         self.walking_motor_goal = msg
@@ -190,13 +205,13 @@ class Motion(object):
             # this is the last frame, we want to tell the state machine, that we're finished with the animations
             self.animation_running = False
             VALUES.external_animation_finished = True
-            if req.positions is None:
+            if req.state is None:
                 # probably this was just to tell us we're finished
                 # we don't need to set another position to the motors
                 return
 
         # sending keyframe positions to hardware
-        self.joint_goal_publisher.publish(req.positions)
+        self.joint_goal_publisher.publish(self.joint_state_to_traj_msg(req.state))
         return True
 
     def main_loop(self):
@@ -235,7 +250,7 @@ class Motion(object):
             # the motor goals are set directly in the callback method, so we don't have to do anything
             return
 
-        if self.animation_running and rospy.Time.now() - self.animation_request_time < 1:
+        if self.animation_running and rospy.get_time() - self.animation_request_time < 1:
             # we are currently running an animation
             # the motor goals are set directly in the callback method, so we don't have to do anything
             return
