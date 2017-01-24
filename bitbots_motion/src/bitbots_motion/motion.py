@@ -244,14 +244,14 @@ class Motion(object):
             # we're currently walking
             # set positions from first point of trajectory
             point = self.walking_motor_goal.points[0]
-            self.goal_pose.set_positions(point.positions)
+            self.goal_pose.set_positions(point.positions) #todo oder set_goals?
             self.goal_pose.set_speed(point.velocities)
 
         if not self.state_machine.is_penalized():
             # we can move our head
             if self.head_motor_goal is not None:
                 point = self.head_motor_goal.points[0]
-                self.goal_pose.set_positions(point.positions)
+                self.goal_pose.set_positions(point.positions) #todo oder set_goals?
                 self.goal_pose.set_speed(point.velocities)
 
         # if we didn't return yet, there are some goals to publish

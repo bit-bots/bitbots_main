@@ -12,7 +12,7 @@ from bitbots_animation.animation import Animator, parse
 from bitbots_common.pose.pypose import PyPose as Pose
 from bitbots_animation.srv import AnimationFrame
 from sensor_msgs.msg import Imu, JointState
-from bitbots_animation.resource_manager import find_animation  # todo put directly in thins package?
+from bitbots_animation.resource_manager import find_animation
 
 
 class AnimationNode:
@@ -69,6 +69,7 @@ class PlayAnimationAction(object):
         self._as.start()
 
     def execute_cb(self, goal):
+        """ This is called, when someone calls the animation action"""
         first = True
 
         # publish info to the console for the user
@@ -85,7 +86,6 @@ class PlayAnimationAction(object):
             rospy.logwarn("Animation '%s' not found" % goal.animation)
             self._as.set_aborted(False, "Animation not found")
             return
-
         animator = Animator(animation, self.current_pose)
         animfunc = animator.playfunc(0.025)  # todo dynamic reconfigure this value
 

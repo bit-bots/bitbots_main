@@ -1,7 +1,5 @@
 #-*- coding:utf-8 -*-
 
-import warnings
-
 import time
 
 import rospy
@@ -102,13 +100,15 @@ class Step:
     '''
 
     def __init__(self, time, value, p=-1):
+        self.hold = False
+        self.off = False
         self.time = time
         self.p = p
         if isinstance(value, basestring):
             if value == "off":
                 self.off = True
             elif value == "hold":
-                warnings.warn("'hold' noch nicht unterstützt!")
+                rospy.logwarn("'hold' noch nicht unterstützt!")
                 self.hold = True
             else:
                 raise ValueError("Ungültiger Wert fürs Ziel")
@@ -333,7 +333,7 @@ class Animator:
         t_start = time.time()
 
         def update(current):
-            t_pose, t_robo = (time.time() - t_start) + self.time_min
+            t_robo = (time.time() - t_start) + self.time_min
 
             if t_robo > self.time_max:
                 return None
