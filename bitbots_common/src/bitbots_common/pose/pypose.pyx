@@ -131,13 +131,13 @@ cdef class PyJoint:
             "yes" if self.active else "no",
             self.position, self.goal, self.speed)
 
-    cdef set_active(self, bool active):
+    cpdef set_active(self, bool active):
         self.joint.set_active(active)
 
-    cdef reset(self):
+    cpdef reset(self):
         self.joint.reset()
 
-    cdef set_goal(self, float goal):
+    cpdef set_goal(self, float goal):
         """
         Beachtenb das es den Setter unten noc hmal als funktion gibt!
         """
@@ -145,64 +145,64 @@ cdef class PyJoint:
             return
         raise ValueError("Invalid Vaulue %f for Motor %d" % (goal, self.cid))
 
-    cdef set_speed(self, float speed):
+    cpdef set_speed(self, float speed):
         self.joint.set_speed(speed)
 
-    cdef set_position(self, float position):
+    cpdef set_position(self, float position):
         self.joint.set_position(position)
 
-    cdef set_load(self, float load):
+    cpdef set_load(self, float load):
         self.joint.set_load(load)
 
-    cdef set_minimum(self, float minimum):
+    cpdef set_minimum(self, float minimum):
         self.joint.set_minimum(minimum)
 
-    cdef set_maximum(self, float maximum):
+    cpdef set_maximum(self, float maximum):
         self.joint.set_maximum(maximum)
 
-    cdef set_p(self, int p):
+    cpdef set_p(self, int p):
         self.joint.set_p(p)
 
-    cdef set_i(self, int i):
+    cpdef set_i(self, int i):
         self.joint.set_i(i)
 
-    cdef set_d(self, int d):
+    cpdef set_d(self, int d):
         self.joint.set_d(d)
 
-    cdef bool is_active(self):
+    cpdef bool is_active(self):
         return self.joint.is_active()
 
-    cdef bool has_changed(self):
+    cpdef bool has_changed(self):
         return self.joint.has_changed()
 
-    cdef float get_goal(self):
+    cpdef float get_goal(self):
         return self.joint.get_goal()
 
-    cdef float get_speed(self):
+    cpdef float get_speed(self):
         return self.joint.get_speed()
 
-    cdef float get_position(self):
+    cpdef float get_position(self):
         return self.joint.get_position()
 
-    cdef float get_load(self):
+    cpdef float get_load(self):
         return self.joint.get_load()
 
-    cdef float get_maximum(self):
+    cpdef float get_maximum(self):
         return self.joint.get_maximum()
 
-    cdef float get_minimum(self):
+    cpdef float get_minimum(self):
         return self.joint.get_minimum()
 
-    cdef int get_p(self):
+    cpdef int get_p(self):
         return self.joint.get_p()
 
-    cdef int get_i(self):
+    cpdef int get_i(self):
         return self.joint.get_i()
 
-    cdef int get_d(self):
+    cpdef int get_d(self):
         return self.joint.get_d()
 
-    cdef int get_cid(self):
+    cpdef int get_cid(self):
         return self.joint.get_cid()
 
 
@@ -279,6 +279,24 @@ cdef class PyPose:
         for name in names:
             self.get_joint(names).set_speed(speeds.__getitem__(i))
             i += 1
+
+    cpdef list get_goals(self):
+        cdef int i
+        cdef vector[string] names = self.pose.get_joint_names()
+        cdef list result =[]
+        for name in names:
+            result.append(self.get_joint(name).get_goal())
+        return result
+
+    cpdef set_goals(self, list names, list speeds):
+        cdef int i
+        cdef list result =[]
+        cdef string name
+        for name in names:
+            self.get_joint(names).set_goal(speeds.__getitem__(i))
+            i += 1
+
+
 
 
     def __getitem__(self, name):

@@ -26,6 +26,10 @@ class Speaker(object):
 
     # todo make also a service for demo proposes, which is blocking while talking
 
+    # todo this can get way more feautres when inclduing these
+    # https: // github.com / relsi / python - espeak
+    # https://github.com/muhrix/espeak_ros/blob/master/src/espeak_ros_node.cpp
+
     def __init__(self):
         # --- Class Variables ---
         self.low_prio_queue = []
