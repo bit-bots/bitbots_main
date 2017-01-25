@@ -1,0 +1,181 @@
+joints:
+  - id: 1
+    limits: {default: 0, max: 180, min: -180}
+    name: RShoulderPitch
+    tags: [arms, rarm, shoulders, right, '1']
+    opposing: 2
+    inverted: True
+  - id: 2
+    limits: {default: 0, max: 180, min: -180}
+    name: LShoulderPitch
+    tags: [arms, larm, shoulders, left, '2']
+    opposing: 1
+    inverted: True
+  - id: 3
+    limits: {default: 0, max: 135, min: -45}
+    name: RShoulderRoll
+    tags: [arms, rarm, shoulders, right, '3']
+    opposing: 4
+    inverted: True
+  - id: 4
+    limits: {default: 0, max: 45, min: -135}
+    name: LShoulderRoll
+    tags: [arms, larm, shoulders, left, '4']
+    opposing: 3
+    inverted: True
+  - id: 5
+    limits: {default: 0, max: 70, min: -93}
+    name: RElbow
+    tags: [arms, rarm, right, '5']
+    opposing: 6
+    inverted: True
+  - id: 6
+    limits: {default: 0, max: 93, min: -70}
+    name: LElbow
+    tags: [arms, larm, left, '6']
+    opposing: 5
+    inverted: True
+  - id: 7
+    limits: {default: 0, max: 53, min: -53}
+    name: RHipYaw
+    tags: [legs, rleg, rhip, hips, right, '7']
+    opposing: 8
+    inverted: True
+  - id: 8
+    limits: {default: 0, max: 53, min: -53}
+    name: LHipYaw
+    tags: [legs, lleg, lhip, hips, left, '8']
+    opposing: 7
+    inverted: True
+  - id: 9
+    limits: {default: 0, max: 58, min: -45}
+    name: RHipRoll
+    tags: [legs, rleg, rhip, hips, right, '9']
+    opposing: 10
+    inverted: False
+  - id: 10
+    limits: {default: 0, max: 45, min: -58}
+    name: LHipRoll
+    tags: [legs, lleg, lhip, hips, left, llegpitch, legpitch, '10']
+    opposing: 9
+    inverted: False
+  - id: 11
+    limits: {default: 0, max: 28, min: -110}
+    name: RHipPitch
+    tags: [legs, rleg, rhip, hips, right, rlegpitch, legpitch,  '11']
+    opposing: 12
+    inverted: True
+  - id: 12
+    limits: {default: 0, max: 110, min: -28}
+    name: LHipPitch
+    tags: [legs, lleg, lhip, hips, left, '12']
+    opposing: 11
+    inverted: True
+  - id: 13
+    limits: {default: 0, max: 130, min: -9}
+    name: RKnee
+    tags: [legs, rleg, knees, right, rlegpitch, legpitch, '13']
+    opposing: 14
+    inverted: True
+  - id: 14
+    limits: {default: 0, max: 9, min: -130}
+    name: LKnee
+    tags: [legs, lleg, knees, left, llegpitch, legpitch, '14']
+    opposing: 13
+    inverted: True
+  - id: 15
+    limits: {default: 0, max: 94, min: -71}
+    name: RAnklePitch
+    tags: [legs, rleg, rfoot, anklepitch, feet, right, rlegpitch, legpitch, '15']
+    opposing: 16
+    inverted: True
+  - id: 16
+    limits: {default: 0, max: 71, min: -94}
+    name: LAnklePitch
+    tags: [legs, lleg, lfoot, anklepitch, feet, left, llegpitch, legpitch, '16']
+    opposing: 15
+    inverted: True
+  - id: 17
+    limits: {default: 0, max: 84, min: -84}
+    name: RAnkleRoll
+    tags: [legs, rleg, rfoot, ankleroll, feet, right, '17']
+    opposing: 18
+    inverted: True
+  - id: 18
+    limits: {default: 0, max: 84, min: -82}
+    name: LAnkleRoll
+    tags: [legs, lleg, lfoot, ankleroll, feet, left, '18']
+    opposing: 17
+    inverted: True
+  - id: 19
+    limits: {default: 0, max: 125, min: -125}
+    name: HeadPan
+    tags: [head, '19']
+    opposing: 0
+    inverted: True
+  - id: 20
+    limits: {default: 0, max: 0, min: -65}
+    name: HeadTilt
+    tags: [head, '20']
+    opposing: 0
+    inverted: True
+  - id: 21
+    limits: {default: 0, max: 180, min: 0}
+    name: RElbowRoll
+    tags: [arms, rarm, elbows, relbow, right, '21']
+    opposing: 0 # Fehlt noch
+    inverted: True
+  - id: 22
+    limits: {default: 0, max: 180, min: 0}
+    name: LElbowRoll
+    tags: [arms, larm, elbows, lelbow, left, '22']
+    opposing: 0 # Fehlt noch
+    inverted: True
+  - id: 23
+    limits: {default: 0, max: 180, min: 0}
+    name: RHand
+    tags: [hands, arms, rarm, right, '23']
+    opposing: 0 # Fehlt noch
+    inverted: True
+  - id: 24
+    limits: {default: 0, max: 180, min: 0}
+    name: LHand
+    tags: [hands, arms, larm, left, '24']
+    opposing: 0 # Fehlt noch
+    inverted: True
+  - id: 25
+    limits: {default: 0, max: 10, min: -90}
+    name: RShoulderYaw
+    tags: [arms, rarm, right, '25']
+    opposing: 26
+    inverted: True
+  - id: 26
+    limits: {default: 0, max: 90, min: -10}
+    name: LShoulderYaw
+    tags: [arms, larm, left, '26']
+    opposing: 25
+    inverted: True
+  - id: 27
+    limits: {default: 0, max: 90, min: -20}
+    name: RToe
+    tags: [right, feet, rfoot, '27']
+    opposing: 28
+    inverted: True
+  - id: 28
+    limits: {default: 0, max: 20, min: -90}
+    name: LToe
+    tags: [left, feet, lfoot, '28']
+    opposing: 27
+    inverted: True
+  - id: 29
+    limits: {default: 0, max: 30, min: -30}
+    name: BellyRoll
+    tags: [belly, '29']
+    opposing: 0
+    inverted: False
+  - id: 30
+    limits: {default: 0, max: 30, min: -10}
+    name: BellyPitch
+    tags: [belly, '30']
+    opposing: 0
+    inverted: False

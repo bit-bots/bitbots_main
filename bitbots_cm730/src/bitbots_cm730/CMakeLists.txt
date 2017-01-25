@@ -17,10 +17,10 @@ set_source_files_properties(
     PROPERTIES CYTHON_IS_CXX TRUE
 )
 
-cython_add_module(cm730_node cm730_node.pyx)
+#cython_add_module(cm730_node cm730_node.pyx)
 cython_add_module(cm730 cm730.pyx)
 
-set_target_properties(cm730_node cm730
+set_target_properties(cm730
   PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION})
 
 # Die kompilierten Module installieren

@@ -6,6 +6,7 @@ import time
 from bitbots_cm730.lowlevel.controller.controller cimport BulkReadPacket, SyncWritePacket, Controller
 from bitbots_cm730.lowlevel.controller.controller import MultiMotorError, MX28_REGISTER, CM730_REGISTER
 from bitbots_cm730.lowlevel.controller.controller cimport ID_CM730
+from bitbots_cm730.lowlevel.serial cimport Serial
 
 from bitbots_common.pose.pypose cimport PyJoint as Joint
 from bitbots_common.util import Joints as JointManager
@@ -14,8 +15,13 @@ from bitbots_common.util import Joints as JointManager
 cdef class CM730(object):
 
     def __init__(self):
-        self.using_cm_730 = True
-        self.ctrl = Controller()
+        device = rospy.get_param("/cm730/device")
+        try:
+            serial = Serial(device)
+        except IOError:
+            rospy.logerr("No connection to cm730 on " + device + " Please check the connection and restart the CM730 node.")
+            exit("Exit because of missing connection to the CM730 board.")
+        self.ctrl = Controller(serial)
         self.read_packet_stub = list()
         self.read_packet2 = BulkReadPacket()
         self.read_packet3_stub = list()
@@ -69,31 +75,31 @@ cdef class CM730(object):
                 (
                     MX28_REGISTER.present_position,
                 )))
-        if self.using_cm_730:
-            self.read_packet_stub.append((
-                ID_CM730,
-                (
-                    CM730_REGISTER.button,
-                    CM730_REGISTER.padding31_37,
-                    CM730_REGISTER.gyro,
-                    CM730_REGISTER.accel,
-                    CM730_REGISTER.voltage
-                )))
-            self.read_packet2.add(
-                ID_CM730,
-                (
-                    CM730_REGISTER.button,
-                    CM730_REGISTER.padding31_37,
-                    CM730_REGISTER.gyro,
-                    CM730_REGISTER.accel,
-                    CM730_REGISTER.voltage
-                ))
-            self.read_packet3_stub.append((
-                ID_CM730,
-                (
-                    CM730_REGISTER.gyro,
-                    CM730_REGISTER.accel
-                )))
+        # IMU, buttons and voltage
+        self.read_packet_stub.append((
+            ID_CM730,
+            (
+                CM730_REGISTER.button,
+                CM730_REGISTER.padding31_37,
+                CM730_REGISTER.gyro,
+                CM730_REGISTER.accel,
+                CM730_REGISTER.voltage
+            )))
+        self.read_packet2.add(
+            ID_CM730,
+            (
+                CM730_REGISTER.button,
+                CM730_REGISTER.padding31_37,
+                CM730_REGISTER.gyro,
+                CM730_REGISTER.accel,
+                CM730_REGISTER.voltage
+            ))
+        self.read_packet3_stub.append((
+            ID_CM730,
+            (
+                CM730_REGISTER.gyro,
+                CM730_REGISTER.accel
+            )))
 
         if len(self.read_packet_stub)!= len(self.read_packet3_stub):
             raise AssertionError("self.read_packet and self.read_packet3 have to be the same size")
@@ -124,7 +130,7 @@ cdef class CM730(object):
                     result = self.ctrl.process(read_packet)
             else:
                 result = self.ctrl.process(self.read_packet2)
-        except IOError, e:
+        except IOError as e:
             rospy.logdebug("Reading error: %s", str(e))
             if self.last_io_success > 0 and time.time() - self.last_io_success > 2:
                 #we tell that we are stuck
@@ -248,14 +254,12 @@ cdef class CM730(object):
         """
         if rospy.get_param('/cm730/setMXRam', False):
             rospy.loginfo("setting MX RAM")
-            if self.using_cm_730:
-                self.ctrl.write_register(ID_CM730, CM730_REGISTER.led_head, (255, 0, 0))
+            self.ctrl.write_register(ID_CM730, CM730_REGISTER.led_head, (255, 0, 0))
             for motor in self.motors:
                 for conf in self.motor_ram_config:
                     self.ctrl.write_register(motor, MX28_REGISTER.get_register_by_name(conf),
                         self.motor_ram_config[conf])
-            if self.using_cm_730:
-                self.ctrl.write_register(ID_CM730, CM730_REGISTER.led_head, (0, 0, 0))
+            self.ctrl.write_register(ID_CM730, CM730_REGISTER.led_head, (0, 0, 0))
             rospy.loginfo("Setting RAM Finished")
 
     cdef apply_goal_pose(self, object goal_pose):
@@ -268,20 +272,19 @@ cdef class CM730(object):
         # Hier werden die Augenfarben gesetzt.
         # Dabei kann in der Config angegeben werden ob die Augen bei Penalty
         # rot werden, und ob sie ansonsten überhaupt genutzt werden
-        if self.using_cm_730:
-            packet = SyncWritePacket((CM730_REGISTER.led_head, CM730_REGISTER.led_eye))
-            #todo make this a service
-            #if self.state == STATE_PENALTY and rospy.get_param("/cm730/EyesPenalty", false):
-            #    packet.add(ID_CM730, ((255, 0, 0), (0, 0, 0)))
-            #else:
-            if rospy.get_param("/cm730/EyesOff", False):
-                packet.add(ID_CM730, ((0, 0, 0), (0, 0, 0)))
-            else:
-                #todo this looks like it even didnt work before
-                #packet.add(ID_CM730, (self.led_head, self.led_eye))
-                pass
+        packet = SyncWritePacket((CM730_REGISTER.led_head, CM730_REGISTER.led_eye))
+        #todo make this a service
+        #if self.state == STATE_PENALTY and rospy.get_param("/cm730/EyesPenalty", false):
+        #    packet.add(ID_CM730, ((255, 0, 0), (0, 0, 0)))
+        #else:
+        if rospy.get_param("/cm730/EyesOff", False):
+            packet.add(ID_CM730, ((0, 0, 0), (0, 0, 0)))
+        else:
+            #todo this looks like it even didnt work before
+            #packet.add(ID_CM730, (self.led_head, self.led_eye))
+            pass
 
-            self.ctrl.process(packet)
+        self.ctrl.process(packet)
 
         cdef Joint joint
         cdef Joint joint2
@@ -354,9 +357,6 @@ cdef class CM730(object):
 
     cdef switch_motor_power(self, bool state):
         # wir machen nur etwas be änderungen des aktuellen statusses
-        if not self.using_cm_730:
-            # without the cm370 we cant switch the motor power
-            return
         if state and not self.dxl_power:
             # anschalten
             rospy.loginfo("Switch dxl_power back on")

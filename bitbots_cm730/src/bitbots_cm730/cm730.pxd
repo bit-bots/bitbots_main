@@ -7,6 +7,7 @@ from bitbots_common.utilCython.datavector cimport IntDataVector as CIntDataVecto
 from bitbots_common.utilCython.datavector cimport DataVector as CDataVector
 from bitbots_common.pose.pypose cimport PyPose as Pose
 
+
 from bitbots_cm730.lowlevel.controller.controller cimport BulkReadPacket, Controller
 from libcpp cimport bool
 

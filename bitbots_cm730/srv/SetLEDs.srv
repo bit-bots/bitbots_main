@@ -1,0 +1,10 @@
+#request
+
+# RBG values
+uint8[] eye
+uint8[] head
+
+---
+#response
+
+bool success

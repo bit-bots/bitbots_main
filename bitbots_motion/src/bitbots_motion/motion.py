@@ -98,8 +98,8 @@ class Motion(object):
         """Gets new IMU values and computes the smoothed values of these"""
         update_time = time.time()
         # todo check if this is not switched
-        self.gyro = msg.linear_acceleration
-        self.accel = msg.angular_velocity
+        self.accel = msg.linear_acceleration
+        self.gyro = msg.angular_velocity
 
         # todo check if this is needed by something else in the software
         # todo make smoothing factors reconfigurable

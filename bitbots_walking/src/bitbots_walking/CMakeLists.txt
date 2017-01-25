@@ -5,8 +5,6 @@ include_directories(../../../../bitbots_misc/bitbots_common/src/bitbots_common/u
 include_directories(../../../../bitbots_misc/bitbots_common/src/bitbots_common/robot)
 include_directories(.)
 #include_directories(..)
-include_directories(lowlevel)
-include_directories(lowlevel/controller)
 include_directories(${Eigen_INCLUDE_DIRS})
 
 set_source_files_properties(
