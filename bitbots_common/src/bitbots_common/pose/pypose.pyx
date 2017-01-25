@@ -271,6 +271,14 @@ cdef class PyPose:
             result.append(self.get_joint(name).get_goal())
         return result
 
+    cpdef list get_loads(self):
+        cdef int i = 0
+        cdef vector[string] names = self.pose.get_joint_names()
+        cdef list result =[]
+        for name in names:
+            result.append(self.get_joint(name).get_load())
+        return result
+
     cpdef set_positions(self, list names, list positions):
         cdef int i = 0
         cdef list result =[]
@@ -304,8 +312,15 @@ cdef class PyPose:
             self.get_joint(name).set_goal(goals[i])
             i += 1
 
-
-
+    cpdef set_loads(self, list names, list loads):
+        cdef int i = 0
+        cdef list result =[]
+        cdef string name
+        if len(names) != len(loads):
+            raise AssertionError("Length of names and goals does not match.")
+        for name in names:
+            self.get_joint(name).set_load(loads[i])
+            i += 1
 
     def __getitem__(self, name):
         return self.get_joint(name)
