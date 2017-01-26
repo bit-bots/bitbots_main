@@ -1,6 +1,6 @@
 <launch>
 
-    <node name="fake_laser" pkg="bitbots_localisation" type="fake_laserdata.py" />
+    <node name="fake_laser" pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" />
 
    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localisation)/models/linemap.yaml"/>
 
