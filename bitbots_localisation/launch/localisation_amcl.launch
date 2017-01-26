@@ -1,0 +1,10 @@
+<launch>
+
+    <node name="fake_laser" pkg="bitbots_localisation" type="fake_laserdata.py" />
+
+   <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localisation)/models/linemap.yaml"/>
+
+    <node name="amcl_particlefilter" pkg="amcl" type="amcl">
+
+    </node>
+</launch>
