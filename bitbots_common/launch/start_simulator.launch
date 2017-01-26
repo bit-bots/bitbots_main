@@ -5,6 +5,11 @@
     <include file="$(find bitbots_vision_common)/launch/vision_processing.launch" />
     <node name="cameraview" pkg="bitbots_imageviewer" type="bitbots_imageviewer.py"/>
 
-    <include file="$(find bitbots_behaviour)/launch/start_behaviour_standalone.launch"/>
+    <!--<include file="$(find bitbots_behaviour)/launch/start_behaviour_standalone.launch"/>-->
+
+    <node name="transform_lines" pkg="bitbots_transform" type="transform_lines.py" />
+
+    <include file="$(find bitbots_localisation)/launch/localisation_amcl.launch" />
+
 
 </launch>
