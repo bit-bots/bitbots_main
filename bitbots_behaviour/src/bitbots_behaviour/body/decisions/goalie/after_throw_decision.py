@@ -5,10 +5,11 @@ InGoal
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
 """
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
-from bitbots_common.stackmachine.model import Connector
+from stackmachine.abstract_decision_module import AbstractDecisionModule
+
 from body.actions.throw import MIDDLE
 from body.decisions.goalie.turn_after_throw import TurnAfterThrow
+from stackmachine.model import Connector
 
 
 class AfterThrowDecision(AbstractDecisionModule):

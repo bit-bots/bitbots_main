@@ -7,11 +7,12 @@ StandsCorrectDecision
 
 """
 
+from stackmachine.abstract_decision_module import AbstractDecisionModule
+
 import rospy
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
-from bitbots_common.stackmachine.model import Connector
 from body.actions.align_on_ball import AlignOnBall
 from body.decisions.common.kick_decision import KickDecisionCommon
+from stackmachine.model import Connector
 
 
 class StandsCorrectDecision(AbstractDecisionModule):

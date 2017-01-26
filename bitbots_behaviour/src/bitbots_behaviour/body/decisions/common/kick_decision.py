@@ -4,10 +4,11 @@ Kick Decision
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 """
+from stackmachine.abstract_decision_module import AbstractDecisionModule
+
 import rospy
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
-from bitbots_common.stackmachine.model import Connector
 from body.actions.kick_ball import KickBall
+from stackmachine.model import Connector
 
 
 class AbstractKickDecision(AbstractDecisionModule):

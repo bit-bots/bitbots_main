@@ -6,10 +6,11 @@ Check if the ball is dangerous and we need to do something about it or if we hav
 """
 import time
 
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
-from bitbots_common.stackmachine.model import Connector
+from stackmachine.abstract_decision_module import AbstractDecisionModule
+
 from body.decisions.goalie.goalie_movement import GoalieMovement
 from body.decisions.goalie.throw_or_raise_arm import ThrowOrRaiseArm
+from stackmachine.model import Connector
 
 
 class BallDangerous(AbstractDecisionModule):

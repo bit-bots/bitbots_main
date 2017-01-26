@@ -12,8 +12,8 @@ History:
 """
 import random
 
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.kick_ball import KickBall
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class PenaltyFirstKick(AbstractDecisionModule):  # todo not yet refactored 6.12.14.

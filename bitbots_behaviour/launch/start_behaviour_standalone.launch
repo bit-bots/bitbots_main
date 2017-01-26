@@ -1,0 +1,6 @@
+<launch>
+    <rosparam command="load" file="$(find bitbots_behaviour)/config/behaviour.yaml" ns="Behaviour"/>
+    <node name="body_behaviour" pkg="bitbots_behaviour" type="body_behaviour.py" respawn="true"/>
+    <!--<node name="head-behaviour" pkg="bitbots_behaviour" type="head_behaviour.py"/>-->
+
+</launch>

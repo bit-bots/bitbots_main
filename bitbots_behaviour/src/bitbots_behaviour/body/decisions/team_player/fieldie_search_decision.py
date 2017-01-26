@@ -15,12 +15,12 @@ History:
 """
 import time
 
-from bitbots_common.stackmachine.abstract_action_module import AbstractActionModule
 from body.actions.plain_walk_action import PlainWalkAction
 from body.actions.search import StopAndSearch
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
-class FieldieSearchDecision(AbstractActionModule):
+class FieldieSearchDecision(AbstractDecisionModule):
     def __init__(self, _):
         super(FieldieSearchDecision, self).__init__()
         self.start_time = time.time()

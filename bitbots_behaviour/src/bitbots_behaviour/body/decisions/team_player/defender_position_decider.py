@@ -11,11 +11,11 @@ History:
 """
 import time
 
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
 from bitbots_common.util.math_utils import convert_uv2angular
 from body.actions.plain_walk_action import PlainWalkAction
 from body.actions.search import Search
 from body.actions.wait import Wait
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class DefenderPositionDecider(AbstractDecisionModule):

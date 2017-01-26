@@ -10,7 +10,7 @@ History:
 * 20.08.2014: Created(Daniel Speck)
 * 05.12.14: Complete Refactor (Marc Bestmann)
 """
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class GoalieMovement(AbstractDecisionModule):

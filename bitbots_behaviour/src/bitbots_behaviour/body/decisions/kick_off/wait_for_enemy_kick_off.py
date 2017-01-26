@@ -10,7 +10,7 @@ History:
 """
 import time
 
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
+from stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class WaitForEnemyKickOff(AbstractDecisionModule):

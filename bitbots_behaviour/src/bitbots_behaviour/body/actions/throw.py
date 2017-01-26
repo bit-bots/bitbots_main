@@ -7,7 +7,7 @@ Handling throwing of the goalie.
 
 import time
 
-from bitbots_common.stackmachine.abstract_action_module import AbstractActionModule
+from stackmachine.abstract_action_module import AbstractActionModule
 
 LEFT = "LEFT"
 MIDDLE = "MIDDLE"

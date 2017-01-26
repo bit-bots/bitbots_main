@@ -7,9 +7,10 @@ Go back to the position where a robot with this duty should stand.
 History:
 * 05.12.14: Created (Marc Bestmann & Nils Rokita)
 """
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
-from bitbots_common.stackmachine.model import Connector
+from stackmachine.abstract_decision_module import AbstractDecisionModule
+
 from body.actions.go_to_absolute_position import GoToAbsolutePosition
+from stackmachine.model import Connector
 
 
 class GoToDutyPosition(AbstractDecisionModule):

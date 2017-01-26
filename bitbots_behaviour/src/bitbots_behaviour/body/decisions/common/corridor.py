@@ -18,11 +18,12 @@ The robot stays in its corridor and finds back if it had leaved it.
 import math
 import time
 
-from bitbots_common.stackmachine.abstract_decision_module import AbstractDecisionModule
-from bitbots_common.stackmachine.model import WalkingCapsule
+from stackmachine.abstract_decision_module import AbstractDecisionModule
+
 from body.actions.plain_walk_action import PlainWalkAction
 from body.actions.wait import Wait
 from body.decisions.team_player.defender_position_decider import DefenderPositionDecider
+from stackmachine.model.capsules.walking_capsule import WalkingCapsule
 
 
 class AbstractCorridor(AbstractDecisionModule):

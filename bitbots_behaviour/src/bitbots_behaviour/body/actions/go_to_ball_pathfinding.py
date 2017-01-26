@@ -5,8 +5,9 @@ GotToBallPathfinding
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
 """
-from bitbots_common.stackmachine.abstract_action_module import AbstractActionModule
 from geometry_msgs.msg import Pose2D
+
+from stackmachine.abstract_action_module import AbstractActionModule
 
 
 class GoToBallPathfinding(AbstractActionModule):
