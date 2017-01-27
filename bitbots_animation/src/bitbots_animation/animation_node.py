@@ -32,15 +32,15 @@ class AnimationNode:
 def keyframe_service_call(first, last, force, pose):
     """Call the keyframe service of the motion node, to transmit the next keyframe."""
     joint_state = JointState()
-    if pose != None:
-        rospy.logwarn(pose.get_positions())
+    if pose is not None:
+        rospy.logdebug("send frame to motion: " + str(pose.get_goals()))
     else:
-        rospy.logwarn(None)
+        rospy.logdebug("send empty frame to motion")
     j_header = Header()
     j_header.stamp = rospy.Time.now()
     joint_state.header = j_header
     if pose is not None:
-        joint_state.position = pose.get_positions()
+        joint_state.position = pose.get_goals()
         joint_state.name = pose.get_joint_names()
     # else:
     #    joint_state.positions = []
@@ -108,10 +108,12 @@ class PlayAnimationAction(object):
             # first check if we have another goal
             if self._as.is_new_goal_available():
                 next_goal = self._as.next_goal
-                rospy.logwarn("New goal: " + next_goal.animation)
-                if next_goal.force:
-                    rospy.logdebug("Accepted forced animation %s", next_goal.animation)
+                rospy.logwarn("New goal: " + next_goal.get_goal().animation)
+                if next_goal.get_goal().force:
+                    rospy.logdebug("Accepted forced animation %s", next_goal.get_goal().animation)
                     # cancel old stuff and restart
+                    first = True
+                    self._as.current_goal.set_aborted()
                     self._as.accept_new_goal()
                     return
                 else:
@@ -132,11 +134,11 @@ class PlayAnimationAction(object):
                 # tell it to the motion
                 keyframe_service_call(False, True, False, None)
                 # we give a positive result
-                # todo test if the execute method is done till the end after this; update:I think its okay
                 self._as.set_succeeded(PlayAnimationResult(True))
                 return
 
             keyframe_service_call(first, False, goal.force, pose)
+            first = False # we have sent the first frame, all frames after this can't be the first
             perc_done = int(((time.time() - animator.get_start_time()) / animator.get_duration()) * 100)
             perc_done = min(perc_done, 100)
             self._as.publish_feedback(PlayAnimationFeedback(percent_done=perc_done))

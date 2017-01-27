@@ -20,6 +20,7 @@ cdef class CM730(object):
             serial = Serial(device)
         except IOError:
             rospy.logerr("No connection to cm730 on " + device + " Please check the connection and restart the CM730 node.")
+            rospy.sleep(1) # to make sure message arrives
             exit("Exit because of missing connection to the CM730 board.")
         self.ctrl = Controller(serial)
         self.read_packet_stub = list()

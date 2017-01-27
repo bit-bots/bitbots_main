@@ -37,24 +37,7 @@ class MotionStateMachine(AbstractStateMachine):
         self.error_state = ShutDown()
         self.state_publisher = state_publisher
 
-        self.connections = {Startup: [Controllable, Softoff, GettingUp, Record, PenaltyAnimationIn],
-                            Softoff: [Controllable, ShutDown, Record],
-                            Record: [Controllable],
-                            PenaltyAnimationIn: [Penalty],
-                            Penalty: [PenaltyAnimationOut],
-                            PenaltyAnimationOut: [Controllable],
-                            GettingUp: [Falling, Fallen, GettingUpSecond],
-                            GettingUpSecond: [Falling, Fallen, Controllable],
-                            Controllable: [ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
-                                           AnimationRunning, Walking],
-                            Falling: [Fallen, Controllable],
-                            Fallen: [GettingUp],
-                            Walking: [ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
-                                      WalkingStopping, Controllable],
-                            WalkingStopping: [Controllable],
-                            AnimationRunning: [Controllable],
-                            ShutDownAnimation: [ShutDown]
-        }
+        self.connections = CONNECTIONS
 
         self.set_state(Startup())
 
@@ -82,11 +65,10 @@ class Startup(AbstractState):
 
     def evaluate(self):
         # leave this if we got a hardware response, or after some time
-        # todo zeit parameteriesern?
         if VALUES.last_hardware_update is not 0 or time.time() - VALUES.start_up_time > self.start_time_limit:
             # check if we directly go into a special state, if not, got to get up
             if VALUES.start_test:
-                # todo
+                # todo ping motors
                 pass
                 return
             if VALUES.record:
@@ -247,7 +229,7 @@ class GettingUp(AbstractState):
     def entry(self):
         rospy.logdebug("Getting up!")
         self.next_state = GettingUpSecond()
-        self.start_animation(  # todo this line is just totally wrong
+        self.start_animation(
             VALUES.fall_checker.check_fallen(VALUES.raw_gyro, VALUES.smooth_gyro, VALUES.robo_angle))
 
     def evaluate(self):
@@ -314,6 +296,7 @@ class Controllable(AbstractState):
         if VALUES.is_soft_off_time():
             return Softoff()
         if VALUES.is_die_time():
+            rospy.logwarn("die time")
             return ShutDownAnimation()
 
         if VALUES.standupflag:
@@ -482,7 +465,7 @@ class ShutDownAnimation(AbstractState):
     def entry(self):
         rospy.loginfo("Motion will shut off")
         speak("Motion will shut off", VALUES.speak_publisher, priority=Speak.HIGH_PRIORITY)
-        self.start_animation(rospy.get_param("/animations/shut_down"))
+        self.start_animation(rospy.get_param("/motion/animations/shut-down"))
 
     def evaluate(self):
         if self.animation_finished():
@@ -540,3 +523,23 @@ def switch_motor_power(state):
             print("Service did not process request: " + str(exc))
         # wait for motors
         rospy.sleep(1)
+
+
+CONNECTIONS = {Startup: [Controllable, Softoff, GettingUp, Record, PenaltyAnimationIn],
+                            Softoff: [Controllable, ShutDown, Record],
+                            Record: [Controllable],
+                            PenaltyAnimationIn: [Penalty],
+                            Penalty: [PenaltyAnimationOut],
+                            PenaltyAnimationOut: [Controllable],
+                            GettingUp: [Falling, Fallen, GettingUpSecond],
+                            GettingUpSecond: [Falling, Fallen, Controllable],
+                            Controllable: [ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
+                                           AnimationRunning, Walking],
+                            Falling: [Fallen, Controllable],
+                            Fallen: [GettingUp],
+                            Walking: [ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
+                                      WalkingStopping, Controllable],
+                            WalkingStopping: [Controllable],
+                            AnimationRunning: [Controllable],
+                            ShutDownAnimation: [ShutDown]
+        }

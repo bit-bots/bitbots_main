@@ -155,6 +155,7 @@ class Motion(object):
     def joint_state_to_traj_msg(self, state):
         msg = JointTrajectoryPoint()
         msg.positions = state.position
+        rospy.logwarn(state.position)
         msg.velocities = state.velocity
         traj_msg = JointTrajectory()
         traj_msg.points = []
@@ -180,9 +181,11 @@ class Motion(object):
 
     def keyframe_callback(self, req):
         """ The animation server is sending us goal positions for the next keyframe"""
-        VALUES.last_request = req.header.stamp
+        rospy.logwarn("got keyframe")
+        VALUES.last_request = req.header.stamp.to_sec()
         self.animation_request_time = time.time()
         if req.first_frame:
+            rospy.logwarn("first frame")
             self.animation_running = True
             VALUES.external_animation_finished = False
             if req.force:
@@ -193,6 +196,7 @@ class Motion(object):
                 # todo check if motor power active
             else:
                 if self.state_machine.get_current_state() != STATE_CONTROLABLE:
+                    rospy.logwarn("Motion is not controllable, animation refused.")
                     # animation has to wait
                     # state machine should try to become controllable
                     VALUES.animation_requested = True

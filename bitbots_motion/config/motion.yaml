@@ -1,19 +1,20 @@
 motion:
 
-  start_time: 10 # time we wait for getting motor updates before leaving startup state
+  start_time: 0 # time we wait for getting motor updates before leaving startup state #todo
   soft_off_time: 30 # time of no use or updates when the motion goes to soft off
-  die_time: 30 # time of no use or updates when the motion shuts down
+  die_time: 60 # time of no use or updates when the motion shuts down
   anim_server_wait_time: 10 # time the motion waits for animation server
 
   animations:
-    walkready : "walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
+    walkready: "walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
     goalie-walkready: "goalie-walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
-    front-up : "front-up"
-    bottom-up : "bottom-up"
+    front-up: "front-up"
+    bottom-up: "bottom-up"
     toSquat: "aufrichten-hocke-tamara"
     stand-up: "stand-up"
-    penalized : "sit-down"
-    sit-down : "sit-down"
+    penalized: "sit-down"
+    sit-down: "sit-down"
+    shut-down: "sit-down"
 
   falling:
 

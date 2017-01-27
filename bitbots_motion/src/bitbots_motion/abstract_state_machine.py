@@ -48,8 +48,7 @@ class AbstractState(object):
         This will NOT wait by itself. You have to check
         VALUES.animation_finished()
         in the evaluate method by yourself.
-        :param anim:
-        :param follow_state:
+        :param anim: animation to play
         :return:
         """
         started = self.play_animation(anim)
@@ -70,6 +69,7 @@ class AbstractState(object):
             rospy.logwarn("Animation server now running, motion will go on.")
         goal = bitbots_animation.msg.PlayAnimationGoal()
         goal.animation = anim_name
+        goal.force = True # the animations from the motion are always forced
         VALUES.animation_client.send_goal(goal)
         return True
 
@@ -149,3 +149,6 @@ class AbstractStateMachine(object):
 
     def get_current_state(self):
         return self.state.motion_state()
+
+    def get_connections(self):
+        return self.connections

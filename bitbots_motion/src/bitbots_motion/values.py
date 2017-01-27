@@ -63,10 +63,16 @@ class Values(object):
         return self.fall_checker.check_fallen(self.raw_gyro, self.smooth_gyro, self.robo_angle)
 
     def is_soft_off_time(self):
-        return self.soft_off_flag and time.time() - self.last_hardware_update > self.softoff_time
+        if self.last_hardware_update is not None:
+            return self.die_flag and time.time() - self.last_hardware_update > self.softoff_time
+        else:
+            return self.die_flag and time.time() - self.start_up_time > self.softoff_time
 
     def is_die_time(self):
-        return self.die_flag and time.time() - self.last_hardware_update > self.die_time
+        if self.last_hardware_update is not None:
+            return self.die_flag and time.time() - self.last_hardware_update > self.die_time
+        else:
+            return self.die_flag and time.time() - self.start_up_time > self.die_time
 
 
 VALUES = Values()
