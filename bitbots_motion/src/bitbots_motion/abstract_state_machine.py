@@ -2,10 +2,12 @@
 import traceback
 
 import rospy
+from humanoid_league_msgs.msg import Speak
 
 from bitbots_motion.values import VALUES
 import bitbots_animation.msg
 from std_msgs.msg import String
+from bitbots_speaker.speaker import speak
 
 
 class AbstractState(object):
@@ -51,12 +53,11 @@ class AbstractState(object):
         :param anim: animation to play
         :return:
         """
-        started = self.play_animation(anim)
-        self.animation_started = started
+        VALUES.motion_animation_playing = False # will be set true when the motion receives keyframe callback
+        VALUES.motion_animation_finished = False
 
-    def play_animation(self, anim_name):
-        rospy.loginfo("Playing animation " + anim_name)
-        if anim_name is None or anim_name == "empty":
+        rospy.loginfo("Playing animation " + anim)
+        if anim is None or anim == "":
             rospy.logwarn("Tried to play an animation with an empty name!")
             return False
         first_try = VALUES.animation_client.wait_for_server(
@@ -68,19 +69,12 @@ class AbstractState(object):
             VALUES.animation_client.wait_for_server()
             rospy.logwarn("Animation server now running, motion will go on.")
         goal = bitbots_animation.msg.PlayAnimationGoal()
-        goal.animation = anim_name
-        goal.force = True # the animations from the motion are always forced
+        goal.animation = anim
+        goal.motion = True  # the animation is from the motion
         VALUES.animation_client.send_goal(goal)
-        return True
 
     def animation_finished(self):
-        if self.animation_started and VALUES.animation_client.get_state() != 9:
-            # We started an animation, let's see if it is finished
-            return VALUES.animation_client.get_result()
-        else:
-            # We didn't actually started an animation, probably due to some error before, print warning and go on
-            rospy.logwarn_throttle(1, "Tried to ask if animation is finished, but no animation was started.")
-            return True
+        return VALUES.motion_animation_finished
 
 
 class AbstractStateMachine(object):
@@ -106,6 +100,8 @@ class AbstractStateMachine(object):
             # publish name of the current state if debug is active
             self.debug_publisher.publish(self.state.__class__.__name__)
             rospy.logdebug("Current state: " + self.state.__class__.__name__)
+            # also say the state name with los priority
+            speak(self.state.__class__.__name__, VALUES.speak_publisher, Speak.LOW_PRIORITY)
         entry_switch = self.state.entry()
         if entry_switch is not None:
             # we directly do another state switch

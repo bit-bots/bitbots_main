@@ -6,9 +6,9 @@ bool first_frame
 # after this the animation is finished
 bool last_frame
 
-# should the animation be played directly, interrupting other animations and walking
-# will only be checked if first_frame is true
-bool force
+# this animation is comming from the motion itself, it knows what to do
+# will only be checked if first_frame or last_frame is true
+bool motion
 
 # motor positions
 sensor_msgs/JointState state

@@ -16,6 +16,8 @@ class Values(object):
     """
 
     def __init__(self):
+        self.speak_publisher = None
+
         self.penalized = False  # paused
         self.record = False  # record UI running
         self.shut_down = False  # do we want to shut down
@@ -38,12 +40,13 @@ class Values(object):
         self.fall_checker = FallChecker()
         # for internal animations
         self.animation_client = None
-        self.speak_publisher = None
+        self.motion_animation_playing = False
+        self.motion_animation_finished = False
 
         # we want to play an animation, try to become controllable
         self.external_animation_requested = False
-        # play now the external animation, go to animation running
-        self.external_animation_play = False
+        # playing now the external animation, go to animation running
+        self.external_animation_playing = False
         # the animation is finished, go back to controllable
         self.external_animation_finished = False
 

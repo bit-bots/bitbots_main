@@ -29,7 +29,7 @@ class AnimationNode:
         rospy.spin()
 
 
-def keyframe_service_call(first, last, force, pose):
+def keyframe_service_call(first, last, motion, pose):
     """Call the keyframe service of the motion node, to transmit the next keyframe."""
     joint_state = JointState()
     if pose is not None:
@@ -54,7 +54,7 @@ def keyframe_service_call(first, last, force, pose):
         return False
     animation_frame_srv = rospy.ServiceProxy("animation_key_frame", AnimationFrame)
     try:
-        response = animation_frame_srv(header, first, last, force, joint_state)
+        response = animation_frame_srv(header, first, last, motion, joint_state)
         return response
     except rospy.ServiceException as exc:
         rospy.logerr("Something went wrong calling the keyframe service.")
@@ -109,8 +109,8 @@ class PlayAnimationAction(object):
             if self._as.is_new_goal_available():
                 next_goal = self._as.next_goal
                 rospy.logwarn("New goal: " + next_goal.get_goal().animation)
-                if next_goal.get_goal().force:
-                    rospy.logdebug("Accepted forced animation %s", next_goal.get_goal().animation)
+                if next_goal.get_goal().motion:
+                    rospy.logdebug("Accepted motion animation %s", next_goal.get_goal().animation)
                     # cancel old stuff and restart
                     first = True
                     self._as.current_goal.set_aborted()
@@ -121,7 +121,7 @@ class PlayAnimationAction(object):
                     self._as.next_goal.set_rejected()
                     # delete the next goal to make sure, that we can accept something else
                     self._as.next_goal = None
-                    rospy.logdebug("Couldn't start non forced animation, bc another one is already running.")
+                    rospy.logdebug("Couldn't start non motion animation, bc another one is already running.")
 
             # if we're here we want to play the next keyframe, cause there is no other goal
             # compute next pose
@@ -132,12 +132,12 @@ class PlayAnimationAction(object):
 
                 # animation is finished
                 # tell it to the motion
-                keyframe_service_call(False, True, False, None)
+                keyframe_service_call(False, True, goal.motion, None)
                 # we give a positive result
                 self._as.set_succeeded(PlayAnimationResult(True))
                 return
 
-            keyframe_service_call(first, False, goal.force, pose)
+            keyframe_service_call(first, False, goal.motion, pose)
             first = False # we have sent the first frame, all frames after this can't be the first
             perc_done = int(((time.time() - animator.get_start_time()) / animator.get_duration()) * 100)
             perc_done = min(perc_done, 100)

@@ -188,7 +188,7 @@ class PenaltyAnimationOut(AbstractState):
 
     def evaluate(self):
         # wait for animation started in entry
-        if VALUES.finished():
+        if self.animation_finished():
             return self.next_state
 
     def exit(self):
@@ -310,7 +310,7 @@ class Controllable(AbstractState):
             if direction_animation is not None:
                 return Fallen()
 
-        if VALUES.external_animation_play:
+        if VALUES.external_animation_playing:
             return AnimationRunning()
 
         if VALUES.walking_active:
@@ -443,7 +443,7 @@ class WalkingStopping(AbstractState):
 class AnimationRunning(AbstractState):
     def entry(self):
         # reset flags
-        VALUES.external_animation_play = False
+        VALUES.external_animation_playing = False
         VALUES.external_animation_requested = False
 
     def evaluate(self):

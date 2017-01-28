@@ -82,7 +82,8 @@ class Motion(object):
         rospy.Subscriber("/record_motor_goals", JointTrajectory, self.record_goal_callback)
         rospy.Subscriber("/pause", Bool, self.pause)
 
-        self.animation_action_client = actionlib.SimpleActionClient('animation', bitbots_animation.msg.PlayAnimationAction)
+        self.animation_action_client = actionlib.SimpleActionClient('animation',
+                                                                    bitbots_animation.msg.PlayAnimationAction)
         VALUES.animation_client = self.animation_action_client
 
         self.animation_keyframe_service = rospy.Service("animation_key_frame", AnimationFrame, self.keyframe_callback)
@@ -163,7 +164,6 @@ class Motion(object):
         traj_msg.header.stamp = rospy.Time.now()
         return traj_msg
 
-
     def walking_goal_callback(self, msg):
         self.walking_motor_goal = msg
         VALUES.walking_active = True
@@ -188,13 +188,13 @@ class Motion(object):
             rospy.logwarn("first frame")
             self.animation_running = True
             VALUES.external_animation_finished = False
-            if req.force:
-                # force to run directly the animation
-                # this is a bit hacky, but I don't know a better solution
-                self.state_machine.set_state(AnimationRunning())
-                # todo walking stop signal
-                # todo check if motor power active
+            if req.motion:
+                # comming from ourselves
+                # state machine already know that we're playing it, but we set the value to be sure
+                VALUES.motion_animation_playing = True
+                VALUES.motion_animation_finished = False
             else:
+                #comming from outside
                 if self.state_machine.get_current_state() != STATE_CONTROLABLE:
                     rospy.logwarn("Motion is not controllable, animation refused.")
                     # animation has to wait
@@ -203,16 +203,22 @@ class Motion(object):
                     return False
                 else:
                     # we're already controllable, go to animation running
-                    VALUES.external_animation_play = True
+                    VALUES.external_animation_playing = True
 
         if req.last_frame:
-            # this is the last frame, we want to tell the state machine, that we're finished with the animations
-            self.animation_running = False
-            VALUES.external_animation_finished = True
-            if req.state is None:
-                # probably this was just to tell us we're finished
-                # we don't need to set another position to the motors
-                return
+            rospy.logwarn("last frame")
+            if req.motion:
+                # This was an animation from the state machine
+                VALUES.motion_animation_playing = False
+                VALUES.motion_animation_finished = True
+            else:
+                # this is the last frame, we want to tell the state machine, that we're finished with the animations
+                self.animation_running = False
+                VALUES.external_animation_finished = True
+                if req.state is None:
+                    # probably this was just to tell us we're finished
+                    # we don't need to set another position to the motors
+                    return
 
         # sending keyframe positions to hardware
         self.joint_goal_publisher.publish(self.joint_state_to_traj_msg(req.state))
@@ -233,7 +239,6 @@ class Motion(object):
         while not self.state_machine.is_shutdown():
             # we still have to update everything
             self.update_once()
-
 
     def update_once(self):
         # check if we're still walking
@@ -263,19 +268,20 @@ class Motion(object):
             # we're currently walking
             # set positions from first point of trajectory
             point = self.walking_motor_goal.points[0]
-            self.goal_pose.set_positions(point.positions) #todo oder set_goals?
+            self.goal_pose.set_positions(point.positions)  # todo oder set_goals?
             self.goal_pose.set_speed(point.velocities)
 
         if not self.state_machine.is_penalized():
             # we can move our head
             if self.head_motor_goal is not None:
                 point = self.head_motor_goal.points[0]
-                self.goal_pose.set_positions(point.positions) #todo oder set_goals?
+                self.goal_pose.set_positions(point.positions)  # todo oder set_goals?
                 self.goal_pose.set_speed(point.velocities)
 
         # if we didn't return yet, there are some goals to publish
-        #todo maybe check, if goals are different from the last published ones
+        # todo maybe check, if goals are different from the last published ones
         self.publish_motor_goals()
+
 
 def calculate_robot_angles(rawData):
     raw = DataVector(rawData.get_x(), rawData.get_y(), rawData.get_z())

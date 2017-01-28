@@ -3,8 +3,9 @@
 # name of the animation
 string animation
 
-# should the animation be played directly, interrupting other animations and walking
-bool force
+# if the animation commes from the motion, it should be played directly, interrupting other animations and walking
+# it's propably falling or standing up
+bool motion
 
 ---
 #result definition
