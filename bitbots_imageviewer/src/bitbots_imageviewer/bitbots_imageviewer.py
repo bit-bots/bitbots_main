@@ -14,7 +14,7 @@ class Loadimg:
     def __init__(self):
         rospy.init_node("bitbots_imageviewer")
 
-        rospy.Subscriber("/usb_cam/image_raw", Image, self._image_callback, queue_size=1)
+        rospy.Subscriber("/image_raw", Image, self._image_callback, queue_size=1)
         rospy.Subscriber("/rated_balls_in_image", BallsInImage, self._candidates_callback, queue_size=1)
 
         self.bridge = CvBridge()

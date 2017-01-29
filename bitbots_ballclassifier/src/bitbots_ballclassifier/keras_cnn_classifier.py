@@ -30,7 +30,7 @@ class Classifier:
         self.model = nem
 
         rospy.init_node("bitbots_ball_classifier")
-        rospy.Subscriber("/usb_cam/image_raw", Image, self._image_callback, queue_size=1)
+        rospy.Subscriber("/image_raw", Image, self._image_callback, queue_size=1)
         rospy.Subscriber("/ball_candidates", BallsInImage, self._candidates_callback, queue_size=1)
 
         while not rospy.is_shutdown():

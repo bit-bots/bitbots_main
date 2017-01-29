@@ -22,7 +22,7 @@ class DummyVision:
         self.pub_lines = rospy.Publisher("/line_in_image", LineInformationInImage)
         self.bridge = CvBridge()
 
-        rospy.Subscriber("/usb_cam/image_raw", Image, self._image_callback, queue_size=1)
+        rospy.Subscriber("/image_raw", Image, self._image_callback, queue_size=1)
         rospy.init_node("bitbots_dummyvision")
 
         self.server = Server(dummyvision_paramsConfig, self.reconfigure)
