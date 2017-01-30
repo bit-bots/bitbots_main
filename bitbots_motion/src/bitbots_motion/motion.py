@@ -143,6 +143,7 @@ class Motion(object):
     def publish_motor_goals(self):
         """ Publish the goal pose as joint message"""
         # we can only handle one point and not a full trajectory
+        rospy.loginfo("publishing motor goals")
         traj_msg = self.pose_to_traj_msg(self.goal_pose)
         self.joint_goal_publisher.publish(traj_msg)
 
@@ -151,9 +152,11 @@ class Motion(object):
         msg.positions = pose.get_positions()
         msg.velocities = pose.get_speeds()
         traj_msg = JointTrajectory()
+        traj_msg.joint_names = pose.get_joint_names()
         traj_msg.points = []
         traj_msg.points.append(msg)
         traj_msg.header.stamp = rospy.Time.now()
+        rospy.loginfo(traj_msg) #todo das hier funktioniert irgendwie noch nicht :(
         return traj_msg
 
     def joint_state_to_traj_msg(self, state):
