@@ -7,6 +7,7 @@ from math import asin
 import math
 
 import actionlib
+import numpy
 import rospy
 from bitbots_common.pose.pypose import PyPose as Pose
 from bitbots_speaker.speaker import speak
@@ -40,11 +41,11 @@ class Motion(object):
         self.first_run = True
 
         # IMU
-        self.accel = IntDataVector(0, 0, 0)
-        self.gyro = IntDataVector(0, 0, 0)
-        self.smooth_accel = IntDataVector(0, 0, 0)
-        self.smooth_gyro = IntDataVector(0, 0, 0)
-        self.not_much_smoothed_gyro = IntDataVector(0, 0, 0)
+        self.accel = numpy.array([0, 0, 0])
+        self.gyro = numpy.array([0, 0, 0])
+        self.smooth_accel = numpy.array([0, 0, 0])
+        self.smooth_gyro = numpy.array([0, 0, 0])
+        self.not_much_smoothed_gyro = numpy.array([0, 0, 0])
         self.gyro_kalman = TripleKalman()
         self.last_gyro_update_time = time.time()
 
@@ -99,8 +100,8 @@ class Motion(object):
         """Gets new IMU values and computes the smoothed values of these"""
         update_time = time.time()
         # todo check if this is not switched
-        self.accel = msg.linear_acceleration
-        self.gyro = msg.angular_velocity
+        self.accel = numpy.array([msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z])
+        self.gyro = numpy.array([msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z])
 
         # todo check if this is needed by something else in the software
         # todo make smoothing factors reconfigurable
@@ -108,18 +109,20 @@ class Motion(object):
         # Used for falling detectiont, smooth_gyro is to late but peaks have to be smoothed anyway
         # increasing smoothing -->  later detection
         # decreasing smoothing --> more false positives
-        self.smooth_gyro = self.smooth_gyro * 0.9 + self.gyro * 0.1  ###gyro
-        self.smooth_accel = self.smooth_accel * 0.9 + self.accel * 0.1  ###accel
-        self.not_much_smoothed_gyro = self.not_much_smoothed_gyro * 0.5 + self.gyro * 0.5
+        self.smooth_gyro = numpy.multiply(self.smooth_gyro, 0.9) + numpy.multiply(self.gyro, 0.1)  ###gyro
+        self.smooth_accel = numpy.multiply(self.smooth_accel, 0.9) + numpy.multiply(self.accel, 0.1)  ###accel
+        self.not_much_smoothed_gyro = numpy.multiply(self.not_much_smoothed_gyro, 0.5) + numpy.multiply(self.gyro, 0.5)
 
         VALUES.raw_gyro = self.gyro
         VALUES.smooth_gyro = self.smooth_gyro
         VALUES.not_so_smooth_gyro = self.not_much_smoothed_gyro
 
         # calculate the angle of the robot based on the kalman filter
-        angles = calculate_robot_angles(self.accel.get_data_vector())
+        angles = calculate_robot_angles(self.accel)
         dt = time.time() - self.last_gyro_update_time
-        angles = self.gyro_kalman.get_angles_pvv(angles, self.gyro - IntDataVector(512, 512, 512), dt)
+        gyro_dataVector = DataVector(self.gyro[0], self.gyro[1], self.gyro[2])
+        #todo filtering should be reanabled
+        #angles = self.gyro_kalman.get_angles_pvv(angles, gyro_dataVector - IntDataVector(512, 512, 512), dt)
         self.robo_angle = angles
 
         VALUES.robo_angle = self.robo_angle
@@ -156,7 +159,7 @@ class Motion(object):
     def joint_state_to_traj_msg(self, state):
         msg = JointTrajectoryPoint()
         msg.positions = state.position
-        rospy.logwarn(state.position)
+        # rospy.logwarn(state.position)
         msg.velocities = state.velocity
         traj_msg = JointTrajectory()
         traj_msg.points = []
@@ -181,7 +184,7 @@ class Motion(object):
 
     def keyframe_callback(self, req):
         """ The animation server is sending us goal positions for the next keyframe"""
-        rospy.logwarn("got keyframe")
+        # rospy.logwarn("got keyframe")
         VALUES.last_request = req.header.stamp.to_sec()
         self.animation_request_time = time.time()
         if req.first_frame:
@@ -194,7 +197,7 @@ class Motion(object):
                 VALUES.motion_animation_playing = True
                 VALUES.motion_animation_finished = False
             else:
-                #comming from outside
+                # comming from outside
                 if self.state_machine.get_current_state() != STATE_CONTROLABLE:
                     rospy.logwarn("Motion is not controllable, animation refused.")
                     # animation has to wait
@@ -283,16 +286,15 @@ class Motion(object):
         self.publish_motor_goals()
 
 
-def calculate_robot_angles(rawData):
-    raw = DataVector(rawData.get_x(), rawData.get_y(), rawData.get_z())
+def calculate_robot_angles(raw):
 
-    pitch_angle = calc_sin_angle(raw, DataVector(0, 1, 0))
-    if raw.z() < 0 and raw.y() < 0:
+    pitch_angle = calc_sin_angle(raw, numpy.array([0, 1, 0]))
+    if raw[2] < 0 and raw[1] < 0:
         pitch_angle = - pitch_angle - 180
-    elif (raw.z() < 0 and raw.y() > 0):
+    elif raw[2] < 0 and raw[1] > 0:
         pitch_angle = 180 - pitch_angle
 
-    roll_angle = calc_sin_angle(raw, DataVector(1, 0, 0))
+    roll_angle = calc_sin_angle(raw, numpy.array([1, 0, 0]))
 
     # TODO mir ist noch keiner schlaue Formel für diesen Wingkel eingefallen
     yaw_angle = 0
@@ -301,9 +303,11 @@ def calculate_robot_angles(rawData):
 
 
 def calc_sin_angle(fst, sec):
-    if fst.norm() == 0 or sec.norm() == 0:
+    fst_norm = numpy.linalg.norm(fst)
+    sec_norm = numpy.linalg.norm(sec)
+    if fst_norm == 0 or sec_norm == 0:
         return 0  # TODO Rückgabewert sinvoll?
-    return math.degrees(asin(fst.dot(sec) / (fst.norm() * sec.norm())))
+    return math.degrees(asin(numpy.dot(fst, sec) / (fst_norm * sec_norm)))
 
 
 def main():

@@ -145,8 +145,8 @@ class PlayAnimationAction(object):
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
-        self.current_pose.set_positions(msg.name, msg.position)
-        self.current_pose.set_speeds(msg.name, msg.velocity)
+        self.current_pose.set_positions(list(msg.name), list(msg.position))
+        self.current_pose.set_speeds(list(msg.name), list(msg.velocity))
 
 
 if __name__ == "__main__":

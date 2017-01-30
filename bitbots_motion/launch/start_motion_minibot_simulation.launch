@@ -3,9 +3,12 @@
     <param name="/simulation_active" value="true"/>
     <param name="/debug_active" value="true"/>
 
+    <remap from="/imu" to="/minibot/imu"/>
+    <remap from="/current_motor_positions" to="/minibot/joint_states"/>
+
 	<include file="$(find bitbots_speaker)/launch/speaker.launch"/>
 
-    <node name="pause" pkg="bitbots_pause" type="pause.py"/>
+<!--    <node name="pause" pkg="bitbots_pause" type="pause.py"/> -->
 
     <node name="animation" pkg="bitbots_animation" type="animation_node.py"/>
 
