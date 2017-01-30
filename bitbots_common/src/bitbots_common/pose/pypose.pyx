@@ -283,10 +283,7 @@ cdef class PyPose:
         cdef int i = 0
         cdef list result =[]
         cdef string name
-        rospy.logwarn("names : " + str(names))
-        rospy.logwarn("positions: " + str(positions))
         if len(names) != len(positions):
-            rospy.logwarn("foo")
             raise AssertionError("Length of names and positions does not match.")
         for name in names:
             self.get_joint(name).set_position(positions[i])
