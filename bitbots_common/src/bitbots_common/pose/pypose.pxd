@@ -4,7 +4,6 @@ from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 
-
 cdef int num_joints = get_num_joints()
 
 cpdef int num_pose_joints()
@@ -21,6 +20,8 @@ cdef class PyJoint:
     cpdef set_speed(self, float speed)
     cpdef set_position(self, float position)
     cpdef set_load(self, float load)
+    cpdef set_temperature(self, float temp)
+    cpdef set_voltage(self, float volt)
     cpdef set_maximum(self, float maximum)
     cpdef set_minimum(self, float minimum)
     cpdef set_p(self, int p)
@@ -32,6 +33,8 @@ cdef class PyJoint:
     cpdef float get_speed(self)
     cpdef float get_position(self)
     cpdef float get_load(self)
+    cpdef float get_temperature(self)
+    cpdef float get_voltage(self)
     cpdef float get_maximum(self)
     cpdef float get_minimum(self)
 
@@ -70,4 +73,3 @@ cdef class PyPose:
 cdef PyPose wrap_pose(Pose& pose)
 cdef PyPose wrap_pose_obj(Pose pose)
 cdef PyPose wrap_pose_ref(Pose& pose)
-

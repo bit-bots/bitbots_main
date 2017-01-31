@@ -9,6 +9,8 @@ cdef import from "joint.hpp":
         void set_speed(float speed)
         void set_position(float position)
         void set_load(float load)
+        void set_temperature(float temperature)
+        void set_voltage(float voltage)
         void reset()
 
 
@@ -29,6 +31,8 @@ cdef import from "joint.hpp":
         float get_goal()
         float get_speed()
         float get_position()
+        float get_temperature()
+        float get_voltage()
         float get_load()
         int get_cid()
         float get_maximum()

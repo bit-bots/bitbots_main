@@ -91,7 +91,7 @@ class Joints(object):
     bereit
     """
     def __init__(self):
-        self.joints = load_joints_from_yaml(find_resource("config/joints.yaml"))
+        self.joints = rospy.get_param("/joints")
 
     def all(self):
         """

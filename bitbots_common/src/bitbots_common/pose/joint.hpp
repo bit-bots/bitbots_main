@@ -22,6 +22,8 @@ class Joint {
         float speed;
         float position;
         float load;
+        float temperature;
+        float voltage;
         float p;
         float i;
         float d;
@@ -47,6 +49,12 @@ class Joint {
 
         void set_position(float position);
         float get_position() const;
+
+        void set_temperature(float temperature);
+        float get_temperature() const;
+
+        void set_voltage(float voltage);
+        float get_voltage() const;
 
         void set_cid(int cid);
         int get_cid() const;
@@ -162,6 +170,26 @@ void Joint::set_load(float load) {
 inline
 float Joint::get_load() const {
     return load;
+}
+
+inline
+void Joint::set_temperature(float temperature) {
+    this->temperature = temperature;
+}
+
+inline
+float Joint::get_temperature() const {
+    return temperature;
+}
+
+inline
+void Joint::set_voltage(float voltage) {
+    this->voltage = voltage;
+}
+
+inline
+float Joint::get_voltage() const {
+    return voltage;
 }
 
 inline

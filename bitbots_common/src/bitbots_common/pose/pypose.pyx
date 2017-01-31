@@ -155,6 +155,12 @@ cdef class PyJoint:
     cpdef set_load(self, float load):
         self.joint.set_load(load)
 
+    cpdef set_temperature(self, float temp):
+        self.joint.set_temperature(temp)
+
+    cpdef set_voltage(self, float volt):
+        self.joint.set_voltage(volt)
+
     cpdef set_minimum(self, float minimum):
         self.joint.set_minimum(minimum)
 
@@ -187,6 +193,12 @@ cdef class PyJoint:
 
     cpdef float get_load(self):
         return self.joint.get_load()
+
+    cpdef float get_temperature(self):
+        return self.joint.get_temperature()
+
+    cpdef float get_voltage(self):
+        return self.joint.get_voltage()
 
     cpdef float get_maximum(self):
         return self.joint.get_maximum()
@@ -560,4 +572,3 @@ cdef PyPose wrap_pose_ref(Pose& p):
     cdef PyPose pose = PyPose()
     pose.set_c_pose_ref(p)
     return pose
-
