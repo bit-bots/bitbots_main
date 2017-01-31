@@ -11,7 +11,7 @@ import numpy
 import rospy
 from bitbots_common.pose.pypose import PyPose as Pose
 from bitbots_speaker.speaker import speak
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, String
 
 import bitbots_animation
 from bitbots_cm730.srv import SwitchMotorPower
@@ -152,11 +152,15 @@ class Motion(object):
         msg.positions = pose.get_positions()
         msg.velocities = pose.get_speeds()
         traj_msg = JointTrajectory()
-        traj_msg.joint_names = pose.get_joint_names()
+        # make an array with String objects (ros message type)
+        joints = []
+        names = pose.get_joint_names()
+        for joint in names:
+            joints.append(joint)
+        traj_msg.joint_names = joints
         traj_msg.points = []
         traj_msg.points.append(msg)
         traj_msg.header.stamp = rospy.Time.now()
-        rospy.loginfo(traj_msg) #todo das hier funktioniert irgendwie noch nicht :(
         return traj_msg
 
     def joint_state_to_traj_msg(self, state):
@@ -226,8 +230,8 @@ class Motion(object):
                     # we don't need to set another position to the motors
                     return
 
-        # sending keyframe positions to hardware
-        self.joint_goal_publisher.publish(self.joint_state_to_traj_msg(req.state))
+        # update goal pose
+        self.goal_pose.set_positions(list(req.state.name), list(req.state.position))
         return True
 
     def main_loop(self):
