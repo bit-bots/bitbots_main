@@ -93,7 +93,7 @@ class CM730Node:
         duration_avg = 0
         start = time.time()
 
-        while True:
+        while not rospy.is_shutdown():
             self.update_once()
 
             # Count to get the update frequency
@@ -125,7 +125,9 @@ class CM730Node:
         self.publish_joints(robo_pose)
         # todo self.publish_additional_servo_data()
         self.publish_imu(gyro, accel)
-        self.publish_buttons(button1, button2)
+        if button1 is not None:
+            # we have to check this because we don't update the buttons everytime
+            self.publish_buttons(button1, button2)
 
         # send new position to servos
         self.cm_730.apply_goal_pose(self.goal_pose)
@@ -142,10 +144,8 @@ class CM730Node:
             speak("motion stuck")
             exit("Motion stuck")
 
-        # todo get temps and voltages
-        # todo parse pose
         # parse data
-        button, gyro, accel = self.cm_730.parse_sensor_data(result, cid_all_values)
+        button, gyro, accel, robo_pose = self.cm_730.parse_sensor_data(result, cid_all_values)
         if button == -1:
             # low voltage error
             speak("Warning: Low Voltage! System Exit!")
@@ -159,7 +159,8 @@ class CM730Node:
             button1 = button & 1
             button2 = (button & 2) >> 1
         else:
-            button1, button2 = None
+            button1 = None
+            button2 = None
 
         rospy.logwarn(robo_pose)
         rospy.logwarn(raw_gyro)

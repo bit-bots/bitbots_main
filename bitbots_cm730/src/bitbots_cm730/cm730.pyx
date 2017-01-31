@@ -184,7 +184,6 @@ cdef class CM730(object):
             # If an error was ignored, we have to test if a packed arrived
             # If not, we have to cancel, otherwise a uncomplete package will be handled
             result = errors.get_packets()
-        rospy.logwarn("5")
         self.last_io_success = time.time()
         return result, cid_all_values
 
@@ -246,7 +245,7 @@ cdef class CM730(object):
                     rospy.logwarn(fmt % (cid, temperature))
                     raise SystemExit(fmt % (cid, temperature))
         self.sensor_all_cid += 1
-        return button, gyro, accel
+        return button, gyro, accel, pose
 
 
     cpdef set_motor_ram(self):

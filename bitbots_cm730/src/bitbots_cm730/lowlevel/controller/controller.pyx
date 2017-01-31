@@ -19,7 +19,7 @@ from bitbots_cm730.lowlevel.controller.register_tables cimport Register
 
 
 # Flag for debug prints in processing
-DEBUG = False
+DEBUG = True
 
 class MultiMotorError(EnvironmentError):
     """
