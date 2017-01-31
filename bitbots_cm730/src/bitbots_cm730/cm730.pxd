@@ -29,14 +29,15 @@ cdef class CM730(object):
     cdef int sensor_all_cid
     cdef IntDataVector raw_gyro
     cdef IntDataVector robo_accel
-    cdef dict motors
+    cdef list motors
     cdef dict motor_ram_config
     cdef dict joint_offsets
+    cdef list joints
 
-    cdef init_read_packet(self)
-    cdef sensor_data_read(self)
-    cdef apply_goal_pose(self, object goal_pose)
-    cdef switch_motor_power(self, bool state)
-    cdef parse_sensor_data(self, object sensor_data, int cid_all_values)
-    cdef set_motor_ram(self)
+    cpdef init_read_packet(self)
+    cpdef sensor_data_read(self)
+    cpdef apply_goal_pose(self, object goal_pose)
+    cpdef switch_motor_power(self, bool state)
+    cpdef parse_sensor_data(self, object sensor_data, int cid_all_values)
+    cpdef set_motor_ram(self)
 

@@ -1,0 +1,16 @@
+mx28config:
+  "ROM":
+      "return_delay_time": 0
+      "limit_temperatur": 65
+      "limit_voltage_low": 60
+      "limit_voltage_high": 180
+      "alarm_led": 127
+      "alarm_shutdown": 14
+      "cw_angle_limit": -180
+      "ccw_angle_limit" : 179
+      "max_torque": 1023
+  "RAM":
+      "d": 0
+      "i": 0
+      "p": 32
+      "lock" : 1

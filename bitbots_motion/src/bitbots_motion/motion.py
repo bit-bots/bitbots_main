@@ -10,6 +10,7 @@ import actionlib
 import numpy
 import rospy
 from bitbots_common.pose.pypose import PyPose as Pose
+from bitbots_common.util.pose_to_message import pose_to_traj_msg
 from bitbots_speaker.speaker import speak
 from std_msgs.msg import Bool, String
 
@@ -144,24 +145,8 @@ class Motion(object):
         """ Publish the goal pose as joint message"""
         # we can only handle one point and not a full trajectory
         rospy.loginfo("publishing motor goals")
-        traj_msg = self.pose_to_traj_msg(self.goal_pose)
+        traj_msg = pose_to_traj_msg(self.goal_pose)
         self.joint_goal_publisher.publish(traj_msg)
-
-    def pose_to_traj_msg(self, pose):
-        msg = JointTrajectoryPoint()
-        msg.positions = pose.get_positions()
-        msg.velocities = pose.get_speeds()
-        traj_msg = JointTrajectory()
-        # make an array with String objects (ros message type)
-        joints = []
-        names = pose.get_joint_names()
-        for joint in names:
-            joints.append(joint)
-        traj_msg.joint_names = joints
-        traj_msg.points = []
-        traj_msg.points.append(msg)
-        traj_msg.header.stamp = rospy.Time.now()
-        return traj_msg
 
     def joint_state_to_traj_msg(self, state):
         msg = JointTrajectoryPoint()

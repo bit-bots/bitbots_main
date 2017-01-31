@@ -20,7 +20,7 @@ cdef class MX28RegisterTable:
     cdef readonly Register d_error_out
 
 
-    cdef Register get_register_by_name(self, object name)
+    cpdef Register get_register_by_name(self, object name)
 
 
 cdef class CM730RegisterTable:

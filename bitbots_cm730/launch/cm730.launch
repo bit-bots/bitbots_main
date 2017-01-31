@@ -1,5 +1,11 @@
 <launch>
+  <param name="/robot_type_name" value="Minibot"/> <!-- Todo this is only for testing -->
+  <param name="/debug_active" value="True"/> <!-- Todo this is only for testing -->
+
+
   <rosparam file="$(find bitbots_cm730)/config/cm730.yaml" command="load"/>
   <rosparam file="$(find bitbots_cm730)/config/joints.yaml" command="load"/>
+  <rosparam file="$(find bitbots_cm730)/config/mx28config.yaml" command="load"/>
+  <rosparam file="$(find bitbots_cm730)/config/offset.yaml" command="load"/>
   <node name="cm730" pkg="bitbots_cm730" type="cm730_node.py" output="screen" />
 </launch>

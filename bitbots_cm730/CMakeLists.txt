@@ -13,6 +13,7 @@ include(BitBotsIncludes)
 find_package(catkin REQUIRED COMPONENTS
   message_generation
   rospy
+  roscpp
   std_msgs
   humanoid_league_msgs
 #  bitbots_common

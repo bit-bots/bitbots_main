@@ -498,7 +498,7 @@ cdef class Controller:
             return None
 
         if DEBUG:
-            print "Process: %s " % (str(packet))
+            rospy.logwarn("Process: " +  (str(packet)))
 
         cdef list responses = self.read_packets(
             processor.get_answer_count(),
@@ -506,7 +506,7 @@ cdef class Controller:
             packet.get_cids())
 
         if DEBUG:
-            print "Responses: ", responses
+            rospy.logwarn("Responses: " + str(responses))
 
         cdef StatusPacket statuspacket
         for statuspacket in responses:

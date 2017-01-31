@@ -22,11 +22,6 @@ cdef class CM730(object):
             rospy.logerr("No connection to cm730 on " + device + " Please check the connection and restart the CM730 node.")
             rospy.sleep(1) # to make sure message arrives
             exit("Exit because of missing connection to the CM730 board.")
-        self.ctrl = Controller(serial)
-        self.read_packet_stub = list()
-        self.read_packet2 = BulkReadPacket()
-        self.read_packet3_stub = list()
-        self.init_read_packet()
 
         self.low_voltage_counter = 0
         self.last_io_success = 0
@@ -43,17 +38,22 @@ cdef class CM730(object):
         self.robo_accel = IntDataVector(0, 0, 0)
 
         robot_type_name = rospy.get_param("/robot_type_name")
-        self.motors = rospy.get_param(robot_type_name + "/motors")
+        self.motors = rospy.get_param("/cm730/" + robot_type_name + "/motors")
         self.motor_ram_config = rospy.get_param("/mx28config/RAM")
         offsets = rospy.get_param("/offsets")
+        self.joints = rospy.get_param("/joints")
 
         self.joint_offsets =  {}
-        joint_manager = JointManager()
-        for i in range(1,31):
-            self.joint_offsets[i] = offsets[joint_manager.get_motor_name(i)]
+        for i in range(1, len(self.joints)):
+            self.joint_offsets[i] = offsets[self.joints[i]['name']]
 
+        self.ctrl = Controller(serial)
+        self.read_packet_stub = list()
+        self.read_packet2 = BulkReadPacket()
+        self.read_packet3_stub = list()
+        self.init_read_packet()
 
-    cdef init_read_packet(self):
+    cpdef init_read_packet(self):
         """
         Initialise the :class:`BulkReadPacket` for communication with the motors
 
@@ -105,7 +105,7 @@ cdef class CM730(object):
         if len(self.read_packet_stub)!= len(self.read_packet3_stub):
             raise AssertionError("self.read_packet and self.read_packet3 have to be the same size")
 
-    cdef sensor_data_read(self):
+    cpdef sensor_data_read(self):
         """
         This Method is part of update_sensor_data,
                 it communicates with the CM730-Board and extract its answer to a directly readable format
@@ -121,14 +121,14 @@ cdef class CM730(object):
             self.sensor_all_cid = 0
         try:
             if self.dxl_power:
-                    read_packet = BulkReadPacket()
-                    for i in range(self.sensor_all_cid - 1):
-                        read_packet.add(self.read_packet3_stub[i][0],self.read_packet3_stub[i][1])
-                    read_packet.add(self.read_packet_stub[self.sensor_all_cid][0],self.read_packet_stub[self.sensor_all_cid][1])
-                    cid_all_values = self.read_packet_stub[self.sensor_all_cid][0]
-                    for i in range(self.sensor_all_cid +1, len(self.read_packet_stub)):
-                        read_packet.add(self.read_packet3_stub[i][0],self.read_packet3_stub[i][1])
-                    result = self.ctrl.process(read_packet)
+                read_packet = BulkReadPacket()
+                for i in range(self.sensor_all_cid - 1):
+                    read_packet.add(self.read_packet3_stub[i][0],self.read_packet3_stub[i][1])
+                read_packet.add(self.read_packet_stub[self.sensor_all_cid][0],self.read_packet_stub[self.sensor_all_cid][1])
+                cid_all_values = self.read_packet_stub[self.sensor_all_cid][0]
+                for i in range(self.sensor_all_cid +1, len(self.read_packet_stub)):
+                    read_packet.add(self.read_packet3_stub[i][0],self.read_packet3_stub[i][1])
+                result = self.ctrl.process(read_packet)
             else:
                 result = self.ctrl.process(self.read_packet2)
         except IOError as e:
@@ -184,12 +184,12 @@ cdef class CM730(object):
             # If an error was ignored, we have to test if a packed arrived
             # If not, we have to cancel, otherwise a uncomplete package will be handled
             result = errors.get_packets()
-
+        rospy.logwarn("5")
         self.last_io_success = time.time()
         return result, cid_all_values
 
 
-    cdef parse_sensor_data(self, object sensor_data, int cid_all_values):
+    cpdef parse_sensor_data(self, object sensor_data, int cid_all_values):
         """
         This Method is part of update_sensor_data,
                 it takes the data which we just read from the CM370 Board and parse it into the right variables
@@ -249,7 +249,7 @@ cdef class CM730(object):
         return button, gyro, accel
 
 
-    cdef set_motor_ram(self):
+    cpdef set_motor_ram(self):
         """
         This method sets the values in the RAM of the motors, dependent on the values in the config.
         """
@@ -263,7 +263,7 @@ cdef class CM730(object):
             self.ctrl.write_register(ID_CM730, CM730_REGISTER.led_head, (0, 0, 0))
             rospy.loginfo("Setting RAM Finished")
 
-    cdef apply_goal_pose(self, object goal_pose):
+    cpdef apply_goal_pose(self, object goal_pose):
         cdef Pose pose = goal_pose
         cdef SyncWritePacket packet
 
@@ -299,7 +299,7 @@ cdef class CM730(object):
 
         if not self.dxl_power:
             self.switch_motor_power(True)
-            # We do nothing, so the pose gets updated before acting
+            # We do nothing, so the actual pose gets updated before acting
             return
 
         goal_packet = SyncWritePacket((MX28_REGISTER.goal_position, MX28_REGISTER.moving_speed))
@@ -356,7 +356,7 @@ cdef class CM730(object):
         if d_packet is not None:
             self.ctrl.process(d_packet)
 
-    cdef switch_motor_power(self, bool state):
+    cpdef switch_motor_power(self, bool state):
         # wir machen nur etwas be änderungen des aktuellen statusses
         if state and not self.dxl_power:
             # anschalten

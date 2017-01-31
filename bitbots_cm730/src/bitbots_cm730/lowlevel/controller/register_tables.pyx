@@ -77,7 +77,7 @@ cdef class MX28RegisterTable(object):
 
         #tauschen von register 26 und 28 mit firmware > 28 oder so
 
-    cdef Register get_register_by_name(self, object name):
+    cpdef Register get_register_by_name(self, object name):
         return eval("self.%s" % name)
 
 

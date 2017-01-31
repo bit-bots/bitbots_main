@@ -1,0 +1,32 @@
+offsets:
+  #motoroffset global dummy
+  "LAnklePitch": 0
+  "LAnkleRoll": 0
+  "LElbow": 0
+  "LHipPitch": 0
+  "LHipRoll": 0
+  "LHipYaw": 0
+  "LKnee": 0
+  "LShoulderPitch": 0
+  "LShoulderRoll": 0
+  "RAnklePitch": 0
+  "RAnkleRoll": 0
+  "RElbow": 0
+  "RHipPitch": 0
+  "RHipRoll": 0
+  "RHipYaw": 0
+  "RKnee": 0
+  "RShoulderPitch": 0
+  "RShoulderRoll": 0
+  "HeadPan": 0
+  "HeadTilt": 0
+  "RElbowRoll": 0
+  "LHand": 0
+  "RHand": 0
+  "LElbowRoll": 0
+  "RShoulderYaw": 0
+  "LShoulderYaw": 0
+  "BellyRoll": 0
+  "BellyPitch": 0
+  "RToe": 0
+  "LToe": 0

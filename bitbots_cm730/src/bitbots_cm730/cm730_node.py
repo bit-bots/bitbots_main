@@ -29,6 +29,8 @@ class CM730Node:
     """
 
     def __init__(self):
+        rospy.init_node('bitbots_cm730', anonymous=False)
+
         # --- Class Variables ---
 
         self.goal_pose = Pose()
@@ -36,11 +38,10 @@ class CM730Node:
         self.led_eye = (0, 0, 0)
         self.led_head = (0, 0, 0)
 
-        # --- Initialize Node ---
-        rospy.init_node('bitbots_cm730', anonymous=False)
+        # --- Initialize Topics ---
         rospy.Subscriber("/motion_motor_goals", JointTrajectory, self.update_motor_goals)
         self.joint_publisher = rospy.Publisher('/current_motor_positions', JointState, queue_size=10)
-        self.speak_publisher = rospy.Publisher('/speak', String, queue_size=10)
+        self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
         self.temp_publisher = rospy.Publisher('/servo_data', AdditionalServoData, queue_size=10)
         self.imu_publisher = rospy.Publisher('/imu', Imu, queue_size=10)
         self.button_publisher = rospy.Publisher('/buttons', Buttons, queue_size=10)
@@ -116,8 +117,10 @@ class CM730Node:
             :attr:`smooth_accel` and :attr:`smooth_gyro`.
         """
         # get sensor data
+        rospy.logwarn("starting update once")
         robo_pose, gyro, accel, button1, button2 = self.update_sensor_data()
 
+        rospy.logwarn("starting publishing")
         # Send Messages to ROS
         self.publish_joints(robo_pose)
         # todo self.publish_additional_servo_data()
@@ -158,6 +161,11 @@ class CM730Node:
         else:
             button1, button2 = None
 
+        rospy.logwarn(robo_pose)
+        rospy.logwarn(raw_gyro)
+        rospy.logwarn(raw_accel)
+        rospy.logwarn(button1)
+        rospy.logwarn(button2)
         return robo_pose, raw_gyro, raw_accel, button1, button2
 
     def switch_motor_power_service_call(self, req):
@@ -176,10 +184,10 @@ class CM730Node:
         """
         msg = JointState()
         msg.header.stamp = rospy.Time.now()
-        msg.name = robo_pose.get_names()
+        msg.name = robo_pose.get_joint_names()
         msg.position = robo_pose.get_positions()
         msg.velocity = robo_pose.get_speeds()
-        msg.effort = robo_pose.get_loads
+        msg.effort = robo_pose.get_loads()
         self.joint_publisher.publish(msg)
 
     def publish_additional_servo_data(self, temps, voltages):
@@ -199,7 +207,7 @@ class CM730Node:
         msg = Imu()
         msg.linear_acceleration = accel
         msg.angular_velocity = gyro
-        self.imu_publisher(msg)
+        self.imu_publisher.publish(msg)
 
     def publish_buttons(self, button1, button2):
         msg = Buttons()
