@@ -19,9 +19,23 @@ cdef class CM730(object):
         try:
             serial = Serial(device)
         except IOError:
-            rospy.logerr("No connection to cm730 on " + device + " Please check the connection and restart the CM730 node.")
-            rospy.sleep(1) # to make sure message arrives
-            exit("Exit because of missing connection to the CM730 board.")
+            rospy.logwarn("No connection to cm730 on " + device + " Will try other possibilities")
+            i = 0
+            sucessfull = False
+            while i < 5:
+                try:
+                    serial = Serial("/dev/ttyUSB" + str(i))
+                    sucessfull = True
+                    rospy.loginfo("/dev/ttyUSB" + str(i) + " worked :D")
+                    break
+                except IOError:
+                    rospy.loginfo("/dev/ttyUSB" + str(i) + " did not work")
+                    i += 1
+
+            if not sucessfull:
+                rospy.logerr("No connection to cm730 on " + device + " Please check the connection and restart the CM730 node.")
+                rospy.sleep(0.1) # to make sure message arrives
+                exit("Exit because of missing connection to the CM730 board.")
 
         self.low_voltage_counter = 0
         self.last_io_success = 0
@@ -212,14 +226,14 @@ cdef class CM730(object):
                 else:
                     #get all values
                     button, _, gyro, accel, voltage = values
-                    rospy.loginfo("CM730.Voltage %d", voltage)
+                    rospy.logdebug_throttle(1, "CM730.Voltage: " + str(voltage))
                     if voltage < 105:
                         rospy.logwarn("Low Voltage!!")
                     if voltage < 100:
                         self.low_voltage_counter += 1
                         if self.low_voltage_counter > 10:
                             # we delay the low voltag shutdown because sometimes the hardware is telling lies
-                            return -1, voltage, -1
+                            return -1, voltage, -1, None
                     else:
                         self.low_voltage_counter = 0
             else:
@@ -229,11 +243,10 @@ cdef class CM730(object):
                 else:
                     position, speed, load, voltage, temperature = values
                     joint.set_load(load)
+                    joint.set_speed(speed)
 
                 position = position - self.joint_offsets[cid]
                 joint.set_position(position)
-                joint.set_load(load)
-                joint.set_speed(speed)
 
                 # Get aditional servo data, not everytime cause its not so important
                 if cid_all_values == cid:  # etwa alle halbe sekunde

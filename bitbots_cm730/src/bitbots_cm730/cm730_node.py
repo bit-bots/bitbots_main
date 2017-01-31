@@ -117,14 +117,14 @@ class CM730Node:
             :attr:`smooth_accel` and :attr:`smooth_gyro`.
         """
         # get sensor data
-        rospy.logwarn("starting update once")
         robo_pose, gyro, accel, button1, button2 = self.update_sensor_data()
 
-        rospy.logwarn("starting publishing")
         # Send Messages to ROS
-        self.publish_joints(robo_pose)
+        if robo_pose is not None:
+            self.publish_joints(robo_pose)
         # todo self.publish_additional_servo_data()
-        self.publish_imu(gyro, accel)
+        if gyro is not None:
+            self.publish_imu(gyro, accel)
         if button1 is not None:
             # we have to check this because we don't update the buttons everytime
             self.publish_buttons(button1, button2)
@@ -134,26 +134,32 @@ class CM730Node:
 
     def update_sensor_data(self):
         robo_pose = Pose()
+        raw_accel = None
+        raw_gyro = None
         # first get data
         result, cid_all_values = self.cm_730.sensor_data_read()
+
         if not result:
-            return
+            return None, None, None, None, None
         if result == -1:
             # this means the motion is stuck
-            rospy.logerr("motion stuck!")
-            speak("motion stuck")
-            exit("Motion stuck")
+            rospy.logerr("IO Error. Reading error on CM730. Motion stuck!")
+            speak("IO Error. Reading error on CM730. Motion stuck!", self.speak_publisher)
+            exit("IO Error. Reading error on CM730. Motion stuck!")
 
         # parse data
         button, gyro, accel, robo_pose = self.cm_730.parse_sensor_data(result, cid_all_values)
+
         if button == -1:
             # low voltage error
             speak("Warning: Low Voltage! System Exit!")
             rospy.logerr("SYSTEM EXIT: LOW VOLTAGE")
             raise SystemExit("SYSTEM EXIT: LOW VOLTAGE " + str(gyro / 10))
 
-        raw_accel = accel - IntDataVector(512, 512, 512)
-        raw_gyro = gyro - IntDataVector(512, 512, 512)
+        if accel is not None:
+            raw_accel = accel - IntDataVector(512, 512, 512)
+        if gyro is not None:
+            raw_gyro = gyro - IntDataVector(512, 512, 512)
 
         if button is not None:
             button1 = button & 1
@@ -162,11 +168,6 @@ class CM730Node:
             button1 = None
             button2 = None
 
-        rospy.logwarn(robo_pose)
-        rospy.logwarn(raw_gyro)
-        rospy.logwarn(raw_accel)
-        rospy.logwarn(button1)
-        rospy.logwarn(button2)
         return robo_pose, raw_gyro, raw_accel, button1, button2
 
     def switch_motor_power_service_call(self, req):

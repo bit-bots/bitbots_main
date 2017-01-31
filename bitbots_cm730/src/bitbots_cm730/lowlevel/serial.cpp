@@ -43,7 +43,8 @@ void Serial::write(const uint8_t *data, size_t length) {
 int Serial::read(uint8_t *data, size_t length) {
     //double timeout = (0.0003 + (20 * length) / baudrate) / 4;
     //double timeout = ( 121 * length) / baudrate;
-    double timeout = ( 600 * length) / baudrate;
+    double timeout = ( 200 * length) / baudrate;
+    //double timeout = ( 600 * length) / baudrate;
     // Teoretical: 1 byte = 10.5 symbols on the bus + latency in the cabel and at processing the answer
     //::usleep((long)(1e6 * timeout));
 
