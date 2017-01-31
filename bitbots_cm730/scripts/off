@@ -2,19 +2,13 @@
 
 # -*- coding: utf8 -*-
 
-from bitbots_common.debug import Scope
-from bitbots_motion.lowlevel.serial import Serial
+from bitbots_cm730.lowlevel.serial import Serial
 
-from bitbots_motion.lowlevel.controller.controller import Controller
-from bitbots_motion.lowlevel.controller.controller import get_cm730_register_table
+from bitbots_cm730.lowlevel.controller.controller import Controller
+from bitbots_cm730.lowlevel.controller.controller import get_cm730_register_table
 
 CM730 = get_cm730_register_table()
 ID_CM730 = 200
-
-debug = Scope("Off")
-
-debug.warning("Dies wird den Strom von den Motoren Nemen!")
-raw_input("Zum vortfahren <Enter> drücken")
 
 ctrl = Controller(Serial("/dev/ttyUSB0"))
 ctrl.write_register(ID_CM730, CM730.dxl_power, 0)

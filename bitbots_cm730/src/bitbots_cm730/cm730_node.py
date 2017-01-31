@@ -54,6 +54,7 @@ class CM730Node:
 
         # --- Setting Params ---
         joints = rospy.get_param("/joints")
+        self.joint_limits = {}
         # problem is, that the number of motors is not known at build time, so write them into params now
         for motor in joints:
             min_value = -180
@@ -63,6 +64,7 @@ class CM730Node:
             if 'min' in motor['limits']:
                 min_value = motor['limits']['min']
             rospy.set_param("/joints/" + str(motor['name']), {'min': min_value, 'max': max_value})
+            self.joint_limits[motor['name']] = {'min': min_value, 'max': max_value}
         # start the endless loop
         self.update_forever()
 
@@ -72,20 +74,21 @@ class CM730Node:
         motor_goals = []
         joints = msg.joint_names
         # we can handle only one position, no real trajectory
-        positions = msg.points[0].position
+        positions = msg.points[0].positions
         i = 0
         for joint in joints:
-            if positions[i] > joint.max:
-                motor_goals[i] = joint.max
-                rospy.logwarn("Joint command over max. Joint: %s Position: %f", (joint, positions[i]))
-            elif positions[i] < joint.min:
-                motor_goals[i] = joint.min
-                rospy.logwarn("Joint command under min. Joint: %s Position: %f", (joint, positions[i]))
+            rospy.logerr(i)
+            if positions[i] > self.joint_limits[joint]['max']:
+                motor_goals.append(self.joint_limits[joint]['max'])
+                rospy.logdebug("Joint command over max. Joint: %s Position: %f", (joint, positions[i]))
+            elif positions[i] < self.joint_limits[joint]['min']:
+                motor_goals.append(self.joint_limits[joint]['min'])
+                rospy.logdebug("Joint command under min. Joint: %s Position: %f", (joint, positions[i]))
             else:
-                motor_goals[i] = positions[i]
+                motor_goals.append(math.degrees(positions[i]))
             i += 1
         # update goal pose accordingly
-        self.goal_pose.set_goals(motor_goals)
+        self.goal_pose.set_goals(joints, motor_goals)
 
     def update_forever(self):
         """ Calls :func:`update_once` in an infinite loop """
