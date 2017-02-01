@@ -57,9 +57,9 @@ cdef class CM730(object):
         offsets = rospy.get_param("/offsets")
         self.joints = rospy.get_param("/joints")
 
-        self.joint_offsets =  {}
+        self.joint_offsets =  []
         for i in range(1, len(self.joints)):
-            self.joint_offsets[i] = offsets[self.joints[i]['name']]
+            self.joint_offsets.append(offsets[self.joints[i]['name']])
 
         self.ctrl = Controller(serial)
         self.read_packet_stub = list()
@@ -320,6 +320,8 @@ cdef class CM730(object):
                 continue
 
             if joint.is_active():
+                rospy.loginfo(self.joint_offsets)
+                rospy.loginfo(joint.get_cid())
                 joint_value = int(joint.get_goal()) + \
                     self.joint_offsets[joint.get_cid()]
                 goal_packet.add(joint.get_cid(),

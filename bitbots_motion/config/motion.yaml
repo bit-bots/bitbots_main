@@ -1,6 +1,6 @@
 motion:
 
-  start_time: 0 # time we wait for getting motor updates before leaving startup state #todo
+  start_time: 10 # time we wait for getting motor updates before leaving startup state
   soft_off_time: 30 # time of no use or updates when the motion goes to soft off
   die_time: 60 # time of no use or updates when the motion shuts down
   anim_server_wait_time: 10 # time the motion waits for animation server

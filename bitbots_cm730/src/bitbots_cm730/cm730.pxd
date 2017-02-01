@@ -31,7 +31,7 @@ cdef class CM730(object):
     cdef IntDataVector robo_accel
     cdef list motors
     cdef dict motor_ram_config
-    cdef dict joint_offsets
+    cdef list joint_offsets
     cdef list joints
 
     cpdef init_read_packet(self)

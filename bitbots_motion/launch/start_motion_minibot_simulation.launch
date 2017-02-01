@@ -9,14 +9,6 @@
     <remap from="/current_motor_positions" to="/minibot/joint_states"/>
     <remap from="/motion_motor_goals" to="/minibot/joint_trajectory_action_controller/command" />
 
-	<include file="$(find bitbots_speaker)/launch/speaker.launch"/>
-
-<!--    <node name="pause" pkg="bitbots_pause" type="pause.py"/> -->
-
-    <node name="animation" pkg="bitbots_animation" type="animation_node.py"/>
-
-    <rosparam file="$(find bitbots_motion)/config/motion.yaml" command="load"/>
-    <node name="motion" pkg="bitbots_motion" type="motion.py" args="" respawn="false"/>
-
+    <include file="$(find bitbots_motion)/launch/motion_nodes.launch"/>
 
 </launch>

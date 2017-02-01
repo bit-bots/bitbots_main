@@ -77,7 +77,6 @@ class CM730Node:
         positions = msg.points[0].positions
         i = 0
         for joint in joints:
-            rospy.logerr(i)
             if positions[i] > self.joint_limits[joint]['max']:
                 motor_goals.append(self.joint_limits[joint]['max'])
                 rospy.logdebug("Joint command over max. Joint: %s Position: %f", (joint, positions[i]))
