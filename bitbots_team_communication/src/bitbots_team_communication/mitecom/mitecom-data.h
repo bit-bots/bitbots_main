@@ -17,7 +17,6 @@ const static uint32_t MITECOM_MAGIC   = 'MXTC'; // little endian
 /// the version number
 const static uint32_t MITECOM_VERSION = 1;
 
-namespace MiTeCom {
 
 /*------------------------------------------------------------------------------------------------*/
 
@@ -95,9 +94,29 @@ typedef MixedTeamStateEnum MixedTeamState;
 
 /*------------------------------------------------------------------------------------------------*/
 
+/// offensive strategy. The transmitted side is the side on which the robots try to attack
+enum MixedTeamSideEnum {
+	/// attacking on over left side
+	SIDE_LEFT                                       = 0,
+
+	/// attacking through the middle
+	SIDE_MIDDLE                                     = 1,
+
+	/// attacking on the right side
+	SIDE_RIGHT                                      = 2,
+
+};
+
+typedef MixedTeamSideEnum MixedTeamSide;
+
+
+/*------------------------------------------------------------------------------------------------*/
+
+
 static const uint32_t MITECOM_RANGE_STATE        = 0x00000000;
 static const uint32_t MITECOM_RANGE_COGNITION    = 0x00010000;
 static const uint32_t MITECOM_RANGE_CAPABILITIES = 0x00020000;
+static const uint32_t MITECOM_RANGE_STRATEGIES   = 0x00030000;
 static const uint32_t MITECOM_RANGE_USERDEFINED  = 0x10000000; // individual settings
 
 /// enum for addressing the different values the team shares
@@ -140,6 +159,103 @@ enum MixedTeamKeyEnum {
 	/// relative position of ball to robot, y-coordinate (in mm)
 	BALL_RELATIVE_Y                              =   MITECOM_RANGE_COGNITION + 5,
 
+    /// belief of relative position of the ball (0..255), with 0 = no confidence
+	/// and 255 = highest confidence
+	BALL_BELIEF                                  =   MITECOM_RANGE_COGNITION + 6,
+
+	/// relative position of opposing goal to robot, x-coordinate (in mm)
+	OPPGOAL_RELATIVE_X                           =   MITECOM_RANGE_COGNITION + 7,
+
+	/// relative position of opposing goal to robot, y-coordinate (in mm)
+	OPPGOAL_RELATIVE_Y                           =   MITECOM_RANGE_COGNITION + 8,
+
+    /// belief of relative position of the opponent goal (0..255), with 0 = no confidence
+	/// and 255 = highest confidence
+    OPPGOAL_BELIEF                               =   MITECOM_RANGE_COGNITION + 9,
+
+    // Position of an opponent robot, x-coordinate (in mm)
+    // The order is not related to the number of the robot
+    OPPONENT_ROBOT_A_X                             = MITECOM_RANGE_COGNITION + 10,
+
+    // Position of an opponent robot, y-coordinate (in mm)
+    // The order is not related to the number of the robot
+    OPPONENT_ROBOT_A_Y                             = MITECOM_RANGE_COGNITION + 11,
+
+    // Belief of accuracy of this robots position, with 0 = no confidence
+	// and 255 = highest confidence
+    OPPONENT_ROBOT_A_BELIEF                        = MITECOM_RANGE_COGNITION + 12,
+
+    // Position of an opponent robot, x-coordinate (in mm)
+    // The order is not related to the number of the robot
+    OPPONENT_ROBOT_B_X                             = MITECOM_RANGE_COGNITION + 13,
+
+    // Position of an opponent robot, y-coordinate (in mm)
+    // The order is not related to the number of the robot
+    OPPONENT_ROBOT_B_Y                             = MITECOM_RANGE_COGNITION + 14,
+
+    // Belief of accuracy of this robots position, with 0 = no confidence
+	// and 255 = highest confidence
+    OPPONENT_ROBOT_B_BELIEF                        = MITECOM_RANGE_COGNITION + 15,
+
+    // Position of an opponent robot, x-coordinate (in mm)
+    // The order is not related to the number of the robot
+    OPPONENT_ROBOT_C_X                             = MITECOM_RANGE_COGNITION + 16,
+
+    // Position of an opponent robot, y-coordinate (in mm)
+    // The order is not related to the number of the robot
+    OPPONENT_ROBOT_C_Y                             = MITECOM_RANGE_COGNITION + 17,
+
+    // Belief of accuracy of this robots position, with 0 = no confidence
+	// and 255 = highest confidence
+    OPPONENT_ROBOT_C_BELIEF                        = MITECOM_RANGE_COGNITION + 18,
+
+    // Position of an opponent robot, x-coordinate (in mm)
+    // The order is not related to the number of the robot
+    OPPONENT_ROBOT_D_X                             = MITECOM_RANGE_COGNITION + 19,
+
+    // Position of an opponent robot, y-coordinate (in mm)
+    // The order is not related to the number of the robot
+    OPPONENT_ROBOT_D_Y                             = MITECOM_RANGE_COGNITION + 20,
+
+    // Belief of accuracy of this robots position, with 0 = no confidence
+	// and 255 = highest confidence
+    OPPONENT_ROBOT_D_BELIEF                        = MITECOM_RANGE_COGNITION + 21,
+
+    // Position of an teammate, x-coordinate (in mm)
+    // The order is not related to the number of the robot
+    TEAM_ROBOT_A_X                                 = MITECOM_RANGE_COGNITION + 22,
+
+    // Position of an teammate, y-coordinate (in mm)
+    // The order is not related to the number of the robot
+    TEAM_ROBOT_A_Y                                 = MITECOM_RANGE_COGNITION + 23,
+
+    // Belief of accuracy of this robots position, with 0 = no confidence
+	// and 255 = highest confidence
+    TEAM_ROBOT_A_BELIEF                            = MITECOM_RANGE_COGNITION + 24,
+
+    // Position of an teammate, x-coordinate (in mm)
+    // The order is not related to the number of the robot
+    TEAM_ROBOT_B_X                                 = MITECOM_RANGE_COGNITION + 25,
+
+    // Position of an teammate, y-coordinate (in mm)
+    // The order is not related to the number of the robot
+    TEAM_ROBOT_B_Y                                  = MITECOM_RANGE_COGNITION + 26,
+
+    // Belief of accuracy of this robots position, with 0 = no confidence
+	// and 255 = highest confidence
+    TEAM_ROBOT_B_BELIEF                             = MITECOM_RANGE_COGNITION + 27,
+
+    // Position of an teammate, x-coordinate (in mm)
+    // The order is not related to the number of the robot
+    TEAM_ROBOT_C_X                                  = MITECOM_RANGE_COGNITION + 28,
+
+    // Position of an teammate, y-coordinate (in mm)
+    // The order is not related to the number of the robot
+    TEAM_ROBOT_C_Y                                  = MITECOM_RANGE_COGNITION + 29,
+
+    // Belief of accuracy of this robots position, with 0 = no confidence
+	// and 255 = highest confidence
+    TEAM_ROBOT_C_BELIEF                             = MITECOM_RANGE_COGNITION + 30,
 
 	/* ******************************************************************
 	** ROBOT CAPABILITIES
@@ -155,51 +271,15 @@ enum MixedTeamKeyEnum {
 	/// the maximum (realistic) distance the ball can be kicked
 	ROBOT_MAX_KICKING_DISTANCE                   =  MITECOM_RANGE_CAPABILITIES + 3,
 
-    /* *******************************************************************
-    ** TEAM DATA
-    ** ******************************************************************/
-    /// The Direction of the Kickoff
-    KICKOFF_OFFENCE_SIDE                         = MITECOM_RANGE_USERDEFINED + 80 + 1,
+    /* ******************************************************************
+	** Strategies
+	** *****************************************************************/
 
-    // Position of an opponent robot, x-coordinate (in mm)
-    OPPONENT_ROBOT_X                             = MITECOM_RANGE_USERDEFINED + 80 + 2,
-
-    // Position of an opponent robot, y-coordinate (in mm)
-    OPPONENT_ROBOT_Y                             = MITECOM_RANGE_USERDEFINED + 80 + 3,
-
-    // Position of an teammate, x-coordinate (in mm)
-    TEAM_MATE_X                                  = MITECOM_RANGE_USERDEFINED + 80 + 4,
-
-    // Position of an teammate, y-coordinate (in mm)
-    TEAM_MATE_Y                                  = MITECOM_RANGE_USERDEFINED + 80 + 5,
-
-    OPPONENT_ROBOT_3							 = MITECOM_RANGE_USERDEFINED + 80 + 6,
-
-    OPPONENT_ROBOT_4							 = MITECOM_RANGE_USERDEFINED + 80 + 7,
-
-    OPPONENT_ROBOT_5							 = MITECOM_RANGE_USERDEFINED + 80 + 8,
-
-    OPPONENT_ROBOT_6							 = MITECOM_RANGE_USERDEFINED + 80 + 9,
-
-    OPPONENT_ROBOT_7							 = MITECOM_RANGE_USERDEFINED + 80 + 10,
-
-    OPPONENT_ROBOT_8							 = MITECOM_RANGE_USERDEFINED + 80 + 11,
-
-    TEAM_MATE_3                                  = MITECOM_RANGE_USERDEFINED + 80 + 12,
-
-    TEAM_MATE_4                                  = MITECOM_RANGE_USERDEFINED + 80 + 13,
-
-    TEAM_MATE_5                                  = MITECOM_RANGE_USERDEFINED + 80 + 14,
-
-    TEAM_MATE_6                                  = MITECOM_RANGE_USERDEFINED + 80 + 15,
-
-    TEAM_MATE_7                                  = MITECOM_RANGE_USERDEFINED + 80 + 16,
-
-    TEAM_MATE_8                                  = MITECOM_RANGE_USERDEFINED + 80 + 17,
-
-
-
-
+	// The attacking direction, for example after the kickoff, the robot which does the kickoff would kick
+	// the ball in this direction. The robot on this side moves forward to accept the pass.
+	// Can be used generally to communicate a basic strategy.
+	// Uses MixedTeamSideEnum
+    OFFENCIVE_SIDE                               =  MITECOM_RANGE_STRATEGIES + 1,
 };
 
 typedef MixedTeamKeyEnum MixedTeamKey;
@@ -265,6 +345,6 @@ typedef std::map<uint16_t, MixedTeamMate> MixedTeamMates;
 
 
 /*------------------------------------------------------------------------------------------------*/
-} //namespace MiTeCom
+
 
 #endif // MITECOM_DATA_H__

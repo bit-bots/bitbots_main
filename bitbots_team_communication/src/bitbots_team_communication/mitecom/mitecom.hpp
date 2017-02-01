@@ -12,28 +12,48 @@ class TeamMateData {
         int get_role(void);
         int get_action(void);
         int get_state(void);
+
+        int get_absolute_x(void);
+        int get_absolute_y(void);
+        int get_absolute_orientation(void);
+        int get_absolute_belief(void);
         int get_relative_ball_x(void);
         int get_relative_ball_y(void);
-        int get_ball_time(void);
-        int get_kickoff_offence_side(void);
-        int get_opponent_robot_x(void);
-        int get_opponent_robot_y(void);
-        int get_opponent_robot_3(void);
-        int get_opponent_robot_4(void);
-        int get_opponent_robot_5(void);
-        int get_opponent_robot_6(void);
-        int get_opponent_robot_7(void);
-        int get_opponent_robot_8(void);
-        int get_team_mate_x(void);
-        int get_team_mate_y(void);
-        int get_team_mate_3(void);
-        int get_team_mate_4(void);
-        int get_team_mate_5(void);
-        int get_team_mate_6(void);
-        int get_team_mate_7(void);
-        int get_team_mate_8(void);
+        int get_ball_belief(void);
+        int get_oppgoal_relative_x(void);
+        int get_oppgoal_relative_y(void);
+        int get_oppgoal_belief(void);
+        int get_opponent_robot_a_x(void);
+        int get_opponent_robot_a_y(void);
+        int get_opponent_robot_a_belief(void);
+        int get_opponent_robot_b_x(void);
+        int get_opponent_robot_b_y(void);
+        int get_opponent_robot_b_belief(void);
+        int get_opponent_robot_c_x(void);
+        int get_opponent_robot_c_y(void);
+        int get_opponent_robot_c_belief(void);
+        int get_opponent_robot_d_x(void);
+        int get_opponent_robot_d_y(void);
+        int get_opponent_robot_d_belief(void);
+        int get_team_robot_a_x(void);
+        int get_team_robot_a_y(void);
+        int get_team_robot_a_belief(void);
+        int get_team_robot_b_x(void);
+        int get_team_robot_b_y(void);
+        int get_team_robot_b_belief(void);
+        int get_team_robot_c_x(void);
+        int get_team_robot_c_y(void);
+        int get_team_robot_c_belief(void);
+
+        int get_avg_walking_speed(void);
+        int get_time_to_ball_time(void);
+        int get_robot_max_kicking_distance(void);
+
+        int get_offencive_side(void);
+
         void set_lastUpdate(uint64_t);
         uint64_t get_lastUpdate(void);
+
     private:
         MixedTeamMate data;
         uint64_t m_lastUpdate;
