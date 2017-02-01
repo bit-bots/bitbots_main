@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_walking)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ~/repositories/bitbots_misc/bitbots_common/cmake) #  TODO: das mus dynamisch
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ~/repositories/bitbots_meta/bitbots_misc/bitbots_common/cmake) #  TODO: das mus dynamisch
 
 include(BitBotsIncludes)
 
