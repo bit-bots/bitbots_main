@@ -6,9 +6,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <limits.h>
+#include <math.h>
 #include <sys/time.h>
 
-using namespace MiTeCom;
+#include <string>
+
 
 /*------------------------------------------------------------------------------------------------*/
 
@@ -27,7 +29,7 @@ MixedTeamMates teamMates;
 uint64_t getCurrentTime () {
 	struct timeval tv;
 	gettimeofday(&tv, 0);
-	return static_cast<uint64_t>( static_cast<uint64_t>(tv.tv_sec) * 1000 + tv.tv_usec / 1000 );
+	return static_cast<uint64_t>( static_cast<uint64_t>(tv.tv_sec) * 1000 + static_cast<uint64_t>(tv.tv_usec) / 1000 );
 }
 
 
@@ -106,7 +108,7 @@ int main(int argc, char* argv[]) {
 		if (messageLength > 0) {
 			// message received, process it
 			MixedTeamMate teamMate = MixedTeamParser::parseIncoming(buffer, messageLength, teamID);
-			if (teamMate.robotID != robotID) {
+			if (teamMate.robotID && teamMate.robotID != robotID) {
 				process(teamMate);
 			}
 		} else {
@@ -122,7 +124,7 @@ int main(int argc, char* argv[]) {
 			myInformation.data[ROBOT_ABSOLUTE_X]           =  mrand48() % SHRT_MAX; // millimeters
 			myInformation.data[ROBOT_ABSOLUTE_Y]           =  mrand48() % SHRT_MAX; // millimeters
 			myInformation.data[ROBOT_ABSOLUTE_ORIENTATION] =  mrand48() % 360;      // degree
-			myInformation.data[ROBOT_ABSOLUTE_BELIEF]      = 0.00001;
+			myInformation.data[ROBOT_ABSOLUTE_BELIEF]      = 0; 			// 0 to 255; 0 = no confidence
 
 			MixedTeamCommMessage *messageDataPtr = NULL;
 			uint32_t messageDataLength = 0;
@@ -146,14 +148,49 @@ int main(int argc, char* argv[]) {
 		if (lastReport + 2000 < getCurrentTime() && teamMates.size() > 0) {
 			printf("=== REPORT ============================================\n");
 			for (MixedTeamMates::iterator it = teamMates.begin(); it != teamMates.end(); it++) {
-				printf("Team mate %d\n", it->first);
-				printf("         Position on field: (%d, %d) at %d degree\n",
-						(it->second).data[ROBOT_ABSOLUTE_X],
-						(it->second).data[ROBOT_ABSOLUTE_Y],
-						(it->second).data[ROBOT_ABSOLUTE_ORIENTATION]);
-				printf("   Belief in this position: %.3f\n",
-						(it->second).data[ROBOT_ABSOLUTE_BELIEF]/255.);
+				MixedTeamMate &mate = it->second;
+				MixedTeamMateData &data = mate.data;
+
+				// extract role
+				std::string currentRoleName;
+				if (data.find(ROBOT_CURRENT_ROLE) != data.end()) {
+					MixedTeamRoleEnum currentRole = (MixedTeamRoleEnum)( data[ROBOT_CURRENT_ROLE] );
+					switch (currentRole) {
+					case ROLE_IDLING:       currentRoleName = "Idling";    break;
+					case ROLE_OTHER:        currentRoleName = "Other";     break;
+					case ROLE_STRIKER:      currentRoleName = "Striker";   break;
+					case ROLE_SUPPORTER:    currentRoleName = "Supporter"; break;
+					case ROLE_DEFENDER:     currentRoleName = "Defender";  break;
+					case ROLE_GOALIE:       currentRoleName = "Goalie";    break;
+					default:                currentRoleName = "Unknown";   break;
+					}
+				} else {
+					currentRoleName = "Not transmitted";
+				}
+
+				// extract ball distance
+				int ballDistance = -1;
+				if (data.find(BALL_RELATIVE_X) != data.end() && data.find(BALL_RELATIVE_Y) != data.end()) {
+					int ballRelX = data[BALL_RELATIVE_X];
+					int ballRelY = data[BALL_RELATIVE_Y];
+					ballDistance = sqrt(ballRelX*ballRelX + ballRelY*ballRelY);
+				}
+
+				printf("Team mate %d (team %d)\n", it->first, teamID);
+				printf("                      Role: %s\n", currentRoleName.c_str());
+				printf("             Ball distance: %d mm\n", ballDistance);
+
+				if (data.find(ROBOT_ABSOLUTE_X) != data.end()) {
+					printf("         Position on field: (%d, %d) at %d degree\n",
+							data[ROBOT_ABSOLUTE_X],
+							data[ROBOT_ABSOLUTE_Y],
+							data[ROBOT_ABSOLUTE_ORIENTATION]);
+					printf("   Belief in this position: %.3f\n", data[ROBOT_ABSOLUTE_BELIEF]/255.);
+				}
+
+				printf("\n");
 			}
+
 			lastReport = getCurrentTime();
 			printf("\n");
 		}

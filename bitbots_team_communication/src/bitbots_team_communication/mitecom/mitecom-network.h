@@ -5,7 +5,7 @@
 #include <inttypes.h>
 
 int mitecom_open(int port);
-ssize_t mitecom_receive(int sock, void* buffer, int bufferSize);
+ssize_t mitecom_receive(int sock, void* buffer, unsigned int bufferSize);
 void mitecom_broadcast(int socket, int port, const void* data, uint32_t dataLength);
 
 

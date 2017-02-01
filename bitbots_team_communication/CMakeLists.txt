@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_team_communication)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ~/repositories/bitbots_meta/bitbots_misc/bitbots_common/cmake) #  TODO: das mus dynamisch
+
+include(BitBotsIncludes)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -8,7 +11,7 @@ project(bitbots_team_communication)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
-  dynamic_reconfigure
+  humanoid_league_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -101,9 +104,9 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES bitbots_speaker
-#  CATKIN_DEPENDS bitbots_common std_msgs
+   CATKIN_DEPENDS bitbots_common
 #  DEPENDS system_lib
-   CATKIN_DEPENDS message_runtime
+#   CATKIN_DEPENDS message_runtime
 )
 
 add_subdirectory(src/bitbots_team_communication)

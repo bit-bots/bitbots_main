@@ -1,5 +1,5 @@
 
-#include <sstream>
+
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <ifaddrs.h>
@@ -8,21 +8,22 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 
+
 /*------------------------------------------------------------------------------------------------*/
 
 /**
  ** Open a listening UDP socket on the given port.
  **
+ ** @param port The UDP port to listen on
+ **
  ** @return -1 on error, otherwise the socket descriptor
  */
- static bool mitecom_sim_enabled = getenv("MITECOM") != NULL;
-
 
 int mitecom_open(int port) {
 	int sock;
 
 	// create socket
-	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
+	if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
 		fprintf(stderr, "Failure creating socket\n");
 		return -1;
 	}
@@ -58,10 +59,14 @@ int mitecom_open(int port) {
 
 /** Receive a UDP  package.
  **
+ ** @param[in]  sock           The socket to receive the package from
+ ** @param[out] buffer         Buffer to fill with the received UDP package
+ ** @param[in]  bufferSize     Size of buffer
  **
+ ** @return the number of bytes received, or -1 on error
  */
 
-ssize_t mitecom_receive(int sock, void* buffer, int bufferSize) {
+ssize_t mitecom_receive(int sock, void* buffer, unsigned int bufferSize) {
 	struct sockaddr_in remoteAddress;
 	socklen_t addressLen = sizeof(remoteAddress);
 	return recvfrom(sock, buffer, bufferSize, 0, (struct sockaddr *)&remoteAddress, &addressLen);
@@ -72,8 +77,10 @@ ssize_t mitecom_receive(int sock, void* buffer, int bufferSize) {
 
 /** Send a broadcast message from the given socket to a port.
  **
- ** @param socket   The outgoing (local) socket
- ** @param port     The port to broadcast to
+ ** @param sock       The outgoing (local) socket
+ ** @param port       The port to broadcast to
+ ** @param data       The data to send
+ ** @param dataLength The length (in bytes) of the data to send
  */
 
 void mitecom_broadcast(int sock, int port, const void* data, uint32_t dataLength) {
@@ -102,52 +109,12 @@ void mitecom_broadcast(int sock, int port, const void* data, uint32_t dataLength
 				// use all interfaces except the local one (we do not want to send to ourselves!)
 				if (interfaceAddress > 0 && interfaceAddress != 0x7F000001) {
 #endif
+					struct sockaddr_in recipient = { 0 };
+					recipient.sin_family      = AF_INET;
+					recipient.sin_port        = htons(port);
+					recipient.sin_addr.s_addr = broadcastAddress;
 
-
-                    // Fake the broadcasts between machines by sending the data to different ports
-                    // Simulated clients will listen on different ports on the same machine
-                    if (mitecom_sim_enabled){
-                        struct sockaddr_in recipient1 = { 0 };
-                        recipient1.sin_family      = AF_INET;
-                        recipient1.sin_port        = htons(12121);
-                        recipient1.sin_addr.s_addr = broadcastAddress;
-                        sendto(sock, data, dataLength, 0, (const struct sockaddr*)&recipient1, sizeof recipient1);
-
-                        struct sockaddr_in recipient2 = { 0 };
-                        recipient2.sin_family      = AF_INET;
-                        recipient2.sin_port        = htons(12221);
-                        recipient2.sin_addr.s_addr = broadcastAddress;
-                        sendto(sock, data, dataLength, 0, (const struct sockaddr*)&recipient2, sizeof recipient2);
-
-                        struct sockaddr_in recipient3 = { 0 };
-                        recipient3.sin_family      = AF_INET;
-                        recipient3.sin_port        = htons(12321);
-                        recipient3.sin_addr.s_addr = broadcastAddress;
-                        sendto(sock, data, dataLength, 0, (const struct sockaddr*)&recipient3, sizeof recipient3);
-
-                        struct sockaddr_in recipient4 = { 0 };
-                        recipient4.sin_family      = AF_INET;
-                        recipient4.sin_port        = htons(12421);
-                        recipient4.sin_addr.s_addr = broadcastAddress;
-                        sendto(sock, data, dataLength, 0, (const struct sockaddr*)&recipient4, sizeof recipient4);
-
-                        struct sockaddr_in recipient5 = { 0 };
-                        recipient5.sin_family      = AF_INET;
-                        recipient5.sin_port        = htons(12521);
-                        recipient5.sin_addr.s_addr = broadcastAddress;
-                        sendto(sock, data, dataLength, 0, (const struct sockaddr*)&recipient5, sizeof recipient5);
-                    }else{
-                        // Normal CAse
-                        struct sockaddr_in recipient = { 0 };
-                        recipient.sin_family      = AF_INET;
-                        recipient.sin_port        = htons(port);
-                        recipient.sin_addr.s_addr = broadcastAddress;
-
-                        sendto(sock, data, dataLength, 0, (const struct sockaddr*)&recipient, sizeof recipient);
-                    }
-
-
-
+					sendto(sock, data, dataLength, 0, (const struct sockaddr*)&recipient, sizeof recipient);
 				}
 			}
 			p = p->ifa_next;

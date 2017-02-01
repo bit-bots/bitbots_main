@@ -3,7 +3,7 @@
 
 #include "mitecom-data.h"
 
-namespace MiTeCom {
+
 /*------------------------------------------------------------------------------------------------*/
 
 class MixedTeamParser {
@@ -12,6 +12,5 @@ public:
 	static MixedTeamCommMessage *create(uint32_t *messageSizePtr, const MixedTeamMate &mate, uint16_t teamID, uint16_t robotID);
 };
 
-} //namespace MiTeCom
 
 #endif

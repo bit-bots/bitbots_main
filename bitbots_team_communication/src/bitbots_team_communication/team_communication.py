@@ -5,7 +5,7 @@ import time
 
 from humanoid_league_msgs.msg import Role, Action, Position, MotionState, BallRelative, TeamData
 
-from mitecom.mitecom import MiteCom, STATE_PENALIZED, ROLE_IDLING, ACTION_UNDEFINED,STATE_INACTIVE
+from bitbots_team_communication.mitecom.mitecom import MiteCom, STATE_PENALIZED, ROLE_IDLING, ACTION_UNDEFINED,STATE_INACTIVE
 
 
 class TeamCommunication(object):
@@ -21,7 +21,7 @@ class TeamCommunication(object):
         rospy.Subscriber("motion_state", MotionState, self.motion_state_callback)
         rospy.Subscriber("ball_relative", BallRelative, self.ball_callback)
 
-        self.publisher = rospy.Publisher("/team_data", TeamData)
+        self.publisher = rospy.Publisher("/team_data", TeamData, queue_size=10)
 
         self.port = rospy.get_param("/team_communication/port")
         self.mitecom_enabled = rospy.get_param("/team_communication/enabled")
@@ -49,7 +49,8 @@ class TeamCommunication(object):
     def run(self):
         mitecom = MiteCom(self.port, self.team)
         mitecom.set_robot_id(self.player)
-        while True:
+
+        while not rospy.is_shutdown():
             if not self.mitecom_enabled:
                 # currently not active, we wait a bit
                 rospy.sleep(1)

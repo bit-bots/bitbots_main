@@ -1,15 +1,17 @@
-# Should something be transmitted
-enabled: True
+team_communication:
 
-# The port to be used
-port: 12321
+  # Should something be transmitted
+  enabled: True
 
-team: 7
+  # The port to be used
+  port: 12321
 
-player: 99
+  team: 7
 
-# Rate of published messages in Hz
-rate: 1
+  player: 99
 
-# avarange walking speed in mm / s !!!
-avg_walking_speed: 10
+  # Rate of published messages in Hz
+  rate: 1
+
+  # avarange walking speed in mm / s !!!
+  avg_walking_speed: 10
