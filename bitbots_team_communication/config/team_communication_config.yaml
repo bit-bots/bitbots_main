@@ -1,8 +1,5 @@
 team_communication:
 
-  # Should something be transmitted
-  enabled: True
-
   # The port to be used
   port: 12321
 
@@ -15,3 +12,6 @@ team_communication:
 
   # avarange walking speed in mm / s !!!
   avg_walking_speed: 10
+
+  # in mm
+  max_kicking_distance: 1000

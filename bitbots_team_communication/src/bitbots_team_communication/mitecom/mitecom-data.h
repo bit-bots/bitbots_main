@@ -96,14 +96,16 @@ typedef MixedTeamStateEnum MixedTeamState;
 
 /// offensive strategy. The transmitted side is the side on which the robots try to attack
 enum MixedTeamSideEnum {
+
+    UNSPECIFIED                                     = 0
 	/// attacking on over left side
-	SIDE_LEFT                                       = 0,
+	SIDE_LEFT                                       = 1,
 
 	/// attacking through the middle
-	SIDE_MIDDLE                                     = 1,
+	SIDE_MIDDLE                                     = 2,
 
 	/// attacking on the right side
-	SIDE_RIGHT                                      = 2,
+	SIDE_RIGHT                                      = 3,
 
 };
 
@@ -279,7 +281,7 @@ enum MixedTeamKeyEnum {
 	// the ball in this direction. The robot on this side moves forward to accept the pass.
 	// Can be used generally to communicate a basic strategy.
 	// Uses MixedTeamSideEnum
-    OFFENCIVE_SIDE                               =  MITECOM_RANGE_STRATEGIES + 1,
+    OFFENSIVE_SIDE                               =  MITECOM_RANGE_STRATEGIES + 1,
 };
 
 typedef MixedTeamKeyEnum MixedTeamKey;
