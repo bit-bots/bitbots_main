@@ -106,6 +106,8 @@ catkin_package(
    CATKIN_DEPENDS message_runtime
 )
 
+add_subdirectory(src/bitbots_team_communication)
+
 ###########
 ## Build ##
 ###########

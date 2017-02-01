@@ -46,8 +46,8 @@ class TeamMateData {
         int get_team_robot_c_belief(void);
 
         int get_avg_walking_speed(void);
-        int get_time_to_ball_time(void);
-        int get_robot_max_kicking_distance(void);
+        int get_time_to_ball(void);
+        int get_max_kicking_distance(void);
 
         int get_offencive_side(void);
 
@@ -66,20 +66,34 @@ class mitecom {
     public:
         mitecom(void);
         ~mitecom(void);
-        void set_robot_id(int ID);
-        void set_pos(int x, int y, int orientation, int belief);
+        void open_socket(int port);
         void send_data(void);
         void recieve_data(void);
-        void set_action(int action);
-        void set_role(int role);
-        void set_state(int state);
-        void set_relative_ball(int x, int y);
-        void set_ball_time(int sec);
-        void set_kickoff_offence_side(int side);
-        void open_socket(int port);
+
+        void set_robot_id(int ID);
         void set_team_id(int id);
-        void set_opponent_robot(int x, int y, int op3, int op4, int op5, int op6, int op7, int op8);
-        void set_team_mate(int x ,int y, int tm3, int tm4, int tm5, int tm6, int tm7, int tm8);
+
+        void set_role(int role);
+        void set_action(int action);
+        void set_state(int state);
+
+        void set_pos(int x, int y, int orientation, int belief);
+        void set_relative_ball(int x, int y, int belief);
+        void set_opp_goal_relative(int x, int y, int belief);
+        void set_opponent_robot_a(int x, int y, int belief);
+        void set_opponent_robot_b(int x, int y, int belief);
+        void set_opponent_robot_c(int x, int y, int belief);
+        void set_opponent_robot_d(int x, int y, int belief);
+        void set_team_robot_a(int x, int y, int belief);
+        void set_team_robot_b(int x, int y, int belief);
+        void set_team_robot_c(int x, int y, int belief);
+
+        void set_get_avg_walking_speed(int speed);
+        void set_time_to_ball(int sec);
+        void set_max_kicking_distance(int distance);
+
+        void set_offencive_side(int side);
+
         const TeamRobotData *get_data(void);
 
     private:

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 import rospy
 import time
@@ -150,3 +151,7 @@ class TeamCommunication(object):
         self.ball_relative_x = msg.ball_relative.x
         self.ball_relative_y = msg.ball_relative.y
         self.ball_certainty = msg.certainty
+
+if __name__ == "__main__":
+    print("Starting Team Communication")
+    TeamCommunication()

@@ -29,7 +29,6 @@ int TeamMateData::get_role(void)
     return data.data[ROBOT_CURRENT_ROLE];
 }
 
-
 int TeamMateData::get_action(void)
 {
     return data.data[ROBOT_CURRENT_ACTION];
@@ -38,6 +37,27 @@ int TeamMateData::get_action(void)
 int TeamMateData::get_state(void)
 {
     return data.data[ROBOT_CURRENT_STATE];
+}
+
+
+int TeamMateData::get_absolute_x(void)
+{
+    return data.data[ROBOT_ABSOLUTE_X];
+}
+
+int TeamMateData::get_absolute_y(void)
+{
+    return data.data[ROBOT_ABSOLUTE_Y];
+}
+
+int TeamMateData::get_absolute_orientation(void)
+{
+    return data.data[ROBOT_ABSOLUTE_ORIENTATION];
+}
+
+int TeamMateData::get_absolute_belief(void)
+{
+    return data.data[ROBOT_ABSOLUTE_BELIEF];
 }
 
 int TeamMateData::get_relative_ball_x(void)
@@ -50,101 +70,158 @@ int TeamMateData::get_relative_ball_y(void)
     return data.data[BALL_RELATIVE_Y];
 }
 
-int TeamMateData::get_kickoff_offence_side(void)
+int TeamMateData::get_ball_belief(void)
 {
-    return data.data[KICKOFF_OFFENCE_SIDE];
+    return data.data[BALL_RELATIVE_Y];
 }
 
-int TeamMateData::get_ball_time(void)
+int TeamMateData::get_oppgoal_relative_x(void)
+{
+    return data.data[OPPGOAL_RELATIVE_X];
+}
+
+int TeamMateData::get_oppgoal_relative_y(void)
+{
+    return data.data[OPPGOAL_RELATIVE_Y];
+}
+
+int TeamMateData::get_oppgoal_belief(void)
+{
+    return data.data[OPPGOAL_RELATIVE_BELIEF];
+}
+
+int TeamMateData::get_opponent_robot_a_x(void)
+{
+    return data.data[OPPONENT_ROBOT_A_X];
+}
+
+int TeamMateData::get_opponent_robot_a_y(void)
+{
+    return data.data[OPPONENT_ROBOT_A_Y];
+}
+
+int TeamMateData::get_opponent_robot_a_belief(void)
+{
+    return data.data[OPPONENT_ROBOT_A_BELIEF];
+}
+
+int TeamMateData::get_opponent_robot_b_x(void)
+{
+    return data.data[OPPONENT_ROBOT_B_X];
+}
+
+int TeamMateData::get_opponent_robot_b_y(void)
+{
+    return data.data[OPPONENT_ROBOT_B_Y];
+}
+
+int TeamMateData::get_opponent_robot_b_belief(void)
+{
+    return data.data[OPPONENT_ROBOT_B_BELIEF];
+}
+
+int TeamMateData::get_opponent_robot_c_x(void)
+{
+    return data.data[OPPONENT_ROBOT_C_X];
+}
+
+int TeamMateData::get_opponent_robot_c_y(void)
+{
+    return data.data[OPPONENT_ROBOT_C_Y];
+}
+
+int TeamMateData::get_opponent_robot_c_belief(void)
+{
+    return data.data[OPPONENT_ROBOT_C_BELIEF];
+}
+
+int TeamMateData::get_opponent_robot_d_x(void)
+{
+    return data.data[OPPONENT_ROBOT_D_X];
+}
+
+int TeamMateData::get_opponent_robot_d_y(void)
+{
+    return data.data[OPPONENT_ROBOT_D_Y];
+}
+
+int TeamMateData::get_opponent_robot_d_belief(void)
+{
+    return data.data[OPPONENT_ROBOT_D_BELIEF];
+}
+
+
+int TeamMateData::get_team_robot_a_x(void)
+{
+    return data.data[TEAM_ROBOT_A_X];
+}
+
+int TeamMateData::get_team_robot_a_y(void)
+{
+    return data.data[TEAM_ROBOT_A_Y];
+}
+
+int TeamMateData::get_team_robot_a_belief(void)
+{
+    return data.data[TEAM_ROBOT_A_BELIEF];
+}
+
+int TeamMateData::get_team_robot_b_x(void)
+{
+    return data.data[TEAM_ROBOT_B_X];
+}
+
+int TeamMateData::get_team_robot_b_y(void)
+{
+    return data.data[TEAM_ROBOT_B_Y];
+}
+
+int TeamMateData::get_team_robot_b_belief(void)
+{
+    return data.data[TEAM_ROBOT_B_BELIEF];
+}
+
+int TeamMateData::get_team_robot_c_x(void)
+{
+    return data.data[TEAM_ROBOT_C_X];
+}
+
+int TeamMateData::get_team_robot_c_y(void)
+{
+    return data.data[TEAM_ROBOT_C_Y];
+}
+
+int TeamMateData::get_team_robot_c_belief(void)
+{
+    return data.data[TEAM_ROBOT_C_BELIEF];
+}
+
+int TeamMateData::get_avg_walking_speed(void)
+{
+    return data.data[ROBOT_AVG_WALKING_SPEED_IN_CM_PER_SECOND];
+}
+
+int TeamMateData::get_time_to_ball(void)
 {
     return data.data[ROBOT_TIME_TO_POSITION_AT_BALL_IN_SECONDS];
 }
+
+int TeamMateData::get_max_kicking_distance(void)
+{
+    return data.data[ROBOT_MAX_KICKING_DISTANCE];
+}
+
+int TeamMateData::get_offencive_side(void)
+{
+    return data.data[OFFENCIVE_SIDE];
+}
+
 
 void TeamMateData::set_lastUpdate(uint64_t lastUpdate)
 {
     m_lastUpdate = lastUpdate;
 }
 
-
-int TeamMateData::get_opponent_robot_x(void)
-{
-    return data.data[OPPONENT_ROBOT_X];
-}
-
-int TeamMateData::get_opponent_robot_y(void)
-{
-    return data.data[OPPONENT_ROBOT_Y];
-}
-
-int TeamMateData::get_opponent_robot_3(void)
-{
-    return data.data[OPPONENT_ROBOT_3];
-}
-
-int TeamMateData::get_opponent_robot_4(void)
-{
-    return data.data[OPPONENT_ROBOT_4];
-}
-
-int TeamMateData::get_opponent_robot_5(void)
-{
-    return data.data[OPPONENT_ROBOT_5];
-}
-
-int TeamMateData::get_opponent_robot_6(void)
-{
-    return data.data[OPPONENT_ROBOT_6];
-}
-
-int TeamMateData::get_opponent_robot_7(void)
-{
-    return data.data[OPPONENT_ROBOT_7];
-}
-
-int TeamMateData::get_opponent_robot_8(void)
-{
-    return data.data[OPPONENT_ROBOT_8];
-}
-
-int TeamMateData::get_team_mate_x(void)
-{
-    return data.data[TEAM_MATE_X];
-}
-
-int TeamMateData::get_team_mate_y(void)
-{
-    return data.data[TEAM_MATE_Y];
-}
-
-int TeamMateData::get_team_mate_3(void)
-{
-    return data.data[TEAM_MATE_3];
-}
-
-int TeamMateData::get_team_mate_4(void)
-{
-    return data.data[TEAM_MATE_4];
-}
-
-int TeamMateData::get_team_mate_5(void)
-{
-    return data.data[TEAM_MATE_5];
-}
-
-int TeamMateData::get_team_mate_6(void)
-{
-    return data.data[TEAM_MATE_6];
-}
-
-int TeamMateData::get_team_mate_7(void)
-{
-    return data.data[TEAM_MATE_7];
-}
-
-int TeamMateData::get_team_mate_8(void)
-{
-    return data.data[TEAM_MATE_8];
-}
 
 uint64_t TeamMateData::get_lastUpdate(void)
 {
@@ -157,89 +234,15 @@ mitecom::mitecom(void)
     m_teamID = -1;
 }
 
-void mitecom::open_socket(int port)
-{
-    m_port = port;
-    m_sock = mitecom_open(port);
-}
-
-void mitecom::set_team_id(int id)
-{
-    m_teamID = id;
-}
-
 mitecom::~mitecom(void)
 {
     delete ownData;
 }
 
-void mitecom::set_robot_id(int ID)
+void mitecom::open_socket(int port)
 {
-    m_robotID = ID;
-}
-
-void mitecom::set_pos(int x, int y, int orientation, int belief)
-{
-    ownData->data[ROBOT_ABSOLUTE_X] = x;
-    ownData->data[ROBOT_ABSOLUTE_Y] = y;
-    ownData->data[ROBOT_ABSOLUTE_ORIENTATION] = orientation;
-    ownData->data[ROBOT_ABSOLUTE_BELIEF] = belief;
-
-}
-
-void mitecom::set_action(int action)
-{
-    ownData->data[ROBOT_CURRENT_ACTION] = action;
-}
-
-void mitecom::set_role(int role)
-{
-    ownData->data[ROBOT_CURRENT_ROLE] = role;
-}
-
-void mitecom::set_state(int state)
-{
-    ownData->data[ROBOT_CURRENT_STATE] = state;
-}
-
-void mitecom::set_relative_ball(int x, int y)
-{
-    ownData->data[BALL_RELATIVE_X] = x;
-    ownData->data[BALL_RELATIVE_Y] = y;
-}
-
-void mitecom::set_ball_time(int sec)
-{
-    ownData->data[ROBOT_TIME_TO_POSITION_AT_BALL_IN_SECONDS] = sec;
-}
-
-void mitecom::set_kickoff_offence_side(int val)
-{
-    ownData->data[KICKOFF_OFFENCE_SIDE] = val;
-}
-
-void mitecom::set_opponent_robot(int x, int y, int op3, int op4, int op5, int op6, int op7, int op8)
-{
-    ownData->data[OPPONENT_ROBOT_X] = x;
-    ownData->data[OPPONENT_ROBOT_Y] = y;
-    ownData->data[OPPONENT_ROBOT_3] = op3;
-    ownData->data[OPPONENT_ROBOT_4] = op4;
-    ownData->data[OPPONENT_ROBOT_5] = op5;
-    ownData->data[OPPONENT_ROBOT_6] = op6;
-    ownData->data[OPPONENT_ROBOT_7] = op7;
-    ownData->data[OPPONENT_ROBOT_8] = op8;
-}
-
-void mitecom::set_team_mate(int x ,int y, int tm3, int tm4, int tm5, int tm6, int tm7, int tm8)
-{
-    ownData->data[TEAM_MATE_X] = x;
-    ownData->data[TEAM_MATE_Y] = y;
-    ownData->data[TEAM_MATE_3] = tm3;
-    ownData->data[TEAM_MATE_4] = tm4;
-    ownData->data[TEAM_MATE_5] = tm5;
-    ownData->data[TEAM_MATE_6] = tm6;
-    ownData->data[TEAM_MATE_7] = tm7;
-    ownData->data[TEAM_MATE_8] = tm8;
+    m_port = port;
+    m_sock = mitecom_open(port);
 }
 
 void mitecom::send_data(void)
@@ -318,6 +321,123 @@ void mitecom::recieve_data(void)
         //usleep(100*1000 /* microseconds */);
     }
 }
+
+void mitecom::set_robot_id(int ID)
+{
+    m_robotID = ID;
+}
+
+void mitecom::set_team_id(int id)
+{
+    m_teamID = id;
+}
+
+void mitecom::set_role(int role)
+{
+    ownData->data[ROBOT_CURRENT_ROLE] = role;
+}
+
+void mitecom::set_action(int action)
+{
+    ownData->data[ROBOT_CURRENT_ACTION] = action;
+}
+
+void mitecom::set_state(int state)
+{
+    ownData->data[ROBOT_CURRENT_STATE] = state;
+}
+
+void mitecom::set_pos(int x, int y, int orientation, int belief)
+{
+    ownData->data[ROBOT_ABSOLUTE_X] = x;
+    ownData->data[ROBOT_ABSOLUTE_Y] = y;
+    ownData->data[ROBOT_ABSOLUTE_ORIENTATION] = orientation;
+    ownData->data[ROBOT_ABSOLUTE_BELIEF] = belief;
+
+}
+
+void mitecom::set_relative_ball(int x, int y, int belief)
+{
+    ownData->data[BALL_RELATIVE_X] = x;
+    ownData->data[BALL_RELATIVE_Y] = y;
+}
+
+void mitecom::set_opp_goal_relative(int x, int y, int belief)
+{
+    ownData->data[OPPGOAL_RELATIVE_X] = x;
+    ownData->data[OPPGOAL_RELATIVE_Y] = y;
+    ownData->data[OPPGOAL_RELATIVE_BELIEF] = belief;
+}
+
+void mitecom::set_opponent_robot_a(int x, int y, int belief)
+{
+    ownData->data[OPPONENT_ROBOT_A_X] = x;
+    ownData->data[OPPONENT_ROBOT_A_Y] = y;
+    ownData->data[OPPONENT_ROBOT_A_BELIEF] = belief;
+}
+
+void mitecom::set_opponent_robot_b(int x, int y, int belief)
+{
+    ownData->data[OPPONENT_ROBOT_B_X] = x;
+    ownData->data[OPPONENT_ROBOT_B_Y] = y;
+    ownData->data[OPPONENT_ROBOT_B_BELIEF] = belief;
+}
+void mitecom::set_opponent_robot_c(int x, int y, int belief)
+{
+    ownData->data[OPPONENT_ROBOT_C_X] = x;
+    ownData->data[OPPONENT_ROBOT_C_Y] = y;
+    ownData->data[OPPONENT_ROBOT_C_BELIEF] = belief;
+}
+
+void mitecom::set_opponent_robot_d(int x, int y, int belief)
+{
+    ownData->data[OPPONENT_ROBOT_D_X] = x;
+    ownData->data[OPPONENT_ROBOT_D_Y] = y;
+    ownData->data[OPPONENT_ROBOT_D_BELIEF] = belief;
+}
+
+void mitecom::set_team_robot_a(int x, int y, int belief)
+{
+    ownData->data[TEAM_ROBOT_A_X] = x;
+    ownData->data[TEAM_ROBOT_A_Y] = y;
+    ownData->data[TEAM_ROBOT_A_BELIEF] = belief;
+}
+
+void mitecom::set_team_robot_b(int x, int y, int belief)
+{
+    ownData->data[TEAM_ROBOT_B_X] = x;
+    ownData->data[TEAM_ROBOT_B_Y] = y;
+    ownData->data[TEAM_ROBOT_B_BELIEF] = belief;
+}
+
+void mitecom::set_team_robot_c(int x, int y, int belief)
+{
+    ownData->data[TEAM_ROBOT_C_X] = x;
+    ownData->data[TEAM_ROBOT_C_Y] = y;
+    ownData->data[TEAM_ROBOT_C_BELIEF] = belief;
+}
+
+void mitecom::set_get_avg_walking_speed(int speed)
+{
+    ownData->data[ROBOT_AVG_WALKING_SPEED_IN_CM_PER_SECOND] = speed;
+}
+
+void mitecom::set_time_to_ball(int sec)
+{
+    ownData->data[ROBOT_TIME_TO_POSITION_AT_BALL_IN_SECONDS] = sec;
+}
+
+void mitecom::set_max_kicking_distance(int distance)
+{
+    ownData->data[ROBOT_TIME_TO_POSITION_AT_BALL_IN_SECONDS] = distance;
+}
+
+
+void mitecom::set_offencive_side(int side)
+{
+    ownData->data[OFFENCIVE_SIDE] = side;
+}
+
 
 const TeamRobotData* mitecom::get_data()
 {

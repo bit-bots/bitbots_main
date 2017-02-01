@@ -171,7 +171,7 @@ enum MixedTeamKeyEnum {
 
     /// belief of relative position of the opponent goal (0..255), with 0 = no confidence
 	/// and 255 = highest confidence
-    OPPGOAL_BELIEF                               =   MITECOM_RANGE_COGNITION + 9,
+    OPPGOAL_RELATIVE_BELIEF                               =   MITECOM_RANGE_COGNITION + 9,
 
     // Position of an opponent robot, x-coordinate (in mm)
     // The order is not related to the number of the robot

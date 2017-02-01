@@ -19,117 +19,136 @@ cdef class TeamMateData:
     cpdef int get_state(self):
         return self.data.get_state()
 
+
+    cpdef int get_absolute_x(self):
+        return self.data.get_absolute_x()
+
+    cpdef int get_absolute_y(self):
+        return self.data.get_absolute_x()
+
+    cpdef int get_absolute_orientation(self):
+        return self.data.get_absolute_orientation()
+
+    cpdef int get_absolute_belief(self):
+        return self.data.get_absolute_belief()
+
     cpdef int get_relative_ball_x(self):
         return self.data.get_relative_ball_x()
 
     cpdef int get_relative_ball_y(self):
         return self.data.get_relative_ball_y()
 
-    cpdef int get_ball_time(self):
-        cdef int time = self.data.get_ball_time()
+    cpdef int get_relative_ball_belief(self):
+        return self.data.get_ball_belief()
+
+    cpdef int get_oppgoal_relative_x(self):
+        return self.data.get_oppgoal_relative_x()
+
+    cpdef int get_oppgoal_relative_y(self):
+        return self.data.get_oppgoal_relative_y()
+
+    cpdef int get_oppgoal_relative_belief(self):
+        return self.data.get_oppgoal_belief()
+
+
+    cpdef int get_opponent_robot_a_x(self):
+        return self.data.get_opponent_robot_a_x()
+
+    cpdef int get_opponent_robot_a_y(self):
+        return self.data.get_opponent_robot_a_y()
+
+    cpdef int get_opponent_robot_a_belief(self):
+        return self.data.get_opponent_robot_a_belief()
+
+    cpdef int get_opponent_robot_b_x(self):
+        return self.data.get_opponent_robot_b_x()
+
+    cpdef int get_opponent_robot_b_y(self):
+        return self.data.get_opponent_robot_b_y()
+
+    cpdef int get_opponent_robot_b_belief(self):
+        return self.data.get_opponent_robot_b_belief()
+
+    cpdef int get_opponent_robot_c_x(self):
+        return self.data.get_opponent_robot_c_x()
+
+    cpdef int get_opponent_robot_c_y(self):
+        return self.data.get_opponent_robot_c_y()
+
+    cpdef int get_opponent_robot_c_belief(self):
+        return self.data.get_opponent_robot_c_belief()
+
+    cpdef int get_opponent_robot_d_x(self):
+        return self.data.get_opponent_robot_d_x()
+
+    cpdef int get_opponent_robot_d_y(self):
+        return self.data.get_opponent_robot_d_y()
+
+    cpdef int get_opponent_robot_d_belief(self):
+        return self.data.get_opponent_robot_d_belief()
+
+
+    cpdef int get_team_robot_a_x(self):
+        return self.data.get_team_robot_a_x()
+
+    cpdef int get_team_robot_a_y(self):
+        return self.data.get_team_robot_a_y()
+    
+    cpdef int get_team_robot_a_belief(self):
+        return self.data.get_team_robot_a_belief()
+
+    cpdef int get_team_robot_b_x(self):
+        return self.data.get_team_robot_b_x()
+
+    cpdef int get_team_robot_b_y(self):
+        return self.data.get_team_robot_b_y()
+    
+    cpdef int get_team_robot_b_belief(self):
+        return self.data.get_team_robot_b_belief()
+    
+    cpdef int get_team_robot_c_x(self):
+        return self.data.get_team_robot_c_x()
+
+    cpdef int get_team_robot_c_y(self):
+        return self.data.get_team_robot_c_y()
+    
+    cpdef int get_team_robot_c_belief(self):
+        return self.data.get_team_robot_c_belief()
+
+
+    cpdef int get_avg_walking_speed(self):
+        return self.data.get_avg_walking_speed()
+
+    cpdef int get_time_to_ball(self):
+        cdef int time = self.data.get_time_to_ball()
         if time == 0:
             # 0 ist der defaultwert wenn nichts gesetzt ist
             time = 99999999
         return time
 
-    cpdef int get_kickoff_offence_side(self):
-        return self.data.get_kickoff_offence_side()
+    cpdef int get_max_kicking_distance(self):
+        return self.data.get_max_kicking_distance()
 
+    cpdef int get_offencive_side(self):
+        return self.data.get_offencive_side()
 
-    cpdef int get_opponent_robot_x(self):
-        return self.data.get_opponent_robot_x()
-
-    cpdef int get_opponent_robot_y(self):
-        return self.data.get_opponent_robot_y()
-
-    cpdef int get_opponent_robot_3(self):
-        return self.data.get_opponent_robot_3()
-
-    cpdef int get_opponent_robot_4(self):
-        return self.data.get_opponent_robot_4()
-
-    cpdef int get_opponent_robot_5(self):
-        return self.data.get_opponent_robot_5()
-
-    cpdef int get_opponent_robot_6(self):
-        return self.data.get_opponent_robot_6()
-
-    cpdef int get_opponent_robot_7(self):
-        return self.data.get_opponent_robot_7()
-
-    cpdef int get_opponent_robot_8(self):
-        return self.data.get_opponent_robot_8()
-
-    cpdef int get_team_mate_x(self):
-        return self.data.get_team_mate_x()
-
-    cpdef int get_team_mate_y(self):
-        return self.data.get_team_mate_y()
-
-    cpdef int get_team_mate_3(self):
-        return self.data.get_team_mate_3()
-
-    cpdef int get_team_mate_4(self):
-        return self.data.get_team_mate_4()
-
-    cpdef int get_team_mate_5(self):
-        return self.data.get_team_mate_5()
-
-    cpdef int get_team_mate_6(self):
-        return self.data.get_team_mate_6()
-
-    cpdef int get_team_mate_7(self):
-        return self.data.get_team_mate_7()
-
-    cpdef int get_team_mate_8(self):
-        return self.data.get_team_mate_8()
 
 cdef class MiteCom(object):
     cdef mitecom _mitecom
 
-    def __init__(self, int port, int team_ID):
+    def __init__(self, int port, int team_id):
         self._mitecom.open_socket(port)
-        self._mitecom.set_team_id(team_ID)
+        self._mitecom.set_team_id(team_id)
 
-    cpdef set_robot_id(self, int ID):
-        self._mitecom.set_robot_id(ID)
 
-    cpdef set_pos(self, int x, int y, int orientation, int belief):
-        self._mitecom.set_pos(x, y, orientation, belief)
+    cpdef open_socket(self, int port):
+        self._mitecom.open_socket(port)
 
     cpdef send_data(self):
         self._mitecom.send_data()
 
     cpdef recieve_data(self):
         self._mitecom.recieve_data()
-
-    cpdef set_role(self, int role):
-        self._mitecom.set_role(role)
-
-    cpdef set_action(self, int action):
-        self._mitecom.set_action(action)
-
-    cpdef set_state(self, int state):
-        self._mitecom.set_state(state)
-
-    cpdef set_relative_ball(self, int x, int y):
-        self._mitecom.set_relative_ball(x, y)
-
-    cpdef set_ball_time(self, int sec):
-        self._mitecom.set_ball_time(sec)
-
-    cpdef set_kickoff_offence_side(self, int side):
-        self._mitecom.set_kickoff_offence_side(side)
-
-
-    cpdef set_team_mate(self, intlist):
-        x, y, tm3, tm4, tm5, tm6, tm7, tm8 = intlist
-        self._mitecom.set_team_mate(x, y, tm3, tm4, tm5, tm6, tm7, tm8)
-
-    cpdef set_opponent_robot(self, intlist):
-        x, y, op3, op4, op5, op6, op7, op8 = intlist
-        self._mitecom.set_opponent_robot(x, y, op3, op4, op5, op6, op7, op8)
-
 
     cpdef dict recv_data(self):
         self._mitecom.recieve_data()
@@ -142,6 +161,70 @@ cdef class MiteCom(object):
             newrobot.set_team_mate_data(deref(robot.second))
             data[robot.first] = newrobot
         return data
+
+
+    cpdef set_robot_id(self, int robot_id):
+        self._mitecom.set_robot_id(robot_id)
+
+    cpdef set_team_id(self, int team_id):
+        self._mitecom.set_team_id(team_id)
+
+
+    cpdef set_role(self, int role):
+        self._mitecom.set_role(role)
+
+    cpdef set_action(self, int action):
+        self._mitecom.set_action(action)
+
+    cpdef set_state(self, int state):
+        self._mitecom.set_state(state)
+
+
+    cpdef set_pos(self, int x, int y, int orientation, int belief):
+        self._mitecom.set_pos(x, y, orientation, belief)
+
+    cpdef set_relative_ball(self, int x, int y, int belief):
+        self._mitecom.set_relative_ball(x, y, belief)
+
+    cpdef set_opp_goal_relative(self, int x, int y, int belief):
+        self._mitecom.set_opp_goal_relative(x, y, belief)
+
+    cpdef set_opponent_robot_a(self, int x, int y, int belief):
+        self._mitecom.set_opponent_robot_a(x, y, belief)
+
+    cpdef set_opponent_robot_b(self, int x, int y, int belief):
+        self._mitecom.set_opponent_robot_b(x, y, belief)
+        
+    cpdef set_opponent_robot_c(self, int x, int y, int belief):
+        self._mitecom.set_opponent_robot_c(x, y, belief)
+
+    cpdef set_opponent_robot_d(self, int x, int y, int belief):
+        self._mitecom.set_opponent_robot_d(x, y, belief)
+
+
+    cpdef set_team_robot_a(self, int x, int y, int belief):
+        self._mitecom.set_team_robot_a(x, y, belief)
+
+    cpdef set_team_robot_b(self, int x, int y, int belief):
+        self._mitecom.set_team_robot_b(x, y, belief)
+        
+    cpdef set_team_robot_c(self, int x, int y, int belief):
+        self._mitecom.set_team_robot_c(x, y, belief)
+
+
+    cpdef set_get_avg_walking_speed(self, int sec):
+        self._mitecom.set_get_avg_walking_speed(sec)
+
+    cpdef set_time_to_ball(self, int sec):
+        self._mitecom.set_time_to_ball(sec)
+
+    cpdef set_max_kicking_distance(self, int sec):
+        self._mitecom.set_max_kicking_distance(sec)
+
+
+    cpdef set_offencive_side(self, int side):
+        self._mitecom.set_offencive_side(side)
+
 
 
 # from mitecom-data.h
