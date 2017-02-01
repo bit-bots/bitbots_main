@@ -57,7 +57,7 @@ cdef class CM730(object):
         offsets = rospy.get_param("/offsets")
         self.joints = rospy.get_param("/joints")
 
-        self.joint_offsets =  []
+        self.joint_offsets =  [0] #todo this is just a hack to make this work. find real error
         for i in range(1, len(self.joints)):
             self.joint_offsets.append(offsets[self.joints[i]['name']])
 
