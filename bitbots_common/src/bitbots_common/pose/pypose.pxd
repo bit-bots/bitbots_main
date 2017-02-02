@@ -57,6 +57,7 @@ cdef class PyPose:
     cpdef string get_joint_name(self, int cid)
 
     cpdef list get_positions(self)
+    cpdef list get_positions_rad(self)
     cpdef list get_speeds(self)
     cpdef list get_goals(self)
     cpdef list get_loads(self)

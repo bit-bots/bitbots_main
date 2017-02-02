@@ -1,10 +1,11 @@
+import math
 import rospy
 from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
 
 
 def pose_to_traj_msg(pose):
     msg = JointTrajectoryPoint()
-    msg.positions = pose.get_positions()
+    msg.positions = pose.get_positions_rad()
     msg.velocities = pose.get_speeds()
     traj_msg = JointTrajectory()
     # make an array with String objects (ros message type)

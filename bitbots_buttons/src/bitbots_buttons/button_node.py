@@ -1,15 +1,18 @@
+#!/usr/bin/env python
+#-*- coding:utf-8 -*-
 import rospy
 import time
-from bitbots_cm730.msg import Buttons
+from bitbots_buttons.msg import Buttons
 from humanoid_league_msgs.msg import Speak
 
 from bitbots_speaker.speaker import speak
-from bitbots_motion.srv import ManualPenalize
+from bitbots_pause.srv import ManualPenalize
 
 
-class button_node(object):
+class ButtonNode(object):
     def __init__(self):
-        rospy.init_node("ButtonManager", anonymous=False)
+        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
+        rospy.init_node("ButtonManager", log_level=log_level, anonymous=False)
         rospy.Subscriber("/buttons", Buttons, self.update_buttons)
         self.speak_publisher = rospy.Publisher('/Speak', Speak, queue_size=10)
         self.button1 = False
@@ -65,3 +68,7 @@ class button_node(object):
 
     def button2_long(self):
         speak("Button 2 pressed long", self.speak_publisher, speaking_active=self.speaking_active)
+
+if __name__ == "__main__":
+    button = ButtonNode()
+    rospy.spin()

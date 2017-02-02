@@ -1,3 +1,4 @@
+import math
 import rospy
 from cython.operator cimport address as ref
 from cython.operator cimport dereference as deref
@@ -266,6 +267,13 @@ cdef class PyPose:
         cdef list result =[]
         for name in names:
             result.append(self.get_joint(name).get_position())
+        return result
+
+    cpdef list get_positions_rad(self):
+        cdef vector[string] names = self.pose.get_joint_names()
+        cdef list result =[]
+        for name in names:
+            result.append(math.radians(self.get_joint(name).get_position()))
         return result
 
     cpdef list get_speeds(self):
