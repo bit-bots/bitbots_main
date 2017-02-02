@@ -49,7 +49,7 @@ class TeamMateData {
         int get_time_to_ball(void);
         int get_max_kicking_distance(void);
 
-        int get_offencive_side(void);
+        int get_offensive_side(void);
 
         void set_lastUpdate(uint64_t);
         uint64_t get_lastUpdate(void);
@@ -92,7 +92,7 @@ class mitecom {
         void set_time_to_ball(int sec);
         void set_max_kicking_distance(int distance);
 
-        void set_offencive_side(int side);
+        void set_offensive_side(int side);
 
         const TeamRobotData *get_data(void);
 

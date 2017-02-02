@@ -97,7 +97,8 @@ typedef MixedTeamStateEnum MixedTeamState;
 /// offensive strategy. The transmitted side is the side on which the robots try to attack
 enum MixedTeamSideEnum {
 
-    UNSPECIFIED                                     = 0
+    UNSPECIFIED                                     = 0,
+
 	/// attacking on over left side
 	SIDE_LEFT                                       = 1,
 

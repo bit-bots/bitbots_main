@@ -233,7 +233,7 @@ class TeamCommunication(object):
             time_to_position_at_balls.append(rob.get_time_to_position_at_ball())
             max_kicking_distances.append(rob.get_max_kicking_distance())
 
-            offensive_side.append(rob.get_offencive_side())
+            offensive_side.append(rob.get_offensive_side())
 
         # build message
         message = TeamData()

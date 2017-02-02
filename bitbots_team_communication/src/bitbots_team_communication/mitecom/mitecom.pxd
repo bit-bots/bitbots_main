@@ -44,7 +44,7 @@ cdef import from "mitecom.hpp" namespace "MiTeCom":
         int get_time_to_ball()
         int get_max_kicking_distance()
 
-        int get_offencive_side()
+        int get_offensive_side()
 
     cdef cppclass mitecom:
         void mietcom()
@@ -75,7 +75,7 @@ cdef import from "mitecom.hpp" namespace "MiTeCom":
         void set_time_to_ball(int sec)
         void set_max_kicking_distance(int distance)
 
-        void set_offencive_side(int side)
+        void set_offensive_side(int side)
 
         const map[int,_TeamMateData*] *get_data()
 

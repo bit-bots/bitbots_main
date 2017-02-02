@@ -129,8 +129,8 @@ cdef class TeamMateData:
     cpdef int get_max_kicking_distance(self):
         return self.data.get_max_kicking_distance()
 
-    cpdef int get_offencive_side(self):
-        return self.data.get_offencive_side()
+    cpdef int get_offensive_side(self):
+        return self.data.get_offensive_side()
 
 
 cdef class MiteCom(object):
@@ -222,8 +222,8 @@ cdef class MiteCom(object):
         self._mitecom.set_max_kicking_distance(sec)
 
 
-    cpdef set_offencive_side(self, int side):
-        self._mitecom.set_offencive_side(side)
+    cpdef set_offensive_side(self, int side):
+        self._mitecom.set_offensive_side(side)
 
 
 

@@ -211,9 +211,9 @@ int TeamMateData::get_max_kicking_distance(void)
     return data.data[ROBOT_MAX_KICKING_DISTANCE];
 }
 
-int TeamMateData::get_offencive_side(void)
+int TeamMateData::get_offensive_side(void)
 {
-    return data.data[OFFENCIVE_SIDE];
+    return data.data[OFFENSIVE_SIDE];
 }
 
 
@@ -429,9 +429,9 @@ void mitecom::set_max_kicking_distance(int distance)
 }
 
 
-void mitecom::set_offencive_side(int side)
+void mitecom::set_offensive_side(int side)
 {
-    ownData->data[OFFENCIVE_SIDE] = side;
+    ownData->data[OFFENSIVE_SIDE] = side;
 }
 
 
