@@ -6,6 +6,7 @@ from sensor_msgs.msg import PointCloud2, CameraInfo, PointCloud, PointField
 from sensor_msgs.point_cloud2 import create_cloud
 from humanoid_league_msgs.msg import LineInformationInImage, LineInformationRelative, LineSegmentRelative
 import image_geometry
+from matplotlib import pyplot as plt
 from std_msgs.msg import Header
 
 
@@ -20,6 +21,20 @@ class TransformLines(object):
 
         rospy.init_node("transform_lines")
         rate = rospy.Rate(30)
+
+        self.f = plt.figure()
+        self.a = self.f.add_subplot(111)
+        self.a.relim()
+        self.a.autoscale_view(True, True, True)
+        self.f.canvas.draw()
+
+        self.f2 = plt.figure()
+        self.a2 = self.f2.add_subplot(111)
+        self.a2.relim()
+        self.a2.autoscale_view(True, True, True)
+        self.f2.canvas.draw()
+        plt.show(block=False)
+
 
         while not rospy.is_shutdown():
             if not self.lineinfo:
@@ -51,11 +66,14 @@ class TransformLines(object):
         #points = []
         lreg = LineInformationRelative()
         lreg.header.stamp = lineinfo.header.stamp
-        lreg.header.frame_id = lineinfo.header.frame_id
+        lreg.header.frame_id = "base_link"
+        print("run")
 
         for seg in lineinfo.segments:
-            lineu = seg.start.x
-            linev = seg.start.y
+            lineu = seg.start.y
+            linev = 600 - seg.start.x
+            self.a.plot(lineu, linev, "ro")
+            self.f.canvas.draw()
 
             # Setup camerainfos
             cam = image_geometry.PinholeCameraModel()
@@ -63,7 +81,7 @@ class TransformLines(object):
 
             ray = cam.projectPixelTo3dRay((lineu, linev))
 
-            p = [trans.transform.translation.x + ray[0] * ray[2]*1000, trans.transform.translation.y + ray[1] * ray[2]*1000, 0]
+            p = [trans.transform.translation.x + ray[0] * ray[2]*2, trans.transform.translation.y + ray[1] * ray[2]*2, 0]
             # points.append(p)
 
             # use poincloud
@@ -84,6 +102,8 @@ class TransformLines(object):
             v.z = p[2]
             ls.start = v
             lreg.segments.append(ls)
+            self.a2.plot(p[0], p[1], "bo")
+            self.f2.canvas.draw()
 
         self.line_relative_pub.publish(lreg)
 
