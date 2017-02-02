@@ -15,7 +15,7 @@ from tf.listener import TransformListener
 
 
 def angle_b(a):
-    b = (1, 0)
+    b = (0, 1)
     arccos_input = dot(a, b) / norm(a) / norm(b)
     arccos_input = 1.0 if arccos_input > 1.0 else arccos_input
     arccos_input = -1.0 if arccos_input < -1.0 else arccos_input
@@ -33,14 +33,12 @@ class FakeLaser(object):
 
     def _callback_lines(self, lines):
         linepoints = [(x.start.x, x.start.y) for x in lines.segments]
-        relp =[]
-        for x, y in linepoints:
-            relp.append((x, y))
 
         for deg in range(360):
             ls = LaserScan()
             ls.header.frame_id = lines.header.frame_id
             ls.header.stamp = lines.header.stamp
+            ls.range_max = 12.0
 
             ls.angle_increment = np.deg2rad(1)
             ls.angle_min = np.deg2rad(deg - 1)
@@ -51,7 +49,7 @@ class FakeLaser(object):
             print(se)
             if len(se) > 0:
                 for scan in se:
-                    ls.ranges.append(math.sqrt(scan[0] ** 2 * scan[1] ** 2))
+                    ls.ranges.append(math.sqrt(scan[0] ** 2 + scan[1] ** 2))
                     print(ls.ranges)
                 self.pub_laser.publish(ls)
 
