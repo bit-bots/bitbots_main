@@ -264,7 +264,7 @@ void mitecom::send_data(void)
     {
         if ((it->second)->get_lastUpdate() + 3000 < getCurrentTime())
         {
-            printf("Mitecom: I didn't hear from %d for a while. Good bye, %d.\n", it->first, it->first);
+            printf("Mitecom: I didn't hear from %d for a while. Good bye, %d.\n", it->first, it->first); //todo change to ROS debug
             delete teamRobotData[it->first];
             teamRobotData.erase(it++);
             //delete teamRobotData[teamMate.robotID]
@@ -292,28 +292,24 @@ void mitecom::recieve_data(void)
         MixedTeamMate teamMate = MixedTeamParser::parseIncoming(buff, messageLength, m_teamID);
         if (teamMate.robotID == -1)
         {
-            printf("Mitecom: Invalid Data\n");
+            printf("Mitecom: Invalid Data\n"); //todo change to ROS debug
         }
         else if (teamMate.robotID > 30)
         {
-            printf("Mitecom: Too high RobotID: %d\n", teamMate.robotID);
+            printf("Mitecom: Too high RobotID: %d\n", teamMate.robotID); //todo change to ROS debug
         }
         else if (teamMate.robotID != m_robotID)
         {
             if (teamRobotData.find(teamMate.robotID) == teamRobotData.end()) {
-                printf("Mitecom: Adding robot %d to my list of team mates. Welcome.\n", teamMate.robotID);
+                printf("Mitecom: Adding robot %d to my list of team mates. Welcome.\n", teamMate.robotID); //todo change to ROS debug
                 teamRobotData[teamMate.robotID] = new TeamMateData();
             }
 
             // add team mate to our map
-            //teamMates[teamMate.robotID] = teamMate;
             teamRobotData[teamMate.robotID]->setData(teamMate);
-            teamRobotData[teamMate.robotID]->set_lastUpdate(getCurrentTime());
-
             // remember the last time (i.e. now) that we heard from this robot
-            //teamMates[teamMate.robotID].lastUpdate = getCurrentTime();
+            teamRobotData[teamMate.robotID]->set_lastUpdate(getCurrentTime());
         }
-
     }
     else
     {
