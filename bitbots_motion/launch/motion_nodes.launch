@@ -1,6 +1,8 @@
 <launch>
     <include file="$(find bitbots_speaker)/launch/speaker.launch"/>
 
+    <node name="buttons" pkg="bitbots_buttons" type="button_node.py" />
+
     <node name="pause" pkg="bitbots_pause" type="pause.py"/>
 
     <node name="animation" pkg="bitbots_animation" type="animation_node.py"/>

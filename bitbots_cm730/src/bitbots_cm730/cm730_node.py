@@ -4,6 +4,7 @@ import time
 
 import math
 # from Cython.Includes.cpython.exc import PyErr_CheckSignals
+import traceback
 
 from trajectory_msgs.msg import JointTrajectory
 from std_msgs.msg import String
@@ -29,11 +30,12 @@ class CM730Node:
     """
 
     def __init__(self):
-        rospy.init_node('bitbots_cm730', anonymous=False)
+        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
+        rospy.init_node('bitbots_cm730', log_level=log_level, anonymous=False)
 
         # --- Class Variables ---
 
-        self.goal_pose = Pose()
+        self.goal_pose = None
         self.cm_730 = CM730()
         self.led_eye = (0, 0, 0)
         self.led_head = (0, 0, 0)
@@ -74,19 +76,26 @@ class CM730Node:
         motor_goals = []
         joints = msg.joint_names
         # we can handle only one position, no real trajectory
+        # they are in radiant because its ros standard
         positions = msg.points[0].positions
         i = 0
         for joint in joints:
-            if positions[i] > self.joint_limits[joint]['max']:
+            # joint limits are in degrees
+            pos_in_deg = math.degrees(positions[i])
+            if pos_in_deg > self.joint_limits[joint]['max']:
                 motor_goals.append(self.joint_limits[joint]['max'])
-                rospy.logdebug("Joint command over max. Joint: %s Position: %f", (joint, positions[i]))
-            elif positions[i] < self.joint_limits[joint]['min']:
+                rospy.logwarn("Joint command over max. Joint: " + str(joint) + " Position: " + str(pos_in_deg))
+            elif pos_in_deg < self.joint_limits[joint]['min']:
                 motor_goals.append(self.joint_limits[joint]['min'])
-                rospy.logdebug("Joint command under min. Joint: %s Position: %f", (joint, positions[i]))
+                rospy.logwarn("Joint command under min. Joint: " + str(joint) + " Position: " + str(pos_in_deg))
             else:
-                motor_goals.append(math.degrees(positions[i]))
+                motor_goals.append(pos_in_deg)
             i += 1
+        rospy.loginfo("goals: " + str(motor_goals))
         # update goal pose accordingly
+        if self.goal_pose is None:
+            # if its the first time initiate Pose object
+            self.goal_pose = Pose()
         self.goal_pose.set_goals(joints, motor_goals)
 
     def update_forever(self):
@@ -94,23 +103,32 @@ class CM730Node:
         iteration = 0
         duration_avg = 0
         start = time.time()
+        # big try block to switch of motor power in case of error
+        try:
+            while not rospy.is_shutdown():
+                self.update_once()
 
-        while not rospy.is_shutdown():
-            self.update_once()
+                # Count to get the update frequency
+                iteration += 1
+                if iteration < 100:
+                    continue
 
-            # Count to get the update frequency
-            iteration += 1
-            if iteration < 100:
-                continue
+                if duration_avg > 0:
+                    duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
+                else:
+                    duration_avg = (time.time() - start)
 
-            if duration_avg > 0:
-                duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
-            else:
-                duration_avg = (time.time() - start)
+                rospy.loginfo("Updates/Sec %f", iteration / duration_avg)
+                iteration = 0
+                start = time.time()
 
-            rospy.loginfo("Updates/Sec %f", iteration / duration_avg)
-            iteration = 0
-            start = time.time()
+            # switch of motor power in the end
+            self.cm_730.switch_motor_power(False)
+        except:
+            # swicht of motor power in case of problem
+            self.cm_730.switch_motor_power(False)
+            # print traceback
+            traceback.print_exc()
 
     def update_once(self):
         """ Updates sensor data with :func:`update_sensor_data`, publishes the data and sends the motor commands.

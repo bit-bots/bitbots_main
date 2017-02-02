@@ -57,8 +57,9 @@ cdef class CM730(object):
         offsets = rospy.get_param("/offsets")
         self.joints = rospy.get_param("/joints")
 
-        self.joint_offsets =  [0] #todo this is just a hack to make this work. find real error
-        for i in range(1, len(self.joints)):
+        self.joint_offsets =  [0]
+        # sort offsets to list with motor ids
+        for i in range(len(self.joints)):
             self.joint_offsets.append(offsets[self.joints[i]['name']])
 
         self.ctrl = Controller(serial)
@@ -320,8 +321,6 @@ cdef class CM730(object):
                 continue
 
             if joint.is_active():
-                rospy.loginfo(self.joint_offsets)
-                rospy.loginfo(joint.get_cid())
                 joint_value = int(joint.get_goal()) + \
                     self.joint_offsets[joint.get_cid()]
                 goal_packet.add(joint.get_cid(),
@@ -374,7 +373,7 @@ cdef class CM730(object):
         # wir machen nur etwas be änderungen des aktuellen statusses
         if state and not self.dxl_power:
             # anschalten
-            rospy.loginfo("Switch dxl_power back on")
+            rospy.loginfo("Switch dxl_power on")
             self.ctrl.write_register(ID_CM730, CM730_REGISTER.dxl_power, 1)
             # wir warten einen Augenblick bis die Motoeren auch wirklich wieder
             # wieder an und gebootet sind
