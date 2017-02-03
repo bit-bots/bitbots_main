@@ -549,7 +549,7 @@ cdef class Controller:
         cdef bytes pystr
         cdef int orig_bytecount = bytecount
         pystr, bytecount = self.serial.read(bytecount)
-        if bytecount != orig_bytecount:
+        if bytecount != orig_bytecount and DEBUG:
             rospy.logwarn("Got only %d of %d bytes, trying to interpret anyway!" % (bytecount, orig_bytecount))
         cdef ubyte* data = <ubyte*><char*>pystr
 
@@ -582,7 +582,7 @@ cdef class Controller:
                         if bytecount != orig_bytecount:#
                             # if there are less bytes that it should be, we try recovering via strategy shift
                             viewstart -= 1
-                            rospy.logwarn("Possible corrupted Haedder, try to interpret with an imaginarry 0xff in front")
+                            if DEBUG: rospy.logdebug("Possible corrupted header, try to interpret with an imaginarry 0xff in front")
                         else:
                             # Alternate recovery strategy found by observing that if the haedder is corrupt, an
                             # additional byte is found after the haedder
@@ -591,9 +591,9 @@ cdef class Controller:
                             data[viewstart + 2] = data[viewstart + 1]
                             data[viewstart + 1] = data[viewstart + 0]
                             data[viewstart + 0] = 0xff
-                            rospy.logwarn("Possible corrupted Haedder, try to interpret with a shift off the haedder")
+                            if DEBUG: rospy.logdebug("Possible corrupted header, try to interpret with a shift off the haedder")
                         break
-                rospy.loginfo("Search packetstart!!, drop byte: %s" % hex(data[viewstart]))
+                if DEBUG: rospy.logdebug("Search packetstart!!, drop byte: %s" % hex(data[viewstart]))
                 # We drop the first byte and try to get a new one, as it is possible
                 # that the byte is stray byte from a former invalid read/write
                 viewstart += 1
@@ -611,7 +611,7 @@ cdef class Controller:
                         # if we reach this point it is very likely that the package header was corrupt as if
                         # it was a stray byte in front of our packet there should be a byte in the que, if it is not
                         # it is highly probable that one of the 0xff bytes in the package were corrupted
-                        rospy.logwarn("Could not read a byte from bus after dropping a byte, likely a corrupt packet header")
+                        if DEBUG: rospy.logdebug("Could not read a byte from bus after dropping a byte, likely a corrupt packet header")
                         pass
                     if DEBUG:
                         print "Data (header): ", (hex(data[viewstart+0]), hex(data[viewstart+1]), hex(data[viewstart+2]),
@@ -620,7 +620,7 @@ cdef class Controller:
 
             if not(viewstart + 6 <= bytecount):
                 # we have reached the end of the data (-6 bytes as the header of one packet is 6 bytes)
-                rospy.logwarn("Unexpected end of packet")
+                if DEBUG: rospy.logdebug("Unexpected end of packet")
                 break
 
             size = 4 + data[viewstart+3]
@@ -644,7 +644,7 @@ cdef class Controller:
         if len(packets) == 0:
             raise IOError("No packets received")
 
-        if len(packets) < count:
+        if len(packets) < count and DEBUG:
             rospy.logwarn("Got only %d of %d packets" % (len(packets) ,count))
 
         return packets

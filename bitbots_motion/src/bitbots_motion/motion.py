@@ -134,6 +134,7 @@ class Motion(object):
         """Gets the current motor positions and updates the representing pose accordingly."""
         self.robo_pose.set_positions(list(msg.name), list(msg.position))
         self.robo_pose.set_speeds(list(msg.name), list(msg.velocity))
+        VALUES.last_hardware_update = time.time()
 
     def reconfigure(self, config, level):
         """ Dynamic reconfigure of the fall checker values."""
@@ -183,6 +184,7 @@ class Motion(object):
             self.animation_running = True
             VALUES.external_animation_finished = False
             if req.motion:
+                rospy.logwarn("setting animation playing")
                 # comming from ourselves
                 # state machine already know that we're playing it, but we set the value to be sure
                 VALUES.motion_animation_playing = True
@@ -202,6 +204,7 @@ class Motion(object):
         if req.last_frame:
             rospy.logwarn("last frame")
             if req.motion:
+                rospy.logwarn("setting animation finished")
                 # This was an animation from the state machine
                 VALUES.motion_animation_playing = False
                 VALUES.motion_animation_finished = True

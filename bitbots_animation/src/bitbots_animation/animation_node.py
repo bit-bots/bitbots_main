@@ -102,8 +102,8 @@ class PlayAnimationAction(object):
             self._as.set_aborted(False, "Animation not found")
             return
         except ValueError:
-            rospy.logwarn("Animation '%s' had an ValueError. Propably some values, like 'name', were not set in the "
-                          "animation file." % goal.animation)
+            rospy.logwarn("Animation '%s' had an ValueError. Propably there is a syntax error in the animation file. "
+                          "See traceback" % goal.animation)
             traceback.print_exc()
             self._as.set_aborted(False, "Animation not found")
             return

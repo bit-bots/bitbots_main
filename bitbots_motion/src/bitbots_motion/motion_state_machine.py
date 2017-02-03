@@ -32,7 +32,7 @@ class MotionStateMachine(AbstractStateMachine):
         VALUES.soft_start = soft_start
         VALUES.start_test = start_test
         VALUES.last_request = 0
-        VALUES.last_hardware_update = 0
+        VALUES.last_hardware_update = None
 
         self.error_state = ShutDown()
         self.state_publisher = state_publisher
@@ -65,7 +65,7 @@ class Startup(AbstractState):
 
     def evaluate(self):
         # leave this if we got a hardware response, or after some time
-        if VALUES.last_hardware_update is not 0 or time.time() - VALUES.start_up_time > self.start_time_limit:
+        if VALUES.last_hardware_update is not None or time.time() - VALUES.start_up_time > self.start_time_limit:
             # check if we directly go into a special state, if not, got to get up
             if VALUES.start_test:
                 # todo ping motors
@@ -229,8 +229,12 @@ class GettingUp(AbstractState):
     def entry(self):
         rospy.logdebug("Getting up!")
         self.next_state = GettingUpSecond()
-        self.start_animation(
-            VALUES.fall_checker.check_fallen(VALUES.raw_gyro, VALUES.smooth_gyro, VALUES.robo_angle))
+        fallen = VALUES.fall_checker.check_fallen(VALUES.raw_gyro, VALUES.smooth_gyro, VALUES.robo_angle)
+        if fallen is not None:
+            self.start_animation(fallen)
+        else:
+            # looks like we didn't fall
+            self.next_state = Controllable()
 
     def evaluate(self):
         # wait for animation started in entry
@@ -299,7 +303,7 @@ class Controllable(AbstractState):
             rospy.logwarn("die time")
             return ShutDownAnimation()
 
-        if VALUES.standupflag:
+        if VALUES.standup_flag:
             ## Falling detection
             falling_pose = VALUES.fall_checker.check_falling(VALUES.not_so_smooth_gyro)
             if falling_pose:
@@ -331,9 +335,10 @@ class Falling(AbstractState):
 
         # go directly in falling pose
         falling_pose = VALUES.fall_checker.check_falling(VALUES.not_so_smooth_gyro)
+        rospy.logwarn(falling_pose)
         if falling_pose is not None:
             # we're falling, stay in falling
-            self.next_state = Falling()
+            self.next_state = Controllable()
             self.start_animation(falling_pose)
         else:
             # we're not falling anymore
@@ -526,20 +531,20 @@ def switch_motor_power(state):
 
 
 CONNECTIONS = {Startup: [Controllable, Softoff, GettingUp, Record, PenaltyAnimationIn],
-                            Softoff: [Controllable, ShutDown, Record],
-                            Record: [Controllable],
-                            PenaltyAnimationIn: [Penalty],
-                            Penalty: [PenaltyAnimationOut],
-                            PenaltyAnimationOut: [Controllable],
-                            GettingUp: [Falling, Fallen, GettingUpSecond],
-                            GettingUpSecond: [Falling, Fallen, Controllable],
-                            Controllable: [ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
-                                           AnimationRunning, Walking],
-                            Falling: [Fallen, Controllable],
-                            Fallen: [GettingUp],
-                            Walking: [ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
-                                      WalkingStopping, Controllable],
-                            WalkingStopping: [Controllable],
-                            AnimationRunning: [Controllable],
-                            ShutDownAnimation: [ShutDown]
-        }
+               Softoff: [Controllable, ShutDown, Record],
+               Record: [Controllable],
+               PenaltyAnimationIn: [Penalty],
+               Penalty: [PenaltyAnimationOut],
+               PenaltyAnimationOut: [Controllable],
+               GettingUp: [Falling, Fallen, GettingUpSecond],
+               GettingUpSecond: [Falling, Fallen, Controllable],
+               Controllable: [ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
+                              AnimationRunning, Walking],
+               Falling: [Fallen, Controllable],
+               Fallen: [GettingUp],
+               Walking: [ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
+                         WalkingStopping, Controllable],
+               WalkingStopping: [Controllable],
+               AnimationRunning: [Controllable],
+               ShutDownAnimation: [ShutDown]
+               }

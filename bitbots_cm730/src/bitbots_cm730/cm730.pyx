@@ -226,7 +226,7 @@ cdef class CM730(object):
                 else:
                     #get all values
                     button, _, gyro, accel, voltage = values
-                    rospy.logdebug_throttle(1, "CM730.Voltage: " + str(voltage))
+                    #rospy.logdebug_throttle(10, "CM730.Voltage: " + str(voltage))
                     if voltage < 105:
                         rospy.logwarn_throttle(1, "Low Voltage!!")
                     if voltage < 100:

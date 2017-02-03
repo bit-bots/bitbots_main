@@ -40,6 +40,20 @@ class CM730Node:
         self.led_eye = (0, 0, 0)
         self.led_head = (0, 0, 0)
 
+        # --- Setting Params ---
+        joints = rospy.get_param("/joints")
+        self.joint_limits = {}
+        # problem is, that the number of motors is not known at build time, so write them into params now
+        for motor in joints:
+            min_value = -180
+            max_value = 180
+            if 'max' in motor['limits']:
+                max_value = motor['limits']['max']
+            if 'min' in motor['limits']:
+                min_value = motor['limits']['min']
+            rospy.set_param("/joints/" + str(motor['name']), {'min': min_value, 'max': max_value})
+            self.joint_limits[motor['name']] = {'min': min_value, 'max': max_value}
+
         # --- Initialize Topics ---
         rospy.Subscriber("/motion_motor_goals", JointTrajectory, self.update_motor_goals)
         self.joint_publisher = rospy.Publisher('/current_motor_positions', JointState, queue_size=10)
@@ -54,19 +68,6 @@ class CM730Node:
 
         speak("CM730 connected", self.speak_publisher)
 
-        # --- Setting Params ---
-        joints = rospy.get_param("/joints")
-        self.joint_limits = {}
-        # problem is, that the number of motors is not known at build time, so write them into params now
-        for motor in joints:
-            min_value = -180
-            max_value = 180
-            if 'max' in motor['limits']:
-                max_value = motor['limits']['max']
-            if 'min' in motor['limits']:
-                min_value = motor['limits']['min']
-            rospy.set_param("/joints/" + str(motor['name']), {'min': min_value, 'max': max_value})
-            self.joint_limits[motor['name']] = {'min': min_value, 'max': max_value}
         # start the endless loop
         self.update_forever()
 
@@ -119,7 +120,7 @@ class CM730Node:
                 else:
                     duration_avg = (time.time() - start)
 
-                rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
+                # rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
                 iteration = 0
                 start = time.time()
 
@@ -224,11 +225,11 @@ class CM730Node:
             temperatures.append(ros_temp)
         msg.temperature = temperatures
         msg.voltage = voltages
-        self.temp_publisher(msg)
+        self.temp_publisher.publish(msg)
 
     def publish_imu(self, gyro, accel):
         msg = Imu()
-        msg.linear_acceleration = accel
+        msg.linear_acceleration = DataVector(accel[1], accel[0], accel[2])  # axis are different in cm board
         msg.angular_velocity = gyro
         self.imu_publisher.publish(msg)
 
