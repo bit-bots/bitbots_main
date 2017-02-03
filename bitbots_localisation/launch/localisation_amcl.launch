@@ -3,8 +3,9 @@
     <!--<node name="fake_laser" pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" />-->
     <node name="fake_laserdata" pkg="bitbots_localisation" type="fake_laserdata.py" />
 
-   <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localisation)/models/linemap.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localisation)/models/linemap.yaml"/>
 
+    <node name="init_pose" pkg="bitbots_localisation" type="init_position.py" />
     <node name="amcl_particlefilter" pkg="amcl" type="amcl">
 
     </node>
