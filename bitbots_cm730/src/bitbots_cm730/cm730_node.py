@@ -84,14 +84,15 @@ class CM730Node:
             pos_in_deg = math.degrees(positions[i])
             if pos_in_deg > self.joint_limits[joint]['max']:
                 motor_goals.append(self.joint_limits[joint]['max'])
-                rospy.logwarn("Joint command over max. Joint: " + str(joint) + " Position: " + str(pos_in_deg))
+                rospy.logwarn("Joint command over max. Joint: " + str(joint) + " limit " +
+                              str(self.joint_limits[joint]['max']) + " setted Position: " + str(pos_in_deg))
             elif pos_in_deg < self.joint_limits[joint]['min']:
                 motor_goals.append(self.joint_limits[joint]['min'])
-                rospy.logwarn("Joint command under min. Joint: " + str(joint) + " Position: " + str(pos_in_deg))
+                rospy.logwarn("Joint command under min. Joint: " + str(joint) + " limit " +
+                              str(self.joint_limits[joint]['min']) + " setted Position: " + str(pos_in_deg))
             else:
                 motor_goals.append(pos_in_deg)
             i += 1
-        rospy.loginfo("goals: " + str(motor_goals))
         # update goal pose accordingly
         if self.goal_pose is None:
             # if its the first time initiate Pose object
@@ -118,7 +119,7 @@ class CM730Node:
                 else:
                     duration_avg = (time.time() - start)
 
-                rospy.loginfo("Updates/Sec %f", iteration / duration_avg)
+                rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
                 iteration = 0
                 start = time.time()
 

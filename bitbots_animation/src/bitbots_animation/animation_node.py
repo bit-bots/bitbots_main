@@ -101,6 +101,12 @@ class PlayAnimationAction(object):
             rospy.logwarn("Animation '%s' not found" % goal.animation)
             self._as.set_aborted(False, "Animation not found")
             return
+        except ValueError:
+            rospy.logwarn("Animation '%s' had an ValueError. Propably some values, like 'name', were not set in the "
+                          "animation file." % goal.animation)
+            traceback.print_exc()
+            self._as.set_aborted(False, "Animation not found")
+            return
         animator = Animator(animation, self.current_pose)
         animfunc = animator.playfunc(0.025)  # todo dynamic reconfigure this value
 

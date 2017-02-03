@@ -13,6 +13,6 @@ install(DIRECTORY resource
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-install(PROGRAMS scripts/rqt_graph
+install(PROGRAMS scripts/motion_viz
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

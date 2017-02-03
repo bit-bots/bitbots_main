@@ -144,7 +144,6 @@ class Motion(object):
     def publish_motor_goals(self):
         """ Publish the goal pose as joint message"""
         # we can only handle one point and not a full trajectory
-        rospy.loginfo("publishing motor goals")
         traj_msg = pose_to_traj_msg(self.goal_pose)
         self.joint_goal_publisher.publish(traj_msg)
 

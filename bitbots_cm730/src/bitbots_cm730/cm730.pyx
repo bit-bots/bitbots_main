@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #-*- coding:utf-8 -*-
 import rospy
 import time
@@ -147,7 +146,7 @@ cdef class CM730(object):
             else:
                 result = self.ctrl.process(self.read_packet2)
         except IOError as e:
-            rospy.logdebug("Reading error: %s", str(e))
+            rospy.logdebug_throttle(1, "Reading error: " + str(e))
             if self.last_io_success > 0 and time.time() - self.last_io_success > 2:
                 #we tell that we are stuck
                 return -1, -1
@@ -229,7 +228,7 @@ cdef class CM730(object):
                     button, _, gyro, accel, voltage = values
                     rospy.logdebug_throttle(1, "CM730.Voltage: " + str(voltage))
                     if voltage < 105:
-                        rospy.logwarn("Low Voltage!!")
+                        rospy.logwarn_throttle(1, "Low Voltage!!")
                     if voltage < 100:
                         self.low_voltage_counter += 1
                         if self.low_voltage_counter > 10:
@@ -256,7 +255,7 @@ cdef class CM730(object):
 
                 if temperature > 60:
                     fmt = "Motor cid=%d has a temperature of %1.1f°C: EMERGENCY SHUT DOWN!"
-                    rospy.logwarn(fmt % (cid, temperature))
+                    rospy.logwarn(1, fmt % (cid, temperature))
                     raise SystemExit(fmt % (cid, temperature))
         self.sensor_all_cid += 1
         return button, gyro, accel, pose

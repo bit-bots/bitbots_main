@@ -1,7 +1,7 @@
 <library path="src">
   <class name="MotionViz" type="motion_viz.motion_viz.MotionViz" base_class_type="rqt_gui_py::Plugin">
     <description>
-      A Python GUI plugin to visualize a ROS computation graph.
+      A Python GUI plugin to visualize the motion state machine
     </description>
     <qtgui>
       <group>
@@ -9,7 +9,7 @@
         <icon type="theme">folder</icon>
         <statustip>Plugins related to introspection.</statustip>
       </group>
-      <label>Node Graph</label>
+      <label>Motion Viz</label>
       <icon type="theme">preferences-system-network</icon>
       <statustip>A Python GUI plugin for visualizing the ROS computation graph.</statustip>
     </qtgui>
