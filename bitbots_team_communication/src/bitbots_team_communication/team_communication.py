@@ -4,12 +4,12 @@ import math
 import rospy
 import time
 
-from humanoid_league_msgs.msg import Role, Action, Position, MotionState, BallRelative, TeamData, Position2D, GoalRelative, ObstaclesRelative
+from humanoid_league_msgs.msg import Role, Action, Position, MotionState, BallRelative, TeamData, Position2D, GoalRelative, ObstaclesRelative, ObstacleRelative
 
 from geometry_msgs.msg import Pose2D
 
 from bitbots_team_communication.mitecom.mitecom import MiteCom, STATE_PENALIZED, ROLE_IDLING, ACTION_UNDEFINED, \
-    STATE_INACTIVE
+    STATE_INACTIVE, STATE_ACTIVE
 
 
 class TeamCommunication(object):
@@ -64,13 +64,14 @@ class TeamCommunication(object):
         rospy.Subscriber("goal_relative", GoalRelative, self.goal_callback)
         rospy.Subscriber("obstacle_relative", ObstaclesRelative, self.obstacle_callback)
 
+        self.run()
+
     def run(self):
         mitecom = MiteCom(self.port, self.team)
         mitecom.set_robot_id(self.player)
 
         while not rospy.is_shutdown():
             #todo check if transmitting while beeing penalized is allowed
-
             # state
             mitecom.set_state(self.state)
             mitecom.set_action(self.action)
@@ -82,7 +83,7 @@ class TeamCommunication(object):
 
             # ball
             if self.ball_belief is not None and self.ball_belief > 0 and not self.state == STATE_PENALIZED:
-                mitecom.set_relative_ball(self.ball_relative_x, self.ball_relative_y)
+                mitecom.set_relative_ball(self.ball_relative_x, self.ball_relative_y, self.ball_belief)
 
             # opponent goal
             if self.oppgoal_belief is not None and self.oppgoal_belief > 0 and not self.state == STATE_PENALIZED:
@@ -113,10 +114,10 @@ class TeamCommunication(object):
                     
             # time to ball
             if self.time_to_position_at_ball is not None:
-                mitecom.set_ball_time(self.time_to_position_at_ball)
+                mitecom.set_time_to_ball(self.time_to_position_at_ball)
 
             # strategy
-            if self.offensive_side is not None
+            if self.offensive_side is not None:
                 mitecom.set_kickoff_offence_side(self.offensive_side)
 
             mitecom.send_data()
@@ -277,12 +278,12 @@ class TeamCommunication(object):
 
     def motion_state_callback(self, msg):
         state = msg.state
-        if state == MotionState.PENALTY or state == MotionState.PENALTY_ANIMATION:
+        if state == MotionState.PENALTY:
             self.state = STATE_PENALIZED
         elif state == MotionState.STARTUP or state == MotionState.SHUTDOWN or state == MotionState.RECORD:
             self.state = STATE_INACTIVE
         else:
-            self.state = MotionState.STATE_ACTIVE
+            self.state = STATE_ACTIVE
 
     def position_callback(self, msg):
         # conversion from m (ROS message) to mm (mitecom)
@@ -303,16 +304,22 @@ class TeamCommunication(object):
 
     def goal_callback(self, msg):
         #todo check if this is a good way to compute the position
+        if msg.positions is None or msg.positions == []:
+            return
         post_a = msg.positions[0]
-        post_b = msg.positions[1]
-        self.oppgoal_relative_x = (post_a.x - post_b.x) / 2 + post_a.x
-        self.oppgoal_relative_y = (post_a.y - post_b.y) / 2 + post_a.y
+        if len(msg.positions) > 1:
+            post_b = msg.positions[1]
+            self.oppgoal_relative_x = (post_a.x - post_b.x) / 2 + post_a.x
+            self.oppgoal_relative_y = (post_a.y - post_b.y) / 2 + post_a.y
+        else:
+            self.oppgoal_relative_x = post_a.x
+            self.oppgoal_relative_y = post_a.y
         self.oppgoal_belief = msg.confidence
 
     def obstacle_callback(self, msg):
         # todo get own team color
-        team_color = CYAN_ROBOT
-        opponent_color = MAGENTA_ROBOT
+        team_color = ObstacleRelative.CYAN_ROBOT
+        opponent_color = ObstacleRelative.MAGENTA_ROBOT
         self.opponent_robots = []
         self.team_robots = []
         for obstacle in msg.obstacles:
@@ -325,4 +332,3 @@ class TeamCommunication(object):
 if __name__ == "__main__":
     print("Starting Team Communication")
     TeamCommunication()
-

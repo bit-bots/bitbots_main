@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_team_communication)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake) #  TODO: das mus dynamisch
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../bitbots_common/cmake) #  TODO: das mus dynamisch
 
-#include(BitBotsIncludes)
-include(UseCython)
+include(BitBotsIncludes)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
