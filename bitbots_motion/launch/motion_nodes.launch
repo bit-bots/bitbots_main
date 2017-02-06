@@ -5,7 +5,7 @@
 
     <node name="pause" pkg="bitbots_pause" type="pause.py"/>
 
-    <node name="animation" pkg="bitbots_animation" type="animation_node.py"/>
+    <include file="$(find bitbots_animation)/launch/animation.launch"/>
 
     <rosparam file="$(find bitbots_motion)/config/motion.yaml" command="load"/>
     <node name="motion" pkg="bitbots_motion" type="motion.py" args="" respawn="false"/>

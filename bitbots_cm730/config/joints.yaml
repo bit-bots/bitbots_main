@@ -84,13 +84,13 @@ joints:
     opposing: 13
     inverted: True
   - id: 15
-    limits: {default: 0, max: 94, min: -71}
+    limits: {default: 0, max: 100, min: -71}
     name: RAnklePitch
     tags: [legs, rleg, rfoot, anklepitch, feet, right, rlegpitch, legpitch, '15']
     opposing: 16
     inverted: True
   - id: 16
-    limits: {default: 0, max: 71, min: -94}
+    limits: {default: 0, max: 71, min: -100}
     name: LAnklePitch
     tags: [legs, lleg, lfoot, anklepitch, feet, left, llegpitch, legpitch, '16']
     opposing: 15

@@ -74,12 +74,13 @@ class CM730Node:
     def update_motor_goals(self, msg):
         """ Callback for subscription on motorgoals topic.
         We can only handle the first point of a JointTrajectory :( """
-        rospy.logwarn("updating motors " + str(msg.header.seq))
         motor_goals = []
+        motor_speeds = []
         joints = msg.joint_names
         # we can handle only one position, no real trajectory
         # they are in radiant because its ros standard
         positions = msg.points[0].positions
+        velocities = msg.points[0].velocities
         i = 0
         for joint in joints:
             # joint limits are in degrees
@@ -94,12 +95,14 @@ class CM730Node:
                               str(self.joint_limits[joint]['min']) + " setted Position: " + str(pos_in_deg))
             else:
                 motor_goals.append(pos_in_deg)
+            motor_speeds.append(velocities[i])
             i += 1
         # update goal pose accordingly
         if self.goal_pose is None:
             # if its the first time initiate Pose object
             self.goal_pose = Pose()
         self.goal_pose.set_goals(joints, motor_goals)
+        self.goal_pose.set_speeds(joints, motor_speeds)
 
     def update_forever(self):
         """ Calls :func:`update_once` in an infinite loop """
@@ -153,6 +156,8 @@ class CM730Node:
             self.publish_buttons(button1, button2)
 
         # send new position to servos
+        if self.goal_pose is not None:
+            rospy.logwarn(self.goal_pose.get_speeds())
         self.cm_730.apply_goal_pose(self.goal_pose)
 
     def update_sensor_data(self):

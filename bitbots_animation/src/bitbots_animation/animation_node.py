@@ -42,6 +42,7 @@ def keyframe_service_call(first, last, motion, pose):
     if pose is not None:
         joint_state.position = pose.get_goals()
         joint_state.name = pose.get_joint_names()
+        joint_state.velocity = pose.get_speeds()
     # else:
     #    joint_state.positions = []
     #    joint_state.name = []
@@ -121,7 +122,7 @@ class PlayAnimationAction(object):
                     # cancel old stuff and restart
                     self._as.current_goal.set_aborted()
                     self._as.accept_new_goal()
-                    rospy.sleep(0.1)  # todo this is an anti animation spam device, revaluate its value
+                    #rospy.sleep(0.1)  # todo this is an anti animation spam device, revaluate its value
                     return
                 else:
                     # can't run this animation now
@@ -133,6 +134,8 @@ class PlayAnimationAction(object):
             # if we're here we want to play the next keyframe, cause there is no other goal
             # compute next pose
             pose = animfunc(self.current_pose)
+            if pose is not None:
+                rospy.logwarn(pose.get_speeds())
             if pose is None:
                 # todo reset pid values if they were changed in animation - mabye also do this in motion, when recieving finished animation
                 # see walking node reset
@@ -150,8 +153,8 @@ class PlayAnimationAction(object):
             perc_done = int(((time.time() - animator.get_start_time()) / animator.get_duration()) * 100)
             perc_done = min(perc_done, 100)
             self._as.publish_feedback(PlayAnimationFeedback(percent_done=perc_done))
-            rospy.sleep(0.01)  #todo this is to give the motion some time to set the motors, evaluate if useful
-        rospy.sleep(0.1)  # todo this is an anti animation spam device, revaluate its value
+            #rospy.sleep(0.01)  #todo this is to give the motion some time to set the motors, evaluate if useful
+        #rospy.sleep(0.1)  # todo this is an anti animation spam device, revaluate its value
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""

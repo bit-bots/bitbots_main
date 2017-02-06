@@ -216,6 +216,7 @@ class Motion(object):
 
         # update goal pose
         self.goal_pose.set_positions(list(req.state.name), list(req.state.position))
+        self.goal_pose.set_speeds(list(req.state.name), list(req.state.velocity))
         self.publish_motor_goals()
         return True
 
@@ -242,7 +243,8 @@ class Motion(object):
             VALUES.walking_active = False
 
         # let statemachine run
-        self.state_machine.evaluate()
+        #self.state_machine.evaluate()
+        #todo deactivated for testing
 
         # now do corresponding actions depending on state of state machine
 
