@@ -347,7 +347,6 @@ class Animator:
                     curjoint = current[name]
                     speed = abs(joint.get_goal() - curjoint.get_position()) / (t_pose - t_robo)
                     joint.set_speed(min(1024, speed)) # 1024 is the highest possible value
-                    rospy.logwarn("joint: " + str(name) + " pos: " + str(curjoint.get_position()) + " goal: " + str(joint.get_goal()) + " dtime: " + str(t_pose-t_robo) + " speed:" + str(min(1024, speed)))
 
             return next
 

@@ -9,13 +9,15 @@ import time
 from std_msgs.msg import Header
 from bitbots_animation.msg import PlayAnimationResult, PlayAnimationFeedback
 from bitbots_animation.msg import PlayAnimationAction as PlayAction
-from trajectory_msgs.msg import JointTrajectoryPoint
+from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
 
 from bitbots_animation.animation import Animator, parse
 from bitbots_common.pose.pypose import PyPose as Pose
 from bitbots_animation.srv import AnimationFrame
 from sensor_msgs.msg import Imu, JointState
 from bitbots_animation.resource_manager import find_animation
+from humanoid_league_msgs.msg import Animation, MotionState
+from bitbots_common.util.pose_to_message import pose_goal_to_traj_msg
 
 
 class AnimationNode:
@@ -29,40 +31,6 @@ class AnimationNode:
         rospy.spin()
 
 
-def keyframe_service_call(first, last, motion, pose):
-    """Call the keyframe service of the motion node, to transmit the next keyframe."""
-    joint_state = JointState()
-    if pose is not None:
-        rospy.logdebug("send frame to motion: " + str(pose.get_goals()))
-    else:
-        rospy.logdebug("send empty frame to motion")
-    j_header = Header()
-    j_header.stamp = rospy.Time.now()
-    joint_state.header = j_header
-    if pose is not None:
-        joint_state.position = pose.get_goals()
-        joint_state.name = pose.get_joint_names()
-        joint_state.velocity = pose.get_speeds()
-    # else:
-    #    joint_state.positions = []
-    #    joint_state.name = []
-    header = Header()
-    header.stamp = rospy.Time.now()
-
-    timeout = rospy.wait_for_service("animation_key_frame", timeout=1)
-    if timeout:
-        rospy.logwarn("Can't access animation key frame service of motion, can't play my animation.")
-        return False
-    animation_frame_srv = rospy.ServiceProxy("animation_key_frame", AnimationFrame)
-    try:
-        response = animation_frame_srv(header, first, last, motion, joint_state)
-        return response
-    except rospy.ServiceException as exc:
-        rospy.logerr("Something went wrong calling the keyframe service.")
-        rospy.logerr(traceback.format_exc())
-        return False
-
-
 class PlayAnimationAction(object):
     _feedback = PlayAnimationFeedback
     _result = PlayAnimationResult
@@ -70,18 +38,17 @@ class PlayAnimationAction(object):
     def __init__(self, name):
         self.current_pose = Pose()
         self._action_name = name
-        self._as = actionlib.SimpleActionServer(self._action_name, PlayAction,
-                                                execute_cb=self.execute_cb, auto_start=False)
-        rospy.loginfo("Will now wait for keyframe service, before providing actions")
-        timeout = rospy.wait_for_service("animation_key_frame", timeout=60)
-        if timeout:
-            rospy.logerr("Didn't found keyframe service, can't run animation. Please start bitbots_motion")
-            exit("No motion")
-        rospy.loginfo("Found animation_key_frame service, can now start action.")
-
-        rospy.Subscriber("/joint_states", JointState, self.update_current_pose)
+        self.motion_state = 0
 
         self.dynamic_animation = rospy.get_param("/animation/dynamic", False)
+
+        rospy.Subscriber("/joint_states", JointState, self.update_current_pose)
+        rospy.Subscriber("/motion_state", MotionState, self.update_motion_state)
+        self.motion_publisher = rospy.Publisher("/animation", Animation, queue_size=100)
+
+        self._as = actionlib.SimpleActionServer(self._action_name, PlayAction,
+                                                execute_cb=self.execute_cb, auto_start=False)
+
         self._as.start()
 
     def execute_cb(self, goal):
@@ -90,6 +57,11 @@ class PlayAnimationAction(object):
 
         # publish info to the console for the user
         rospy.logfatal("Request to play animation %s", goal.animation)
+
+        if self.motion_state != 0 and not goal.motion:  # 0 means controlable
+            # we cant play an animation right now
+            # but we send a request, so that we may can soon
+            self.send_animation_request()
 
         # start animation
         try:
@@ -110,6 +82,7 @@ class PlayAnimationAction(object):
             return
         animator = Animator(parsed_animation, self.current_pose)
         animfunc = animator.playfunc(0.025)  # todo dynamic reconfigure this value
+        rate = rospy.Rate(50) #todo dependency to steprate?
 
         while not rospy.is_shutdown():
             # todo aditional time staying up after shutdown to enable motion to sit down, or play sit down directly?
@@ -122,7 +95,6 @@ class PlayAnimationAction(object):
                     # cancel old stuff and restart
                     self._as.current_goal.set_aborted()
                     self._as.accept_new_goal()
-                    #rospy.sleep(0.1)  # todo this is an anti animation spam device, revaluate its value
                     return
                 else:
                     # can't run this animation now
@@ -134,32 +106,48 @@ class PlayAnimationAction(object):
             # if we're here we want to play the next keyframe, cause there is no other goal
             # compute next pose
             pose = animfunc(self.current_pose)
-            #if pose is not None:
-                #rospy.logwarn(pose.get_speeds())
             if pose is None:
                 # todo reset pid values if they were changed in animation - mabye also do this in motion, when recieving finished animation
                 # see walking node reset
 
                 # animation is finished
                 # tell it to the motion
-                keyframe_service_call(False, True, goal.motion, None)
+                self.send_animation(False, True, goal.motion, None)
                 self._as.publish_feedback(PlayAnimationFeedback(percent_done=100))
                 # we give a positive result
                 self._as.set_succeeded(PlayAnimationResult(True))
                 return
 
-            keyframe_service_call(first, False, goal.motion, pose)
+            self.send_animation(first, False, goal.motion, pose)
             first = False  # we have sent the first frame, all frames after this can't be the first
             perc_done = int(((time.time() - animator.get_start_time()) / animator.get_duration()) * 100)
             perc_done = min(perc_done, 100)
             self._as.publish_feedback(PlayAnimationFeedback(percent_done=perc_done))
-            #rospy.sleep(0.01)  #todo this is to give the motion some time to set the motors, evaluate if useful
-        #rospy.sleep(0.1)  # todo this is an anti animation spam device, revaluate its value
+            rate.sleep()
+
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
         self.current_pose.set_positions_rad(list(msg.name), list(msg.position))
         self.current_pose.set_speeds(list(msg.name), list(msg.velocity))
+
+    def update_motion_state(self, msg):
+        self.motion_state = msg.state
+
+    def send_animation_request(self):
+        msg = Animation()
+        msg.request = True
+        self.motion_publisher.publish(msg)
+
+    def send_animation(self, first, last, motion, pose):
+        msg = Animation()
+        msg.request = False
+        msg.first = first
+        msg.last = last
+        msg.motion = motion
+        if pose is not None:
+            msg.position = pose_goal_to_traj_msg(pose)
+        self.motion_publisher.publish(msg)
 
 
 if __name__ == "__main__":

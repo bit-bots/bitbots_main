@@ -156,8 +156,6 @@ class CM730Node:
             self.publish_buttons(button1, button2)
 
         # send new position to servos
-        if self.goal_pose is not None:
-            rospy.logwarn(self.goal_pose.get_speeds())
         self.cm_730.apply_goal_pose(self.goal_pose)
 
     def update_sensor_data(self):

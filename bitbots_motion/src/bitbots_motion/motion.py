@@ -19,7 +19,7 @@ from bitbots_cm730.srv import SwitchMotorPower
 
 from bitbots_motion.motion_state_machine import MotionStateMachine, STATE_CONTROLABLE, AnimationRunning
 from dynamic_reconfigure.server import Server
-from humanoid_league_msgs.msg import MotionState
+from humanoid_league_msgs.msg import MotionState, Animation
 from humanoid_league_msgs.msg import Speak
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import JointState
@@ -81,6 +81,7 @@ class Motion(object):
         rospy.Subscriber("/imu", Imu, self.update_imu)
         rospy.Subscriber("/joint_states", JointState, self.update_current_pose)
         rospy.Subscriber("/walking_motor_goals", JointTrajectory, self.walking_goal_callback)
+        rospy.Subscriber("/animation", Animation, self.animation_callback)
         rospy.Subscriber("/head_motor_goals", JointTrajectory, self.head_goal_callback)
         rospy.Subscriber("/record_motor_goals", JointTrajectory, self.record_goal_callback)
         rospy.Subscriber("/pause", Bool, self.pause)
@@ -89,7 +90,8 @@ class Motion(object):
                                                                     bitbots_animation.msg.PlayAnimationAction)
         VALUES.animation_client = self.animation_action_client
 
-        self.animation_keyframe_service = rospy.Service("animation_key_frame", AnimationFrame, self.keyframe_callback)
+        # todo was replaced by topic
+        # self.animation_keyframe_service = rospy.Service("animation_key_frame", AnimationFrame, self.keyframe_callback)
         self.dyn_reconf = Server(motion_paramsConfig, self.reconfigure)
 
         self.main_loop()
@@ -152,7 +154,6 @@ class Motion(object):
     def joint_state_to_traj_msg(self, state):
         msg = JointTrajectoryPoint()
         msg.positions = state.position
-        # rospy.logwarn(state.position)
         msg.velocities = state.velocity
         traj_msg = JointTrajectory()
         traj_msg.points = []
@@ -175,15 +176,14 @@ class Motion(object):
             VALUES.record = True
             self.joint_goal_publisher.publish(msg)
 
-    def keyframe_callback(self, req):
+    def animation_callback(self, msg):
         """ The animation server is sending us goal positions for the next keyframe"""
-        #rospy.logwarn("first: " + str(req.first_frame) + " last: " + str(req.last_frame) + " motion: " + str(req.motion) + " pos: " + str(req.state.position))
-        VALUES.last_request = req.header.stamp.to_sec()
+        VALUES.last_request = msg.header.stamp.to_sec()
         self.animation_request_time = time.time()
-        if req.first_frame:
+        if msg.first:
             self.animation_running = True
             VALUES.external_animation_finished = False
-            if req.motion:
+            if msg.motion:
                 # comming from ourselves
                 # state machine already know that we're playing it, but we set the value to be sure
                 VALUES.motion_animation_playing = True
@@ -191,17 +191,18 @@ class Motion(object):
             else:
                 # comming from outside
                 if self.state_machine.get_current_state() != STATE_CONTROLABLE:
-                    rospy.logwarn("Motion is not controllable, animation refused.")
+                    rospy.logwarn("Motion is not controllable, animation refused.")  # todo handle this now
                     # animation has to wait
                     # state machine should try to become controllable
                     VALUES.animation_requested = True
-                    return False
+                    return
                 else:
                     # we're already controllable, go to animation running
                     VALUES.external_animation_playing = True
 
-        if req.last_frame:
-            if req.motion:
+        if msg.last:
+            # todo reset motor speeds afterward to 0
+            if msg.motion:
                 # This was an animation from the state machine
                 VALUES.motion_animation_playing = False
                 VALUES.motion_animation_finished = True
@@ -209,16 +210,19 @@ class Motion(object):
                 # this is the last frame, we want to tell the state machine, that we're finished with the animations
                 self.animation_running = False
                 VALUES.external_animation_finished = True
-                if req.state is None:
+                if msg.position is None:
                     # probably this was just to tell us we're finished
                     # we don't need to set another position to the motors
                     return
 
         # update goal pose
-        self.goal_pose.set_positions(list(req.state.name), list(req.state.position))
-        self.goal_pose.set_speeds(list(req.state.name), list(req.state.velocity))
-        self.publish_motor_goals()
-        return True
+        # self.goal_pose.set_positions(list(msg.state.name), list(msg.state.position))
+        # self.goal_pose.set_speeds(list(msg.state.name), list(msg.state.velocity))
+        # self.publish_motor_goals()
+
+        # forward positions to cm730, if some where transmitted
+        if len(msg.position.points) > 0:
+            self.joint_goal_publisher.publish(msg.position)
 
     def main_loop(self):
         """ Calls :func:`update_once` until ROS is shutting down """
@@ -232,10 +236,10 @@ class Motion(object):
         # we got external shutdown, tell it to the state machine, it will handle it
         VALUES.shut_down = True
         # now wait for it finishing the shutdown procedure
-        while not self.state_machine.is_shutdown():
-            # we still have to update everything
-            self.update_once()
-            rospy.sleep(0.01)  # todo remove
+        # while not self.state_machine.is_shutdown():
+        #    # we still have to update everything
+        #    self.update_once()
+        #    rospy.sleep(0.01)  # todo remove
 
     def update_once(self):  # todo flag setzen falls werte geändert und nur dann evaluieren
         # check if we're still walking
@@ -243,8 +247,8 @@ class Motion(object):
             VALUES.walking_active = False
 
         # let statemachine run
-        #self.state_machine.evaluate()
-        #todo deactivated for testing
+        # self.state_machine.evaluate()
+        # todo deactivated for testing
 
         # now do corresponding actions depending on state of state machine
 
@@ -276,9 +280,9 @@ class Motion(object):
                 self.goal_pose.set_positions(point.positions)  # todo oder set_goals?
                 self.goal_pose.set_speed(point.velocities)
 
-        # if we didn't return yet, there are some goals to publish
-        # todo maybe check, if goals are different from the last published ones
-        self.publish_motor_goals()
+                # if we didn't return yet, there are some goals to publish
+                # todo maybe check, if goals are different from the last published ones
+                # self.publish_motor_goals()
 
 
 def calculate_robot_angles(raw):
