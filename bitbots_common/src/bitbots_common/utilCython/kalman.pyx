@@ -71,6 +71,11 @@ cdef class TripleKalman(object):
     cdef DataVector get_angles_pvv(self, DataVector& angles_in, PyIntDataVector newRates, float dt):
         return self.get_angles_vv(angles_in, deref(newRates.get_data_vector()), dt)
 
+    cpdef PyDataVector get_angles_pvv_py(self, PyDataVector angles_in, PyIntDataVector newRates, float dt):
+        cdef DataVector vec =  self.get_angles_vv(deref(angles_in.get_data_vector()), deref(newRates.get_data_vector()), dt)
+        cpdef PyDataVector py_vec = PyDataVector(vec.get_x(), vec.get_y(), vec.get_z())
+        return  py_vec
+
     cdef DataVector get_angles_vv(self, DataVector& angles_in, IntDataVector newRates, float dt):
         cdef DataVector angles = DataVector()
         angles.set_x(self.kalman_x.get_angle2(angles_in.get_x(), newRates.get_x(), dt))
