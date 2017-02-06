@@ -81,7 +81,7 @@ class TransformLines(object):
 
             ray = cam.projectPixelTo3dRay((lineu, linev))
 
-            p = [trans.transform.translation.x + ray[0] * ray[2]*2, trans.transform.translation.y + ray[1] * ray[2]*2, 0]
+            p = [(trans.transform.translation.x + ray[0]) * ray[2]*2, (((trans.transform.translation.y + ray[1]) * ray[2])*2)+1, 0]
             # points.append(p)
 
             # use poincloud
