@@ -291,6 +291,14 @@ cdef class PyPose:
             result.append(self.get_joint(name).get_goal())
         return result
 
+    cpdef list get_goals_rad(self):
+        cdef int i = 0
+        cdef vector[string] names = self.pose.get_joint_names()
+        cdef list result =[]
+        for name in names:
+            result.append(math.radians(self.get_joint(name).get_goal()))
+        return result
+
     cpdef list get_loads(self):
         cdef int i = 0
         cdef vector[string] names = self.pose.get_joint_names()
@@ -308,6 +316,17 @@ cdef class PyPose:
         for name in names:
             self.get_joint(name).set_position(positions[i])
             i += 1
+
+    cpdef set_positions_rad(self, list names, list positions):
+        cdef int i = 0
+        cdef list result =[]
+        cdef string name
+        if len(names) != len(positions):
+            raise AssertionError("Length of names and positions does not match.")
+        for name in names:
+            self.get_joint(name).set_position(math.degrees(positions[i]))
+            i += 1
+
 
     cpdef set_speeds(self, list names, list speeds):
         cdef int i = 0
