@@ -53,7 +53,7 @@ class AbstractState(object):
         :param anim: animation to play
         :return:
         """
-        VALUES.motion_animation_playing = False # will be set true when the motion receives keyframe callback
+        VALUES.motion_animation_playing = False  # will be set true when the motion receives keyframe callback
         VALUES.motion_animation_finished = False
 
         rospy.loginfo("Playing animation " + anim)

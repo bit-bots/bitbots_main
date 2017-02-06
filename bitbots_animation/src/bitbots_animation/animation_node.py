@@ -78,7 +78,7 @@ class PlayAnimationAction(object):
             exit("No motion")
         rospy.loginfo("Found animation_key_frame service, can now start action.")
 
-        rospy.Subscriber("/current_motor_positions", JointState, self.update_current_pose)
+        rospy.Subscriber("/joint_states", JointState, self.update_current_pose)
 
         self.dynamic_animation = rospy.get_param("/animation/dynamic", False)
         self._as.start()
@@ -88,15 +88,15 @@ class PlayAnimationAction(object):
         first = True
 
         # publish info to the console for the user
-        rospy.loginfo("Request to play animation %s", goal.animation)
+        rospy.logfatal("Request to play animation %s", goal.animation)
 
         # start animation
         try:
             if not self.dynamic_animation:
                 with open(find_animation(goal.animation)) as fp:
-                    animation = parse(json.load(fp))
+                    parsed_animation = parse(json.load(fp))
             else:
-                animation = parse(goal.animation)
+                parsed_animation = parse(goal.animation)
         except IOError:
             rospy.logwarn("Animation '%s' not found" % goal.animation)
             self._as.set_aborted(False, "Animation not found")
@@ -107,10 +107,11 @@ class PlayAnimationAction(object):
             traceback.print_exc()
             self._as.set_aborted(False, "Animation not found")
             return
-        animator = Animator(animation, self.current_pose)
+        animator = Animator(parsed_animation, self.current_pose)
         animfunc = animator.playfunc(0.025)  # todo dynamic reconfigure this value
 
         while not rospy.is_shutdown():
+            # todo aditional time staying up after shutdown to enable motion to sit down, or play sit down directly?
             # first check if we have another goal
             if self._as.is_new_goal_available():
                 next_goal = self._as.next_goal
@@ -118,9 +119,9 @@ class PlayAnimationAction(object):
                 if next_goal.get_goal().motion:
                     rospy.logdebug("Accepted motion animation %s", next_goal.get_goal().animation)
                     # cancel old stuff and restart
-                    first = True
                     self._as.current_goal.set_aborted()
                     self._as.accept_new_goal()
+                    rospy.sleep(0.1)  # todo this is an anti animation spam device, revaluate its value
                     return
                 else:
                     # can't run this animation now
@@ -139,15 +140,18 @@ class PlayAnimationAction(object):
                 # animation is finished
                 # tell it to the motion
                 keyframe_service_call(False, True, goal.motion, None)
+                self._as.publish_feedback(PlayAnimationFeedback(percent_done=100))
                 # we give a positive result
                 self._as.set_succeeded(PlayAnimationResult(True))
                 return
 
             keyframe_service_call(first, False, goal.motion, pose)
-            first = False # we have sent the first frame, all frames after this can't be the first
+            first = False  # we have sent the first frame, all frames after this can't be the first
             perc_done = int(((time.time() - animator.get_start_time()) / animator.get_duration()) * 100)
             perc_done = min(perc_done, 100)
             self._as.publish_feedback(PlayAnimationFeedback(percent_done=perc_done))
+            rospy.sleep(0.01)  #todo this is to give the motion some time to set the motors, evaluate if useful
+        rospy.sleep(0.1)  # todo this is an anti animation spam device, revaluate its value
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""

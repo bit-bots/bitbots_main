@@ -56,7 +56,7 @@ class CM730Node:
 
         # --- Initialize Topics ---
         rospy.Subscriber("/motion_motor_goals", JointTrajectory, self.update_motor_goals)
-        self.joint_publisher = rospy.Publisher('/current_motor_positions', JointState, queue_size=10)
+        self.joint_publisher = rospy.Publisher('/joint_states', JointState, queue_size=10)
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
         self.temp_publisher = rospy.Publisher('/servo_data', AdditionalServoData, queue_size=10)
         self.imu_publisher = rospy.Publisher('/imu', Imu, queue_size=10)
@@ -74,6 +74,7 @@ class CM730Node:
     def update_motor_goals(self, msg):
         """ Callback for subscription on motorgoals topic.
         We can only handle the first point of a JointTrajectory :( """
+        rospy.logwarn("updating motors " + str(msg.header.seq))
         motor_goals = []
         joints = msg.joint_names
         # we can handle only one position, no real trajectory
@@ -209,7 +210,7 @@ class CM730Node:
         msg = JointState()
         msg.header.stamp = rospy.Time.now()
         msg.name = robo_pose.get_joint_names()
-        msg.position = robo_pose.get_positions()
+        msg.position = robo_pose.get_positions_rad()
         msg.velocity = robo_pose.get_speeds()
         msg.effort = robo_pose.get_loads()
         self.joint_publisher.publish(msg)
@@ -229,7 +230,7 @@ class CM730Node:
 
     def publish_imu(self, gyro, accel):
         msg = Imu()
-        msg.linear_acceleration = DataVector(accel[1], accel[0], accel[2])  # axis are different in cm board
+        msg.linear_acceleration = DataVector(accel[1] * -1, accel[0], accel[2])  # axis are different in cm board
         msg.angular_velocity = gyro
         self.imu_publisher.publish(msg)
 

@@ -49,6 +49,7 @@ class Motion(object):
         self.not_much_smoothed_gyro = numpy.array([0, 0, 0])
         self.gyro_kalman = TripleKalman()
         self.last_gyro_update_time = time.time()
+        self.robo_angle = (0, 0, 0)
 
         # Motor Positions
         self.robo_pose = Pose()
@@ -78,7 +79,7 @@ class Motion(object):
                                                 self.motion_state_publisher)
 
         rospy.Subscriber("/imu", Imu, self.update_imu)
-        rospy.Subscriber("/current_motor_positions", JointState, self.update_current_pose)
+        rospy.Subscriber("/joint_states", JointState, self.update_current_pose)
         rospy.Subscriber("/walking_motor_goals", JointTrajectory, self.walking_goal_callback)
         rospy.Subscriber("/head_motor_goals", JointTrajectory, self.head_goal_callback)
         rospy.Subscriber("/record_motor_goals", JointTrajectory, self.record_goal_callback)
@@ -100,7 +101,6 @@ class Motion(object):
     def update_imu(self, msg):
         """Gets new IMU values and computes the smoothed values of these"""
         update_time = time.time()
-        # todo check if this is not switched
         self.accel = numpy.array([msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z])
         self.gyro = numpy.array([msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z])
 
@@ -120,10 +120,11 @@ class Motion(object):
 
         # calculate the angle of the robot based on the kalman filter
         angles = calculate_robot_angles(self.accel)
+        angles_py = DataVector(angles[0], angles[1], angles[2])
         dt = time.time() - self.last_gyro_update_time
-        gyro_dataVector = DataVector(self.gyro[0], self.gyro[1], self.gyro[2])
-        #todo filtering should be reanabled
-        #angles = self.gyro_kalman.get_angles_pvv(angles, gyro_dataVector - IntDataVector(512, 512, 512), dt)
+        # todo we loose precision due to float -> int
+        gyro_data_vector = IntDataVector(self.gyro[0], self.gyro[1], self.gyro[2])
+        angles = self.gyro_kalman.get_angles_pvv_py(angles_py, gyro_data_vector - IntDataVector(512, 512, 512), dt)
         self.robo_angle = angles
 
         VALUES.robo_angle = self.robo_angle
@@ -176,15 +177,13 @@ class Motion(object):
 
     def keyframe_callback(self, req):
         """ The animation server is sending us goal positions for the next keyframe"""
-        # rospy.logwarn("got keyframe")
+        #rospy.logwarn("first: " + str(req.first_frame) + " last: " + str(req.last_frame) + " motion: " + str(req.motion) + " pos: " + str(req.state.position))
         VALUES.last_request = req.header.stamp.to_sec()
         self.animation_request_time = time.time()
         if req.first_frame:
-            rospy.logwarn("first frame")
             self.animation_running = True
             VALUES.external_animation_finished = False
             if req.motion:
-                rospy.logwarn("setting animation playing")
                 # comming from ourselves
                 # state machine already know that we're playing it, but we set the value to be sure
                 VALUES.motion_animation_playing = True
@@ -202,9 +201,7 @@ class Motion(object):
                     VALUES.external_animation_playing = True
 
         if req.last_frame:
-            rospy.logwarn("last frame")
             if req.motion:
-                rospy.logwarn("setting animation finished")
                 # This was an animation from the state machine
                 VALUES.motion_animation_playing = False
                 VALUES.motion_animation_finished = True
@@ -219,6 +216,7 @@ class Motion(object):
 
         # update goal pose
         self.goal_pose.set_positions(list(req.state.name), list(req.state.position))
+        self.publish_motor_goals()
         return True
 
     def main_loop(self):
@@ -236,8 +234,9 @@ class Motion(object):
         while not self.state_machine.is_shutdown():
             # we still have to update everything
             self.update_once()
+            rospy.sleep(0.01)  # todo remove
 
-    def update_once(self):
+    def update_once(self):  # todo flag setzen falls werte geändert und nur dann evaluieren
         # check if we're still walking
         if self.walking_motor_goal is None or rospy.Time.now() - self.walking_motor_goal.header.stamp > 0.5:
             VALUES.walking_active = False
@@ -281,7 +280,6 @@ class Motion(object):
 
 
 def calculate_robot_angles(raw):
-
     pitch_angle = calc_sin_angle(raw, numpy.array([0, 1, 0]))
     if raw[2] < 0 and raw[1] < 0:
         pitch_angle = - pitch_angle - 180

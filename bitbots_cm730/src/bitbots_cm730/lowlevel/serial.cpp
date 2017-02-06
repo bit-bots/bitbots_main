@@ -73,7 +73,7 @@ int Serial::read(uint8_t *data, size_t length) {
         i+=1;
     }
     if(rc != length) {
-        std::cout << "Timeout: " << 1e6 * timeout << " us, " << rc << " of " << length << " in " << i * 5 << " us Sleep " << now.tv_usec - start.tv_usec << " us real time"<< std::endl;
+        //std::cout << "Timeout: " << 1e6 * timeout << " us, " << rc << " of " << length << " in " << i * 5 << " us Sleep " << now.tv_usec - start.tv_usec << " us real time"<< std::endl;
         if (rc == 0)
         {
             throw std::ios_base::failure("Reading from serial interface: Not enough data");
