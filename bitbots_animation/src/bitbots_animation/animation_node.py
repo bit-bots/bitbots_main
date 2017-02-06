@@ -134,8 +134,8 @@ class PlayAnimationAction(object):
             # if we're here we want to play the next keyframe, cause there is no other goal
             # compute next pose
             pose = animfunc(self.current_pose)
-            if pose is not None:
-                rospy.logwarn(pose.get_speeds())
+            #if pose is not None:
+                #rospy.logwarn(pose.get_speeds())
             if pose is None:
                 # todo reset pid values if they were changed in animation - mabye also do this in motion, when recieving finished animation
                 # see walking node reset
@@ -158,7 +158,7 @@ class PlayAnimationAction(object):
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
-        self.current_pose.set_positions(list(msg.name), list(msg.position))
+        self.current_pose.set_positions_rad(list(msg.name), list(msg.position))
         self.current_pose.set_speeds(list(msg.name), list(msg.velocity))
 
 
