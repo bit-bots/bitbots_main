@@ -54,13 +54,20 @@ cdef class PyPose:
 
     cpdef PyJoint get_joint(self, bytes name)
     cpdef PyJoint get_joint_by_cid(self, int cid)
+    cpdef PyJoint get_joint_by_name(self, string name)
+    cpdef list get_joints_cids(self, list cids)
     cpdef string get_joint_name(self, int cid)
+    cpdef list get_joint_names_cids(self, list cids)
+
 
     cpdef list get_positions(self)
     cpdef list get_positions_rad(self)
+    cpdef list get_positions_rad_names(self, names)
     cpdef list get_speeds(self)
+    cpdef list get_speeds_names(self, names)
     cpdef list get_goals(self)
     cpdef list get_goals_rad(self)
+    cpdef list get_goal_rad_names(self, names)
     cpdef list get_loads(self)
     cpdef set_positions(self, list names, list positions)
     cpdef set_positions_rad(self, list names, list positions)

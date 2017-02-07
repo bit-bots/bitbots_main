@@ -259,6 +259,9 @@ cdef class PyPose:
     cpdef PyJoint get_joint(self, bytes pyname):
         return wrap_joint_ptr(self, self.pose.get_joint_ptr(string(<char*>pyname)))
 
+    cpdef PyJoint get_joint_by_name(self, string name):
+        return wrap_joint_ptr(self, self.pose.get_joint_ptr(name))
+
     cpdef PyJoint get_joint_by_cid(self, int cid):
         return wrap_joint_ptr(self, self.pose.get_joint_by_cid(cid))
 
@@ -276,11 +279,23 @@ cdef class PyPose:
             result.append(math.radians(self.get_joint(name).get_position()))
         return result
 
+    cpdef list get_positions_rad_names(self, names):
+        cdef list result =[]
+        for name in names:
+            result.append(math.radians(self.get_joint_by_name(name).get_position()))
+        return result
+
     cpdef list get_speeds(self):
         cdef vector[string] names = self.pose.get_joint_names()
         cdef list result =[]
         for name in names:
             result.append(self.get_joint(name).get_speed())
+        return result
+
+    cpdef list get_speeds_names(self, names):
+        cdef list result =[]
+        for name in names:
+            result.append(self.get_joint_by_name(name).get_speed())
         return result
 
     cpdef list get_goals(self):
@@ -297,6 +312,12 @@ cdef class PyPose:
         cdef list result =[]
         for name in names:
             result.append(math.radians(self.get_joint(name).get_goal()))
+        return result
+
+    cpdef list get_goal_rad_names(self, names):
+        cdef list result =[]
+        for name in names:
+            result.append(math.radians(self.get_joint_by_name(name).get_goal()))
         return result
 
     cpdef list get_loads(self):
@@ -377,6 +398,19 @@ cdef class PyPose:
             result.append(<bytes>names[i].c_str())
 
         return result
+
+    cpdef list get_joint_names_cids(self, list cids):
+        cdef list names = self.get_joint_names()
+        cdef list ret = []
+        for i in cids:
+            ret.append(names[i-1])
+        return ret
+
+    cpdef list get_joints_cids(self, list cids):
+        cdef list joints = []
+        for i in cids:
+            joints.append(self.get_joint_by_cid(i))
+        return joints
 
     cpdef string get_joint_name(self, int cid):
         cdef vector[string] names = self.pose.get_joint_names()
