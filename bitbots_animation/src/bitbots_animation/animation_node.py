@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf8 -*-
 import json
 
@@ -130,8 +130,9 @@ class PlayAnimationAction(object):
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
-        self.current_pose.set_positions_rad(list(msg.name), list(msg.position))
-        self.current_pose.set_speeds(list(msg.name), list(msg.velocity))
+        names = [x.encode("utf-8") for x in msg.name]
+        self.current_pose.set_positions_rad(names, list(msg.position))
+        self.current_pose.set_speeds(names, list(msg.velocity))
 
     def update_motion_state(self, msg):
         self.motion_state = msg.state

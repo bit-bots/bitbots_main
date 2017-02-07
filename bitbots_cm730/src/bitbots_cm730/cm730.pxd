@@ -33,6 +33,7 @@ cdef class CM730(object):
     cdef dict motor_ram_config
     cdef list joint_offsets
     cdef list joints
+    cdef bool eye_param
 
     cpdef init_read_packet(self)
     cpdef sensor_data_read(self)

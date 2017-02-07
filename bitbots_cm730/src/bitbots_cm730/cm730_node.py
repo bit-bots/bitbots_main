@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 import time
 
@@ -105,6 +105,8 @@ class CM730Node:
         if self.goal_pose is None:
             # if its the first time initiate Pose object
             self.goal_pose = Pose()
+
+        joints = [x.encode("utf8") for x in joints]
         self.goal_pose.set_goals(joints, motor_goals)
         self.goal_pose.set_speeds(joints, motor_speeds)
 
@@ -213,9 +215,9 @@ class CM730Node:
         """
         Sends the Joint States to ROS
         """
-        msg = JointState()
+        msg = JointState() #todo nich jedesmal object createn
         msg.header.stamp = rospy.Time.now()
-        msg.name = self.used_motor_names
+        msg.name = [x.decode("utf-8") for x in self.used_motor_names]
         msg.position = robo_pose.get_positions_rad_names(self.used_motor_names)
         msg.velocity = robo_pose.get_speeds_names(self.used_motor_names)
         #msg.effort = robo_pose.get_loads_names(self.used_motor_names) Not used for the moment

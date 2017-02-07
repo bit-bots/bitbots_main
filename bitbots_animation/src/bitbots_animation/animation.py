@@ -55,10 +55,11 @@ class Animation:
         """
         return self.interpolators.get(name, self.default_interpolator)
 
-    def get_steps(self, name):
+    def get_steps(self, nameb: bytes):
         """ Gibt ein Liste von :class:`Step` Objekten für das Gelenk *name*
             zurück.
         """
+        name = nameb.decode()
         time = 0
         steps = []
         for keyframe in self.keyframes:
@@ -284,7 +285,7 @@ class Animator:
             self.interpolators[joint] = ip(steps)
 
         # Start und Endzeit
-        values = self.interpolators.values()
+        values = list(self.interpolators.values())
         self.time_min = min(ip.time_min for ip in values)
         self.time_max = max(ip.time_max for ip in values)
         self.duration = self.time_max - self.time_min
@@ -377,7 +378,7 @@ def parse(info):
         anim.default_interpolator = INTERPOLATORS[info["default_interpolator"]]
 
     interpolators = info.get("interpolators", {})
-    anim.interpolators = {name: INTERPOLATORS[ip] for name, ip in interpolators.iteritems()}
+    anim.interpolators = {name: INTERPOLATORS[ip] for name, ip in interpolators.items()}
 
     keyframes = info.get("keyframes", ())
     anim.keyframes = [Keyframe(k.get('goals',{}), k.get('duration',1), k.get('pause', 0), k.get('p', {})) for k in keyframes]

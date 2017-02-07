@@ -69,12 +69,12 @@ cdef class Serial:
         fp2.write(str(os.getpid()))
         fp2.close()
         try:
-            self.serial = new _Serial(<char*>device)
+            self.serial = new _Serial(device.encode('utf8'))
         except:
             # wir greifen nicht mehr zu, lock aufgeben
             fp = open("/tmp/cm370lock","w")
             fp.write("-1")
-            fp.close
+            fp.close()
             raise
 
     def __dealloc__(self):
@@ -87,7 +87,7 @@ cdef class Serial:
             if pid and own_pid(int(pid)):
                 fp = open("/tmp/cm370lock","w")
                 fp.write("-1")
-                fp.close
+                fp.close()
         except IOError:
             pass
 

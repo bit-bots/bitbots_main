@@ -55,6 +55,7 @@ cdef class CM730(object):
         self.motor_ram_config = rospy.get_param("/mx28config/RAM")
         offsets = rospy.get_param("/offsets")
         self.joints = rospy.get_param("/joints")
+        self.eye_param = rospy.get_param("/cm730/EyesOff", False)
 
         self.joint_offsets =  [0]
         # sort offsets to list with motor ids
@@ -214,10 +215,11 @@ cdef class CM730(object):
         cdef IntDataVector gyro = None
         #cdef maxtmp = 0, maxcid = -1
         #cdef min_voltage = 1e10, max_voltage = 0
-        cdef position = None, speed=None, load=None
-        cdef voltage = None, temperature=None, button=None
+        cdef int position = 0, speed=0, load=0
+        cdef int voltage = 0, temperature=0
+        cdef button=None
 
-        for cid, values in sensor_data.iteritems():
+        for cid, values in sensor_data.items():
             if cid == ID_CM730:
                 #this is a reponse package from cm730
                 if not cid_all_values == ID_CM730 and self.dxl_power:
@@ -290,7 +292,7 @@ cdef class CM730(object):
         #if self.state == STATE_PENALTY and rospy.get_param("/cm730/EyesPenalty", false):
         #    packet.add(ID_CM730, ((255, 0, 0), (0, 0, 0)))
         #else:
-        if rospy.get_param("/cm730/EyesOff", False):
+        if self.eye_param:
             packet.add(ID_CM730, ((0, 0, 0), (0, 0, 0)))
         else:
             #todo this looks like it even didnt work before
