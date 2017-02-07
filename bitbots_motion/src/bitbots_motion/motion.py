@@ -151,16 +151,6 @@ class Motion(object):
         traj_msg = pose_to_traj_msg(self.goal_pose)
         self.joint_goal_publisher.publish(traj_msg)
 
-    def joint_state_to_traj_msg(self, state):
-        msg = JointTrajectoryPoint()
-        msg.positions = state.position
-        msg.velocities = state.velocity
-        traj_msg = JointTrajectory()
-        traj_msg.points = []
-        traj_msg.points.append(msg)
-        traj_msg.header.stamp = rospy.Time.now()
-        return traj_msg
-
     def walking_goal_callback(self, msg):
         self.walking_motor_goal = msg
         VALUES.walking_active = True
@@ -226,12 +216,31 @@ class Motion(object):
 
     def main_loop(self):
         """ Calls :func:`update_once` until ROS is shutting down """
+        iteration = 0
+        duration_avg = 0
+        start = time.time()
+        rate = rospy.Rate(200)
 
         while not rospy.is_shutdown():
             finished = self.update_once()
             if finished:
                 # Todo maybe do some last shutdown stuff after internal shutdown?
                 return
+
+            # Count to get the update frequency
+            iteration += 1
+            if iteration < 100:
+                continue
+
+            if duration_avg > 0:
+                duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
+            else:
+                duration_avg = (time.time() - start)
+
+            rospy.logwarn("Updates/Sec %f", iteration / duration_avg)
+            iteration = 0
+            start = time.time()
+            rospy.sleep(0.5)
 
         # we got external shutdown, tell it to the state machine, it will handle it
         VALUES.shut_down = True

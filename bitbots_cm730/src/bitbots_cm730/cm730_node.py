@@ -39,6 +39,10 @@ class CM730Node:
         self.cm_730 = CM730()
         self.led_eye = (0, 0, 0)
         self.led_head = (0, 0, 0)
+        robot_type_name = rospy.get_param("/robot_type_name")
+        self.used_motor_cids = rospy.get_param("/cm730/" + robot_type_name + "/motors")
+        self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
+        rospy.logwarn(self.used_motor_names)
 
         # --- Setting Params ---
         joints = rospy.get_param("/joints")
@@ -124,7 +128,7 @@ class CM730Node:
                 else:
                     duration_avg = (time.time() - start)
 
-                # rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
+                rospy.logwarn("Updates/Sec %f", iteration / duration_avg)
                 iteration = 0
                 start = time.time()
 
@@ -159,7 +163,6 @@ class CM730Node:
         self.cm_730.apply_goal_pose(self.goal_pose)
 
     def update_sensor_data(self):
-        robo_pose = Pose()
         raw_accel = None
         raw_gyro = None
         # first get data
@@ -212,10 +215,10 @@ class CM730Node:
         """
         msg = JointState()
         msg.header.stamp = rospy.Time.now()
-        msg.name = robo_pose.get_joint_names()
-        msg.position = robo_pose.get_positions_rad()
-        msg.velocity = robo_pose.get_speeds()
-        msg.effort = robo_pose.get_loads()
+        msg.name = self.used_motor_names
+        msg.position = robo_pose.get_positions_rad_names(self.used_motor_names)
+        msg.velocity = robo_pose.get_speeds_names(self.used_motor_names)
+        #msg.effort = robo_pose.get_loads_names(self.used_motor_names) Not used for the moment
         self.joint_publisher.publish(msg)
 
     def publish_additional_servo_data(self, temps, voltages):
@@ -233,6 +236,7 @@ class CM730Node:
 
     def publish_imu(self, gyro, accel):
         msg = Imu()
+        msg.header.stamp = rospy.Time.now()
         msg.linear_acceleration = DataVector(accel[1] * -1, accel[0], accel[2])  # axis are different in cm board
         msg.angular_velocity = gyro
         self.imu_publisher.publish(msg)

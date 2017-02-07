@@ -41,6 +41,9 @@ class PlayAnimationAction(object):
         self.motion_state = 0
 
         self.dynamic_animation = rospy.get_param("/animation/dynamic", False)
+        robot_type_name = rospy.get_param("/robot_type_name")
+        self.used_motor_cids = rospy.get_param("/cm730/" + robot_type_name + "/motors")
+        self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
 
         rospy.Subscriber("/joint_states", JointState, self.update_current_pose)
         rospy.Subscriber("/motion_state", MotionState, self.update_motion_state)
@@ -82,7 +85,7 @@ class PlayAnimationAction(object):
             return
         animator = Animator(parsed_animation, self.current_pose)
         animfunc = animator.playfunc(0.025)  # todo dynamic reconfigure this value
-        rate = rospy.Rate(50) #todo dependency to steprate?
+        rate = rospy.Rate(100)  # todo dependency to steprate?
 
         while not rospy.is_shutdown():
             # todo aditional time staying up after shutdown to enable motion to sit down, or play sit down directly?
@@ -125,7 +128,6 @@ class PlayAnimationAction(object):
             self._as.publish_feedback(PlayAnimationFeedback(percent_done=perc_done))
             rate.sleep()
 
-
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
         self.current_pose.set_positions_rad(list(msg.name), list(msg.position))
@@ -146,7 +148,7 @@ class PlayAnimationAction(object):
         msg.last = last
         msg.motion = motion
         if pose is not None:
-            msg.position = pose_goal_to_traj_msg(pose)
+            msg.position = pose_goal_to_traj_msg(pose, self.used_motor_names)
         self.motion_publisher.publish(msg)
 
 
