@@ -44,6 +44,13 @@ class CM730Node:
         self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
         rospy.logwarn(self.used_motor_names)
 
+        # pre initialized messages for more performance
+        self.joint_state_msg = JointState()
+        self.joint_state_msg.name = [x.decode("utf-8") for x in self.used_motor_names]
+        self.add_data_msg = AdditionalServoData()
+        self.imu_msg = Imu()
+        self.button_msg = Buttons()
+
         # --- Setting Params ---
         joints = rospy.get_param("/joints")
         self.joint_limits = {}
@@ -215,39 +222,35 @@ class CM730Node:
         """
         Sends the Joint States to ROS
         """
-        msg = JointState() #todo nich jedesmal object createn
-        msg.header.stamp = rospy.Time.now()
-        msg.name = [x.decode("utf-8") for x in self.used_motor_names]
-        msg.position = robo_pose.get_positions_rad_names(self.used_motor_names)
-        msg.velocity = robo_pose.get_speeds_names(self.used_motor_names)
-        #msg.effort = robo_pose.get_loads_names(self.used_motor_names) Not used for the moment
-        self.joint_publisher.publish(msg)
+        self.joint_state_msg.header.stamp = rospy.Time.now()
+        self.joint_state_msg.position = robo_pose.get_positions_rad_names(self.used_motor_names)
+        self.joint_state_msg.velocity = robo_pose.get_speeds_names(self.used_motor_names)
+        #self.joint_msg.effort = robo_pose.get_loads_names(self.used_motor_names) Not used for the moment
+        self.joint_publisher.publish(self.joint_state_msg)
 
     def publish_additional_servo_data(self, temps, voltages):
-        msg = AdditionalServoData()
+        time = rospy.Time.now()
         temperatures = []
         for temp in temps:
             ros_temp = Temperature()
-            ros_temp.header.stamp = rospy.Time.now()
+            ros_temp.header.stamp = time
             ros_temp.temperature = temp
             ros_temp.variance = 0
             temperatures.append(ros_temp)
-        msg.temperature = temperatures
-        msg.voltage = voltages
-        self.temp_publisher.publish(msg)
+        self.add_data_msg.temperature = temperatures
+        self.add_data_msg.voltage = voltages
+        self.temp_publisher.publish(self.add_data_msg)
 
     def publish_imu(self, gyro, accel):
-        msg = Imu()
-        msg.header.stamp = rospy.Time.now()
-        msg.linear_acceleration = DataVector(accel[1] * -1, accel[0], accel[2])  # axis are different in cm board
-        msg.angular_velocity = gyro
-        self.imu_publisher.publish(msg)
+        self.imu_msg.header.stamp = rospy.Time.now()
+        self.imu_msg.linear_acceleration = DataVector(accel[1] * -1, accel[0], accel[2])  # axis are different in cm board
+        self.imu_msg.angular_velocity = gyro
+        self.imu_publisher.publish(self.imu_msg)
 
     def publish_buttons(self, button1, button2):
-        msg = Buttons()
-        msg.button1 = button1
-        msg.button2 = button2
-        self.button_publisher.publish(msg)
+        self.button_msg.button1 = button1
+        self.button_msg.button2 = button2
+        self.button_publisher.publish(self.button_msg)
 
 
 if __name__ == "__main__":
