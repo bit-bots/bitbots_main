@@ -78,7 +78,7 @@ def get_error_list(errorbits):
     """
     out = []
     for error, msg in zip([bool(errorbits & (1 << 8 - i - 1))
-                          for i in xrange(8)], ERRORS):
+                          for i in range(8)], ERRORS):
         if error:
             out.append(msg)
     return out
