@@ -40,13 +40,16 @@ class PlayAnimationAction(object):
         self._action_name = name
         self.motion_state = 0
 
-        # pre defiened messages for performance
-        self.anim_msg = Animation()
-
         self.dynamic_animation = rospy.get_param("/animation/dynamic", False)
         robot_type_name = rospy.get_param("/robot_type_name")
         self.used_motor_cids = rospy.get_param("/cm730/" + robot_type_name + "/motors")
         self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
+
+        # pre defiened messages for performance
+        self.anim_msg = Animation()
+        self.traj_msg = JointTrajectory()
+        self.traj_msg.joint_names = [x.decode() for x in self.used_motor_names]
+        self.traj_point = JointTrajectoryPoint()
 
         rospy.Subscriber("/joint_states", JointState, self.update_current_pose)
         rospy.Subscriber("/motion_state", MotionState, self.update_motion_state)
@@ -169,7 +172,7 @@ class PlayAnimationAction(object):
         self.anim_msg.last = last
         self.anim_msg.motion = motion
         if pose is not None:
-            self.anim_msg.position = pose_goal_to_traj_msg(pose, self.used_motor_names)
+            self.anim_msg.position = pose_goal_to_traj_msg(pose, self.used_motor_names, self.traj_msg, self.traj_point)
         self.motion_publisher.publish(self.anim_msg)
 
 

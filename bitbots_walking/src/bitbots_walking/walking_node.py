@@ -9,7 +9,8 @@ from geometry_msgs.msg import Twist
 from humanoid_league_msgs.msg import MotionState
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import JointState, Imu
-from trajectory_msgs.msg import JointTrajectory
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from bitbots_common.util.pose_to_message import pose_goal_to_traj_msg
 
 from bitbots_walking.zmpwalking import ZMPWalkingEngine
 
@@ -28,6 +29,16 @@ class WalkingNode(object):
         self.walking = ZMPWalkingEngine()
         self.walkready_animation = self.walking.create_walkready_pose(duration=1.5)
 
+        robot_type_name = rospy.get_param("/robot_type_name")
+        self.used_motor_cids = rospy.get_param("/cm730/" + robot_type_name + "/motors")
+        self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
+
+        # pre defiened messages for performance
+        self.traj_msg = JointTrajectory()
+        self.traj_msg.joint_names = [x.decode() for x in self.used_motor_names]
+        self.traj_point = JointTrajectoryPoint()
+
+
         self.with_gyro = zmp_config["use_gyro_for_walking"]
 
         self.walk_active = False
@@ -36,11 +47,11 @@ class WalkingNode(object):
         self.walk_angular = 0
 
         rospy.init_node("bitbots_walking", anonymous=False)
-        self.motor_goal_publisher = rospy.Publisher("/walking_motor_goals", JointTrajectory, queue_size=10)
+        self.motor_goal_publisher = rospy.Publisher("/motion_motor_goals", JointTrajectory, queue_size=10)#todo just for testing
         self.odometry_publisher = rospy.Publisher("/odometry", Odometry, queue_size=10)
         rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_cb)
         rospy.Subscriber("/motion_state", MotionState, self.motion_state_cb)
-        rospy.Subscriber("/motor_current_position", JointState, self.current_position_cb)
+        rospy.Subscriber("/joint_states", JointState, self.current_position_cb)
         rospy.Subscriber("/imu", Imu, self.imu_cb)
 
         self.run()
@@ -51,14 +62,16 @@ class WalkingNode(object):
         self.walk_sideward = msg.linear.y
         self.walk_angular = msg.angular.z
         # deactivate walking if goal is 0 movement, else activate it
-        self.walk_active = self.walk_forward == 0 and self.walk_sideward == 0 and self.walk_angular == 0
+        self.walk_active = not (self.walk_forward == 0 and self.walk_sideward == 0 and self.walk_angular == 0)
 
     def motion_state_cb(self, msg):
         self.motion_state = msg.state
 
     def current_position_cb(self, msg):
         self.pose_lock.acquire()
-        set_joint_state_on_pose(msg, self.current_pose)
+        names = [x.encode("utf-8") for x in msg.name]
+        self.current_pose.set_positions_rad(names, list(msg.position))
+        self.current_pose.set_speeds(names, list(msg.velocity))
         self.pose_lock.release()
 
     def imu_cb(self, msg):
@@ -113,10 +126,15 @@ class WalkingNode(object):
         """
         self.walking.stop()
 
-    def run(self):
-        rate = rospy.Rate(200)
+    def publish_motor_goals(self):
+        msg = pose_goal_to_traj_msg(self.goal_pose, self.used_motor_names, self.traj_msg, self.traj_point)
+        self.motor_goal_publisher.publish(msg)
 
+
+    def run(self):
+        rate = rospy.Rate(10)
         while not rospy.is_shutdown():
+
             if self.walking.running:
                 # The walking is walking
                 if self.motion_state == MotionState.WALKING:
@@ -128,6 +146,7 @@ class WalkingNode(object):
                     self.pose_lock.acquire()
                     self.goal_pose.update(self.calculate_walking())
                     self.pose_lock.release()
+                    self.publish_motor_goals()
                 else:
                     # The motion changed from state walking to something else.
                     # das bedeutet das wir von der Motion gezwungen wurden

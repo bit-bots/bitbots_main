@@ -61,6 +61,15 @@ class Motion(object):
         self.animation_running = False  # animation request from animation server
         self.animation_request_time = 0  # time we got the animation request
 
+        robot_type_name = rospy.get_param("/robot_type_name")
+        self.used_motor_cids = rospy.get_param("/cm730/" + robot_type_name + "/motors")
+        self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
+
+        # pre defiened messages for performance
+        self.traj_msg = JointTrajectory()
+        self.traj_msg.joint_names = [x.decode() for x in self.used_motor_names]
+        self.traj_point = JointTrajectoryPoint()
+
         # --- Initialize Node ---
         log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_motion', log_level=log_level, anonymous=False)
@@ -149,7 +158,7 @@ class Motion(object):
     def publish_motor_goals(self):
         """ Publish the goal pose as joint message"""
         # we can only handle one point and not a full trajectory
-        traj_msg = pose_to_traj_msg(self.goal_pose)
+        traj_msg = pose_to_traj_msg(self.goal_pose, self.used_motor_names, self.traj_msg, self.traj_point)
         self.joint_goal_publisher.publish(traj_msg)
 
     def walking_goal_callback(self, msg):
@@ -254,7 +263,7 @@ class Motion(object):
 
     def update_once(self):  # todo flag setzen falls werte geändert und nur dann evaluieren
         # check if we're still walking
-        if self.walking_motor_goal is None or rospy.Time.now() - self.walking_motor_goal.header.stamp > 0.5:
+        if self.walking_motor_goal is None or rospy.Time.now().to_sec() - self.walking_motor_goal.header.stamp.to_sec() > 0.5:
             VALUES.walking_active = False
 
         # let statemachine run
