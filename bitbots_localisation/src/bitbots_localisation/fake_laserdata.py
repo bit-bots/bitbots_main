@@ -38,6 +38,7 @@ class FakeLaser(object):
         self.a = self.f.add_subplot(111, projection='polar')
         self.a.relim()
         self.a.autoscale_view(True, True, True)
+        self.a.set_ylim(0, 5)
         self.f.canvas.draw()
         plt.show(block=False)
         self.newest = collections.deque()
