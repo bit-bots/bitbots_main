@@ -224,7 +224,11 @@ cdef class CM730(object):
                 #this is a reponse package from cm730
                 if not cid_all_values == ID_CM730 and self.dxl_power:
                     #only IMU values
-                    gyro, accel = values
+                    #but sometimes something is strange so make another test
+                    if len(values) == 2:
+                        gyro, accel = values
+                    else:
+                        button, _, gyro, accel, voltage = values
                 else:
                     #get all values
                     button, _, gyro, accel, voltage = values
@@ -393,3 +397,4 @@ cdef class CM730(object):
             time.sleep(0.3) # WICHTIGE CODEZEILE! (siehe oben)
             self.ctrl.write_register(ID_CM730, CM730_REGISTER.dxl_power, 0)
             self.dxl_power = False
+        return True

@@ -29,6 +29,7 @@ class CM730Node:
     and sets goal values to the servos.
     """
 
+    #todo write in roscpp for better performance (due to multi core use)
     def __init__(self):
         log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_cm730', log_level=log_level, anonymous=False)

@@ -193,6 +193,7 @@ class Motion(object):
 
         if msg.last:
             # todo reset motor speeds afterward to 0
+            # todo reset pid values
             if msg.motion:
                 # This was an animation from the state machine
                 VALUES.motion_animation_playing = False
@@ -249,7 +250,7 @@ class Motion(object):
         # while not self.state_machine.is_shutdown():
         #    # we still have to update everything
         #    self.update_once()
-        #    rospy.sleep(0.01)  # todo remove
+        #    rospy.sleep(0.01)
 
     def update_once(self):  # todo flag setzen falls werte geändert und nur dann evaluieren
         # check if we're still walking
@@ -257,8 +258,7 @@ class Motion(object):
             VALUES.walking_active = False
 
         # let statemachine run
-        # self.state_machine.evaluate()
-        # todo deactivated for testing
+        self.state_machine.evaluate()
 
         # now do corresponding actions depending on state of state machine
 

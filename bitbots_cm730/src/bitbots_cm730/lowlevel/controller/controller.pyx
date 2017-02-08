@@ -614,8 +614,8 @@ cdef class Controller:
                         if DEBUG: rospy.logdebug("Could not read a byte from bus after dropping a byte, likely a corrupt packet header")
                         pass
                     if DEBUG:
-                        print "Data (header): ", (hex(data[viewstart+0]), hex(data[viewstart+1]), hex(data[viewstart+2]),
-                                         hex(data[viewstart+3]), hex(data[viewstart+4]), hex(data[viewstart+5]))
+                        print("Data (header): ", (hex(data[viewstart+0]), hex(data[viewstart+1]), hex(data[viewstart+2]),
+                                         hex(data[viewstart+3]), hex(data[viewstart+4]), hex(data[viewstart+5])))
                         rospy.loginfo("Data Langth %d " % bytecount)
 
             if not(viewstart + 6 <= bytecount):
@@ -625,14 +625,14 @@ cdef class Controller:
 
             size = 4 + data[viewstart+3]
             if DEBUG and False:
-                print [hex(ord(x)) for x in data[viewstart:viewstart+size]]
+                print([hex(ord(x)) for x in data[viewstart:viewstart+size]])
             #print checksum(data + viewstart, size-1), data[viewstart+size-1]
             #print viewstart, data[viewstart], data[viewstart+1], size
             if checksum(data + viewstart, size) != 0:
                 # We calculate the checksum over the data plus the original checksum the result should be zero
                 # as the checksum is the complement of the data
                 rospy.logwarn("Checksum mismatch for CID %s (propably), this will lead to search of package start!" % hex(data[viewstart +3]))
-                print "Data: ", [hex(ord(x)) for x in data[viewstart:viewstart+size]]
+                #print("Data: ", [hex(ord(x)) for x in data[viewstart:viewstart+size]])
                 viewstart += 1 if not corrupt_start else 2
                 # we increment viewstart twice on corrupt start because of the decrement in case of an missing 0xff
                 continue
