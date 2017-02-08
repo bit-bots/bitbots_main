@@ -21,7 +21,7 @@
 #define MESSAGE_MOTION_SERVOTARGET_H
 
 #include <nuclear>
-#include "message/input/ServoID.h"
+#include "NUBots/message/input/ServoID.h"
 
 namespace message {
     namespace motion {

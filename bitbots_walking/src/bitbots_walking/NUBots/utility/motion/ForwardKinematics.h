@@ -25,15 +25,15 @@
 #include <cmath>
 //#include <nuclear>
 
-#include "utility/math/matrix/Transform3D.h"
-#include "utility/math/matrix/Rotation3D.h"
-#include "utility/math/angle.h"
+#include "NUBots/utility/math/matrix/Transform3D.h"
+#include "NUBots/utility/math/matrix/Rotation3D.h"
+#include "NUBots/utility/math/angle.h"
 
-#include "message/input/Sensors.h"
-#include "message/input/LimbID.h"
-#include "message/input/ServoID.h"
+#include "NUBots/message/input/Sensors.h"
+#include "NUBots/message/input/LimbID.h"
+#include "NUBots/message/input/ServoID.h"
 
-#include "message/motion/KinematicsModels.h"
+#include "NUBots/message/motion/KinematicsModels.h"
 
 namespace utility {
 namespace motion {

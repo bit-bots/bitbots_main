@@ -18,7 +18,7 @@
  */
 
 #include "Quad.h"
-#include "../../../utility/math/geometry/ParametricLine.h"
+#include "ParametricLine.h"
 
 namespace utility {
 namespace math {

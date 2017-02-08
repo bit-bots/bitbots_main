@@ -19,8 +19,8 @@
 
 #include "Rotation3D.h"
 #include "matrix.h"
-#include "utility/math/comparison.h"
-#include "utility/math/angle.h"
+#include "NUBots/utility/math/comparison.h"
+#include "NUBots/utility/math/angle.h"
 
 
 namespace utility {

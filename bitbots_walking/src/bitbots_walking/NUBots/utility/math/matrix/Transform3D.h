@@ -22,9 +22,9 @@
 
 #include <armadillo>
 
-#include "utility/math/matrix/Transform2D.h"
-#include "utility/math/matrix/Rotation3D.h"
-#include "utility/math/geometry/UnitQuaternion.h"
+#include "NUBots/utility/math/matrix/Transform2D.h"
+#include "NUBots/utility/math/matrix/Rotation3D.h"
+#include "NUBots/utility/math/geometry/UnitQuaternion.h"
 
 namespace utility {
 namespace math {

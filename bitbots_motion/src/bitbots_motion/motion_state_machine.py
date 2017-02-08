@@ -338,7 +338,7 @@ class Falling(AbstractState):
         rospy.logwarn(falling_pose)
         if falling_pose is not None:
             # we're falling, stay in falling
-            self.next_state = Controllable()
+            self.next_state = Falling()
             self.start_animation(falling_pose)
         else:
             # we're not falling anymore

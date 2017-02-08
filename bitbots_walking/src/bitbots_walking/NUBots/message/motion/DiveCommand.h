@@ -22,7 +22,7 @@
 
 #include <nuclear>
 #include <armadillo>
-#include "message/behaviour/Action.h"
+#include "NUBots/message/behaviour/Action.h"
 
 namespace message {
     namespace motion {

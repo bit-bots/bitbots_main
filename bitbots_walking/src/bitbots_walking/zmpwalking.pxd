@@ -6,7 +6,7 @@ from bitbots_common.eigen cimport Vector2d
 from bitbots_common.eigen cimport Vector3d
 from bitbots_common.eigen cimport Vector4d
 
-cdef extern from "walking/zmp_walk_wrapper.hpp":
+cdef extern from "zmp_walk_wrapper.hpp":
 
     cdef enum FootPhase "ZMPWalk::FootPhase":
         left, right, stopped, both
@@ -44,7 +44,7 @@ cdef extern from "walking/zmp_walk_wrapper.hpp":
 
     _ZMPWalk* getInstance(const _ZMPParameter& parameter)
 
-cdef extern from "walking/zmp_walk_parameter.hpp":
+cdef extern from "zmp_walk_parameter.hpp":
     cdef cppclass _ZMPParameter "ZMPWalking::ZMPParameter":
         _ZMPParameter()
         _ZMPParameter(_ZMPParameter)

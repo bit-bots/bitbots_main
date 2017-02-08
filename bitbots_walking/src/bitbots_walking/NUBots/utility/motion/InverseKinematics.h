@@ -26,15 +26,15 @@
 #include <chrono>
 #include <limits>
 
-#include "utility/math/matrix/Transform3D.h"
-#include "utility/math/coordinates.h"
-#include "utility/motion/ForwardKinematics.h"
-#include "message/input/ServoID.h"
-#include "message/input/Sensors.h"
-#include "utility/math/angle.h"
-#include "message/behaviour/Action.h"
+#include "NUBots/utility/math/matrix/Transform3D.h"
+#include "NUBots/utility/math/coordinates.h"
+#include "NUBots/utility/motion/ForwardKinematics.h"
+#include "NUBots/message/input/ServoID.h"
+#include "NUBots/message/input/Sensors.h"
+#include "NUBots/utility/math/angle.h"
+#include "NUBots/message/behaviour/Action.h"
 
-#include "message/motion/KinematicsModels.h"
+#include "NUBots/message/motion/KinematicsModels.h"
 
 namespace utility {
 namespace motion {

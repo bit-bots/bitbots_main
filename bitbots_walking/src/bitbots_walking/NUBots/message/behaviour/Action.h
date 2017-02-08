@@ -20,7 +20,7 @@
 #ifndef MESSAGE_BEHAVIOUR_ACTIONS_H
 #define MESSAGE_BEHAVIOUR_ACTIONS_H
 
-#include "message/input/LimbID.h"
+#include "NUBots/message/input/LimbID.h"
 #include <functional>
 
 namespace message {

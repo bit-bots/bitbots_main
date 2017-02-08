@@ -14,7 +14,7 @@
 #include "NUBots/utility/motion/InverseKinematics.h"
 
 #include "armaFlags.hpp"
-#include "../zmp_walk_wrapper.hpp"
+#include "zmp_walk_wrapper.hpp"
 
 namespace ZMPWalking{
 

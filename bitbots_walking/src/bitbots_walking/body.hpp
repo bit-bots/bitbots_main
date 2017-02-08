@@ -3,7 +3,7 @@
 
 #include <Eigen/Core>
 #include <cmath>
-#include "pose.hpp"
+#include "bitbots_common/pose/pose.hpp"
 #include "zmp_math_basics.h"
 #include <iostream>
 

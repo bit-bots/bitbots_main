@@ -22,7 +22,7 @@
 
 #include <nuclear>
 #include <armadillo>
-#include "message/input/LimbID.h"
+#include "NUBots/message/input/LimbID.h"
 
 namespace message {
     namespace motion {

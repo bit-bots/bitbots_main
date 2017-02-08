@@ -22,7 +22,7 @@
 
 #include <armadillo>
 
-#include "../../../utility/math/matrix/Rotation3D.h"
+#include "../matrix/Rotation3D.h"
 
 namespace utility {
 namespace math {

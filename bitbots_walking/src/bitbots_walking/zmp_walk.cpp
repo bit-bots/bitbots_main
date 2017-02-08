@@ -17,8 +17,6 @@ using namespace Eigen;
 using message::motion::kinematics::KinematicsModel;
 using utility::motion::kinematics::calculateLegJointsTeamDarwin;
 
-#include "debug.hpp"
-#include "../debug/debugmacro.h"
 #include <assert.h>
 #include "body.hpp"
 

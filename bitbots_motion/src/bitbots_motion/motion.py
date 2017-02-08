@@ -258,7 +258,7 @@ class Motion(object):
             VALUES.walking_active = False
 
         # let statemachine run
-        self.state_machine.evaluate()
+        #self.state_machine.evaluate()
 
         # now do corresponding actions depending on state of state machine
 

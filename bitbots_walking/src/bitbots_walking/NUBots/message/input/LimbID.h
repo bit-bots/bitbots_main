@@ -22,7 +22,7 @@
 
 
 #include <set>
-#include "message/input/ServoID.h"
+#include "NUBots/message/input/ServoID.h"
 
 namespace message {
     namespace input {

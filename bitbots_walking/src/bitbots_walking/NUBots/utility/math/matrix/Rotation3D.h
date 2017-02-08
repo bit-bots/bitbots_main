@@ -22,7 +22,7 @@
 
 #include <armadillo>
 
-#include "utility/math/geometry/UnitQuaternion.h"
+#include "NUBots/utility/math/geometry/UnitQuaternion.h"
 
 namespace utility {
 namespace math {

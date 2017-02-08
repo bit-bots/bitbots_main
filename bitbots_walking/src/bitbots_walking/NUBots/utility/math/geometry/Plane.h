@@ -20,7 +20,7 @@
 #define UTILITY_MATH_GEOMETRY_PLANE_H
 
 #include <armadillo>
-#include "../../../utility/math/geometry/ParametricLine.h"
+#include "ParametricLine.h"
 
 namespace utility {
 namespace math {
