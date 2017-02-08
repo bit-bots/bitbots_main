@@ -102,8 +102,8 @@ class DummyVision:
                         continue
 
                     ls = LineSegmentInImage()
-                    ls.start.x = p[0]
-                    ls.start.y = p[1]
+                    ls.start.x = p[1]
+                    ls.start.y = p[0]
                     ls.end = ls.start
                     li.segments.append(ls)
                     cv2.circle(bimg, (p[1], p[0]), 1, (0, 0, 255))
