@@ -1,5 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #-*- coding:utf-8 -*-
+import threading
+
 import rospy
 from bitbots_common.pose.pypose import PyPose as Pose
 from bitbots_common.util.pose_util import set_joint_state_on_pose
@@ -9,7 +11,7 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import JointState, Imu
 from trajectory_msgs.msg import JointTrajectory
 
-from bitbots_walking.src.bitbots_walking.zmpwalking import ZMPWalkingEngine
+from bitbots_walking.zmpwalking import ZMPWalkingEngine
 
 
 class WalkingNode(object):
@@ -20,8 +22,9 @@ class WalkingNode(object):
         self.gyro = (0, 0, 0)
         self.motion_state = None
         self.walking_started = 0
+        self.pose_lock = threading.Lock()
 
-        zmp_config = rospy.get_param("/ZMPConfig" + rospy.get_param("/robot_type_name"))
+        zmp_config = rospy.get_param("/ZMPConfig/" + rospy.get_param("/robot_type_name"))
         self.walking = ZMPWalkingEngine()
         self.walkready_animation = self.walking.create_walkready_pose(duration=1.5)
 
@@ -33,8 +36,8 @@ class WalkingNode(object):
         self.walk_angular = 0
 
         rospy.init_node("bitbots_walking", anonymous=False)
-        self.motor_goal_publisher = rospy.Publisher("/walking_motor_goals", JointTrajectory)
-        self.odometry_publisher = rospy.Publisher("/odometry", Odometry)
+        self.motor_goal_publisher = rospy.Publisher("/walking_motor_goals", JointTrajectory, queue_size=10)
+        self.odometry_publisher = rospy.Publisher("/odometry", Odometry, queue_size=10)
         rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_cb)
         rospy.Subscriber("/motion_state", MotionState, self.motion_state_cb)
         rospy.Subscriber("/motor_current_position", JointState, self.current_position_cb)
@@ -54,11 +57,13 @@ class WalkingNode(object):
         self.motion_state = msg.state
 
     def current_position_cb(self, msg):
+        self.pose_lock.acquire()
         set_joint_state_on_pose(msg, self.current_pose)
+        self.pose_lock.release()
 
     def imu_cb(self, msg):
-        self.gyro = msg.linear_velocity
-        self.accel = msg.angular_velocity
+        self.accel = msg.linear_acceleration
+        self.gyro = msg.angular_velocity
 
     def calculate_walking(self):
         """
@@ -69,7 +74,7 @@ class WalkingNode(object):
         self.walking.set_velocity(
             self.walk_forward / 150.0,
             self.walk_sideward / 50.0,
-            self.walk_angular / 50.0)  # werte aus config erstmal hard TODO
+            self.walk_angular / 50.0)  # werte aus config erstmal hard TODO dyn conf
         # Gyro auslesen und an das Walking weitergeben
         if self.with_gyro is True:
             gyro_x, gyro_y, gyro_z = self.gyro
@@ -109,35 +114,41 @@ class WalkingNode(object):
         self.walking.stop()
 
     def run(self):
-        if self.walking.running:
-            # The walking is walking
-            if self.motion_state == MotionState.WALKING:
-                # The robot is in the right state, let's compute next pose
-                if not self.walk_active:
-                    # the client told us to stop, so let's stop
-                    self.walking_stop()
-                    # After this we still have to compute the next pose, because we have to do a fex steps to stop
-                self.goal_pose.update(self.calculate_walking())
+        rate = rospy.Rate(200)
+
+        while not rospy.is_shutdown():
+            if self.walking.running:
+                # The walking is walking
+                if self.motion_state == MotionState.WALKING:
+                    # The robot is in the right state, let's compute next pose
+                    if not self.walk_active:
+                        # the client told us to stop, so let's stop
+                        self.walking_stop()
+                        # After this we still have to compute the next pose, because we have to do a fex steps to stop
+                    self.pose_lock.acquire()
+                    self.goal_pose.update(self.calculate_walking())
+                    self.pose_lock.release()
+                else:
+                    # The motion changed from state walking to something else.
+                    # das bedeutet das wir von der Motion gezwungen wurden
+                    # etwas anderes zu tun (z.B. Aufstehn/Hinfallen)
+                    # Dann reseten Wir das Walking und stoppen dabei.
+                    self.walking_reset()
+                    # reset pid, if the walking did something with this
+                    p = rospy.get_param("/mx28config/RAM/p")
+                    i = rospy.get_param("/mx28config/RAM/i")
+                    d = rospy.get_param("/mx28config/RAM/d")
+                    for name, joint in self.goal_pose.joints:
+                        joint.p = p
+                        joint.i = i
+                        joint.d = d
             else:
-                # The motion changed from state walking to something else.
-                # das bedeutet das wir von der Motion gezwungen wurden
-                # etwas anderes zu tun (z.B. Aufstehn/Hinfallen)
-                # Dann reseten Wir das Walking und stoppen dabei.
-                self.walking_reset()
-                # reset pid, if the walking did something with this
-                p = rospy.get_param("/mx28config/RAM/p")
-                i = rospy.get_param("/mx28config/RAM/i")
-                d = rospy.get_param("/mx28config/RAM/d")
-                for name, joint in self.goal_pose.joints:
-                    joint.p = p
-                    joint.i = i
-                    joint.d = d
-        else:
-            # We're not currently running, test if we want to start
-            if self.walk_active and self.motion_state in (
-            MotionState.CONTROLABLE, MotionState.WALKING, MotionState.MOTOR_OFF):
-                self.walking_started = rospy.Time.now()
-                self.walking_start()
+                # We're not currently running, test if we want to start
+                if self.walk_active and self.motion_state in (
+                MotionState.CONTROLABLE, MotionState.WALKING, MotionState.MOTOR_OFF):
+                    self.walking_started = rospy.Time.now()
+                    self.walking_start()
+            rate.sleep()
 
 if __name__ == "__main__":
     walking = WalkingNode()

@@ -1,0 +1,139 @@
+ZMPConfig:
+  Darwin:
+      "use_gyro_for_walking": false
+      "HipPitch": 25
+      "FORWARD_FACTOR": 100.0
+      "SIDEWARD_FACTOR": 50.0
+      "ANGLE_FACTOR": -50.0
+      "l_shoulder_pitch": 0
+      "r_shoulder_pitch": 0
+      "l_shoulder_roll": 30
+      "r_shoulder_roll": 30
+      "supportBack": 0.1
+      "hip_pitch": 0 #Weirder Hack, nicht benutzen außer wenn man genau weiß was es macht
+      "MAX_FORWARD_SPEED": 5
+      "MAX_SIDEWARDS_SPEED": 3.5
+      "MAX_SPEED": 10
+      "MAX_ANGULAR_SPEED": 12
+      "UPDATE_INTERVALL": 0.3
+      "SPEED_DELTA": 0.6
+      "BellyRollPID": [32,0,0]
+      "HasNewLongLegs": false
+      "LongLegs": [0.0930, 0.0930]
+      "BodyOffsets": [0.037, 0.096]
+      "FootHeight": 0.0335
+      "AngularOffset": 0
+      "Parameter":
+          "bodyHeight": 0.28
+          "stepHeight": 0.05
+          "footX": 0.033
+          "tZmp": 0.165
+          "tStep": 0.24
+          "frontComp": 0.008
+          "supportFront": 0.00
+          "supportFront2": 0.005
+          "footSizeX": [-0.01, 0.01]
+          "supportBack": 0
+          "stanceLimitY": [0.07,0.3]
+          "armImuParamY": [0.3, 0.01, 0.6, 5] ##0 mal 1; 1 mal 0.0014 ; 2 und 3 mal 0.0175, dann ist es in Grad
+          "armImuParamX": [0.3, 0.01, 0.6, 5] ##0 mal 1; 1 mal 0.0014 ; 2 und 3 mal 0.0175, dann ist es in Grad
+          "supportSideX": -0.025
+          "supportTurn": -0.025
+          "supportY": 0.075
+          "footY": 0.055
+          "zPhase": [0.1, 0.9]
+          "xPhase": [0.1, 0.9]
+          "supportX": 0
+      "SLOW_STOP" : false
+  Hambot:
+      "use_gyro_for_walking" : true
+      "FORWARD_FACTOR": 150.0
+      "SIDEWARD_FACTOR": 50.0
+      "ANGLE_FACTOR": -50.0
+      "l_shoulder_pitch": 0
+      "r_shoulder_pitch": 0
+      "l_shoulder_roll": 0
+      "r_shoulder_roll": 0
+      "supportBack": 0.1
+      "BellyRollPID": [32,0,0]
+      "hip_pitch": 0 #Weirder Hack, nicht benutzen außer wenn man genau weiß was es macht
+      "MAX_FORWARD_SPEED": 5
+      "MAX_SIDEWARDS_SPEED": 5
+      "MAX_SPEED": 10
+      "MAX_ANGULAR_SPEED": 6
+      "UPDATE_INTERVALL": 0.25
+      "SPEED_DELTA": 0.5
+      "HipPitch": 0.5
+      "AngularOffset": 0
+      "Parameter":
+          "bodyHeight": 0.55
+          "footX": 0.045 #Verschiebt den Oberkörper konstant nach hinten
+          "footY": 0.02 # Zielschrittbereite zusammen mit supportY
+          "tStep": 0.4959 #Die Schrittgeschwindigkeit; Song glaubt, dass die Natürliche Frequenz ein guter Wert ist. Also 1.4877388682499322 * Faktor
+          "tZmp": 0.45 #Ein  Magischer Konfigwert. Steuert hauptsächlich die Ausgleichbewegung vom Roboter - Schaut euch Songs Masterarbeit an ^^
+          "stepHeight": 0.095 #Die SChritthöhe
+          belly_pitch: 0
+          belly_roll: 0
+          "footSizeX": [-0.065, 0.11] # FootSizeX gibt zusammen mit SanceLimitMarginY an in welcher Relation Die Drehung des Fusses beachtet wird.
+          "stanceLimitY": [0.15,0.16]  # Minimale und Maximale Schrittbreite in Abhängigkeit von vielem ;D; insbesondere BodyOffsets;bodyHeight; support und Footy
+          "stanceLimitMarginY": 99 #Wenn der Fuß gedreht ist, beachtet er das; Mit 99 ists quasi Deaktiviert
+          "supportY": 0.1 #Die Ausgleichbewegung des Oberkörpers/Aber auch die Schrittbreite
+          "supportX": 0.0 #Verschiebt bei der Berechnung der Verschiedenen ZMP Spezifischen Werte die Zielposition des Oberkörpers diesen nach Vorne
+          "phSingle": [0.05,0.95] # Der Wert 0 bis phSingle[0], ist die Zeit in der das Walkin versucht den ZMP von der Mitte zum Fuß zu bewegen. von phSingle[1] bis 1 vice versa
+          "zPhase": [0.2,0.8] # Zwischen zPhase[0] und zPhase[1] bewegt er sein Bein in Z Achse, im Allgemeinen zPhase>=xPhase
+          "xPhase": [0.2,0.8] # -||-
+      "r_shoulder_roll": 24
+      "l_shoulder_roll": 24
+      "HasNewLongLegs": true
+      "LongLegs": [0.180, 0.18] # Länge Oberschenkel/Unterschenkel
+      "SLOW_STOP" : false
+      # Einfach mal aus spaß gemessen und Werte geraten @Robert
+      "BodyOffsets": [0.05, 0.200] #Der Ort des Schwerpunkt des {Oberkörpers, Roboters ,Toast - In Absteigender Wahrscheinlichkeit} Relativ zur Hüfte in y und z achse
+      "FootHeight": 0.0335 # Entfernung vom Pitchmotor zum Endeffektor
+  Minibot:
+      "use_gyro_for_walking": false
+      "HipPitch": 25
+      "FORWARD_FACTOR": 100.0
+      "SIDEWARD_FACTOR": 50.0
+      "ANGLE_FACTOR": -50.0
+      "l_shoulder_pitch": 0
+      "r_shoulder_pitch": 0
+      "l_shoulder_roll": 30
+      "r_shoulder_roll": 30
+      "supportBack": 0.1
+      "hip_pitch": 0 #Weirder Hack, nicht benutzen außer wenn man genau weiß was es macht
+      "MAX_FORWARD_SPEED": 5
+      "MAX_SIDEWARDS_SPEED": 2
+      "MAX_SPEED": 10
+      "MAX_ANGULAR_SPEED": 6
+      "UPDATE_INTERVALL": 0.3
+      "SPEED_DELTA": 0.6
+      "BellyRollPID": [32,0,0]
+      "HasNewLongLegs": false
+      "LongLegs": [0.0930, 0.0930]
+      "BodyOffsets": [0.037, 0.096]
+      "FootHeight": 0.0335
+      "AngularOffset": 0
+      "Parameter":
+          "bodyHeight": 0.28
+          "stepHeight": 0.05
+          "footX": 0.033
+          "tZmp": 0.165
+          "tStep": 0.25
+          "frontComp": 0.008
+          "supportFront": 0.00
+          "supportFront2": 0.005
+          "frontComp": 0
+          "AccelComp": 0
+          "footSizeX": [-0.01, 0.01]
+          "stanceLimitY": [0.07,0.3]
+          "armImuParamY": [0.3, 0.01, 0.6, 5] ##0 mal 1; 1 mal 0.0014 ; 2 und 3 mal 0.0175, dann ist es in Grad
+          "armImuParamX": [0.3, 0.01, 0.6, 5] ##0 mal 1; 1 mal 0.0014 ; 2 und 3 mal 0.0175, dann ist es in Grad
+          "supportSideX": -0.025
+          "supportTurn": -0.025
+          "supportY": 0.01
+          "bodyTiltXScaling": 1
+          "footY": 0.05
+          "zPhase": [0.1, 0.9]
+          "xPhase": [0.1, 0.9]
+      "SLOW_STOP" : false

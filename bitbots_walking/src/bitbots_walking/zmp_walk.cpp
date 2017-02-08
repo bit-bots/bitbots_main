@@ -22,8 +22,6 @@ using utility::motion::kinematics::calculateLegJointsTeamDarwin;
 
 #include "NUBots/utility/math/matrix/Transform3D.h"
 
-static Debug::Scope m_debug("ZMPWalking");
-
 inline double time_to_double(const boost::posix_time::time_duration& t) {
     long l = t.total_nanoseconds();
     assert(((double)l )/ e9 == ((double)l )/ e9);
@@ -40,7 +38,7 @@ return new ZMPWalk(parameter);
 
 
 ZMPWalk::ZMPWalk(const ZMPParameter& parameter)
-:kinematicsModel(), m_debug("ZMPWalking"), m_body(parameter.pDefault), m_parameter(parameter)
+:kinematicsModel(), m_body(parameter.pDefault), m_parameter(parameter)
 {
 
     m_uSupport = m_uTorso1 = m_uTorso2 =m_uTorso = Vector3d(parameter.supportX/2.0, 0, 0);
@@ -72,7 +70,7 @@ ZMPWalk::ZMPWalk(const ZMPParameter& parameter)
     // Init Gyro to zero
     m_imuGyr = Vector3d::Zero();
 
-    DEBUG_LOG(2, "Motion: Walk entry");
+    //ROS_DEBUG("Motion: Walk entry");
     //SJ: now we always assume that we start walking with feet together
     //Because joint readings are not always available with darwins
     stance_reset();
@@ -99,7 +97,7 @@ ZMPWalk::FootPhase ZMPWalk::update() {
     double ph = time_to_double((t-m_tLastStep))/m_parameter.tStep;
     double phSingle = fmin(fmax(ph-m_parameter.zPhase.x(), 0)/(m_parameter.zPhase.y()-m_parameter.zPhase.x()),1);
     if(not m_active) { //Kommt aktuell nicht vor
-        //DEBUG_LOG(2, "Walking not active");
+        //ROS_DEBUG("Walking not active");
         return FootPhase::both;
     }
 
@@ -115,7 +113,7 @@ ZMPWalk::FootPhase ZMPWalk::update() {
     if(m_newStep and(m_stopRequest ==2)) {
         m_stopRequest = 0;
         m_active = false;
-        //DEBUG_LOG(4, "Walking is stopping");
+        //ROS_DEBUG("Walking is stopping");
         return FootPhase::both;
     }
 
@@ -183,7 +181,7 @@ void ZMPWalk::calculateStepGoal()
 
     //Adjustable initial step body swing
     if(m_initial_step>0) {
-        m_debug << " init steps" ;
+        //ROS_DEBUG(" init steps") ;
         if(m_supportLeg == 0) { //LS
             supportMod.y() = m_parameter.supportModYInitial;
         } else { //RS
@@ -587,7 +585,7 @@ void ZMPWalk::stop() {
 /* standup/sitdown/falldown handling */
 void ZMPWalk::stance_reset() {
 
-    DEBUG_LOG(2, "Stance Resetted");
+    //ROS_DEBUG(2, "Stance Resetted");
 
 
     m_uTorso1 = m_uTorso2 =m_uTorso = Vector3d(m_parameter.supportX/2.0, 0, 0);

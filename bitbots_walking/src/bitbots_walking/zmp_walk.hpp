@@ -27,7 +27,6 @@ public:
 private:
 
     message::motion::kinematics::KinematicsModel kinematicsModel;
-    mutable Debug::Scope m_debug;
     Eigen::Vector3d m_uTorso, m_uLeft,m_uRight;
     Eigen::Vector3d m_velCurrent, m_velCommand, m_velDiff;
 

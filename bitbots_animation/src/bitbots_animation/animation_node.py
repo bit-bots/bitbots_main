@@ -50,7 +50,7 @@ class PlayAnimationAction(object):
 
         rospy.Subscriber("/joint_states", JointState, self.update_current_pose)
         rospy.Subscriber("/motion_state", MotionState, self.update_motion_state)
-        self.motion_publisher = rospy.Publisher("/animation", Animation, queue_size=100)
+        self.motion_publisher = rospy.Publisher("/animation", Animation, queue_size=1)
 
         self._as = actionlib.SimpleActionServer(self._action_name, PlayAction,
                                                 execute_cb=self.execute_cb, auto_start=False)
@@ -88,7 +88,10 @@ class PlayAnimationAction(object):
             return
         animator = Animator(parsed_animation, self.current_pose)
         animfunc = animator.playfunc(0.02)  # todo dynamic reconfigure this value
-        rate = rospy.Rate(100)
+        rate = rospy.Rate(50)
+        iteration = 0
+        duration_avg = 0
+        start = time.time()
 
         while not rospy.is_shutdown():
             # todo aditional time staying up after shutdown to enable motion to sit down, or play sit down directly?
@@ -129,7 +132,23 @@ class PlayAnimationAction(object):
             perc_done = int(((time.time() - animator.get_start_time()) / animator.get_duration()) * 100)
             perc_done = min(perc_done, 100)
             self._as.publish_feedback(PlayAnimationFeedback(percent_done=perc_done))
+
             rate.sleep()
+            #rospy.sleep(0.01)
+
+            # Count to get the update frequency
+            iteration += 1
+            if iteration < 100:
+                continue
+
+            if duration_avg > 0:
+                duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
+            else:
+                duration_avg = (time.time() - start)
+
+            rospy.logwarn("Updates/Sec %f", iteration / duration_avg)
+            iteration = 0
+            start = time.time()
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""

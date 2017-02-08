@@ -67,7 +67,7 @@ class Motion(object):
         rospy.sleep(0.1)  # This is important! Otherwise a lot of messages will get lost, bc the init is not finished
         rospy.loginfo("Starting motion")
 
-        self.joint_goal_publisher = rospy.Publisher('/motion_motor_goals', JointTrajectory, queue_size=10)
+        self.joint_goal_publisher = rospy.Publisher('/motion_motor_goals', JointTrajectory, queue_size=1)
         self.motion_state_publisher = rospy.Publisher('/motion_state', MotionState, queue_size=10)
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
         VALUES.speak_publisher = self.speak_publisher
@@ -239,7 +239,7 @@ class Motion(object):
             else:
                 duration_avg = (time.time() - start)
 
-            rospy.logwarn("Updates/Sec %f", iteration / duration_avg)
+            #rospy.logwarn("Updates/Sec %f", iteration / duration_avg)
             iteration = 0
             start = time.time()
             rospy.sleep(0.5)

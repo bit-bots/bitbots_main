@@ -20,10 +20,10 @@ set_target_properties(zmpwalking PROPERTIES COMPILE_FLAGS -fPIC
 
 set(INSTALL_TARGETS ${INSTALL_TARGETS} zmpwalking)
 
-target_link_libraries(zmpwalking debug-common utility)
+target_link_libraries(zmpwalking utility)
 
 set_target_properties(zmpwalking
-  PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}/walking)
+  PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION})
 
 
 # Die kompilierten Module installieren
@@ -32,7 +32,7 @@ install(
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/bitbots_walking/
 )
 
-#add_subdirectory(NUBots/utility)
+add_subdirectory(NUBots/utility)
 
 #if(INVERSE_DARWIN_KINEMATICS)
 #add_subdirectory(DarwinWalking)

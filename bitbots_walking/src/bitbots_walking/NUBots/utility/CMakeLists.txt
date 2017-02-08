@@ -10,7 +10,7 @@ set_target_properties(utility PROPERTIES COMPILE_FLAGS "-fPIC"
                         LINK_FLAGS -fPIC)
 
 #target_link_libraries(utility ${BLAS_LIBRARIES})
-target_link_libraries(utility ${CMAKE_INSTALL_PREFIX}/lib/libarmadillo.so ${ARMADILLO_LIBRARIES})
+target_link_libraries(utility /usr/lib/libarmadillo.so ${ARMADILLO_LIBRARIES})
 # Put it in an IDE group for shared
 SET_PROPERTY(TARGET utility PROPERTY FOLDER "shared/")
 

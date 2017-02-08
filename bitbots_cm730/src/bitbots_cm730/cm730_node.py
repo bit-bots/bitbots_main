@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
+import threading
 import time
 
 import math
@@ -44,6 +45,7 @@ class CM730Node:
         self.used_motor_cids = rospy.get_param("/cm730/" + robot_type_name + "/motors")
         self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
         rospy.logwarn(self.used_motor_names)
+        self.pose_lock = threading.Lock()
 
         # pre initialized messages for more performance
         self.joint_state_msg = JointState()
@@ -67,12 +69,12 @@ class CM730Node:
             self.joint_limits[motor['name']] = {'min': min_value, 'max': max_value}
 
         # --- Initialize Topics ---
-        rospy.Subscriber("/motion_motor_goals", JointTrajectory, self.update_motor_goals)
-        self.joint_publisher = rospy.Publisher('/joint_states', JointState, queue_size=10)
-        self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
-        self.temp_publisher = rospy.Publisher('/servo_data', AdditionalServoData, queue_size=10)
-        self.imu_publisher = rospy.Publisher('/imu', Imu, queue_size=10)
-        self.button_publisher = rospy.Publisher('/buttons', Buttons, queue_size=10)
+        rospy.Subscriber("/motion_motor_goals", JointTrajectory, self.update_motor_goals, queue_size=1)
+        self.joint_publisher = rospy.Publisher('/joint_states', JointState, queue_size=1)
+        self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=1)
+        self.temp_publisher = rospy.Publisher('/servo_data', AdditionalServoData, queue_size=1)
+        self.imu_publisher = rospy.Publisher('/imu', Imu, queue_size=1)
+        self.button_publisher = rospy.Publisher('/buttons', Buttons, queue_size=1)
         self.motor_power_service = rospy.Service("switch_motor_power", SwitchMotorPower,
                                                  self.switch_motor_power_service_call)
         self.led_service = rospy.Service("set_leds", SetLEDs,
@@ -115,8 +117,11 @@ class CM730Node:
             self.goal_pose = Pose()
 
         joints = [x.encode("utf8") for x in joints]
+        #todo sinusgenerator
+        self.pose_lock.acquire()
         self.goal_pose.set_goals(joints, motor_goals)
         self.goal_pose.set_speeds(joints, motor_speeds)
+        self.pose_lock.release()
 
     def update_forever(self):
         """ Calls :func:`update_once` in an infinite loop """
@@ -170,7 +175,9 @@ class CM730Node:
             self.publish_buttons(button1, button2)
 
         # send new position to servos
+        self.pose_lock.acquire()
         self.cm_730.apply_goal_pose(self.goal_pose)
+        self.pose_lock.release()
 
     def update_sensor_data(self):
         raw_accel = None

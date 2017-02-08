@@ -219,19 +219,19 @@ cdef class ZMPParameter:
 cdef class ZMPWalkingEngine:
 
     def __cinit__(self, object config={}, string robottype="Darwin"):
-        robottype = config["RobotTypeName"]
         params = ZMPParameter()
-        cdef object zmp_config = config["ZMPConfig"][robottype]
+        cdef object zmp_config = rospy.get_param("/ZMPConfig/" + rospy.get_param("/robot_type_name"))
         cdef dict zmp_param_config = zmp_config["Parameter"]
         for name in zmp_param_config:
             if hasattr(params, name):
                 setattr(params, name, zmp_param_config[name])
             else:
                 rospy.logdebug("Konnte ZMPParameter %s nicht setzten. Es scheint ihn nicht zu geben" % name)
-        params.pDefault = config["mx28config"]["RAM"]["p"]
+        mx28config = rospy.get_param("/mx28config")
+        params.pDefault = mx28config["RAM"]["p"]
 
         self.thisptr = getInstance(deref(params.params))
-        self.init_from_config(config["ZMPConfig"][robottype], robottype)
+        self.init_from_config(zmp_config, robottype)
 
     def __dealloc__(self):
         del self.thisptr

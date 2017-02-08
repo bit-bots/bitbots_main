@@ -1,6 +1,6 @@
 from libcpp.vector cimport vector
 from libcpp.pair cimport pair
-from bitbots.robot.pypose cimport PyPose
+from bitbots_common.pose.pypose cimport PyPose
 from libcpp cimport bool
 
 cdef extern from "InverseKinematicsHelper.hpp":

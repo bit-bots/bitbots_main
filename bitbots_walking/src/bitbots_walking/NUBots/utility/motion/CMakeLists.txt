@@ -14,7 +14,7 @@ set_target_properties(InverseKinematicsPy PROPERTIES COMPILE_FLAGS -fPIC
 set(INSTALL_TARGETS InverseKinematicsPy)
 
 
-target_link_libraries(InverseKinematicsPy debug-common utility)
+target_link_libraries(InverseKinematicsPy utility)
 
 install(
     TARGETS ${INSTALL_TARGETS}

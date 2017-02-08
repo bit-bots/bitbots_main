@@ -10,12 +10,14 @@ include(BitBotsIncludes)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  rosconsole
   rospy
   std_msgs
   humanoid_league_msgs
 #  bitbots_common
 )
 
+find_package(Armadillo REQUIRED)
 find_package(Eigen REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system thread date_time iostreams)
 
