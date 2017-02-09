@@ -13,4 +13,4 @@ set_target_properties(mitecom
 
 install(
     TARGETS mitecom
-    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/bitbots_team_communication/mitecom)
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/mitecom)
