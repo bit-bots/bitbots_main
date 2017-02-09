@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 import math
 import rospy
@@ -163,22 +163,22 @@ class TeamCommunication(object):
             pos_msg = Pose2D()
             pos_msg.x = rob.get_absolute_x() / 1000
             pos_msg.y = rob.get_absolute_y() / 1000
-            pos_msg.theta = rob.getabsolute_orientation()
+            pos_msg.theta = rob.get_absolute_orientation()
             own_position.append(pos_msg)
             own_position_beliefs.append(rob.get_absolute_belief() / 255)
 
             # ball
             ball_msg = Position2D
-            ball_msg.x = rob.get_ball_relative_x() / 1000
-            ball_msg.y = rob.get_ball_relative_y() / 1000
-            ball_msg.confidence = rob.get_ball_belief() / 255
+            ball_msg.x = rob.get_relative_ball_x() / 1000
+            ball_msg.y = rob.get_relative_ball_y() / 1000
+            ball_msg.confidence = rob.get_relative_ball_belief() / 255
             ball_relative.append(ball_msg)
 
             # oppgoal
             oppgoal_msg = Position2D
             oppgoal_msg.x = rob.get_oppgoal_relative_x() / 1000
             oppgoal_msg.y = rob.get_oppgoal_relative_y() / 1000
-            oppgoal_msg.confidence = rob.get_oppgoal_belief() / 255
+            oppgoal_msg.confidence = rob.get_oppgoal_relative_belief() / 255
             oppgoal_relative.append(oppgoal_msg)
 
             # opponent_robot_a
@@ -231,7 +231,7 @@ class TeamCommunication(object):
             team_robot_c.append(team_robot_c_msg)
 
             avg_walking_speeds.append(rob.get_avg_walking_speed())
-            time_to_position_at_balls.append(rob.get_time_to_position_at_ball())
+            time_to_position_at_balls.append(rob.get_time_to_ball())
             max_kicking_distances.append(rob.get_max_kicking_distance())
 
             offensive_side.append(rob.get_offensive_side())
