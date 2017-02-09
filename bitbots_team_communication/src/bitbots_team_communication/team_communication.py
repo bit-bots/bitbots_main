@@ -1,10 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 import math
+from _thread import start_new_thread
+
 import rospy
 import time
 
-from humanoid_league_msgs.msg import Role, Action, Position, MotionState, BallRelative, TeamData, Position2D, GoalRelative, ObstaclesRelative, ObstacleRelative
+from humanoid_league_msgs.msg import Role, Action, Position, MotionState, BallRelative, TeamData, Position2D, \
+    GoalRelative, ObstaclesRelative, ObstacleRelative
 
 from geometry_msgs.msg import Pose2D
 
@@ -19,6 +22,15 @@ class TeamCommunication(object):
 
     def __init__(self):
         rospy.init_node('bitbots_team_communication', anonymous=False)
+
+        # --- Params ---
+        self.port = rospy.get_param("/team_communication/port")
+        self.team = rospy.get_param("/team_communication/team")
+        self.player = rospy.get_param("/team_communication/player")
+        # publishing rate in Hz
+        self.rate = rospy.Rate(rospy.get_param("/team_communication/rate"))
+        self.avg_walking_speed = rospy.get_param("/team_communication/avg_walking_speed")
+        self.max_kicking_distance = rospy.get_param("/team_communication/max_kicking_distance")
 
         # -- Class variables
         self.role = ROLE_IDLING
@@ -43,15 +55,10 @@ class TeamCommunication(object):
 
         self.time_to_position_at_ball = None
         self.offensive_side = None
+        self.data = {}
 
-        # --- Params ---
-        self.port = rospy.get_param("/team_communication/port")
-        self.team = rospy.get_param("/team_communication/team")
-        self.player = rospy.get_param("/team_communication/player")
-        # publishing rate in Hz
-        self.rate = rospy.Rate(rospy.get_param("/team_communication/rate"))
-        self.avg_walking_speed = rospy.get_param("/team_communication/avg_walking_speed")
-        self.max_kicking_distance = rospy.get_param("/team_communication/max_kicking_distance")
+        self.mitecom = MiteCom(self.port, self.team)
+        self.mitecom.set_robot_id(self.player)
 
         # --Publishers and Subscribers ---
         self.publisher = rospy.Publisher("/team_data", TeamData, queue_size=10)
@@ -67,64 +74,78 @@ class TeamCommunication(object):
         self.run()
 
     def run(self):
-        mitecom = MiteCom(self.port, self.team)
-        mitecom.set_robot_id(self.player)
-
+        start_new_thread(self.recv_thread, ())
+        start_new_thread(self.send_thread, ())
         while not rospy.is_shutdown():
-            #todo check if transmitting while beeing penalized is allowed
+            # let the main thread wait
+            rospy.sleep(1)
+
+    def recv_thread(self):
+        rec_rate = rospy.Rate(10)
+        while not rospy.is_shutdown():
+            self.data = self.mitecom.recv_data()
+            rec_rate.sleep()
+
+    def send_thread(self):
+        while not rospy.is_shutdown():
+            # todo check if transmitting while beeing penalized is allowed
             # state
-            mitecom.set_state(self.state)
-            mitecom.set_action(self.action)
-            mitecom.set_role(self.role)
+            self.mitecom.set_state(self.state)
+            self.mitecom.set_action(self.action)
+            self.mitecom.set_role(self.role)
 
             # position
             if self.position_belief is not None and self.position_belief > 0 and self.state == STATE_PENALIZED:
-                mitecom.set_pos(self.position_x, self.position_y, self.position_orientation, self.position_belief)
+                self.mitecom.set_pos(self.position_x, self.position_y, self.position_orientation, self.position_belief)
 
             # ball
             if self.ball_belief is not None and self.ball_belief > 0 and not self.state == STATE_PENALIZED:
-                mitecom.set_relative_ball(self.ball_relative_x, self.ball_relative_y, self.ball_belief)
+                self.mitecom.set_relative_ball(self.ball_relative_x, self.ball_relative_y, self.ball_belief)
 
             # opponent goal
             if self.oppgoal_belief is not None and self.oppgoal_belief > 0 and not self.state == STATE_PENALIZED:
-                mitecom.set_opp_goal_relative(self.oppgoal_relative_x, self.oppgoal_relative_y, self.oppgoal_belief)
+                self.mitecom.set_opp_goal_relative(self.oppgoal_relative_x, self.oppgoal_relative_y,
+                                                   self.oppgoal_belief)
 
             # opponent robots
             if self.oppgoal_belief is not None:
                 if len(self.opponent_robots) > 0:
-                    mitecom.set_opponent_robot_a(self.opponent_robots[0].x, self.opponent_robots[0].y, self.opponent_robots[0].confidence)
+                    self.mitecom.set_opponent_robot_a(self.opponent_robots[0].x, self.opponent_robots[0].y,
+                                                      self.opponent_robots[0].confidence)
                 if len(self.opponent_robots) > 1:
-                    mitecom.set_opponent_robot_a(self.opponent_robots[1].x, self.opponent_robots[1].x, self.opponent_robots[1].confidence)
+                    self.mitecom.set_opponent_robot_a(self.opponent_robots[1].x, self.opponent_robots[1].x,
+                                                      self.opponent_robots[1].confidence)
                 if len(self.opponent_robots) > 2:
-                    mitecom.set_opponent_robot_a(self.opponent_robots[2].x, self.opponent_robots[2].x, self.opponent_robots[2].confidence)
+                    self.mitecom.set_opponent_robot_a(self.opponent_robots[2].x, self.opponent_robots[2].x,
+                                                      self.opponent_robots[2].confidence)
                 if len(self.opponent_robots) > 3:
-                    mitecom.set_opponent_robot_a(self.opponent_robots[3].x, self.opponent_robots[3].x, self.opponent_robots[3].confidence)
+                    self.mitecom.set_opponent_robot_a(self.opponent_robots[3].x, self.opponent_robots[3].x,
+                                                      self.opponent_robots[3].confidence)
 
             # team robots
             if self.oppgoal_belief is not None:
                 if len(self.team_robots) > 0:
-                    mitecom.set_team_robot_a(self.team_robots[0].x, self.team_robots[0].y,
-                                                 self.team_robots[0].confidence)
+                    self.mitecom.set_team_robot_a(self.team_robots[0].x, self.team_robots[0].y,
+                                                  self.team_robots[0].confidence)
                 if len(self.team_robots) > 1:
-                    mitecom.set_team_robot_a(self.team_robots[1].x, self.team_robots[1].x,
-                                                 self.team_robots[1].confidence)
+                    self.mitecom.set_team_robot_a(self.team_robots[1].x, self.team_robots[1].x,
+                                                  self.team_robots[1].confidence)
                 if len(self.team_robots) > 2:
-                    mitecom.set_team_robot_a(self.team_robots[2].x, self.team_robots[2].x,
-                                                 self.team_robots[2].confidence)
-                    
+                    self.mitecom.set_team_robot_a(self.team_robots[2].x, self.team_robots[2].x,
+                                                  self.team_robots[2].confidence)
+
             # time to ball
             if self.time_to_position_at_ball is not None:
-                mitecom.set_time_to_ball(self.time_to_position_at_ball)
+                self.mitecom.set_time_to_ball(self.time_to_position_at_ball)
 
             # strategy
             if self.offensive_side is not None:
-                mitecom.set_kickoff_offence_side(self.offensive_side)
+                self.mitecom.set_kickoff_offence_side(self.offensive_side)
 
-            mitecom.send_data()
+            self.mitecom.send_data()
 
-            data = mitecom.recv_data()
-            if data != {}:
-                self.publish_data(data)
+            if self.data != {}:
+                self.publish_data(self.data)
             self.rate.sleep()
 
     def publish_data(self, data):
@@ -163,22 +184,22 @@ class TeamCommunication(object):
             pos_msg = Pose2D()
             pos_msg.x = rob.get_absolute_x() / 1000
             pos_msg.y = rob.get_absolute_y() / 1000
-            pos_msg.theta = rob.getabsolute_orientation()
+            pos_msg.theta = rob.get_absolute_orientation()
             own_position.append(pos_msg)
             own_position_beliefs.append(rob.get_absolute_belief() / 255)
 
             # ball
             ball_msg = Position2D
-            ball_msg.x = rob.get_ball_relative_x() / 1000
-            ball_msg.y = rob.get_ball_relative_y() / 1000
-            ball_msg.confidence = rob.get_ball_belief() / 255
+            ball_msg.x = rob.get_relative_ball_x() / 1000
+            ball_msg.y = rob.get_relative_ball_y() / 1000
+            ball_msg.confidence = rob.get_relative_ball_belief() / 255
             ball_relative.append(ball_msg)
 
             # oppgoal
             oppgoal_msg = Position2D
             oppgoal_msg.x = rob.get_oppgoal_relative_x() / 1000
             oppgoal_msg.y = rob.get_oppgoal_relative_y() / 1000
-            oppgoal_msg.confidence = rob.get_oppgoal_belief() / 255
+            oppgoal_msg.confidence = rob.get_oppgoal_relative_belief() / 255
             oppgoal_relative.append(oppgoal_msg)
 
             # opponent_robot_a
@@ -231,7 +252,7 @@ class TeamCommunication(object):
             team_robot_c.append(team_robot_c_msg)
 
             avg_walking_speeds.append(rob.get_avg_walking_speed())
-            time_to_position_at_balls.append(rob.get_time_to_position_at_ball())
+            time_to_position_at_balls.append(rob.get_time_to_ball())
             max_kicking_distances.append(rob.get_max_kicking_distance())
 
             offensive_side.append(rob.get_offensive_side())
@@ -268,6 +289,8 @@ class TeamCommunication(object):
 
         message.offensive_side = offensive_side
 
+        rospy.logwarn(message)
+
         self.publisher.publish(message)
 
     def role_callback(self, msg):
@@ -286,24 +309,25 @@ class TeamCommunication(object):
             self.state = STATE_ACTIVE
 
     def position_callback(self, msg):
-        # conversion from m (ROS message) to mm (mitecom)
+        # conversion from m (ROS message) to mm (self.mitecom)
         self.position_x = int(msg.pose.x * 1000)
         self.position_y = int(msg.pose.y * 1000)
         self.position_orientation = int(msg.pose.theta)
-        # the scale is different in mitecom, so we have to transfer from 0...1 to 0...255
+        # the scale is different in self.mitecom, so we have to transfer from 0...1 to 0...255
         self.position_belief = int(msg.confidence * 255)
 
     def ball_callback(self, msg):
-        # conversion from m (ROS message) to mm (mitecom)
+        # conversion from m (ROS message) to mm (self.mitecom)
         self.ball_relative_x = int(msg.ball_relative.x * 1000)
         self.ball_relative_y = int(msg.ball_relative.y * 1000)
-        # the scale is different in mitecom, so we have to transfer from 0...1 to 0...255
+        # the scale is different in self.mitecom, so we have to transfer from 0...1 to 0...255
         self.ball_belief = int(msg.confidence * 255)
         # use pythagoras to compute time to ball
-        self.time_to_position_at_ball = math.sqrt(self.ball_relative_x**2 + self.ball_relative_y**2)/self.avg_walking_speed
+        self.time_to_position_at_ball = math.sqrt(
+            self.ball_relative_x ** 2 + self.ball_relative_y ** 2) / self.avg_walking_speed
 
     def goal_callback(self, msg):
-        #todo check if this is a good way to compute the position
+        # todo check if this is a good way to compute the position
         if msg.positions is None or msg.positions == []:
             return
         post_a = msg.positions[0]
@@ -323,11 +347,12 @@ class TeamCommunication(object):
         self.opponent_robots = []
         self.team_robots = []
         for obstacle in msg.obstacles:
-            #only take obstacles that are team mates or opponents
+            # only take obstacles that are team mates or opponents
             if obstacle.type == team_color:
                 self.team_robots.append(obstacle.position)
             elif obstacle.type == opponent_color:
                 self.opponent_robots.append(obstacle.position)
+
 
 if __name__ == "__main__":
     print("Starting Team Communication")

@@ -5,7 +5,7 @@ team_communication:
 
   team: 7
 
-  player: 99
+  player: 1
 
   # Rate of published messages in Hz
   rate: 1
