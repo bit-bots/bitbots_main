@@ -16,9 +16,9 @@ from bitbots_team_communication.mitecom.mitecom import MiteCom, STATE_PENALIZED,
 
 
 class TeamCommunication(object):
-    # todo docu
-    # todo oppgoal to goal
-    # todo belief to confidence
+    """This node provides ROS connections to a mitecom object. Two threads are started, one for receiving information
+    from other robots and one for sending out information to other robots and to the ROS topics. Information about the
+    current state of the robot are fetched using subscription on multiple topics."""
 
     def __init__(self):
         rospy.init_node('bitbots_team_communication', anonymous=False)
@@ -32,7 +32,7 @@ class TeamCommunication(object):
         self.avg_walking_speed = rospy.get_param("/team_communication/avg_walking_speed")
         self.max_kicking_distance = rospy.get_param("/team_communication/max_kicking_distance")
 
-        # -- Class variables
+        # -- Class variables ---
         self.role = ROLE_IDLING
         self.action = ACTION_UNDEFINED
         self.state = STATE_INACTIVE
@@ -60,7 +60,7 @@ class TeamCommunication(object):
         self.mitecom = MiteCom(self.port, self.team)
         self.mitecom.set_robot_id(self.player)
 
-        # --Publishers and Subscribers ---
+        # --- Initialize Topics ---
         self.publisher = rospy.Publisher("/team_data", TeamData, queue_size=10)
 
         rospy.Subscriber("role", Role, self.role_callback)
@@ -71,6 +71,7 @@ class TeamCommunication(object):
         rospy.Subscriber("goal_relative", GoalRelative, self.goal_callback)
         rospy.Subscriber("obstacle_relative", ObstaclesRelative, self.obstacle_callback)
 
+        # --- Start loop ---
         self.run()
 
     def run(self):
@@ -88,7 +89,7 @@ class TeamCommunication(object):
 
     def send_thread(self):
         while not rospy.is_shutdown():
-            # todo check if transmitting while beeing penalized is allowed
+            # todo check if transmitting while being penalized is allowed
             # state
             self.mitecom.set_state(self.state)
             self.mitecom.set_action(self.action)
@@ -288,8 +289,6 @@ class TeamCommunication(object):
         message.max_kicking_distance = max_kicking_distances
 
         message.offensive_side = offensive_side
-
-        rospy.logwarn(message)
 
         self.publisher.publish(message)
 

@@ -14,14 +14,16 @@ from humanoid_league_msgs.msg import Speak
 
 
 def speak(text, publisher, priority=Speak.MID_PRIORITY, speaking_active=True):
+    """ Utility method which can be used by other classes to easily publish a message."""
     if speaking_active:
         msg = Speak()
         msg.priority = priority
         msg.text = text
         publisher.publish(msg)
 
+
 class Speaker(object):
-    """ Uses espeak to say all messages from the speak topic
+    """ Uses espeak to say messages from the speak topic.
     """
 
     # todo make also a service for demo proposes, which is blocking while talking
@@ -31,51 +33,51 @@ class Speaker(object):
     # https://github.com/muhrix/espeak_ros/blob/master/src/espeak_ros_node.cpp
 
     def __init__(self):
+        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
+        rospy.init_node('bitbots_speaker', log_level=log_level, anonymous=False)
+        rospy.loginfo("Starting speaker")
+
         # --- Class Variables ---
         self.low_prio_queue = []
         self.mid_prio_queue = []
         self.high_prio_queue = []
-
         # if you want to change standard startup, do it in the config yaml
         self.speak_enabled = None
         self.print_say = None
         self.message_level = None
         self.amplitude = None
 
-        # --- Initialize Node ---
-        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
-        rospy.init_node('bitbots_speaker', log_level=log_level, anonymous=False)
-        rospy.loginfo("Starting speaker")
-
-        # subscribe to whats to say
-        rospy.Subscriber("/speak", Speak, self.incoming_text)
-
+        # --- Dynamic Reconfigure ---
         # dyn reconfigure to turn speaking on/off, set volume and to set priority level
         # will use values from config/speaker_params as start
         self.server = Server(speaker_paramsConfig, self.reconfigure)
 
-        self.__run_speaker()
+        # --- Initialize Topics ---
+        rospy.Subscriber("/speak", Speak, self.speak_cb)
 
-    def __run_speaker(self):
-        """ Runs continuously to wait for messages and speak them"""
-        # wait for messages. while true doesn't work well in ROS
+        # --- Start loop ---
+        self.run_speaker()
+
+    def run_speaker(self):
+        """ Runs continuously to wait for messages and speaks them."""
+        rate = rospy.Rate(20)
         while not rospy.is_shutdown():
             # test if espeak is already running and speak is enabled
             if not "espeak " in os.popen("ps xa").read() and self.speak_enabled:
                 # take the highest priority message first
                 if len(self.high_prio_queue) > 0:
                     text, is_file = self.high_prio_queue.pop(0)
-                    self.__say(text, is_file)
+                    self.say(text, is_file)
                 elif len(self.mid_prio_queue) > 0 and self.message_level <= 1:
                     text, is_file = self.mid_prio_queue.pop(0)
-                    self.__say(text, is_file)
+                    self.say(text, is_file)
                 elif len(self.low_prio_queue) > 0 and self.message_level == 0:
                     text, is_file = self.low_prio_queue.pop(0)
-                    self.__say(text)
+                    self.say(text)
             # wait a bit to eat not all the performance
-            rospy.sleep(0.5)
+            rate.sleep()
 
-    def __say(self, text, file=False):
+    def say(self, text, file=False):
         """ Speak this specific text"""
         # todo make volume adjustable, some how like this
         #        command = ("espeak", "-a", self.amplitude, text)
@@ -94,7 +96,7 @@ class Speaker(object):
         except OSError:
             pass
 
-    def incoming_text(self, msg):
+    def speak_cb(self, msg):
         """ Handles incoming msg on speak topic."""
 
         # first decide if it's a file or a text

@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-#-*- coding:utf-8 -*-
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
 import rospy
 import time
 from bitbots_buttons.msg import Buttons
@@ -10,20 +10,33 @@ from bitbots_pause.srv import ManualPenalize
 
 
 class ButtonNode(object):
+    """ This node handles pressing of buttons on the robot. It should be used to call services on other nodes,
+    as an sort of event driven architecture for the buttons.
+    """
+
     def __init__(self):
         log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
         rospy.init_node("ButtonManager", log_level=log_level, anonymous=False)
-        rospy.Subscriber("/buttons", Buttons, self.update_buttons)
-        self.speak_publisher = rospy.Publisher('/Speak', Speak, queue_size=10)
-        self.button1 = False
-        self.button2 = False
-        self.button1_time = 0
-        self.button2_time = 0
+
+        # --- Params ---
         self.speaking_active = rospy.get_param("/buttons/speak_active", False)
         self.short_time = rospy.get_param("/buttons/short_time", 2)
         self.manual_penality_mode = rospy.get_param("/button_modes/manual_penalty", False)
 
-    def update_buttons(self, msg):
+        # --- Class variables ---
+        self.button1 = False
+        self.button2 = False
+        self.button1_time = 0
+        self.button2_time = 0
+
+        # --- Initialize Topics ---
+        rospy.Subscriber("/buttons", Buttons, self.button_cb)
+        self.speak_publisher = rospy.Publisher('/Speak', Speak, queue_size=10)
+
+        rospy.spin()
+
+    def button_cb(self, msg):
+        """Callback for msg about pressed buttons."""
         if msg.button1 and not self.button1:
             # button1 was newly pressed
             self.button1 = True
@@ -68,6 +81,7 @@ class ButtonNode(object):
 
     def button2_long(self):
         speak("Button 2 pressed long", self.speak_publisher, speaking_active=self.speaking_active)
+
 
 if __name__ == "__main__":
     button = ButtonNode()
