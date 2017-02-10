@@ -2,11 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 
 project(bitbots_cm730)
 
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../bitbots_common/cmake) #  TODO: das mus dynamisch
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ~/repositories/bitbots_meta/bitbots_misc/bitbots_common/cmake) #  TODO: das mus dynamisch
-
-include(BitBotsIncludes)
-
 ## Find catkin macros and librariese
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -16,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   humanoid_league_msgs
-#  bitbots_common
+  bitbots_common
 )
 
 find_package(Eigen REQUIRED)
@@ -113,7 +108,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
   LIBRARIES bitbots_cm730
-  CATKIN_DEPENDS bitbots_common message_runtime
+  CATKIN_DEPENDS message_runtime
   DEPENDS Eigen
 )
 

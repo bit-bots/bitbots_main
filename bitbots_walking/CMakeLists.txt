@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_walking)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ~/repositories/bitbots_meta/bitbots_misc/bitbots_common/cmake) #  TODO: das mus dynamisch
-
-include(BitBotsIncludes)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -14,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   humanoid_league_msgs
-#  bitbots_common
+  bitbots_common
 )
 
 find_package(Armadillo REQUIRED)
@@ -113,7 +110,7 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
   LIBRARIES bitbots_walking
-  CATKIN_DEPENDS bitbots_common
+  #CATKIN_DEPENDS
   DEPENDS Eigen
 )
 
