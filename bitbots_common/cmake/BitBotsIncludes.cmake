@@ -5,6 +5,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") #enable c++11 for all build
 set(Python_ADDITIONAL_VERSIONS 3.5)
 # Python-Version finden
 include(FindPythonInterp)
+
+# Add the directory of this file to the path because the other used files are also here
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR})
+
 # Cython danach angeben, sonst vcersionskonflikte
 include(UseCython)
 
