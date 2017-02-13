@@ -7,10 +7,10 @@ The Robot repositionates so he is facing the opponent goal to score.
 """
 import time
 
-from stackmachine.abstract_action_module import AbstractActionModule
+from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
 import rospy
-from stackmachine.model import Connector
+from model.connector import Connector
 
 
 class AlignToGoal(AbstractActionModule):

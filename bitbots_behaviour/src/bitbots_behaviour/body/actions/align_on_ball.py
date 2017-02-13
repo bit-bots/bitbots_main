@@ -5,8 +5,8 @@ AlignOnBall
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
 """
-from stackmachine.abstract_action_module import AbstractActionModule
-from stackmachine.model import Connector
+from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+from model.connector import Connector
 
 
 class AlignOnBall(AbstractActionModule):

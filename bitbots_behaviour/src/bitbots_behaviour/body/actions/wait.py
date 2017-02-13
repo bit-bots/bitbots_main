@@ -8,7 +8,7 @@ Just waits for something (i.e. that preconditions will be fullfilled)
 """
 import time
 
-from stackmachine.abstract_action_module import AbstractActionModule
+from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
 
 class Wait(AbstractActionModule):

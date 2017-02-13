@@ -4,7 +4,7 @@ CloseBall
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 """
-from stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 import rospy
 from body.actions.align_on_ball import AlignOnBall
@@ -12,7 +12,7 @@ from body.actions.go_to_ball_pathfinding import GoToBallPathfinding
 from body.decisions.common.kick_decision import KickDecisionPenaltyKick
 from body.decisions.common.stands_correct_decision import StandsCorrectDecision
 from body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
-from stackmachine.model import Connector
+from model.connector import Connector
 
 
 class AbstractCloseBall(AbstractDecisionModule):

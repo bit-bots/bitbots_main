@@ -9,7 +9,7 @@ History:
 """
 from body.decisions.common.ball_seen import BallSeenGoalie
 from body.decisions.common.go_to_duty_position import GoToDutyPosition
-from stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class GoaliePositionDecision(AbstractDecisionModule):

@@ -10,9 +10,9 @@ The robot performs a cretain set of walking parameters. The action expects a lis
 """
 import time
 
-from stackmachine.abstract_init_action_module import AbstractInitActionModule
+from bitbots_stackmachine.abstract_init_action_module import AbstractInitActionModule
 
-from stackmachine.model import Connector
+from model.connector import Connector
 
 
 class PlainWalkAction(AbstractInitActionModule):

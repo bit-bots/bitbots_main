@@ -12,7 +12,7 @@ from body.decisions.team_player.center_decision import CenterDecision
 from body.decisions.team_player.defender_decision import DefenderDecision
 from body.decisions.team_player.supporter_decision import SupporterDecision
 from humanoid_league_msgs.msg import Role
-from stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class RoleDecider(AbstractDecisionModule):

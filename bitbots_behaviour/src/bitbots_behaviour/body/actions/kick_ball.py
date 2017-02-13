@@ -6,9 +6,9 @@ KickBall
 """
 import time
 
-from stackmachine.abstract_action_module import AbstractActionModule
+from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
-from stackmachine.model import Connector
+from model.connector import Connector
 import rospy
 
 

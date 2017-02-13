@@ -11,7 +11,7 @@ import rospy
 from body.decisions.common.duty_decider import DutyDecider
 from geometry_msgs.msg import Twist, Pose2D
 from humanoid_league_msgs.msg import BallRelative, ObstacleRelative, GameState, Speak, Role
-from stackmachine.stack_machine_module import StackMachineModule
+from bitbots_stackmachine.stack_machine_module import StackMachineModule
 
 
 class BehaviourModule(StackMachineModule):

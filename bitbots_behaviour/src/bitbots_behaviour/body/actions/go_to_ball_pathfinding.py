@@ -7,7 +7,7 @@ GotToBallPathfinding
 """
 from geometry_msgs.msg import Pose2D
 
-from stackmachine.abstract_action_module import AbstractActionModule
+from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
 
 class GoToBallPathfinding(AbstractActionModule):

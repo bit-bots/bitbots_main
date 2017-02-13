@@ -1,18 +1,17 @@
-# -*- coding:utf-8 -*-
 """
 StandsCorrectDecision
 ^^^^^^^^^^^^^
 
-.. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
+.. moduleauthor:: Martin Poppinga <robocup@poppinga.xyz>
 
 """
 
-from stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 import rospy
 from body.actions.align_on_ball import AlignOnBall
 from body.decisions.common.kick_decision import KickDecisionCommon
-from stackmachine.model import Connector
+from model.connector import Connector
 
 
 class StandsCorrectDecision(AbstractDecisionModule):

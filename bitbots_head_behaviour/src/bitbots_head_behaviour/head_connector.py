@@ -1,9 +1,9 @@
 import rospy
-import time
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 from humanoid_league_msgs.msg import Role
+
 
 class HeadConnector:
     def __init__(self):
@@ -49,12 +49,6 @@ class HeadConnector:
 
     def get_current_head_pos(self):
         return self.current_pan_pos, self.current_tilt_pos
-
-    def get_confirmed_ball(self):
-        return self.my_data.get("Confirmed.Ball", 0)
-
-    def set_confirmed_ball(self):
-        self.my_data["Confirmed.Ball"] = time.time()
 
     def get_duty(self):
         return self.role

@@ -9,9 +9,9 @@ The threshold determines how precise the robot tries to get to this angle. 10 de
 History:
 * 06.12.14: Created (Marc Bestmann)
 """
-from stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
-from stackmachine.model import Connector
+from model.connector import Connector
 
 
 class TurnToAbsoluteDirection(AbstractDecisionModule):
