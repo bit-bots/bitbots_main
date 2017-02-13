@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-#-*- coding:utf-8 -*-
 import threading
 
 import rospy
@@ -16,48 +15,56 @@ from bitbots_walking.zmpwalking import ZMPWalkingEngine
 
 
 class WalkingNode(object):
+    """ This node computes walking positions based on the current position, if the walking is active."""
+
     def __init__(self):
-        self.current_pose = Pose()
-        self.goal_pose = Pose()
-        self.accel = (0, 0, 0)
-        self.gyro = (0, 0, 0)
-        self.motion_state = None
-        self.walking_started = 0
-        self.pose_lock = threading.Lock()
+        rospy.init_node("bitbots_walking", anonymous=False)
+        self.motor_goal_publisher = rospy.Publisher("/motion_motor_goals", JointTrajectory,
+                                                    queue_size=10)  # todo just for testing
 
+        # --- Params ---
         zmp_config = rospy.get_param("/ZMPConfig/" + rospy.get_param("/robot_type_name"))
-        self.walking = ZMPWalkingEngine()
-        self.walkready_animation = self.walking.create_walkready_pose(duration=1.5)
-
+        self.with_gyro = zmp_config["use_gyro_for_walking"]
         robot_type_name = rospy.get_param("/robot_type_name")
         self.used_motor_cids = rospy.get_param("/cm730/" + robot_type_name + "/motors")
         self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
 
-        # pre defiened messages for performance
-        self.traj_msg = JointTrajectory()
-        self.traj_msg.joint_names = [x.decode() for x in self.used_motor_names]
-        self.traj_point = JointTrajectoryPoint()
+        # --- Class Variables ---
+        self.walking = ZMPWalkingEngine()
+        self.walkready_animation = self.walking.create_walkready_pose(duration=1.5)
+        self.current_pose = Pose()
+        self.goal_pose = Pose()
+        self.pose_lock = threading.Lock()
 
-
-        self.with_gyro = zmp_config["use_gyro_for_walking"]
+        self.accel = (0, 0, 0)
+        self.gyro = (0, 0, 0)
 
         self.walk_active = False
         self.walk_forward = 0
         self.walk_sideward = 0
         self.walk_angular = 0
 
-        rospy.init_node("bitbots_walking", anonymous=False)
-        self.motor_goal_publisher = rospy.Publisher("/motion_motor_goals", JointTrajectory, queue_size=10)#todo just for testing
+        self.motion_state = None
+        self.walking_started = 0
+
+        # --- pre defiened messages for performance ---
+        self.traj_msg = JointTrajectory()
+        self.traj_msg.joint_names = [x.decode() for x in self.used_motor_names]
+        self.traj_point = JointTrajectoryPoint()
+
+        # --- Initialize Topics ---
         self.odometry_publisher = rospy.Publisher("/odometry", Odometry, queue_size=10)
         rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_cb)
         rospy.Subscriber("/motion_state", MotionState, self.motion_state_cb)
         rospy.Subscriber("/joint_states", JointState, self.current_position_cb)
         rospy.Subscriber("/imu", Imu, self.imu_cb)
 
+        # --- Start loop ---
         self.run()
 
     def cmd_vel_cb(self, msg):
-        # we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its axis
+        # we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
+        # axis
         self.walk_forward = msg.linear.x
         self.walk_sideward = msg.linear.y
         self.walk_angular = msg.angular.z
@@ -68,6 +75,7 @@ class WalkingNode(object):
         self.motion_state = msg.state
 
     def current_position_cb(self, msg):
+        # we lock the pose to make shure nobody is reading it at the same time
         self.pose_lock.acquire()
         names = [x.encode("utf-8") for x in msg.name]
         self.current_pose.set_positions_rad(names, list(msg.position))
@@ -80,7 +88,7 @@ class WalkingNode(object):
 
     def calculate_walking(self):
         """
-        Setzt die Parameter fürs walking und berechnet die Pose
+        Set parameters for walking and calculate pose.
         """
 
         # Aktuelle geschwindigkeitswerte Setzen
@@ -97,39 +105,33 @@ class WalkingNode(object):
         # todo check if this is still in use
         # self.ipc.set_walking_foot_phase(self.zmp_foot_phase)
 
-        # Pose zurückgeben
         return self.walking.pose
 
     def walking_start(self):
         """
-        Startet das Walking. Ab sofort wir der Roboter laufen.
+        This is starting the walking.
         """
         self.walking.start()
         self.walking.stance_reset()
 
     def walking_reset(self):
         """
-        Resettet das Walking und stoppt es dabei *sofort*. Das bedeutet
-        das es auch mitten im Schritt in einer instabilen Position anhalten
-        kann. Überwiegend zum abbrechen wenn wir gerade Fallen oder
-        ähnliches
+        Resets the walking and stops it *imediatly*. This means that it can also stop during a step, thus in an
+        unstable position. Should be normally used when the robot is already falling.
         """
         self.walking.stop()
         self.walking.stance_reset()
 
     def walking_stop(self):
         """
-        Sagt dem Walking das wir stoppen wollen. Das Walking wird noch
-        etwas Weiterlaufen bis es einen Stabilen zustand zum anhalten
-        erreicht hat, daher muss weiter :func:`calculate_walking`
-        benutzt werden
+        Tells the walking that we want to stop. The walking will run a bit more until it reaches a stable stopping
+        position. Therefore :func:`calculate_walking` has to be called further on.
         """
         self.walking.stop()
 
     def publish_motor_goals(self):
         msg = pose_goal_to_traj_msg(self.goal_pose, self.used_motor_names, self.traj_msg, self.traj_point)
         self.motor_goal_publisher.publish(msg)
-
 
     def run(self):
         rate = rospy.Rate(10)
@@ -164,10 +166,11 @@ class WalkingNode(object):
             else:
                 # We're not currently running, test if we want to start
                 if self.walk_active and self.motion_state in (
-                MotionState.CONTROLABLE, MotionState.WALKING, MotionState.MOTOR_OFF):
+                        MotionState.CONTROLABLE, MotionState.WALKING, MotionState.MOTOR_OFF):
                     self.walking_started = rospy.Time.now()
                     self.walking_start()
             rate.sleep()
+
 
 if __name__ == "__main__":
     walking = WalkingNode()

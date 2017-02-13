@@ -1,7 +1,7 @@
 <library path="src">
   <class name="MotionViz" type="motion_viz.motion_viz.MotionViz" base_class_type="rqt_gui_py::Plugin">
     <description>
-      A Python GUI plugin to visualize the motion state machine
+      A Python GUI plugin to visualize the bitbots motion state machine from the package bitbots_motion.
     </description>
     <qtgui>
       <group>
@@ -11,7 +11,7 @@
       </group>
       <label>Motion Viz</label>
       <icon type="theme">preferences-system-network</icon>
-      <statustip>A Python GUI plugin for visualizing the ROS computation graph.</statustip>
+      <statustip>A Python GUI plugin to visualize the bitbots motion state machine from the package bitbots_motion.</statustip>
     </qtgui>
   </class>
 </library>
