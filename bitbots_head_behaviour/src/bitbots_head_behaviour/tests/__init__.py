@@ -6,6 +6,6 @@
 .. moduleauthor:: sheepy <sheepy@informatik.uni-hamburg.de>
 
 History:
-* 4/16/14: Created (sheepy)
+* 5/7/14: Created (sheepy)
 
 """

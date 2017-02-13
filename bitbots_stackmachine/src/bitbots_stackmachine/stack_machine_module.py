@@ -31,7 +31,7 @@ class StackMachineModule:
     old_representation = ""
 
     def __init__(self):
-        self.connector = Connector()
+        self.connector = None
 
     def _init_module(self, module, init_data=None):
         """
