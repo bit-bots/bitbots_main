@@ -16,8 +16,8 @@ from model.connector import Connector
 
 
 class PlainWalkAction(AbstractInitActionModule):
-    def __init__(self, args):
-        AbstractInitActionModule.__init__(self, args)
+    def __init__(self, connector: Connector, args):
+        AbstractInitActionModule.__init__(self, connector, args)
         self.step_list = args
         self.walking_steps = self.walking_step_generator_function()
         self.active = False

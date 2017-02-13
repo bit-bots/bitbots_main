@@ -11,11 +11,12 @@ History:
 * 05.12.14: Complete Refactor (Marc Bestmann)
 """
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from model.connector import Connector
 
 
 class GoalieMovement(AbstractDecisionModule):
-    def __init__(self, _):
-        super(GoalieMovement, self).__init__()
+    def __init__(self,  connector: Connector, _):
+        super(GoalieMovement, self).__init__(connector)
         self.toggle_goalie_becomes_fieldie = config["Toggles"]["Goalie"]["goalieGoFieldie"]
         self.toggle_goalie_go_to_ball = config["Toggles"]["Goalie"]["goalieGoToBall"]
         self.toggle_goalie_position_in_goal = config["Toggles"]["Goalie"]["walkInGoal"]

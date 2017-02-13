@@ -9,7 +9,7 @@ History:
 * 5/7/14: Created (sheepy)
 * 07.01.15: Complete Refactoring (Marc Bestmann)
 """
-from stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class KickOffRoleDecider(AbstractDecisionModule):

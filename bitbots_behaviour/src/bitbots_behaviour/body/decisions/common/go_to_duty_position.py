@@ -7,15 +7,15 @@ Go back to the position where a robot with this duty should stand.
 History:
 * 05.12.14: Created (Marc Bestmann & Nils Rokita)
 """
-from stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 from body.actions.go_to_absolute_position import GoToAbsolutePosition
-from stackmachine.model import Connector
+from model.connector import Connector
 
 
 class GoToDutyPosition(AbstractDecisionModule):
-    def __init__(self, _):
-        super(GoToDutyPosition, self).__init__()
+    def __init__(self, connector: Connector, _):
+        super(GoToDutyPosition, self).__init__(connector)
         self.length = config["field"]["length"]
         self.width = config["field"]["width"]
         self.goalie_position = config["Behaviour"]["Common"]["Positions"]["goalie"]

@@ -19,8 +19,8 @@ class StandsCorrectDecision(AbstractDecisionModule):
     Decides if the robot stands correct and takes care if it doesn't
     """
 
-    def __init__(self, _):
-        super(StandsCorrectDecision, self).__init__()
+    def __init__(self, connector: Connector, _):
+        super(StandsCorrectDecision, self).__init__(connector)
         self.toggle_align_to_goal = rospy.get_param("/Behaviour/Toggles/Fieldie/alignToGoal")
         self.toggle_use_side_kick_in_game = rospy.get_param("/Behaviour/Toggles/Fieldie/useSideKickInGame")
         self.toggle_hack_align = rospy.get_param("/Behaviour/Toggles/Fieldie/hackAlign")

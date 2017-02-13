@@ -1,20 +1,12 @@
-# -*- coding:utf-8 -*-
 """
 StackMachineModule
 ^^^^^^^^^^^^^^^^^^
 
 .. moduleauthor:: Nils Rokita <0rokita@informatik.uni-hamburg.de>
 
-History:
-
-* 1.12.13: Created (Nils Rokita)
-* 14.12.13: Umstellung auf Weltmodellschnittstelle (Martin Poppinga)
-* 05.02.13: Erweterung um reevaluate von decisions (Nils Rokita)
-* 03.04.14: Unterdrückung des reevaluate (Nils Rokita)
 """
 import rospy
-from stackmachine.abstract_stack_element import AbstractStackElement
-from stackmachine.model import Connector
+from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
 
 
 class StackMachineModule:
@@ -37,7 +29,7 @@ class StackMachineModule:
         """
         Initialisiert das Modul module
         """
-        mod = module(init_data)
+        mod = module(self.connector, init_data)
         mod.setup_internals(self, init_data)
         return mod
 

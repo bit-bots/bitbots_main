@@ -17,7 +17,7 @@ import time
 
 from body.actions.plain_walk_action import PlainWalkAction
 from body.actions.search import StopAndSearch
-from stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class FieldieSearchDecision(AbstractDecisionModule):

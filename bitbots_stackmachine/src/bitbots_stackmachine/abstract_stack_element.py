@@ -5,7 +5,6 @@ AbstractStackElement
 .. moduleauthor:: Nils Rokita <0rokita@informatik.uni-hamburg.de>
 
 """
-from stackmachine.model import Connector
 
 
 class AbstractStackElement:
@@ -20,7 +19,7 @@ class AbstractStackElement:
     reevaluate = False
     _init_data = None
 
-    def __init__(self, args=None):
+    def __init__(self, connector, args=None):
         pass
 
     def setup_internals(self, behaviour, init_data):
@@ -68,7 +67,7 @@ class AbstractStackElement:
         """
         self._behaviour.push(module, init_data)
 
-    def perform(self, connector: Connector, reevaluate: bool=False):
+    def perform(self, connector, reevaluate: bool=False):
         """
          Diese Methode wird aufgeruffen wenn das Modul im Stack ganz oben
          liegt und drann ist. Diese Methode sollte überladen werden!

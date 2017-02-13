@@ -14,7 +14,7 @@ import time
 
 from body.actions.wait import Wait
 from body.decisions.common.corridor import DefenderCorridor
-from stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class DefenderDecision(AbstractDecisionModule):

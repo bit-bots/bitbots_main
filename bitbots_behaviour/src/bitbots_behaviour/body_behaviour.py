@@ -12,10 +12,12 @@ from body.decisions.common.duty_decider import DutyDecider
 from geometry_msgs.msg import Twist, Pose2D
 from humanoid_league_msgs.msg import BallRelative, ObstacleRelative, GameState, Speak, Role
 from bitbots_stackmachine.stack_machine_module import StackMachineModule
+from model.connector import Connector
 
 
 class BehaviourModule(StackMachineModule):
     def __init__(self):
+        self.connector = Connector()
         self.set_start_module(DutyDecider)
         super(BehaviourModule, self).__init__()
 
@@ -27,6 +29,8 @@ class BehaviourModule(StackMachineModule):
         self.connector.team_data.role_sender = rospy.Publisher("/role", Role, queue_size=2)
         self.connector.walking.pub_walking_objective = rospy.Publisher("/navigation_goal", Pose2D, queue_size=3)
         self.connector.walking.pub_walkin_params = rospy.Publisher("/cmd_vel", Twist, queue_size=6)
+
+        self.connector.config = rospy.get_param("/Behaviour/Body")
 
         #self.connector.animation.server = actionlib.SimpleActionClient("bitbots_animation", PlayAnimationAction)
 

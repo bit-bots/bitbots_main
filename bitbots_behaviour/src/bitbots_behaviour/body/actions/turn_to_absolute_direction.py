@@ -15,8 +15,8 @@ from model.connector import Connector
 
 
 class TurnToAbsoluteDirection(AbstractDecisionModule):
-    def __init__(self, args):
-        super(TurnToAbsoluteDirection, self).__init__()
+    def __init__(self, connector: Connector, args):
+        super(TurnToAbsoluteDirection, self).__init__(connector)
         self.goal_direction = args[0]
         self.threshold = args[1]
 

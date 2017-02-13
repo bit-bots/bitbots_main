@@ -17,8 +17,8 @@ class AfterThrowDecision(AbstractDecisionModule):
     Decides how the robot will turn after it has thrown itself.
     """
 
-    def __init__(self, _):
-        super(AfterThrowDecision, self).__init__()
+    def __init__(self, connector: Connector, _):
+        super(AfterThrowDecision, self).__init__(connector)
         self.relocateTurn = config["Behaviour"]["Toggles"]["Goalie"]["relocateTurn"]
         self.anim_goalie_walkready = config["animations"]["motion"]["goalie-walkready"]
 

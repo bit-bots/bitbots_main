@@ -18,17 +18,19 @@ The robot stays in its corridor and finds back if it had leaved it.
 import math
 import time
 
-from stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 from body.actions.plain_walk_action import PlainWalkAction
 from body.actions.wait import Wait
 from body.decisions.team_player.defender_position_decider import DefenderPositionDecider
-from stackmachine.model.capsules.walking_capsule import WalkingCapsule
+from model.capsules.walking_capsule import WalkingCapsule
+
+from model.connector import Connector
 
 
 class AbstractCorridor(AbstractDecisionModule):
-    def __init__(self, _):
-        super(AbstractCorridor, self).__init__()
+    def __init__(self, connector: Connector, _):
+        super(AbstractCorridor, self).__init__(connector)
 
         self.corridor_u_start = int(config["length"]) * (1.0 / 9.0)
         self.corridor_u_end = int(config["length"]) * (2.0 / 9.0)

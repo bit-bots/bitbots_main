@@ -16,6 +16,8 @@ from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCap
 from bitbots.util import get_config
 from bitbots.debug.test.debug_log import DebugLog
 
+from model.connector import Connector
+
 
 class GoalieBehaviourDynamic(AbstractDecisionModule):
     # threshold angle (if ball is seen under an angle greater than the threshold
@@ -34,8 +36,8 @@ class GoalieBehaviourDynamic(AbstractDecisionModule):
     goalCenter = (9000, 0)
     goalCenter_old = (9000, 0)
 
-    def __init__(self, _):
-        super(GoalieBehaviourDynamic, self).__init__()
+    def __init__(self, connector: Connector, _):
+        super(GoalieBehaviourDynamic, self).__init__(connector)
         self.log = DebugLog(self.G_LOGFILE)
 
     def own_debug(self, connector):

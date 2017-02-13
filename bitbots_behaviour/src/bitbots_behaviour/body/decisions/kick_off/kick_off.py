@@ -11,7 +11,7 @@ import rosparam
 from body.decisions.common.role_decider import RoleDecider
 from body.decisions.kick_off.kick_off_role_decider import KickOffRoleDecider
 from body.decisions.kick_off.wait_for_enemy_kick_off import WaitForEnemyKickOff
-from stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class KickOff(AbstractDecisionModule):

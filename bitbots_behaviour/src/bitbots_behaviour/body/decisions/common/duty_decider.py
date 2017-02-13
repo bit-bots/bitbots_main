@@ -30,10 +30,10 @@ class DutyDecider(AbstractDecisionModule):
     Decides what kind of behavoiur the robot performs
     """
 
-    def __init__(self, _):
-        super(DutyDecider, self).__init__()
-        self.max_fieldie_time = rospy.get_param("/Behaviour/Fieldie/Defender/maxFieldieTime")
-        self.toggle_self_positioning = rospy.get_param("/Behaviour/Toggles/Fieldie/trySelfPositioning")
+    def __init__(self, connector: Connector, _):
+        super(DutyDecider, self).__init__(connector)
+        self.max_fieldie_time = connector.config["Fieldie"]["Defender"]["maxFieldieTime"]
+        self.toggle_self_positioning = connector.config["Toggles"]["Fieldie"]["trySelfPositioning"]
 
     def perform(self, connector: Connector, reevaluate=False):
 

@@ -14,8 +14,8 @@ from model.connector import Connector
 
 
 class GoToAbsolutePosition(AbstractActionModule):
-    def __init__(self, args=None):
-        AbstractActionModule.__init__(self, args)
+    def __init__(self, connector: Connector, args=None):
+        AbstractActionModule.__init__(self, connector, args)
         self.target_x = args[0]
         self.target_y = args[1]
         self.target_o = args[2]

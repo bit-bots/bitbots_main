@@ -12,7 +12,7 @@ History:
 """
 from body.actions.wait import Wait
 from keys import DATA_VALUE_STATE_PLAYING
-from stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class EnemyKickOff(AbstractDecisionModule):

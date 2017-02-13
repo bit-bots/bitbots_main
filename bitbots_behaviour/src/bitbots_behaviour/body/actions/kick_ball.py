@@ -18,8 +18,8 @@ class KickBall(AbstractActionModule):
     Kicks the ball, gets in init_data the information about the side.
     """
 
-    def __init__(self, args):
-        super(KickBall, self).__init__()
+    def __init__(self, connector: Connector, args):
+        super(KickBall, self).__init__(connector)
         self.side = args
         self.begin = time.time()
         self.rk = rospy.get_param("/animations/kicks/rk")

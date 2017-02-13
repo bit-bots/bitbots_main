@@ -14,9 +14,9 @@ from model.connector import Connector
 
 
 class AlignToGoal(AbstractActionModule):
-    def __init__(self, _):
-        super(AlignToGoal, self).__init__()
-        self.config_max_aligning_time = rospy.get_param("/Behaviour/Fieldie/maxGoalAlignTime")
+    def __init__(self, connector: Connector, _):
+        super(AlignToGoal, self).__init__(connector)
+        self.config_max_aligning_time = connector.config["Fieldie"]["maxGoalAlignTime"]
 
     def perform(self, connector: Connector, reevaluate=False):
         connector.blackboard.schedule_both_tracking()

@@ -16,8 +16,8 @@ class AbstractKickDecision(AbstractDecisionModule):
     Decides wich leg he has to use to kick the ball and if he has te repositionate before kicking
     """
 
-    def __init__(self, _):
-        super(AbstractKickDecision, self).__init__()
+    def __init__(self, connector: Connector, _):
+        super(AbstractKickDecision, self).__init__(connector)
         self.max_goal_hard_distance = rospy.get_param("Behaviour/Fieldie/maxGoalHardKickDistance")
         self.toggle_use_side_kick = rospy.get_param("Behaviour/Toggles/Fieldie/useSideKickInGame")
         self.use_dynamic_kick_toggle = rospy.get_param("Behaviour/Toggles/Fieldie/useDynamicKick")

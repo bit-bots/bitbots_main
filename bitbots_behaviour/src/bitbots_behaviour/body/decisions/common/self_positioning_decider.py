@@ -19,12 +19,14 @@ from bitbots.modules.behaviour.body.actions.go_to_absolute_position import GoToA
 from bitbots.modules.keys import DATA_VALUE_STATE_READY
 from bitbots.util import get_config
 
+from model.connector import Connector
+
 config = get_config()
 
 
 class SelfPositioningDecider(AbstractDecisionModule):
-    def __init__(self, _):
-        super(SelfPositioningDecider, self).__init__()
+    def __init__(self, connector: Connector, _):
+        super(SelfPositioningDecider, self).__init__(connector)
         self.looked_which_goal_is_mine = False
         self.finished_positioning = False
         self.determination_result = None

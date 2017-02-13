@@ -10,8 +10,8 @@ import time
 from body.actions.go_to_ball_pathfinding import GoToBallPathfinding
 from body.actions.search import Search
 from body.actions.wait import Wait
-from stackmachine.abstract_decision_module import AbstractDecisionModule
-from stackmachine.model import Connector
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from model.connector import Connector
 
 
 class SupporterDecision(AbstractDecisionModule):

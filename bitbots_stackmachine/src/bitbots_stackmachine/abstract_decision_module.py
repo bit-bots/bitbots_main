@@ -1,4 +1,4 @@
-from stackmachine.abstract_stack_element import AbstractStackElement
+from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
 
 
 class AbstractDecisionModule(AbstractStackElement):

@@ -20,13 +20,13 @@ class AbstractCloseBall(AbstractDecisionModule):
     Test if the ball is in kick distance
     """
 
-    def __init__(self, _):
-        super(AbstractCloseBall, self).__init__()
+    def __init__(self, connector: Connector, _):
+        super(AbstractCloseBall, self).__init__(connector)
         self.last_goalie_dist = 0
         self.last_goalie_dist_time = 0
-        self.max_kick_distance = rospy.get_param("/Behaviour/Fieldie/kickDistance")
-        self.min_kick_distance = rospy.get_param("/Behaviour/Fieldie/minKickDistance")
-        self.config_kickalign_v = rospy.get_param("/Behaviour/Fieldie/kickAlign")
+        self.max_kick_distance = connector.config["Fieldie"]["kickDistance"]
+        self.min_kick_distance = connector.config["Fieldie"]["minKickDistance"]
+        self.config_kickalign_v = connector.config["Fieldie"]["kickAlign"]
 
     def perform(self, connector: Connector, reevaluate=False):
         # if the robot is near to the ball
