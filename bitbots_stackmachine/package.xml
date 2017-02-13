@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>bitbots_stack_machine</name>
+  <name>bitbots_stackmachine</name>
   <version>0.0.0</version>
   <description>The bitbots_stackmachine package</description>
 
