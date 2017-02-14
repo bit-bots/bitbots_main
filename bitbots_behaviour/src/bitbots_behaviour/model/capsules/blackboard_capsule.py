@@ -12,7 +12,7 @@ import rosparam
 class BlackboardCapsule:
     def __init__(self):
         self.my_data = {}
-        self.config_stop_g_align_dur = rosparam.get_param("/Behaviour/Fieldie/stopGoalAlignDuration")
+        self.config_stop_g_align_dur = rosparam.get_param("/Behaviour/Body/Fieldie/stopGoalAlignDuration")
 
     def freeze_till(self, ftime):
         self.my_data["freeze"] = ftime
