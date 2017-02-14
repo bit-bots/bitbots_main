@@ -1,19 +1,13 @@
-# -*- coding:utf-8 -*-
 """
 ConfirmGoal
 ^^^^^^^^^^
 
 .. moduleauthor:: Marc Bestmann <0bestman@informatik.uni-hamburg.de>
 
-History:
-
-* 06.03.14: Created (Marc)
-* 10-12.03.14: Changed to use config values (Marc)
-
 """
 
-from bitbots.modules.abstract.abstract_init_action_module import AbstractInitActionModule
-from bitbots.util import get_config
+from bitbots_head_behaviour.head_connector import HeadConnector
+from bitbots_stackmachine.abstract_init_action_module import AbstractInitActionModule
 
 
 class AbstactTrackObject(AbstractInitActionModule):
@@ -21,31 +15,30 @@ class AbstactTrackObject(AbstractInitActionModule):
     Confirmed either the Ball, OwnGoal or EnemyGoal by passing it to the init arg
     """
 
-    def __init__(self, args=None):
-        super(AbstactTrackObject, self).__init__(args)
-
+    def __init__(self, connector: HeadConnector, args=None):
+        super(AbstactTrackObject, self).__init__(connector, args)
 
         # this influences how precise the ball has to be in the center to make the head move
-        self.a_sens = self.common_behaviour_config["Tracking"]["xSensivity"]
-        self.b_sens = self.common_behaviour_config["Tracking"]["ySensivity"]
-        self.b_center_default = self.common_behaviour_config["Tracking"]["yCenterDefault"]
-        self.b_center_goalie = self.common_behaviour_config["Tracking"]["yCenterGoalie"]
+        self.a_sens = connector.config["Tracking"]["xSensivity"]
+        self.b_sens = connector.config["Tracking"]["ySensivity"]
+        self.b_center_default = connector.config["Tracking"]["yCenterDefault"]
+        self.b_center_goalie = connector.config["Tracking"]["yCenterGoalie"]
 
         # just the max and min angles for moving the head
-        self.max_tilt = self.common_behaviour_config["Camera"]["maxTilt"]
-        self.min_tilt = self.common_behaviour_config["Camera"]["minTilt"]
-        self.min_pan = self.common_behaviour_config["Camera"]["minPan"]
-        self.max_pan = self.common_behaviour_config["Camera"]["maxPan"]
+        self.max_tilt = connector.config["Camera"]["maxTilt"]
+        self.min_tilt = connector.config["Camera"]["minTilt"]
+        self.min_pan = connector.config["Camera"]["minPan"]
+        self.max_pan = connector.config["Camera"]["maxPan"]
 
-        self.max_tilt_speed = self.common_behaviour_config["Tracking"]["maxTiltSpeedTracking"]
-        self.max_pan_speed = self.common_behaviour_config["Tracking"]["maxPanSpeedTracking"]
+        self.max_tilt_speed = connector.config["Tracking"]["maxTiltSpeedTracking"]
+        self.max_pan_speed = connector.config["Tracking"]["maxPanSpeedTracking"]
 
         # propably camera angle
-        self.angle = self.common_behaviour_config["Camera"]["cameraAngle"]
+        self.angle = connector.config["Camera"]["cameraAngle"]
 
         # to compute the camera angle in vertical (16:9)
-        self.horizontal_factor = self.common_behaviour_config["Camera"]["horizontalFactor"]
-        self.vertical_factor = self.common_behaviour_config["Camera"]["verticalFactor"]
+        self.horizontal_factor = connector.config["Camera"]["horizontalFactor"]
+        self.vertical_factor = connector.config["Camera"]["verticalFactor"]
 
     def track_with_values(self, connector, a, b):
         # the goalie wants to track the ball in the upper part of the image, because it will probably come to him

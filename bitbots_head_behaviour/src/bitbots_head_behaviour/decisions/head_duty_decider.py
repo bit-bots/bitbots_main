@@ -1,33 +1,25 @@
-# -*- coding:utf-8 -*-
 """
 HeadDutyDecider
 ^^^^^^^^^^^^^^^
-
-Entscheidet was der Kopf tun soll
-
-History:
-
-* 19.08.14: Created (Nils Rokita)
 
 """
 import rospy
 import time
 
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.abstract.abstract_module import debug_m
-from bitbots.modules.behaviour.head.decisions.search_and_confirm import SearchAndConfirmBall, SearchAndConfirmEnemyGoal
-from bitbots.modules.behaviour.head.decisions.continious_search import ContiniousSearch
-from bitbots.util import get_config
-from humanoid_league.msgs.HeadMode import DONT_MOVE, BALL_MODE, POLE_MODE, BALL_GOAL_TRACKING, FIELD_FEATURES
+
+from bitbots_head_behaviour.head_connector import HeadConnector
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+
 
 class HeadDutyDecider(AbstractDecisionModule):
 
-    def __init__(self, outcomes=['nothing', 'trackBall', 'trackGoal', 'trackBothBall', 'trackBothGoal', 'trackBothElse', 'searchAndConfirmBall', 'searchAndConfirmGoal', 'defaultSearch']):
-        toggles = get_config()["Behaviour"]["Toggles"]["Head"]
-        config = get_config()
-        self.toggle_goal_vison_tracking = toggles["goalVisionTracking"]
-        self.toggle_switch_ball_goal = toggles["switchBallGoalSearch"]
-        self.confirm_time = config["Behaviour"]["Common"]["Search"]["confirmTime"]
+    def __init__(self, connector: HeadConnector,
+                 outcomes=('nothing', 'trackBall', 'trackGoal', 'trackBothBall', 'trackBothGoal', 'trackBothElse',
+                           'searchAndConfirmBall', 'searchAndConfirmGoal', 'defaultSearch')):
+        super().__init__(connector)
+        self.toggle_goal_vison_tracking = connector.config["Toggles"]["goalVisionTracking"]
+        self.toggle_switch_ball_goal = connector.config["Toggles"]["switchBallGoalSearch"]
+        self.confirm_time = connector.config["Search"]["confirmTime"]
 
         self.last_confirmd_goal = 0
         self.fail_goal_counter = 0
@@ -35,7 +27,7 @@ class HeadDutyDecider(AbstractDecisionModule):
         self.goal_prio = 0
         self.trackjustball_aftergoal = False
 
-    def execute(self, connector):
+    def execute(self, connector: HeadConnector):
 
         # set priorities
         if connector.raw_vision_capsule().ball_seen():
@@ -47,7 +39,6 @@ class HeadDutyDecider(AbstractDecisionModule):
             self.goal_prio = max(0, self.goal_prio - 2)
         else:
             self.goal_prio = min(100, self.goal_prio + 3)
-
 
         rospy.loginfo("GoalPrio", self.goal_prio)
         rospy.loginfo("BallPrio", self.ball_prio)

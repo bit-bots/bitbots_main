@@ -1,25 +1,22 @@
-# -*- coding:utf-8 -*-
+
 """
 SearchAndConfirm
 ^^^^^^^^^^^^^^^^
 
 Searches and confirms the goal or ball
 
-History:
-
-* 25.03.2015: Created (Martin Poppinga)
-
 """
 import time
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.head.actions.track_object import TrackBall, TrackGoal
-from bitbots.modules.behaviour.head.decisions.search_for_object import SearchForBall, SearchForEnemyGoal
-from bitbots.util import get_config
+
+from bitbots_head_behaviour.actions.track_object import TrackBall, TrackGoal
+from bitbots_head_behaviour.decisions.search_for_object import SearchForBall, SearchForEnemyGoal
+from bitbots_head_behaviour.head_connector import HeadConnector
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class AbstractSearchAndConfirm(AbstractDecisionModule):
-    def __init__(self, _):
-        super(AbstractSearchAndConfirm, self).__init__(_)
+    def __init__(self, connector: HeadConnector,  _):
+        super(AbstractSearchAndConfirm, self).__init__(connector,_)
         self.set_confirmed = None
         self.get_started_confirm_time = None
         self.set_started_confirm_time = None
@@ -28,19 +25,17 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
         self.object_last_seen = None
         self.fr = True
 
-        config = get_config()
         self.fail_counter = 0
-        self.confirm_time = config["Behaviour"]["Common"]["Search"]["confirmTime"]
-        self.track_ball_lost_time = config["Behaviour"]["Common"]["Tracking"]["trackBallLost"]
-        self.ball_fail_conter_max = config["Behaviour"]["Common"]["Tracking"]["ballFailCounterMax"]
+        self.confirm_time = connector.config["Search"]["confirmTime"]
+        self.track_ball_lost_time = connector.config["Tracking"]["trackBallLost"]
+        self.ball_fail_conter_max = connector.config["Tracking"]["ballFailCounterMax"]
 
-    def perform(self, connector, reevaluate=False):
+    def perform(self, connector: HeadConnector, reevaluate=False):
 
         if time.time() - self.get_started_confirm_time() > self.confirm_time and \
                         self.get_started_confirm_time() != 0:
             self.set_confirmed()
             self.unset_started_confirm_time()
-            self.debug("confirmed")
             return self.pop()
 
         if self.object_seen():
@@ -69,7 +64,7 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
 
 
 class SearchAndConfirmBall(AbstractSearchAndConfirm):
-    def perform(self, connector, reevaluate=False):
+    def perform(self, connector: HeadConnector, reevaluate=False):
         if self.fr:
             self.fr = False
             self.get_started_confirm_time = connector.blackboard_capsule().get_started_confirm_ball
@@ -88,7 +83,7 @@ class SearchAndConfirmBall(AbstractSearchAndConfirm):
 
 
 class SearchAndConfirmEnemyGoal(AbstractSearchAndConfirm):
-    def perform(self, connector, reevaluate=False):
+    def perform(self, connector: HeadConnector, reevaluate=False):
         if self.fr:
             self.fr = False
             self.get_started_confirm_time = connector.blackboard_capsule().get_started_confirm_goal

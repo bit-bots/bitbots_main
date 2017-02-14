@@ -8,17 +8,19 @@ from humanoid_league_msgs.msg import Role
 class HeadConnector:
     def __init__(self):
         # params loading only once, for more performance later
-        config = rospy.get_param("/Behaviour/Head/")
-        self.delta = config["Search"]["headTurnPrecision"]
-        self.wait_time = config["Search"]["headTurnTime"]
-        self.pan_speed_max = config["Search"]["maxPanSpeedSearch"]
-        self.tilt_speed_max = config["Search"]["maxTiltSpeedSearch"]
+        self.config = rospy.get_param("/Behaviour/Head/")
+        self.delta = self.config["Search"]["headTurnPrecision"]
+        self.wait_time = self.config["Search"]["headTurnTime"]
+        self.pan_speed_max = self.config["Search"]["maxPanSpeedSearch"]
+        self.tilt_speed_max = self.config["Search"]["maxTiltSpeedSearch"]
 
         # class variables
         self.current_pan_pos = 0
         self.current_tilt_pos = 0
 
         self.role = 0
+
+        self.is_ball_tracking_still_active = False
 
         # preparing message for more performance
         self.pos_msg = JointTrajectory()
