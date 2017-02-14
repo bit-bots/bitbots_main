@@ -14,7 +14,7 @@ class AbstractInitActionModule(AbstractActionModule):
     """ This is for actions that can have an init method that is called
         once and only once and drains no performance from that time """
 
-    def __init__(self, args=None):
+    def __init__(self, connector, args=None):
         self.perform_backup = self.perform
         self.perform = self.perform_once
 
