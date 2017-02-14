@@ -25,6 +25,7 @@ class Connector:
         self.team_data = TeamDataCapsule()
         self.animation = AnimationCapsule()
 
+        self.head = None  # type: rospy.Publisher
         self.speaker = None  # type: rospy.Publisher
 
         self.config = None  # type: dict
