@@ -119,7 +119,7 @@ ZMPConfig:
           "stepHeight": 0.05
           "footX": 0.033
           "tZmp": 0.165
-          "tStep": 0.25
+          "tStep": 1
           "frontComp": 0.008
           "supportFront": 0.00
           "supportFront2": 0.005

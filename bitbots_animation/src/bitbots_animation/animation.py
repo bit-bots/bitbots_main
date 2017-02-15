@@ -346,7 +346,8 @@ class Animator:
                 if joint.has_changed():
                     # Berechne Geschwindigkeit für dieses Gelenk
                     curjoint = current[name]
-                    speed = abs(joint.get_goal() - curjoint.get_position()) / (t_pose - t_robo)
+                    speed = abs(joint.get_goal() - curjoint.get_position()) / (t_pose - t_robo) * 0.15  # todo -100 is just test
+                    # speed = max(1, speed)todo jhust etest
                     joint.set_speed(min(1024, speed)) # 1024 is the highest possible value
 
             return next

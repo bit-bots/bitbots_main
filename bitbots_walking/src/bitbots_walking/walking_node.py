@@ -79,7 +79,7 @@ class WalkingNode(object):
         self.pose_lock.acquire()
         names = [x.encode("utf-8") for x in msg.name]
         self.current_pose.set_positions_rad(names, list(msg.position))
-        self.current_pose.set_speeds(names, list(msg.velocity))
+        #self.current_pose.set_speeds(names, list(msg.velocity))
         self.pose_lock.release()
 
     def imu_cb(self, msg):
@@ -134,7 +134,7 @@ class WalkingNode(object):
         self.motor_goal_publisher.publish(msg)
 
     def run(self):
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(100)
         while not rospy.is_shutdown():
 
             if self.walking.running:
@@ -167,6 +167,7 @@ class WalkingNode(object):
                 # We're not currently running, test if we want to start
                 if self.walk_active and self.motion_state in (
                         MotionState.CONTROLABLE, MotionState.WALKING, MotionState.MOTOR_OFF):
+                    rospy.logwarn("started walking")
                     self.walking_started = rospy.Time.now()
                     self.walking_start()
             rate.sleep()

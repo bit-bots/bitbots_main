@@ -215,8 +215,8 @@ cdef class CM730(object):
         cdef IntDataVector gyro = None
         #cdef maxtmp = 0, maxcid = -1
         #cdef min_voltage = 1e10, max_voltage = 0
-        cdef int position = 0, speed=0, load=0
-        cdef int voltage = 0, temperature=0
+        cdef float position = 0, speed=0, load=0
+        cdef float voltage = 0, temperature=0
         cdef button=None
 
         for cid, values in sensor_data.items():

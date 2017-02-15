@@ -5,9 +5,9 @@
     </description>
     <qtgui>
       <group>
-        <label>Introspection</label>
+        <label>RoboCup</label>
         <icon type="theme">folder</icon>
-        <statustip>Plugins related to introspection.</statustip>
+        <statustip>Plugins related to RoboCup.</statustip>
       </group>
       <label>Motion Viz</label>
       <icon type="theme">preferences-system-network</icon>

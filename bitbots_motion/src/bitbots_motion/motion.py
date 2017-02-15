@@ -146,7 +146,6 @@ class Motion(object):
         """Gets the current motor positions and updates the representing pose accordingly."""
         names = [x.encode("utf-8") for x in msg.name]
         self.robo_pose.set_positions_rad(names, list(msg.position))
-        self.robo_pose.set_speeds(names, list(msg.velocity))
         VALUES.last_hardware_update = time.time()
 
     def reconfigure(self, config, level):

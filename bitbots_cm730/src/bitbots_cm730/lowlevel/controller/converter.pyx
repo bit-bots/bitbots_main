@@ -1,3 +1,4 @@
+import rospy
 from libc.math cimport fabs
 from bitbots_common.utilCython.datavector cimport DataVector
 from bitbots_common.utilCython.pydatavector cimport PyDataVector, PyIntDataVector
@@ -149,7 +150,7 @@ cdef int angle_to_raw(float angle):
     return int(angle * 4096 / 360 + 2048)
 
 cdef float raw_to_angle(int raw):
-    return (raw - 2048) * 360 / 4096.0
+    return (raw - 2048.0) * 360.0 / 4096.0
 
 cdef class AngleConverter(Converter):
     def __init__(self):

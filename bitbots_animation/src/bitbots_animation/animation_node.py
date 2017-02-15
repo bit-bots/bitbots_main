@@ -157,7 +157,6 @@ class PlayAnimationAction(object):
         """Gets the current motor positions and updates the representing pose accordingly."""
         names = [x.encode("utf-8") for x in msg.name]
         self.current_pose.set_positions_rad(names, list(msg.position))
-        self.current_pose.set_speeds(names, list(msg.velocity))
 
     def update_motion_state(self, msg):
         self.motion_state = msg.state
