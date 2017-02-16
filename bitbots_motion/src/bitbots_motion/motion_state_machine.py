@@ -37,7 +37,7 @@ class MotionStateMachine(AbstractStateMachine):
         self.error_state = ShutDown()
         self.state_publisher = state_publisher
 
-        self.connections = CONNECTIONS
+        self.connections = rospy.get_param("/motion_state_machine")
 
         self.set_state(Startup())
 
@@ -528,23 +528,3 @@ def switch_motor_power(state):
             print("Service did not process request: " + str(exc))
         # wait for motors
         rospy.sleep(1)
-
-
-CONNECTIONS = {Startup: [Controllable, Softoff, GettingUp, Record, PenaltyAnimationIn],
-               Softoff: [Controllable, ShutDown, Record],
-               Record: [Controllable],
-               PenaltyAnimationIn: [Penalty],
-               Penalty: [PenaltyAnimationOut],
-               PenaltyAnimationOut: [Controllable],
-               GettingUp: [Falling, Fallen, GettingUpSecond],
-               GettingUpSecond: [Falling, Fallen, Controllable],
-               Controllable: [ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
-                              AnimationRunning, Walking],
-               Falling: [Fallen, Controllable],
-               Fallen: [GettingUp],
-               Walking: [ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
-                         WalkingStopping, Controllable],
-               WalkingStopping: [Controllable],
-               AnimationRunning: [Controllable],
-               ShutDownAnimation: [ShutDown]
-               }

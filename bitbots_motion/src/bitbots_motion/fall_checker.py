@@ -1,8 +1,6 @@
 # -*- coding: utf8 -*-
 import numpy
 import rospy
-from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
-from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
 
 
 class FallChecker(object):

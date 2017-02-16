@@ -128,7 +128,7 @@ class AbstractStateMachine(object):
         switch_state = self.state.evaluate()
 
         if switch_state is not None:
-            if switch_state.__class__ in self.connections[self.state.__class__]:
+            if switch_state.__class__.__name__ in self.connections[self.state.__class__.__name__]:
                 self.set_state(switch_state)
             else:
                 print(
