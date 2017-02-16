@@ -232,6 +232,7 @@ class CM730Node:
         """
         self.joint_state_msg.header.stamp = rospy.Time.from_sec(time.time())
         self.joint_state_msg.position = robo_pose.get_positions_rad_names(self.used_motor_names)
+        self.joint_state_msg.velocity = robo_pose.get_speeds_names(self.used_motor_names)
         #self.joint_msg.effort = robo_pose.get_loads_names(self.used_motor_names) Not used for the moment
         self.joint_publisher.publish(self.joint_state_msg)
 

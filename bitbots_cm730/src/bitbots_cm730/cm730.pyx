@@ -90,6 +90,7 @@ cdef class CM730(object):
                 cid,
                 (
                     MX28_REGISTER.present_position,
+                    MX28_REGISTER.present_speed,
                 )))
         # IMU, buttons and voltage
         self.read_packet_stub.append((
@@ -245,7 +246,8 @@ cdef class CM730(object):
             else:
                 joint = pose.get_joint_by_cid(cid)
                 if not cid_all_values == cid:
-                    position = values[0]
+                    position, speed = values
+                    joint.set_speed(speed)
                 else:
                     position, speed, load, voltage, temperature = values
                     joint.set_load(load)

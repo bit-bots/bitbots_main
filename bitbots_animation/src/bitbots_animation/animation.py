@@ -1,12 +1,14 @@
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 
 import time
 
+import math
 import rospy
 from bitbots_common.pose.pypose import PyPose as Pose
 from numpy.compat import basestring
 
 from bitbots_common.pose.pypose import PyJoint as Joint
+
 
 class Keyframe:
     '''
@@ -24,6 +26,7 @@ class Keyframe:
         self.pause = float(pause)
         self.goals = goals
         self.p = p
+
 
 class Animation:
     '''
@@ -84,7 +87,7 @@ class Animation:
                 time,
                 keyframe.goals[name],
                 keyframe.p.get(name, -1)
-                ))
+            ))
 
             if keyframe.pause > 0:
                 # Pause beachten
@@ -178,6 +181,7 @@ class LinearInterpolator(Interpolator):
     Implementierung von :class:`Interpolator` für eine einfache lineare
     Interpolation der Stützwerte
     '''
+
     def interpolate(self, t):
         last = None
         for next in self.steps:
@@ -191,8 +195,8 @@ class LinearInterpolator(Interpolator):
                 dt = (next.time - last.time)
                 dv = (next.value - last.value)
                 return (
-                    last.value + ((t-last.time) / dt) * dv,
-                    next.off, next.hold, last.p  #TODO: überprüfen ob das nicht alles last sein möchte
+                    last.value + ((t - last.time) / dt) * dv,
+                    next.off, next.hold, last.p  # TODO: überprüfen ob das nicht alles last sein möchte
                 )
 
             # letze Position merken
@@ -205,10 +209,10 @@ class LinearInterpolator(Interpolator):
 def cubic_hermite_interpolate(a, b, t):
     dt = b.time - a.time
     t = (t - a.time) / dt
-    return (2*t*t*t - 3*t*t + 1)*a.value \
-        + (t*t*t - 2*t*t + t)*dt*a.m \
-        + (t*t * (3-2*t))*b.value \
-        + (t*t * (t-1))*dt*b.m
+    return (2 * t * t * t - 3 * t * t + 1) * a.value \
+           + (t * t * t - 2 * t * t + t) * dt * a.m \
+           + (t * t * (3 - 2 * t)) * b.value \
+           + (t * t * (t - 1)) * dt * b.m
 
 
 class CubicHermiteInterpolator(Interpolator):
@@ -218,6 +222,7 @@ class CubicHermiteInterpolator(Interpolator):
     Es müssen die Tangenten mit der :func:`prepare`-Methode berechnet und
     in :attr:`Step.m` gespeichert werden.
     """
+
     def interpolate(self, t):
         last = None
         for next in self.steps:
@@ -244,17 +249,19 @@ class CatmullRomInterpolator(CubicHermiteInterpolator):
     """
     Berechnet die Tangenten nachdem `Catmull-Rom <http://en.wikipedia.org/wiki/Cubic_Hermite_spline#Catmull.E2.80.93Rom_spline>`_ Verfahren.
     """
+
     def m(self, idx):
-        if idx == 0 or idx == len(self.steps)-1:
+        if idx == 0 or idx == len(self.steps) - 1:
             return 0
 
-        a = self.steps[idx-1]
-        b = self.steps[idx+1]
+        a = self.steps[idx - 1]
+        b = self.steps[idx + 1]
         return (b.value - a.value) / float(b.time - a.time)
 
     def prepare(self):
         for idx in range(len(self.steps)):
             (self.steps[idx]).m = self.m(idx)
+
 
 class Animator:
     """
@@ -290,6 +297,7 @@ class Animator:
         self.time_max = max(ip.time_max for ip in values)
         self.duration = self.time_max - self.time_min
         self.t_start = None
+        self.speed_factor = rospy.get_param("/animation/speed_factor")
 
     def get_pose(self, t, pose=None):
         ''' Interpoliert eine Pose zum Zeitpunkt *t*. Es wird entweder ein
@@ -346,10 +354,9 @@ class Animator:
                 if joint.has_changed():
                     # Berechne Geschwindigkeit für dieses Gelenk
                     curjoint = current[name]
-                    speed = abs(joint.get_goal() - curjoint.get_position()) / (t_pose - t_robo) * 0.15  # todo -100 is just test
-                    # speed = max(1, speed)todo jhust etest
-                    joint.set_speed(min(1024, speed)) # 1024 is the highest possible value
-
+                    degree_per_second = abs(joint.get_goal() - curjoint.get_position()) / (t_pose - t_robo)
+                    speed = degree_per_second * pre * self.speed_factor  # see config for docu
+                    joint.set_speed(speed)
             return next
 
         return update
@@ -363,10 +370,12 @@ class Animator:
     def __str__(self):
         return "<Animator '%s' duration=%1.2fsek>" % (self.name, self.duration)
 
+
 INTERPOLATORS = {
     "LinearInterpolator": LinearInterpolator,
     "CatmullRomInterpolator": CatmullRomInterpolator
 }
+
 
 def parse(info):
     ''' Diese Methode parst eine Animation aus
@@ -382,9 +391,11 @@ def parse(info):
     anim.interpolators = {name: INTERPOLATORS[ip] for name, ip in interpolators.items()}
 
     keyframes = info.get("keyframes", ())
-    anim.keyframes = [Keyframe(k.get('goals',{}), k.get('duration',1), k.get('pause', 0), k.get('p', {})) for k in keyframes]
+    anim.keyframes = [Keyframe(k.get('goals', {}), k.get('duration', 1), k.get('pause', 0), k.get('p', {})) for k in
+                      keyframes]
 
     return anim
+
 
 def as_dict(anim):
     ''' Wandelt die Animation in Standard Python Typen um, damit sie in einem
@@ -395,11 +406,9 @@ def as_dict(anim):
         "default_interpolator": anim.default_interpolator.__name__,
         "interpolators": {n: ip.__name__ for n, ip in anim.interpolators},
         "keyframes": [{
-            "duration": k.duration,
-            "pause": k.pause,
-            "goals": k.goals,
-            "p": k.p
-        } for k in anim.keyframes]
+                          "duration": k.duration,
+                          "pause": k.pause,
+                          "goals": k.goals,
+                          "p": k.p
+                      } for k in anim.keyframes]
     }
-
-
