@@ -1,3 +1,4 @@
+import rospy
 from libc.math cimport fabs
 from bitbots_common.utilCython.datavector cimport DataVector
 from bitbots_common.utilCython.pydatavector cimport PyDataVector, PyIntDataVector
@@ -149,7 +150,7 @@ cdef int angle_to_raw(float angle):
     return int(angle * 4096 / 360 + 2048)
 
 cdef float raw_to_angle(int raw):
-    return (raw - 2048) * 360 / 4096.0
+    return (raw - 2048.0) * 360.0 / 4096.0
 
 cdef class AngleConverter(Converter):
     def __init__(self):
@@ -174,7 +175,7 @@ cdef class SpeedConverter(Converter):
 
     cdef encode(self, object value, ubyte *result):
         cdef float speed = value
-        speed /= (117.07 / 1023.0) * 360 / 60
+        speed /= (117.07 / 1023.0) * 360 / 60 # degree / sec to revolution/ min and conversion to motor scale
         speed = fabs(speed)
 
         cdef int iv
@@ -204,4 +205,7 @@ cdef class SignedSpeedConverter(Converter):
 
     cdef object decode(self, ubyte *data):
         cdef int iv = (data[1] << 8) | data[0]
-        return (iv - 1023) * ((117.07 / 1023.0) * 360 / 60)
+        cdef sing = iv & 0x200 # the 10th bit is the sing
+        iv = iv & 0x1FF # use the other bits
+        cdef float result = iv * ((117.07 / 1023.0) * 360 / 60)
+        return result if sing else result * -1

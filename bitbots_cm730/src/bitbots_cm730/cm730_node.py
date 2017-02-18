@@ -30,7 +30,7 @@ class CM730Node:
     and sets goal values to the servos.
     """
 
-    #todo write in roscpp for better performance (due to multi core use)
+    # todo write in roscpp for better performance (due to multi core use)
     def __init__(self):
         log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_cm730', log_level=log_level, anonymous=False)
@@ -70,12 +70,12 @@ class CM730Node:
             self.joint_limits[motor['name']] = {'min': min_value, 'max': max_value}
 
         # --- Initialize Topics ---
-        rospy.Subscriber("/motion_motor_goals", JointTrajectory, self.update_motor_goals, queue_size=1)
-        self.joint_publisher = rospy.Publisher('/joint_states', JointState, queue_size=1)
-        self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=1)
-        self.temp_publisher = rospy.Publisher('/servo_data', AdditionalServoData, queue_size=1)
-        self.imu_publisher = rospy.Publisher('/imu', Imu, queue_size=1)
-        self.button_publisher = rospy.Publisher('/buttons', Buttons, queue_size=1)
+        rospy.Subscriber("/motion_motor_goals", JointTrajectory, self.update_motor_goals, queue_size=2)
+        self.joint_publisher = rospy.Publisher('/joint_states', JointState, queue_size=2)
+        self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=2)
+        self.temp_publisher = rospy.Publisher('/servo_data', AdditionalServoData, queue_size=2)
+        self.imu_publisher = rospy.Publisher('/imu', Imu, queue_size=2)
+        self.button_publisher = rospy.Publisher('/buttons', Buttons, queue_size=2)
         self.motor_power_service = rospy.Service("switch_motor_power", SwitchMotorPower,
                                                  self.switch_motor_power_service_call)
         self.led_service = rospy.Service("set_leds", SetLEDs,
@@ -118,7 +118,7 @@ class CM730Node:
             self.goal_pose = Pose()
 
         joints = [x.encode("utf8") for x in joints]
-        #todo sinusgenerator
+        # todo sinusgenerator
         self.pose_lock.acquire()
         self.goal_pose.set_goals(joints, motor_goals)
         self.goal_pose.set_speeds(joints, motor_speeds)
@@ -231,7 +231,7 @@ class CM730Node:
         """
         Sends the Joint States to ROS
         """
-        self.joint_state_msg.header.stamp = rospy.Time.now()
+        self.joint_state_msg.header.stamp = rospy.Time.from_sec(time.time())
         self.joint_state_msg.position = robo_pose.get_positions_rad_names(self.used_motor_names)
         self.joint_state_msg.velocity = robo_pose.get_speeds_names(self.used_motor_names)
         #self.joint_msg.effort = robo_pose.get_loads_names(self.used_motor_names) Not used for the moment
@@ -251,7 +251,7 @@ class CM730Node:
         self.temp_publisher.publish(self.add_data_msg)
 
     def publish_imu(self, gyro, accel):
-        self.imu_msg.header.stamp = rospy.Time.now()
+        self.imu_msg.header.stamp = rospy.Time.from_sec(time.time())
         self.imu_msg.linear_acceleration = DataVector(accel[1] * -1, accel[0], accel[2])  # axis are different in cm board
         self.imu_msg.angular_velocity = gyro
         self.imu_publisher.publish(self.imu_msg)

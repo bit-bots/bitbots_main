@@ -146,7 +146,6 @@ class Motion(object):
         """Gets the current motor positions and updates the representing pose accordingly."""
         names = [x.encode("utf-8") for x in msg.name]
         self.robo_pose.set_positions_rad(names, list(msg.position))
-        self.robo_pose.set_speeds(names, list(msg.velocity))
         VALUES.last_hardware_update = time.time()
 
     def reconfigure(self, config, level):
@@ -267,7 +266,7 @@ class Motion(object):
             VALUES.walking_active = False
 
         # let statemachine run
-        #self.state_machine.evaluate()
+        self.state_machine.evaluate()
 
         # now do corresponding actions depending on state of state machine
 

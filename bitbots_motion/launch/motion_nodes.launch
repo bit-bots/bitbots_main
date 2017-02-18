@@ -8,6 +8,7 @@
     <include file="$(find bitbots_animation)/launch/animation.launch"/>
 
     <rosparam file="$(find bitbots_motion)/config/motion.yaml" command="load"/>
+    <rosparam file="$(find bitbots_motion)/config/motion_state_machine.yaml" command="load"/>
     <node name="motion" pkg="bitbots_motion" type="motion.py" args="" respawn="false"/>
 
 </launch>

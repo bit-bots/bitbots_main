@@ -1,7 +1,7 @@
 <package>
   <name>bitbots_motion_visualization</name>
   <version>0.0.1</version>
-  <description>bitbots_motion_visualization provides a GUI plugin for visualizing the motion state machine.<br /> 
+  <description>A Python GUI plugin to visualize the bitbots motion state machine from the package bitbots_motion.<br />
       
 		Loosly based on rqt_graph
   </description>

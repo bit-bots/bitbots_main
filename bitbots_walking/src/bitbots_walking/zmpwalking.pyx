@@ -278,9 +278,9 @@ cdef class ZMPWalkingEngine:
 
     cpdef create_walkready_pose(self, dict config={}, duration=1):
         """
-            Erstellt eine neue temporäre ZMPWalkingengine und für eine iteration mit ihr aus
-            Danach wird die Pose, die aus der Walkeringiteration folgt
-            extrahiert und in eine Animation überführt.
+            Creates a new temporary ZMPWalkingengine and does on iteration with it.
+            Afterwards the pose which derives of the walking iteration, will be extracted
+            and transfered to an animation.
         """
         walking = ZMPWalkingEngine(config)
         # parame walking
@@ -292,9 +292,8 @@ cdef class ZMPWalkingEngine:
         #for joint in pose:
         #    joint.set_speed((joint.goal - joint.position)/duration)
 
-        # Eine Animation ist ein dict mit Zusatzinformationen und der
-        # Liste der Keyframes. Ein Keyframe ist ein dict mit der "duration"
-        # und der Motorzielpositionen "goals"
+        # An animation is a dict with additional information and a list of keyframes.
+        # A keyframe is a dict with a duration and a list of motor goals
         animation = {"name": "walkready",
             "keyframes": [{"duration":duration, "goals":{joint[0]:joint[1].goal for joint in pose}}]}
 

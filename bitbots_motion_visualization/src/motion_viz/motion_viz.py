@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright (c) 2011, Dirk Thomas, TU Darmstadt
 # All rights reserved.
 #
@@ -41,6 +42,7 @@ from python_qt_binding.QtCore import QAbstractListModel, QFile, QIODevice, Qt, S
 from python_qt_binding.QtGui import QIcon, QImage, QPainter
 from python_qt_binding.QtWidgets import QCompleter, QFileDialog, QGraphicsScene, QWidget
 from python_qt_binding.QtSvg import QSvgGenerator
+from python_qt_binding.QtGui import QColor
 
 import rosservice
 import rostopic
@@ -50,8 +52,6 @@ from qt_dotgraph.pydotfactory import PydotFactory
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import String
 
-from bitbots_motion import motion_state_machine
-from bitbots_motion.motion_state_machine import MotionStateMachine
 from .interactive_graphics_view import InteractiveGraphicsView
 
 
@@ -69,7 +69,15 @@ class MotionViz(Plugin):
         self.state_history = ""
         self.last_refresh_time = time.time()
 
-        rospy.Subscriber("/motion_state_debug", String, self.state_update)
+        # connections of state machine, load form parameter sever, this means we have to wait until motion has provided
+        # them
+        try:
+            self.connections = rospy.get_param("/motion_state_machine")
+        except:
+            rospy.logfatal("Load the config file first, i.e. by running the motion.")
+            exit()
+
+        rospy.Subscriber("/motion_state_debug", String, self.state_update, queue_size=100)
 
         self._widget = QWidget()
 
@@ -108,16 +116,27 @@ class MotionViz(Plugin):
         self._widget.save_as_image_push_button.setIcon(QIcon.fromTheme('image'))
         self._widget.save_as_image_push_button.pressed.connect(self._save_image)
 
-        #self._refresh_graph()
+        # self._refresh_graph()
         self._deferred_fit_in_view.connect(self._fit_in_view, Qt.QueuedConnection)
         self._deferred_fit_in_view.emit()
 
         context.add_widget(self._widget)
 
     def state_update(self, msg):
+        self._update_current_state(msg.data)
         self.active_state = msg.data
         self.state_history = self.state_history + self.active_state + "\n"
         self._widget.text_edit.append(self.active_state)
+
+
+    def _update_current_state(self, next_state):
+        current_qt_node = self.nodes.get(self.active_state)
+        if current_qt_node:
+            current_qt_node.set_node_color(QColor(0, 0, 0))
+        next_qt_node = self.nodes.get(next_state)
+        if next_qt_node:
+            next_qt_node.set_node_color(QColor(255, 165, 0))
+
 
     def save_settings(self, plugin_settings, instance_settings):
         instance_settings.set_value('auto_fit_graph_check_box_state', self._widget.auto_fit_graph_check_box.isChecked())
@@ -139,7 +158,7 @@ class MotionViz(Plugin):
 
     def _generate_dotcode(self):
         # get conections of the state machine
-        connections = motion_state_machine.CONNECTIONS
+        connections = self.connections
         # sort them so that the image is always the same
         # looks strange what I did and is strange, but python makes dicts non deterministic
         if self.active_state is None:
@@ -151,9 +170,9 @@ class MotionViz(Plugin):
         for con in connections:
             array = []
             for item in connections.get(con):
-                array.append(item.__name__)
+                array.append(item)
             array = sorted(array, key=str.lower)
-            connections_name[con.__name__] = array
+            connections_name[con] = array
         names = sorted(connections_name)
         sorted_connections = {}
         for name in names:
@@ -199,26 +218,32 @@ class MotionViz(Plugin):
         return url
 
     def _redraw_graph_view(self):
+        rospy.logwarn("1")
         self._scene.clear()
+        rospy.logwarn("1.5")
 
         if self._widget.highlight_connections_check_box.isChecked():
             highlight_level = 3
         else:
             highlight_level = 1
 
+        rospy.logwarn("2")
         # layout graph and create qt items
-        (nodes, edges) = self.dot_to_qt.dotcode_to_qt_items(self._current_dotcode,
-                                                            highlight_level=highlight_level,
-                                                            same_label_siblings=True)
-        for node_item in nodes:
-            self._scene.addItem(nodes.get(node_item))
+        self.nodes, edges = self.dot_to_qt.dotcode_to_qt_items(self._current_dotcode,
+                                                               highlight_level=highlight_level,
+                                                               same_label_siblings=True)
+        for node_item in self.nodes:
+            self._scene.addItem(self.nodes.get(node_item))
         for edge_items in edges:
             for edge_item in edges.get(edge_items):
                 edge_item.add_to_scene(self._scene)
-
+        rospy.logwarn("3")
         self._scene.setSceneRect(self._scene.itemsBoundingRect())
+        rospy.logwarn("4")
         if self._widget.auto_fit_graph_check_box.isChecked():
+            rospy.logwarn("5")
             self._fit_in_view()
+        rospy.logwarn("6")
 
     def _load_dot(self, file_name=None):
         if file_name is None:
