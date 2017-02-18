@@ -14,6 +14,8 @@ gefundene Datei nicht wieder gesucht werden muss.
 
 """
 
+#todo translate old german comments to english
+
 import os.path
 from os.path import abspath, dirname, exists, join, normpath
 from os import walk

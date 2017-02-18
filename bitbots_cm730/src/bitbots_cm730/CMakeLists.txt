@@ -11,7 +11,6 @@ include_directories(${Eigen_INCLUDE_DIRS})
 
 add_subdirectory(lowlevel)
 
-
 set_source_files_properties(
     cm730_node.pyx cm730.pyx
     PROPERTIES CYTHON_IS_CXX TRUE

@@ -8,6 +8,7 @@ from numpy.compat import basestring
 
 from bitbots_common.pose.pypose import PyJoint as Joint
 
+#todo translate old german comments to english
 class Keyframe:
     '''
     Eine Pose, die vom Roboter innerhalb einer Animation zu einem

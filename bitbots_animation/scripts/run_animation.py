@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf8 -*-
 import actionlib
 import rospy
@@ -28,8 +28,6 @@ def anim_run():
     anim_client.send_goal(goal)
 
 if __name__ == '__main__':
-    # run with "rosrun bitbots_animation run_animation.py _text:=TEXT"
-    # you can add _prio:=NUMBER with a number between 0 and 2 to set the priority level
-    # if you use _filename instead of _text you can give out a file with the corresponding path
+    # run with "rosrun bitbots_animation run_animation.py _anim:=NAME"
     print("Deactivate evaluation fo state machine in motion befor using this")
     anim_run()

@@ -47,7 +47,8 @@ class CM730Node:
         rospy.logwarn(self.used_motor_names)
         self.pose_lock = threading.Lock()
 
-        # pre initialized messages for more performance
+        # --- Pre initialize messages ---
+        # (for more performance)
         self.joint_state_msg = JointState()
         self.joint_state_msg.name = [x.decode("utf-8") for x in self.used_motor_names]
         self.add_data_msg = AdditionalServoData()
