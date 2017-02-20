@@ -164,7 +164,8 @@ class MotionViz(Plugin):
         if self.active_state is None:
             # we don't know the active node, this means the motion is sending us nothing
             graph = pydot.Dot(graph_type='digraph')
-            graph.add_node(pydot.Node("Please set param /debug_active to True, in order to get states from motion."))
+            graph.add_node(pydot.Node("Please set param /debug_active to True, in order to get states from motion. "
+                                      "And also start the motion."))
             return self.dotcode_factory.create_dot(graph)
         connections_name = {}
         for con in connections:
@@ -218,16 +219,13 @@ class MotionViz(Plugin):
         return url
 
     def _redraw_graph_view(self):
-        rospy.logwarn("1")
         self._scene.clear()
-        rospy.logwarn("1.5")
 
         if self._widget.highlight_connections_check_box.isChecked():
             highlight_level = 3
         else:
             highlight_level = 1
 
-        rospy.logwarn("2")
         # layout graph and create qt items
         self.nodes, edges = self.dot_to_qt.dotcode_to_qt_items(self._current_dotcode,
                                                                highlight_level=highlight_level,
@@ -237,13 +235,9 @@ class MotionViz(Plugin):
         for edge_items in edges:
             for edge_item in edges.get(edge_items):
                 edge_item.add_to_scene(self._scene)
-        rospy.logwarn("3")
         self._scene.setSceneRect(self._scene.itemsBoundingRect())
-        rospy.logwarn("4")
         if self._widget.auto_fit_graph_check_box.isChecked():
-            rospy.logwarn("5")
             self._fit_in_view()
-        rospy.logwarn("6")
 
     def _load_dot(self, file_name=None):
         if file_name is None:

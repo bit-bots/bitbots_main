@@ -70,6 +70,8 @@ class Animation:
             # zeit immer berechnen sonst gibts bei in der mitte fehlenden
             # motoren komische bugs
             time += keyframe.duration
+            if keyframe.duration < 0.001:
+                rospy.logwarn_throttle(1, "Keyframe has very low duration, this may lead to errors.")
 
             if name not in keyframe.goals:
                 # wenn das gelenk in diesem Keyframe nicht angesteuert wird

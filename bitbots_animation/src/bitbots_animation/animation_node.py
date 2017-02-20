@@ -65,7 +65,7 @@ class PlayAnimationAction(object):
         first = True
 
         # publish info to the console for the user
-        rospy.logfatal("Request to play animation %s", goal.animation)
+        rospy.loginfo("Request to play animation %s", goal.animation)
 
         if self.motion_state != 0 and not goal.motion:  # 0 means controlable
             # we cant play an animation right now
@@ -172,6 +172,7 @@ class PlayAnimationAction(object):
         self.anim_msg.motion = motion
         if pose is not None:
             self.anim_msg.position = pose_goal_to_traj_msg(pose, self.used_motor_names, self.traj_msg, self.traj_point)
+        rospy.logdebug(self.anim_msg.position)
         self.motion_publisher.publish(self.anim_msg)
 
 

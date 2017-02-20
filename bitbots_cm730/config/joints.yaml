@@ -60,13 +60,13 @@ joints:
     opposing: 9
     inverted: False
   - id: 11
-    limits: {default: 0, max: 30, min: -110}
+    limits: {default: 0, max: 32, min: -110}
     name: RHipPitch
     tags: [legs, rleg, rhip, hips, right, rlegpitch, legpitch,  '11']
     opposing: 12
     inverted: True
   - id: 12
-    limits: {default: 0, max: 110, min: -30}
+    limits: {default: 0, max: 110, min: -32}
     name: LHipPitch
     tags: [legs, lleg, lhip, hips, left, '12']
     opposing: 11
@@ -114,7 +114,7 @@ joints:
     opposing: 0
     inverted: True
   - id: 20
-    limits: {default: 0, max: 0, min: -65}
+    limits: {default: 0, max: 5, min: -65}
     name: HeadTilt
     tags: [head, '20']
     opposing: 0
