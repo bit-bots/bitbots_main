@@ -32,10 +32,10 @@ class Values(object):
         self.last_request = None  # last request on doing something
         self.start_up_time = time.time()
 
-        self.raw_gyro = IntDataVector(0, 0, 0)
-        self.smooth_gyro = IntDataVector(0, 0, 0)
-        self.not_so_smooth_gyro = IntDataVector(0, 0, 0)
-        self.robo_angle = DataVector(0, 0, 0)
+        self.raw_gyro = DataVector(0, 0, 0)
+        self.smooth_gyro = DataVector(0, 0, 0)
+        self.not_so_smooth_gyro = DataVector(0, 0, 0)
+        self.smooth_accel = DataVector(0, 0, 0)
 
         self.fall_checker = FallChecker()
         # for internal animations
@@ -63,7 +63,7 @@ class Values(object):
         return False
 
     def is_fallen(self):
-        return self.fall_checker.check_fallen(self.raw_gyro, self.smooth_gyro, self.robo_angle)
+        return self.fall_checker.check_fallen(self.smooth_accel)
 
     def is_soft_off_time(self):
         if self.last_hardware_update is not None:

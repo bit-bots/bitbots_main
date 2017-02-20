@@ -5,9 +5,8 @@ import rospy
 
 class FallChecker(object):
     def __init__(self):
+        # will be set by dynamic reconfigure
         robot_type_name = rospy.get_param("/robot_type_name")
-        self.dyn_falling_active = rospy.get_param("/motion/falling/" + robot_type_name + "/dyn_falling_active")
-        self.ground_coefficient = rospy.get_param("/motion/falling/" + robot_type_name + "/ground_coefficient")
 
         # Fallanimation laden
         self.falling_motor_degrees_front = rospy.get_param(
@@ -19,14 +18,27 @@ class FallChecker(object):
         self.falling_motor_degrees_left = rospy.get_param(
             "/motion/falling/falling_left")
 
-        # Fallerkennungs Grenzwerte laden
+        # load config values depending on robot type and lode them into param server to set
+        # start values for dynamic reconfigure
+        # There are no default values set in dynamic reconfigure, in order to make it dependable on the robot
+        self.dyn_falling_active = rospy.get_param("/motion/falling/" + robot_type_name + "/dyn_falling_active")
+        rospy.set_param("/motion/dyn_falling_active", self.dyn_falling_active)
+        self.ground_coefficient = rospy.get_param("/motion/falling/" + robot_type_name + "/ground_coefficient")
+        rospy.set_param("/motion/ground_coefficient", self.ground_coefficient)
+
+        if not rospy.has_param("/ZMPConfig/" + robot_type_name + "/HipPitch"):
+            rospy.logwarn("HipPitch offset from walking was not found on parameter server, will use 0.")
         self.falling_threshold_front = rospy.get_param("/motion/falling/" + robot_type_name + "/threshold_gyro_y_front") \
-                                       + rospy.get_param("/ZMPConfig/" + robot_type_name + "/HipPitch", 0)
+                                       + numpy.math.radians(rospy.get_param("/ZMPConfig/" + robot_type_name + "/HipPitch", 0))
+        rospy.set_param("/motion/threshold_gyro_y_front", self.falling_threshold_front)
         self.falling_threshold_back = rospy.get_param("/motion/falling/" + robot_type_name + "/threshold_gyro_y_back") \
-                                      + rospy.get_param("/ZMPConfig/" + robot_type_name + "/HipPitch", 0)
-        self.falling_threshold_right = rospy.get_param(
-            "/motion/falling/" + robot_type_name + "/threshold_gyro_x_right")
+                                      + numpy.math.radians(rospy.get_param("/ZMPConfig/" + robot_type_name + "/HipPitch", 0))
+        print("set: " + str(self.falling_threshold_back))
+        rospy.set_param("/motion/threshold_gyro_y_back", self.falling_threshold_back)
+        self.falling_threshold_right = rospy.get_param("/motion/falling/" + robot_type_name + "/threshold_gyro_x_right")
+        rospy.set_param("/motion/threshold_gyro_x_right", self.falling_threshold_right)
         self.falling_threshold_left = rospy.get_param("/motion/falling/" + robot_type_name + "/threshold_gyro_x_left")
+        rospy.set_param("/motion/threshold_gyro_x_left", self.falling_threshold_left)
 
         # Grenzwerte an Untergrund anpassen
         self.falling_threshold_front *= self.ground_coefficient
@@ -72,21 +84,19 @@ class FallChecker(object):
             rospy.logdebug("FALLING TO THE LEFT")
             return self.falling_motor_degrees_left
 
-    def check_fallen(self, raw_gyro, smooth_gyro, robo_angle):
-        # todo where the fuck comes robo_angle from and what is this magic
+    def check_fallen(self, smooth_accel):
         """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""
-        if numpy.linalg.norm(raw_gyro) < 5 and numpy.linalg.norm(smooth_gyro) < 5 and robo_angle[1] > 80:  ###gyro
+        if smooth_accel[1] > 6:  ###gyro
             rospy.logdebug("Lying on belly, should stand up")
             return rospy.get_param("/motion/animations/front-up")
 
-        if numpy.linalg.norm(raw_gyro) < 5 and numpy.linalg.norm(smooth_gyro) < 5 and robo_angle[1] < -60:  ###gyro
+        if smooth_accel[1] < -6:  ###gyro
             rospy.logdebug("Lying on my back, should stand up!")
             return rospy.get_param("/motion/animations/bottom-up")
 
-        if numpy.linalg.norm(raw_gyro) < 5 and numpy.linalg.norm(smooth_gyro) < 5 and abs(robo_angle[0]) > 60:
+        if abs(smooth_accel[0]) > 6:
             rospy.logdebug("Lying on the side, should stand up. Trying to stand up from front. Is that right?")
             return rospy.get_param("/motion/animations/front-up")
 
-        if numpy.linalg.norm(raw_gyro) < 3 and numpy.linalg.norm(smooth_gyro) < 3:
-            rospy.logdebug("I think I am still kind of upright, trying to go to walkready")
-            return rospy.get_param("/motion/animations/walkready")
+        rospy.logdebug("I think I am still kind of upright, trying to go to walkready")
+        return rospy.get_param("/motion/animations/walkready")

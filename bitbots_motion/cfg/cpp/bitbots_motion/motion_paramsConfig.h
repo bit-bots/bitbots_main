@@ -412,47 +412,47 @@ motion_paramsConfig::GroupDescription<motion_paramsConfig::DEFAULT, motion_param
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       __max__.ground_coefficient = 2.0;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __default__.ground_coefficient = 1.25;
+      __default__.ground_coefficient = 0;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       Default.abstract_parameters.push_back(motion_paramsConfig::AbstractParamDescriptionConstPtr(new motion_paramsConfig::ParamDescription<double>("ground_coefficient", "double", 1, "Hardness of the floor, 1.25 for artificial turf(soft), 1 for hard ground", "", &motion_paramsConfig::ground_coefficient)));
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       __param_descriptions__.push_back(motion_paramsConfig::AbstractParamDescriptionConstPtr(new motion_paramsConfig::ParamDescription<double>("ground_coefficient", "double", 1, "Hardness of the floor, 1.25 for artificial turf(soft), 1 for hard ground", "", &motion_paramsConfig::ground_coefficient)));
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __min__.threshold_gyro_y_front = -100.0;
+      __min__.threshold_gyro_y_front = -3.14;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __max__.threshold_gyro_y_front = 0.0;
+      __max__.threshold_gyro_y_front = 3.14;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __default__.threshold_gyro_y_front = -50.0;
+      __default__.threshold_gyro_y_front = 0;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       Default.abstract_parameters.push_back(motion_paramsConfig::AbstractParamDescriptionConstPtr(new motion_paramsConfig::ParamDescription<double>("threshold_gyro_y_front", "double", 1, "Threshold harder -> earlier reaction, but more false positives.", "", &motion_paramsConfig::threshold_gyro_y_front)));
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       __param_descriptions__.push_back(motion_paramsConfig::AbstractParamDescriptionConstPtr(new motion_paramsConfig::ParamDescription<double>("threshold_gyro_y_front", "double", 1, "Threshold harder -> earlier reaction, but more false positives.", "", &motion_paramsConfig::threshold_gyro_y_front)));
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __min__.threshold_gyro_y_back = 0.0;
+      __min__.threshold_gyro_y_back = -3.14;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __max__.threshold_gyro_y_back = -100.0;
+      __max__.threshold_gyro_y_back = 3.14;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __default__.threshold_gyro_y_back = 50.0;
+      __default__.threshold_gyro_y_back = 0;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       Default.abstract_parameters.push_back(motion_paramsConfig::AbstractParamDescriptionConstPtr(new motion_paramsConfig::ParamDescription<double>("threshold_gyro_y_back", "double", 1, "Threshold harder -> earlier reaction, but more false positives.", "", &motion_paramsConfig::threshold_gyro_y_back)));
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       __param_descriptions__.push_back(motion_paramsConfig::AbstractParamDescriptionConstPtr(new motion_paramsConfig::ParamDescription<double>("threshold_gyro_y_back", "double", 1, "Threshold harder -> earlier reaction, but more false positives.", "", &motion_paramsConfig::threshold_gyro_y_back)));
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __min__.threshold_gyro_x_right = -100.0;
+      __min__.threshold_gyro_x_right = -3.14;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __max__.threshold_gyro_x_right = 0.0;
+      __max__.threshold_gyro_x_right = 3.14;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __default__.threshold_gyro_x_right = -30.0;
+      __default__.threshold_gyro_x_right = 0;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       Default.abstract_parameters.push_back(motion_paramsConfig::AbstractParamDescriptionConstPtr(new motion_paramsConfig::ParamDescription<double>("threshold_gyro_x_right", "double", 1, "Threshold harder -> earlier reaction, but more false positives.", "", &motion_paramsConfig::threshold_gyro_x_right)));
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       __param_descriptions__.push_back(motion_paramsConfig::AbstractParamDescriptionConstPtr(new motion_paramsConfig::ParamDescription<double>("threshold_gyro_x_right", "double", 1, "Threshold harder -> earlier reaction, but more false positives.", "", &motion_paramsConfig::threshold_gyro_x_right)));
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __min__.threshold_gyro_x_left = 0.0;
+      __min__.threshold_gyro_x_left = -3.14;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __max__.threshold_gyro_x_left = -100.0;
+      __max__.threshold_gyro_x_left = 3.14;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
-      __default__.threshold_gyro_x_left = 30.0;
+      __default__.threshold_gyro_x_left = 0;
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       Default.abstract_parameters.push_back(motion_paramsConfig::AbstractParamDescriptionConstPtr(new motion_paramsConfig::ParamDescription<double>("threshold_gyro_x_left", "double", 1, "Threshold harder -> earlier reaction, but more false positives.", "", &motion_paramsConfig::threshold_gyro_x_left)));
 //#line 259 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"

@@ -49,7 +49,6 @@ class Motion(object):
         self.not_much_smoothed_gyro = numpy.array([0, 0, 0])
         self.gyro_kalman = TripleKalman()
         self.last_gyro_update_time = time.time()
-        self.robo_angle = (0, 0, 0)
 
         # Motor Positions
         self.robo_pose = Pose()
@@ -128,19 +127,10 @@ class Motion(object):
         VALUES.raw_gyro = self.gyro
         VALUES.smooth_gyro = self.smooth_gyro
         VALUES.not_so_smooth_gyro = self.not_much_smoothed_gyro
-
-        # calculate the angle of the robot based on the kalman filter
-        angles = calculate_robot_angles(self.accel)
-        angles_py = DataVector(angles[0], angles[1], angles[2])
-        dt = time.time() - self.last_gyro_update_time
-        # todo we loose precision due to float -> int
-        gyro_data_vector = IntDataVector(self.gyro[0], self.gyro[1], self.gyro[2])
-        angles = self.gyro_kalman.get_angles_pvv_py(angles_py, gyro_data_vector - IntDataVector(512, 512, 512), dt)
-        self.robo_angle = angles
-
-        VALUES.robo_angle = self.robo_angle
+        VALUES.smooth_accel = self.smooth_accel
 
         self.last_gyro_update_time = update_time
+        rospy.logwarn_throttle(1, "s " + str(self.smooth_accel))
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
@@ -247,7 +237,7 @@ class Motion(object):
             else:
                 duration_avg = (time.time() - start)
 
-            #rospy.logwarn("Updates/Sec %f", iteration / duration_avg)
+            # rospy.logwarn("Updates/Sec %f", iteration / duration_avg)
             iteration = 0
             start = time.time()
             rospy.sleep(0.5)

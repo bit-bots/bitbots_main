@@ -19,8 +19,6 @@ class WalkingNode(object):
 
     def __init__(self):
         rospy.init_node("bitbots_walking", anonymous=False)
-        self.motor_goal_publisher = rospy.Publisher("/motion_motor_goals", JointTrajectory,
-                                                    queue_size=10)  # todo just for testing
 
         # --- Params ---
         zmp_config = rospy.get_param("/ZMPConfig/" + rospy.get_param("/robot_type_name"))
@@ -54,6 +52,8 @@ class WalkingNode(object):
 
         # --- Initialize Topics ---
         self.odometry_publisher = rospy.Publisher("/odometry", Odometry, queue_size=10)
+        self.motor_goal_publisher = rospy.Publisher("/walking_motor_goals", JointTrajectory,
+                                                    queue_size=10)
         rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_cb)
         rospy.Subscriber("/motion_state", MotionState, self.motion_state_cb)
         rospy.Subscriber("/joint_states", JointState, self.current_position_cb)
@@ -98,6 +98,9 @@ class WalkingNode(object):
             self.walk_angular / 50.0)  # werte aus config erstmal hard TODO dyn conf
         # Gyro auslesen und an das Walking weitergeben
         if self.with_gyro is True:
+            rospy.logwarn("Your trying to use the gyro with walking. The values are now in rad/sec (ROS standard) and "
+                          "not the cm730 specific units. Please convert theme or adapt the walking algorithm "
+                          "acordingly. It's propably not going to work like this.")
             gyro_x, gyro_y, gyro_z = self.gyro
             self.walking.set_gyro(gyro_x, gyro_y, gyro_z)  ###gyro
         # Pose berechnen

@@ -232,7 +232,7 @@ class GettingUp(AbstractState):
         # normally we should got to getting up second after this
         self.next_state = GettingUpSecond()
         # but lets check if we actually have to stand up
-        fallen = VALUES.fall_checker.check_fallen(VALUES.raw_gyro, VALUES.smooth_gyro, VALUES.robo_angle)
+        fallen = VALUES.fall_checker.check_fallen(VALUES.smooth_accel)
         if fallen is not None:
             self.start_animation(fallen)
         else:
@@ -298,8 +298,7 @@ class Controllable(AbstractState):
             if falling_pose:
                 return Falling()
             ### Standing up
-            direction_animation = VALUES.fall_checker.check_fallen(VALUES.raw_gyro, VALUES.smooth_gyro,
-                                                                   VALUES.robo_angle)
+            direction_animation = VALUES.fall_checker.check_fallen(VALUES.smooth_accel)
             if direction_animation is not None:
                 return Fallen()
 

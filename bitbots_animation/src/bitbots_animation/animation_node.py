@@ -149,7 +149,7 @@ class PlayAnimationAction(object):
             else:
                 duration_avg = (time.time() - start)
 
-            rospy.logwarn("Updates/Sec %f", iteration / duration_avg)
+            rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
             iteration = 0
             start = time.time()
 

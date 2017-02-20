@@ -107,6 +107,7 @@ cdef class RawBytesConverter(Converter):
 cdef class VectorConverter(Converter):
     def __init__(self, bool revert=False, int_data=False):
         self._length = 6
+        # revert is needed because robotis stores the vlaues in wrong order for the accelerometer
         self.revert = revert
         self.int_data = int_data
 
