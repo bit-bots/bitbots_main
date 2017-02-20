@@ -226,9 +226,12 @@ class Penalty(AbstractState):
 
 
 class GettingUp(AbstractState):
+    """This state starts the getting up procedure. """
     def entry(self):
         rospy.logdebug("Getting up!")
+        # normally we should got to getting up second after this
         self.next_state = GettingUpSecond()
+        # but lets check if we actually have to stand up
         fallen = VALUES.fall_checker.check_fallen(VALUES.raw_gyro, VALUES.smooth_gyro, VALUES.robo_angle)
         if fallen is not None:
             self.start_animation(fallen)
@@ -239,16 +242,8 @@ class GettingUp(AbstractState):
     def evaluate(self):
         # wait for animation started in entry
         if self.animation_finished():
-            # we stood up, but are we now really standing correct?
-            if VALUES.is_falling():
-                # we're falling, directly going to falling
-                return Falling()
-            elif VALUES.is_fallen():
-                # we're fallen, directly going to fallen
-                return Fallen()
-            else:
-                # everything is fine, head on
-                return self.next_state
+            # head on
+            return self.next_state
 
     def exit(self):
         pass
@@ -261,21 +256,15 @@ class GettingUp(AbstractState):
 
 
 class GettingUpSecond(AbstractState):
+    """This state plays a second animation for getting up."""
+
     def entry(self):
         self.next_state = Controllable()
         self.start_animation(rospy.get_param("/motion/animations/walkready"))
 
     def evaluate(self):
         if self.animation_finished():
-            # we stood up, but are we now really standing correct?
-            if VALUES.is_falling():
-                # we're falling, directly going to falling
-                return Falling()
-            elif VALUES.is_fallen():
-                # we're fallen, directly going to fallen
-                return Fallen()
-            else:
-                # everything is fine, head on
+                # head on
                 return self.next_state
 
     def exit(self):
@@ -335,7 +324,6 @@ class Falling(AbstractState):
 
         # go directly in falling pose
         falling_pose = VALUES.fall_checker.check_falling(VALUES.not_so_smooth_gyro)
-        rospy.logwarn(falling_pose)
         if falling_pose is not None:
             # we're falling, stay in falling
             self.next_state = Falling()

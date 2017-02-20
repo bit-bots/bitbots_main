@@ -5,12 +5,12 @@ motion_state_machine:
   PenaltyAnimationIn: [Penalty]
   Penalty: [PenaltyAnimationOut]
   PenaltyAnimationOut: [Controllable]
-  GettingUp: [Falling, Fallen, GettingUpSecond]
-  GettingUpSecond: [Falling, Fallen, Controllable]
+  GettingUp: [GettingUpSecond, Controllable]
+  GettingUpSecond: [Controllable]
   Controllable: [ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
                 AnimationRunning, Walking]
-  Falling: [Fallen, Controllable]
-  Fallen: [GettingUp]
+  Falling: [Falling, Fallen, Controllable]
+  Fallen: [GettingUp, Controllable]
   Walking: [ShutDownAnimation, Record, PenaltyAnimationIn, Softoff, Falling, Fallen,
            WalkingStopping, Controllable]
   WalkingStopping: [Controllable]

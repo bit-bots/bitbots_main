@@ -131,7 +131,7 @@ class AbstractStateMachine(object):
             if switch_state.__class__.__name__ in self.connections[self.state.__class__.__name__]:
                 self.set_state(switch_state)
             else:
-                print(
+                rospy.logerr(
                     "Not allowed transistion from " + self.state.__class__.__name__ + " to " +
                     switch_state.__class__.__name__)
 
