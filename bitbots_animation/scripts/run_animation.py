@@ -9,7 +9,6 @@ import bitbots_animation.msg
 def anim_run():
     anim_client = actionlib.SimpleActionClient('animation', bitbots_animation.msg.PlayAnimationAction)
     rospy.init_node('anim_sender', anonymous=False)
-    #rospy.sleep(1)
     anim = rospy.get_param("~anim")
     if anim is None or anim == "":
         rospy.logwarn("Tried to play an animation with an empty name!")
@@ -24,7 +23,7 @@ def anim_run():
         rospy.logwarn("Animation server now running, motion will go on.")
     goal = bitbots_animation.msg.PlayAnimationGoal()
     goal.animation = anim
-    goal.motion = True  # the animation is from the motion
+    goal.motion = False  # the animation is from the motion
     print(anim_client.send_goal_and_wait(goal))
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@
 import threading
 
 import rospy
+import time
 from bitbots_common.pose.pypose import PyPose as Pose
 from bitbots_common.util.pose_util import set_joint_state_on_pose
 from geometry_msgs.msg import Twist
@@ -79,7 +80,7 @@ class WalkingNode(object):
         self.pose_lock.acquire()
         names = [x.encode("utf-8") for x in msg.name]
         self.current_pose.set_positions_rad(names, list(msg.position))
-        #self.current_pose.set_speeds(names, list(msg.velocity))
+        # self.current_pose.set_speeds(names, list(msg.velocity))
         self.pose_lock.release()
 
     def imu_cb(self, msg):
@@ -142,8 +143,10 @@ class WalkingNode(object):
 
             if self.walking.running:
                 # The walking is walking
-                if self.motion_state == MotionState.WALKING:
+                if self.motion_state == MotionState.WALKING or (
+                        self.motion_state == MotionState.CONTROLABLE and time.time() - self.walking_started < 1):
                     # The robot is in the right state, let's compute next pose
+                    # if we just started walking, the motion does maybe not know it yet
                     if not self.walk_active:
                         # the client told us to stop, so let's stop
                         self.walking_stop()
@@ -171,7 +174,7 @@ class WalkingNode(object):
                 if self.walk_active and self.motion_state in (
                         MotionState.CONTROLABLE, MotionState.WALKING, MotionState.MOTOR_OFF):
                     rospy.logwarn("started walking")
-                    self.walking_started = rospy.Time.now()
+                    self.walking_started = time.time()
                     self.walking_start()
             rate.sleep()
 

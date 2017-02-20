@@ -163,7 +163,7 @@ class PenaltyAnimationIn(AbstractState):
     def entry(self):
         rospy.logwarn("Penalized, sitting down!")
         self.next_state = Penalty()
-        self.start_animation(rospy.get_param("/animations/motion/penalized"))
+        self.start_animation(rospy.get_param("/motion/animations/penalized"))
 
     def evaluate(self):
         # wait for animation started in entry
@@ -184,7 +184,7 @@ class PenaltyAnimationOut(AbstractState):
     def entry(self):
         rospy.logwarn("Not penalized anymore, getting up!")
         self.next_state = Controllable()
-        self.start_animation(rospy.get_param("/animations/motion/penalized_end"))
+        self.start_animation(rospy.get_param("/motion/animations/penalized_end"))
 
     def evaluate(self):
         # wait for animation started in entry
@@ -227,6 +227,7 @@ class Penalty(AbstractState):
 
 class GettingUp(AbstractState):
     """This state starts the getting up procedure. """
+
     def entry(self):
         rospy.logdebug("Getting up!")
         # normally we should got to getting up second after this
@@ -236,8 +237,7 @@ class GettingUp(AbstractState):
         if fallen is not None:
             self.start_animation(fallen)
         else:
-            # looks like we didn't fall
-            self.next_state = Controllable()
+            return Controllable()
 
     def evaluate(self):
         # wait for animation started in entry
@@ -264,8 +264,8 @@ class GettingUpSecond(AbstractState):
 
     def evaluate(self):
         if self.animation_finished():
-                # head on
-                return self.next_state
+            # head on
+            return self.next_state
 
     def exit(self):
         pass
@@ -295,7 +295,7 @@ class Controllable(AbstractState):
         if VALUES.standup_flag:
             ## Falling detection
             falling_pose = VALUES.fall_checker.check_falling(VALUES.not_so_smooth_gyro)
-            if falling_pose:
+            if falling_pose is not None:
                 return Falling()
             ### Standing up
             direction_animation = VALUES.fall_checker.check_fallen(VALUES.smooth_accel)
@@ -387,11 +387,11 @@ class Walking(AbstractState):
             return Softoff()
         if VALUES.is_die_time():
             return ShutDownAnimation()
-        if VALUES.standupflag:
-            ## Falling detection
+        if VALUES.standup_flag:
+            # Falling detection
             if VALUES.is_falling():
                 return Falling()
-            ### Standing up
+            # Standing up
             if VALUES.is_fallen():
                 return Fallen()
 
@@ -400,8 +400,6 @@ class Walking(AbstractState):
 
         if not VALUES.walking_active:
             return Controllable()
-
-            # todo request walk positions?
 
     def exit(self):
         VALUES.walking_active = False

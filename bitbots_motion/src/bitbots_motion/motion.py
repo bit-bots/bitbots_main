@@ -54,6 +54,7 @@ class Motion(object):
         self.robo_pose = Pose()
         self.goal_pose = Pose()
         self.walking_motor_goal = None
+        self.last_walking_update = 0
         self.head_motor_goal = None
 
         # Animation
@@ -76,7 +77,7 @@ class Motion(object):
         rospy.loginfo("Starting motion")
 
         self.joint_goal_publisher = rospy.Publisher('/motion_motor_goals', JointTrajectory, queue_size=1)
-        self.motion_state_publisher = rospy.Publisher('/motion_state', MotionState, queue_size=10)
+        self.motion_state_publisher = rospy.Publisher('/motion_state', MotionState, queue_size=10, latch=True)
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
         VALUES.speak_publisher = self.speak_publisher
 
@@ -106,7 +107,7 @@ class Motion(object):
 
     def pause(self, msg):
         """ Updates the pause state for the state machine"""
-        VALUES.penalized = msg
+        VALUES.penalized = msg.data
 
     def update_imu(self, msg):
         """Gets new IMU values and computes the smoothed values of these"""
@@ -130,7 +131,6 @@ class Motion(object):
         VALUES.smooth_accel = self.smooth_accel
 
         self.last_gyro_update_time = update_time
-        rospy.logwarn_throttle(1, "s " + str(self.smooth_accel))
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
@@ -144,15 +144,19 @@ class Motion(object):
         VALUES.fall_checker.update_reconfigurable_values(config, level)
         return config
 
-    def publish_motor_goals(self):
+    def publish_motor_goals(self, joint_names, positions, velocities):
         """ Publish the goal pose as joint message"""
         # we can only handle one point and not a full trajectory
-        traj_msg = pose_to_traj_msg(self.goal_pose, self.used_motor_names, self.traj_msg, self.traj_point)
-        self.joint_goal_publisher.publish(traj_msg)
+        self.traj_msg.joint_names = joint_names
+        self.traj_point.positions = positions
+        self.traj_point.velocities = velocities
+        self.traj_msg.points = [self.traj_point]
+        self.joint_goal_publisher.publish(self.traj_msg)
 
     def walking_goal_callback(self, msg):
         self.walking_motor_goal = msg
         VALUES.walking_active = True
+        self.last_walking_update = msg.header.stamp.to_sec()
 
     def head_goal_callback(self, msg):
         self.head_motor_goal = msg
@@ -252,14 +256,13 @@ class Motion(object):
 
     def update_once(self):  # todo flag setzen falls werte geändert und nur dann evaluieren
         # check if we're still walking
-        if self.walking_motor_goal is None or rospy.Time.now().to_sec() - self.walking_motor_goal.header.stamp.to_sec() > 0.5:
+        if time.time() - self.last_walking_update > 0.5:
             VALUES.walking_active = False
 
         # let statemachine run
         self.state_machine.evaluate()
 
         # now do corresponding actions depending on state of state machine
-
         if self.state_machine.is_shutdown():
             # the motion has to shutdown, we tell main_loop to close the node
             return True
@@ -274,23 +277,31 @@ class Motion(object):
             # the motor goals are set directly in the callback method, so we don't have to do anything
             return
 
-        if self.state_machine.is_walking():
+        joint_names = []
+        positions = []
+        velocities = []
+        if self.walking_motor_goal is not None and VALUES.walking_active:
             # we're currently walking
             # set positions from first point of trajectory
             point = self.walking_motor_goal.points[0]
-            self.goal_pose.set_positions(point.positions)  # todo oder set_goals?
-            self.goal_pose.set_speed(point.velocities)
-
+            joint_names += list(self.walking_motor_goal.joint_names)
+            positions += list(point.positions)
+            velocities += list(point.velocities)
+            self.walking_motor_goal = None
+        # merge goals of walking and head, if necessary
         if not self.state_machine.is_penalized():
             # we can move our head
             if self.head_motor_goal is not None:
                 point = self.head_motor_goal.points[0]
-                self.goal_pose.set_positions(point.positions)  # todo oder set_goals?
-                self.goal_pose.set_speed(point.velocities)
+                joint_names += list(self.head_motor_goal.joint_names)
+                positions += list(point.positions)
+                velocities += list(point.velocities)
+                self.head_motor_goal = None
 
-                # if we didn't return yet, there are some goals to publish
-                # todo maybe check, if goals are different from the last published ones
-                # self.publish_motor_goals()
+        # if we didn't return yet, there are some goals to publish
+        # but only if we have something new
+        if joint_names:
+            self.publish_motor_goals(joint_names, positions, velocities)
 
 
 def calculate_robot_angles(raw):

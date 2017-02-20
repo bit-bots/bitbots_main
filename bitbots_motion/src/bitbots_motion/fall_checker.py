@@ -33,7 +33,6 @@ class FallChecker(object):
         rospy.set_param("/motion/threshold_gyro_y_front", self.falling_threshold_front)
         self.falling_threshold_back = rospy.get_param("/motion/falling/" + robot_type_name + "/threshold_gyro_y_back") \
                                       + numpy.math.radians(rospy.get_param("/ZMPConfig/" + robot_type_name + "/HipPitch", 0))
-        print("set: " + str(self.falling_threshold_back))
         rospy.set_param("/motion/threshold_gyro_y_back", self.falling_threshold_back)
         self.falling_threshold_right = rospy.get_param("/motion/falling/" + robot_type_name + "/threshold_gyro_x_right")
         rospy.set_param("/motion/threshold_gyro_x_right", self.falling_threshold_right)
@@ -73,6 +72,7 @@ class FallChecker(object):
         if not_much_smoothed_gyro[1] < self.falling_threshold_front:
             rospy.logdebug("FALLING TO THE FRONT")
             return self.falling_motor_degrees_front
+        return None
 
     def check_falling_sideways(self, not_much_smoothed_gyro):
         # Am I falling to the right
@@ -83,6 +83,7 @@ class FallChecker(object):
         if self.falling_threshold_left < not_much_smoothed_gyro[0]:
             rospy.logdebug("FALLING TO THE LEFT")
             return self.falling_motor_degrees_left
+        return None
 
     def check_fallen(self, smooth_accel):
         """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""
@@ -98,5 +99,4 @@ class FallChecker(object):
             rospy.logdebug("Lying on the side, should stand up. Trying to stand up from front. Is that right?")
             return rospy.get_param("/motion/animations/front-up")
 
-        rospy.logdebug("I think I am still kind of upright, trying to go to walkready")
-        return rospy.get_param("/motion/animations/walkready")
+        return None

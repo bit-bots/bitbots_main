@@ -13,16 +13,17 @@ motion:
     toSquat: "aufrichten-hocke-tamara"
     stand-up: "stand-up"
     penalized: "sit-down"
+    penalized_end: "stand-up"
     sit-down: "sit-down"
     shut-down: "sit-down"
 
   falling:
 
     #falling animations
-    "falling_front": "falling-front"
-    "falling_back": "falling-back"
-    "falling_left": "falling-left"
-    "falling_right": "falling-right"
+    "falling_front": "falling_front"
+    "falling_back": "falling_back"
+    "falling_left": "falling_left"
+    "falling_right": "falling_right"
 
     #Werte erstellt durch 3doerfle, 3bimberg, 3windsor (Praktikum sose 2015)
     "Darwin":
