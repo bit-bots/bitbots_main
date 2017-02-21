@@ -118,7 +118,6 @@ class CM730Node:
             self.goal_pose = Pose()
 
         joints = [x.encode("utf8") for x in joints]
-        # todo sinusgenerator
         self.pose_lock.acquire()
         self.goal_pose.set_goals(joints, motor_goals)
         self.goal_pose.set_speeds(joints, motor_speeds)

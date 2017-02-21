@@ -25,6 +25,7 @@ def anim_run():
     goal.animation = anim
     goal.motion = False  # the animation is from the motion
     print(anim_client.send_goal_and_wait(goal))
+    rospy.sleep(0.5)
 
 if __name__ == '__main__':
     # run with "rosrun bitbots_animation run_animation.py _anim:=NAME"

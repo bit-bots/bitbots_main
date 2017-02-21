@@ -72,6 +72,7 @@ class AbstractState(object):
         goal.animation = anim
         goal.motion = True  # the animation is from the motion
         VALUES.animation_client.send_goal(goal)
+        self.animation_started = True
 
     def animation_finished(self):
         return VALUES.motion_animation_finished

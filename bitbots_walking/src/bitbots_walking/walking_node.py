@@ -26,7 +26,7 @@ class WalkingNode(object):
         self.with_gyro = zmp_config["use_gyro_for_walking"]
         robot_type_name = rospy.get_param("/robot_type_name")
         self.used_motor_cids = rospy.get_param("/cm730/" + robot_type_name + "/motors")
-        self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
+        self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids[0:-2])  # without head
 
         # --- Class Variables ---
         self.walking = ZMPWalkingEngine()
@@ -136,11 +136,11 @@ class WalkingNode(object):
     def publish_motor_goals(self):
         msg = pose_goal_to_traj_msg(self.goal_pose, self.used_motor_names, self.traj_msg, self.traj_point)
         self.motor_goal_publisher.publish(msg)
+        #rospy.logerr("pub")
 
     def run(self):
         rate = rospy.Rate(100)
         while not rospy.is_shutdown():
-
             if self.walking.running:
                 # The walking is walking
                 if self.motion_state == MotionState.WALKING or (

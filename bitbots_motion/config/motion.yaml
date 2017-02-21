@@ -16,6 +16,7 @@ motion:
     penalized_end: "stand-up"
     sit-down: "sit-down"
     shut-down: "sit-down"
+    init: "init"
 
   falling:
 

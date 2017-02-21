@@ -64,32 +64,38 @@ class Startup(AbstractState):
         self.start_time_limit = rospy.get_param("/motion/start_time", 10)
 
     def evaluate(self):
-        # leave this if we got a hardware response, or after some time
-        if VALUES.last_hardware_update is not None or time.time() - VALUES.start_up_time > self.start_time_limit:
-            # check if we directly go into a special state, if not, got to get up
-            if VALUES.start_test:
-                # todo ping motors
-                pass
-                return
-            if VALUES.record:
+        if not self.animation_started:
+            # leave this if we got a hardware response, or after some time
+            if VALUES.last_hardware_update is not None or time.time() - VALUES.start_up_time > self.start_time_limit:
+                # check if we directly go into a special state, if not, got to get up
+                if VALUES.start_test:
+                    # todo ping motors
+                    pass
+                    return
+                if VALUES.record:
+                    switch_motor_power(True)
+                    return Record()
+                if VALUES.soft_start:
+                    switch_motor_power(False)
+                    # to prohibit getting directly out of softoff
+                    VALUES.last_client_update = time.time() - 120
+                    return Softoff()
                 switch_motor_power(True)
-                return Record()
-            if VALUES.soft_start:
-                switch_motor_power(False)
-                # to prohibit getting directly out of softoff
-                VALUES.last_client_update = time.time() - 120
-                return Softoff()
-            switch_motor_power(True)
-            if VALUES.penalized:
-                return PenaltyAnimationIn()
+                if VALUES.penalized:
+                    return PenaltyAnimationIn()
 
-            # normal states
-            if VALUES.standup_flag:
-                return GettingUp()
+                # normal states
+                if VALUES.standup_flag:
+                    self.next_state = GettingUp()
+                else:
+                    self.next_state = Controllable()
+                # play init
+                self.start_animation(rospy.get_param("/motion/animations/init"))
             else:
-                return Controllable()
+                rospy.loginfo_throttle(1, "Motion is waiting for data from hardware")
         else:
-            rospy.loginfo_throttle(1, "Motion is waiting for data from hardware")
+            if self.animation_finished():
+                return self.next_state
 
     def exit(self):
         pass
@@ -229,7 +235,6 @@ class GettingUp(AbstractState):
     """This state starts the getting up procedure. """
 
     def entry(self):
-        rospy.logdebug("Getting up!")
         # normally we should got to getting up second after this
         self.next_state = GettingUpSecond()
         # but lets check if we actually have to stand up
@@ -237,7 +242,8 @@ class GettingUp(AbstractState):
         if fallen is not None:
             self.start_animation(fallen)
         else:
-            return Controllable()
+            self.next_state = Controllable()
+            self.start_animation(rospy.get_param("/motion/animations/walkready"))
 
     def evaluate(self):
         # wait for animation started in entry
@@ -320,7 +326,7 @@ class Controllable(AbstractState):
 
 class Falling(AbstractState):
     def entry(self):
-
+        self.wait_time = time.time()
         # go directly in falling pose
         falling_pose = VALUES.fall_checker.check_falling(VALUES.not_so_smooth_gyro)
         if falling_pose is not None:
@@ -333,10 +339,12 @@ class Falling(AbstractState):
                 # go directly to fallen
                 return Fallen()
             else:
-                return Controllable()
+                self.next_state = Controllable()
+                self.start_animation(rospy.get_param("/motion/animations/walkready"))
 
     def evaluate(self):
-        if self.animation_finished():
+        # we wait a moment before going to the next state
+        if time.time() - self.wait_time > 3 and self.animation_finished():
             return self.next_state
 
     def exit(self):
