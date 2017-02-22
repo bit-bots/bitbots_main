@@ -1,10 +1,9 @@
 import time
 
+from bitbots_misc.bitbots_common.src.bitbots_common.connector.capsules.walking_capsule import WalkingCapsule
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-
 from body.actions.plain_walk_action import PlainWalkAction
 from body.actions.throw import RIGHT, LEFT
-from model.capsules.walking_capsule import WalkingCapsule
 
 
 class TurnAfterThrow(AbstractDecisionModule):

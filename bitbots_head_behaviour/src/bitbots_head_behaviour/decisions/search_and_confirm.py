@@ -10,12 +10,12 @@ import time
 
 from bitbots_head_behaviour.actions.track_object import TrackBall, TrackGoal
 from bitbots_head_behaviour.decisions.search_for_object import SearchForBall, SearchForEnemyGoal
-from bitbots_head_behaviour.head_connector import HeadConnector
+from bitbots_misc.bitbots_common.src.bitbots_common.connector.connector import Connector
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class AbstractSearchAndConfirm(AbstractDecisionModule):
-    def __init__(self, connector: HeadConnector,  _):
+    def __init__(self, connector: Connector,  _):
         super(AbstractSearchAndConfirm, self).__init__(connector,_)
         self.set_confirmed = None
         self.get_started_confirm_time = None
@@ -30,7 +30,7 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
         self.track_ball_lost_time = connector.config["Tracking"]["trackBallLost"]
         self.ball_fail_conter_max = connector.config["Tracking"]["ballFailCounterMax"]
 
-    def perform(self, connector: HeadConnector, reevaluate=False):
+    def perform(self, connector: Connector, reevaluate=False):
 
         if time.time() - self.get_started_confirm_time() > self.confirm_time and \
                         self.get_started_confirm_time() != 0:
@@ -64,15 +64,15 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
 
 
 class SearchAndConfirmBall(AbstractSearchAndConfirm):
-    def perform(self, connector: HeadConnector, reevaluate=False):
+    def perform(self, connector: Connector, reevaluate=False):
         if self.fr:
             self.fr = False
-            self.get_started_confirm_time = connector.blackboard_capsule().get_started_confirm_ball
-            self.set_started_confirm_time = connector.blackboard_capsule().set_started_confirm_ball
-            self.unset_started_confirm_time = connector.blackboard_capsule().unset_started_confirm_ball
-            self.set_confirmed = connector.blackboard_capsule().set_confirmed_ball
-            self.object_seen = connector.raw_vision_capsule().ball_seen
-            self.object_last_seen = connector.raw_vision_capsule().ball_last_seen
+            self.get_started_confirm_time = connector.blackboard.get_started_confirm_ball
+            self.set_started_confirm_time = connector.blackboard.set_started_confirm_ball
+            self.unset_started_confirm_time = connector.blackboard.unset_started_confirm_ball
+            self.set_confirmed = connector.blackboard.set_confirmed_ball
+            self.object_seen = connector.vision.ball_seen
+            self.object_last_seen = connector.vision.ball_last_seen
         super(SearchAndConfirmBall, self).perform(connector, reevaluate)
 
     def track(self):
@@ -83,15 +83,15 @@ class SearchAndConfirmBall(AbstractSearchAndConfirm):
 
 
 class SearchAndConfirmEnemyGoal(AbstractSearchAndConfirm):
-    def perform(self, connector: HeadConnector, reevaluate=False):
+    def perform(self, connector: Connector, reevaluate=False):
         if self.fr:
             self.fr = False
-            self.get_started_confirm_time = connector.blackboard_capsule().get_started_confirm_goal
-            self.set_started_confirm_time = connector.blackboard_capsule().set_started_confirm_goal
-            self.unset_started_confirm_time = connector.blackboard_capsule().unset_started_confirm_goal
-            self.set_confirmed = connector.blackboard_capsule().set_confirmed_goal
-            self.object_seen = connector.raw_vision_capsule().any_goal_seen
-            self.object_last_seen = connector.raw_vision_capsule().any_goalpost_last_seen
+            self.get_started_confirm_time = connector.blackboard.get_started_confirm_goal
+            self.set_started_confirm_time = connector.blackboard.set_started_confirm_goal
+            self.unset_started_confirm_time = connector.blackboard.unset_started_confirm_goal
+            self.set_confirmed = connector.blackboard.set_confirmed_goal
+            self.object_seen = connector.vision.any_goal_seen
+            self.object_last_seen = connector.vision.any_goalpost_last_seen
         super(SearchAndConfirmEnemyGoal, self).perform(connector, reevaluate)
 
     def track(self):
