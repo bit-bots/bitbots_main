@@ -20,7 +20,7 @@ from humanoid_league_msgs.msg import Speak
 from keys import DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_READY, DATA_VALUE_STATE_SET, \
     DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-from model.connector import Connector
+from bitbots_common.connector.connector import BodyConnector
 
 duty = None  # can be overwriten by the startup script (to force a behaviour)
 
@@ -30,12 +30,12 @@ class DutyDecider(AbstractDecisionModule):
     Decides what kind of behavoiur the robot performs
     """
 
-    def __init__(self, connector: Connector, _):
+    def __init__(self, connector: BodyConnector, _):
         super(DutyDecider, self).__init__(connector)
         self.max_fieldie_time = connector.config["Fieldie"]["Defender"]["maxFieldieTime"]
         self.toggle_self_positioning = connector.config["Toggles"]["Fieldie"]["trySelfPositioning"]
 
-    def perform(self, connector: Connector, reevaluate=False):
+    def perform(self, connector: BodyConnector, reevaluate=False):
 
         if connector.blackboard.is_frozen():
             return

@@ -11,14 +11,14 @@ from body.actions.go_to_ball_pathfinding import GoToBallPathfinding
 from body.actions.search import Search
 from body.actions.wait import Wait
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-from model.connector import Connector
+from bitbots_common.connector.connector import BodyConnector
 
 
 class SupporterDecision(AbstractDecisionModule):
     def __init__(self, _):
         super(SupporterDecision, self).__init__()
 
-    def perform(self, connector: Connector, reevaluate=False):
+    def perform(self, connector: BodyConnector, reevaluate=False):
 
         if not (connector.vision.ball_seen() or
                 time.time() - connector.vision.ball_last_seen() < 1):

@@ -12,7 +12,7 @@ from body.actions.go_to_ball_pathfinding import GoToBallPathfinding
 from body.decisions.common.kick_decision import KickDecisionPenaltyKick
 from body.decisions.common.stands_correct_decision import StandsCorrectDecision
 from body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
-from model.connector import Connector
+from bitbots_common.connector.connector import BodyConnector
 
 
 class AbstractCloseBall(AbstractDecisionModule):
@@ -20,7 +20,7 @@ class AbstractCloseBall(AbstractDecisionModule):
     Test if the ball is in kick distance
     """
 
-    def __init__(self, connector: Connector, _):
+    def __init__(self, connector: BodyConnector, _):
         super(AbstractCloseBall, self).__init__(connector)
         self.last_goalie_dist = 0
         self.last_goalie_dist_time = 0
@@ -28,7 +28,7 @@ class AbstractCloseBall(AbstractDecisionModule):
         self.min_kick_distance = connector.config["Fieldie"]["minKickDistance"]
         self.config_kickalign_v = connector.config["Fieldie"]["kickAlign"]
 
-    def perform(self, connector: Connector, reevaluate=False):
+    def perform(self, connector: BodyConnector, reevaluate=False):
         # if the robot is near to the ball
         if self.min_kick_distance < connector.vision.get_ball_relative[0] <= self.max_kick_distance \
                 and connector.vision.get_ball_distance <= self.max_kick_distance * 5.0:

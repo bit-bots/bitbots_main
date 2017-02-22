@@ -11,8 +11,7 @@ This module expects a 2tupel containing pan and tilt for the head
 """
 import time
 
-
-from bitbots_head_behaviour.head_connector import HeadConnector
+from bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
 

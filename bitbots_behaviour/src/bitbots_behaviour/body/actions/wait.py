@@ -9,11 +9,11 @@ Just waits for something (i.e. that preconditions will be fullfilled)
 import time
 
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
-from model.connector import Connector
+from bitbots_common.connector.connector import BodyConnector
 
 
 class Wait(AbstractActionModule):
-    def __init__(self, connector: Connector, args=99999999):
+    def __init__(self, connector: BodyConnector, args=99999999):
         super(Wait, self).__init__(connector)
         if args is None:
             args = 10

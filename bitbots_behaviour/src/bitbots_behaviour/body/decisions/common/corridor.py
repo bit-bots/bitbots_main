@@ -23,11 +23,11 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.plain_walk_action import PlainWalkAction
 from body.actions.wait import Wait
 from body.decisions.team_player.defender_position_decider import DefenderPositionDecider
-from model.connector import Connector
+from bitbots_common.connector.connector import BodyConnector
 
 
 class AbstractCorridor(AbstractDecisionModule):
-    def __init__(self, connector: Connector, _):
+    def __init__(self, connector: BodyConnector, _):
         super(AbstractCorridor, self).__init__(connector)
 
         self.corridor_u_start = int(config["length"]) * (1.0 / 9.0)

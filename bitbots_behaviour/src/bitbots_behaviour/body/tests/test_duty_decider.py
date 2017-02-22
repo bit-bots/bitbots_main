@@ -17,7 +17,7 @@ from bitbots.modules.behaviour.body.decisions.common.duty_decider import DutyDec
 from bitbots.modules.behaviour.body.decisions.goalie.goalie_decision import GoalieDecision
 from bitbots.modules.behaviour.body.decisions.kick_off.kick_off import KickOff
 from bitbots.modules.behaviour.body.decisions.common.role_decider import RoleDecider
-from bitbots.modules.behaviour.modell.connector import Connector
+from bitbots.modules.behaviour.modell.connector import BodyConnector
 from bitbots.modules.keys import DATA_KEY_GAME_STATUS, DATA_VALUE_STATE_PLAYING
 
 
@@ -29,7 +29,7 @@ class TestDutyDecider(unittest.TestCase):
         dc.push = push_mock
 
         data = {DATA_KEY_GAME_STATUS: DATA_VALUE_STATE_PLAYING}
-        connector = Connector(data)
+        connector = BodyConnector(data)
 
         bitbots.modules.behaviour.body.decisions.common.duty_decider.duty = start_duty
 

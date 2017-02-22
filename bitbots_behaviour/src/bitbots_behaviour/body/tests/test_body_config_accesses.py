@@ -16,7 +16,7 @@ from bitbots.modules.behaviour.body.actions.go_to_ball import GoToBall
 from bitbots.modules.behaviour.body.actions.align_on_ball import AlignOnBall
 from bitbots.modules.behaviour.body.decisions.common.ball_seen import AbstractBallSeen
 from bitbots.modules.behaviour.body.decisions.goalie.throw_or_raise_arm import ThrowOrRaiseArm
-from bitbots.modules.behaviour.modell.connector import Connector
+from bitbots.modules.behaviour.modell.connector import BodyConnector
 
 
 class TestBodyConfigAccesses(unittest.TestCase):
@@ -29,7 +29,7 @@ class TestBodyConfigAccesses(unittest.TestCase):
         pass
 
     def setUp(self):
-        self.connector = Connector({})
+        self.connector = BodyConnector({})
         self.ball_dangerous = ThrowOrRaiseArm(None)
         self.ball_seen = AbstractBallSeen(None)
         self.throw = Throw(None)

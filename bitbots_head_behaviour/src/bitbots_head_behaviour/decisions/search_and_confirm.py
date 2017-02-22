@@ -1,4 +1,3 @@
-
 """
 SearchAndConfirm
 ^^^^^^^^^^^^^^^^
@@ -10,13 +9,13 @@ import time
 
 from bitbots_head_behaviour.actions.track_object import TrackBall, TrackGoal
 from bitbots_head_behaviour.decisions.search_for_object import SearchForBall, SearchForEnemyGoal
-from bitbots_misc.bitbots_common.src.bitbots_common.connector.connector import Connector
+from bitbots_misc.bitbots_common.src.bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class AbstractSearchAndConfirm(AbstractDecisionModule):
-    def __init__(self, connector: Connector,  _):
-        super(AbstractSearchAndConfirm, self).__init__(connector,_)
+    def __init__(self, connector: HeadConnector, _):
+        super(AbstractSearchAndConfirm, self).__init__(connector, _)
         self.set_confirmed = None
         self.get_started_confirm_time = None
         self.set_started_confirm_time = None
@@ -30,7 +29,7 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
         self.track_ball_lost_time = connector.config["Tracking"]["trackBallLost"]
         self.ball_fail_conter_max = connector.config["Tracking"]["ballFailCounterMax"]
 
-    def perform(self, connector: Connector, reevaluate=False):
+    def perform(self, connector: HeadConnector, reevaluate=False):
 
         if time.time() - self.get_started_confirm_time() > self.confirm_time and \
                         self.get_started_confirm_time() != 0:
@@ -64,7 +63,7 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
 
 
 class SearchAndConfirmBall(AbstractSearchAndConfirm):
-    def perform(self, connector: Connector, reevaluate=False):
+    def perform(self, connector: HeadConnector, reevaluate=False):
         if self.fr:
             self.fr = False
             self.get_started_confirm_time = connector.blackboard.get_started_confirm_ball
@@ -83,7 +82,7 @@ class SearchAndConfirmBall(AbstractSearchAndConfirm):
 
 
 class SearchAndConfirmEnemyGoal(AbstractSearchAndConfirm):
-    def perform(self, connector: Connector, reevaluate=False):
+    def perform(self, connector: HeadConnector, reevaluate=False):
         if self.fr:
             self.fr = False
             self.get_started_confirm_time = connector.blackboard.get_started_confirm_goal

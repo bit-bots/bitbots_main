@@ -5,8 +5,7 @@ ConfirmGoal
 .. moduleauthor:: Marc Bestmann <0bestman@informatik.uni-hamburg.de>
 
 """
-
-from bitbots_head_behaviour.head_connector import HeadConnector
+from bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_init_action_module import AbstractInitActionModule
 
 
@@ -40,7 +39,7 @@ class AbstactTrackObject(AbstractInitActionModule):
         self.horizontal_factor = connector.config["Camera"]["horizontalFactor"]
         self.vertical_factor = connector.config["Camera"]["verticalFactor"]
 
-    def track_with_values(self, connector, a, b):
+    def track_with_values(self, connector: HeadConnector, a, b):
         # the goalie wants to track the ball in the upper part of the image, because it will probably come to him
         if connector.get_duty() == "Goalie":
             b_center = self.b_center_goalie
@@ -72,15 +71,15 @@ class AbstactTrackObject(AbstractInitActionModule):
 
 
 class TrackBall(AbstactTrackObject):
-    def perform(self, connector, reevaluate=False):
+    def perform(self, connector: HeadConnector, reevaluate=False):
         # the ball is seen, so we center our view to it
-        a = connector.raw_vision_capsule().get_ball_info_legacy_wrapper("a")
-        b = connector.raw_vision_capsule().get_ball_info_legacy_wrapper("b")
+        a = connector.vision.get_ball_info_legacy_wrapper("a")
+        b = connector.vision.get_ball_info_legacy_wrapper("b")
         self.track_with_values(connector, a, b)
 
 
 class TrackGoal(AbstactTrackObject):
-    def perform(self, connector, reevaluate=None):
-        a = connector.raw_vision_capsule().get_goal_infos()[0].x
-        b = connector.raw_vision_capsule().get_goal_infos()[0].y
+    def perform(self, connector: HeadConnector, reevaluate=None):
+        a = connector.vision.get_goal_infos()[0].x
+        b = connector.vision.get_goal_infos()[0].y
         self.track_with_values(connector, a, b)

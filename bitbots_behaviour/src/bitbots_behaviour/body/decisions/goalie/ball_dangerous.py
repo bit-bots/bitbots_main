@@ -10,11 +10,11 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 from body.decisions.goalie.goalie_movement import GoalieMovement
 from body.decisions.goalie.throw_or_raise_arm import ThrowOrRaiseArm
-from model.connector import Connector
+from bitbots_common.connector.connector import BodyConnector
 
 
 class BallDangerous(AbstractDecisionModule):
-    def perform(self, connector: Connector, reevaluate=False):
+    def perform(self, connector: BodyConnector, reevaluate=False):
         ufiltered = connector.vision.get_ball_relative()[0]
 
         # We saw the ball so we track it

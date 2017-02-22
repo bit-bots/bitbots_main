@@ -6,16 +6,14 @@ HeadDutyDecider
 import time
 
 import rospy
-from bitbots_misc.bitbots_common.src.bitbots_common.connector.connector import Connector
+from bitbots_misc.bitbots_common.src.bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-from humanoid_league_msgs.msg._HeadMode import  DONT_MOVE, BALL_MODE, POLE_MODE, BALL_GOAL_TRACKING
+from humanoid_league_msgs.msg import HeadMode
 
 
 class HeadDutyDecider(AbstractDecisionModule):
 
-    def __init__(self, connector: Connector,
-                 outcomes=('nothing', 'trackBall', 'trackGoal', 'trackBothBall', 'trackBothGoal', 'trackBothElse',
-                           'searchAndConfirmBall', 'searchAndConfirmGoal', 'defaultSearch')):
+    def __init__(self, connector: HeadConnector, _):
         super().__init__(connector)
         self.toggle_goal_vision_tracking = connector.config["Toggles"]["goalVisionTracking"]
         self.toggle_switch_ball_goal = connector.config["Toggles"]["switchBallGoalSearch"]
@@ -27,7 +25,7 @@ class HeadDutyDecider(AbstractDecisionModule):
         self.goal_prio = 0
         self.trackjustball_aftergoal = False
 
-    def execute(self, connector: Connector):
+    def perform(self, connector: HeadConnector, reevaluate: bool=False):
 
         # set priorities
         if connector.vision.ball_seen():
@@ -46,16 +44,16 @@ class HeadDutyDecider(AbstractDecisionModule):
         rospy.loginfo("BallLastStratedconfirm", time.time() - connector.blackboard.get_started_confirm_ball())
 
         head_mode = connector.head.get_headmode()
-        if head_mode == DONT_MOVE:
+        if head_mode == "":
             return 'nothing'
 
-        if head_mode == BALL_MODE:
+        if head_mode == HeadMode.BALL_MODE:
             return 'trackBall'
 
-        if head_mode == POLE_MODE:
+        if head_mode == HeadMode.POLE_MODE:
             return 'trackGoal'
 
-        if head_mode == BALL_GOAL_TRACKING:
+        if head_mode == HeadMode.BALL_GOAL_TRACKING:
             rospy.loginfo("TrackbothTime", time.time())
             if time.time() - connector.head.get_confirmed_ball() > 5:
                 return 'trackBothBall'

@@ -13,11 +13,11 @@ from body.decisions.team_player.defender_decision import DefenderDecision
 from body.decisions.team_player.supporter_decision import SupporterDecision
 from humanoid_league_msgs.msg import Role
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-from model.connector import Connector
+from bitbots_common.connector.connector import BodyConnector
 
 
 class RoleDecider(AbstractDecisionModule):
-    def __init__(self, connector: Connector, forced=None):
+    def __init__(self, connector: BodyConnector, forced=None):
         super(RoleDecider, self).__init__(connector)
         self.forced = forced
 

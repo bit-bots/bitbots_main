@@ -10,11 +10,11 @@ orientation within the absolute coordinate system.
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 from geometry_msgs.msg import Pose2D
 
-from model.connector import Connector
+from bitbots_common.connector.connector import BodyConnector
 
 
 class GoToAbsolutePosition(AbstractActionModule):
-    def __init__(self, connector: Connector, args=None):
+    def __init__(self, connector: BodyConnector, args=None):
         AbstractActionModule.__init__(self, connector, args)
         self.target_x = args[0]
         self.target_y = args[1]
@@ -24,7 +24,7 @@ class GoToAbsolutePosition(AbstractActionModule):
 
         self.align_on_zero = False
 
-    def perform(self, connector: Connector, reevaluate=False):
+    def perform(self, connector: BodyConnector, reevaluate=False):
 
         if connector.world_model.get_distance_to_xy(self.target_x, self.target_y) > self.tolerance:
             p = Pose2D()
