@@ -8,7 +8,7 @@ Starts the body behaviour
 """
 import rospy
 # from bitbots_animation.animation_node import PlayAnimationAction
-from bitbots_behaviour.body.decisions.common.duty_decider import DutyDecider
+from bitbots_body_behaviour.body.decisions.common.duty_decider import DutyDecider
 from geometry_msgs.msg import Twist, Pose2D
 from humanoid_league_msgs.msg import BallRelative, ObstacleRelative, GameState, Speak, Role, HeadMode
 from bitbots_stackmachine.stack_machine_module import StackMachineModule
