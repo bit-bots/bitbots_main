@@ -4,7 +4,7 @@ project(bitbots_head_behaviour)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED std_msgs humanoid_league_msgs rospy bitbots_stackmachine)
+find_package(catkin REQUIRED std_msgs humanoid_league_msgs rospy bitbots_stackmachine bitbots_body_behaviour)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
