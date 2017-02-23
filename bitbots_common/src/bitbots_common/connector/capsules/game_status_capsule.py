@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 """
 GameStatusCapsule
 ^^^^^^^^^^^^^^^^^
@@ -8,20 +7,16 @@ Provides informations about the current game state.
 """
 import time
 
-from humanoid_league_msgs.msg import GameState
-from keys import DATA_KEY_OWN_KICK_OF, DATA_KEY_DROP_IN_TIME, DATA_KEY_OWN_GOALS, DATA_KEY_ENEMY_GOALS,\
-    DATA_KEY_SECONDS_REMAINING, DATA_KEY_SECONDAR_SECONDS_REMAINING, DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_SET,\
-    DATA_VALUE_STATE_READY, \
-    DATA_VALUE_STATE_INITIAL, DATA_VALUE_STATE_FINISHED, DATA_KEY_DROP_BALL_TIME, \
-    DATA_KEY_KICK_OFF_TIME, DATA_KEY_GAME_STATUS
-
 import rosparam
+from keys import DATA_VALUE_STATE_READY, DATA_VALUE_STATE_PLAYING, \
+    DATA_VALUE_STATE_SET, DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
+from humanoid_league_msgs.msg import GameState
 
 
 class GameStatusCapsule:
     def __init__(self):
-        self.kick_off_valid_time = rosparam.get_param("/Behaviour/Body/Common/kickOffValidTime")
-        self.drop_ball_valid_time = rosparam.get_param("/Behaviour/Body/Common/dropBallValidTime")
+        self.kick_off_valid_time = rosparam.get_param("Behaviour/Body/Common/kickOffValidTime")
+        self.drop_ball_valid_time = rosparam.get_param("Behaviour/Body/Common/dropBallValidTime")
         self.gamestate = GameState()
 
     def is_game_state_equals(self, value):
