@@ -27,10 +27,9 @@ class AnimationNode:
         rospy.init_node("bitbots_animation", log_level=log_level, anonymous=False)
         rospy.logdebug("Starting Animation Server")
         server = PlayAnimationAction(rospy.get_name())
-        self.current_pose = Pose()
         rospy.spin()
 
-
+#todo diese zweite klasse macht keinen sinn, das sollte auch alles in die node klasse passen
 class PlayAnimationAction(object):
     _feedback = PlayAnimationFeedback
     _result = PlayAnimationResult

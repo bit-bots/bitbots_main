@@ -182,6 +182,7 @@ class CM730Node:
     def update_sensor_data(self):
         raw_accel = None
         raw_gyro = None
+        #todo put sensordata read und parsesensordata in eine methode zusammen ins cm730
         # first get data
         result, cid_all_values = self.cm_730.sensor_data_read()
 
