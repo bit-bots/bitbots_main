@@ -23,15 +23,16 @@ class HeadToPanTilt(AbstractActionModule):
         self.at_position = time.time()
 
     def perform(self, connector: HeadConnector, reevaluate=False):
-        curren_pan_pos, current_tilt_pos = connector.get_current_head_pos()
+        curren_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
 
-        if abs(curren_pan_pos - self.pan) < connector.delta and abs(current_tilt_pos - self.tilt) < connector.delta:
+        if abs(curren_pan_pos - self.pan) < connector.head.delta and \
+                        abs(current_tilt_pos - self.tilt) < connector.head.delta:
             # We reached the position
-            if time.time() - self.at_position > connector.wait_time:
+            if time.time() - self.at_position > connector.head.wait_time:
                 # We waited long enough, go back
                 return self.pop()
         else:
             # We haven't reached it
             # Update when we should reach it
             self.at_position = time.time()
-            connector.send_motor_goals(self.pan, connector.pan_speed_max, self.tilt, connector.tilt_speed_max)
+            connector.head.send_motor_goals(self.pan, connector.head.pan_speed_max, self.tilt, connector.head.tilt_speed_max)

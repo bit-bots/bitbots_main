@@ -66,10 +66,10 @@ class SearchAndConfirmBall(AbstractSearchAndConfirm):
     def perform(self, connector: HeadConnector, reevaluate=False):
         if self.fr:
             self.fr = False
-            self.get_started_confirm_time = connector.blackboard.get_started_confirm_ball
-            self.set_started_confirm_time = connector.blackboard.set_started_confirm_ball
-            self.unset_started_confirm_time = connector.blackboard.unset_started_confirm_ball
-            self.set_confirmed = connector.blackboard.set_confirmed_ball
+            self.get_started_confirm_time = connector.head.get_started_confirm_ball
+            self.set_started_confirm_time = connector.head.set_started_confirm_ball
+            self.unset_started_confirm_time = connector.head.unset_started_confirm_ball
+            self.set_confirmed = connector.head.set_confirmed_ball
             self.object_seen = connector.vision.ball_seen
             self.object_last_seen = connector.vision.ball_last_seen
         super(SearchAndConfirmBall, self).perform(connector, reevaluate)
@@ -85,10 +85,10 @@ class SearchAndConfirmEnemyGoal(AbstractSearchAndConfirm):
     def perform(self, connector: HeadConnector, reevaluate=False):
         if self.fr:
             self.fr = False
-            self.get_started_confirm_time = connector.blackboard.get_started_confirm_goal
-            self.set_started_confirm_time = connector.blackboard.set_started_confirm_goal
-            self.unset_started_confirm_time = connector.blackboard.unset_started_confirm_goal
-            self.set_confirmed = connector.blackboard.set_confirmed_goal
+            self.get_started_confirm_time = connector.head.get_started_confirm_goal
+            self.set_started_confirm_time = connector.head.set_started_confirm_goal
+            self.unset_started_confirm_time = connector.head.unset_started_confirm_goal
+            self.set_confirmed = connector.head.set_confirmed_goal
             self.object_seen = connector.vision.any_goal_seen
             self.object_last_seen = connector.vision.any_goalpost_last_seen
         super(SearchAndConfirmEnemyGoal, self).perform(connector, reevaluate)

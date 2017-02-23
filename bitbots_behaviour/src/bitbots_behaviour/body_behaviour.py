@@ -31,7 +31,7 @@ class BehaviourModule(StackMachineModule):
         self.connector.walking.pub_walkin_params = rospy.Publisher("/cmd_vel", Twist, queue_size=6)
         self.connector.head_pub = rospy.Publisher("/head_duty", HeadMode, queue_size=10)
 
-        self.connector.config = rospy.get_param("/Behaviour")
+        self.connector.config = rospy.get_param("Behaviour")
 
         # self.connector.animation.server = actionlib.SimpleActionClient("bitbots_animation", PlayAnimationAction)
 

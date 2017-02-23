@@ -8,8 +8,8 @@ This Modul performs a continious search with the head. In the standard case it w
 so only in special cases the ball will be tracked.
 
 """
+from bitbots_common.connector.connector import HeadConnector
 from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
-from bitbots_head_behaviour.head_connector import HeadConnector
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
@@ -21,8 +21,7 @@ class ContiniousSearch(AbstractDecisionModule):
         self.defender_pattern = connector.config["SearchPattern"]["defender"]
         self.center_pattern = connector.config["SearchPattern"]["center"]
         self.ball_pattern = connector.config["Behaviour"]["Common"]["SearchPattern"]["ball"]
-        self.default_pattern = connector.config["Behaviour"]["Common"]["SearchPattern"][
-            "ball"]  # todo default <-> Ball pattern
+        self.default_pattern = connector.config["Behaviour"]["Common"]["SearchPattern"]["ball"]
         self.current_pattern = self.default_pattern
         self.last_pattern = self.current_pattern
 
@@ -36,9 +35,9 @@ class ContiniousSearch(AbstractDecisionModule):
 
     def set_pattern(self, connector: HeadConnector):
         self.last_pattern = self.current_pattern
-        duty = connector.get_duty()
+        duty = connector.head.get_duty()
 
-        if connector.is_ball_tracking_still_active:
+        if connector.head.is_ball_tracking_still_active:
             # we only come here if the continousSearch is called by the SearchForBall Module
             # in this case we want to search the ball
             self.current_pattern = self.ball_pattern

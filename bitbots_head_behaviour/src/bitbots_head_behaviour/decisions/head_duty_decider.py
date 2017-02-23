@@ -6,7 +6,7 @@ HeadDutyDecider
 import time
 
 import rospy
-from bitbots_misc.bitbots_common.src.bitbots_common.connector.connector import HeadConnector
+from bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from humanoid_league_msgs.msg import HeadMode
 
@@ -40,8 +40,8 @@ class HeadDutyDecider(AbstractDecisionModule):
 
         rospy.loginfo("GoalPrio", self.goal_prio)
         rospy.loginfo("BallPrio", self.ball_prio)
-        rospy.loginfo("BallLastConfirmed", time.time() - connector.blackboard.get_confirmed_ball())
-        rospy.loginfo("BallLastStratedconfirm", time.time() - connector.blackboard.get_started_confirm_ball())
+        rospy.loginfo("BallLastConfirmed", time.time() - connector.head.get_confirmed_ball())
+        rospy.loginfo("BallLastStratedconfirm", time.time() - connector.head.get_started_confirm_ball())
 
         head_mode = connector.head.get_headmode()
         if head_mode == "":
