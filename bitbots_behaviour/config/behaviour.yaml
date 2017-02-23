@@ -151,7 +151,7 @@ Behaviour:
 
 
 
-  Common:
+    Common:
       # Time after which the robot assumes he lost the ball
       maxBallTime: 3
 
