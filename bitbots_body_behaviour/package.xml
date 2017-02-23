@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>bitbots_behaviour</name>
+  <name>bitbots_body_behaviour</name>
   <version>0.0.0</version>
   <description>The bitbots_behaviour package</description>
 
