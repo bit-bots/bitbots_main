@@ -45,7 +45,7 @@ class HeadCapsule:
     def get_confirmed_ball(self):
         return self.confirmedBall
 
-    def cb_headmode(self, headmode:HeadMode):
+    def cb_headmode(self, headmode: HeadMode):
         self.headmode = headmode.headMode
 
     def joint_state_cb(self, msg: JointState):
@@ -56,6 +56,3 @@ class HeadCapsule:
             elif joint == "HeadTilt":
                 self.current_tilt_pos = msg.position[i]
             i += 1
-
-
-
