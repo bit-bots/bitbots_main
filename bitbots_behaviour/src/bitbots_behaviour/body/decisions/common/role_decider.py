@@ -18,7 +18,7 @@ from bitbots_common.connector.connector import BodyConnector
 
 class RoleDecider(AbstractDecisionModule):
     def __init__(self, connector: BodyConnector, forced=None):
-        super(RoleDecider, self).__init__(connector)
+        super().__init__(connector)
         self.forced = forced
 
     def perform(self, connector, reevaluate=False):

@@ -40,12 +40,12 @@ Restliche Keys
 Jetzt folgen die Keys, für die keine Gruppe besteht
 """
 
-from keys.network_keys import *
-from keys.vision_keys import *
-from keys.post_processing_keys import *
-from keys.motion_keys import *
-from keys.world_model_keys import *
-from keys.walking_keys import *
+from bitbots_behaviour.keys.network_keys import *
+from bitbots_behaviour.keys.vision_keys import *
+from bitbots_behaviour.keys.post_processing_keys import *
+from bitbots_behaviour.keys.motion_keys import *
+from bitbots_behaviour.keys.world_model_keys import *
+from bitbots_behaviour.keys.walking_keys import *
 
 DATA_KEY_CONFIG = "Config"
 """ Name der Config """

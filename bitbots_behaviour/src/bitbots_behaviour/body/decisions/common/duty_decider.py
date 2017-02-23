@@ -32,8 +32,8 @@ class DutyDecider(AbstractDecisionModule):
 
     def __init__(self, connector: BodyConnector, _):
         super(DutyDecider, self).__init__(connector)
-        self.max_fieldie_time = connector.config["Fieldie"]["Defender"]["maxFieldieTime"]
-        self.toggle_self_positioning = connector.config["Toggles"]["Fieldie"]["trySelfPositioning"]
+        self.max_fieldie_time = connector.config["Body"]["Fieldie"]["Defender"]["maxFieldieTime"]
+        self.toggle_self_positioning = connector.config["Body"]["Toggles"]["Fieldie"]["trySelfPositioning"]
 
     def perform(self, connector: BodyConnector, reevaluate=False):
 
