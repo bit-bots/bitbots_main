@@ -1,5 +1,5 @@
 set_source_files_properties(
-    joints.pyx png.pyx pydatavector.pyx kalman.pyx kinematicutil.pyx
+    joints.pyx png.pyx pydatavector.pyx kinematicutil.pyx
     PROPERTIES CYTHON_IS_CXX TRUE
 )
 
