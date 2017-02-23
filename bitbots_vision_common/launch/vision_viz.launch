@@ -1,0 +1,13 @@
+<launch>
+
+    <node name="camera" pkg="usb_cam" type="usb_cam_node" />
+    <node name="vision_viz" pkg="humanoid_league_vision_viz" type="vision_viz.py">
+        <remap from="/image_raw" to="/usb_cam/image_raw"/>
+    </node>
+    <node name="bitbots_imageviewer" pkg="bitbots_imageviewer" type="bitbots_imageviewer.py">
+        <remap from="image" to="/vision_viz_image"/>
+    </node>
+
+
+
+</launch>
