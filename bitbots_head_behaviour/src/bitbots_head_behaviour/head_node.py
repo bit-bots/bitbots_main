@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import rospy
+from bitbots_common.connector.connector import HeadConnector
 from bitbots_head_behaviour.decisions.head_duty_decider import HeadDutyDecider
-from bitbots_misc.bitbots_common.src.bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.stack_machine_module import StackMachineModule
 from humanoid_league_msgs.msg import HeadMode, BallRelative, ObstacleRelative
 
@@ -25,5 +25,3 @@ class HeadNode(StackMachineModule):
         while not rospy.is_shutdown():
             self.update()
             rate.sleep()
-
-

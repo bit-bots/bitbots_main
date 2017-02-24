@@ -12,9 +12,9 @@ History:
 import time
 
 from bitbots_common.util.math_utils import convert_uv2angular
-from body.actions.plain_walk_action import PlainWalkAction
-from body.actions.search import Search
-from body.actions.wait import Wait
+from bitbots_body_behaviour.body.actions.plain_walk_action import PlainWalkAction
+from bitbots_body_behaviour.body.actions.search import Search
+from bitbots_body_behaviour.body.actions.wait import Wait
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 

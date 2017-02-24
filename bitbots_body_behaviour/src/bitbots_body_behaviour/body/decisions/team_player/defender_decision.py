@@ -12,14 +12,14 @@ Decides what a defender does
 """
 import time
 
-from body.actions.wait import Wait
-from body.decisions.common.corridor import DefenderCorridor
+from bitbots_body_behaviour.body.actions.wait import Wait
+from bitbots_body_behaviour.body.decisions.common.corridor import DefenderCorridor
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class DefenderDecision(AbstractDecisionModule):
-    def __init__(self, _):
-        super(DefenderDecision, self).__init__()
+    def __init__(self, connector, _):
+        super(DefenderDecision, self).__init__(connector, _)
 
         self.toggle_one_time_defender = config["Toggles"]["Fieldie"]["oneTimeDefender"]
         self.go_striker_range = config["Fieldie"]["Defender"]["goStrikerRange"]

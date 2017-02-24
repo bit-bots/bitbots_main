@@ -15,8 +15,8 @@ from bitbots_common.connector.connector import BodyConnector
 
 
 class SupporterDecision(AbstractDecisionModule):
-    def __init__(self, _):
-        super(SupporterDecision, self).__init__()
+    def __init__(self, connector, args=None):
+        super().__init__(connector, args)
 
     def perform(self, connector: BodyConnector, reevaluate=False):
 

@@ -15,16 +15,18 @@ History:
 """
 import time
 
-from body.actions.plain_walk_action import PlainWalkAction
-from body.actions.search import StopAndSearch
+from bitbots_body_behaviour.body.actions.plain_walk_action import PlainWalkAction
+from bitbots_body_behaviour.body.actions.search import StopAndSearch
+
+from bitbots_common.connector.capsules.walking_capsule import WalkingCapsule
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class FieldieSearchDecision(AbstractDecisionModule):
-    def __init__(self, _):
-        super(FieldieSearchDecision, self).__init__()
+    def __init__(self, connector):
+        super(FieldieSearchDecision, self).__init__(connector)
         self.start_time = time.time()
-        self.turn_wait_time = config["Behaviour"]["Common"]["Search"]["turnWaitTime"]
+        self.turn_wait_time = connector.config["Common"]["Search"]["turnWaitTime"]
 
     def perform(self, connector, reevaluate=False):
         # if we have loked to long in the same direktion without seeing we want to walk

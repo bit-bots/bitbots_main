@@ -6,18 +6,18 @@ DutyDecider
 
 """
 import rospy
-from body.actions.go_to_absolute_position import GoToAbsolutePosition
-from body.actions.testing.test_walking_dynamic import TestWalkingDynamic
-from body.actions.testing.test_walking_static import TestWalkingStatic
-from body.actions.wait import Wait
-from body.decisions.common.go_to_duty_position import GoToDutyPosition
-from body.decisions.common.role_decider import RoleDecider
-from body.decisions.goalie.goalie_decision import GoaliePositionDecision
-from body.decisions.kick_off.kick_off import KickOff
-from body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
-from body.decisions.penalty.penalty_kicker_decision import PenaltyKickerDecision
+from bitbots_body_behaviour.body.actions.go_to_absolute_position import GoToAbsolutePosition
+from bitbots_body_behaviour.body.actions.testing.test_walking_dynamic import TestWalkingDynamic
+from bitbots_body_behaviour.body.actions.testing.test_walking_static import TestWalkingStatic
+from bitbots_body_behaviour.body.actions.wait import Wait
+from bitbots_body_behaviour.body.decisions.common.go_to_duty_position import GoToDutyPosition
+from bitbots_body_behaviour.body.decisions.common.role_decider import RoleDecider
+from bitbots_body_behaviour.body.decisions.goalie.goalie_decision import GoaliePositionDecision
+from bitbots_body_behaviour.body.decisions.kick_off.kick_off import KickOff
+from bitbots_body_behaviour.body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
+from bitbots_body_behaviour.body.decisions.penalty.penalty_kicker_decision import PenaltyKickerDecision
 from humanoid_league_msgs.msg import Speak
-from keys import DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_READY, DATA_VALUE_STATE_SET, \
+from bitbots_body_behaviour.keys import DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_READY, DATA_VALUE_STATE_SET, \
     DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from bitbots_common.connector.connector import BodyConnector
