@@ -8,7 +8,7 @@ Provides informations about the current game state.
 import time
 
 import rosparam
-from keys import DATA_VALUE_STATE_READY, DATA_VALUE_STATE_PLAYING, \
+from bitbots_body_behaviour.keys import DATA_VALUE_STATE_READY, DATA_VALUE_STATE_PLAYING, \
     DATA_VALUE_STATE_SET, DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
 from humanoid_league_msgs.msg import GameState
 

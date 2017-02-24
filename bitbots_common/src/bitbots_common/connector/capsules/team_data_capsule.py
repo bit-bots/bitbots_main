@@ -6,10 +6,10 @@ import math
 
 import rospy
 from humanoid_league_msgs.msg import Role
-from keys import DATA_KEY_GOALIE_BALL_RELATIVE_POSITION, DATA_KEY_BALL_TIME, \
+from bitbots_body_behaviour.keys import DATA_KEY_GOALIE_BALL_RELATIVE_POSITION, DATA_KEY_BALL_TIME, \
     DATA_KEY_FIELDIE_BALL_TIME_LIST, DATA_KEY_KICKOFF_OFFENSE_SIDE, \
     DATA_KEY_KICKOFF_OFFENSE_SIDE_RECEIVED
-from keys.grid_world_keys import DATA_KEY_OWN_POSITION_GRID
+from bitbots_body_behaviour.keys.grid_world_keys import DATA_KEY_OWN_POSITION_GRID
 
 
 class TeamDataCapsule:
