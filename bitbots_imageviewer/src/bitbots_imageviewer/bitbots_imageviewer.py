@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 import copy
+import threading
 from collections import OrderedDict
 
 import cv2
@@ -8,6 +9,9 @@ import rospy
 from humanoid_league_msgs.msg import BallInImage, BallsInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+
+pimg = False
+lock = threading.Lock()
 
 
 class Loadimg:
@@ -21,11 +25,15 @@ class Loadimg:
         self.images = OrderedDict()
         self.ball_candidates = OrderedDict()
 
+        ibx = 0
+
         while not rospy.is_shutdown():
+            lock.acquire()
             images = copy.deepcopy(self.images)
+            lock.release()
             #print("Waiting for " + str(self.images.keys()))
             for t in images.keys():  # imgages who are wating
-
+                #print("new image")
                 if t in self.ball_candidates:  # Check if all data to draw is there
 
                     img = images.pop(t)  # get image from queue
@@ -39,18 +47,36 @@ class Loadimg:
                             i[0] = int(can.center.x)
                             i[1] = int(can.center.y)
                             i[2] = int(can.diameter / 2.0)
+                            try:
+                                if pimg:
+                                    i[2] = i[2] + 3
+                                    corp = ra[i[1] - i[2] - 3:i[1] + i[2] + 3, i[0] - i[2] - 3:i[0] + i[2] + 3]
+                                    cv2.imshow("corp", corp)
 
-                            if can == maxcan:
-                                c = (255, 0, 0)
-                            elif can.confidence >= 0.5:
-                                c = (0, 255, 0)
-                            else:
-                                c = (0, 0, 255)
-                                # print(p)
-                                # draw the outer circle
-                            cv2.circle(ra, (i[0], i[1]), i[2], c, 2)
-                            # draw the center of the circle
-                            cv2.circle(ra, (i[0], i[1]), 2, (0, 0, 255), 3)
+                                    corp = cv2.resize(corp, (30, 30), interpolation=cv2.INTER_CUBIC)
+                                    corp.reshape((1,) + corp.shape)
+                                    ibx +=1
+                                if can == maxcan:
+                                    c = (255, 0, 0)
+                                    if pimg:
+                                        cv2.imwrite("pd/nr%d6.jpg" % ibx, corp)
+                                elif can.confidence >= 0.5:
+                                    c = (0, 255, 0)
+                                    if pimg:
+                                        cv2.imwrite("pd/nr%d6.jpg" % ibx, corp)
+                                else:
+                                    c = (0, 0, 255)
+                                    if pimg:
+                                        cv2.imwrite("nd/nr%d6.jpg" % ibx, corp)
+                                        #print(p)
+                                    # draw the outer circle
+                                cv2.circle(ra, (i[0], i[1]), i[2], c, 2)
+                                # draw the center of the circle
+                                cv2.circle(ra, (i[0], i[1]), 2, (0, 0, 255), 3)
+                            except:
+                                pass
+
+
                     cv2.imshow("Image", ra)
                     cv2.waitKey(1)
             rospy.sleep(0.01)
