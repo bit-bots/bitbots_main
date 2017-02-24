@@ -33,6 +33,7 @@ from __future__ import division
 import os
 
 import pydot as pydot
+import rosparam
 import rospkg
 import rospy
 import time
@@ -74,8 +75,13 @@ class MotionViz(Plugin):
         try:
             self.connections = rospy.get_param("/motion_state_machine")
         except:
-            rospy.logfatal("Load the config file first, i.e. by running the motion.")
-            exit()
+            rospy.logwarn("Config for state machine was not laoded, will try to this by my self now.")
+            rp = rospkg.RosPack()
+            config_file_path = rp.get_path('bitbots_motion') + "/config/motion_state_machine.yaml"
+            paramlist = rosparam.load_file(config_file_path, default_namespace="/")
+            for params, ns in paramlist:
+                rosparam.upload_params(ns, params)
+            self.connections = rospy.get_param("/motion_state_machine")
 
         rospy.Subscriber("/motion_state_debug", String, self.state_update, queue_size=100)
 
