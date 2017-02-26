@@ -5,11 +5,11 @@ from humanoid_league_msgs.msg import BallRelative, BallInImage
 from sensor_msgs.msg import CameraInfo
 
 
-class TransformLines(object):
+class TransformBall(object):
     def __init__(self):
         rospy.Subscriber("ball_in_image", BallInImage, self._callback_ball, queue_size=1)
-        rospy.Subscriber("camera/camera_info", CameraInfo, self._callback_camera_info)
-        self.line_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=10)
+        rospy.Subscriber("minibot/camera/camera_info", CameraInfo, self._callback_camera_info)
+        self.ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=10)
         self.caminfo = None  # type:CameraInfo
 
         rospy.init_node("transform_ball")
@@ -23,7 +23,7 @@ class TransformLines(object):
         self.work(ballinfo)
 
     def work(self, ballinfo):
-        p = transf(ballinfo.center.x, ballinfo.center.y, self.caminfo)
+        p = transf(ballinfo.center.x, ballinfo.center.y - ballinfo.diameter // 2, self.caminfo)
 
         br = BallRelative()
         br.header.stamp = ballinfo.header.stamp
@@ -33,11 +33,11 @@ class TransformLines(object):
         br.ball_relative.y = p[1]
         br.ball_relative.z = p[2]
 
-        self.line_relative_pub.publish(br)
+        self.ball_relative_pub.publish(br)
 
     def _callback_camera_info(self, camerainfo):
         self.caminfo = camerainfo
 
 
 if __name__ == "__main__":
-    TransformLines()
+    TransformBall()
