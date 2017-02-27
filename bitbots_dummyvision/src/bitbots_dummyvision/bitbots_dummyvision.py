@@ -18,11 +18,11 @@ class DummyVision:
         self.green_min = (0, 110, 0)
         self.green_max = (140, 255, 140)
 
-        self.pub_balls = rospy.Publisher("/ball_candidates", BallsInImage, queue_size=1)
-        self.pub_lines = rospy.Publisher("/line_in_image", LineInformationInImage)
+        self.pub_balls = rospy.Publisher("ball_candidates", BallsInImage, queue_size=1)
+        self.pub_lines = rospy.Publisher("line_in_image", LineInformationInImage, queue_size=5)
         self.bridge = CvBridge()
 
-        rospy.Subscriber("/image_raw", Image, self._image_callback, queue_size=1)
+        rospy.Subscriber("image_raw", Image, self._image_callback, queue_size=1)
         rospy.init_node("bitbots_dummyvision")
 
         self.server = Server(dummyvision_paramsConfig, self.reconfigure)
@@ -60,7 +60,7 @@ class DummyVision:
 
         #b, g, r = cv2.split(bimg)
         circles = cv2.HoughCircles(maskb, cv2.HOUGH_GRADIENT, 1, 100,
-                                   param1=50, param2=43, minRadius=15, maxRadius=200)
+                                   param1=20, param2=25, minRadius=7, maxRadius=300)
 
         # Ball
         msg = BallsInImage()
@@ -127,9 +127,13 @@ class DummyVision:
 
     @staticmethod
     def under_horizon(horizon, i):
-        return horizon[(i[1] // 30)] < i[0]
+        try:
+            return horizon[(i[1] // 30)] < i[0]
+        except:
+            return False
 
     def _image_callback(self, img):
+        print("in:", img.header.stamp.to_time())
         self.work(img)
 
     def reconfigure(self, config, level):

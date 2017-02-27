@@ -5,7 +5,7 @@
     <include file="$(find bitbots_vision_common)/launch/vision_processing.launch" />
     <node name="bitbots_imageviewer" pkg="bitbots_imageviewer" type="bitbots_imageviewer.py" />
     <node name="bitbots_imageloader" pkg="bitbots_imageloader" type="bitbots_imageloader.py">
-        <param name="/load_from" value="$(find bitbots_imageloader)/images" />
+        <param name="/bitbots_imageloader/load_from" value="$(find bitbots_imageloader)/images" />
     </node>
 
 
