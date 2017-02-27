@@ -1,6 +1,7 @@
 <launch>
     <arg name="ns" default="robot1"/>
     <rosparam command="load" ns="$(arg ns)" file="$(find bitbots_body_behaviour)/config/behaviour.yaml"/>
+    <rosparam command="load" ns="$(arg ns)" file="$(find bitbots_head_behaviour)/config/head_config.yaml"/>
     <node name="body_behaviour" ns="$(arg ns)" pkg="bitbots_body_behaviour" type="body_behaviour.py" respawn="true" output="screen"/>
     <node name="head_behaviour" ns="$(arg ns)" pkg="bitbots_head_behaviour" type="head_node.py"/>
 

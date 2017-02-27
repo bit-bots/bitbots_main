@@ -15,9 +15,9 @@ class HeadDutyDecider(AbstractDecisionModule):
 
     def __init__(self, connector: HeadConnector, _):
         super().__init__(connector)
-        self.toggle_goal_vision_tracking = connector.config["Toggles"]["goalVisionTracking"]
-        self.toggle_switch_ball_goal = connector.config["Toggles"]["switchBallGoalSearch"]
-        self.confirm_time = connector.config["Search"]["confirmTime"]
+        self.toggle_goal_vision_tracking = connector.config["Head"]["Toggles"]["goalVisionTracking"]
+        self.toggle_switch_ball_goal = connector.config["Head"]["Toggles"]["switchBallGoalSearch"]
+        self.confirm_time = connector.config["Head"]["Search"]["confirmTime"]
 
         self.last_confirmd_goal = 0
         self.fail_goal_counter = 0
@@ -38,10 +38,10 @@ class HeadDutyDecider(AbstractDecisionModule):
         else:
             self.goal_prio = min(100, self.goal_prio + 3)
 
-        rospy.loginfo("GoalPrio", self.goal_prio)
-        rospy.loginfo("BallPrio", self.ball_prio)
-        rospy.loginfo("BallLastConfirmed", time.time() - connector.head.get_confirmed_ball())
-        rospy.loginfo("BallLastStratedconfirm", time.time() - connector.head.get_started_confirm_ball())
+        rospy.loginfo("GoalPrio" + str(self.goal_prio))
+        rospy.loginfo("BallPrio" + str(self.ball_prio))
+        rospy.loginfo("BallLastConfirmed" + str(time.time() - connector.head.get_confirmed_ball()))
+        rospy.loginfo("BallLastStratedconfirm" + str(time.time() - connector.head.startedconfirmingball))
 
         head_mode = connector.head.get_headmode()
         if head_mode == "":

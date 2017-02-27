@@ -72,40 +72,40 @@ Behaviour:
         confirmTime: 2
 
     SearchPattern:
-    help: |
-      These are the search pattern for the head behaviour.
-      Each position is a tupel of pan and tilt in degree
+      help: |
+        These are the search pattern for the head behaviour.
+        Each position is a tupel of pan and tilt in degree
 
-    ball:
-          - [0 , -12]
-          -  [90 , -10]
-          -  [50 ,-35]
-          -  [ 0 ,-50]
-          - [-50 ,-35]
-          - [-90 ,-10]
+      ball:
+            - [0 , -12]
+            -  [90 , -10]
+            -  [50 ,-35]
+            -  [ 0 ,-50]
+            - [-50 ,-35]
+            - [-90 ,-10]
 
-    goalie:
-          - [  0 ,-20]
-          - [ 90 , -5]
-          -  [50 ,-40]
-          -  [ 0 ,-60]
-          - [-50 ,-40]
-          - [-90 ,-20]
-
-
-    defender:
-          - [  0 ,-20]
-          - [ 90 , -5]
-          - [ 50 ,-40]
-          - [  0 ,-60]
-          - [-50 ,-40]
-          - [-90 ,-20]
+      goalie:
+            - [  0 ,-20]
+            - [ 90 , -5]
+            -  [50 ,-40]
+            -  [ 0 ,-60]
+            - [-50 ,-40]
+            - [-90 ,-20]
 
 
-    center:
-          - [  0 ,-20]
-          - [ 90 , -5]
-          - [ 50 ,-40]
-          - [  0 ,-60]
-          - [-50 ,-40]
-          - [-90 ,-20]
+      defender:
+            - [  0 ,-20]
+            - [ 90 , -5]
+            - [ 50 ,-40]
+            - [  0 ,-60]
+            - [-50 ,-40]
+            - [-90 ,-20]
+
+
+      center:
+            - [  0 ,-20]
+            - [ 90 , -5]
+            - [ 50 ,-40]
+            - [  0 ,-60]
+            - [-50 ,-40]
+            - [-90 ,-20]

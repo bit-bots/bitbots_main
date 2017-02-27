@@ -12,15 +12,16 @@ class HeadNode(StackMachineModule):
     def __init__(self):
         super().__init__()
         self.connector = HeadConnector()
-        self.set_start_module(HeadDutyDecider)
-
         self.connector.config = rospy.get_param("Behaviour")
+
         self.connector.head.position_publisher = rospy.Publisher("head_motor_goals", JointTrajectory, queue_size=10)
+
         rospy.Subscriber("joint_states", JointState, self.connector.head.joint_state_cb)
         rospy.Subscriber("head_duty", HeadMode, self.connector.head.cb_headmode, queue_size=10)
         rospy.Subscriber("ball_relative", BallRelative, self.connector.vision.ball_callback)
         rospy.Subscriber("obstacle_relative", ObstacleRelative, self.connector.vision.obstacle_callback)
 
+        self.set_start_module(HeadDutyDecider)
         rospy.init_node("Headbehaviour")
 
     def run(self):
