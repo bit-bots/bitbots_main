@@ -57,6 +57,9 @@ class VisionCapsule:
 
         return self.obstacles.obstacles
 
+    def any_goal_seen(self):
+        return False  # TODO get goal information
+
     def ball_callback(self, ball: BallRelative):
         self.ball = ball
         self.my_data["BallLastSeen"] = time.time()

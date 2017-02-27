@@ -8,15 +8,16 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 class HeadCapsule:
     def __init__(self):
 
-        self.config = rosparam.get_param("/Behaviour/Head")
+        self.config = rosparam.get_param("Behaviour/Head")
         self.delta = self.config["Search"]["headTurnPrecision"]
         self.wait_time = self.config["Search"]["headTurnTime"]
         self.pan_speed_max = self.config["Search"]["maxPanSpeedSearch"]
         self.tilt_speed_max = self.config["Search"]["maxTiltSpeedSearch"]
 
         # class variables
-        self.headmode = 0
+        self._headmode = 0
         self.confirmedBall = 0
+        self.startedconfirmingball = 0
         self.confirmedGoal = 0
         self.current_pan_pos = 0
         self.current_tilt_pos = 0
@@ -28,8 +29,7 @@ class HeadCapsule:
         self.point_msg = JointTrajectoryPoint()
         self.pos_msg.points = [self.point_msg]
 
-        self.position_publisher = rospy.Publisher("/head_motor_goals", JointTrajectory, queue_size=10)
-        rospy.Subscriber("/joint_states", JointState, self.joint_state_cb)
+        self.position_publisher = None  # type: rospy.Publisher
 
     def send_motor_goals(self, pan_position: float, pan_speed: float, tilt_position: float, tilt_speed: float):
         self.point_msg.positions = [pan_position, tilt_position]
@@ -40,13 +40,13 @@ class HeadCapsule:
         return self.current_pan_pos, self.current_tilt_pos
 
     def get_headmode(self):
-        return self.headmode
+        return self._headmode
 
     def get_confirmed_ball(self):
         return self.confirmedBall
 
     def cb_headmode(self, headmode: HeadMode):
-        self.headmode = headmode.headMode
+        self._headmode = headmode.headMode
 
     def joint_state_cb(self, msg: JointState):
         i = 0
