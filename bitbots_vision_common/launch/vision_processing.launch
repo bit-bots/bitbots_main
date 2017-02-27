@@ -1,5 +1,5 @@
 <launch>
-    <arg name="ns" />
+    <arg name="ns" default="robot1"/>
     <node name="bitbots_dummyvision" ns="$(arg ns)" pkg="bitbots_dummyvision" type="bitbots_dummyvision.py" />
     <node name="bitbots_ballclassifier" ns="$(arg ns)"  pkg="bitbots_ballclassifier" type="keras_cnn_classifier.py">
         <param name="/runpath" value="$(find bitbots_ballclassifier)"/>
