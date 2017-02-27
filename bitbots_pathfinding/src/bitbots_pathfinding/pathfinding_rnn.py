@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import pickle
+import threading
 from collections import namedtuple
 from typing import Tuple
 
@@ -37,6 +38,8 @@ class Pathfinding:
         self.goalobjective = point(0, 0)
         self.obstacles = []
 
+        self.lock = threading.Lock()
+
         self.network_path = os.path.join(rospy.get_param("pathfinding/runpath"),
                                          rospy.get_param("pathfinding/network_path"))
         self.network = pickle.load(open(self.network_path, "rb"))
@@ -45,9 +48,9 @@ class Pathfinding:
 
         while not rospy.is_shutdown():
             if self.goalpos:  # New data avaliable
-                self.perform()
-                self.goalpos = None
-
+                with self.lock:
+                    self.perform()
+                    self.goalpos = None
             r.sleep()
 
     def perform(self):
@@ -74,11 +77,9 @@ class Pathfinding:
 
         side = sig(tres(((walk_parameters[2]) + s) * 0.3)) * 2.5
 
-        rospy.logdebug(3, "#   F:" + str(forward) + "   #  T:" + str(turn) + "   #   S:" + str(side))
+        rospy.logdebug("#   F:" + str(forward) + "   #  T:" + str(turn) + "   #   S:" + str(side))
 
-        self.last_vel.forward = forward
-        self.last_vel.turn = turn
-        self.last_vel.sideward = side
+        self.last_vel = vel(forward, turn, side)
 
         msg = Twist()
         msg.linear = Vector3(forward, side, 0)
@@ -86,18 +87,21 @@ class Pathfinding:
         self.publish_walking.publish(msg)
 
     def _update_naviagtiongoal(self, pos: Pose2D):
-        self.goalpos = point(pos.x, pos.y)
+        with self.lock:
+            self.goalpos = point(pos.x, pos.y)
 
     def _update_obstacle(self, obs: ObstaclesRelative):
         olist = [(o.position.x, o.position.y) for o in obs.obstacles]
-        self.obstacles = olist
-        self.obstacles.append(self.goalpos)
+        with self.lock:
+            self.obstacles = olist
+            self.obstacles.append(self.goalpos)
 
     def _update_orientationobjective(self, go: GoalRelative):
-        if self.conf_align_to_goal:
-            self.goalobjective = point(go.positions[0].x, go.positions[0].y)
-        else:
-            self.goalobjective = point(0, 0)
+        with self.lock:
+            if self.conf_align_to_goal:
+                self.goalobjective = point(go.positions[0].x, go.positions[0].y)
+            else:
+                self.goalobjective = point(0, 0)
 
 if __name__ == "__main__":
     Pathfinding()
