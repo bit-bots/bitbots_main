@@ -8,7 +8,7 @@ from sensor_msgs.msg import CameraInfo
 class TransformBall(object):
     def __init__(self):
         rospy.Subscriber("ball_in_image", BallInImage, self._callback_ball, queue_size=1)
-        rospy.Subscriber("minibot/camera/camera_info", CameraInfo, self._callback_camera_info)
+        rospy.Subscriber("camera/camera_info", CameraInfo, self._callback_camera_info)
         self.ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=10)
         self.caminfo = None  # type:CameraInfo
 

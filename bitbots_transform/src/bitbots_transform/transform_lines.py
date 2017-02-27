@@ -15,7 +15,7 @@ from sensor_msgs.msg import CameraInfo
 class TransformLines(object):
     def __init__(self):
         rospy.Subscriber("/line_in_image", LineInformationInImage, self._callback_lines, queue_size=1)
-        rospy.Subscriber("/minibot/camera/camera_info", CameraInfo, self._callback_camera_info)
+        rospy.Subscriber("camera/camera_info", CameraInfo, self._callback_camera_info)
         self.line_relative_pub = rospy.Publisher("/lines_relative", LineInformationRelative, queue_size=10)
         self.caminfo = None  # type:CameraInfo
         self.lineinfo = None  # type:LineInformationRelative
