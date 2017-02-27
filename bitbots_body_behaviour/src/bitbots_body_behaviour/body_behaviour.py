@@ -22,16 +22,16 @@ class BehaviourModule(StackMachineModule):
         self.connector.config = rospy.get_param("Behaviour")
 
         self.connector.speaker = rospy.Publisher("speak", Speak, queue_size=3)
-        self.connector.team_data.role_sender = rospy.Publisher("/role", Role, queue_size=2)
-        self.connector.walking.pub_walking_objective = rospy.Publisher("/navigation_goal", Pose2D, queue_size=3)
-        self.connector.walking.pub_walkin_params = rospy.Publisher("/cmd_vel", Twist, queue_size=6)
-        self.connector.head_pub = rospy.Publisher("/head_duty", HeadMode, queue_size=10)
+        self.connector.team_data.role_sender = rospy.Publisher("role", Role, queue_size=2)
+        self.connector.walking.pub_walking_objective = rospy.Publisher("navigation_goal", Pose2D, queue_size=3)
+        self.connector.walking.pub_walkin_params = rospy.Publisher("cmd_vel", Twist, queue_size=6)
+        self.connector.head_pub = rospy.Publisher("head_duty", HeadMode, queue_size=10)
 
         self.set_start_module(DutyDecider)
 
-        rospy.Subscriber("/ball_relative", BallRelative, self.connector.vision.ball_callback)
-        rospy.Subscriber("/obstacle_relative", ObstacleRelative, self.connector.vision.obstacle_callback)
-        rospy.Subscriber("/Gamestate", GameState, self.connector.gamestate.gamestate_callback)
+        rospy.Subscriber("ball_relative", BallRelative, self.connector.vision.ball_callback)
+        rospy.Subscriber("obstacle_relative", ObstacleRelative, self.connector.vision.obstacle_callback)
+        rospy.Subscriber("Gamestate", GameState, self.connector.gamestate.gamestate_callback)
 
         # self.connector.animation.server = actionlib.SimpleActionClient("bitbots_animation", PlayAnimationAction)
 
