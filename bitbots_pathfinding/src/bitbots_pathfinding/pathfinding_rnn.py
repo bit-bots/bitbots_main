@@ -1,14 +1,11 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-
-import time
-import math
+#!/usr/bin/env python3
+import os
 import pickle
-import rospy
-from bitbots_pathfinding_rnn.potential_field import PotentialMap
-from bitbots_pathfinding_rnn.rnn import Network
 from collections import namedtuple
-from typing import List, Tuple
+from typing import Tuple
+
+import rospy
+from bitbots_pathfinding.potential_field import PotentialMap
 
 from geometry_msgs.msg import Pose2D
 from geometry_msgs.msg import Twist
@@ -17,26 +14,32 @@ from humanoid_league_msgs.msg import GoalRelative
 from humanoid_league_msgs.msg import ObstaclesRelative
 
 
+vel = namedtuple("LastVel", ["forward", "turn", "sideward"])
+point = namedtuple("Point", ["x", "y"])
+
+
 class Pathfinding:
     def __init__(self):
         rospy.logdebug("Init Pathfinding")
         rospy.init_node("bitbots_pathfinding_rnn")
-        self.conf_align_to_goal = rospy.get_param("/pathfinding/conf_align_to_goal")
-        self.conf_refreshRate = rospy.get_param("/pathfinding/refreshRate")
+        self.conf_align_to_goal = rospy.get_param("pathfinding/align_to_goal")
+        self.conf_refreshRate = rospy.get_param("pathfinding/refreshRate")
 
-        self.publish_walking = rospy.Publisher("/cmd_vel", Twist)
+        self.publish_walking = rospy.Publisher("cmd_vel", Twist)
 
-        rospy.Subscriber("/navigation_goal", Pose2D, self._update_naviagtiongoal)
-        rospy.Subscriber("/obstacles_relative", ObstaclesRelative, self._update_obstacle)
-        rospy.Subscriber("/goal_relative", GoalRelative, self._update_orientationobjective)  # TODO Aus localisation holen oder netz ändern, sodass schon im verhalten und dann pose relvandt
+        rospy.Subscriber("navigation_goal", Pose2D, self._update_naviagtiongoal)
+        rospy.Subscriber("obstacles_relative", ObstaclesRelative, self._update_obstacle)
+        rospy.Subscriber("goal_relative", GoalRelative,
+                         self._update_orientationobjective)  # TODO Aus localisation holen oder netz ändern, sodass schon im verhalten und dann pose relvandt
 
-        self.last_vel = namedtuple("LastVel", ["forward", "turn", "sideward"])
-        self.goalpos = namedtuple("GoalPosition", ["x", "y"])
-        self.goalobjective = namedtuple("GoalObjective", ["x", "y"])
+        self.last_vel = vel(0, 0, 0)
+        self.goalpos = None  # type: point
+        self.goalobjective = point(0, 0)
         self.obstacles = []
 
-        self.network_path = rospy.get_param("", "")
-        self.network = pickle.load(open(self.network_path, "r"))
+        self.network_path = os.path.join(rospy.get_param("pathfinding/runpath"),
+                                         rospy.get_param("pathfinding/network_path"))
+        self.network = pickle.load(open(self.network_path, "rb"))
 
         r = rospy.Rate(self.conf_refreshRate)
 
@@ -83,7 +86,7 @@ class Pathfinding:
         self.publish_walking.publish(msg)
 
     def _update_naviagtiongoal(self, pos: Pose2D):
-        self.goalpos = (pos.x, pos.y)
+        self.goalpos = point(pos.x, pos.y)
 
     def _update_obstacle(self, obs: ObstaclesRelative):
         olist = [(o.position.x, o.position.y) for o in obs.obstacles]
@@ -92,9 +95,9 @@ class Pathfinding:
 
     def _update_orientationobjective(self, go: GoalRelative):
         if self.conf_align_to_goal:
-            self.goalobjective = (go.positions[0].x, go.positions[0].y)
+            self.goalobjective = point(go.positions[0].x, go.positions[0].y)
         else:
-            self.goalobjective = (0, 0)
+            self.goalobjective = point(0, 0)
 
 if __name__ == "__main__":
     Pathfinding()

@@ -1,3 +1,4 @@
 pathfinding:
   align_to_goal: true
   refreshRate: 5
+  network_path: "include/network.pickle"
