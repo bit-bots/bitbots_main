@@ -25,7 +25,7 @@ class Pathfinding:
         self.conf_align_to_goal = rospy.get_param("pathfinding/align_to_goal")
         self.conf_refreshRate = rospy.get_param("pathfinding/refreshRate")
 
-        self.publish_walking = rospy.Publisher("cmd_vel", Twist)
+        self.publish_walking = rospy.Publisher("cmd_vel", Twist, queue_size=5)
 
         rospy.Subscriber("navigation_goal", Pose2D, self._update_naviagtiongoal)
         rospy.Subscriber("obstacles_relative", ObstaclesRelative, self._update_obstacle)
