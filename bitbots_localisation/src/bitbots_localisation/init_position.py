@@ -6,7 +6,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 
 class InitPosition:
     def __init__(self):
-        self.pose = rospy.Publisher("/initialpose", PoseWithCovarianceStamped, queue_size=1)
+        self.pose = rospy.Publisher("initialpose", PoseWithCovarianceStamped, queue_size=1)
         rospy.init_node("init_pose")
 
     def init_pose(self):

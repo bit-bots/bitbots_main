@@ -28,8 +28,8 @@ def polar(x,y):
 
 class FakeLaser(object):
     def __init__(self):
-        self.sub_line = rospy.Subscriber("/lines_relative", LineInformationRelative, self._callback_lines, queue_size=1)
-        self.pub_laser = rospy.Publisher("/scan", LaserScan, queue_size=200)
+        self.sub_line = rospy.Subscriber("lines_relative", LineInformationRelative, self._callback_lines, queue_size=1)
+        self.pub_laser = rospy.Publisher("scan", LaserScan, queue_size=200)
         rospy.init_node("bitbots_Fakelaser")
         self.tfl = TransformListener()
 
