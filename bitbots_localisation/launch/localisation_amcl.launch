@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="ns" />
+    <arg name="ns" default="robot1"/>
 
     <!--<node name="fake_laser" pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" />-->
     <node name="fake_laserdata" ns="$(arg ns)" pkg="bitbots_localisation" type="fake_laserdata.py" />
