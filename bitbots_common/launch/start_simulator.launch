@@ -23,7 +23,9 @@
     <include file="$(find bitbots_transform)/launch/transforms.launch">
         <arg name="ns" value="$(arg ns)" />
     </include>
-
+    <group ns="$(arg ns)">
+         <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch"/>
+    </group>
 
     <include file="$(find bitbots_localisation)/launch/localisation_amcl.launch">
          <arg name="ns" value="$(arg ns)" />
