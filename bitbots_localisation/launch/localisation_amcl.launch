@@ -1,16 +1,14 @@
 <launch>
 
-    <arg name="ns" default="robot1"/>
-
     <!--<node name="fake_laser" pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" />-->
-    <node name="fake_laserdata" ns="$(arg ns)" pkg="bitbots_localisation" type="fake_laserdata.py" />
+    <node name="fake_laserdata"  pkg="bitbots_localisation" type="fake_laserdata.py" />
 
-    <node name="map_server" ns="$(arg ns)" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localisation)/models/linemap.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localisation)/models/linemap.yaml"/>
 
-    <node name="init_pose" ns="$(arg ns)" pkg="bitbots_localisation" type="init_position.py" />
+    <node name="init_pose" pkg="bitbots_localisation" type="init_position.py" />
 
     <param name="/use_map_topic" value="true" />
-    <node name="amcl_particlefilter" ns="$(arg ns)" pkg="amcl" type="amcl">
+    <node name="amcl_particlefilter"  pkg="amcl" type="amcl">
 
     </node>
 </launch>
