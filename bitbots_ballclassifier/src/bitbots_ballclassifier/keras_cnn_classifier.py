@@ -17,16 +17,16 @@ class Classifier:
         self.pub_ball = rospy.Publisher("ball_in_image", BallInImage, queue_size=1)
         self.pub_rated_ball = rospy.Publisher("rated_balls_in_image", BallsInImage, queue_size=1)
 
-        path = rospy.get_param("/bitbots_ballclassifier/runpath", "")
+        path = rospy.get_param("bitbots_ballclassifier/runpath", "")
 
         self.bridge = CvBridge()
         self.last_imgs = OrderedDict()
         self.new_can = False
         self.latest_image_id = None
 
-        with open(os.path.join(path, "models/model4.json"), "r") as j:
+        with open(os.path.join(path, "models/model3.json"), "r") as j:
             nem = model_from_json(j.read())
-        nem.load_weights(os.path.join(path, "models/model4.ker"))
+        nem.load_weights(os.path.join(path, "models/model3.ker"))
         self.model = nem
 
         rospy.init_node("bitbots_ball_classifier")
