@@ -1,6 +1,0 @@
-<launch>
-
-    <rosparam file="$(find bitbots_team_communication)/config/team_communication_config.yaml" command="load"/>
-    <node name="team_communication" pkg="bitbots_team_communication" type="team_communication.py" output="screen" />
-
-</launch>

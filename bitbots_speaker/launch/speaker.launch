@@ -1,6 +1,0 @@
-<launch>
-
-    <rosparam file="$(find bitbots_speaker)/config/speaker_config.yaml" command="load"/>
-    <node name="speaker" pkg="bitbots_speaker" type="speaker.py" />
-
-</launch>
