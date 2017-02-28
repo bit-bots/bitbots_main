@@ -3,4 +3,4 @@ If you get an import error from the following line:
 Do from catkin directory:
     cp src/humanoid_league_speaker/src/humanoid_league_speaker/cfg/speaker_paramsConfig.py devel/lib/python2.7/dist-packages/humanoid_league_speaker/cfg
 
-I don't know why this problem exists
+I don't know why this problem exists.
