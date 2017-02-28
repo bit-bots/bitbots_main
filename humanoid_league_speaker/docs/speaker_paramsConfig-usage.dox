@@ -1,0 +1,10 @@
+\subsubsection usage Usage
+\verbatim
+<node name="humanoid_league_speaker" pkg="humanoid_league_speaker" type="humanoid_league_speaker">
+  <param name="print" type="bool" value="True" />
+  <param name="talk" type="bool" value="True" />
+  <param name="msg_level" type="int" value="0" />
+  <param name="amplitude" type="int" value="10" />
+</node>
+\endverbatim
+

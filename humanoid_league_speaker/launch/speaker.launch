@@ -1,0 +1,6 @@
+<launch>
+
+    <rosparam file="$(find humanoid_league_speaker)/config/speaker_config.yaml" command="load"/>
+    <node name="speaker" pkg="humanoid_league_speaker" type="speaker.py" />
+
+</launch>

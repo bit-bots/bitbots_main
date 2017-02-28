@@ -1,0 +1,10 @@
+speaker:
+  # print what it says also to loginfo
+  print: true
+  # active audio output
+  talk: true
+  # minimum priority for beeing accepted
+  msg_level: 0
+  # amplitude of espeak
+  amplitude: 7
+
