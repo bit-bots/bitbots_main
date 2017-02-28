@@ -28,9 +28,9 @@ class Loadimg:
         ibx = 0
 
         while not rospy.is_shutdown():
-            lock.acquire()
-            images = copy.deepcopy(self.images)
-            lock.release()
+            with lock:
+                images = copy.deepcopy(self.images)
+
             #print("Waiting for " + str(self.images.keys()))
             for t in images.keys():  # imgages who are wating
                 #print("new image")
@@ -82,10 +82,12 @@ class Loadimg:
             rospy.sleep(0.01)
 
     def _image_callback(self, img):
-        self.images[img.header.stamp] = img
+        with lock:
+            self.images[img.header.stamp] = img
 
-        if len(self.images) >= 10:
-            self.images.popitem(last=False)
+            if len(self.images) >= 10:
+                self.images.popitem(last=False)
+
 
     def _candidates_callback(self, balls):
         self.ball_candidates[balls.header.stamp] = balls.candidates
