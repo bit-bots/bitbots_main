@@ -5,7 +5,7 @@ import rospy
 from humanoid_league_msgs.msg import Speak
 
 from bitbots_hcm.values import VALUES
-import bitbots_animation.msg
+import humanoid_league_msgs.msg
 from std_msgs.msg import String
 from humanoid_league_speaker.speaker import speak
 
@@ -68,7 +68,7 @@ class AbstractState(object):
                 "Will now wait until server is accessible!")
             VALUES.animation_client.wait_for_server()
             rospy.logwarn("Animation server now running, hcm will go on.")
-        goal = bitbots_animation.msg.PlayAnimationGoal()
+        goal = humanoid_league_msgs.msg.PlayAnimationGoal()
         goal.animation = anim
         goal.hcm = True  # the animation is from the hcm
         VALUES.animation_client.send_goal(goal)

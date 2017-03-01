@@ -15,7 +15,7 @@ from bitbots_animation_server.animation import Animator, parse
 from bitbots_common.pose.pypose import PyPose as Pose
 from sensor_msgs.msg import Imu, JointState
 from bitbots_animation_server.resource_manager import find_animation
-from humanoid_league_msgs.msg import Animation, MotionState
+from humanoid_league_msgs.msg import Animation, RobotControlState
 from bitbots_common.util.pose_to_message import pose_goal_to_traj_msg
 
 
@@ -36,7 +36,7 @@ class PlayAnimationAction(object):
     def __init__(self, name):
         self.current_pose = Pose()
         self._action_name = name
-        self.motion_state = 0
+        self.hcm_state = 0
 
         self.dynamic_animation = rospy.get_param("/animation/dynamic", False)
         robot_type_name = rospy.get_param("/robot_type_name")
@@ -50,8 +50,8 @@ class PlayAnimationAction(object):
         self.traj_point = JointTrajectoryPoint()
 
         rospy.Subscriber("/joint_states", JointState, self.update_current_pose)
-        rospy.Subscriber("/motion_state", MotionState, self.update_motion_state)
-        self.motion_publisher = rospy.Publisher("/animation", Animation, queue_size=1)
+        rospy.Subscriber("/hcm_state", RobotControlState, self.update_hcm_state)
+        self.hcm_publisher = rospy.Publisher("/animation", Animation, queue_size=1)
 
         self._as = actionlib.SimpleActionServer(self._action_name, PlayAction,
                                                 execute_cb=self.execute_cb, auto_start=False)
@@ -65,7 +65,7 @@ class PlayAnimationAction(object):
         # publish info to the console for the user
         rospy.loginfo("Request to play animation %s", goal.animation)
 
-        if self.motion_state != 0 and not goal.motion:  # 0 means controlable
+        if self.hcm_state != 0 and not goal.hcm:  # 0 means controlable
             # we cant play an animation right now
             # but we send a request, so that we may can soon
             self.send_animation_request()
@@ -95,13 +95,13 @@ class PlayAnimationAction(object):
         start = time.time()
 
         while not rospy.is_shutdown():
-            # todo aditional time staying up after shutdown to enable motion to sit down, or play sit down directly?
+            # todo aditional time staying up after shutdown to enable hcm to sit down, or play sit down directly?
             # first check if we have another goal
             if self._as.is_new_goal_available():
                 next_goal = self._as.next_goal
                 rospy.logwarn("New goal: " + next_goal.get_goal().animation)
-                if next_goal.get_goal().motion:
-                    rospy.logdebug("Accepted motion animation %s", next_goal.get_goal().animation)
+                if next_goal.get_goal().hcm:
+                    rospy.logdebug("Accepted hcm animation %s", next_goal.get_goal().animation)
                     # cancel old stuff and restart
                     self._as.current_goal.set_aborted()
                     self._as.accept_new_goal()
@@ -111,24 +111,24 @@ class PlayAnimationAction(object):
                     self._as.next_goal.set_rejected()
                     # delete the next goal to make sure, that we can accept something else
                     self._as.next_goal = None
-                    rospy.logdebug("Couldn't start non motion animation, bc another one is already running.")
+                    rospy.logdebug("Couldn't start non hcm animation, bc another one is already running.")
 
             # if we're here we want to play the next keyframe, cause there is no other goal
             # compute next pose
             pose = animfunc(self.current_pose)
             if pose is None:
-                # todo reset pid values if they were changed in animation - mabye also do this in motion, when recieving finished animation
+                # todo reset pid values if they were changed in animation - mabye also do this in hcm, when recieving finished animation
                 # see walking node reset
 
                 # animation is finished
-                # tell it to the motion
-                self.send_animation(False, True, goal.motion, None)
+                # tell it to the hcm
+                self.send_animation(False, True, goal.hcm, None)
                 self._as.publish_feedback(PlayAnimationFeedback(percent_done=100))
                 # we give a positive result
                 self._as.set_succeeded(PlayAnimationResult(True))
                 return
 
-            self.send_animation(first, False, goal.motion, pose)
+            self.send_animation(first, False, goal.hcm, pose)
             first = False  # we have sent the first frame, all frames after this can't be the first
             perc_done = int(((time.time() - animator.get_start_time()) / animator.get_duration()) * 100)
             perc_done = min(perc_done, 100)
@@ -156,22 +156,22 @@ class PlayAnimationAction(object):
         names = [x.encode("utf-8") for x in msg.name]
         self.current_pose.set_positions_rad(names, list(msg.position))
 
-    def update_motion_state(self, msg):
-        self.motion_state = msg.state
+    def update_hcm_state(self, msg):
+        self.hcm_state = msg.state
 
     def send_animation_request(self):
         self.anim_msg.request = True
-        self.motion_publisher.publish(self.anim_msg)
+        self.hcm_publisher.publish(self.anim_msg)
 
-    def send_animation(self, first, last, motion, pose):
+    def send_animation(self, first, last, hcm, pose):
         self.anim_msg.request = False
         self.anim_msg.first = first
         self.anim_msg.last = last
-        self.anim_msg.motion = motion
+        self.anim_msg.hcm = hcm
         if pose is not None:
             self.anim_msg.position = pose_goal_to_traj_msg(pose, self.used_motor_names, self.traj_msg, self.traj_point)
         rospy.logdebug(self.anim_msg.position)
-        self.motion_publisher.publish(self.anim_msg)
+        self.hcm_publisher.publish(self.anim_msg)
 
 
 if __name__ == "__main__":

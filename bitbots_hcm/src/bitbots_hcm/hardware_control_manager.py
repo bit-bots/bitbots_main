@@ -17,20 +17,16 @@ from bitbots_common.util.pose_to_message import pose_to_traj_msg
 from humanoid_league_speaker.speaker import speak
 from std_msgs.msg import Bool, String
 
-import bitbots_animation_server
 from bitbots_cm730.srv import SwitchMotorPower
 
-from bitbots_hcm.hcm_state_machine import MotionStateMachine, STATE_CONTROLABLE, AnimationRunning, STATE_WALKING
+from bitbots_hcm.hcm_state_machine import HcmStateMachine, STATE_CONTROLABLE, AnimationRunning, STATE_WALKING
 from dynamic_reconfigure.server import Server
-from humanoid_league_msgs.msg import RobotState, Animation
+from humanoid_league_msgs.msg import RobotControlState, Animation
 from humanoid_league_msgs.msg import Speak
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
-from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
 
-from bitbots_animation.srv import AnimationFrame
 from bitbots_hcm.values import VALUES
 from bitbots_hcm.cfg import hcm_paramsConfig
 
@@ -80,15 +76,15 @@ class Motion(object):
         rospy.loginfo("Starting hcm")
 
         self.joint_goal_publisher = rospy.Publisher('/motor_goals', JointTrajectory, queue_size=1)
-        self.hcm_state_publisher = rospy.Publisher('/robot_state', RobotState, queue_size=10, latch=True)
+        self.hcm_state_publisher = rospy.Publisher('/robot_state', RobotControlState, queue_size=10, latch=True)
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
         VALUES.speak_publisher = self.speak_publisher
 
         rospy.sleep(0.1)  # important to make sure the connection to the speaker is established, for next line
         speak("Starting hcm", self.speak_publisher, priority=Speak.HIGH_PRIORITY)
 
-        self.state_machine = MotionStateMachine(dieflag, standupflag, softoff_flag, softstart, start_test,
-                                                self.hcm_state_publisher)
+        self.state_machine = HcmStateMachine(dieflag, standupflag, softoff_flag, softstart, start_test,
+                                             self.hcm_state_publisher)
 
         rospy.Subscriber("/imu", Imu, self.update_imu)
         rospy.Subscriber("/joint_states", JointState, self.update_current_pose)

@@ -14,20 +14,20 @@ def anim_run():
         rospy.logwarn("Tried to play an animation with an empty name!")
         return False
     first_try = anim_client.wait_for_server(
-        rospy.Duration(rospy.get_param("/motion/anim_server_wait_time", 10)))
+        rospy.Duration(rospy.get_param("/hcm/anim_server_wait_time", 10)))
     if not first_try:
         rospy.logerr(
             "Animation Action Server not running! Motion can not work without animation action server. "
             "Will now wait until server is accessible!")
         anim_client.wait_for_server()
-        rospy.logwarn("Animation server now running, motion will go on.")
+        rospy.logwarn("Animation server now running, hcm will go on.")
     goal = humanoid_league_msgs.msg.PlayAnimationGoal()
     goal.animation = anim
-    goal.motion = False  # the animation is from the motion
+    goal.hcm = False  # the animation is from the hcm
     print(anim_client.send_goal_and_wait(goal))
     rospy.sleep(0.5)
 
 if __name__ == '__main__':
     # run with "rosrun bitbots_animation_server run_animation.py _anim:=NAME"
-    print("Deactivate evaluation fo state machine in motion befor using this")
+    print("Deactivate evaluation fo state machine in hcm befor using this")
     anim_run()

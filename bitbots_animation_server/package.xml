@@ -3,7 +3,7 @@
   <name>bitbots_animation_server</name>
   <version>1.0.0</version>
   <description>The bitbots_animation_server package provides an action server which interpolates keyframe animations and
-  sends the next motor values to the motion.</description>
+  sends the next motor values to the hardware control manager.</description>
 
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
   <license>BSD</license>

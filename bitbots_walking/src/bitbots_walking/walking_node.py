@@ -6,7 +6,7 @@ import time
 from bitbots_common.pose.pypose import PyPose as Pose
 from bitbots_common.util.pose_util import set_joint_state_on_pose
 from geometry_msgs.msg import Twist
-from humanoid_league_msgs.msg import MotionState
+from humanoid_league_msgs.msg import RobotControlState
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import JointState, Imu
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
@@ -56,7 +56,7 @@ class WalkingNode(object):
         self.motor_goal_publisher = rospy.Publisher("/walking_motor_goals", JointTrajectory,
                                                     queue_size=10)
         rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_cb)
-        rospy.Subscriber("/motion_state", MotionState, self.motion_state_cb)
+        rospy.Subscriber("/motion_state", RobotControlState, self.motion_state_cb)
         rospy.Subscriber("/joint_states", JointState, self.current_position_cb)
         rospy.Subscriber("/imu", Imu, self.imu_cb)
 

@@ -3,7 +3,7 @@ import time
 
 import rospy
 from bitbots_cm730.srv import SwitchMotorPower
-from humanoid_league_msgs.msg import MotionState
+from humanoid_league_msgs.msg import RobotControlState
 
 from .abstract_state_machine import AbstractState, VALUES
 from .abstract_state_machine import AbstractStateMachine
@@ -23,9 +23,9 @@ STATE_RECORD = 9
 STATE_WALKING = 10
 
 
-class MotionStateMachine(AbstractStateMachine):
+class HcmStateMachine(AbstractStateMachine):
     def __init__(self, die_flag, standup_flag, soft_off_flag, soft_start, start_test, state_publisher):
-        super(MotionStateMachine, self).__init__()
+        super(HcmStateMachine, self).__init__()
         VALUES.standup_flag = standup_flag
         VALUES.die_flag = die_flag
         VALUES.soft_off_flag = soft_off_flag
@@ -42,7 +42,7 @@ class MotionStateMachine(AbstractStateMachine):
         self.set_state(Startup())
 
     def publish_state(self, state):
-        msg = MotionState()
+        msg = RobotControlState()
         msg.state = state.hcm_state()
         self.state_publisher.publish(msg)
 

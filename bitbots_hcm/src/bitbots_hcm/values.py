@@ -4,9 +4,7 @@ from .fall_checker import FallChecker
 from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
 from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
 
-import bitbots_animation.msg
 import time
-import actionlib
 
 
 class Values(object):
