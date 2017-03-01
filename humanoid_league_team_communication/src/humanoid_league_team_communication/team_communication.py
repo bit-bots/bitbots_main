@@ -66,7 +66,7 @@ class TeamCommunication(object):
         rospy.Subscriber("role", Role, self.role_callback)
         rospy.Subscriber("action", Action, self.action_callback)
         rospy.Subscriber("position", Position, self.position_callback)
-        rospy.Subscriber("motion_state", MotionState, self.motion_state_callback)
+        rospy.Subscriber("motion_state", RobotControlState, self.motion_state_callback)
         rospy.Subscriber("ball_relative", BallRelative, self.ball_callback)
         rospy.Subscriber("goal_relative", GoalRelative, self.goal_callback)
         rospy.Subscriber("obstacle_relative", ObstaclesRelative, self.obstacle_callback)
@@ -300,9 +300,9 @@ class TeamCommunication(object):
 
     def motion_state_callback(self, msg):
         state = msg.state
-        if state == MotionState.PENALTY:
+        if state == RobotControlState.PENALTY:
             self.state = STATE_PENALIZED
-        elif state == MotionState.STARTUP or state == MotionState.SHUTDOWN or state == MotionState.RECORD:
+        elif state == RobotControlState.STARTUP or state == RobotControlState.SHUTDOWN or state == RobotControlState.RECORD:
             self.state = STATE_INACTIVE
         else:
             self.state = STATE_ACTIVE
