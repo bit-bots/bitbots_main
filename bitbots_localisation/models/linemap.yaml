@@ -1,4 +1,4 @@
-image: /home/bitbots/ws/src/bitbots_localisation/bitbots_localisation/models/map.png
+image: map.png
 resolution: 0.01
 origin: [0.0, 0.0, 0.0]
 occupied_thresh: 0.65
