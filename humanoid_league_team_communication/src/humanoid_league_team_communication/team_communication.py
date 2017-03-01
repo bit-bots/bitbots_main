@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+
 import math
 from _thread import start_new_thread
 
-import rospy
-import time
-
-from humanoid_league_msgs.msg import Role, Action, Position, MotionState, BallRelative, TeamData, Position2D, \
+from humanoid_league_msgs.msg import Role, Action, Position, RobotControlState, BallRelative, TeamData, Position2D, \
     GoalRelative, ObstaclesRelative, ObstacleRelative
 
+import rospy
 from geometry_msgs.msg import Pose2D
-
 from humanoid_league_team_communication.mitecom.mitecom import MiteCom, STATE_PENALIZED, ROLE_IDLING, ACTION_UNDEFINED, \
     STATE_INACTIVE, STATE_ACTIVE
 
 
-class TeamCommunication(object):
+class TeamCommunication:
     """This node provides ROS connections to a mitecom object. Two threads are started, one for receiving information
     from other robots and one for sending out information to other robots and to the ROS topics. Information about the
     current state of the robot are fetched using subscription on multiple topics."""
