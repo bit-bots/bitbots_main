@@ -6,7 +6,7 @@ from _thread import start_new_thread
 import rospy
 import time
 
-from humanoid_league_msgs.msg import Role, Action, Position, RobotControlState, BallRelative, TeamData, Position2D, \
+from humanoid_league_msgs.msg import Role, Action, Position, MotionState, BallRelative, TeamData, Position2D, \
     GoalRelative, ObstaclesRelative, ObstacleRelative
 
 from geometry_msgs.msg import Pose2D
