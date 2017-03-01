@@ -4,7 +4,7 @@ AnimationCapsule
 """
 import actionlib
 from actionlib_msgs.msg import GoalStatus
-from bitbots_animation.msg import PlayAnimationGoal
+from humanoid_league_msgs.msg import PlayAnimationGoal
 
 
 class AnimationCapsule:
