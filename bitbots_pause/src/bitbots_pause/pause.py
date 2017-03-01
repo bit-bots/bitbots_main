@@ -6,7 +6,7 @@ from std_msgs.msg import Bool
 
 from bitbots_pause.srv import ManualPenalize
 from humanoid_league_msgs.msg import GameState
-from bitbots_speaker.speaker import speak
+from humanoid_league_speaker.speaker import speak
 
 
 class Pause(object):

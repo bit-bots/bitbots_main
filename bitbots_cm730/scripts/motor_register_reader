@@ -3,9 +3,9 @@
 
 from bitbots.lowlevel.serial import Serial
 
-from bitbots_motion.lowlevel.controller.controller import Controller
-from bitbots_motion.lowlevel.controller.controller import Register, ByteConverter, WordConverter, SpeedConverter, AngleConverter
-from bitbots_motion.lowlevel.controller.controller import get_mx28_register_table, get_cm730_register_table
+from bitbots_hcm.lowlevel.controller.controller import Controller
+from bitbots_hcm.lowlevel.controller.controller import Register, ByteConverter, WordConverter, SpeedConverter, AngleConverter
+from bitbots_hcm.lowlevel.controller.controller import get_mx28_register_table, get_cm730_register_table
 
 MX28 = get_mx28_register_table()
 CM730 = get_cm730_register_table()

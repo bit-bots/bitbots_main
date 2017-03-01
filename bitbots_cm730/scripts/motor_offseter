@@ -3,14 +3,14 @@
 
 from bitbots.debug import Scope
 from bitbots.util.config import Config
-from ros.bitbots_motion.src.bitbots_motion.lowlevel.controller.controller import Controller
-from ros.bitbots_motion.src.bitbots_motion.lowlevel.controller.controller import get_mx28_register_table, get_cm730_register_table
+from ros.bitbots_hcm.src.bitbots_hcm.lowlevel.controller.controller import Controller
+from ros.bitbots_hcm.src.bitbots_hcm.lowlevel.controller.controller import get_mx28_register_table, get_cm730_register_table
 
 debug = Scope("Motoroffseter")
 import json
 offset_config = Config(debug, "offset").get_config()
 
-from bitbots_motion.lowlevel.serial import Serial
+from bitbots_hcm.lowlevel.serial import Serial
 from bitbots_common.util import Joints
 
 joints = Joints()

@@ -23,6 +23,6 @@ set_target_properties(serial
 
 install(
     TARGETS serial
-    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/bitbots_motion/lowlevel
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/bitbots_hcm/lowlevel
 )
 

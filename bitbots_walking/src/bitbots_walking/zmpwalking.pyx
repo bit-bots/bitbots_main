@@ -218,7 +218,7 @@ cdef class ZMPParameter:
 
 cdef class ZMPWalkingEngine:
 
-    def __cinit__(self, object config={}, string robottype="Darwin"):
+    def __cinit__(self, object config={}, string robottype="Darwin".encode()):
         params = ZMPParameter()
         cdef object zmp_config = rospy.get_param("/ZMPConfig/" + rospy.get_param("/robot_type_name"))
         cdef dict zmp_param_config = zmp_config["Parameter"]

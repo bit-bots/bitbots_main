@@ -1,7 +1,0 @@
-<launch>
-    <param name="/robot_type_name" value="Minibot"/>
-    <param name="/debug_active" value="true"/>
-
-    <include file="$(find bitbots_motion)/launch/motion_nodes.launch"/>
-
-</launch>

@@ -15,7 +15,7 @@ from humanoid_league_msgs.msg import Speak
 
 from bitbots_cm730.cm730 import CM730
 from bitbots_cm730.srv import SwitchMotorPower, SetLEDs
-from bitbots_speaker.speaker import speak
+from humanoid_league_speaker.speaker import speak
 from bitbots_common.pose.pypose import PyPose as Pose
 from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
 from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
@@ -70,7 +70,7 @@ class CM730Node:
             self.joint_limits[motor['name']] = {'min': min_value, 'max': max_value}
 
         # --- Initialize Topics ---
-        rospy.Subscriber("/motion_motor_goals", JointTrajectory, self.update_motor_goals, queue_size=2)
+        rospy.Subscriber("/motor_goals", JointTrajectory, self.update_motor_goals, queue_size=2)
         self.joint_publisher = rospy.Publisher('/joint_states', JointState, queue_size=2)
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=2)
         self.temp_publisher = rospy.Publisher('/servo_data', AdditionalServoData, queue_size=2)

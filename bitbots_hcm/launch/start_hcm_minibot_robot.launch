@@ -1,0 +1,7 @@
+<launch>
+    <param name="/robot_type_name" value="Minibot"/>
+    <param name="/debug_active" value="true"/>
+
+    <include file="$(find bitbots_hcm)/launch/hcm_nodes.launch"/>
+
+</launch>
