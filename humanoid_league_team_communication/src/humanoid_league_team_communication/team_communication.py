@@ -141,7 +141,7 @@ class TeamCommunication(object):
 
             # strategy
             if self.offensive_side is not None:
-                self.mitecom.set_kickoff_offence_side(self.offensive_side)
+                self.mitecom.set_offensive_side(self.offensive_side)
 
             self.mitecom.send_data()
 
