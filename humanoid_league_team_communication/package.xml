@@ -14,12 +14,10 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>humanoid_league_msgs</build_depend>
   <build_depend>rospy</build_depend>
-  <build_depend>bitbots_common</build_depend>
 
   <run_depend>std_msgs</run_depend>
   <run_depend>humanoid_league_msgs</run_depend>
   <run_depend>rospy</run_depend>
-  <run_depend>bitbots_common</run_depend>
 
   <export>
   </export>
