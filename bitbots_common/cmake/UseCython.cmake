@@ -68,7 +68,7 @@ set( CYTHON_ANNOTATE OFF
 set( CYTHON_NO_DOCSTRINGS OFF
   CACHE BOOL "Strip docstrings from the compiled module." )
 
-set( CYTHON_FLAGS "-X embedsignature=False" CACHE STRING
+set( CYTHON_FLAGS "-X embedsignature=False" "-3" "-v" CACHE STRING
   "Extra flags to the cython compiler." )
 
 mark_as_advanced( CYTHON_ANNOTATE CYTHON_NO_DOCSTRINGS CYTHON_FLAGS )

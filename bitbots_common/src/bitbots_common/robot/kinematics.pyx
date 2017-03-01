@@ -183,7 +183,7 @@ cdef class KinematicTask:
         if not self.executable:
             self.prepare()
         cdef int it = self.task.execute(iterations)
-        print "Benötigte %d Iterationen" % (iterations - it)
+        print("Benötigte %d Iterationen" % (iterations - it))
 
     cpdef prepare(self):
         if not self.targets:

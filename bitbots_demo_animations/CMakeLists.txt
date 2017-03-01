@@ -96,7 +96,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 #catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES bitbots_speaker
+#  LIBRARIES humanoid_league_speaker
 #  CATKIN_DEPENDS bitbots_common std_msgs
 #  DEPENDS system_lib
 #   CATKIN_DEPENDS message_runtime
@@ -114,24 +114,24 @@ find_package(catkin REQUIRED COMPONENTS
 #)
 
 ## Declare a C++ library
-# add_library(bitbots_speaker
-#   src/${PROJECT_NAME}/bitbots_speaker.cpp
+# add_library(humanoid_league_speaker
+#   src/${PROJECT_NAME}/humanoid_league_speaker.cpp
 # )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(bitbots_speaker ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(humanoid_league_speaker ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(bitbots_speaker_node src/bitbots_speaker_node.cpp)
+# add_executable(humanoid_league_speaker_node src/humanoid_league_speaker_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(bitbots_speaker_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(humanoid_league_speaker_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(bitbots_speaker_node
+# target_link_libraries(humanoid_league_speaker_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -150,7 +150,7 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS bitbots_speaker bitbots_speaker_node
+# install(TARGETS humanoid_league_speaker humanoid_league_speaker_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -175,7 +175,7 @@ find_package(catkin REQUIRED COMPONENTS
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_bitbots_speaker.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_humanoid_league_speaker.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
