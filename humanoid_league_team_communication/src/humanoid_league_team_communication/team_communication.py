@@ -21,13 +21,13 @@ class TeamCommunication:
         rospy.init_node('humanoid_league_team_communication', anonymous=False)
 
         # --- Params ---
-        self.port = rospy.get_param("/team_communication/port")
-        self.team = rospy.get_param("/team_communication/team")
-        self.player = rospy.get_param("/team_communication/player")
+        self.port = rospy.get_param("team_communication/port")
+        self.team = rospy.get_param("team_communication/team")
+        self.player = rospy.get_param("team_communication/player")
         # publishing rate in Hz
-        self.rate = rospy.Rate(rospy.get_param("/team_communication/rate"))
-        self.avg_walking_speed = rospy.get_param("/team_communication/avg_walking_speed")
-        self.max_kicking_distance = rospy.get_param("/team_communication/max_kicking_distance")
+        self.rate = rospy.Rate(rospy.get_param("team_communication/rate"))
+        self.avg_walking_speed = rospy.get_param("team_communication/avg_walking_speed")
+        self.max_kicking_distance = rospy.get_param("team_communication/max_kicking_distance")
 
         # -- Class variables ---
         self.role = ROLE_IDLING
