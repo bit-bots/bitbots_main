@@ -16,5 +16,5 @@ class AlignOnBall(AbstractActionModule):
         connector.walking.start_walking_plain(
             -1,
             0,
-            self.sign(connector.world_model.get_ball_position_uv()[1] * 2)
+            self.sign(connector.vision.get_ball_relative()[1] * 2)
         )
