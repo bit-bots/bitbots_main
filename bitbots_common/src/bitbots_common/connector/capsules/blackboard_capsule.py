@@ -113,10 +113,11 @@ class BlackboardCapsule:
             role = "Goalie"
         if duty in ("Fieldie", "TeamPlayer"):
             role = "Supporter"
-        self.my_data["Duty"] = role
+        self.my_data["Duty"] = duty
+        # TODO role Duty auseinaderdividieren
 
     def get_duty(self):
-        return self.my_data.get("Duty", False)
+        return self.my_data.get("Duty", None)
 
     ####################
     # ## Tacking Part ##
