@@ -30,8 +30,8 @@ class AbstractCloseBall(AbstractDecisionModule):
 
     def perform(self, connector: BodyConnector, reevaluate=False):
         # if the robot is near to the ball
-        if self.min_kick_distance < connector.vision.get_ball_relative[0] <= self.max_kick_distance \
-                and connector.vision.get_ball_distance <= self.max_kick_distance * 5.0:
+        if self.min_kick_distance < connector.vision.get_ball_relative()[0] <= self.max_kick_distance \
+                and connector.vision.get_ball_distance() <= self.max_kick_distance * 5.0:
             # TODO config
             self.action(connector)
         else:

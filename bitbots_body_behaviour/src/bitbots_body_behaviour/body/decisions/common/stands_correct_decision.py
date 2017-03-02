@@ -21,10 +21,10 @@ class StandsCorrectDecision(AbstractDecisionModule):
 
     def __init__(self, connector: BodyConnector, _):
         super(StandsCorrectDecision, self).__init__(connector)
-        self.toggle_align_to_goal = rospy.get_param("/Behaviour/Toggles/Fieldie/alignToGoal")
-        self.toggle_use_side_kick_in_game = rospy.get_param("/Behaviour/Toggles/Fieldie/useSideKickInGame")
-        self.toggle_hack_align = rospy.get_param("/Behaviour/Toggles/Fieldie/hackAlign")
-        self.config_kickalign_v = rospy.get_param("/Behaviour/Fieldie/kickAlign")
+        self.toggle_align_to_goal = connector.config["Body"]["Toggles"]["Fieldie"]["alignToGoal"]
+        self.toggle_use_side_kick_in_game = connector.config["Body"]["Toggles"]["Fieldie"]["useSideKickInGame"]
+        self.toggle_hack_align = connector.config["Body"]["Toggles"]["Fieldie"]["hackAlign"]
+        self.config_kickalign_v = connector.config["Body"]["Fieldie"]["kickAlign"]
 
     def perform(self, connector: BodyConnector, reevaluate=False):
 
