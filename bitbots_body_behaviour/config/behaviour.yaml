@@ -61,15 +61,15 @@ Behaviour:
 
     Fieldie:
       # Abstand bei dem der Roboter direkt vorm Ball steht um den ball beim kick zu erreichen(Fieldie)
-      kickDistance:  200
+      kickDistance:  0.2
       # Mindestabstand bei dem der Roboter direkt vorm Ball steht und den Ball kicken kann (Fieldie)
       minKickDistance:  0
 
       # Mindestwinkel zum tor, bevor er einen Sidekick anstatt einem Normalen Kick probiert
-      minVSideKick: 1000
+      minVSideKick: 1.0
 
       # Seitlicher versatz bei dem er sich noch sitlich zum Ball ausrichten soll
-      kickAlign: 100
+      kickAlign: 0.1
 
       # Der absolut Wert des angularen Wertes des Walkings mit dem er sich dreht wenn er nach dem Ball sucht.
       searchingTurnAngularAbsolute: 8
@@ -81,17 +81,17 @@ Behaviour:
       stopGoalAlignDuration: 10
 
       # The max distance to the enemy goal for using a hard kick
-      maxGoalHardKickDistance: 3000
+      maxGoalHardKickDistance: 3.0
 
       # Distance when he starts to track only the ball
-      focusBallDistance: 800
+      focusBallDistance: 0.8
 
 
       Defender:
           # distanz zum ball bei der der defender direkt zum normalen spieler wird
-          goStrikerRange: 1500
+          goStrikerRange: 1.5
           # zeit die der defender am nächsten zum ball sein muss bis er denkt das er alleine ist
-          goStrikerTime: 1000
+          goStrikerTime: 1.0
           # die wie viel letzte ball entfernenungen betrachtet werden um zu entscheiden ob der defender zum striker wird
           ballHistoryLenght: 20
           # Wie viele Trues in der History sein müssen zum striekr zu werden
@@ -103,7 +103,7 @@ Behaviour:
 
       KickOff:
           # Distance to ball, below the robot is the striker, above it is supporter, in mm
-          roleDecisionDistance: 500
+          roleDecisionDistance: 0.5
           # time after the supporter ignores the kick off and starts normal behaviour
           ignoreKickOffTime: 20
           # Time to decide if a recived strategy was from a kick off before
@@ -112,15 +112,15 @@ Behaviour:
     Goalie:
     ### Go To Ball ###
       # geschwindigkeit, bei der der Torwart denkt, dass der Ball liegt und er zu ihm geht
-      goToBallVelocity: 100
+      goToBallVelocity: 0.1
       # u distanz bei der er zum Ball läuft
-      goToBallu : 450
+      goToBallu : 0.45
 
     ### Sideward walking in goal ###
       # Winkel ab dem es sich nicht lohnt seitlich im Tor zu laufen in Degree
       sidewardMoveAngleThreshold: 20
       # Distanz ab der wir uns seitwärts ausrichten um den ball zu blocken
-      sidewardMoveUThreshold: 3000
+      sidewardMoveUThreshold: 3.0
       # maximal movement to the the side as percent of the goal width
       maxSidewardMovement: 0.8
 
@@ -130,9 +130,9 @@ Behaviour:
 
     ### Throw ###
       # v distance to decide between right, middle and left throw
-      vThrowDirectionDistance: 100
+      vThrowDirectionDistance: 0.1
       # u estimation distance between befor throwing
-      uThrowThreshold: 500
+      uThrowThreshold: 0.5
 
     # elfemter schütze
     PenaltyFieldie:
@@ -162,7 +162,7 @@ Behaviour:
       dropBallValidTime: 30
 
       # threshold at which the current position of the robot is counted as right
-      positioningThreshold: 500
+      positioningThreshold: 0.5
 
       Walking:
           # Forward-Backward

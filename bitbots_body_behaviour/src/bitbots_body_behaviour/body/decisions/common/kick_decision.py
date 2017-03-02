@@ -5,9 +5,7 @@ Kick Decision
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 """
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-
-import rospy
-from body.actions.kick_ball import KickBall
+from bitbots_body_behaviour.body.actions.kick_ball import KickBall
 from bitbots_common.connector.connector import BodyConnector
 
 
@@ -32,10 +30,10 @@ class AbstractKickDecision(AbstractDecisionModule):
 
         # TODO improve
         if not self.toggle_use_side_kick \
-                or not (connector.world_model.get_opp_goal_distance() < 1000
+                or not (connector.world_model.get_opp_goal_distance() < 1
                         and connector.world_model.get_opp_goal_angle() > 30):
 
-            if connector.world_model.get_opp_goal_distance() > self.max_goal_hard_distance:
+            if False and connector.world_model.get_opp_goal_distance() > self.max_goal_hard_distance:
                 return self.hard_kick(connector)
             else:
                 return self.kick_normal(connector)
@@ -47,7 +45,7 @@ class AbstractKickDecision(AbstractDecisionModule):
         """
         Pushes a normal kick, depending on side of the Ball
         """
-        if connector.world_model.get_ball_position_uv()[1] <= 0:
+        if connector.vision.get_ball_relative()[1] <= 0:
             return self.push(KickBall, init_data="R")
         else:
             return self.push(KickBall, init_data="L")
