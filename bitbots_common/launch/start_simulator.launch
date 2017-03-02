@@ -1,18 +1,25 @@
 <launch>
-    <remap from="/minibot/camera/image_raw" to="/image_raw"/>
+
+    <arg name="ns" default="robot1" />
+
+    <remap from="$(arg ns)/camera/image_raw" to="$(arg ns)/image_raw"/>
 
     <param name="/use_sim_time" value="true" />
-    <include file="$(find minibot_description)/launch/minibot_robocup.launch"/>
+    <include file="$(find minibot_description)/launch/minibot_robocup.launch">
+        <arg name="ns" value="$(arg ns)" />
+    </include>
 
-    <include file="$(find bitbots_vision_common)/launch/vision_processing.launch" />
-    <node name="cameraview" pkg="bitbots_imageviewer" type="bitbots_imageviewer.py"/>
+    <group ns="$(arg ns)">
+        <include file="$(find bitbots_vision_common)/launch/vision_processing.launch"/>
+        <!--<node name="cameraview" pkg="bitbots_imageviewer" type="bitbots_imageviewer.py"/>-->
 
-    <!--<include file="$(find bitbots_behaviour)/launch/start_behaviour_standalone.launch"/>-->
+        <include file="$(find bitbots_body_behaviour)/launch/start_behaviour_standalone.launch"/>
 
-    <node name="transform_lines" pkg="bitbots_transform" type="transform_lines.py" />
+        <include file="$(find bitbots_transform)/launch/transforms.launch"/>
 
+        <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch"/>
 
-    <include file="$(find bitbots_localisation)/launch/localisation_amcl.launch" />
-
+        <include file="$(find bitbots_localisation)/launch/localisation_amcl.launch"/>
+    </group>
 
 </launch>

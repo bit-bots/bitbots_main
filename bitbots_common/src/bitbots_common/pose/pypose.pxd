@@ -1,3 +1,5 @@
+#cython: language_level=3
+
 from bitbots_common.pose.pose cimport Pose, Joint, get_num_joints
 from libcpp cimport bool
 

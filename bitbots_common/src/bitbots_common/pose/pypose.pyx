@@ -1,3 +1,5 @@
+#cython: language_level=3
+
 import math
 import rospy
 from cython.operator cimport address as ref

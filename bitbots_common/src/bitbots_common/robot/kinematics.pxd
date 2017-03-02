@@ -245,7 +245,7 @@ cdef inline Joint init_joint_from_config(dict joint_config):
             off_x, off_y, off_z = offsets[part]["offset"]
             masses.push_back(Vector4d(off_x / 1000.0, off_y / 1000.0, off_z / 1000.0, mass))
     except Exception, e:
-        print e
+        print(e)
         raise Exception(e, "Error while filling offsets", id_string)
 
     cdef float x, y, z, r, p, yaw
@@ -255,7 +255,7 @@ cdef inline Joint init_joint_from_config(dict joint_config):
         r, p, yaw = joint_config["rpy"]
         rotations = Vector3d(r, p, yaw)
     except Exception, e:
-        print e
+        print(e)
         raise Exception(e, "Error while creating transform", id_string)
 
     cdef int default, min , max
@@ -264,7 +264,7 @@ cdef inline Joint init_joint_from_config(dict joint_config):
         #angles = Vector3d(0, -180, 180)
         angles = Vector3d(int(default), int(min), int(max))
     except Exception, e:
-        print e
+        print(e)
         raise Exception(e, "Error while setting angles", id_string)
 
     cdef Joint joint = Joint(joint_config["name"])
@@ -315,7 +315,7 @@ cdef inline _Robot* create_robot_from_config(object config):
             #print "old joint: %d \n %s" % (joints[int(joint["id"])].get_id(), (joints[int(joint["id"])].get()) )
             joints[int(joint["id"])] = init_joint_from_config(joint)
             #print "new joint: %d \n %s" % (joints[int(joint["id"])].get_id(), (joints[int(joint["id"])].get()) )
-            print "Set specialized configuration for %s \n %s" % (joint["name"], joint)
+            print("Set specialized configuration for %s \n %s" % (joint["name"], joint))
 
     #init the chain template with joint ids
     cdef vector[vector[int]] chain_template = vector[vector[int] ]()

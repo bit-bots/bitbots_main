@@ -9,7 +9,7 @@ cdef class Robot:
         try:
             self.robot = create_robot_from_config(config)
         except BaseException, e:
-            print e
+            print(e)
             #exit()
             raise e
 

@@ -5,7 +5,7 @@ import time
 from bitbots_buttons.msg import Buttons
 from humanoid_league_msgs.msg import Speak
 
-from bitbots_speaker.speaker import speak
+from humanoid_league_speaker.speaker import speak
 from bitbots_pause.srv import ManualPenalize
 
 
