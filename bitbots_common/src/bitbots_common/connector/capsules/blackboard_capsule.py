@@ -287,10 +287,10 @@ class BlackboardCapsule:
             self.data.get("CompleteGoalCenter", (0, 0))[0] ** 2 + self.data.get("CompleteGoalCenter", (0, 0))[1] ** 2)
 
     def set_finished_align(self):
-        self.data["FinishedAlign"] = time.time()
+        self.my_data["FinishedAlign"] = time.time()
 
     def unset_finished_align(self):
-        self.data["FinishedAlign"] = 0
+        self.my_data["FinishedAlign"] = 0
 
     def get_finished_align(self):
-        return time.time() - self.data.get("FinishedAlign", 0) < 10
+        return time.time() - self.my_data.get("FinishedAlign", 0) < 10
