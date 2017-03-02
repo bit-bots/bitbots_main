@@ -221,6 +221,12 @@ cdef class PyJoint:
     cpdef int get_cid(self):
         return self.joint.get_cid()
 
+    cpdef bool get_motorCommunicationOK(self):
+        return self.joint.get_motorCommunicationOK()
+
+    cpdef set_motorCommunicationOK(self, bool ok):
+        self.joint.set_motorCommunicationOK(ok)
+
 
 cdef PyJoint wrap_joint(PyPose pose, Joint& j):
     cdef PyJoint joint = PyJoint()

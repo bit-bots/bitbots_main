@@ -16,20 +16,21 @@ class Pose;
  */
 class Joint {
     private:
-        bool active;
-        bool changed;
-        float goal;
-        float speed;
-        float position;
-        float load;
-        float temperature;
-        float voltage;
-        float p;
-        float i;
-        float d;
-        int cid;
-        float minimal;
-        float maximal;
+        volatile bool active;
+        volatile bool changed;
+        volatile float goal;
+        volatile float speed;
+        volatile float position;
+        volatile float load;
+        volatile float temperature;
+        volatile float voltage;
+        volatile float p;
+        volatile float i;
+        volatile float d;
+        volatile int cid;
+        volatile float minimal;
+        volatile float maximal;
+        volatile bool motorCommunicationOK;
 
     public:
         Joint();
@@ -77,17 +78,20 @@ class Joint {
         void set_minimum(float minimum);
         float get_minimum() const;
 
+        bool get_motorCommunicationOK() const;
+        void set_motorCommunicationOK(bool ok);
+
         friend class Pose;
 };
 
 inline
 Joint::Joint()
-    : active(0), changed(0), goal(0), speed(0), position(0), load(0), p(-1), i(-1), d(-1), cid(0), minimal(-180), maximal(180) {
+    : active(0), changed(0), goal(0), speed(0), position(0), load(0), p(-1), i(-1), d(-1), cid(0), minimal(-180), maximal(180), motorCommunicationOK(true) {
 }
 
 inline
 Joint::Joint(float minimal,float maximal)
-    : active(0), changed(0), goal(0), speed(0), position(0), load(0), p(-1), i(-1), d(-1), cid(0), minimal(minimal), maximal(maximal) {
+    : active(0), changed(0), goal(0), speed(0), position(0), load(0), p(-1), i(-1), d(-1), cid(0), minimal(minimal), maximal(maximal), motorCommunicationOK(true) {
 }
 
 inline
@@ -239,6 +243,17 @@ inline
 float Joint::get_minimum() const {
     return minimal;
 }
+
+inline
+bool Joint::get_motorCommunicationOK() const{
+return motorCommunicationOK;
+}
+
+inline
+void Joint::set_motorCommunicationOK(bool ok){
+motorCommunicationOK = ok;
+}
+
 
 } //namespace
 #endif
