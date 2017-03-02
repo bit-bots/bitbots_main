@@ -60,6 +60,7 @@ class DutyDecider(AbstractDecisionModule):
         if connector.gamestate.get_gamestatus() in [DATA_VALUE_STATE_INITIAL,
                                                     DATA_VALUE_STATE_SET,
                                                     DATA_VALUE_STATE_FINISHED]:
+            rospy.loginfo("Wait for Gamestate")
             return self.push(Wait, 0.1)
 
         # Positioning ourself on the Field
@@ -70,6 +71,7 @@ class DutyDecider(AbstractDecisionModule):
         ################################
         # #load cetain part of behaviour
         ################################
+        rospy.loginfo("Current duty: " + connector.blackboard.get_duty())
 
         if connector.blackboard.get_duty() in ["TeamPlayer"]:
             return self.push(KickOff)

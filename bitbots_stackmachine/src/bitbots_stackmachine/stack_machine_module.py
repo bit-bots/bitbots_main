@@ -121,6 +121,7 @@ class StackMachineModule:
         :param init_data: init Data wird dem neuen Modul zum Init
             übergeben, optional
         """
+        rospy.loginfo("Pushed: " + str(module).split(".")[-1][:-2])
         if self.stack_reevaluate:
             # wir sind gerade dabei die vorbedingungen zu prüfen
             # testen op die entscheidung noch die gleiche ist:
