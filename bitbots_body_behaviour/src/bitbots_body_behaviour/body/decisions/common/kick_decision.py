@@ -18,9 +18,9 @@ class AbstractKickDecision(AbstractDecisionModule):
 
     def __init__(self, connector: BodyConnector, _):
         super(AbstractKickDecision, self).__init__(connector)
-        self.max_goal_hard_distance = rospy.get_param("Behaviour/Fieldie/maxGoalHardKickDistance")
-        self.toggle_use_side_kick = rospy.get_param("Behaviour/Toggles/Fieldie/useSideKickInGame")
-        self.use_dynamic_kick_toggle = rospy.get_param("Behaviour/Toggles/Fieldie/useDynamicKick")
+        self.max_goal_hard_distance = connector.config["Body"]["Fieldie"]["maxGoalHardKickDistance"]
+        self.toggle_use_side_kick = connector.config["Body"]["Toggles"]["Fieldie"]["useSideKickInGame"]
+        self.use_dynamic_kick_toggle = connector.config["Body"]["Toggles"]["Fieldie"]["useDynamicKick"]
 
     def perform(self, connector: BodyConnector, reevaluate=False):
 
