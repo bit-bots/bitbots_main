@@ -38,6 +38,10 @@ cdef import from "joint.hpp":
         float get_maximum()
         float get_minimum()
 
+        bool get_motorCommunicationOK()
+        void set_motorCommunicationOK(bool ok)
+
+
 cdef extern from "pose.hpp" namespace "Robot":
     int get_num_joints()
 

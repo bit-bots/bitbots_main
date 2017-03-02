@@ -44,6 +44,10 @@ cdef class PyJoint:
 
     cpdef int get_cid(self)
 
+    cpdef bool get_motorCommunicationOK(self)
+    cpdef set_motorCommunicationOK(self,bool ok)
+
+
 cdef class PyPose:
     cdef bool is_reference
     cdef Pose* pose
