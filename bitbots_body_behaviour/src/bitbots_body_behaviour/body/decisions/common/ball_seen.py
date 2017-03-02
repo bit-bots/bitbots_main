@@ -24,7 +24,7 @@ class AbstractBallSeen(AbstractDecisionModule):
 
     def __init__(self, connector: BodyConnector, _):
         super(AbstractBallSeen, self).__init__(connector)
-        self.max_ball_time = connector.config["Common"]["maxBallTime"]
+        self.max_ball_time = connector.config["Body"]["Common"]["maxBallTime"]
 
     def perform(self, connector, reevaluate=False):
 

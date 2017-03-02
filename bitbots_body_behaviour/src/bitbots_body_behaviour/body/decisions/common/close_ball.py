@@ -24,9 +24,9 @@ class AbstractCloseBall(AbstractDecisionModule):
         super(AbstractCloseBall, self).__init__(connector)
         self.last_goalie_dist = 0
         self.last_goalie_dist_time = 0
-        self.max_kick_distance = connector.config["Fieldie"]["kickDistance"]
-        self.min_kick_distance = connector.config["Fieldie"]["minKickDistance"]
-        self.config_kickalign_v = connector.config["Fieldie"]["kickAlign"]
+        self.max_kick_distance = connector.config["Body"]["Fieldie"]["kickDistance"]
+        self.min_kick_distance = connector.config["Body"]["Fieldie"]["minKickDistance"]
+        self.config_kickalign_v = connector.config["Body"]["Fieldie"]["kickAlign"]
 
     def perform(self, connector: BodyConnector, reevaluate=False):
         # if the robot is near to the ball
