@@ -3,6 +3,7 @@ AnimationCapsule
 ^^^^^^^^^^^^^^^^
 """
 import actionlib
+import rospy
 from actionlib_msgs.msg import GoalStatus
 from humanoid_league_msgs.msg import PlayAnimationGoal
 
@@ -10,6 +11,9 @@ from humanoid_league_msgs.msg import PlayAnimationGoal
 class AnimationCapsule:
     def __init__(self):
         self.server = None  # type: actionlib.SimpleActionClient
+        self.an_config = rospy.get_param("animations", None)
+        if not self.an_config:
+            rospy.logerr("Animations not found")
 
     def play_animation(self, ani: str)->bool:
         """
