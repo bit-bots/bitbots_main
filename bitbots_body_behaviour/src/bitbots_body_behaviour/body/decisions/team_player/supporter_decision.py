@@ -24,9 +24,9 @@ class SupporterDecision(AbstractDecisionModule):
                 time.time() - connector.vision.ball_last_seen() < 1):
             return self.push(Search)
 
-        if connector.vision.get_ball_distance() < 900:
+        if connector.vision.get_ball_distance() < 0.9:
             return self.push(Wait, 9999999)
-        elif connector.vision.get_ball_distance() > 1100:
+        elif connector.vision.get_ball_distance() > 1.1:
             return self.push(GoToBallPathfinding)
         else:
             return self.push(Wait, 9999999)
