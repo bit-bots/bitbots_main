@@ -143,8 +143,8 @@ class WalkingNode(object):
         while not rospy.is_shutdown():
             if self.walking.running:
                 # The walking is walking
-                if self.motion_state == MotionState.WALKING or (
-                        self.motion_state == MotionState.CONTROLABLE and time.time() - self.walking_started < 1):
+                if self.motion_state == RobotControlState.WALKING or (
+                        self.motion_state == RobotControlState.CONTROLABLE and time.time() - self.walking_started < 1):
                     # The robot is in the right state, let's compute next pose
                     # if we just started walking, the motion does maybe not know it yet
                     if not self.walk_active:
@@ -172,7 +172,7 @@ class WalkingNode(object):
             else:
                 # We're not currently running, test if we want to start
                 if self.walk_active and self.motion_state in (
-                        MotionState.CONTROLABLE, MotionState.WALKING, MotionState.MOTOR_OFF):
+                        RobotControlState.CONTROLABLE, RobotControlState.WALKING, RobotControlState.MOTOR_OFF):
                     rospy.logwarn("started walking")
                     self.walking_started = time.time()
                     self.walking_start()
