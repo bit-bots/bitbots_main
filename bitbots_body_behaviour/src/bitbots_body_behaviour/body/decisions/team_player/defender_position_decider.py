@@ -11,6 +11,7 @@ History:
 """
 import time
 
+from bitbots_common.connector.connector import BodyConnector
 from bitbots_common.util.math_utils import convert_uv2angular
 from bitbots_body_behaviour.body.actions.plain_walk_action import PlainWalkAction
 from bitbots_body_behaviour.body.actions.search import Search
@@ -19,8 +20,8 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class DefenderPositionDecider(AbstractDecisionModule):
-    def __init__(self, _):
-        super(DefenderPositionDecider, self).__init__()
+    def __init__(self, connector: BodyConnector, _):
+        super(DefenderPositionDecider, self).__init__(connector, _)
         self.timestamp_goal = 0
         self.wait_goal_time = 1
 

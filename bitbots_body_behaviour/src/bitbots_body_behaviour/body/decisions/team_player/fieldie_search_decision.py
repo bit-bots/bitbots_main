@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 """
 FieldieSearchDecision
 ^^^^^^^^^^^^^^^^^^^^
@@ -19,12 +18,13 @@ from bitbots_body_behaviour.body.actions.plain_walk_action import PlainWalkActio
 from bitbots_body_behaviour.body.actions.search import StopAndSearch
 
 from bitbots_common.connector.capsules.walking_capsule import WalkingCapsule
+from bitbots_common.connector.connector import BodyConnector
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class FieldieSearchDecision(AbstractDecisionModule):
-    def __init__(self, connector):
-        super(FieldieSearchDecision, self).__init__(connector)
+    def __init__(self, connector: BodyConnector, _):
+        super(FieldieSearchDecision, self).__init__(connector, _)
         self.start_time = time.time()
         self.turn_wait_time = connector.config["Common"]["Search"]["turnWaitTime"]
 
