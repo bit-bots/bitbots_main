@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.5
 import rospy
 from bitbots_common.connector.connector import HeadConnector
 from bitbots_head_behaviour.decisions.head_duty_decider import HeadDutyDecider
