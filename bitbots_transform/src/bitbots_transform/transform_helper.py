@@ -1,7 +1,9 @@
 import math
+import thread
 
 import image_geometry
 import rospy
+import sys
 import tf2_ros
 import tf_conversions
 
@@ -11,8 +13,12 @@ def transf(x, y, caminfo):
     tfl = tf2_ros.TransformListener(tfbuffer)
 
     pit = rospy.Time(0)
-    trans = tfbuffer.lookup_transform("base_link", "L_CAMERA", pit, rospy.Duration(0.1))
-
+    try:
+        trans = tfbuffer.lookup_transform("base_link", "L_CAMERA", pit, rospy.Duration(0.1))
+    except (tf2_ros.ConnectivityException, tf2_ros.LookupException) as e:
+        rospy.logerr(e)
+        thread.interrupt_main()
+        sys.exit(1)
 
     # Setup camerainfos
     cam = image_geometry.PinholeCameraModel()

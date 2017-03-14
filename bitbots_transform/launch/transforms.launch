@@ -1,4 +1,4 @@
 <launch>
-    <node name="line_transform" pkg="bitbots_transform" type="transform_lines.py" />
-    <node name="ball_transform" pkg="bitbots_transform" type="transform_ball.py" />
+    <node name="line_transform" pkg="bitbots_transform" type="transform_lines.py" respawn="true" />
+    <node name="ball_transform" pkg="bitbots_transform" type="transform_ball.py" respawn="true" />
 </launch>
