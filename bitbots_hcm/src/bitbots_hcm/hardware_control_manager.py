@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-#  -*- coding: utf8 -*-
+#!/usr/bin/env python3.5
 import argparse
 import time
 from math import asin
@@ -31,7 +30,7 @@ from bitbots_hcm.values import VALUES
 from bitbots_hcm.cfg import hcm_paramsConfig
 
 
-class Motion(object):
+class Motion:
     def __init__(self, dieflag, standupflag, softoff_flag, softstart, start_test):
 
         # --- Class Variables ---
