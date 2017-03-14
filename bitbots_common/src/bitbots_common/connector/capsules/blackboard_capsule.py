@@ -2,7 +2,6 @@
 BehaviourBlackboardCapsule
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. moduleauthor:: sheepy <sheepy@informatik.uni-hamburg.de>
 """
 import time
 import math
