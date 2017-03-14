@@ -26,7 +26,7 @@ class FieldieSearchDecision(AbstractDecisionModule):
     def __init__(self, connector: BodyConnector, _):
         super(FieldieSearchDecision, self).__init__(connector, _)
         self.start_time = time.time()
-        self.turn_wait_time = connector.config["Common"]["Search"]["turnWaitTime"]
+        self.turn_wait_time = connector.config["Head"]["Search"]["turnWaitTime"]
 
     def perform(self, connector, reevaluate=False):
         # if we have loked to long in the same direktion without seeing we want to walk
@@ -34,7 +34,7 @@ class FieldieSearchDecision(AbstractDecisionModule):
             # reset the timer
             self.start_time = time.time()
             return self.push(PlainWalkAction,
-                             [[WalkingCapsule.ZERO, WalkingCapsule.MEDIUM_ANGULAR_RIGHT, WalkingCapsule.ZERO, 5]])
+                             [[0, -10, 0, 5]])
         else:
             # Just Search
             return self.push(StopAndSearch)

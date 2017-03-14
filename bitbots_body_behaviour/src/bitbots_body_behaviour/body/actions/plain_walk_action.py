@@ -34,7 +34,7 @@ class PlainWalkAction(AbstractInitActionModule):
         if connector.blackboard.get_duty() in ["ThrowIn", "PenaltyKickFieldie"]:
             self.do_not_reevaluate()
         if not self.active:
-            self.current_step = self.walking_steps.next()
+            self.current_step = next(self.walking_steps)
             if self.current_step is None:
                 connector.walking.stop_walking()
                 return self.pop()
@@ -42,7 +42,7 @@ class PlainWalkAction(AbstractInitActionModule):
             self.active = True
             self.started_time = time.time()
 
-            connector.walking.start_walking(f, a, s)
+            connector.walking.start_walking_plain(f, a, s)
         else:
             if time.time() > self.current_step[3] + self.started_time:
                 self.active = False
