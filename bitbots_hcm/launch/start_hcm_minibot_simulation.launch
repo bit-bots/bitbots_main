@@ -1,13 +1,13 @@
 <launch>
     <!-- we want to start with simulation and debug active -->
-    <param name="/robot_type_name" value="Minibot"/>
-    <param name="/simulation_active" value="true"/>
-    <param name="/debug_active" value="true"/>
+    <param name="robot_type_name" value="Minibot"/>
+    <param name="simulation_active" value="true"/>
+    <param name="debug_active" value="true"/>
 
     <!-- for the simulator we have to remap some topic names -->
-    <remap from="/imu" to="/minibot/imu"/>
-    <remap from="/current_motor_positions" to="/minibot/joint_states"/>
-    <remap from="/motor_goals" to="/minibot/joint_trajectory_action_controller/command" />
+    <remap from="imu" to="/minibot/imu"/>
+    <remap from="current_motor_positions" to="/minibot/joint_states"/>
+    <remap from="motor_goals" to="/minibot/joint_trajectory_action_controller/command" />
 
     <include file="$(find bitbots_hcm)/launch/hcm_nodes.launch"/>
 

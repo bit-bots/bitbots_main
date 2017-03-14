@@ -37,7 +37,7 @@ class HcmStateMachine(AbstractStateMachine):
         self.error_state = ShutDown()
         self.state_publisher = state_publisher
 
-        self.connections = rospy.get_param("/hcm_state_machine")
+        self.connections = rospy.get_param("hcm_state_machine")
 
         self.set_state(Startup())
 
@@ -61,7 +61,7 @@ class HcmStateMachine(AbstractStateMachine):
 
 class Startup(AbstractState):
     def entry(self):
-        self.start_time_limit = rospy.get_param("/hcm/start_time", 10)
+        self.start_time_limit = rospy.get_param("hcm/start_time", 10)
 
     def evaluate(self):
         if not self.animation_started:
@@ -90,7 +90,7 @@ class Startup(AbstractState):
                 else:
                     self.next_state = Controllable()
                 # play init
-                self.start_animation(rospy.get_param("/hcm/animations/init"))
+                self.start_animation(rospy.get_param("hcm/animations/init"))
             else:
                 rospy.loginfo_throttle(1, "Motion is waiting for data from hardware")
         else:
@@ -118,13 +118,13 @@ class Softoff(AbstractState):
                 switch_motor_power(True)
                 self.next_state = Record()
                 # don't directly change state, we wait for animation to finish
-                self.start_animation(rospy.get_param("/hcm/animations/walkready"))
+                self.start_animation(rospy.get_param("hcm/animations/walkready"))
                 return
             if time.time() - VALUES.last_request < 10:  # todo param
                 # got a new move request
                 switch_motor_power(True)
                 self.next_state = Controllable()
-                self.start_animation(rospy.get_param("/hcm/animations/walkready"))
+                self.start_animation(rospy.get_param("hcm/animations/walkready"))
                 return
             if VALUES.is_die_time():
                 return ShutDown()
@@ -169,7 +169,7 @@ class PenaltyAnimationIn(AbstractState):
     def entry(self):
         rospy.logwarn("Penalized, sitting down!")
         self.next_state = Penalty()
-        self.start_animation(rospy.get_param("/hcm/animations/penalized"))
+        self.start_animation(rospy.get_param("hcm/animations/penalized"))
 
     def evaluate(self):
         # wait for animation started in entry
@@ -190,7 +190,7 @@ class PenaltyAnimationOut(AbstractState):
     def entry(self):
         rospy.logwarn("Not penalized anymore, getting up!")
         self.next_state = Controllable()
-        self.start_animation(rospy.get_param("/hcm/animations/penalized_end"))
+        self.start_animation(rospy.get_param("hcm/animations/penalized_end"))
 
     def evaluate(self):
         # wait for animation started in entry
@@ -243,7 +243,7 @@ class GettingUp(AbstractState):
             self.start_animation(fallen)
         else:
             self.next_state = Controllable()
-            self.start_animation(rospy.get_param("/hcm/animations/walkready"))
+            self.start_animation(rospy.get_param("hcm/animations/walkready"))
 
     def evaluate(self):
         # wait for animation started in entry
@@ -266,7 +266,7 @@ class GettingUpSecond(AbstractState):
 
     def entry(self):
         self.next_state = Controllable()
-        self.start_animation(rospy.get_param("/hcm/animations/walkready"))
+        self.start_animation(rospy.get_param("hcm/animations/walkready"))
 
     def evaluate(self):
         if self.animation_finished():
@@ -340,7 +340,7 @@ class Falling(AbstractState):
                 return Fallen()
             else:
                 self.next_state = Controllable()
-                self.start_animation(rospy.get_param("/hcm/animations/walkready"))
+                self.start_animation(rospy.get_param("hcm/animations/walkready"))
 
     def evaluate(self):
         # we wait a moment before going to the next state
@@ -463,7 +463,7 @@ class ShutDownAnimation(AbstractState):
     def entry(self):
         rospy.loginfo("Motion will shut off")
         speak("Motion will shut off", VALUES.speak_publisher, priority=Speak.HIGH_PRIORITY)
-        self.start_animation(rospy.get_param("/hcm/animations/shut-down"))
+        self.start_animation(rospy.get_param("hcm/animations/shut-down"))
 
     def evaluate(self):
         if self.animation_finished():
@@ -505,7 +505,7 @@ class ShutDown(AbstractState):
 
 def switch_motor_power(state):
     """ Calling service from CM730 to turn motor power on or off. But only if not using simulator"""
-    if rospy.get_param("/simulation_active", False):
+    if rospy.get_param("simulation_active", False):
         rospy.loginfo("I'm simulating, not switching motorpower to " + state.__str__())
     else:
         # todo set motor ram here if turned on, bc it lost it

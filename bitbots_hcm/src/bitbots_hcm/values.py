@@ -51,8 +51,8 @@ class Values(object):
         # are we walking?
         self.walking_active = False
 
-        self.softoff_time = rospy.get_param("/hcm/soft_off_time")
-        self.die_time = rospy.get_param("/hcm/die_time")
+        self.softoff_time = rospy.get_param("hcm/soft_off_time")
+        self.die_time = rospy.get_param("hcm/die_time")
 
     def is_falling(self):
         falling_pose = self.fall_checker.check_falling(self.not_so_smooth_gyro)
