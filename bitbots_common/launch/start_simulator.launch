@@ -19,7 +19,9 @@
 
         <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch"/>
 
-        <include file="$(find bitbots_localisation)/launch/localisation_amcl.launch"/>
+        <!--<include file="$(find bitbots_localisation)/launch/localisation_amcl.launch"/>-->
+
+        <include file="$(find bitbots_hcm)/launch/start_hcm_minibot_simulation.launch"/>
     </group>
 
 </launch>
