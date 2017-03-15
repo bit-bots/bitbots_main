@@ -83,6 +83,7 @@ class Classifier:
             rb.header.stamp = img.header.stamp
             self.pub_rated_ball.publish(rb)
         else:
+            return
             b = BallInImage()
             b.header.frame_id = img.header.frame_id
             b.header.stamp = img.header.stamp
