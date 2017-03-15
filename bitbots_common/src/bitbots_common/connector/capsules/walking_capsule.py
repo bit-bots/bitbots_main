@@ -19,7 +19,7 @@ class WalkingCapsule:
         """ This method returns True if the walking is actually not running """
         raise NotImplementedError
 
-    def start_walking_plain(self, f, s, tw):
+    def start_walking_plain(self, f, tw, s):
         t = Twist()
         t.linear.x = f
         t.linear.y = s
