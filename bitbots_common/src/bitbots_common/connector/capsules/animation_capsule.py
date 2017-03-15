@@ -4,35 +4,45 @@ AnimationCapsule
 """
 import actionlib
 import rospy
-from actionlib_msgs.msg import GoalStatus
-from humanoid_league_msgs.msg import PlayAnimationGoal
+from humanoid_league_msgs.msg import PlayAnimationGoal, humanoid_league_msgs
 
 
 class AnimationCapsule:
     def __init__(self):
-        self.server = None  # type: actionlib.SimpleActionClient
-        self.an_config = rospy.get_param("animations", None)
-        if not self.an_config:
-            rospy.logerr("Animations not found")
+        self.active = False
+        self.anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
 
-    def play_animation(self, ani: str)->bool:
+    def play_animation(self, anim: str)->bool:
         """
         plays the animation "ani" and sets the flag "BusyAnimation"
 
-        :param ani: name of the animation which shall be played
+        :param anim: name of the animation which shall be played
         """
-        if self.server.get_goal_status() == GoalStatus.ACTIVE:
-            # is currently busy, so can't start a new animation
+        if self.active:
             return False
-        else:
-            goal = PlayAnimationGoal()
-            goal.animation = ani
-            goal.force = False
-            self.server.execute_cb(goal)
-            return True
+
+        if anim is None or anim == "":
+            rospy.logwarn("Tried to play an animation with an empty name!")
+            return False
+        first_try = self.anim_client.wait_for_server(
+            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 10)))
+        if not first_try:
+            rospy.logerr(
+                "Animation Action Server not running! Motion can not work without animation action server. "
+                "Will now wait until server is accessible!")
+            self.anim_client.wait_for_server()
+            rospy.logwarn("Animation server now running, hcm will go on.")
+        goal = PlayAnimationGoal()
+        goal.animation = anim
+        goal.hcm = False  # the animation is from the hcm
+        self.anim_client.send_goal(goal, done_cb=self.cb_unset_is_busy)
+        self.active = True
+
+    def cb_unset_is_busy(self):
+        self.active = False
 
     def is_animation_busy(self):
         """
         Checks if an animation is currently played
         """
-        return self.server.get_goal_status() == GoalStatus.ACTIVE
+        return self.active
