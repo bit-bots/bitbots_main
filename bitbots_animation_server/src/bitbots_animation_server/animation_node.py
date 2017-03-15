@@ -21,7 +21,7 @@ from bitbots_common.util.pose_to_message import pose_goal_to_traj_msg
 class AnimationNode:
     def __init__(self):
         """Starts a simple action server and waits for requests."""
-        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
+        log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
         rospy.init_node("bitbots_animation_server", log_level=log_level, anonymous=False)
         rospy.logdebug("Starting Animation Server")
         server = PlayAnimationAction(rospy.get_name())
@@ -37,9 +37,9 @@ class PlayAnimationAction(object):
         self._action_name = name
         self.hcm_state = 0
 
-        self.dynamic_animation = rospy.get_param("/animation/dynamic", False)
-        robot_type_name = rospy.get_param("/robot_type_name")
-        self.used_motor_cids = rospy.get_param("/cm730/" + robot_type_name + "/motors")
+        self.dynamic_animation = rospy.get_param("animation/dynamic", False)
+        robot_type_name = rospy.get_param("robot_type_name")
+        self.used_motor_cids = rospy.get_param("cm730/" + robot_type_name + "/motors")
         self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
 
         # pre defiened messages for performance
@@ -48,9 +48,9 @@ class PlayAnimationAction(object):
         self.traj_msg.joint_names = [x.decode() for x in self.used_motor_names]
         self.traj_point = JointTrajectoryPoint()
 
-        rospy.Subscriber("/joint_states", JointState, self.update_current_pose)
-        rospy.Subscriber("/hcm_state", RobotControlState, self.update_hcm_state)
-        self.hcm_publisher = rospy.Publisher("/animation", Animation, queue_size=1)
+        rospy.Subscriber("joint_states", JointState, self.update_current_pose)
+        rospy.Subscriber("hcm_state", RobotControlState, self.update_hcm_state)
+        self.hcm_publisher = rospy.Publisher("animation", Animation, queue_size=1)
 
         self._as = actionlib.SimpleActionServer(self._action_name, PlayAction,
                                                 execute_cb=self.execute_cb, auto_start=False)

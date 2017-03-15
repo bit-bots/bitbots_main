@@ -162,9 +162,9 @@ class WalkingNode:
                     # Dann reseten Wir das Walking und stoppen dabei.
                     self.walking_reset()
                     # reset pid, if the walking did something with this
-                    p = rospy.get_param("/mx28config/RAM/p")
-                    i = rospy.get_param("/mx28config/RAM/i")
-                    d = rospy.get_param("/mx28config/RAM/d")
+                    p = rospy.get_param("mx28config/RAM/p")
+                    i = rospy.get_param("mx28config/RAM/i")
+                    d = rospy.get_param("mx28config/RAM/d")
                     for name, joint in self.goal_pose.joints:
                         joint.p = p
                         joint.i = i
