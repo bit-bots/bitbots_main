@@ -1,6 +1,9 @@
 <launch>
     <include file="$(find humanoid_league_speaker)/launch/speaker.launch"/>
 
+    <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
+    <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
+
     <node name="buttons" pkg="bitbots_buttons" type="button_node.py" />
 
     <node name="pause" pkg="bitbots_pause" type="pause.py"/>
