@@ -91,7 +91,7 @@ class Joints(object):
     bereit
     """
     def __init__(self):
-        self.joints = rospy.get_param("/joints")
+        self.joints = rospy.get_param("joints")
 
     def all(self):
         """
