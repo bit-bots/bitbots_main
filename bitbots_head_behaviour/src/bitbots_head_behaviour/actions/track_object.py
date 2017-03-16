@@ -18,26 +18,26 @@ class AbstactTrackObject(AbstractInitActionModule):
         super(AbstactTrackObject, self).__init__(connector, args)
 
         # this influences how precise the ball has to be in the center to make the head move
-        self.a_sens = connector.config["Tracking"]["xSensivity"]
-        self.b_sens = connector.config["Tracking"]["ySensivity"]
-        self.b_center_default = connector.config["Tracking"]["yCenterDefault"]
-        self.b_center_goalie = connector.config["Tracking"]["yCenterGoalie"]
+        self.a_sens = connector.config["Head"]["Tracking"]["xSensivity"]
+        self.b_sens = connector.config["Head"]["Tracking"]["ySensivity"]
+        self.b_center_default = connector.config["Head"]["Tracking"]["yCenterDefault"]
+        self.b_center_goalie = connector.config["Head"]["Tracking"]["yCenterGoalie"]
 
         # just the max and min angles for moving the head
-        self.max_tilt = connector.config["Camera"]["maxTilt"]
-        self.min_tilt = connector.config["Camera"]["minTilt"]
-        self.min_pan = connector.config["Camera"]["minPan"]
-        self.max_pan = connector.config["Camera"]["maxPan"]
+        self.max_tilt = connector.config["Head"]["Camera"]["maxTilt"]
+        self.min_tilt = connector.config["Head"]["Camera"]["minTilt"]
+        self.min_pan = connector.config["Head"]["Camera"]["minPan"]
+        self.max_pan = connector.config["Head"]["Camera"]["maxPan"]
 
-        self.max_tilt_speed = connector.config["Tracking"]["maxTiltSpeedTracking"]
-        self.max_pan_speed = connector.config["Tracking"]["maxPanSpeedTracking"]
+        self.max_tilt_speed = connector.config["Head"]["Tracking"]["maxTiltSpeedTracking"]
+        self.max_pan_speed = connector.config["Head"]["Tracking"]["maxPanSpeedTracking"]
 
         # propably camera angle
-        self.angle = connector.config["Camera"]["cameraAngle"]
+        self.angle = connector.config["Head"]["Camera"]["cameraAngle"]
 
         # to compute the camera angle in vertical (16:9)
-        self.horizontal_factor = connector.config["Camera"]["horizontalFactor"]
-        self.vertical_factor = connector.config["Camera"]["verticalFactor"]
+        self.horizontal_factor = connector.config["Head"]["Camera"]["horizontalFactor"]
+        self.vertical_factor = connector.config["Head"]["Camera"]["verticalFactor"]
 
     def track_with_values(self, connector: HeadConnector, a, b):
         # the goalie wants to track the ball in the upper part of the image, because it will probably come to him

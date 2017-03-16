@@ -9,7 +9,7 @@ import time
 
 from bitbots_head_behaviour.actions.track_object import TrackBall, TrackGoal
 from bitbots_head_behaviour.decisions.search_for_object import SearchForBall, SearchForEnemyGoal
-from bitbots_misc.bitbots_common.src.bitbots_common.connector.connector import HeadConnector
+from bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
@@ -25,9 +25,9 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
         self.fr = True
 
         self.fail_counter = 0
-        self.confirm_time = connector.config["Search"]["confirmTime"]
-        self.track_ball_lost_time = connector.config["Tracking"]["trackBallLost"]
-        self.ball_fail_conter_max = connector.config["Tracking"]["ballFailCounterMax"]
+        self.confirm_time = connector.config["Head"]["Search"]["confirmTime"]
+        self.track_ball_lost_time = connector.config["Head"]["Tracking"]["trackBallLost"]
+        self.ball_fail_conter_max = connector.config["Head"]["Tracking"]["ballFailCounterMax"]
 
     def perform(self, connector: HeadConnector, reevaluate=False):
 

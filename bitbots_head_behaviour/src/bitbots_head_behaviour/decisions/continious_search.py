@@ -17,11 +17,11 @@ class ContiniousSearch(AbstractDecisionModule):
     def __init__(self, connector: HeadConnector, outcomes=()):
         super().__init__(connector)
         self.pattern_pos = 0
-        self.goalie_pattern = connector.config["SearchPattern"]["goalie"]
-        self.defender_pattern = connector.config["SearchPattern"]["defender"]
-        self.center_pattern = connector.config["SearchPattern"]["center"]
-        self.ball_pattern = connector.config["Behaviour"]["Common"]["SearchPattern"]["ball"]
-        self.default_pattern = connector.config["Behaviour"]["Common"]["SearchPattern"]["ball"]
+        self.goalie_pattern = connector.config["Head"]["SearchPattern"]["goalie"]
+        self.defender_pattern = connector.config["Head"]["SearchPattern"]["defender"]
+        self.center_pattern = connector.config["Head"]["SearchPattern"]["center"]
+        self.ball_pattern = connector.config["Head"]["SearchPattern"]["ball"]
+        self.default_pattern = connector.config["Head"]["SearchPattern"]["ball"]
         self.current_pattern = self.default_pattern
         self.last_pattern = self.current_pattern
 

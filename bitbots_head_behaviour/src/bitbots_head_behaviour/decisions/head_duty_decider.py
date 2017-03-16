@@ -7,6 +7,7 @@ import time
 
 import rospy
 from bitbots_common.connector.connector import HeadConnector
+from bitbots_head_behaviour.decisions.search_and_confirm import SearchAndConfirmBall, SearchAndConfirmEnemyGoal
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from humanoid_league_msgs.msg import HeadMode
 
@@ -45,32 +46,32 @@ class HeadDutyDecider(AbstractDecisionModule):
 
         head_mode = connector.head.get_headmode()
         if head_mode == "":
-            return 'nothing'
+            return self.interrupt()
 
         if head_mode == HeadMode.BALL_MODE:
-            return 'trackBall'
+            return self.push(SearchAndConfirmBall)
 
         if head_mode == HeadMode.POLE_MODE:
-            return 'trackGoal'
+            return self.push(SearchAndConfirmEnemyGoal)
 
         if head_mode == HeadMode.BALL_GOAL_TRACKING:
             rospy.loginfo("TrackbothTime", time.time())
             if time.time() - connector.head.get_confirmed_ball() > 5:
-                return 'trackBothBall'
+                return self.push(SearchAndConfirmBall)
 
             # ball long enough seen
             elif time.time() - connector.head.get_confirmed_goal() > 6:
-                return 'trackBothGoal'
+                return self.push(SearchAndConfirmEnemyGoal)
 
             elif self.trackjustball_aftergoal:
-                return 'trackBothElse'
+                return self.push(SearchAndConfirmBall)
 
         if self.toggle_switch_ball_goal:
             rospy.loginfo("Headdoes", "Priorities")
             if self.ball_prio >= self.goal_prio:
-                return 'searchAndConfirmBall'
+                return self.push(SearchAndConfirmBall)
             else:
-                return 'searchAndConfirmGoal'
+                return self.push(SearchAndConfirmEnemyGoal)
 
         # Default Head Behaviour
         return 'defaultSearch'
