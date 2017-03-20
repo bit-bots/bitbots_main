@@ -7,6 +7,8 @@ Searches and confirms the goal or ball
 """
 import time
 
+import rospy
+
 from bitbots_head_behaviour.actions.track_object import TrackBall, TrackGoal
 from bitbots_head_behaviour.decisions.search_for_object import SearchForBall, SearchForEnemyGoal
 from bitbots_common.connector.connector import HeadConnector
@@ -36,7 +38,7 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
             self.set_confirmed()
             self.unset_started_confirm_time()
             return self.pop()
-
+        rospy.loginfo("Ballseen: " + str(self.object_seen()))
         if self.object_seen():
             if time.time() - self.get_started_confirm_time() > self.confirm_time:
                 self.set_started_confirm_time()

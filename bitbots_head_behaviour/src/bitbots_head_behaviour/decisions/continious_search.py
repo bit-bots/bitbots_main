@@ -35,7 +35,7 @@ class ContiniousSearch(AbstractDecisionModule):
 
     def set_pattern(self, connector: HeadConnector):
         self.last_pattern = self.current_pattern
-        duty = connector.head.get_duty()
+        duty = connector.team_data.get_role()
 
         if connector.head.is_ball_tracking_still_active:
             # we only come here if the continousSearch is called by the SearchForBall Module

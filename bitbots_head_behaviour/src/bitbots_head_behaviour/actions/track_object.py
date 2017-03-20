@@ -73,13 +73,14 @@ class AbstactTrackObject(AbstractInitActionModule):
 class TrackBall(AbstactTrackObject):
     def perform(self, connector: HeadConnector, reevaluate=False):
         # the ball is seen, so we center our view to it
-        a = connector.vision.get_ball_info_legacy_wrapper("a")
-        b = connector.vision.get_ball_info_legacy_wrapper("b")
-        self.track_with_values(connector, a, b)
+        x, y = connector.head.bestball_in_image
+        if x is not None:
+            self.track_with_values(connector, x, y)
 
 
 class TrackGoal(AbstactTrackObject):
     def perform(self, connector: HeadConnector, reevaluate=None):
+        raise NotImplementedError
         a = connector.vision.get_goal_infos()[0].x
         b = connector.vision.get_goal_infos()[0].y
         self.track_with_values(connector, a, b)
