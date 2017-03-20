@@ -1,7 +1,7 @@
 import time
 
 import rospy
-from humanoid_league_msgs.msg import HeadMode
+from humanoid_league_msgs.msg import HeadMode, BallInImage
 import rosparam
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
@@ -25,6 +25,7 @@ class HeadCapsule:
         self.current_pan_pos = 0
         self.current_tilt_pos = 0
         self.is_ball_tracking_still_active = False
+        self.bestball_in_image = None, None
 
         # preparing message for more performance
         self.pos_msg = JointTrajectory()
@@ -59,6 +60,9 @@ class HeadCapsule:
             elif joint == "HeadTilt":
                 self.current_tilt_pos = msg.position[i]
             i += 1
+
+    def cb_ballinimage(self, ball:BallInImage):
+        self.bestball_in_image = ball.center.x, ball.center.y
 
     def get_started_confirm_ball(self):
         return self.startedconfirmingball

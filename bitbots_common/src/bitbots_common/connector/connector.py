@@ -15,9 +15,8 @@ class AbstractConnector:
     def __init__(self):
         self.vision = VisionCapsule()
         self.world_model = WorldModelCapsule()
+        self.team_data = TeamDataCapsule()
 
-        self.head_pub = None  # type: rospy.Publisher
-        self.speaker = None  # type: rospy.Publisher
         self.config = None  # type: dict
 
 
@@ -27,8 +26,10 @@ class BodyConnector(AbstractConnector):
         self.blackboard = BlackboardCapsule()
         self.gamestate = GameStatusCapsule()
         self.walking = WalkingCapsule()
-        self.team_data = TeamDataCapsule()
         self.animation = AnimationCapsule()
+
+        self.head_pub = None  # type: rospy.Publisher
+        self.speaker = None  # type: rospy.Publisher
 
 
 class HeadConnector(AbstractConnector):
