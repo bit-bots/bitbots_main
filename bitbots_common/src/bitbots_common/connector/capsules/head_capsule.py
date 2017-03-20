@@ -1,3 +1,5 @@
+import time
+
 import rospy
 from humanoid_league_msgs.msg import HeadMode
 import rosparam
@@ -19,6 +21,7 @@ class HeadCapsule:
         self.confirmedBall = 0
         self.startedconfirmingball = 0
         self.confirmedGoal = 0
+        self.startedconfirminggoal = 0
         self.current_pan_pos = 0
         self.current_tilt_pos = 0
         self.is_ball_tracking_still_active = False
@@ -56,3 +59,27 @@ class HeadCapsule:
             elif joint == "HeadTilt":
                 self.current_tilt_pos = msg.position[i]
             i += 1
+
+    def get_started_confirm_ball(self):
+        return self.startedconfirmingball
+
+    def set_started_confirm_ball(self, t=time.time()):
+        self.startedconfirmingball = t
+
+    def unset_started_confirm_ball(self):
+        self.startedconfirmingball = 0
+
+    def set_confirmed_ball(self):
+        self.startedconfirmingball = time.time()
+        
+    def get_started_confirm_goal(self):
+        return self.startedconfirminggoal
+
+    def set_started_confirm_goal(self, t=time.time()):
+        self.startedconfirminggoal = t
+
+    def unset_started_confirm_goal(self):
+        self.startedconfirminggoal = 0
+
+    def set_confirmed_goal(self):
+        self.startedconfirminggoal = time.time()
