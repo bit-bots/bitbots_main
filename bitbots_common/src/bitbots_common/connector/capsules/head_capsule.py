@@ -1,5 +1,7 @@
 import time
 
+import math
+
 import rospy
 from humanoid_league_msgs.msg import HeadMode, BallInImage
 import rosparam
@@ -36,8 +38,12 @@ class HeadCapsule:
         self.position_publisher = None  # type: rospy.Publisher
 
     def send_motor_goals(self, pan_position: float, pan_speed: float, tilt_position: float, tilt_speed: float):
-        self.point_msg.positions = [pan_position, tilt_position]
-        self.point_msg.velocities = [pan_speed, tilt_speed]
+        point = self.pos_msg.points[0]
+        posnew = list(point.positions[:-2]) + [math.radians(pan_position), math.radians(tilt_position)]
+        velnew = list(point.velocities[:-2]) + [pan_speed, tilt_speed]
+        self.pos_msg.points[0].positions = posnew
+        self.pos_msg.points[0].velocities = velnew
+        self.pos_msg.header.stamp = rospy.Time.now()
         self.position_publisher.publish(self.pos_msg)
 
     def get_current_head_pos(self):
@@ -56,9 +62,9 @@ class HeadCapsule:
         i = 0
         for joint in msg.name:
             if joint == "HeadPan":
-                self.current_pan_pos = msg.position[i]
+                self.current_pan_pos = math.degrees(msg.position[i])
             elif joint == "HeadTilt":
-                self.current_tilt_pos = msg.position[i]
+                self.current_tilt_pos = math.degrees(msg.position[i])
             i += 1
 
     def cb_ballinimage(self, ball:BallInImage):
@@ -87,3 +93,6 @@ class HeadCapsule:
 
     def set_confirmed_goal(self):
         self.startedconfirminggoal = time.time()
+
+    def cb_motor_postions(self, msg: JointTrajectory):
+        self.pos_msg = msg
