@@ -52,7 +52,6 @@ class Motion:
         self.walking_motor_goal = None
         self.walking_goal_lock = Lock()
         self.last_walking_update = 0
-        self.head_motor_goal = None
         self.head_goal_lock = Lock()
 
         # Animation
@@ -159,8 +158,7 @@ class Motion:
     def head_goal_callback(self, msg):
         if not self.state_machine.is_penalized():
             # we can move our head
-            if self.head_motor_goal is not None:
-                self.joint_goal_publisher.publish(msg)
+            self.joint_goal_publisher.publish(msg)
 
     def record_goal_callback(self, msg):
         if msg is None:
