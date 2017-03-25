@@ -326,7 +326,7 @@ class Controllable(AbstractState):
 
 class Falling(AbstractState):
     def entry(self):
-        self.wait_time = time.time()
+        self.wait_time = time.time() #todo remove senseless double checking if falling or not
         # go directly in falling pose
         falling_pose = VALUES.fall_checker.check_falling(VALUES.not_so_smooth_gyro)
         if falling_pose is not None:
@@ -388,12 +388,12 @@ class Walking(AbstractState):
 
     def evaluate(self):
         if VALUES.record:
-            return Record()
+            return Record() #todo to walking stopping
         if VALUES.penalized:
-            return PenaltyAnimationIn()
-        if VALUES.is_soft_off_time():
+            return PenaltyAnimationIn() #todo to walking stopping?
+        if VALUES.is_soft_off_time(): #todo should not be possible while running? and also go to walking stopping
             return Softoff()
-        if VALUES.is_die_time():
+        if VALUES.is_die_time(): #todo to walking stopping
             return ShutDownAnimation()
         if VALUES.standup_flag:
             # Falling detection

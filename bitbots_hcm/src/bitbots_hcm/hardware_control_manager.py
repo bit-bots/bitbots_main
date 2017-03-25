@@ -154,7 +154,7 @@ class Motion(object):
         VALUES.walking_active = True
         self.last_walking_update = time.time()
         if self.state_machine.get_current_state() == STATE_CONTROLABLE or \
-                        self.state_machine.get_current_state() == STATE_WALKING:
+                        self.state_machine.get_current_state() == STATE_WALKING: #todo change to statemachin.is_walking
             self.joint_goal_publisher.publish(msg)
 
     def head_goal_callback(self, msg):
@@ -227,7 +227,7 @@ class Motion(object):
         start = time.time()
         rate = rospy.Rate(200)
 
-        while not rospy.is_shutdown():
+        while not rospy.is_shutdown(): #todo should directly be not statemachine.shutdown()
             finished = self.update_once()
             if finished:
                 # Todo maybe do some last shutdown stuff after internal shutdown?
@@ -250,7 +250,7 @@ class Motion(object):
 
         # we got external shutdown, tell it to the state machine, it will handle it
         VALUES.shut_down = True
-        # now wait for it finishing the shutdown procedure
+        # now wait for it finishing the shutdown procedure #todo fix this see above
         # while not self.state_machine.is_shutdown():
         #    # we still have to update everything
         #    self.update_once()
