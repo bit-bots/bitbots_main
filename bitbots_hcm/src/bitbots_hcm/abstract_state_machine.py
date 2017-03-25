@@ -61,7 +61,7 @@ class AbstractState(object):
             rospy.logwarn("Tried to play an animation with an empty name!")
             return False
         first_try = VALUES.animation_client.wait_for_server(
-            rospy.Duration(rospy.get_param("/hcm/anim_server_wait_time", 10)))
+            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 10)))
         if not first_try:
             rospy.logerr(
                 "Animation Action Server not running! Motion can not work without animation action server. "
@@ -83,9 +83,9 @@ class AbstractStateMachine(object):
         self.state = None
         self.connections = []
         self.error_state = None
-        self.debug_active = rospy.get_param("/debug_active", False)
+        self.debug_active = rospy.get_param("debug_active", False)
         if self.debug_active:
-            self.debug_publisher = rospy.Publisher("/hcm_state_debug", String, queue_size=10)
+            self.debug_publisher = rospy.Publisher("hcm_state_debug", String, queue_size=10)
 
     def set_state(self, state):
         """

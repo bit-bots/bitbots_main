@@ -23,7 +23,7 @@ from os import walk
 import rosparam
 import rospkg as rospkg
 
-anim_package = rosparam.get_param("/robot_type_name").lower() + "_animations"
+anim_package = rosparam.get_param("robot_type_name").lower() + "_animations"
 rospack = rospkg.RosPack()
 path = rospack.get_path(anim_package)
 BASEPATH = abspath(path + "/animations")

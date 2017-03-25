@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-#  -*- coding: utf8 -*-
+#!/usr/bin/env python3.5
 import argparse
 import time
 from math import asin
@@ -31,7 +30,7 @@ from bitbots_hcm.values import VALUES
 from bitbots_hcm.cfg import hcm_paramsConfig
 
 
-class Motion(object):
+class Motion:
     def __init__(self, dieflag, standupflag, softoff_flag, softstart, start_test):
 
         # --- Class Variables ---
@@ -53,15 +52,14 @@ class Motion(object):
         self.walking_motor_goal = None
         self.walking_goal_lock = Lock()
         self.last_walking_update = 0
-        self.head_motor_goal = None
         self.head_goal_lock = Lock()
 
         # Animation
         self.animation_running = False  # animation request from animation server
         self.animation_request_time = 0  # time we got the animation request
 
-        robot_type_name = rospy.get_param("/robot_type_name")
-        self.used_motor_cids = rospy.get_param("/cm730/" + robot_type_name + "/motors")
+        robot_type_name = rospy.get_param("robot_type_name")
+        self.used_motor_cids = rospy.get_param("cm730/" + robot_type_name + "/motors")
         self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
 
         # pre defiened messages for performance
@@ -70,14 +68,14 @@ class Motion(object):
         self.traj_point = JointTrajectoryPoint()
 
         # --- Initialize Node ---
-        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
+        log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_hcm', log_level=log_level, anonymous=False)
         rospy.sleep(0.1)  # Otherwise messages will get lost, bc the init is not finished
         rospy.loginfo("Starting hcm")
 
-        self.joint_goal_publisher = rospy.Publisher('/motor_goals', JointTrajectory, queue_size=1)
-        self.hcm_state_publisher = rospy.Publisher('/robot_state', RobotControlState, queue_size=10, latch=True)
-        self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
+        self.joint_goal_publisher = rospy.Publisher('motor_goals', JointTrajectory, queue_size=1)
+        self.hcm_state_publisher = rospy.Publisher('robot_state', RobotControlState, queue_size=10, latch=True)
+        self.speak_publisher = rospy.Publisher('speak', Speak, queue_size=10)
         VALUES.speak_publisher = self.speak_publisher
 
         rospy.sleep(0.1)  # important to make sure the connection to the speaker is established, for next line
@@ -86,13 +84,13 @@ class Motion(object):
         self.state_machine = HcmStateMachine(dieflag, standupflag, softoff_flag, softstart, start_test,
                                              self.hcm_state_publisher)
 
-        rospy.Subscriber("/imu", Imu, self.update_imu)
-        rospy.Subscriber("/joint_states", JointState, self.update_current_pose)
-        rospy.Subscriber("/walking_motor_goals", JointTrajectory, self.walking_goal_callback, queue_size=10)
-        rospy.Subscriber("/animation", Animation, self.animation_callback)
-        rospy.Subscriber("/head_motor_goals", JointTrajectory, self.head_goal_callback)
-        rospy.Subscriber("/record_motor_goals", JointTrajectory, self.record_goal_callback)
-        rospy.Subscriber("/pause", Bool, self.pause)
+        rospy.Subscriber("imu", Imu, self.update_imu)
+        rospy.Subscriber("joint_states", JointState, self.update_current_pose)
+        rospy.Subscriber("walking_motor_goals", JointTrajectory, self.walking_goal_callback, queue_size=10)
+        rospy.Subscriber("animation", Animation, self.animation_callback)
+        rospy.Subscriber("head_motor_goals", JointTrajectory, self.head_goal_callback)
+        rospy.Subscriber("record_motor_goals", JointTrajectory, self.record_goal_callback)
+        rospy.Subscriber("pause", Bool, self.pause)
 
         self.animation_action_client = actionlib.SimpleActionClient('animation',
                                                                     humanoid_league_msgs.msg.PlayAnimationAction)
@@ -160,8 +158,7 @@ class Motion(object):
     def head_goal_callback(self, msg):
         if not self.state_machine.is_penalized():
             # we can move our head
-            if self.head_motor_goal is not None:
-                self.joint_goal_publisher.publish(msg)
+            self.joint_goal_publisher.publish(msg)
 
     def record_goal_callback(self, msg):
         if msg is None:

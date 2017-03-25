@@ -300,7 +300,7 @@ class Animator:
         self.time_max = max(ip.time_max for ip in values)
         self.duration = self.time_max - self.time_min
         self.t_start = None
-        self.speed_factor = rospy.get_param("/animation/speed_factor")
+        self.speed_factor = rospy.get_param("animation/speed_factor")
 
     def get_pose(self, t, pose=None):
         ''' Interpoliert eine Pose zum Zeitpunkt *t*. Es wird entweder ein

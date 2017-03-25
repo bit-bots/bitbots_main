@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.5
 import threading
 
 import rospy
@@ -15,17 +15,17 @@ from bitbots_common.util.pose_to_message import pose_goal_to_traj_msg
 from bitbots_walking.zmpwalking import ZMPWalkingEngine
 
 
-class WalkingNode(object):
+class WalkingNode:
     """ This node computes walking positions based on the current position, if the walking is active."""
 
     def __init__(self):
         rospy.init_node("bitbots_walking", anonymous=False)
 
         # --- Params ---
-        zmp_config = rospy.get_param("/ZMPConfig/" + rospy.get_param("/robot_type_name"))
+        zmp_config = rospy.get_param("ZMPConfig/" + rospy.get_param("robot_type_name"))
         self.with_gyro = zmp_config["use_gyro_for_walking"]
-        robot_type_name = rospy.get_param("/robot_type_name")
-        self.used_motor_cids = rospy.get_param("/cm730/" + robot_type_name + "/motors")
+        robot_type_name = rospy.get_param("robot_type_name")
+        self.used_motor_cids = rospy.get_param("cm730/" + robot_type_name + "/motors")
         self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids[0:-2])  # without head
 
         # --- Class Variables ---
@@ -52,13 +52,13 @@ class WalkingNode(object):
         self.traj_point = JointTrajectoryPoint()
 
         # --- Initialize Topics ---
-        self.odometry_publisher = rospy.Publisher("/odometry", Odometry, queue_size=10)
-        self.motor_goal_publisher = rospy.Publisher("/walking_motor_goals", JointTrajectory,
+        self.odometry_publisher = rospy.Publisher("odometry", Odometry, queue_size=10)
+        self.motor_goal_publisher = rospy.Publisher("walking_motor_goals", JointTrajectory,
                                                     queue_size=10)
-        rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_cb)
-        rospy.Subscriber("/motion_state", RobotControlState, self.motion_state_cb)
-        rospy.Subscriber("/joint_states", JointState, self.current_position_cb)
-        rospy.Subscriber("/imu", Imu, self.imu_cb)
+        rospy.Subscriber("cmd_vel", Twist, self.cmd_vel_cb)
+        rospy.Subscriber("motion_state", RobotControlState, self.motion_state_cb)
+        rospy.Subscriber("joint_states", JointState, self.current_position_cb)
+        rospy.Subscriber("imu", Imu, self.imu_cb)
 
         # --- Start loop ---
         self.run()
@@ -162,9 +162,9 @@ class WalkingNode(object):
                     # Dann reseten Wir das Walking und stoppen dabei.
                     self.walking_reset()
                     # reset pid, if the walking did something with this
-                    p = rospy.get_param("/mx28config/RAM/p")
-                    i = rospy.get_param("/mx28config/RAM/i")
-                    d = rospy.get_param("/mx28config/RAM/d")
+                    p = rospy.get_param("mx28config/RAM/p")
+                    i = rospy.get_param("mx28config/RAM/i")
+                    d = rospy.get_param("mx28config/RAM/d")
                     for name, joint in self.goal_pose.joints:
                         joint.p = p
                         joint.i = i

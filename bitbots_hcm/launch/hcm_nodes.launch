@@ -1,11 +1,17 @@
 <launch>
     <include file="$(find humanoid_league_speaker)/launch/speaker.launch"/>
 
+    <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
+    <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
+
     <node name="buttons" pkg="bitbots_buttons" type="button_node.py" />
 
     <node name="pause" pkg="bitbots_pause" type="pause.py"/>
 
     <include file="$(find bitbots_animation_server)/launch/animation.launch"/>
+
+    <rosparam file="$(find bitbots_cm730)/config/cm730.yaml" command="load"/>
+    <rosparam file="$(find bitbots_cm730)/config/mx28config.yaml" command="load"/>
 
     <include file="$(find bitbots_walking)/launch/walking.launch"/>
 

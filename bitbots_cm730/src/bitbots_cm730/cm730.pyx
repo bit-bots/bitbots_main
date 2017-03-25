@@ -14,7 +14,7 @@ from bitbots_common.util import Joints as JointManager
 cdef class CM730(object):
 
     def __init__(self):
-        device = rospy.get_param("/cm730/device")
+        device = rospy.get_param("cm730/device")
         try:
             serial = Serial(device)
         except IOError:
@@ -50,12 +50,12 @@ cdef class CM730(object):
         self.raw_gyro = IntDataVector(0, 0, 0)
         self.robo_accel = IntDataVector(0, 0, 0)
 
-        robot_type_name = rospy.get_param("/robot_type_name")
-        self.motors = rospy.get_param("/cm730/" + robot_type_name + "/motors")
-        self.motor_ram_config = rospy.get_param("/mx28config/RAM")
-        offsets = rospy.get_param("/offsets")
-        self.joints = rospy.get_param("/joints")
-        self.eye_param = rospy.get_param("/cm730/EyesOff", False)
+        robot_type_name = rospy.get_param("robot_type_name")
+        self.motors = rospy.get_param("cm730/" + robot_type_name + "/motors")
+        self.motor_ram_config = rospy.get_param("mx28config/RAM")
+        offsets = rospy.get_param("offsets")
+        self.joints = rospy.get_param("joints")
+        self.eye_param = rospy.get_param("cm730/EyesOff", False)
 
         self.joint_offsets =  [0]
         # sort offsets to list with motor ids
@@ -273,7 +273,7 @@ cdef class CM730(object):
         """
         This method sets the values in the RAM of the motors, dependent on the values in the config.
         """
-        if rospy.get_param('/cm730/setMXRam', False):
+        if rospy.get_param('cm730/setMXRam', False):
             rospy.loginfo("setting MX RAM")
             self.ctrl.write_register(ID_CM730, CM730_REGISTER.led_head, (255, 0, 0))
             for motor in self.motors:

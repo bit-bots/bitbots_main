@@ -32,7 +32,7 @@ class CM730Node:
 
     # todo write in roscpp for better performance (due to multi core use)
     def __init__(self):
-        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
+        log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_cm730', log_level=log_level, anonymous=False)
 
         # --- Class Variables ---
@@ -41,8 +41,8 @@ class CM730Node:
         self.cm_730 = CM730()
         self.led_eye = (0, 0, 0)
         self.led_head = (0, 0, 0)
-        robot_type_name = rospy.get_param("/robot_type_name")
-        self.used_motor_cids = rospy.get_param("/cm730/" + robot_type_name + "/motors")
+        robot_type_name = rospy.get_param("robot_type_name")
+        self.used_motor_cids = rospy.get_param("cm730/" + robot_type_name + "/motors")
         self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
         rospy.logwarn(self.used_motor_names)
         self.pose_lock = threading.Lock()
@@ -56,7 +56,7 @@ class CM730Node:
         self.button_msg = Buttons()
 
         # --- Setting Params ---
-        joints = rospy.get_param("/joints")
+        joints = rospy.get_param("joints")
         self.joint_limits = {}
         # problem is, that the number of motors is not known at build time, so write them into params now
         for motor in joints:
@@ -66,16 +66,16 @@ class CM730Node:
                 max_value = motor['limits']['max']
             if 'min' in motor['limits']:
                 min_value = motor['limits']['min']
-            rospy.set_param("/joints/" + str(motor['name']), {'min': min_value, 'max': max_value})
+            rospy.set_param("joints/" + str(motor['name']), {'min': min_value, 'max': max_value})
             self.joint_limits[motor['name']] = {'min': min_value, 'max': max_value}
 
         # --- Initialize Topics ---
-        rospy.Subscriber("/motor_goals", JointTrajectory, self.update_motor_goals, queue_size=2)
-        self.joint_publisher = rospy.Publisher('/joint_states', JointState, queue_size=2)
-        self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=2)
-        self.temp_publisher = rospy.Publisher('/servo_data', AdditionalServoData, queue_size=2)
-        self.imu_publisher = rospy.Publisher('/imu', Imu, queue_size=2)
-        self.button_publisher = rospy.Publisher('/buttons', Buttons, queue_size=2)
+        rospy.Subscriber("motor_goals", JointTrajectory, self.update_motor_goals, queue_size=2)
+        self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=2)
+        self.speak_publisher = rospy.Publisher('speak', Speak, queue_size=2)
+        self.temp_publisher = rospy.Publisher('servo_data', AdditionalServoData, queue_size=2)
+        self.imu_publisher = rospy.Publisher('imu', Imu, queue_size=2)
+        self.button_publisher = rospy.Publisher('buttons', Buttons, queue_size=2)
         self.motor_power_service = rospy.Service("switch_motor_power", SwitchMotorPower,
                                                  self.switch_motor_power_service_call)
         self.led_service = rospy.Service("set_leds", SetLEDs,
