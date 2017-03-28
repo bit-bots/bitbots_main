@@ -20,13 +20,12 @@ class HeadNode(StackMachineModule):
         rospy.Subscriber("head_duty", HeadMode, self.connector.head.cb_headmode, queue_size=10)
         rospy.Subscriber("ball_relative", BallRelative, self.connector.vision.ball_callback)
         rospy.Subscriber("obstacle_relative", ObstacleRelative, self.connector.vision.obstacle_callback)
-        rospy.Subscriber("/minibot/joint_trajectory_action_controller/command", JointTrajectory, self.connector.head.cb_motor_postions) #todo if simulation
 
         self.set_start_module(HeadDutyDecider)
         rospy.init_node("Headbehaviour")
 
     def run(self):
-        rate = rospy.Rate(15)
+        rate = rospy.Rate(1)
         while not rospy.is_shutdown():
             self.update()
             rate.sleep()
