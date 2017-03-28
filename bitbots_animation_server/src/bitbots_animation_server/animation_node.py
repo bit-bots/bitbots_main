@@ -160,6 +160,7 @@ class PlayAnimationAction(object):
 
     def send_animation_request(self):
         self.anim_msg.request = True
+        self.anim_msg.header.stamp = rospy.Time.now()
         self.hcm_publisher.publish(self.anim_msg)
 
     def send_animation(self, first, last, hcm, pose):
@@ -170,6 +171,7 @@ class PlayAnimationAction(object):
         if pose is not None:
             self.anim_msg.position = pose_goal_to_traj_msg(pose, self.used_motor_names, self.traj_msg, self.traj_point)
         rospy.logdebug(self.anim_msg.position)
+        self.anim_msg.header.stamp=rospy.Time.now()
         self.hcm_publisher.publish(self.anim_msg)
 
 

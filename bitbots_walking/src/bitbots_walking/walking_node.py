@@ -56,7 +56,7 @@ class WalkingNode:
         self.motor_goal_publisher = rospy.Publisher("walking_motor_goals", JointTrajectory,
                                                     queue_size=10)
         rospy.Subscriber("cmd_vel", Twist, self.cmd_vel_cb)
-        rospy.Subscriber("motion_state", RobotControlState, self.motion_state_cb)
+        rospy.Subscriber("robot_state", RobotControlState, self.motion_state_cb)
         rospy.Subscriber("joint_states", JointState, self.current_position_cb)
         rospy.Subscriber("imu", Imu, self.imu_cb)
 
@@ -135,6 +135,7 @@ class WalkingNode:
 
     def publish_motor_goals(self):
         msg = pose_goal_to_traj_msg(self.goal_pose, self.used_motor_names, self.traj_msg, self.traj_point)
+        msg.header.stamp = rospy.Time.now()
         self.motor_goal_publisher.publish(msg)
         #rospy.logerr("pub")
 
@@ -144,7 +145,7 @@ class WalkingNode:
             if self.walking.running:
                 # The walking is walking
                 if self.motion_state == RobotControlState.WALKING or (
-                        self.motion_state == RobotControlState.CONTROLABLE and time.time() - self.walking_started < 1):
+                        self.motion_state == RobotControlState.CONTROLABLE):
                     # The robot is in the right state, let's compute next pose
                     # if we just started walking, the motion does maybe not know it yet
                     if not self.walk_active:

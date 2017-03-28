@@ -29,10 +29,10 @@ class FallChecker(object):
         if not rospy.has_param("ZMPConfig/" + robot_type_name + "/HipPitch"):
             rospy.logwarn("HipPitch offset from walking was not found on parameter server, will use 0.")
         self.falling_threshold_front = rospy.get_param("hcm/falling/" + robot_type_name + "/threshold_gyro_y_front") \
-                                       + numpy.math.radians(rospy.get_param("ZMPConfig/" + robot_type_name + "/HipPitch", 0))
+                                       + numpy.math.radians(rospy.get_param("ZMPConfig/" + robot_type_name + "/HipPitch", -10))
         rospy.set_param("hcm/threshold_gyro_y_front", self.falling_threshold_front)
         self.falling_threshold_back = rospy.get_param("hcm/falling/" + robot_type_name + "/threshold_gyro_y_back") \
-                                      + numpy.math.radians(rospy.get_param("ZMPConfig/" + robot_type_name + "/HipPitch", 0))
+                                      + numpy.math.radians(rospy.get_param("ZMPConfig/" + robot_type_name + "/HipPitch", 10))
         rospy.set_param("hcm/threshold_gyro_y_back", self.falling_threshold_back)
         self.falling_threshold_right = rospy.get_param("hcm/falling/" + robot_type_name + "/threshold_gyro_x_right")
         rospy.set_param("hcm/threshold_gyro_x_right", self.falling_threshold_right)
@@ -46,12 +46,13 @@ class FallChecker(object):
         self.falling_threshold_left *= self.ground_coefficient
 
     def update_reconfigurable_values(self, config, level):
-        self.dyn_falling_active = config["dyn_falling_active"]
-        self.ground_coefficient = config["ground_coefficient"]
-        self.falling_threshold_front = config["threshold_gyro_y_front"]
-        self.falling_threshold_back = config["threshold_gyro_y_back"]
-        self.falling_threshold_right = config["threshold_gyro_x_right"]
-        self.falling_threshold_left = config["threshold_gyro_x_left"]
+        #self.dyn_falling_active = config["dyn_falling_active"]
+        #self.ground_coefficient = config["ground_coefficient"]
+        #self.falling_threshold_front = config["threshold_gyro_y_front"]
+        #self.falling_threshold_back = config["threshold_gyro_y_back"]
+        #self.falling_threshold_right = config["threshold_gyro_x_right"]
+        #self.falling_threshold_left = config["threshold_gyro_x_left"]
+        pass
 
     def check_falling(self, not_much_smoothed_gyro):
         """Checks if the robot is currently falling and in which direction. """
@@ -66,10 +67,12 @@ class FallChecker(object):
     def check_falling_front_back(self, not_much_smoothed_gyro):
         # Am I falling backwards
         if self.falling_threshold_back < not_much_smoothed_gyro[1]:
+            print(str(self.falling_threshold_back) + " < " + str(not_much_smoothed_gyro[1]))
             rospy.logdebug("FALLING BACKWARDS ")
             return self.falling_motor_degrees_back
         # Am I falling to the front
         if not_much_smoothed_gyro[1] < self.falling_threshold_front:
+            print(str(not_much_smoothed_gyro[1]) + " < " + str(self.falling_threshold_front))
             rospy.logdebug("FALLING TO THE FRONT")
             return self.falling_motor_degrees_front
         return None

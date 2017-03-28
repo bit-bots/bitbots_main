@@ -139,15 +139,6 @@ class Motion:
         VALUES.fall_checker.update_reconfigurable_values(config, level)
         return config
 
-    def publish_motor_goals(self, joint_names, positions, velocities):
-        """ Publish the goal pose as joint message"""
-        # we can only handle one point and not a full trajectory
-        self.traj_msg.joint_names = joint_names
-        self.traj_point.positions = positions
-        self.traj_point.velocities = velocities
-        self.traj_msg.points = [self.traj_point]
-        self.joint_goal_publisher.publish(self.traj_msg)
-
     def walking_goal_callback(self, msg):
         VALUES.walking_active = True
         self.last_walking_update = time.time()
@@ -222,7 +213,7 @@ class Motion:
         iteration = 0
         duration_avg = 0
         start = time.time()
-        rate = rospy.Rate(200)
+        rate = rospy.Rate(100)
 
         while not rospy.is_shutdown(): #todo should directly be not statemachine.shutdown()
             finished = self.update_once()

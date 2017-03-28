@@ -143,7 +143,7 @@ class CM730Node:
                 else:
                     duration_avg = (time.time() - start)
 
-                rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
+                #rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
                 iteration = 0
                 start = time.time()
 
@@ -231,10 +231,10 @@ class CM730Node:
         """
         Sends the Joint States to ROS
         """
-        self.joint_state_msg.header.stamp = rospy.Time.from_sec(time.time())
         self.joint_state_msg.position = robo_pose.get_positions_rad_names(self.used_motor_names)
         self.joint_state_msg.velocity = robo_pose.get_speeds_names(self.used_motor_names)
         # self.joint_msg.effort = robo_pose.get_loads_names(self.used_motor_names) Not used for the moment
+        self.joint_state_msg.header.stamp = rospy.Time.now()  # rospy.Time.from_sec(time.time())
         self.joint_publisher.publish(self.joint_state_msg)
 
     def publish_additional_servo_data(self, temps, voltages):
@@ -256,10 +256,11 @@ class CM730Node:
         gyro = (math.radians(gyro[0] * f), math.radians(gyro[1] * f), math.radians(gyro[2] * f))
         f = (4 * 9.81) / 512
         accel = (accel[0] * f, accel[1] * f, accel[2] * f)
-        self.imu_msg.header.stamp = rospy.Time.from_sec(time.time())
         # axis are different in cm board, see cm730 documentation
         self.imu_msg.linear_acceleration = DataVector(accel[1] * -1, accel[0], accel[2] * -1)
         self.imu_msg.angular_velocity = DataVector(gyro[0], gyro[1] * -1, gyro[2])
+        self.imu_msg.header.stamp = rospy.Time.now()  # rospy.Time.from_sec(time.time())
+
         self.imu_publisher.publish(self.imu_msg)
 
     def publish_buttons(self, button1, button2):
