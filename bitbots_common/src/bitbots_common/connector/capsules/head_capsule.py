@@ -38,9 +38,10 @@ class HeadCapsule:
         self.position_publisher = None  # type: rospy.Publisher
 
     def send_motor_goals(self, pan_position: float, pan_speed: float, tilt_position: float, tilt_speed: float):
+        rospy.loginfo("Move Head: %f, %f" % (pan_position, tilt_position))
         self.point_msg.positions = [math.radians(pan_position), math.radians(tilt_position)]
         self.point_msg.velocities = [pan_speed, tilt_speed]
-        self.point_msg.time_from_start = rospy.Duration.from_sec(0.01)
+        self.point_msg.time_from_start = rospy.Duration.from_sec(0.04)
         self.position_publisher.publish(self.pos_msg)
 
     def get_current_head_pos(self):
@@ -64,7 +65,7 @@ class HeadCapsule:
                 self.current_tilt_pos = math.degrees(msg.position[i])
             i += 1
 
-    def cb_ballinimage(self, ball:BallInImage):
+    def cb_ballinimage(self, ball: BallInImage):
         self.bestball_in_image = ball.center.x, ball.center.y
 
     def get_started_confirm_ball(self):
