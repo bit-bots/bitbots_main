@@ -3,7 +3,7 @@ import rospy
 from bitbots_common.connector.connector import HeadConnector
 from bitbots_head_behaviour.decisions.head_duty_decider import HeadDutyDecider
 from bitbots_stackmachine.stack_machine_module import StackMachineModule
-from humanoid_league_msgs.msg import HeadMode, BallRelative, ObstacleRelative
+from humanoid_league_msgs.msg import HeadMode, BallRelative, ObstacleRelative, BallInImage
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory
 
@@ -19,14 +19,16 @@ class HeadNode(StackMachineModule):
         rospy.Subscriber("joint_states", JointState, self.connector.head.joint_state_cb)
         rospy.Subscriber("head_duty", HeadMode, self.connector.head.cb_headmode, queue_size=10)
         rospy.Subscriber("ball_relative", BallRelative, self.connector.vision.ball_callback)
+        rospy.Subscriber("ball_in_image", BallInImage, self.connector.head.cb_ballinimage)
         rospy.Subscriber("obstacle_relative", ObstacleRelative, self.connector.vision.obstacle_callback)
 
         self.set_start_module(HeadDutyDecider)
         rospy.init_node("Headbehaviour")
 
     def run(self):
-        rate = rospy.Rate(1)
+        rate = rospy.Rate(2)
         while not rospy.is_shutdown():
+            rospy.loginfo("######Run Headbehaviour")
             self.update()
             rate.sleep()
 
