@@ -1,6 +1,6 @@
 <launch>
 
-  <include file="vision_processing.launch" />
+  <include file="$(find bitbots_vision_common)/launch/vision_processing.launch" />
 
   <node name="usb_cam" pkg="usb_cam" type="usb_cam" args="" />
 
