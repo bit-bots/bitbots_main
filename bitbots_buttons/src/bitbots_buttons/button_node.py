@@ -31,7 +31,7 @@ class ButtonNode(object):
 
         # --- Initialize Topics ---
         rospy.Subscriber("/buttons", Buttons, self.button_cb)
-        self.speak_publisher = rospy.Publisher('/Speak', Speak, queue_size=10)
+        self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
 
         rospy.spin()
 
