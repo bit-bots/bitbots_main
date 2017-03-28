@@ -5,6 +5,8 @@ ConfirmGoal
 .. moduleauthor:: Marc Bestmann <0bestman@informatik.uni-hamburg.de>
 
 """
+import rospy
+
 from bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_init_action_module import AbstractInitActionModule
 
@@ -39,16 +41,21 @@ class AbstactTrackObject(AbstractInitActionModule):
         self.horizontal_factor = connector.config["Head"]["Camera"]["horizontalFactor"]
         self.vertical_factor = connector.config["Head"]["Camera"]["verticalFactor"]
 
-    def track_with_values(self, connector: HeadConnector, a, b):
+    def track_with_values(self, connector: HeadConnector, x, y):
+        a = ((y / 600) - 0.5) * 2
+        b = ((x / 800) - 0.5) * 2
+
+
         # the goalie wants to track the ball in the upper part of the image, because it will probably come to him
-        if connector.get_duty() == "Goalie":
+        if connector.head.get_headmode() == "Goalie":  # todo: mit headmodes richtig lösen
             b_center = self.b_center_goalie
         else:
             b_center = self.b_center_default
 
         # Get the current positions
         curren_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
-
+        rospy.loginfo("OldTiltgoal: %f" % current_tilt_pos)
+        rospy.loginfo("OldPangoal: %f" % curren_pan_pos)
         if not (-self.a_sens < a < self.a_sens):
             goal = curren_pan_pos + a * self.angle * self.horizontal_factor
             goal = min(self.max_pan, max(self.min_pan, goal))
@@ -61,8 +68,11 @@ class AbstactTrackObject(AbstractInitActionModule):
             goal = current_tilt_pos + b * self.angle * self.vertical_factor
             goal = min(self.max_tilt, max(self.min_tilt, goal))
             head_tilt_goal = goal
+
         else:
             head_tilt_goal = current_tilt_pos
+        rospy.loginfo("Tiltgoal: %f" % head_tilt_goal)
+        rospy.loginfo("Pangoal: %f" % head_pan_goal)
 
         connector.head.send_motor_goals(head_pan_goal, self.max_pan_speed, head_tilt_goal, self.max_tilt_speed)
 
@@ -76,6 +86,8 @@ class TrackBall(AbstactTrackObject):
         x, y = connector.head.bestball_in_image
         if x is not None:
             self.track_with_values(connector, x, y)
+        else:
+            rospy.loginfo("No ball found to track")
 
 
 class TrackGoal(AbstactTrackObject):
