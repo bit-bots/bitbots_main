@@ -38,12 +38,9 @@ class HeadCapsule:
         self.position_publisher = None  # type: rospy.Publisher
 
     def send_motor_goals(self, pan_position: float, pan_speed: float, tilt_position: float, tilt_speed: float):
-        point = self.pos_msg.points[0]
-        posnew = list(point.positions[:-2]) + [math.radians(pan_position), math.radians(tilt_position)]
-        velnew = list(point.velocities[:-2]) + [pan_speed, tilt_speed]
-        self.pos_msg.points[0].positions = posnew
-        self.pos_msg.points[0].velocities = velnew
-        self.pos_msg.header.stamp = rospy.Time.now()
+        self.point_msg.positions = [math.radians(pan_position), math.radians(tilt_position)]
+        self.point_msg.velocities = [pan_speed, tilt_speed]
+        self.point_msg.time_from_start = rospy.Duration.from_sec(0.01)
         self.position_publisher.publish(self.pos_msg)
 
     def get_current_head_pos(self):
