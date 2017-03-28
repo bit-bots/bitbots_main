@@ -85,7 +85,6 @@ class Motion:
                                              self.hcm_state_publisher)
 
         rospy.Subscriber("imu", Imu, self.update_imu)
-        rospy.Subscriber("joint_states", JointState, self.update_current_pose)
         rospy.Subscriber("walking_motor_goals", JointTrajectory, self.walking_goal_callback, queue_size=10)
         rospy.Subscriber("animation", Animation, self.animation_callback)
         rospy.Subscriber("head_motor_goals", JointTrajectory, self.head_goal_callback)
@@ -126,12 +125,8 @@ class Motion:
         VALUES.smooth_accel = self.smooth_accel
 
         self.last_gyro_update_time = update_time
-
-    def update_current_pose(self, msg):
-        """Gets the current motor positions and updates the representing pose accordingly."""
-        names = [x.encode("utf-8") for x in msg.name]
-        self.robo_pose.set_positions_rad(names, list(msg.position))
         VALUES.last_hardware_update = time.time()
+
 
     def reconfigure(self, config, level):
         """ Dynamic reconfigure of the fall checker values."""
