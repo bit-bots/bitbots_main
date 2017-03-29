@@ -42,8 +42,9 @@ class AbstactTrackObject(AbstractInitActionModule):
         self.vertical_factor = connector.config["Head"]["Camera"]["verticalFactor"]
 
     def track_with_values(self, connector: HeadConnector, x, y):
-        a = ((y / 600) - 0.5) * 2
-        b = ((x / 800) - 0.5) * 2
+        a = ((x / connector.head.cam_info[0]) - 0.5) * 2
+        b = ((y / connector.head.cam_info[1]) - 0.5) * -2
+        rospy.logwarn("rela: %f relb: %f " % (a, b))
 
 
         # the goalie wants to track the ball in the upper part of the image, because it will probably come to him
