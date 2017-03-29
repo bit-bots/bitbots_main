@@ -8,6 +8,8 @@ History:
 
 
 """
+import rospy
+
 from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
 from bitbots_head_behaviour.decisions.continious_search import ContiniousSearch
 from bitbots_common.connector.connector import HeadConnector
@@ -37,11 +39,13 @@ class AbstactSearchForObject(AbstractDecisionModule):
         # elif self.run ==1: #todo do fancy stuff like looking left and right of the saved position
         else:
             # we try to find the ball by using a pattern
+            rospy.loginfo("Push: Continious Search")
             return self.push(ContiniousSearch)
 
 
 class SearchForBall(AbstactSearchForObject):
     def perform(self, connector: HeadConnector, reevaluate=False):
+        rospy.loginfo("Start Searchfor ball")
         #u, v = connector.world_model.get_ballpos()
         u, v = None, None
         return self.search(connector, u, v)

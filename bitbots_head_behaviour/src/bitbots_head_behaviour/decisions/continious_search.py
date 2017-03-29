@@ -8,6 +8,8 @@ This Modul performs a continious search with the head. In the standard case it w
 so only in special cases the ball will be tracked.
 
 """
+import rospy
+
 from bitbots_common.connector.connector import HeadConnector
 from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
@@ -24,11 +26,13 @@ class ContiniousSearch(AbstractDecisionModule):
         self.default_pattern = connector.config["Head"]["SearchPattern"]["ball"]
         self.current_pattern = self.default_pattern
         self.last_pattern = self.current_pattern
+        rospy.logwarn("Start new Search")
 
     def perform(self, connector: HeadConnector, reevaluate=False):
         self.set_pattern(connector)
 
         pos = self.pattern_pos
+        rospy.logerr("Pattern pos" + str(pos))
         # Increment the to be reached postion with wrap around
         self.pattern_pos = (pos + 1) % len(self.current_pattern)
         return self.push(HeadToPanTilt, self.current_pattern[pos])
