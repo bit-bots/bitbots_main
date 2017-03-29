@@ -34,21 +34,21 @@ class FakeLaser(object):
         self.tfl = TransformListener()
 
 
-        self.f = plt.figure()
-        self.a = self.f.add_subplot(111, projection='polar')
-        self.a.relim()
-        self.a.autoscale_view(True, True, True)
-        self.a.set_ylim(0, 5)
-        self.f.canvas.draw()
-        plt.show(block=False)
+        #self.f = plt.figure()
+        #self.a = self.f.add_subplot(111, projection='polar')
+        #self.a.relim()
+        #self.a.autoscale_view(True, True, True)
+        #self.a.set_ylim(0, 5)
+        #self.f.canvas.draw()
+        #plt.show(block=False)
         self.newest = collections.deque()
 
 
         while not rospy.is_shutdown():
             if len(self.newest) > 0:
                 newest = self.newest.popleft()
-                self.a.plot(newest[0], newest[1], "go")
-                self.f.canvas.draw()
+                #self.a.plot(newest[0], newest[1], "go")
+                #self.f.canvas.draw()
             else:
                 rospy.sleep(0.1)
 
