@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 import threading
-import time
 
 import math
 # from Cython.Includes.cpython.exc import PyErr_CheckSignals
@@ -22,7 +21,7 @@ from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
 from bitbots_buttons.msg import Buttons
 
 import rospy
-
+import time
 
 class CM730Node:
     """
@@ -47,6 +46,10 @@ class CM730Node:
         rospy.logwarn(self.used_motor_names)
         self.pose_lock = threading.Lock()
 
+        # time
+        self.goal_sum=0
+        self.goal_count =0
+
         # --- Pre initialize messages ---
         # (for more performance)
         self.joint_state_msg = JointState()
@@ -70,12 +73,12 @@ class CM730Node:
             self.joint_limits[motor['name']] = {'min': min_value, 'max': max_value}
 
         # --- Initialize Topics ---
-        rospy.Subscriber("motor_goals", JointTrajectory, self.update_motor_goals, queue_size=2)
-        self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=2)
-        self.speak_publisher = rospy.Publisher('speak', Speak, queue_size=2)
-        self.temp_publisher = rospy.Publisher('servo_data', AdditionalServoData, queue_size=2)
-        self.imu_publisher = rospy.Publisher('imu', Imu, queue_size=2)
-        self.button_publisher = rospy.Publisher('buttons', Buttons, queue_size=2)
+        rospy.Subscriber("motor_goals", JointTrajectory, self.update_motor_goals, queue_size=1)
+        self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=1)
+        self.speak_publisher = rospy.Publisher('speak', Speak, queue_size=1)
+        self.temp_publisher = rospy.Publisher('servo_data', AdditionalServoData, queue_size=1)
+        self.imu_publisher = rospy.Publisher('imu', Imu, queue_size=1)
+        self.button_publisher = rospy.Publisher('buttons', Buttons, queue_size=1)
         self.motor_power_service = rospy.Service("switch_motor_power", SwitchMotorPower,
                                                  self.switch_motor_power_service_call)
         self.led_service = rospy.Service("set_leds", SetLEDs,
@@ -89,6 +92,8 @@ class CM730Node:
     def update_motor_goals(self, msg):
         """ Callback for subscription on motorgoals topic.
         We can only handle the first point of a JointTrajectory :( """
+        self.goal_sum += time.time() - msg.header.stamp.to_sec()
+        self.goal_count +=1
         motor_goals = []
         motor_speeds = []
         joints = msg.joint_names
@@ -133,27 +138,32 @@ class CM730Node:
             while not rospy.is_shutdown():
                 self.update_once()
 
-                # Count to get the update frequency
-                iteration += 1
-                if iteration < 100:
-                    continue
+                if False:
+                    # Count to get the update frequency
+                    iteration += 1
+                    if iteration < 100:
+                        continue
 
-                if duration_avg > 0:
-                    duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
-                else:
-                    duration_avg = (time.time() - start)
+                    if duration_avg > 0:
+                        duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
+                    else:
+                        duration_avg = (time.time() - start)
 
-                #rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
-                iteration = 0
-                start = time.time()
+                    #rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
+                    iteration = 0
+                    start = time.time()
 
             # switch of motor power in the end
             self.cm_730.switch_motor_power(False)
+            if self.goal_count !=0:
+                print("goal mean: " + str((self.goal_sum/self.goal_count)/1000))
         except:
             # swicht of motor power in case of problem
             self.cm_730.switch_motor_power(False)
             # print traceback
             traceback.print_exc()
+            if self.goal_count != 0:
+                print("goal mean: " + str((self.goal_sum / self.goal_count)/1000))
 
     def update_once(self):
         """ Updates sensor data with :func:`update_sensor_data`, publishes the data and sends the motor commands.
@@ -234,15 +244,15 @@ class CM730Node:
         self.joint_state_msg.position = robo_pose.get_positions_rad_names(self.used_motor_names)
         self.joint_state_msg.velocity = robo_pose.get_speeds_names(self.used_motor_names)
         # self.joint_msg.effort = robo_pose.get_loads_names(self.used_motor_names) Not used for the moment
-        self.joint_state_msg.header.stamp = rospy.Time.now()  # rospy.Time.from_sec(time.time())
+        self.joint_state_msg.header.stamp = rospy.Time.from_sec(time.time())  # rospy.Time.from_sec(time.time())
         self.joint_publisher.publish(self.joint_state_msg)
 
     def publish_additional_servo_data(self, temps, voltages):
-        time = rospy.Time.now()
+        t = rospy.Time.from_sec(time.time())
         temperatures = []
         for temp in temps:
             ros_temp = Temperature()
-            ros_temp.header.stamp = time
+            ros_temp.header.stamp = t
             ros_temp.temperature = temp
             ros_temp.variance = 0
             temperatures.append(ros_temp)
@@ -259,7 +269,7 @@ class CM730Node:
         # axis are different in cm board, see cm730 documentation
         self.imu_msg.linear_acceleration = DataVector(accel[1] * -1, accel[0], accel[2] * -1)
         self.imu_msg.angular_velocity = DataVector(gyro[0], gyro[1] * -1, gyro[2])
-        self.imu_msg.header.stamp = rospy.Time.now()  # rospy.Time.from_sec(time.time())
+        self.imu_msg.header.stamp = rospy.Time.from_sec(time.time())  # rospy.Time.from_sec(time.time())
 
         self.imu_publisher.publish(self.imu_msg)
 

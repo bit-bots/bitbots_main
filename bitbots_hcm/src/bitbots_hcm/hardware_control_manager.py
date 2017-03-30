@@ -67,6 +67,14 @@ class Motion:
         self.traj_msg.joint_names = [x.decode() for x in self.used_motor_names]
         self.traj_point = JointTrajectoryPoint()
 
+        #times
+        self.anim_sum=0
+        self.anim_count=0
+        self.walk_sum = 0
+        self.walk_count=0
+        self.imu_sum =0
+        self.imu_count = 0
+
         # --- Initialize Node ---
         log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_hcm', log_level=log_level, anonymous=False)
@@ -74,8 +82,8 @@ class Motion:
         rospy.loginfo("Starting hcm")
 
         self.joint_goal_publisher = rospy.Publisher('motor_goals', JointTrajectory, queue_size=1)
-        self.hcm_state_publisher = rospy.Publisher('robot_state', RobotControlState, queue_size=10, latch=True)
-        self.speak_publisher = rospy.Publisher('speak', Speak, queue_size=10)
+        self.hcm_state_publisher = rospy.Publisher('robot_state', RobotControlState, queue_size=1, latch=True)
+        self.speak_publisher = rospy.Publisher('speak', Speak, queue_size=1)
         VALUES.speak_publisher = self.speak_publisher
 
         rospy.sleep(0.1)  # important to make sure the connection to the speaker is established, for next line
@@ -84,12 +92,12 @@ class Motion:
         self.state_machine = HcmStateMachine(dieflag, standupflag, softoff_flag, softstart, start_test,
                                              self.hcm_state_publisher)
 
-        rospy.Subscriber("imu", Imu, self.update_imu)
-        rospy.Subscriber("walking_motor_goals", JointTrajectory, self.walking_goal_callback, queue_size=10)
-        rospy.Subscriber("animation", Animation, self.animation_callback)
-        rospy.Subscriber("head_motor_goals", JointTrajectory, self.head_goal_callback)
-        rospy.Subscriber("record_motor_goals", JointTrajectory, self.record_goal_callback)
-        rospy.Subscriber("pause", Bool, self.pause)
+        rospy.Subscriber("imu", Imu, self.update_imu, queue_size=1)
+        rospy.Subscriber("walking_motor_goals", JointTrajectory, self.walking_goal_callback, queue_size=1)
+        rospy.Subscriber("animation", Animation, self.animation_callback, queue_size=1)
+        rospy.Subscriber("head_motor_goals", JointTrajectory, self.head_goal_callback, queue_size=1)
+        rospy.Subscriber("record_motor_goals", JointTrajectory, self.record_goal_callback, queue_size=1)
+        rospy.Subscriber("pause", Bool, self.pause, queue_size=1)
 
         self.animation_action_client = actionlib.SimpleActionClient('animation',
                                                                     humanoid_league_msgs.msg.PlayAnimationAction)
@@ -106,6 +114,9 @@ class Motion:
     def update_imu(self, msg):
         """Gets new IMU values and computes the smoothed values of these"""
         update_time = time.time()
+        self.imu_sum += update_time - msg.header.stamp.to_sec()
+        self.imu_count += 1
+
         self.accel = numpy.array([msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z])
         self.gyro = numpy.array([msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z])
 
@@ -125,7 +136,7 @@ class Motion:
         VALUES.smooth_accel = self.smooth_accel
 
         self.last_gyro_update_time = update_time
-        VALUES.last_hardware_update = time.time()
+        VALUES.last_hardware_update = update_time
 
 
     def reconfigure(self, config, level):
@@ -135,8 +146,12 @@ class Motion:
         return config
 
     def walking_goal_callback(self, msg):
+        t = time.time()
+        self.walk_sum += t - msg.header.stamp.to_sec()
+        self.walk_count +=1
+
         VALUES.walking_active = True
-        self.last_walking_update = time.time()
+        self.last_walking_update = t
         if self.state_machine.get_current_state() == STATE_CONTROLABLE or \
                         self.state_machine.get_current_state() == STATE_WALKING: #todo change to statemachin.is_walking
             self.joint_goal_publisher.publish(msg)
@@ -156,8 +171,15 @@ class Motion:
 
     def animation_callback(self, msg):
         """ The animation server is sending us goal positions for the next keyframe"""
-        VALUES.last_request = msg.header.stamp.to_sec()
-        self.animation_request_time = time.time()
+        mt = msg.header.stamp.to_sec()
+        t = time.time()
+        self.anim_sum += t - mt
+        self.anim_count +=1
+
+        VALUES.last_request = mt
+        self.animation_request_time = t
+        # VALUES.last_request = msg.header.stamp.to_sec()
+        #self.animation_request_time = time.time()
         if msg.first:
             self.animation_running = True
             VALUES.external_animation_finished = False
@@ -208,7 +230,7 @@ class Motion:
         iteration = 0
         duration_avg = 0
         start = time.time()
-        rate = rospy.Rate(100)
+        rate = rospy.Rate(20)
 
         while not rospy.is_shutdown(): #todo should directly be not statemachine.shutdown()
             finished = self.update_once()
@@ -221,14 +243,15 @@ class Motion:
             if iteration < 100:
                 continue
 
-            if duration_avg > 0:
-                duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
-            else:
-                duration_avg = (time.time() - start)
+            if False:  # only for debug
+                if duration_avg > 0:
+                    duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
+                else:
+                    duration_avg = (time.time() - start)
 
-            # rospy.logwarn("Updates/Sec %f", iteration / duration_avg)
-            iteration = 0
-            start = time.time()
+                # rospy.logwarn("Updates/Sec %f", iteration / duration_avg)
+                iteration = 0
+                start = time.time()
             rate.sleep()
 
         # we got external shutdown, tell it to the state machine, it will handle it
@@ -238,6 +261,13 @@ class Motion:
         #    # we still have to update everything
         #    self.update_once()
         #    rospy.sleep(0.01)
+
+        if self.imu_count != 0:
+            print("imu mean: " + str((self.imu_sum/self.imu_count)/1000))
+        if self.walk_count != 0:
+            print("walk mean: " + str((self.walk_sum / self.walk_count)/1000))
+        if self.anim_count != 0:
+            print("anim mean: " + str((self.anim_sum / self.anim_count)/1000))
 
     def update_once(self):  # todo flag setzen falls werte geändert und nur dann evaluieren
         # check if we're still walking
@@ -251,17 +281,6 @@ class Motion:
         if self.state_machine.is_shutdown():
             # the hcm has to shutdown, we tell main_loop to close the node
             return True
-
-        # todo the following two ifs are normally unnecessary
-        if self.state_machine.is_record():
-            # we are currently in record mode
-            # the motor goals are set directly in the callback method, so we don't have to do anything
-            return
-
-        if self.animation_running and rospy.get_time() - self.animation_request_time < 1:
-            # we are currently running an animation
-            # the motor goals are set directly in the callback method, so we don't have to do anything
-            return
 
 
 def calculate_robot_angles(raw):
