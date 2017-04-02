@@ -2,14 +2,14 @@
 
 import math
 from _thread import start_new_thread
+from typing import List
 
-from humanoid_league_msgs.msg import Role, Action, Position, RobotControlState, BallRelative, TeamData, Position2D, \
-    GoalRelative, ObstaclesRelative, ObstacleRelative
+from humanoid_league_msgs.msg import BallRelative, TeamData, GoalRelative, ObstaclesRelative, ObstacleRelative, \
+    Position2D, RobotControlState, Strategy
 
 import rospy
 from geometry_msgs.msg import Pose2D
-from humanoid_league_team_communication.mitecom.mitecom import MiteCom, STATE_PENALIZED, ROLE_IDLING, ACTION_UNDEFINED, \
-    STATE_INACTIVE, STATE_ACTIVE
+from humanoid_league_team_communication.mitecom.mitecom import MiteCom, STATE_PENALIZED, STATE_INACTIVE, STATE_ACTIVE
 
 
 class TeamCommunication:
@@ -30,8 +30,8 @@ class TeamCommunication:
         self.max_kicking_distance = rospy.get_param("team_communication/max_kicking_distance")
 
         # -- Class variables ---
-        self.role = ROLE_IDLING
-        self.action = ACTION_UNDEFINED
+        self.role = Strategy.ROLE_IDLING
+        self.action = Strategy.ACTION_UNDEFINED
         self.state = STATE_INACTIVE
 
         self.position_x = None
@@ -60,9 +60,8 @@ class TeamCommunication:
         # --- Initialize Topics ---
         self.publisher = rospy.Publisher("/team_data", TeamData, queue_size=10)
 
-        rospy.Subscriber("role", Role, self.role_callback)
-        rospy.Subscriber("action", Action, self.action_callback)
-        rospy.Subscriber("position", Position, self.position_callback)
+        rospy.Subscriber("role", Strategy, self.strategy_callback)
+        rospy.Subscriber("position", Position2D, self.position_callback)
         rospy.Subscriber("motion_state", RobotControlState, self.motion_state_callback)
         rospy.Subscriber("ball_relative", BallRelative, self.ball_callback)
         rospy.Subscriber("goal_relative", GoalRelative, self.goal_callback)
@@ -153,7 +152,7 @@ class TeamCommunication:
         states = []
         own_position = []
         own_position_beliefs = []
-        ball_relative = []
+        ball_relative = []  # type:List[Position2D]
         oppgoal_relative = []
         opponent_robot_a = []
         opponent_robot_b = []
@@ -188,64 +187,64 @@ class TeamCommunication:
 
             # ball
             ball_msg = Position2D
-            ball_msg.x = rob.get_relative_ball_x() / 1000
-            ball_msg.y = rob.get_relative_ball_y() / 1000
+            ball_msg.pose.x = rob.get_relative_ball_x() / 1000
+            ball_msg.pose.y = rob.get_relative_ball_y() / 1000
             ball_msg.confidence = rob.get_relative_ball_belief() / 255
             ball_relative.append(ball_msg)
 
             # oppgoal
             oppgoal_msg = Position2D
-            oppgoal_msg.x = rob.get_oppgoal_relative_x() / 1000
-            oppgoal_msg.y = rob.get_oppgoal_relative_y() / 1000
+            oppgoal_msg.pose.x = rob.get_oppgoal_relative_x() / 1000
+            oppgoal_msg.pose.y = rob.get_oppgoal_relative_y() / 1000
             oppgoal_msg.confidence = rob.get_oppgoal_relative_belief() / 255
             oppgoal_relative.append(oppgoal_msg)
 
             # opponent_robot_a
             opponent_robot_a_msg = Position2D
-            opponent_robot_a_msg.x = rob.get_opponent_robot_a_x() / 1000
-            opponent_robot_a_msg.y = rob.get_opponent_robot_a_y() / 1000
+            opponent_robot_a_msg.pose.x = rob.get_opponent_robot_a_x() / 1000
+            opponent_robot_a_msg.pose.y = rob.get_opponent_robot_a_y() / 1000
             opponent_robot_a_msg.confidence = rob.get_opponent_robot_a_belief() / 255
             opponent_robot_a.append(opponent_robot_a_msg)
 
             # opponent_robot_b
             opponent_robot_b_msg = Position2D
-            opponent_robot_b_msg.x = rob.get_opponent_robot_b_x() / 1000
-            opponent_robot_b_msg.y = rob.get_opponent_robot_b_y() / 1000
+            opponent_robot_b_msg.pose.x = rob.get_opponent_robot_b_x() / 1000
+            opponent_robot_b_msg.pose.y = rob.get_opponent_robot_b_y() / 1000
             opponent_robot_b_msg.confidence = rob.get_opponent_robot_b_belief() / 255
             opponent_robot_b.append(opponent_robot_b_msg)
 
             # opponent_robot_c
             opponent_robot_c_msg = Position2D
-            opponent_robot_c_msg.x = rob.get_opponent_robot_c_x() / 1000
-            opponent_robot_c_msg.y = rob.get_opponent_robot_c_y() / 1000
+            opponent_robot_c_msg.pose.x = rob.get_opponent_robot_c_x() / 1000
+            opponent_robot_c_msg.pose.y = rob.get_opponent_robot_c_y() / 1000
             opponent_robot_c_msg.confidence = rob.get_opponent_robot_c_belief() / 255
             opponent_robot_c.append(opponent_robot_c_msg)
 
             # opponent_robot_d
             opponent_robot_d_msg = Position2D
-            opponent_robot_d_msg.x = rob.get_opponent_robot_d_x() / 1000
-            opponent_robot_d_msg.y = rob.get_opponent_robot_d_y() / 1000
+            opponent_robot_d_msg.pose.x = rob.get_opponent_robot_d_x() / 1000
+            opponent_robot_d_msg.pose.y = rob.get_opponent_robot_d_y() / 1000
             opponent_robot_d_msg.confidence = rob.get_opponent_robot_d_belief() / 255
             opponent_robot_d.append(opponent_robot_d_msg)
 
             # team_robot_a
             team_robot_a_msg = Position2D
-            team_robot_a_msg.x = rob.get_team_robot_a_x() / 1000
-            team_robot_a_msg.y = rob.get_team_robot_a_y() / 1000
+            team_robot_a_msg.pose.x = rob.get_team_robot_a_x() / 1000
+            team_robot_a_msg.pose.y = rob.get_team_robot_a_y() / 1000
             team_robot_a_msg.confidence = rob.get_team_robot_a_belief() / 255
             team_robot_a.append(team_robot_a_msg)
 
             # team_robot_b
             team_robot_b_msg = Position2D
-            team_robot_b_msg.x = rob.get_team_robot_b_x() / 1000
-            team_robot_b_msg.y = rob.get_team_robot_b_y() / 1000
+            team_robot_b_msg.pose.x = rob.get_team_robot_b_x() / 1000
+            team_robot_b_msg.pose.y = rob.get_team_robot_b_y() / 1000
             team_robot_b_msg.confidence = rob.get_team_robot_b_belief() / 255
             team_robot_b.append(team_robot_b_msg)
 
             # team_robot_c
             team_robot_c_msg = Position2D
-            team_robot_c_msg.x = rob.get_team_robot_c_x() / 1000
-            team_robot_c_msg.y = rob.get_team_robot_c_y() / 1000
+            team_robot_c_msg.pose.x = rob.get_team_robot_c_x() / 1000
+            team_robot_c_msg.pose.y = rob.get_team_robot_c_y() / 1000
             team_robot_c_msg.confidence = rob.get_team_robot_c_belief() / 255
             team_robot_c.append(team_robot_c_msg)
 
@@ -265,8 +264,8 @@ class TeamCommunication:
         message.action = actions
         message.state = states
 
-        message.own_position = own_position
-        message.own_position_confidence = own_position_beliefs
+        message.robot_positions = own_position
+        own_position.confidece = own_position_beliefs
 
         message.ball_relative = ball_relative
 
@@ -289,10 +288,8 @@ class TeamCommunication:
 
         self.publisher.publish(message)
 
-    def role_callback(self, msg):
+    def strategy_callback(self, msg: Strategy):
         self.role = msg.role
-
-    def action_callback(self, msg):
         self.action = msg.action
 
     def motion_state_callback(self, msg):
@@ -304,7 +301,7 @@ class TeamCommunication:
         else:
             self.state = STATE_ACTIVE
 
-    def position_callback(self, msg):
+    def position_callback(self, msg: Position2D):
         # conversion from m (ROS message) to mm (self.mitecom)
         self.position_x = int(msg.pose.x * 1000)
         self.position_y = int(msg.pose.y * 1000)
@@ -338,8 +335,8 @@ class TeamCommunication:
 
     def obstacle_callback(self, msg):
         # todo get own team color
-        team_color = ObstacleRelative.CYAN_ROBOT
-        opponent_color = ObstacleRelative.MAGENTA_ROBOT
+        team_color = ObstacleRelative.ROBOT_CYAN
+        opponent_color = ObstacleRelative.ROBOT_MAGENTA
         self.opponent_robots = []
         self.team_robots = []
         for obstacle in msg.obstacles:
