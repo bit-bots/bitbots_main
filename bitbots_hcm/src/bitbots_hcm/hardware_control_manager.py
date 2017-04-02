@@ -11,6 +11,7 @@ import numpy
 import rospy
 
 import humanoid_league_msgs
+from bitbots_animation_server.animation import Animation
 from bitbots_common.pose.pypose import PyPose as Pose
 from bitbots_common.util.pose_to_message import pose_to_traj_msg
 from humanoid_league_speaker.speaker import speak
@@ -20,7 +21,7 @@ from bitbots_cm730.srv import SwitchMotorPower
 
 from bitbots_hcm.hcm_state_machine import HcmStateMachine, STATE_CONTROLABLE, AnimationRunning, STATE_WALKING
 from dynamic_reconfigure.server import Server
-from humanoid_league_msgs.msg import RobotControlState, Animation
+from humanoid_league_msgs.msg import RobotControlState
 from humanoid_league_msgs.msg import Speak
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import JointState

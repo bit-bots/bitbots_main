@@ -5,7 +5,8 @@ import actionlib
 import traceback
 import rospy
 import time
-from std_msgs.msg import Header
+
+from bitbots_animation_server.animation import Animation
 from humanoid_league_msgs.msg import PlayAnimationResult, PlayAnimationFeedback
 from humanoid_league_msgs.msg import PlayAnimationAction as PlayAction
 from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
@@ -14,7 +15,7 @@ from bitbots_animation_server.animation import Animator, parse
 from bitbots_common.pose.pypose import PyPose as Pose
 from sensor_msgs.msg import Imu, JointState
 from bitbots_animation_server.resource_manager import find_animation
-from humanoid_league_msgs.msg import Animation, RobotControlState
+from humanoid_league_msgs.msg import RobotControlState
 from bitbots_common.util.pose_to_message import pose_goal_to_traj_msg
 
 
