@@ -5,16 +5,17 @@ TeamDataCapsule
 import math
 
 import rospy
-from humanoid_league_msgs.msg import Role
 from bitbots_body_behaviour.keys import DATA_KEY_GOALIE_BALL_RELATIVE_POSITION, DATA_KEY_BALL_TIME, \
     DATA_KEY_FIELDIE_BALL_TIME_LIST, DATA_KEY_KICKOFF_OFFENSE_SIDE, \
     DATA_KEY_KICKOFF_OFFENSE_SIDE_RECEIVED
 from bitbots_body_behaviour.keys.grid_world_keys import DATA_KEY_OWN_POSITION_GRID
+from humanoid_league_msgs.msg import Strategy
+from humanoid_league_team_communication.mitecom.mitecom import ROLE_STRIKER, ROLE_DEFENDER, ROLE_SUPPORTER, ROLE_GOALIE
 
 
 class TeamDataCapsule:
     def __init__(self):
-        self.role_sender = None  # type: rospy.Publisher
+        self.strategy_sender = None  # type: rospy.Publisher
         self.my_data = dict()
 
     def get_ball_in_own_half(self):
@@ -56,10 +57,10 @@ class TeamDataCapsule:
 
     def set_role(self, role: int):
         """ Set the Team Role - Need to be in data dict for Comm Modules """
-        assert role in [Role.ROLE_STRIKER, Role.ROLE_DEFENDER, Role.ROLE_SUPPORTER, Role.ROLE_GOALIE]
-        r = Role()
+        assert role in [ROLE_STRIKER, ROLE_DEFENDER, ROLE_SUPPORTER, ROLE_GOALIE]
+        r = Strategy
         r.role = role
-        self.role_sender.publish(r)
+        self.strategy_sender.publish(r)
         self.my_data["role"] = role
 
     def get_role(self):
