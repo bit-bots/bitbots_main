@@ -11,9 +11,9 @@ from bitbots_body_behaviour.body.decisions.common.ball_seen import BallSeenField
 from bitbots_body_behaviour.body.decisions.team_player.center_decision import CenterDecision
 from bitbots_body_behaviour.body.decisions.team_player.defender_decision import DefenderDecision
 from bitbots_body_behaviour.body.decisions.team_player.supporter_decision import SupporterDecision
-from humanoid_league_msgs.msg import Role
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from bitbots_common.connector.connector import BodyConnector
+from humanoid_league_team_communication.mitecom.mitecom import ROLE_STRIKER, ROLE_SUPPORTER, ROLE_OTHER, ROLE_DEFENDER
 
 
 class RoleDecider(AbstractDecisionModule):
@@ -24,19 +24,19 @@ class RoleDecider(AbstractDecisionModule):
     def perform(self, connector, reevaluate=False):
         if self.forced:
             if self.forced == "Striker":
-                connector.team_data.set_role(Role.ROLE_STRIKER)
+                connector.team_data.set_role(ROLE_STRIKER)
                 return self.push(BallSeenFieldie)
 
             elif self.forced == "Supporter":
-                connector.team_data.set_role(Role.ROLE_SUPPORTER)
+                connector.team_data.set_role(ROLE_SUPPORTER)
                 return self.push(SupporterDecision)
 
             elif self.forced == "Center":
-                connector.team_data.set_role(Role.ROLE_OTHER)
+                connector.team_data.set_role(ROLE_OTHER)
                 return self.push(CenterDecision)
 
             elif self.forced == "Defender":
-                connector.team_data.set_role(Role.ROLE_DEFENDER)
+                connector.team_data.set_role(ROLE_DEFENDER)
                 return self.push(DefenderDecision)
             else:
                 raise NotImplementedError
