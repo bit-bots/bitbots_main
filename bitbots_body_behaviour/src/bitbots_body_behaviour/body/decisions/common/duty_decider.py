@@ -6,6 +6,7 @@ DutyDecider
 
 """
 import rospy
+from bitbots_body_behaviour.body.actions.go_away_from_ball import GoAwayFromBall
 from bitbots_body_behaviour.body.actions.go_to_absolute_position import GoToAbsolutePosition
 from bitbots_body_behaviour.body.actions.testing.test_walking_dynamic import TestWalkingDynamic
 from bitbots_body_behaviour.body.actions.testing.test_walking_static import TestWalkingStatic
@@ -62,6 +63,11 @@ class DutyDecider(AbstractDecisionModule):
                                                     DATA_VALUE_STATE_FINISHED]:
             rospy.loginfo("Wait for Gamestate")
             return self.push(Wait, 0.1)
+
+        # Penalty Shoot but not mine, run away
+        elif connector.config["Body"]["Toggles"]["Fieldie"]["penaltykick_go_away"] and connector.blackboard.get_duty() is not "Goalie" and\
+                        connector.gamestate.get_gamestatus() is STATE_PENALTYSHOOT and connector.gamestate.has_penaltykick():
+            return self.push(GoAwayFromBall)
 
         # Positioning ourself on the Field
         if self.toggle_self_positioning:

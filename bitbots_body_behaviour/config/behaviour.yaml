@@ -35,6 +35,9 @@ Behaviour:
           # Track Ball and Goal while running to Ball
           trackBoth: False
 
+          # Go away from Ball if opponent team has penalty/freekick
+          penaltykick_go_away: False
+
 
       # Toggles für den Goalie
       Goalie:
