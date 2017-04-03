@@ -68,6 +68,19 @@ cdef class CM730(object):
         self.read_packet3_stub = list()
         self.init_read_packet()
 
+        self.switch_motor_power(True)
+
+        if rospy.get_param("cm730/motor_test"):
+            motors_ok = True
+            for i in range(len(rospy.get_param("cm730/Minibot/motors"))):
+                # range goes from 0 to number of joints -1 so we increment by one
+                if not self.ctrl.ping(i+1):
+                    rospy.logwarn("Motor " + str(i) + " did not respond to ping")
+                    motors_ok = False
+            if motors_ok:
+                rospy.logwarn("All motors were found")
+
+        self.switch_motor_power(False)
     cpdef init_read_packet(self):
         """
         Initialise the :class:`BulkReadPacket` for communication with the motors
