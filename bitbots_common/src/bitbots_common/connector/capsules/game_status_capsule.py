@@ -65,5 +65,8 @@ class GameStatusCapsule:
     def get_seconds_since_last_drop_ball(self):
         return time.time() - self.get_last_drop_in_time()
 
+    def has_penalty_kick(self):
+        return self.gamestate.penaltyShot
+
     def gamestate_callback(self, gs: GameState):
         self.gamestate = gs
