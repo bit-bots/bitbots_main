@@ -518,8 +518,6 @@ cdef class Controller:
                     (error.get_motor(), error.get_error_str()))
                 rospy.logerr(msg)
                 err = error.get_error()
-                # wir machen da mal ein packet draus (bitschifting ist toll)
-                rospy.logerr("LastError", (statuspacket.err << 8) + statuspacket.cid)
                 errors.add_motor_error(error)
         if errors:
             # antwort trotzdem verarbeiten

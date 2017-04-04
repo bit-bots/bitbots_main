@@ -239,7 +239,7 @@ cdef class CM730(object):
         for cid, values in sensor_data.items():
             if cid == ID_CM730:
                 #this is a reponse package from cm730
-                if not cid_all_values == ID_CM730 and self.dxl_power:
+                if not cid_all_values == ID_CM730:#Todo: warum: and self.dxl_power:
                     #only IMU values
                     #but sometimes something is strange so make another test
                     if len(values) == 2:
