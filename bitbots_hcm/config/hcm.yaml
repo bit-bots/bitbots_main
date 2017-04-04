@@ -61,7 +61,7 @@ hcm:
 
       #Grenzwerte müssen auf härterem boden auch härter eingestellt werden,
       #dies erfolgt mit dem boden_koeffizient
-      "ground_coefficient": 1.5  #WEICH(kunstrasen Spielfeld)= 1.0 , HART(teppich Spielfeld)= 1.25
+      "ground_coefficient": 1.0  #WEICH(kunstrasen Spielfeld)= 1.0 , HART(teppich Spielfeld)= 1.25
 
       #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
       #Grenzwerte sanfter --> zu spaete Raktion
