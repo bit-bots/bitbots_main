@@ -2,7 +2,7 @@
     <param name="/robot_type_name" value="Minibot"/>
     <param name="/debug_active" value="true"/>
 
-    <include file="$/find bitbots_cm730)/launch/cm730.launch" />
+    <include file="$(find bitbots_cm730)/launch/cm730.launch" />
 
     <include file="$(find bitbots_hcm)/launch/hcm_nodes.launch"/>
     <include file="$(find bitbots_cm730)/launch/cm730.launch" />
