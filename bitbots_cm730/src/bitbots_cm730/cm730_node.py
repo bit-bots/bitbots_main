@@ -79,6 +79,8 @@ class CM730Node:
         self.temp_publisher = rospy.Publisher('servo_data', AdditionalServoData, queue_size=1)
         self.imu_publisher = rospy.Publisher('imu', Imu, queue_size=1)
         self.button_publisher = rospy.Publisher('buttons', Buttons, queue_size=1)
+
+        # --- Initialize Services ---
         self.motor_power_service = rospy.Service("switch_motor_power", SwitchMotorPower,
                                                  self.switch_motor_power_service_call)
         self.led_service = rospy.Service("set_leds", SetLEDs,

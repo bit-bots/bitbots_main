@@ -63,11 +63,12 @@ cdef class CM730(object):
             self.joint_offsets.append(offsets[self.joints[i]['name']])
 
         self.ctrl = Controller(serial)
+        self.dxl_power = self.ctrl.read_register(ID_CM730, CM730_REGISTER.dxl_power)
         self.read_packet_stub = list()
         self.read_packet2 = BulkReadPacket()
         self.read_packet3_stub = list()
         self.init_read_packet()
-
+        cdef bool old_dxl_power = self.dxl_power
         self.switch_motor_power(True)
 
         if rospy.get_param("cm730/motor_test"):
@@ -80,7 +81,8 @@ cdef class CM730(object):
             if motors_ok:
                 rospy.logwarn("All motors were found")
 
-        self.switch_motor_power(False)
+        self.switch_motor_power(old_dxl_power)
+
     cpdef init_read_packet(self):
         """
         Initialise the :class:`BulkReadPacket` for communication with the motors
@@ -88,23 +90,7 @@ cdef class CM730(object):
         Important: The motor in self.read_packet[i] has to be the same like in self.read_packet3[i], because
          while reading, single packages from 1 are inserted to 3.
         """
-        for cid in self.motors:
-            # if robot has this motor
-            self.read_packet_stub.append((
-                cid,
-                (
-                    MX28_REGISTER.present_position,
-                    MX28_REGISTER.present_speed,
-                    MX28_REGISTER.present_load,
-                    MX28_REGISTER.present_voltage,
-                    MX28_REGISTER.present_temperature
-                )))
-            self.read_packet3_stub.append((
-                cid,
-                (
-                    MX28_REGISTER.present_position,
-                    MX28_REGISTER.present_speed,
-                )))
+
         # IMU, buttons and voltage
         self.read_packet_stub.append((
             ID_CM730,
@@ -130,6 +116,23 @@ cdef class CM730(object):
                 CM730_REGISTER.gyro,
                 CM730_REGISTER.accel
             )))
+        for cid in self.motors:
+            # if robot has this motor
+            self.read_packet_stub.append((
+                cid,
+                (
+                    MX28_REGISTER.present_position,
+                    MX28_REGISTER.present_speed,
+                    MX28_REGISTER.present_load,
+                    MX28_REGISTER.present_voltage,
+                    MX28_REGISTER.present_temperature
+                )))
+            self.read_packet3_stub.append((
+                cid,
+                (
+                    MX28_REGISTER.present_position,
+                    MX28_REGISTER.present_speed,
+                )))
 
         if len(self.read_packet_stub)!= len(self.read_packet3_stub):
             raise AssertionError("self.read_packet and self.read_packet3 have to be the same size")
