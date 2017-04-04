@@ -1,0 +1,5 @@
+<launch>
+    <rosparam command="load" file="$(find game_controller)/config/game_controller.yaml" />
+    <node pkg="game_conroller" type="game_conroller_node" name="game_conroller_node" output="screen">
+    </node>
+</launch>
