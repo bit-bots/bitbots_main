@@ -5,7 +5,6 @@
     <include file="$(find bitbots_transform)/launch/transforms.launch"/>
     <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch"/>
     <include file="$(find bitbots_localisation)/launch/localisation_amcl.launch"/>
-    <include file="$(find bitbots_cm730)/launch/cm730.launch" />
     <include file="$(find bitbots_hcm)/launch/hcm_nodes.launch"/>
 
 </launch>
