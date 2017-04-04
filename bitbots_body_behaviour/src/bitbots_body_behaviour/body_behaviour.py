@@ -31,7 +31,7 @@ class BehaviourModule(StackMachineModule):
 
         rospy.Subscriber("ball_relative", BallRelative, self.connector.vision.ball_callback)
         rospy.Subscriber("obstacle_relative", ObstacleRelative, self.connector.vision.obstacle_callback)
-        rospy.Subscriber("Gamestate", GameState, self.connector.gamestate.gamestate_callback)
+        rospy.Subscriber("gamestate", GameState, self.connector.gamestate.gamestate_callback)
 
         # self.connector.animation.server = actionlib.SimpleActionClient("bitbots_animation", PlayAnimationAction)
 
