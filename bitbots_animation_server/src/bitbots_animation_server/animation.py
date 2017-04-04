@@ -111,16 +111,17 @@ class Step:
         self.time = time
         self.p = p
 
-        if value == "off":
-            self.off = True
-        elif value == "hold":
-            rospy.logwarn("'hold' noch nicht unterstützt!")
-            self.hold = True
-        else:
-            raise ValueError("Ungültiger Wert fürs Ziel")
+        if isinstance(value, str):
+            if value == "off":
+                self.off = True
+            elif value == "hold":
+                rospy.logwarn("'hold' noch nicht unterstützt!")
+                self.hold = True
+            else:
+                raise ValueError("Ungültiger Wert fürs Ziel:" + str(value))
 
-        # gegen einen anderen Wert ersetzten
-        value = 0
+            # gegen einen anderen Wert ersetzten
+            value = 0
 
         self.value = value
 
