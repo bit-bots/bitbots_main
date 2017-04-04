@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <name>bitbots_joy</name>
+  <version>1.0.0</version>
+  <description>The bitbots_joy takes messages from the joy node and converts them to messages for /cmd_vel.</description>
+
+  <author email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</author>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>humanoid_league_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>std_msgs</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>humanoid_league_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+
+  <export>
+  </export>
+</package>
