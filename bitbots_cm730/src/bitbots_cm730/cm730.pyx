@@ -332,11 +332,11 @@ cdef class CM730(object):
         cdef SyncWritePacket d_packet = None
         cdef int joint_value = 0
 
-
-        if not self.dxl_power:
-            self.switch_motor_power(True)
-            # We do nothing, so the actual pose gets updated before acting
-            return
+        # TODO: das ist mist hier, dann kan man den roboter nicht aus machen...
+        #if not self.dxl_power:
+        #    self.switch_motor_power(True)
+        #    # We do nothing, so the actual pose gets updated before acting
+        #    return
 
         goal_packet = SyncWritePacket((MX28_REGISTER.goal_position, MX28_REGISTER.moving_speed))
         for name, joint in pose.joints:
