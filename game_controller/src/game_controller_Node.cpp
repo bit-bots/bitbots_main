@@ -55,6 +55,7 @@ int main(int argc, char **argv) {
                  //gameState.kickoff_nsec = mGame->getKickOffTime().tv_usec;
 		 gameStatePub.publish(gameState);
 		 ros::spinOnce();
+		 ros::Duration(0.05).sleep();
 	 }
 
 
