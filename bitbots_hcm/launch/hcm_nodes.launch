@@ -6,7 +6,7 @@
 
     <include file="$(find bitbots_buttons)/launch/buttons.launch"/>
 
-    <node name="pause" pkg="bitbots_pause" type="pause.py"/>
+    <node name="pause" pkg="bitbots_pause" type="pause.py" respawn="true"/>
 
     <include file="$(find bitbots_animation_server)/launch/animation.launch"/>
 
@@ -17,6 +17,6 @@
 
     <rosparam file="$(find bitbots_hcm)/config/hcm.yaml" command="load"/>
     <rosparam file="$(find bitbots_hcm)/config/hcm_state_machine.yaml" command="load"/>
-    <node name="HCM" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" respawn="false"/>
+    <node name="HCM" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" respawn="true"/>
 
 </launch>

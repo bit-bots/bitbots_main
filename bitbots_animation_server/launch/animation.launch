@@ -1,4 +1,4 @@
 <launch>
     <rosparam file="$(find bitbots_animation_server)/config/animation.yaml" command="load"/>
-    <node name="animation" pkg="bitbots_animation_server" type="animation_node.py"/>
+    <node name="animation" pkg="bitbots_animation_server" type="animation_node.py" respawn="true"/>
 </launch>
