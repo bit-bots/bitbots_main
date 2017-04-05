@@ -26,8 +26,8 @@ int main(int argc, char **argv) {
     n.getParam("bot_id", bot_id);
     n.getParam("team_id", team_id);
 
-    mGame->setTeamId(bot_id);
-    mGame->setBotId(team_id);
+    mGame->setTeamId(team_id);
+    mGame->setBotId(bot_id);
 	mGame->setBotAllowedToMove(true);
 	mGame->setGameState(Game::PLAYING);
 
