@@ -19,7 +19,7 @@ class Pause(object):
         log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_pause', log_level=log_level, anonymous=False)
         self.manual_penalize_service = rospy.Service("manual_penalize", ManualPenalize, self.manual_update)
-        rospy.Subscriber("/gamestate", GameState, self.game_controler_update)
+        rospy.Subscriber("gamestate", GameState, self.game_controler_update)
         self.pause_publisher = rospy.Publisher("/pause", Bool, queue_size=10)
         self.speak_publisher = rospy.Publisher("/speak", Speak, queue_size=10)
 
