@@ -15,8 +15,8 @@ from cfg import dummyvision_paramsConfig
 
 class DummyVision:
     def __init__(self):
-        self.green_min = (0, 110, 0)
-        self.green_max = (140, 255, 140)
+        self.green_min = (0, 75, 0)
+        self.green_max = (113, 255, 115)
 
         self.pub_balls = rospy.Publisher("ball_candidates", BallsInImage, queue_size=1)
         self.pub_lines = rospy.Publisher("line_in_image", LineInformationInImage, queue_size=5)
@@ -114,8 +114,8 @@ class DummyVision:
             cv2.line(bimg, (30 * x + 15, horizon[x]), (30 * (x + 1) + 15, horizon[x + 1]), color=(0, 255, 0))
 
         #cv2.imshow("Image", bimg)
-        #cv2.imshow("Mask", mask)
-        #cv2.waitKey(1)
+        cv2.imshow("Mask", mask)
+        cv2.waitKey(1)
 
         self.pub_lines.publish(li)
         self.pub_balls.publish(msg)
