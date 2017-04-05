@@ -30,18 +30,19 @@ class Pause(object):
         self.pause = False
 
     def manual_update(self, req):
-        if req == 0:
+        if req.penalize == 0:
             # off
             self.penalty_manual = False
-        elif req == 1:
+        elif req.penalize == 1:
             # on
             self.penalty_manual = True
-        elif req == 2:
+        elif req.penalize == 2:
             # switch
             self.penalty_manual = not self.penalty_manual
         else:
             rospy.logerr("Manual penalize call with unspecified request")
         self.set_pause(self.penalty_manual)
+        return True
 
     def game_controler_update(self, msg):
         # if something changed
@@ -56,8 +57,9 @@ class Pause(object):
             text = "Pause was set"
         else:
             text = "Pause was removed"
+        rospy.logwarn(text)
         speak(text, self.speak_publisher, speaking_active=self.talking, priority=Speak.HIGH_PRIORITY)
-        self.pause_publisher(state)
+        self.pause_publisher.publish(Bool(state))
 
 if __name__ == "__main__":
     pause = Pause()

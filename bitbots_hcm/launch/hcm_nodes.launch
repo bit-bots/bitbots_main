@@ -4,7 +4,7 @@
     <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
     <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
 
-    <node name="buttons" pkg="bitbots_buttons" type="button_node.py" />
+    <include file="$(find bitbots_buttons)/launch/buttons.launch"/>
 
     <node name="pause" pkg="bitbots_pause" type="pause.py"/>
 
