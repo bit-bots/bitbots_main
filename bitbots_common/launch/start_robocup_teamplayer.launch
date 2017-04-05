@@ -1,6 +1,15 @@
 <launch>
+    <arg name="wfvision" default="true"/>
 
-    <include file="$(find bitbots_vision_common)/launch/vision_startup.launch"/>
+    <group if="$(arg wfvision)">
+        <include file="$(find bitbots_vision_common)/launch/vision_startup_wf.launch"/>
+    </group>
+
+    <group unless="$(arg wfvision)">
+        <include file="$(find bitbots_vision_common)/launch/vision_startup.launch"/>
+    </group>
+
+
     <include file="$(find bitbots_body_behaviour)/launch/start_behaviour_standalone.launch"/>
     <include file="$(find bitbots_transform)/launch/transforms.launch"/>
     <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch"/>
