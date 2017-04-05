@@ -21,7 +21,7 @@ class ButtonNode(object):
         # --- Params ---
         self.speaking_active = rospy.get_param("/buttons/speak_active", False)
         self.short_time = rospy.get_param("/buttons/short_time", 2)
-        self.manual_penality_mode = rospy.get_param("/button_modes/manual_penalty", False)
+        self.manual_penality_mode = rospy.get_param("/buttons/manual_penalty", False)
 
         # --- Class variables ---
         self.button1 = False
@@ -57,29 +57,33 @@ class ButtonNode(object):
             # button2 not pressed anymore
             self.button2 = False
             if time.time() - self.button2_time < self.short_time:
-                self.button1_short()
+                self.button2_short()
             else:
-                self.button1_long()
+                self.button2_long()
             self.button2_time = 0
 
     def button1_short(self):
+        rospy.logwarn('Button 1 Pressed short')
         speak("Button 1 pressed short", self.speak_publisher, speaking_active=self.speaking_active)
 
     def button1_long(self):
+        rospy.logwarn('Button 1 Pressed long')
         speak("Button 1 pressed long", self.speak_publisher, speaking_active=self.speaking_active)
 
     def button2_short(self):
+        rospy.logwarn('Button 2 Pressed short')
         speak("Button 2 pressed short", self.speak_publisher, speaking_active=self.speaking_active)
         if self.manual_penality_mode:
             # switch penalty state by calling service on motion
             rospy.wait_for_service("manual_penalize")
             manual_penalize_method = rospy.ServiceProxy("manual_penalize", ManualPenalize)
             try:
-                response = manual_penalize_method(3)  # argument 3 for switch
+                response = manual_penalize_method(2)  # argument 3 for switch
             except rospy.ServiceException as exc:
                 print("Service did not process request: " + str(exc))
 
     def button2_long(self):
+        rospy.logwarn('Button 2 Pressed long')
         speak("Button 2 pressed long", self.speak_publisher, speaking_active=self.speaking_active)
 
 
