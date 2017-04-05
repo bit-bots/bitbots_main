@@ -63,7 +63,7 @@ Behaviour:
         headTurnPrecision: 2
 
         # Time in Secounds to wait befor turn by Walking
-        turnWaitTime: 20
+        turnWaitTime: 9999 #todo change if turning works
 
         #New feature if wew want to use invere kinematics for searching
         useKinematicTaskForSearching: true
