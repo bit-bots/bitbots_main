@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
 	mGame->isAllowedToMove();
 
 	ros::Publisher gameStatePub = n.advertise<humanoid_league_msgs::GameState>("GameState", 1);
+	ros::Rate r(3);
 	 while (ros::ok())
 	 {
 		 humanoid_league_msgs::GameState gameState;
@@ -55,6 +56,7 @@ int main(int argc, char **argv) {
                  //gameState.kickoff_nsec = mGame->getKickOffTime().tv_usec;
 		 gameStatePub.publish(gameState);
 		 ros::spinOnce();
+		 r.sleep();
 	 }
 
 
