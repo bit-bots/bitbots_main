@@ -26,8 +26,8 @@ int main(int argc, char **argv) {
     n.getParam("bot_id", bot_id);
     n.getParam("team_id", team_id);
 
-    mGame->setTeamId(bot_id);
-    mGame->setBotId(team_id);
+    mGame->setTeamId(team_id);
+    mGame->setBotId(bot_id);
 	mGame->setBotAllowedToMove(true);
 	mGame->setGameState(Game::PLAYING);
 
@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
 	mGame->isAllowedToMove();
 
 	ros::Publisher gameStatePub = n.advertise<humanoid_league_msgs::GameState>("gamestate", 1);
+	ros::Rate r(3);
 	 while (ros::ok())
 	 {
 		 humanoid_league_msgs::GameState gameState;
@@ -55,7 +56,7 @@ int main(int argc, char **argv) {
                  //gameState.kickoff_nsec = mGame->getKickOffTime().tv_usec;
 		 gameStatePub.publish(gameState);
 		 ros::spinOnce();
-		 ros::Duration(0.05).sleep();
+		 r.sleep();
 	 }
 
 

@@ -45,12 +45,12 @@ void GameControllerServer::execute(void* arg) {
     struct timeval timeout;     // timeout for socket access
 
     timeout.tv_sec = 0;
-    timeout.tv_usec = 100000;
 
 	uint64_t lastSendTime = 0;
 	uint64_t currentTime = 0;
 
 	do {
+		timeout.tv_usec = 100000;
 		if (mNetwork == NULL) {
 			break;
 		}
@@ -143,9 +143,18 @@ void GameControllerServer::HandlePacket(char* data) {
 					case STATE_PLAYING:
 						//Debugger::INFO("GameControllerServer", "GameState: PLAYING");
 						//Debugger::DEBUG("GameControllerServer", "Kickoff for team %d", msg->kickOffTeam);
-						ROS_INFO("GameState: PLAYINGs");
+						//TODO THERE IS SOMETHING WRONG WITH THE TEAMS PLACES CHANGE BEETWEEN HALFES !!!!!
 						if (msg->kickOffTeam < 2 ) {
-							if (msg->teams[msg->kickOffTeam].teamNumber == teamId) {
+                            ROS_INFO("KickoffTeam %d",msg->kickOffTeam);
+                            if (msg->firstHalf && msg->teams[msg->kickOffTeam].teamNumber == teamId) {
+								//Debugger::INFO("GameControllerServer", "We got kick-off!");
+								ROS_INFO("We got kick-off!");
+								timeval kickoffTime;
+								gettimeofday(&kickoffTime, 0);
+								mGame->setKickoff(true, kickoffTime);
+								mGame->setBotAllowedToMove(true);
+								mWaitingForKickOffDelay = false;
+							}if (msg->firstHalf==0 && msg->teams[msg->kickOffTeam].teamNumber != teamId) {
 								//Debugger::INFO("GameControllerServer", "We got kick-off!");
 								ROS_INFO("We got kick-off!");
 								timeval kickoffTime;
