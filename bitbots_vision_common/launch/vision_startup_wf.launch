@@ -10,5 +10,6 @@
 
 
   <!--<include file="$(find wolves_image_provider_v4l)/launch/image_provider_v4l.launch" />-->
-
+  <remap from ="usb_cam/image_raw" to="image_raw"/>
+  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" args="" />
 </launch>
