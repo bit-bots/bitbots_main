@@ -107,13 +107,13 @@ def get_mx28_register_table():
     """
     Get the mx28 register table
     """
-    return MX28
+    return MX28_REGISTER
 
 def get_cm730_register_table():
     """
     Get the register table of the cm730
     """
-    return CM730
+    return CM730_REGISTER
 
 # IDs
 ID_BROADCAST    = 254

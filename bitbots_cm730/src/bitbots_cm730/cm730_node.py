@@ -283,4 +283,10 @@ class CM730Node:
 
 if __name__ == "__main__":
     rospy.logdebug("starting cm730 node")
+    try:
+        from bitbots_common.nice import Nice
+        nice = Nice()
+        nice.set_realtime()
+    except ImportError:
+        rospy.logwarn("Could not import Nice")
     cm730_node = CM730Node()

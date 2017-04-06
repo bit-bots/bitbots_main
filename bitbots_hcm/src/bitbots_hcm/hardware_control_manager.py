@@ -326,4 +326,10 @@ def main():
 
 
 if __name__ == "__main__":
+    try:
+        from bitbots_common.nice import Nice
+        nice = Nice()
+        nice.set_realtime()
+    except ImportError:
+        rospy.logwarn("Could not import Nice")
     main()
