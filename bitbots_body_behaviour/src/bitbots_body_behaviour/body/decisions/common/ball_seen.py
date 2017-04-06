@@ -8,10 +8,10 @@ BallSeen
 import time
 
 import rospy
-from body.actions.search import Search
-from body.decisions.common.close_ball import CloseBallPenaltyKick, CloseBallCommon
-from body.decisions.goalie.ball_dangerous import BallDangerous
-from body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
+from bitbots_body_behaviour.body.actions.search import Search
+from bitbots_body_behaviour.body.decisions.common.close_ball import CloseBallPenaltyKick, CloseBallCommon
+from bitbots_body_behaviour.body.decisions.goalie.ball_dangerous import BallDangerous
+from bitbots_body_behaviour.body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from bitbots_common.connector.connector import BodyConnector
 
