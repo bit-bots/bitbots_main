@@ -145,7 +145,8 @@ void GameControllerServer::HandlePacket(char* data) {
 						//Debugger::DEBUG("GameControllerServer", "Kickoff for team %d", msg->kickOffTeam);
 						ROS_INFO("GameState: PLAYINGs");
 						if (msg->kickOffTeam < 2 ) {
-							if (msg->teams[msg->kickOffTeam].teamNumber == teamId) {
+                            ROS_INFO("KickoffTeam %d",msg->teams[msg->kickOffTeam].teamNumber);
+                            if (msg->teams[msg->kickOffTeam].teamNumber == teamId) {
 								//Debugger::INFO("GameControllerServer", "We got kick-off!");
 								ROS_INFO("We got kick-off!");
 								timeval kickoffTime;
