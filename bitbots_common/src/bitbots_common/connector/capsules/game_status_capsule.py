@@ -68,5 +68,8 @@ class GameStatusCapsule:
     def has_penalty_kick(self):
         return self.gamestate.penaltyShot
 
+    def is_allowed_to_move(self):
+        return self.gamestate.allowedToMove
+
     def gamestate_callback(self, gs: GameState):
         self.gamestate = gs
