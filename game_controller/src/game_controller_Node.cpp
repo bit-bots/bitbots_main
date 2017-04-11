@@ -9,6 +9,7 @@
 #include "Network/GameControllerServer.h"
 #include "Game.h"
 #include "IGame.h"
+#include "std_msgs/Bool.h"
 #include "humanoid_league_msgs/GameState.h"
 
 int main(int argc, char **argv) {
@@ -36,6 +37,7 @@ int main(int argc, char **argv) {
 	mGame->isAllowedToMove();
 
 	ros::Publisher gameStatePub = n.advertise<humanoid_league_msgs::GameState>("GameState", 1);
+    ros::Publisher networkStatePub = n.advertise<std_msgs::Bool>("WifiConnected",1);
 	ros::Rate r(3);
 	 while (ros::ok())
 	 {
@@ -52,9 +54,14 @@ int main(int argc, char **argv) {
 		 gameState.hasKickOff = mGame->haveKickOff();
 		 gameState.penalized = mGame->isPenalized();
 		 gameState.firstHalf = mGame->isFirstHalf();
+         const bool isWifi = mGameController->isWifiConnected;
+         std_msgs::Bool wifiMsg;
+         wifiMsg.data = isWifi;
+         networkStatePub.publish(wifiMsg);
                  //gameState.kickoff_sec = mGame->getKickOffTime().tv_sec;
                  //gameState.kickoff_nsec = mGame->getKickOffTime().tv_usec;
 		 gameStatePub.publish(gameState);
+		 //TODO PENALTY SHOT COUNTER, singleShots
 		 ros::spinOnce();
 		 r.sleep();
 	 }

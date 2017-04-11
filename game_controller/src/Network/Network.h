@@ -134,6 +134,7 @@ public:
    * @return positive true, negative false.
    */
   uint8_t isConnected() const;
+    uint8_t isWifiConnected() const ;
 
 private:
   /**
@@ -152,6 +153,7 @@ private:
    */
   static void initWinsocks();
 
+  char* mInterfaceWifiName;
   SOCKET mSocket;					//!< Socket of the network.
   struct sockaddr_in mSource;		//!< Source address(Local) of the network.
   struct sockaddr_in mDestination;	//!< Destination(Target) of the Network. If 0 -> Broadcast.

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
+#include <ifaddrs.h>
 
 
 #define WINVER 0x0501
@@ -43,6 +44,7 @@ void Network::construct(uint32_t address, uint16_t port, uint32_t sourceAddress,
 	mSocket = socket(PF_INET, TCPMode ? SOCK_STREAM : SOCK_DGRAM, 0);
 	if (mSocket == INVALID_SOCKET) {
 		printf("<1> [Network] construct: Unable to create socket!\n");
+		ROS_ERROR("<1> [Network] construct: Unable to create socket!");
 	}
 
 	// Set source address for datagram and bind to socket
@@ -53,6 +55,7 @@ void Network::construct(uint32_t address, uint16_t port, uint32_t sourceAddress,
 		if (bind(mSocket, (struct sockaddr *) &mSource,
 				(socklen_t) sizeof(struct sockaddr_in)) == SOCKET_ERROR) {
 			printf("<1> [Network] construct: Unable to bind socket!\n");
+            ROS_ERROR("<1> [Network] construct: Unable to bind socket!");
 		}
 	}
 
@@ -81,13 +84,26 @@ void Network::construct(uint32_t address, uint16_t port, uint32_t sourceAddress,
 		if (connect(mSocket, (struct sockaddr *) &mDestination,
 				(socklen_t) sizeof(struct sockaddr_in)) == SOCKET_ERROR) {
 			printf("<1> [Network] construct: Could not connect. Error: %d\n", errno);
-
+            ROS_ERROR("<1> [Network] construct: Could not connect. Error: %d", errno);
 			close(mSocket);
 			mSocket = INVALID_SOCKET;
 		}
 	}
 
 	mInstanceCounter++;
+    struct ifaddrs *ifaddr, *ifa;
+    int family, s, n;
+    if (getifaddrs(&ifaddr) == -1) {
+        ROS_ERROR("Cant read addresses");
+    }
+    for (ifa = ifaddr, n = 0; ifa != NULL; ifa = ifa->ifa_next, n++) {
+        //ROS_INFO("IFA Name is %s",ifa->ifa_name);
+        if(ifa->ifa_name[0]=='w'){
+            mInterfaceWifiName = ifa->ifa_name;
+
+        }
+
+    }
 }
 
 Network::~Network() {
@@ -264,5 +280,22 @@ uint32_t Network::resolveHost(string host) {
 }
 
 uint8_t Network::isConnected() const {
+
 	return mSocket != INVALID_SOCKET;
+}
+
+uint8_t Network::isWifiConnected() const {
+    struct ifreq ifr;
+
+    memset( &ifr, 0, sizeof(ifr) );
+    strcpy( ifr.ifr_name,mInterfaceWifiName );
+
+    if( ioctl(mSocket, SIOCGIFFLAGS, &ifr ) != -1 )
+    {
+        if(mInterfaceWifiName,(ifr.ifr_flags & ( IFF_UP | IFF_RUNNING )) == ( IFF_UP | IFF_RUNNING )){
+            return true;
+        }
+        //ROS_INFO("Connected int %s is :%d", mInterfaceWifiName,(ifr.ifr_flags & ( IFF_UP | IFF_RUNNING )) == ( IFF_UP | IFF_RUNNING ));
+    }
+    return false;
 }

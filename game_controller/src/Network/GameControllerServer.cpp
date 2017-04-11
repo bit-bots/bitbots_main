@@ -26,6 +26,7 @@ GameControllerServer::GameControllerServer(Game* game) {
 	mPreviousTeamColor = 255;
 	mGame = game;
 	mWaitingForKickOffDelay = false;
+    isWifiConnected = false;
 	mKickOffUnparalyzeTime = 0;
 	mLastMsgReceived = 0;
 	//Debugger::DEBUG("GameControllerServer", "Team: %d, Port: %d", mGame->getTeamID(), GAMECONTROLLER_PORT);
@@ -54,6 +55,7 @@ void GameControllerServer::execute(void* arg) {
 		if (mNetwork == NULL) {
 			break;
 		}
+
 		if (mNetwork->receiveData(networkBuffer, (size_t)GAMECONTROLLER_BUFFER_LENGTH, &timeout, NULL, NULL) > 0) {
 			// Check header
 			if (   networkBuffer[0] == 'R'
@@ -75,6 +77,13 @@ void GameControllerServer::execute(void* arg) {
 		}
 		if ((currentTime - lastSendTime) >= KEEPALIVE_INTERVAL) {
 			SendKeepAlive();
+            //We check each KeepAlive step if the wifi is connected
+            if(mNetwork->isWifiConnected()){
+                //ROS_ERROR("NO CONNECTION");
+                isWifiConnected = true;
+            }else{
+                isWifiConnected = false;
+            }
 			lastSendTime = currentTime;
 		}
 		if (mLastMsgReceived != 0) {
@@ -145,7 +154,7 @@ void GameControllerServer::HandlePacket(char* data) {
 						//Debugger::DEBUG("GameControllerServer", "Kickoff for team %d", msg->kickOffTeam);
 						ROS_INFO("GameState: PLAYINGs");
 						if (msg->kickOffTeam < 2 ) {
-                            ROS_INFO("KickoffTeam %d",msg->teams[msg->kickOffTeam].teamNumber);
+                            ROS_INFO("KickoffTeam %d",msg->kickOffTeam);
                             if (msg->teams[msg->kickOffTeam].teamNumber == teamId) {
 								//Debugger::INFO("GameControllerServer", "We got kick-off!");
 								ROS_INFO("We got kick-off!");

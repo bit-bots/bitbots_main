@@ -27,7 +27,7 @@ public:
 	 */
 	GameControllerServer(Game* game);
 	virtual ~GameControllerServer();
-
+    bool isWifiConnected;
 private:
 	//lint -e(1704)
 	GameControllerServer(const GameControllerServer& cSource);
@@ -44,6 +44,7 @@ private:
     uint8_t mPreviousTeamColor;
     uint64_t mLastMsgReceived;
     uint64_t mKickOffUnparalyzeTime;
+
     bool mWaitingForKickOffDelay;
 };
 
