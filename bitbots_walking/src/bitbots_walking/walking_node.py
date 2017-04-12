@@ -107,7 +107,6 @@ class WalkingNode:
             self.walking.set_gyro(gyro_x, gyro_y, gyro_z)  ###gyro
         # Pose berechnen
         self.zmp_foot_phase = self.walking.process()
-        # todo check if this is still in use
         # self.ipc.set_walking_foot_phase(self.zmp_foot_phase)
 
         return self.walking.pose

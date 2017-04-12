@@ -29,7 +29,6 @@ class CM730Node:
     and sets goal values to the servos.
     """
 
-    # todo write in roscpp for better performance (due to multi core use)
     def __init__(self):
         log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_cm730', log_level=log_level, anonymous=False)
@@ -49,6 +48,10 @@ class CM730Node:
         # time
         self.goal_sum=0
         self.goal_count =0
+        self.f = open("cm_lat", 'w')
+        self.arrt = []
+        self.arrn = []
+
 
         # --- Pre initialize messages ---
         # (for more performance)
@@ -92,8 +95,12 @@ class CM730Node:
     def update_motor_goals(self, msg):
         """ Callback for subscription on motorgoals topic.
         We can only handle the first point of a JointTrajectory :( """
-        self.goal_sum += time.time() - msg.header.stamp.to_sec()
+        #self.goal_sum += time.time() - msg.header.stamp.to_sec()
         self.goal_count +=1
+
+        self.arrt.append(time.time() - msg.header.stamp.to_sec())
+        self.arrn.append(msg.header.seq)
+
         motor_goals = []
         motor_speeds = []
         joints = msg.joint_names
@@ -156,14 +163,28 @@ class CM730Node:
             # switch of motor power in the end
             self.cm_730.switch_motor_power(False)
             if self.goal_count !=0:
-                print("goal mean: " + str((self.goal_sum/self.goal_count)/1000))
+                print("goal mean: " + str((self.goal_sum/self.goal_count)*1000))
+
+            i = 0
+            for n in self.arrn:
+                self.f.write(str(n) + "," + str(self.arrt[i] * 1000) + "\n")
+                i += 1
+            self.f.close()
+
         except:
             # swicht of motor power in case of problem
             self.cm_730.switch_motor_power(False)
             # print traceback
             traceback.print_exc()
             if self.goal_count != 0:
-                print("goal mean: " + str((self.goal_sum / self.goal_count)/1000))
+                print("goal mean: " + str((self.goal_sum / self.goal_count)*1000))
+
+            i = 0
+            for n in self.arrn:
+                self.f.write(str(n) + "," + str(self.arrt[i] * 1000) + "\n")
+                i += 1
+            self.f.close()
+
 
     def update_once(self):
         """ Updates sensor data with :func:`update_sensor_data`, publishes the data and sends the motor commands.
@@ -177,7 +198,6 @@ class CM730Node:
         # Send Messages to ROS
         if robo_pose is not None:
             self.publish_joints(robo_pose)
-        # todo self.publish_additional_servo_data()
         if gyro is not None:
             self.publish_imu(gyro, accel)
         if button1 is not None:
@@ -192,7 +212,6 @@ class CM730Node:
     def update_sensor_data(self):
         raw_accel = None
         raw_gyro = None
-        #todo put sensordata read und parsesensordata in eine methode zusammen ins cm730
         # first get data
         result, cid_all_values = self.cm_730.sensor_data_read()
 

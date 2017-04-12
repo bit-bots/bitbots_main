@@ -74,6 +74,12 @@ class Motion:
         self.walk_count=0
         self.imu_sum =0
         self.imu_count = 0
+        self.arrt = []
+        self.arrn = []
+        self.f = open("hcm_lat_imu", 'w')
+        self.f2 = open("hcm_lat_walk", 'w')
+        self.aw1 = []
+        self.aw2 = []
 
         # --- Initialize Node ---
         log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
@@ -114,18 +120,15 @@ class Motion:
     def update_imu(self, msg):
         """Gets new IMU values and computes the smoothed values of these"""
         update_time = time.time()
-        self.imu_sum += update_time - msg.header.stamp.to_sec()
+        #self.imu_sum += update_time - msg.header.stamp.to_sec()
         self.imu_count += 1
+        self.arrt.append(update_time - msg.header.stamp.to_sec())
+        self.arrn.append(msg.header.seq)
 
         self.accel = numpy.array([msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z])
         self.gyro = numpy.array([msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z])
 
-        # todo check if this is needed by something else in the software
-        # todo make smoothing factors reconfigurable
-        # Remember smoothed gyro values
-        # Used for falling detectiont, smooth_gyro is to late but peaks have to be smoothed anyway
-        # increasing smoothing -->  later detection
-        # decreasing smoothing --> more false positives
+
         self.smooth_gyro = numpy.multiply(self.smooth_gyro, 0.9) + numpy.multiply(self.gyro, 0.1)  # gyro
         self.smooth_accel = numpy.multiply(self.smooth_accel, 0.9) + numpy.multiply(self.accel, 0.1)  # accel
         self.not_much_smoothed_gyro = numpy.multiply(self.not_much_smoothed_gyro, 0.5) + numpy.multiply(self.gyro, 0.5)
@@ -147,13 +150,16 @@ class Motion:
 
     def walking_goal_callback(self, msg):
         t = time.time()
-        self.walk_sum += t - msg.header.stamp.to_sec()
+        #self.walk_sum += t - msg.header.stamp.to_sec()
         self.walk_count +=1
+
+        self.aw1.append(t - msg.header.stamp.to_sec())
+        self.aw2.append(msg.header.seq)
 
         VALUES.walking_active = True
         self.last_walking_update = t
         if self.state_machine.get_current_state() == STATE_CONTROLABLE or \
-                        self.state_machine.get_current_state() == STATE_WALKING: #todo change to statemachin.is_walking
+                        self.state_machine.get_current_state() == STATE_WALKING:
             self.joint_goal_publisher.publish(msg)
 
     def head_goal_callback(self, msg):
@@ -191,7 +197,7 @@ class Motion:
             else:
                 # comming from outside
                 if self.state_machine.get_current_state() != STATE_CONTROLABLE:
-                    rospy.logwarn("Motion is not controllable, animation refused.")  # todo handle this now
+                    rospy.logwarn("Motion is not controllable, animation refused.")
                     # animation has to wait
                     # state machine should try to become controllable
                     VALUES.animation_requested = True
@@ -201,8 +207,6 @@ class Motion:
                     VALUES.external_animation_playing = True
 
         if msg.last:
-            # todo reset motor speeds afterward to 0
-            # todo reset pid values
             if msg.hcm:
                 # This was an animation from the state machine
                 VALUES.hcm_animation_playing = False
@@ -232,10 +236,9 @@ class Motion:
         start = time.time()
         rate = rospy.Rate(20)
 
-        while not rospy.is_shutdown(): #todo should directly be not statemachine.shutdown()
+        while not rospy.is_shutdown():
             finished = self.update_once()
             if finished:
-                # Todo maybe do some last shutdown stuff after internal shutdown?
                 return
 
             # Count to get the update frequency
@@ -256,20 +259,32 @@ class Motion:
 
         # we got external shutdown, tell it to the state machine, it will handle it
         VALUES.shut_down = True
-        # now wait for it finishing the shutdown procedure #todo fix this see above
+        # now wait for it finishing the shutdown procedure
         # while not self.state_machine.is_shutdown():
         #    # we still have to update everything
         #    self.update_once()
         #    rospy.sleep(0.01)
 
         if self.imu_count != 0:
-            print("imu mean: " + str((self.imu_sum/self.imu_count)/1000))
+            print("imu mean: " + str((self.imu_sum/self.imu_count)*1000))
         if self.walk_count != 0:
-            print("walk mean: " + str((self.walk_sum / self.walk_count)/1000))
+            print("walk mean: " + str((self.walk_sum / self.walk_count)*1000))
         if self.anim_count != 0:
-            print("anim mean: " + str((self.anim_sum / self.anim_count)/1000))
+            print("anim mean: " + str((self.anim_sum / self.anim_count)*1000))
 
-    def update_once(self):  # todo flag setzen falls werte geändert und nur dann evaluieren
+        i = 0
+        for n in self.arrn:
+            self.f.write(str(n) + "," + str(self.arrt[i] * 1000) + "\n")
+            i += 1
+        self.f.close()
+
+        i = 0
+        for n in self.aw2:
+            self.f2.write(str(n) + "," + str(self.aw1[i] * 1000) + "\n")
+            i += 1
+        self.f2.close()
+
+    def update_once(self):
         # check if we're still walking
         if time.time() - self.last_walking_update > 0.5:
             VALUES.walking_active = False
@@ -292,7 +307,6 @@ def calculate_robot_angles(raw):
 
     roll_angle = calc_sin_angle(raw, numpy.array([1, 0, 0]))
 
-    # TODO mir ist noch keiner schlaue Formel für diesen Wingkel eingefallen
     yaw_angle = 0
 
     return -roll_angle, -pitch_angle, yaw_angle
@@ -302,7 +316,7 @@ def calc_sin_angle(fst, sec):
     fst_norm = numpy.linalg.norm(fst)
     sec_norm = numpy.linalg.norm(sec)
     if fst_norm == 0 or sec_norm == 0:
-        return 0  # TODO Rückgabewert sinvoll?
+        return 0
     return math.degrees(asin(numpy.dot(fst, sec) / (fst_norm * sec_norm)))
 
 

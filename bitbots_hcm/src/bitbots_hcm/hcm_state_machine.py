@@ -69,7 +69,6 @@ class Startup(AbstractState):
             if VALUES.last_hardware_update is not None or time.time() - VALUES.start_up_time > self.start_time_limit:
                 # check if we directly go into a special state, if not, got to get up
                 if VALUES.start_test:
-                    # todo ping motors
                     pass
                     return
                 if VALUES.record:
@@ -114,13 +113,12 @@ class Softoff(AbstractState):
     def evaluate(self):
         if not self.animation_started:
             if VALUES.record:
-                # todo prohibit sudden movement by getting first one time the current motor values
                 switch_motor_power(True)
                 self.next_state = Record()
                 # don't directly change state, we wait for animation to finish
                 self.start_animation(rospy.get_param("hcm/animations/walkready"))
                 return
-            if time.time() - VALUES.last_request < 10:  # todo param
+            if time.time() - VALUES.last_request < 10:
                 # got a new move request
                 switch_motor_power(True)
                 self.next_state = Controllable()
@@ -326,7 +324,7 @@ class Controllable(AbstractState):
 
 class Falling(AbstractState):
     def entry(self):
-        self.wait_time = time.time() #todo remove senseless double checking if falling or not
+        self.wait_time = time.time()
         # go directly in falling pose
         falling_pose = VALUES.fall_checker.check_falling(VALUES.not_so_smooth_gyro)
         if falling_pose is not None:
@@ -388,12 +386,12 @@ class Walking(AbstractState):
 
     def evaluate(self):
         if VALUES.record:
-            return Record() #todo to walking stopping
+            return Record()
         if VALUES.penalized:
-            return PenaltyAnimationIn() #todo to walking stopping?
-        if VALUES.is_soft_off_time(): #todo should not be possible while running? and also go to walking stopping
+            return PenaltyAnimationIn()
+        if VALUES.is_soft_off_time():
             return Softoff()
-        if VALUES.is_die_time(): #todo to walking stopping
+        if VALUES.is_die_time():
             return ShutDownAnimation()
         if VALUES.standup_flag:
             # Falling detection
@@ -421,11 +419,9 @@ class Walking(AbstractState):
 
 class WalkingStopping(AbstractState):
     def entry(self):
-        # todo walking stop
         pass
 
     def evaluate(self):
-        # todo if wakling stopped
         return Controllable()
 
     def exit(self):
@@ -508,7 +504,6 @@ def switch_motor_power(state):
     if rospy.get_param("simulation_active", False):
         rospy.loginfo("I'm simulating, not switching motorpower to " + state.__str__())
     else:
-        # todo set motor ram here if turned on, bc it lost it
         try:
             rospy.wait_for_service("switch_motor_power", timeout=1)
         except rospy.ROSException:
@@ -516,7 +511,7 @@ def switch_motor_power(state):
             return
         power_switch = rospy.ServiceProxy("switch_motor_power", SwitchMotorPower)
         try:
-            response = power_switch(state)  # todo do something with respons
+            response = power_switch(state)
         except rospy.ServiceException as exc:
             print("Service did not process request: " + str(exc))
         # wait for motors

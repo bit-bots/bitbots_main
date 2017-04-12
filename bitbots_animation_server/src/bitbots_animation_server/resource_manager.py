@@ -30,10 +30,7 @@ BASEPATH = abspath(path + "/animations")
 
 
 class ResourceManager(object):
-    """ Simpler Resourcen Manager, der den absoluten Pfad für Resources
-        in Abhängigkeit des Python-Paths findet, und dannach in einem
-        Cache hält.
-    """
+
     def __init__(self):
         self.cache = {}
         self.files = []  # Animations cached for find_all_animations

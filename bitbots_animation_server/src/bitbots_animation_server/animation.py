@@ -9,17 +9,9 @@ from numpy.compat import basestring
 
 from bitbots_common.pose.pypose import PyJoint as Joint
 
-#todo translate old german comments to english
-
 class Keyframe:
     '''
-    Eine Pose, die vom Roboter innerhalb einer Animation zu einem
-    Zeitpunkt :attr:`duration` Sekunden in der Zukunft eingenommen wird.
-    Der Roboter hat zu diesem Zeitpunkt
-    dann alle Gelenke auf den in der Zuordnung :attr:`goals` gespeicherten
-    Werten. Beim Erreichen dieser Pose hält der Roboter für
-    :attr:`pause` Sekunden inne. Es werden die P-Gains auf die entsprechenden
-    p werte gesetzt, sodenn vorhanden.
+    A pose which the robot reaches at :attr:`duration` seconds in the future.
     '''
 
     def __init__(self, goals, duration=1.0, pause=0.0, p={}):
@@ -31,19 +23,8 @@ class Keyframe:
 
 class Animation:
     '''
-    Eine Animation besteht aus einer Reihe von Zielposen (:class:`Keyframe`)
-    für die einzelnen Gelenke des Roboters, die nacheinander
-    abgefahren werden müssen. Zwischen den einzelnen Zielposen kann eine
-    variable Zeit vergehen und der Roboter kann nach dem Erreichen einer
-    Position für eine bestimmte Zeit in dieser verweilen, bevor
-    die nächste Pose angefahren wird.
-
-    Die Art, wie zwischen zwei Posen interpoliert wird, ist durch einen
-    :class:`Interpolator` festgelegt. Jedem Gelenk kann dabei ein eigener
-    :class:`Interpolator` zugeordnet werden. Ist keiner zugeordnet, so wird
-    der Standardinterpolator für die Animation verwendet. Ist keiner
-    festgelegt, wird eine einfache lineare Interpolation mittels
-    des :class:`LinearInterpolator` verwendet.
+    An animation is constructed by an array of goal positions (:class:`Keyframe`).
+    Between two keyframes, the goal positions are interpolated by an  :class:`Interpolator`.
     '''
 
     def __init__(self, name, keyframes, default_interpolator=None):
@@ -53,15 +34,14 @@ class Animation:
         self.default_interpolator = default_interpolator or LinearInterpolator
 
     def get_interpolator(self, name):
-        """ Gibt die Klasse des für das Gelenk *name* verwendeten
-            Interpolators zurück. Ist für das Gelenk speziell keiner gesetzt,
-            wird der Wert von :attr:`default_interpolator` zurück gegeben.
+        """
+            Returns the interpolator class which uses the joint *name*.
+            If none is set, the default interpolator is returned
         """
         return self.interpolators.get(name, self.default_interpolator)
 
     def get_steps(self, nameb: bytes):
-        """ Gibt ein Liste von :class:`Step` Objekten für das Gelenk *name*
-            zurück.
+        """ Returns list of :class:`Step` objects for the joint *name*
         """
         name = nameb.decode()
         time = 0
@@ -102,8 +82,7 @@ class Animation:
 
 class Step:
     '''
-    Einfache Klasse zum Speichern der Stützstellen und Stützwerte
-    für die Interpolation.
+    Simple class for saving splines
     '''
 
     def __init__(self, time, value, p=-1):
@@ -131,15 +110,8 @@ class Step:
 
 class Interpolator:
     """
-    Dies ist die Basisklasse für alle Interpolatoren. Ein Interpolator
-    bekommt im Konstruktor eine Liste von :class:`Step`-Objekten.
-    Der Konstruktor ruft die prepare() Methode auf, in der der
-    Interpolator einmalige Vorbereitungen treffen kann.
-    Ein kubischer Interpolator würde z.B. die Steigung der Tangenten
-    berechnen.
-
-    Danach können interpolierte Werte über die Funktion :func:`interpolate`
-    erfragt werden.
+    This is the basic class for all interpolators.
+    Interpolated values can be get by calling the  :func:`interpolate`
     """
 
     def __init__(self, steps):
@@ -169,20 +141,19 @@ class Interpolator:
         pass
 
     def interpolate(self, t):
-        ''' Interpoliert einen Wert an der Stelle *t*
-            Gibt ein Tupel mit vier Elementen zurück:
-            # Zielwinkel
-            # Boolscher Wert, ob das Gelenk aktiv sein soll
-            # Boolscher Wert, ob das Gelenk den aktuellen Wert halten soll
-            # Integer, p value, -1=nicht ändern
+        ''' Interpolates a value at time t
+            returns a tuple with 4 elemtens:
+            # goal angle
+            # Bool, if joint is activ
+            # Bool, if joint schould stay at current position
+            # Integer, p value, -1=dont change
         '''
         return 0, False, False, -1
 
 
 class LinearInterpolator(Interpolator):
     '''
-    Implementierung von :class:`Interpolator` für eine einfache lineare
-    Interpolation der Stützwerte
+    Simple linear interpolation
     '''
 
     def interpolate(self, t):
@@ -220,10 +191,7 @@ def cubic_hermite_interpolate(a, b, t):
 
 class CubicHermiteInterpolator(Interpolator):
     """
-    Basisklasse für
     `Cubic-Hermite <http://en.wikipedia.org/wiki/Cubic_Hermite_spline>`_-Splines.
-    Es müssen die Tangenten mit der :func:`prepare`-Methode berechnet und
-    in :attr:`Step.m` gespeichert werden.
     """
 
     def interpolate(self, t):
@@ -250,7 +218,7 @@ class CubicHermiteInterpolator(Interpolator):
 
 class CatmullRomInterpolator(CubicHermiteInterpolator):
     """
-    Berechnet die Tangenten nachdem `Catmull-Rom <http://en.wikipedia.org/wiki/Cubic_Hermite_spline#Catmull.E2.80.93Rom_spline>`_ Verfahren.
+    `Catmull-Rom <http://en.wikipedia.org/wiki/Cubic_Hermite_spline#Catmull.E2.80.93Rom_spline>`
     """
 
     def m(self, idx):
@@ -268,10 +236,8 @@ class CatmullRomInterpolator(CubicHermiteInterpolator):
 
 class Animator:
     """
-    Die :class:`Animator`-Klasse dient zum Abspielen einer Animation.
-    Dem Konstruktor wird ein fertig konfiguriertes :class:`Animation`-Objekt
-    gegeben, für das dann die entsprechenden :class:`Interpolator`-Instanzen
-    erzeugt werden.
+    The :class:`Animator` plays animations.
+    The constructor takes a finished animation object for which the interpolator instance is created
 
     Wird dem Konstruktor eine weitere Pose in *first_pose* übergeben, so
     wird dies als die aktuelle *ist Position* interpretiert und als Ausgang
@@ -303,9 +269,7 @@ class Animator:
         self.speed_factor = rospy.get_param("animation/speed_factor")
 
     def get_pose(self, t, pose=None):
-        ''' Interpoliert eine Pose zum Zeitpunkt *t*. Es wird entweder ein
-            neues :class:`~bitbots.robot.pypose.PyPose` Objekt zurück gegeben oder das
-            optional in *pose* übergebene Objekt verändert.
+        ''' Interpolates a pose at time t
         '''
 
         if pose is None:
@@ -333,13 +297,10 @@ class Animator:
         return pose
 
     def playfunc(self, stepsize):
-        """ Diese Funktion generiert eine anonyme Funktion, die bei jedem
-            Aufruf einen neue Pose erzeugt.
-            Die zurückgegebene Funktion sollte mindestens alle
-            *stepsize*-Sekunden aufgerufen werden, kann aber auch häufiger
-            aufgerufen werden.
-
-            Ist die Animation beendet, wird *None* zurückgegeben.
+        """ This function generates an anymous function which returns at each caLL a new pose
+            The returned function has to be called at least each *stepsize* seconds
+            but can be called more often
+            None is returned when the animation is finished
         """
         pre = stepsize * 1.5
 

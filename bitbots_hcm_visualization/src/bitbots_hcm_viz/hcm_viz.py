@@ -73,17 +73,17 @@ class HcmViz(Plugin):
         # connections of state machine, load form parameter sever, this means we have to wait until motion has provided
         # them
         try:
-            self.connections = rospy.get_param("/motion_state_machine")
+            self.connections = rospy.get_param("/hcm_state_machine")
         except:
             rospy.logwarn("Config for state machine was not laoded, will try to this by my self now.")
             rp = rospkg.RosPack()
-            config_file_path = rp.get_path('bitbots_hcm') + "/config/motion_state_machine.yaml"
+            config_file_path = rp.get_path('bitbots_hcm') + "/config/hcm_state_machine.yaml"
             paramlist = rosparam.load_file(config_file_path, default_namespace="/")
             for params, ns in paramlist:
                 rosparam.upload_params(ns, params)
             self.connections = rospy.get_param("/motion_state_machine")
 
-        rospy.Subscriber("/motion_state_debug", String, self.state_update, queue_size=100)
+        rospy.Subscriber("/hcm_state_debug", String, self.state_update, queue_size=100)
 
         self._widget = QWidget()
 

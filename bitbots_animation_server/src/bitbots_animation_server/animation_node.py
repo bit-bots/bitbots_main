@@ -27,7 +27,7 @@ class AnimationNode:
         server = PlayAnimationAction(rospy.get_name())
         rospy.spin()
 
-#todo diese zweite klasse macht keinen sinn, das sollte auch alles in die node klasse passen
+
 class PlayAnimationAction(object):
     _feedback = PlayAnimationFeedback
     _result = PlayAnimationResult
@@ -94,7 +94,6 @@ class PlayAnimationAction(object):
         start = time.time()
 
         while not rospy.is_shutdown():
-            # todo aditional time staying up after shutdown to enable hcm to sit down, or play sit down directly?
             # first check if we have another goal
             if self._as.is_new_goal_available():
                 next_goal = self._as.next_goal
@@ -116,7 +115,6 @@ class PlayAnimationAction(object):
             # compute next pose
             pose = animfunc(self.current_pose)
             if pose is None:
-                # todo reset pid values if they were changed in animation - mabye also do this in hcm, when recieving finished animation
                 # see walking node reset
 
                 # animation is finished
