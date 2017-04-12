@@ -63,10 +63,25 @@ cdef class CM730(object):
             self.joint_offsets.append(offsets[self.joints[i]['name']])
 
         self.ctrl = Controller(serial)
+        self.dxl_power = self.ctrl.read_register(ID_CM730, CM730_REGISTER.dxl_power)
         self.read_packet_stub = list()
         self.read_packet2 = BulkReadPacket()
         self.read_packet3_stub = list()
         self.init_read_packet()
+        cdef bool old_dxl_power = self.dxl_power
+        self.switch_motor_power(True)
+
+        if rospy.get_param("cm730/motor_test"):
+            motors_ok = True
+            for i in range(len(rospy.get_param("cm730/Minibot/motors"))):
+                # range goes from 0 to number of joints -1 so we increment by one
+                if not self.ctrl.ping(i+1):
+                    rospy.logwarn("Motor " + str(i) + " did not respond to ping")
+                    motors_ok = False
+            if motors_ok:
+                rospy.logwarn("All motors were found")
+
+        self.switch_motor_power(old_dxl_power)
 
     cpdef init_read_packet(self):
         """
@@ -75,23 +90,7 @@ cdef class CM730(object):
         Important: The motor in self.read_packet[i] has to be the same like in self.read_packet3[i], because
          while reading, single packages from 1 are inserted to 3.
         """
-        for cid in self.motors:
-            # if robot has this motor
-            self.read_packet_stub.append((
-                cid,
-                (
-                    MX28_REGISTER.present_position,
-                    MX28_REGISTER.present_speed,
-                    MX28_REGISTER.present_load,
-                    MX28_REGISTER.present_voltage,
-                    MX28_REGISTER.present_temperature
-                )))
-            self.read_packet3_stub.append((
-                cid,
-                (
-                    MX28_REGISTER.present_position,
-                    MX28_REGISTER.present_speed,
-                )))
+
         # IMU, buttons and voltage
         self.read_packet_stub.append((
             ID_CM730,
@@ -117,6 +116,23 @@ cdef class CM730(object):
                 CM730_REGISTER.gyro,
                 CM730_REGISTER.accel
             )))
+        for cid in self.motors:
+            # if robot has this motor
+            self.read_packet_stub.append((
+                cid,
+                (
+                    MX28_REGISTER.present_position,
+                    MX28_REGISTER.present_speed,
+                    MX28_REGISTER.present_load,
+                    MX28_REGISTER.present_voltage,
+                    MX28_REGISTER.present_temperature
+                )))
+            self.read_packet3_stub.append((
+                cid,
+                (
+                    MX28_REGISTER.present_position,
+                    MX28_REGISTER.present_speed,
+                )))
 
         if len(self.read_packet_stub)!= len(self.read_packet3_stub):
             raise AssertionError("self.read_packet and self.read_packet3 have to be the same size")
@@ -223,7 +239,7 @@ cdef class CM730(object):
         for cid, values in sensor_data.items():
             if cid == ID_CM730:
                 #this is a reponse package from cm730
-                if not cid_all_values == ID_CM730 and self.dxl_power:
+                if not cid_all_values == ID_CM730:#Todo: warum: and self.dxl_power:
                     #only IMU values
                     #but sometimes something is strange so make another test
                     if len(values) == 2:
@@ -316,11 +332,11 @@ cdef class CM730(object):
         cdef SyncWritePacket d_packet = None
         cdef int joint_value = 0
 
-
-        if not self.dxl_power:
-            self.switch_motor_power(True)
-            # We do nothing, so the actual pose gets updated before acting
-            return
+        # TODO: das ist mist hier, dann kan man den roboter nicht aus machen...
+        #if not self.dxl_power:
+        #    self.switch_motor_power(True)
+        #    # We do nothing, so the actual pose gets updated before acting
+        #    return
 
         goal_packet = SyncWritePacket((MX28_REGISTER.goal_position, MX28_REGISTER.moving_speed))
         for name, joint in pose.joints:

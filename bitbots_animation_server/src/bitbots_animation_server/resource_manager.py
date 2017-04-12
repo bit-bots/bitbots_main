@@ -139,7 +139,7 @@ class ResourceManager(object):
         return lambda name: self.find(join(path, name))
 
     def find_animation(self, name):
-        """ Findet eine Animation unter share/bitbots/animations/*.
+        """ Findet eine Animation unter <roboter_name>_animations/animations/*.
             Der Dateiname in *name* ist ohne ``.json`` anzugeben.
             path = find_animation("walkready")
         """

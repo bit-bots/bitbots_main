@@ -82,6 +82,8 @@ class CM730Node:
         self.temp_publisher = rospy.Publisher('servo_data', AdditionalServoData, queue_size=1)
         self.imu_publisher = rospy.Publisher('imu', Imu, queue_size=1)
         self.button_publisher = rospy.Publisher('buttons', Buttons, queue_size=1)
+
+        # --- Initialize Services ---
         self.motor_power_service = rospy.Service("switch_motor_power", SwitchMotorPower,
                                                  self.switch_motor_power_service_call)
         self.led_service = rospy.Service("set_leds", SetLEDs,
@@ -300,4 +302,10 @@ class CM730Node:
 
 if __name__ == "__main__":
     rospy.logdebug("starting cm730 node")
+    try:
+        from bitbots_common.nice import Nice
+        nice = Nice()
+        nice.set_realtime()
+    except ImportError:
+        rospy.logwarn("Could not import Nice")
     cm730_node = CM730Node()

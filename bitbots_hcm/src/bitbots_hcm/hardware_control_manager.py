@@ -10,7 +10,8 @@ import actionlib
 import numpy
 import rospy
 
-import humanoid_league_msgs
+from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAction
+
 from bitbots_common.pose.pypose import PyPose as Pose
 from bitbots_common.util.pose_to_message import pose_to_traj_msg
 from humanoid_league_speaker.speaker import speak
@@ -20,7 +21,7 @@ from bitbots_cm730.srv import SwitchMotorPower
 
 from bitbots_hcm.hcm_state_machine import HcmStateMachine, STATE_CONTROLABLE, AnimationRunning, STATE_WALKING
 from dynamic_reconfigure.server import Server
-from humanoid_league_msgs.msg import RobotControlState, Animation
+from humanoid_league_msgs.msg import RobotControlState
 from humanoid_league_msgs.msg import Speak
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import JointState
@@ -100,13 +101,12 @@ class Motion:
 
         rospy.Subscriber("imu", Imu, self.update_imu, queue_size=1)
         rospy.Subscriber("walking_motor_goals", JointTrajectory, self.walking_goal_callback, queue_size=1)
-        rospy.Subscriber("animation", Animation, self.animation_callback, queue_size=1)
+        rospy.Subscriber("animation", AnimationMsg, self.animation_callback, queue_size=1)
         rospy.Subscriber("head_motor_goals", JointTrajectory, self.head_goal_callback, queue_size=1)
         rospy.Subscriber("record_motor_goals", JointTrajectory, self.record_goal_callback, queue_size=1)
         rospy.Subscriber("pause", Bool, self.pause, queue_size=1)
 
-        self.animation_action_client = actionlib.SimpleActionClient('animation',
-                                                                    humanoid_league_msgs.msg.PlayAnimationAction)
+        self.animation_action_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
         VALUES.animation_client = self.animation_action_client
 
         self.dyn_reconf = Server(hcm_paramsConfig, self.reconfigure)
@@ -340,4 +340,10 @@ def main():
 
 
 if __name__ == "__main__":
+    try:
+        from bitbots_common.nice import Nice
+        nice = Nice()
+        nice.set_realtime()
+    except ImportError:
+        rospy.logwarn("Could not import Nice")
     main()

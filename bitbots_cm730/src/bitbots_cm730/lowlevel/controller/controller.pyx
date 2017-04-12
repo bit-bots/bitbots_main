@@ -107,13 +107,13 @@ def get_mx28_register_table():
     """
     Get the mx28 register table
     """
-    return MX28
+    return MX28_REGISTER
 
 def get_cm730_register_table():
     """
     Get the register table of the cm730
     """
-    return CM730
+    return CM730_REGISTER
 
 # IDs
 ID_BROADCAST    = 254
@@ -518,8 +518,6 @@ cdef class Controller:
                     (error.get_motor(), error.get_error_str()))
                 rospy.logerr(msg)
                 err = error.get_error()
-                # wir machen da mal ein packet draus (bitschifting ist toll)
-                rospy.logerr("LastError", (statuspacket.err << 8) + statuspacket.cid)
                 errors.add_motor_error(error)
         if errors:
             # antwort trotzdem verarbeiten

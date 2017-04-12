@@ -5,7 +5,6 @@ import time
 import math
 import rospy
 from bitbots_common.pose.pypose import PyPose as Pose
-from numpy.compat import basestring
 
 from bitbots_common.pose.pypose import PyJoint as Joint
 
@@ -90,14 +89,15 @@ class Step:
         self.off = False
         self.time = time
         self.p = p
-        if isinstance(value, basestring):
+
+        if isinstance(value, str):
             if value == "off":
                 self.off = True
             elif value == "hold":
                 rospy.logwarn("'hold' noch nicht unterstützt!")
                 self.hold = True
             else:
-                raise ValueError("Ungültiger Wert fürs Ziel")
+                raise ValueError("Ungültiger Wert fürs Ziel:" + str(value))
 
             # gegen einen anderen Wert ersetzten
             value = 0

@@ -5,16 +5,18 @@ import actionlib
 import traceback
 import rospy
 import time
-from std_msgs.msg import Header
+
+
 from humanoid_league_msgs.msg import PlayAnimationResult, PlayAnimationFeedback
 from humanoid_league_msgs.msg import PlayAnimationAction as PlayAction
+from humanoid_league_msgs.msg import Animation as AnimationMsg
 from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
 
 from bitbots_animation_server.animation import Animator, parse
 from bitbots_common.pose.pypose import PyPose as Pose
 from sensor_msgs.msg import Imu, JointState
 from bitbots_animation_server.resource_manager import find_animation
-from humanoid_league_msgs.msg import Animation, RobotControlState
+from humanoid_league_msgs.msg import RobotControlState
 from bitbots_common.util.pose_to_message import pose_goal_to_traj_msg
 
 
@@ -43,14 +45,14 @@ class PlayAnimationAction(object):
         self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
 
         # pre defiened messages for performance
-        self.anim_msg = Animation()
+        self.anim_msg = AnimationMsg()
         self.traj_msg = JointTrajectory()
         self.traj_msg.joint_names = [x.decode() for x in self.used_motor_names]
         self.traj_point = JointTrajectoryPoint()
 
         rospy.Subscriber("joint_states", JointState, self.update_current_pose, queue_size=1)
         rospy.Subscriber("robot_state", RobotControlState, self.update_hcm_state, queue_size=1)
-        self.hcm_publisher = rospy.Publisher("animation", Animation, queue_size=1)
+        self.hcm_publisher = rospy.Publisher("animation", AnimationMsg, queue_size=1)
 
         self._as = actionlib.SimpleActionServer(self._action_name, PlayAction,
                                                 execute_cb=self.execute_cb, auto_start=False)
@@ -169,7 +171,7 @@ class PlayAnimationAction(object):
         if pose is not None:
             self.anim_msg.position = pose_goal_to_traj_msg(pose, self.used_motor_names, self.traj_msg, self.traj_point)
         rospy.logdebug(self.anim_msg.position)
-        self.anim_msg.header.stamp=rospy.Time.from_sec(time.time())
+        self.anim_msg.header.stamp = rospy.Time.from_sec(time.time())
         self.hcm_publisher.publish(self.anim_msg)
 
 
