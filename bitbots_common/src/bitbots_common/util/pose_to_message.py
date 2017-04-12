@@ -1,5 +1,6 @@
 import math
 import rospy
+import time
 from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
 
 
@@ -10,7 +11,8 @@ def pose_to_traj_msg(pose, motor_names, joint_traj_msg, traj_point_msg):
     # make an array with String objects (ros message type)
     joint_traj_msg.points = []
     joint_traj_msg.points.append(traj_point_msg)
-    joint_traj_msg.header.stamp = rospy.Time.now()
+    joint_traj_msg.header.stamp = rospy.Time.from_sec(
+        time.time())
     return joint_traj_msg
 
 
@@ -21,5 +23,5 @@ def pose_goal_to_traj_msg(pose, motor_names, joint_traj_msg, traj_point_msg):
     # make an array with String objects (ros message type)
     joint_traj_msg.points = []
     joint_traj_msg.points.append(traj_point_msg)
-    joint_traj_msg.header.stamp = rospy.Time.now()
+    joint_traj_msg.header.stamp = rospy.Time.from_sec(time.time())
     return joint_traj_msg

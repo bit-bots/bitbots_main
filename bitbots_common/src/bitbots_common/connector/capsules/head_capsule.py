@@ -43,7 +43,7 @@ class HeadCapsule:
         velnew = list(point.velocities[:-2]) + [pan_speed, tilt_speed]
         self.pos_msg.points[0].positions = posnew
         self.pos_msg.points[0].velocities = velnew
-        self.pos_msg.header.stamp = rospy.Time.now()
+        self.pos_msg.header.stamp = rospy.Time.from_sec(time.time())
         self.position_publisher.publish(self.pos_msg)
 
     def get_current_head_pos(self):
