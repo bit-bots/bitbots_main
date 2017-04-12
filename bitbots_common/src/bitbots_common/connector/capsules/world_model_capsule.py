@@ -8,12 +8,12 @@ Provides informations about the world model.
 import math
 from typing import Tuple
 
-from humanoid_league_msgs.msg import Position
+from humanoid_league_msgs.msg import Position2D
 
 
 class WorldModelCapsule:
     def __init__(self, ):
-        self.position = Position()
+        self.position = Position2D()
 
     def get_current_position(self)->Tuple[float, float, float]:
         return self.position.pose.x, self.position.pose.y, self.position.pose.theta
@@ -57,5 +57,5 @@ class WorldModelCapsule:
     def get_ballpos(self)->Tuple[float, float]:
         raise NotImplementedError
 
-    def position_callback(self, pos: Position):
+    def position_callback(self, pos: Position2D):
         self.position = pos

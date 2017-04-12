@@ -5,7 +5,7 @@ import math
 import rospy
 from humanoid_league_msgs.msg import HeadMode, BallInImage
 import rosparam
-from sensor_msgs.msg import JointState
+from sensor_msgs.msg import JointState, CameraInfo
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
@@ -28,6 +28,7 @@ class HeadCapsule:
         self.current_tilt_pos = 0
         self.is_ball_tracking_still_active = False
         self.bestball_in_image = None, None
+        self.cam_info = 800, 600
 
         # preparing message for more performance
         self.pos_msg = JointTrajectory()
@@ -67,7 +68,7 @@ class HeadCapsule:
                 self.current_tilt_pos = math.degrees(msg.position[i])
             i += 1
 
-    def cb_ballinimage(self, ball:BallInImage):
+    def cb_ballinimage(self, ball: BallInImage):
         self.bestball_in_image = ball.center.x, ball.center.y
 
     def get_started_confirm_ball(self):
@@ -77,6 +78,7 @@ class HeadCapsule:
         self.startedconfirmingball = t
 
     def unset_started_confirm_ball(self):
+        rospy
         self.startedconfirmingball = 0
 
     def set_confirmed_ball(self):
@@ -96,3 +98,6 @@ class HeadCapsule:
 
     def cb_motor_postions(self, msg: JointTrajectory):
         self.pos_msg = msg
+
+    def cb_cam_info(self, msg: CameraInfo):
+        self.cam_info = msg.width, msg.height
