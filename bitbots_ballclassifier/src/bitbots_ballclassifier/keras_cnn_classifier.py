@@ -71,8 +71,6 @@ class Classifier:
             msg.center.y = i[1]
             msg.diameter = i[2] * 2
             msg.confidence = p[0][0]
-            msg.header.frame_id = img.header.frame_id
-            msg.header.stamp = img.header.stamp
             quality.append(msg)
 
         if len(quality) > 0:

@@ -79,8 +79,6 @@ class DummyVision:
                 can.center.x = i[0]
                 can.center.y = i[1]
                 can.diameter = (i[2] * 2) + 3
-                can.header.frame_id = img.header.frame_id
-                can.header.stamp = img.header.stamp
                 msg.candidates.append(can)
 
         # Linepoints
