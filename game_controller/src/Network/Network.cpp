@@ -297,5 +297,6 @@ uint8_t Network::isWifiConnected() const {
         }
         //ROS_INFO("Connected int %s is :%d", mInterfaceWifiName,(ifr.ifr_flags & ( IFF_UP | IFF_RUNNING )) == ( IFF_UP | IFF_RUNNING ));
     }
+    delete ifr;
     return false;
 }
