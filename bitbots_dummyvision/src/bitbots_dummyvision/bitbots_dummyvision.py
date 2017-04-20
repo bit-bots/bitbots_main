@@ -15,8 +15,10 @@ from cfg import dummyvision_paramsConfig
 
 class DummyVision:
     def __init__(self):
-        self.green_min = (0, 75, 0)
-        self.green_max = (113, 255, 115)
+        self.green_min = (0, 110, 37)
+        self.green_max = (139, 255, 255)
+        self.horizon_x_steps = 30
+        self.horizon_y_steps = 30
 
         self.pub_balls = rospy.Publisher("ball_candidates", BallsInImage, queue_size=1)
         self.pub_lines = rospy.Publisher("line_in_image", LineInformationInImage, queue_size=5)
@@ -44,19 +46,23 @@ class DummyVision:
         # mask = cv2.erode(mask, None, iterations = 2)
         # mask = 255 - mask
 
-        # Horizion
-        horizonbase = np.zeros((ra.shape[0] / 30, ra.shape[1] / 30))
-        for x in range(ra.shape[0] / 30):
-            for y in range(ra.shape[1] / 30):
-                horizonbase[x, y] = self.check_img(mask[x * 30:(x + 1) * 30, y * 30:(y + 1) * 30])
-
-        horizon = []
-        for col in range(horizonbase.shape[1]):
-            hl = list(horizonbase[:, col])
-            if 1 in hl:
-                horizon.append(hl.index(1) * 30)
-            else:
-                horizon.append(len(hl)*30)
+        # Horizon
+        stepwidth = (ra.shape[1] / (self.horizon_x_steps - 1), ra.shape[0] / (self.horizon_y_steps - 1))  # (x_stepwidth, y_stepwidth)
+        horizon = np.empty(self.horizon_x_steps)
+        horizon.fill(self.horizon_y_steps)  # worst case as default
+        for y in range(self.horizon_y_steps - 1):  # first half step
+            if self.check_img(mask[int(y * stepwidth[1]):int((y + 1) * stepwidth[1]), 0:math.ceil(0.5 * stepwidth[0]), ]):
+                horizon[0] = y
+                break
+        for y in range(self.horizon_y_steps - 1):  # last half step
+            if self.check_img(mask[int(y * stepwidth[1]):int((y + 1) * stepwidth[1]), int(self.horizon_x_steps - 1.5) * stepwidth[0]:math.ceil((self.horizon_x_steps - 1) * stepwidth[0])]):
+                horizon[self.horizon_x_steps - 1] = y
+                break
+        for x in range(1, self.horizon_x_steps - 1):  # everything in between
+            for y in range(self.horizon_y_steps - 1):
+                if self.check_img(mask[int(y * stepwidth[1]):int((y + 1) * stepwidth[1]), int((x - 0.5) * stepwidth[0]):math.ceil((x + 0.5) * stepwidth[0])]):
+                    horizon[x] = y
+                    break
 
         #b, g, r = cv2.split(bimg)
         circles = cv2.HoughCircles(maskb, cv2.HOUGH_GRADIENT, 1, 100,
@@ -70,7 +76,7 @@ class DummyVision:
             circles = np.uint16(np.around(circles))
 
             for i in circles[0, :]:
-                if not self.under_horizon(horizon, (i[1], i[0])):
+                if not self.under_horizon(horizon, stepwidth, (i[0], i[1])):
                     cv2.circle(bimg, (i[0], i[1]), i[2], (0, 0, 255))
                     continue
                 # corp = ra[i[1] - i[2]:i[1] + i[2], i[0] - i[2]:i[0] + i[2]]
@@ -89,7 +95,7 @@ class DummyVision:
 
             p = randint(0, bimg.shape[0] - 1), randint(0, bimg.shape[1] - 31)
 
-            if self.under_horizon(horizon, p):
+            if self.under_horizon(horizon, stepwidth, p):
                 if mask[p[0], p[1]] == 0 and sum(bimg[p[0], p[1]]) > 400:
                     is_ball = False
                     if circles is not None:
@@ -109,9 +115,9 @@ class DummyVision:
         # Plotting
 
         for x in range(len(horizon) - 1):
-            cv2.line(bimg, (30 * x + 15, horizon[x]), (30 * (x + 1) + 15, horizon[x + 1]), color=(0, 255, 0))
+            cv2.line(bimg, (int(stepwidth[0]) * x, int(stepwidth[1] * horizon[x])), (int(stepwidth[0] * (x + 1)), int(stepwidth[1] * horizon[x + 1])), color=(0, 255, 0))
 
-        #cv2.imshow("Image", bimg)
+        cv2.imshow("Image", bimg)
         cv2.imshow("Mask", mask)
         cv2.waitKey(1)
 
@@ -124,9 +130,10 @@ class DummyVision:
         return m > 100
 
     @staticmethod
-    def under_horizon(horizon, i):
+    def under_horizon(horizon, stepwidth, i):
+        """returns true if point i is under the horizon"""
         try:
-            return horizon[(i[1] // 30)] < i[0]
+            return horizon[(i[0] // stepwidth[0])] < i[1] / stepwidth[1]
         except:
             return False
 
@@ -138,6 +145,8 @@ class DummyVision:
         # Fill in local variables with values received from dynamic reconfigure clients (typically the GUI).
         self.green_min = (config["b_min"], config["g_min"], config["r_min"])
         self.green_max = (config["b_max"], config["g_max"], config["r_max"])
+        self.horizon_x_steps = config["x_stepcount"]
+        self.horizon_y_steps = config["y_stepcount"]
 
         # Return the new variables.
         return config
