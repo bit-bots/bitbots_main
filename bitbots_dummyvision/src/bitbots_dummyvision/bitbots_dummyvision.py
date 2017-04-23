@@ -27,6 +27,12 @@ class DummyVision:
         rospy.Subscriber("image_raw", Image, self._image_callback, queue_size=1)
         rospy.init_node("bitbots_dummyvision")
 
+        self.debug = rospy.get_param("debug", False)
+        if self.debug:
+            rospy.logwarn("Debug windows are enabled")
+        else:
+            rospy.loginfo("Debug windows not enabled")
+
         self.server = Server(dummyvision_paramsConfig, self.reconfigure)
 
         rospy.spin()
@@ -77,11 +83,13 @@ class DummyVision:
 
             for i in circles[0, :]:
                 if not self.under_horizon(horizon, stepwidth, (i[0], i[1])):
-                    cv2.circle(bimg, (i[0], i[1]), i[2], (0, 0, 255))
+                    if self.debug:
+                        cv2.circle(bimg, (i[0], i[1]), i[2], (0, 0, 255))
                     continue
                 # corp = ra[i[1] - i[2]:i[1] + i[2], i[0] - i[2]:i[0] + i[2]]
                 can = BallInImage()
-                cv2.circle(bimg, (i[0], i[1]), i[2], (255, 0, 0))
+                if self.debug:
+                    cv2.circle(bimg, (i[0], i[1]), i[2], (255, 0, 0))
                 can.center.x = i[0]
                 can.center.y = i[1]
                 can.diameter = (i[2] * 2) + 3
@@ -110,16 +118,17 @@ class DummyVision:
                     ls.start.y = p[0]
                     ls.end = ls.start
                     li.segments.append(ls)
-                    cv2.circle(bimg, (p[1], p[0]), 1, (0, 0, 255))
+                    if self.debug:
+                        cv2.circle(bimg, (p[1], p[0]), 1, (0, 0, 255))
 
         # Plotting
+        if self.debug:
+            for x in range(len(horizon) - 1):
+                cv2.line(bimg, (int(stepwidth[0]) * x, int(stepwidth[1] * horizon[x])), (int(stepwidth[0] * (x + 1)), int(stepwidth[1] * horizon[x + 1])), color=(0, 255, 0))
 
-        for x in range(len(horizon) - 1):
-            cv2.line(bimg, (int(stepwidth[0]) * x, int(stepwidth[1] * horizon[x])), (int(stepwidth[0] * (x + 1)), int(stepwidth[1] * horizon[x + 1])), color=(0, 255, 0))
-
-        cv2.imshow("Image", bimg)
-        cv2.imshow("Mask", mask)
-        cv2.waitKey(1)
+            cv2.imshow("Image", bimg)
+            cv2.imshow("Mask", mask)
+            cv2.waitKey(1)
 
         self.pub_lines.publish(li)
         self.pub_balls.publish(msg)
