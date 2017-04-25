@@ -1,0 +1,7 @@
+<launch>
+    <rosparam command="load" file="$(find wolves_soccer_vision)/config/fieldColor.yaml" />
+    <rosparam command="load" file="$(find wolves_soccer_vision)/config/goalWhiteColor.yaml" />
+    <rosparam command="load" file="$(find wolves_soccer_vision)/config/parameters.yaml" />
+    <node pkg="wolves_soccer_vision" type="wolves_soccer_vision_node" name="wolves_soccer_vision_node" output="screen">
+    </node>
+</launch>
