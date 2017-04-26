@@ -117,7 +117,7 @@ ZMPConfig:
       "Parameter":
           "bodyHeight": 0.28
           "stepHeight": 0.05
-          "footX": 0.033
+          "footX": 0.025
           "tZmp": 0.165
           "tStep": 0.35
           "frontComp": 0.008
@@ -129,11 +129,12 @@ ZMPConfig:
           "stanceLimitY": [0.07,0.3]
           "armImuParamY": [0.3, 0.01, 0.6, 5] ##0 mal 1; 1 mal 0.0014 ; 2 und 3 mal 0.0175, dann ist es in Grad
           "armImuParamX": [0.3, 0.01, 0.6, 5] ##0 mal 1; 1 mal 0.0014 ; 2 und 3 mal 0.0175, dann ist es in Grad
-          "supportSideX": -0.025
-          "supportTurn": -0.025
-          "supportY": 0.05
-          "bodyTiltXScaling": 1
-          "footY": 0.05
+          "supportSideX": -0.01
+          "supportTurn": -0.01
+          "supportBack": -0.01
+          "supportFront2": -0.02
+          "supportY": 0.0
+          "footY": 0.07
           "zPhase": [0.1, 0.9]
           "xPhase": [0.1, 0.9]
       "SLOW_STOP" : false
