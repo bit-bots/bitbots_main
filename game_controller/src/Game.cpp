@@ -209,7 +209,14 @@ void Game::setBotId(int id){
     mBotID = id;
     ROS_INFO("Now I have the bot ID %d", id);
 }
-
+void Game::setKickoff(bool haveKickoff) {
+	mHaveKickOff = haveKickoff;
+	if( mHaveKickOff) {
+		ROS_INFO("We have KickOff!");
+	} else {
+		ROS_INFO( "Other team has KickOff!");
+	}
+}
 void Game::setKickoff(bool haveKickoff, const timeval& kickoffTime) {
 	//lint --e{731}
 	if( (mHaveKickOff != haveKickoff)) {

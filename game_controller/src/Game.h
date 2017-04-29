@@ -147,6 +147,7 @@ public:
 
 	void setBotId(int id);
 
+	void setKickoff(bool haveKickoff);
 	/**
 	 * set the kick-off data
 	 * @param haveKickoff	true if our team has kick-off

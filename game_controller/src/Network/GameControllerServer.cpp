@@ -118,6 +118,7 @@ void GameControllerServer::HandlePacket(char* data) {
 			ourTeam = &msg->teams[1];
 			rivalTeam = &msg->teams[0];
 		}
+
 		if (ourTeam != NULL) {
 			//Debugger::DEBUG("GameControllerServer", "Packet received");
 			ROS_DEBUG( "Packet received");
@@ -138,6 +139,11 @@ void GameControllerServer::HandlePacket(char* data) {
 						ROS_INFO("GameState: READY");
 						mGame->setBotAllowedToMove(false);
 						mGame->setGameState(Game::READY);
+						/*if (msg->kickOffTeam == teamId) {
+							mGame->setKickoff(true);
+						}else{
+							mGame->setKickoff(false);
+						}*/
 						// update score
 						if( rivalTeam != NULL) {
 							mGame->setScore(ourTeam->score, rivalTeam->score);
@@ -153,9 +159,10 @@ void GameControllerServer::HandlePacket(char* data) {
 						//Debugger::INFO("GameControllerServer", "GameState: PLAYING");
 						//Debugger::DEBUG("GameControllerServer", "Kickoff for team %d", msg->kickOffTeam);
 						ROS_INFO("GameState: PLAYINGs");
-						if (msg->kickOffTeam < 2 ) {
+						ROS_INFO("KickoffTeam %d",msg->kickOffTeam);
+						if (msg->kickOffTeam <  128 ) {
                             ROS_INFO("KickoffTeam %d",msg->kickOffTeam);
-                            if (msg->teams[msg->kickOffTeam].teamNumber == teamId) {
+                            if (msg->kickOffTeam== teamId) {
 								//Debugger::INFO("GameControllerServer", "We got kick-off!");
 								ROS_INFO("We got kick-off!");
 								timeval kickoffTime;

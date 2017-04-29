@@ -159,6 +159,7 @@ public:
 	 * @param kickoffTime	time for kick-off
 	 */
 	virtual void setKickoff(bool haveKickoff, const timeval& kickoffTime) = 0;
+	virtual void setKickoff(bool haveKickoff) = 0;
 	
 	/**
 	 * set first or second half
