@@ -101,7 +101,7 @@ void GameControllerServer::execute(void* arg) {
 
 void GameControllerServer::HandlePacket(char* data) {
 	//Debugger::INFO"GameControllerServer", "Received RGme packet");
-
+    ROS_DEBUG( "Received RGme packet");
 	//lint -e(826)
 	struct RoboCupGameControlData* msg = (struct RoboCupGameControlData*)data;
 
