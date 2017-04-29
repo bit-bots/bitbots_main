@@ -30,8 +30,8 @@ GameControllerServer::GameControllerServer(Game* game) {
 	mKickOffUnparalyzeTime = 0;
 	mLastMsgReceived = 0;
 	//Debugger::DEBUG("GameControllerServer", "Team: %d, Port: %d", mGame->getTeamID(), GAMECONTROLLER_PORT);
-	ROS_DEBUG("Team: %d, Port: %d", mGame->getTeamID(), GAMECONTROLLER_PORT);
-	mNetwork = new Network(0, GAMECONTROLLER_PORT, INADDR_ANY, GAMECONTROLLER_PORT);
+	ROS_DEBUG("Team: %d, Port: %d", mGame->getTeamID(), GAMECONTROLLER_DATA_PORT);
+	mNetwork = new Network(0, GAMECONTROLLER_DATA_PORT, INADDR_ANY, GAMECONTROLLER_DATA_PORT);
 	this->start(this);
 }
 
