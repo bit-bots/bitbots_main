@@ -46,12 +46,12 @@ void GameControllerServer::execute(void* arg) {
     struct timeval timeout;     // timeout for socket access
 
     timeout.tv_sec = 0;
-    timeout.tv_usec = 100000;
 
 	uint64_t lastSendTime = 0;
 	uint64_t currentTime = 0;
 
 	do {
+		timeout.tv_usec = 100000;
 		if (mNetwork == NULL) {
 			break;
 		}
@@ -162,7 +162,7 @@ void GameControllerServer::HandlePacket(char* data) {
 						ROS_INFO("KickoffTeam %d",msg->kickOffTeam);
 						if (msg->kickOffTeam <  128 ) {
                             ROS_INFO("KickoffTeam %d",msg->kickOffTeam);
-                            if (msg->kickOffTeam== teamId) {
+                            if (msg->kickOffTeam == teamId) {
 								//Debugger::INFO("GameControllerServer", "We got kick-off!");
 								ROS_INFO("We got kick-off!");
 								timeval kickoffTime;
