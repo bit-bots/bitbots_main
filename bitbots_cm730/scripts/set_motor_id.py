@@ -12,8 +12,8 @@ mx = get_mx28_register_table()
 ctrl.write_register(200, cm.dxl_power, 1)
 
 print("Ths Scripts sets the Motorid from old_id to new_id")
-old_cid = int(raw_input("The old ID:"))
-new_cid = int(raw_input("The new ID:"))
+old_cid = int(input("The old ID:"))
+new_cid = int(input("The new ID:"))
 
 ctrl.write_register(old_cid, mx.cid, new_cid)
 
