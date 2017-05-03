@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
 
 	mGame->isAllowedToMove();
 
-    ros::Publisher networkStatePub = n.advertise<std_msgs::Bool>("WifiConnected",1);
+    ros::Publisher networkStatePub = n.advertise<std_msgs::Bool>("wifi_connected", 1);
 	ros::Publisher gameStatePub = n.advertise<humanoid_league_msgs::GameState>("gamestate", 1);
 	ros::Rate r(3);
 	 while (ros::ok())
