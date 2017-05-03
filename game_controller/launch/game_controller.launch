@@ -1,5 +1,5 @@
 <launch>
     <rosparam command="load" file="$(find game_controller)/config/game_controller.yaml" />
-    <node pkg="game_controller" type="game_controller_node" name="game_controller_node" output="screen">
+    <node pkg="game_controller" type="game_controller_node" name="game_controller_node" output="screen" respawn="true">
     </node>
 </launch>
