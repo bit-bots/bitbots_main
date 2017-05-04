@@ -72,10 +72,10 @@ class Pathfinding:
         # put values together and take some factors
         tres = lambda x: 0.0 if abs(x) < 0.75 else x
         sig = lambda x: x / (1 + abs(x))
-        turn = tres(walk_parameters[1] * 5.0)
-        forward = ((tres(((walk_parameters[0]) + (f * 0.5)) * distancefactor)) * 5) + abs(turn / 4)
+        turn = -walk_parameters[1] / 2
+        forward = ((walk_parameters[0] + f) / 2) * distancefactor
 
-        side = sig(tres(((walk_parameters[2]) + s) * 0.3)) * 2.5
+        side = (walk_parameters[2] + s) / 2
 
         rospy.logdebug("#   F:" + str(forward) + "   #  T:" + str(turn) + "   #   S:" + str(side))
 

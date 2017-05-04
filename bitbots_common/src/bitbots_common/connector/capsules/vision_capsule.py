@@ -15,7 +15,7 @@ class VisionCapsule:
     ############
 
     def ball_seen(self):
-        return bool(self.ball.ball_relative)
+        return time.time() - self.ball_last_seen() < 0.5
 
     def ball_last_seen(self):
         return self.my_data.get("BallLastSeen", 0)

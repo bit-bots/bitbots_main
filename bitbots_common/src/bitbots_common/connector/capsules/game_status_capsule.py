@@ -18,6 +18,7 @@ class GameStatusCapsule:
         self.kick_off_valid_time = rosparam.get_param("Behaviour/Body/Common/kickOffValidTime")
         self.drop_ball_valid_time = rosparam.get_param("Behaviour/Body/Common/dropBallValidTime")
         self.gamestate = GameState()
+        self.lastupdate = 0
 
     def is_game_state_equals(self, value):
         assert value in [DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_SET, DATA_VALUE_STATE_READY,
@@ -65,5 +66,12 @@ class GameStatusCapsule:
     def get_seconds_since_last_drop_ball(self):
         return time.time() - self.get_last_drop_in_time()
 
+    def has_penalty_kick(self):
+        return self.gamestate.penaltyShot
+
+    def is_allowed_to_move(self):
+        return self.gamestate.allowedToMove or time.time() - self.lastupdate > 15
+
     def gamestate_callback(self, gs: GameState):
         self.gamestate = gs
+        self.lastupdate = time.time()

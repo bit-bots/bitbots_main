@@ -38,7 +38,7 @@ class AnimationCapsule:
         self.anim_client.send_goal(goal, done_cb=self.cb_unset_is_busy)
         self.active = True
 
-    def cb_unset_is_busy(self):
+    def cb_unset_is_busy(self, _p1, _p2):
         self.active = False
 
     def is_animation_busy(self):
