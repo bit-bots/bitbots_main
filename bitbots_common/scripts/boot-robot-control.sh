@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ~/catkin_ws/devel/setup.sh
+
 while true ; do
     (
         roslaunch bitbots_hcm start_hcm_minibot_robot.launch
