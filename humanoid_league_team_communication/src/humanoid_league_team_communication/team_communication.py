@@ -186,63 +186,63 @@ class TeamCommunication:
             own_position_beliefs.append(rob.get_absolute_belief() / 255)
 
             # ball
-            ball_msg = Position2D
+            ball_msg = Position2D()
             ball_msg.pose.x = rob.get_relative_ball_x() / 1000
             ball_msg.pose.y = rob.get_relative_ball_y() / 1000
             ball_msg.confidence = rob.get_relative_ball_belief() / 255
             ball_relative.append(ball_msg)
 
             # oppgoal
-            oppgoal_msg = Position2D
+            oppgoal_msg = Position2D()
             oppgoal_msg.pose.x = rob.get_oppgoal_relative_x() / 1000
             oppgoal_msg.pose.y = rob.get_oppgoal_relative_y() / 1000
             oppgoal_msg.confidence = rob.get_oppgoal_relative_belief() / 255
             oppgoal_relative.append(oppgoal_msg)
 
             # opponent_robot_a
-            opponent_robot_a_msg = Position2D
+            opponent_robot_a_msg = Position2D()
             opponent_robot_a_msg.pose.x = rob.get_opponent_robot_a_x() / 1000
             opponent_robot_a_msg.pose.y = rob.get_opponent_robot_a_y() / 1000
             opponent_robot_a_msg.confidence = rob.get_opponent_robot_a_belief() / 255
             opponent_robot_a.append(opponent_robot_a_msg)
 
             # opponent_robot_b
-            opponent_robot_b_msg = Position2D
+            opponent_robot_b_msg = Position2D()
             opponent_robot_b_msg.pose.x = rob.get_opponent_robot_b_x() / 1000
             opponent_robot_b_msg.pose.y = rob.get_opponent_robot_b_y() / 1000
             opponent_robot_b_msg.confidence = rob.get_opponent_robot_b_belief() / 255
             opponent_robot_b.append(opponent_robot_b_msg)
 
             # opponent_robot_c
-            opponent_robot_c_msg = Position2D
+            opponent_robot_c_msg = Position2D()
             opponent_robot_c_msg.pose.x = rob.get_opponent_robot_c_x() / 1000
             opponent_robot_c_msg.pose.y = rob.get_opponent_robot_c_y() / 1000
             opponent_robot_c_msg.confidence = rob.get_opponent_robot_c_belief() / 255
             opponent_robot_c.append(opponent_robot_c_msg)
 
             # opponent_robot_d
-            opponent_robot_d_msg = Position2D
+            opponent_robot_d_msg = Position2D()
             opponent_robot_d_msg.pose.x = rob.get_opponent_robot_d_x() / 1000
             opponent_robot_d_msg.pose.y = rob.get_opponent_robot_d_y() / 1000
             opponent_robot_d_msg.confidence = rob.get_opponent_robot_d_belief() / 255
             opponent_robot_d.append(opponent_robot_d_msg)
 
             # team_robot_a
-            team_robot_a_msg = Position2D
+            team_robot_a_msg = Position2D()
             team_robot_a_msg.pose.x = rob.get_team_robot_a_x() / 1000
             team_robot_a_msg.pose.y = rob.get_team_robot_a_y() / 1000
             team_robot_a_msg.confidence = rob.get_team_robot_a_belief() / 255
             team_robot_a.append(team_robot_a_msg)
 
             # team_robot_b
-            team_robot_b_msg = Position2D
+            team_robot_b_msg = Position2D()
             team_robot_b_msg.pose.x = rob.get_team_robot_b_x() / 1000
             team_robot_b_msg.pose.y = rob.get_team_robot_b_y() / 1000
             team_robot_b_msg.confidence = rob.get_team_robot_b_belief() / 255
             team_robot_b.append(team_robot_b_msg)
 
             # team_robot_c
-            team_robot_c_msg = Position2D
+            team_robot_c_msg = Position2D()
             team_robot_c_msg.pose.x = rob.get_team_robot_c_x() / 1000
             team_robot_c_msg.pose.y = rob.get_team_robot_c_y() / 1000
             team_robot_c_msg.confidence = rob.get_team_robot_c_belief() / 255
