@@ -88,7 +88,7 @@ class Pathfinding:
 
     def _update_naviagtiongoal(self, pos: Pose2D):
         with self.lock:
-            self.goalpos = point(pos.x, pos.y)
+            self.goalpos = point(pos.x * 1000, pos.y * 1000)
 
     def _update_obstacle(self, obs: ObstaclesRelative):
         olist = [(o.position.x, o.position.y) for o in obs.obstacles]
