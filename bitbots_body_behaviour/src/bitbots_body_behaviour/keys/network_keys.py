@@ -77,19 +77,19 @@ DATA_KEY_DROP_IN_TIME = "Gamecontrollerdropintimr"
 DATA_KEY_GAME_STATUS = "GameStatus"
 """ The Key in the data dictionary for the GameStatus """
 
-DATA_VALUE_STATE_SET = "STATE_SET"
+DATA_VALUE_STATE_SET = 2
 """ The GameState SET """
 
-DATA_VALUE_STATE_PLAYING = "STATE_PLAYING"
+DATA_VALUE_STATE_PLAYING = 3
 """ The GameState PLAYING """
 
-DATA_VALUE_STATE_READY = "STATE_READY"
+DATA_VALUE_STATE_READY = 1
 """ The GameState READY """
 
-DATA_VALUE_STATE_FINISHED = "STATE_FINISHED"
+DATA_VALUE_STATE_FINISHED = 4
 """ The GameState FINISHED """
 
-DATA_VALUE_STATE_INITIAL = "STATE_INITIAL"
+DATA_VALUE_STATE_INITIAL = 1
 """ The GameStatus INITIAL """
 ###########################################
 
