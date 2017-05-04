@@ -4,6 +4,7 @@ import actionlib
 import rospy
 
 import humanoid_league_msgs.msg
+import time
 
 
 def anim_run():
@@ -23,11 +24,11 @@ def anim_run():
         rospy.logwarn("Animation server now running, hcm will go on.")
     goal = humanoid_league_msgs.msg.PlayAnimationGoal()
     goal.animation = anim
-    goal.hcm = False  # the animation is from the hcm
+    goal.hcm = True  # the animation is from the hcm
     print(anim_client.send_goal_and_wait(goal))
     rospy.sleep(0.5)
 
 if __name__ == '__main__':
     # run with "rosrun bitbots_animation_server run_animation.py _anim:=NAME"
-    print("Deactivate evaluation fo state machine in hcm befor using this")
+    print("Deactivate evaluation of state machine in hcm befor using this, maybe")
     anim_run()

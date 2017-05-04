@@ -18,30 +18,34 @@ class Pause(object):
     def __init__(self):
         log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_pause', log_level=log_level, anonymous=False)
-        self.manual_penalize_service = rospy.Service("manual_penalize", ManualPenalize, self.manual_update)
-        rospy.Subscriber("/Gamestate", GameState, self.game_controler_update)
-        self.pause_publisher = rospy.Publisher("/pause", Bool, queue_size=10)
-        self.speak_publisher = rospy.Publisher("/speak", Speak, queue_size=10)
-
-        self.talking = rospy.get_param("/pause/talking", True)
 
         self.penalty_manual = False
         self.game_controller_penalty = False
         self.pause = False
 
+        self.manual_penalize_service = rospy.Service("manual_penalize", ManualPenalize, self.manual_update)
+        rospy.Subscriber("gamestate", GameState, self.game_controler_update)
+        self.pause_publisher = rospy.Publisher("/pause", Bool, queue_size=10)
+        self.speak_publisher = rospy.Publisher("/speak", Speak, queue_size=10)
+
+        self.talking = rospy.get_param("/pause/talking", True)
+
+
+
     def manual_update(self, req):
-        if req == 0:
+        if req.penalize == 0:
             # off
             self.penalty_manual = False
-        elif req == 1:
+        elif req.penalize == 1:
             # on
             self.penalty_manual = True
-        elif req == 2:
+        elif req.penalize == 2:
             # switch
             self.penalty_manual = not self.penalty_manual
         else:
             rospy.logerr("Manual penalize call with unspecified request")
         self.set_pause(self.penalty_manual)
+        return True
 
     def game_controler_update(self, msg):
         # if something changed
@@ -56,7 +60,9 @@ class Pause(object):
             text = "Pause was set"
         else:
             text = "Pause was removed"
+        rospy.logwarn(text)
         speak(text, self.speak_publisher, speaking_active=self.talking, priority=Speak.HIGH_PRIORITY)
+        self.pause_publisher.publish(Bool(state))
 
 if __name__ == "__main__":
     pause = Pause()

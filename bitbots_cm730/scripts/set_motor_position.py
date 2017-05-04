@@ -3,6 +3,7 @@
 from math import pi
 
 import rospy
+import time
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 if __name__ == "__main__":
@@ -18,7 +19,7 @@ if __name__ == "__main__":
         traj_msg.joint_names = ['LElbow']
         traj_msg.points = []
         traj_msg.points.append(msg)
-        traj_msg.header.stamp = rospy.Time.now()
+        traj_msg.header.stamp = rospy.Time.from_sec(time.time())
 
         rospy.logwarn(traj_msg)
 

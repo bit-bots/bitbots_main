@@ -5,16 +5,18 @@ import actionlib
 import traceback
 import rospy
 import time
-from std_msgs.msg import Header
+
+
 from humanoid_league_msgs.msg import PlayAnimationResult, PlayAnimationFeedback
 from humanoid_league_msgs.msg import PlayAnimationAction as PlayAction
+from humanoid_league_msgs.msg import Animation as AnimationMsg
 from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
 
 from bitbots_animation_server.animation import Animator, parse
 from bitbots_common.pose.pypose import PyPose as Pose
 from sensor_msgs.msg import Imu, JointState
 from bitbots_animation_server.resource_manager import find_animation
-from humanoid_league_msgs.msg import Animation, RobotControlState
+from humanoid_league_msgs.msg import RobotControlState
 from bitbots_common.util.pose_to_message import pose_goal_to_traj_msg
 
 
@@ -27,7 +29,7 @@ class AnimationNode:
         server = PlayAnimationAction(rospy.get_name())
         rospy.spin()
 
-#todo diese zweite klasse macht keinen sinn, das sollte auch alles in die node klasse passen
+
 class PlayAnimationAction(object):
     _feedback = PlayAnimationFeedback
     _result = PlayAnimationResult
@@ -43,14 +45,14 @@ class PlayAnimationAction(object):
         self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
 
         # pre defiened messages for performance
-        self.anim_msg = Animation()
+        self.anim_msg = AnimationMsg()
         self.traj_msg = JointTrajectory()
         self.traj_msg.joint_names = [x.decode() for x in self.used_motor_names]
         self.traj_point = JointTrajectoryPoint()
 
-        rospy.Subscriber("joint_states", JointState, self.update_current_pose)
-        rospy.Subscriber("hcm_state", RobotControlState, self.update_hcm_state)
-        self.hcm_publisher = rospy.Publisher("animation", Animation, queue_size=1)
+        rospy.Subscriber("joint_states", JointState, self.update_current_pose, queue_size=1)
+        rospy.Subscriber("robot_state", RobotControlState, self.update_hcm_state, queue_size=1)
+        self.hcm_publisher = rospy.Publisher("animation", AnimationMsg, queue_size=1)
 
         self._as = actionlib.SimpleActionServer(self._action_name, PlayAction,
                                                 execute_cb=self.execute_cb, auto_start=False)
@@ -94,7 +96,6 @@ class PlayAnimationAction(object):
         start = time.time()
 
         while not rospy.is_shutdown():
-            # todo aditional time staying up after shutdown to enable hcm to sit down, or play sit down directly?
             # first check if we have another goal
             if self._as.is_new_goal_available():
                 next_goal = self._as.next_goal
@@ -116,7 +117,6 @@ class PlayAnimationAction(object):
             # compute next pose
             pose = animfunc(self.current_pose)
             if pose is None:
-                # todo reset pid values if they were changed in animation - mabye also do this in hcm, when recieving finished animation
                 # see walking node reset
 
                 # animation is finished
@@ -134,21 +134,21 @@ class PlayAnimationAction(object):
             self._as.publish_feedback(PlayAnimationFeedback(percent_done=perc_done))
 
             rate.sleep()
-            #rospy.sleep(0.01)
 
-            # Count to get the update frequency
-            iteration += 1
-            if iteration < 100:
-                continue
+            if False:
+                # Count to get the update frequency
+                iteration += 1
+                if iteration < 100:
+                    continue
 
-            if duration_avg > 0:
-                duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
-            else:
-                duration_avg = (time.time() - start)
+                if duration_avg > 0:
+                    duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
+                else:
+                    duration_avg = (time.time() - start)
 
-            rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
-            iteration = 0
-            start = time.time()
+                rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
+                iteration = 0
+                start = time.time()
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
@@ -160,6 +160,7 @@ class PlayAnimationAction(object):
 
     def send_animation_request(self):
         self.anim_msg.request = True
+        self.anim_msg.header.stamp = rospy.Time.from_sec(time.time())
         self.hcm_publisher.publish(self.anim_msg)
 
     def send_animation(self, first, last, hcm, pose):
@@ -170,6 +171,7 @@ class PlayAnimationAction(object):
         if pose is not None:
             self.anim_msg.position = pose_goal_to_traj_msg(pose, self.used_motor_names, self.traj_msg, self.traj_point)
         rospy.logdebug(self.anim_msg.position)
+        self.anim_msg.header.stamp = rospy.Time.from_sec(time.time())
         self.hcm_publisher.publish(self.anim_msg)
 
 

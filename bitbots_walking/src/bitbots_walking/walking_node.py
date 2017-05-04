@@ -52,13 +52,14 @@ class WalkingNode:
         self.traj_point = JointTrajectoryPoint()
 
         # --- Initialize Topics ---
-        self.odometry_publisher = rospy.Publisher("odometry", Odometry, queue_size=10)
+        self.odometry_publisher = rospy.Publisher("odometry", Odometry, queue_size=1)
         self.motor_goal_publisher = rospy.Publisher("walking_motor_goals", JointTrajectory,
-                                                    queue_size=10)
-        rospy.Subscriber("cmd_vel", Twist, self.cmd_vel_cb)
-        rospy.Subscriber("motion_state", RobotControlState, self.motion_state_cb)
-        rospy.Subscriber("joint_states", JointState, self.current_position_cb)
-        rospy.Subscriber("imu", Imu, self.imu_cb)
+                                                    queue_size=1)
+        rospy.Subscriber("cmd_vel", Twist, self.cmd_vel_cb, queue_size=1)
+        rospy.Subscriber("robot_state", RobotControlState, self.motion_state_cb, queue_size=1)
+        rospy.Subscriber("joint_states", JointState, self.current_position_cb, queue_size=1)
+        if self.with_gyro:
+            rospy.Subscriber("imu", Imu, self.imu_cb, queue_size=1)
 
         # --- Start loop ---
         self.run()
@@ -98,7 +99,7 @@ class WalkingNode:
             self.walk_sideward / 50.0,
             self.walk_angular / 50.0)  # werte aus config erstmal hard TODO dyn conf
         # Gyro auslesen und an das Walking weitergeben
-        if self.with_gyro is True:
+        if self.with_gyro:
             rospy.logwarn("Your trying to use the gyro with walking. The values are now in rad/sec (ROS standard) and "
                           "not the cm730 specific units. Please convert theme or adapt the walking algorithm "
                           "acordingly. It's propably not going to work like this.")
@@ -106,7 +107,6 @@ class WalkingNode:
             self.walking.set_gyro(gyro_x, gyro_y, gyro_z)  ###gyro
         # Pose berechnen
         self.zmp_foot_phase = self.walking.process()
-        # todo check if this is still in use
         # self.ipc.set_walking_foot_phase(self.zmp_foot_phase)
 
         return self.walking.pose
@@ -135,6 +135,7 @@ class WalkingNode:
 
     def publish_motor_goals(self):
         msg = pose_goal_to_traj_msg(self.goal_pose, self.used_motor_names, self.traj_msg, self.traj_point)
+        msg.header.stamp = rospy.Time.from_sec(time.time())
         self.motor_goal_publisher.publish(msg)
         #rospy.logerr("pub")
 
@@ -144,7 +145,7 @@ class WalkingNode:
             if self.walking.running:
                 # The walking is walking
                 if self.motion_state == RobotControlState.WALKING or (
-                        self.motion_state == RobotControlState.CONTROLABLE and time.time() - self.walking_started < 1):
+                        self.motion_state == RobotControlState.CONTROLABLE):
                     # The robot is in the right state, let's compute next pose
                     # if we just started walking, the motion does maybe not know it yet
                     if not self.walk_active:
@@ -180,5 +181,11 @@ class WalkingNode:
 
 
 if __name__ == "__main__":
+    try:
+        from bitbots_common.nice import Nice
+        nice = Nice()
+        nice.set_realtime()
+    except ImportError:
+        rospy.logwarn("Could not import Nice")
     walking = WalkingNode()
     rospy.spin()
