@@ -1,3 +1,3 @@
 #!/bin/bash
 
-START_BEHAVIOUR=true
+START_BEHAVIOUR=false

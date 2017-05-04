@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ~/catkin_ws/devel/setup.sh
+
 while true ; do
     (
         . ~/catkin_ws/src/bitbots_meta/bitbots_misc/bitbots_common/scripts/boot-defaults.sh
