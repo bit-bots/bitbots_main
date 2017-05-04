@@ -91,11 +91,13 @@ class CM730Node:
         We can only handle the first point of a JointTrajectory :( """
         motor_goals = []
         motor_speeds = []
+        motor_efforts = []
         joints = msg.joint_names
         # we can handle only one position, no real trajectory
         # they are in radiant because its ros standard
         positions = msg.points[0].positions
         velocities = msg.points[0].velocities
+        efforts = msg.points[0].effort
         i = 0
         for joint in joints:
             # joint limits are in degrees
@@ -111,6 +113,7 @@ class CM730Node:
             else:
                 motor_goals.append(pos_in_deg)
             motor_speeds.append(velocities[i])
+            motor_efforts.append(efforts[i])
             i += 1
         # update goal pose accordingly
         if self.goal_pose is None:
@@ -121,6 +124,7 @@ class CM730Node:
         self.pose_lock.acquire()
         self.goal_pose.set_goals(joints, motor_goals)
         self.goal_pose.set_speeds(joints, motor_speeds)
+        self.goal_pose.set_efforts(joints, motor_efforts)
         self.pose_lock.release()
 
     def update_forever(self):
