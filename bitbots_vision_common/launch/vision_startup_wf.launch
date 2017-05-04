@@ -6,7 +6,7 @@
     </node>
     -->
   <include file="$(find bitbots_soccer_vision)/launch/bitbots_soccer_vision.launch" />
-  <include file="$(find bitbots_ball_filter)/launch/bitbots_ball_filter.launch" />
+  <include file="$(find wolves_ball_filter)/launch/wolves_ball_filter.launch" />
 
 
   <include file="$(find wolves_image_provider_v4l)/launch/image_provider_v4l.launch" />
