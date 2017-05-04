@@ -58,11 +58,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0">
      <item>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QListView" name="listView"/>
-       </item>
-      </layout>
+      <layout class="QGridLayout" name="gridLayout"/>
      </item>
      <item>
       <layout class="QGridLayout" name="gridLayout_2"/>
