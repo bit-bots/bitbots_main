@@ -130,7 +130,10 @@ class CM730Node:
             else:
                 motor_goals.append(pos_in_deg)
             motor_speeds.append(velocities[i])
-            motor_efforts.append(efforts[i])
+            if len(efforts) > i:
+                motor_efforts.append(efforts[i])
+            else:
+                motor_efforts.append(1)
             i += 1
         # update goal pose accordingly
         if self.goal_pose is None:
