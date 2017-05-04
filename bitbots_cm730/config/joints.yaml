@@ -1,4 +1,4 @@
-joints:
+joints_yaml:
   - id: 1
     limits: {default: 0, max: 180, min: -180}
     name: RShoulderPitch
