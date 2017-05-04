@@ -80,6 +80,7 @@ cdef class PyPose:
     cpdef set_speeds(self, list names, list speeds)
     cpdef set_goals(self, list names, list speeds)
     cpdef set_loads(self, list names, list loads)
+    cpdef set_efforts(self, list names, list loads)
 
 
     cpdef reset(self)

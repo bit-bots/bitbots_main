@@ -387,6 +387,13 @@ cdef class PyPose:
             self.get_joint(name).set_load(loads[i])
             i += 1
 
+    cpdef set_efforts(self, list names, list loads):
+        """deactivates joints if effort is zero. otherwise they are activated"""
+        cdef int i = 0
+        for name in names:
+            self.get_joint(name).set_active(loads[i]!=0)
+
+
     def __getitem__(self, name):
         return self.get_joint(name)
 
