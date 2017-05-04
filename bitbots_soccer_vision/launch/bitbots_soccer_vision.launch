@@ -2,6 +2,6 @@
     <rosparam command="load" file="$(find bitbots_soccer_vision)/config/fieldColor.yaml" />
     <rosparam command="load" file="$(find bitbots_soccer_vision)/config/goalWhiteColor.yaml" />
     <rosparam command="load" file="$(find bitbots_soccer_vision)/config/parameters.yaml" />
-    <node pkg="bitbots_soccer_vision" type="bitbots_soccer_vision_node" name="bitbots_soccer_vision_node" output="screen">
+    <node pkg="bitbots_soccer_vision" type="bitbots_soccer_vision_node" name="bitbots_soccer_vision_node" output="screen" >
     </node>
 </launch>
