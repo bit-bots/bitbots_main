@@ -5,6 +5,8 @@ DutyDecider
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
 """
+import time
+
 import rospy
 from bitbots_body_behaviour.body.actions.go_away_from_ball import GoAwayFromBall
 from bitbots_body_behaviour.body.actions.go_to_absolute_position import GoToAbsolutePosition
@@ -35,6 +37,7 @@ class DutyDecider(AbstractDecisionModule):
         super(DutyDecider, self).__init__(connector)
         self.max_fieldie_time = connector.config["Body"]["Fieldie"]["Defender"]["maxFieldieTime"]
         self.toggle_self_positioning = connector.config["Body"]["Toggles"]["Fieldie"]["trySelfPositioning"]
+        self.start_self_pos = None
 
     def perform(self, connector: BodyConnector, reevaluate=False):
 
@@ -42,6 +45,14 @@ class DutyDecider(AbstractDecisionModule):
             connector.walking.stop_walking()
             rospy.logwarn("Not allowed to move")
             return
+
+        if connector.gamestate.is_game_state_equals(DATA_VALUE_STATE_READY):
+            if self.start_self_pos is None:
+                self.start_self_pos = time.time() + 20
+            if self.start_self_pos > time.time():
+                connector.walking.start_walking_plain(4, 0, 0)
+                rospy.loginfo("State Ready: Go forward")
+                return
 
         if not connector.blackboard.get_duty():
             if duty is not None:
