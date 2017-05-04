@@ -35,6 +35,10 @@ class CM730Node:
 
         # --- Class Variables ---
 
+
+        joints = rospy.get_param("joints_yaml")
+        rospy.set_param("joints", joints)
+
         self.goal_pose = None
         self.cm_730 = CM730()
         self.led_eye = (0, 0, 0)
@@ -62,8 +66,6 @@ class CM730Node:
         self.button_msg = Buttons()
 
         # --- Setting Params ---
-        joints = rospy.get_param("joints_yaml")
-        rospy.set_param("joints", joints)
         self.joint_limits = {}
         # problem is, that the number of motors is not known at build time, so write them into params now
         for motor in joints:
