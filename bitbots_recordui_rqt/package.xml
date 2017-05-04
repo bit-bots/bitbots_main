@@ -1,0 +1,33 @@
+<package>
+  <name>bitbots_recordui_rqt</name>
+  <version>0.0.1</version>
+  <description>TODO
+  </description>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <license>BSD</license>
+
+  <author>Jasper Güldenstein</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend version_gte="0.2.19">python_qt_binding</run_depend>
+  <run_depend>python-rospkg</run_depend>
+  <run_depend>qt_dotgraph</run_depend>
+  <run_depend>rosgraph</run_depend>
+  <run_depend>rosgraph_msgs</run_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend>rosnode</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>rosservice</run_depend>
+  <run_depend>rostopic</run_depend>
+  <run_depend>rqt_gui</run_depend>
+  <run_depend>rqt_gui_py</run_depend>
+  <run_depend>bitbots_hcm</run_depend>
+
+  <export>
+    <architecture_independent/>
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
+  </export>
+</package>
+
