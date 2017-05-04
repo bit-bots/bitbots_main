@@ -35,6 +35,10 @@ class CM730Node:
 
         # --- Class Variables ---
 
+
+        joints = rospy.get_param("joints_yaml")
+        rospy.set_param("joints", joints)
+
         self.goal_pose = None
         self.cm_730 = CM730()
         self.led_eye = (0, 0, 0)
@@ -62,7 +66,6 @@ class CM730Node:
         self.button_msg = Buttons()
 
         # --- Setting Params ---
-        joints = rospy.get_param("joints")
         self.joint_limits = {}
         # problem is, that the number of motors is not known at build time, so write them into params now
         for motor in joints:
@@ -105,11 +108,13 @@ class CM730Node:
 
         motor_goals = []
         motor_speeds = []
+        motor_efforts = []
         joints = msg.joint_names
         # we can handle only one position, no real trajectory
         # they are in radiant because its ros standard
         positions = msg.points[0].positions
         velocities = msg.points[0].velocities
+        efforts = msg.points[0].effort
         i = 0
         for joint in joints:
             # joint limits are in degrees
@@ -125,6 +130,10 @@ class CM730Node:
             else:
                 motor_goals.append(pos_in_deg)
             motor_speeds.append(velocities[i])
+            if len(efforts) > i:
+                motor_efforts.append(efforts[i])
+            else:
+                motor_efforts.append(1)
             i += 1
         # update goal pose accordingly
         if self.goal_pose is None:
@@ -135,6 +144,7 @@ class CM730Node:
         self.pose_lock.acquire()
         self.goal_pose.set_goals(joints, motor_goals)
         self.goal_pose.set_speeds(joints, motor_speeds)
+        self.goal_pose.set_efforts(joints, motor_efforts)
         self.pose_lock.release()
 
     def update_forever(self):
