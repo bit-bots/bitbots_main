@@ -8,10 +8,10 @@ hcm:
   animations:
     walkready: "walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
     goalie-walkready: "goalie-walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
-    front-up: "front-up"
-    bottom-up: "bottom-up"
-    toSquat: "aufrichten-hocke-tamara"
-    stand-up: "stand-up"
+    front-up: "standup-minibot-front"
+    bottom-up: "bottom-up-minibot-iran2016"
+    toSquat: "standup-minibot-tosquat"
+    stand-up: "standup-minibot-up"
     penalized: "sit-down"
     penalized_end: "stand-up"
     sit-down: "sit-down"
