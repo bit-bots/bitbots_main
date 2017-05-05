@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import rospkg
 import rospy
-import python_qt_binding
 import time
 
 from python_qt_binding.QtCore import Qt
@@ -11,6 +10,7 @@ from python_qt_binding.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem, Q
 from python_qt_binding.QtGui import QDoubleValidator
 
 from sensor_msgs.msg import JointState
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 import os
 
@@ -28,6 +28,8 @@ class RecordUI(Plugin):
         self._sliders = {}
         self._textFields = {}
         self._motorValues = {}
+        self._motorSwitched = {}
+
         self._treeItems = {}
         self._motorCheckBody = QTreeWidgetItem(self._widget.treeWidget)
         self._motorCheckLegs = QTreeWidgetItem(self._motorCheckBody)
@@ -44,6 +46,7 @@ class RecordUI(Plugin):
 
 
         rospy.Subscriber("/joint_states", JointState, self.state_update, queue_size=100)
+        self._joint_pub = rospy.Publisher("/motor_goals", JointTrajectory)
 
         while not self._initial_joints:
             time.sleep(0.5)
@@ -51,35 +54,39 @@ class RecordUI(Plugin):
 
         self.initialize()
 
+
         context.add_widget(self._widget)
 
     def initialize(self):
-        self.sliders()
+        self.motor_controller()
         self.motor_switcher()
+        for i in range(0, len(self._initial_joints.name)):
+            self._motorSwitched[self._initial_joints.name[i]] = False
 
 
     def state_update(self, joint_states):
         if not self._initial_joints:
             self._initial_joints = joint_states
+            time.sleep(1)
+
         for i in range(0, len(joint_states.name)):
-            return
+            self._motorValues[joint_states.name[i]] = joint_states.position[i]
 
+        for k, v in self._motorValues.items():
+            self._sliders[k].setValue(v*180/3.14)
 
-    def sliders(self):
+    def motor_controller(self):
         for i in range(0, len(self._initial_joints.name)):
             self._motorValues[self._initial_joints.name[i]] = self._initial_joints.position[i]
 
         i = 0
-        for k,v in self._motorValues.items():
+        for k, v in self._motorValues.items():
             group = QGroupBox()
             slider = QSlider(Qt.Horizontal)
             slider.setTickInterval(1)
             slider.setMinimum(-180)
             slider.setMaximum(180)
-
             slider.valueChanged.connect(self.slider_update)
-
-
             self._sliders[k] = slider
 
             textfield = QLineEdit()
@@ -119,7 +126,7 @@ class RecordUI(Plugin):
         self._motorCheckRLeg.setText(0, "Right Leg")
         self._motorCheckRLeg.setFlags(self._motorCheckRLeg.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
 
-        for k,v in self._motorValues.items():
+        for k, v in self._motorValues.items():
             parent = None
             if 'LHip' in k or 'LKnee' in k or 'LAnkle' in k:
                 parent = self._motorCheckLLeg
@@ -137,15 +144,35 @@ class RecordUI(Plugin):
             child.setCheckState(0, Qt.Checked)
             self._treeItems[k] = child
 
-
+        self._widget.treeWidget.itemChanged.connect(self.tick)
 
     def slider_update(self):
-        for k,v in self._textFields.items():
-            v.setText(str(self._sliders[k].value()))
+        for k, v in self._sliders.items():
+            self._motorValues[k] = float(v.value())*3.14/180.0
+            self._textFields[k].setText(str(v.value()))
 
     def textfield_update(self):
-        for k,v in self._sliders.items():
+        for k, v in self._sliders.items():
             try:
+                self._motorValues[k] = float(self._textFields[k].text()) * 3.14 / 180.0
                 v.setValue(int(self._textFields[k].text()))
             except ValueError:
                 continue
+
+    def tick(self):
+        msg = JointTrajectory()
+        msg.header.stamp = rospy.Time.now()
+        msg.joint_names = []
+        msg.points = []
+        msg.points.append(JointTrajectoryPoint())
+
+        for k, v in self._treeItems.items():
+            self._motorSwitched[k] = (v.checkState(0) == Qt.Checked)
+            msg.joint_names.append(k)
+            msg.points[0].positions.append(self._motorValues[k])
+            if self._motorSwitched[k]:
+                msg.points[0].effort.append(1.0)
+            else:
+                msg.points[0].effort.append(0.0)
+        self._joint_pub.publish(msg)
+
