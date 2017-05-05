@@ -136,7 +136,7 @@ class RecordUI(Plugin):
         self._widget.buttonRedo.clicked.connect(self.redo)
 
     def new(self):
-        raise NotImplementedError
+        self._recorder.clear()
 
     def save(self):
         raise NotImplementedError
@@ -148,7 +148,7 @@ class RecordUI(Plugin):
         raise NotImplementedError
 
     def play(self):
-        raise NotImplementedError
+        self._recorder.play()
 
     def goto_frame(self):
         raise NotImplementedError
@@ -158,10 +158,10 @@ class RecordUI(Plugin):
         print self._recorder.record(self._motorValues,self._widget.lineFrameName.text(), 1, 0) #todo time and pause
 
     def undo(self):
-        raise NotImplementedError
+        self._recorder.undo()
 
     def redo(self):
-        raise NotImplementedError
+        self._recorder.redo()
 
     def motor_switcher(self):
         self._widget.motorTree.setHeaderLabel("Motors")
