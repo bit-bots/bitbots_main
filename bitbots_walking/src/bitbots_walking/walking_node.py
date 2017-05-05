@@ -95,7 +95,7 @@ class WalkingNode:
 
         # Aktuelle geschwindigkeitswerte Setzen
         self.walking.set_velocity(
-            self.walk_forward / 150.0,
+            self.walk_forward / 100.0,
             self.walk_sideward / 50.0,
             self.walk_angular / 50.0)  # werte aus config erstmal hard TODO dyn conf
         # Gyro auslesen und an das Walking weitergeben
