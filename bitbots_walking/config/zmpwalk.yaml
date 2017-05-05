@@ -116,10 +116,10 @@ ZMPConfig:
       "AngularOffset": 0
       "Parameter":
           "bodyHeight": 0.28 # Wie Sehr der Roboter in die Knie geht
-          "stepHeight": 0.05
+          "stepHeight": 0.015
           "footX": 0.025
           "tZmp": 0.165
-          "tStep": 0.35
+          "tStep": 0.45
           "frontComp": 0.008
           "supportFront": 0.00
           "supportFront2": 0.005
