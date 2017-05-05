@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import rospkg
 import rospy
 import time
@@ -14,7 +15,7 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 import os
 
-#from .animation_recording import Recorder
+from .animation_recording import Recorder
 
 
 class RecordUI(Plugin):
@@ -30,7 +31,7 @@ class RecordUI(Plugin):
         print "load ui"
         loadUi(ui_file, self._widget, {})
 
-        #self._recorder = Recorder()
+        self._recorder = Recorder()
         self._sliders = {}
         self._textFields = {}
         self._motorValues = {}

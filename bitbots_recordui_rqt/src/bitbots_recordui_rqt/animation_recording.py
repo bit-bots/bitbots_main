@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import datetime
 
 # todo
@@ -18,6 +19,7 @@ import rospy
 from copy import deepcopy
 from socket import gethostname
 import rospkg
+from humanoid_league_msgs.msg import PlayAnimationAction
 
 
 class AnimationData(object):
@@ -48,7 +50,7 @@ class Recorder(object):
         self.steps = []
         self.redo_steps = []
         self.current_state = AnimationData()
-        self.anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
+        self.anim_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
 
     def get_animation_state(self):
         return self.current_state.anim_steps
