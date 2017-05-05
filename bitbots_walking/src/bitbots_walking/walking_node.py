@@ -24,6 +24,9 @@ class WalkingNode:
         # --- Params ---
         zmp_config = rospy.get_param("ZMPConfig/" + rospy.get_param("robot_type_name"))
         self.with_gyro = zmp_config["use_gyro_for_walking"]
+        self.forward_factor = zmp_config["FORWARD_FACTOR"]
+        self.sideward_factor = zmp_config["SIDEWARD_FACTOR"]
+        self.angular_factor = zmp_config["ANGLE_FACTOR"]
         robot_type_name = rospy.get_param("robot_type_name")
         self.used_motor_cids = rospy.get_param("cm730/" + robot_type_name + "/motors")
         self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids[0:-2])  # without head
@@ -95,9 +98,9 @@ class WalkingNode:
 
         # Aktuelle geschwindigkeitswerte Setzen
         self.walking.set_velocity(
-            self.walk_forward / 100.0,
-            self.walk_sideward / 50.0,
-            self.walk_angular / 50.0)  # werte aus config erstmal hard TODO dyn conf
+            self.walk_forward / self.forward_factor,
+            self.walk_sideward / self.sideward_factor,
+            self.walk_angular / self.angular_factor)
         # Gyro auslesen und an das Walking weitergeben
         if self.with_gyro:
             rospy.logwarn("Your trying to use the gyro with walking. The values are now in rad/sec (ROS standard) and "
