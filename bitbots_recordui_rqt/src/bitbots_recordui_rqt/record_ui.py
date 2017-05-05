@@ -14,7 +14,7 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 import os
 
-#from .animation_recording import Recorder
+from .animation_recording import Recorder
 
 
 class RecordUI(Plugin):
@@ -30,7 +30,7 @@ class RecordUI(Plugin):
         print "load ui"
         loadUi(ui_file, self._widget, {})
 
-        #self._recorder = Recorder()
+        self._recorder = Recorder()
         self._sliders = {}
         self._textFields = {}
         self._motorValues = {}
@@ -54,9 +54,12 @@ class RecordUI(Plugin):
         rospy.Subscriber("/joint_states", JointState, self.state_update, queue_size=100)
         self._joint_pub = rospy.Publisher("/motor_goals", JointTrajectory, queue_size=1)
 
-        while not self._initial_joints or not rospy.is_shutdown():
-            time.sleep(0.5)
-            print "wait"
+        while not self._initial_joints:
+            if not rospy.is_shutdown():
+                time.sleep(0.5)
+                print "wait"
+            else:
+                return
 
         self.initialize()
 
@@ -68,8 +71,9 @@ class RecordUI(Plugin):
         self.motor_switcher()
         for i in range(0, len(self._initial_joints.name)):
             self._motorSwitched[self._initial_joints.name[i]] = True
-            self._textFields[self._initial_joints.name[i]].setText(self._initial_joints.position[i])
+            self._textFields[self._initial_joints.name[i]].setText(str(int(self._initial_joints.position[i]*180/3.14)))
         self.button_connect()
+        self.box_ticked()
 
 
     def state_update(self, joint_states):
