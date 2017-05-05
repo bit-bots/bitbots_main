@@ -34,7 +34,7 @@ class FieldieSearchDecision(AbstractDecisionModule):
             # reset the timer
             self.start_time = time.time()
             return self.push(PlainWalkAction,
-                             [[0, -2, 0, 5]])
+                             [[3, 0, 0, 10]])
         else:
             # Just Search
             return self.push(StopAndSearch)
