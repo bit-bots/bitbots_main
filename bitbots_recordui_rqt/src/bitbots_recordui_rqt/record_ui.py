@@ -14,24 +14,30 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 import os
 
+#from .animation_recording import Recorder
+
 
 class RecordUI(Plugin):
     def __init__(self, context):
+        print "super"
         super(RecordUI, self).__init__(context)
 
 
         self._widget = QWidget()
+        print "thingies"
         rp = rospkg.RosPack()
         ui_file = os.path.join(rp.get_path('bitbots_recordui_rqt'), 'resource', 'RecordUI.ui')
+        print "load ui"
         loadUi(ui_file, self._widget, {})
 
+        #self._recorder = Recorder()
         self._sliders = {}
         self._textFields = {}
         self._motorValues = {}
         self._motorSwitched = {}
 
         self._treeItems = {}
-        self._motorCheckBody = QTreeWidgetItem(self._widget.treeWidget)
+        self._motorCheckBody = QTreeWidgetItem(self._widget.motorTree)
         self._motorCheckLegs = QTreeWidgetItem(self._motorCheckBody)
         self._motorCheckArms = QTreeWidgetItem(self._motorCheckBody)
         self._motorCheckHead = QTreeWidgetItem(self._motorCheckBody)
@@ -46,9 +52,9 @@ class RecordUI(Plugin):
 
 
         rospy.Subscriber("/joint_states", JointState, self.state_update, queue_size=100)
-        self._joint_pub = rospy.Publisher("/motor_goals", JointTrajectory)
+        self._joint_pub = rospy.Publisher("/motor_goals", JointTrajectory, queue_size=1)
 
-        while not self._initial_joints:
+        while not self._initial_joints or not rospy.is_shutdown():
             time.sleep(0.5)
             print "wait"
 
@@ -61,7 +67,9 @@ class RecordUI(Plugin):
         self.motor_controller()
         self.motor_switcher()
         for i in range(0, len(self._initial_joints.name)):
-            self._motorSwitched[self._initial_joints.name[i]] = False
+            self._motorSwitched[self._initial_joints.name[i]] = True
+            self._textFields[self._initial_joints.name[i]].setText(self._initial_joints.position[i])
+        self.button_connect()
 
 
     def state_update(self, joint_states):
@@ -72,8 +80,10 @@ class RecordUI(Plugin):
         for i in range(0, len(joint_states.name)):
             self._motorValues[joint_states.name[i]] = joint_states.position[i]
 
-        for k, v in self._motorValues.items():
-            self._sliders[k].setValue(v*180/3.14)
+        for k, v in self._motorValues.\
+                items():
+            if not self._motorSwitched[k]:
+                self._sliders[k].setValue(v*180/3.14)
 
     def motor_controller(self):
         for i in range(0, len(self._initial_joints.name)):
@@ -103,28 +113,76 @@ class RecordUI(Plugin):
             layout.addWidget(self._sliders[k])
             layout.addWidget(self._textFields[k])
             group.setLayout(layout)
-            group.moveToThread(self._widget.gridLayout_2.thread())
-            self._widget.gridLayout_2.addWidget(group, i / 5, i % 5)
+            self._widget.motorControlLayout.addWidget(group, i / 5, i % 5)
             i = i+1
 
+    def button_connect(self):
+        self._widget.buttonNew.clicked.connect(self.new)
+        self._widget.buttonSave.clicked.connect(self.save)
+        self._widget.buttonSaveAs.clicked.connect(self.save_as)
+        self._widget.buttonSaveAs.clicked.connect(self.save_as)
+
+
+        self._widget.buttonPlay.clicked.connect(self.play)
+        self._widget.buttonGotoFrame.clicked.connect(self.goto_frame)
+        self._widget.buttonRecord.clicked.connect(self.record)
+
+        self._widget.buttonUndo.clicked.connect(self.undo)
+        self._widget.buttonRedo.clicked.connect(self.redo)
+
+    def new(self):
+        raise NotImplementedError
+
+    def save(self):
+        raise NotImplementedError
+
+    def save_as(self):
+        raise NotImplementedError
+
+    def open(self):
+        raise NotImplementedError
+
+    def play(self):
+        raise NotImplementedError
+
+    def goto_frame(self):
+        raise NotImplementedError
+
+    def record(self):
+        self._recorder.record()
+
+    def undo(self):
+        raise NotImplementedError
+
+    def redo(self):
+        raise NotImplementedError
+
     def motor_switcher(self):
-        self._widget.treeWidget.setHeaderLabel("Motors")
+        self._widget.motorTree.setHeaderLabel("Motors")
         self._motorCheckBody.setText(0, "Body")
         self._motorCheckBody.setFlags(self._motorCheckBody.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+        self._motorCheckBody.setExpanded(True)
         self._motorCheckHead.setText(0, "Head")
         self._motorCheckHead.setFlags(self._motorCheckHead.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+        self._motorCheckHead.setExpanded(True)
         self._motorCheckArms.setText(0, "Arms")
         self._motorCheckArms.setFlags(self._motorCheckArms.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+        self._motorCheckArms.setExpanded(True)
         self._motorCheckLegs.setText(0, "Legs")
         self._motorCheckLegs.setFlags(self._motorCheckLegs.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+        self._motorCheckLegs.setExpanded(True)
         self._motorCheckLArm.setText(0, "Left Arm")
         self._motorCheckLArm.setFlags(self._motorCheckLArm.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+        self._motorCheckLArm.setExpanded(True)
         self._motorCheckRArm.setText(0, "Right Arm")
         self._motorCheckRArm.setFlags(self._motorCheckRArm.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+        self._motorCheckRArm.setExpanded(True)
         self._motorCheckLLeg.setText(0, "Left Leg")
         self._motorCheckLLeg.setFlags(self._motorCheckLLeg.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+        self._motorCheckLLeg.setExpanded(True)
         self._motorCheckRLeg.setText(0, "Right Leg")
         self._motorCheckRLeg.setFlags(self._motorCheckRLeg.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+        self._motorCheckRLeg.setExpanded(True)
 
         for k, v in self._motorValues.items():
             parent = None
@@ -144,7 +202,7 @@ class RecordUI(Plugin):
             child.setCheckState(0, Qt.Checked)
             self._treeItems[k] = child
 
-        self._widget.treeWidget.itemChanged.connect(self.tick)
+        self._widget.motorTree.itemChanged.connect(self.box_ticked)
 
     def slider_update(self):
         for k, v in self._sliders.items():
@@ -159,7 +217,7 @@ class RecordUI(Plugin):
             except ValueError:
                 continue
 
-    def tick(self):
+    def box_ticked(self):
         msg = JointTrajectory()
         msg.header.stamp = rospy.Time.now()
         msg.joint_names = []
@@ -175,4 +233,5 @@ class RecordUI(Plugin):
             else:
                 msg.points[0].effort.append(0.0)
         self._joint_pub.publish(msg)
+        print "published"
 

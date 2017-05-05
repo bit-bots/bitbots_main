@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1298</width>
-    <height>307</height>
+    <width>1195</width>
+    <height>662</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,23 +18,51 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0">
+    <layout class="QHBoxLayout" name="headerLayout" stretch="0,0,0,0,0,0,0,0,0,0">
      <item>
-      <widget class="QPushButton" name="button_record">
+      <widget class="QPushButton" name="buttonNew">
        <property name="text">
-        <string>goto Frame</string>
+        <string>New</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="button_play_animation">
+      <widget class="QPushButton" name="buttonSave">
+       <property name="text">
+        <string>Save</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonSaveAs">
+       <property name="text">
+        <string>Save as</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonOpen">
+       <property name="text">
+        <string>Open</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonPlay">
        <property name="text">
         <string>Play Animation</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="button_goto_frame">
+      <widget class="QPushButton" name="buttonGotoFrame">
+       <property name="text">
+        <string>goto Frame</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonRecord">
        <property name="text">
         <string>Record</string>
        </property>
@@ -53,18 +81,104 @@
        </property>
       </spacer>
      </item>
+     <item>
+      <widget class="QPushButton" name="buttonUndo">
+       <property name="text">
+        <string>Undo</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonRedo">
+       <property name="text">
+        <string>Redo</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0">
+    <layout class="QHBoxLayout" name="contentLayout" stretch="0,0,0">
      <item>
-      <layout class="QGridLayout" name="gridLayout"/>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QListView" name="frameList"/>
+       </item>
+       <item>
+        <layout class="QFormLayout" name="formLayout">
+         <property name="labelAlignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+         <property name="formAlignment">
+          <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+         </property>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Version</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="lineVersion"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="lineAuthor"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Author</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Animation Name</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="lineName"/>
+         </item>
+         <item row="3" column="1">
+          <widget class="QPlainTextEdit" name="fieldDescription"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Description</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
      </item>
      <item>
-      <layout class="QGridLayout" name="gridLayout_2"/>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <layout class="QFormLayout" name="formLayout_2">
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Frame Name</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="lineFrameName"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="motorControlLayout"/>
+       </item>
+      </layout>
      </item>
      <item>
-      <widget class="QTreeWidget" name="treeWidget">
+      <widget class="QTreeWidget" name="motorTree">
        <column>
         <property name="text">
          <string notr="true">1</string>
