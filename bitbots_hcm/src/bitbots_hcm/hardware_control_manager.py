@@ -129,8 +129,8 @@ class Motion:
         self.gyro = numpy.array([msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z])
 
 
-        self.smooth_gyro = numpy.multiply(self.smooth_gyro, 0.9) + numpy.multiply(self.gyro, 0.1)  # gyro
-        self.smooth_accel = numpy.multiply(self.smooth_accel, 0.9) + numpy.multiply(self.accel, 0.1)  # accel
+        self.smooth_gyro = numpy.multiply(self.smooth_gyro, 0.95) + numpy.multiply(self.gyro, 0.05)  # gyro
+        self.smooth_accel = numpy.multiply(self.smooth_accel, 0.99) + numpy.multiply(self.accel, 0.01)  # accel
         self.not_much_smoothed_gyro = numpy.multiply(self.not_much_smoothed_gyro, 0.5) + numpy.multiply(self.gyro, 0.5)
 
         VALUES.raw_gyro = self.gyro
