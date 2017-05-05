@@ -83,10 +83,10 @@ class RecordUI(Plugin):
             time.sleep(1)
 
         for i in range(0, len(joint_states.name)):
-            self._motorValues[joint_states.name[i]] = joint_states.position[i]
+            if not self._motorSwitched[joint_states.name[i]]:
+                self._motorValues[joint_states.name[i]] = joint_states.position[i]
 
-        for k, v in self._motorValues.\
-                items():
+        for k, v in self._motorValues.items():
             if not self._motorSwitched[k]:
                 self._sliders[k].setValue(v*180/3.14)
 
@@ -154,7 +154,8 @@ class RecordUI(Plugin):
         raise NotImplementedError
 
     def record(self):
-        self._recorder.record()
+        print self._motorValues["RAnklePitch"]
+        print self._recorder.record(self._motorValues,self._widget.lineFrameName.text(), 1, 0) #todo time and pause
 
     def undo(self):
         raise NotImplementedError
