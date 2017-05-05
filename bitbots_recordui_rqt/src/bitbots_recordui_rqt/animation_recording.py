@@ -138,8 +138,8 @@ class Recorder(object):
             "goals": motor_pos
         }
         if not seq_pos:
-            self.save_step("Appending new keyframe #%i" % len(self.current_state.anim_steps))
             self.current_state.anim_steps.append(frame)
+            self.save_step("Appending new keyframe #%i" % len(self.current_state.anim_steps))
         else:
             self.save_step("Inserting new keyframe to position %s" % seq_pos)
             self.current_state.anim_steps.insert(seq_pos, frame)
