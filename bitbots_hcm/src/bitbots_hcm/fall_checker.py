@@ -91,15 +91,15 @@ class FallChecker(object):
 
     def check_fallen(self, smooth_accel):
         """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""
-        if smooth_accel[0] > 6:  ###gyro
+        if smooth_accel[0] > 7:
             rospy.logdebug("Lying on belly, should stand up")
             return rospy.get_param("hcm/animations/front-up")
 
-        if smooth_accel[0] < -6:  ###gyro
+        if smooth_accel[0] < -7:
             rospy.logdebug("Lying on my back, should stand up!")
             return rospy.get_param("hcm/animations/bottom-up")
 
-        if abs(smooth_accel[1]) > 6:
+        if abs(smooth_accel[1]) > 7:
             rospy.logdebug("Lying on the side, should stand up. Trying to stand up from front. Is that right?")
             return rospy.get_param("hcm/animations/front-up")
 
