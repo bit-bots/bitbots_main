@@ -4,11 +4,11 @@ import datetime
 
 # todo
 # klickbar für welche motoren werte in den step gespeichert werden
-# leiste mit keyframe, die namen haben. letzter is current keyframe
-# cleraar butt
 # copy past of frames, from one animation to another
+# duplicate frame
 # button for playing just current frmae
 # button to set robot in init pose
+# record button next to frame name filed
 import json
 import os
 
@@ -93,7 +93,6 @@ class Recorder(object):
             state, description = self.steps.pop()
             if state.anim_steps == self.current_state.anim_steps:
                 state, description = self.steps.pop()
-            print(state.anim_steps)
             self.redo_steps.append((state, description, self.current_state))
             self.current_state = state
             rospy.loginfo("Undoing: %s" % description)
@@ -408,3 +407,13 @@ class Recorder(object):
         self.save_step('moving Keyframe #%i to #%i' % (frm + 1, to + 1), orig_state)
         self.current_state.anim_steps.insert(to, item)
         return True
+
+    def change_frame_order(self, new_order):
+        """ Changes the order of the frames given an array of frame names"""
+        new_ordered_frames = []
+        for frame_name in new_order:
+            for frame in self.current_state.anim_steps:
+                if frame_name == frame["name"]:
+                    new_ordered_frames.append(frame)
+        self.current_state.anim_steps = new_ordered_frames
+        self.save_step("Reordered frames")

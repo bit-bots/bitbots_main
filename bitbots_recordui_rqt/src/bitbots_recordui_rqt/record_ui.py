@@ -4,10 +4,10 @@ import rospkg
 import rospy
 import time
 
-from python_qt_binding.QtCore import Qt
+from python_qt_binding.QtCore import Qt, QMetaType, QDataStream, QVariant
 from python_qt_binding import loadUi
 from rqt_gui_py.plugin import Plugin
-from python_qt_binding.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem,QListWidgetItem, QSlider, QGroupBox, QVBoxLayout, QLabel, QLineEdit
+from python_qt_binding.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem,QListWidgetItem, QSlider, QGroupBox, QVBoxLayout, QLabel, QLineEdit, QListWidget, QAbstractItemView
 from python_qt_binding.QtGui import QDoubleValidator
 
 from sensor_msgs.msg import JointState
@@ -17,6 +17,23 @@ import os
 
 from .animation_recording import Recorder
 
+class DragDropList(QListWidget):
+    """ QListWidget with an event that is called when a drag and drop action was performed."""
+
+    def __init__(self, parent, ui):
+        super(DragDropList, self).__init__(parent)
+
+        self.ui = ui
+        self.setAcceptDrops(True)
+
+
+    def dropEvent(self, e):
+        super(DragDropList, self).dropEvent(e)
+        items = []
+        for i in range(0, self.count()):
+            items.append(self.item(i).text())
+        print(items)
+        self.ui.change_frame_order(items)
 
 class RecordUI(Plugin):
     def __init__(self, context):
@@ -52,6 +69,9 @@ class RecordUI(Plugin):
 
         self._initial_joints = None
 
+        self._widget.frameList = DragDropList(self._widget, self)
+        self._widget.verticalLayout_2.insertWidget(0, self._widget.frameList)
+        self._widget.frameList.setDragDropMode(QAbstractItemView.InternalMove)
 
         rospy.Subscriber("/joint_states", JointState, self.state_update, queue_size=100)
         self._joint_pub = rospy.Publisher("/motor_goals", JointTrajectory, queue_size=1)
@@ -185,7 +205,7 @@ class RecordUI(Plugin):
         self.set_sliders_and_text_fields()
 
     def motor_switcher(self):
-        self._widget.motorTree.setHeaderLabel("Motors")
+        self._widget.motorTree.setHeaderLabel("Stiff Motors")
         self._motorCheckBody.setText(0, "Body")
         self._motorCheckBody.setFlags(self._motorCheckBody.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
         self._motorCheckBody.setExpanded(True)
@@ -280,3 +300,8 @@ class RecordUI(Plugin):
         current = QListWidgetItem()
         current.setText("#CURRENT_FRAME")
         self._widget.frameList.addItem(current)
+
+    def change_frame_order(self, new_order):
+        """ Calls the recorder to update frame order and updates the gui"""
+        self._recorder.change_frame_order(new_order)
+        self.update_frames()
