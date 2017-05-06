@@ -95,27 +95,7 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-<<<<<<< HEAD
-        <layout class="QFormLayout" name="formLayout">
-         <property name="labelAlignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-         <property name="formAlignment">
-          <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-         </property>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Animation Name</string>
-           </property>
-          </widget>
-         </item>
-=======
-        <widget class="QListWidget" name="frameList"/>
-       </item>
-       <item>
         <layout class="QGridLayout" name="gridLayout">
->>>>>>> 999561d08864557df74b51da931d75dd3fd7a044
          <item row="0" column="1">
           <widget class="QLineEdit" name="lineAnimationName"/>
          </item>
