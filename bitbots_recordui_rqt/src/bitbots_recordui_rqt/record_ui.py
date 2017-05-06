@@ -216,8 +216,14 @@ class RecordUI(Plugin):
         self._recorder.play()
 
     def goto_frame(self):
-        raise NotImplementedError
-        #todo publish joint trajecory message with stuff
+        msg = JointTrajectory()
+        msg.header.stamp = rospy.Time.from_seconds(time.time())
+        msg.joint_names= self._initial_joints.name
+        point = JointTrajectoryPoint()
+        print(self._workingValues.values())
+        point.positions= self._workingValues.values()
+        msg.points = [point]
+        self._joint_pub.publish(msg)
 
     def goto_init(self):
         msg = JointTrajectory()
@@ -286,7 +292,7 @@ class RecordUI(Plugin):
 
         if selected_frame_name != "#CURRENT_FRAME":
             self._currentGoals = deepcopy(self._workingValues)
-            self._workingValues = selected_frame["goals"]
+            self._workingValues = deepcopy(selected_frame["goals"])
         else:
             self._workingValues = deepcopy(self._currentGoals)
 

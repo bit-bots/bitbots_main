@@ -6,8 +6,10 @@ import datetime
 # klickbar für welche motoren werte in den step gespeichert werden
 # copy past of frames, from one animation to another
 # button for playing just current frmae
-# button to set robot in init pose
 # record button next to frame name filed
+# set min max for joint value fields
+# check frame names if empty or duplicated
+
 import json
 import os
 
