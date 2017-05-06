@@ -58,7 +58,7 @@ class AbstactTrackObject(AbstractInitActionModule):
         rospy.loginfo("OldTiltgoal: %f" % current_tilt_pos)
         rospy.loginfo("OldPangoal: %f" % curren_pan_pos)
         if not (-self.a_sens < a < self.a_sens):
-            goal = curren_pan_pos + a * self.angle * self.horizontal_factor
+            goal = curren_pan_pos + a * (self.angle/2.0) * self.horizontal_factor
             goal = min(self.max_pan, max(self.min_pan, goal))
             head_pan_goal = goal
         else:
@@ -66,7 +66,7 @@ class AbstactTrackObject(AbstractInitActionModule):
 
         # Ball not centered vertically
         if not (-self.b_sens + b_center < b < self.b_sens + b_center):
-            goal = current_tilt_pos + b * self.angle * self.vertical_factor
+            goal = current_tilt_pos + b * (self.angle/2.0) * self.vertical_factor
             goal = min(self.max_tilt, max(self.min_tilt, goal))
             head_tilt_goal = goal
 
