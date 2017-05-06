@@ -218,7 +218,10 @@ class RecordUI(Plugin):
         #todo publish joint trajecory message with stuff
 
     def duplicate(self):
-        frame = self._widget.frameList.selectedItems().text()
+        try:
+            frame = self._widget.frameList.selectedItems()[0].text()
+        except:
+            return
         if frame:
             self._recorder.duplicate(frame)
             self.update_frames()
