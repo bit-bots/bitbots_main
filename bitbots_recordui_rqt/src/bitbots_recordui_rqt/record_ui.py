@@ -7,7 +7,7 @@ import time
 from python_qt_binding.QtCore import Qt
 from python_qt_binding import loadUi
 from rqt_gui_py.plugin import Plugin
-from python_qt_binding.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem, QSlider, QGroupBox, QVBoxLayout, QLabel, QLineEdit
+from python_qt_binding.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem,QListWidgetItem, QSlider, QGroupBox, QVBoxLayout, QLabel, QLineEdit
 from python_qt_binding.QtGui import QDoubleValidator
 
 from sensor_msgs.msg import JointState
@@ -156,6 +156,7 @@ class RecordUI(Plugin):
     def record(self):
         print self._motorValues["RAnklePitch"]
         print self._recorder.record(self._motorValues,self._widget.lineFrameName.text(), 1, 0) #todo time and pause
+        self.update_frames()
 
     def undo(self):
         self._recorder.undo()
@@ -241,3 +242,12 @@ class RecordUI(Plugin):
         self._joint_pub.publish(msg)
         print "published"
 
+    def update_frames(self):
+        current_state = self._recorder.get_animation_state()
+        while self._widget.frameList.takeItem(0):
+            continue
+
+        for i in range(0, len(current_state.anim_steps)):
+            item = QListWidgetItem()
+            item.setText(current_state.anim_steps[i]["name"])
+            self._widget.frameList.addItem()
