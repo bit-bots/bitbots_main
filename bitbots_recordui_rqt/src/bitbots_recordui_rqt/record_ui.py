@@ -36,6 +36,7 @@ class RecordUI(Plugin):
         self._textFields = {}
         self._motorValues = {}
         self._motorSwitched = {}
+        self._freeze = False
 
         self._treeItems = {}
         self._motorCheckBody = QTreeWidgetItem(self._widget.motorTree)
@@ -64,7 +65,6 @@ class RecordUI(Plugin):
 
         self.initialize()
 
-
         context.add_widget(self._widget)
 
     def initialize(self):
@@ -75,6 +75,7 @@ class RecordUI(Plugin):
             self._textFields[self._initial_joints.name[i]].setText(str(int(self._initial_joints.position[i]*180/3.14)))
         self.button_connect()
         self.box_ticked()
+        self.frame_list()
 
 
     def state_update(self, joint_states):
@@ -87,7 +88,7 @@ class RecordUI(Plugin):
                 self._motorValues[joint_states.name[i]] = joint_states.position[i]
 
         for k, v in self._motorValues.items():
-            if not self._motorSwitched[k]:
+            if not self._motorSwitched[k] and not self._freeze:
                 self._sliders[k].setValue(v*180/3.14)
 
     def motor_controller(self):
@@ -153,6 +154,7 @@ class RecordUI(Plugin):
 
     def goto_frame(self):
         raise NotImplementedError
+        #todo publish joint trajecory message with stuff
 
     def record(self):
         print self._motorValues["RAnklePitch"]
@@ -161,9 +163,26 @@ class RecordUI(Plugin):
 
     def undo(self):
         self._recorder.undo()
+        self.update_frames()
 
     def redo(self):
         self._recorder.redo()
+        self.update_frames()
+
+    def frame_list(self):
+        self._widget.frameList.itemClicked.connect(self.frame_select)
+
+    def frame_select(self):
+        selectedFrameName = self._widget.frameList.currentItem().text()
+        selectedFrame = None
+        for v in self._recorder.get_animation_state():
+            if v["name"] is selectedFrameName:
+                selectedFrame = v
+                break
+
+        self._motorValues = selectedFrame["goals"]
+        self._freeze = not (selectedFrameName is "#CURRENT_FRAME")
+        self.set_sliders_and_text_fields()
 
     def motor_switcher(self):
         self._widget.motorTree.setHeaderLabel("Motors")
@@ -206,7 +225,7 @@ class RecordUI(Plugin):
                 parent = self._motorCheckHead
             child = QTreeWidgetItem(parent)
             child.setText(0, k)
-            child.setFlags(child.flags() |  Qt.ItemIsUserCheckable)
+            child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
             child.setCheckState(0, Qt.Checked)
             self._treeItems[k] = child
 
@@ -215,15 +234,20 @@ class RecordUI(Plugin):
     def slider_update(self):
         for k, v in self._sliders.items():
             self._motorValues[k] = float(v.value())*3.14/180.0
-            self._textFields[k].setText(str(v.value()))
+        self.set_sliders_and_text_fields()
+
+    def set_sliders_and_text_fields(self):
+        for k, v in self._motorValues.items():
+            self._textFields[k].setText(str(int(v / 3.14 * 180)))
+            self._sliders[k].setValue(int(v / 3.14 * 180))
 
     def textfield_update(self):
-        for k, v in self._sliders.items():
+        for k, v in self._textFields.items():
             try:
-                self._motorValues[k] = float(self._textFields[k].text()) * 3.14 / 180.0
-                v.setValue(int(self._textFields[k].text()))
+                self._motorValues[k] = float(v.text()) * 3.14 / 180.0
             except ValueError:
                 continue
+        self.set_sliders_and_text_fields()
 
     def box_ticked(self):
         msg = JointTrajectory()
@@ -252,3 +276,7 @@ class RecordUI(Plugin):
             item = QListWidgetItem()
             item.setText(current_state[i]["name"])
             self._widget.frameList.addItem(item)
+
+        current = QListWidgetItem()
+        current.setText("#CURRENT_FRAME")
+        self._widget.frameList.addItem(current)

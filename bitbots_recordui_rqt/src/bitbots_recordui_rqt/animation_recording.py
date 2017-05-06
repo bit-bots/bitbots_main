@@ -88,11 +88,13 @@ class Recorder(object):
         """
         if amount > len(self.steps):
             rospy.logwarn("I cannot undo what did not happen!")
-            # todo display in GUI
             return False
         if amount == 1:
             state, description = self.steps.pop()
-            self.redo_steps = [(state, description, self.current_state)]
+            if state.anim_steps == self.current_state.anim_steps:
+                state, description = self.steps.pop()
+            print(state.anim_steps)
+            self.redo_steps.append((state, description, self.current_state))
             self.current_state = state
             rospy.loginfo("Undoing: %s" % description)
             if self.steps:
@@ -115,7 +117,6 @@ class Recorder(object):
         post_state = None
         if not self.redo_steps:
             rospy.logwarn("Cannot redo what was not undone!")
-            # todo display in GUI
             return False
         if amount < 0:
             rospy.logwarn("Amount cannot be negative! (What where you even thinking?)")
@@ -139,9 +140,9 @@ class Recorder(object):
         }
         if not seq_pos:
             self.current_state.anim_steps.append(frame)
-            self.save_step("Appending new keyframe #%i" % len(self.current_state.anim_steps))
+            self.save_step("Appending new keyframe " + frame_name)
         else:
-            self.save_step("Inserting new keyframe to position %s" % seq_pos)
+            self.save_step("Inserting new keyframe " + frame_name + " to position " + seq_pos)
             self.current_state.anim_steps.insert(seq_pos, frame)
         return True
 
