@@ -142,11 +142,11 @@ class Recorder(object):
             self.current_state.anim_steps.append(new_frame)
             self.save_step("Appending new keyframe " + frame_name)
         elif not override:
-            self.save_step("Inserting new keyframe " + frame_name + " to position " + seq_pos)
             self.current_state.anim_steps.insert(seq_pos, new_frame)
+            self.save_step("Inserting new keyframe " + frame_name + " to position " + str(seq_pos))
         else:
-            self.save_step("overriding keyframe " + frame_name + " at position " + seq_pos)
             self.current_state.anim_steps[seq_pos] = new_frame
+            self.save_step("overriding keyframe " + frame_name + " at position " + str(seq_pos))
         return True
 
     def clear(self):

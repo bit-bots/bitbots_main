@@ -62,7 +62,8 @@ class RecordUI(Plugin):
         self._workingPause = 0.0
         self._workingName = self._currentName
 
-        self._freeze = False
+        self._current = True
+
         self._saveDir = None
 
         #save current frame when switching to other frames for reference
@@ -121,7 +122,6 @@ class RecordUI(Plugin):
         for i in range(0, len(joint_states.name)):
             if (not self._motorSwitched[joint_states.name[i]]):
                 self._workingValues[joint_states.name[i]] = joint_states.position[i]
-                print "update"
 
         self.set_sliders_and_text_fields()
 
@@ -250,21 +250,41 @@ class RecordUI(Plugin):
 
     def frame_list(self):
         self._widget.frameList.itemClicked.connect(self.frame_select)
+        self._widget.lineFrameName.textEdited.connect(self.frame_meta_update)
+        self._widget.spinBoxPause.valueChanged.connect(self.frame_meta_update)
+        self._widget.spinBoxDuration.valueChanged.connect(self.frame_meta_update)
+
+    def frame_meta_update(self):
+        self._workingDuration = self._widget.spinBoxDuration.value()
+        self._workingPause = self._widget.spinBoxPause.value()
+        self._workingName = self._widget.lineFrameName.text()
 
     def frame_select(self):
         selected_frame_name = self._widget.frameList.currentItem().text()
         selected_frame = None
+
 
         for v in self._recorder.get_animation_state():
             if v["name"] == selected_frame_name:
                 selected_frame = v
                 break
 
-        if selected_frame_name != "#CURRENT_FRAME":
-            self._currentGoals = deepcopy(self._workingValues)
-            self._workingValues = selected_frame["goals"]
-        else:
+        #save current values to _currentValues if switching from current frame to different one
+        #when switching from current to different, save current values
+
+
+        if selected_frame_name == "#CURRENT_FRAME":
             self._workingValues = deepcopy(self._currentGoals)
+            self._workingName = deepcopy(self._currentName)
+            self._workingDuration = deepcopy(self._currentDuration)
+            self._workingPause = deepcopy(self._currentPause)
+
+            self._current = True
+        else:
+            if self._current:
+                self._currentGoals = deepcopy(self._workingValues)
+            self._workingValues = selected_frame["goals"]
+            self._current = False
 
         self.set_sliders_and_text_fields()
 
@@ -320,15 +340,6 @@ class RecordUI(Plugin):
             self._workingValues[k] = float(v.value()) * 3.14 / 180.0
         self.set_sliders_and_text_fields()
 
-    def set_sliders_and_text_fields(self):
-        """
-        Updates the text fields and sliders ins self._sliders and self._textfields to the values in self._workingValues
-        :return: 
-        """
-        for k, v in self._workingValues.items():
-            self._textFields[k].setText(str(int(v / 3.14 * 180)))
-            self._sliders[k].setValue(int(v / 3.14 * 180))
-
     def textfield_update(self):
         for k, v in self._textFields.items():
             try:
@@ -336,6 +347,20 @@ class RecordUI(Plugin):
             except ValueError:
                 continue
         self.set_sliders_and_text_fields()
+
+    def set_sliders_and_text_fields(self):
+        """
+        Updates the text fields and sliders ins self._sliders and self._textfields and also frame name and duration and pause 
+        to the values in self._workingValues
+        :return: 
+        """
+        for k, v in self._workingValues.items():
+            self._textFields[k].setText(str(int(v / 3.14 * 180)))
+            self._sliders[k].setValue(int(v / 3.14 * 180))
+
+        self._widget.lineFrameName.setText(self._workingName)
+        self._widget.spinBoxDuration.setValue(self._workingDuration)
+        self._widget.spinBoxPause.setValue(self._workingPause)
 
     def box_ticked(self):
         msg = JointTrajectory()
@@ -376,6 +401,7 @@ class RecordUI(Plugin):
         current.setText("#CURRENT_FRAME")
         self._widget.frameList.addItem(current)
         self._widget.frameList.setCurrentItem(current)
+        self._current = True
 
     def change_frame_order(self, new_order):
         """ Calls the recorder to update frame order and updates the gui"""
