@@ -4,10 +4,12 @@ import rospkg
 import rospy
 import time
 
+from copy import deepcopy
 from python_qt_binding.QtCore import Qt, QMetaType, QDataStream, QVariant
 from python_qt_binding import loadUi
 from rqt_gui_py.plugin import Plugin
-from python_qt_binding.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem,QListWidgetItem, QSlider, QGroupBox, QVBoxLayout, QLabel, QLineEdit, QListWidget, QAbstractItemView, QFileDialog
+from python_qt_binding.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem,QListWidgetItem, \
+    QSlider, QGroupBox, QVBoxLayout, QLabel, QLineEdit, QListWidget, QAbstractItemView, QFileDialog, QDoubleSpinBox
 from python_qt_binding.QtGui import QDoubleValidator
 
 from sensor_msgs.msg import JointState
@@ -117,8 +119,8 @@ class RecordUI(Plugin):
             time.sleep(1)
 
         for i in range(0, len(joint_states.name)):
-            if (not self._motorSwitched[joint_states.name[i]]) and (not self._freeze):
-                self._currentGoals[joint_states.name[i]] = joint_states.position[i]
+            if (not self._motorSwitched[joint_states.name[i]]):
+                self._workingValues[joint_states.name[i]] = joint_states.position[i]
                 print "update"
 
         self.set_sliders_and_text_fields()
@@ -214,7 +216,20 @@ class RecordUI(Plugin):
         #todo publish joint trajecory message with stuff
 
     def record(self):
-        self._recorder.record(self._currentGoals, self._widget.lineFrameName.text(), 1, 0) #todo time and pause
+        if self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
+            self._recorder.record(self._workingValues,
+                                  self._widget.lineFrameName.text(),
+                                  self._widget.spinBoxDuration.value(),
+                                  self._widget.spinBoxPause.value())
+        else:
+            current_row = self._widget.frameList.currentRow()
+            self._recorder.record(self._workingValues,
+                                  self._widget.lineFrameName.text(),
+                                  self._widget.spinBoxDuration.value(),
+                                  self._widget.spinBoxPause.value(),
+                                  current_row,
+                                  True)
+
         self.update_frames()
 
     def undo(self):
@@ -231,20 +246,17 @@ class RecordUI(Plugin):
     def frame_select(self):
         selected_frame_name = self._widget.frameList.currentItem().text()
         selected_frame = None
+
         for v in self._recorder.get_animation_state():
             if v["name"] == selected_frame_name:
                 selected_frame = v
                 break
 
-        self._freeze = not (selected_frame_name == "#CURRENT_FRAME")
-        print "freeze is " + str(not (selected_frame_name == "#CURRENT_FRAME"))
-
         if selected_frame_name != "#CURRENT_FRAME":
-            self._currentGoals = selected_frame["goals"]
-            print "setting motor values"
-            for k,v in self._currentGoals.items():
-                print k + " set to " + str(v)
-                print str(selected_frame["goals"][k])
+            self._currentGoals = deepcopy(self._workingValues)
+            self._workingValues = selected_frame["goals"]
+        else:
+            self._workingValues = deepcopy(self._currentGoals)
 
         self.set_sliders_and_text_fields()
 
@@ -297,22 +309,22 @@ class RecordUI(Plugin):
 
     def slider_update(self):
         for k, v in self._sliders.items():
-            self._currentGoals[k] = float(v.value()) * 3.14 / 180.0
+            self._workingValues[k] = float(v.value()) * 3.14 / 180.0
         self.set_sliders_and_text_fields()
 
     def set_sliders_and_text_fields(self):
         """
-        Updates the text fields and sliders ins self._sliders and self._textfields to the values in self._motor_values
+        Updates the text fields and sliders ins self._sliders and self._textfields to the values in self._workingValues
         :return: 
         """
-        for k, v in self._currentGoals.items():
+        for k, v in self._workingValues.items():
             self._textFields[k].setText(str(int(v / 3.14 * 180)))
             self._sliders[k].setValue(int(v / 3.14 * 180))
 
     def textfield_update(self):
         for k, v in self._textFields.items():
             try:
-                self._currentGoals[k] = float(v.text()) * 3.14 / 180.0
+                self._workingValues[k] = float(v.text()) * 3.14 / 180.0
             except ValueError:
                 continue
         self.set_sliders_and_text_fields()
@@ -351,6 +363,7 @@ class RecordUI(Plugin):
 
         current = QListWidgetItem()
         current.setText("#CURRENT_FRAME")
+        self._widget.frameList.addItem(current)
         self._widget.frameList.setCurrentItem(current)
 
     def change_frame_order(self, new_order):
