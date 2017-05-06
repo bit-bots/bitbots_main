@@ -161,9 +161,12 @@ class RecordUI(Plugin):
 
     def undo(self):
         self._recorder.undo()
+        self.update_frames()
+
 
     def redo(self):
         self._recorder.redo()
+        self.update_frames()
 
     def motor_switcher(self):
         self._widget.motorTree.setHeaderLabel("Motors")
