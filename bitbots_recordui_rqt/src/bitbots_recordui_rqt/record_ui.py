@@ -429,6 +429,10 @@ class RecordUI(Plugin):
         self._joint_pub.publish(msg)
         print "published"
 
+        for k, v in self._motorSwitched.items():
+            if v:
+                self._sliders[k].
+
     def update_frames(self):
         """
         updates the list of frames present in the current animation
