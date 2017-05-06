@@ -62,9 +62,23 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="buttonGotoInit">
+       <property name="text">
+        <string>goto Init</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="buttonDuplicateFrame">
        <property name="text">
         <string>Duplicate Frame</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonDeleteFrame">
+       <property name="text">
+        <string>Delete Frame</string>
        </property>
       </widget>
      </item>

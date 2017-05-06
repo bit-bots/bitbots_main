@@ -170,9 +170,11 @@ class RecordUI(Plugin):
 
         self._widget.buttonPlay.clicked.connect(self.play)
         self._widget.buttonGotoFrame.clicked.connect(self.goto_frame)
+        self._widget.buttonGotoInit.clicked.connect(self.goto_init)
         self._widget.buttonRecord.clicked.connect(self.record)
 
         self._widget.buttonDuplicateFrame.clicked.connect(self.duplicate)
+        self._widget.buttonDeleteFrame.clicked.connect(self.delete)
 
         self._widget.buttonUndo.clicked.connect(self.undo)
         self._widget.buttonRedo.clicked.connect(self.redo)
@@ -214,14 +216,42 @@ class RecordUI(Plugin):
         self._recorder.play()
 
     def goto_frame(self):
-        raise NotImplementedError
-        #todo publish joint trajecory message with stuff
+        msg = JointTrajectory()
+        msg.header.stamp = rospy.Time.from_seconds(time.time())
+        msg.joint_names= self._initial_joints.name
+        point = JointTrajectoryPoint()
+        print(self._workingValues.values())
+        point.positions= self._workingValues.values()
+        msg.points = [point]
+        self._joint_pub.publish(msg)
+
+    def goto_init(self):
+        msg = JointTrajectory()
+        msg.header.stamp = rospy.Time.from_seconds(time.time())
+        msg.joint_names= self._initial_joints.name
+        point = JointTrajectoryPoint()
+        point.positions= [0] * len(self._initial_joints.name)
+        msg.points = [point]
+        self._joint_pub.publish(msg)
 
     def duplicate(self):
-        frame = self._widget.frameList.selectedItems().text()
+        try:
+            frame = self._widget.frameList.selectedItems()[0].text()
+        except:
+            return
         if frame:
             self._recorder.duplicate(frame)
             self.update_frames()
+
+    def delete(self):
+        try:
+            frame = self._widget.frameList.selectedItems()[0].text()
+        except:
+            return
+        if frame:
+            self._recorder.delete(frame)
+            self.update_frames()
+
 
     def record(self):
         if self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
