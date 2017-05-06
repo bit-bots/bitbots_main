@@ -216,6 +216,7 @@ class RecordUI(Plugin):
         self._recorder.play()
 
     def goto_frame(self):
+        self.set_all_joints_stiff()
         msg = JointTrajectory()
         msg.header.stamp = rospy.Time.from_seconds(time.time())
         msg.joint_names= self._initial_joints.name
@@ -226,6 +227,7 @@ class RecordUI(Plugin):
         self._joint_pub.publish(msg)
 
     def goto_init(self):
+        self.set_all_joints_stiff()
         msg = JointTrajectory()
         msg.header.stamp = rospy.Time.from_seconds(time.time())
         msg.joint_names= self._initial_joints.name
@@ -233,6 +235,10 @@ class RecordUI(Plugin):
         point.positions= [0] * len(self._initial_joints.name)
         msg.points = [point]
         self._joint_pub.publish(msg)
+
+    def set_all_joints_stiff(self):
+        for k, v in self._treeItems.items():
+            v.setCheckState(0, Qt.Checked)
 
     def duplicate(self):
         try:
