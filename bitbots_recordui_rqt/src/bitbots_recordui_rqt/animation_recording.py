@@ -392,3 +392,11 @@ class Recorder(object):
                 new_frames.append(duplicate)
         self.current_state.anim_steps = new_frames
         self.save_step("Duplicated Frame " + frame_name)
+
+    def delete(self, frame_name):
+        new_frames = []
+        for frame in self.current_state.anim_steps:
+            if not frame_name == frame["name"]:
+                new_frames.append(frame)
+        self.current_state.anim_steps = new_frames
+        self.save_step("Duplicated Frame " + frame_name)

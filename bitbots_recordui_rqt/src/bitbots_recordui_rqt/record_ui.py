@@ -173,6 +173,7 @@ class RecordUI(Plugin):
         self._widget.buttonRecord.clicked.connect(self.record)
 
         self._widget.buttonDuplicateFrame.clicked.connect(self.duplicate)
+        self._widget.buttonDeleteFrame.clicked.connect(self.delete)
 
         self._widget.buttonUndo.clicked.connect(self.undo)
         self._widget.buttonRedo.clicked.connect(self.redo)
@@ -225,6 +226,16 @@ class RecordUI(Plugin):
         if frame:
             self._recorder.duplicate(frame)
             self.update_frames()
+
+    def delete(self):
+        try:
+            frame = self._widget.frameList.selectedItems()[0].text()
+        except:
+            return
+        if frame:
+            self._recorder.delete(frame)
+            self.update_frames()
+
 
     def record(self):
         if self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
