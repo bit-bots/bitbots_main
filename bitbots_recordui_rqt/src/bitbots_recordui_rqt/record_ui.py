@@ -9,7 +9,7 @@ from python_qt_binding.QtCore import Qt, QMetaType, QDataStream, QVariant
 from python_qt_binding import loadUi
 from rqt_gui_py.plugin import Plugin
 from python_qt_binding.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem,QListWidgetItem, \
-    QSlider, QGroupBox, QVBoxLayout, QLabel, QLineEdit, QListWidget, QAbstractItemView, QFileDialog, QDoubleSpinBox
+    QSlider, QGroupBox, QVBoxLayout, QLabel, QLineEdit, QListWidget, QAbstractItemView, QFileDialog, QDoubleSpinBox, QMessageBox
 from python_qt_binding.QtGui import QDoubleValidator
 
 from sensor_msgs.msg import JointState
@@ -255,6 +255,11 @@ class RecordUI(Plugin):
 
     def record(self):
         if self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
+
+            for state in self._recorder.get_animation_state():
+                if self._workingName == state["name"]:
+                    QMessageBox.information(self._widget, "you messed up", "frame name is already in use")
+                    return
             self._recorder.record(self._workingValues,
                                   self._widget.lineFrameName.text(),
                                   self._widget.spinBoxDuration.value(),
@@ -313,7 +318,15 @@ class RecordUI(Plugin):
         else:
             if self._current:
                 self._currentGoals = deepcopy(self._workingValues)
+                self._currentName = deepcopy(self._workingName)
+                self._currentDuration = deepcopy(self._workingDuration)
+                self._currentPause = deepcopy(self._workingPause)
+
             self._workingValues = selected_frame["goals"]
+            self._workingName = selected_frame["name"]
+            self._workingPause = selected_frame["pause"]
+            self._workingDuration = selected_frame["duration"]
+
             self._current = False
 
         self.set_sliders_and_text_fields()
