@@ -172,6 +172,8 @@ class RecordUI(Plugin):
         self._widget.buttonGotoFrame.clicked.connect(self.goto_frame)
         self._widget.buttonRecord.clicked.connect(self.record)
 
+        self._widget.buttonDuplicateFrame.clicked.connect(self.duplicate)
+
         self._widget.buttonUndo.clicked.connect(self.undo)
         self._widget.buttonRedo.clicked.connect(self.redo)
 
@@ -214,6 +216,12 @@ class RecordUI(Plugin):
     def goto_frame(self):
         raise NotImplementedError
         #todo publish joint trajecory message with stuff
+
+    def duplicate(self):
+        frame = self._widget.frameList.selectedItems().text()
+        if frame:
+            self._recorder.duplicate(frame)
+            self.update_frames()
 
     def record(self):
         if self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
@@ -358,7 +366,10 @@ class RecordUI(Plugin):
 
         for i in range(0, len(current_state)):
             item = QListWidgetItem()
-            item.setText(current_state[i]["name"])
+            if "name" in current_state[i]:
+                item.setText(current_state[i]["name"])
+            else: #older animations without names for the frames
+                item.setText(str(i))
             self._widget.frameList.addItem(item)
 
         current = QListWidgetItem()
