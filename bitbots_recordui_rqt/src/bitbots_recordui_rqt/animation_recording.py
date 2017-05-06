@@ -81,7 +81,7 @@ class Recorder(object):
         if not state:
             state = deepcopy(self.current_state)
         self.steps.append((state, description))
-        self.save_animtion("backup")
+        self.save_animation("backup")
 
     def undo(self, amount=1):
         """ Undo <amount> of steps or the last Step if not given
@@ -129,7 +129,7 @@ class Recorder(object):
         rospy.loginfo("Last noted step is now: %s " % self.steps[-1][1])
         return True
 
-    def record(self, motor_pos, frame_name, duration, pause, seq_pos=None):
+    def record(self, motor_pos, frame_name, duration, pause, seq_pos=None, override=False):
         """ Record Command, save current keyframe-data
         """
         frame = {
@@ -138,12 +138,16 @@ class Recorder(object):
             "pause": pause,
             "goals": motor_pos
         }
+        new_frame = deepcopy(frame)
         if not seq_pos:
-            self.current_state.anim_steps.append(frame)
+            self.current_state.anim_steps.append(new_frame)
             self.save_step("Appending new keyframe " + frame_name)
-        else:
+        elif not override:
             self.save_step("Inserting new keyframe " + frame_name + " to position " + seq_pos)
-            self.current_state.anim_steps.insert(seq_pos, frame)
+            self.current_state.anim_steps.insert(seq_pos, new_frame)
+        else:
+            self.save_step("overriding keyframe " + frame_name + " at position " + seq_pos)
+            self.current_state.anim_steps[seq_pos] = new_frame
         return True
 
     def clear(self):
@@ -153,7 +157,7 @@ class Recorder(object):
         self.current_state.anim_steps = []
         return True
 
-    def save_animtion(self, path, file_name=None, force=False):
+    def save_animation(self, path, file_name=None, force=False):
         """ Record Command, dump all keyframedata to an animation .json file
 
         The GUI is asked for validity of the data, because the GUI keeps track
