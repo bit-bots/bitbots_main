@@ -23,7 +23,7 @@ class TransformBall(object):
         self.work(ballinfo)
 
     def work(self, ballinfo):
-        p = transf(ballinfo.center.x, ballinfo.center.y - ballinfo.diameter // 2, self.caminfo)
+        p = transf(ballinfo.center.x, ballinfo.center.y + ballinfo.diameter // 2, self.caminfo)
 
         br = BallRelative()
         br.header.stamp = ballinfo.header.stamp
