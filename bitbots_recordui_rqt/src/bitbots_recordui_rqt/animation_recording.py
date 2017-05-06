@@ -372,46 +372,6 @@ class Recorder(object):
         goal.animation = name
         goal.hcm = True  # force
 
-    def copy(self, frm, to=None):
-        """ copy a keyframe
-        :param frm: position to copy from
-        :param to: position to copy to, defaults to frm
-        """
-        frm -= 1  # adapt for index difference
-        if not to:
-            to = frm
-        else:
-            to -= 1  # adapt for index difference
-        try:
-            self.current_state.anim_steps.insert(to, self.current_state.anim_steps[frm])
-        except IndexError:
-            rospy.logwarn("The Keyframe number %s does not exist!" % frm)
-            return False
-        return True
-
-    def move(self, frm, to):
-        """ move a keyframe
-        :param frm: position to move from
-        :param to: position to move to
-        """
-        assert frm > 0
-        assert to > 0
-        # adapt for index difference
-        frm -= 1
-        to -= 1
-        orig_state = deepcopy(self.current_state)
-        # calculate index shift by pop
-        if frm <= to:
-            to -= 1
-        try:
-            item = self.current_state.anim_steps.pop(frm)
-        except IndexError:
-            rospy.logwarn("The Keyframe number %s does not exist!" % frm)
-            return False
-        self.save_step('moving Keyframe #%i to #%i' % (frm + 1, to + 1), orig_state)
-        self.current_state.anim_steps.insert(to, item)
-        return True
-
     def change_frame_order(self, new_order):
         """ Changes the order of the frames given an array of frame names"""
         new_ordered_frames = []
@@ -421,3 +381,14 @@ class Recorder(object):
                     new_ordered_frames.append(frame)
         self.current_state.anim_steps = new_ordered_frames
         self.save_step("Reordered frames")
+
+    def duplicate(self, frame_name):
+        new_frames = []
+        for frame in self.current_state.anim_steps:
+            new_frames.append(frame)
+            if frame_name == frame["name"]:
+                duplicate = deepcopy(frame)
+                duplicate["name"] = frame_name + "duplicate"
+                new_frames.append(duplicate)
+        self.current_state.anim_steps = new_frames
+        self.save_step("Duplicated Frame " + frame_name)
