@@ -137,6 +137,7 @@ class RecordUI(Plugin):
 
     def new(self):
         self._recorder.clear()
+        self.update_frames()
 
     def save(self):
         raise NotImplementedError
@@ -247,7 +248,7 @@ class RecordUI(Plugin):
         while self._widget.frameList.takeItem(0):
             continue
 
-        for i in range(0, len(current_state.anim_steps)):
+        for i in range(0, len(current_state)):
             item = QListWidgetItem()
-            item.setText(current_state.anim_steps[i]["name"])
-            self._widget.frameList.addItem()
+            item.setText(current_state[i]["name"])
+            self._widget.frameList.addItem(item)
