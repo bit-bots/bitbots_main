@@ -5,7 +5,6 @@ import datetime
 # todo
 # klickbar für welche motoren werte in den step gespeichert werden
 # copy past of frames, from one animation to another
-# duplicate frame
 # button for playing just current frmae
 # button to set robot in init pose
 # record button next to frame name filed

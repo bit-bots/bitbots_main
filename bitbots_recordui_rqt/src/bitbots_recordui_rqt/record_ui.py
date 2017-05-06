@@ -170,6 +170,7 @@ class RecordUI(Plugin):
 
         self._widget.buttonPlay.clicked.connect(self.play)
         self._widget.buttonGotoFrame.clicked.connect(self.goto_frame)
+        self._widget.buttonGotoInit.clicked.connect(self.goto_init)
         self._widget.buttonRecord.clicked.connect(self.record)
 
         self._widget.buttonDuplicateFrame.clicked.connect(self.duplicate)
@@ -217,6 +218,15 @@ class RecordUI(Plugin):
     def goto_frame(self):
         raise NotImplementedError
         #todo publish joint trajecory message with stuff
+
+    def goto_init(self):
+        msg = JointTrajectory()
+        msg.header.stamp = rospy.Time.from_seconds(time.time())
+        msg.joint_names= self._initial_joints.name
+        point = JointTrajectoryPoint()
+        point.positions= [0] * len(self._initial_joints.name)
+        msg.points = [point]
+        self._joint_pub.publish(msg)
 
     def duplicate(self):
         try:
