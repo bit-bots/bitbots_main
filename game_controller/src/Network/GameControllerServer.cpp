@@ -137,7 +137,7 @@ void GameControllerServer::HandlePacket(char* data) {
 					case STATE_READY:
 						//Debugger::INFO("GameControllerServer", "GameState: READY");
 						ROS_INFO("GameState: READY");
-						mGame->setBotAllowedToMove(false);
+						mGame->setBotAllowedToMove(true);
 						mGame->setGameState(Game::READY);
 						/*if (msg->kickOffTeam == teamId) {
 							mGame->setKickoff(true);
