@@ -3,6 +3,7 @@
 import rospkg
 import rospy
 import time
+import math
 
 from copy import deepcopy
 from python_qt_binding.QtCore import Qt, QMetaType, QDataStream, QVariant
@@ -105,8 +106,8 @@ class RecordUI(Plugin):
     def initialize(self):
         for i in range(0, len(self._initial_joints.name)):
             self._currentGoals[self._initial_joints.name[i]] = self._initial_joints.position[i]
+            self._workingValues[self._initial_joints.name[i]] = self._initial_joints.position[i]
             self._motorSwitched[self._initial_joints.name[i]] = True
-
 
         self.motor_controller()
         self.motor_switcher()
@@ -114,6 +115,7 @@ class RecordUI(Plugin):
         self.box_ticked()
         self.frame_list()
         self.update_frames()
+        self.set_sliders_and_text_fields(True)
 
     def state_update(self, joint_states):
         if not self._initial_joints:
@@ -124,7 +126,7 @@ class RecordUI(Plugin):
             if (not self._motorSwitched[joint_states.name[i]]):
                 self._workingValues[joint_states.name[i]] = joint_states.position[i]
 
-        self.set_sliders_and_text_fields()
+        self.set_sliders_and_text_fields(manual=False)
 
     def motor_controller(self):
         """
@@ -238,10 +240,10 @@ class RecordUI(Plugin):
     def goto_init(self):
         self.set_all_joints_stiff()
         msg = JointTrajectory()
-        msg.header.stamp = rospy.Time.from_seconds(time.time())
-        msg.joint_names= self._initial_joints.name
+        msg.header.stamp = rospy.Time.from_seconds(time.time()) #why not rospy.Time.now() ??
+        msg.joint_names = self._initial_joints.name
         point = JointTrajectoryPoint()
-        point.positions= [0] * len(self._initial_joints.name)
+        point.positions = [0] * len(self._initial_joints.name)
         msg.points = [point]
         self._joint_pub.publish(msg)
 
@@ -344,7 +346,7 @@ class RecordUI(Plugin):
 
             self._current = False
 
-        self.set_sliders_and_text_fields()
+        self.set_sliders_and_text_fields(manual=True)
 
     def motor_switcher(self):
         self._widget.motorTree.setHeaderLabel("Stiff Motors")
@@ -395,30 +397,32 @@ class RecordUI(Plugin):
 
     def slider_update(self):
         for k, v in self._sliders.items():
-            self._workingValues[k] = float(v.value()) * 3.14 / 180.0
-        self.set_sliders_and_text_fields()
+            self._workingValues[k] = math.radians(v.value())
+        self.set_sliders_and_text_fields(manual=True)
 
     def textfield_update(self):
         for k, v in self._textFields.items():
             try:
-                self._workingValues[k] = float(v.text()) * 3.14 / 180.0
+                self._workingValues[k] = math.radians(float(v.text()))
             except ValueError:
                 continue
-        self.set_sliders_and_text_fields()
+        self.set_sliders_and_text_fields(manual=True)
 
-    def set_sliders_and_text_fields(self):
+    def set_sliders_and_text_fields(self, manual):
         """
         Updates the text fields and sliders ins self._sliders and self._textfields and also frame name and duration and pause 
         to the values in self._workingValues
         :return: 
         """
         for k, v in self._workingValues.items():
-            self._textFields[k].setText(str(int(v / 3.14 * 180)))
-            self._sliders[k].setValue(int(v / 3.14 * 180))
+            if not self._motorSwitched[k] or manual:
+                self._textFields[k].setText(str(int(math.degrees(v))))
+                self._sliders[k].setValue(int(math.degrees(v)))
 
-        self._widget.lineFrameName.setText(self._workingName)
-        self._widget.spinBoxDuration.setValue(self._workingDuration)
-        self._widget.spinBoxPause.setValue(self._workingPause)
+        if manual:
+            self._widget.lineFrameName.setText(self._workingName)
+            self._widget.spinBoxDuration.setValue(self._workingDuration)
+            self._widget.spinBoxPause.setValue(self._workingPause)
 
     def box_ticked(self):
         msg = JointTrajectory()
@@ -428,15 +432,21 @@ class RecordUI(Plugin):
         msg.points.append(JointTrajectoryPoint())
 
         for k, v in self._treeItems.items():
+            if self._motorSwitched[k] != (v.checkState(0) == Qt.Checked): #if motor stiffness should change
+                msg.joint_names.append(k)
+                msg.points[0].positions.append(self._workingValues[k])
+                if v.checkState(0) == Qt.Checked:
+                    msg.points[0].effort.append(1.0)
+                else:
+                    msg.points[0].effort.append(0.0)
             self._motorSwitched[k] = (v.checkState(0) == Qt.Checked)
-            msg.joint_names.append(k)
-            msg.points[0].positions.append(self._currentGoals[k])
-            if self._motorSwitched[k]:
-                msg.points[0].effort.append(1.0)
-            else:
-                msg.points[0].effort.append(0.0)
+
         self._joint_pub.publish(msg)
-        print "published"
+
+        for k, v in self._motorSwitched.items():
+            self._textFields[k].setEnabled(v)
+            self._sliders[k].setEnabled(v)
+            print k + " " + str(v)
 
     def update_frames(self):
         """
