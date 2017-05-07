@@ -28,7 +28,7 @@ class HeadCapsule:
         self.current_tilt_pos = 0
         self.is_ball_tracking_still_active = False
         self.bestball_in_image = None, None
-        self.cam_info = 800, 600
+        self.cam_info = 640, 360
 
         # preparing message for more performance
         self.pos_msg = JointTrajectory()
