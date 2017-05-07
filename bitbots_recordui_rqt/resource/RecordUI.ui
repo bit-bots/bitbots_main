@@ -55,16 +55,23 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="buttonUntilFrame">
+       <property name="text">
+        <string>Play Until Frame</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="buttonGotoFrame">
        <property name="text">
-        <string>goto Frame</string>
+        <string>Play Frame</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="buttonGotoInit">
        <property name="text">
-        <string>goto Init</string>
+        <string>Play Init</string>
        </property>
       </widget>
      </item>
