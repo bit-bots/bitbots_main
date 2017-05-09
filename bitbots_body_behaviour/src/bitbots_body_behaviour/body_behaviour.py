@@ -6,6 +6,9 @@ BehaviourModule
 
 Starts the body behaviour
 """
+import sys
+
+import bitbots_body_behaviour
 import rospy
 # from bitbots_animation.animation_node import PlayAnimationAction
 from bitbots_stackmachine.stack_machine_module import StackMachineModule
@@ -26,6 +29,14 @@ class BehaviourModule(StackMachineModule):
         self.connector.walking.pub_walking_objective = rospy.Publisher("navigation_goal", Pose2D, queue_size=3)
         self.connector.walking.pub_walkin_params = rospy.Publisher("cmd_vel", Twist, queue_size=6)
         self.connector.head_pub = rospy.Publisher("head_duty", HeadMode, queue_size=10)
+
+        if len(sys.argv) > 1:
+            duty = sys.argv[1]
+            rospy.loginfo("Forcing %s behaviour" % duty)
+        else:
+            duty = None
+
+        bitbots_body_behaviour.body.decisions.common.duty_decider.duty = duty
 
         self.set_start_module(DutyDecider)
 

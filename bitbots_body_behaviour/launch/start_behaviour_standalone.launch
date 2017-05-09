@@ -1,10 +1,11 @@
 <launch>
+    <arg name="duty" default="TeamPlayer"/>
     <rosparam command="load" file="$(find bitbots_body_behaviour)/config/behaviour.yaml"/>
     <rosparam command="load" file="$(find bitbots_head_behaviour)/config/head_config.yaml"/>
     <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
     <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
-    <node name="body_behaviour" pkg="bitbots_body_behaviour" type="body_behaviour.py" respawn="true" output="screen"/>
-    <node name="head_behaviour"  pkg="bitbots_head_behaviour" type="head_node.py" respawn="true" />
+    <node name="body_behaviour" pkg="bitbots_body_behaviour" type="body_behaviour.py" respawn="true"  output="screen" args="$(arg duty)" />
+    <node name="head_behaviour"  pkg="bitbots_head_behaviour" type="head_node.py" respawn="true" output="screen"/>
 
     <rosparam command="load" file="$(find bitbots_pathfinding)/config/pathfinding_config.yaml"/>
     <node name="pathfinding" pkg="bitbots_pathfinding" type="pathfinding_rnn.py" respawn="true">
