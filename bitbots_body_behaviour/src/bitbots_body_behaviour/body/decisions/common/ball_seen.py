@@ -46,7 +46,7 @@ class AbstractBallSeen(AbstractDecisionModule):
 class BallSeenGoalie(AbstractBallSeen):
     def perform(self, connector, reevaluate=False):
 
-        if time.time() - connector.blackboard_capsule().get_confirmed_ball() < 2:
+        if time.time() - connector.blackboard.get_confirmed_ball() < 2:
             return self.has_ball_seen(connector)
         else:
             return self.ball_not_seen(connector)

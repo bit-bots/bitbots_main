@@ -14,7 +14,7 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 class GoaliePositionDecision(AbstractDecisionModule):
     def perform(self, connector, reevaluate=False):
-        if connector.blackboard_capsule().get_goalie_out_of_goal():
+        if connector.blackboard.get_goalie_out_of_goal():
             return self.push(GoToDutyPosition)
 
         return self.push(BallSeenGoalie)
