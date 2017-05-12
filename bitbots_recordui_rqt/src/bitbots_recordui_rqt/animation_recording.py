@@ -8,7 +8,6 @@ import datetime
 # button for playing just current frmae
 # record button next to frame name filed
 # set min max for joint value fields
-# check frame names if empty or duplicated
 
 import json
 import os

@@ -52,6 +52,7 @@ class RecordUI(Plugin):
         self._sliders = {}
         self._textFields = {}
         self._motorSwitched = {}
+        self._selected_frame  = None
 
         self._currentGoals = {}                 # this is the data about the current unsaved frame
         self._currentDuration = 1.0
@@ -171,6 +172,7 @@ class RecordUI(Plugin):
 
 
         self._widget.buttonPlay.clicked.connect(self.play)
+        self._widget.buttonUntilFrame.clicked.connect(self.play_until)
         self._widget.buttonGotoFrame.clicked.connect(self.goto_frame)
         self._widget.buttonGotoInit.clicked.connect(self.goto_init)
         self._widget.buttonRecord.clicked.connect(self.record)
@@ -216,6 +218,13 @@ class RecordUI(Plugin):
 
     def play(self):
         self._recorder.play()
+
+    def play_unitl(self):
+        steps = self._recorder.get_animation_state()
+        for i in range(0, len(steps.keys())):
+            if steps[i]["name"] == self._selected_frame:
+                self._recorder.play(i)
+                return
 
     def goto_frame(self):
         self.set_all_joints_stiff()
@@ -310,12 +319,12 @@ class RecordUI(Plugin):
 
     def frame_select(self):
         selected_frame_name = self._widget.frameList.currentItem().text()
-        selected_frame = None
+        self._selected_frame = None
 
 
         for v in self._recorder.get_animation_state():
             if v["name"] == selected_frame_name:
-                selected_frame = v
+                self._selected_frame = v
                 break
 
         #save current values to _currentValues if switching from current frame to different one
@@ -336,10 +345,10 @@ class RecordUI(Plugin):
                 self._currentDuration = deepcopy(self._workingDuration)
                 self._currentPause = deepcopy(self._workingPause)
 
-            self._workingValues = selected_frame["goals"]
-            self._workingName = selected_frame["name"]
-            self._workingPause = selected_frame["pause"]
-            self._workingDuration = selected_frame["duration"]
+            self._workingValues = self._selected_frame["goals"]
+            self._workingName = self._selected_frame["name"]
+            self._workingPause = self._selected_frame["pause"]
+            self._workingDuration = self._selected_frame["duration"]
 
             self._current = False
 
