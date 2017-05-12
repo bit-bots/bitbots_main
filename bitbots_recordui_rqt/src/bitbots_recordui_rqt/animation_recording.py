@@ -139,7 +139,7 @@ class Recorder(object):
             "goals": motor_pos
         }
         new_frame = deepcopy(frame)
-        if not seq_pos:
+        if seq_pos is None:
             self.current_state.anim_steps.append(new_frame)
             self.save_step("Appending new keyframe " + frame_name)
         elif not override:

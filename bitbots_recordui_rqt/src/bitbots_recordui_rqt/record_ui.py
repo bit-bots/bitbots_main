@@ -221,10 +221,15 @@ class RecordUI(Plugin):
         self.set_all_joints_stiff()
         msg = JointTrajectory()
         msg.header.stamp = rospy.Time.from_seconds(time.time())
-        msg.joint_names= self._initial_joints.name
+        #msg.joint_names= self._initial_joints.name
         point = JointTrajectoryPoint()
         print(self._workingValues.values())
-        point.positions= self._workingValues.values()
+        #point.positions= self._workingValues.values()
+
+        for k,v in self._workingValues.items():
+            msg.joint_names.append(k)
+            point.positions.append(v)
+        point.velocities = [30.0] * len(self._initial_joints.name)
         msg.points = [point]
         self._joint_pub.publish(msg)
 
@@ -235,6 +240,7 @@ class RecordUI(Plugin):
         msg.joint_names = self._initial_joints.name
         point = JointTrajectoryPoint()
         point.positions = [0] * len(self._initial_joints.name)
+        point.velocities = [30.0] * len(self._initial_joints.name)
         msg.points = [point]
         self._joint_pub.publish(msg)
 
@@ -260,7 +266,6 @@ class RecordUI(Plugin):
             self._recorder.delete(frame)
             self.update_frames()
 
-
     def record(self):
         if self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
 
@@ -274,6 +279,7 @@ class RecordUI(Plugin):
                                   self._widget.spinBoxPause.value())
         else:
             current_row = self._widget.frameList.currentRow()
+            print current_row
             self._recorder.record(self._workingValues,
                                   self._widget.lineFrameName.text(),
                                   self._widget.spinBoxDuration.value(),
@@ -430,9 +436,13 @@ class RecordUI(Plugin):
                     msg.points[0].effort.append(1.0)
                 else:
                     msg.points[0].effort.append(0.0)
+
+                msg.points[0].velocities.append(30.0)
+
             self._motorSwitched[k] = (v.checkState(0) == Qt.Checked)
 
-        self._joint_pub.publish(msg)
+        if len(msg.joint_names) > 0:
+            self._joint_pub.publish(msg)
 
         for k, v in self._motorSwitched.items():
             self._textFields[k].setEnabled(v)

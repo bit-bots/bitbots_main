@@ -79,7 +79,7 @@ class CM730Node:
             self.joint_limits[motor['name']] = {'min': min_value, 'max': max_value}
 
         # --- Initialize Topics ---
-        rospy.Subscriber("motor_goals", JointTrajectory, self.update_motor_goals, queue_size=1)
+        rospy.Subscriber("motor_goals", JointTrajectory, self.update_motor_goals, queue_size=20)
         self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=1)
         self.speak_publisher = rospy.Publisher('speak', Speak, queue_size=1)
         self.temp_publisher = rospy.Publisher('servo_data', AdditionalServoData, queue_size=1)
