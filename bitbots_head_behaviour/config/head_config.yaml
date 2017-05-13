@@ -62,8 +62,8 @@ Behaviour:
         # how exact the head has to be an the position to be recongized as at this position (in degree)
         headTurnPrecision: 2
 
-        # Time in Secounds to wait befor turn by Walking
-        turnWaitTime: 9999 #todo change if turning works
+        # Time in seconds to wait before moving
+        turnWaitTime: 5 #todo change if turning works
 
         #New feature if wew want to use invere kinematics for searching
         useKinematicTaskForSearching: true
@@ -79,9 +79,9 @@ Behaviour:
       ball:
             - [0 , -12]
             -  [90 , -10]
-            -  [50 ,-35]
-            -  [ 0 ,-50]
-            - [-50 ,-35]
+            -  [50 ,-40]
+            -  [ 0 ,-65]
+            - [-50 ,-40]
             - [-90 ,-10]
 
       goalie:
