@@ -1,13 +1,13 @@
 #!/usr/bin/env python2.7
 import rospy
 from bitbots_transform.transform_helper import transf
-from humanoid_league_msgs.msg import BallRelative, BallInImage
+from humanoid_league_msgs.msg import BallRelative, BallInImage, BallsInImage
 from sensor_msgs.msg import CameraInfo
 
 
 class TransformBall(object):
     def __init__(self):
-        rospy.Subscriber("ball_in_image", BallInImage, self._callback_ball, queue_size=1)
+        rospy.Subscriber("ball_in_image", BallsInImage, self._callback_ball, queue_size=1)
         rospy.Subscriber("camera/camera_info", CameraInfo, self._callback_camera_info)
         self.ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=10)
         self.caminfo = None  # type:CameraInfo
@@ -16,13 +16,18 @@ class TransformBall(object):
 
         rospy.spin()
 
-    def _callback_ball(self, ballinfo):
+    def _callback_ball(self, ballsinfo):
         if not self.caminfo:
             return  # No camaraInfo available
 
-        self.work(ballinfo)
+        self.work(ballsinfo)
 
-    def work(self, ballinfo):
+    def work(self, ballsinfo):
+        if len(ballsinfo.candidates) == 0:
+            rospy.logerr("No candidates in BallsInImage message")
+            return
+
+        ballinfo = ballsinfo.candidates[0]
         p = transf(ballinfo.center.x, ballinfo.center.y + ballinfo.diameter // 2, self.caminfo)
 
         br = BallRelative()
