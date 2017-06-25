@@ -31,7 +31,7 @@ class TransformBall(object):
         p = transf(ballinfo.center.x, ballinfo.center.y + ballinfo.diameter // 2, self.caminfo)
 
         br = BallRelative()
-        br.header.stamp = ballinfo.header.stamp
+        br.header.stamp = ballsinfo.header.stamp
         br.header.frame_id = "base_link"
 
         br.ball_relative.x = p[0]
