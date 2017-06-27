@@ -1,13 +1,14 @@
 <launch>
-    <arg name="wfvision" default="true"/>
+    <arg name="cppvision" default="true"/>
     <arg name="wftransform" default="true"/>
-    <arg name="duty"/>
+    <arg name="duty" default="TeamPlayer"/>
+    <arg name="hcm" default="true"/>
 
-    <group if="$(arg wfvision)">
+    <group if="$(arg cppvision)">
         <include file="$(find bitbots_vision_common)/launch/vision_startup_wf.launch"/>
     </group>
 
-    <group unless="$(arg wfvision)">
+    <group unless="$(arg cppvision)">
         <include file="$(find bitbots_vision_common)/launch/vision_startup.launch"/>
     </group>
 
@@ -28,6 +29,9 @@
     <include file="$(find game_controller)/launch/game_controller.launch" />
 
     <include file="$(find bitbots_localisation)/launch/localisation_amcl.launch"/>
-    <include file="$(find bitbots_hcm)/launch/start_hcm_minibot_robot.launch"/>
+
+    <group if="$(arg hcm)">
+        <include file="$(find bitbots_hcm)/launch/start_hcm_minibot_robot.launch"/>
+    </group>
 
 </launch>
