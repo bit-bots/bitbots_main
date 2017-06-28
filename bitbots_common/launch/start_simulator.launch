@@ -10,6 +10,8 @@
         <arg name="ns" value="$(arg ns)" />
     </include>
 
+    <param name="/camera_v4l/resolution/width" value="800" />
+    <param name="/camera_v4l/resolution/height" value="600" />
     <group ns="$(arg ns)">
         <remap from="cmd_vel" to="/minibot/cmd_vel"/>
 
