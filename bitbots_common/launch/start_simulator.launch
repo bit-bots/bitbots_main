@@ -16,7 +16,8 @@
         <remap from="cmd_vel" to="/minibot/cmd_vel"/>
 
         <include file="$(find bitbots_vision_common)/launch/vision_processing_wf.launch"/>
-        <!--<node name="cameraview" pkg="bitbots_imageviewer" type="bitbots_imageviewer.py"/>-->
+
+        <node name="image_marker" pkg="humanoid_league_image_marker" type="image_marker.py"/>
 
         <include file="$(find bitbots_body_behaviour)/launch/start_behaviour_standalone.launch"/>
 
