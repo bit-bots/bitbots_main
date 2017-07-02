@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="ns" default="robot1" />
+    <arg name="ns" default="" />
 
     <remap from="$(arg ns)/camera/image_raw" to="$(arg ns)/image_raw"/>
 
