@@ -63,7 +63,7 @@ ZMPWalk::ZMPWalk(const ZMPParameter& parameter)
 
     m_stopRequest = 0;
 
-    m_initial_step = 2;
+    m_initial_step = 1;
 
     m_toeTipCompensation = 0;
 
@@ -572,7 +572,7 @@ void ZMPWalk::start() {
         m_started = false;
         m_newStep = true;
         m_tLastStep = boost::posix_time::microsec_clock::local_time();
-        m_initial_step = 2;
+        m_initial_step = 1;
     }
 }
 
