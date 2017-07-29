@@ -25,14 +25,14 @@ RhobanWalk::RhobanWalk(): params(), outputs()
     * Model leg typical length between
     * each rotation axis
      **/
-   params.distHipToKnee = 0.105;
-   params.distKneeToAnkle = 0.093;
-   params.distAnkleToGround = 0.032;
+   params.distHipToKnee = 0.15;
+   params.distKneeToAnkle = 0.15;
+   params.distAnkleToGround = 0.04;
    /**
     * Distance between the two feet in lateral
     * axis while in zero position
     */
-    params.distFeetLateral = 0.074; //Nur Relevant wen  SwingRollGain != 0
+    params.distFeetLateral = 0.12; //Nur Relevant wen  SwingRollGain != 0
     /**
      * Complete (two legs) walk cycle frequency
      * in Hertz

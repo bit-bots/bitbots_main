@@ -1,6 +1,6 @@
 ZMPConfig:
   Darwin:
-      "use_gyro_for_walking": false
+      "use_gyro_for_walking": true
       "HipPitch": 25
       "FORWARD_FACTOR": 100.0
       "SIDEWARD_FACTOR": 50.0
@@ -91,7 +91,7 @@ ZMPConfig:
       "BodyOffsets": [0.05, 0.200] #Der Ort des Schwerpunkt des {Oberkörpers, Roboters ,Toast - In Absteigender Wahrscheinlichkeit} Relativ zur Hüfte in y und z achse
       "FootHeight": 0.0335 # Entfernung vom Pitchmotor zum Endeffektor
   Minibot:
-      "use_gyro_for_walking": false
+      "use_gyro_for_walking": true
       "HipPitch": 25
       "FORWARD_FACTOR": 100.0
       "SIDEWARD_FACTOR": 50.0

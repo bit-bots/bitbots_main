@@ -46,7 +46,7 @@ cdef class ZMPWalkingEngine:
         pass
 
     cpdef set_velocity(self, float x, float y, float z):
-        self.thisptr.set_velocity(x/3.0, y/5.0, z/5.0) #TODO
+        self.thisptr.set_velocity(x/30.0, y/50.0, z/50.0) #TODO
 
     cpdef set_gyro(self, float x, float y, float z):
         self.thisptr.set_gyro(x, y, z)
