@@ -12,7 +12,8 @@ from sensor_msgs.msg import JointState, Imu
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from bitbots_common.util.pose_to_message import pose_goal_to_traj_msg
 
-from bitbots_walking.zmpwalking import ZMPWalkingEngine
+#from bitbots_walking.zmpwalking import ZMPWalkingEngine
+from bitbots_walking.RhobanWalking.walking import ZMPWalkingEngine
 
 
 class WalkingNode:

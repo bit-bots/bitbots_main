@@ -7,6 +7,9 @@ include_directories(.)
 #include_directories(..)
 include_directories(${Eigen_INCLUDE_DIRS})
 
+
+add_subdirectory(RhobanWalking)
+
 set_source_files_properties(
     walking.pyx zmpwalking.pyx
     PROPERTIES CYTHON_IS_CXX TRUE
