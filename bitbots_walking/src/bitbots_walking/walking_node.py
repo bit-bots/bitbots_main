@@ -23,14 +23,14 @@ class WalkingNode:
         rospy.init_node("bitbots_walking", anonymous=False)
 
         # --- Params ---
-        zmp_config = rospy.get_param("ZMPConfig/" + rospy.get_param("robot_type_name"))
+        robot_type_name = rospy.get_param("robot_type_name")
+        zmp_config = rospy.get_param("ZMPConfig/" + robot_type_name)
         self.with_gyro = zmp_config["use_gyro_for_walking"]
         self.forward_factor = zmp_config["FORWARD_FACTOR"]
         self.sideward_factor = zmp_config["SIDEWARD_FACTOR"]
         self.angular_factor = zmp_config["ANGLE_FACTOR"]
-        robot_type_name = rospy.get_param("robot_type_name")
         self.used_motor_cids = rospy.get_param("cm730/" + robot_type_name + "/motors")
-        self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids[0:-2])  # without head
+        self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids[0:-2])  # without head #TODO: das kan grausam schief gehen, die letzten beiden müssen nicht der kopf sein
 
         # --- Class Variables ---
         self.walking = ZMPWalkingEngine()
@@ -107,7 +107,7 @@ class WalkingNode:
             rospy.logwarn("Your trying to use the gyro with walking. The values are now in rad/sec (ROS standard) and "
                           "not the cm730 specific units. Please convert theme or adapt the walking algorithm "
                           "acordingly. It's propably not going to work like this.")
-            gyro_x, gyro_y, gyro_z = self.gyro
+            gyro_x, gyro_y, gyro_z = self.gyro.x, self.gyro.y, self.gyro.z
             self.walking.set_gyro(gyro_x, gyro_y, gyro_z)  ###gyro
         # Pose berechnen
         self.zmp_foot_phase = self.walking.process()
