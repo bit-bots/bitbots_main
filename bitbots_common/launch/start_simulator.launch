@@ -21,7 +21,8 @@
 
         <include file="$(find bitbots_body_behaviour)/launch/start_behaviour_standalone.launch"/>
 
-        <include file="$(find bitbots_transform)/launch/transforms.launch"/>
+        <!--<include file="$(find bitbots_transform)/launch/transforms.launch"/>-->
+        <include file="$(find wolves_relative_transformer)/launch/wolves_relative_transformer.launch"/>
 
         <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch"/>
 
