@@ -4,13 +4,13 @@ AnimationCapsule
 """
 import actionlib
 import rospy
-from humanoid_league_msgs.msg import PlayAnimationGoal, humanoid_league_msgs
+from humanoid_league_msgs.msg import PlayAnimationGoal, PlayAnimationAction
 
 
 class AnimationCapsule:
     def __init__(self):
         self.active = False
-        self.anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
+        self.anim_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
 
     def play_animation(self, anim: str)->bool:
         """
