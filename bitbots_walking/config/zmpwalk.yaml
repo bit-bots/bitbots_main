@@ -117,7 +117,7 @@ ZMPConfig:
       "Parameter":
           "bodyHeight": 0.28 # Wie Sehr der Roboter in die Knie geht
           "stepHeight": 0.015
-          "footX": 0.025
+          "footX": 0.030
           "tZmp": 0.165
           "tStep": 0.45
           "frontComp": 0.008

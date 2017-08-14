@@ -355,7 +355,7 @@ void ZMPWalk::applyGyroStabilization(Eigen::Matrix<double, 12, 1>& qLegs) {
     //Ankle stabilization using gyro feedback
 
     double gyro_roll0 = m_imuGyr.x(); //0 if without Gyrostabilisation
-    double gyro_pitch0 = m_imuGyr.y();
+    double gyro_pitch0 = - m_imuGyr.y();
 
     //get effective gyro angle considering body angle offset
     double yawAngle = 0;
