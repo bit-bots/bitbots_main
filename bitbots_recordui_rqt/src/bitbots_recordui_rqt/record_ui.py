@@ -95,7 +95,7 @@ class RecordUI(Plugin):
         while not self._initial_joints:
             if not rospy.is_shutdown():
                 time.sleep(0.5)
-                print "wait"
+                print("wait")
             else:
                 return
 
@@ -288,7 +288,7 @@ class RecordUI(Plugin):
                                   self._widget.spinBoxPause.value())
         else:
             current_row = self._widget.frameList.currentRow()
-            print current_row
+            print(current_row)
             self._recorder.record(self._workingValues,
                                   self._widget.lineFrameName.text(),
                                   self._widget.spinBoxDuration.value(),
@@ -456,7 +456,7 @@ class RecordUI(Plugin):
         for k, v in self._motorSwitched.items():
             self._textFields[k].setEnabled(v)
             self._sliders[k].setEnabled(v)
-            print k + " " + str(v)
+            print(k + " " + str(v))
 
     def update_frames(self):
         """
