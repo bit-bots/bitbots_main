@@ -3,10 +3,19 @@ BehaviourBlackboardCapsule
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 """
+import os
 import time
 import math
-import rosparam
 
+import sys
+
+import rosparam
+import pickle as Pickle
+import rospkg
+rospack = rospkg.RosPack()
+
+from bitbots_pathfinding import network
+sys.modules['network'] = network
 
 class BlackboardCapsule:
     def __init__(self):
@@ -293,3 +302,10 @@ class BlackboardCapsule:
 
     def get_finished_align(self):
         return time.time() - self.my_data.get("FinishedAlign", 0) < 10
+
+    def get_pathfinding_net(self):
+        if "pathfinding_net" not in self.my_data:
+            path = os.path.join(rospack.get_path("bitbots_pathfinding"), "include/network.pickle")
+            self.my_data["pathfinding_net"] = Pickle.load(open(path, "rb"))
+        return self.my_data["pathfinding_net"]
+
