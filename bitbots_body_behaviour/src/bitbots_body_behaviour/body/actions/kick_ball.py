@@ -22,12 +22,12 @@ class KickBall(AbstractActionModule):
         super(KickBall, self).__init__(connector)
         self.side = args
         self.begin = time.time()
-        self.rk = connector.animation.an_config["kicks"]["rk"]
-        self.lk = connector.animation.an_config["kicks"]["lk"]
-        self.rkp = connector.animation.an_config["kicks"]["rkp"]
-        self.lkp = connector.animation.an_config["kicks"]["lkp"]
-        self.side_right = connector.animation.an_config["kicks"]["lko"]
-        self.side_left = connector.animation.an_config["kicks"]["rko"]
+        self.rk = "rk_wm2016_unstable" # connector.animation.an_config["kicks"]["rk"]
+        self.lk = None # connector.animation.an_config["kicks"]["lk"]
+        self.rkp = None #  connector.animation.an_config["kicks"]["rkp"]
+        self.lkp = None # connector.animation.an_config["kicks"]["lkp"]
+        self.side_right = None # connector.animation.an_config["kicks"]["lko"]
+        self.side_left = None # connector.animation.an_config["kicks"]["rko"]
         self.anim_begin = False
 
     def perform(self, connector: BodyConnector, reevaluate=False):

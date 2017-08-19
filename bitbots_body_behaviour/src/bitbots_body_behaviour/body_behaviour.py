@@ -49,7 +49,7 @@ class BehaviourModule(StackMachineModule):
         rospy.init_node("Bodybehaviour")
 
     def run(self):
-        rate = rospy.Rate(15)
+        rate = rospy.Rate(5)
         while not rospy.is_shutdown():
             self.update()
             rate.sleep()
