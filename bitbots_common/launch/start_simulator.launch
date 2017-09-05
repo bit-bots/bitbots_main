@@ -15,7 +15,8 @@
     <group ns="$(arg ns)">
         <remap from="cmd_vel" to="/minibot/cmd_vel"/>
 
-        <include file="$(find bitbots_vision_common)/launch/vision_processing_wf.launch"/>
+          <include file="$(find bitbots_soccer_vision)/launch/bitbots_soccer_vision.launch" />
+            <include file="$(find wolves_ball_filter)/launch/wolves_ball_filter.launch" />
 
         <node name="image_marker" pkg="humanoid_league_image_marker" type="image_marker.py"/>
 
