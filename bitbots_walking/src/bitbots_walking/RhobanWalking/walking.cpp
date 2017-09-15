@@ -244,7 +244,7 @@ ZMPFootPhaseDefinition::FootPhase RhobanWalk::update()
 {
     bool success = Rhoban::IKWalk::walk(
             params, //Walk parameters
-            1.0/engineFrequenzy, //Time step
+            1.0/engineFrequenzy, //Time step //todo I think it would be better to use the actual delta t, this can make problems if the function is not called correctly
             phase, //Current walk phase -will be updated)
             outputs); //Result target position (updated)
     if (!success) {
