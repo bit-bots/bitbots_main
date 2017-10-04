@@ -29,7 +29,7 @@ class HeadNode(StackMachineModule):
     def run(self):
         rate = rospy.Rate(4)
         while not rospy.is_shutdown():
-            rospy.loginfo("######Run Headbehaviour")
+            rospy.logdebug("######Run Headbehaviour")
             self.update()
             rate.sleep()
 

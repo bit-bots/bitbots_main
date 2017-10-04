@@ -44,7 +44,7 @@ class AbstactTrackObject(AbstractInitActionModule):
     def track_with_values(self, connector: HeadConnector, x, y):
         a = ((x / connector.head.cam_info[0]) - 0.5) * 2
         b = ((y / connector.head.cam_info[1]) - 0.5) * -2
-        rospy.logwarn("rela: %f relb: %f " % (a, b))
+        rospy.logdebug("rela: %f relb: %f " % (a, b))
 
 
         # the goalie wants to track the ball in the upper part of the image, because it will probably come to him
@@ -55,8 +55,8 @@ class AbstactTrackObject(AbstractInitActionModule):
 
         # Get the current positions
         curren_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
-        rospy.loginfo("OldTiltgoal: %f" % current_tilt_pos)
-        rospy.loginfo("OldPangoal: %f" % curren_pan_pos)
+        rospy.logdebug("OldTiltgoal: %f" % current_tilt_pos)
+        rospy.logdebug("OldPangoal: %f" % curren_pan_pos)
         if not (-self.a_sens < a < self.a_sens):
             goal = curren_pan_pos + a * (self.angle/2.0) * self.horizontal_factor
             goal = min(self.max_pan, max(self.min_pan, goal))
@@ -72,8 +72,8 @@ class AbstactTrackObject(AbstractInitActionModule):
 
         else:
             head_tilt_goal = current_tilt_pos
-        rospy.loginfo("Tiltgoal: %f" % head_tilt_goal)
-        rospy.loginfo("Pangoal: %f" % head_pan_goal)
+        rospy.logdebug("Tiltgoal: %f" % head_tilt_goal)
+        rospy.logdebug("Pangoal: %f" % head_pan_goal)
 
         connector.head.send_motor_goals(head_pan_goal, self.max_pan_speed, head_tilt_goal, self.max_tilt_speed)
 

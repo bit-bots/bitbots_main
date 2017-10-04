@@ -39,10 +39,10 @@ class HeadDutyDecider(AbstractDecisionModule):
         else:
             self.goal_prio = min(100, self.goal_prio + 3)
 
-        rospy.loginfo("GoalPrio" + str(self.goal_prio))
-        rospy.loginfo("BallPrio" + str(self.ball_prio))
-        rospy.loginfo("BallLastConfirmed" + str(time.time() - connector.head.get_confirmed_ball()))
-        rospy.loginfo("BallLastStratedconfirm" + str(time.time() - connector.head.startedconfirmingball))
+        rospy.logdebug("GoalPrio" + str(self.goal_prio))
+        rospy.logdebug("BallPrio" + str(self.ball_prio))
+        rospy.logdebug("BallLastConfirmed" + str(time.time() - connector.head.get_confirmed_ball()))
+        rospy.logdebug("BallLastStratedconfirm" + str(time.time() - connector.head.startedconfirmingball))
 
         head_mode = connector.head.get_headmode()
         if head_mode == "":
@@ -55,7 +55,7 @@ class HeadDutyDecider(AbstractDecisionModule):
             return self.push(SearchAndConfirmEnemyGoal)
 
         if head_mode == HeadMode.BALL_GOAL_TRACKING:
-            rospy.loginfo("TrackbothTime", time.time())
+            rospy.logdebug("TrackbothTime", time.time())
             if time.time() - connector.head.get_confirmed_ball() > 5:
                 return self.push(SearchAndConfirmBall)
 
@@ -67,7 +67,7 @@ class HeadDutyDecider(AbstractDecisionModule):
                 return self.push(SearchAndConfirmBall)
 
         if self.toggle_switch_ball_goal:
-            rospy.loginfo("Headdoes", "Priorities")
+            rospy.logdebug("Headdoes", "Priorities")
             if self.ball_prio >= self.goal_prio:
                 return self.push(SearchAndConfirmBall)
             else:

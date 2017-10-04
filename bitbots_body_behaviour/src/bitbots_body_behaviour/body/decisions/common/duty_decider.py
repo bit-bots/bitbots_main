@@ -90,7 +90,7 @@ class DutyDecider(AbstractDecisionModule):
         ################################
         # #load cetain part of behaviour
         ################################
-        rospy.loginfo("Current duty: " + connector.blackboard.get_duty())
+        rospy.logdebug("Current duty: " + connector.blackboard.get_duty())
 
         if connector.blackboard.get_duty() in ["TeamPlayer"]:
             return self.push(KickOff)

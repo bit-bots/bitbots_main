@@ -32,7 +32,7 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
         self.ball_fail_conter_max = connector.config["Head"]["Tracking"]["ballFailCounterMax"]
 
     def perform(self, connector: HeadConnector, reevaluate=False):
-        rospy.loginfo("Ballseen: " + str(self.object_seen()))
+        rospy.logdebug("Ballseen: " + str(self.object_seen()))
         if time.time() - self.get_started_confirm_time() > self.confirm_time and \
                         self.get_started_confirm_time() != 0:
             self.set_confirmed()
@@ -77,11 +77,11 @@ class SearchAndConfirmBall(AbstractSearchAndConfirm):
         super(SearchAndConfirmBall, self).perform(connector, reevaluate)
 
     def track(self):
-        rospy.loginfo("Push TrackBall")
+        rospy.loginlogdebugfo("Push TrackBall")
         return self.push(TrackBall)
 
     def search(self):
-        rospy.loginfo("Push SearchForBall")
+        rospy.logdebug("Push SearchForBall")
         return self.push(SearchForBall)
 
 

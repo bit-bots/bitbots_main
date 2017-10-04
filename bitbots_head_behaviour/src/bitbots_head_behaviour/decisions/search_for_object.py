@@ -39,13 +39,13 @@ class AbstactSearchForObject(AbstractDecisionModule):
         # elif self.run ==1: #todo do fancy stuff like looking left and right of the saved position
         else:
             # we try to find the ball by using a pattern
-            rospy.loginfo("Push: Continious Search")
+            rospy.logdebug("Push: Continious Search")
             return self.push(ContiniousSearch)
 
 
 class SearchForBall(AbstactSearchForObject):
     def perform(self, connector: HeadConnector, reevaluate=False):
-        rospy.loginfo("Start Searchfor ball")
+        rospy.logdebug("Start Searchfor ball")
         #u, v = connector.world_model.get_ballpos()
         u, v = None, None
         return self.search(connector, u, v)

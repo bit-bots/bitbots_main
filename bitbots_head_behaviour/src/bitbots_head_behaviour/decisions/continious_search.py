@@ -26,13 +26,13 @@ class ContiniousSearch(AbstractDecisionModule):
         self.default_pattern = connector.config["Head"]["SearchPattern"]["ball"]
         self.current_pattern = self.default_pattern
         self.last_pattern = self.current_pattern
-        rospy.logwarn("Start new Search")
+        rospy.logdebug("Start new Search")
 
     def perform(self, connector: HeadConnector, reevaluate=False):
         self.set_pattern(connector)
 
         pos = self.pattern_pos
-        rospy.logerr("Pattern pos" + str(pos))
+        rospy.logdebug("Pattern pos" + str(pos))
         # Increment the to be reached postion with wrap around
         self.pattern_pos = (pos + 1) % len(self.current_pattern)
         return self.push(HeadToPanTilt, self.current_pattern[pos])

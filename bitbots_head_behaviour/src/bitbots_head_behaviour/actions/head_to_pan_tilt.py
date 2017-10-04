@@ -25,7 +25,7 @@ class HeadToPanTilt(AbstractActionModule):
         self.at_position = time.time()
 
     def perform(self, connector: HeadConnector, reevaluate=False):
-        rospy.loginfo("HeadToPanTilt")
+        rospy.logdebug("HeadToPanTilt")
         curren_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
 
         if abs(curren_pan_pos - self.pan) < connector.head.delta and \
@@ -38,5 +38,5 @@ class HeadToPanTilt(AbstractActionModule):
             # We haven't reached it
             # Update when we should reach it
             self.at_position = time.time()
-            rospy.loginfo("pan: " + str(self.pan) + "tilt:" + str(self.tilt))
+            rospy.logdebug("pan: " + str(self.pan) + "tilt:" + str(self.tilt))
             connector.head.send_motor_goals(self.pan, connector.head.pan_speed_max, self.tilt, connector.head.tilt_speed_max)
