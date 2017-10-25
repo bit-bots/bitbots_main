@@ -48,8 +48,8 @@ class Motion:
         self.last_gyro_update_time = time.time()
 
         # Motor Positions
-        self.robo_pose = Pose()
-        self.goal_pose = Pose()
+        self.robo_pose = Pose() #todo this is not used anymore?
+        self.goal_pose = Pose() #todo this is not used anymore?
         self.walking_motor_goal = None
         self.walking_goal_lock = Lock()
         self.last_walking_update = 0

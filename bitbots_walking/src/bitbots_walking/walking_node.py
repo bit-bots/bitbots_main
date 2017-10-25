@@ -104,9 +104,9 @@ class WalkingNode:
             self.walk_angular / self.angular_factor)
         # Gyro auslesen und an das Walking weitergeben
         if self.with_gyro:
-            rospy.logwarn("Your trying to use the gyro with walking. The values are now in rad/sec (ROS standard) and "
-                          "not the cm730 specific units. Please convert theme or adapt the walking algorithm "
-                          "acordingly. It's propably not going to work like this.")
+            #rospy.logwarn("Your trying to use the gyro with walking. The values are now in rad/sec (ROS standard) and "
+            #              "not the cm730 specific units. Please convert theme or adapt the walking algorithm "
+            #              "acordingly. It's propably not going to work like this.")
             gyro_x, gyro_y, gyro_z = self.gyro.x, self.gyro.y, self.gyro.z
             self.walking.set_gyro(gyro_x, gyro_y, gyro_z)  ###gyro
         # Pose berechnen

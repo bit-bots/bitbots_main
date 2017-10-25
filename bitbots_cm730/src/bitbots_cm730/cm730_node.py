@@ -129,7 +129,10 @@ class CM730Node:
                               str(self.joint_limits[joint]['min']) + " setted Position: " + str(pos_in_deg))
             else:
                 motor_goals.append(pos_in_deg)
-            motor_speeds.append(velocities[i])
+            if len(velocities) > i:
+                motor_speeds.append(velocities[i])
+            else:
+                motor_speeds.append(1)
             if len(efforts) > i:
                 motor_efforts.append(efforts[i])
             else:
