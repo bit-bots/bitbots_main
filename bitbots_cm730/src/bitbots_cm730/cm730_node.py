@@ -132,7 +132,7 @@ class CM730Node:
             if len(velocities) > i:
                 motor_speeds.append(velocities[i])
             else:
-                motor_speeds.append(1)
+                motor_speeds.append(0)
             if len(efforts) > i:
                 motor_efforts.append(efforts[i])
             else:
