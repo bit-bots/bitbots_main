@@ -1,3 +1,5 @@
+import numpy as np
+
 class HorizonDetector:
 
     def __init__(self, image, color_detector):
@@ -17,14 +19,18 @@ class HorizonDetector:
         pass
 
     def get_full_horizon(self):
-        pass
+        if self._horizon_full is None:
+            xp, fp = zip(*self.get_horizon_points())
+            x = list(range(len(fp)+1))
+            self._horizon_full = np.interp(x, xp, fp)
+        return self._horizon_full
+
 
     def point_under_horizon(self, point, offset) -> bool:
-        pass
+        return point[1] + offset > self.get_full_horizon()[point[0]]  # Todo: catch out of bounds points
 
-    def _interpolate_points(self, points):
-        pass
 
     def _equalize_points(self, points):
         for index, point in enumerate(points[1:-1]):
-            point_before =
+            point_before = points[index]
+            point_after = points[index+2]
