@@ -3,7 +3,7 @@ import cv2
 
 
 class Classifier:
-    def __init__(self, image, candidates, classifier):
+    def __init__(self, image, classifier, candidates):
         self._image = image
         self._input_candidates = candidates
         self._classifier = classifier
@@ -30,6 +30,6 @@ class Classifier:
         if self._top_candidate is None:
             maxconf_index = np.argmax(
                 np.array([x[1] for x in self.get_classified_candidates()]))
-            self._top_candidate = self._input_candidates[maxconf_index]
+            self._top_candidate = self._classified_candidates[maxconf_index]
             pass
         return self._top_candidate
