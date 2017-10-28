@@ -16,7 +16,9 @@ class LiveClassifier(object):
         self.model_load_path = load_path + "model"
         self.load_path = load_path
 
-        self.X = tf.placeholder(tf.float32, shape=[None, 40, 40, 3], name="X")
+        self.input_shape = (40, 40, 3)
+
+        self.X = tf.placeholder(tf.float32, shape=[None, self.input_shape[0], self.input_shape[1], self.input_shape[2]], name="X")
         self.Y = tf.placeholder(tf.float32, shape=[None, 1], name="Y")
 
         self.M, self.M_logits = self.model(self.X)
