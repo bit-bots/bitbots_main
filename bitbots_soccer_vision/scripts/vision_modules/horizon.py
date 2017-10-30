@@ -1,5 +1,5 @@
 import numpy as np
-from.color import ColorDetector
+from .color import ColorDetector
 
 class HorizonDetector:
 
