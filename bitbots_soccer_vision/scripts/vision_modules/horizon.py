@@ -11,12 +11,16 @@ class HorizonDetector:
         self._y_steps = 30
 
     def get_horizon_points(self):
-        y_stepsize = self.image.shape[0] / (self._y_steps-1)
-        x_stepsize = self.image.shape[1] / (self._x_steps-1)
-        for x in range(self._x_steps):
-            for y in range(self._y_steps):
+        if self._horizon_points is None:
+            y_stepsize = self.image.shape[0] / (self._y_steps-1)
+            x_stepsize = self.image.shape[1] / (self._x_steps-1)
+            self._horizon_points = []
+            for x_step in range(self._x_steps):
+                x = round(x_step * x_stepsize)
+                for y_step in range(self._y_steps):
 
-        pass
+                                        pass
+        return self._horizon_points
 
     def get_full_horizon(self):
         if self._horizon_full is None:
