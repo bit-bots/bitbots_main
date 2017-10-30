@@ -10,6 +10,8 @@ class HorizonDetector:
         self._horizon_full = None
         self._x_steps = 30
         self._y_steps = 30
+        self._precise_pixel = 5
+        self._min_precise_pixel = 3
 
     def get_horizon_points(self) -> list:
         if self._horizon_points is None:
@@ -38,6 +40,33 @@ class HorizonDetector:
             horizon_points.append((x, temp_horizon_y))
         return horizon_points
 
+    def _precise_horizon(self):
+        #worst case:
+        minY = self._image.shape[0]
+        y_stepsize = self._image.shape[0] / (self._y_steps - 1)
+        x_stepsize = self._image.shape[1] / (self._x_steps - 1)
+        horizon_points = []
+        for x_step in range(self._x_steps):
+            greencount = 0
+            firstgreen = minY
+            x = round(x_step * x_stepsize)
+            for y_step in range(self._y_steps):
+                y = round(y_step * y_stepsize)
+                if self._color_detector.match_pixel(self._image[y, x]):
+                    if((y + self._precise_pixel) < minY):
+                        for i in range(self._precise_pixel):
+                            if self._color_detector.match_pixel(self._image[y, x]):
+                                greencount += 1
+                            if greencount > self._min_precise_pixel:
+                                firstgreen = y
+                                break
+                        greencount = 0
+                        firstgreen = y
+                        break
+            if firstgreen < minY:
+                firstgreen = minY
+            horizon_points.append((x,y))
+        return horizon_points
 
 
 
