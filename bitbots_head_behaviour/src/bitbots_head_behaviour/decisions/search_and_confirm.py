@@ -77,7 +77,7 @@ class SearchAndConfirmBall(AbstractSearchAndConfirm):
         super(SearchAndConfirmBall, self).perform(connector, reevaluate)
 
     def track(self):
-        rospy.loginlogdebugfo("Push TrackBall")
+        rospy.logdebug("Push TrackBall")
         return self.push(TrackBall)
 
     def search(self):
