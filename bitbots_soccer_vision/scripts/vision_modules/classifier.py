@@ -12,13 +12,12 @@ class Classifier:
 
     def get_classified_candidates(self):
         if self._classified_candidates is None:
-            if self._input_candidates:
+            if len(self._input_candidates) > 0:
                 batch = list()
                 for item in self._input_candidates:
-                    radius = int(item.diameter / 2)
-                    x, y = int(item.center.x), int(item.center.y)
-                    image_cropped = cv2.resize(self._image[y - radius: y + radius,
-                                               x - radius: x + radius],
+                    print(item)
+                    image_cropped = cv2.resize(self._image[item[1]: item[1]+item[3],
+                                               item[0]: item[0]+item[2]],
                                                (self._classifier.input_shape[0], self._classifier.input_shape[1]))
                     batch.append(image_cropped.astype(np.float32) / 255.0)
             # classify whole batch of images

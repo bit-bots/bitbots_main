@@ -1,9 +1,11 @@
 import numpy as np
+import cv2
 from .color import ColorDetector
+
 
 class HorizonDetector:
 
-    def __init__(self, image, color_detector: ColorDetector):
+    def __init__(self, image: np.matrix, color_detector: ColorDetector):
         self._image = image
         self._color_detector = color_detector
         self._horizon_points = None
@@ -68,8 +70,6 @@ class HorizonDetector:
             horizon_points.append((x,y))
         return horizon_points
 
-
-
     def get_full_horizon(self) -> list:
         if self._horizon_full is None:
             xp, fp = zip(*self.get_horizon_points())
@@ -77,10 +77,8 @@ class HorizonDetector:
             self._horizon_full = np.interp(x, xp, fp)
         return self._horizon_full
 
-
-    def point_under_horizon(self, point, offset) -> bool:
+    def point_under_horizon(self, point, offset=0) -> bool:
         return point[1] + offset > self.get_full_horizon()[point[0]]  # Todo: catch out of bounds points
-
 
     def _equalize_points(self, points):
         for index, point in enumerate(points[1:-1]):
