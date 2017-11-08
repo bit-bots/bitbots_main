@@ -17,12 +17,12 @@ class HorizonDetector:
 
     def get_horizon_points(self) -> list:
         if self._horizon_points is None:
-            self._horizon_points = self._fast_horizon()
+            self._horizon_points = self._precise_horizon()
         return self._horizon_points
 
     def _fast_horizon(self) -> list:
-        y_stepsize = self._image.shape[0] / (self._y_steps)
-        x_stepsize = self._image.shape[1] / (self._x_steps)
+        y_stepsize = self._image.shape[0] / self._y_steps
+        x_stepsize = self._image.shape[1] / self._x_steps
         horizon_points = []
         for x_step in range(self._x_steps):
             x = round(x_step * x_stepsize)
@@ -45,8 +45,8 @@ class HorizonDetector:
     def _precise_horizon(self):
         #worst case:
         minY = self._image.shape[0]
-        y_stepsize = self._image.shape[0] / (self._y_steps - 1)
-        x_stepsize = self._image.shape[1] / (self._x_steps - 1)
+        y_stepsize = self._image.shape[0] / self._y_steps
+        x_stepsize = self._image.shape[1] / self._x_steps
         horizon_points = []
         for x_step in range(self._x_steps):
             greencount = 0
@@ -74,7 +74,7 @@ class HorizonDetector:
         if self._horizon_full is None:
             xp, fp = zip(*self.get_horizon_points())
             x = list(range(len(fp)+1))
-            self._horizon_full = np.interp(x, xp, fp)
+            self._horizon_full = np.interp(x, list(xp), list(fp))
         return self._horizon_full
 
     def point_under_horizon(self, point, offset=0) -> bool:
