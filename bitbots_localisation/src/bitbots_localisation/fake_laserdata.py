@@ -1,5 +1,7 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3.5
 import math
+import sys
+sys.path[1:1] = [sys.path[-1]]
 from cv2 import norm
 
 import numpy as np
@@ -9,8 +11,6 @@ import rospy
 from geometry_msgs.msg import PointStamped
 from humanoid_league_msgs.msg import LineInformationInImage, LineInformationRelative
 from sensor_msgs.msg import LaserScan
-from matplotlib import pyplot as plt
-import tf
 from tf.listener import TransformListener
 
 
@@ -26,7 +26,7 @@ def polar(x,y):
   return math.hypot(x,y),math.degrees(math.atan2(y,x))%360
 
 
-class FakeLaser(object):
+class FakeLaser:
     def __init__(self):
         self.sub_line = rospy.Subscriber("lines_relative", LineInformationRelative, self._callback_lines, queue_size=1)
         self.pub_laser = rospy.Publisher("scan", LaserScan, queue_size=200)
