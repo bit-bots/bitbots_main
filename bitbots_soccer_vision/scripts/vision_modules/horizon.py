@@ -21,8 +21,8 @@ class HorizonDetector:
         return self._horizon_points
 
     def _fast_horizon(self) -> list:
-        y_stepsize = self._image.shape[0] / (self._y_steps - 1)
-        x_stepsize = self._image.shape[1] / (self._x_steps - 1)
+        y_stepsize = self._image.shape[0] / (self._y_steps)
+        x_stepsize = self._image.shape[1] / (self._x_steps)
         horizon_points = []
         for x_step in range(self._x_steps):
             x = round(x_step * x_stepsize)
@@ -37,7 +37,7 @@ class HorizonDetector:
                     if y_step > 0:
                         half_y_step = round(y - (0.5 * y_stepsize))
                         if self._color_detector.match_pixel(self._image[half_y_step, x]):
-                            temp_horizon_y = [half_y_step, x]
+                            temp_horizon_y = round(half_y_step)
                     break
             horizon_points.append((x, temp_horizon_y))
         return horizon_points
@@ -55,7 +55,7 @@ class HorizonDetector:
             for y_step in range(self._y_steps):
                 y = round(y_step * y_stepsize)
                 if self._color_detector.match_pixel(self._image[y, x]):
-                    if((y + self._precise_pixel) < minY):
+                    if (y + self._precise_pixel) < minY:
                         for i in range(self._precise_pixel):
                             if self._color_detector.match_pixel(self._image[y, x]):
                                 greencount += 1
@@ -67,7 +67,7 @@ class HorizonDetector:
                         break
             if firstgreen < minY:
                 firstgreen = minY
-            horizon_points.append((x,y))
+            horizon_points.append((x, y))
         return horizon_points
 
     def get_full_horizon(self) -> list:
