@@ -1,0 +1,20 @@
+<launch>
+
+    <arg name="ns" default="robot1" />
+
+    <remap from="$(arg ns)/camera/image_raw" to="$(arg ns)/image_raw"/>
+
+
+    <param name="/use_sim_time" value="true" />
+    <include file="$(find minibot_description)/launch/minibot_robocup.launch">
+        <arg name="ns" value="$(arg ns)" />
+    </include>
+
+    <param name="/camera_v4l/resolution/width" value="800" />
+    <param name="/camera_v4l/resolution/height" value="600" />
+    <group ns="$(arg ns)">
+        <remap from="cmd_vel" to="/minibot/cmd_vel"/>
+        <include file="$(find bitbots_hcm)/launch/start_hcm_minibot_simulation.launch"/>
+    </group>
+
+</launch>
