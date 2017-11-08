@@ -1,0 +1,20 @@
+import cv2
+
+
+class DebugImage:
+
+    def __init__(self, image):
+        self.raw_image = image[:]
+
+    def draw_horizon(self, horizon_points):
+        for i in range(len(horizon_points) - 1):
+            cv2.line(self.raw_image, horizon_points[i], horizon_points[i+1], 255)
+
+    def draw_ball_candidates(self, ball_candidates):
+        for candidate in ball_candidates:
+            cv2.circle(self.raw_image, (candidate[0] + candidate[2]//2, candidate[1] + candidate[3] // 2), candidate[3] // 2, 1023)
+
+    def imshow(self):
+        cv2.imwrite('img.png', self.raw_image)
+        # cv2.imshow('Debug Image', self.raw_image)
+        # cv2.waitKey(0)

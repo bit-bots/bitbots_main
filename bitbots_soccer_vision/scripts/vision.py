@@ -1,5 +1,6 @@
-from vision_modules import ball, classifier, live_classifier, horizon, color
+from vision_modules import ball, classifier, live_classifier, horizon, color, debug_image
 import cv2
+
 
 class Vision:
 
