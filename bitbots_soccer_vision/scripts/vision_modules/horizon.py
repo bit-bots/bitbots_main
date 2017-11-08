@@ -21,8 +21,8 @@ class HorizonDetector:
         return self._horizon_points
 
     def _fast_horizon(self) -> list:
-        y_stepsize = self._image.shape[0] / self._y_steps
-        x_stepsize = self._image.shape[1] / self._x_steps
+        y_stepsize = (self._image.shape[0] - 1) / (self._y_steps - 1)
+        x_stepsize = (self._image.shape[1] - 1) / (self._x_steps - 1)
         horizon_points = []
         for x_step in range(self._x_steps):
             x = round(x_step * x_stepsize)
@@ -43,31 +43,28 @@ class HorizonDetector:
         return horizon_points
 
     def _precise_horizon(self):
-        #worst case:
-        minY = self._image.shape[0]
-        y_stepsize = self._image.shape[0] / self._y_steps
-        x_stepsize = self._image.shape[1] / self._x_steps
+        # worst case:
+        min_y = self._image.shape[0] - 1
+        y_stepsize = (self._image.shape[0] - 1) / (self._y_steps - 1)
+        x_stepsize = (self._image.shape[1] - 1) / (self._x_steps - 1)
         horizon_points = []
-        for x_step in range(self._x_steps):
-            greencount = 0
-            firstgreen = minY
-            x = round(x_step * x_stepsize)
-            for y_step in range(self._y_steps):
-                y = round(y_step * y_stepsize)
-                if self._color_detector.match_pixel(self._image[y, x]):
-                    if (y + self._precise_pixel) < minY:
+        for x_step in range(self._x_steps):  # traverse columns
+            firstgreen = min_y  # set horizon point to worst case
+            x = round(x_step * x_stepsize)  # get x value of step (depends on image size)
+            for y_step in range(self._y_steps):  # traverse rows
+                y = round(y_step * y_stepsize)  # get y value of step (depends on image size)
+                if self._color_detector.match_pixel(self._image[y, x]):  # when the pixel is in the color space
+                    if (y + self._precise_pixel) < min_y:
                         for i in range(self._precise_pixel):
+                            greencount = 0
                             if self._color_detector.match_pixel(self._image[y, x]):
                                 greencount += 1
-                            if greencount > self._min_precise_pixel:
+                            if greencount >= self._min_precise_pixel:
                                 firstgreen = y
                                 break
-                        greencount = 0
                         firstgreen = y
                         break
-            if firstgreen < minY:
-                firstgreen = minY
-            horizon_points.append((x, y))
+            horizon_points.append((x, firstgreen))
         return horizon_points
 
     def get_full_horizon(self) -> list:
