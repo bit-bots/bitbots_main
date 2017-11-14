@@ -16,11 +16,22 @@ class HorizonDetector:
         self._min_precise_pixel = 3
 
     def get_horizon_points(self) -> list:
+        """
+        calculates the horizon if not calculated yet and returns a list containing coordinates on the picture where the horizon is.
+        :return list of x,y tuples of the horizon:
+        """
         if self._horizon_points is None:
             self._horizon_points = self._equalize_points(self._precise_horizon())
         return self._horizon_points
 
     def _fast_horizon(self) -> list:
+        """
+        calculates the horizon coordinates in a quick and efficient, but less precise way.
+        It calculates the horizon by checking for green and after having found the first green it also checks
+        between the last point which wasn't green and the current one to see if the horizon is already inbetween.
+        see also: _precise_horizon()
+        :return list of coordinates of the horizon:
+        """
         y_stepsize = (self._image.shape[0] - 1) / (self._y_steps - 1)
         x_stepsize = (self._image.shape[1] - 1) / (self._x_steps - 1)
         horizon_points = []
@@ -43,6 +54,15 @@ class HorizonDetector:
         return horizon_points
 
     def _precise_horizon(self):
+        """
+        Calculates the horizon coordinates in a precise way, but less fast and efficient.
+        It checks after having found a horizon if coordinates around this point are also green
+        and thus under the horizon.
+        It additionally employs checking between the last point known as not the horizon and the horizon point
+        to see if the horizon starts somewhere in between. (Currently actually a TODO)
+        see also: _fast_horizon()
+        :return list of coordinates of the horizon:
+        """
         # worst case:
         min_y = self._image.shape[0] - 1
         y_stepsize = (self._image.shape[0] - 1) / (self._y_steps - 1)
@@ -68,6 +88,11 @@ class HorizonDetector:
         return horizon_points
 
     def get_full_horizon(self) -> list:
+        """
+        calculates an interpolated list of y coordinates where the horizon is for the picture
+        the index of the y value is the x coordinate on the picture
+        :return list of y coordinates where the horizon is. Index of y value is the x coordinate:
+        """
         if self._horizon_full is None:
             xp, fp = zip(*self.get_horizon_points())
             x = list(range(len(fp)+1))
@@ -75,6 +100,12 @@ class HorizonDetector:
         return self._horizon_full
 
     def point_under_horizon(self, point, offset=0) -> bool:
+        """
+        returns if given coordinate is a point under horizon
+        :param point coordinate to test:
+        :param offset offset of pixels to still be accepted as under the horizon. Default is 0.:
+        :return a boolean if point is under horizon:
+        """
         return point[1] + offset > self.get_full_horizon()[point[0]]  # Todo: catch out of bounds points
 
     def _equalize_points(self, points: list) -> list:
