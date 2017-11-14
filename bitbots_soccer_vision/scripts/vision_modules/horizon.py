@@ -17,7 +17,7 @@ class HorizonDetector:
 
     def get_horizon_points(self) -> list:
         if self._horizon_points is None:
-            self._horizon_points = self._precise_horizon()
+            self._horizon_points = self._equalize_points(self._precise_horizon())
         return self._horizon_points
 
     def _fast_horizon(self) -> list:
@@ -77,7 +77,16 @@ class HorizonDetector:
     def point_under_horizon(self, point, offset=0) -> bool:
         return point[1] + offset > self.get_full_horizon()[point[0]]  # Todo: catch out of bounds points
 
-    def _equalize_points(self, points):
-        for index, point in enumerate(points[1:-1]):
-            point_before = points[index]
-            point_after = points[index+2]
+    def _equalize_points(self, points: list) -> list:
+        equalized_points = list()
+        equalized_points.append(points[0])
+        buffer0 = points[0]
+        buffer1 = points[1]
+        for i in range(2, len(points)):
+            buffer2 = points[i]
+            equalized_points.append((buffer1[0], round((((buffer0[1] + buffer2[1]) / 2) + buffer1[1]) / 2)))
+            buffer0 = buffer1
+            buffer1 = buffer2
+        equalized_points.append(points[-1])
+        print(equalized_points)
+        return equalized_points
