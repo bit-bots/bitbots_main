@@ -99,6 +99,10 @@ class HorizonDetector:
             self._horizon_full = np.interp(x, list(xp), list(fp))
         return self._horizon_full
 
+    def candidate_under_horizon(self, candidate, y_offset):
+        footpoint = (candidate[0] + candidate[2] // 2, candidate[1] + candidate[3] + y_offset)
+        return self.point_under_horizon(footpoint)
+
     def point_under_horizon(self, point, offset=0) -> bool:
         """
         returns if given coordinate is a point under horizon
