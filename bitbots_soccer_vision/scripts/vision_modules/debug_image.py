@@ -30,5 +30,5 @@ class DebugImage:
         :return void:
         """
         cv2.imwrite('img.png', self.raw_image)
-        # cv2.imshow('Debug Image', self.raw_image)
-        # cv2.waitKey(0)
+        cv2.imshow('Debug Image', self.raw_image)
+        cv2.waitKey(0)

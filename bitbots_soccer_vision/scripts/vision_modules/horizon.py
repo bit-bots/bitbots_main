@@ -24,7 +24,7 @@ class HorizonDetector:
             self._horizon_points = self._equalize_points(self._precise_horizon())
         return self._horizon_points
 
-    def _fast_horizon(self) -> list:
+    def _fast_horizon(self) -> list:  # do not use
         """
         calculates the horizon coordinates in a quick and efficient, but less precise way.
         It calculates the horizon by checking for green and after having found the first green it also checks
@@ -95,13 +95,22 @@ class HorizonDetector:
         """
         if self._horizon_full is None:
             xp, fp = zip(*self.get_horizon_points())
-            x = list(range(len(fp)+1))
+            x = list(range(self._image.shape[1]))
             self._horizon_full = np.interp(x, list(xp), list(fp))
         return self._horizon_full
 
-    def candidate_under_horizon(self, candidate, y_offset):
+    def candidate_under_horizon(self, candidate, y_offset=0) -> bool:
+        """
+        returns whether the candidate is under the horizon or not
+        :param candidate: the candidate, a tuple (upleft_x, upleft_y, width, height)
+        :param y_offset: an offset in y-direction (higher offset allows points in a wider range over the horizon)
+        :return: whether the candidate is under the horizon or not
+        """
         footpoint = (candidate[0] + candidate[2] // 2, candidate[1] + candidate[3] + y_offset)
         return self.point_under_horizon(footpoint)
+
+    def candidates_under_horizon(self, candidates: list, y_offset=0):
+        return [candidate for candidate in candidates if self.candidate_under_horizon(candidate, y_offset)]
 
     def point_under_horizon(self, point, offset=0) -> bool:
         """
@@ -113,6 +122,13 @@ class HorizonDetector:
         return point[1] + offset > self.get_full_horizon()[point[0]]  # Todo: catch out of bounds points
 
     def _equalize_points(self, points: list) -> list:
+        """
+        returns a list of the input points with smoothed y-coordinates to reduce
+        the impact of outlier points in the horizon, which are caused by
+        detection errors
+        :param points: list of input points consisting of tuples (x, y)
+        :return: list of input points with smoothed y-coordinates consisting of tuples (x, y)
+        """
         equalized_points = list()
         equalized_points.append(points[0])
         buffer0 = points[0]
