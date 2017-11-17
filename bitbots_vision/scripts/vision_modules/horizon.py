@@ -74,6 +74,7 @@ class HorizonDetector:
             for y_step in range(self._y_steps):  # traverse rows
                 y = round(y_step * y_stepsize)  # get y value of step (depends on image size)
                 if self._color_detector.match_pixel(self._image[y, x]):  # when the pixel is in the color space
+                    #TODO see if horizon starts higher already (see fast_horizon())
                     if (y + self._precise_pixel) < min_y:
                         for i in range(self._precise_pixel):
                             greencount = 0
