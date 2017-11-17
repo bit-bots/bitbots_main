@@ -1,14 +1,15 @@
+#! /usr/bin/python3.5
+
 from vision_modules import ball, classifier, live_classifier, horizon, color, debug_image
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineSegmentInImage, LineInformationInImage
 from sensor_msgs.msg import Image
-import rospy
 from cv_bridge import CvBridge
+import rospy
 import sys
 # moving ROS to end of path to use system/venv cv2 for Python3
 if "python2.7" in sys.path[1] and "python2.7" in sys.path[2]:
     sys.path.append(sys.path.pop(1))
     sys.path.append(sys.path.pop(1))
-
 import cv2
 
 
@@ -28,7 +29,7 @@ class Vision:
 
         # subscriber:
         self.bridge = CvBridge()
-        rospy.Subscriber("image_raw", Image, self._image_callback, queue_size=1)
+        rospy.Subscriber("image_raw", Image, self._image_callback, queue_size=1)  # TODO: use image_transport
         rospy.init_node("bitbots_soccer_vision")
 
         if self.debug:
@@ -53,12 +54,12 @@ class Vision:
             debug_image_dings.draw_horizon(horizon_detector.get_horizon_points())
             debug_image_dings.draw_ball_candidates(horizon_detector.candidates_under_horizon(ball_finder.get_candidates(), 100))
             # debug_image_dings.imshow()
-        if ball_classifier.get_top_candidate()[1] > 0.5:  # Todo: set real threshold
-            msg = BallsInImage()
-            msg.header.frame_id = image_msg.header.frame_id
-            msg.header.stamp = image_msg.header.stamp
-            msg.candidates.append(ball_classifier.get_top_candidate())
-            self.pub_balls.publish(msg)
+        ball_msg = BallsInImage()
+        ball_msg.header.frame_id = image_msg.header.frame_id
+        ball_msg.header.stamp = image_msg.header.stamp
+        if ball_classifier.get_top_candidate()[1] > 0.5:  # Todo: set real threshold, always send message/only when ball found?
+            ball_msg.candidates.append(ball_classifier.get_top_candidate())
+        self.pub_balls.publish(ball_msg)
 
 
 

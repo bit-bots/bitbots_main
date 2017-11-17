@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="bitbots_vision" type="bitbots_vision_node" name="bitbots_vision_node" output="screen" >
+    </node>
+</launch>
