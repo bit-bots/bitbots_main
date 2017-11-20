@@ -89,7 +89,7 @@ class RecordUI(Plugin):
         self._widget.verticalLayout_2.insertWidget(0, self._widget.frameList)
         self._widget.frameList.setDragDropMode(QAbstractItemView.InternalMove)
 
-        rospy.Subscriber("/joint_states", JointState, self.state_update, queue_size=100)
+        rospy.Subscriber("/joint_states", JointState, self.state_update, queue_size=1)
         self._joint_pub = rospy.Publisher("/motor_goals", JointTrajectory, queue_size=1)
 
         while not self._initial_joints:
@@ -213,13 +213,13 @@ class RecordUI(Plugin):
 
         self._widget.lineAnimationName.setText(metadata[0])
         self._widget.lineAuthor.setText(metadata[2])
-        self._widget.lineVersion.setText(metadata[1])
+        self._widget.lineVersion.setText(str(metadata[1]))
         self._widget.fieldDescription.setPlainText(metadata[3])
 
     def play(self):
         self._recorder.play()
 
-    def play_unitl(self):
+    def play_until(self):
         steps = self._recorder.get_animation_state()
         for i in range(0, len(steps.keys())):
             if steps[i]["name"] == self._selected_frame:
