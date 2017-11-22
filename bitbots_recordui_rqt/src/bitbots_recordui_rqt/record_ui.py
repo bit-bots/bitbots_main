@@ -138,15 +138,15 @@ class RecordUI(Plugin):
 			group = QGroupBox()
 			slider = QSlider(Qt.Horizontal)
 			slider.setTickInterval(1)
-			slider.setMinimum(-180)
-			slider.setMaximum(180)
+			slider.setMinimum(-181)
+			slider.setMaximum(181)
 			slider.valueChanged.connect(self.slider_update)
 			self._sliders[k] = slider
 
 			textfield = QLineEdit()
 			textfield.setText('0')
 			textfield.textEdited.connect(self.textfield_update)
-			textfield.setValidator(QDoubleValidator(-180.0, 180.0, 2))
+			textfield.setValidator(QDoubleValidator(-181.0, 181.0, 2))
 			self._textFields[k] = textfield
 
 			label = QLabel()
@@ -403,6 +403,10 @@ class RecordUI(Plugin):
 	def slider_update(self):
 		for k, v in self._sliders.items():
 			self._workingValues[k] = math.radians(v.value())
+			if self._workingValues[k] < -math.pi:
+				self._workingValues[k] = -math.pi
+			elif self._workingValues[k] > math.pi:
+				self._workingValues[k] = math.pi
 		self.set_sliders_and_text_fields(manual=True)
 
 	def textfield_update(self):
