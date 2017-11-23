@@ -185,11 +185,12 @@ class RecordUI(Plugin):
 		self._widget.buttonRedo.clicked.connect(self.redo)
 
 	def new(self):
-		message = "This will discard your current Animation. Continue?"
-		sure = QMessageBox.question(self._widget, 'Sure?', message, QMessageBox.Yes | QMessageBox.No)
-		if sure == QMessageBox.Yes:
-			self._recorder.clear()
-			self.update_frames()
+			if len(self._widget.frameList) > 1:
+				message = "This will discard your current Animation. Continue?"
+				sure = QMessageBox.question(self._widget, 'Sure?', message, QMessageBox.Yes | QMessageBox.No)
+				if sure == QMessageBox.Yes:
+					self._recorder.clear()
+					self.update_frames()
 
 	def save(self):
 		self.set_metadata()
@@ -208,20 +209,22 @@ class RecordUI(Plugin):
 									 self._widget.fieldDescription.toPlainText())
 
 	def open(self):
-		message = "This will discard your current Animation. Continue?"
-		sure = QMessageBox.question(self._widget, 'Sure?', message, QMessageBox.Yes | QMessageBox.No)
-		if sure == QMessageBox.Yes:
-			my_file = QFileDialog.getOpenFileName()[0]
-			if my_file:
-				self._recorder.load_animation(my_file)
-			self.update_frames()
+		if len(self._widget.frameList) > 1:
+			message = "This will discard your current Animation. Continue?"
+			sure = QMessageBox.question(self._widget, 'Sure?', message, QMessageBox.Yes | QMessageBox.No)
+			if sure == QMessageBox.No:
+				return
+		my_file = QFileDialog.getOpenFileName()[0]
+		if my_file:
+			self._recorder.load_animation(my_file)
+		self.update_frames()
 
-			metadata = self._recorder.get_meta_data()
+		metadata = self._recorder.get_meta_data()
 
-			self._widget.lineAnimationName.setText(metadata[0])
-			self._widget.lineAuthor.setText(metadata[2])
-			self._widget.lineVersion.setText(str(metadata[1]))
-			self._widget.fieldDescription.setPlainText(metadata[3])
+		self._widget.lineAnimationName.setText(metadata[0])
+		self._widget.lineAuthor.setText(metadata[2])
+		self._widget.lineVersion.setText(str(metadata[1]))
+		self._widget.fieldDescription.setPlainText(metadata[3])
 
 	def play(self):
 		self._recorder.play()
