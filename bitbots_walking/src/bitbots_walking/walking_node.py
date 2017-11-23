@@ -25,7 +25,7 @@ class WalkingNode:
         # --- Params ---
         robot_type_name = rospy.get_param("robot_type_name")
         zmp_config = rospy.get_param("ZMPConfig/" + robot_type_name)
-        self.with_gyro = zmp_config["use_gyro_for_walking"]
+        self.with_gyro = False
         self.forward_factor = zmp_config["FORWARD_FACTOR"]
         self.sideward_factor = zmp_config["SIDEWARD_FACTOR"]
         self.angular_factor = zmp_config["ANGLE_FACTOR"]
