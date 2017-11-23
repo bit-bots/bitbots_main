@@ -146,6 +146,7 @@ class WalkingNode:
     def run(self):
         rate = rospy.Rate(100)
         while not rospy.is_shutdown():
+            rospy.logwarn("Using deprecated walking")
             if self.walking.running:
                 # The walking is walking
                 if self.motion_state == RobotControlState.WALKING or (

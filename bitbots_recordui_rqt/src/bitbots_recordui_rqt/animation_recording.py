@@ -285,6 +285,11 @@ class Recorder(object):
         with open(path) as fp:
             try:
                 data = json.load(fp)
+                i = 0
+                for kf in data['keyframes']:
+                    if not 'name' in kf:
+                        kf['name'] = 'frame'+str(i)
+                        i += 1
             except ValueError as e:
                 rospy.logerr("Animation %s is corrupt:\n %s" %
                              (path, e.message.partition('\n')[0]))
