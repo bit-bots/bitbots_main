@@ -1,10 +1,12 @@
-#! /usr/bin/python3.5
+#! /usr/bin/env python3
+
 
 from vision_modules import ball, classifier, live_classifier, horizon, color, debug_image
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineSegmentInImage, LineInformationInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import rospy
+import rospkg
 import sys
 # moving ROS to end of path to use system/venv cv2 for Python3
 if "python2.7" in sys.path[1] and "python2.7" in sys.path[2]:
@@ -16,11 +18,12 @@ import cv2
 class Vision:
 
     def __init__(self):
-        self.field_color_detector = color.ColorDetector('../config/fieldColor.yaml')  # Todo: set right path
-        self.cascade = cv2.CascadeClassifier('../classifier/cascadeNew.xml')  # Todo: set path
-        self.ball_classifier = live_classifier.LiveClassifier('../models/classifier_01')  # Todo: set path
+        rospack = rospkg.RosPack()
+        package_path = rospack.get_path('bitbots_vision')
+        self.field_color_detector = color.ColorDetector(package_path + '/config/fieldColor.yaml')  # Todo: set right path
+        self.cascade = cv2.CascadeClassifier(package_path + '/classifier/cascadeNew.xml')  # Todo: set path
+        self.ball_classifier = live_classifier.LiveClassifier(package_path + '/models/classifier_01')  # Todo: set path
         self.debug = False
-
         # ROS-Stuff:
 
         # publisher:
@@ -63,3 +66,6 @@ class Vision:
 
 
 
+
+if __name__ == "__main__":
+    Vision()
