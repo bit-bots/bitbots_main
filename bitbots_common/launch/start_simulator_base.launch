@@ -1,5 +1,4 @@
 <launch>
-
     <arg name="ns" default="minibot" />
 
     <param name="/use_sim_time" value="true" />
