@@ -357,7 +357,7 @@ class RecordUI(Plugin):
 			self._workingValues = self._selected_frame["goals"]
 			self._workingName = self._selected_frame["name"]
 			self._workingPause = self._selected_frame["pause"]
-			self._workingDuration = self._selected_frame["duration"]
+			self._workingDuration = float(self._selected_frame["duration"])
 
 			self._current = False
 
@@ -433,15 +433,26 @@ class RecordUI(Plugin):
 		to the values in self._workingValues
 		:return: 
 		"""
+		deg = False
 		for k, v in self._workingValues.items():
-			if not self._motorSwitched[k] or manual:
-				self._textFields[k].setText(str(int(math.degrees(v))))
-				self._sliders[k].setValue(int(math.degrees(v)))
+				if v > math.pi or v < -math.pi:
+					deg = True
 
+		for k, v in self._workingValues.items():
+			try:
+				if not self._motorSwitched[k] or manual:
+					if deg == False:
+						self._textFields[k].setText(str(int(math.degrees(v))))
+						self._sliders[k].setValue(int(math.degrees(v)))
+					else:
+						self._textFields[k].setText(str(int(v)))
+						self._sliders[k].setValue(int(v))
+			except KeyError:
+				return
 		if manual:
 			self._widget.lineFrameName.setText(self._workingName)
 			self._widget.spinBoxDuration.setValue(self._workingDuration)
-			self._widget.spinBoxPause.setValue(self._workingPause)
+			self._widget.spinBoxPause.setValue(float(self._workingPause))
 
 	def box_ticked(self):
 		msg = JointTrajectory()
