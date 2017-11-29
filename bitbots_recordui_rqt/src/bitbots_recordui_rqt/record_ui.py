@@ -430,7 +430,8 @@ class RecordUI(Plugin):
 	def set_sliders_and_text_fields(self, manual):
 		"""
 		Updates the text fields and sliders ins self._sliders and self._textfields and also frame name and duration and pause 
-		to the values in self._workingValues
+		to the values in self._workingValues. If one of the values is greater than pi( or lesser than negative pi), all loaded values
+		can't be radians and thus are interpreted as degrees.
 		:return: 
 		"""
 		deg = False
@@ -448,7 +449,7 @@ class RecordUI(Plugin):
 						self._textFields[k].setText(str(int(v)))
 						self._sliders[k].setValue(int(v))
 			except KeyError:
-				return
+				continue
 		if manual:
 			self._widget.lineFrameName.setText(self._workingName)
 			self._widget.spinBoxDuration.setValue(self._workingDuration)
