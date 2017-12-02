@@ -12,8 +12,8 @@ class Classifier:
 
     def get_classified_candidates(self):
         if self._classified_candidates is None:
+            batch = list()
             if len(self._input_candidates) > 0:
-                batch = list()
                 for item in self._input_candidates:
                     print(item)
                     image_cropped = cv2.resize(self._image[item[1]: item[1]+item[3],

@@ -5,7 +5,8 @@ from .color import ColorDetector
 
 class HorizonDetector:
 
-    def __init__(self, image: np.matrix, color_detector: ColorDetector):
+    def __init__(self, image, color_detector):
+        # type: (np.matrix, ColorDetector) -> HorizonDetector
         self._image = image
         self._color_detector = color_detector
         self._horizon_points = None
@@ -15,7 +16,8 @@ class HorizonDetector:
         self._precise_pixel = 5
         self._min_precise_pixel = 3
 
-    def get_horizon_points(self) -> list:
+    def get_horizon_points(self):
+        # type: () -> list
         """
         calculates the horizon if not calculated yet and returns a list containing coordinates on the picture where the horizon is.
         :return list of x,y tuples of the horizon:
@@ -24,7 +26,8 @@ class HorizonDetector:
             self._horizon_points = self._equalize_points(self._precise_horizon())
         return self._horizon_points
 
-    def _fast_horizon(self) -> list:  # do not use
+    def _fast_horizon(self):  # do not use
+        # type: () -> list
         """
         calculates the horizon coordinates in a quick and efficient, but less precise way.
         It calculates the horizon by checking for green and after having found the first green it also checks
@@ -54,6 +57,7 @@ class HorizonDetector:
         return horizon_points
 
     def _precise_horizon(self):
+        # type: () -> list
         """
         Calculates the horizon coordinates in a precise way, but less fast and efficient.
         It checks after having found a horizon if coordinates around this point are also green
@@ -88,7 +92,8 @@ class HorizonDetector:
             horizon_points.append((x, firstgreen))
         return horizon_points
 
-    def get_full_horizon(self) -> list:
+    def get_full_horizon(self):
+        # type: () -> list
         """
         calculates an interpolated list of y coordinates where the horizon is for the picture
         the index of the y value is the x coordinate on the picture
@@ -100,7 +105,8 @@ class HorizonDetector:
             self._horizon_full = np.interp(x, list(xp), list(fp))
         return self._horizon_full
 
-    def candidate_under_horizon(self, candidate, y_offset=0) -> bool:
+    def candidate_under_horizon(self, candidate, y_offset=0):
+        # type: (tuple, int) -> bool
         """
         returns whether the candidate is under the horizon or not
         :param candidate: the candidate, a tuple (upleft_x, upleft_y, width, height)
@@ -110,10 +116,12 @@ class HorizonDetector:
         footpoint = (candidate[0] + candidate[2] // 2, candidate[1] + candidate[3] + y_offset)
         return self.point_under_horizon(footpoint)
 
-    def candidates_under_horizon(self, candidates: list, y_offset=0):
+    def candidates_under_horizon(self, candidates, y_offset=0):
+        # type: (list, int) -> list
         return [candidate for candidate in candidates if self.candidate_under_horizon(candidate, y_offset)]
 
-    def point_under_horizon(self, point, offset=0) -> bool:
+    def point_under_horizon(self, point, offset=0):
+        # type: (tuple, int) -> bool
         """
         returns if given coordinate is a point under horizon
         :param point coordinate to test:
@@ -122,7 +130,8 @@ class HorizonDetector:
         """
         return point[1] + offset > self.get_full_horizon()[point[0]]  # Todo: catch out of bounds points
 
-    def _equalize_points(self, points: list) -> list:
+    def _equalize_points(self, points):
+        # types: (list) -> list
         """
         returns a list of the input points with smoothed y-coordinates to reduce
         the impact of outlier points in the horizon, which are caused by

@@ -13,7 +13,9 @@ class DebugImage:
         :return void:
         """
         for i in range(len(horizon_points) - 1):
-            cv2.line(self.raw_image, horizon_points[i], horizon_points[i+1], 255)
+            cv2.line(self.raw_image,
+                     horizon_points[i],
+                     horizon_points[i+1], 255)
 
     def draw_ball_candidates(self, ball_candidates):
         """
@@ -22,7 +24,10 @@ class DebugImage:
         :return void:
         """
         for candidate in ball_candidates:
-            cv2.circle(self.raw_image, (candidate[0] + candidate[2]//2, candidate[1] + candidate[3] // 2), candidate[3] // 2, 1023)
+            cv2.circle(self.raw_image,
+                       (candidate[0] + candidate[2]//2,
+                        candidate[1] + candidate[3] // 2),
+                       candidate[3] // 2, 1023)
 
     def imshow(self):
         """

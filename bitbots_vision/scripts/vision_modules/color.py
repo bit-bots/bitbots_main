@@ -29,7 +29,7 @@ class ColorDetector:
                                  color_values['green'][x],
                                  color_values['red'][x]] = True
 
-    def match_pixel(self, pixel) -> bool:
+    def match_pixel(self, pixel):
         """
         Returns if bgr pixel is in color space
 
