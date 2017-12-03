@@ -1,15 +1,8 @@
 
 import sys
 from random import randint
-
 from humanoid_league_msgs.msg import LineSegmentInImage
 import math
-
-
-# moving ROS to end of path to use system/venv cv2 for Python3
-if "python2.7" in sys.path[1] and "python2.7" in sys.path[2]:
-    sys.path.append(sys.path.pop(1))
-    sys.path.append(sys.path.pop(1))
 import cv2
 
 
