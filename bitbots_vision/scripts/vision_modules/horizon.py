@@ -74,10 +74,10 @@ class HorizonDetector:
         horizon_points = []
         for x_step in range(self._x_steps):  # traverse columns
             firstgreen = min_y  # set horizon point to worst case
-            x = round(x_step * x_stepsize)  # get x value of step (depends on image size)
+            x = int(round(x_step * x_stepsize))  # get x value of step (depends on image size)
             for y_step in range(self._y_steps):  # traverse rows
-                y = round(y_step * y_stepsize)  # get y value of step (depends on image size)
-                if self._color_detector.match_pixel(self._image[y, x]):  # when the pixel is in the color space
+                y = int(round(y_step * y_stepsize))  # get y value of step (depends on image size)
+                if self._color_detector.match_pixel(self._image[y][x]):  # when the pixel is in the color space
                     #TODO see if horizon starts higher already (see fast_horizon())
                     if (y + self._precise_pixel) < min_y:
                         for i in range(self._precise_pixel):
@@ -149,5 +149,4 @@ class HorizonDetector:
             buffer0 = buffer1
             buffer1 = buffer2
         equalized_points.append(points[-1])
-        print(equalized_points)
         return equalized_points
