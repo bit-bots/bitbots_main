@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python2
 
 
 from vision_modules import ball, classifier, live_classifier, horizon, color, debug_image
