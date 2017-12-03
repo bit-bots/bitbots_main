@@ -21,6 +21,7 @@ class Vision:
         rospack = rospkg.RosPack()
         package_path = rospack.get_path('bitbots_vision')
         self.field_color_detector = color.ColorDetector(package_path + '/config/fieldColor.yaml')  # Todo: set right path
+        self.line_color_detector = color.ColorDetector(package_path) # Todo set right path
         self.cascade = cv2.CascadeClassifier(package_path + '/classifier/cascadeNew.xml')  # Todo: set path
         self.ball_classifier = live_classifier.LiveClassifier(package_path + '/models/classifier_01')  # Todo: set path
         self.debug = False
@@ -67,7 +68,7 @@ class Vision:
         line_msg = LineInformationInImage() # Todo: filter lines under horizon
         line_msg.header.frame_id = image.header.frame_id
         line_msg.header.stamp = image.header.stamp
-        line_msg.segments.append(lines.Lines(image, ball_finder.get_candidates))
+        line_msg.segments.append(lines.Lines(image, ball_finder.get_candidates, self.line_color_detector))
         self.pub_lines.publish(line_msg)
 
 
