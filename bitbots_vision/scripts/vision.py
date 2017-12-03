@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python2
 
 
 from vision_modules import ball, classifier, lines, live_classifier, horizon, color, debug_image
@@ -8,10 +8,6 @@ from cv_bridge import CvBridge
 import rospy
 import rospkg
 import sys
-# moving ROS to end of path to use system/venv cv2 for Python3
-if "python2.7" in sys.path[1] and "python2.7" in sys.path[2]:
-    sys.path.append(sys.path.pop(1))
-    sys.path.append(sys.path.pop(1))
 import cv2
 
 
@@ -52,7 +48,6 @@ class Vision:
         ball_finder = ball.BallFinder(image, self.cascade)
         # Todo: filter balls under horizon
         ball_classifier = classifier.Classifier(image, self.ball_classifier, ball_finder.get_candidates())
-        print(horizon_detector.get_horizon_points())
         if self.debug:
             debug_image_dings = debug_image.DebugImage(image)
             debug_image_dings.draw_horizon(horizon_detector.get_horizon_points())
@@ -61,7 +56,7 @@ class Vision:
         ball_msg = BallsInImage()
         ball_msg.header.frame_id = image_msg.header.frame_id
         ball_msg.header.stamp = image_msg.header.stamp
-        if ball_classifier.get_top_candidate()[1] > 0.5:  # Todo: set real threshold, always send message/only when ball found?
+        if ball_classifier.get_top_candidate() and ball_classifier.get_top_candidate()[1] > 0.5:  # Todo: set real threshold, always send message/only when ball found?
             ball_msg.candidates.append(ball_classifier.get_top_candidate())
         self.pub_balls.publish(ball_msg)
 
