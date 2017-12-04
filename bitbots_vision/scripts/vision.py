@@ -9,6 +9,7 @@ import rospy
 import rospkg
 import sys
 import cv2
+import os
 
 
 class Vision:
@@ -17,7 +18,11 @@ class Vision:
         rospack = rospkg.RosPack()
         package_path = rospack.get_path('bitbots_vision')
         self.field_color_detector = color.ColorDetector(package_path + '/config/fieldColor.yaml')  # Todo: set right path
-        self.cascade = cv2.CascadeClassifier(package_path + '/classifier/cascadeNew.xml')  # Todo: set path
+        cascade_path = package_path + '/classifier/cascadeNew.xml'  # TODO: set path
+        if os.path.exists(cascade_path):
+            self.cascade = cv2.CascadeClassifier(cascade_path)
+        else:
+            print('AAAAHHHH! The specified cascade config file doesn\'t exist!')
         self.ball_classifier = live_classifier.LiveClassifier(package_path + '/models/classifier_01')  # Todo: set path
         self.debug = False
         # ROS-Stuff:
@@ -28,7 +33,7 @@ class Vision:
 
         # subscriber:
         self.bridge = CvBridge()
-        rospy.Subscriber("image_raw", Image, self._image_callback, queue_size=1)  # TODO: use image_transport
+        rospy.Subscriber(rospy.get_param('visionparams/ROS/img_msg_name'), Image, self._image_callback, queue_size=1)  # TODO: use image_transport
         rospy.init_node("bitbots_soccer_vision")
 
         if self.debug:

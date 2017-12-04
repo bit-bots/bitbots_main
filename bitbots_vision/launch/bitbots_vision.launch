@@ -1,4 +1,5 @@
 <launch>
-    <node pkg="bitbots_vision" type="bitbots_vision_node" name="bitbots_vision_node" output="screen" >
+    <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml" />
+    <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen" >
     </node>
 </launch>

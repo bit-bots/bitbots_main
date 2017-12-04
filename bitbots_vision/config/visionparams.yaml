@@ -1,0 +1,10 @@
+visionparams:
+    classifier:
+       model_path: 5
+
+    color:
+        field_color_path: 5
+
+    ROS:
+        img_msg_name: 'image_raw'
+        img_queue_size: 1
