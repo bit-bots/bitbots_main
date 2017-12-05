@@ -9,8 +9,8 @@ visionparams:
         path: '/config/fieldColor.yaml'
 
     white_color_detector:
-        lower_values: [0, 0, 0]
-        upper_values: [0, 0, 0]
+        lower_values: [85, 0, 100]
+        upper_values: [255, 100, 255]
 
     horizon_finder:
         vertical_steps: 30
@@ -20,5 +20,7 @@ visionparams:
         min_precision_pix: 3
 
     ROS:
-        img_msg_name: 'image_raw'
+        # Subscriber
+        img_msg_topic: 'image_raw'
         img_queue_size: 1
+        # Publisher

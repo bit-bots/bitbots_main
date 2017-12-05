@@ -43,9 +43,10 @@ class Vision:
         # subscriber:
         self.bridge = CvBridge()
         # TODO: use image_transport
-        rospy.Subscriber(rospy.get_param('visionparams/ROS/img_msg_name'),
+        rospy.Subscriber(rospy.get_param('visionparams/ROS/img_msg_topic'),
                          Image,
-                         self._image_callback, queue_size=1)
+                         self._image_callback,
+                         rospy.get_param('visionparams/ROS/img_queue_size'))
         rospy.init_node("bitbots_soccer_vision")
 
         if self.debug:
