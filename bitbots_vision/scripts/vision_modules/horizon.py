@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import rospy
 from .color import ColorDetector
 
 
@@ -11,10 +12,10 @@ class HorizonDetector:
         self._color_detector = color_detector
         self._horizon_points = None
         self._horizon_full = None
-        self._x_steps = 30
-        self._y_steps = 30
-        self._precise_pixel = 5
-        self._min_precise_pixel = 3
+        self._x_steps = rospy.get_param('visionparams/horizon_finder/horizontal_steps')
+        self._y_steps = rospy.get_param('visionparams/horizon_finder/vertical_steps')
+        self._precise_pixel = rospy.get_param('visionparams/horizon_finder/precision_pix')
+        self._min_precise_pixel = rospy.get_param('visionparams/horizon_finder/min_precision_pix')
 
     def get_horizon_points(self):
         # type: () -> list

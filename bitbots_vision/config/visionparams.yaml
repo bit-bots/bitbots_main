@@ -12,6 +12,13 @@ visionparams:
         lower_values: [0, 0, 0]
         upper_values: [0, 0, 0]
 
+    horizon_finder:
+        vertical_steps: 30
+        horizontal_steps: 30
+
+        precision_pix: 5
+        min_precision_pix: 3
+
     ROS:
         img_msg_name: 'image_raw'
         img_queue_size: 1
