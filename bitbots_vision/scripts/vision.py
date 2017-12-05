@@ -1,8 +1,8 @@
 #! /usr/bin/env python2
 
 
-from vision_modules import ball, classifier, live_classifier, horizon, color, debug_image
-from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineSegmentInImage, LineInformationInImage
+from vision_modules import ball, classifier, lines, live_classifier, horizon, color, debug_image
+from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import rospy
@@ -38,7 +38,7 @@ class Vision:
 
         # publisher:
         self.pub_balls = rospy.Publisher("ball_in_image", BallsInImage, queue_size=1)
-        # self.pub_lines = rospy.Publisher("line_in_image", LineInformationInImage, queue_size=5)
+        self.pub_lines = rospy.Publisher("line_in_image", LineInformationInImage, queue_size=5)
 
         # subscriber:
         self.bridge = CvBridge()
@@ -77,6 +77,11 @@ class Vision:
             ball_msg.candidates.append(ball_classifier.get_top_candidate())
         self.pub_balls.publish(ball_msg)
 
+        line_msg = LineInformationInImage() # Todo: filter lines under horizon
+        line_msg.header.frame_id = image.header.frame_id
+        line_msg.header.stamp = image.header.stamp
+        line_msg.segments.append(lines.Lines(image, ball_finder.get_candidates, self.line_color_detector))
+        self.pub_lines.publish(line_msg)
 
 
 
