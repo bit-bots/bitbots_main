@@ -17,7 +17,7 @@ class Vision:
     def __init__(self):
         rospack = rospkg.RosPack()
         package_path = rospack.get_path('bitbots_vision')
-        self.field_color_detector = color.ColorDetector(package_path + '/config/fieldColor.yaml')  # Todo: set right path
+        self.field_color_detector = color.PixelListColorDetector(package_path + '/config/fieldColor.yaml')  # Todo: set right path
         cascade_path = package_path + '/classifier/cascadeNew.xml'  # TODO: set path
         if os.path.exists(cascade_path):
             self.cascade = cv2.CascadeClassifier(cascade_path)
