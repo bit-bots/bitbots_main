@@ -15,7 +15,6 @@ class Classifier:
             batch = list()
             if len(self._input_candidates) > 0:
                 for item in self._input_candidates:
-                    print(item)
                     image_cropped = cv2.resize(self._image[item[1]: item[1]+item[3],
                                                item[0]: item[0]+item[2]],
                                                (self._classifier.input_shape[0], self._classifier.input_shape[1]))

@@ -100,7 +100,8 @@ class HsvSpaceColorDetector(ColorDetector):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         return cv2.inRange(image, self.min_vals, self.max_vals)
 
-    def pixel_bgr2hsv(self, pixel):
+    @staticmethod
+    def pixel_bgr2hsv(pixel):
         pic = np.zeros((1, 1, 3), np.uint8)
         pic[0][0] = pixel
         return cv2.cvtColor(pic, cv2.COLOR_BGR2HSV)[0][0]
