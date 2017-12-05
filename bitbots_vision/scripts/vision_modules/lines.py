@@ -2,45 +2,50 @@
 import sys
 from random import randint
 from humanoid_league_msgs.msg import LineSegmentInImage
+from.color import ColorDetector
+from.horizon import HorizonDetector
 import math
+import numpy as np
 import cv2
 
 
-class Lines:
-    def __init__(self, image, candidates, colordetector):
+class LineDetector:
+    def __init__(self, image, candidates, white_detector, horizon_detector):
+        # type: (np.matrix, tuple, ColorDetector, HorizonDetector) -> LineDetector
         self._image = image
+        self._blurred_image = None
         self._candidates = candidates
         self._linepoints = None
-        self._debug = False
-        self._candidates = candidates
-        self._colordetector = colordetector
-
+        self._white_detector = white_detector
+        self._horizon_detector = horizon_detector
+        self._horizon_offset = 10
 
     def get_linepoints(self):
+        if self._linepoints is None:
+            for x in range(1000):
+                # point (x, y)
+                p = tuple((randint(0, self._blurred_image.shape[1] - 1),
+                           randint(self._horizon_detector.get_upper_bound(self._horizon_offset),
+                                   self._blurred_image.shape[0] - 1)))
 
-        bimg = cv2.GaussianBlur(self._image, (9, 9), 0)
-       # mask = cv2.inRange(bimg, self.green_min, self.green_max)
+                if self._horizon_detector.point_under_horizon(p, self._horizon_offset):
+                    if self._white_detector.match_pixel(self._blurred_image[p[1]][p[0]]):
+                        is_candidate = False
+                        if self._candidates is not None:
+                            for candidate in self._candidates[0, :]:
+                                if self._point_in_candidate(p, candidate):
+                                    is_candidate = True
+                                    break
+                        if is_candidate:
+                            continue
+                        self._linepoints.append(p)
+        return self._linepoints
 
-        for x in range(1000):
+    def _point_in_candidate(self, point, candidate):
+        return candidate[0] <= point[0] <= (candidate[0] + candidate[2]) and \
+               candidate[1] <= point[1] <= (candidate[1] + candidate[3])
 
-            p = randint(0, bimg.shape[0] - 1), randint(0, bimg.shape[1] - 31)
-
-            #if self.under_horizon(horizon, stepwidth, p): # todo check if under horizon
-           # if mask[p[0], p[1]] == 0 and sum(bimg[p[0], p[1]]) > 400:
-            if self._colordetector.match_pixel(p[0]) and self._colordetector.match_pixel(p[1]):
-                is_ball = False
-                if self._candidates is not None:
-                    for b in self._candidates[0, :]:
-                        if math.sqrt((b[0] - p[1]) ** 2 + (b[1] - p[0]) ** 2) < b[2] + 15:
-                            is_ball = True
-                if is_ball:
-                    continue
-
-                ls = LineSegmentInImage()
-                ls.start.x = p[1]
-                ls.start.y = p[0]
-                ls.end = ls.start
-
-                if self.debug:
-                    cv2.circle(bimg, (p[1], p[0]), 1, (0, 0, 255))
-        return ls
+    def _get_blurred_image(self):
+        if self._blurred_image is None:
+            self._blurred_image = cv2.GaussianBlur(self._image, (9, 9), 0)
+        return self._blurred_image
