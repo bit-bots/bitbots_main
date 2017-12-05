@@ -1,11 +1,12 @@
 import numpy as np
 import yaml
 import abc
+import cv2
 
 
 class ColorDetector:
 
-    def __init__(self, color_path):
+    def __init__(self):
         pass
 
     @abc.abstractmethod
@@ -29,7 +30,7 @@ class ColorDetector:
 
 class PixelListColorDetector(ColorDetector):
     def __init__(self, color_path):
-        ColorDetector.__init__()
+        ColorDetector.__init__(self)
         self.color_space = np.full((256, 256, 256), False, dtype=bool)
         self.init_color_space(color_path)
 
@@ -80,15 +81,51 @@ class PixelListColorDetector(ColorDetector):
 
 
 class HsvSpaceColorDetector(ColorDetector):
+
     def __init__(self, min_vals, max_vals):
-        ColorDetector.__init__()
+        ColorDetector.__init__(self)
         self.min_vals = min_vals
         self.max_vals = max_vals
 
     def match_pixel(self, pixel):
-        # TODO
-        pass
+        pixel = self.pixel_bgr2hsv(pixel)
+        return (pixel[0] <= self.max_vals[0]
+                or pixel[0] >= self.min_vals[0]) and \
+               (pixel[1] <= self.max_vals[1]
+                or pixel[1] >= self.min_vals[1]) and \
+               (pixel[2] <= self.max_vals[2]
+                or pixel[3] >= self.min_vals[3])
 
     def mask_image(self, image):
-        # TODO
-        pass
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        return cv2.inRange(image, self.min_vals, self.max_vals)
+
+    def pixel_bgr2hsv(self, pixel):
+        pic = np.zeros((1, 1, 3), np.uint8)
+        pic[0][0] = pixel
+        return cv2.cvtColor(pic, cv2.COLOR_BGR2HSV)[0][0]
+
+    # do not use this stuff!
+    # def pixel_bgr2hsv(self, bgr_pixel):
+    #     normalized_bgr_pixel = (bgr_pixel[0] / 255,
+    #                             bgr_pixel[1] / 255,
+    #                             bgr_pixel[2] / 255)
+    #     min_bgr = min(normalized_bgr_pixel)
+    #     index_max = max(xrange(len(bgr_pixel)), key=bgr_pixel.__getitem__)
+    #
+    #     # set V
+    #     v = normalized_bgr_pixel[index_max]
+    #     # set S
+    #     s = 0
+    #     if v is not 0:
+    #         s = (v - min_bgr) / float(v)
+    #     # set H
+    #     buf = v - min_bgr
+    #     if index_max is 0:
+    #         h = 120 + 30 * (normalized_bgr_pixel[2] - normalized_bgr_pixel[1]) / buf
+    #     elif index_max is 1:
+    #         h = 60 + 30 * (normalized_bgr_pixel[0] - normalized_bgr_pixel[2]) / buf
+    #     else:
+    #         h = 30 * (normalized_bgr_pixel[1] - normalized_bgr_pixel[0]) / buf
+    #     return tuple((int(h), int(s * 255), int(v * 255)))
+
