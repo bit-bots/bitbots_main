@@ -35,8 +35,8 @@ class HorizonDetector:
         see also: _precise_horizon()
         :return list of coordinates of the horizon:
         """
-        y_stepsize = (self._image.shape[0] - 1) / (self._y_steps - 1)
-        x_stepsize = (self._image.shape[1] - 1) / (self._x_steps - 1)
+        y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
+        x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
         horizon_points = []
         for x_step in range(self._x_steps):
             x = round(x_step * x_stepsize)
@@ -69,8 +69,8 @@ class HorizonDetector:
         """
         # worst case:
         min_y = self._image.shape[0] - 1
-        y_stepsize = (self._image.shape[0] - 1) / (self._y_steps - 1)
-        x_stepsize = (self._image.shape[1] - 1) / (self._x_steps - 1)
+        y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
+        x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
         horizon_points = []
         for x_step in range(self._x_steps):  # traverse columns
             firstgreen = min_y  # set horizon point to worst case
@@ -131,7 +131,7 @@ class HorizonDetector:
         return point[1] + offset > self.get_full_horizon()[point[0]]  # Todo: catch out of bounds points
 
     def _equalize_points(self, points):
-        # types: (list) -> list
+        # type: (list) -> list
         """
         returns a list of the input points with smoothed y-coordinates to reduce
         the impact of outlier points in the horizon, which are caused by
@@ -145,7 +145,7 @@ class HorizonDetector:
         buffer1 = points[1]
         for i in range(2, len(points)):
             buffer2 = points[i]
-            equalized_points.append((buffer1[0], round((((buffer0[1] + buffer2[1]) / 2) + buffer1[1]) / 2)))
+            equalized_points.append((buffer1[0], round((((buffer0[1] + buffer2[1]) / 2.0) + buffer1[1]) / 2.0)))
             buffer0 = buffer1
             buffer1 = buffer2
         equalized_points.append(points[-1])

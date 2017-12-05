@@ -10,4 +10,4 @@ for imagename in sys.argv[2:]:
     for x in range(int(sys.argv[1])):
         vision.handle_image(image=image)
     b = cv2.getTickCount()
-    print((b - a) / cv2.getTickFrequency())
+    print((b - a) / float(cv2.getTickFrequency()))
