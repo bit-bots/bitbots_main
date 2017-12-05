@@ -17,13 +17,22 @@ class Vision:
     def __init__(self):
         rospack = rospkg.RosPack()
         package_path = rospack.get_path('bitbots_vision')
-        self.field_color_detector = color.PixelListColorDetector(package_path + '/config/fieldColor.yaml')  # Todo: set right path
-        cascade_path = package_path + '/classifier/cascadeNew.xml'  # TODO: set path
+        self.field_color_detector = color.PixelListColorDetector(
+            package_path +
+            rospy.get_param('visionparams/field_color_detector/path'))
+        cascade_path = package_path + \
+                       rospy.get_param('visionparams/cascade_classifier/path')
         if os.path.exists(cascade_path):
             self.cascade = cv2.CascadeClassifier(cascade_path)
         else:
             print('AAAAHHHH! The specified cascade config file doesn\'t exist!')
-        self.ball_classifier = live_classifier.LiveClassifier(package_path + '/models/classifier_01')  # Todo: set path
+        self.ball_classifier = live_classifier\
+            .LiveClassifier(package_path +
+                            rospy.get_param(
+                                'visionparams/classifier/model_path'))
+        self.white_color_detector = color.HsvSpaceColorDetector(
+            rospy.get_param('visionparams/white_color_detector/lower_values'),
+            rospy.get_param('visionparams/white_color_detector/upper_values'))
         self.debug = False
         # ROS-Stuff:
 
@@ -33,7 +42,10 @@ class Vision:
 
         # subscriber:
         self.bridge = CvBridge()
-        rospy.Subscriber(rospy.get_param('visionparams/ROS/img_msg_name'), Image, self._image_callback, queue_size=1)  # TODO: use image_transport
+        # TODO: use image_transport
+        rospy.Subscriber(rospy.get_param('visionparams/ROS/img_msg_name'),
+                         Image,
+                         self._image_callback, queue_size=1)
         rospy.init_node("bitbots_soccer_vision")
 
         if self.debug:

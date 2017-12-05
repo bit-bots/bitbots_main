@@ -1,9 +1,16 @@
 visionparams:
     classifier:
-       model_path: 5
+       model_path: '/models/classifier_01'
 
-    color:
-        field_color_path: 5
+    cascade_classifier:
+        path: '/classifier/cascadeNew.xml'
+
+    field_color_detector:
+        path: '/config/fieldColor.yaml'
+
+    white_color_detector:
+        lower_values: [0, 0, 0]
+        upper_values: [0, 0, 0]
 
     ROS:
         img_msg_name: 'image_raw'
