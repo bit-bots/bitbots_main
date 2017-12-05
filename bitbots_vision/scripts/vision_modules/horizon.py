@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import rospy
 from .color import ColorDetector
-
+from operator import itemgetter
 
 class HorizonDetector:
 
@@ -125,11 +125,19 @@ class HorizonDetector:
         # type: (tuple, int) -> bool
         """
         returns if given coordinate is a point under horizon
-        :param point coordinate to test:
-        :param offset offset of pixels to still be accepted as under the horizon. Default is 0.:
+        :param point: coordinate (x, y) to test
+        :param offset: offset of pixels to still be accepted as under the horizon. Default is 0.
         :return a boolean if point is under horizon:
         """
         return point[1] + offset > self.get_full_horizon()[point[0]]  # Todo: catch out of bounds points
+
+    def get_upper_bound(self, y_offset=0):
+        # type: () -> int
+        """
+        returns the y-value of highest point of the horizon (lowest y-value)
+        :return: int(), y-value of highest point of the horizon (lowest y-value)
+        """
+        return int(min(self.get_horizon_points(), key=itemgetter(1))[1])
 
     def _equalize_points(self, points):
         # type: (list) -> list
