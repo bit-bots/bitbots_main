@@ -1,0 +1,15 @@
+<library path="src">
+    <class name="TestHeadBehaviour" type="rqt_test_head_behaviour.test_head_behaviour.TestHeadBehaviour" base_class_type="rqt_gui_py::Plugin">
+        <description>
+            An rqt Plugin to test the Head Behaviour and relative transformer
+        </description>
+        <qtgui>
+            <group>
+                 <label>RoboCup</label>
+            </group>
+            <label>Test Head Behaviour</label>
+            <icon type="theme">system-help</icon>
+            <statustip>A Python GUI plugin for testing the head beahviour and the relative transformer.</statustip>
+        </qtgui>
+    </class>
+</library>

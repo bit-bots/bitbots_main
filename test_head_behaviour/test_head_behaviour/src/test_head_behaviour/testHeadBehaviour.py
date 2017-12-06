@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 
 import rospy
-from humanoid_league_msgs.msg import BallInImage, BallsInImage, BallRelative
+from humanoid_league_msgs.msg import BallInImage, BallsInImage, BallRelative, BallRelative
 
 
 def run():
@@ -14,11 +14,10 @@ def run():
     rospy.init_node("bitbots_testHeadBehaviour")
 
     rate = rospy.Rate(4)
-    rospy.logdebug("L?uft...")
+    rospy.logdebug("Laeuft...")
     while not rospy.is_shutdown():
         # Ball in Image
-        msg = BallsInImage()
-        msg.header.frame_id = "0"
+        ball_in_image_msg = BallsInImage()
         can = BallInImage()
         can.center.x = counter
         if(counter > 500 or counter < -500):
@@ -29,10 +28,9 @@ def run():
         can.center.y = 100
         can.diameter = 10
         can.confidence = 1
-        msg.candidates.append(can)
-        
-        # Ball relative
-        pub_balls.publish(msg)
+        ball_in_image_msg.candidates.append(can)
+
+        pub_balls.publish(ball_in_image_msg)
         rate.sleep()
 
 if __name__ == "__main__":
