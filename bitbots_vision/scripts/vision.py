@@ -74,6 +74,8 @@ class Vision:
             debug_image_dings.draw_horizon(horizon_detector.get_horizon_points())
             debug_image_dings.draw_ball_candidates(horizon_detector.candidates_under_horizon(ball_finder.get_candidates(), 100))
             # debug_image_dings.imshow()
+
+        # create ball msg
         ball_msg = BallsInImage()
         ball_msg.header.frame_id = image_msg.header.frame_id
         ball_msg.header.stamp = image_msg.header.stamp
@@ -81,10 +83,11 @@ class Vision:
             ball_msg.candidates.append(ball_classifier.get_top_candidate())
         self.pub_balls.publish(ball_msg)
 
+        # create line msg
         line_msg = LineInformationInImage()  # Todo: add lines
         line_msg.header.frame_id = image.header.frame_id
         line_msg.header.stamp = image.header.stamp
-        line_msg.segments.append(lines.Lines(image, ball_finder.get_candidates, self.line_color_detector))
+        line_msg.segments.append(lines.Lines(image, ball_finder.get_candidates, self.white_color_detector))
         self.pub_lines.publish(line_msg)
 
 

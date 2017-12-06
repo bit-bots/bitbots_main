@@ -89,6 +89,7 @@ class HsvSpaceColorDetector(ColorDetector):
 
     def match_pixel(self, pixel):
         pixel = self.pixel_bgr2hsv(pixel)
+        # TODO: optimize comparisons
         return (pixel[0] <= self.max_vals[0]
                 or pixel[0] >= self.min_vals[0]) and \
                (pixel[1] <= self.max_vals[1]

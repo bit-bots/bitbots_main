@@ -4,6 +4,7 @@ import rospy
 from .color import ColorDetector
 from operator import itemgetter
 
+
 class HorizonDetector:
 
     def __init__(self, image, color_detector):
@@ -12,6 +13,7 @@ class HorizonDetector:
         self._color_detector = color_detector
         self._horizon_points = None
         self._horizon_full = None
+        # TODO: Get them outta here!
         self._x_steps = rospy.get_param('visionparams/horizon_finder/horizontal_steps')
         self._y_steps = rospy.get_param('visionparams/horizon_finder/vertical_steps')
         self._precise_pixel = rospy.get_param('visionparams/horizon_finder/precision_pix')
@@ -79,7 +81,7 @@ class HorizonDetector:
             for y_step in range(self._y_steps):  # traverse rows
                 y = int(round(y_step * y_stepsize))  # get y value of step (depends on image size)
                 if self._color_detector.match_pixel(self._image[y][x]):  # when the pixel is in the color space
-                    #TODO see if horizon starts higher already (see fast_horizon())
+                    # TODO: see if horizon starts higher already (see fast_horizon())
                     if (y + self._precise_pixel) < min_y:
                         for i in range(self._precise_pixel):
                             greencount = 0
