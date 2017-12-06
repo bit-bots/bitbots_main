@@ -62,6 +62,10 @@ class Vision:
     def handle_image(self, image_msg):
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")  # converting the ROS image message to CV2-image
         horizon_detector = horizon.HorizonDetector(image, self.field_color_detector)
+        line_detector = lines.LineDetector(image,
+                                           [],
+                                           self.white_color_detector,
+                                           horizon_detector)
         ball_finder = ball.BallFinder(image, self.cascade)
         # Todo: filter balls under horizon
         ball_classifier = classifier.Classifier(image, self.ball_classifier, ball_finder.get_candidates())
@@ -77,7 +81,7 @@ class Vision:
             ball_msg.candidates.append(ball_classifier.get_top_candidate())
         self.pub_balls.publish(ball_msg)
 
-        line_msg = LineInformationInImage() # Todo: filter lines under horizon
+        line_msg = LineInformationInImage()  # Todo: add lines
         line_msg.header.frame_id = image.header.frame_id
         line_msg.header.stamp = image.header.stamp
         line_msg.segments.append(lines.Lines(image, ball_finder.get_candidates, self.line_color_detector))

@@ -11,7 +11,7 @@ import cv2
 
 class LineDetector:
     def __init__(self, image, candidates, white_detector, horizon_detector):
-        # type: (np.matrix, tuple, ColorDetector, HorizonDetector) -> LineDetector
+        # type: (np.matrix, list, ColorDetector, HorizonDetector) -> LineDetector
         self._image = image
         self._blurred_image = None
         self._candidates = candidates
@@ -19,6 +19,10 @@ class LineDetector:
         self._white_detector = white_detector
         self._horizon_detector = horizon_detector
         self._horizon_offset = 10
+
+    def set_candidates(self, candidates):
+        # type: (list) -> None
+        self._candidates = candidates
 
     def get_linepoints(self):
         if self._linepoints is None:
