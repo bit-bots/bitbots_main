@@ -39,6 +39,9 @@ class DragDropList(QListWidget):
 		print(items)
 		self.ui.change_frame_order(items)
 
+	def keyPressEvent(self, e):
+		return
+
 class RecordUI(Plugin):
 	def __init__(self, context):
 		super(RecordUI, self).__init__(context)

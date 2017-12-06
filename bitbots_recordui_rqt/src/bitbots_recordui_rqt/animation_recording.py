@@ -386,6 +386,7 @@ class Recorder(object):
 			for frame in self.current_state.anim_steps:
 				if frame_name == frame["name"]:
 					new_ordered_frames.append(frame)
+
 		self.current_state.anim_steps = new_ordered_frames
 		self.save_step("Reordered frames")
 
