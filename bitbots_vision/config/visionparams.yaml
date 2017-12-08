@@ -19,6 +19,11 @@ visionparams:
         precision_pix: 5
         min_precision_pix: 3
 
+    line_detector:
+        horizon_offset: 10
+        linepoints_range: 1000
+        blur_kernel_size: (9, 9)
+
     ROS:
         # Subscriber
         img_msg_topic: 'image_raw'
