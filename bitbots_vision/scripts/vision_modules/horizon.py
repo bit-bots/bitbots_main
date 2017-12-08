@@ -18,6 +18,8 @@ class HorizonDetector:
         self._y_steps = config['y_steps']
         self._precise_pixel = config['precise_pixel']
         self._min_precise_pixel = config['min_precise_pixel']
+        #   TODO: insert y_offset to candidates_under_horizon
+        self._y_offset = config['y_offset']
 
     def get_horizon_points(self):
         # type: () -> list

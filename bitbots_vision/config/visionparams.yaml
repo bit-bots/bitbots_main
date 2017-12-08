@@ -25,6 +25,8 @@ visionparams:
         precision_pix: 5
         min_precision_pix: 3
 
+        y_offset: 0
+
     line_detector:
         horizon_offset: 10
         linepoints_range: 1000
