@@ -15,8 +15,8 @@ visionparams:
     ball_finder:
         classify_threshold: 0.5
         scale_factor: 1.1
-        min_neighbors': 1
-        min_size': (10, 10)
+        min_neighbors: 1
+        min_size: 10
 
     horizon_finder:
         vertical_steps: 30
@@ -32,7 +32,7 @@ visionparams:
     line_detector:
         horizon_offset: 10
         linepoints_range: 1000
-        blur_kernel_size: (9, 9)
+        blur_kernel_size: 9
 
     ROS:
         # Subscriber

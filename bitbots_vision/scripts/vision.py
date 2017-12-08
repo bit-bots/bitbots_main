@@ -46,7 +46,7 @@ class Vision:
         self.horizon_config = {
             'x_steps': rospy.get_param('visionparams/horizon_finder/horizontal_steps'),
             'y_steps': rospy.get_param('visionparams/horizon_finder/vertical_steps'),
-            'prescise_pixel': rospy.get_param('visionparams/horizon_finder/precision_pix'),
+            'precise_pixel': rospy.get_param('visionparams/horizon_finder/precision_pix'),
             'min_precise_pixel': rospy.get_param('visionparams/horizon_finder/min_precision_pix'),
         }
 
@@ -76,7 +76,7 @@ class Vision:
         rospy.Subscriber(rospy.get_param('visionparams/ROS/img_msg_topic'),
                          Image,
                          self._image_callback,
-                         rospy.get_param('visionparams/ROS/img_queue_size'))
+                         queue_size=rospy.get_param('visionparams/ROS/img_queue_size'))
         rospy.init_node("bitbots_soccer_vision")
 
         if self.debug:
@@ -134,8 +134,8 @@ class Vision:
 
         # create line msg
         line_msg = LineInformationInImage()  # Todo: add lines
-        line_msg.header.frame_id = image.header.frame_id
-        line_msg.header.stamp = image.header.stamp
+        line_msg.header.frame_id = image_msg.header.frame_id
+        line_msg.header.stamp = image_msg.header.stamp
         line_msg.segments.append(line_detector.get_linepoints())
         self.pub_lines.publish(line_msg)
 

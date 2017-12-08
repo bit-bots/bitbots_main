@@ -29,17 +29,18 @@ class LineDetector:
 
     def get_linepoints(self):
         if self._linepoints is None:
+            self._linepoints = list()
             for x in range(self._linepoints_range):
                 # point (x, y)
-                p = tuple((randint(0, self._blurred_image.shape[1] - 1),
+                p = tuple((randint(0, self._get_blurred_image().shape[1] - 1),
                            randint(self._horizon_detector.get_upper_bound(self._horizon_offset),
-                                   self._blurred_image.shape[0] - 1)))
+                                   self._get_blurred_image().shape[0] - 1)))
 
                 if self._horizon_detector.point_under_horizon(p, self._horizon_offset):
-                    if self._white_detector.match_pixel(self._blurred_image[p[1]][p[0]]):
+                    if self._white_detector.match_pixel(self._get_blurred_image()[p[1]][p[0]]):
                         is_candidate = False
                         if self._candidates is not None:
-                            for candidate in self._candidates[0, :]:
+                            for candidate in self._candidates:
                                 if self._point_in_candidate(p, candidate):
                                     is_candidate = True
                                     break
@@ -54,5 +55,5 @@ class LineDetector:
 
     def _get_blurred_image(self):
         if self._blurred_image is None:
-            self._blurred_image = cv2.blur(self._image, self._blur_kernel_size)
+            self._blurred_image = cv2.blur(self._image, (self._blur_kernel_size, self._blur_kernel_size))
         return self._blurred_image

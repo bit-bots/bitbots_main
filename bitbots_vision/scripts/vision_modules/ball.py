@@ -25,7 +25,7 @@ class BallFinder:
         if self._candidates is None:
             image_gray = cv2.cvtColor(self._image, cv2.COLOR_BGR2GRAY)
             self._candidates = self._cascade.detectMultiScale(image_gray,
-                                                              scaleFactor=_scale_factor,
-                                                              minNeighbors=_min_neighbors,
-                                                              minSize=_min_size)
+                                                              scaleFactor=self._scale_factor,
+                                                              minNeighbors=self._min_neighbors,
+                                                              minSize=(self._min_size, self._min_size))
         return self._candidates
