@@ -7,22 +7,23 @@ from operator import itemgetter
 
 class HorizonDetector:
 
-    def __init__(self, image, color_detector):
-        # type: (np.matrix, ColorDetector) -> HorizonDetector
+    def __init__(self, image, color_detector, config):
+        # type: (np.matrix, ColorDetector, dict) -> HorizonDetector
         self._image = image
         self._color_detector = color_detector
         self._horizon_points = None
         self._horizon_full = None
-        # TODO: Get them outta here!
-        self._x_steps = rospy.get_param('visionparams/horizon_finder/horizontal_steps')
-        self._y_steps = rospy.get_param('visionparams/horizon_finder/vertical_steps')
-        self._precise_pixel = rospy.get_param('visionparams/horizon_finder/precision_pix')
-        self._min_precise_pixel = rospy.get_param('visionparams/horizon_finder/min_precision_pix')
+        # init config
+        self._x_steps = config['x_steps']
+        self._y_steps = config['y_steps']
+        self._precise_pixel = config['precise_pixel']
+        self._min_precise_pixel = config['min_precise_pixel']
 
     def get_horizon_points(self):
         # type: () -> list
         """
-        calculates the horizon if not calculated yet and returns a list containing coordinates on the picture where the horizon is.
+        calculates the horizon if not calculated yet and returns a list
+        containing coordinates on the picture where the horizon is.
         :return list of x,y tuples of the horizon:
         """
         if self._horizon_points is None:

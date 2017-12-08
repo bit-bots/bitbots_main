@@ -33,6 +33,15 @@ class Vision:
         self.white_color_detector = color.HsvSpaceColorDetector(
             rospy.get_param('visionparams/white_color_detector/lower_values'),
             rospy.get_param('visionparams/white_color_detector/upper_values'))
+
+        # set up horizon config
+        self.horizon_config = {
+            'x_steps': rospy.get_param('visionparams/horizon_finder/horizontal_steps'),
+            'y_steps': rospy.get_param('visionparams/horizon_finder/vertical_steps'),
+            'prescise_pixel': rospy.get_param('visionparams/horizon_finder/precision_pix'),
+            'min_precise_pixel': rospy.get_param('visionparams/horizon_finder/min_precision_pix'),
+        }
+
         self.debug = False
         # ROS-Stuff:
 
@@ -61,7 +70,11 @@ class Vision:
 
     def handle_image(self, image_msg):
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")  # converting the ROS image message to CV2-image
-        horizon_detector = horizon.HorizonDetector(image, self.field_color_detector)
+
+        # setup detectors
+        horizon_detector = horizon.HorizonDetector(image,
+                                                   self.field_color_detector,
+                                                   self.horizon_config)
         line_detector = lines.LineDetector(image,
                                            [],
                                            self.white_color_detector,
@@ -69,6 +82,8 @@ class Vision:
         ball_finder = ball.BallFinder(image, self.cascade)
         # Todo: filter balls under horizon
         ball_classifier = classifier.Classifier(image, self.ball_classifier, ball_finder.get_candidates())
+
+        # do debug stuff
         if self.debug:
             debug_image_dings = debug_image.DebugImage(image)
             debug_image_dings.draw_horizon(horizon_detector.get_horizon_points())
@@ -87,7 +102,7 @@ class Vision:
         line_msg = LineInformationInImage()  # Todo: add lines
         line_msg.header.frame_id = image.header.frame_id
         line_msg.header.stamp = image.header.stamp
-        line_msg.segments.append(lines.Lines(image, ball_finder.get_candidates, self.white_color_detector))
+        line_msg.segments.append(line_detector.get_linepoints())
         self.pub_lines.publish(line_msg)
 
 
