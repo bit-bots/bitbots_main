@@ -42,6 +42,13 @@ class Vision:
             'min_precise_pixel': rospy.get_param('visionparams/horizon_finder/min_precision_pix'),
         }
 
+        # set up lines config
+        self.lines_config = {
+            'horizon_offset': rospy.get_param('visionparams/line_detector/horizon_offset'),
+            'linepoints_range': rospy.get_param('visionparams/line_detector/linepoints_range'),
+            'blur_kernel_size': rospy.get_param('visionparams/line_detector/blur_kernel_size'),
+        }
+
         self.debug = False
         # ROS-Stuff:
 
@@ -78,7 +85,8 @@ class Vision:
         line_detector = lines.LineDetector(image,
                                            [],
                                            self.white_color_detector,
-                                           horizon_detector)
+                                           horizon_detector,
+                                           self.lines_config)
         ball_finder = ball.BallFinder(image, self.cascade)
         # Todo: filter balls under horizon
         ball_classifier = classifier.Classifier(image, self.ball_classifier, ball_finder.get_candidates())
