@@ -48,7 +48,6 @@ class Vision:
             'y_steps': rospy.get_param('visionparams/horizon_finder/vertical_steps'),
             'prescise_pixel': rospy.get_param('visionparams/horizon_finder/precision_pix'),
             'min_precise_pixel': rospy.get_param('visionparams/horizon_finder/min_precision_pix'),
-            'y_offset': rospy.get_param('visionparams/horizon_finder/y_offset')
         }
 
         # set up lines config
@@ -57,13 +56,19 @@ class Vision:
             'linepoints_range': rospy.get_param('visionparams/line_detector/linepoints_range'),
             'blur_kernel_size': rospy.get_param('visionparams/line_detector/blur_kernel_size'),
         }
+        self._ball_candidate_threshold = rospy.get_param('visionparams/vision/ball_candidate_rating_threshold')
+        self._ball_candidate_y_offset = rospy.get_param('visionparams/vision/ball_candidate_horizon_y_offset')
 
         self.debug = False
         # ROS-Stuff:
 
         # publisher:
-        self.pub_balls = rospy.Publisher("ball_in_image", BallsInImage, queue_size=1)
-        self.pub_lines = rospy.Publisher("line_in_image", LineInformationInImage, queue_size=5)
+        self.pub_balls = rospy.Publisher("ball_in_image",
+                                         BallsInImage,
+                                         queue_size=1)
+        self.pub_lines = rospy.Publisher("line_in_image",
+                                         LineInformationInImage,
+                                         queue_size=5)
 
         # subscriber:
         self.bridge = CvBridge()
@@ -98,21 +103,32 @@ class Vision:
                                            self.lines_config)
         ball_finder = ball.BallFinder(image, self.cascade, self.ball_config)
         # Todo: filter balls under horizon
-        ball_classifier = classifier.Classifier(image, self.ball_classifier,
-                                                horizon_detector.candidates_under_horizon(ball_finder.get_candidates(), ))
+        ball_classifier = classifier.\
+            Classifier(image,
+                       self.ball_classifier,
+                       horizon_detector.
+                       candidates_under_horizon(
+                           ball_finder.get_candidates(),
+                           self._ball_candidate_y_offset))
 
         # do debug stuff
         if self.debug:
             debug_image_dings = debug_image.DebugImage(image)
-            debug_image_dings.draw_horizon(horizon_detector.get_horizon_points())
-            debug_image_dings.draw_ball_candidates(horizon_detector.candidates_under_horizon(ball_finder.get_candidates(), 100))
+            debug_image_dings.draw_horizon(
+                horizon_detector.get_horizon_points())
+            debug_image_dings.draw_ball_candidates(
+                horizon_detector.candidates_under_horizon(
+                    ball_finder.get_candidates(),
+                    self._ball_candidate_y_offset))
             # debug_image_dings.imshow()
 
         # create ball msg
         ball_msg = BallsInImage()
         ball_msg.header.frame_id = image_msg.header.frame_id
         ball_msg.header.stamp = image_msg.header.stamp
-        if ball_classifier.get_top_candidate() and ball_classifier.get_top_candidate()[1] > 0.5:  # Todo: set real threshold, always send message/only when ball found?
+        if ball_classifier.get_top_candidate() and \
+            ball_classifier.get_top_candidate()[1] > \
+                self._ball_candidate_threshold:
             ball_msg.candidates.append(ball_classifier.get_top_candidate())
         self.pub_balls.publish(ball_msg)
 
@@ -122,7 +138,6 @@ class Vision:
         line_msg.header.stamp = image.header.stamp
         line_msg.segments.append(line_detector.get_linepoints())
         self.pub_lines.publish(line_msg)
-
 
 
 if __name__ == "__main__":

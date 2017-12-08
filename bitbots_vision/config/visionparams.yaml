@@ -25,7 +25,9 @@ visionparams:
         precision_pix: 5
         min_precision_pix: 3
 
-        y_offset: 0
+    vision:
+        ball_candidate_horizon_y_offset: 0
+        ball_candidate_rating_threshold: 0.5
 
     line_detector:
         horizon_offset: 10
