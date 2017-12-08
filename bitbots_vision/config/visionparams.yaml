@@ -12,6 +12,12 @@ visionparams:
         lower_values: [85, 0, 100]
         upper_values: [255, 100, 255]
 
+    ball_finder:
+        classify_threshold: 0.5
+        scale_factor: 1.1
+        min_neighbors': 1
+        min_size': (10, 10)
+
     horizon_finder:
         vertical_steps: 30
         horizontal_steps: 30

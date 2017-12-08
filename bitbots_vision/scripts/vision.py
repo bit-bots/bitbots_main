@@ -34,6 +34,14 @@ class Vision:
             rospy.get_param('visionparams/white_color_detector/lower_values'),
             rospy.get_param('visionparams/white_color_detector/upper_values'))
 
+        # set up ball config
+        self.ball_config = {
+            'classify_threshold': rospy.get_param('visionparams/ball_finder/classify_threshold'),
+            'scale_factor': rospy.get_param('visionparams/ball_finder/scale_factor'),
+            'min_neighbors': rospy.get_param('visionparams/ball_finder/min_neighbors'),
+            'min_size': rospy.get_param('visionparams/ball_finder/min_size'),
+        }
+
         # set up horizon config
         self.horizon_config = {
             'x_steps': rospy.get_param('visionparams/horizon_finder/horizontal_steps'),
@@ -89,13 +97,13 @@ class Vision:
                                            self.lines_config)
         ball_finder = ball.BallFinder(image, self.cascade)
         # Todo: filter balls under horizon
-        ball_classifier = classifier.Classifier(image, self.ball_classifier, ball_finder.get_candidates())
+        ball_classifier = classifier.Classifier(image, self.ball_classifier, ball_finder.get_candidates(self.ball_config))
 
         # do debug stuff
         if self.debug:
             debug_image_dings = debug_image.DebugImage(image)
             debug_image_dings.draw_horizon(horizon_detector.get_horizon_points())
-            debug_image_dings.draw_ball_candidates(horizon_detector.candidates_under_horizon(ball_finder.get_candidates(), 100))
+            debug_image_dings.draw_ball_candidates(horizon_detector.candidates_under_horizon(ball_finder.get_candidates(self.ball_config), 100))
             # debug_image_dings.imshow()
 
         # create ball msg
