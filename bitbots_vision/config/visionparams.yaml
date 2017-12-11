@@ -9,8 +9,8 @@ visionparams:
         path: '/config/fieldColor.yaml'
 
     white_color_detector:
-        lower_values: [85, 0, 100]
-        upper_values: [255, 100, 255]
+        lower_values: [0, 0, 180]
+        upper_values: [255, 120, 255]
 
     ball_finder:
         classify_threshold: 0.5
@@ -26,11 +26,12 @@ visionparams:
         min_precision_pix: 3
 
     vision:
+        debug: true
         ball_candidate_horizon_y_offset: 0
         ball_candidate_rating_threshold: 0.5
 
     line_detector:
-        horizon_offset: 10
+        horizon_offset: 50
         linepoints_range: 1000
         blur_kernel_size: 9
 

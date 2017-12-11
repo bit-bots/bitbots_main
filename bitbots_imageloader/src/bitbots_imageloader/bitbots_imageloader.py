@@ -28,7 +28,6 @@ class Loadimg:
                 ra = cv2.imread(os.path.join(path, im))
 
                 msg = self.bridge.cv2_to_imgmsg(ra, "bgr8")
-                msg.header.seq = img_id
                 msg.header.frame_id = "/camera_link"
                 img_id += 1
                 msg.header.stamp = rospy.get_rostime()

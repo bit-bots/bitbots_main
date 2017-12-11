@@ -14,7 +14,9 @@ class LineDetector:
         # type: (np.matrix, list, ColorDetector, HorizonDetector, dict) -> LineDetector
         self._image = image
         self._blurred_image = None
-        self._candidates = candidates
+        self._candidates = []
+        if candidates:
+            self._candidates = candidates
         self._linepoints = None
         self._white_detector = white_detector
         self._horizon_detector = horizon_detector

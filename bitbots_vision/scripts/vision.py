@@ -2,7 +2,7 @@
 
 
 from vision_modules import ball, classifier, lines, live_classifier, horizon, color, debug_image
-from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage
+from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import rospy
@@ -59,9 +59,10 @@ class Vision:
         self._ball_candidate_threshold = rospy.get_param('visionparams/vision/ball_candidate_rating_threshold')
         self._ball_candidate_y_offset = rospy.get_param('visionparams/vision/ball_candidate_horizon_y_offset')
 
-        self.debug = False
+        self.debug = rospy.get_param('visionparams/vision/debug')
         # ROS-Stuff:
 
+        rospy.init_node('bitbots_vision')
         # publisher:
         self.pub_balls = rospy.Publisher("ball_in_image",
                                          BallsInImage,
@@ -77,7 +78,6 @@ class Vision:
                          Image,
                          self._image_callback,
                          queue_size=rospy.get_param('visionparams/ROS/img_queue_size'))
-        rospy.init_node("bitbots_soccer_vision")
 
         if self.debug:
             rospy.logwarn("Debug windows are enabled")
@@ -96,11 +96,6 @@ class Vision:
         horizon_detector = horizon.HorizonDetector(image,
                                                    self.field_color_detector,
                                                    self.horizon_config)
-        line_detector = lines.LineDetector(image,
-                                           [],
-                                           self.white_color_detector,
-                                           horizon_detector,
-                                           self.lines_config)
         ball_finder = ball.BallFinder(image, self.cascade, self.ball_config)
         # Todo: filter balls under horizon
         ball_classifier = classifier.\
@@ -110,34 +105,63 @@ class Vision:
                        candidates_under_horizon(
                            ball_finder.get_candidates(),
                            self._ball_candidate_y_offset))
+        line_detector = lines.LineDetector(image,
+                                           [ball_classifier.get_top_candidate()[0]] if ball_classifier.get_top_candidate() else[],
+                                           self.white_color_detector,
+                                           horizon_detector,
+                                           self.lines_config)
 
         # do debug stuff
         if self.debug:
             debug_image_dings = debug_image.DebugImage(image)
             debug_image_dings.draw_horizon(
-                horizon_detector.get_horizon_points())
+                horizon_detector.get_horizon_points(),
+                (0, 0, 255))
+            debug_image_dings.draw_ball_candidates(
+                    ball_finder.get_candidates(),
+                    (0, 0, 255))
             debug_image_dings.draw_ball_candidates(
                 horizon_detector.candidates_under_horizon(
                     ball_finder.get_candidates(),
-                    self._ball_candidate_y_offset))
-            # debug_image_dings.imshow()
+                    self._ball_candidate_y_offset),
+                    (0, 255, 255))
 
         # create ball msg
-        ball_msg = BallsInImage()
-        ball_msg.header.frame_id = image_msg.header.frame_id
-        ball_msg.header.stamp = image_msg.header.stamp
+        balls_msg = BallsInImage()
+        balls_msg.header.frame_id = image_msg.header.frame_id
+        balls_msg.header.stamp = image_msg.header.stamp
+
         if ball_classifier.get_top_candidate() and \
             ball_classifier.get_top_candidate()[1] > \
                 self._ball_candidate_threshold:
-            ball_msg.candidates.append(ball_classifier.get_top_candidate())
-        self.pub_balls.publish(ball_msg)
+            if self.debug:
+                debug_image_dings.draw_ball_candidates([ball_classifier.get_top_candidate()[0]],
+                                                       (0, 255, 0))
+            ball_msg = BallInImage()
+            ball_msg.center.x = ball_classifier.get_top_candidate()[0][0] + (ball_classifier.get_top_candidate()[0][2] // 2)
+            ball_msg.center.y = ball_classifier.get_top_candidate()[0][1] + (ball_classifier.get_top_candidate()[0][3] // 2)
+            ball_msg.diameter = ball_classifier.get_top_candidate()[0][2]
+            ball_msg.confidence = 1
+            balls_msg.candidates.append(ball_msg)
+            print('found a ball! \o/')
+        self.pub_balls.publish(balls_msg)
 
         # create line msg
         line_msg = LineInformationInImage()  # Todo: add lines
         line_msg.header.frame_id = image_msg.header.frame_id
         line_msg.header.stamp = image_msg.header.stamp
-        line_msg.segments.append(line_detector.get_linepoints())
+        for lp in line_detector.get_linepoints():
+            ls = LineSegmentInImage()
+            ls.start.x = lp[0]
+            ls.start.y = lp[1]
+            ls.end = ls.start
+            line_msg.segments.append(ls)
         self.pub_lines.publish(line_msg)
+        if self.debug:
+            # cv2.imshow('White Image', self.white_color_detector.mask_image(image))
+            cv2.waitKey(0)
+            debug_image_dings.draw_points(line_detector.get_linepoints(), (0, 0, 0))
+            debug_image_dings.imshow()
 
 
 if __name__ == "__main__":

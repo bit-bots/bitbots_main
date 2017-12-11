@@ -84,18 +84,15 @@ class HsvSpaceColorDetector(ColorDetector):
 
     def __init__(self, min_vals, max_vals):
         ColorDetector.__init__(self)
-        self.min_vals = min_vals
-        self.max_vals = max_vals
+        self.min_vals = np.array(min_vals)
+        self.max_vals = np.array(max_vals)
 
     def match_pixel(self, pixel):
         pixel = self.pixel_bgr2hsv(pixel)
         # TODO: optimize comparisons
-        return (pixel[0] <= self.max_vals[0]
-                or pixel[0] >= self.min_vals[0]) and \
-               (pixel[1] <= self.max_vals[1]
-                or pixel[1] >= self.min_vals[1]) and \
-               (pixel[2] <= self.max_vals[2]
-                or pixel[3] >= self.min_vals[3])
+        return (self.max_vals[0] >= pixel[0] >= self.min_vals[0]) and \
+               (self.max_vals[1] >= pixel[1] >= self.min_vals[1]) and \
+               (self.max_vals[2] >= pixel[2] >= self.min_vals[2])
 
     def mask_image(self, image):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)

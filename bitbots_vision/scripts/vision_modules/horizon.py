@@ -157,7 +157,7 @@ class HorizonDetector:
         buffer1 = points[1]
         for i in range(2, len(points)):
             buffer2 = points[i]
-            equalized_points.append((buffer1[0], round((((buffer0[1] + buffer2[1]) / 2.0) + buffer1[1]) / 2.0)))
+            equalized_points.append((buffer1[0], int(round((((buffer0[1] + buffer2[1]) / 2.0) + buffer1[1]) / 2.0))))
             buffer0 = buffer1
             buffer1 = buffer2
         equalized_points.append(points[-1])
