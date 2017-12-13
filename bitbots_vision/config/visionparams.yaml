@@ -10,7 +10,7 @@ visionparams:
 
     white_color_detector:
         lower_values: [0, 0, 180]
-        upper_values: [255, 120, 255]
+        upper_values: [255, 140, 255]
 
     ball_finder:
         classify_threshold: 0.5
@@ -32,7 +32,7 @@ visionparams:
 
     line_detector:
         horizon_offset: 50
-        linepoints_range: 1000
+        linepoints_range: 2000
         blur_kernel_size: 9
 
     ROS:
