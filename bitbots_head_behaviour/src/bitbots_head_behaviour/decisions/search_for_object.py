@@ -9,6 +9,7 @@ History:
 
 """
 import rospy
+import math
 
 from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
 from bitbots_head_behaviour.decisions.continious_search import ContiniousSearch
@@ -26,22 +27,31 @@ class AbstactSearchForObject(AbstractDecisionModule):
         self.pattern = connector.config["Head"]["SearchPattern"]
 
     def search(self, connector: HeadConnector, u: float, v: float):
-
         self.run += 1
+        (u, v) = connector.world_model.get_ball_position_uv()
 
-        if False and self.run <= 10 and not (u == 0.0 and v == 0.0):
+        if self.run <= 10 and not (u == 0.0 and v == 0.0) and u and v:
             # the ball is not seen, so we first try to find it at its last position
-            # (u, v) = connector.world_model_capsule().get_ball_position_uv()#todo mittelsweltmodell implentieren
-
-            pan_tilt = get_pantilt_from_uv(u, v, connector.get_ipc())
+            pan_tilt = self.get_pantilt_from_uv(u, v, connector)
             return self.push(HeadToPanTilt, pan_tilt)
 
         # elif self.run ==1: #todo do fancy stuff like looking left and right of the saved position
         else:
             # we try to find the ball by using a pattern
-            rospy.logdebug("Push: Continious Search")
+            rospy.loginfo("Push: Continious Search")
             return self.push(ContiniousSearch)
 
+    def get_pantilt_from_uv(self, u, v, connector):
+        rospy.loginfo('Arrived at pantilt from uv')
+        cam_height = connector.config["Head"]["Camera"]["cameraHeight"]
+        ball_height = connector.config["Head"]["Camera"]["ballHeight"]
+        if u == 0.0:
+            pan = 90
+        else:
+            pan = math.degrees(math.atan(v/u))
+
+        tilt = math.degrees(math.atan((cam_height - ball_height / 2)/(math.sqrt(u ** 2 + v ** 2))))
+        return pan, tilt
 
 class SearchForBall(AbstactSearchForObject):
     def perform(self, connector: HeadConnector, reevaluate=False):

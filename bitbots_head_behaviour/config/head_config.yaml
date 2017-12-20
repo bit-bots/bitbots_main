@@ -29,6 +29,9 @@ Behaviour:
             horizontalFactor: 1
             verticalFactor: 0.5625
 
+            cameraHeight: 75.0
+            ballHeight: 20.0
+
     Tracking:
         #max Speed for tracking
         maxPanSpeedTracking: 60

@@ -44,6 +44,8 @@ class AbstactTrackObject(AbstractInitActionModule):
     def track_with_values(self, connector: HeadConnector, x, y):
         a = ((x / connector.head.cam_info[0]) - 0.5) * 2
         b = ((y / connector.head.cam_info[1]) - 0.5) * -2
+        a = ((x / connector.head.cam_info[0]) - 0.5) * 2    # maps coordinates to values from -1 (left) to 1 (right)
+        b = ((y / connector.head.cam_info[1]) - 0.5) * -2   # maps coordinates to values from -1 (bottom) to 1 (top)
         rospy.logdebug("rela: %f relb: %f " % (a, b))
 
 
@@ -55,14 +57,18 @@ class AbstactTrackObject(AbstractInitActionModule):
 
         # Get the current positions
         curren_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
+        current_pan_pos, current_tilt_pos = connector.head.get_current_head_pos() # this is always 0!
         rospy.logdebug("OldTiltgoal: %f" % current_tilt_pos)
         rospy.logdebug("OldPangoal: %f" % curren_pan_pos)
+        rospy.logdebug("OldPangoal: %f" % current_pan_pos)
         if not (-self.a_sens < a < self.a_sens):
             goal = curren_pan_pos + a * (self.angle/2.0) * self.horizontal_factor
+            goal = current_pan_pos + a * (self.angle/2.0) * self.horizontal_factor # why that angle?
             goal = min(self.max_pan, max(self.min_pan, goal))
             head_pan_goal = goal
         else:
             head_pan_goal = curren_pan_pos
+            head_pan_goal = current_pan_pos
 
         # Ball not centered vertically
         if not (-self.b_sens + b_center < b < self.b_sens + b_center):

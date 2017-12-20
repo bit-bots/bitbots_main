@@ -26,9 +26,9 @@ class HeadToPanTilt(AbstractActionModule):
 
     def perform(self, connector: HeadConnector, reevaluate=False):
         rospy.logdebug("HeadToPanTilt")
-        curren_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
+        current_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
 
-        if abs(curren_pan_pos - self.pan) < connector.head.delta and \
+        if abs(current_pan_pos - self.pan) < connector.head.delta and \
                         abs(current_tilt_pos - self.tilt) < connector.head.delta:
             # We reached the position
             if time.time() - self.at_position > connector.head.wait_time:
