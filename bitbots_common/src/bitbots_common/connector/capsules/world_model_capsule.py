@@ -14,6 +14,8 @@ from humanoid_league_msgs.msg import Position2D
 class WorldModelCapsule:
     def __init__(self, ):
         self.position = Position2D()
+        self.ball_position_u = None
+        self.ball_position_v = None
 
     def get_current_position(self)->Tuple[float, float, float]:
         return self.position.pose.x, self.position.pose.y, self.position.pose.theta
@@ -21,8 +23,12 @@ class WorldModelCapsule:
     def get_ball_position_xy(self)->Tuple[float, float]:
         raise NotImplementedError
 
+    def ball_relative_cb(self, msg):
+        self.ball_position_u = msg.ball_relative.x
+        self.ball_position_v = msg.ball_relative.y
+
     def get_ball_position_uv(self)->Tuple[float, float]:
-        raise NotImplementedError
+        return self.ball_position_u, self.ball_position_v
 
     def get_opp_goal_center_uv(self)->Tuple[float, float]:
         raise NotImplementedError
