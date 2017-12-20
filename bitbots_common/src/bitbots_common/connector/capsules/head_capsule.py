@@ -17,6 +17,15 @@ class HeadCapsule:
         self.wait_time = self.config["Search"]["headTurnTime"]
         self.pan_speed_max = self.config["Search"]["maxPanSpeedSearch"]
         self.tilt_speed_max = self.config["Search"]["maxTiltSpeedSearch"]
+        self.max_pan = self.config["Camera"]["maxPan"]
+        self.min_pan = self.config["Camera"]["minPan"]
+        self.max_tilt = self.config["Camera"]["maxTilt"]
+        self.min_tilt = self.config["Camera"]["minTilt"]
+        self.camera_height = self.config["Camera"]["cameraHeight"]
+        self.ball_height = self.config["Camera"]["ballHeight"]
+        self.offset_right = self.config["Search"]["offsetRight"]
+        self.offset_down = self.config["Search"]["offsetDown"]
+        self.offset_left = self.config["Search"]["offsetLeft"]
 
         # class variables
         self._headmode = 0
@@ -34,14 +43,17 @@ class HeadCapsule:
         self.pos_msg = JointTrajectory()
         self.pos_msg.joint_names = ["HeadPan", "HeadTilt"]
         self.point_msg = JointTrajectoryPoint()
+        self.point_msg.positions = [0, 0]
+        self.point_msg.velocities = [0, 0]
         self.pos_msg.points = [self.point_msg]
 
         self.position_publisher = None  # type: rospy.Publisher
 
     def send_motor_goals(self, pan_position: float, pan_speed: float, tilt_position: float, tilt_speed: float):
-        point = self.pos_msg.points[0]
-        posnew = list(point.positions[:-2]) + [math.radians(pan_position), math.radians(tilt_position)]
-        velnew = list(point.velocities[:-2]) + [pan_speed, tilt_speed]
+        self.current_pan_pos = pan_position
+        self.current_tilt_pos = tilt_position
+        posnew = math.radians(pan_position), math.radians(tilt_position)
+        velnew = math.radians(pan_speed), math.radians(tilt_speed)
         self.pos_msg.points[0].positions = posnew
         self.pos_msg.points[0].velocities = velnew
         self.pos_msg.header.stamp = rospy.Time.from_sec(time.time())
