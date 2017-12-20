@@ -74,6 +74,13 @@ Behaviour:
         # Time to confirm an object
         confirmTime: 2
 
+        # When the ball is lost, we are looking at these offsets around its last positions
+        # the offsets are in degrees of head rotation
+        # TODO: evaluate offsets
+        offsetRight: 10
+        offsetDown: 10
+        offsetLeft: 10
+
     SearchPattern:
       help: |
         These are the search pattern for the head behaviour.

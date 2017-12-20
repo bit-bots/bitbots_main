@@ -54,7 +54,7 @@ class AbstactTrackObject(AbstractInitActionModule):
             b_center = self.b_center_default
 
         # Get the current positions
-        current_pan_pos, current_tilt_pos = connector.head.get_current_head_pos() # this is always 0!
+        current_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
         rospy.logdebug("OldTiltgoal: %f" % current_tilt_pos)
         rospy.logdebug("OldPangoal: %f" % current_pan_pos)
         if not (-self.a_sens < a < self.a_sens):

@@ -4,7 +4,7 @@ HeadToPanTilt
 
 .. moduleauthor:: Nils <0rokita@informatik.uni-hamburg.de>
 
-This action moves the head to a given pan/tilt position and waits there for a second
+This action moves the head to a given pan/tilt position and waits there for the time given in head_config.yaml
 
 This module expects a 2tupel containing pan and tilt for the head
 
@@ -37,6 +37,8 @@ class HeadToPanTilt(AbstractActionModule):
         else:
             # We haven't reached it
             # Update when we should reach it
+            pan_fitting = min(max(connector.head.min_pan, self.pan), connector.head.max_pan)
+            tilt_fitting = min(max(connector.head.min_tilt, self.tilt), connector.head.max_tilt)
             self.at_position = time.time()
-            rospy.logdebug("pan: " + str(self.pan) + "tilt:" + str(self.tilt))
-            connector.head.send_motor_goals(self.pan, connector.head.pan_speed_max, self.tilt, connector.head.tilt_speed_max)
+            rospy.logdebug("pan: " + str(pan_fitting) + " tilt:" + str(tilt_fitting))
+            connector.head.send_motor_goals(pan_fitting, connector.head.pan_speed_max, tilt_fitting, connector.head.tilt_speed_max)

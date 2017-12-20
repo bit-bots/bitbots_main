@@ -7,7 +7,7 @@ from humanoid_league_msgs.msg import BallInImage, BallsInImage, BallRelative, Ba
 def run():
     pub_balls = rospy.Publisher("ball_in_image", BallsInImage, queue_size=1)
 
-    counter = -5
+    counter = 320
     direction = 5
         
     rospy.loginfo("Create Test")
@@ -20,12 +20,12 @@ def run():
         ball_in_image_msg = BallsInImage()
         can = BallInImage()
         can.center.x = counter
-        if(counter > 500 or counter < -500):
+        if(counter > 600 or counter < 40):
             direction *= -1
             counter += direction
         else:
             counter += direction
-        can.center.y = 100
+        can.center.y = 200
         can.diameter = 10
         can.confidence = 1
         ball_in_image_msg.candidates.append(can)
