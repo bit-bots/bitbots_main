@@ -20,8 +20,10 @@ from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 class HeadToPanTilt(AbstractActionModule):
     def __init__(self, connector: HeadConnector, args):
         super(HeadToPanTilt, self).__init__(connector)
-        self.pan = float(args[0])
-        self.tilt = float(args[1])
+        # The head should not try to move to a position it cannot reach
+        self.pan = min(max(connector.head.min_pan, float(args[0])), connector.head.max_pan)
+        self.tilt = min(max(connector.head.min_tilt, float(args[1])), connector.head.max_tilt)
+        # TODO: move body when ball is too far left or right
         self.at_position = time.time()
 
     def perform(self, connector: HeadConnector, reevaluate=False):
@@ -37,8 +39,6 @@ class HeadToPanTilt(AbstractActionModule):
         else:
             # We haven't reached it
             # Update when we should reach it
-            pan_fitting = min(max(connector.head.min_pan, self.pan), connector.head.max_pan)
-            tilt_fitting = min(max(connector.head.min_tilt, self.tilt), connector.head.max_tilt)
             self.at_position = time.time()
-            rospy.logdebug("pan: " + str(pan_fitting) + " tilt:" + str(tilt_fitting))
-            connector.head.send_motor_goals(pan_fitting, connector.head.pan_speed_max, tilt_fitting, connector.head.tilt_speed_max)
+            rospy.logdebug("pan: " + str(self.pan) + " tilt:" + str(self.tilt))
+            connector.head.send_motor_goals(self.pan, connector.head.pan_speed_max, self.tilt, connector.head.tilt_speed_max)

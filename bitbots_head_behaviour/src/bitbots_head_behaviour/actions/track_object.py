@@ -9,7 +9,7 @@ import rospy
 
 from bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_init_action_module import AbstractInitActionModule
-
+from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
 
 class AbstactTrackObject(AbstractInitActionModule):
     """
@@ -42,40 +42,10 @@ class AbstactTrackObject(AbstractInitActionModule):
         self.vertical_factor = connector.config["Head"]["Camera"]["verticalFactor"]
 
     def track_with_values(self, connector: HeadConnector, x, y):
-        a = ((x / connector.head.cam_info[0]) - 0.5) * 2    # maps coordinates to values from -1 (left) to 1 (right)
-        b = ((y / connector.head.cam_info[1]) - 0.5) * -2   # maps coordinates to values from -1 (bottom) to 1 (top)
-        rospy.logdebug("rela: %f relb: %f " % (a, b))
-
-
-        # the goalie wants to track the ball in the upper part of the image, because it will probably come to him
-        if connector.head.get_headmode() == "Goalie":  # todo: mit headmodes richtig lösen
-            b_center = self.b_center_goalie
-        else:
-            b_center = self.b_center_default
-
-        # Get the current positions
-        current_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
-        rospy.logdebug("OldTiltgoal: %f" % current_tilt_pos)
-        rospy.logdebug("OldPangoal: %f" % current_pan_pos)
-        if not (-self.a_sens < a < self.a_sens):
-            goal = current_pan_pos + a * (self.angle/2.0) * self.horizontal_factor # why that angle?
-            goal = min(self.max_pan, max(self.min_pan, goal))
-            head_pan_goal = goal
-        else:
-            head_pan_goal = current_pan_pos
-
-        # Ball not centered vertically
-        if not (-self.b_sens + b_center < b < self.b_sens + b_center):
-            goal = current_tilt_pos + b * (self.angle/2.0) * self.vertical_factor
-            goal = min(self.max_tilt, max(self.min_tilt, goal))
-            head_tilt_goal = goal
-
-        else:
-            head_tilt_goal = current_tilt_pos
-        rospy.logdebug("Tiltgoal: %f" % head_tilt_goal)
-        rospy.logdebug("Pangoal: %f" % head_pan_goal)
-
-        connector.head.send_motor_goals(head_pan_goal, self.max_pan_speed, head_tilt_goal, self.max_tilt_speed)
+        rospy.logdebug('Tracking...')
+        u, v = connector.world_model.get_ball_position_uv()
+        pan_tilt = connector.head.get_pantilt_from_uv(u, v)
+        return self.push(HeadToPanTilt, pan_tilt)
 
     def perform(self, connector, reevaluate=None):
         raise NotImplementedError
@@ -83,12 +53,7 @@ class AbstactTrackObject(AbstractInitActionModule):
 
 class TrackBall(AbstactTrackObject):
     def perform(self, connector: HeadConnector, reevaluate=False):
-        # the ball is seen, so we center our view to it
-        x, y = connector.head.bestball_in_image
-        if x is not None:
-            self.track_with_values(connector, x, y)
-        else:
-            rospy.loginfo("No ball found to track")
+        self.track_with_values(connector)
 
 
 class TrackGoal(AbstactTrackObject):
