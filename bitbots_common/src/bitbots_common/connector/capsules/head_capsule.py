@@ -80,6 +80,18 @@ class HeadCapsule:
                 self.current_tilt_pos = math.degrees(msg.position[i])
             i += 1
 
+    def get_pantilt_from_uv(self, u, v):
+        # type: (float, float) -> tuple
+        cam_height = self.camera_height
+        ball_height = self.ball_height
+        if u == 0.0:
+            pan = 90
+        else:
+            pan = math.degrees(math.atan(v/u))
+
+        tilt = -math.degrees(math.atan((cam_height - ball_height / 2)/(math.sqrt(u ** 2 + v ** 2))))
+        return pan, tilt
+
     def cb_ballinimage(self, balls: BallsInImage):
         if balls.candidates:
             ball = balls.candidates[0]
