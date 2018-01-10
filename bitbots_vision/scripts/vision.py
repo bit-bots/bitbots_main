@@ -65,7 +65,7 @@ class Vision:
         rospy.init_node('bitbots_vision')
         # publisher:
         self.pub_balls = rospy.Publisher("ball_in_image",
-                                         BallsInImage,
+                                         BallInImage,
                                          queue_size=1)
         self.pub_lines = rospy.Publisher("line_in_image",
                                          LineInformationInImage,
@@ -127,9 +127,6 @@ class Vision:
                     (0, 255, 255))
 
         # create ball msg
-        balls_msg = BallsInImage()
-        balls_msg.header.frame_id = image_msg.header.frame_id
-        balls_msg.header.stamp = image_msg.header.stamp
 
         if ball_classifier.get_top_candidate() and \
             ball_classifier.get_top_candidate()[1] > \
@@ -138,13 +135,14 @@ class Vision:
                 debug_image_dings.draw_ball_candidates([ball_classifier.get_top_candidate()[0]],
                                                        (0, 255, 0))
             ball_msg = BallInImage()
+            ball_msg.header.frame_id = image_msg.header.frame_id
+            ball_msg.header.stamp = image_msg.header.stamp
             ball_msg.center.x = ball_classifier.get_top_candidate()[0][0] + (ball_classifier.get_top_candidate()[0][2] // 2)
             ball_msg.center.y = ball_classifier.get_top_candidate()[0][1] + (ball_classifier.get_top_candidate()[0][3] // 2)
             ball_msg.diameter = ball_classifier.get_top_candidate()[0][2]
             ball_msg.confidence = 1
-            balls_msg.candidates.append(ball_msg)
             print('found a ball! \o/')
-        self.pub_balls.publish(balls_msg)
+        self.pub_balls.publish(ball_msg)
 
         # create line msg
         line_msg = LineInformationInImage()  # Todo: add lines
