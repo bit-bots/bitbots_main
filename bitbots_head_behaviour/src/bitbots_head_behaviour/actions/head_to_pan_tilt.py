@@ -4,7 +4,7 @@ HeadToPanTilt
 
 .. moduleauthor:: Nils <0rokita@informatik.uni-hamburg.de>
 
-This action moves the head to a given pan/tilt position and waits there for a second
+This action moves the head to a given pan/tilt position and waits there for the time given in head_config.yaml
 
 This module expects a 2tupel containing pan and tilt for the head
 
@@ -20,15 +20,17 @@ from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 class HeadToPanTilt(AbstractActionModule):
     def __init__(self, connector: HeadConnector, args):
         super(HeadToPanTilt, self).__init__(connector)
-        self.pan = float(args[0])
-        self.tilt = float(args[1])
+        # The head should not try to move to a position it cannot reach
+        self.pan = min(max(connector.head.min_pan, float(args[0])), connector.head.max_pan)
+        self.tilt = min(max(connector.head.min_tilt, float(args[1])), connector.head.max_tilt)
+        # TODO: move body when ball is too far left or right
         self.at_position = time.time()
 
     def perform(self, connector: HeadConnector, reevaluate=False):
         rospy.logdebug("HeadToPanTilt")
-        curren_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
+        current_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
 
-        if abs(curren_pan_pos - self.pan) < connector.head.delta and \
+        if abs(current_pan_pos - self.pan) < connector.head.delta and \
                         abs(current_tilt_pos - self.tilt) < connector.head.delta:
             # We reached the position
             if time.time() - self.at_position > connector.head.wait_time:
@@ -38,5 +40,5 @@ class HeadToPanTilt(AbstractActionModule):
             # We haven't reached it
             # Update when we should reach it
             self.at_position = time.time()
-            rospy.logdebug("pan: " + str(self.pan) + "tilt:" + str(self.tilt))
+            rospy.logdebug("pan: " + str(self.pan) + " tilt:" + str(self.tilt))
             connector.head.send_motor_goals(self.pan, connector.head.pan_speed_max, self.tilt, connector.head.tilt_speed_max)
