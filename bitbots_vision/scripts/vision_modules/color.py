@@ -46,6 +46,9 @@ class PixelListColorDetector(ColorDetector):
             except yaml.YAMLError as exc:
                 print(exc)
                 # Todo: what now??? Handle the error?
+        # compatibility with colorpicker
+        if 'color_values' in color_values.keys():
+            color_values = color_values['color_values']['greenField']
         length = len(color_values['red'])
         if length == len(color_values['green']) and \
                         length == len(color_values['blue']):
