@@ -41,7 +41,7 @@ class AbstactTrackObject(AbstractInitActionModule):
         self.horizontal_factor = connector.config["Head"]["Camera"]["horizontalFactor"]
         self.vertical_factor = connector.config["Head"]["Camera"]["verticalFactor"]
 
-    def track_with_values(self, connector: HeadConnector, x, y):
+    def track_with_values(self, connector: HeadConnector):
         rospy.logdebug('Tracking...')
         u, v = connector.world_model.get_ball_position_uv()
         pan_tilt = connector.head.get_pantilt_from_uv(u, v)
