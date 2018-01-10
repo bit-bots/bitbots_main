@@ -142,7 +142,7 @@ class Vision:
             ball_msg.diameter = ball_classifier.get_top_candidate()[0][2]
             ball_msg.confidence = 1
             print('found a ball! \o/')
-        self.pub_balls.publish(ball_msg)
+            self.pub_balls.publish(ball_msg)
 
         # create line msg
         line_msg = LineInformationInImage()  # Todo: add lines
