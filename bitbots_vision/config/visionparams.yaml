@@ -6,7 +6,7 @@ visionparams:
         path: '/classifier/cascadeNew.xml'
 
     field_color_detector:
-        path: '/config/fieldColor.yaml'
+        path: '/config/simColor.yaml'
 
     white_color_detector:
         lower_values: [0, 0, 180]
