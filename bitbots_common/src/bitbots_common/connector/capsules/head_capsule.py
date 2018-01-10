@@ -84,7 +84,14 @@ class HeadCapsule:
         # type: (float, float) -> tuple
         cam_height = self.camera_height
         ball_height = self.ball_height
-        if u == 0.0:
+        if u == 0.0 and v == 0.0:
+
+            pan = self.current_pan_pos
+            tilt= self.current_tilt_pos
+            return pan, tilt
+        elif u == 0 and v > 0:
+            pan = -90
+        elif u==0 and v<0:
             pan = 90
         else:
             pan = math.degrees(math.atan(v/u))
