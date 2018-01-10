@@ -2,9 +2,17 @@
     <arg name="wftransform" default="true"/>
     <arg name="duty" default="TeamPlayer"/>
     <arg name="hcm" default="true"/>
+    <arg name="simulator" default="false"/>
 
-    <include file="$(find bitbots_vision_common)/launch/vision_startup.launch"/>
 
+
+    <group if="$(arg simulator)">
+        <include file="$(find bitbots_vision_common)/launch/vision_simulator.launch"/>
+    </group>
+
+    <group unless="$(arg simulator)">
+        <include file="$(find bitbots_vision_common)/launch/vision_startup.launch"/>
+    </group>
 
 
     <group if="$(arg wftransform)">

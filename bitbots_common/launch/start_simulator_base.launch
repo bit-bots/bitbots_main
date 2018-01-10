@@ -7,7 +7,7 @@
 
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">
 		<arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer.world"/>
-		<arg name="paused" value="true" />
+		<arg name="paused" value="false" />
 	</include>
   
     <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg ns)" type="spawn_model" args="-file $(find minibot_description)/urdf/minibot.urdf -urdf -model minibot -x -1.5 -y 0.0 -z 0.0" />
