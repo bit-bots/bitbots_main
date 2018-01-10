@@ -1,16 +1,10 @@
 <launch>
-    <arg name="cppvision" default="true"/>
     <arg name="wftransform" default="true"/>
     <arg name="duty" default="TeamPlayer"/>
     <arg name="hcm" default="true"/>
 
-    <group if="$(arg cppvision)">
-        <include file="$(find bitbots_vision_common)/launch/vision_startup_wf.launch"/>
-    </group>
+    <include file="$(find bitbots_vision_common)/launch/vision_startup.launch"/>
 
-    <group unless="$(arg cppvision)">
-        <include file="$(find bitbots_vision_common)/launch/vision_startup.launch"/>
-    </group>
 
 
     <group if="$(arg wftransform)">
