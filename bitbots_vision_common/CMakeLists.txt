@@ -10,8 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   humanoid_league_msgs
   geometry_msgs
   nav_msgs
-  bitbots_ballclassifier
-  bitbots_dummyvision
 )
 
 ## System dependencies are found with CMake's conventions
