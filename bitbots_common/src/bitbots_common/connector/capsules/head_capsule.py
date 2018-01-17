@@ -3,7 +3,7 @@ import time
 import math
 
 import rospy
-from humanoid_league_msgs.msg import HeadMode, BallInImage, BallsInImage
+from humanoid_league_msgs.msg import HeadMode, BallInImage
 import rosparam
 from sensor_msgs.msg import JointState, CameraInfo
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
@@ -99,10 +99,8 @@ class HeadCapsule:
         tilt = -math.degrees(math.atan((cam_height - ball_height / 2)/(math.sqrt(u ** 2 + v ** 2))))
         return pan, tilt
 
-    def cb_ballinimage(self, balls: BallsInImage):
-        if balls.candidates:
-            ball = balls.candidates[0]
-            self.bestball_in_image = ball.center.x, ball.center.y
+    def cb_ballinimage(self, ball: BallInImage):
+        self.bestball_in_image = ball.center.x, ball.center.y
 
     def get_started_confirm_ball(self):
         return self.startedconfirmingball
