@@ -138,6 +138,9 @@ class HorizonDetector:
         :param offset: offset of pixels to still be accepted as under the horizon. Default is 0.
         :return a boolean if point is under horizon:
         """
+        if not 0 <= point[0] < len(self.get_full_horizon()):
+            rospy.logwarn('point_under_horizon got called with an out of bounds horizon point')
+            return False
         return point[1] + offset > self.get_full_horizon()[point[0]]  # Todo: catch out of bounds points
 
     def get_upper_bound(self, y_offset=0):

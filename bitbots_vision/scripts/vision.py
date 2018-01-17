@@ -7,7 +7,6 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import rospy
 import rospkg
-import sys
 import cv2
 import os
 
@@ -25,7 +24,12 @@ class Vision:
         if os.path.exists(cascade_path):
             self.cascade = cv2.CascadeClassifier(cascade_path)
         else:
-            print('AAAAHHHH! The specified cascade config file doesn\'t exist!')
+            rospy.logerr(
+                'AAAAHHHH! The specified cascade config file doesn\'t exist!')
+        classifier_path = rospy.get_param('visionparams/classifier/model_path')
+        if not os.path.exists(classifier_path):
+            rospy.logerr(
+                'AAAAHHHH! The specified classifier model file doesn\'t exist!')
         self.ball_classifier = live_classifier\
             .LiveClassifier(package_path +
                             rospy.get_param(
@@ -36,28 +40,41 @@ class Vision:
 
         # set up ball config
         self.ball_config = {
-            'classify_threshold': rospy.get_param('visionparams/ball_finder/classify_threshold'),
-            'scale_factor': rospy.get_param('visionparams/ball_finder/scale_factor'),
-            'min_neighbors': rospy.get_param('visionparams/ball_finder/min_neighbors'),
-            'min_size': rospy.get_param('visionparams/ball_finder/min_size'),
+            'classify_threshold': rospy.get_param(
+                'visionparams/ball_finder/classify_threshold'),
+            'scale_factor': rospy.get_param(
+                'visionparams/ball_finder/scale_factor'),
+            'min_neighbors': rospy.get_param(
+                'visionparams/ball_finder/min_neighbors'),
+            'min_size': rospy.get_param(
+                'visionparams/ball_finder/min_size'),
         }
 
         # set up horizon config
         self.horizon_config = {
-            'x_steps': rospy.get_param('visionparams/horizon_finder/horizontal_steps'),
-            'y_steps': rospy.get_param('visionparams/horizon_finder/vertical_steps'),
-            'precise_pixel': rospy.get_param('visionparams/horizon_finder/precision_pix'),
-            'min_precise_pixel': rospy.get_param('visionparams/horizon_finder/min_precision_pix'),
+            'x_steps': rospy.get_param(
+                'visionparams/horizon_finder/horizontal_steps'),
+            'y_steps': rospy.get_param(
+                'visionparams/horizon_finder/vertical_steps'),
+            'precise_pixel': rospy.get_param(
+                'visionparams/horizon_finder/precision_pix'),
+            'min_precise_pixel': rospy.get_param(
+                'visionparams/horizon_finder/min_precision_pix'),
         }
 
         # set up lines config
         self.lines_config = {
-            'horizon_offset': rospy.get_param('visionparams/line_detector/horizon_offset'),
-            'linepoints_range': rospy.get_param('visionparams/line_detector/linepoints_range'),
-            'blur_kernel_size': rospy.get_param('visionparams/line_detector/blur_kernel_size'),
+            'horizon_offset': rospy.get_param(
+                'visionparams/line_detector/horizon_offset'),
+            'linepoints_range': rospy.get_param(
+                'visionparams/line_detector/linepoints_range'),
+            'blur_kernel_size': rospy.get_param(
+                'visionparams/line_detector/blur_kernel_size'),
         }
-        self._ball_candidate_threshold = rospy.get_param('visionparams/vision/ball_candidate_rating_threshold')
-        self._ball_candidate_y_offset = rospy.get_param('visionparams/vision/ball_candidate_horizon_y_offset')
+        self._ball_candidate_threshold = rospy.get_param(
+            'visionparams/vision/ball_candidate_rating_threshold')
+        self._ball_candidate_y_offset = rospy.get_param(
+            'visionparams/vision/ball_candidate_horizon_y_offset')
 
         self.debug = rospy.get_param('visionparams/vision/debug')
         # ROS-Stuff:
@@ -73,11 +90,11 @@ class Vision:
 
         # subscriber:
         self.bridge = CvBridge()
-        # TODO: use image_transport
         rospy.Subscriber(rospy.get_param('visionparams/ROS/img_msg_topic'),
                          Image,
                          self._image_callback,
-                         queue_size=rospy.get_param('visionparams/ROS/img_queue_size'))
+                         queue_size=rospy.get_param(
+                             'visionparams/ROS/img_queue_size'))
 
         if self.debug:
             rospy.logwarn("Debug windows are enabled")
@@ -90,7 +107,8 @@ class Vision:
         self.handle_image(img)
 
     def handle_image(self, image_msg):
-        image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")  # converting the ROS image message to CV2-image
+        # converting the ROS image message to CV2-image
+        image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
 
         # setup detectors
         horizon_detector = horizon.HorizonDetector(image,
@@ -141,7 +159,7 @@ class Vision:
             ball_msg.center.y = ball_classifier.get_top_candidate()[0][1] + (ball_classifier.get_top_candidate()[0][3] // 2)
             ball_msg.diameter = ball_classifier.get_top_candidate()[0][2]
             ball_msg.confidence = 1
-            print('found a ball! \o/')
+            rospy.loginfo('found a ball! \o/')
             self.pub_balls.publish(ball_msg)
 
         # create line msg
@@ -156,9 +174,11 @@ class Vision:
             line_msg.segments.append(ls)
         self.pub_lines.publish(line_msg)
         if self.debug:
-            # cv2.imshow('White Image', self.white_color_detector.mask_image(image))
             cv2.waitKey(0)
-            debug_image_dings.draw_points(line_detector.get_linepoints(), (0, 0, 0))
+            # draw linepoints in black
+            debug_image_dings.draw_points(
+                line_detector.get_linepoints(),
+                (0, 0, 0))
             debug_image_dings.imshow()
 
 
