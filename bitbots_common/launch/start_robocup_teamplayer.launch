@@ -33,7 +33,12 @@
     <include file="$(find bitbots_localisation)/launch/localisation_amcl.launch"/>
 
     <group if="$(arg hcm)">
-        <include file="$(find bitbots_hcm)/launch/start_hcm_minibot_robot.launch"/>
+        <group if="$(arg simulator)">
+             <include file="$(find bitbots_hcm)/launch/start_hcm_minibot_simulation.launch"/>
+         </group>
+         <group unless="$(arg simulator)">
+           <include file="$(find bitbots_hcm)/launch/start_hcm_minibot_robot.launch"/>
+        </group>
     </group>
 
 </launch>
