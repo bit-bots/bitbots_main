@@ -1,3 +1,4 @@
+#include "ros/ros.h"
 #include <iostream>
 #include <cstdio>
 #include <arpa/inet.h>
@@ -16,6 +17,10 @@ void handlePacket(Packet* packet) {
 }
 
 int main(int argc, char** args) {
+
+    for(int i = 1; i < argc; i++) {
+        cout << args[i] << endl;
+    }
 
     cout << "Listening to 8888" << endl;
 
