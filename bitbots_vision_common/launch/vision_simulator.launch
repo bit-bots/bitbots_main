@@ -1,6 +1,5 @@
 <launch>
-  <remap from ="/minibot/camera/image_raw" to="/image_raw"/>
+  <remap to ="/minibot/camera/image_raw" from="/image_raw"/>
   <include file="$(find bitbots_vision)/launch/bitbots_vision.launch" />
-
 
 </launch>
