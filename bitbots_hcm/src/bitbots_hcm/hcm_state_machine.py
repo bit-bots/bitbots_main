@@ -66,7 +66,7 @@ class Startup(AbstractState):
     def evaluate(self):
         if not self.animation_started:
             # leave this if we got a hardware response, or after some time
-            if VALUES.last_hardware_update is not None or time.time() - VALUES.start_up_time > self.start_time_limit:
+            if VALUES.last_hardware_update is not None or rospy.get_time() - VALUES.start_up_time > self.start_time_limit:
                 # check if we directly go into a special state, if not, got to get up
                 if VALUES.start_test:
                     pass
@@ -77,7 +77,7 @@ class Startup(AbstractState):
                 if VALUES.soft_start:
                     switch_motor_power(False)
                     # to prohibit getting directly out of softoff
-                    VALUES.last_client_update = time.time() - 120
+                    VALUES.last_client_update = rospy.get_time() - 120
                     return Softoff()
                 switch_motor_power(True)
                 if VALUES.penalized:
@@ -118,7 +118,7 @@ class Softoff(AbstractState):
                 # don't directly change state, we wait for animation to finish
                 self.start_animation(rospy.get_param("hcm/animations/walkready"))
                 return
-            if time.time() - VALUES.last_request < 10:
+            if rospy.get_time() - VALUES.last_request < 10:
                 # got a new move request
                 switch_motor_power(True)
                 self.next_state = Controllable()
@@ -215,7 +215,7 @@ class Penalty(AbstractState):
             # still penalized, lets wait a bit
             rospy.sleep(0.05)
             # prohibit soft off
-            VALUES.last_client_update = time.time()
+            VALUES.last_client_update = rospy.get_time()
         else:
             return PenaltyAnimationOut()
 
@@ -324,7 +324,7 @@ class Controllable(AbstractState):
 
 class Falling(AbstractState):
     def entry(self):
-        self.wait_time = time.time()
+        self.wait_time = rospy.get_time()
         # go directly in falling pose
         falling_pose = VALUES.fall_checker.check_falling(VALUES.not_so_smooth_gyro)
         if falling_pose is not None:
@@ -342,7 +342,7 @@ class Falling(AbstractState):
 
     def evaluate(self):
         # we wait a moment before going to the next state
-        if time.time() - self.wait_time > 3 and self.animation_finished():
+        if rospy.get_time() - self.wait_time > 3 and self.animation_finished():
             return self.next_state
 
     def exit(self):
