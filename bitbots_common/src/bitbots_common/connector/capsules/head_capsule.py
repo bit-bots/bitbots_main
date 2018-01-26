@@ -56,7 +56,7 @@ class HeadCapsule:
         velnew = math.radians(pan_speed), math.radians(tilt_speed)
         self.pos_msg.points[0].positions = posnew
         self.pos_msg.points[0].velocities = velnew
-        self.pos_msg.header.stamp = rospy.Time.from_sec(time.time())
+        self.pos_msg.header.stamp = rospy.Time.now()
         self.position_publisher.publish(self.pos_msg)
 
     def get_current_head_pos(self):
@@ -105,7 +105,9 @@ class HeadCapsule:
     def get_started_confirm_ball(self):
         return self.startedconfirmingball
 
-    def set_started_confirm_ball(self, t=time.time()):
+    def set_started_confirm_ball(self, t=None):
+        if not t:
+            t = rospy.get_time()
         self.startedconfirmingball = t
 
     def unset_started_confirm_ball(self):
@@ -113,19 +115,21 @@ class HeadCapsule:
         self.startedconfirmingball = 0
 
     def set_confirmed_ball(self):
-        self.startedconfirmingball = time.time()
+        self.startedconfirmingball = rospy.get_time()
         
     def get_started_confirm_goal(self):
         return self.startedconfirminggoal
 
-    def set_started_confirm_goal(self, t=time.time()):
+    def set_started_confirm_goal(self, t=None):
+        if not t:
+            t = rospy.get_time()
         self.startedconfirminggoal = t
 
     def unset_started_confirm_goal(self):
         self.startedconfirminggoal = 0
 
     def set_confirmed_goal(self):
-        self.startedconfirminggoal = time.time()
+        self.startedconfirminggoal = rospy.get_time()
 
     def cb_motor_postions(self, msg: JointTrajectory):
         self.pos_msg = msg
