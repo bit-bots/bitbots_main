@@ -82,7 +82,7 @@ class Vision:
         rospy.init_node('bitbots_vision')
         # publisher:
         self.pub_balls = rospy.Publisher("ball_in_image",
-                                         BallInImage,
+                                         BallsInImage,
                                          queue_size=1)
         self.pub_lines = rospy.Publisher("line_in_image",
                                          LineInformationInImage,
@@ -115,7 +115,6 @@ class Vision:
                                                    self.field_color_detector,
                                                    self.horizon_config)
         ball_finder = ball.BallFinder(image, self.cascade, self.ball_config)
-        # Todo: filter balls under horizon
         ball_classifier = classifier.\
             Classifier(image,
                        self.ball_classifier,
@@ -142,7 +141,7 @@ class Vision:
                 horizon_detector.candidates_under_horizon(
                     ball_finder.get_candidates(),
                     self._ball_candidate_y_offset),
-                    (0, 255, 255))
+                (0, 255, 255))
 
         # create ball msg
 
@@ -152,15 +151,19 @@ class Vision:
             if self.debug:
                 debug_image_dings.draw_ball_candidates([ball_classifier.get_top_candidate()[0]],
                                                        (0, 255, 0))
+            balls_msg = BallInImage()
+            balls_msg.header.frame_id = image_msg.header.frame_id
+            balls_msg.header.stamp = image_msg.header.stamp
+
             ball_msg = BallInImage()
-            ball_msg.header.frame_id = image_msg.header.frame_id
-            ball_msg.header.stamp = image_msg.header.stamp
             ball_msg.center.x = ball_classifier.get_top_candidate()[0][0] + (ball_classifier.get_top_candidate()[0][2] // 2)
             ball_msg.center.y = ball_classifier.get_top_candidate()[0][1] + (ball_classifier.get_top_candidate()[0][3] // 2)
             ball_msg.diameter = ball_classifier.get_top_candidate()[0][2]
             ball_msg.confidence = 1
+
+            balls_msg.candidates.append(ball_msg)
             rospy.loginfo('found a ball! \o/')
-            self.pub_balls.publish(ball_msg)
+            self.pub_balls.publish(balls_msg)
 
         # create line msg
         line_msg = LineInformationInImage()  # Todo: add lines
