@@ -5,7 +5,7 @@ SupporterDecision
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
 """
-import time
+import rospy
 
 from body.actions.go_to_ball_pathfinding import GoToBallPathfinding
 from body.actions.search import Search
@@ -21,7 +21,7 @@ class SupporterDecision(AbstractDecisionModule):
     def perform(self, connector: BodyConnector, reevaluate=False):
 
         if not (connector.vision.ball_seen() or
-                time.time() - connector.vision.ball_last_seen() < 1):
+                rospy.get_time() - connector.vision.ball_last_seen() < 1):
             return self.push(Search)
 
         if connector.vision.get_ball_distance() < 0.9:
