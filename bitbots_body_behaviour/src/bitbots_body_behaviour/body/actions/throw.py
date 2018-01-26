@@ -5,7 +5,7 @@ Throw
 Handling throwing of the goalie.
 """
 
-import time
+import rospy
 
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
@@ -23,7 +23,7 @@ class Throw(AbstractActionModule):
     def __init__(self, args):
         super(Throw, self).__init__()
         self.richtung = args
-        self.initializationTime = time.time()
+        self.initializationTime = rospy.get_time()
         self.played = False
         self.left_animation = config["animations"]["goalie"]["throw_left"]
         self.middle_animation = config["animations"]["goalie"]["throw_middle"]
@@ -40,12 +40,12 @@ class Throw(AbstractActionModule):
         elif self.richtung == RIGHT:
             if connector.animation.play_animation(self.right_animation):
                 connector.blackboard.set_thrown(RIGHT)
-                connector.blackboard.freeze_till(time.time() + 4)
+                connector.blackboard.freeze_till(rospy.get_time() + 4)
                 return self.interrupt()
         elif self.richtung == MIDDLE:  # MIDDLE
             if connector.animation.play_animation(self.middle_animation):
                 connector.blackboard.set_thrown(MIDDLE)
-                connector.blackboard.freeze_till(time.time() + 4)
+                connector.blackboard.freeze_till(rospy.get_time() + 4)
                 return self.interrupt()
         else:
             raise ValueError('%s is not a possible throw direction.' % self.richtung)

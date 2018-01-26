@@ -9,7 +9,7 @@ The robot decides if he ist exactly between Ball and Goal to protect it.
 History:
 * 19.08.14 Created (Judith Hartfill)
 """
-import time
+import rospy
 
 from bitbots_common.connector.connector import BodyConnector
 from bitbots_common.util.math_utils import convert_uv2angular
@@ -48,8 +48,8 @@ class DefenderPositionDecider(AbstractDecisionModule):
         if self.angularballgoal >= 180:
             self.angularballgoal = 360 - self.angularballgoal
 
-        if self.timestamp_goal < (int(time.time()) - self.wait_goal_time):
-            self.timestamp_goal = int(time.time())
+        if self.timestamp_goal < (int(rospy.get_time()) - self.wait_goal_time):
+            self.timestamp_goal = int(rospy.get_time())
         # Search first for the ball
         if self.ball == (2000.0, 1000.0):
             self.debug("Search for ball")

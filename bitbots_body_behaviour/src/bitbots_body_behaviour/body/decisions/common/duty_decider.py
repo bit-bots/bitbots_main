@@ -48,8 +48,8 @@ class DutyDecider(AbstractDecisionModule):
 
         if connector.gamestate.is_game_state_equals(DATA_VALUE_STATE_READY):
             if self.start_self_pos is None:
-                self.start_self_pos = time.time() + 20
-            if self.start_self_pos > time.time():
+                self.start_self_pos = rospy.get_time() + 20
+            if self.start_self_pos > rospy.get_time():
                 connector.walking.start_walking_plain(4, 0, 0)
                 rospy.loginfo("State Ready: Go forward")
                 return

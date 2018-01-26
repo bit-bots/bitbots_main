@@ -7,7 +7,7 @@ GotToBallPathfinding
 """
 import math
 
-import time
+import rospy
 
 from bitbots_common.connector.connector import BodyConnector
 from bitbots_pathfinding.potential_field import PotentialMap
@@ -32,7 +32,7 @@ class GoToBallPathfinding(AbstractActionModule):
         self.last_f = 0
         self.last_t = 0
         self.last_s = 0
-        self.last_iteration = time.time()
+        self.last_iteration = rospy.get_time()
 
     def perform(self, connector: BodyConnector, reevaluate=False):
         self.align_to_goal = connector.config["Body"]["Toggles"]["Fieldie"]["alignToGoal"]
@@ -63,9 +63,9 @@ class GoToBallPathfinding(AbstractActionModule):
 
         # only run approx. 3 times a second:
 
-        if time.time() - self.last_iteration > 0.33:
+        if rospy.get_time() - self.last_iteration > 0.33:
             network = connector.blackboard.get_pathfinding_net()
-            self.last_iteration = time.time()
+            self.last_iteration = rospy.get_time()
 
             if False and align_to_goal:
                 pass

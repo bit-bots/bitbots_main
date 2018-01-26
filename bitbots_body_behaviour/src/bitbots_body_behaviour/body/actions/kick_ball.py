@@ -21,7 +21,7 @@ class KickBall(AbstractActionModule):
     def __init__(self, connector: BodyConnector, args):
         super(KickBall, self).__init__(connector)
         self.side = args
-        self.begin = time.time()
+        self.begin = rospy.get_time()
         self.rk = "rk_wm2016_unstable" # connector.animation.an_config["kicks"]["rk"]
         self.lk = None # connector.animation.an_config["kicks"]["lk"]
         self.rkp = None #  connector.animation.an_config["kicks"]["rkp"]
@@ -34,7 +34,7 @@ class KickBall(AbstractActionModule):
         self.do_not_reevaluate()
         connector.walking.stop_walking()
 
-        if time.time() - self.begin > 3.5:  # wait one moment
+        if rospy.get_time() - self.begin > 3.5:  # wait one moment
             self.do_not_reevaluate()  # dont interrrupt the kick
 
             connector.blackboard.set_one_time_kicked(True)

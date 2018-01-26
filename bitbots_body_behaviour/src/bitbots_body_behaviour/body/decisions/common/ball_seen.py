@@ -28,7 +28,7 @@ class AbstractBallSeen(AbstractDecisionModule):
 
     def perform(self, connector, reevaluate=False):
 
-        if (time.time() - connector.vision.ball_last_seen()) < self.max_ball_time:
+        if (rospy.get_time() - connector.vision.ball_last_seen()) < self.max_ball_time:
             return self.has_ball_seen(connector)
         else:
             return self.ball_not_seen(connector)
@@ -46,7 +46,7 @@ class AbstractBallSeen(AbstractDecisionModule):
 class BallSeenGoalie(AbstractBallSeen):
     def perform(self, connector, reevaluate=False):
 
-        if time.time() - connector.blackboard.get_confirmed_ball() < 2:
+        if rospy.get_time() - connector.blackboard.get_confirmed_ball() < 2:
             return self.has_ball_seen(connector)
         else:
             return self.ball_not_seen(connector)
@@ -63,9 +63,9 @@ class BallSeenFieldie(AbstractBallSeen):
     def perform(self, connector, reevaluate=False):
 
         if connector.raw_vision_capsule().ball_seen() or \
-                ((time.time() - connector.blackboard_capsule().get_confirmed_ball() < 5 and
+                ((rospy.get_time() - connector.blackboard_capsule().get_confirmed_ball() < 5 and
                 connector.filtered_vision_capsule().get_local_goal_model_ball_distance() > 1000)
-            or (time.time() - connector.blackboard_capsule().get_confirmed_ball() < 2 and
+            or (rospy.get_time() - connector.blackboard_capsule().get_confirmed_ball() < 2 and
                 connector.filtered_vision_capsule().get_local_goal_model_ball_distance() < 1000)):
             return self.has_ball_seen(connector)
         else:

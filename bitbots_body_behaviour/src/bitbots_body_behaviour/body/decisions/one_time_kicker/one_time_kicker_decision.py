@@ -8,7 +8,7 @@ Start of OneTimeKicker behaviour.
 History:
 * 05.12.14: Created (Marc Bestmann & Nils Rokita)
 """
-import time
+import rospy
 
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
@@ -22,7 +22,7 @@ class OneTimeKickerDecision(AbstractDecisionModule):  # todo make this player sh
 
     def perform(self, connector, reevaluate=False):
         # sets the robot back to its original role if the time is up
-        if connector.blackboard_capsule().get_one_time_kicker_timer() + self.reset_time < time.time():
+        if connector.blackboard_capsule().get_one_time_kicker_timer() + self.reset_time < rospy.get_time():
             connector.set_duty(None)
             return self.interrupt()
 

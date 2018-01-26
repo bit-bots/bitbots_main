@@ -4,7 +4,7 @@ BallDangerous
 
 Check if the ball is dangerous and we need to do something about it or if we have time for other stuff.
 """
-import time
+import rospy
 
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
@@ -20,7 +20,7 @@ class BallDangerous(AbstractDecisionModule):
         # We saw the ball so we track it
         connector.blackboard.schedule_ball_tracking()
 
-        if ufiltered < 1500 and time.time() - connector.vision.get_last_seen("Ball") < 2:
+        if ufiltered < 1500 and rospy.get_time() - connector.vision.get_last_seen("Ball") < 2:
             return self.push(ThrowOrRaiseArm)
         else:
             return self.push(GoalieMovement)

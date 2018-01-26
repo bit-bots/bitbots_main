@@ -10,7 +10,7 @@ History:
 
 Decides what a defender does
 """
-import time
+import rospy
 
 from bitbots_body_behaviour.body.actions.wait import Wait
 from bitbots_body_behaviour.body.decisions.common.corridor import DefenderCorridor
@@ -27,11 +27,11 @@ class DefenderDecision(AbstractDecisionModule):
         self.ball_history_length = config["Fieldie"]["Defender"]["ballHistoryLenght"]
         self.first_first_time = None
         self.required_number = config["Fieldie"]["Defender"]["requiredNumberTrues"]
-        self.start_time = time.time()
+        self.start_time = rospy.get_time()
         self.wait_at_start = config["Fieldie"]["Defender"]["waitAtStart"]
         self.ball_distance_history = []
         self.started = None
-        self.start = time.time()
+        self.start = rospy.get_time()
 
     def vote_for_switch_to_striker(self, connector):
         if (connector.raw_vision_capsule().ball_seen() and connector.raw_vision_capsule().get_ball_info("u") <
@@ -63,4 +63,4 @@ class DefenderDecision(AbstractDecisionModule):
         return True
 
     def is_waiting_period_over(self):
-        return time.time() > self.start + self.wait_at_start
+        return rospy.get_time() > self.start + self.wait_at_start

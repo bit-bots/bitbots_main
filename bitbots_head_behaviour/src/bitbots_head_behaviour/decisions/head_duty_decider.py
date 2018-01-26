@@ -41,8 +41,8 @@ class HeadDutyDecider(AbstractDecisionModule):
 
         rospy.logdebug("GoalPrio" + str(self.goal_prio))
         rospy.logdebug("BallPrio" + str(self.ball_prio))
-        rospy.logdebug("BallLastConfirmed" + str(time.time() - connector.head.get_confirmed_ball()))
-        rospy.logdebug("BallLastStratedconfirm" + str(time.time() - connector.head.startedconfirmingball))
+        rospy.logdebug("BallLastConfirmed" + str(rospy.get_time() - connector.head.get_confirmed_ball()))
+        rospy.logdebug("BallLastStratedconfirm" + str(rospy.get_time() - connector.head.startedconfirmingball))
 
         head_mode = connector.head.get_headmode()
         if head_mode == "":
@@ -55,12 +55,12 @@ class HeadDutyDecider(AbstractDecisionModule):
             return self.push(SearchAndConfirmEnemyGoal)
 
         if head_mode == HeadMode.BALL_GOAL_TRACKING:
-            rospy.logdebug("TrackbothTime", time.time())
-            if time.time() - connector.head.get_confirmed_ball() > 5:
+            rospy.logdebug("TrackbothTime", rospy.get_time())
+            if rospy.get_time() - connector.head.get_confirmed_ball() > 5:
                 return self.push(SearchAndConfirmBall)
 
             # ball long enough seen
-            elif time.time() - connector.head.get_confirmed_goal() > 6:
+            elif rospy.get_time() - connector.head.get_confirmed_goal() > 6:
                 return self.push(SearchAndConfirmEnemyGoal)
 
             elif self.trackjustball_aftergoal:

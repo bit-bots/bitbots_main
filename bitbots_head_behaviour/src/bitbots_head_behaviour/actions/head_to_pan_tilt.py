@@ -24,7 +24,7 @@ class HeadToPanTilt(AbstractActionModule):
         self.pan = min(max(connector.head.min_pan, float(args[0])), connector.head.max_pan)
         self.tilt = min(max(connector.head.min_tilt, float(args[1])), connector.head.max_tilt)
         # TODO: move body when ball is too far left or right
-        self.at_position = time.time()
+        self.at_position = rospy.get_time()
 
     def perform(self, connector: HeadConnector, reevaluate=False):
         rospy.logdebug("HeadToPanTilt")
@@ -33,12 +33,12 @@ class HeadToPanTilt(AbstractActionModule):
         if abs(current_pan_pos - self.pan) < connector.head.delta and \
                         abs(current_tilt_pos - self.tilt) < connector.head.delta:
             # We reached the position
-            if time.time() - self.at_position > connector.head.wait_time:
+            if rospy.get_time() - self.at_position > connector.head.wait_time:
                 # We waited long enough, go back
                 return self.pop()
         else:
             # We haven't reached it
             # Update when we should reach it
-            self.at_position = time.time()
+            self.at_position = rospy.get_time()
             rospy.logdebug("pan: " + str(self.pan) + " tilt:" + str(self.tilt))
             connector.head.send_motor_goals(self.pan, connector.head.pan_speed_max, self.tilt, connector.head.tilt_speed_max)

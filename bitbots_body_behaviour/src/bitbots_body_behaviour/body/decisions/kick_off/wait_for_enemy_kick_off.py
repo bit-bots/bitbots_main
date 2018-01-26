@@ -8,7 +8,7 @@ WaitForEnemyKickOff
 History:
 * 06.01.15: Created (Marc Bestmann)
 """
-import time
+import rospy
 
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
@@ -16,10 +16,10 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 class WaitForEnemyKickOff(AbstractDecisionModule):
     def __init__(self):
         super(WaitForEnemyKickOff, self).__init__()
-        self.start_time = time.time()
+        self.start_time = rospy.get_time()
 
     def perform(self, connector, reevaluate=False):
-        if time.time() - self.start_time > 9:
+        if rospy.get_time() - self.start_time > 9:
             return self.interrupt()
         else:
             ball_x, ball_y = connector.world_model_capsule().get_ball_position_xy()

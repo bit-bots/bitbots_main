@@ -8,7 +8,7 @@ PlainWalkAction
 The robot performs a cretain set of walking parameters. The action expects a list of 4-tuples as first argument.
 
 """
-import time
+import rospy
 
 from bitbots_stackmachine.abstract_init_action_module import AbstractInitActionModule
 
@@ -40,9 +40,9 @@ class PlainWalkAction(AbstractInitActionModule):
                 return self.pop()
             f, a, s, t = self.current_step
             self.active = True
-            self.started_time = time.time()
+            self.started_time = rospy.get_time()
 
             connector.walking.start_walking_plain(f, a, s)
         else:
-            if time.time() > self.current_step[3] + self.started_time:
+            if rospy.get_time() > self.current_step[3] + self.started_time:
                 self.active = False

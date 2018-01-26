@@ -8,7 +8,7 @@ KickOffSupporter
 History:
 * 06.01.15: Created (Marc Bestmann)
 """
-import time
+import rospy
 
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
@@ -33,20 +33,20 @@ class KickOffSupporter(AbstractDecisionModule):
         self.ignore_kick_off_time = config["Behaviour"]["Fieldie"]["KickOff"]["ignoreKickOffTime"]
         self.strategy_outdated = config["Behaviour"]["Fieldie"]["KickOff"]["strategyOutdateTime"]
         self.toggle_one_time_defender = config["Behaviour"]["Toggles"]["Fielde"]["kickOffOneTimeDefender"]
-        self.start_time = time.time()
+        self.start_time = rospy.get_time()
         self.direction = args
         self.walked = False
 
     def perform(self, connector, reevaluate=False):
 
         # If a certain time is up interrupt
-        if time.time() - self.start_time > self.ignore_kick_off_time:
+        if rospy.get_time() - self.start_time > self.ignore_kick_off_time:
             say("Nothing is happening")
             self.interrupt()
 
         strategy, recive_time = connector.team_data_capsule().get_kickoff_strategy()
 
-        if strategy != 0 and time.time() - recive_time < self.strategy_outdated:
+        if strategy != 0 and rospy.get_time() - recive_time < self.strategy_outdated:
             # only do something if the strategy was recently recived
 
             direction_string = "left" if strategy == -1 else "right"
