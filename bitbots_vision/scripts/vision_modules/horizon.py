@@ -30,36 +30,6 @@ class HorizonDetector:
             self._horizon_points = self._equalize_points(self._precise_horizon())
         return self._horizon_points
 
-    def _fast_horizon(self):  # do not use
-        # type: () -> list
-        """
-        calculates the horizon coordinates in a quick and efficient, but less precise way.
-        It calculates the horizon by checking for green and after having found the first green it also checks
-        between the last point which wasn't green and the current one to see if the horizon is already inbetween.
-        see also: _precise_horizon()
-        :return list of coordinates of the horizon:
-        """
-        y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
-        x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
-        horizon_points = []
-        for x_step in range(self._x_steps):
-            x = round(x_step * x_stepsize)
-            temp_horizon_y = round(self._y_steps * y_stepsize)
-            for y_step in range(self._y_steps):
-                y = round(y_step * y_stepsize)
-                # y,x because opencv image format
-                if self._color_detector.match_pixel(self._image[y, x]):
-                    temp_horizon_y = y
-                    # going back half the step size if horizon was found
-                    # doubles the precision at almost no cost
-                    if y_step > 0:
-                        half_y_step = round(y - (0.5 * y_stepsize))
-                        if self._color_detector.match_pixel(self._image[half_y_step, x]):
-                            temp_horizon_y = round(half_y_step)
-                    break
-            horizon_points.append((x, temp_horizon_y))
-        return horizon_points
-
     def _precise_horizon(self):
         # type: () -> list
         """
