@@ -40,3 +40,5 @@ visionparams:
         img_msg_topic: 'image_raw'
         img_queue_size: 1
         # Publisher
+        ball_msg_topic: 'ball_in_image'
+        line_msg_topic: 'line_in_image'

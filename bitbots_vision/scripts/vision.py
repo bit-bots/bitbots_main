@@ -81,12 +81,14 @@ class Vision:
 
         rospy.init_node('bitbots_vision')
         # publisher:
-        self.pub_balls = rospy.Publisher("ball_in_image",
-                                         BallsInImage,
-                                         queue_size=1)
-        self.pub_lines = rospy.Publisher("line_in_image",
-                                         LineInformationInImage,
-                                         queue_size=5)
+        self.pub_balls = rospy.Publisher(
+            rospy.get_param('visionparams/ROS/ball_msg_topic'),
+            BallsInImage,
+            queue_size=1)
+        self.pub_lines = rospy.Publisher(
+            rospy.get_param('visionparams/ROS/line_msg_topic'),
+            LineInformationInImage,
+            queue_size=5)
 
         # subscriber:
         self.bridge = CvBridge()
