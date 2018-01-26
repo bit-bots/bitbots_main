@@ -151,7 +151,7 @@ class Vision:
             if self.debug:
                 debug_image_dings.draw_ball_candidates([ball_classifier.get_top_candidate()[0]],
                                                        (0, 255, 0))
-            balls_msg = BallInImage()
+            balls_msg = BallsInImage()
             balls_msg.header.frame_id = image_msg.header.frame_id
             balls_msg.header.stamp = image_msg.header.stamp
 
