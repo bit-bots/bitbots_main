@@ -179,7 +179,6 @@ class Vision:
             line_msg.segments.append(ls)
         self.pub_lines.publish(line_msg)
         if self.debug:
-            cv2.waitKey(0)
             # draw linepoints in black
             debug_image_dings.draw_points(
                 line_detector.get_linepoints(),

@@ -38,6 +38,5 @@ class DebugImage:
         saves the image in current directory as "img.png" with edits made to the image from the other functions
         :return void:
         """
-        # cv2.imwrite('img.png', self.raw_image)
         cv2.imshow('Debug Image', self.raw_image)
-        cv2.waitKey(0)
+        cv2.waitKey(1)
