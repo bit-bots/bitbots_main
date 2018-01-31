@@ -19,4 +19,5 @@
     <depend>dynamic_reconfigure</depend>
     <depend>numpy</depend>
     <depend>cv2</depend>
+    <depend>wolves_image_provider_v4l</depend>
 </package>
