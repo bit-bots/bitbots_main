@@ -93,7 +93,7 @@ class PlayAnimationAction(object):
         rate = rospy.Rate(50)
         iteration = 0
         duration_avg = 0
-        start = time.time()
+        start = rospy.get_time()
 
         while not rospy.is_shutdown():
             # first check if we have another goal
@@ -129,7 +129,7 @@ class PlayAnimationAction(object):
 
             self.send_animation(first, False, goal.hcm, pose)
             first = False  # we have sent the first frame, all frames after this can't be the first
-            perc_done = int(((time.time() - animator.get_start_time()) / animator.get_duration()) * 100)
+            perc_done = int(((rospy.get_time() - animator.get_start_time()) / animator.get_duration()) * 100)
             perc_done = min(perc_done, 100)
             self._as.publish_feedback(PlayAnimationFeedback(percent_done=perc_done))
 
@@ -142,13 +142,13 @@ class PlayAnimationAction(object):
                     continue
 
                 if duration_avg > 0:
-                    duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
+                    duration_avg = 0.5 * duration_avg + 0.5 * (rospy.get_time() - start)
                 else:
-                    duration_avg = (time.time() - start)
+                    duration_avg = (rospy.get_time() - start)
 
                 rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
                 iteration = 0
-                start = time.time()
+                start = rospy.get_time()
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
@@ -160,7 +160,7 @@ class PlayAnimationAction(object):
 
     def send_animation_request(self):
         self.anim_msg.request = True
-        self.anim_msg.header.stamp = rospy.Time.from_sec(time.time())
+        self.anim_msg.header.stamp = rospy.Time.now()
         self.hcm_publisher.publish(self.anim_msg)
 
     def send_animation(self, first, last, hcm, pose):
@@ -171,7 +171,7 @@ class PlayAnimationAction(object):
         if pose is not None:
             self.anim_msg.position = pose_goal_to_traj_msg(pose, self.used_motor_names, self.traj_msg, self.traj_point)
         rospy.logdebug(self.anim_msg.position)
-        self.anim_msg.header.stamp = rospy.Time.from_sec(time.time())
+        self.anim_msg.header.stamp = rospy.Time.now()
         self.hcm_publisher.publish(self.anim_msg)
 
 

@@ -304,10 +304,10 @@ class Animator:
         """
         pre = stepsize * 1.5
 
-        self.t_start = time.time()
+        self.t_start = rospy.get_time()
 
         def update(current):
-            t_robo = (time.time() - self.t_start) + self.time_min
+            t_robo = (rospy.get_time() - self.t_start) + self.time_min
 
             if t_robo > self.time_max:
                 return None

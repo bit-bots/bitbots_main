@@ -19,7 +19,7 @@ if __name__ == "__main__":
         traj_msg.joint_names = ['LElbow']
         traj_msg.points = []
         traj_msg.points.append(msg)
-        traj_msg.header.stamp = rospy.Time.from_sec(time.time())
+        traj_msg.header.stamp = rospy.Time.now()
 
         rospy.logwarn(traj_msg)
 

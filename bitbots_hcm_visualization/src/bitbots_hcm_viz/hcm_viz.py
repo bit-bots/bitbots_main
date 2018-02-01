@@ -68,7 +68,7 @@ class HcmViz(Plugin):
 
         self.active_state = None
         self.state_history = ""
-        self.last_refresh_time = time.time()
+        self.last_refresh_time = rospy.get_time()
 
         # connections of state machine, load form parameter sever, this means we have to wait until motion has provided
         # them

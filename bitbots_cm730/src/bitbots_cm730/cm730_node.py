@@ -100,10 +100,10 @@ class CM730Node:
     def update_motor_goals(self, msg):
         """ Callback for subscription on motorgoals topic.
         We can only handle the first point of a JointTrajectory :( """
-        #self.goal_sum += time.time() - msg.header.stamp.to_sec()
+        #self.goal_sum += rospy.get_time() - msg.header.stamp.to_sec()
         self.goal_count +=1
 
-        self.arrt.append(time.time() - msg.header.stamp.to_sec())
+        self.arrt.append(rospy.get_time() - msg.header.stamp.to_sec())
         self.arrn.append(msg.header.seq)
 
         motor_goals = []
@@ -154,7 +154,7 @@ class CM730Node:
         """ Calls :func:`update_once` in an infinite loop """
         iteration = 0
         duration_avg = 0
-        start = time.time()
+        start = rospy.get_time()
         # big try block to switch of motor power in case of error
         try:
             while not rospy.is_shutdown():
@@ -167,13 +167,13 @@ class CM730Node:
                         continue
 
                     if duration_avg > 0:
-                        duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
+                        duration_avg = 0.5 * duration_avg + 0.5 * (rospy.get_time() - start)
                     else:
-                        duration_avg = (time.time() - start)
+                        duration_avg = (rospy.get_time() - start)
 
                     #rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
                     iteration = 0
-                    start = time.time()
+                    start = rospy.get_time()
 
             # switch of motor power in the end
             self.cm_730.switch_motor_power(False)
@@ -278,11 +278,11 @@ class CM730Node:
         self.joint_state_msg.position = robo_pose.get_positions_rad_names(self.used_motor_names)
         self.joint_state_msg.velocity = robo_pose.get_speeds_names(self.used_motor_names)
         # self.joint_msg.effort = robo_pose.get_loads_names(self.used_motor_names) Not used for the moment
-        self.joint_state_msg.header.stamp = rospy.Time.from_sec(time.time())  # rospy.Time.from_sec(time.time())
+        self.joint_state_msg.header.stamp = rospy.Time.now()  # rospy.Time.now()
         self.joint_publisher.publish(self.joint_state_msg)
 
     def publish_additional_servo_data(self, temps, voltages):
-        t = rospy.Time.from_sec(time.time())
+        t = rospy.Time.now()
         temperatures = []
         for temp in temps:
             ros_temp = Temperature()
@@ -303,7 +303,7 @@ class CM730Node:
         # axis are different in cm board, see cm730 documentation
         self.imu_msg.linear_acceleration = DataVector(accel[1] * -1, accel[0], accel[2] * -1)
         self.imu_msg.angular_velocity = DataVector(gyro[0], gyro[1] * -1, gyro[2])
-        self.imu_msg.header.stamp = rospy.Time.from_sec(time.time())  # rospy.Time.from_sec(time.time())
+        self.imu_msg.header.stamp = rospy.Time.now()  # rospy.Time.now()
 
         self.imu_publisher.publish(self.imu_msg)
 
