@@ -28,7 +28,7 @@ class Values(object):
 
         self.last_hardware_update = None  # time of last update from hardware
         self.last_request = None  # last request on doing something
-        self.start_up_time = rospy.get_time()
+        self.start_up_time = 0
 
         self.raw_gyro = DataVector(0, 0, 0)
         self.smooth_gyro = DataVector(0, 0, 0)
