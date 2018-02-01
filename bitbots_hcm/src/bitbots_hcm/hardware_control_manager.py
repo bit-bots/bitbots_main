@@ -36,7 +36,6 @@ class Motion:
 
         # --- Class Variables ---
         # Setup
-        self.startup_time = rospy.get_time()
         self.first_run = True
 
         # IMU
@@ -45,7 +44,6 @@ class Motion:
         self.smooth_accel = numpy.array([0, 0, 0])
         self.smooth_gyro = numpy.array([0, 0, 0])
         self.not_much_smoothed_gyro = numpy.array([0, 0, 0])
-        self.last_gyro_update_time = rospy.get_time()
 
         # Motor Positions
         self.robo_pose = Pose() #todo this is not used anymore?
@@ -87,6 +85,9 @@ class Motion:
         rospy.init_node('bitbots_hcm', log_level=log_level, anonymous=False)
         rospy.sleep(0.1)  # Otherwise messages will get lost, bc the init is not finished
         rospy.loginfo("Starting hcm")
+
+        self.startup_time = rospy.get_time()
+        self.last_gyro_update_time = rospy.get_time()
 
         self.joint_goal_publisher = rospy.Publisher('motor_goals', JointTrajectory, queue_size=1)
         self.hcm_state_publisher = rospy.Publisher('robot_state', RobotControlState, queue_size=1, latch=True)
@@ -255,7 +256,11 @@ class Motion:
                 # rospy.logwarn("Updates/Sec %f", iteration / duration_avg)
                 iteration = 0
                 start = rospy.get_time()
-            rate.sleep()
+            try:
+                # catch exeption of moving backwarts in time, when restarting simulator
+                rate.sleep()
+            except rospy.exceptions.ROSTimeMovedBackwardsException:
+                rospy.logwarn("We moved backwards in time. I hope you just resetted the simulation. If not there is something wrong")
 
         # we got external shutdown, tell it to the state machine, it will handle it
         VALUES.shut_down = True
