@@ -10,7 +10,7 @@ from bitbots.ipc.ipc import SharedMemoryIPC
 from bitbots.robot.pypose import PyPose
 from bitbots.util import get_config
 from bitbots.util.animation import play_animation
-
+import rospy
 config = get_config()
 ipc = SharedMemoryIPC()
 robot = Robot()
@@ -68,7 +68,7 @@ if __name__ == "__main__":
         r.task.set_subtask(l_task)
     for i in range(25):
         #local calculating stuff
-        begin = time.time()
+        begin = rospy.get_time()
         current = begin
         end = begin + iteration_time
         dt = 0
@@ -90,6 +90,6 @@ if __name__ == "__main__":
             print("R: soll : %s \nist:      %s" % (r_target, robot.get_joint_by_id(r_end_joint).get_endpoint().reshape((1,3))))
             print("L: soll : %s \nist:      %s" % (l_target, robot.get_joint_by_id(l_end_joint).get_endpoint().reshape((1,3))))
             update(ipc, robot, -1, steptime)
-            dt = time.time() - current
+            dt = rospy.get_time() - current
             current = current + dt
             time.sleep(max(0, steptime - dt))

@@ -40,15 +40,15 @@ class ButtonNode(object):
         if msg.button1 and not self.button1:
             # button1 was newly pressed
             self.button1 = True
-            self.button1_time = time.time()
+            self.button1_time = rospy.get_time()
         elif msg.button2 and not self.button2:
             # button2 was newly pressed
             self.button2 = True
-            self.button2_time = time.time()
+            self.button2_time = rospy.get_time()
         elif not msg.button1 and self.button1:
             # button1 not pressed anymore
             self.button1 = False
-            if time.time() - self.button1_time < self.short_time:
+            if rospy.get_time() - self.button1_time < self.short_time:
                 self.button1_short()
             else:
                 self.button1_long()
@@ -56,7 +56,7 @@ class ButtonNode(object):
         elif not msg.button2 and self.button2:
             # button2 not pressed anymore
             self.button2 = False
-            if time.time() - self.button2_time < self.short_time:
+            if rospy.get_time() - self.button2_time < self.short_time:
                 self.button2_short()
             else:
                 self.button2_long()

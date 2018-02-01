@@ -78,7 +78,7 @@ class FilteredVisionCapsule(object):
         u_center/v_center  ->  vertical/horizontal distance to the center of the goal
         u_post1/v_post1    ->  vertical/horizontal distance to goal post one
         u_post2/v_post2    ->  vertical/horizontal distance to goal post two
-        time               ->  point in time of the current data set (python time.time())
+        time               ->  point in time of the current data set (rospy.get_time() or it wont work in simulator)
 
         :rtype :  namedtuple
         :return : (u_center, v_center, u_post1, v_post1, u_post2, v_post2, time)

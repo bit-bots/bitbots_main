@@ -107,7 +107,7 @@ class FakeDataGenerator():
 
     def ball_candidates_msg(self, xs, ys, ds, cs):
         msg = BallsInImage()
-        msg.header.stamp = rospy.Time.from_seconds(time.time())
+        msg.header.stamp = rospy.Time.now()
         i = 0
         cans = []
         for x in xs:
@@ -126,7 +126,7 @@ class FakeDataGenerator():
 
     def ball_rel_msg(self, x: int, y: int, c: int):
         msg = BallRelative()
-        msg.header.stamp = rospy.Time.from_seconds(time.time())
+        msg.header.stamp = rospy.Time.now()
         msg.ball_relative.x = x
         msg.ball_relative.y = y
         msg.confidence = c
@@ -134,7 +134,7 @@ class FakeDataGenerator():
 
     def goal_rel_msg(self, lx, ly, rx, ry, cx, cy, c):
         msg = GoalRelative()
-        msg.header.stamp = rospy.Time.from_seconds(time.time())
+        msg.header.stamp = rospy.Time.now()
         msg.left_post.x = lx
         msg.left_post.y = ly
         msg.right_post.x = rx
@@ -156,7 +156,7 @@ class FakeDataGenerator():
 
     def obstacles_rel_msg(self, xs, ys, ws, hs, ts, cs):
         msg = ObstaclesRelative()
-        msg.header.stamp = rospy.Time.from_seconds(time.time())
+        msg.header.stamp = rospy.Time.now()
         i = 0
         obs = []
         for x in xs:

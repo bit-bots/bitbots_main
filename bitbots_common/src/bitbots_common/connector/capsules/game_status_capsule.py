@@ -11,7 +11,7 @@ import rosparam
 from bitbots_body_behaviour.keys import DATA_VALUE_STATE_READY, DATA_VALUE_STATE_PLAYING, \
     DATA_VALUE_STATE_SET, DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
 from humanoid_league_msgs.msg import GameState
-
+import rospy
 
 class GameStatusCapsule:
     def __init__(self):
@@ -29,7 +29,7 @@ class GameStatusCapsule:
         return self.gamestate.gameState
 
     def is_kick_off(self):
-        return time.time() - self.gamestate.kickoff_sec < self.kick_off_valid_time
+        return rospy.get_time() - self.gamestate.kickoff_sec < self.kick_off_valid_time
 
     def is_drop_ball(self):
         raise NotImplemented
@@ -64,14 +64,14 @@ class GameStatusCapsule:
         return x if x is not None else 0
 
     def get_seconds_since_last_drop_ball(self):
-        return time.time() - self.get_last_drop_in_time()
+        return rospy.get_time() - self.get_last_drop_in_time()
 
     def has_penalty_kick(self):
         return self.gamestate.penaltyShot
 
     def is_allowed_to_move(self):
-        return self.gamestate.allowedToMove or time.time() - self.lastupdate > 15
+        return self.gamestate.allowedToMove or rospy.get_time() - self.lastupdate > 15
 
     def gamestate_callback(self, gs: GameState):
         self.gamestate = gs
-        self.lastupdate = time.time()
+        self.lastupdate = rospy.get_time()

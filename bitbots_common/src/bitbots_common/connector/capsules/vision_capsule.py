@@ -2,7 +2,7 @@ import time
 from typing import List
 
 from humanoid_league_msgs.msg import ObstacleRelative, BallRelative, ObstaclesRelative
-
+import rospy
 
 class VisionCapsule:
     def __init__(self):
@@ -15,7 +15,7 @@ class VisionCapsule:
     ############
 
     def ball_seen(self):
-        return time.time() - self.ball_last_seen() < 0.5
+        return rospy.get_time() - self.ball_last_seen() < 0.5
 
     def ball_last_seen(self):
         return self.my_data.get("BallLastSeen", 0)
@@ -62,7 +62,7 @@ class VisionCapsule:
 
     def ball_callback(self, ball: BallRelative):
         self.ball = ball
-        self.my_data["BallLastSeen"] = time.time()
+        self.my_data["BallLastSeen"] = rospy.get_time()
 
     def obstacle_callback(self, obstacles: ObstaclesRelative):
         self.obstacles = obstacles

@@ -12,6 +12,8 @@ import sys
 import rosparam
 import pickle as Pickle
 import rospkg
+import rospy
+
 rospack = rospkg.RosPack()
 
 from bitbots_pathfinding import network
@@ -26,7 +28,7 @@ class BlackboardCapsule:
         self.my_data["freeze"] = ftime
 
     def is_frozen(self):
-        return time.time() - self.my_data.get("freeze", 0) < 0
+        return rospy.get_time() - self.my_data.get("freeze", 0) < 0
 
     ###############
     # ## Fieldie ##
@@ -36,14 +38,14 @@ class BlackboardCapsule:
         Returns True if the robots has aborted or completed an aligning process in the last n seconds
         :return:
         """
-        return time.time() - self.my_data.get("AligningLastStopped", 0) < self.config_stop_g_align_dur
+        return rospy.get_time() - self.my_data.get("AligningLastStopped", 0) < self.config_stop_g_align_dur
 
     def stop_aligning(self):
         self.my_data["StartAlignTime"] = 0
-        self.my_data["AligningLastStopped"] = time.time()
+        self.my_data["AligningLastStopped"] = rospy.get_time()
 
     def set_aligning_start_time(self):
-        self.my_data["StartAlignTime"] = time.time()
+        self.my_data["StartAlignTime"] = rospy.get_time()
 
     def get_aligning_start_time(self):
         return self.my_data.get("StartAlignTime", 0)
@@ -137,13 +139,13 @@ class BlackboardCapsule:
         if not self.my_data.get("Tracking.Ball", None):
             return False
         else:
-            return time.time() - self.my_data.get("Tracking.Ball.LastTimeScheduled", 0) <= 1  # todo config
+            return rospy.get_time() - self.my_data.get("Tracking.Ball.LastTimeScheduled", 0) <= 1  # todo config
 
     def schedule_ball_tracking(self):
         """ Tracking works with calling this method repeatedly to keep the tracking active
             When this method is not called for a certain amount of time tracking will be deactivated """
         self.my_data["Tracking.Ball"] = True
-        self.my_data["Tracking.Ball.LastTimeScheduled"] = time.time()
+        self.my_data["Tracking.Ball.LastTimeScheduled"] = rospy.get_time()
 
     def cancel_ball_tracking(self):
         """ This sets the ball tracking to False immideatly """
@@ -156,13 +158,13 @@ class BlackboardCapsule:
         if not self.my_data.get("Tracking.enemyGoal", None):
             return False
         else:
-            return time.time() - self.my_data.get("Tracking.enemyGoal.LastTimeScheduled", 0) <= 1  # todo config
+            return rospy.get_time() - self.my_data.get("Tracking.enemyGoal.LastTimeScheduled", 0) <= 1  # todo config
 
     def schedule_enemy_goal_tracking(self):
         """ Tracking works with calling this method repeatedly to keep the tracking active
             When this method is not called for a certain amount of time tracking will be deactivated """
         self.my_data["Tracking.enemyGoal"] = True
-        self.my_data["Tracking.enemyGoal.LastTimeScheduled"] = time.time()
+        self.my_data["Tracking.enemyGoal.LastTimeScheduled"] = rospy.get_time()
 
     def cancel_enemy_goal_tracking(self):
         """ This sets the enemyGoal tracking to False immideatly """
@@ -172,12 +174,12 @@ class BlackboardCapsule:
     def is_tracking_both_still_active(self):
         """ This method checks if the tracking of ball and goal schedule was called in the
             last _VAR_ seconds """
-        return time.time() - self.my_data.get("Tracking.both.LastTimeScheduled", 0) <= 1  # todo config
+        return rospy.get_time() - self.my_data.get("Tracking.both.LastTimeScheduled", 0) <= 1  # todo config
 
     def schedule_both_tracking(self):
         """ Tracking works with calling this method repeatedly to keep the tracking active
             When this method is not called for a certain amount of time tracking will be deactivated """
-        self.my_data["Tracking.both.LastTimeScheduled"] = time.time()
+        self.my_data["Tracking.both.LastTimeScheduled"] = rospy.get_time()
 
     def cancel_both_tracking(self):
         """ This sets the enemyGoal tracking to False immideatly """
@@ -187,13 +189,13 @@ class BlackboardCapsule:
         return self.my_data.get("Confirmed.Ball", 0)
 
     def set_confirmed_ball(self):
-        self.my_data["Confirmed.Ball"] = time.time()
+        self.my_data["Confirmed.Ball"] = rospy.get_time()
 
     def get_started_confirm_ball(self):
         return self.my_data.get("StartConfirm.Ball", 0)
 
     def set_started_confirm_ball(self):
-        self.my_data["StartConfirm.Ball"] = time.time()
+        self.my_data["StartConfirm.Ball"] = rospy.get_time()
 
     def unset_started_confirm_ball(self):
         self.my_data["StartConfirm.Ball"] = 0
@@ -202,13 +204,13 @@ class BlackboardCapsule:
         return self.my_data.get("Confirmed.Goal", 0)
 
     def set_confirmed_goal(self):
-        self.my_data["Confirmed.Goal"] = time.time()
+        self.my_data["Confirmed.Goal"] = rospy.get_time()
 
     def get_started_confirm_goal(self):
         return self.my_data.get("StartConfirm.Goal", 0)
 
     def set_started_confirm_goal(self):
-        self.my_data["StartConfirm.Goal"] = time.time()
+        self.my_data["StartConfirm.Goal"] = rospy.get_time()
 
     def unset_started_confirm_goal(self):
         self.my_data["StartConfirm.Goal"] = 0
@@ -295,13 +297,13 @@ class BlackboardCapsule:
             self.data.get("CompleteGoalCenter", (0, 0))[0] ** 2 + self.data.get("CompleteGoalCenter", (0, 0))[1] ** 2)
 
     def set_finished_align(self):
-        self.my_data["FinishedAlign"] = time.time()
+        self.my_data["FinishedAlign"] = rospy.get_time()
 
     def unset_finished_align(self):
         self.my_data["FinishedAlign"] = 0
 
     def get_finished_align(self):
-        return time.time() - self.my_data.get("FinishedAlign", 0) < 10
+        return rospy.get_time() - self.my_data.get("FinishedAlign", 0) < 10
 
     def get_pathfinding_net(self):
         if "pathfinding_net" not in self.my_data:
