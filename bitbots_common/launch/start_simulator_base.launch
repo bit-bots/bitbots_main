@@ -1,6 +1,7 @@
 <launch>
     <!-- set parameter -->
     <arg name="ns" default="minibot" />
+    <arg name="hcm" default="true"/>
     <param name="/use_sim_time" value="true" />
     <param name="simulation_active" value="true"/>
     <param name="robot_type_name" value="Minibot"/>
@@ -33,19 +34,20 @@
         <remap from="/joint_states" to="/minibot/joint_states"/>
         <remap from="/imu" to="/minibot/imu"/>
     -->
-    <remap from="motor_goals" to="/minibot/joint_trajectory_action_controller/command" />
-    <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
-    <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
+    <group if="$(arg hcm)">
+        <remap from="motor_goals" to="/minibot/joint_trajectory_action_controller/command" />
+        <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
+        <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
 
-    <include file="$(find bitbots_animation_server)/launch/animation.launch"/>
+        <include file="$(find bitbots_animation_server)/launch/animation.launch"/>
 
-    <rosparam file="$(find bitbots_cm730)/config/cm730.yaml" command="load"/>
-    <rosparam file="$(find bitbots_cm730)/config/mx28config.yaml" command="load"/>
-    <rosparam file="$(find bitbots_hcm)/config/hcm.yaml" command="load"/>
-    <rosparam file="$(find bitbots_hcm)/config/hcm_state_machine.yaml" command="load"/>
+        <rosparam file="$(find bitbots_cm730)/config/cm730.yaml" command="load"/>
+        <rosparam file="$(find bitbots_cm730)/config/mx28config.yaml" command="load"/>
+        <rosparam file="$(find bitbots_hcm)/config/hcm.yaml" command="load"/>
+        <rosparam file="$(find bitbots_hcm)/config/hcm_state_machine.yaml" command="load"/>
 
-    <node name="HCM" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" respawn="true"/>
-
+        <node name="HCM" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" respawn="true"/>
+    </group>
 
 
 
