@@ -29,15 +29,15 @@ class HeadCapsule:
 
         # class variables
         self._headmode = 0
-        self.confirmedBall = 0
-        self.startedconfirmingball = 0
-        self.confirmedGoal = 0
-        self.startedconfirminggoal = 0
+        self.confirmedBall = -999
+        self.startedconfirmingball = -999
+        self.confirmedGoal = -999
+        self.startedconfirminggoal = -999
         self.current_pan_pos = 0
         self.current_tilt_pos = 0
         self.is_ball_tracking_still_active = False
         self.bestball_in_image = None, None
-        self.cam_info = 640, 360
+        self.cam_info = 640, 360 #todo aus parametern!
 
         # preparing message for more performance
         self.pos_msg = JointTrajectory()
@@ -113,8 +113,7 @@ class HeadCapsule:
         self.startedconfirmingball = t
 
     def unset_started_confirm_ball(self):
-        rospy
-        self.startedconfirmingball = 0
+        self.startedconfirmingball = -999
 
     def set_confirmed_ball(self):
         self.startedconfirmingball = rospy.get_time()
@@ -128,7 +127,7 @@ class HeadCapsule:
         self.startedconfirminggoal = t
 
     def unset_started_confirm_goal(self):
-        self.startedconfirminggoal = 0
+        self.startedconfirminggoal = -999
 
     def set_confirmed_goal(self):
         self.startedconfirminggoal = rospy.get_time()
