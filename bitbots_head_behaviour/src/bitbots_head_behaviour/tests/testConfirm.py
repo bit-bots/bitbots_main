@@ -33,7 +33,7 @@ class TestConfirm(unittest.TestCase):
         connector = Connector(data={
             DATA_KEY_BALL_FOUND: True,
             DATA_KEY_BALL_INFO: nt,
-            "BallLastSeen": time.time(),
+            "BallLastSeen": rospy.get_time(),
             "Pose": PyPose(),
             "Ipc": mock.MagicMock()
         })

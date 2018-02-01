@@ -24,7 +24,7 @@ from body.actions.plain_walk_action import PlainWalkAction
 from body.actions.wait import Wait
 from body.decisions.team_player.defender_position_decider import DefenderPositionDecider
 from bitbots_common.connector.connector import BodyConnector
-
+import rospy
 
 class AbstractCorridor(AbstractDecisionModule):
     def __init__(self, connector: BodyConnector, _):
@@ -46,8 +46,8 @@ class AbstractCorridor(AbstractDecisionModule):
     def perform(self, connector, reevaluate=False):
         self.own_goal = connector.filtered_vision_capsule().get_local_goal_model_own_goal()
         self.opp_goal = connector.filtered_vision_capsule().get_local_goal_model_opp_goal()
-        if self.timestamp_goal < (int(time.time()) - self.wait_goal_time):
-            self.timestamp_goal = int(time.time())
+        if self.timestamp_goal < (int(rospy.get_time()) - self.wait_goal_time):
+            self.timestamp_goal = int(rospy.get_time())
 
         # "own_pos" contains the information, at which hight the robot is in relation to his own goal
         own_hypotenuse = math.sqrt(self.own_goal[0] ** 2 + self.own_goal[1] ** 2)
@@ -139,7 +139,7 @@ class CenterCorridor(AbstractCorridor):
         self.corridor_u_end = int(config["length"]) * (5.5 / 9.0)
         self.ball_distance_history = []
         config = get_config()["Behaviour"]
-        self.start = time.time()
+        self.start = rospy.get_time()
         self.go_striker_range = config["Fieldie"]["Defender"]["goStrikerRange"]
         self.go_striker_time = config["Fieldie"]["Defender"]["goStrikerTime"]
         self.ball_history_length = config["Fieldie"]["Defender"]["ballHistoryLenght"]
@@ -170,4 +170,4 @@ class CenterCorridor(AbstractCorridor):
         return number_trues
 
     def is_waiting_period_over(self):
-        return time.time() > self.start + self.wait_at_start
+        return rospy.get_time()) > self.start + self.wait_at_start

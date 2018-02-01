@@ -7,15 +7,15 @@ Testing the walking using a fixed pattern
 import time
 
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
-
+import rospy
 
 class TestWalkingStatic(AbstractActionModule):
     def __init__(self, _):
         super(TestWalkingStatic, self).__init__()
-        self.starttime = time.time() - 10
+        self.starttime = rospy.get_time() - 10
 
     def perform(self, connector, reevaluate=False):
-        td = time.time() - self.starttime
+        td = rospy.get_time() - self.starttime
         print(td)
 
         if td < 5:

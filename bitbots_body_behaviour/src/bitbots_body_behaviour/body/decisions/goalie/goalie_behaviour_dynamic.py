@@ -17,7 +17,7 @@ from bitbots.util import get_config
 from bitbots.debug.test.debug_log import DebugLog
 
 from bitbots_common.connector.connector import BodyConnector
-
+import rospy
 
 class GoalieBehaviourDynamic(AbstractDecisionModule):
     # threshold angle (if ball is seen under an angle greater than the threshold
@@ -29,7 +29,7 @@ class GoalieBehaviourDynamic(AbstractDecisionModule):
     G_DOLOG = True  # should logging be activated?
     G_LOGFILE = "GoalieDynamic.log"  # name of the logfile
     G_logcount = 0  # counting the logs
-    G_lastcall = int(time.time())  # when was the last log?
+    G_lastcall = int(rospy.get_time())  # when was the last log?
     G_DEBUGTIMETHRESOLD = 1  # how often should be logged? (in seconds)
 
     # Variables
@@ -128,8 +128,8 @@ class GoalieBehaviourDynamic(AbstractDecisionModule):
 
         # is last debug-call older than 1 second? (respectively older than G_DEBUGTIMETHRESHOLD)
         if config["Behaviour"]["Goalie"]["goalieDynamicDoLog"]:
-            if int(int(time.time()) - self.G_lastcall) > self.G_DEBUGTIMETHRESOLD:
-                self.G_lastcall = int(time.time())  # update last call time
+            if int(int(rospy.get_time()) - self.G_lastcall) > self.G_DEBUGTIMETHRESOLD:
+                self.G_lastcall = int(rospy.get_time())  # update last call time
                 self.own_debug(connector)
 
         # --- Vars ---

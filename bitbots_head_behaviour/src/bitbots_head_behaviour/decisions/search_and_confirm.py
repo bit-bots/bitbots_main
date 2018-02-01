@@ -33,14 +33,14 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
 
     def perform(self, connector: HeadConnector, reevaluate=False):
         rospy.logdebug("Ballseen: " + str(self.object_seen()))
-        if time.time() - self.get_started_confirm_time() > self.confirm_time and \
+        if rospy.get_time() - self.get_started_confirm_time() > self.confirm_time and \
                         self.get_started_confirm_time() != 0:
             self.set_confirmed()
             self.unset_started_confirm_time()
             #return self.pop()
 
         if self.object_seen():
-            if time.time() - self.get_started_confirm_time() > self.confirm_time:
+            if rospy.get_time() - self.get_started_confirm_time() > self.confirm_time:
                 self.set_started_confirm_time()
                 self.fail_counter = 0
             self.fail_counter -= 1
@@ -49,7 +49,7 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
             self.fail_counter += 2
             if self.fail_counter >= self.ball_fail_conter_max:
                 self.unset_started_confirm_time()  # stop confirming, because ball was lost
-            if time.time() - self.object_last_seen() < self.track_ball_lost_time:
+            if rospy.get_time() - self.object_last_seen() < self.track_ball_lost_time:
                 return self.track()
             else:
                 return self.search()

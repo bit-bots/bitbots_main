@@ -4,7 +4,7 @@ from bitbots_misc.bitbots_common.src.bitbots_common.connector.capsules.walking_c
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.plain_walk_action import PlainWalkAction
 from body.actions.throw import RIGHT, LEFT
-
+import rospy
 
 class TurnAfterThrow(AbstractDecisionModule):
     def __init__(self, _):
@@ -12,7 +12,7 @@ class TurnAfterThrow(AbstractDecisionModule):
         self.toggle_relocate_turn = config["Behaviour"]["Toggles"]["Goalie"]["relocateTurn"]
         self.anim_goalie_walkready = config["animations"]["motion"]["goalie-walkready"]
         self.accel_lst = []
-        self.starttime = time.time()
+        self.starttime = rospy.get_time()
         self.vote_accel_z = False
 
     def perform(self, connector, reevaluate=False):
