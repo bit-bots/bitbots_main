@@ -170,4 +170,4 @@ class CenterCorridor(AbstractCorridor):
         return number_trues
 
     def is_waiting_period_over(self):
-        return rospy.get_time()) > self.start + self.wait_at_start
+        return rospy.get_time() > self.start + self.wait_at_start
