@@ -130,10 +130,14 @@ class PlayAnimationAction(object):
             self.send_animation(first, False, goal.hcm, pose)
             first = False  # we have sent the first frame, all frames after this can't be the first
             perc_done = int(((rospy.get_time() - animator.get_start_time()) / animator.get_duration()) * 100)
-            perc_done = min(perc_done, 100)
+            perc_done = max(0,min(perc_done, 100))
             self._as.publish_feedback(PlayAnimationFeedback(percent_done=perc_done))
 
-            rate.sleep()
+            try:
+                # catch exeption of moving backwarts in time, when restarting simulator
+                rate.sleep()
+            except rospy.exceptions.ROSTimeMovedBackwardsException:
+                rospy.logwarn("We moved backwards in time. I hope you just resetted the simulation. If not there is something wrong")
 
             if False:
                 # Count to get the update frequency

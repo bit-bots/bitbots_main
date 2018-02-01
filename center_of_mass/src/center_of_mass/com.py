@@ -29,15 +29,16 @@ class CoMCalculator:
         #Calculate the total mass of the robot
         for link in self.links:
             self.Mass += self.links[link].inertial.mass
-            
+
+        rospy.loginfo("Mass of robot is %f", self.Mass)
         self.calculator()
     
     def calculator(self):
         #initialisations for tf and marker
         tfBuffer = tf2_ros.Buffer()
         listener = tf2_ros.TransformListener(tfBuffer)
-        zuTransformieren = geometry_msgs.msg.PointStamped();
-        transformiert = geometry_msgs.msg.PointStamped();
+        zuTransformieren = geometry_msgs.msg.PointStamped()
+        transformiert = geometry_msgs.msg.PointStamped()
         x = 0
         y = 0
         z = 0
@@ -52,7 +53,7 @@ class CoMCalculator:
         marker.scale.x = 0.03
         marker.scale.y = 0.03
         marker.scale.z = 0.03
-        pub = rospy.Publisher('/com',Marker,queue_size=1)
+        pub = rospy.Publisher('/com', Marker, queue_size=1)
         
         rate = rospy.Rate(1)
         rospy.sleep(1)
@@ -67,15 +68,16 @@ class CoMCalculator:
                     zuTransformieren.point.x = self.links[link].inertial.origin.xyz[0]
                     zuTransformieren.point.y = self.links[link].inertial.origin.xyz[1]
                     zuTransformieren.point.z = self.links[link].inertial.origin.xyz[2]
-                    zuTransformieren.header.frame_id = link;
+                    zuTransformieren.header.frame_id = link
                     zuTransformieren.header.stamp = rospy.get_rostime()
                     transformiert = tf_geo.do_transform_point(zuTransformieren,trans)
                     #calculate part of CoM equation depending on link
                     x += self.links[link].inertial.mass * transformiert.point.x
                     y += self.links[link].inertial.mass * transformiert.point.y
                     z += self.links[link].inertial.mass * transformiert.point.z
-                except (tf2_ros.TransformException):
-                    print "exeption"
+                except tf2_ros.TransformException as err:
+                    rospy.logerr("TF error in COM computation %s", err)
+
             '''except (tf2_ros.ConnectivityException):
                 print "ConnectivityException"
             except (tf2_ros.LookupException):
@@ -96,7 +98,11 @@ class CoMCalculator:
             marker.pose.position.z = z
             pub.publish(marker)
 
-            rate.sleep()
+            try:
+                # catch exeption of moving backwarts in time, when restarting simulator
+                rate.sleep()
+            except rospy.exceptions.ROSTimeMovedBackwardsException:
+                rospy.logwarn("We moved backwards in time. I hope you just resetted the simulation. If not there is something wrong")
             
             
 if __name__ == '__main__':
