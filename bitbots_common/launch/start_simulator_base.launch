@@ -14,13 +14,14 @@
 
     <!-- load URDF -->
     <param name="robot_description" textfile="$(find minibot_description)/urdf/minibot.urdf" />
-    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg ns)" type="spawn_model" args="-file $(find minibot_description)/urdf/minibot.urdf -urdf -model minibot -x -1.5 -y 0.0 -z 0.0" />
+    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg ns)" type="spawn_model" args="-file $(find minibot_description)/urdf/minibot.urdf -urdf -model minibot -x -1.0 -y 0.0 -z 0.0" />
 
 
     <!-- load the controllers -->
     <rosparam file="$(find minibot_description)/config/minibot_control.yaml" command="load"/>
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-        output="screen" ns="minibot" args="joint_state_controller joint_trajectory_action_controller --shutdown-timeout 0.1" />
+        output="screen" ns="minibot" args="joint_state_controller controller" />
+
 
     <!-- convert joint states to TF transforms for rviz, etc -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
@@ -33,19 +34,10 @@
         <remap from="/joint_states" to="/minibot/joint_states"/>
         <remap from="/imu" to="/minibot/imu"/>
     -->
-    <remap from="motor_goals" to="/minibot/joint_trajectory_action_controller/command" />
-    <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
-    <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
+    <remap from="motor_goals" to="/minibot/controller/command" />
 
-    <include file="$(find bitbots_animation_server)/launch/animation.launch"/>
-
-    <rosparam file="$(find bitbots_cm730)/config/cm730.yaml" command="load"/>
-    <rosparam file="$(find bitbots_cm730)/config/mx28config.yaml" command="load"/>
-    <rosparam file="$(find bitbots_hcm)/config/hcm.yaml" command="load"/>
-    <rosparam file="$(find bitbots_hcm)/config/hcm_state_machine.yaml" command="load"/>
-
-    <node name="HCM" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" respawn="true"/>
-
+    <!-- fake 0 goal values for controller -->
+    <node name="pub_sim_joints" pkg="minibot_description" type="pub_joint_goals_sim.py" respawn="true"/>
 
 
 
