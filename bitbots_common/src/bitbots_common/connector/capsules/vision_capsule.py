@@ -18,7 +18,7 @@ class VisionCapsule:
         return rospy.get_time() - self.ball_last_seen() < 0.5
 
     def ball_last_seen(self):
-        return self.my_data.get("BallLastSeen", 0)
+        return self.my_data.get("BallLastSeen", -999)
 
     def get_ball_relative(self):
         return self.ball.ball_relative.x, self.ball.ball_relative.y
