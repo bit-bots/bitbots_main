@@ -40,8 +40,8 @@
     <node name="pub_sim_joints" pkg="minibot_description" type="pub_joint_goals_sim.py" respawn="true"/>
 
     <group if="$(arg hcm)">
-        <remap from="/joint_states" to="/minibot/joint_states"/>
         <!-- imu currently deactive, because robot will think its falling
+        <remap from="/joint_states" to="/minibot/joint_states"/>
         <remap from="/imu" to="/minibot/imu"/>
             -->
         <remap from="motor_goals" to="/minibot/controller/command" />
