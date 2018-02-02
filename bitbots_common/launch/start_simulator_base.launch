@@ -30,9 +30,9 @@
     <remap from="/joint_states" to="/minibot/joint_states" />
     </node>
 
-    <!-- imu currently deactive, because robot will think its falling
 
-    -->
+
+
 
     <remap from="motor_goals" to="/minibot/controller/command" />
 
@@ -41,7 +41,9 @@
 
     <group if="$(arg hcm)">
         <remap from="/joint_states" to="/minibot/joint_states"/>
+        <!-- imu currently deactive, because robot will think its falling
         <remap from="/imu" to="/minibot/imu"/>
+            -->
         <remap from="motor_goals" to="/minibot/controller/command" />
         <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
         <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
