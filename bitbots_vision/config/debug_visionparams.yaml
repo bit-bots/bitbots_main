@@ -6,8 +6,9 @@ visionparams:
         path: '/classifier/cascadeNew.xml'
 
     field_color_detector:
-        path: '/config/color_spaces/simColor.yaml'
-        use_dummy_green: false
+        # path: '/config/color_spaces/simColor.yaml'
+        path: '/config/color_spaces/testfield_color01.yaml'
+        use_dummy_green: True
         dummy_lower_values: [0, 0, 180]
         dummy_upper_values: [0, 0, 180]
 
@@ -29,7 +30,7 @@ visionparams:
         min_precision_pix: 3
 
     vision:
-        debug: false
+        debug: true
         ball_candidate_horizon_y_offset: 0
         ball_candidate_rating_threshold: 0.5
 
