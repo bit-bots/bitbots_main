@@ -16,7 +16,7 @@
 
     <!-- load URDF -->
     <param name="robot_description" textfile="$(find wolves_robot_description)/urdf/wolves.urdf" />
-    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg ns)" type="spawn_model" args="-file $(find wolves_robot_description)/urdf/wolves.urdf -urdf -model wolves -x -1.5 -y 0.0 -z 0.0" />
+    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg ns)" type="spawn_model" args="-file $(find wolves_robot_description)/urdf/wolves.urdf -urdf -model wolves -x -1.5 -y 0.0 -z 0.55" />
 
 
     <!-- load the controllers -->
