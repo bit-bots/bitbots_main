@@ -1,6 +1,4 @@
 <launch>
-
   <include file="$(find bitbots_vision)/launch/bitbots_vision.launch" />
   <include file="$(find wolves_image_provider_v4l)/launch/image_provider_v4l.launch" />
-
 </launch>
