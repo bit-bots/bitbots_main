@@ -261,6 +261,8 @@ class Motion:
                 rate.sleep()
             except rospy.exceptions.ROSTimeMovedBackwardsException:
                 rospy.logwarn("We moved backwards in time. I hope you just resetted the simulation. If not there is something wrong")
+            except rospy.exceptions.ROSInterruptException:
+                exit()
 
         # we got external shutdown, tell it to the state machine, it will handle it
         VALUES.shut_down = True

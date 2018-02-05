@@ -138,6 +138,8 @@ class PlayAnimationAction(object):
                 rate.sleep()
             except rospy.exceptions.ROSTimeMovedBackwardsException:
                 rospy.logwarn("We moved backwards in time. I hope you just resetted the simulation. If not there is something wrong")
+            except rospy.exceptions.ROSInterruptException:
+                exit()
 
             if False:
                 # Count to get the update frequency
