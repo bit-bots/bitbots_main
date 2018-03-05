@@ -1,10 +1,10 @@
 """
-ContiniousSearch
+ContinuousSearch
 ^^^^^^^^^^^^^^^^
 
 .. moduleauthor:: Nils <0rokita@informatik.uni-hamburg.de>
 
-This Modul performs a continious search with the head. In the standard case it works with a simple fixed pattern,
+This Modul performs a continuous search with the head. In the standard case it works with a simple fixed pattern,
 so only in special cases the ball will be tracked.
 
 """
@@ -15,7 +15,7 @@ from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
-class ContiniousSearch(AbstractDecisionModule):
+class ContinuousSearch(AbstractDecisionModule):
     def __init__(self, connector: HeadConnector, outcomes=()):
         super().__init__(connector)
         self.pattern_pos = 0
@@ -42,7 +42,7 @@ class ContiniousSearch(AbstractDecisionModule):
         duty = connector.team_data.get_role()
 
         if connector.head.is_ball_tracking_still_active:
-            # we only come here if the continousSearch is called by the SearchForBall Module
+            # we only come here if the continuousSearch is called by the SearchForBall Module
             # in this case we want to search the ball
             self.current_pattern = self.ball_pattern
         elif duty == "Goalie":

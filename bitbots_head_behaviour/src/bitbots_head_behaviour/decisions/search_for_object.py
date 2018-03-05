@@ -12,17 +12,17 @@ import rospy
 import math
 
 from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
-from bitbots_head_behaviour.decisions.continious_search import ContiniousSearch
+from bitbots_head_behaviour.decisions.continuous_search import ContinuousSearch
 from bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
-class AbstactSearchForObject(AbstractDecisionModule):
+class AbstractSearchForObject(AbstractDecisionModule):
     def perform(self, connector: HeadConnector, reevaluate=False):
         pass
 
     def __init__(self, connector: HeadConnector, _):
-        super(AbstactSearchForObject, self).__init__(connector)
+        super(AbstractSearchForObject, self).__init__(connector)
         self.run = 0
         self.pattern = connector.config["Head"]["SearchPattern"]
 
@@ -53,17 +53,17 @@ class AbstactSearchForObject(AbstractDecisionModule):
             return self.push(HeadToPanTilt, pan_tilt_right)
         else:
             # we try to find the ball by using a pattern
-            rospy.logdebug("Push: Continious Search")
-            return self.push(ContiniousSearch)
+            rospy.logdebug("Push: Continuous Search")
+            return self.push(ContinuousSearch)
 
 
-class SearchForBall(AbstactSearchForObject):
+class SearchForBall(AbstractSearchForObject):
     def perform(self, connector: HeadConnector, reevaluate=False):
         rospy.logdebug("Start Search for ball")
         return self.search(connector)
 
 
-class SearchForEnemyGoal(AbstactSearchForObject):
+class SearchForEnemyGoal(AbstractSearchForObject):
     def perform(self, connector: HeadConnector, reevaluate=False):
         u, v = connector.world_model.get_opp_goal_center_uv()
         return self.search(connector, u, v)

@@ -8,7 +8,7 @@ Behaviour:
       #Uses the Visionnformation to focus the goals, if false it will use the information of the GoalModel
       goalVisionTracking: True
 
-      #continous switching between Ball and Goal searching
+      #continuous switching between Ball and Goal searching
       switchBallGoalSearch: False
 
       # track goal while going on position

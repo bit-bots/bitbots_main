@@ -11,13 +11,13 @@ from bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_init_action_module import AbstractInitActionModule
 from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
 
-class AbstactTrackObject(AbstractInitActionModule):
+class AbstractTrackObject(AbstractInitActionModule):
     """
     Confirmed either the Ball, OwnGoal or EnemyGoal by passing it to the init arg
     """
 
     def __init__(self, connector: HeadConnector, args=None):
-        super(AbstactTrackObject, self).__init__(connector, args)
+        super(AbstractTrackObject, self).__init__(connector, args)
 
         # this influences how precise the ball has to be in the center to make the head move
         self.a_sens = connector.config["Head"]["Tracking"]["xSensivity"]
@@ -51,12 +51,12 @@ class AbstactTrackObject(AbstractInitActionModule):
         raise NotImplementedError
 
 
-class TrackBall(AbstactTrackObject):
+class TrackBall(AbstractTrackObject):
     def perform(self, connector: HeadConnector, reevaluate=False):
         self.track_with_values(connector)
 
 
-class TrackGoal(AbstactTrackObject):
+class TrackGoal(AbstractTrackObject):
     def perform(self, connector: HeadConnector, reevaluate=None):
         raise NotImplementedError
         a = connector.vision.get_goal_infos()[0].x
