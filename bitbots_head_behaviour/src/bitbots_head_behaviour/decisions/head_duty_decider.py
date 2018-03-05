@@ -6,9 +6,11 @@ HeadDutyDecider
 import time
 
 import rospy
+import math
 from bitbots_common.connector.connector import HeadConnector
 from bitbots_head_behaviour.decisions.search_and_confirm import SearchAndConfirmBall, SearchAndConfirmEnemyGoal
 from bitbots_head_behaviour.decisions.continuous_search import ContinuousSearch
+from bitbots_head_behaviout.actions.head_to_pan_tilt import HeadToPanTilt
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from humanoid_league_msgs.msg import HeadMode
 
@@ -20,6 +22,9 @@ class HeadDutyDecider(AbstractDecisionModule):
         self.toggle_goal_vision_tracking = connector.config["Head"]["Toggles"]["goalVisionTracking"]
         self.toggle_switch_ball_goal = connector.config["Head"]["Toggles"]["switchBallGoalSearch"]
         self.confirm_time = connector.config["Head"]["Search"]["confirmTime"]
+
+        self.min_tilt = connector.config["Head"]["Camera"]["minTilt"]
+        self.max_tilt = connector.config["Head"]["Camera"]["maxTilt"]
 
         self.last_confirmd_goal = 0
         self.fail_goal_counter = 0
@@ -49,6 +54,9 @@ class HeadDutyDecider(AbstractDecisionModule):
         if head_mode == "":
             return self.interrupt()
 
+        if head_mode == HeadMode.DONT_MOVE:
+            return
+
         if head_mode == HeadMode.BALL_MODE:
             return self.push(SearchAndConfirmBall)
 
@@ -69,6 +77,18 @@ class HeadDutyDecider(AbstractDecisionModule):
 
         if head_mode == HeadMode.FIELD_FEATURES:
             return self.push(ContinuousSearch)
+
+        if head_mode == HeadMode.LOOK_DOWN:
+            pan_tilt = 0, math.radians(self.min_tilt)
+            return self.push(HeadToPanTilt, pan_tilt)
+
+        if head_mode == HeadMode.LOOK_FORWARD:
+            pan_tilt = 0, math.radians(-12)
+            return self.push(HeadToPanTilt, pan_tilt)
+
+        if head_mode == HeadMode.LOOK_UP:
+            pan_tilt = 0, math.radians(self.max_tilt)
+            return self.push(HeadToPanTilt, pan_tilt)
 
         if self.toggle_switch_ball_goal:
             rospy.logdebug("Headdoes", "Priorities")
