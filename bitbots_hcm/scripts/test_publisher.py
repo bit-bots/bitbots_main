@@ -12,6 +12,6 @@ if __name__ == "__main__":
     rate = rospy.Rate(100)
 
     while not rospy.is_shutdown():
-        msg.header.stamp = rospy.Time.from_sec(time.time())
+        msg.header.stamp = rospy.Time.now()
         pub.publish(msg)
         rate.sleep()

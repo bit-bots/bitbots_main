@@ -28,7 +28,7 @@ class SubTest():
         self.f.close()
 
     def cb(self, msg:Imu):
-        diff = time.time() - msg.header.stamp.to_sec()
+        diff = rospy.get_time() - msg.header.stamp.to_sec()
         self.arrt.append(diff)
         self.arrn.append(msg.header.seq)
         self.sum += diff

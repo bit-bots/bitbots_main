@@ -139,7 +139,7 @@ class WalkingNode:
 
     def publish_motor_goals(self):
         msg = pose_goal_to_traj_msg(self.goal_pose, self.used_motor_names, self.traj_msg, self.traj_point)
-        msg.header.stamp = rospy.Time.from_sec(time.time())
+        msg.header.stamp = rospy.Time.now()
         self.motor_goal_publisher.publish(msg)
         #rospy.logerr("pub")
 
@@ -180,7 +180,7 @@ class WalkingNode:
                 if self.walk_active and self.motion_state in (
                         RobotControlState.CONTROLABLE, RobotControlState.WALKING, RobotControlState.MOTOR_OFF):
                     rospy.logwarn("started walking")
-                    self.walking_started = time.time()
+                    self.walking_started = rospy.get_time()
                     self.walking_start()
             rate.sleep()
 

@@ -28,7 +28,7 @@ class Values(object):
 
         self.last_hardware_update = None  # time of last update from hardware
         self.last_request = None  # last request on doing something
-        self.start_up_time = time.time()
+        self.start_up_time = 0
 
         self.raw_gyro = DataVector(0, 0, 0)
         self.smooth_gyro = DataVector(0, 0, 0)
@@ -53,6 +53,7 @@ class Values(object):
 
         self.softoff_time = rospy.get_param("hcm/soft_off_time")
         self.die_time = rospy.get_param("hcm/die_time")
+        self.simulation_active = rospy.get_param("simulation_active")
 
     def is_falling(self):
         falling_pose = self.fall_checker.check_falling(self.not_so_smooth_gyro)
@@ -64,16 +65,20 @@ class Values(object):
         return self.fall_checker.check_fallen(self.smooth_accel)
 
     def is_soft_off_time(self):
+        if self.simulation_active:
+            return False
         if self.last_hardware_update is not None:
-            return self.die_flag and time.time() - self.last_hardware_update > self.softoff_time
+            return self.die_flag and rospy.get_time() - self.last_hardware_update > self.softoff_time
         else:
-            return self.die_flag and time.time() - self.start_up_time > self.softoff_time
+            return self.die_flag and rospy.get_time() - self.start_up_time > self.softoff_time
 
     def is_die_time(self):
+        if self.simulation_active:
+            return False
         if self.last_hardware_update is not None:
-            return self.die_flag and time.time() - self.last_hardware_update > self.die_time
+            return self.die_flag and rospy.get_time() - self.last_hardware_update > self.die_time
         else:
-            return self.die_flag and time.time() - self.start_up_time > self.die_time
+            return self.die_flag and rospy.get_time() - self.start_up_time > self.die_time
 
 
 VALUES = Values()
