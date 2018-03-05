@@ -8,6 +8,7 @@ Handling throwing of the goalie.
 import rospy
 
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+from humanoid_league_msgs.msg import HeadMode
 
 LEFT = "LEFT"
 MIDDLE = "MIDDLE"
@@ -30,8 +31,10 @@ class Throw(AbstractActionModule):
         self.right_animation = config["animations"]["goalie"]["throw_right"]
 
     def perform(self, connector, reevaluate=False):
-
-        connector.blackboard.cancel_ball_tracking()
+        # The head should not move when being thrown
+        head_mode_msg = HeadMode()
+        head_mode_msg.headMode = HeadMode.LOOK_FORWARD
+        connector.head_pub.publish(head_mode_msg)
         if self.richtung == LEFT:
             # Returns true if can be performed
             if connector.animation.play_animation(self.left_animation):

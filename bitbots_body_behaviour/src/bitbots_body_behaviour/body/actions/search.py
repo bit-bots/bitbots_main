@@ -8,12 +8,10 @@ from humanoid_league_msgs.msg import HeadMode
 
 class Search(AbstractActionModule):
     def perform(self, connector, reevaluate=False):
-        # We do nothing here, the head is searching.
-        connector.blackboard.schedule_ball_tracking()
         # Tell the head that it should search for the ball
-        ball_mode_msg = HeadMode()
-        ball_mode_msg.headMode = HeadMode.BALL_MODE
-        connector.head_pub.publish(ball_mode_msg)
+        head_mode_msg = HeadMode()
+        head_mode_msg.headMode = HeadMode.BALL_MODE
+        connector.head_pub.publish(head_mode_msg)
         self.pop()
 
 

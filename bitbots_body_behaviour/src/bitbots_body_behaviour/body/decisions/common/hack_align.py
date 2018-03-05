@@ -17,6 +17,7 @@ from bitbots.modules.behaviour.body.actions.kick_ball import KickBall
 from bitbots.modules.behaviour.body.actions.plain_walk_action import PlainWalkAction
 from bitbots.modules.behaviour.body.actions.wait import Wait
 from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
+from humanoid_league_msgs.msg import HeadMode
 from bitbots.util.config import get_config
 from bitbots.util.math_utils import convert_uv2polar
 from bitbots.util.speaker import say
@@ -28,7 +29,11 @@ class HackAlign(AbstractDecisionModule):
         # search complete goal
         connector.blackboard_capsule().set_priorities(enemy_goal_priority=0, ball_priority=0, own_goal_priority=0,
                                                       align_priority=1510)
-        connector.blackboard_capsule().cancel_ball_tracking()
+        # Look at the goal
+        head_mode_msg = HeadMode()
+        head_mode_msg.headMode = HeadMode.POST_MODE
+        connector.head_pub.publish(head_mode_msg)
+
         connector.walking_capsule().stop_walking()
         self.do_not_reevaluate()
 
