@@ -8,6 +8,7 @@ import time
 import rospy
 from bitbots_common.connector.connector import HeadConnector
 from bitbots_head_behaviour.decisions.search_and_confirm import SearchAndConfirmBall, SearchAndConfirmEnemyGoal
+from bitbots_head_behaviour.decisions.continous_search import ContinousSearch
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from humanoid_league_msgs.msg import HeadMode
 
@@ -51,7 +52,7 @@ class HeadDutyDecider(AbstractDecisionModule):
         if head_mode == HeadMode.BALL_MODE:
             return self.push(SearchAndConfirmBall)
 
-        if head_mode == HeadMode.POLE_MODE:
+        if head_mode == HeadMode.POST_MODE:
             return self.push(SearchAndConfirmEnemyGoal)
 
         if head_mode == HeadMode.BALL_GOAL_TRACKING:
@@ -65,6 +66,9 @@ class HeadDutyDecider(AbstractDecisionModule):
 
             elif self.trackjustball_aftergoal:
                 return self.push(SearchAndConfirmBall)
+
+        if head_mode == HeadMode.FIELD_FEATURES:
+            return self.push(ContinousSearch)
 
         if self.toggle_switch_ball_goal:
             rospy.logdebug("Headdoes", "Priorities")

@@ -19,7 +19,7 @@ from bitbots_body_behaviour.body.decisions.goalie.goalie_decision import GoalieP
 from bitbots_body_behaviour.body.decisions.kick_off.kick_off import KickOff
 from bitbots_body_behaviour.body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
 from bitbots_body_behaviour.body.decisions.penalty.penalty_kicker_decision import PenaltyKickerDecision
-from humanoid_league_msgs.msg import Speak
+from humanoid_league_msgs.msg import Speak, HeadMode
 from bitbots_body_behaviour.keys import DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_READY, DATA_VALUE_STATE_SET, \
     DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
@@ -51,6 +51,10 @@ class DutyDecider(AbstractDecisionModule):
                 self.start_self_pos = rospy.get_time() + 20
             if self.start_self_pos > rospy.get_time():
                 connector.walking.start_walking_plain(4, 0, 0)
+                # When walking in, the head should look around to find features on the field
+                field_features_msg = HeadMode()
+                field_features_msg.headMode = HeadMode.FIELD_FEATURES
+                connector.head_pub.publish(field_features_msg)
                 rospy.loginfo("State Ready: Go forward")
                 return
 
