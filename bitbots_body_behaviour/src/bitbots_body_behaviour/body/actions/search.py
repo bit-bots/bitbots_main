@@ -3,7 +3,7 @@ Search
 ^^^^^^
 """
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
-from humanoid_league_msgs import HeadMode
+from humanoid_league_msgs.msg import HeadMode
 
 
 class Search(AbstractActionModule):
