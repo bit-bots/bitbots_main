@@ -41,6 +41,8 @@ class DutyDecider(AbstractDecisionModule):
 
     def perform(self, connector: BodyConnector, reevaluate=False):
 
+        head_mode_msg = HeadMode()
+
         if connector.blackboard.is_frozen() or not connector.gamestate.is_allowed_to_move():
             connector.walking.stop_walking()
             rospy.logwarn("Not allowed to move")
@@ -51,10 +53,6 @@ class DutyDecider(AbstractDecisionModule):
                 self.start_self_pos = rospy.get_time() + 20
             if self.start_self_pos > rospy.get_time():
                 connector.walking.start_walking_plain(4, 0, 0)
-                # When walking in, the head should look around to find features on the field
-                field_features_msg = HeadMode()
-                field_features_msg.headMode = HeadMode.FIELD_FEATURES
-                connector.head_pub.publish(field_features_msg)
                 rospy.loginfo("State Ready: Go forward")
                 return
 
@@ -69,6 +67,9 @@ class DutyDecider(AbstractDecisionModule):
             # resets all behaviours if the gamestate is not playing, because the robots are positioned again
             if duty is not None:
                 connector.blackboard.set_duty(duty)
+            # When not playing, the head should look around to find features on the field
+            head_mode_msg.headMode = HeadMode.FIELD_FEATURES
+            connector.head_pub.publish(head_mode_msg)
 
         ############################
         # # Gamestate related Stuff#
@@ -89,6 +90,9 @@ class DutyDecider(AbstractDecisionModule):
         # Positioning ourself on the Field
         if self.toggle_self_positioning:
             if connector.gamestate.is_game_state_equals(DATA_VALUE_STATE_READY):  # Todo check if working
+                # Look for general field features to improve localization
+                head_mode_msg.headMode = HeadMode.FIELD_FEATURES
+                connector.head_pub.publish(head_mode_msg)
                 return self.push(GoToDutyPosition)
 
         ################################
@@ -100,6 +104,9 @@ class DutyDecider(AbstractDecisionModule):
             return self.push(KickOff)
 
         elif connector.blackboard.get_duty() == "Goalie":
+            # The Goalie should look for the ball only
+            head_mode_msg.headMode = HeadMode.BALL_MODE
+            connector.head_pub.publish(head_mode_msg)
             return self.push(GoaliePositionDecision)
 
         elif connector.blackboard.get_duty() == "OneTimeKicker":

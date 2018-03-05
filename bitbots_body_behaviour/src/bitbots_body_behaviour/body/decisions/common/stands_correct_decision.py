@@ -12,6 +12,7 @@ import rospy
 from bitbots_body_behaviour.body.actions.align_on_ball import AlignOnBall
 from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionCommon
 from bitbots_common.connector.connector import BodyConnector
+from humanoid_league_msgs import HeadMode
 
 
 class StandsCorrectDecision(AbstractDecisionModule):
@@ -46,6 +47,11 @@ class StandsCorrectDecision(AbstractDecisionModule):
         # if abs(connector.filtered_vision_capsule().get_local_goal_model_ball()[1]) > self.config_kickalign_v:
         if abs(connector.vision.get_ball_relative()[1]) > self.config_kickalign_v:
             # todo wieder gefilterte daten verwenden
+
+            # When positioning, the robot should only look to the ball
+            head_mode_msg = HeadMode()
+            head_mode_msg.headMode = HeadMode.BALL_MODE
+            connector.head_pub.publish(head_mode_msg)
 
             return self.push(AlignOnBall)
 
