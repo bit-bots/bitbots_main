@@ -79,15 +79,15 @@ class HeadDutyDecider(AbstractDecisionModule):
             return self.push(ContinuousSearch)
 
         if head_mode == HeadMode.LOOK_DOWN:
-            pan_tilt = 0, math.radians(self.min_tilt)
+            pan_tilt = 0, self.min_tilt
             return self.push(HeadToPanTilt, pan_tilt)
 
         if head_mode == HeadMode.LOOK_FORWARD:
-            pan_tilt = 0, math.radians(-12)
+            pan_tilt = 0, -12
             return self.push(HeadToPanTilt, pan_tilt)
 
         if head_mode == HeadMode.LOOK_UP:
-            pan_tilt = 0, math.radians(self.max_tilt)
+            pan_tilt = 0, self.max_tilt
             return self.push(HeadToPanTilt, pan_tilt)
 
         if self.toggle_switch_ball_goal:
