@@ -15,7 +15,7 @@ Behaviour:
       track_goal: True
 
       # try to find the ball on old position
-      look_at_old_position: False
+      look_at_old_position: True
 
     Camera:
             minPan: -125

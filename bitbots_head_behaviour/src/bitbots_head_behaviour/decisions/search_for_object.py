@@ -25,32 +25,33 @@ class AbstractSearchForObject(AbstractDecisionModule):
         super(AbstractSearchForObject, self).__init__(connector)
         self.run = 0
         self.pattern = connector.config["Head"]["SearchPattern"]
+        self.look_at_old_position = connector.config["Head"]["Toggles"]["look_at_old_position"]
 
     def search(self, connector: HeadConnector):
         rospy.logdebug('Searching...')
         self.run += 1
         u, v = connector.world_model.get_ball_position_uv()
 
-        # TODO: use config look_at_old_position
-        if self.run == 1 and not (u == 0.0 and v == 0.0) and u and v:
-            # the ball is not seen, so we first try to find it at its last position
-            pan_tilt = connector.head.get_pantilt_from_uv(u, v)
-            return self.push(HeadToPanTilt, pan_tilt)
-        elif self.run == 2:
-            # rechts vom Ball suchen
-            pan_tilt = connector.head.get_pantilt_from_uv(u, v)
-            pan_tilt_right = pan_tilt[0] + connector.head.offset_right, pan_tilt[1] # TODO: make sure that right is + and left is -
-            return self.push(HeadToPanTilt, pan_tilt_right)
-        elif self.run == 3:
-            # vor dem Ball suchen
-            pan_tilt = connector.head.get_pantilt_from_uv(u, v)
-            pan_tilt_right = pan_tilt[0], pan_tilt[1] - connector.head.offset_down # TODO: make sure that 10° is enough
-            return self.push(HeadToPanTilt, pan_tilt_right)
-        elif self.run == 4:
-            # links vom Ball suchen
-            pan_tilt = connector.head.get_pantilt_from_uv(u, v)
-            pan_tilt_right = pan_tilt[0] - connector.head.offset_left, pan_tilt[1] # TODO: make sure that right is + and left is -
-            return self.push(HeadToPanTilt, pan_tilt_right)
+        if self.look_at_old_position and self.run <= 4:
+            if self.run == 1 and not (u == 0.0 and v == 0.0) and u and v:
+                # the ball is not seen, so we first try to find it at its last position
+                pan_tilt = connector.head.get_pantilt_from_uv(u, v)
+                return self.push(HeadToPanTilt, pan_tilt)
+            elif self.run == 2:
+                # rechts vom Ball suchen
+                pan_tilt = connector.head.get_pantilt_from_uv(u, v)
+                pan_tilt_right = pan_tilt[0] + connector.head.offset_right, pan_tilt[1] # TODO: make sure that right is + and left is -
+                return self.push(HeadToPanTilt, pan_tilt_right)
+            elif self.run == 3:
+                # vor dem Ball suchen
+                pan_tilt = connector.head.get_pantilt_from_uv(u, v)
+                pan_tilt_right = pan_tilt[0], pan_tilt[1] - connector.head.offset_down # TODO: make sure that 10° is enough
+                return self.push(HeadToPanTilt, pan_tilt_right)
+            elif self.run == 4:
+                # links vom Ball suchen
+                pan_tilt = connector.head.get_pantilt_from_uv(u, v)
+                pan_tilt_right = pan_tilt[0] - connector.head.offset_left, pan_tilt[1] # TODO: make sure that right is + and left is -
+                return self.push(HeadToPanTilt, pan_tilt_right)
         else:
             # we try to find the ball by using a pattern
             rospy.logdebug("Push: Continuous Search")
