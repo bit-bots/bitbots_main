@@ -29,8 +29,8 @@ Behaviour:
             horizontalFactor: 1
             verticalFactor: 0.5625
 
-            cameraHeight: 75.0
-            ballHeight: 20.0
+            cameraHeight: 0.75
+            ballHeight: 0.20
 
             imageWidth: 640
             imageHeight: 360

@@ -105,7 +105,7 @@ Behaviour:
           maxFieldieTime: 60
 
       KickOff:
-          # Distance to ball, below the robot is the striker, above it is supporter, in mm
+          # Distance to ball, below the robot is the striker, above it is supporter, in m
           roleDecisionDistance: 0.5
           # time after the supporter ignores the kick off and starts normal behaviour
           ignoreKickOffTime: 20
