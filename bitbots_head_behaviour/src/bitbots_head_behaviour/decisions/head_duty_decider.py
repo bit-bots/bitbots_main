@@ -10,7 +10,7 @@ import math
 from bitbots_common.connector.connector import HeadConnector
 from bitbots_head_behaviour.decisions.search_and_confirm import SearchAndConfirmBall, SearchAndConfirmEnemyGoal
 from bitbots_head_behaviour.decisions.continuous_search import ContinuousSearch
-from bitbots_head_behaviout.actions.head_to_pan_tilt import HeadToPanTilt
+from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from humanoid_league_msgs.msg import HeadMode
 
