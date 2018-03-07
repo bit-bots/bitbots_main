@@ -12,7 +12,6 @@ from bitbots_body_behaviour.body.actions.go_to_ball_pathfinding import GoToBallP
 from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionPenaltyKick
 from bitbots_body_behaviour.body.decisions.common.stands_correct_decision import StandsCorrectDecision
 from bitbots_body_behaviour.body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
-from humanoid_league_msgs.msg import HeadMode
 from bitbots_common.connector.connector import BodyConnector
 
 
@@ -31,9 +30,7 @@ class AbstractCloseBall(AbstractDecisionModule):
 
     def perform(self, connector: BodyConnector, reevaluate=False):
         # When the ball is seen, the robot should switch between looking to the ball and the goal
-        head_mode_msg = HeadMode()
-        head_mode_msg.headMode = HeadMode.BALL_GOAL_TRACKING
-        connector.head_pub.publish(head_mode_msg)
+        connector.blackboard.set_head_duty("BALL_GOAL_TRACKING")
         # if the robot is near to the ball
         if self.min_kick_distance < connector.vision.get_ball_relative()[0] <= self.max_kick_distance \
                 and connector.vision.get_ball_distance() <= self.max_kick_distance * 5.0:

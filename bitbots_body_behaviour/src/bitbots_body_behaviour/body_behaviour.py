@@ -28,7 +28,7 @@ class BehaviourModule(StackMachineModule):
         self.connector.team_data.strategy_sender = rospy.Publisher("strategy", Strategy, queue_size=2)
         self.connector.walking.pub_walking_objective = rospy.Publisher("navigation_goal", Pose2D, queue_size=3)
         self.connector.walking.pub_walkin_params = rospy.Publisher("cmd_vel", Twist, queue_size=6)
-        self.connector.head_pub = rospy.Publisher("head_duty", HeadMode, queue_size=10)
+        self.connector.blackboard.head_pub = rospy.Publisher("head_duty", HeadMode, queue_size=10)
 
         if len(sys.argv) > 1:
             duty = sys.argv[1]

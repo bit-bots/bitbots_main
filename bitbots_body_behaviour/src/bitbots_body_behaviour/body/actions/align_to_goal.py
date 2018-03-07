@@ -19,9 +19,7 @@ class AlignToGoal(AbstractActionModule):
         self.config_max_aligning_time = connector.config["Fieldie"]["maxGoalAlignTime"]
 
     def perform(self, connector: BodyConnector, reevaluate=False):
-        head_mode_msg = HeadMode()
-        head_mode_msg.headMode = HeadMode.BALL_GOAL_TRACKING
-        connector.head_pub.publish(head_mode_msg)
+        connector.blackboard.set_head_duty("BALL_GOAL_TRACKING")
 
         if not connector.blackboard.get_aligning_start_time():
             # First run, set the start time

@@ -19,7 +19,7 @@ from bitbots_body_behaviour.body.decisions.goalie.goalie_decision import GoalieP
 from bitbots_body_behaviour.body.decisions.kick_off.kick_off import KickOff
 from bitbots_body_behaviour.body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
 from bitbots_body_behaviour.body.decisions.penalty.penalty_kicker_decision import PenaltyKickerDecision
-from humanoid_league_msgs.msg import Speak, HeadMode
+from humanoid_league_msgs.msg import Speak
 from bitbots_body_behaviour.keys import DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_READY, DATA_VALUE_STATE_SET, \
     DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
@@ -40,8 +40,6 @@ class DutyDecider(AbstractDecisionModule):
         self.start_self_pos = None
 
     def perform(self, connector: BodyConnector, reevaluate=False):
-
-        head_mode_msg = HeadMode()
 
         if connector.blackboard.is_frozen() or not connector.gamestate.is_allowed_to_move():
             connector.walking.stop_walking()
@@ -68,8 +66,7 @@ class DutyDecider(AbstractDecisionModule):
             if duty is not None:
                 connector.blackboard.set_duty(duty)
             # When not playing, the head should look around to find features on the field
-            head_mode_msg.headMode = HeadMode.FIELD_FEATURES
-            connector.head_pub.publish(head_mode_msg)
+            connector.blackboard.set_head_duty("FIELD_FEATURES")
 
         ############################
         # # Gamestate related Stuff#
@@ -91,8 +88,7 @@ class DutyDecider(AbstractDecisionModule):
         if self.toggle_self_positioning:
             if connector.gamestate.is_game_state_equals(DATA_VALUE_STATE_READY):  # Todo check if working
                 # Look for general field features to improve localization
-                head_mode_msg.headMode = HeadMode.FIELD_FEATURES
-                connector.head_pub.publish(head_mode_msg)
+                connector.blackboard.set_head_duty("FIELD_FEATURES")
                 return self.push(GoToDutyPosition)
 
         ################################
@@ -104,9 +100,6 @@ class DutyDecider(AbstractDecisionModule):
             return self.push(KickOff)
 
         elif connector.blackboard.get_duty() == "Goalie":
-            # The Goalie should look for the ball only
-            head_mode_msg.headMode = HeadMode.BALL_MODE
-            connector.head_pub.publish(head_mode_msg)
             return self.push(GoaliePositionDecision)
 
         elif connector.blackboard.get_duty() == "OneTimeKicker":
