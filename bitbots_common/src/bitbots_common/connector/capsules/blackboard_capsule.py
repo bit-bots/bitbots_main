@@ -17,12 +17,14 @@ import rospy
 rospack = rospkg.RosPack()
 
 from bitbots_pathfinding import network
+from humanoid_league_msgs.msg import HeadMode
 sys.modules['network'] = network
 
 class BlackboardCapsule:
     def __init__(self):
         self.my_data = {}
         self.config_stop_g_align_dur = rosparam.get_param("Behaviour/Body/Fieldie/stopGoalAlignDuration")
+        self.head_pub = None  # type: rospy.Publisher
 
     def freeze_till(self, ftime):
         self.my_data["freeze"] = ftime
@@ -128,6 +130,35 @@ class BlackboardCapsule:
 
     def get_duty(self):
         return self.my_data.get("Duty", None)
+
+    #####################
+    # ## Tracking Part ##
+    #####################
+
+    def set_head_duty(self, head_duty):
+        head_duty_msg = HeadMode()
+        if head_duty == "BALL_MODE":
+            head_duty_msg.headMode = HeadMode.BALL_MODE
+        elif head_duty == "GOAL_MODE":
+            head_duty_msg.headMode = HeadMode.GOAL_MODE
+        elif head_duty == "BALL_GOAL_TRACKING":
+            head_duty_msg.headMode = HeadMode.BALL_GOAL_TRACKING
+        elif head_duty == "FIELD_FEATURES":
+            head_duty_msg.headMode = HeadMode.FIELD_FEATURES
+        elif head_duty == "NON_FIELD_FEATURES":
+            head_duty_msg.headMode = HeadMode.NON_FIELD_FEATURES
+        elif head_duty == "LOOK_DOWN":
+            head_duty_msg.headMode = HeadMode.LOOK_DOWN
+        elif head_duty == "LOOK_FORWARD":
+            head_duty_msg.headMode = HeadMode.LOOK_FORWARD
+        elif head_duty == "DONT_MOVE":
+            head_duty_msg.headMode = HeadMode.DONT_MOVE
+        elif head_duty == "LOOK_UP":
+            head_duty_msg.headMode = HeadMode.LOOK_UP
+        else:
+            rospy.logwarn("Unknown head duty %s" % head_duty)
+            return
+        self.head_pub.publish(head_duty_msg)
 
     ####################
     # ## Penalty Kick ##
