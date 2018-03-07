@@ -17,12 +17,14 @@ import rospy
 rospack = rospkg.RosPack()
 
 from bitbots_pathfinding import network
+from humanoid_league_msgs.msg import HeadMode
 sys.modules['network'] = network
 
 class BlackboardCapsule:
     def __init__(self):
         self.my_data = {}
         self.config_stop_g_align_dur = rosparam.get_param("Behaviour/Body/Fieldie/stopGoalAlignDuration")
+        self.head_pub = None  # type: rospy.Publisher
 
     def freeze_till(self, ftime):
         self.my_data["freeze"] = ftime
@@ -129,91 +131,34 @@ class BlackboardCapsule:
     def get_duty(self):
         return self.my_data.get("Duty", None)
 
-    ####################
-    # ## Tacking Part ##
-    ####################
+    #####################
+    # ## Tracking Part ##
+    #####################
 
-    def is_ball_tracking_still_active(self):
-        """ This method checks if the ball tracking schedule was called in the
-            last _VAR_ seconds """
-        if not self.my_data.get("Tracking.Ball", None):
-            return False
+    def set_head_duty(self, head_duty):
+        head_duty_msg = HeadMode()
+        if head_duty == "BALL_MODE":
+            head_duty_msg.headMode = HeadMode.BALL_MODE
+        elif head_duty == "GOAL_MODE":
+            head_duty_msg.headMode = HeadMode.GOAL_MODE
+        elif head_duty == "BALL_GOAL_TRACKING":
+            head_duty_msg.headMode = HeadMode.BALL_GOAL_TRACKING
+        elif head_duty == "FIELD_FEATURES":
+            head_duty_msg.headMode = HeadMode.FIELD_FEATURES
+        elif head_duty == "NON_FIELD_FEATURES":
+            head_duty_msg.headMode = HeadMode.NON_FIELD_FEATURES
+        elif head_duty == "LOOK_DOWN":
+            head_duty_msg.headMode = HeadMode.LOOK_DOWN
+        elif head_duty == "LOOK_FORWARD":
+            head_duty_msg.headMode = HeadMode.LOOK_FORWARD
+        elif head_duty == "DONT_MOVE":
+            head_duty_msg.headMode = HeadMode.DONT_MOVE
+        elif head_duty == "LOOK_UP":
+            head_duty_msg.headMode = HeadMode.LOOK_UP
         else:
-            return rospy.get_time() - self.my_data.get("Tracking.Ball.LastTimeScheduled", 0) <= 1  # todo config
-
-    def schedule_ball_tracking(self):
-        """ Tracking works with calling this method repeatedly to keep the tracking active
-            When this method is not called for a certain amount of time tracking will be deactivated """
-        self.my_data["Tracking.Ball"] = True
-        self.my_data["Tracking.Ball.LastTimeScheduled"] = rospy.get_time()
-
-    def cancel_ball_tracking(self):
-        """ This sets the ball tracking to False immideatly """
-        self.my_data["Tracking.Ball"] = False
-        self.my_data["Tracking.Ball.LastTimeScheduled"] = 0
-
-    def is_enemy_goal_tracking_still_active(self):
-        """ This method checks if the enemyGoal tracking schedule was called in the
-            last _VAR_ seconds """
-        if not self.my_data.get("Tracking.enemyGoal", None):
-            return False
-        else:
-            return rospy.get_time() - self.my_data.get("Tracking.enemyGoal.LastTimeScheduled", 0) <= 1  # todo config
-
-    def schedule_enemy_goal_tracking(self):
-        """ Tracking works with calling this method repeatedly to keep the tracking active
-            When this method is not called for a certain amount of time tracking will be deactivated """
-        self.my_data["Tracking.enemyGoal"] = True
-        self.my_data["Tracking.enemyGoal.LastTimeScheduled"] = rospy.get_time()
-
-    def cancel_enemy_goal_tracking(self):
-        """ This sets the enemyGoal tracking to False immideatly """
-        self.my_data["Tracking.enemyGoal"] = False
-        self.my_data["Tracking.enemyGoal.LastTimeScheduled"] = 0
-
-    def is_tracking_both_still_active(self):
-        """ This method checks if the tracking of ball and goal schedule was called in the
-            last _VAR_ seconds """
-        return rospy.get_time() - self.my_data.get("Tracking.both.LastTimeScheduled", 0) <= 1  # todo config
-
-    def schedule_both_tracking(self):
-        """ Tracking works with calling this method repeatedly to keep the tracking active
-            When this method is not called for a certain amount of time tracking will be deactivated """
-        self.my_data["Tracking.both.LastTimeScheduled"] = rospy.get_time()
-
-    def cancel_both_tracking(self):
-        """ This sets the enemyGoal tracking to False immideatly """
-        self.my_data["Tracking.both.LastTimeScheduled"] = 0
-
-    def get_confirmed_ball(self):
-        return self.my_data.get("Confirmed.Ball", 0)
-
-    def set_confirmed_ball(self):
-        self.my_data["Confirmed.Ball"] = rospy.get_time()
-
-    def get_started_confirm_ball(self):
-        return self.my_data.get("StartConfirm.Ball", 0)
-
-    def set_started_confirm_ball(self):
-        self.my_data["StartConfirm.Ball"] = rospy.get_time()
-
-    def unset_started_confirm_ball(self):
-        self.my_data["StartConfirm.Ball"] = 0
-
-    def get_confirmed_goal(self):
-        return self.my_data.get("Confirmed.Goal", 0)
-
-    def set_confirmed_goal(self):
-        self.my_data["Confirmed.Goal"] = rospy.get_time()
-
-    def get_started_confirm_goal(self):
-        return self.my_data.get("StartConfirm.Goal", 0)
-
-    def set_started_confirm_goal(self):
-        self.my_data["StartConfirm.Goal"] = rospy.get_time()
-
-    def unset_started_confirm_goal(self):
-        self.my_data["StartConfirm.Goal"] = 0
+            rospy.logwarn("Unknown head duty %s" % head_duty)
+            return
+        self.head_pub.publish(head_duty_msg)
 
     ####################
     # ## Penalty Kick ##
