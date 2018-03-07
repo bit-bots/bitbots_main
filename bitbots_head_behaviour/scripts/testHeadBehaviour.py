@@ -1,12 +1,12 @@
 #!/usr/bin/env python2.7
 
 import rospy
-from humanoid_league_msgs.msg import BallInImage, BallRelative
+from humanoid_league_msgs.msg import BallInImage, BallRelative, BallsInImage
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
 def run():
-    pub_ball = rospy.Publisher("ball_in_image", BallInImage, queue_size=1)
+    pub_ball = rospy.Publisher("ball_in_image", BallsInImage, queue_size=1)
     pub_hmg = rospy.Publisher("head_motor_goals", JointTrajectory, queue_size=1)
 
     hmg = JointTrajectory()
@@ -37,8 +37,11 @@ def run():
         ball.center.y = 200
         ball.diameter = 10
         ball.confidence = 1
+        balls = BallsInImage()
+        balls.candidates.append(ball)
 
-        pub_ball.publish(ball)
+        pub_ball.publish(balls)
+        rospy.loginfo("Published ball: %s" % counter)
         rate.sleep()
 
 if __name__ == "__main__":
