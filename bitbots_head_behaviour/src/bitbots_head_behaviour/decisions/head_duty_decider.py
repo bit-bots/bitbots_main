@@ -55,7 +55,7 @@ class HeadDutyDecider(AbstractDecisionModule):
             return self.interrupt()
 
         if head_mode == HeadMode.DONT_MOVE:
-            return
+            return self.interrupt()
 
         if head_mode == HeadMode.BALL_MODE:
             return self.push(SearchAndConfirmBall)
