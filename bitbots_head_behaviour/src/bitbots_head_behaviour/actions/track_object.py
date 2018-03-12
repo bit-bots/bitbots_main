@@ -41,9 +41,8 @@ class AbstractTrackObject(AbstractInitActionModule):
         self.horizontal_factor = connector.config["Head"]["Camera"]["horizontalFactor"]
         self.vertical_factor = connector.config["Head"]["Camera"]["verticalFactor"]
 
-    def track_with_values(self, connector: HeadConnector):
+    def track_with_values(self, connector: HeadConnector, u, v):
         rospy.logdebug('Tracking...')
-        u, v = connector.world_model.get_ball_position_uv()
         pan_tilt = connector.head.get_pantilt_from_uv(u, v)
         return self.push(HeadToPanTilt, pan_tilt)
 
@@ -53,7 +52,8 @@ class AbstractTrackObject(AbstractInitActionModule):
 
 class TrackBall(AbstractTrackObject):
     def perform(self, connector: HeadConnector, reevaluate=False):
-        self.track_with_values(connector)
+        u, v = connector.world_model.get_ball_position_uv()
+        self.track_with_values(connector, u, v)
 
 
 class TrackGoal(AbstractTrackObject):

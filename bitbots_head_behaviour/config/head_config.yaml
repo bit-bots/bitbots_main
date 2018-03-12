@@ -23,6 +23,9 @@ Behaviour:
             maxPan: 125
             maxTilt: 0
 
+            # The tilt where the robot looks straight forward
+            initialTilt: -12
+
             #this is only right for 4:3 resolution!
             cameraAngle: 66.5
 
