@@ -21,6 +21,7 @@ class HeadCapsule:
         self.min_pan = self.config["Camera"]["minPan"]
         self.max_tilt = self.config["Camera"]["maxTilt"]
         self.min_tilt = self.config["Camera"]["minTilt"]
+        self.initial_tilt = self.config["Camera"]["initialTilt"]
         self.camera_height = self.config["Camera"]["cameraHeight"]
         self.ball_height = self.config["Camera"]["ballHeight"]
         self.offset_right = self.config["Search"]["offsetRight"]
@@ -36,7 +37,6 @@ class HeadCapsule:
         self.current_pan_pos = 0
         self.current_tilt_pos = 0
         self.is_ball_tracking_still_active = False
-        self.bestball_in_image = None, None
         self.cam_info = self.config["Camera"]["imageWidth"], self.config["Camera"]["imageHeight"]
 
         # preparing message for more performance
@@ -85,24 +85,16 @@ class HeadCapsule:
         cam_height = self.camera_height
         ball_height = self.ball_height
         if (u == 0.0 and v == 0.0) or u is None:
-
             pan = self.current_pan_pos
-            tilt= self.current_tilt_pos
+            tilt = self.current_tilt_pos
             return pan, tilt
-        elif u == 0 and v > 0:
-            pan = -90
-        elif u==0 and v<0:
-            pan = 90
+        elif u == 0:
+            pan = math.copysign(90, v)
         else:
             pan = math.degrees(math.atan(v/u))
 
-        tilt = -math.degrees(math.atan((cam_height - ball_height / 2)/(math.sqrt(u ** 2 + v ** 2))))
+        tilt = self.initial_tilt - math.degrees(math.atan((cam_height - ball_height / 2)/(math.sqrt(u ** 2 + v ** 2))))
         return pan, tilt
-
-    def cb_ballinimage(self, balls: BallsInImage):
-        if len(balls.candidates):
-            ball = balls.candidates[0]
-            self.bestball_in_image = ball.center.x, ball.center.y
 
     def get_started_confirm_ball(self):
         return self.startedconfirmingball
