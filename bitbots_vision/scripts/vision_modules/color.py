@@ -90,6 +90,10 @@ class HsvSpaceColorDetector(ColorDetector):
         self.min_vals = np.array(min_vals)
         self.max_vals = np.array(max_vals)
 
+    def set_config(self, min_vals, max_vals):
+        self.min_vals = np.array(min_vals)
+        self.max_vals = np.array(max_vals)
+
     def match_pixel(self, pixel):
         pixel = self.pixel_bgr2hsv(pixel)
         # TODO: optimize comparisons
