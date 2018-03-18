@@ -65,8 +65,6 @@ class DutyDecider(AbstractDecisionModule):
             # resets all behaviours if the gamestate is not playing, because the robots are positioned again
             if duty is not None:
                 connector.blackboard.set_duty(duty)
-            # When not playing, the head should look around to find features on the field
-            connector.blackboard.set_head_duty("FIELD_FEATURES")
 
         ############################
         # # Gamestate related Stuff#
@@ -77,6 +75,8 @@ class DutyDecider(AbstractDecisionModule):
                                                     DATA_VALUE_STATE_SET,
                                                     DATA_VALUE_STATE_FINISHED]:
             rospy.loginfo("Wait for Gamestate")
+            # When not playing, the head should look around to find features on the field
+            connector.blackboard.set_head_duty("FIELD_FEATURES")
             return self.push(Wait, 0.1)
 
         # Penalty Shoot but not mine, run away
