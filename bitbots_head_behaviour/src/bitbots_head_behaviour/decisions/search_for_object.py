@@ -66,5 +66,6 @@ class SearchForBall(AbstractSearchForObject):
 
 class SearchForEnemyGoal(AbstractSearchForObject):
     def perform(self, connector: HeadConnector, reevaluate=False):
-        u, v = connector.world_model.get_opp_goal_center_uv()
+        # Take any goal until we can distinguish between them
+        u, v = connector.vision.get_goal_relative()
         return self.search(connector, u, v)
