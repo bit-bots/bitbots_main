@@ -58,7 +58,6 @@ class TrackBall(AbstractTrackObject):
 
 class TrackGoal(AbstractTrackObject):
     def perform(self, connector: HeadConnector, reevaluate=None):
-        raise NotImplementedError
-        a = connector.vision.get_goal_infos()[0].x
-        b = connector.vision.get_goal_infos()[0].y
+        # TODO: Distinguish between own and enemy goal (get data from world model)
+        a, b = connector.vision.get_goal_relative()
         self.track_with_values(connector, a, b)

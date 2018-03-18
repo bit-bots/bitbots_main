@@ -88,6 +88,7 @@ class SearchAndConfirmBall(AbstractSearchAndConfirm):
 class SearchAndConfirmEnemyGoal(AbstractSearchAndConfirm):
     def perform(self, connector: HeadConnector, reevaluate=False):
         if self.fr:
+            # TODO: get data from world model to distinguish between own and enemy goal
             self.fr = False
             self.get_started_confirm_time = connector.head.get_started_confirm_goal
             self.set_started_confirm_time = connector.head.set_started_confirm_goal
