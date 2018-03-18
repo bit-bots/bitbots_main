@@ -95,7 +95,7 @@ class SearchAndConfirmEnemyGoal(AbstractSearchAndConfirm):
             self.unset_started_confirm_time = connector.head.unset_started_confirm_goal
             self.set_confirmed = connector.head.set_confirmed_goal
             self.object_seen = connector.vision.any_goal_seen
-            self.object_last_seen = connector.vision.any_goalpost_last_seen
+            self.object_last_seen = connector.vision.any_goal_last_seen
         super(SearchAndConfirmEnemyGoal, self).perform(connector, reevaluate)
 
     def track(self):
