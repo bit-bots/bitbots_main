@@ -33,9 +33,9 @@ class VisionCapsule:
     ############
 
     def any_goal_seen(self):
-        return rospy.get_time() - self.goal_last_seen() < 0.5
+        return rospy.get_time() - self.any_goal_last_seen() < 0.5
 
-    def goal_last_seen(self):
+    def any_goal_last_seen(self):
         return self.my_data.get("GoalLastSeen", -999)
 
     def get_left_post_relative(self):
