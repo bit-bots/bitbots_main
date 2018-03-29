@@ -99,7 +99,14 @@ class Pathfinding:
     def _update_orientationobjective(self, go: GoalRelative):
         with self.lock:
             if self.conf_align_to_goal:
-                self.goalobjective = point(go.positions[0].x, go.positions[0].y)
+                if go.center_direction:
+                    self.goalobjective = point(go.center_direction.x, go.center_direction.y)
+                else:
+                    if go.right_post:
+                        self.goalobjective = point((go.left_post.x + go.right_post.x) / 2,
+                                                   (go.left_post.y + go.right_post.y) / 2)
+                    else:
+                        self.goalobjective = point(go.left_post.x, go.left_post.y)
             else:
                 self.goalobjective = point(0, 0)
 
