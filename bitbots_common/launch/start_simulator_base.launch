@@ -12,11 +12,13 @@
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">
 		<arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer.world"/>
 		<arg name="paused" value="false" />
+		<!--<arg name="physics" value="dart"/>-->
 	</include>
 
     <!-- load URDF -->
     <param name="robot_description" textfile="$(find minibot_description)/urdf/minibot.urdf" />
-    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg ns)" type="spawn_model" args="-file $(find minibot_description)/urdf/minibot.urdf -urdf -model minibot -x -1.0 -y 0.0 -z 1.0" />
+
+    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg ns)" type="spawn_model" args="-file $(find minibot_description)/urdf/minibot.urdf -urdf -model minibot -x -1.0 -y 0.0 -z 0.0" output="screen" />
 
 
     <!-- load the controllers -->
