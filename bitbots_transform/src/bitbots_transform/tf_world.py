@@ -21,7 +21,7 @@ class TFWorld(object):
                 transform = TransformStamped()
                 transform.header.frame_id = "world"
                 transform.header.stamp = rospy.Time.now()
-                transform.child_frame_id = "base_link"
+                transform.child_frame_id = "trunk_link"
                 transform.transform.translation = msg.pose[i].position
                 transform.transform.rotation = msg.pose[i].orientation
                 br.sendTransformMessage(transform)
@@ -34,7 +34,14 @@ class TFWorld(object):
                 transform.transform.rotation = msg.pose[i].orientation
                 br.sendTransformMessage(transform)
 
-
+        transform = TransformStamped()
+        transform.header.frame_id = "world"
+        transform.header.stamp = rospy.Time.now()
+        transform.child_frame_id = "base_link"
+        transform.transform.translation = msg.pose[i].position
+        transform.transform.translation.z = 0
+        transform.transform.rotation = msg.pose[i].orientation
+        br.sendTransformMessage(transform)
 
 
 if __name__ == "__main__":
