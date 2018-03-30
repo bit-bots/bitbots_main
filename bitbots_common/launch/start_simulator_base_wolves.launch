@@ -12,6 +12,7 @@
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">
 		<arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer.world"/>
 		<arg name="paused" value="false" />
+	    <!--<arg name="physics" value="dart"/>-->
 	</include>
 
     <!-- load URDF -->
