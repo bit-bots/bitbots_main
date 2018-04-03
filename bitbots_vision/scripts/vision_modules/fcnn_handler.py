@@ -1,11 +1,12 @@
 import numpy as np
 import cv2
+from .ball_detection.fcnn.live_fcnn_03 import FCNN03
 
 
 class FcnnHandler:
-    def __init__(self, image, fcnn, config):
+    def __init__(self, image, config):
         self._image = image
-        self._fcnn = fcnn
+        self._fcnn = FCNN03() # TODO: specify load path
         self._rated_candidates = None
         self._sorted_rated_candidates = None
         self._top_candidate = None
