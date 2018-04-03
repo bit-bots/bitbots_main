@@ -9,11 +9,28 @@ class FCNN03:
 
         self._load_path = os.path.join(load_path, "model_final")
 
+        self.input_shape = (150, 200, 3)  # y, x, z
+        self.output_shape = (150, 200, 1)  # y, x, z
+
         # placeholders
         with tf.variable_scope("placeholders"):
             self._keep_prob = tf.placeholder("float", name="keep_prob")
-            self.X = tf.placeholder(tf.float32, shape=[None, 150, 200, 3], name="X")
-            self.Y = tf.placeholder(tf.float32, shape=[None, 150, 200, 1], name="Y")
+            self.X = tf.placeholder(
+                tf.float32,
+                shape=[
+                    None,
+                    self.output_shape[0],
+                    self.output_shape[1],
+                    self.output_shape[2]],
+                name="X")
+            self.Y = tf.placeholder(
+                tf.float32,
+                shape=[
+                    None,
+                    self.output_shape[0],
+                    self.output_shape[1],
+                    self.output_shape[2]],
+                name="Y")
 
         # create network
         self._fcnn_out, self._fcnn_logits = self._fcnn_model()

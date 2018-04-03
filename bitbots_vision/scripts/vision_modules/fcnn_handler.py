@@ -58,7 +58,11 @@ class FcnnHandler:
 
     def get_fcnn_output(self):
         if not self._fcnn_output:
-            pass  # TODO: implement this stuff
+            self._fcnn_output = self._fcnn.predict(
+                [cv2.resize(
+                    self._image,
+                    (self._fcnn.input_shape[0], self._fcnn.input_shape[1]))]
+            )
         return self._fcnn_output
 
     def get_raw_candidates(self):
