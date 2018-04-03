@@ -16,6 +16,16 @@ their size, these are not part of this repository.
 To tweak the camera image, use the settings in the image provider.
 WARNING: uvcdynctrl is required by the image provider. Make sure it is installed
 
+Required Packages
+-----------------
+
+**pip** *pip install PACKAGE*
+- tensorflow
+- opencv-python
+
+**apt** *sudo apt install PACKAGE*
+- uvcdynctrl
+
 Launchscripts
 -------------
 
