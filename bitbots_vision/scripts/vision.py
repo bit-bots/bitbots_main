@@ -21,6 +21,9 @@ class Vision:
             rospy.get_param('visionparams/field_color_detector/path'))
         ball_fcnn_path = package_path + \
             rospy.get_param('visionparams/ball_fcnn/model_path')
+        if not os.path.exists(ball_fcnn_path):
+            rospy.logerr(
+                'AAAAHHHH! The specified fcnn model file doesn\'t exist!')
         self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
         # cascade_path = package_path + \
         #                rospy.get_param('visionparams/cascade_classifier/path')
