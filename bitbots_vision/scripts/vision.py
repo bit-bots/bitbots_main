@@ -1,7 +1,7 @@
 #! /usr/bin/env python2
 
 
-from vision_modules import ball, classifier, lines, live_classifier, horizon, color, debug_image
+from vision_modules import ball, classifier, lines, live_classifier, horizon, color, debug_image, fcnn_handler
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
@@ -19,36 +19,36 @@ class Vision:
         self.field_color_detector = color.PixelListColorDetector(
             package_path +
             rospy.get_param('visionparams/field_color_detector/path'))
-        cascade_path = package_path + \
-                       rospy.get_param('visionparams/cascade_classifier/path')
-        if os.path.exists(cascade_path):
-            self.cascade = cv2.CascadeClassifier(cascade_path)
-        else:
-            rospy.logerr(
-                'AAAAHHHH! The specified cascade config file doesn\'t exist!')
-        classifier_path = rospy.get_param('visionparams/classifier/model_path')
-        if not os.path.exists(classifier_path):
-            rospy.logerr(
-                'AAAAHHHH! The specified classifier model file doesn\'t exist!')
-        self.ball_classifier = live_classifier\
-            .LiveClassifier(package_path +
-                            rospy.get_param(
-                                'visionparams/classifier/model_path'))
+        # cascade_path = package_path + \
+        #                rospy.get_param('visionparams/cascade_classifier/path')
+        # if os.path.exists(cascade_path):
+        #     self.cascade = cv2.CascadeClassifier(cascade_path)
+        # else:
+        #     rospy.logerr(
+        #         'AAAAHHHH! The specified cascade config file doesn\'t exist!')
+        # classifier_path = rospy.get_param('visionparams/classifier/model_path')
+        # if not os.path.exists(classifier_path):
+        #     rospy.logerr(
+        #         'AAAAHHHH! The specified classifier model file doesn\'t exist!')
+        # self.ball_classifier = live_classifier\
+        #     .LiveClassifier(package_path +
+        #                     rospy.get_param(
+        #                         'visionparams/classifier/model_path'))
         self.white_color_detector = color.HsvSpaceColorDetector(
             rospy.get_param('visionparams/white_color_detector/lower_values'),
             rospy.get_param('visionparams/white_color_detector/upper_values'))
 
         # set up ball config
-        self.ball_config = {
-            'classify_threshold': rospy.get_param(
-                'visionparams/ball_finder/classify_threshold'),
-            'scale_factor': rospy.get_param(
-                'visionparams/ball_finder/scale_factor'),
-            'min_neighbors': rospy.get_param(
-                'visionparams/ball_finder/min_neighbors'),
-            'min_size': rospy.get_param(
-                'visionparams/ball_finder/min_size'),
-        }
+        # self.ball_config = {
+        #     'classify_threshold': rospy.get_param(
+        #         'visionparams/ball_finder/classify_threshold'),
+        #     'scale_factor': rospy.get_param(
+        #         'visionparams/ball_finder/scale_factor'),
+        #     'min_neighbors': rospy.get_param(
+        #         'visionparams/ball_finder/min_neighbors'),
+        #     'min_size': rospy.get_param(
+        #         'visionparams/ball_finder/min_size'),
+        # }
 
         # set up horizon config
         self.horizon_config = {
