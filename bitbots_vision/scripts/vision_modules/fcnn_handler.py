@@ -80,9 +80,23 @@ class FcnnHandler:
         out = self.get_fcnn_output()
         r, out_bin = cv2.threshold(out, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         candidates = list()
-        # TODO: create points
-        points = list()
-        # points = itertools.product(xlist,ylist)
+        # creating points
+        # x shape
+        xshape = self._fcnn.output_shape[1]
+        xlist = []
+        x = 0
+        while x < xshape:
+            xlist.append(x)
+            x += self._pointcloud_stepsize
+        # y shape
+        yshape = self._fcnn.output_shape[0]
+        ylist = []
+        y = 0
+        while y < yshape:
+            ylist.append(y)
+            y += self._pointcloud_stepsize
+        # generate carthesian product of list
+        points = itertools.product(xlist, ylist)
         # expand points
         while points:
             point = points.pop()
