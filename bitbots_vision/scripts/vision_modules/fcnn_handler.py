@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from ball import Ball
 import itertools
 from bitbots_vision.scripts.vision_modules.live_fcnn_03 import FCNN03
 
@@ -73,8 +74,8 @@ class FcnnHandler:
 
     def _get_raw_candidates(self):
         """
-        returns a list of candidates (center x, center y, width, height)
-        :return:
+        returns a list of candidates [(Ball), ...]
+        :return: a list of candidates [(Ball), ...]
         """
         out = self.get_fcnn_output()
         r, out_bin = cv2.threshold(out, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -109,11 +110,7 @@ class FcnnHandler:
                 next_lx = min(ly + self._expand_steps, self._image.shape[0] - 1)
 
             width, height = rx - lx, ly - uy
-            candidates.append((
-                rx - int(width // 2),
-                ly - int(height // 2),
-                width,
-                height))
+            candidates.append(Ball(lx, uy, width, height))
             for other_point in points:
                 if lx <= other_point[0] <= rx and uy <= other_point[1] <= ly:
                     points.remove(other_point)
