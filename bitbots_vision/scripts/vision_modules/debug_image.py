@@ -1,8 +1,9 @@
 import cv2
+from ball import Ball
+# NOTE: cv2 drawing functions use (x, y) points!
 
 
 class DebugImage:
-
     def __init__(self, image):
         self.raw_image = image[:]
 
@@ -17,17 +18,19 @@ class DebugImage:
                      horizon_points[i],
                      horizon_points[i+1], color)
 
-    def draw_ball_candidates(self, ball_candidates, color):
+    def draw_ball_candidates(self, ball_candidates, color, thickness=1):
         """
         draws a circle around every coordinate where a ball candidate was found
-        :param ball_candidates list of cooordinates of ball candidates:
+        :param ball_candidates: list of cooordinates of ball candidates of type Ball
+        :param color: color of the circle to draw
         :return void:
         """
         for candidate in ball_candidates:
             cv2.circle(self.raw_image,
-                       (candidate[0] + candidate[2]//2,
-                        candidate[1] + candidate[3] // 2),
-                       candidate[3] // 2, color)
+                       (candidate.get_center_x(), candidate.get_center_y()),
+                       candidate.get_radius(),
+                       color,
+                       thickness=thickness)
 
     def draw_points(self, points, color, rad=2):
         for point in points:
