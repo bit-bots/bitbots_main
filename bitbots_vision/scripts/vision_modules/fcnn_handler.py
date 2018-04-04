@@ -14,8 +14,8 @@ class FcnnHandler:
         self._fcnn_output = None
         # init config
         self._threshold = config['threshold']  # minimal activation
-        self._expand_steps = config['expand_steps']
-        self._pointcount = config['pointcount']  # number of points in the image, which get checked to find candidates
+        self._expand_steps = config['expand_steps']  #
+        self._pointcloud_steps = config['pointcloud_steps']  #
 
     def get_candidates(self):
         """
@@ -79,19 +79,41 @@ class FcnnHandler:
         out = self.get_fcnn_output()
         r, out_bin = cv2.threshold(out, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         candidates = list()
-        # points
-
-        points = itertools.product(xlist,ylist)
+        # TODO: create points
+        points = list()
+        # points = itertools.product(xlist,ylist)
         # expand points
-            # build candidate
-                # expand in 4 directions
+        while points:
+            point = points.pop()
             lx, uy = point
             rx, ly = point
-            while lx > 0 and out_bin[point[1]][lx]:
-                lx = max(lx - self._expand_steps, 0)  # TODO fix this
-            # TODO other directions
+            # expand to the left
+            next_lx = max(lx - self._expand_steps, 0)
+            while next_lx > 0 and out_bin[point[1]][next_lx]:
+                lx = next_lx
+                next_lx = max(lx - self._expand_steps, 0)
+            # expand to the right
+            next_rx = min(rx + self._expand_steps, self._image.shape[1] - 1)
+            while next_lx < self._image.shape[1] - 1 and out_bin[point[1]][next_rx]:
+                rx = next_rx
+                next_rx = min(rx + self._expand_steps, self._image.shape[1] - 1)
+            # expand upwards
+            next_uy = max(uy - self._expand_steps, 0)
+            while next_uy > 0 and out_bin[next_uy][point[0]]:
+                uy = next_uy
+                next_uy = max(uy - self._expand_steps, 0)
+            # expand downwards (the lowest y is the highest number for y)
+            next_ly = min(ly + self._expand_steps, self._image.shape[0] - 1)
+            while next_ly < self._image.shape[0] - 1 and out_bin[next_ly][point[0]]:
+                ly = next_ly
+                next_lx = min(ly + self._expand_steps, self._image.shape[0] - 1)
 
-            candidates.append((rx - lx, ly - uy))
+            width, height = rx - lx, ly - uy
+            candidates.append((
+                rx - int(width // 2),
+                ly - int(height // 2),
+                width,
+                height))
             for other_point in points:
                 if lx <= other_point[0] <= rx and uy <= other_point[1] <= ly:
                     points.remove(other_point)
