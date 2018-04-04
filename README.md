@@ -38,3 +38,10 @@ Launchscripts
 - *bitbots_vision_recordbag*: records a rosbag containing the camera image as
 image_raw and stores it as /tmp/tmpbag.bag
 - *vision_simulator*: should start the vision compatible to the simulator
+
+Neural Network Models
+---------------------
+
+Currently, the models of our neural networks are not available publicly.
+Due to their size, they are not included in the repository.
+Bit-Bots find them in the Mafiasi NextCloud `robocup-ai/log/`
