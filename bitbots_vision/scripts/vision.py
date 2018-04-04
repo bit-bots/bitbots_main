@@ -1,7 +1,7 @@
 #! /usr/bin/env python2
 
 
-from vision_modules import lines, horizon, color, debug_image, fcnn_handler, live_fcnn_03
+from vision_modules import lines, horizon, color, debug_image, fcnn_handler, live_fcnn_03, ball
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
@@ -151,29 +151,28 @@ class Vision:
             debug_image_dings.draw_horizon(
                 horizon_detector.get_horizon_points(),
                 (0, 0, 255))
-            # TODO: debug stuff for balls
-            # debug_image_dings.draw_ball_candidates(
-            #         ball_finder.get_candidates(),
-            #         (0, 0, 255))
-            # debug_image_dings.draw_ball_candidates(
-            #     horizon_detector.candidates_under_horizon(
-            #         ball_finder.get_candidates(),
-            #         self._ball_candidate_y_offset),
-            #     (0, 255, 255))
+            debug_image_dings.draw_ball_candidates(
+                    ball_fcnn_handler.get_candidates(),
+                    (0, 0, 255))
+            debug_image_dings.draw_ball_candidates(
+                horizon_detector.candidates_under_horizon(
+                    ball_fcnn_handler.get_candidates(),
+                    self._ball_candidate_y_offset),
+                (0, 255, 255))
 
         # create ball msg
         if top_ball_candidate and top_ball_candidate[1] > self._ball_candidate_threshold:
-            # if self.debug:
-            #     debug_image_dings.draw_ball_candidates([ball_classifier.get_top_candidate()[0]],
-            #                                            (0, 255, 0))
+            if self.debug:
+                debug_image_dings.draw_ball_candidates([top_ball_candidate[0]],
+                                                       (0, 255, 0))
             balls_msg = BallsInImage()
             balls_msg.header.frame_id = image_msg.header.frame_id
             balls_msg.header.stamp = image_msg.header.stamp
 
             ball_msg = BallInImage()
-            ball_msg.center.x = top_ball_candidate[0][0]
-            ball_msg.center.y = top_ball_candidate[0][1]
-            ball_msg.diameter = int((top_ball_candidate[0][2] + top_ball_candidate[0][3]) // 2)
+            ball_msg.center.x = top_ball_candidate[0].get_center_x()
+            ball_msg.center.y = top_ball_candidate[0].get_center_y()
+            ball_msg.diameter = top_ball_candidate[0].get_diameter()
             ball_msg.confidence = 1
 
             balls_msg.candidates.append(ball_msg)
