@@ -135,8 +135,9 @@ class Vision:
         #                candidates_under_horizon(
         #                    ball_finder.get_candidates(),
         #                    self._ball_candidate_y_offset))
+        top_ball_candidate = ball_fcnn_handler.get_top_candidate()
         line_detector = lines.LineDetector(image,
-                                           [ball_classifier.get_top_candidate()[0]] if ball_classifier.get_top_candidate() else[],
+                                           [top_ball_candidate[0]] if top_ball_candidate else[],
                                            self.white_color_detector,
                                            horizon_detector,
                                            self.lines_config)
@@ -158,8 +159,7 @@ class Vision:
             #     (0, 255, 255))
 
         # create ball msg
-        top_candidate = ball_fcnn_handler.get_top_candidate()
-        if top_candidate and top_candidate[1] > self._ball_candidate_threshold:
+        if top_ball_candidate and top_ball_candidate[1] > self._ball_candidate_threshold:
             # if self.debug:
             #     debug_image_dings.draw_ball_candidates([ball_classifier.get_top_candidate()[0]],
             #                                            (0, 255, 0))
@@ -168,9 +168,9 @@ class Vision:
             balls_msg.header.stamp = image_msg.header.stamp
 
             ball_msg = BallInImage()
-            ball_msg.center.x = top_candidate[0][0]
-            ball_msg.center.y = top_candidate[0][1]
-            ball_msg.diameter = int((top_candidate[0][2] + top_candidate[0][3]) // 2)
+            ball_msg.center.x = top_ball_candidate[0][0]
+            ball_msg.center.y = top_ball_candidate[0][1]
+            ball_msg.diameter = int((top_ball_candidate[0][2] + top_ball_candidate[0][3]) // 2)
             ball_msg.confidence = 1
 
             balls_msg.candidates.append(ball_msg)

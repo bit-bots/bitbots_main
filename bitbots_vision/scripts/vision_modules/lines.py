@@ -52,8 +52,8 @@ class LineDetector:
         return self._linepoints
 
     def _point_in_candidate(self, point, candidate):
-        return candidate[0] <= point[0] <= (candidate[0] + candidate[2]) and \
-               candidate[1] <= point[1] <= (candidate[1] + candidate[3])
+        return candidate[0] - int(candidate[2] // 2) <= point[0] <= candidate[0] + int(candidate[2] // 2) and \
+               candidate[1] - int(candidate[3] // 2) <= point[1] <= candidate[1] + int(candidate[3] // 2)
 
     def _get_blurred_image(self):
         if self._blurred_image is None:
