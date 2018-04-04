@@ -14,8 +14,8 @@ class FcnnHandler:
         self._fcnn_output = None
         # init config
         self._threshold = config['threshold']  # minimal activation
-        self._expand_steps = config['expand_steps']  #
-        self._pointcloud_steps = config['pointcloud_steps']  #
+        self._expand_stepsize = config['expand_stepsize']  #
+        self._pointcloud_stepsize = config['pointcloud_stepsize']  #
 
     def get_candidates(self):
         """

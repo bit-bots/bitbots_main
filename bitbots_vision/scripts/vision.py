@@ -1,7 +1,7 @@
 #! /usr/bin/env python2
 
 
-from vision_modules import ball, classifier, lines, live_classifier, horizon, color, debug_image, fcnn_handler
+from vision_modules import lines, horizon, color, debug_image, fcnn_handler, live_fcnn_03
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
@@ -19,6 +19,9 @@ class Vision:
         self.field_color_detector = color.PixelListColorDetector(
             package_path +
             rospy.get_param('visionparams/field_color_detector/path'))
+        ball_fcnn_path = package_path + \
+            rospy.get_param('visionparams/ball_fcnn/model_path')
+        self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
         # cascade_path = package_path + \
         #                rospy.get_param('visionparams/cascade_classifier/path')
         # if os.path.exists(cascade_path):
@@ -49,6 +52,13 @@ class Vision:
         #     'min_size': rospy.get_param(
         #         'visionparams/ball_finder/min_size'),
         # }
+
+        # set up ball fcnn config
+        self.ball_fcnn_config = {
+            'threshold': rospy.get_param('visionparams/ball_fcnn/threshold'),
+            'expand_stepsize': rospy.get_param('visionparams/ball_fcnn/expand_stepsize'),
+            'pointcloud_stepsize': rospy.get_param('visionparams/ball_fcnn/pointcloud_stepsize'),
+        }
 
         # set up horizon config
         self.horizon_config = {
@@ -116,14 +126,15 @@ class Vision:
         horizon_detector = horizon.HorizonDetector(image,
                                                    self.field_color_detector,
                                                    self.horizon_config)
-        ball_finder = ball.BallFinder(image, self.cascade, self.ball_config)
-        ball_classifier = classifier.\
-            Classifier(image,
-                       self.ball_classifier,
-                       horizon_detector.
-                       candidates_under_horizon(
-                           ball_finder.get_candidates(),
-                           self._ball_candidate_y_offset))
+        ball_fcnn_handler = fcnn_handler.FcnnHandler(image, self.ball_fcnn, self.ball_fcnn_config)
+        # ball_finder = ball.BallFinder(image, self.cascade, self.ball_config)
+        # ball_classifier = classifier.\
+        #     Classifier(image,
+        #                self.ball_classifier,
+        #                horizon_detector.
+        #                candidates_under_horizon(
+        #                    ball_finder.get_candidates(),
+        #                    self._ball_candidate_y_offset))
         line_detector = lines.LineDetector(image,
                                            [ball_classifier.get_top_candidate()[0]] if ball_classifier.get_top_candidate() else[],
                                            self.white_color_detector,
@@ -136,31 +147,30 @@ class Vision:
             debug_image_dings.draw_horizon(
                 horizon_detector.get_horizon_points(),
                 (0, 0, 255))
-            debug_image_dings.draw_ball_candidates(
-                    ball_finder.get_candidates(),
-                    (0, 0, 255))
-            debug_image_dings.draw_ball_candidates(
-                horizon_detector.candidates_under_horizon(
-                    ball_finder.get_candidates(),
-                    self._ball_candidate_y_offset),
-                (0, 255, 255))
+            # TODO: debug stuff for balls
+            # debug_image_dings.draw_ball_candidates(
+            #         ball_finder.get_candidates(),
+            #         (0, 0, 255))
+            # debug_image_dings.draw_ball_candidates(
+            #     horizon_detector.candidates_under_horizon(
+            #         ball_finder.get_candidates(),
+            #         self._ball_candidate_y_offset),
+            #     (0, 255, 255))
 
         # create ball msg
-
-        if ball_classifier.get_top_candidate() and \
-            ball_classifier.get_top_candidate()[1] > \
-                self._ball_candidate_threshold:
-            if self.debug:
-                debug_image_dings.draw_ball_candidates([ball_classifier.get_top_candidate()[0]],
-                                                       (0, 255, 0))
+        top_candidate = ball_fcnn_handler.get_top_candidate()
+        if top_candidate and top_candidate[1] > self._ball_candidate_threshold:
+            # if self.debug:
+            #     debug_image_dings.draw_ball_candidates([ball_classifier.get_top_candidate()[0]],
+            #                                            (0, 255, 0))
             balls_msg = BallsInImage()
             balls_msg.header.frame_id = image_msg.header.frame_id
             balls_msg.header.stamp = image_msg.header.stamp
 
             ball_msg = BallInImage()
-            ball_msg.center.x = ball_classifier.get_top_candidate()[0][0] + (ball_classifier.get_top_candidate()[0][2] // 2)
-            ball_msg.center.y = ball_classifier.get_top_candidate()[0][1] + (ball_classifier.get_top_candidate()[0][3] // 2)
-            ball_msg.diameter = ball_classifier.get_top_candidate()[0][2]
+            ball_msg.center.x = top_candidate[0][0]
+            ball_msg.center.y = top_candidate[0][1]
+            ball_msg.diameter = int((top_candidate[0][2] + top_candidate[0][3]) // 2)
             ball_msg.confidence = 1
 
             balls_msg.candidates.append(ball_msg)

@@ -1,4 +1,10 @@
 visionparams:
+    ball_fcnn:
+        model_path: '/models/fcnn03'
+        threshold: .5 # not in use
+        expand_stepsize: 4
+        pointcloud_stepsize: 10
+
     # classifier:
     #    model_path: '/models/classifier_01'
 
