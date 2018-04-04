@@ -13,7 +13,7 @@
     <rosparam file="$(find bitbots_cm730)/config/cm730.yaml" command="load"/>
     <rosparam file="$(find bitbots_cm730)/config/mx28config.yaml" command="load"/>
 
-    <include file="$(find rhoban_walking)/launch/walking.launch"/>
+    <include file="$(find quintic_walk)/launch/quintic_walk_minibot.launch"/>
 
     <rosparam file="$(find bitbots_hcm)/config/hcm.yaml" command="load"/>
     <rosparam file="$(find bitbots_hcm)/config/hcm_state_machine.yaml" command="load"/>
