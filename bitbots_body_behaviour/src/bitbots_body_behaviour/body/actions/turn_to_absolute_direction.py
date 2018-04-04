@@ -30,6 +30,6 @@ class TurnToAbsoluteDirection(AbstractDecisionModule):
             return self.pop()
         else:
             if current_direction < self.goal_direction:
-                connector.walking.start_walking_plain(0, 5, 0)
+                connector.walking.start_walking_plain(0.04, 0.2, 0)
             else:
-                connector.walking.start_walking_plain(0, -5, 0)
+                connector.walking.start_walking_plain(0.04, -0.2, 0)

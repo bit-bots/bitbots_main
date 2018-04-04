@@ -34,7 +34,7 @@ class FieldieSearchDecision(AbstractDecisionModule):
             # reset the timer
             self.start_time = rospy.get_time()
             return self.push(PlainWalkAction,
-                             [[120, 0, 0, 100]])
+                             [[0.04, 0, 0, 100]])
         else:
             # Just Search
             return self.push(StopAndSearch)

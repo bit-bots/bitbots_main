@@ -50,7 +50,7 @@ class DutyDecider(AbstractDecisionModule):
             if self.start_self_pos is None:
                 self.start_self_pos = rospy.get_time() + 20
             if self.start_self_pos > rospy.get_time():
-                connector.walking.start_walking_plain(4, 0, 0)
+                connector.walking.start_walking_plain(0.04, 0, 0)
                 rospy.loginfo("State Ready: Go forward")
                 return
 

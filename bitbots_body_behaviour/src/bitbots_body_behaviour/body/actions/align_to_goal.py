@@ -30,6 +30,6 @@ class AlignToGoal(AbstractActionModule):
             connector.blackboard.stop_aligning()
 
         connector.walking.start_walking_plain(
-            0,
-            self.sign(connector.world_model.get_opp_goal_center_uv()[1]) * -5,
+            0.04,
+            self.sign(connector.world_model.get_opp_goal_center_uv()[1]) * -0.2,
             0)
