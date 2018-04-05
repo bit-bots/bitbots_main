@@ -39,9 +39,9 @@ Behaviour:
             imageHeight: 360
 
     Tracking:
-        #max Speed for tracking
-        maxPanSpeedTracking: 60
-        maxTiltSpeedTracking: 60
+        #max Speed for tracking (no unit, 0 is max)
+        maxPanSpeedTracking: 0
+        maxTiltSpeedTracking: 0
 
         # Maximale abweichung bevor gedreht wird
         xSensivity: 0.1
@@ -61,9 +61,9 @@ Behaviour:
         ballFailCounterMax: 17
 
     Search:
-        #max Speed for searching
-        maxPanSpeedSearch: 60
-        maxTiltSpeedSearch: 60
+        #max Speed for searching (no unit, 0 is max)
+        maxPanSpeedSearch: 0
+        maxTiltSpeedSearch: 0
 
         # time between steps of the head movement
         headTurnTime: 0.7
