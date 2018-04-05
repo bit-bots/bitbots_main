@@ -44,7 +44,7 @@ class Ball:
 
 class BallFinder:
     def __init__(self, image, cascade, config):
-        # type: (np.matrix, cv2.CascadeClassifier, dict) -> BallFinder
+        # type: (np.matrix, cv2.CascadeClassifier, dict) -> None
         self._candidates = None
         self._ball = None
         self._cascade = cascade

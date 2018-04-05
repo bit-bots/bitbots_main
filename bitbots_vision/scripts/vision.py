@@ -58,6 +58,7 @@ class Vision:
 
         # set up ball fcnn config
         self.ball_fcnn_config = {
+            'debug': rospy.get_param('visionparams/ball_fcnn/debug'),
             'threshold': rospy.get_param('visionparams/ball_fcnn/threshold'),
             'expand_stepsize': rospy.get_param('visionparams/ball_fcnn/expand_stepsize'),
             'pointcloud_stepsize': rospy.get_param('visionparams/ball_fcnn/pointcloud_stepsize'),

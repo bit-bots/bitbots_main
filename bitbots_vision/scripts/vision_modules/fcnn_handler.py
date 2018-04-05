@@ -14,9 +14,13 @@ class FcnnHandler:
         self._top_candidate = None
         self._fcnn_output = None
         # init config
+        self._debug = config['debug']
         self._threshold = config['threshold']  # minimal activation
         self._expand_stepsize = config['expand_stepsize']  #
         self._pointcloud_stepsize = config['pointcloud_stepsize']  #
+
+        # draw the output when debug is enabled
+        self.draw_debug_image()
 
     def get_candidates(self):
         """
@@ -129,3 +133,9 @@ class FcnnHandler:
                 if lx <= other_point[0] <= rx and uy <= other_point[1] <= ly:
                     points.remove(other_point)
         return candidates
+
+    def draw_debug_image(self):
+        if not self._debug:
+            return
+        cv2.imshow('FCNN Output', self.get_fcnn_output())
+        cv2.waitKey(1)

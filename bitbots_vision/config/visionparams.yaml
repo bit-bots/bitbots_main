@@ -1,15 +1,10 @@
 visionparams:
     ball_fcnn:
         model_path: '/models/fcnn03'
+        debug: true  # only active when true and vision/debug is true, too!
         threshold: .5 # not in use
         expand_stepsize: 4
         pointcloud_stepsize: 10
-
-    # classifier:
-    #    model_path: '/models/classifier_01'
-
-    # cascade_classifier:
-    #    path: '/classifier/cascadeNew.xml'
 
     field_color_detector:
         path: '/config/color_spaces/Iran_Feld_nah.yaml'
@@ -20,12 +15,6 @@ visionparams:
     white_color_detector:
         lower_values: [0, 0, 180]
         upper_values: [255, 140, 255]
-
-    # ball_finder:
-    #     classify_threshold: 0.5
-    #     scale_factor: 1.1
-    #     min_neighbors: 1
-    #     min_size: 10
 
     horizon_finder:
         vertical_steps: 30
@@ -51,3 +40,15 @@ visionparams:
         # Publisher
         ball_msg_topic: 'ball_in_image'
         line_msg_topic: 'line_in_image'
+
+    # ball_finder:
+    #     classify_threshold: 0.5
+    #     scale_factor: 1.1
+    #     min_neighbors: 1
+    #     min_size: 10
+
+    # classifier:
+    #    model_path: '/models/classifier_01'
+
+    # cascade_classifier:
+    #    path: '/classifier/cascadeNew.xml'
