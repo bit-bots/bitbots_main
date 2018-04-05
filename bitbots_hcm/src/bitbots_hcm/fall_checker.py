@@ -66,16 +66,17 @@ class FallChecker(object):
         return falling_pose
 
     def check_falling_front_back(self, not_much_smoothed_gyro):
-        # Am I falling backwards
+        # TODO: Hack
+        # Am I falling to the front
         if self.falling_threshold_back < not_much_smoothed_gyro[1]:
             print(str(self.falling_threshold_back) + " < " + str(not_much_smoothed_gyro[1]))
-            rospy.logdebug("FALLING BACKWARDS ")
-            return self.falling_motor_degrees_back
-        # Am I falling to the front
-        if not_much_smoothed_gyro[1] < self.falling_threshold_front:
-            print(str(not_much_smoothed_gyro[1]) + " < " + str(self.falling_threshold_front))
             rospy.logdebug("FALLING TO THE FRONT")
             return self.falling_motor_degrees_front
+        # Am I falling backwards
+        if not_much_smoothed_gyro[1] < self.falling_threshold_front:
+            print(str(not_much_smoothed_gyro[1]) + " < " + str(self.falling_threshold_front))
+            rospy.logdebug("FALLING BACKWARDS")
+            return self.falling_motor_degrees_back
         return None
 
     def check_falling_sideways(self, not_much_smoothed_gyro):
