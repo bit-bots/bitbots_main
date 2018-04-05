@@ -293,7 +293,7 @@ class Motion:
 
     def update_once(self):
         # check if we're still walking
-        if rospy.get_time() - self.last_walking_update > 0.5:
+        if rospy.get_time() - self.last_walking_update > 0.2:
             VALUES.walking_active = False
 
         # let statemachine run

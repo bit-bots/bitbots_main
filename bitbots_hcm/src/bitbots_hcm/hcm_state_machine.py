@@ -3,6 +3,7 @@ import time
 
 import rospy
 from bitbots_cm730.srv import SwitchMotorPower
+from geometry_msgs.msg import Twist
 from humanoid_league_msgs.msg import RobotControlState
 
 from .abstract_state_machine import AbstractState, VALUES
@@ -408,7 +409,7 @@ class Walking(AbstractState):
             return Controllable()
 
     def exit(self):
-        VALUES.walking_active = False
+        pass
 
     def hcm_state(self):
         return STATE_WALKING
@@ -419,13 +420,17 @@ class Walking(AbstractState):
 
 class WalkingStopping(AbstractState):
     def entry(self):
-        pass
+        # publish 0 twist message to stop the walking
+        twist = Twist()
+        VALUES.cmd_vel_pub.publish()
 
     def evaluate(self):
-        return Controllable()
+        # wait till the walking stopped and go to controlable
+        if not VALUES.walking_active:
+            return Controllable()
 
     def exit(self):
-        VALUES.walking_active = False
+        pass
 
     def hcm_state(self):
         return STATE_WALKING

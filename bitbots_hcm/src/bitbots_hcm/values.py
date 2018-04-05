@@ -1,4 +1,5 @@
 import rospy
+from geometry_msgs.msg import Twist
 
 from .fall_checker import FallChecker
 from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
@@ -51,9 +52,13 @@ class Values(object):
         # are we walking?
         self.walking_active = False
 
+        # used to stop the walking
+        self.cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
+
         self.softoff_time = rospy.get_param("hcm/soft_off_time")
         self.die_time = rospy.get_param("hcm/die_time")
         self.simulation_active = rospy.get_param("simulation_active")
+
 
     def is_falling(self):
         falling_pose = self.fall_checker.check_falling(self.not_so_smooth_gyro)
