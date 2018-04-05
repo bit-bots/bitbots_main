@@ -103,4 +103,4 @@ class GoToBallPathfinding(AbstractActionModule):
             turn = self.last_t
             side = self.last_s
         # start walking
-        connector.walking.start_walking_plain(forward, turn, side)
+        connector.walking.start_walking_plain(forward/1000, turn/1000, side/1000)

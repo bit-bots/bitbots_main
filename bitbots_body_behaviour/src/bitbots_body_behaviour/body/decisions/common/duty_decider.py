@@ -41,6 +41,12 @@ class DutyDecider(AbstractDecisionModule):
 
     def perform(self, connector: BodyConnector, reevaluate=False):
 
+        connector.blackboard.set_head_duty("BALL_MODE")
+        if connector.vision.ball_seen():
+            return self.push(GoToAbsolutePosition, [connector.vision.get_ball_relative()[0], connector.vision.get_ball_relative()[1], 0])
+        else:
+            return self.push(GoToAbsolutePosition, [0.04, 0, 0])
+
         if connector.blackboard.is_frozen() or not connector.gamestate.is_allowed_to_move():
             connector.walking.stop_walking()
             rospy.logwarn("Not allowed to move")

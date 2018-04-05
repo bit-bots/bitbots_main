@@ -9,6 +9,7 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 import rospy
 from bitbots_body_behaviour.body.actions.align_on_ball import AlignOnBall
 from bitbots_body_behaviour.body.actions.go_to_ball_pathfinding import GoToBallPathfinding
+from bitbots_body_behaviour.body.actions.go_to_absolute_position import GoToAbsolutePosition
 from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionPenaltyKick
 from bitbots_body_behaviour.body.decisions.common.stands_correct_decision import StandsCorrectDecision
 from bitbots_body_behaviour.body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
@@ -37,13 +38,13 @@ class AbstractCloseBall(AbstractDecisionModule):
             # TODO config
             self.action(connector)
         else:
-            self.go()
+            self.go(connector)
 
     def action(self, connector):
         return self.push(StandsCorrectDecision)
 
-    def go(self):
-        return self.push(GoToBallPathfinding)
+    def go(self, connector):
+        return self.push(GoToAbsolutePosition, [connector.vision.get_ball_relative()[0], connector.vision.get_ball_relative()[1], 0])
 
     def get_reevaluate(self):
         return True
