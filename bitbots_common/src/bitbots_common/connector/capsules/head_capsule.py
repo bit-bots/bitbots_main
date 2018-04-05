@@ -53,7 +53,7 @@ class HeadCapsule:
         self.current_pan_pos = pan_position
         self.current_tilt_pos = tilt_position
         posnew = math.radians(pan_position), math.radians(tilt_position)
-        velnew = math.radians(pan_speed), math.radians(tilt_speed)
+        velnew = pan_speed, tilt_speed
         self.pos_msg.points[0].positions = posnew
         self.pos_msg.points[0].velocities = velnew
         self.pos_msg.header.stamp = rospy.Time.now()
