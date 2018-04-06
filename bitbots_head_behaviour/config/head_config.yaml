@@ -35,9 +35,6 @@ Behaviour:
             cameraHeight: 0.75
             ballHeight: 0.20
 
-            imageWidth: 640
-            imageHeight: 360
-
     Tracking:
         #max Speed for tracking (no unit, 0 is max)
         maxPanSpeedTracking: 0

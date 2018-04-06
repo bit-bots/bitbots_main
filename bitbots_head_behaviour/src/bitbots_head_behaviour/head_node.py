@@ -22,7 +22,6 @@ class HeadNode(StackMachineModule):
         rospy.Subscriber("ball_relative", BallRelative, self.connector.world_model.ball_relative_cb)
         rospy.Subscriber("goal_relative", GoalRelative, self.connector.vision.goal_callback)
         rospy.Subscriber("obstacle_relative", ObstacleRelative, self.connector.vision.obstacle_callback)
-        rospy.Subscriber("camera/camera_info", CameraInfo, self.connector.head.cb_cam_info)
 
         self.set_start_module(HeadDutyDecider)
         rospy.init_node("Headbehaviour")
