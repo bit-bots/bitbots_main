@@ -1,5 +1,5 @@
 <launch>
-    <arg name="wftransform" default="true"/>
+    <arg name="wftransform" default="false"/>
     <arg name="duty" default="TeamPlayer"/>
     <arg name="hcm" default="true"/>
     <arg name="simulator" default="false"/>
