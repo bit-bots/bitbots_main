@@ -11,7 +11,7 @@ catkin_python_setup()
 )
 
 catkin_package(
- CATKIN_DEPENDS bitbots_common
+ CATKIN_DEPENDS
 )
 
 include_directories(

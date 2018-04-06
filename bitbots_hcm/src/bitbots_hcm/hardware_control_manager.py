@@ -12,14 +12,12 @@ import rospy
 
 from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAction
 
-from bitbots_common.pose.pypose import PyPose as Pose
-from bitbots_common.util.pose_to_message import pose_to_traj_msg
 from humanoid_league_speaker.speaker import speak
 from std_msgs.msg import Bool, String
 
 from bitbots_cm730.srv import SwitchMotorPower
 
-from bitbots_hcm.hcm_state_machine import HcmStateMachine, STATE_CONTROLABLE, AnimationRunning, STATE_WALKING
+from bitbots_hcm.hcm_state_machine import HcmStateMachine, STATE_CONTROLABLE, AnimationRunning, STATE_WALKING, STATE_ANIMATION_RUNNING
 from dynamic_reconfigure.server import Server
 from humanoid_league_msgs.msg import RobotControlState
 from humanoid_league_msgs.msg import Speak
@@ -29,6 +27,7 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 from bitbots_hcm.values import VALUES
 from bitbots_hcm.cfg import hcm_paramsConfig
+
 
 
 class Motion:
@@ -46,8 +45,6 @@ class Motion:
         self.not_much_smoothed_gyro = numpy.array([0, 0, 0])
 
         # Motor Positions
-        self.robo_pose = Pose() #todo this is not used anymore?
-        self.goal_pose = Pose() #todo this is not used anymore?
         self.walking_motor_goal = None
         self.walking_goal_lock = Lock()
         self.last_walking_update = 0
@@ -56,15 +53,6 @@ class Motion:
         # Animation
         self.animation_running = False  # animation request from animation server
         self.animation_request_time = 0  # time we got the animation request
-
-        robot_type_name = rospy.get_param("robot_type_name")
-        self.used_motor_cids = rospy.get_param("cm730/" + robot_type_name + "/motors")
-        self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
-
-        # pre defiened messages for performance
-        self.traj_msg = JointTrajectory()
-        self.traj_msg.joint_names = [x.decode() for x in self.used_motor_names]
-        self.traj_point = JointTrajectoryPoint()
 
         #times
         self.anim_sum=0
@@ -164,7 +152,7 @@ class Motion:
             self.joint_goal_publisher.publish(msg)
 
     def head_goal_callback(self, msg):
-        if not self.state_machine.is_penalized():
+        if self.state_machine.get_current_state() == STATE_CONTROLABLE or self.state_machine.get_current_state() == STATE_WALKING or self.state_machine.get_current_state() == STATE_ANIMATION_RUNNING:
             # we can move our head
             self.joint_goal_publisher.publish(msg)
 
