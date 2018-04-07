@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from ball import Ball
 import itertools
-from bitbots_vision.scripts.vision_modules.live_fcnn_03 import FCNN03
+from .live_fcnn_03 import FCNN03
 
 
 class FcnnHandler:
@@ -30,7 +30,11 @@ class FcnnHandler:
         if self._rated_candidates is None:
             self._rated_candidates = list()
             for candidate in self._get_raw_candidates():
-                self._rated_candidates.append((candidate, self.get_fcnn_output()[candidate[1]][candidate[0]] / 255.0))
+                out = self.get_fcnn_output()
+                line = out[candidate.get_center_y()]
+                print(line)
+                rating = line[candidate.get_center_x()] / 255.0
+                self._rated_candidates.append((candidate, rating))
         return self._rated_candidates
 
     def get_top_candidate(self):
@@ -41,7 +45,7 @@ class FcnnHandler:
         :return: the candidate with the highest rating (candidate)
         """
         if self._top_candidate is None:
-            if not self._sorted_rated_candidates:
+            if self._sorted_rated_candidates is None:
                 self._top_candidate = max(
                     self.get_top_candidates(),
                     key=lambda x: x[1]
@@ -59,21 +63,18 @@ class FcnnHandler:
         """
         if count < 1:
             raise ValueError('the count must be equal or greater 1!')
-        if not self._sorted_rated_candidates:
-            self._sorted_rated_candidates = self.get_top_candidates()\
+        if self._sorted_rated_candidates is None:
+            self._sorted_rated_candidates = self.get_candidates()\
                 .sorted(key=lambda x: x[1])
         return self._sorted_rated_candidates[0:count-1]
 
     def get_fcnn_output(self):
-        if not self._fcnn_output:
-            self._fcnn_output = (self._fcnn.predict(
-                [cv2.resize(
-                    self._image,
-                    (self._fcnn.input_shape[0], self._fcnn.input_shape[1]))]
-            ).reshape(
-                -1,
-                self._fcnn.output_shape[0],
-                self._fcnn.output_shape[1])[0] * 255).astype(np.uint8)
+        if self._fcnn_output is None:
+            out = self._fcnn.predict([cv2.resize(self._image, (self._fcnn.input_shape[1], self._fcnn.input_shape[0]))])
+            out = out.reshape(self._fcnn.output_shape[0], self._fcnn.output_shape[1])[0]
+            out = (out * 255).astype(np.uint8)
+            self._fcnn_output = cv2.resize(out, (self._image.shape[1], self._image.shape[0]))
+            print(self._fcnn_output.shape)
         return self._fcnn_output
 
     def _get_raw_candidates(self):
@@ -100,32 +101,32 @@ class FcnnHandler:
             ylist.append(y)
             y += self._pointcloud_stepsize
         # generate carthesian product of list
-        points = itertools.product(xlist, ylist)
+        points = list(itertools.product(xlist, ylist))
         # expand points
         while points:
             point = points.pop()
             lx, uy = point
             rx, ly = point
             # expand to the left
-            next_lx = max(lx - self._expand_steps, 0)
+            next_lx = max(lx - self._expand_stepsize, 0)
             while next_lx > 0 and out_bin[point[1]][next_lx]:
                 lx = next_lx
-                next_lx = max(lx - self._expand_steps, 0)
+                next_lx = max(lx - self._expand_stepsize, 0)
             # expand to the right
-            next_rx = min(rx + self._expand_steps, self._image.shape[1] - 1)
-            while next_lx < self._image.shape[1] - 1 and out_bin[point[1]][next_rx]:
+            next_rx = min(rx + self._expand_stepsize, out_bin.shape[1] - 1)
+            while next_rx < out_bin.shape[1] - 1 and out_bin[point[1]][next_rx]:
                 rx = next_rx
-                next_rx = min(rx + self._expand_steps, self._image.shape[1] - 1)
+                next_rx = min(rx + self._expand_stepsize, out_bin.shape[1] - 1)
             # expand upwards
-            next_uy = max(uy - self._expand_steps, 0)
+            next_uy = max(uy - self._expand_stepsize, 0)
             while next_uy > 0 and out_bin[next_uy][point[0]]:
                 uy = next_uy
-                next_uy = max(uy - self._expand_steps, 0)
+                next_uy = max(uy - self._expand_stepsize, 0)
             # expand downwards (the lowest y is the highest number for y)
-            next_ly = min(ly + self._expand_steps, self._image.shape[0] - 1)
-            while next_ly < self._image.shape[0] - 1 and out_bin[next_ly][point[0]]:
+            next_ly = min(ly + self._expand_stepsize, out_bin.shape[0] - 1)
+            while next_ly < out_bin.shape[0] - 1 and out_bin[next_ly][point[0]]:
                 ly = next_ly
-                next_lx = min(ly + self._expand_steps, self._image.shape[0] - 1)
+                next_ly = min(ly + self._expand_stepsize, out_bin.shape[0] - 1)
 
             width, height = rx - lx, ly - uy
             candidates.append(Ball(lx, uy, width, height))
