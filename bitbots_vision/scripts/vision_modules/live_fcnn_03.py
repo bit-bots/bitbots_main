@@ -19,9 +19,9 @@ class FCNN03:
                 tf.float32,
                 shape=[
                     None,
-                    self.output_shape[0],
-                    self.output_shape[1],
-                    self.output_shape[2]],
+                    self.input_shape[0],
+                    self.input_shape[1],
+                    self.input_shape[2]],
                 name="X")
             self.Y = tf.placeholder(
                 tf.float32,
