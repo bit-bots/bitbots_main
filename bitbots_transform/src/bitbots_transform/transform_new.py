@@ -21,12 +21,12 @@ class TransformBall(object):
 
         self.marker_pub = rospy.Publisher("ballpoint", Marker, queue_size=10)
         self.ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=10)
-        self.line_relative_pub = rospy.Publisher("lines_relative", LineInformationRelative, queue_size=10)
+        self.line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=10)
 
         self.caminfo = None
 
         rospy.init_node("bitbots_transformer")
-        rospy.set_param("/object_height", 0.1)
+        #rospy.set_param("/object_height", 0.1)
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(5.0))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
@@ -37,10 +37,8 @@ class TransformBall(object):
 
 
     def _callback_ball(self, msg):
-        #transformed = self.transform
-
         br = BallRelative()
-        br.header.stamp = msg.header.stamp  # todo ball in image time!
+        br.header.stamp = msg.header.stamp
         br.header.frame_id = "L_CAMERA"
 
         for ball in msg.candidates:
@@ -165,6 +163,10 @@ class TransformBall(object):
         field_point.pose.position.z = object_height
         field_point = self.tf_buffer.transform(field_point, "L_CAMERA")
 
+        field_normal.pose.position.x = field_point.pose.position.x - field_normal.pose.position.x
+        field_normal.pose.position.y = field_point.pose.position.y - field_normal.pose.position.y
+        field_normal.pose.position.z = field_point.pose.position.z - field_normal.pose.position.z
+
         msg = Marker()
         msg.header.frame_id = "L_CAMERA"
         msg.header.stamp = rospy.get_rostime() - rospy.Duration(0.2)
@@ -207,6 +209,9 @@ class TransformBall(object):
         msg.header.frame_id = "L_CAMERA"
         msg.type = Marker.SPHERE
         msg.id = 4
+        msg.color.r = 1
+        msg.color.g = 1
+        msg.color.b = 1
         msg.scale.x = 0.05
         msg.scale.y = 0.05
         msg.scale.z = 0.05
@@ -228,16 +233,31 @@ class TransformBall(object):
             return point
         else:
             return None"""
-        return self.GetIntersectionEG(field_point.pose.position, field_normal.pose.position, point_on_image.pose.position)
+
+        p = self.GetIntersectionEG(field_point.pose.position, field_normal.pose.position, point_on_image.pose.position)
+
+        msg.header.frame_id = "L_CAMERA"
+        msg.type = Marker.SPHERE
+        msg.id = 5
+        msg.scale.x = 0.08
+        msg.scale.y = 0.08
+        msg.scale.z = 0.08
+        msg.color.b = 0
+        msg.color.r = 1
+        msg.color.g = 0
+        msg.pose.position = p
+
+        self.marker_pub.publish(msg)
+
+        print self.tf_buffer.transform(field_point, "world")
+        print self.tf_buffer.transform(field_normal, "world")
+        print self.tf_buffer.transform(point_on_image, "world")
+        return p
+
+
 
     def GetIntersectionEG(self, Ep, normal, Gr, epsilon=1e-6):
-        """
-        Ep = Ortsvector der Ebene
-        Er1 = Richtungsvetor 1 von Ep aus
-        Er2 = Richtungsvetor 2 von Ep aus
-        Gp = Ortsvektor auf der Geraden
-        Gr = Richtungvektor von Gp aus
-        """
+
         t = ((Ep.x * normal.x) + (Ep.y * normal.y) + (Ep.z * normal.z)) / \
             ((normal.x * Gr.x) + (normal.y * Gr.y) + (normal.z * Gr.z))
         print t
