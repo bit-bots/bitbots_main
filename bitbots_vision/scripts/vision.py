@@ -141,7 +141,7 @@ class Vision:
         #                    self._ball_candidate_y_offset))
         top_ball_candidate = ball_fcnn_handler.get_top_candidate()
         line_detector = lines.LineDetector(image,
-                                           [top_ball_candidate[0]] if top_ball_candidate else[],
+                                           [top_ball_candidate] if top_ball_candidate else list(),
                                            self.white_color_detector,
                                            horizon_detector,
                                            self.lines_config)
@@ -156,24 +156,24 @@ class Vision:
                     ball_fcnn_handler.get_candidates(),
                     (0, 0, 255))
             debug_image_dings.draw_ball_candidates(
-                horizon_detector.candidates_under_horizon(
+                horizon_detector.balls_under_horizon(
                     ball_fcnn_handler.get_candidates(),
                     self._ball_candidate_y_offset),
                 (0, 255, 255))
 
         # create ball msg
-        if top_ball_candidate and top_ball_candidate[1] > self._ball_candidate_threshold:
+        if top_ball_candidate and top_ball_candidate.rating > self._ball_candidate_threshold:
             if self.debug:
-                debug_image_dings.draw_ball_candidates([top_ball_candidate[0]],
+                debug_image_dings.draw_ball_candidates([top_ball_candidate],
                                                        (0, 255, 0))
             balls_msg = BallsInImage()
             balls_msg.header.frame_id = image_msg.header.frame_id
             balls_msg.header.stamp = image_msg.header.stamp
 
             ball_msg = BallInImage()
-            ball_msg.center.x = top_ball_candidate[0].get_center_x()
-            ball_msg.center.y = top_ball_candidate[0].get_center_y()
-            ball_msg.diameter = top_ball_candidate[0].get_diameter()
+            ball_msg.center.x = top_ball_candidate.get_center_x()
+            ball_msg.center.y = top_ball_candidate.get_center_y()
+            ball_msg.diameter = top_ball_candidate.get_diameter()
             ball_msg.confidence = 1
 
             balls_msg.candidates.append(ball_msg)

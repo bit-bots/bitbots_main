@@ -5,11 +5,12 @@ import cv2
 
 
 class Ball:
-    def __init__(self, x1=0, y1=0, width=0, height=0):
+    def __init__(self, x1=0, y1=0, width=0, height=0, rating=None):
         self._x1 = x1
         self._y1 = y1
         self._width = width
         self._height = height
+        self.rating = rating
 
     def get_width(self):
         return self._width

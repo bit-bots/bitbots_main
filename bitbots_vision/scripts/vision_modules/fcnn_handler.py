@@ -32,8 +32,8 @@ class FcnnHandler:
             for candidate in self._get_raw_candidates():
                 out = self.get_fcnn_output()
                 line = out[candidate.get_center_y()]
-                rating = line[candidate.get_center_x()] / 255.0
-                self._rated_candidates.append((candidate, rating))
+                candidate.rating = line[candidate.get_center_x()] / 255.0
+                self._rated_candidates.append(candidate)
         return self._rated_candidates
 
     def get_top_candidate(self):
@@ -48,7 +48,7 @@ class FcnnHandler:
                 if self.get_top_candidates():
                     self._top_candidate = list([max(
                         self.get_top_candidates(),
-                        key=lambda x: x[1]
+                        key=lambda x: x.rating
                     )[0]])
                 else:
                     self._top_candidate = list()  # empty list -> initialized, but no candidate available
@@ -68,7 +68,7 @@ class FcnnHandler:
         if count < 1:
             raise ValueError('the count must be equal or greater 1!')
         if self._sorted_rated_candidates is None:
-            self._sorted_rated_candidates = sorted(self.get_candidates(), key=lambda x: x[1])
+            self._sorted_rated_candidates = sorted(self.get_candidates(), key=lambda x: x.rating)
         return self._sorted_rated_candidates[0:count-1]
 
     def get_fcnn_output(self):
@@ -79,7 +79,6 @@ class FcnnHandler:
             out = out.reshape(self._fcnn.output_shape[0], self._fcnn.output_shape[1])
             out = (out * 255).astype(np.uint8)
             self._fcnn_output = cv2.resize(out, (self._image.shape[1], self._image.shape[0]))
-            print(self._fcnn_output.shape)
         return self._fcnn_output
 
     def _get_raw_candidates(self):
