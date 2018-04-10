@@ -100,6 +100,15 @@ class HorizonDetector:
         # type: (list, int) -> list
         return [candidate for candidate in candidates if self.candidate_under_horizon(candidate, y_offset)]
 
+    def balls_under_horizon(self, balls, y_offset=0):
+        # type: (list, int) -> list
+        return [ball for ball in balls if self.candidate_under_horizon(
+            (ball.get_upper_left_x(),
+             ball.get_upper_left_y(),
+             ball.get_width(),
+             ball.get_height()),
+            y_offset)]
+
     def point_under_horizon(self, point, offset=0):
         # type: (tuple, int) -> bool
         """
