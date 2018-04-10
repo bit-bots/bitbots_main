@@ -51,7 +51,7 @@ class FcnnHandler:
                         key=lambda x: x[1]
                     )[0]])
                 else:
-                    self._top_candidate = list()
+                    self._top_candidate = list()  # empty list -> initialized, but no candidate available
             else:
                 self._top_candidate = list([self._sorted_rated_candidates[0]])
         if self._top_candidate:
@@ -74,6 +74,7 @@ class FcnnHandler:
     def get_fcnn_output(self):
         if self._fcnn_output is None:
             in_img = cv2.resize(self._image, (self._fcnn.input_shape[1], self._fcnn.input_shape[0]))
+            in_img = cv2.cvtColor(in_img, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
             out = self._fcnn.predict(list([in_img]))
             out = out.reshape(self._fcnn.output_shape[0], self._fcnn.output_shape[1])
             out = (out * 255).astype(np.uint8)
