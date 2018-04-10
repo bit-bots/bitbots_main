@@ -16,6 +16,14 @@ class Vision:
     def __init__(self):
         rospack = rospkg.RosPack()
         package_path = rospack.get_path('bitbots_vision')
+
+        self._ball_candidate_threshold = rospy.get_param(
+            'visionparams/vision/ball_candidate_rating_threshold')
+        self._ball_candidate_y_offset = rospy.get_param(
+            'visionparams/vision/ball_candidate_horizon_y_offset')
+
+        self.debug = rospy.get_param('visionparams/vision/debug')
+
         self.field_color_detector = color.PixelListColorDetector(
             package_path +
             rospy.get_param('visionparams/field_color_detector/path'))
@@ -58,7 +66,8 @@ class Vision:
 
         # set up ball fcnn config
         self.ball_fcnn_config = {
-            'debug': rospy.get_param('visionparams/ball_fcnn/debug'),
+            'debug': rospy.get_param('visionparams/ball_fcnn/debug')
+                     and self.debug,
             'threshold': rospy.get_param('visionparams/ball_fcnn/threshold'),
             'expand_stepsize': rospy.get_param('visionparams/ball_fcnn/expand_stepsize'),
             'pointcloud_stepsize': rospy.get_param('visionparams/ball_fcnn/pointcloud_stepsize'),
@@ -85,12 +94,6 @@ class Vision:
             'blur_kernel_size': rospy.get_param(
                 'visionparams/line_detector/blur_kernel_size'),
         }
-        self._ball_candidate_threshold = rospy.get_param(
-            'visionparams/vision/ball_candidate_rating_threshold')
-        self._ball_candidate_y_offset = rospy.get_param(
-            'visionparams/vision/ball_candidate_horizon_y_offset')
-
-        self.debug = rospy.get_param('visionparams/vision/debug')
         # ROS-Stuff:
 
         rospy.init_node('bitbots_vision')
