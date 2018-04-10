@@ -21,7 +21,7 @@ class Ball:
         return self._x1 + int(self._width // 2)
 
     def get_center_y(self):
-        self._y1 + int(self._height // 2)
+        return self._y1 + int(self._height // 2)
 
     def get_center_point(self):
         return self.get_center_x(), self.get_center_y()
