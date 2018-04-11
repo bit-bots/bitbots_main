@@ -71,7 +71,7 @@ class FcnnHandler:
             raise ValueError('the count must be equal or greater 1!')
         if self._sorted_rated_candidates is None:
             self._sorted_rated_candidates = sorted(self.get_candidates(), key=lambda x: x.rating)
-        return self._sorted_rated_candidates[0:count-1]
+        return self._sorted_rated_candidates[0:count]
 
     def get_fcnn_output(self):
         if self._fcnn_output is None:
