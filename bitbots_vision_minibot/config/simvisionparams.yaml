@@ -1,0 +1,47 @@
+visionparams:
+    classifier:
+       model_path: '/models/classifier_01'
+
+    cascade_classifier:
+        path: '/classifier/cascadeNew.xml'
+
+    field_color_detector:
+        path: '/config/color_spaces/simColor.yaml'
+        use_dummy_green: false
+        dummy_lower_values: [0, 0, 180]
+        dummy_upper_values: [0, 0, 180]
+
+    white_color_detector:
+        lower_values: [0, 0, 180]
+        upper_values: [255, 140, 255]
+
+    ball_finder:
+        classify_threshold: 0.5
+        scale_factor: 1.1
+        min_neighbors: 1
+        min_size: 10
+
+    horizon_finder:
+        vertical_steps: 30
+        horizontal_steps: 30
+
+        precision_pix: 5
+        min_precision_pix: 3
+
+    vision:
+        debug: true
+        ball_candidate_horizon_y_offset: 0
+        ball_candidate_rating_threshold: 0.5
+
+    line_detector:
+        horizon_offset: 50
+        linepoints_range: 2000
+        blur_kernel_size: 9
+
+    ROS:
+        # Subscriber
+        img_msg_topic: 'image_raw'
+        img_queue_size: 1
+        # Publisher
+        ball_msg_topic: 'ball_in_image'
+        line_msg_topic: 'line_in_image'

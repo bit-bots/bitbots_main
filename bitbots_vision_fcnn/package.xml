@@ -1,5 +1,5 @@
 <package format="2">
-    <name>bitbots_vision</name>
+    <name>bitbots_vision_fcnn</name>
     <description>
         This is the vision package of the Hamburg Bit-Bots.
         We use the wolves_image_provider_v4l package as image provider.
@@ -32,5 +32,6 @@
     <depend>dynamic_reconfigure</depend>
     <depend>numpy</depend>
     <depend>cv2</depend>
+    <depend>bitbots_vision_common</depend>
     <depend>wolves_image_provider_v4l</depend>
 </package>

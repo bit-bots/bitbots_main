@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(bitbots_vision)
+project(bitbots_vision_fcnn)
 
 set(CMAKE_BUILD_TYPE Debug)
 

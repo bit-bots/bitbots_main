@@ -1,0 +1,5 @@
+<launch>
+    <rosparam command="load" file="$(find bitbots_vision_fcnn)/config/visionparams.yaml" />
+    <node pkg="bitbots_vision_fcnn" type="vision.py" name="bitbots_vision_fcnn" output="screen" >
+    </node>
+</launch>

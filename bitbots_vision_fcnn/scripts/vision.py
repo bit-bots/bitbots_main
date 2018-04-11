@@ -1,7 +1,7 @@
 #! /usr/bin/env python2
 
 
-from vision_modules import lines, horizon, color, debug_image, fcnn_handler, live_fcnn_03, ball
+from bitbots_vision_common.vision_modules import lines, horizon, color, debug_image, fcnn_handler, live_fcnn_03, ball
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
@@ -15,63 +15,36 @@ class Vision:
 
     def __init__(self):
         rospack = rospkg.RosPack()
-        package_path = rospack.get_path('bitbots_vision')
+        package_path = rospack.get_path('bitbots_vision_fcnn')
 
         self._ball_candidate_threshold = rospy.get_param(
             'visionparams/vision/ball_candidate_rating_threshold')
         self._ball_candidate_y_offset = rospy.get_param(
             'visionparams/vision/ball_candidate_horizon_y_offset')
-        self._use_fcnn = rospy.get_param(
-            'visionparams/vision/use_fcnn')
 
         self.debug = rospy.get_param('visionparams/vision/debug')
 
-        if self._use_fcnn:
-            ball_fcnn_path = package_path + \
-                rospy.get_param('visionparams/ball_fcnn/model_path')
-            if not os.path.exists(ball_fcnn_path):
-                rospy.logerr(
-                    'AAAAHHHH! The specified fcnn model file doesn\'t exist!')
-            self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
+        ball_fcnn_path = package_path + \
+            rospy.get_param('visionparams/ball_fcnn/model_path')
+        if not os.path.exists(ball_fcnn_path):
+            rospy.logerr(
+                'AAAAHHHH! The specified fcnn model file doesn\'t exist!')
+        self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
 
-            # set up ball fcnn config
-            self.ball_fcnn_config = {
-                'debug': rospy.get_param('visionparams/ball_fcnn/debug')
-                         and self.debug,
-                'threshold': rospy.get_param('visionparams/ball_fcnn/threshold'),
-                'expand_stepsize': rospy.get_param('visionparams/ball_fcnn/expand_stepsize'),
-                'pointcloud_stepsize': rospy.get_param('visionparams/ball_fcnn/pointcloud_stepsize'),
-                'shuffle_candidate_list': rospy.get_param('visionparams/ball_fcnn/shuffle_candidate_list'),
-                'min_ball_diameter': rospy.get_param('visionparams/ball_fcnn/min_ball_diameter'),
-                'max_ball_diameter': rospy.get_param('visionparams/ball_fcnn/max_ball_diameter'),
-            }
-        else:
-            cascade_path = package_path + \
-                           rospy.get_param('visionparams/cascade_classifier/path')
-            if os.path.exists(cascade_path):
-                self.cascade = cv2.CascadeClassifier(cascade_path)
-            else:
-                rospy.logerr(
-                    'AAAAHHHH! The specified cascade config file doesn\'t exist!')
-            classifier_path = rospy.get_param('visionparams/classifier/model_path')
-            if not os.path.exists(classifier_path):
-                rospy.logerr(
-                    'AAAAHHHH! The specified classifier model file doesn\'t exist!')
-            self.ball_classifier = live_classifier\
-                .LiveClassifier(package_path +
-                                rospy.get_param(
-                                    'visionparams/classifier/model_path'))
-            # set up ball config
-            self.ball_config = {
-                'classify_threshold': rospy.get_param(
-                    'visionparams/ball_finder/classify_threshold'),
-                'scale_factor': rospy.get_param(
-                    'visionparams/ball_finder/scale_factor'),
-                'min_neighbors': rospy.get_param(
-                    'visionparams/ball_finder/min_neighbors'),
-                'min_size': rospy.get_param(
-                    'visionparams/ball_finder/min_size'),
-            }
+        # set up ball fcnn config
+        self.ball_fcnn_config = {
+            'debug': rospy.get_param('visionparams/ball_fcnn/debug')
+                     and self.debug,
+            'threshold': rospy.get_param('visionparams/ball_fcnn/threshold'),
+            'expand_stepsize': rospy.get_param('visionparams/ball_fcnn/expand_stepsize'),
+            'pointcloud_stepsize': rospy.get_param('visionparams/ball_fcnn/pointcloud_stepsize'),
+            'shuffle_candidate_list': rospy.get_param('visionparams/ball_fcnn/shuffle_candidate_list'),
+            'min_ball_diameter': rospy.get_param('visionparams/ball_fcnn/min_ball_diameter'),
+            'max_ball_diameter': rospy.get_param('visionparams/ball_fcnn/max_ball_diameter'),
+        }
+
+        # color config
+
         self.white_color_detector = color.HsvSpaceColorDetector(
             rospy.get_param('visionparams/white_color_detector/lower_values'),
             rospy.get_param('visionparams/white_color_detector/upper_values'))
@@ -104,7 +77,7 @@ class Vision:
         }
         # ROS-Stuff:
 
-        rospy.init_node('bitbots_vision')
+        rospy.init_node('bitbots_vision_fcnn')
         # publisher:
         self.pub_balls = rospy.Publisher(
             rospy.get_param('visionparams/ROS/ball_msg_topic'),
