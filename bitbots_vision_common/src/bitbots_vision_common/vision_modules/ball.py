@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 
 
-class BallFinder(CandidateFinder):
+class BallFinder():
     def __init__(self, image, cascade, config):
         # type: (np.matrix, cv2.CascadeClassifier, dict) -> None
         self._candidates = None
@@ -20,7 +20,7 @@ class BallFinder(CandidateFinder):
         self._min_neighbors = config['min_neighbors']
         self._min_size = config['min_size']
 
-    def get_candidates(self):
+    def get_ball_candidates(self):
         # type: () -> list
         if self._candidates is None:
             image_gray = cv2.cvtColor(self._image, cv2.COLOR_BGR2GRAY)

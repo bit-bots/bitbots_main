@@ -42,6 +42,7 @@ class Candidate:
 
 class CandidateFinder(object):
 
+    @abc.abstractmethod
     def get_top_candidates(self, count=1):
         """
         Returns the count best candidates.
@@ -64,4 +65,4 @@ class CandidateFinder(object):
         :param count: Number of top-candidates to return
         :return: the count top candidates
         """
-        return self.get_top_candidates()
+        return self.get_top_candidates()[0] if self.get_top_candidates() else None

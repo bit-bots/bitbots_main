@@ -183,3 +183,5 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+models/

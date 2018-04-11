@@ -1,35 +1,37 @@
 import numpy as np
 import cv2
+from .candidate import Candidate, CandidateFinder
 
 
-class Classifier:
+class Classifier(CandidateFinder):
     def __init__(self, image, classifier, candidates):
         self._image = image
         self._input_candidates = candidates
         self._classifier = classifier
         self._classified_candidates = None
+        self._sorted_candidates = None
         self._top_candidate = None
 
-    def get_classified_candidates(self):
+    def get_candidates(self):
         if self._classified_candidates is None:
             batch = list()
-            if len(self._input_candidates) > 0:
+            if self._input_candidates:
                 for item in self._input_candidates:
-                    image_cropped = cv2.resize(self._image[item[1]: item[1]+item[3],
-                                               item[0]: item[0]+item[2]],
+                    image_cropped = cv2.resize(self._image[item.get_upper_left_y(): item.get_upper_left_y()+item.get_height(),
+                                               item.get_upper_left_x(): item.get_upper_left_x()+item.get_width()],
                                                (self._classifier.input_shape[0], self._classifier.input_shape[1]))
                     batch.append(image_cropped.astype(np.float32) / 255.0)
                 # classify whole batch of images
                 batch_conf = self._classifier.predict(batch)
-                self._classified_candidates = [(self._input_candidates[i], batch_conf[i]) for i in range(len(batch_conf))]
+                for i in range(len(batch_conf)):
+                    self._input_candidates[i].rating=batch_conf[i]
+                self._classified_candidates = self._input_candidates
             else:
                 self._classified_candidates = list()
         return self._classified_candidates
 
-    def get_top_candidate(self):
-        if self._top_candidate is None and self.get_classified_candidates():
-            maxconf_index = np.argmax(
-                np.array([x[1] for x in self.get_classified_candidates()]))
-            self._top_candidate = self._classified_candidates[maxconf_index]
-            pass
-        return self._top_candidate
+    def get_top_candidates(self, count=1):
+        if self._sorted_candidates is None:
+            self._sorted_candidates = sorted(self.get_candidates(), key=lambda x: x.rating)
+        return self._sorted_candidates[0:count]
+
