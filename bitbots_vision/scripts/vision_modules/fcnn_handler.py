@@ -150,7 +150,7 @@ class FcnnHandler(CandidateFinder):
                 next_ly = min(ly + self._expand_stepsize, out_bin.shape[0] - 1)
 
             width, height = rx - lx, ly - uy
-            candidates.append(Ball(lx, uy, width, height))
+            candidates.append(Candidate(lx, uy, width, height))
             points = [other_point for other_point in points if point != other_point and not (lx <= other_point[0] <= rx and uy <= other_point[1] <= ly)]
         return candidates
 

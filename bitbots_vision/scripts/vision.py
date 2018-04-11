@@ -121,8 +121,9 @@ class Vision:
                          Image,
                          self._image_callback,
                          queue_size=rospy.get_param(
-                             'visionparams/ROS/img_queue_size'))
-
+                             'visionparams/ROS/img_queue_size'),
+                         buff_size=60000000)
+        # https://github.com/ros/ros_comm/issues/536
         if self.debug:
             rospy.logwarn("Debug windows are enabled")
         else:
