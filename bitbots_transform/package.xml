@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <package>
   <name>bitbots_transform</name>
-  <version>0.0.0</version>
-  <description>The bitbots_transform package</description>
+  <version>0.1.0</version>
+  <description>bitbots_transform provides a node to transform from a pixel in an image to real world coordinates.
+    CameraInfo and the TF-Tree needs to be available for it to properly work</description>
 
-  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
 
-  <license>BSD</license>
+  <license>TODO</license>
 
 
   <buildtool_depend>catkin</buildtool_depend>
@@ -14,6 +15,7 @@
   <build_depend>rospy</build_depend>
   <build_depend>humanoid_league_msgs</build_depend>
   <build_depend>message_generation</build_depend>
+  <build_depend>std_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
 
   <run_depend>rospy</run_depend>

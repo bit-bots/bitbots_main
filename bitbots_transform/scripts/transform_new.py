@@ -1,22 +1,22 @@
 #!/usr/bin/env python2.7
 import rospy
-from humanoid_league_msgs.msg import BallRelative, BallInImage, BallsInImage, \
+from humanoid_league_msgs.msg import BallRelative, BallsInImage, \
     LineInformationInImage, LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import CameraInfo
 import tf2_ros
 import math
-from tf2_geometry_msgs import PoseStamped
+from tf2_geometry_msgs import PoseStamped, PointStamped
 from visualization_msgs.msg import Marker
 import numpy as np
-import tf
-import tf_conversions
 
 
 class TransformBall(object):
     def __init__(self):
+        rospy.init_node("bitbots_transformer")
+
         rospy.Subscriber("ball_in_image", BallsInImage, self._callback_ball, queue_size=1)
-        rospy.Subscriber("line_in_image", LineInformationInImage, self._callback_lines, queue_size=1)
+        #rospy.Subscriber("line_in_image", LineInformationInImage, self._callback_lines, queue_size=1)
         rospy.Subscriber("/minibot/camera/camera_info", CameraInfo, self._callback_camera_info, queue_size=1)
 
         self.marker_pub = rospy.Publisher("ballpoint", Marker, queue_size=10)
@@ -25,16 +25,15 @@ class TransformBall(object):
 
         self.caminfo = None
 
-        rospy.init_node("bitbots_transformer")
-        #rospy.set_param("/object_height", 0.1)
+
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(5.0))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
         self.ball_height = 0.1
-        rospy.sleep(1)
         rospy.spin()
 
-
+    def _callback_camera_info(self, camerainfo):
+        self.caminfo = camerainfo
 
     def _callback_ball(self, msg):
         br = BallRelative()
@@ -123,12 +122,8 @@ class TransformBall(object):
         fov = 1.012300
         focal_length = 1.0 / math.tan(fov/2)
 
-        point_on_image = PoseStamped()
-        point_on_image.header.frame_id = "L_CAMERA"
-        point_on_image.header.stamp = stamp
-        point_on_image.pose.position.x = focal_length
-        point_on_image.pose.position.y = -normalized_x
-        point_on_image.pose.position.z = normalized_y
+
+        point_on_image = np.array([focal_length, -normalized_x, normalized_y])
 
         tf_right = self.tf_buffer.lookup_transform("L_CAMERA", "right_foot_sole_link", stamp)
         tf_left = self.tf_buffer.lookup_transform("L_CAMERA", "left_foot_sole_link", stamp)
@@ -145,137 +140,41 @@ class TransformBall(object):
         else:
             ground_foot = "left_foot_sole_link"
 
-        print ground_foot
 
-        field_normal = PoseStamped()
+        field_normal = PointStamped()
         field_normal.header.frame_id = ground_foot
         field_normal.header.stamp = stamp
-        field_normal.pose.position.x = 0.0
-        field_normal.pose.position.y = 0.0
-        field_normal.pose.position.z = 1.0
+        field_normal.point.x = 0.0
+        field_normal.point.y = 0.0
+        field_normal.point.z = 1.0
         field_normal = self.tf_buffer.transform(field_normal, "L_CAMERA")
 
-        field_point = PoseStamped()
+        field_point = PointStamped()
         field_point.header.frame_id = ground_foot
         field_point.header.stamp = stamp
-        field_point.pose.position.x = 0.0
-        field_point.pose.position.y = 0.0
-        field_point.pose.position.z = object_height
+        field_point.point.x = 0.0
+        field_point.point.y = 0.0
+        field_point.point.z = object_height
         field_point = self.tf_buffer.transform(field_point, "L_CAMERA")
 
-        field_normal.pose.position.x = field_point.pose.position.x - field_normal.pose.position.x
-        field_normal.pose.position.y = field_point.pose.position.y - field_normal.pose.position.y
-        field_normal.pose.position.z = field_point.pose.position.z - field_normal.pose.position.z
+        field_normal = np.array([field_normal.point.x, field_normal.point.y, field_normal.point.z])
+        field_point = np.array([field_point.point.x, field_point.point.y, field_point.point.z])
+        field_normal = field_point - field_normal
 
-        msg = Marker()
-        msg.header.frame_id = "L_CAMERA"
-        msg.header.stamp = rospy.get_rostime() - rospy.Duration(0.2)
-        msg.pose.position = field_normal.pose.position
-
-        msg.pose.orientation.x = 0
-        msg.pose.orientation.y = 0
-        msg.pose.orientation.z = 0
-        msg.pose.orientation.w = 1
-        msg.type = Marker.SPHERE
-        msg.lifetime = rospy.Duration(100)
-        msg.action = msg.ADD
-        msg.ns = "ball_finder"
-        msg.id = 1
-        msg.scale.x = 0.05
-        msg.scale.y = 0.05
-        msg.scale.z = 0.05
-        msg.color.r = 0
-        msg.color.g = 0
-        msg.color.b = 1
-        msg.color.a = 1
-
-        self.marker_pub.publish(msg)
-
-        msg.pose.position = field_point.pose.position
-        msg.id = 2
-        self.marker_pub.publish(msg)
-
-        msg.header.frame_id = "L_CAMERA"
-        msg.type = Marker.CUBE
-        msg.id = 3
-        msg.scale.x = 5
-        msg.scale.y = 5
-        msg.scale.z = 0.01
-        msg.pose.position = field_point.pose.position
-        msg.pose.orientation = self.tf_buffer.lookup_transform("L_CAMERA", ground_foot, stamp).transform.rotation
-
-        self.marker_pub.publish(msg)
-
-        msg.header.frame_id = "L_CAMERA"
-        msg.type = Marker.SPHERE
-        msg.id = 4
-        msg.color.r = 1
-        msg.color.g = 1
-        msg.color.b = 1
-        msg.scale.x = 0.05
-        msg.scale.y = 0.05
-        msg.scale.z = 0.05
-        msg.pose.position = point_on_image.pose.position
-
-        self.marker_pub.publish(msg)
-
-        """np_field_normal = np.array([field_normal.pose.position.x, field_normal.pose.position.y, field_normal.pose.position.z])
-        np_field_point = np.array([field_point.pose.position.x, field_point.pose.position.y, field_point.pose.position.z])
-        np_point_on_image = np.array([point_on_image.pose.position.x, point_on_image.pose.position.y, point_on_image.pose.position.z])
-        p = self.line_plane_collision(np_field_normal, np_field_point, np_point_on_image, np.array([0, 0, 0]))
-        
-        #if an intersection can be found...
-        if len(p):
-            point = Point()
-            point.x = p[0]
-            point.y = p[1]
-            point.z = p[2]
-            return point
-        else:
-            return None"""
-
-        p = self.GetIntersectionEG(field_point.pose.position, field_normal.pose.position, point_on_image.pose.position)
-
-        msg.header.frame_id = "L_CAMERA"
-        msg.type = Marker.SPHERE
-        msg.id = 5
-        msg.scale.x = 0.08
-        msg.scale.y = 0.08
-        msg.scale.z = 0.08
-        msg.color.b = 0
-        msg.color.r = 1
-        msg.color.g = 0
-        msg.pose.position = p
-
-        self.marker_pub.publish(msg)
-
-        print self.tf_buffer.transform(field_point, "world")
-        print self.tf_buffer.transform(field_normal, "world")
-        print self.tf_buffer.transform(point_on_image, "world")
-        return p
+        return line_plane_collision(field_normal, field_point, point_on_image)
 
 
+def line_plane_collision(planeNormal, planePoint, rayDirection,  epsilon=1e-3):
+    ndotu = planeNormal.dot(rayDirection)
+    # checking if intersection can be found at reasonable distance or at all
+    if abs(ndotu) < epsilon:
+        return None
 
-    def GetIntersectionEG(self, Ep, normal, Gr, epsilon=1e-6):
+    si = -planeNormal.dot(- planePoint) / ndotu
+    intersection = -planePoint + si * rayDirection + planePoint
+    return Point(intersection[0], intersection[1], intersection[2])
 
-        t = ((Ep.x * normal.x) + (Ep.y * normal.y) + (Ep.z * normal.z)) / \
-            ((normal.x * Gr.x) + (normal.y * Gr.y) + (normal.z * Gr.z))
-        print t
-        return Point(Gr.x * t, Gr.y * t, Gr.z * t)
 
-    def line_plane_collision(self, planeNormal, planePoint, rayDirection, rayPoint, epsilon=1e-6):
-
-        ndotu = planeNormal.dot(rayDirection)
-        if abs(ndotu) < epsilon:
-            return []
-
-        w = rayPoint - planePoint
-        si = -planeNormal.dot(w) / ndotu
-        Psi = w + si * rayDirection + planePoint
-        return Psi
-
-    def _callback_camera_info(self, camerainfo):
-        self.caminfo = camerainfo
 
 
 if __name__ == "__main__":
