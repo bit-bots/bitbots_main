@@ -1,12 +1,12 @@
 import cv2
 import numpy as np
-from ball import Ball
+from candidate import CandidateFinder, Candidate
 import itertools
 import random
 from .live_fcnn_03 import FCNN03
 
 
-class FcnnHandler:
+class FcnnHandler(CandidateFinder):
     def __init__(self, image, fcnn, config):
         self._image = image
         self._fcnn = fcnn
@@ -42,7 +42,7 @@ class FcnnHandler:
         return self._rated_candidates
 
     def inspect_candidate(self, candidate):
-        # type: (Ball) -> bool
+        # type: (Candidate) -> bool
         return candidate.rating >= self._threshold \
                and self._min_ball_diameter \
                <= candidate.get_diameter() \
@@ -95,8 +95,8 @@ class FcnnHandler:
 
     def _get_raw_candidates(self):
         """
-        returns a list of candidates [(Ball), ...]
-        :return: a list of candidates [(Ball), ...]
+        returns a list of candidates [(Candidate), ...]
+        :return: a list of candidates [(Candidate), ...]
         """
         out = self.get_fcnn_output()
         r, out_bin = cv2.threshold(out, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)

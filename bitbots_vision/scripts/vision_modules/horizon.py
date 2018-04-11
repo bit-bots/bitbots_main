@@ -8,7 +8,7 @@ from operator import itemgetter
 class HorizonDetector:
 
     def __init__(self, image, color_detector, config):
-        # type: (np.matrix, ColorDetector, dict) -> HorizonDetector
+        # type: (np.matrix, ColorDetector, dict) -> None
         self._image = image
         self._color_detector = color_detector
         self._horizon_points = None
@@ -102,11 +102,11 @@ class HorizonDetector:
 
     def balls_under_horizon(self, balls, y_offset=0):
         # type: (list, int) -> list
-        return [ball for ball in balls if self.candidate_under_horizon(
-            (ball.get_upper_left_x(),
-             ball.get_upper_left_y(),
-             ball.get_width(),
-             ball.get_height()),
+        return [candidate for candidate in balls if self.candidate_under_horizon(
+            (candidate.get_upper_left_x(),
+             candidate.get_upper_left_y(),
+             candidate.get_width(),
+             candidate.get_height()),
             y_offset)]
 
     def point_under_horizon(self, point, offset=0):

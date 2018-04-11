@@ -1,10 +1,9 @@
 
 import sys
 from random import randint
-from humanoid_league_msgs.msg import LineSegmentInImage
-from.color import ColorDetector
-from.horizon import HorizonDetector
-from .ball import Ball
+from .color import ColorDetector
+from .horizon import HorizonDetector
+from .candidate import Candidate
 import math
 import numpy as np
 import cv2
@@ -12,7 +11,7 @@ import cv2
 
 class LineDetector:
     def __init__(self, image, candidates, white_detector, horizon_detector, config):
-        # type: (np.matrix, list, ColorDetector, HorizonDetector, dict) -> LineDetector
+        # type: (np.matrix, list, ColorDetector, HorizonDetector, dict) -> None
         self._image = image
         self._blurred_image = None
         self._candidates = []
@@ -53,7 +52,7 @@ class LineDetector:
         return self._linepoints
 
     def _point_in_candidate(self, point, candidate):
-        # type: (tuple, Ball) -> bool
+        # type: (tuple, Candidate) -> bool
         return candidate.get_upper_left_x() <= point[0] <= candidate.get_upper_left_x() + candidate.get_width() and \
                candidate.get_upper_left_y() <= point[1] <= candidate.get_upper_left_y() + candidate.get_height()
 

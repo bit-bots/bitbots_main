@@ -1,5 +1,5 @@
 import cv2
-from ball import Ball
+from candidate import Candidate
 # NOTE: cv2 drawing functions use (x, y) points!
 
 
@@ -21,7 +21,7 @@ class DebugImage:
     def draw_ball_candidates(self, ball_candidates, color, thickness=1):
         """
         draws a circle around every coordinate where a ball candidate was found
-        :param ball_candidates: list of cooordinates of ball candidates of type Ball
+        :param ball_candidates: list of cooordinates of ball candidates of type Candidate
         :param color: color of the circle to draw
         :return void:
         """
