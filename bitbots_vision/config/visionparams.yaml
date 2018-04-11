@@ -5,6 +5,7 @@ visionparams:
         threshold: .5 # not in use
         expand_stepsize: 4
         pointcloud_stepsize: 10
+        shuffle_candidate_list: true  # shuffles the list of possible candidate points
 
     field_color_detector:
         path: '/config/color_spaces/Iran_Feld_nah.yaml'

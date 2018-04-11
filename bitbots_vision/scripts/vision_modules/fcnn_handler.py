@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from ball import Ball
 import itertools
+import random
 from .live_fcnn_03 import FCNN03
 
 
@@ -18,6 +19,7 @@ class FcnnHandler:
         self._threshold = config['threshold']  # minimal activation
         self._expand_stepsize = config['expand_stepsize']  #
         self._pointcloud_stepsize = config['pointcloud_stepsize']  #
+        self._shuffle_candidate_list = config['shuffle_candidate_list']
 
         # draw the output when debug is enabled
         self.draw_debug_image()
@@ -106,6 +108,8 @@ class FcnnHandler:
             y += self._pointcloud_stepsize
         # generate carthesian product of list
         points = list(itertools.product(xlist, ylist))
+        if self._shuffle_candidate_list:
+            random.shuffle(points)
         # expand points
         while points:
             point = points[-1]

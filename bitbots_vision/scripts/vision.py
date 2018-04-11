@@ -71,6 +71,7 @@ class Vision:
             'threshold': rospy.get_param('visionparams/ball_fcnn/threshold'),
             'expand_stepsize': rospy.get_param('visionparams/ball_fcnn/expand_stepsize'),
             'pointcloud_stepsize': rospy.get_param('visionparams/ball_fcnn/pointcloud_stepsize'),
+            'shuffle_candidate_list': rospy.get_param('visionparams/ball_fcnn/shuffle_candidate_list'),
         }
 
         # set up horizon config
