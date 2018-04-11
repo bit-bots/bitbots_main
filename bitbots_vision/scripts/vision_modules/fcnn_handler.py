@@ -49,7 +49,7 @@ class FcnnHandler:
                     self._top_candidate = list([max(
                         self.get_top_candidates(),
                         key=lambda x: x.rating
-                    )[0]])
+                    )])
                 else:
                     self._top_candidate = list()  # empty list -> initialized, but no candidate available
             else:
@@ -91,14 +91,14 @@ class FcnnHandler:
         candidates = list()
         # creating points
         # x shape
-        xshape = self._fcnn.output_shape[1]
+        xshape = self._image.shape[1]
         xlist = []
         x = 0
         while x < xshape:
             xlist.append(x)
             x += self._pointcloud_stepsize
         # y shape
-        yshape = self._fcnn.output_shape[0]
+        yshape = self._image.shape[0]
         ylist = []
         y = 0
         while y < yshape:
@@ -108,10 +108,13 @@ class FcnnHandler:
         points = list(itertools.product(xlist, ylist))
         # expand points
         while points:
-            point = points.pop()
+            point = points[-1]
             lx, uy = point
             rx, ly = point
             # expand to the left
+            if not out_bin[point[1]][point[0]]:
+                points = [other_point for other_point in points if point != other_point]
+                continue
             next_lx = max(lx - self._expand_stepsize, 0)
             while next_lx > 0 and out_bin[point[1]][next_lx]:
                 lx = next_lx
@@ -134,9 +137,7 @@ class FcnnHandler:
 
             width, height = rx - lx, ly - uy
             candidates.append(Ball(lx, uy, width, height))
-            for other_point in points:
-                if lx <= other_point[0] <= rx and uy <= other_point[1] <= ly:
-                    points.remove(other_point)
+            points = [other_point for other_point in points if point != other_point and not (lx <= other_point[0] <= rx and uy <= other_point[1] <= ly)]
         return candidates
 
     def draw_debug_image(self):
