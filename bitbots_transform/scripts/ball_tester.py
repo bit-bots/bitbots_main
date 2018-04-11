@@ -7,23 +7,26 @@ import signal
 
 
 def signal_term_handler(signal, frame):
-  rospy.logerr('User Keyboard interrupt')
-  sys.exit(0)
+    rospy.logerr('User Keyboard interrupt')
+    sys.exit(0)
+
 
 if __name__ == "__main__":
     # handle keyboard interrupts
     signal.signal(signal.SIGINT, signal_term_handler)
-    
-    rospy.init_node("transform_tester")
+
+    rospy.init_node("ball_tester")
     pub = rospy.Publisher("ball_in_image", BallsInImage,queue_size=10)
 
     while True:
         x_str = raw_input("x:")
-        y_str = raw_input("y:")
-
-
         try:
             x = int(x_str)
+        except ValueError:
+            print("try again, without fucking this time up please")
+            continue
+        y_str = raw_input("y:")
+        try:
             y = int(y_str)
         except ValueError:
             print("try again, without fucking this time up please")
