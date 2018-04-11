@@ -20,6 +20,8 @@ class FcnnHandler:
         self._expand_stepsize = config['expand_stepsize']  #
         self._pointcloud_stepsize = config['pointcloud_stepsize']  #
         self._shuffle_candidate_list = config['shuffle_candidate_list']
+        self._min_ball_diameter = config['min_ball_diameter']
+        self._max_ball_diameter = config['max_ball_diameter']
 
         # draw the output when debug is enabled
         self.draw_debug_image()
@@ -35,8 +37,16 @@ class FcnnHandler:
                 out = self.get_fcnn_output()
                 line = out[candidate.get_center_y()]
                 candidate.rating = line[candidate.get_center_x()] / 255.0
-                self._rated_candidates.append(candidate)
+                if self.inspect_candidate(candidate):
+                    self._rated_candidates.append(candidate)
         return self._rated_candidates
+
+    def inspect_candidate(self, candidate):
+        # type: (Ball) -> bool
+        return candidate.rating >= self._threshold \
+               and self._min_ball_diameter \
+               <= candidate.get_diameter() \
+               <= self._max_ball_diameter
 
     def get_top_candidate(self):
         """

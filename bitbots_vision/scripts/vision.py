@@ -72,6 +72,8 @@ class Vision:
             'expand_stepsize': rospy.get_param('visionparams/ball_fcnn/expand_stepsize'),
             'pointcloud_stepsize': rospy.get_param('visionparams/ball_fcnn/pointcloud_stepsize'),
             'shuffle_candidate_list': rospy.get_param('visionparams/ball_fcnn/shuffle_candidate_list'),
+            'min_ball_diameter': rospy.get_param('visionparams/ball_fcnn/min_ball_diameter'),
+            'max_ball_diameter': rospy.get_param('visionparams/ball_fcnn/max_ball_diameter'),
         }
 
         # set up horizon config
