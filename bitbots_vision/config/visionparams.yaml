@@ -27,7 +27,8 @@ visionparams:
         min_precision_pix: 3
 
     vision:
-        debug: false
+        debug: true
+        use_fcnn: true
         ball_candidate_horizon_y_offset: 0
         ball_candidate_rating_threshold: 0.5
 
@@ -44,14 +45,14 @@ visionparams:
         ball_msg_topic: 'ball_in_image'
         line_msg_topic: 'line_in_image'
 
-    # ball_finder:
-    #     classify_threshold: 0.5
-    #     scale_factor: 1.1
-    #     min_neighbors: 1
-    #     min_size: 10
+    ball_finder:
+        classify_threshold: 0.5
+        scale_factor: 1.1
+        min_neighbors: 1
+        min_size: 10
 
-    # classifier:
-    #    model_path: '/models/classifier_01'
+    classifier:
+       model_path: '/models/classifier_01'
 
-    # cascade_classifier:
-    #    path: '/classifier/cascadeNew.xml'
+    cascade_classifier:
+       path: '/classifier/cascadeNew.xml'
