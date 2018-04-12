@@ -15,7 +15,7 @@ class Vision:
 
     def __init__(self):
         rospack = rospkg.RosPack()
-        package_path = rospack.get_path('bitbots_vision_minibot')
+        package_path = rospack.get_path('bitbots_vision_cascade')
 
         self._ball_candidate_threshold = rospy.get_param(
             'visionparams/vision/ball_candidate_rating_threshold')
@@ -85,7 +85,7 @@ class Vision:
         }
         # ROS-Stuff:
 
-        rospy.init_node('bitbots_vision_minibot')
+        rospy.init_node('bitbots_vision_cascade')
         # publisher:
         self.pub_balls = rospy.Publisher(
             rospy.get_param('visionparams/ROS/ball_msg_topic'),

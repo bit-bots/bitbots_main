@@ -1,0 +1,5 @@
+<launch>
+    <rosparam command="load" file="$(find bitbots_vision_cascade)/config/debug_visionparams.yaml" />
+    <node pkg="bitbots_vision_cascade" type="vision.py" name="bitbots_vision_cascade" output="screen" >
+    </node>
+</launch>

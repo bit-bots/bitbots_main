@@ -1,5 +1,5 @@
 <package format="2">
-    <name>bitbots_vision_minibot</name>
+    <name>bitbots_vision_cascade</name>
     <description>
         vision module
     </description>
