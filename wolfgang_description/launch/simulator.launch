@@ -1,0 +1,35 @@
+<launch>
+    <arg name="ns" default="/wolves" />
+
+    <param name="/use_sim_time" value="true" />
+
+    <param name="robot_description" textfile="$(find wolves_robot_description)/urdf/wolves.urdf" />
+
+	<include file="$(find gazebo_ros)/launch/empty_world.launch">
+		<arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer.world"/>
+		<arg name="paused" value="true" />
+	</include>
+
+    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg ns)" type="spawn_model" args="-file $(find wolves_robot_description)/urdf/wolves.urdf -urdf -model wolves -x -1.5 -y 0.0 -z 0.0" />
+
+    <rosparam file="$(find wolves_robot_description)/config/wolves_control.yaml" command="load"/>
+
+
+    <!-- load the controllers -->
+      <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+       output="screen" ns="wolves" args="joint_state_controller joint_trajectory_action_controller --shutdown-timeout 0.1" />
+
+      <!-- convert joint states to TF transforms for rviz, etc -->
+      <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+        respawn="false" output="screen">
+        <remap from="/joint_states" to="/wolves/joint_states" />
+      </node>
+
+
+
+  <!--<node name="rviz" pkg="rviz" type="rviz" output="screen"
+      args="-d $(find wolves_robot_description)/config/wolves.rviz" >
+
+  </node>-->
+
+</launch>
