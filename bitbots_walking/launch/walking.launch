@@ -1,6 +1,0 @@
-<launch>
-    <param name="robot_type_name" value="Minibot"/> <!-- Todo this is only for testing -->
-
-    <rosparam file="$(find bitbots_walking)/config/zmpwalk.yaml" command="load"/>
-    <node name="walking" pkg="bitbots_walking" type="walking_node.py" respawn="true"/>
-</launch>
