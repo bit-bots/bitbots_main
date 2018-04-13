@@ -37,8 +37,13 @@ class FcnnHandler(CandidateFinder):
             self._rated_candidates = list()
             for candidate in self._get_raw_candidates():
                 out = self.get_fcnn_output()
-                line = out[candidate.get_center_y()]
-                candidate.rating = line[candidate.get_center_x()] / 255.0
+                candidate.rating = np.mean(
+                    out[
+                        candidate.get_upper_left_y():
+                        candidate.get_upper_left_y() + candidate.get_height(),
+                        candidate.get_upper_left_x():
+                        candidate.get_upper_left_x() + candidate.get_width()]
+                ) / 255.0
                 if self.inspect_candidate(candidate):
                     self._rated_candidates.append(candidate)
         return self._rated_candidates
