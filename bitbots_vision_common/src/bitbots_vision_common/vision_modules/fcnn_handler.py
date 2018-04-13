@@ -22,6 +22,8 @@ class FcnnHandler(CandidateFinder):
         self._shuffle_candidate_list = config['shuffle_candidate_list']
         self._min_ball_diameter = config['min_ball_diameter']
         self._max_ball_diameter = config['max_ball_diameter']
+        self._candidate_refinement_iteration_count = \
+            config['candidate_refinement_iteration_count']
 
         # draw the output when debug is enabled
         self.draw_debug_image()
@@ -148,7 +150,38 @@ class FcnnHandler(CandidateFinder):
             while next_ly < out_bin.shape[0] - 1 and out_bin[next_ly][point[0]]:
                 ly = next_ly
                 next_ly = min(ly + self._expand_stepsize, out_bin.shape[0] - 1)
+            for i in range(self._candidate_refinement_iteration_count):
+                # expand from the middle of the borders of the found candidate
+                width, height = rx - lx, ly - uy
 
+                buffer_x = lx + width // 2
+                buffer_y = uy + height // 2
+
+                # expand to the left
+                next_lx = max(lx - self._expand_stepsize, 0)
+                while next_lx > 0 and out_bin[buffer_y][next_lx]:
+                    lx = next_lx
+                    next_lx = max(lx - self._expand_stepsize, 0)
+
+                # expand to the right
+                next_rx = min(rx + self._expand_stepsize, out_bin.shape[1] - 1)
+                while next_rx < out_bin.shape[1] - 1 and out_bin[buffer_y][next_rx]:
+                    rx = next_rx
+                    next_rx = min(rx + self._expand_stepsize, out_bin.shape[1] - 1)
+
+                # expand upwards
+                next_uy = max(uy - self._expand_stepsize, 0)
+                while next_uy > 0 and out_bin[next_uy][buffer_x]:
+                    uy = next_uy
+                    next_uy = max(uy - self._expand_stepsize, 0)
+
+                # expand downwards
+                next_ly = min(ly + self._expand_stepsize, out_bin.shape[0] - 1)
+                while next_ly < out_bin.shape[0] - 1 and out_bin[next_ly][buffer_x]:
+                    ly = next_ly
+                    next_ly = min(ly + self._expand_stepsize, out_bin.shape[0] - 1)
+
+            # calculate final width and height
             width, height = rx - lx, ly - uy
             candidates.append(Candidate(lx, uy, width, height))
             points = [other_point for other_point in points if point != other_point and not (lx <= other_point[0] <= rx and uy <= other_point[1] <= ly)]

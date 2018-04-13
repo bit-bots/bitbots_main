@@ -8,6 +8,7 @@ visionparams:
         shuffle_candidate_list: true  # shuffles the list of possible candidate points
         min_ball_diameter: 5
         max_ball_diameter: 200
+        candidate_refinement_iteration_count: 1
 
     field_color_detector:
         path: '/config/color_spaces/Iran_Feld_nah.yaml'

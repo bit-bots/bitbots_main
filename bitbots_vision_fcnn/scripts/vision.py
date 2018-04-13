@@ -41,6 +41,7 @@ class Vision:
             'shuffle_candidate_list': rospy.get_param('visionparams/ball_fcnn/shuffle_candidate_list'),
             'min_ball_diameter': rospy.get_param('visionparams/ball_fcnn/min_ball_diameter'),
             'max_ball_diameter': rospy.get_param('visionparams/ball_fcnn/max_ball_diameter'),
+            'candidate_refinement_iteration_count': rospy.get_param('visionparams/ball_fcnn/candidate_refinement_iteration_count'),
         }
 
         # color config
