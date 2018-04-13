@@ -1,7 +1,7 @@
 #! /usr/bin/env python2
 
 
-from bitbots_vision_common.vision_modules import lines, horizon, color, debug_image, live_classifier, classifier, ball
+from bitbots_vision_common.vision_modules import lines, horizon, color, debug, live_classifier, classifier, ball
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
@@ -142,7 +142,7 @@ class Vision:
 
         # do debug stuff
         if self.debug:
-            debug_image_dings = debug_image.DebugImage(image)
+            debug_image_dings = debug.DebugImage(image)
             debug_image_dings.draw_horizon(
                 horizon_detector.get_horizon_points(),
                 (0, 0, 255))

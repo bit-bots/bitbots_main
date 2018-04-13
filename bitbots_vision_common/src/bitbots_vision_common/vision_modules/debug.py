@@ -38,7 +38,7 @@ class DebugImage:
 
     def imshow(self):
         """
-        saves the image in current directory as "img.png" with edits made to the image from the other functions
+        Shows the drawn debug image.
         :return void:
         """
         cv2.imshow('Debug Image', self.raw_image)
