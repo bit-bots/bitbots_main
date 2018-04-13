@@ -27,8 +27,7 @@ visionparams:
         min_precision_pix: 3
 
     vision:
-        debug: true
-        use_fcnn: true
+        debug: false
         ball_candidate_horizon_y_offset: 0
         ball_candidate_rating_threshold: 0.5
 
