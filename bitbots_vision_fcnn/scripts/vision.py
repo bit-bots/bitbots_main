@@ -39,8 +39,8 @@ class Vision:
             'expand_stepsize': rospy.get_param('visionparams/ball_fcnn/expand_stepsize'),
             'pointcloud_stepsize': rospy.get_param('visionparams/ball_fcnn/pointcloud_stepsize'),
             'shuffle_candidate_list': rospy.get_param('visionparams/ball_fcnn/shuffle_candidate_list'),
-            'min_ball_diameter': rospy.get_param('visionparams/ball_fcnn/min_ball_diameter'),
-            'max_ball_diameter': rospy.get_param('visionparams/ball_fcnn/max_ball_diameter'),
+            'min_candidate_diameter': rospy.get_param('visionparams/ball_fcnn/min_candidate_diameter'),
+            'max_candidate_diameter': rospy.get_param('visionparams/ball_fcnn/max_candidate_diameter'),
             'candidate_refinement_iteration_count': rospy.get_param('visionparams/ball_fcnn/candidate_refinement_iteration_count'),
         }
 

@@ -20,8 +20,8 @@ class FcnnHandler(CandidateFinder):
         self._expand_stepsize = config['expand_stepsize']  #
         self._pointcloud_stepsize = config['pointcloud_stepsize']  #
         self._shuffle_candidate_list = config['shuffle_candidate_list']
-        self._min_ball_diameter = config['min_ball_diameter']
-        self._max_ball_diameter = config['max_ball_diameter']
+        self._min_candidate_diameter = config['min_candidate_diameter']
+        self._max_candidate_diameter = config['max_candidate_diameter']
         self._candidate_refinement_iteration_count = \
             config['candidate_refinement_iteration_count']
 
@@ -51,9 +51,9 @@ class FcnnHandler(CandidateFinder):
     def inspect_candidate(self, candidate):
         # type: (Candidate) -> bool
         return candidate.rating >= self._threshold \
-               and self._min_ball_diameter \
+               and self._min_candidate_diameter \
                <= candidate.get_diameter() \
-               <= self._max_ball_diameter
+               <= self._max_candidate_diameter
 
     def get_top_candidate(self):
         """

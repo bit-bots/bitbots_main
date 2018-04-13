@@ -6,8 +6,8 @@ visionparams:
         expand_stepsize: 4
         pointcloud_stepsize: 10
         shuffle_candidate_list: true  # shuffles the list of possible candidate points
-        min_ball_diameter: 5
-        max_ball_diameter: 200
+        min_candidate_diameter: 10
+        max_candidate_diameter: 200
         candidate_refinement_iteration_count: 1
 
     field_color_detector:
