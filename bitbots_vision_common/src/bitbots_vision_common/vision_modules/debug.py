@@ -1,4 +1,5 @@
 import cv2
+import rospy
 from candidate import Candidate
 # NOTE: cv2 drawing functions use (x, y) points!
 
@@ -43,3 +44,32 @@ class DebugImage:
         """
         cv2.imshow('Debug Image', self.raw_image)
         cv2.waitKey(1)
+
+
+class DebugPrinter:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def print_candidates_info(candidates, name='candidate'):
+        if candidates:
+            rospy.loginfo('{0} candidates:'.format(len(candidates)))
+        else:
+            rospy.loginfo('0 candidates.')
+        for candidate in candidates:
+            DebugPrinter.print_candidate_info(candidate, name=name, prefix='- ')
+
+    @staticmethod
+    def print_candidate_info(candidate, name='candidate', prefix=''):
+        rospy.loginfo(
+            '{0}{1}: x1,y1: {2},{3} | width,height: {4},{5} | rating: {6}'
+            .format(
+                prefix,
+                name,
+                candidate.get_upper_left_x(),
+                candidate.get_upper_left_y(),
+                candidate.get_width(),
+                candidate.get_height(),
+                candidate.rating))
+
+

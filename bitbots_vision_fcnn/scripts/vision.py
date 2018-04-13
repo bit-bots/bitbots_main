@@ -145,7 +145,7 @@ class Vision:
                     ball_fcnn_handler.get_candidates(),
                     self._ball_candidate_y_offset),
                 (0, 255, 255))
-
+            debug.DebugPrinter.print_candidates_info(ball_fcnn_handler.get_candidates(), 'Ball')
         # create ball msg
         if top_ball_candidate and top_ball_candidate.rating > self._ball_candidate_threshold:
             if self.debug:
