@@ -7,6 +7,23 @@ from .live_fcnn_03 import FCNN03
 
 
 class FcnnHandler(CandidateFinder):
+    """
+    This handles FCNNs, meaning it finds and rates candidates in their output.
+
+    Example configuration (put these values into the config dictionary or just
+    copy them into the vision package config):
+
+    ball_fcnn:
+        model_path: '/models/fcnn03'
+        debug: true  # only active when true and vision/debug is true, too!
+        threshold: .5  # minimal value for a candidate to be considered
+        expand_stepsize: 4
+        pointcloud_stepsize: 10
+        shuffle_candidate_list: true  # shuffles the list of possible candidate points
+        min_candidate_diameter: 10
+        max_candidate_diameter: 200
+        candidate_refinement_iteration_count: 1
+    """
     def __init__(self, image, fcnn, config):
         self._image = image
         self._fcnn = fcnn
