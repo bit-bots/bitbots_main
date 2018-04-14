@@ -29,5 +29,8 @@
   <run_depend>std_msgs</run_depend>
 
   <export>
+    <bitbots_documentation>
+      <language>python3</language>
+    </bitbots_documentation>
   </export>
 </package>
