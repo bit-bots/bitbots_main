@@ -2,7 +2,9 @@
 <package>
   <name>bitbots_pathfinding</name>
   <version>0.0.0</version>
-  <description>The bitbots_pathfinding package</description>
+  <description>The bitbots_pathfinding package is used to find an optimal path for
+      the robot leading from the current position to a given position and direction
+      while avoiding obstacles (e. g. other robots)</description>
 
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
@@ -23,6 +25,8 @@
 
 
   <export>
-
+    <bitbots_documentation>
+      <language>python3</language>
+    </bitbots_documentation>
   </export>
 </package>

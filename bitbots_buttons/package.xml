@@ -21,5 +21,8 @@
   <run_depend>message_runtime</run_depend>
 
   <export>
+    <bitbots_documentation>
+      <language>python3</language>
+    </bitbots_documentation>
   </export>
 </package>

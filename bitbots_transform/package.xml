@@ -25,5 +25,8 @@
 
 
   <export>
+    <bitbots_documentation>
+      <language>python2</language>
+    </bitbots_documentation>
   </export>
 </package>
