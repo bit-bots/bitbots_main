@@ -26,8 +26,8 @@ class TransformBall(object):
         self.marker_pub = rospy.Publisher("ballpoint", Marker, queue_size=10)
         self.ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=10)
         self.line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=10)
-        self.line_relative_pub = rospy.Publisher("goal_relative", GoalRelative, queue_size=10)
-        self.line_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=10)
+        self.goal_relative_pub = rospy.Publisher("goal_relative", GoalRelative, queue_size=10)
+        self.obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=10)
 
         self.camera_info = None
         self.focal_length = None
@@ -110,7 +110,7 @@ class TransformBall(object):
                 rel_seg.start = self.transform(segment.start, field)
                 rel_seg.end = self.transform(segment.end, field)
 
-                rel_seg.confidence = seg.confidence
+                rel_seg.confidence = segment.confidence
 
                 if rel_seg.start is not None and rel_seg.end is not None:
                     rel_inter.segments.append(rel_seg)
@@ -123,7 +123,7 @@ class TransformBall(object):
 
             if not broken:
                 line.intersections.append(rel_inter)
-
+        
         self.line_relative_pub.publish(line)
 
     def _callback_goal(self, msg):
