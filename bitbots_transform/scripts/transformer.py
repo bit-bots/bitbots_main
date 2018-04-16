@@ -123,7 +123,7 @@ class TransformBall(object):
 
             if not broken:
                 line.intersections.append(rel_inter)
-        
+
         self.line_relative_pub.publish(line)
 
     def _callback_goal(self, msg):

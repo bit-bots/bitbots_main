@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.7
 import rospy
-from sensor_msgs.msg import CameraInfo
+
 
 from geometry_msgs.msg import TransformStamped
 from gazebo_msgs.msg import ModelStates
@@ -37,10 +37,15 @@ class TFWorld(object):
         transform = TransformStamped()
         transform.header.frame_id = "world"
         transform.header.stamp = rospy.Time.now()
-        transform.child_frame_id = "base_link"
-        transform.transform.translation = msg.pose[i].position
+        transform.child_frame_id = "map"
+
+        transform.transform.translation.x = -10.15/2
+        transform.transform.translation.y = -7.13/2
         transform.transform.translation.z = 0
-        transform.transform.rotation = msg.pose[i].orientation
+        transform.transform.rotation.x = 0
+        transform.transform.rotation.y = 0
+        transform.transform.rotation.z = 0
+        transform.transform.rotation.w = 1
         br.sendTransformMessage(transform)
 
 
