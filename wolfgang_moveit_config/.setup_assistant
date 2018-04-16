@@ -1,0 +1,10 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: wolves_robot_description
+    relative_path: urdf/wolves_renamed.urdf
+  SRDF:
+    relative_path: config/wolves.srdf
+  CONFIG:
+    author_name: Marc Bestmann
+    author_email: bestmann@informatik.uni-hamburg.de
+    generated_timestamp: 1520259033
