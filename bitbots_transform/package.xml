@@ -27,6 +27,7 @@
   <export>
     <bitbots_documentation>
       <language>python2</language>
+      <status>sim_tested</status>
     </bitbots_documentation>
   </export>
 </package>

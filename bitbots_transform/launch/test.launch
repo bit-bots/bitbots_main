@@ -1,7 +1,4 @@
 <launch>
     <!--include file="$(find bitbots_common)/launch/start_simulator_base.launch" /-->
-    <node name="transform_new" pkg="bitbots_transform" type="transform_new.py" respawn="true"/>
-    <node name="tf_world" pkg="bitbots_transform" type="tf_world.py"/>
-    <node name="image_view" pkg="image_view" type="image_view" args="image:=/minibot/camera/image_raw theora"/>
-    <node name="viz" pkg="humanoid_league_rviz_marker" type="show_robocup_objects.py"/>
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localisation)/models/linemap.yaml"/>
 </launch>

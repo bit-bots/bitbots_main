@@ -30,6 +30,6 @@ if __name__ == "__main__":
         if i < 1.5:
             i += 0.1
         else:
-            i = 0
+            i = -1.5
 
     rospy.spin()

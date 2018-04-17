@@ -5,7 +5,8 @@ LineInformationInImage, LineInformationRelative, LineSegmentRelative, LineCircle
 ObstaclesInImage, ObstaclesRelative, ObstacleRelative, \
 GoalInImage, GoalRelative
 from geometry_msgs.msg import Point
-from sensor_msgs.msg import CameraInfo
+from sensor_msgs.msg import CameraInfo, PointCloud2
+import sensor_msgs.point_cloud2 as pc2
 import tf2_ros
 import math
 from tf2_geometry_msgs import PointStamped
@@ -17,31 +18,49 @@ class TransformBall(object):
     def __init__(self):
         rospy.init_node("bitbots_transformer")
 
-        rospy.Subscriber("ball_in_image", BallsInImage, self._callback_ball, queue_size=1)
-        rospy.Subscriber("line_in_image", LineInformationInImage, self._callback_lines, queue_size=1)
-        #rospy.Subscriber("goal_in_image", GoalInImage, self._callback_goal, queue_size=1)
-        #rospy.Subscriber("obstacles_in_image", ObstaclesInImage, self._callback_obstacles, queue_size=1)
-        rospy.Subscriber("/minibot/camera/camera_info", CameraInfo, self._callback_camera_info, queue_size=1)
+        rospy.Subscriber(rospy.get_param("transformer/ball/ball_topic", "ball_in_image"),
+                         BallsInImage,
+                         self._callback_ball,
+                         queue_size=1)
+        if rospy.get_param("transformer/lines/lines_relative", True):
+            rospy.Subscriber(rospy.get_param("transformer/lines/lines_topic", "line_in_image"),
+                             LineInformationInImage,
+                             self._callback_lines, queue_size=1)
+        if rospy.get_param("transformer/lines/pointcloud", False):
+            rospy.Subscriber(rospy.get_param("transformer/lines/lines_topic", "line_in_image"),
+                             LineInformationInImage,
+                             self._callback_lines_pc, queue_size=1)
+
+        # rospy.Subscriber("goal_in_image", GoalInImage, self._callback_goal, queue_size=1)
+        # rospy.Subscriber("obstacles_in_image", ObstaclesInImage, self._callback_obstacles, queue_size=1)
+
+        rospy.Subscriber(rospy.get_param("transformer/camera_info/camera_info_topic", "/minibot/camera/camera_info"),
+                         CameraInfo,
+                         self._callback_camera_info,
+                         queue_size=1)
 
         self.marker_pub = rospy.Publisher("ballpoint", Marker, queue_size=10)
         self.ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=10)
-        self.line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=10)
+        if rospy.get_param("transformer/lines/lines_relative", True):
+            self.line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=10)
+        if rospy.get_param("transformer/lines/pointcloud", False):
+            self.line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=10)
         self.goal_relative_pub = rospy.Publisher("goal_relative", GoalRelative, queue_size=10)
         self.obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=10)
 
         self.camera_info = None
         self.focal_length = None
 
-        self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(5.0))
+        self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(10.0))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
-        self.ball_height = 0.1
+        self.ball_height = rospy.get_param("transformer/ball_radius", 0.1)
 
         rospy.spin()
 
-    def _callback_camera_info(self, camerainfo):
-        self.camera_info = camerainfo
-        self.focal_length = float(camerainfo.K[0])/ (camerainfo.width / 2.0)
+    def _callback_camera_info(self, camera_info):
+        self.camera_info = camera_info
+        self.focal_length = camera_info.K[0] / (camera_info.width / 2.0)
 
     def _callback_ball(self, msg):
         if self.camera_info is None:
@@ -126,20 +145,28 @@ class TransformBall(object):
 
         self.line_relative_pub.publish(line)
 
+    def _callback_lines_pc(self, msg):
+        rospy.logerr_throttle(rospy.Rate(1), "i am not going to publish a pointcloud yet, nobody told me how to")
+        # points = []
+        # self.line_relative_pc_pub(pc2.create_cloud_xyz32(msg.header, points))
+
     def _callback_goal(self, msg):
         gr = GoalRelative()
         gr.header.stamp = msg.header.stamp
         gr.header.frame_id = "L_CAMERA"
         return
 
-
     def _callback_obstacles(self, msg):
         return
 
     def get_plane(self, stamp, object_height):
         """ returns a plane which an object is believed to be on as a tuple of a point on this plane and a normal"""
-        tf_right = self.tf_buffer.lookup_transform("L_CAMERA", "right_foot_sole_link", stamp)
-        tf_left = self.tf_buffer.lookup_transform("L_CAMERA", "left_foot_sole_link", stamp)
+        try:
+            tf_right = self.tf_buffer.lookup_transform("L_CAMERA", "right_foot_sole_link", stamp)
+            tf_left = self.tf_buffer.lookup_transform("L_CAMERA", "left_foot_sole_link", stamp)
+        except tf2_ros.LookupException:
+            rospy.logwarn_throttle(rospy.Rate(1), "still waiting for transforms")
+            return
 
         len_r = math.sqrt(tf_right.transform.translation.x ** 2 +
                           tf_right.transform.translation.y ** 2 +
@@ -164,6 +191,7 @@ class TransformBall(object):
         except tf2_ros.LookupException:
             rospy.logwarn_throttle(rospy.Rate(1.0), "Could not transform from " + ground_foot + " to L_CAMERA")
             return None
+
 
         field_point = PointStamped()
         field_point.header.frame_id = ground_foot
