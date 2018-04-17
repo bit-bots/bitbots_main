@@ -1,7 +1,7 @@
 visionparams:
     ball_fcnn:
         model_path: '/models/fcnn03'
-        debug: true  # only active when true and vision/debug is true, too!
+        debug: false  # only active when true and vision/debug is true, too!
         threshold: .5  # minimal value for a candidate to be considered
         expand_stepsize: 4
         pointcloud_stepsize: 10
@@ -26,7 +26,8 @@ visionparams:
         min_precision_pix: 3
 
     vision:
-        debug: true
+        debug: false
+        no_balls: false  # when this is set to true, the vision won't search nor publish balls!
         ball_candidate_horizon_y_offset: 0
         ball_candidate_rating_threshold: 0.5
 

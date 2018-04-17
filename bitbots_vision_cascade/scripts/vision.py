@@ -23,6 +23,7 @@ class Vision:
             'visionparams/vision/ball_candidate_horizon_y_offset')
 
         self.debug = rospy.get_param('visionparams/vision/debug')
+        self.no_balls = rospy.get_param('visionparams/vision/no_balls')
 
         cascade_path = package_path + \
                        rospy.get_param('visionparams/cascade_classifier/path')
@@ -98,13 +99,22 @@ class Vision:
 
         # subscriber:
         self.bridge = CvBridge()
-        rospy.Subscriber(rospy.get_param('visionparams/ROS/img_msg_topic'),
-                         Image,
-                         self._image_callback,
-                         queue_size=rospy.get_param(
-                             'visionparams/ROS/img_queue_size'),
-                         buff_size=60000000)
-        # https://github.com/ros/ros_comm/issues/536
+        if self.no_balls:
+            rospy.Subscriber(rospy.get_param('visionparams/ROS/img_msg_topic'),
+                             Image,
+                             self.handle_image_no_balls(),
+                             queue_size=rospy.get_param(
+                                 'visionparams/ROS/img_queue_size'),
+                             buff_size=60000000)
+            # https://github.com/ros/ros_comm/issues/536
+        else:
+            rospy.Subscriber(rospy.get_param('visionparams/ROS/img_msg_topic'),
+                             Image,
+                             self._image_callback,
+                             queue_size=rospy.get_param(
+                                 'visionparams/ROS/img_queue_size'),
+                             buff_size=60000000)
+            # https://github.com/ros/ros_comm/issues/536
         if self.debug:
             rospy.logwarn("Debug windows are enabled")
         else:
@@ -124,7 +134,7 @@ class Vision:
                                                    self.field_color_detector,
                                                    self.horizon_config)
         ball_finder = ball.BallFinder(image, self.cascade, self.ball_config)
-        ball_classifier = classifier.\
+        ball_classifier = classifier. \
             Classifier(image,
                        self.ball_classifier,
                        horizon_detector.
@@ -147,8 +157,8 @@ class Vision:
                 horizon_detector.get_horizon_points(),
                 (0, 0, 255))
             debug_image_dings.draw_ball_candidates(
-                    ball_classifier.get_candidates(),
-                    (0, 0, 255))
+                ball_classifier.get_candidates(),
+                (0, 0, 255))
             debug_image_dings.draw_ball_candidates(
                 horizon_detector.balls_under_horizon(
                     ball_classifier.get_candidates(),
@@ -187,6 +197,43 @@ class Vision:
         self.pub_lines.publish(line_msg)
         if self.debug:
             # draw linepoints in black
+            debug_image_dings.draw_points(
+                line_detector.get_linepoints(),
+                (0, 0, 0))
+            debug_image_dings.imshow()
+
+    def handle_image_no_balls(self, image_msg):
+        # converting the ROS image message to CV2-image
+        image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
+
+        # setup detectors
+        horizon_detector = horizon.HorizonDetector(image,
+                                                   self.field_color_detector,
+                                                   self.horizon_config)
+
+        line_detector = lines.LineDetector(image,
+                                           list(),
+                                           self.white_color_detector,
+                                           horizon_detector,
+                                           self.lines_config)
+
+        # create line msg
+        line_msg = LineInformationInImage()  # Todo: add lines
+        line_msg.header.frame_id = image_msg.header.frame_id
+        line_msg.header.stamp = image_msg.header.stamp
+        for lp in line_detector.get_linepoints():
+            ls = LineSegmentInImage()
+            ls.start.x = lp[0]
+            ls.start.y = lp[1]
+            ls.end = ls.start
+            line_msg.segments.append(ls)
+        self.pub_lines.publish(line_msg)
+        if self.debug:
+            # draw linepoints in black
+            debug_image_dings = debug.DebugImage(image)
+            debug_image_dings.draw_horizon(
+                horizon_detector.get_horizon_points(),
+                (0, 0, 255))
             debug_image_dings.draw_points(
                 line_detector.get_linepoints(),
                 (0, 0, 0))
