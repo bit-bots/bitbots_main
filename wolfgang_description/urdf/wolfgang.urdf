@@ -18,14 +18,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/trunk_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/trunk_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/trunk_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/trunk_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -38,14 +38,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_hip_yaw_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/right_hip_yaw_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_hip_yaw_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/right_hip_yaw_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -58,14 +58,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_hip_roll_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/right_hip_roll_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_hip_roll_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/right_hip_roll_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -78,14 +78,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_thigh_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/left_thigh_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_thigh_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/left_thigh_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -98,14 +98,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_shank_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/right_shank_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_shank_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/right_shank_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -118,14 +118,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_ankle_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/right_ankle_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_ankle_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/right_ankle_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -138,14 +138,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_foot_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/right_foot_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_foot_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/right_foot_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -158,14 +158,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_hip_yaw_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/left_hip_yaw_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_hip_yaw_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/left_hip_yaw_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -178,14 +178,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.033 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_hip_roll_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/left_hip_roll_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0.033 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_hip_roll_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/left_hip_roll_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -198,14 +198,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_thigh_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/left_thigh_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_thigh_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/left_thigh_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -218,14 +218,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_shank_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/left_shank_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_shank_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/left_shank_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -238,14 +238,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_ankle_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/left_ankle_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_ankle_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/left_ankle_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -258,14 +258,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_foot_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/left_foot_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_foot_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/left_foot_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -278,14 +278,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_shoulder_pitch_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/right_shoulder_pitch_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_shoulder_pitch_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/right_shoulder_pitch_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -298,14 +298,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_shoulder_arm_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/right_shoulder_arm_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_shoulder_arm_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/right_shoulder_arm_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -318,14 +318,14 @@
     <visual>
       <origin rpy="0 -1.57 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_lower_arm_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/right_lower_arm_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 -1.57 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/right_lower_arm_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/right_lower_arm_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -338,14 +338,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_shoulder_pitch_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/left_shoulder_pitch_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_shoulder_pitch_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/left_shoulder_pitch_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -358,14 +358,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_upper_arm_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/left_upper_arm_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_upper_arm_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/left_upper_arm_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -378,14 +378,14 @@
     <visual>
       <origin rpy="0 -1.57 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_lower_arm_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/left_lower_arm_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 -1.57 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/left_lower_arm_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/left_lower_arm_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -398,14 +398,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/neck_link.STL"/>
+        <mesh filename="package://wolfgang_description/mesh/neck_link.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://wolves_robot_description/mesh/neck_link.dae"/>
+        <mesh filename="package://wolfgang_description/mesh/neck_link.dae"/>
       </geometry>
     </collision>
   </link>
@@ -419,7 +419,7 @@
     <!--<visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolves_robot_description/mesh/head_link.STL" />
+                <mesh filename="package://wolfgang_description/mesh/head_link.STL" />
             </geometry>
             <material name="">
                 <color rgba="0.8 0.8 0.8 1" />
@@ -428,7 +428,7 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolves_robot_description/mesh/head_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/head_link.dae" />
             </geometry>
         </collision>-->
   </link>

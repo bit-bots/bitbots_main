@@ -3,16 +3,16 @@
 
     <param name="/use_sim_time" value="true" />
 
-    <param name="robot_description" textfile="$(find wolves_robot_description)/urdf/wolves.urdf" />
+    <param name="robot_description" textfile="$(find wolfgang_description)/urdf/wolves.urdf" />
 
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">
 		<arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer.world"/>
 		<arg name="paused" value="true" />
 	</include>
 
-    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg ns)" type="spawn_model" args="-file $(find wolves_robot_description)/urdf/wolves.urdf -urdf -model wolves -x -1.5 -y 0.0 -z 0.0" />
+    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg ns)" type="spawn_model" args="-file $(find wolfgang_description)/urdf/wolves.urdf -urdf -model wolves -x -1.5 -y 0.0 -z 0.0" />
 
-    <rosparam file="$(find wolves_robot_description)/config/wolves_control.yaml" command="load"/>
+    <rosparam file="$(find wolfgang_description)/config/wolves_control.yaml" command="load"/>
 
 
     <!-- load the controllers -->
@@ -28,7 +28,7 @@
 
 
   <!--<node name="rviz" pkg="rviz" type="rviz" output="screen"
-      args="-d $(find wolves_robot_description)/config/wolves.rviz" >
+      args="-d $(find wolfgang_description)/config/wolves.rviz" >
 
   </node>-->
 

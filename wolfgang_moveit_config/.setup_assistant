@@ -1,9 +1,9 @@
 moveit_setup_assistant_config:
   URDF:
-    package: wolves_robot_description
-    relative_path: urdf/wolves_renamed.urdf
+    package: wolfgang_description
+    relative_path: urdf/wolfgang_renamed.urdf
   SRDF:
-    relative_path: config/wolves.srdf
+    relative_path: config/wolfgang.srdf
   CONFIG:
     author_name: Marc Bestmann
     author_email: bestmann@informatik.uni-hamburg.de
