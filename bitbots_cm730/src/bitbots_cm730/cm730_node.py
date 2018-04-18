@@ -301,9 +301,10 @@ class CM730Node:
         f = (4 * 9.81) / 512
         accel = (accel[0] * f, accel[1] * f, accel[2] * f)
         # axis are different in cm board, see cm730 documentation
-        self.imu_msg.linear_acceleration = DataVector(accel[1] * -1, accel[0], accel[2] * -1)
-        self.imu_msg.angular_velocity = DataVector(gyro[0], gyro[1] * -1, gyro[2])
+        self.imu_msg.linear_acceleration = DataVector(accel[1], accel[0], accel[2])
+        self.imu_msg.angular_velocity = DataVector(gyro[1], gyro[0], gyro[2])
         self.imu_msg.header.stamp = rospy.Time.now()  # rospy.Time.now()
+        self.imu_msg.header.frame_id = "torso_link"
 
         self.imu_publisher.publish(self.imu_msg)
 
