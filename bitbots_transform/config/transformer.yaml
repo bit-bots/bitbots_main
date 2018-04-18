@@ -9,7 +9,7 @@ transformer:
     lines_topic: 'line_in_image'
     # if the line_in_image message is used to only to sent points and a point cloud should be published
     lines_relative: true
-    pointcloud: false
+    pointcloud: true
 
   goals:
     goals_topic: 'goal_in_image'
@@ -18,4 +18,4 @@ transformer:
     obstacles_topic: 'obstacles_in_image'
 
   camera_info:
-    camera_info_topic: '/minibot/camera/camera_info'
+    camera_info_topic: 'camera_info'

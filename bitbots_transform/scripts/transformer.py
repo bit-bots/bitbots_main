@@ -68,6 +68,7 @@ class TransformBall(object):
 
         field = self.get_plane(msg.header.stamp, self.ball_height)
         if field is None:
+            rospy.logerr("fuck")
             return
 
         br = BallRelative()
@@ -82,7 +83,7 @@ class TransformBall(object):
                 self.ball_relative_pub.publish(br)
             else:
                 rospy.logwarn("got a ball i could not transform, would be too far away" +
-                              " x: " + ball.center.x + " y: " + ball.center.y)
+                              " x: " + str(ball.center.x) + " y: " + str(ball.center.y))
 
     def _callback_lines(self, msg):
         if self.camera_info is None:
@@ -146,9 +147,14 @@ class TransformBall(object):
         self.line_relative_pub.publish(line)
 
     def _callback_lines_pc(self, msg):
-        rospy.logerr_throttle(rospy.Rate(1), "i am not going to publish a pointcloud yet, nobody told me how to")
-        # points = []
-        # self.line_relative_pc_pub(pc2.create_cloud_xyz32(msg.header, points))
+        points = []
+        field = self.get_plane(msg.header.stamp, 0)
+        for seg in msg.segments:
+            transformed = self.transform(seg.start,field)
+            points.append([transformed.x, transformed.y, transformed.z])
+        pc_header = msg.header
+        pc_header.frame_id = "L_CAMERA"
+        self.line_relative_pc_pub.publish(pc2.create_cloud_xyz32(pc_header, points))
 
     def _callback_goal(self, msg):
         gr = GoalRelative()
@@ -224,7 +230,7 @@ class TransformBall(object):
         normalized_y = (-2 * (float(point.y) - (float(self.camera_info.height) / 2)) / float(self.camera_info.height)) * \
                        (float(self.camera_info.height) / float(self.camera_info.width))
 
-        point_on_image = np.array([self.focal_length, -normalized_x, normalized_y])
+        point_on_image = np.array([1.36, -normalized_x, normalized_y])
 
         return line_plane_intersection(field[0], field[1], point_on_image)
 
