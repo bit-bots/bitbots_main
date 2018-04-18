@@ -102,7 +102,7 @@ class Vision:
         if self.no_balls:
             rospy.Subscriber(rospy.get_param('visionparams/ROS/img_msg_topic'),
                              Image,
-                             self.handle_image_no_balls(),
+                             self.handle_image_no_balls,
                              queue_size=rospy.get_param(
                                  'visionparams/ROS/img_queue_size'),
                              buff_size=60000000)
