@@ -1,37 +1,36 @@
 <launch>
     <!-- set parameter -->
-    <arg name="ns" default="minibot" />
+    <arg name="ns" default="wolfgang" />
     <arg name="hcm" default="false"/>
     <param name="/use_sim_time" value="true" />
     <param name="simulation_active" value="true"/>
-    <param name="robot_type_name" value="Minibot"/>
+    <param name="robot_type_name" value="Wolfgang"/>
     <param name="ns" value="$(arg ns)"/>
 
 
     <!-- launch gazebo with soccer field -->
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">
 		<arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer.world"/>
-		<arg name="paused" value="true" />
-		<!--<arg name="physics" value="dart"/>-->
+		<arg name="paused" value="false" />
+	    <!--<arg name="physics" value="dart"/>-->
 	</include>
 
     <!-- load URDF -->
-    <param name="robot_description" textfile="$(find minibot_description)/urdf/minibot.urdf" />
-
-    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg ns)" type="spawn_model" args="-file $(find minibot_description)/urdf/minibot.urdf -urdf -model minibot -x -1.0 -y 0.0 -z 0.379" output="screen" />
+    <param name="robot_description" textfile="$(find wolfgang_description)/urdf/wolfgang.urdf" />
+    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg ns)" type="spawn_model" args="-file $(find wolfgang_description)/urdf/wolfgang.urdf -urdf -model wolfgang -x -1.5 -y 0.0 -z 0.55" />
 
 
     <!-- load the controllers -->
-    <rosparam file="$(find minibot_description)/config/minibot_control.yaml" command="load"/>
+    <rosparam file="$(find wolfgang_description)/config/wolfgang_control.yaml" command="load"/>
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-        output="screen" ns="minibot" args="joint_state_controller controller" />
+       output="screen" ns="wolfgang" args="joint_state_controller controller" />
 
 
     <!-- convert joint states to TF transforms for rviz, etc -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
         respawn="false" output="screen">
-    <remap from="/joint_states" to="/minibot/joint_states" />
+        <remap from="/joint_states" to="/wolfgang/joint_states" />
     </node>
-                        
+
 
 </launch>
