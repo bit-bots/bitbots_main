@@ -38,7 +38,7 @@
         </collision>
     </link>
 
-    <link name="r_hip_yaw">
+    <link name="r_hip_1">
         <inertial>
             <origin xyz="4.7878E-16 2.8449E-16 -0.013803" rpy="0 0 0" />
             <mass value="0.073374" />
@@ -59,7 +59,7 @@
         </collision>
     </link>
 
-    <link name="r_hip_roll">
+    <link name="r_hip_2">
         <inertial>
             <origin xyz="0.010896 0.00023756 -0.014538" rpy="0 0 0" />
             <mass value="0.35903" />
@@ -80,7 +80,7 @@
         </collision>
     </link>
 
-    <link name="r_thigh">
+    <link name="r_upper_leg">
         <inertial>
             <origin xyz="0.0038549 0.00023828 -0.1495" rpy="0 0 0" />
             <mass value="0.38276" />
@@ -101,7 +101,7 @@
         </collision>
     </link>
 
-    <link name="r_shank">
+    <link name="r_lower_leg">
         <inertial>
             <origin xyz="-0.0033779 6.578E-10 -0.10469" rpy="0 0 3.14159265359" />
             <mass value="0.20549" />
@@ -163,8 +163,24 @@
             </geometry>
         </collision>
     </link>
+    
+    <link name="r_sole">
+        <inertial>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <mass value="0.01" />
+          <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+        </inertial>
+    </link>
 
-    <link name="l_hip_yaw">
+    <link name="r_toe">
+        <inertial>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <mass value="0.01" />
+          <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+        </inertial>
+    </link>
+
+    <link name="l_hip_1">
         <inertial>
             <origin xyz="4.996E-16 2.5674E-16 -0.013803" rpy="0 0 0" />
             <mass value="0.073374" />
@@ -185,7 +201,7 @@
         </collision>
     </link>
 
-    <link name="l_hip_roll">
+    <link name="l_hip_2">
         <inertial>
             <origin xyz="-0.019434 -0.0014499 -0.014536" rpy="0 0 0" />
             <mass value="0.35844" />
@@ -206,7 +222,7 @@
         </collision>
     </link>
 
-    <link name="l_thigh">
+    <link name="l_upper_leg">
         <inertial>
             <origin xyz="0.0038576 -0.0014383 -0.1495" rpy="0 0 0" />
             <mass value="0.38276" />
@@ -227,7 +243,7 @@
         </collision>
     </link>
 
-    <link name="l_shank">
+    <link name="l_lower_leg">
         <inertial>
             <origin xyz="-0.0033779 -0.0012 -0.10469" rpy="0 0 0" />
             <mass value="0.20549" />
@@ -290,7 +306,23 @@
         </collision>
     </link>
 
-    <link name="r_shoulder_pitch">
+    <link name="l_sole">
+        <inertial>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <mass value="0.01" />
+          <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+        </inertial>
+    </link>
+
+    <link name="l_toe">
+        <inertial>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <mass value="0.01" />
+          <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+        </inertial>
+    </link>
+
+    <link name="r_shoulder">
         <inertial>
             <origin xyz="0 -0.014621 0" rpy="0 0 0" />
             <mass value="0.025434" />
@@ -353,7 +385,9 @@
         </collision>
     </link>
 
-    <link name="l_shoulder_pitch">
+    <link name="r_wrist"> </link>    
+
+    <link name="l_shoulder">
         <inertial>
             <origin xyz="0 0.014621 0" rpy="0 0 0" />
             <mass value="0.025434" />
@@ -416,6 +450,8 @@
         </collision>
     </link>
 
+    <link name="l_wrist"> </link>
+
     <link name="neck">
         <inertial>
             <origin xyz="2.1595E-05 0.00064781 0.033208" rpy="0 0 0" />
@@ -438,7 +474,7 @@
     </link>
     <link name="camera" />
 
-    <link name="gaze">
+    <link name="head">
         <inertial>
             <origin xyz="0.014358 0.0005519 0.069919" rpy="0 0 0" />
             <mass value="0.40746" />
@@ -468,7 +504,7 @@
     <joint name="RHipYaw" type="revolute">
         <origin xyz="-0.019 -0.055 0" rpy="0 0 0" />
         <parent link="base_link" />
-        <child link="r_hip_yaw" />
+        <child link="r_hip_1" />
         <axis xyz="0 0 1" />
         <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-0.9250245035547" upper="0.9250245035547" />
         <dynamics damping="${d}" friction="0.0" />
@@ -476,8 +512,8 @@
 
     <joint name="RHipRoll" type="revolute">
         <origin xyz="-0.0072 0 -0.0438" rpy="0 0 0" />
-        <parent link="r_hip_yaw" />
-        <child link="r_hip_roll" />
+        <parent link="r_hip_1" />
+        <child link="r_hip_2" />
         <axis xyz="1 0 0" />
         <limit effort="${tofa*6.0}" velocity="6.597344565" lower="-1.0122909661542001" upper="0.7853981633955001" />
         <dynamics damping="${d}" friction="0.0" />
@@ -485,8 +521,8 @@
 
     <joint name="RHipPitch" type="revolute">
         <origin xyz="0.0303 0 0" rpy="0 0 0" />
-        <parent link="r_hip_roll" />
-        <child link="r_thigh" />
+        <parent link="r_hip_2" />
+        <child link="r_upper_leg" />
         <axis xyz="0 1 0" />
         <limit effort="${tofa*8.4}" velocity="4.712388975" lower="-1.919862177189" upper="0.48869219055720003" />
         <dynamics damping="${d}" friction="0.0" />
@@ -494,8 +530,8 @@
 
     <joint name="RKnee" type="revolute">
         <origin xyz="0 0 -0.22" rpy="0 0 0" />
-        <parent link="r_thigh" />
-        <child link="r_shank" />
+        <parent link="r_upper_leg" />
+        <child link="r_lower_leg" />
         <axis xyz="0 1 0" />
         <limit effort="${tofa*8.4}" velocity="4.712388975" lower="0" upper="2.268928027587" />
         <dynamics damping="${d}" friction="0.0" />
@@ -503,7 +539,7 @@
 
     <joint name="RAnklePitch" type="revolute">
         <origin xyz="-0.00186 0 -0.22" rpy="0 0 0" />
-        <parent link="r_shank" />
+        <parent link="r_lower_leg" />
         <child link="r_ankle" />
         <axis xyz="0 1 0" />
         <limit effort="${tofa*8.4}" velocity="4.712388975" lower="-1.2391837689129" upper="1.6406094968706" />
@@ -519,10 +555,24 @@
         <dynamics damping="${d}" friction="0.0" />
     </joint>
 
+    <joint name="r_foot_to_sole" type="fixed">
+        <origin xyz="0 0 -0.04" rpy="0 0 0" />
+        <parent link="r_foot" />
+        <child link="r_sole" />
+        <axis xyz="0 0 0" />
+    </joint>
+
+    <joint name="r_foot_to_toe" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="r_sole" />
+        <child link="r_toe" />
+        <axis xyz="0 0 0" />
+    </joint>
+
     <joint name="LHipYaw" type="revolute">
         <origin xyz="-0.019 0.055 0" rpy="0 0 0" />
         <parent link="base_link" />
-        <child link="l_hip_yaw" />
+        <child link="l_hip_1" />
         <axis xyz="0 0 1" />
         <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-0.9250245035547" upper="0.9250245035547" />
         <dynamics damping="${d}" friction="0.0" />
@@ -530,8 +580,8 @@
 
     <joint name="LHipRoll" type="revolute">
         <origin xyz="-0.0072 0.0012 -0.0438" rpy="0 0 0" />
-        <parent link="l_hip_yaw" />
-        <child link="l_hip_roll" />
+        <parent link="l_hip_1" />
+        <child link="l_hip_2" />
         <axis xyz="1 0 0" />
         <limit effort="${tofa*6.0}" velocity="6.597344565" lower="-1.0122909661542001" upper="0.7853981633955001" />
         <dynamics damping="${d}" friction="0.0" />
@@ -539,8 +589,8 @@
 
     <joint name="LHipPitch" type="revolute">
         <origin xyz="0.0303 0 0" rpy="0 0 0" />
-        <parent link="l_hip_roll" />
-        <child link="l_thigh" />
+        <parent link="l_hip_2" />
+        <child link="l_upper_leg" />
         <axis xyz="0 1 0" />
         <limit effort="${tofa*8.4}" velocity="4.712388975" lower="-0.48869219055720003" upper="1.919862177189" />
         <dynamics damping="${d}" friction="0.0" />
@@ -548,8 +598,8 @@
 
     <joint name="LKnee" type="revolute">
         <origin xyz="0 0 -0.22" rpy="0 0 0" />
-        <parent link="l_thigh" />
-        <child link="l_shank" />
+        <parent link="l_upper_leg" />
+        <child link="l_lower_leg" />
         <axis xyz="0 1 0" />
         <limit effort="${tofa*8.4}" velocity="4.712388975" lower="-2.268928027587" upper="0" />
         <dynamics damping="${d}" friction="0.0" />
@@ -557,7 +607,7 @@
 
     <joint name="LAnklePitch" type="revolute">
         <origin xyz="-0.00186 0 -0.22" rpy="0 0 0" />
-        <parent link="l_shank" />
+        <parent link="l_lower_leg" />
         <child link="l_ankle" />
         <axis xyz="0 1 0" />
         <limit effort="${tofa*8.4}" velocity="4.712388975" lower="-1.6406094968706" upper="1.2391837689129" />
@@ -573,6 +623,20 @@
         <dynamics damping="${d}" friction="0.0" />
     </joint>
 
+    <joint name="left_foot_to_sole" type="fixed">
+        <origin xyz="0 0 -0.04" rpy="0 0 0" />
+        <parent link="l_foot" />
+        <child link="l_sole" />
+        <axis xyz="0 0 0" />
+    </joint>
+
+    <joint name="left_foot_to_toe" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="l_sole" />
+        <child link="l_toe" />
+        <axis xyz="0 0 0" />
+    </joint>
+
     <joint name="base_link_to_torso" type="fixed">
         <parent link="base_link" />
         <child link="torso" />
@@ -582,7 +646,7 @@
     <joint name="RShoulderPitch" type="revolute">
         <origin xyz="-0.0205 -0.0745 0.1075" rpy="0 0 0" />
         <parent link="torso" />
-        <child link="r_shoulder_pitch" />
+        <child link="r_shoulder" />
         <axis xyz="0 1 0" />
         <limit effort="${tofa*6.0}" velocity="6.597344565" lower="-3.1415926535820002" upper="3.1415926535820002" />
         <dynamics damping="${d}" friction="0.0" />
@@ -590,7 +654,7 @@
 
     <joint name="RShoulderRoll" type="revolute">
         <origin xyz="0 -0.038 0" rpy="0 0 0" />
-        <parent link="r_shoulder_pitch" />
+        <parent link="r_shoulder" />
         <child link="r_upper_arm" />
         <axis xyz="1 0 0" />
         <limit effort="${tofa*2.5}" velocity="5.648668" lower="-0.7853981633955001" upper="2.3561944901865" />
@@ -606,10 +670,16 @@
         <dynamics damping="${d}" friction="0.0" />
     </joint>
 
+    <joint name="r_elbow_to_wrist" type="fixed">
+        <parent link="r_lower_arm" />
+        <child link="r_wrist" />
+        <origin xyz="0.17 0 0" rpy="0 0 0"/> <!--todo-->
+    </joint>
+
     <joint name="LShoulderPitch" type="revolute">
         <origin xyz="-0.0205 0.0745 0.1075" rpy="0 0 0" />
         <parent link="torso" />
-        <child link="l_shoulder_pitch" />
+        <child link="l_shoulder" />
         <axis xyz="0 -1 0" />
         <limit effort="${tofa*6.0}" velocity="6.597344565" lower="-3.1415926535820002" upper="3.1415926535820002" />
         <dynamics damping="${d}" friction="0.0" />
@@ -617,7 +687,7 @@
 
     <joint name="LShoulderRoll" type="revolute">
         <origin xyz="0 0.038 0" rpy="0 0 0" />
-        <parent link="l_shoulder_pitch" />
+        <parent link="l_shoulder" />
         <child link="l_upper_arm" />
         <axis xyz="1 0 0" />
         <limit effort="${tofa*2.5}" velocity="5.648668" lower="-2.3561944901865" upper="0.7853981633955001" />
@@ -633,6 +703,12 @@
         <dynamics damping="${d}" friction="0.0" />
     </joint>
 
+    <joint name="l_elbow_to_wrist" type="fixed">
+        <parent link="l_lower_arm" />
+        <child link="l_wrist" />
+        <origin xyz="0.17 0 0" rpy="0 0 0"/> <!--todo-->
+    </joint>
+
     <joint name="HeadPan" type="revolute">
         <origin xyz="-0.0285 0 0.1365" rpy="0 0 0" />
         <parent link="torso" />
@@ -645,16 +721,16 @@
     <joint name="HeadTilt" type="revolute">
         <origin xyz="0 0 0.0505" rpy="0 0 0" />
         <parent link="neck" />
-        <child link="gaze" />
+        <child link="head" />
         <axis xyz="0 1 0" />
         <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-1.5707963267910001" upper="0" />
         <dynamics damping="${d}" friction="0.0" />
     </joint>
 
 
-    <joint name="camera_joint" type="fixed">
+    <joint name="head_to_camera" type="fixed">
         <origin xyz="0.03 0 0.05" rpy="0 0 0" />
-        <parent link="gaze" />
+        <parent link="head" />
         <child link="camera" />
         <axis xyz="0 0 0" />
         <dynamics damping="${d}" friction="0.0" />
@@ -861,8 +937,8 @@
         </actuator>
     </transmission>
 
-    <gazebo reference="r_foot">
-        <material>Gazebo/Grey</material>
+    <headbo reference="r_foot">
+        <material>headbo/Grey</material>
         <kp>1000000.0</kp>
         <kd>100.0</kd>
         <mu1>1.0</mu1>
@@ -870,9 +946,9 @@
         <fdir1>1 0 0</fdir1>
         <maxVel>1.0</maxVel>
         <minDepth>0.00</minDepth>
-    </gazebo>
-    <gazebo reference="l_foot">
-        <material>Gazebo/Grey</material>
+    </headbo>
+    <headbo reference="l_foot">
+        <material>headbo/Grey</material>
         <kp>1000000.0</kp>
         <kd>100.0</kd>
         <mu1>1.0</mu1>
@@ -880,17 +956,17 @@
         <fdir1>1 0 0</fdir1>
         <maxVel>1.0</maxVel>
         <minDepth>0.00</minDepth>
-    </gazebo>
+    </headbo>
 
   <!-- joint controller -->
-    <gazebo>
-        <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
+    <headbo>
+        <plugin filename="libheadbo_ros_control.so" name="headbo_ros_control">
             <robotNamespace>wolves</robotNamespace>
         </plugin>
-    </gazebo>
+    </headbo>
 
   <!-- camera sensor -->
-  <gazebo reference="camera">
+  <headbo reference="camera">
         <sensor name='camera' type='camera'>
           <pose>-0.050000 -0.010000 0.000000 -1.5708 0.000000 -3.141592</pose>
           <camera name='__default__'>
@@ -907,7 +983,7 @@
           <always_on>1</always_on>
           <update_rate>30.000000</update_rate>
           <visualize>1</visualize>
-          <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+          <plugin name="camera_controller" filename="libheadbo_ros_camera.so">
             <alwaysOn>true</alwaysOn>
             <updateRate>30</updateRate>
             <cameraName>camera</cameraName>
@@ -922,18 +998,18 @@
             <distortionT2>0.0</distortionT2>
           </plugin>
       </sensor>
-  </gazebo>
+  </headbo>
 
 
    <!-- IMU sensor -->
-   <gazebo reference="L_IMU">
+   <headbo reference="L_IMU">
     <gravity>true</gravity>
     <sensor name="imu_sensor" type="imu">
       <always_on>true</always_on>
       <update_rate>100</update_rate>
       <visualize>true</visualize>
       <topic>__default_topic__</topic>
-      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+      <plugin filename="libheadbo_ros_imu_sensor.so" name="imu_plugin">
         <topicName>imu</topicName>
         <bodyName>torso</bodyName>
         <updateRateHZ>100.0</updateRateHZ>
@@ -944,12 +1020,12 @@
       </plugin>
       <pose>0 0 0 0 0 0</pose>
     </sensor>
-  </gazebo>
+  </headbo>
 
    <!-- fake controller that allows us to move the robot and to get its oposition -->
    <!-- rostopic pub /minibot/cmd_vel geometry_msgs/Twist "{ linear: [ 0.1, 0, 0], angular: [0.2, 0, 0.1] }" -->
-   <!--<gazebo>
-    <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
+   <!--<headbo>
+    <plugin name="object_controller" filename="libheadbo_ros_planar_move.so">
       <robotNamespace>wolves</robotNamespace>
 
       <commandTopic>cmd_vel</commandTopic>
@@ -958,7 +1034,7 @@
       <odometryRate>100.0</odometryRate>
       <robotBaseFrame>base_link</robotBaseFrame>
     </plugin>
-  </gazebo> -->
+  </headbo> -->
 
 </robot>
 
