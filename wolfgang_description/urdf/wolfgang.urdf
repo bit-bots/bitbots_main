@@ -870,8 +870,8 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
-  <headbo reference="r_foot">
-    <material>headbo/Grey</material>
+  <gazebo reference="r_foot">
+    <material>gazebo/Grey</material>
     <kp>1000000.0</kp>
     <kd>100.0</kd>
     <mu1>1.0</mu1>
@@ -879,9 +879,9 @@
     <fdir1>1 0 0</fdir1>
     <maxVel>1.0</maxVel>
     <minDepth>0.00</minDepth>
-  </headbo>
-  <headbo reference="l_foot">
-    <material>headbo/Grey</material>
+  </gazebo>
+  <gazebo reference="l_foot">
+    <material>gazebo/Grey</material>
     <kp>1000000.0</kp>
     <kd>100.0</kd>
     <mu1>1.0</mu1>
@@ -889,15 +889,15 @@
     <fdir1>1 0 0</fdir1>
     <maxVel>1.0</maxVel>
     <minDepth>0.00</minDepth>
-  </headbo>
+  </gazebo>
   <!-- joint controller -->
-  <headbo>
-    <plugin filename="libheadbo_ros_control.so" name="headbo_ros_control">
-      <robotNamespace>wolves</robotNamespace>
+  <gazebo>
+    <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
+      <robotNamespace>wolfgang</robotNamespace>
     </plugin>
-  </headbo>
+  </gazebo>
   <!-- camera sensor -->
-  <headbo reference="camera">
+  <gazebo reference="camera">
     <sensor name="camera" type="camera">
       <pose>-0.050000 -0.010000 0.000000 -1.5708 0.000000 -3.141592</pose>
       <camera name="__default__">
@@ -914,7 +914,7 @@
       <always_on>1</always_on>
       <update_rate>30.000000</update_rate>
       <visualize>1</visualize>
-      <plugin filename="libheadbo_ros_camera.so" name="camera_controller">
+      <plugin filename="libgazebo_ros_camera.so" name="camera_controller">
         <alwaysOn>true</alwaysOn>
         <updateRate>30</updateRate>
         <cameraName>camera</cameraName>
@@ -929,16 +929,16 @@
         <distortionT2>0.0</distortionT2>
       </plugin>
     </sensor>
-  </headbo>
+  </gazebo>
   <!-- IMU sensor -->
-  <headbo reference="L_IMU">
+  <gazebo reference="L_IMU">
     <gravity>true</gravity>
     <sensor name="imu_sensor" type="imu">
       <always_on>true</always_on>
       <update_rate>100</update_rate>
       <visualize>true</visualize>
       <topic>__default_topic__</topic>
-      <plugin filename="libheadbo_ros_imu_sensor.so" name="imu_plugin">
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
         <topicName>imu</topicName>
         <bodyName>torso</bodyName>
         <updateRateHZ>100.0</updateRateHZ>
@@ -949,11 +949,11 @@
       </plugin>
       <pose>0 0 0 0 0 0</pose>
     </sensor>
-  </headbo>
+  </gazebo>
   <!-- fake controller that allows us to move the robot and to get its oposition -->
   <!-- rostopic pub /minibot/cmd_vel geometry_msgs/Twist "{ linear: [ 0.1, 0, 0], angular: [0.2, 0, 0.1] }" -->
-  <!--<headbo>
-    <plugin name="object_controller" filename="libheadbo_ros_planar_move.so">
+  <!--<gazebo>
+    <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
       <robotNamespace>wolves</robotNamespace>
 
       <commandTopic>cmd_vel</commandTopic>
@@ -962,6 +962,6 @@
       <odometryRate>100.0</odometryRate>
       <robotBaseFrame>base_link</robotBaseFrame>
     </plugin>
-  </headbo> -->
+  </gazebo> -->
 </robot>
 

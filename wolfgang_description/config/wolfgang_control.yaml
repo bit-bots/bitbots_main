@@ -1,4 +1,4 @@
-wolves:
+wolfgang:
   # Publish all joint states -----------------------------------
   # 100Hz is a compromise between fast reaction and CPU load
   joint_state_controller:
@@ -11,7 +11,7 @@ wolves:
   # we could also set up controllers for the individual 'chains',
   # e.g. head, left_arm, right_arm, left_leg, right_leg.
   #
-  controller:
+  trajcontroller:
     type: effort_controllers/JointTrajectoryController
     joints:
       - HeadPan
@@ -58,6 +58,50 @@ wolves:
     allow_partial_joints_goal: true
     constraints:
         goal_time: 10
+
+  controller:
+    type: effort_controllers/JointGroupPositionController
+    joints:
+      - HeadPan
+      - HeadTilt
+      - LShoulderPitch
+      - LShoulderRoll
+      - LElbow
+      - RShoulderPitch
+      - RShoulderRoll
+      - RElbow
+      - LHipYaw
+      - LHipRoll
+      - LHipPitch
+      - LKnee
+      - LAnklePitch
+      - LAnkleRoll
+      - RHipYaw
+      - RHipRoll
+      - RHipPitch
+      - RKnee
+      - RAnklePitch
+      - RAnkleRoll
+    HeadPan/pid:        { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    HeadTilt/pid:       { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    LShoulderPitch/pid: { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    LShoulderRoll/pid:  { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    LElbow/pid:         { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    RShoulderPitch/pid: { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    RShoulderRoll/pid:  { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    RElbow/pid:         { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    LHipYaw/pid:        { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    LHipRoll/pid:       { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    LHipPitch/pid:      { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    LKnee/pid:          { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    LAnklePitch/pid:    { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    LAnkleRoll/pid:     { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    RHipYaw/pid:        { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    RHipRoll/pid:       { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    RHipPitch/pid:      { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    RKnee/pid:          { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    RAnklePitch/pid:    { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+    RAnkleRoll/pid:     { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
  
   # Individual Joint Position Controllers ---------------------------------------
 
