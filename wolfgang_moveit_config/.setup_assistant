@@ -1,10 +1,10 @@
 moveit_setup_assistant_config:
   URDF:
     package: wolfgang_description
-    relative_path: urdf/wolfgang_renamed.urdf
+    relative_path: urdf/wolfgang.urdf
   SRDF:
     relative_path: config/wolfgang.srdf
   CONFIG:
     author_name: Marc Bestmann
     author_email: bestmann@informatik.uni-hamburg.de
-    generated_timestamp: 1520259033
+    generated_timestamp: 1524130082

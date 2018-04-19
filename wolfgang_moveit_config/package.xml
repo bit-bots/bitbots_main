@@ -3,7 +3,7 @@
   <name>wolfgang_moveit_config</name>
   <version>0.3.0</version>
   <description>
-     An automatically generated package with all the configuration and launch files for using the wolfgang with the MoveIt! Motion Planning Framework
+     An automatically generated package with all the configuration and launch files for using the wolves with the MoveIt! Motion Planning Framework
   </description>
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
