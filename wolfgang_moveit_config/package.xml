@@ -5,8 +5,9 @@
   <description>
      An automatically generated package with all the configuration and launch files for using the wolves with the MoveIt! Motion Planning Framework
   </description>
-  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
   <license>BSD</license>
 
@@ -29,5 +30,7 @@
   <build_depend>wolfgang_description</build_depend>
   <run_depend>wolfgang_description</run_depend>
 
-
+  <export>
+      <status>tested_simulator</status>
+  </export>
 </package>
