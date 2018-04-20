@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    
+    <rosparam file="$(find bitbots_hcm)/config/hcm.yaml" command="load"/>
+    <rosparam file="$(find bitbots_hcm)/config/hcm_state_machine.yaml" command="load"/>
+    <node name="HCM" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" respawn="true"/>
+</launch>
