@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="wolves">
 
-    <xacro:property name="tofa" value="1" />
-    <!--Torque factor-->
-    <xacro:property name="infa" value="1" />
-    <!--inertia factor-->
-    <xacro:property name="insu" value="0" />
-    <!--inertia summand-->
-    <xacro:property name="d" value="0" />
-    <!-- damping -->
-    <xacro:property name="f" value="0" />
-    <!-- friction -->
+    <xacro:arg name="sim_ns" default="/" />
+
+    <xacro:property name="tofa" value="1" /> <!--Torque factor-->
+    <xacro:property name="infa" value="1" /> <!--inertia factor-->
+    <xacro:property name="insu" value="0" /> <!--inertia summand-->
+    <xacro:property name="d" value="0" /> <!-- damping -->
+    <xacro:property name="f" value="0" /> <!-- friction -->
     <material name="black">
         <color rgba="0.1 0.1 0.1 1" />
     </material>
@@ -961,7 +958,7 @@
   <!-- joint controller -->
     <gazebo>
         <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
-            <robotNamespace>wolfgang</robotNamespace>
+            <robotNamespace>$(arg sim_ns)</robotNamespace>
         </plugin>
     </gazebo>
 
