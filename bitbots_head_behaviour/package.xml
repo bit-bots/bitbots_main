@@ -7,6 +7,7 @@
       controlled by the /head_duty topic and publishes the head motion in the /head_motor_goals topic.
   </description>
   <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
@@ -25,6 +26,7 @@
 
   <export>
     <bitbots_documentation>
+      <status>compiles</status>
       <language>python3</language>
     </bitbots_documentation>
   </export>
