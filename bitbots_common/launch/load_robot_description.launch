@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<launch>
+    
+    <arg name="minibot" default="false"/>
+    <arg name="wolfgang" default="false"/>
+    <arg name="sim" default="false"/>
+    <arg name="sim_ns" default="sim_robot" />
+
+    <group unless="$(arg minibot)">
+        <group unless="$(arg wolfgang)">
+            <node pkg="bitbots_common" type="launch_warning.py" name="warning">                
+            </node>
+        </group>
+    </group>
+
+    <group if="$(arg minibot)">
+        <param name="robot_description" command="$(find xacro)/xacro $(find minibot_description)/urdf/minibot.urdf.xacro sim_ns:=$(arg sim_ns)" />                
+        <param name="robot_description_semantic" textfile="$(find minibot_moveit_config)/config/Minibot.srdf" />
+        <param name="robot_type_name" value="Minibot"/>    
+        <!-- Load updated joint limits (override information from URDF) -->
+        <group ns="robot_description_planning">
+            <rosparam command="load" file="$(find minibot_moveit_config)/config/joint_limits.yaml"/>
+        </group>
+        <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->
+        <group ns="robot_description_kinematics">
+            <rosparam command="load" file="$(find minibot_moveit_config)/config/kinematics.yaml"/>
+        </group>
+    </group>
+
+    <group if="$(arg wolfgang)">
+        <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/wolfgang.urdf.xacro sim_ns:=$(arg sim_ns)" />                
+        <param name="urdf" value="$(find wolfgang_description)/urdf/wolfgang.urdf" />
+        <param name="robot_description_semantic" textfile="$(find wolfgang_moveit_config)/config/wolfgang.srdf" />
+        <param name="robot_type_name" value="Wolfgang"/>
+        <!-- Load updated joint limits (override information from URDF) -->
+        <group ns="robot_description_planning">
+            <rosparam command="load" file="$(find wolfgang_moveit_config)/config/joint_limits.yaml"/>
+        </group>
+
+        <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->
+        <group ns="robot_description_kinematics">
+            <rosparam command="load" file="$(find wolfgang_moveit_config)/config/kinematics.yaml"/>
+        </group>
+    </group>
+
+    <!-- publish tfs, change topic depending if the simulation is used -->
+    <group if="$(arg sim)">
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">        
+            <remap from="/joint_states" to="joint_states" />    
+        </node>
+    </group>
+
+    <group unless="$(arg sim)">
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">        
+        </node>
+    </group>
+</launch>

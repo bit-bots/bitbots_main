@@ -1,0 +1,33 @@
+<launch>
+    <arg name="sim" default="false"/>
+    <arg name="minibot" default="false"/>
+    <arg name="wolfgang" default="false"/>
+    
+
+
+    <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
+    <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
+
+    <include file="$(find humanoid_league_speaker)/launch/speaker.launch"/>
+    <include file="$(find bitbots_buttons)/launch/buttons.launch"/>
+    <include file="$(find bitbots_pause)/launch/pause.launch"/>
+
+    <include file="$(find bitbots_animation_server)/launch/animation.launch"/>
+
+    <group if="$(arg minibot)">
+        <include file="$(find bitbots_cm730)/launch/cm730.launch"/>
+    </group>
+
+    <group if="$(arg wolfgang)">
+        <include file="$(find dynamixel_workbench_ros_control)/launch/ros_control_wolfgang.launch"/>
+    </group>
+    
+    <include file="$(find bitbots_quintic_walk)/launch/quintic_walk.launch">
+        <arg name="sim" value="$(arg sim)"/>
+        <arg name="minibot" value="$(arg minibot)"/>
+        <arg name="wolfgang" value="$(arg wolfgang)"/>  
+    </include>
+
+    <include file="$(find bitbots_hcm)/launch/hcm.launch"/>
+
+</launch>
