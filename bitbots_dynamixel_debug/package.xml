@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package>
+  <name>bitbots_dynamixel_debug</name>
+  <version>1.0.0</version>
+  <description>Collection of python scripts based on DynamixelSDK to debug strange servo behaviour.</description>
+
+  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>dynamixel_sdk</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>dynamixel_sdk</run_depend>
+
+  <export>
+    <bitbots_documentation>
+      <language>python</language>
+      <status>unknown</status>
+    </bitbots_documentation>
+  </export>
+</package>
