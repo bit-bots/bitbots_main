@@ -1,4 +1,0 @@
-<launch>
-    <param name="robot_description"  textfile="$(find wolfgang_description)/urdf/wolfgang_renamed.xml" />
-    <node pkg="robot_state_publisher" type="robot_state_publisher" name="wolves_state_pub" />
-</launch>
