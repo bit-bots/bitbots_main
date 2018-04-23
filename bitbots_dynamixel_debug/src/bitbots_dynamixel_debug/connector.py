@@ -54,18 +54,18 @@ class Connector(object):
 
         # Open port
         if dynamixel.openPort(self.port_num):
-            print("Succeeded to open the port " + self.device)
+            print("Succeeded to open the port " + str(self.device))
         else:
-            print("Failed to open the port "  + self.device)
+            print("Failed to open the port "  + str(self.device))
             print("Press any key to terminate...")
             getch()
             quit()
 
         # Set port baudrate
         if dynamixel.setBaudRate(self.port_num, self.baudrate):
-            print("Succeeded to change the baudrate to " + self.baudrate)
+            print("Succeeded to change the baudrate to " + str(self.baudrate))
         else:
-            print("Failed to change the baudrate to " + self.baudrate)
+            print("Failed to change the baudrate to " + str(self.baudrate))
             print("Press any key to terminate...")
             getch()
             quit()
@@ -98,7 +98,7 @@ class Connector(object):
             print(dynamixel.getTxRxResult(self.protocol, dxl_comm_result))
 
         print("Detected Dynamixel : ")
-        for id in range(0, maxId):
+        for id in range(0, int(maxId)):
             if ctypes.c_ubyte(dynamixel.getBroadcastPingResult(self.port_num, self.protocol, id)).value:
                 print("[ID:%03d]" % (id))
 

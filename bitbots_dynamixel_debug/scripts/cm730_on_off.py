@@ -4,27 +4,24 @@
 from bitbots_dynamixel_debug.connector import Connector
 import sys
 
-
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--p1", help="use old protocol version", action="store_true")
-parser.add_argument("maxId")
+parser.add_argument("--on", help="activate cm730 motor power", action="store_true")
+parser.add_argument("--off", help="deactivate cm730 motor power", action="store_true")
 args = parser.parse_args()
 
 
-maxId = args.maxId
-if args.p1:
-    protocol = 1
-else:
-    protocol = 2
-protocol = 2
+protocol = 1
 baudrate = 1000000
 device ="/dev/ttyUSB0".encode('utf-8')
 
 c = Connector(protocol, device, baudrate)
 
-c.broadcast_ping(maxId, doPrint=True)
-
+if args.on:
+    c.cm730Power(True)
+if args.off:
+    c.cm730Power(False)
+    
 c.closePort()
 
 

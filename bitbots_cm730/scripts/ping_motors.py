@@ -13,7 +13,7 @@ ctrl.write_register(200, cm.dxl_power, 1)
 
 time.sleep(1)
 
-for i in range(1, 200):
+for i in range(1, 21):
     print(i, ctrl.ping(i))
 
 time.sleep(1)
