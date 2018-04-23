@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>bitbots_demo_animations</name>
+  <version>0.0.0</version>
+  <description>Demo animation files robot</description>
+
+  <maintainer email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</maintainer>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+
+  <license>BSD</license>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+    <bitbots_documentation>
+      <status>untested</status>
+    </bitbots_documentation>
+  </export>
+</package>
