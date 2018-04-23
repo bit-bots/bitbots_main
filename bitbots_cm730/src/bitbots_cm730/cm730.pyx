@@ -53,6 +53,7 @@ cdef class CM730(object):
         robot_type_name = rospy.get_param("robot_type_name")
         self.motors = rospy.get_param("cm730/" + robot_type_name + "/motors")
         self.motor_ram_config = rospy.get_param("mx28config/RAM")
+        self.motor_rom_config = rospy.get_param("mx28config/ROM")
         offsets = rospy.get_param("offsets")
         self.joints = rospy.get_param("joints")
         self.eye_param = rospy.get_param("cm730/EyesOff", False)
@@ -80,6 +81,17 @@ cdef class CM730(object):
                     motors_ok = False
             if motors_ok:
                 rospy.logwarn("All motors were found")
+
+        if rospy.get_param("cm730/setMXRom"):
+            rospy.loginfo("Set Motor ROM")
+            romsettings = self.motor_rom_config
+            for i in range(len(rospy.get_param("cm730/Minibot/motors"))):
+                self.ctrl.write_register(i,MX28_REGISTER.led, 1)
+                for conf in romsettings:
+                    self.ctrl.write_register(i,MX28_REGISTER.get_register_by_name(conf),
+                        romsettings[conf])
+                self.ctrl.write_register(i,MX28_REGISTER.led, 0)
+            rospy.loginfo("Rom der Motoren gesetzt")
 
         self.switch_motor_power(old_dxl_power)
 
@@ -411,7 +423,7 @@ cdef class CM730(object):
             # Vermutete ursache:
             # Schreiben der ROM area der Register mit sofortigen
             # abschalten des Stromes führt auf den motoren einen
-            # vollst#ndigen Reset durch!
+            # vollständigen Reset durch!
             time.sleep(0.3) # WICHTIGE CODEZEILE! (siehe oben)
             self.ctrl.write_register(ID_CM730, CM730_REGISTER.dxl_power, 0)
             self.dxl_power = False
