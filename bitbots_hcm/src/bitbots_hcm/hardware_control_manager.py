@@ -12,14 +12,12 @@ import rospy
 
 from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAction
 
-from bitbots_common.pose.pypose import PyPose as Pose
-from bitbots_common.util.pose_to_message import pose_to_traj_msg
 from humanoid_league_speaker.speaker import speak
 from std_msgs.msg import Bool, String
 
 from bitbots_cm730.srv import SwitchMotorPower
 
-from bitbots_hcm.hcm_state_machine import HcmStateMachine, STATE_CONTROLABLE, AnimationRunning, STATE_WALKING
+from bitbots_hcm.hcm_state_machine import HcmStateMachine, STATE_CONTROLABLE, AnimationRunning, STATE_WALKING, STATE_ANIMATION_RUNNING
 from dynamic_reconfigure.server import Server
 from humanoid_league_msgs.msg import RobotControlState
 from humanoid_league_msgs.msg import Speak
@@ -31,12 +29,12 @@ from bitbots_hcm.values import VALUES
 from bitbots_hcm.cfg import hcm_paramsConfig
 
 
+
 class Motion:
     def __init__(self, dieflag, standupflag, softoff_flag, softstart, start_test):
 
         # --- Class Variables ---
         # Setup
-        self.startup_time = time.time()
         self.first_run = True
 
         # IMU
@@ -45,11 +43,8 @@ class Motion:
         self.smooth_accel = numpy.array([0, 0, 0])
         self.smooth_gyro = numpy.array([0, 0, 0])
         self.not_much_smoothed_gyro = numpy.array([0, 0, 0])
-        self.last_gyro_update_time = time.time()
 
         # Motor Positions
-        self.robo_pose = Pose() #todo this is not used anymore?
-        self.goal_pose = Pose() #todo this is not used anymore?
         self.walking_motor_goal = None
         self.walking_goal_lock = Lock()
         self.last_walking_update = 0
@@ -58,15 +53,6 @@ class Motion:
         # Animation
         self.animation_running = False  # animation request from animation server
         self.animation_request_time = 0  # time we got the animation request
-
-        robot_type_name = rospy.get_param("robot_type_name")
-        self.used_motor_cids = rospy.get_param("cm730/" + robot_type_name + "/motors")
-        self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
-
-        # pre defiened messages for performance
-        self.traj_msg = JointTrajectory()
-        self.traj_msg.joint_names = [x.decode() for x in self.used_motor_names]
-        self.traj_point = JointTrajectoryPoint()
 
         #times
         self.anim_sum=0
@@ -87,6 +73,9 @@ class Motion:
         rospy.init_node('bitbots_hcm', log_level=log_level, anonymous=False)
         rospy.sleep(0.1)  # Otherwise messages will get lost, bc the init is not finished
         rospy.loginfo("Starting hcm")
+
+        self.startup_time = rospy.get_time()
+        self.last_gyro_update_time = rospy.get_time()
 
         self.joint_goal_publisher = rospy.Publisher('motor_goals', JointTrajectory, queue_size=1)
         self.hcm_state_publisher = rospy.Publisher('robot_state', RobotControlState, queue_size=1, latch=True)
@@ -119,7 +108,7 @@ class Motion:
 
     def update_imu(self, msg):
         """Gets new IMU values and computes the smoothed values of these"""
-        update_time = time.time()
+        update_time = rospy.get_time()
         #self.imu_sum += update_time - msg.header.stamp.to_sec()
         self.imu_count += 1
         self.arrt.append(update_time - msg.header.stamp.to_sec())
@@ -149,7 +138,7 @@ class Motion:
         return config
 
     def walking_goal_callback(self, msg):
-        t = time.time()
+        t = rospy.get_time()
         #self.walk_sum += t - msg.header.stamp.to_sec()
         self.walk_count +=1
 
@@ -163,7 +152,7 @@ class Motion:
             self.joint_goal_publisher.publish(msg)
 
     def head_goal_callback(self, msg):
-        if not self.state_machine.is_penalized():
+        if self.state_machine.get_current_state() == STATE_CONTROLABLE or self.state_machine.get_current_state() == STATE_WALKING or self.state_machine.get_current_state() == STATE_ANIMATION_RUNNING:
             # we can move our head
             self.joint_goal_publisher.publish(msg)
 
@@ -178,14 +167,14 @@ class Motion:
     def animation_callback(self, msg):
         """ The animation server is sending us goal positions for the next keyframe"""
         mt = msg.header.stamp.to_sec()
-        t = time.time()
+        t = rospy.get_time()
         self.anim_sum += t - mt
         self.anim_count +=1
 
         VALUES.last_request = mt
         self.animation_request_time = t
         # VALUES.last_request = msg.header.stamp.to_sec()
-        #self.animation_request_time = time.time()
+        #self.animation_request_time = rospy.get_time()
         if msg.first:
             self.animation_running = True
             VALUES.external_animation_finished = False
@@ -233,7 +222,7 @@ class Motion:
         """ Calls :func:`update_once` until ROS is shutting down """
         iteration = 0
         duration_avg = 0
-        start = time.time()
+        start = rospy.get_time()
         rate = rospy.Rate(20)
 
         while not rospy.is_shutdown():
@@ -248,14 +237,20 @@ class Motion:
 
             if False:  # only for debug
                 if duration_avg > 0:
-                    duration_avg = 0.5 * duration_avg + 0.5 * (time.time() - start)
+                    duration_avg = 0.5 * duration_avg + 0.5 * (rospy.get_time() - start)
                 else:
-                    duration_avg = (time.time() - start)
+                    duration_avg = (rospy.get_time() - start)
 
                 # rospy.logwarn("Updates/Sec %f", iteration / duration_avg)
                 iteration = 0
-                start = time.time()
-            rate.sleep()
+                start = rospy.get_time()
+            try:
+                # catch exeption of moving backwarts in time, when restarting simulator
+                rate.sleep()
+            except rospy.exceptions.ROSTimeMovedBackwardsException:
+                rospy.logwarn("We moved backwards in time. I hope you just resetted the simulation. If not there is something wrong")
+            except rospy.exceptions.ROSInterruptException:
+                exit()
 
         # we got external shutdown, tell it to the state machine, it will handle it
         VALUES.shut_down = True
@@ -286,7 +281,7 @@ class Motion:
 
     def update_once(self):
         # check if we're still walking
-        if time.time() - self.last_walking_update > 0.5:
+        if rospy.get_time() - self.last_walking_update > 0.2:
             VALUES.walking_active = False
 
         # let statemachine run

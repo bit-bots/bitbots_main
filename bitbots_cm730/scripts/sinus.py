@@ -21,7 +21,7 @@ pose = Pose()
 joint_goal_publisher = rospy.Publisher('/motion_motor_goals', JointTrajectory, queue_size=1)
 
 rate = rospy.Rate(10)
-start_time = time.time()
+start_time = rospy.get_time()
 speed = 0.1
 
 traj_msg = JointTrajectory()
@@ -30,7 +30,7 @@ traj_point = JointTrajectoryPoint()
 pose.set_speeds(["LShoulderPitch".encode()], [16 for x in range(1)])
 
 while not rospy.is_shutdown():
-    factor = (time.time() - start_time) * speed
+    factor = (rospy.get_time() - start_time) * speed
     pos = (np.math.pi * factor) % (2*np.math.pi) - np.math.pi
     pos = np.math.degrees(pos)
     pose.set_positions(["LShoulderPitch".encode()], [pos])

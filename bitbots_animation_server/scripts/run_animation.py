@@ -30,5 +30,5 @@ def anim_run():
 
 if __name__ == '__main__':
     # run with "rosrun bitbots_animation_server run_animation.py _anim:=NAME"
-    print("Deactivate evaluation of state machine in hcm befor using this, maybe")
+    #print("Deactivate evaluation of state machine in hcm befor using this, maybe")
     anim_run()

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="1">
+  <name>center_of_mass</name>
+  <version>0.0.0</version>
+  <description>Calculates the CoM and publishes result as marker msg on /com</description>
+
+  <maintainer email="5flemmin@bit-bots.de">Tanja Flemming</maintainer>
+  <author email="5flemmin@bit-bots.de">Tanja Flemming</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+  <license>BSD</license>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>urdfdom_py</build_depend>
+  <build_depend>rospy</build_depend>
+  <run_depend>urdfdom_py</run_depend>
+  <run_depend>rospy</run_depend>
+
+
+  <export>
+    <bitbots_documentation>
+      <language>python</language>
+    </bitbots_documentation>
+  </export>
+</package>

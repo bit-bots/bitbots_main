@@ -177,11 +177,11 @@ cdef class CM730(object):
                 result = self.ctrl.process(self.read_packet2)
         except IOError as e:
             rospy.logdebug_throttle(1, "Reading error: " + str(e))
-            if self.last_io_success > 0 and time.time() - self.last_io_success > 2:
+            if self.last_io_success > 0 and rospy.get_time() - self.last_io_success > 2:
                 #we tell that we are stuck
                 return -1, -1
             elif not  self.last_io_success > 0:
-                self.last_io_success = time.time() + 5
+                self.last_io_success = rospy.get_time() + 5
                 # This looks strange but is on purpose:
                 # If it doesn't get any data, it should stop at _sometime_
             return None, None
@@ -204,7 +204,7 @@ cdef class CM730(object):
                 if (err >> 5 & 1) == 1: # Overload Error
                     say_error = False
                     if e.get_motor() in self.last_overload and \
-                      time.time() - 2 < self.last_overload[e.get_motor()]:
+                      rospy.get_time() - 2 < self.last_overload[e.get_motor()]:
                         self.overload_count[e.get_motor()] += 1
                         if self.overload_count[e.get_motor()] > 60:
                             rospy.logwarn("Raise long holding overload error")
@@ -214,7 +214,7 @@ cdef class CM730(object):
                         self.overload_count[e.get_motor()] = 0
                         rospy.logwarn("Motor %d has a Overloaderror, "
                             % e.get_motor() + " ignoring 60 updates")
-                    self.last_overload[e.get_motor()] = time.time()
+                    self.last_overload[e.get_motor()] = rospy.get_time()
                 if (err >> 6 & 1) == 1: # Instruction Error
                     is_ok = False
                 if (err >> 7 & 1) == 1: # Unused
@@ -228,7 +228,7 @@ cdef class CM730(object):
             # If an error was ignored, we have to test if a packed arrived
             # If not, we have to cancel, otherwise a uncomplete package will be handled
             result = errors.get_packets()
-        self.last_io_success = time.time()
+        self.last_io_success = rospy.get_time()
         return result, cid_all_values
 
 

@@ -1,17 +1,4 @@
 <launch>
-  <param name="robot_type_name" value="Minibot"/> <!-- Todo this is only for testing -->
-  <param name="debug_active" value="True"/> <!-- Todo this is only for testing -->
-  <param name="robot_description" textfile="$(find minibot_description)/urdf/minibot.urdf" />
-
-  <!-- We do not have a robot connected, so publish fake joint states -->
-  <!--  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-  </node>-->
-
-  <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher">
-    <param name="publish_frequency" type="double" value="100.0" />
-    <param name="tf_prefix" type="string" value="" />
-  </node>
-
   <rosparam file="$(find bitbots_cm730)/config/cm730.yaml" command="load"/>
   <rosparam file="$(find bitbots_cm730)/config/joints.yaml" command="load"/>
   <rosparam file="$(find bitbots_cm730)/config/mx28config.yaml" command="load"/>

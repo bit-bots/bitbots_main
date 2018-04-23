@@ -6,7 +6,9 @@
   The node communicates with the board via USB to send commands to the servos and to get their current position.
   </description>
 
-  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
@@ -26,5 +28,9 @@
 
 
   <export>
+    <bitbots_documentation>
+      <language>c++</language>
+      <status>unknown</status>
+    </bitbots_documentation>
   </export>
 </package>

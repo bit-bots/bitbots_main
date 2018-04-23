@@ -15,7 +15,7 @@ if __name__ == "__main__":
     traj_msg.joint_names = ['HeadTilt']
     traj_msg.points = []
     traj_msg.points.append(msg)
-    traj_msg.header.stamp = rospy.Time.from_sec(time.time())
+    traj_msg.header.stamp = rospy.Time.now()
 
     joint_goal_publisher.publish(traj_msg)
     rospy.logwarn(traj_msg)
@@ -25,4 +25,4 @@ if __name__ == "__main__":
 
 
 
-    rospy.sleep(2)
+    rospy.sleep(1)

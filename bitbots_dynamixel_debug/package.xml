@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>bitbots_pause</name>
+  <name>bitbots_dynamixel_debug</name>
   <version>1.0.0</version>
-  <description>The bitbots_pause package decides if the robot is currently in a pause/penalized mode. </description>
+  <description>Collection of python scripts based on DynamixelSDK to debug strange servo behaviour.</description>
 
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
@@ -10,22 +10,16 @@
 
   <license>BSD</license>
 
-
   <buildtool_depend>catkin</buildtool_depend>
-
-  <build_depend>std_msgs</build_depend>
-  <build_depend>message_generation</build_depend>
   <build_depend>rospy</build_depend>
-  <build_depend>humanoid_league_msgs</build_depend>
+  <build_depend>dynamixel_sdk</build_depend>
 
-  <run_depend>std_msgs</run_depend>
-  <run_depend>message_runtime</run_depend>
   <run_depend>rospy</run_depend>
-  <run_depend>humanoid_league_msgs</run_depend>
+  <run_depend>dynamixel_sdk</run_depend>
 
   <export>
     <bitbots_documentation>
-      <language>python3</language>
+      <language>python</language>
       <status>unknown</status>
     </bitbots_documentation>
   </export>

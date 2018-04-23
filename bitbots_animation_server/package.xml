@@ -5,7 +5,9 @@
   <description>The bitbots_animation_server package provides an action server which interpolates keyframe animations and
   sends the next motor values to the hardware control manager.</description>
 
-  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
@@ -29,5 +31,9 @@
   <run_depend>std_msgs</run_depend>
 
   <export>
+    <bitbots_documentation>
+      <status>unknown</status>
+      <language>python3</language>
+    </bitbots_documentation>
   </export>
 </package>

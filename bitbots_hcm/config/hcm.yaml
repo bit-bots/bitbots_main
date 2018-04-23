@@ -7,11 +7,11 @@ hcm:
 
   animations:
     walkready: "walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
-    goalie-walkready: "goalie-walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
+    goalie-walkready: "walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
     front-up: "standup-minibot-new-front-up"
     bottom-up: "standup-minibot-new-back-up"
-    toSquat: "standup-minibot-tosquat"
-    stand-up: "standup-minibot-up"
+    toSquat: "sit-down"
+    stand-up: "stand-up"
     penalized: "sit-down"
     penalized_end: "stand-up"
     sit-down: "sit-down"
@@ -25,37 +25,6 @@ hcm:
     "falling_back": "falling_back"
     "falling_left": "falling_left"
     "falling_right": "falling_right"
-
-    #Werte erstellt durch 3doerfle, 3bimberg, 3windsor (Praktikum sose 2015)
-    "Darwin":
-
-      #Grenzwerte müssen auf härterem boden auch härter eingestellt werden,
-      #dies erfolgt mit dem boden_koeffizient
-      "ground_coefficient": 1.25   #WEICH(kunstrasen Spielfeld)= 1.0 , HART(teppich Spielfeld)= 1.25
-
-      #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
-      #Grenzwerte sanfter --> zu spaete Raktion
-      "threshold_gyro_y_front":  -2.272 # > gyroY
-      "threshold_gyro_y_back":  2.272 # < gyroY
-      "threshold_gyro_x_right": -1.63 # > gyroX
-      "threshold_gyro_x_left":   1.63 # < gyroX
-
-      #false = motoren werden bei fallerkennung abgeschaltet
-      "dyn_falling_active": true
-
-
-    "Hambot": #Achtung werte nur kopiert und nicht getestet!!!
-
-      #Koeffizient wird auch benutzt wenn fallen deaktiviert --> nur dass er die motoren ausmacht
-      "ground_coefficient": 1.25 #--> wert ist gut für HAMBOT, da dieser Wert das laufen nicht beeinträchtigt
-
-      "threshold_gyro_y_front":  -1.12 # > gyroY
-      "threshold_gyro_y_back":  1.12 # < gyroY
-      "threshold_gyro_x_right": -1.63 # > gyroX
-      "threshold_gyro_x_left":   1.63 # < gyroX
-
-      #false = motoren werden bei fallerkennung abgeschaltet
-      "dyn_falling_active": false
 
     "Minibot":
 
@@ -72,6 +41,3 @@ hcm:
 
       #false = motoren werden bei fallerkennung abgeschaltet
       "dyn_falling_active": true
-
-
-

@@ -304,10 +304,10 @@ class Animator:
         """
         pre = stepsize * 1.5
 
-        self.t_start = time.time()
+        self.t_start = rospy.get_time()
 
         def update(current):
-            t_robo = (time.time() - self.t_start) + self.time_min
+            t_robo = (rospy.get_time() - self.t_start) + self.time_min
 
             if t_robo > self.time_max:
                 return None
@@ -318,7 +318,10 @@ class Animator:
                 if joint.has_changed():
                     # Berechne Geschwindigkeit für dieses Gelenk
                     curjoint = current[name]
-                    degree_per_second = abs(joint.get_goal() - curjoint.get_position()) / (t_pose - t_robo)
+                    if t_pose - t_robo != 0:
+                        degree_per_second = abs(joint.get_goal() - curjoint.get_position()) / (t_pose - t_robo)
+                    else:
+                        degree_per_second = abs(joint.get_goal() - curjoint.get_position()) / 0.01
                     speed = degree_per_second * pre * self.speed_factor  # see config for docu
                     joint.set_speed(speed)
             return next
