@@ -304,7 +304,7 @@ class CM730Node:
         self.imu_msg.linear_acceleration = DataVector(accel[1], accel[0], accel[2])
         self.imu_msg.angular_velocity = DataVector(gyro[1], gyro[0], gyro[2])
         self.imu_msg.header.stamp = rospy.Time.now()  # rospy.Time.now()
-        self.imu_msg.header.frame_id = "torso_link"
+        self.imu_msg.header.frame_id = "L_IMU"
 
         self.imu_publisher.publish(self.imu_msg)
 
