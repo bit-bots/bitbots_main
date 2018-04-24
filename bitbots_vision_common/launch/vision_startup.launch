@@ -1,4 +1,10 @@
 <launch>
-  <include file="$(find bitbots_vision)/launch/bitbots_vision.launch" />
+  <arg name="sim" default="false"/>
+
+  <group if="$(arg sim)">
+    <remap to="/minibot/camera/image_raw" from="/image_raw"/>
+  </group>
+  
+  <include file="$(find bitbots_vision_cascade)/launch/bitbots_vision.launch" />
   <include file="$(find wolves_image_provider_v4l)/launch/image_provider_v4l.launch" />
 </launch>
