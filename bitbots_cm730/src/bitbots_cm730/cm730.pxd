@@ -31,6 +31,7 @@ cdef class CM730(object):
     cdef IntDataVector robo_accel
     cdef list motors
     cdef dict motor_ram_config
+    cdef dict motor_rom_config
     cdef list joint_offsets
     cdef list joints
     cdef bool eye_param
