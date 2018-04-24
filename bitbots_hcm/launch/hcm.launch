@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <launch>
-    
+
+    <arg name="sim" default="false"/>
+    <arg name="minibot" default="false"/>
+    <arg name="wolfgang" default="false"/>
+
     <rosparam file="$(find bitbots_hcm)/config/hcm.yaml" command="load"/>
     <rosparam file="$(find bitbots_hcm)/config/hcm_state_machine.yaml" command="load"/>
     
