@@ -2,7 +2,7 @@
   <arg name="sim" default="false"/>
 
   <group if="$(arg sim)">
-    <remap to="/minibot/camera/image_raw" from="/image_raw"/>
+    <remap from="/camera/image_raw" to="/image_raw"/>
   </group>
   
   <include file="$(find bitbots_vision_cascade)/launch/bitbots_vision.launch" />

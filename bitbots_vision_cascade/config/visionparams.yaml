@@ -10,7 +10,7 @@ visionparams:
         max_ball_diameter: 200
 
     field_color_detector:
-        path: '/config/color_spaces/Iran_Feld_nah.yaml'
+        path: '/config/color_spaces/simColor.yaml'
         use_dummy_green: false
         dummy_lower_values: [0, 0, 180]
         dummy_upper_values: [0, 0, 180]
@@ -33,12 +33,12 @@ visionparams:
 
     line_detector:
         horizon_offset: 50
-        linepoints_range: 2000
+        linepoints_range: 5000
         blur_kernel_size: 9
 
     ROS:
         # Subscriber
-        img_msg_topic: 'image_raw'
+        img_msg_topic: '/camera/image_raw'
         img_queue_size: 1
         # Publisher
         ball_msg_topic: 'ball_in_image'
