@@ -73,7 +73,7 @@ class TransformBall(object):
 
         br = BallRelative()
         br.header.stamp = msg.header.stamp
-        br.header.frame_id = "L_CAMERA"
+        br.header.frame_id = "camera"
 
         for ball in msg.candidates:
             br.ball_relative = self.transform(ball.center, field)
@@ -87,7 +87,7 @@ class TransformBall(object):
 
     def _callback_lines(self, msg):
         if self.camera_info is None:
-            rospy.logerr_throttle(rospy.Rate(1.0), "did not receive camerainfo")
+            rospy.logerr( "did not receive camerainfo")
 
         field = self.get_plane(msg.header.stamp, 0.0)
         if field is None:
@@ -95,7 +95,7 @@ class TransformBall(object):
 
         line = LineInformationRelative()
         line.header.stamp = msg.header.stamp
-        line.header.frame_id = "L_CAMERA"
+        line.header.frame_id = "camera"
 
         for seg in msg.segments:
             rel_seg = LineSegmentRelative()
@@ -153,13 +153,13 @@ class TransformBall(object):
             transformed = self.transform(seg.start,field)
             points.append([transformed.x, transformed.y, transformed.z])
         pc_header = msg.header
-        pc_header.frame_id = "L_CAMERA"
+        pc_header.frame_id = "camera"
         self.line_relative_pc_pub.publish(pc2.create_cloud_xyz32(pc_header, points))
 
     def _callback_goal(self, msg):
         gr = GoalRelative()
         gr.header.stamp = msg.header.stamp
-        gr.header.frame_id = "L_CAMERA"
+        gr.header.frame_id = "camera"
         return
 
     def _callback_obstacles(self, msg):
@@ -168,10 +168,10 @@ class TransformBall(object):
     def get_plane(self, stamp, object_height):
         """ returns a plane which an object is believed to be on as a tuple of a point on this plane and a normal"""
         try:
-            tf_right = self.tf_buffer.lookup_transform("L_CAMERA", "right_foot_sole_link", stamp)
-            tf_left = self.tf_buffer.lookup_transform("L_CAMERA", "left_foot_sole_link", stamp)
+            tf_right = self.tf_buffer.lookup_transform("camera", "r_sole", stamp)
+            tf_left = self.tf_buffer.lookup_transform("camera", "l_sole", stamp)
         except tf2_ros.LookupException:
-            rospy.logwarn_throttle(rospy.Rate(1), "still waiting for transforms")
+            rospy.logwarn("still waiting for transforms")
             return
 
         len_r = math.sqrt(tf_right.transform.translation.x ** 2 +
@@ -182,9 +182,9 @@ class TransformBall(object):
                           tf_left.transform.translation.z ** 2)
 
         if len_r > len_l:
-            ground_foot = "right_foot_sole_link"
+            ground_foot = "r_sole"
         else:
-            ground_foot = "left_foot_sole_link"
+            ground_foot = "l_sole"
 
         field_normal = PointStamped()
         field_normal.header.frame_id = ground_foot
@@ -193,9 +193,9 @@ class TransformBall(object):
         field_normal.point.y = 0.0
         field_normal.point.z = 1.0
         try:
-            field_normal = self.tf_buffer.transform(field_normal, "L_CAMERA")
+            field_normal = self.tf_buffer.transform(field_normal, "camera")
         except tf2_ros.LookupException:
-            rospy.logwarn_throttle(rospy.Rate(1.0), "Could not transform from " + ground_foot + " to L_CAMERA")
+            rospy.logwarn("Could not transform from " + ground_foot + " to camera")
             return None
 
 
@@ -206,9 +206,9 @@ class TransformBall(object):
         field_point.point.y = 0.0
         field_point.point.z = object_height
         try:
-            field_point = self.tf_buffer.transform(field_point, "L_CAMERA")
+            field_point = self.tf_buffer.transform(field_point, "camera")
         except tf2_ros.LookupException:
-            rospy.logwarn_throttle(rospy.Rate(1.0), "Could not transform from " + ground_foot + " to L_CAMERA")
+            rospy.logwarn("Could not transform from " + ground_foot + " to camera")
             return None
 
         field_normal = np.array([field_normal.point.x, field_normal.point.y, field_normal.point.z])
