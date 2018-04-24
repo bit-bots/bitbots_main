@@ -41,7 +41,7 @@ class PlayAnimationAction(object):
 
         self.dynamic_animation = rospy.get_param("animation/dynamic", False)
         robot_type_name = rospy.get_param("robot_type_name")
-        self.used_motor_cids = rospy.get_param("cm730/" + robot_type_name + "/motors")
+        self.used_motor_cids = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 1, 2, 3, 4, 5, 6, 19, 20] #rospy.get_param("cm730/" + robot_type_name + "/motors")
         self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
 
         # pre defiened messages for performance
