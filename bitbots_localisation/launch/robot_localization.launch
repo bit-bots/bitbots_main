@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="robot_localization" type="ukf_localization_node" name="ukf_se" clear_params="true">
+    <rosparam command="load" file="$(find bitbots_localisation)/config/test_localize.yaml"/>
+
+  </node>
+</launch>
