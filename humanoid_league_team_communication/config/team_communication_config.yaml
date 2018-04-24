@@ -4,7 +4,7 @@ team_communication:
   port: 12321
 
   # Team number
-  team: 7
+  team: 8
 
   # Player number
   player: 1
