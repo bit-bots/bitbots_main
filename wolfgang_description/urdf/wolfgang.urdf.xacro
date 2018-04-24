@@ -499,10 +499,10 @@
 
 
     <joint name="RHipYaw" type="revolute">
-        <origin xyz="-0.019 -0.055 0" rpy="0 0 0" />
+        <origin xyz="0 -0.055 0" rpy="0 0 0" />
         <parent link="base_link" />
         <child link="r_hip_1" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 -1" />
         <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-0.9250245035547" upper="0.9250245035547" />
         <dynamics damping="${d}" friction="0.0" />
     </joint>
@@ -512,7 +512,7 @@
         <parent link="r_hip_1" />
         <child link="r_hip_2" />
         <axis xyz="1 0 0" />
-        <limit effort="${tofa*6.0}" velocity="6.597344565" lower="-1.0122909661542001" upper="0.7853981633955001" />
+        <limit effort="${tofa*6.0}" velocity="6.597344565" lower="-1.57" upper="0.7853981633955001" />
         <dynamics damping="${d}" friction="0.0" />
     </joint>
 
@@ -538,7 +538,7 @@
         <origin xyz="-0.00186 0 -0.22" rpy="0 0 0" />
         <parent link="r_lower_leg" />
         <child link="r_ankle" />
-        <axis xyz="0 1 0" />
+        <axis xyz="0 -1 0" />
         <limit effort="${tofa*8.4}" velocity="4.712388975" lower="-1.2391837689129" upper="1.6406094968706" />
         <dynamics damping="${d}" friction="0.0" />
     </joint>
@@ -547,7 +547,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <parent link="r_ankle" />
         <child link="r_foot" />
-        <axis xyz="1 0 0" />
+        <axis xyz="-1 0 0" />
         <limit effort="${tofa*6.0}" velocity="6.597344565" lower="-1.4660765716716" upper="1.4660765716716" />
         <dynamics damping="${d}" friction="0.0" />
     </joint>
@@ -567,10 +567,10 @@
     </joint>
 
     <joint name="LHipYaw" type="revolute">
-        <origin xyz="-0.019 0.055 0" rpy="0 0 0" />
+        <origin xyz="0 0.055 0" rpy="0 0 0" />
         <parent link="base_link" />
         <child link="l_hip_1" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 -1" />
         <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-0.9250245035547" upper="0.9250245035547" />
         <dynamics damping="${d}" friction="0.0" />
     </joint>
@@ -580,7 +580,7 @@
         <parent link="l_hip_1" />
         <child link="l_hip_2" />
         <axis xyz="1 0 0" />
-        <limit effort="${tofa*6.0}" velocity="6.597344565" lower="-1.0122909661542001" upper="0.7853981633955001" />
+        <limit effort="${tofa*6.0}" velocity="6.597344565" lower="-0.7853981633955001" upper="1.57" />
         <dynamics damping="${d}" friction="0.0" />
     </joint>
 
@@ -588,8 +588,8 @@
         <origin xyz="0.0303 0 0" rpy="0 0 0" />
         <parent link="l_hip_2" />
         <child link="l_upper_leg" />
-        <axis xyz="0 1 0" />
-        <limit effort="${tofa*8.4}" velocity="4.712388975" lower="-0.48869219055720003" upper="1.919862177189" />
+        <axis xyz="0 -1 0" />
+        <limit effort="${tofa*8.4}" velocity="4.712388975" lower="-1.919862177189" upper="0.48869219055720003" />
         <dynamics damping="${d}" friction="0.0" />
     </joint>
 
@@ -597,7 +597,7 @@
         <origin xyz="0 0 -0.22" rpy="0 0 0" />
         <parent link="l_upper_leg" />
         <child link="l_lower_leg" />
-        <axis xyz="0 1 0" />
+        <axis xyz="0 -1 0" />
         <limit effort="${tofa*8.4}" velocity="4.712388975" lower="-2.268928027587" upper="0" />
         <dynamics damping="${d}" friction="0.0" />
     </joint>
@@ -615,7 +615,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <parent link="l_ankle" />
         <child link="l_foot" />
-        <axis xyz="1 0 0" />
+        <axis xyz="-1 0 0" />
         <limit effort="${tofa*6.0}" velocity="6.597344565" lower="-1.4660765716716" upper="1.4660765716716" />
         <dynamics damping="${d}" friction="0.0" />
     </joint>
@@ -637,7 +637,7 @@
     <joint name="base_link_to_torso" type="fixed">
         <parent link="base_link" />
         <child link="torso" />
-        <origin rpy="0 0 0" xyz="0 0 0.0936" />
+        <origin rpy="0.019 0 0" xyz="0 0 0.0936" />
     </joint>
 
     <joint name="RShoulderPitch" type="revolute">
