@@ -7,7 +7,7 @@
   
   <include file="$(find bitbots_vision_cascade)/launch/bitbots_vision.launch" />
 
-  <group unless=$(arg sim)">
+  <group unless="$(arg sim)">
     <include file="$(find wolves_image_provider_v4l)/launch/image_provider_v4l.launch" />
   </group>
 </launch>
