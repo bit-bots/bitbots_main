@@ -17,6 +17,8 @@ class Vision:
         rospack = rospkg.RosPack()
         package_path = rospack.get_path('bitbots_vision_cascade')
 
+        rospy.loginfo('Initializing cascade vision...')
+
         self._ball_candidate_threshold = rospy.get_param(
             'visionparams/vision/ball_candidate_rating_threshold')
         self._ball_candidate_y_offset = rospy.get_param(

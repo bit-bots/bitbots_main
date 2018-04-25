@@ -1,5 +1,12 @@
 <launch>
-    <rosparam command="load" file="$(find bitbots_vision_fcnn)/config/visionparams.yaml" />
+    <arg name="debug" default="false"/>
+
+    <group if="$(arg debug)">
+        <rosparam command="load" file="$(find bitbots_vision_fcnn)/config/debug_visionparams.yaml" />
+    </group>
+    <group unless="$(arg debug)">
+        <rosparam command="load" file="$(find bitbots_vision_fcnn)/config/visionparams.yaml" />
+    </group>
     <node pkg="bitbots_vision_fcnn" type="vision.py" name="bitbots_vision_fcnn" output="screen" >
     </node>
 </launch>
