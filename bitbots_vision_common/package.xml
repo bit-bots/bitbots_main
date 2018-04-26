@@ -3,9 +3,12 @@
     <name>bitbots_vision_common</name>
     <description>
         This is the Bit-Bots Vision Common package.
-        It provides essential modules, which are needed by Bit-Bots Vision
-        modules that actually do stuff. Out of the vision modules, provided by
+        We use the wolves_image_provider_v4l package as image provider.
+        It provides essential modules, which are needed by Bit-Bots vision
+        modules that actually do stuff. Out of the vision modules provided by
         this package, new vision systems can be built.
+        When you want to trim parameters, you are wrong in this package. Here,
+        the specific implementation of module related stuff is defined.
     </description>
     <version>1.0.0</version>
     <maintainer email="5fiedler@informatik.uni-hamburg.de">Niklas Fiedler</maintainer>
