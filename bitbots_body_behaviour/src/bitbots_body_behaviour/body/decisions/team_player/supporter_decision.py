@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 SupporterDecision
 ^^^^^^^^^^^^^^^^^
@@ -11,14 +12,13 @@ from body.actions.go_to_ball_pathfinding import GoToBallPathfinding
 from body.actions.search import Search
 from body.actions.wait import Wait
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-from bitbots_common.connector.connector import BodyConnector
 
 
 class SupporterDecision(AbstractDecisionModule):
     def __init__(self, connector, args=None):
-        super().__init__(connector, args)
+        super(SupporterDecision, self).__init__(connector, args)
 
-    def perform(self, connector: BodyConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
 
         if not (connector.vision.ball_seen() or
                 rospy.get_time() - connector.vision.ball_last_seen() < 1):

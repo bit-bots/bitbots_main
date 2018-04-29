@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 GotToBallPathfinding
 ^^^^^^^^^^^^^^^^^^^^
@@ -9,7 +10,6 @@ import math
 
 import rospy
 
-from bitbots_common.connector.connector import BodyConnector
 from bitbots_pathfinding.potential_field import PotentialMap
 
 
@@ -21,8 +21,8 @@ class GoToBallPathfinding(AbstractActionModule):
     Goes to the ball
     """
 
-    def __init__(self, _, connector: BodyConnector):
-        super().__init__(connector)
+    def __init__(self, _, connector):
+        super(GoToBallPathfinding, self).__init__(connector)
         self.align_to_goal = None
         self.toggle_track_both = None
         self.focus_ball_distance = None
@@ -34,7 +34,7 @@ class GoToBallPathfinding(AbstractActionModule):
         self.last_s = 0
         self.last_iteration = rospy.get_time()
 
-    def perform(self, connector: BodyConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         self.align_to_goal = connector.config["Body"]["Toggles"]["Fieldie"]["alignToGoal"]
         self.toggle_track_both = connector.config["Body"]["Toggles"]["Fieldie"]["trackBoth"]
         self.focus_ball_distance = connector.config["Body"]["Fieldie"]["focusBallDistance"]
@@ -59,7 +59,7 @@ class GoToBallPathfinding(AbstractActionModule):
 
         self.go_to_pos(connector, bu, bv, obstacles, align_to_goal)
 
-    def go_to_pos(self, connector: BodyConnector, pu, pv, additional_obstacles, align_to_goal):
+    def go_to_pos(self, connector, pu, pv, additional_obstacles, align_to_goal):
 
         # only run approx. 3 times a second:
 

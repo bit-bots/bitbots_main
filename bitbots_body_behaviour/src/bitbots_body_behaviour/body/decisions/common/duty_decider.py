@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 DutyDecider
 ^^^^^^^^^^^
@@ -23,7 +24,6 @@ from humanoid_league_msgs.msg import Speak
 from bitbots_body_behaviour.keys import DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_READY, DATA_VALUE_STATE_SET, \
     DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-from bitbots_common.connector.connector import BodyConnector
 
 duty = None  # can be overwriten by the startup script (to force a behaviour)
 
@@ -33,13 +33,13 @@ class DutyDecider(AbstractDecisionModule):
     Decides what kind of behavoiur the robot performs
     """
 
-    def __init__(self, connector: BodyConnector, _):
+    def __init__(self, connector, _):
         super(DutyDecider, self).__init__(connector)
         self.max_fieldie_time = connector.config["Body"]["Fieldie"]["Defender"]["maxFieldieTime"]
         self.toggle_self_positioning = connector.config["Body"]["Toggles"]["Fieldie"]["trySelfPositioning"]
         self.start_self_pos = None
 
-    def perform(self, connector: BodyConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
 
         connector.blackboard.set_head_duty("BALL_MODE")
         if connector.vision.ball_seen():

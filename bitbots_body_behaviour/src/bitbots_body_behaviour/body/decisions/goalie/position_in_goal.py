@@ -14,11 +14,9 @@ from bitbots.modules.behaviour.body.actions.plain_walk_action import PlainWalkAc
 from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
 from bitbots.util import get_config
 
-from bitbots_common.connector.connector import BodyConnector
-
 
 class PositionInGoal(AbstractDecisionModule):
-    def __init__(self,  connector: BodyConnector, _):
+    def __init__(self,  connector, _):
         super(PositionInGoal, self).__init__(connector)
         config = get_config()
         goal_width = config["field"]["goal-width"]

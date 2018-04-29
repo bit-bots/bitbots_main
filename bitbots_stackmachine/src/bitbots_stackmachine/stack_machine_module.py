@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 StackMachineModule
 ^^^^^^^^^^^^^^^^^^
@@ -9,7 +10,7 @@ import rospy
 from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
 
 
-class StackMachineModule:
+class StackMachineModule(object):
     """
     Diese Klasse handeld die Verhaltensarchitektur
     """
@@ -103,7 +104,7 @@ class StackMachineModule:
 
             rospy.logdebug("Stack1" + " ".join(b))
 
-    def push(self, module: AbstractStackElement, init_data=None):
+    def push(self, module, init_data=None):
         """
         Ein neues Modul auf den Stack legen, es wird sofort ausgeführt
 

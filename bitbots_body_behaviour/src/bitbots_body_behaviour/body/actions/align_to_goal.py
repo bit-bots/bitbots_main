@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 AlignToGoal
 ^^^^^^^^^^^
@@ -10,15 +11,14 @@ import time
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
 import rospy
-from bitbots_common.connector.connector import BodyConnector
 
 
 class AlignToGoal(AbstractActionModule):
-    def __init__(self, connector: BodyConnector, _):
+    def __init__(self, connector, _):
         super(AlignToGoal, self).__init__(connector)
         self.config_max_aligning_time = connector.config["Fieldie"]["maxGoalAlignTime"]
 
-    def perform(self, connector: BodyConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         connector.blackboard.set_head_duty("BALL_GOAL_TRACKING")
 
         if not connector.blackboard.get_aligning_start_time():

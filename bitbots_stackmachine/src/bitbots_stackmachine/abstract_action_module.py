@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
 
 

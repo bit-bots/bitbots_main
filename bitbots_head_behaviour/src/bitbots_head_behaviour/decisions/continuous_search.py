@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 ContinuousSearch
 ^^^^^^^^^^^^^^^^
@@ -10,14 +11,13 @@ so only in special cases the ball will be tracked.
 """
 import rospy
 
-from bitbots_common.connector.connector import HeadConnector
 from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class ContinuousSearch(AbstractDecisionModule):
-    def __init__(self, connector: HeadConnector, outcomes=()):
-        super().__init__(connector)
+    def __init__(self, connector, outcomes=()):
+        super(ContinuousSearch, self).__init__(connector)
         self.pattern_pos = 0
         self.goalie_pattern = connector.config["Head"]["SearchPattern"]["goalie"]
         self.defender_pattern = connector.config["Head"]["SearchPattern"]["defender"]
@@ -28,7 +28,7 @@ class ContinuousSearch(AbstractDecisionModule):
         self.last_pattern = self.current_pattern
         rospy.logdebug("Start new Search")
 
-    def perform(self, connector: HeadConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         self.set_pattern(connector)
 
         pos = self.pattern_pos
@@ -37,7 +37,7 @@ class ContinuousSearch(AbstractDecisionModule):
         self.pattern_pos = (pos + 1) % len(self.current_pattern)
         return self.push(HeadToPanTilt, self.current_pattern[pos])
 
-    def set_pattern(self, connector: HeadConnector):
+    def set_pattern(self, connector):
         self.last_pattern = self.current_pattern
         duty = connector.team_data.get_role()
 

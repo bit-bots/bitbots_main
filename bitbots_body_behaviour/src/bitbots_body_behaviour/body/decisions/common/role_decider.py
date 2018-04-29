@@ -12,14 +12,13 @@ from bitbots_body_behaviour.body.decisions.team_player.center_decision import Ce
 from bitbots_body_behaviour.body.decisions.team_player.defender_decision import DefenderDecision
 from bitbots_body_behaviour.body.decisions.team_player.supporter_decision import SupporterDecision
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-from bitbots_common.connector.connector import BodyConnector
 from humanoid_league_team_communication.mitecom.mitecom import ROLE_STRIKER, ROLE_SUPPORTER, ROLE_OTHER, ROLE_DEFENDER
 
 
 class RoleDecider(AbstractDecisionModule):
-    def __init__(self, connector: BodyConnector, forced=None):
-        super().__init__(connector)
-        self.forced = forced
+    def __init__(self, connector, args):
+        super(RoleDecider, self).__init__(connector)
+        self.forced = args[0] if args else None
 
     def perform(self, connector, reevaluate=False):
         if self.forced:

@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import unittest
 from bitbots.modules.behaviour.body.actions.go_to_absolute_position import GoToAbsolutePosition
 

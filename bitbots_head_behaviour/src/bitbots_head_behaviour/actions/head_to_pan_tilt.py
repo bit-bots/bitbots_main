@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 HeadToPanTilt
 ^^^^^^^^^^^^^
@@ -13,12 +14,11 @@ import time
 
 import rospy
 
-from bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
 
 class HeadToPanTilt(AbstractActionModule):
-    def __init__(self, connector: HeadConnector, args):
+    def __init__(self, connector, args):
         super(HeadToPanTilt, self).__init__(connector)
         # The head should not try to move to a position it cannot reach
         self.pan = min(max(connector.head.min_pan, float(args[0])), connector.head.max_pan)
@@ -26,7 +26,7 @@ class HeadToPanTilt(AbstractActionModule):
         # TODO: move body when ball is too far left or right
         self.at_position = rospy.get_time()
 
-    def perform(self, connector: HeadConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         rospy.logdebug("HeadToPanTilt")
         current_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
 

@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import time
 
 from bitbots_misc.bitbots_common.src.bitbots_common.connector.capsules.walking_capsule import WalkingCapsule

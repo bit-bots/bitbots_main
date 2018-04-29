@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 HeadDutyDecider
 ^^^^^^^^^^^^^^^
@@ -7,7 +8,6 @@ import time
 
 import rospy
 import math
-from bitbots_common.connector.connector import HeadConnector
 from bitbots_head_behaviour.decisions.search_and_confirm import SearchAndConfirmBall, SearchAndConfirmEnemyGoal
 from bitbots_head_behaviour.decisions.continuous_search import ContinuousSearch
 from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
@@ -17,8 +17,8 @@ from humanoid_league_msgs.msg import HeadMode
 
 class HeadDutyDecider(AbstractDecisionModule):
 
-    def __init__(self, connector: HeadConnector, _):
-        super().__init__(connector)
+    def __init__(self, connector, _):
+        super(HeadDutyDecider, self).__init__(connector)
         self.toggle_goal_vision_tracking = connector.config["Head"]["Toggles"]["goalVisionTracking"]
         self.toggle_switch_ball_goal = connector.config["Head"]["Toggles"]["switchBallGoalSearch"]
         self.confirm_time = connector.config["Head"]["Search"]["confirmTime"]
@@ -32,7 +32,7 @@ class HeadDutyDecider(AbstractDecisionModule):
         self.goal_prio = 0
         self.trackjustball_aftergoal = False
 
-    def perform(self, connector: HeadConnector, reevaluate: bool=False):
+    def perform(self, connector, reevaluate=False):
 
         # set priorities
         if connector.vision.ball_seen():

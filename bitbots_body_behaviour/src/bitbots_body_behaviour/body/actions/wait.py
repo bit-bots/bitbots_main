@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 Wait
 ^^^^
@@ -9,11 +10,10 @@ Just waits for something (i.e. that preconditions will be fullfilled)
 import rospy
 
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
-from bitbots_common.connector.connector import BodyConnector
 
 
 class Wait(AbstractActionModule):
-    def __init__(self, connector: BodyConnector, args=99999999):
+    def __init__(self, connector, args=99999999):
         super(Wait, self).__init__(connector)
         if args is None:
             args = 10

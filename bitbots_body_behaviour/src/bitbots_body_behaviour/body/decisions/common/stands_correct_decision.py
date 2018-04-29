@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 StandsCorrectDecision
 ^^^^^^^^^^^^^
@@ -11,7 +12,6 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 import rospy
 from bitbots_body_behaviour.body.actions.align_on_ball import AlignOnBall
 from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionCommon
-from bitbots_common.connector.connector import BodyConnector
 
 
 class StandsCorrectDecision(AbstractDecisionModule):
@@ -19,14 +19,14 @@ class StandsCorrectDecision(AbstractDecisionModule):
     Decides if the robot stands correct and takes care if it doesn't
     """
 
-    def __init__(self, connector: BodyConnector, _):
+    def __init__(self, connector, _):
         super(StandsCorrectDecision, self).__init__(connector)
         self.toggle_align_to_goal = connector.config["Body"]["Toggles"]["Fieldie"]["alignToGoal"]
         self.toggle_use_side_kick_in_game = connector.config["Body"]["Toggles"]["Fieldie"]["useSideKickInGame"]
         self.toggle_hack_align = connector.config["Body"]["Toggles"]["Fieldie"]["hackAlign"]
         self.config_kickalign_v = connector.config["Body"]["Fieldie"]["kickAlign"]
 
-    def perform(self, connector: BodyConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
 
         # get data
         #opp_goal_u = connector.filtered_vision_capsule().get_local_goal_model_opp_goal()[0]

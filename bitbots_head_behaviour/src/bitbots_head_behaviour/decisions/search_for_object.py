@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 SearchForBall
 ^^^^^^^^^^^^^
@@ -13,21 +14,20 @@ import math
 
 from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
 from bitbots_head_behaviour.decisions.continuous_search import ContinuousSearch
-from bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class AbstractSearchForObject(AbstractDecisionModule):
-    def perform(self, connector: HeadConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         pass
 
-    def __init__(self, connector: HeadConnector, _):
+    def __init__(self, connector, _):
         super(AbstractSearchForObject, self).__init__(connector)
         self.run = 0
         self.pattern = connector.config["Head"]["SearchPattern"]
         self.look_at_old_position = connector.config["Head"]["Toggles"]["look_at_old_position"]
 
-    def search(self, connector: HeadConnector, u, v):
+    def search(self, connector, u, v):
         rospy.logdebug('Searching...')
         self.run += 1
 
@@ -58,14 +58,14 @@ class AbstractSearchForObject(AbstractDecisionModule):
 
 
 class SearchForBall(AbstractSearchForObject):
-    def perform(self, connector: HeadConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         rospy.logdebug("Start Search for ball")
         u, v = connector.world_model.get_ball_position_uv()
         return self.search(connector, u, v)
 
 
 class SearchForEnemyGoal(AbstractSearchForObject):
-    def perform(self, connector: HeadConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         # Take any goal until we can distinguish between them
         u, v = connector.vision.get_goal_relative()
         return self.search(connector, u, v)

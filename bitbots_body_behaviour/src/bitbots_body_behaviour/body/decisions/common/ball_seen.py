@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 BallSeen
 ^^^^^^^^^^^^^
@@ -13,7 +14,6 @@ from bitbots_body_behaviour.body.decisions.common.close_ball import CloseBallPen
 from bitbots_body_behaviour.body.decisions.goalie.ball_dangerous import BallDangerous
 from bitbots_body_behaviour.body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-from bitbots_common.connector.connector import BodyConnector
 
 
 class AbstractBallSeen(AbstractDecisionModule):
@@ -22,7 +22,7 @@ class AbstractBallSeen(AbstractDecisionModule):
     Decides if the ball was seen rspectively if the information is  authentic enough.
     """
 
-    def __init__(self, connector: BodyConnector, _):
+    def __init__(self, connector, _):
         super(AbstractBallSeen, self).__init__(connector)
         self.max_ball_time = connector.config["Body"]["Common"]["maxBallTime"]
 

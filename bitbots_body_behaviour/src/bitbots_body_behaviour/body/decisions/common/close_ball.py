@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 CloseBall
 ^^^^^^^^^
@@ -13,7 +14,6 @@ from bitbots_body_behaviour.body.actions.go_to_absolute_position import GoToAbso
 from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionPenaltyKick
 from bitbots_body_behaviour.body.decisions.common.stands_correct_decision import StandsCorrectDecision
 from bitbots_body_behaviour.body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
-from bitbots_common.connector.connector import BodyConnector
 
 
 class AbstractCloseBall(AbstractDecisionModule):
@@ -21,7 +21,7 @@ class AbstractCloseBall(AbstractDecisionModule):
     Test if the ball is in kick distance
     """
 
-    def __init__(self, connector: BodyConnector, _):
+    def __init__(self, connector, _):
         super(AbstractCloseBall, self).__init__(connector)
         self.last_goalie_dist = 0
         self.last_goalie_dist_time = 0
@@ -29,7 +29,7 @@ class AbstractCloseBall(AbstractDecisionModule):
         self.min_kick_distance = connector.config["Body"]["Fieldie"]["minKickDistance"]
         self.config_kickalign_v = connector.config["Body"]["Fieldie"]["kickAlign"]
 
-    def perform(self, connector: BodyConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         # When the ball is seen, the robot should switch between looking to the ball and the goal
         connector.blackboard.set_head_duty("BALL_GOAL_TRACKING")
         # if the robot is near to the ball

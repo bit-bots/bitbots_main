@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 SearchAndConfirm
 ^^^^^^^^^^^^^^^^
@@ -11,12 +12,11 @@ import rospy
 
 from bitbots_head_behaviour.actions.track_object import TrackBall, TrackGoal
 from bitbots_head_behaviour.decisions.search_for_object import SearchForBall, SearchForEnemyGoal
-from bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class AbstractSearchAndConfirm(AbstractDecisionModule):
-    def __init__(self, connector: HeadConnector, _):
+    def __init__(self, connector, _):
         super(AbstractSearchAndConfirm, self).__init__(connector, _)
         self.set_confirmed = None
         self.get_started_confirm_time = None
@@ -31,7 +31,7 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
         self.track_ball_lost_time = connector.config["Head"]["Tracking"]["trackBallLost"]
         self.ball_fail_conter_max = connector.config["Head"]["Tracking"]["ballFailCounterMax"]
 
-    def perform(self, connector: HeadConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         rospy.logdebug("Ballseen: " + str(self.object_seen()))
         if rospy.get_time() - self.get_started_confirm_time() > self.confirm_time and \
                         self.get_started_confirm_time() != 0:
@@ -65,7 +65,7 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
 
 
 class SearchAndConfirmBall(AbstractSearchAndConfirm):
-    def perform(self, connector: HeadConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         if self.fr:
             self.fr = False
             self.get_started_confirm_time = connector.head.get_started_confirm_ball
@@ -86,7 +86,7 @@ class SearchAndConfirmBall(AbstractSearchAndConfirm):
 
 
 class SearchAndConfirmEnemyGoal(AbstractSearchAndConfirm):
-    def perform(self, connector: HeadConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         if self.fr:
             # TODO: get data from world model to distinguish between own and enemy goal
             self.fr = False

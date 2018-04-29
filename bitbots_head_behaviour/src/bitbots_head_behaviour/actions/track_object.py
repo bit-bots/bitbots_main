@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 ConfirmGoal
 ^^^^^^^^^^
@@ -7,7 +8,6 @@ ConfirmGoal
 """
 import rospy
 
-from bitbots_common.connector.connector import HeadConnector
 from bitbots_stackmachine.abstract_init_action_module import AbstractInitActionModule
 from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
 
@@ -15,8 +15,7 @@ class AbstractTrackObject(AbstractInitActionModule):
     """
     Confirmed either the Ball, OwnGoal or EnemyGoal by passing it to the init arg
     """
-
-    def __init__(self, connector: HeadConnector, args=None):
+    def __init__(self, connector, args=None):
         super(AbstractTrackObject, self).__init__(connector, args)
 
         # this influences how precise the ball has to be in the center to make the head move
@@ -41,7 +40,7 @@ class AbstractTrackObject(AbstractInitActionModule):
         self.horizontal_factor = connector.config["Head"]["Camera"]["horizontalFactor"]
         self.vertical_factor = connector.config["Head"]["Camera"]["verticalFactor"]
 
-    def track_with_values(self, connector: HeadConnector, u, v):
+    def track_with_values(self, connector, u, v):
         rospy.logdebug('Tracking...')
         pan_tilt = connector.head.get_pantilt_from_uv(u, v)
         return self.push(HeadToPanTilt, pan_tilt)
@@ -51,13 +50,13 @@ class AbstractTrackObject(AbstractInitActionModule):
 
 
 class TrackBall(AbstractTrackObject):
-    def perform(self, connector: HeadConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         u, v = connector.world_model.get_ball_position_uv()
         self.track_with_values(connector, u, v)
 
 
 class TrackGoal(AbstractTrackObject):
-    def perform(self, connector: HeadConnector, reevaluate=None):
+    def perform(self, connector, reevaluate=None):
         # TODO: Distinguish between own and enemy goal (get data from world model)
         a, b = connector.vision.get_goal_relative()
         self.track_with_values(connector, a, b)

@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 AlignOnBall
 ^^^^^^^^^^^
@@ -6,11 +7,10 @@ AlignOnBall
 
 """
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
-from bitbots_common.connector.connector import BodyConnector
 
 
 class AlignOnBall(AbstractActionModule):
-    def perform(self, connector: BodyConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         connector.blackboard.set_head_duty("BALL_MODE")
 
         connector.walking.start_walking_plain(

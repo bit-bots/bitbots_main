@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 AbstractStackElement
 ^^^^^^^^^^^^^^^^^^^^
@@ -7,7 +8,7 @@ AbstractStackElement
 """
 
 
-class AbstractStackElement:
+class AbstractStackElement(object):
     """
     Das AbstractStackElement ist die Grundlager aller Module welche auf dem
     Stack landen. Es hat dafür einige hilfsfunktionen welche nicht
@@ -67,7 +68,7 @@ class AbstractStackElement:
         """
         self._behaviour.push(module, init_data)
 
-    def perform(self, connector, reevaluate: bool=False):
+    def perform(self, connector, reevaluate=False):
         """
          Diese Methode wird aufgeruffen wenn das Modul im Stack ganz oben
          liegt und drann ist. Diese Methode sollte überladen werden!

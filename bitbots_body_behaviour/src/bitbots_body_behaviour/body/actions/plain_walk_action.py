@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 PlainWalkAction
 ^^^^^^^^^^^^^^^
@@ -12,11 +13,9 @@ import rospy
 
 from bitbots_stackmachine.abstract_init_action_module import AbstractInitActionModule
 
-from bitbots_common.connector.connector import BodyConnector
-
 
 class PlainWalkAction(AbstractInitActionModule):
-    def __init__(self, connector: BodyConnector, args):
+    def __init__(self, connector, args):
         AbstractInitActionModule.__init__(self, connector, args)
         self.step_list = args
         self.walking_steps = self.walking_step_generator_function()
@@ -30,7 +29,7 @@ class PlainWalkAction(AbstractInitActionModule):
             yield element
         yield None
 
-    def perform(self, connector: BodyConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         if connector.blackboard.get_duty() in ["ThrowIn", "PenaltyKickFieldie"]:
             self.do_not_reevaluate()
         if not self.active:

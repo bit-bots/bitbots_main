@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+# -*- coding:utf-8 -*-
 
 import rospy
 from humanoid_league_msgs.msg import BallInImage, BallRelative, BallsInImage

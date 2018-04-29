@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 RaiseArm
 ^^^^^^^^
@@ -7,11 +8,9 @@ Raising Arms to get ready to throw the goalie.
 from body.actions.throw import LEFT, RIGHT, MIDDLE, BOTH_ARMS_HIGH
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
-from bitbots_common.connector.connector import BodyConnector
-
 
 class RaiseArm(AbstractActionModule):
-    def __init__(self, connector: BodyConnector, args):
+    def __init__(self, connector, args):
         super(RaiseArm, self).__init__(connector)
         self.richtung = args
         self.use_both_arms = self.connector.config["Behaviour"]["Toggles"]["Goalie"]["useBothArms"]

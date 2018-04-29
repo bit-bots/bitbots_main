@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 TurnToAbsoluteDirection
 ^^^^^^^^^^^^^^
@@ -11,16 +12,14 @@ History:
 """
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
-from bitbots_common.connector.connector import BodyConnector
-
 
 class TurnToAbsoluteDirection(AbstractDecisionModule):
-    def __init__(self, connector: BodyConnector, args):
+    def __init__(self, connector, args):
         super(TurnToAbsoluteDirection, self).__init__(connector)
         self.goal_direction = args[0]
         self.threshold = args[1]
 
-    def perform(self, connector: BodyConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
 
         current_direction = connector.world_model.get_current_position()[2]
 

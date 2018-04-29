@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 AbstractModule
 ^^^^^^^^^^^^^^
@@ -8,7 +9,7 @@ Dieses Modul ist die Basis aller VerhaltensModule
 """
 
 
-class AbstractModule:
+class AbstractModule(object):
     _event_framework = None
 
     def start(self, data):

@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2.7
+# -*- coding:utf-8 -*-
 """
 BehaviourModule
 ^^^^^^^^^^^^^^^
@@ -20,7 +21,7 @@ from bitbots_common.connector.connector import BodyConnector
 
 class BehaviourModule(StackMachineModule):
     def __init__(self):
-        super().__init__()
+        super(BehaviourModule, self).__init__()
         self.connector = BodyConnector()
         self.connector.config = rospy.get_param("Behaviour")
 

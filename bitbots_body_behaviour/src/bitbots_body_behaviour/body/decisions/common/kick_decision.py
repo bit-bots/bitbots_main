@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 Kick Decision
 ^^^^^^^^^^^^^
@@ -6,7 +7,6 @@ Kick Decision
 """
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from bitbots_body_behaviour.body.actions.kick_ball import KickBall
-from bitbots_common.connector.connector import BodyConnector
 
 
 class AbstractKickDecision(AbstractDecisionModule):
@@ -14,17 +14,17 @@ class AbstractKickDecision(AbstractDecisionModule):
     Decides wich leg he has to use to kick the ball and if he has te repositionate before kicking
     """
 
-    def __init__(self, connector: BodyConnector, _):
+    def __init__(self, connector, _):
         super(AbstractKickDecision, self).__init__(connector)
         self.max_goal_hard_distance = connector.config["Body"]["Fieldie"]["maxGoalHardKickDistance"]
         self.toggle_use_side_kick = connector.config["Body"]["Toggles"]["Fieldie"]["useSideKickInGame"]
         self.use_dynamic_kick_toggle = connector.config["Body"]["Toggles"]["Fieldie"]["useDynamicKick"]
 
-    def perform(self, connector: BodyConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
 
         self.action(connector, reevaluate)
 
-    def action(self, connector: BodyConnector, reevaluate):
+    def action(self, connector, reevaluate):
         self.do_not_reevaluate()
         connector.blackboard.unset_finished_align()
 
@@ -41,7 +41,7 @@ class AbstractKickDecision(AbstractDecisionModule):
         else:
             return self.kick_side_goal(connector)
 
-    def kick_normal(self, connector: BodyConnector):
+    def kick_normal(self, connector):
         """
         Pushes a normal kick, depending on side of the Ball
         """
@@ -50,7 +50,7 @@ class AbstractKickDecision(AbstractDecisionModule):
         else:
             return self.push(KickBall, init_data="L")
 
-    def kick_side_goal(self, connector: BodyConnector):
+    def kick_side_goal(self, connector):
         """
         Pushes a sidekick, depending on the side of the enemy goal
         """
@@ -59,7 +59,7 @@ class AbstractKickDecision(AbstractDecisionModule):
         else:
             return self.push(KickBall, init_data="SLK")
 
-    def hard_kick(self, connector: BodyConnector):
+    def hard_kick(self, connector):
         """
         Pushes a hard kick, depending on side of the ball
         :param connector:

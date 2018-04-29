@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 FieldieSearchDecision
 ^^^^^^^^^^^^^^^^^^^^
@@ -17,13 +18,11 @@ import rospy
 from bitbots_body_behaviour.body.actions.plain_walk_action import PlainWalkAction
 from bitbots_body_behaviour.body.actions.search import StopAndSearch
 
-from bitbots_common.connector.capsules.walking_capsule import WalkingCapsule
-from bitbots_common.connector.connector import BodyConnector
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class FieldieSearchDecision(AbstractDecisionModule):
-    def __init__(self, connector: BodyConnector, _):
+    def __init__(self, connector, _):
         super(FieldieSearchDecision, self).__init__(connector, _)
         self.start_time = rospy.get_time()
         self.turn_wait_time = connector.config["Head"]["Search"]["turnWaitTime"]

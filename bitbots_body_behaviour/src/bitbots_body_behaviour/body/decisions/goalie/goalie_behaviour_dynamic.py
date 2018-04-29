@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 GoalieBehaviour_Dynamic
 ^^^^^^^^^^^
@@ -36,7 +37,7 @@ class GoalieBehaviourDynamic(AbstractDecisionModule):
     goalCenter = (9000, 0)
     goalCenter_old = (9000, 0)
 
-    def __init__(self, connector: BodyConnector, _):
+    def __init__(self, connector, _):
         super(GoalieBehaviourDynamic, self).__init__(connector)
         self.log = DebugLog(self.G_LOGFILE)
 

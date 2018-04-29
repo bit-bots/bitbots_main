@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 KickBall
 ^^^^^^^^
@@ -8,7 +9,6 @@ import time
 
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
-from bitbots_common.connector.connector import BodyConnector
 import rospy
 
 
@@ -18,7 +18,7 @@ class KickBall(AbstractActionModule):
     Kicks the ball, gets in init_data the information about the side.
     """
 
-    def __init__(self, connector: BodyConnector, args):
+    def __init__(self, connector, args):
         super(KickBall, self).__init__(connector)
         self.side = args
         self.begin = rospy.get_time()
@@ -30,7 +30,7 @@ class KickBall(AbstractActionModule):
         self.side_left = None # connector.animation.an_config["kicks"]["rko"]
         self.anim_begin = False
 
-    def perform(self, connector: BodyConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         self.do_not_reevaluate()
         connector.walking.stop_walking()
 

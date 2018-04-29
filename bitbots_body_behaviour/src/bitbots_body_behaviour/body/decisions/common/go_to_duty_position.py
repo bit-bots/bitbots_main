@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 GoToDutyPosition
 ^^^^^^^^^^^^^^^^
@@ -10,11 +11,10 @@ History:
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 from body.actions.go_to_absolute_position import GoToAbsolutePosition
-from bitbots_common.connector.connector import BodyConnector
 
 
 class GoToDutyPosition(AbstractDecisionModule):
-    def __init__(self, connector: BodyConnector, _):
+    def __init__(self, connector):
         super(GoToDutyPosition, self).__init__(connector)
         self.length = config["field"]["length"]
         self.width = config["field"]["width"]
@@ -24,7 +24,7 @@ class GoToDutyPosition(AbstractDecisionModule):
         self.center_position = config["Behaviour"]["Common"]["Positions"]["center"]
         self.threshold = config["Behaviour"]["Common"]["positioningThreshold"]
 
-    def perform(self, connector: BodyConnector, reevaluate=False):
+    def perform(self, connector, reevaluate=False):
         duty = connector.blackboard.get_duty()
 
         if duty == "Goalie":
