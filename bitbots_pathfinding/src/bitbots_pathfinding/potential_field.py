@@ -6,7 +6,6 @@ An implementation for a potential filed
 """
 
 import math
-from typing import Tuple, List
 
 
 class PotentialField:
@@ -45,7 +44,7 @@ class PotentialMap:
     Defines the potential fields
     """
 
-    def __init__(self, t: Tuple[int, int]):
+    def __init__(self, t):
         (nr_r, nr_a) = t
         self.p_activated_attractors = False  # TODO config
         self.p_ball_repulsor = True  # todo config
@@ -57,7 +56,7 @@ class PotentialMap:
         for i2 in range(nr_a):
             self.fields.append(PotentialField(True))
 
-    def compute(self, oblist: List[Tuple[float, float]])->Tuple[float, float, float]:
+    def compute(self, oblist):
         """
         :return the 3-Tupel vektor
         """
