@@ -1,10 +1,10 @@
-#include <dynamixel_workbench_ros_control/dynamixel_hardware_interface.h>
+#include <bitbots_ros_control/dynamixel_hardware_interface.h>
 #define DXL_MAKEWORD(a, b)  ((uint16_t)(((uint8_t)(((uint64_t)(a)) & 0xff)) | ((uint16_t)((uint8_t)(((uint64_t)(b)) & 0xff))) << 8))
 #define DXL_MAKEDWORD(a, b) ((uint32_t)(((uint16_t)(((uint64_t)(a)) & 0xffff)) | ((uint32_t)((uint16_t)(((uint64_t)(b)) & 0xffff))) << 16))
 
 #define gravity 9.80665
 
-namespace dynamixel_workbench_ros_control
+namespace bitbots_ros_control
 {
 
 DynamixelHardwareInterface::DynamixelHardwareInterface()
@@ -442,7 +442,7 @@ bool DynamixelHardwareInterface::syncWriteCurrent() {
   free(goal_current);
 }
 
-void DynamixelHardwareInterface::reconf_callback(dynamixel_workbench_ros_control::dynamixel_workbench_ros_control_paramsConfig &config, uint32_t level) {
+void DynamixelHardwareInterface::reconf_callback(bitbots_ros_control::bitbots_ros_control_paramsConfig &config, uint32_t level) {
   _read_position = config.read_position;
   _read_velocity = config.read_velocity;
   _read_effort = config.read_effort;

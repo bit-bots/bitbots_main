@@ -1,8 +1,8 @@
-#include <dynamixel_workbench_ros_control/dynamixel_hardware_interface.h>
+#include <bitbots_ros_control/dynamixel_hardware_interface.h>
 #include <ros/callback_queue.h>
 #include <controller_manager/controller_manager.h>
 #include <dynamic_reconfigure/server.h>
-#include <dynamixel_workbench_ros_control/dynamixel_workbench_ros_control_paramsConfig.h>
+#include <bitbots_ros_control/bitbots_ros_control_paramsConfig.h>
 
 
 int main(int argc, char** argv)
@@ -11,13 +11,13 @@ int main(int argc, char** argv)
   ros::NodeHandle pnh("~");
 
   // Load dynamixels
-  dynamixel_workbench_ros_control::DynamixelHardwareInterface hw;
+  bitbots_ros_control::DynamixelHardwareInterface hw;
 
 
   // set the dynamic reconfigure and load standard params
-  dynamic_reconfigure::Server<dynamixel_workbench_ros_control::dynamixel_workbench_ros_control_paramsConfig> server;
-  dynamic_reconfigure::Server<dynamixel_workbench_ros_control::dynamixel_workbench_ros_control_paramsConfig>::CallbackType f;
-  f = boost::bind(&dynamixel_workbench_ros_control::DynamixelHardwareInterface::reconf_callback,&hw, _1, _2);
+  dynamic_reconfigure::Server<bitbots_ros_control::bitbots_ros_control_paramsConfig> server;
+  dynamic_reconfigure::Server<bitbots_ros_control::bitbots_ros_control_paramsConfig>::CallbackType f;
+  f = boost::bind(&bitbots_ros_control::DynamixelHardwareInterface::reconf_callback,&hw, _1, _2);
   server.setCallback(f);
 
   if (!hw.init(pnh))

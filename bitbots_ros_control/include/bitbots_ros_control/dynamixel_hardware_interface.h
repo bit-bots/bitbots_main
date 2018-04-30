@@ -13,11 +13,11 @@
 #include <transmission_interface/transmission_interface.h>
 #include <dynamic_reconfigure/server.h>
 
-#include <dynamixel_workbench_ros_control/dynamixel_workbench_ros_control_paramsConfig.h>
+#include <bitbots_ros_control/bitbots_ros_control_paramsConfig.h>
 
 #include <dynamixel_workbench/dynamixel_driver.h>
 
-namespace dynamixel_workbench_ros_control
+namespace bitbots_ros_control
 {
 template<typename T>
 std::string vecToString(const std::vector<T>& vec)
@@ -59,7 +59,7 @@ class DynamixelHardwareInterface : public hardware_interface::RobotHW
 {
 public:
   DynamixelHardwareInterface();
-  void reconf_callback(dynamixel_workbench_ros_control::dynamixel_workbench_ros_control_paramsConfig &config, uint32_t level);
+  void reconf_callback(bitbots_ros_control::bitbots_ros_control_paramsConfig &config, uint32_t level);
 
   bool init(ros::NodeHandle& nh);
   void read();

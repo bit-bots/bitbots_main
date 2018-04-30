@@ -20,12 +20,12 @@ set(SOURCES
 )
 
 generate_dynamic_reconfigure_options(
-        cfg/dynamixel_workbench_ros_control_params.cfg
+        cfg/bitbots_ros_control_params.cfg
 )
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES dynamixel_workbench_ros_control
+  LIBRARIES bitbots_ros_control
   CATKIN_DEPENDS roscpp std_msgs dynamixel_workbench_toolbox hardware_interface controller_manager
 )
 
@@ -37,17 +37,17 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   cfg/cpp
 )
-add_library(dynamixel_workbench_ros_control
+add_library(bitbots_ros_control
  ${HEADERS} ${SOURCES}
 )
-add_dependencies(dynamixel_workbench_ros_control 
+add_dependencies(bitbots_ros_control 
   ${${PROJECT_NAME}_EXPORTED_TARGETS} 
   ${catkin_EXPORTED_TARGETS}
 )
-target_link_libraries(dynamixel_workbench_ros_control
+target_link_libraries(bitbots_ros_control
   ${catkin_LIBRARIES}
 )
 
 add_executable(dynamixel_controller_manager_node src/dynamixel_controller_manager_node.cpp)
 add_dependencies(dynamixel_controller_manager_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
-target_link_libraries(dynamixel_controller_manager_node dynamixel_workbench_ros_control)
+target_link_libraries(dynamixel_controller_manager_node bitbots_ros_control)
