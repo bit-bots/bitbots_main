@@ -27,9 +27,11 @@ class AbstractSearchForObject(AbstractDecisionModule):
         self.pattern = connector.config["Head"]["SearchPattern"]
         self.look_at_old_position = connector.config["Head"]["Toggles"]["look_at_old_position"]
 
-    def search(self, connector, u, v):
+    def search(self, connector, point):
         rospy.logdebug('Searching...')
         self.run += 1
+        u = point.x
+        v = point.y
 
         if self.look_at_old_position and self.run <= 4:
             if self.run == 1 and not (u == 0.0 and v == 0.0) and u and v:
@@ -60,12 +62,12 @@ class AbstractSearchForObject(AbstractDecisionModule):
 class SearchForBall(AbstractSearchForObject):
     def perform(self, connector, reevaluate=False):
         rospy.logdebug("Start Search for ball")
-        u, v = connector.world_model.get_ball_position_uv()
-        return self.search(connector, u, v)
+        ball = connector.vision.get_ball_relative_msg()
+        return self.search(connector, ball)
 
 
 class SearchForEnemyGoal(AbstractSearchForObject):
     def perform(self, connector, reevaluate=False):
         # Take any goal until we can distinguish between them
-        u, v = connector.vision.get_goal_relative()
-        return self.search(connector, u, v)
+        goal = connector.vision.get_goal_relative()
+        return self.search(connector, goal)

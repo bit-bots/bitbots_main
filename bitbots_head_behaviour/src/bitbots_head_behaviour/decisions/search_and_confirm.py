@@ -11,6 +11,7 @@ import time
 import rospy
 
 from bitbots_head_behaviour.actions.track_object import TrackBall, TrackGoal
+from bitbots_head_behaviour.actions.look_at import LookAtBall, LookAtGoal
 from bitbots_head_behaviour.decisions.search_for_object import SearchForBall, SearchForEnemyGoal
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
@@ -77,8 +78,8 @@ class SearchAndConfirmBall(AbstractSearchAndConfirm):
         super(SearchAndConfirmBall, self).perform(connector, reevaluate)
 
     def track(self):
-        rospy.logdebug("Push TrackBall")
-        return self.push(TrackBall)
+        rospy.logdebug("Push LookAtBall")
+        return self.push(LookAtBall)
 
     def search(self):
         rospy.logdebug("Push SearchForBall")
@@ -99,7 +100,7 @@ class SearchAndConfirmEnemyGoal(AbstractSearchAndConfirm):
         super(SearchAndConfirmEnemyGoal, self).perform(connector, reevaluate)
 
     def track(self):
-        return self.push(TrackGoal)
+        return self.push(LookAtGoal)
 
     def search(self):
         return self.push(SearchForEnemyGoal)
