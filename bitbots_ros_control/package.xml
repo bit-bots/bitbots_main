@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package>
+  <name>bitbots_ros_control</name>
+  <version>0.0.1</version>
+  <description>Hardware interface based the "dynamixel_workbench_ros_control" by Martin Oehler. It uses a modified version of the dynamixel_workbench to provide a higher update rate on the servo bus by using sync reads of multiple values. </description>
+
+
+  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+
+  <license>MIT</license>
+
+  <author email="ros@martinoehler.de">Martin Oehler</author>
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>dynamixel_workbench_toolbox</build_depend>
+  <build_depend>hardware_interface</build_depend>
+  <build_depend>controller_manager</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>dynamixel_workbench_toolbox</run_depend>
+  <run_depend>hardware_interface</run_depend>
+  <run_depend>controller_manager</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
+
+  <export>
+  </export>
+</package>

@@ -1,0 +1,81 @@
+ros_control:
+  read_position: true
+  read_velocity: false
+  read_effort: false
+  read_volt_temp: true
+  VT_update_rate: 100
+  read_imu: true
+  control_loop_hz: 200
+
+  dynamixels:
+    port_info:
+      port_name: /dev/ttyACM0
+      baudrate: 2000000
+      protocol_version: 2
+    control_mode: position
+    auto_torque: true
+    device_info:
+      HeadPan:
+        id: 1
+        model_number: 321
+      HeadTilt:
+        id: 2
+        model_number: 311
+      LShoulderPitch:
+        id: 3
+        model_number: 311
+      LShoulderRoll:
+        id: 4
+        model_number: 311
+      LElbow:
+        id: 5
+        model_number: 311
+      RShoulderPitch:
+        id: 6
+        model_number: 311
+      RShoulderRoll:
+        id: 7
+        model_number: 311
+      RElbow:
+        id: 8
+        model_number: 311
+      LHipYaw:
+        id: 9
+        model_number: 311
+      LHipRoll:
+        id: 10
+        model_number: 311
+      LHipPitch:
+        id: 11
+        model_number: 311
+      LKnee:
+        id: 12
+        model_number: 311
+      LAnklePitch:
+        id: 13
+        model_number: 311
+      LAnkleRoll:
+        id: 14
+        model_number: 311
+      RHipYaw:
+        id: 15
+        model_number: 311
+      RHipRoll:
+        id: 16
+        model_number: 311
+      RHipPitch:
+        id: 17
+        model_number: 311
+      RKnee:
+        id: 18
+        model_number: 311
+      RAnklePitch:
+        id: 19
+        model_number: 311
+      RAnkleRoll:
+        id: 20
+        model_number: 321
+  IMU:
+    name: IMU
+    frame: IMU_frame        
+    
