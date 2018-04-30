@@ -26,5 +26,5 @@ class WalkingCapsule:
         t.angular.z = tw
         self.pub_walkin_params.publish(t)
 
-    def walking_callback(self, od: Odometry):
+    def walking_callback(self):
         self.odometry_data = copy.copy(od)
