@@ -1,0 +1,1331 @@
+diff --git b/bitbots_body_behaviour/setup.py a/bitbots_body_behaviour/setup.py
+index b484b66..ac6efe5 100644
+--- b/bitbots_body_behaviour/setup.py
++++ a/bitbots_body_behaviour/setup.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ from distutils.core import setup
+ from catkin_pkg.python_setup import generate_distutils_setup
+ 
+@@ -8,4 +7,4 @@ d = generate_distutils_setup(
+     package_dir={'': 'src'}
+ )
+ 
+-setup(**d)
++setup(**d)
+\ No newline at end of file
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/__init__.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/__init__.py
+index 47dad61..81bc1d9 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/__init__.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/__init__.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ Actions
+ -------
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/align_on_ball.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/align_on_ball.py
+index 1ac2263..f74f037 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/align_on_ball.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/align_on_ball.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ AlignOnBall
+ ^^^^^^^^^^^
+@@ -7,10 +6,11 @@ AlignOnBall
+ 
+ """
+ from bitbots_stackmachine.abstract_action_module import AbstractActionModule
++from bitbots_common.connector.connector import BodyConnector
+ 
+ 
+ class AlignOnBall(AbstractActionModule):
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+         connector.blackboard.set_head_duty("BALL_MODE")
+ 
+         connector.walking.start_walking_plain(
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/align_to_goal.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/align_to_goal.py
+index c5cc1bb..124ac88 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/align_to_goal.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/align_to_goal.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ AlignToGoal
+ ^^^^^^^^^^^
+@@ -11,14 +10,15 @@ import time
+ from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+ 
+ import rospy
++from bitbots_common.connector.connector import BodyConnector
+ 
+ 
+ class AlignToGoal(AbstractActionModule):
+-    def __init__(self, connector, _):
++    def __init__(self, connector: BodyConnector, _):
+         super(AlignToGoal, self).__init__(connector)
+         self.config_max_aligning_time = connector.config["Fieldie"]["maxGoalAlignTime"]
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+         connector.blackboard.set_head_duty("BALL_GOAL_TRACKING")
+ 
+         if not connector.blackboard.get_aligning_start_time():
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/go_away_from_ball.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/go_away_from_ball.py
+index b7f22bb..5bc6552 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/go_away_from_ball.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/go_away_from_ball.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ GotToBallPathfinding
+ ^^^^^^^^^^^^^^^^^^^^
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/go_to_absolute_position.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/go_to_absolute_position.py
+index 3f4bc25..b65716b 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/go_to_absolute_position.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/go_to_absolute_position.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ GoToAbsolutePosition
+ ^^^^^^^^^^^^^^^^^^^^
+@@ -13,9 +12,11 @@ import math
+ from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+ from geometry_msgs.msg import Twist
+ 
++from bitbots_common.connector.connector import BodyConnector
++
+ 
+ class GoToAbsolutePosition(AbstractActionModule):
+-    def __init__(self, connector, args=None):
++    def __init__(self, connector: BodyConnector, args=None):
+         AbstractActionModule.__init__(self, connector, args)
+         self.target_x = args[0]
+         self.target_y = args[1]
+@@ -25,7 +26,7 @@ class GoToAbsolutePosition(AbstractActionModule):
+ 
+         self.align_on_zero = False
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+ 
+         print("Walking to %s", [self.target_x, self.target_y, self.target_o])
+ 
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/go_to_ball_pathfinding.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/go_to_ball_pathfinding.py
+index 30a6bff..aeb6fca 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/go_to_ball_pathfinding.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/go_to_ball_pathfinding.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ GotToBallPathfinding
+ ^^^^^^^^^^^^^^^^^^^^
+@@ -10,6 +9,7 @@ import math
+ 
+ import rospy
+ 
++from bitbots_common.connector.connector import BodyConnector
+ from bitbots_pathfinding.potential_field import PotentialMap
+ 
+ 
+@@ -21,8 +21,8 @@ class GoToBallPathfinding(AbstractActionModule):
+     Goes to the ball
+     """
+ 
+-    def __init__(self, _, connector):
+-        super(GoToBallPathfinding, self).__init__(connector)
++    def __init__(self, _, connector: BodyConnector):
++        super().__init__(connector)
+         self.align_to_goal = None
+         self.toggle_track_both = None
+         self.focus_ball_distance = None
+@@ -34,7 +34,7 @@ class GoToBallPathfinding(AbstractActionModule):
+         self.last_s = 0
+         self.last_iteration = rospy.get_time()
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+         self.align_to_goal = connector.config["Body"]["Toggles"]["Fieldie"]["alignToGoal"]
+         self.toggle_track_both = connector.config["Body"]["Toggles"]["Fieldie"]["trackBoth"]
+         self.focus_ball_distance = connector.config["Body"]["Fieldie"]["focusBallDistance"]
+@@ -59,7 +59,7 @@ class GoToBallPathfinding(AbstractActionModule):
+ 
+         self.go_to_pos(connector, bu, bv, obstacles, align_to_goal)
+ 
+-    def go_to_pos(self, connector, pu, pv, additional_obstacles, align_to_goal):
++    def go_to_pos(self, connector: BodyConnector, pu, pv, additional_obstacles, align_to_goal):
+ 
+         # only run approx. 3 times a second:
+ 
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/kick_ball.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/kick_ball.py
+index dce82e1..6e90ad6 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/kick_ball.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/kick_ball.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ KickBall
+ ^^^^^^^^
+@@ -9,6 +8,7 @@ import time
+ 
+ from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+ 
++from bitbots_common.connector.connector import BodyConnector
+ import rospy
+ 
+ 
+@@ -18,7 +18,7 @@ class KickBall(AbstractActionModule):
+     Kicks the ball, gets in init_data the information about the side.
+     """
+ 
+-    def __init__(self, connector, args):
++    def __init__(self, connector: BodyConnector, args):
+         super(KickBall, self).__init__(connector)
+         self.side = args
+         self.begin = rospy.get_time()
+@@ -30,7 +30,7 @@ class KickBall(AbstractActionModule):
+         self.side_left = None # connector.animation.an_config["kicks"]["rko"]
+         self.anim_begin = False
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+         self.do_not_reevaluate()
+         connector.walking.stop_walking()
+ 
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/plain_walk_action.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/plain_walk_action.py
+index a0db1df..7504f41 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/plain_walk_action.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/plain_walk_action.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ PlainWalkAction
+ ^^^^^^^^^^^^^^^
+@@ -13,9 +12,11 @@ import rospy
+ 
+ from bitbots_stackmachine.abstract_init_action_module import AbstractInitActionModule
+ 
++from bitbots_common.connector.connector import BodyConnector
++
+ 
+ class PlainWalkAction(AbstractInitActionModule):
+-    def __init__(self, connector, args):
++    def __init__(self, connector: BodyConnector, args):
+         AbstractInitActionModule.__init__(self, connector, args)
+         self.step_list = args
+         self.walking_steps = self.walking_step_generator_function()
+@@ -29,7 +30,7 @@ class PlainWalkAction(AbstractInitActionModule):
+             yield element
+         yield None
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+         if connector.blackboard.get_duty() in ["ThrowIn", "PenaltyKickFieldie"]:
+             self.do_not_reevaluate()
+         if not self.active:
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/raise_arm.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/raise_arm.py
+index 19857d8..f944eef 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/raise_arm.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/raise_arm.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ RaiseArm
+ ^^^^^^^^
+@@ -8,9 +7,11 @@ Raising Arms to get ready to throw the goalie.
+ from body.actions.throw import LEFT, RIGHT, MIDDLE, BOTH_ARMS_HIGH
+ from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+ 
++from bitbots_common.connector.connector import BodyConnector
++
+ 
+ class RaiseArm(AbstractActionModule):
+-    def __init__(self, connector, args):
++    def __init__(self, connector: BodyConnector, args):
+         super(RaiseArm, self).__init__(connector)
+         self.richtung = args
+         self.use_both_arms = self.connector.config["Behaviour"]["Toggles"]["Goalie"]["useBothArms"]
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/search.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/search.py
+index 03a352d..def027b 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/search.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/search.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ Search
+ ^^^^^^
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/testing/test_walking_dynamic.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/testing/test_walking_dynamic.py
+index 718332a..fd170e9 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/testing/test_walking_dynamic.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/testing/test_walking_dynamic.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ TestWalkingDynamic
+ ^^^^^^^^^^^^^^^^
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/testing/test_walking_static.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/testing/test_walking_static.py
+index 8c8f0c6..2b50cec 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/testing/test_walking_static.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/testing/test_walking_static.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ TestWalkingStaic
+ ^^^^^^^^^^^^^^^^
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/throw.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/throw.py
+index 8eff521..e9fc1b4 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/throw.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/throw.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ Throw
+ ^^^^^
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/turn_to_absolute_direction.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/turn_to_absolute_direction.py
+index d082859..06992f2 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/turn_to_absolute_direction.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/turn_to_absolute_direction.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ TurnToAbsoluteDirection
+ ^^^^^^^^^^^^^^
+@@ -12,14 +11,16 @@ History:
+ """
+ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+ 
++from bitbots_common.connector.connector import BodyConnector
++
+ 
+ class TurnToAbsoluteDirection(AbstractDecisionModule):
+-    def __init__(self, connector, args):
++    def __init__(self, connector: BodyConnector, args):
+         super(TurnToAbsoluteDirection, self).__init__(connector)
+         self.goal_direction = args[0]
+         self.threshold = args[1]
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+ 
+         current_direction = connector.world_model.get_current_position()[2]
+ 
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/wait.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/wait.py
+index f49c464..31e28e8 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/wait.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/actions/wait.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ Wait
+ ^^^^
+@@ -10,10 +9,11 @@ Just waits for something (i.e. that preconditions will be fullfilled)
+ import rospy
+ 
+ from bitbots_stackmachine.abstract_action_module import AbstractActionModule
++from bitbots_common.connector.connector import BodyConnector
+ 
+ 
+ class Wait(AbstractActionModule):
+-    def __init__(self, connector, args=99999999):
++    def __init__(self, connector: BodyConnector, args=99999999):
+         super(Wait, self).__init__(connector)
+         if args is None:
+             args = 10
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/__init__.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/__init__.py
+index bfeb27b..c3e73ae 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/__init__.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/__init__.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ Decisions
+ ---------
+@@ -13,4 +12,4 @@ Hier befinden sich die Entscheidungen des Roboters im Standardverhalten
+ .. automodule:: bitbots.modules.behaviour.body.decisions.InGoal
+ .. automodule:: bitbots.modules.behaviour.body.decisions.KickDecision
+ .. automodule:: bitbots.modules.behaviour.body.decisions.KickOff
+-"""
++"""
+\ No newline at end of file
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/ball_seen.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/ball_seen.py
+index 8681d62..e66cde3 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/ball_seen.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/ball_seen.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ BallSeen
+ ^^^^^^^^^^^^^
+@@ -14,6 +13,7 @@ from bitbots_body_behaviour.body.decisions.common.close_ball import CloseBallPen
+ from bitbots_body_behaviour.body.decisions.goalie.ball_dangerous import BallDangerous
+ from bitbots_body_behaviour.body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
+ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
++from bitbots_common.connector.connector import BodyConnector
+ 
+ 
+ class AbstractBallSeen(AbstractDecisionModule):
+@@ -22,7 +22,7 @@ class AbstractBallSeen(AbstractDecisionModule):
+     Decides if the ball was seen rspectively if the information is  authentic enough.
+     """
+ 
+-    def __init__(self, connector, _):
++    def __init__(self, connector: BodyConnector, _):
+         super(AbstractBallSeen, self).__init__(connector)
+         self.max_ball_time = connector.config["Body"]["Common"]["maxBallTime"]
+ 
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/close_ball.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/close_ball.py
+index ea4754b..3b7721d 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/close_ball.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/close_ball.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ CloseBall
+ ^^^^^^^^^
+@@ -14,6 +13,7 @@ from bitbots_body_behaviour.body.actions.go_to_absolute_position import GoToAbso
+ from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionPenaltyKick
+ from bitbots_body_behaviour.body.decisions.common.stands_correct_decision import StandsCorrectDecision
+ from bitbots_body_behaviour.body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
++from bitbots_common.connector.connector import BodyConnector
+ 
+ 
+ class AbstractCloseBall(AbstractDecisionModule):
+@@ -21,7 +21,7 @@ class AbstractCloseBall(AbstractDecisionModule):
+     Test if the ball is in kick distance
+     """
+ 
+-    def __init__(self, connector, _):
++    def __init__(self, connector: BodyConnector, _):
+         super(AbstractCloseBall, self).__init__(connector)
+         self.last_goalie_dist = 0
+         self.last_goalie_dist_time = 0
+@@ -29,7 +29,7 @@ class AbstractCloseBall(AbstractDecisionModule):
+         self.min_kick_distance = connector.config["Body"]["Fieldie"]["minKickDistance"]
+         self.config_kickalign_v = connector.config["Body"]["Fieldie"]["kickAlign"]
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+         # When the ball is seen, the robot should switch between looking to the ball and the goal
+         connector.blackboard.set_head_duty("BALL_GOAL_TRACKING")
+         # if the robot is near to the ball
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/corridor.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/corridor.py
+index f901c90..3742053 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/corridor.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/corridor.py
+@@ -23,10 +23,11 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+ from body.actions.plain_walk_action import PlainWalkAction
+ from body.actions.wait import Wait
+ from body.decisions.team_player.defender_position_decider import DefenderPositionDecider
++from bitbots_common.connector.connector import BodyConnector
+ import rospy
+ 
+ class AbstractCorridor(AbstractDecisionModule):
+-    def __init__(self, connector, _):
++    def __init__(self, connector: BodyConnector, _):
+         super(AbstractCorridor, self).__init__(connector)
+ 
+         self.corridor_u_start = int(config["length"]) * (1.0 / 9.0)
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/duty_decider.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/duty_decider.py
+index 1bacac7..ec142d2 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/duty_decider.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/duty_decider.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ DutyDecider
+ ^^^^^^^^^^^
+@@ -24,6 +23,7 @@ from humanoid_league_msgs.msg import Speak
+ from bitbots_body_behaviour.keys import DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_READY, DATA_VALUE_STATE_SET, \
+     DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
+ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
++from bitbots_common.connector.connector import BodyConnector
+ 
+ duty = None  # can be overwriten by the startup script (to force a behaviour)
+ 
+@@ -33,13 +33,13 @@ class DutyDecider(AbstractDecisionModule):
+     Decides what kind of behavoiur the robot performs
+     """
+ 
+-    def __init__(self, connector, _):
++    def __init__(self, connector: BodyConnector, _):
+         super(DutyDecider, self).__init__(connector)
+         self.max_fieldie_time = connector.config["Body"]["Fieldie"]["Defender"]["maxFieldieTime"]
+         self.toggle_self_positioning = connector.config["Body"]["Toggles"]["Fieldie"]["trySelfPositioning"]
+         self.start_self_pos = None
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+ 
+         connector.blackboard.set_head_duty("BALL_MODE")
+         if connector.vision.ball_seen():
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/go_to_duty_position.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/go_to_duty_position.py
+index 8ca3704..e8db0da 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/go_to_duty_position.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/go_to_duty_position.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ GoToDutyPosition
+ ^^^^^^^^^^^^^^^^
+@@ -11,10 +10,11 @@ History:
+ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+ 
+ from body.actions.go_to_absolute_position import GoToAbsolutePosition
++from bitbots_common.connector.connector import BodyConnector
+ 
+ 
+ class GoToDutyPosition(AbstractDecisionModule):
+-    def __init__(self, connector):
++    def __init__(self, connector: BodyConnector, _):
+         super(GoToDutyPosition, self).__init__(connector)
+         self.length = config["field"]["length"]
+         self.width = config["field"]["width"]
+@@ -24,7 +24,7 @@ class GoToDutyPosition(AbstractDecisionModule):
+         self.center_position = config["Behaviour"]["Common"]["Positions"]["center"]
+         self.threshold = config["Behaviour"]["Common"]["positioningThreshold"]
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+         duty = connector.blackboard.get_duty()
+ 
+         if duty == "Goalie":
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/kick_decision.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/kick_decision.py
+index cf33122..33c0804 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/kick_decision.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/kick_decision.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ Kick Decision
+ ^^^^^^^^^^^^^
+@@ -7,6 +6,7 @@ Kick Decision
+ """
+ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+ from bitbots_body_behaviour.body.actions.kick_ball import KickBall
++from bitbots_common.connector.connector import BodyConnector
+ 
+ 
+ class AbstractKickDecision(AbstractDecisionModule):
+@@ -14,17 +14,17 @@ class AbstractKickDecision(AbstractDecisionModule):
+     Decides wich leg he has to use to kick the ball and if he has te repositionate before kicking
+     """
+ 
+-    def __init__(self, connector, _):
++    def __init__(self, connector: BodyConnector, _):
+         super(AbstractKickDecision, self).__init__(connector)
+         self.max_goal_hard_distance = connector.config["Body"]["Fieldie"]["maxGoalHardKickDistance"]
+         self.toggle_use_side_kick = connector.config["Body"]["Toggles"]["Fieldie"]["useSideKickInGame"]
+         self.use_dynamic_kick_toggle = connector.config["Body"]["Toggles"]["Fieldie"]["useDynamicKick"]
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+ 
+         self.action(connector, reevaluate)
+ 
+-    def action(self, connector, reevaluate):
++    def action(self, connector: BodyConnector, reevaluate):
+         self.do_not_reevaluate()
+         connector.blackboard.unset_finished_align()
+ 
+@@ -41,7 +41,7 @@ class AbstractKickDecision(AbstractDecisionModule):
+         else:
+             return self.kick_side_goal(connector)
+ 
+-    def kick_normal(self, connector):
++    def kick_normal(self, connector: BodyConnector):
+         """
+         Pushes a normal kick, depending on side of the Ball
+         """
+@@ -50,7 +50,7 @@ class AbstractKickDecision(AbstractDecisionModule):
+         else:
+             return self.push(KickBall, init_data="L")
+ 
+-    def kick_side_goal(self, connector):
++    def kick_side_goal(self, connector: BodyConnector):
+         """
+         Pushes a sidekick, depending on the side of the enemy goal
+         """
+@@ -59,7 +59,7 @@ class AbstractKickDecision(AbstractDecisionModule):
+         else:
+             return self.push(KickBall, init_data="SLK")
+ 
+-    def hard_kick(self, connector):
++    def hard_kick(self, connector: BodyConnector):
+         """
+         Pushes a hard kick, depending on side of the ball
+         :param connector:
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/role_decider.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/role_decider.py
+index f6f5328..13582e1 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/role_decider.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/role_decider.py
+@@ -12,13 +12,14 @@ from bitbots_body_behaviour.body.decisions.team_player.center_decision import Ce
+ from bitbots_body_behaviour.body.decisions.team_player.defender_decision import DefenderDecision
+ from bitbots_body_behaviour.body.decisions.team_player.supporter_decision import SupporterDecision
+ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
++from bitbots_common.connector.connector import BodyConnector
+ from humanoid_league_team_communication.mitecom.mitecom import ROLE_STRIKER, ROLE_SUPPORTER, ROLE_OTHER, ROLE_DEFENDER
+ 
+ 
+ class RoleDecider(AbstractDecisionModule):
+-    def __init__(self, connector, args):
+-        super(RoleDecider, self).__init__(connector)
+-        self.forced = args[0] if args else None
++    def __init__(self, connector: BodyConnector, forced=None):
++        super().__init__(connector)
++        self.forced = forced
+ 
+     def perform(self, connector, reevaluate=False):
+         if self.forced:
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/self_positioning_decider.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/self_positioning_decider.py
+index b389b33..1bf1281 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/self_positioning_decider.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/self_positioning_decider.py
+@@ -19,11 +19,13 @@ from bitbots.modules.behaviour.body.actions.go_to_absolute_position import GoToA
+ from bitbots.modules.keys import DATA_VALUE_STATE_READY
+ from bitbots.util import get_config
+ 
++from bitbots_common.connector.connector import BodyConnector
++
+ config = get_config()
+ 
+ 
+ class SelfPositioningDecider(AbstractDecisionModule):
+-    def __init__(self, connector, _):
++    def __init__(self, connector: BodyConnector, _):
+         super(SelfPositioningDecider, self).__init__(connector)
+         self.looked_which_goal_is_mine = False
+         self.finished_positioning = False
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/stands_correct_decision.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/stands_correct_decision.py
+index a757e15..878e21b 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/stands_correct_decision.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/common/stands_correct_decision.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ StandsCorrectDecision
+ ^^^^^^^^^^^^^
+@@ -12,6 +11,7 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+ import rospy
+ from bitbots_body_behaviour.body.actions.align_on_ball import AlignOnBall
+ from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionCommon
++from bitbots_common.connector.connector import BodyConnector
+ 
+ 
+ class StandsCorrectDecision(AbstractDecisionModule):
+@@ -19,14 +19,14 @@ class StandsCorrectDecision(AbstractDecisionModule):
+     Decides if the robot stands correct and takes care if it doesn't
+     """
+ 
+-    def __init__(self, connector, _):
++    def __init__(self, connector: BodyConnector, _):
+         super(StandsCorrectDecision, self).__init__(connector)
+         self.toggle_align_to_goal = connector.config["Body"]["Toggles"]["Fieldie"]["alignToGoal"]
+         self.toggle_use_side_kick_in_game = connector.config["Body"]["Toggles"]["Fieldie"]["useSideKickInGame"]
+         self.toggle_hack_align = connector.config["Body"]["Toggles"]["Fieldie"]["hackAlign"]
+         self.config_kickalign_v = connector.config["Body"]["Fieldie"]["kickAlign"]
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+ 
+         # get data
+         #opp_goal_u = connector.filtered_vision_capsule().get_local_goal_model_opp_goal()[0]
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/after_throw_decision.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/after_throw_decision.py
+index d60cdff..c474bf3 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/after_throw_decision.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/after_throw_decision.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ InGoal
+ ^^^^^^
+@@ -10,6 +9,7 @@ from stackmachine.abstract_decision_module import AbstractDecisionModule
+ 
+ from body.actions.throw import MIDDLE
+ from body.decisions.goalie.turn_after_throw import TurnAfterThrow
++from stackmachine.model import BodyConnector
+ 
+ 
+ class AfterThrowDecision(AbstractDecisionModule):
+@@ -17,12 +17,12 @@ class AfterThrowDecision(AbstractDecisionModule):
+     Decides how the robot will turn after it has thrown itself.
+     """
+ 
+-    def __init__(self, connector, _):
++    def __init__(self, connector: BodyConnector, _):
+         super(AfterThrowDecision, self).__init__(connector)
+         self.relocateTurn = config["Behaviour"]["Toggles"]["Goalie"]["relocateTurn"]
+         self.anim_goalie_walkready = config["animations"]["motion"]["goalie-walkready"]
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+         richtung = connector.blackboard.get_throw_direction()
+         if richtung == MIDDLE:
+             connector.blackboard.delete_was_thrown()
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/ball_dangerous.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/ball_dangerous.py
+index 1ad7fc1..211fd4e 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/ball_dangerous.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/ball_dangerous.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ BallDangerous
+ ^^^^^^^^^^^^^
+@@ -11,10 +10,11 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+ 
+ from body.decisions.goalie.goalie_movement import GoalieMovement
+ from body.decisions.goalie.throw_or_raise_arm import ThrowOrRaiseArm
++from bitbots_common.connector.connector import BodyConnector
+ 
+ 
+ class BallDangerous(AbstractDecisionModule):
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+         ufiltered = connector.vision.get_ball_relative()[0]
+ 
+         # We saw the ball so we track it
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/goalie_behaviour_dynamic.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/goalie_behaviour_dynamic.py
+index 3d1a837..5608e3b 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/goalie_behaviour_dynamic.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/goalie_behaviour_dynamic.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ GoalieBehaviour_Dynamic
+ ^^^^^^^^^^^
+@@ -37,7 +36,7 @@ class GoalieBehaviourDynamic(AbstractDecisionModule):
+     goalCenter = (9000, 0)
+     goalCenter_old = (9000, 0)
+ 
+-    def __init__(self, connector, _):
++    def __init__(self, connector: BodyConnector, _):
+         super(GoalieBehaviourDynamic, self).__init__(connector)
+         self.log = DebugLog(self.G_LOGFILE)
+ 
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/goalie_decision.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/goalie_decision.py
+index b3963ae..68287a3 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/goalie_decision.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/goalie_decision.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ GoalieDecision
+ ^^^^^^^^^^^^^^
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/goalie_movement.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/goalie_movement.py
+index eca7d2b..330da2d 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/goalie_movement.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/goalie_movement.py
+@@ -11,10 +11,11 @@ History:
+ * 05.12.14: Complete Refactor (Marc Bestmann)
+ """
+ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
++from bitbots_common.connector.connector import BodyConnector
+ 
+ 
+ class GoalieMovement(AbstractDecisionModule):
+-    def __init__(self,  connector, _):
++    def __init__(self,  connector: BodyConnector, _):
+         super(GoalieMovement, self).__init__(connector)
+         self.toggle_goalie_becomes_fieldie = config["Toggles"]["Goalie"]["goalieGoFieldie"]
+         self.toggle_goalie_go_to_ball = config["Toggles"]["Goalie"]["goalieGoToBall"]
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/position_in_goal.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/position_in_goal.py
+index 07b52bc..25c06b3 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/position_in_goal.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/position_in_goal.py
+@@ -14,9 +14,11 @@ from bitbots.modules.behaviour.body.actions.plain_walk_action import PlainWalkAc
+ from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
+ from bitbots.util import get_config
+ 
++from bitbots_common.connector.connector import BodyConnector
++
+ 
+ class PositionInGoal(AbstractDecisionModule):
+-    def __init__(self,  connector, _):
++    def __init__(self,  connector: BodyConnector, _):
+         super(PositionInGoal, self).__init__(connector)
+         config = get_config()
+         goal_width = config["field"]["goal-width"]
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/turn_after_throw.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/turn_after_throw.py
+index ed42504..2044bb0 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/turn_after_throw.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/goalie/turn_after_throw.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ import time
+ 
+ from bitbots_misc.bitbots_common.src.bitbots_common.connector.capsules.walking_capsule import WalkingCapsule
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/kick_off/kick_off.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/kick_off/kick_off.py
+index e18d866..8037756 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/kick_off/kick_off.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/kick_off/kick_off.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ KickOff
+ ^^^^^^^
+@@ -10,6 +9,7 @@ from bitbots_body_behaviour.body.decisions.common.role_decider import RoleDecide
+ from bitbots_body_behaviour.body.decisions.kick_off.kick_off_role_decider import KickOffRoleDecider
+ from bitbots_body_behaviour.body.decisions.kick_off.wait_for_enemy_kick_off import WaitForEnemyKickOff
+ 
++from bitbots_common.connector.connector import BodyConnector
+ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+ 
+ 
+@@ -18,11 +18,11 @@ class KickOff(AbstractDecisionModule):
+     Decided if there is a kick off
+     """
+ 
+-    def __init__(self, connector, args):
++    def __init__(self, connector: BodyConnector, args):
+         super(KickOff, self).__init__(connector, args)
+         self.toggle_care_about_kickoff = connector.config["Body"]["Toggles"]["Fieldie"]["careAboutKickoff"]
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+         return self.push(RoleDecider)
+         if 0 < connector.gamestate.get_seconds_since_last_drop_ball() < 60:
+             # there is a drop ball, normal behaviour
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/team_player/defender_position_decider.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/team_player/defender_position_decider.py
+index 77bb2a2..ee2ff3c 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/team_player/defender_position_decider.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/team_player/defender_position_decider.py
+@@ -11,6 +11,7 @@ History:
+ """
+ import rospy
+ 
++from bitbots_common.connector.connector import BodyConnector
+ from bitbots_common.util.math_utils import convert_uv2angular
+ from bitbots_body_behaviour.body.actions.plain_walk_action import PlainWalkAction
+ from bitbots_body_behaviour.body.actions.search import Search
+@@ -19,7 +20,7 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+ 
+ 
+ class DefenderPositionDecider(AbstractDecisionModule):
+-    def __init__(self, connector, _):
++    def __init__(self, connector: BodyConnector, _):
+         super(DefenderPositionDecider, self).__init__(connector, _)
+         self.timestamp_goal = 0
+         self.wait_goal_time = 1
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/team_player/fieldie_search_decision.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/team_player/fieldie_search_decision.py
+index 33cc56d..46fbccf 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/team_player/fieldie_search_decision.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/team_player/fieldie_search_decision.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ FieldieSearchDecision
+ ^^^^^^^^^^^^^^^^^^^^
+@@ -18,11 +17,13 @@ import rospy
+ from bitbots_body_behaviour.body.actions.plain_walk_action import PlainWalkAction
+ from bitbots_body_behaviour.body.actions.search import StopAndSearch
+ 
++from bitbots_common.connector.capsules.walking_capsule import WalkingCapsule
++from bitbots_common.connector.connector import BodyConnector
+ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+ 
+ 
+ class FieldieSearchDecision(AbstractDecisionModule):
+-    def __init__(self, connector, _):
++    def __init__(self, connector: BodyConnector, _):
+         super(FieldieSearchDecision, self).__init__(connector, _)
+         self.start_time = rospy.get_time()
+         self.turn_wait_time = connector.config["Head"]["Search"]["turnWaitTime"]
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/team_player/supporter_decision.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/team_player/supporter_decision.py
+index acfa339..9e95aa3 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/team_player/supporter_decision.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/team_player/supporter_decision.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ SupporterDecision
+ ^^^^^^^^^^^^^^^^^
+@@ -12,13 +11,14 @@ from body.actions.go_to_ball_pathfinding import GoToBallPathfinding
+ from body.actions.search import Search
+ from body.actions.wait import Wait
+ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
++from bitbots_common.connector.connector import BodyConnector
+ 
+ 
+ class SupporterDecision(AbstractDecisionModule):
+     def __init__(self, connector, args=None):
+-        super(SupporterDecision, self).__init__(connector, args)
++        super().__init__(connector, args)
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: BodyConnector, reevaluate=False):
+ 
+         if not (connector.vision.ball_seen() or
+                 rospy.get_time() - connector.vision.ball_last_seen() < 1):
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/tests/test_to_to_absolute_position.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/tests/test_to_to_absolute_position.py
+index 7dc2b4f..7c71507 100644
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/tests/test_to_to_absolute_position.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/tests/test_to_to_absolute_position.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ import unittest
+ from bitbots.modules.behaviour.body.actions.go_to_absolute_position import GoToAbsolutePosition
+ 
+diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body_behaviour.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body_behaviour.py
+index 2cfab74..22c7fe7 100755
+--- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body_behaviour.py
++++ a/bitbots_body_behaviour/src/bitbots_body_behaviour/body_behaviour.py
+@@ -1,5 +1,4 @@
+-#!/usr/bin/env python2.7
+-# -*- coding:utf-8 -*-
++#!/usr/bin/env python3
+ """
+ BehaviourModule
+ ^^^^^^^^^^^^^^^
+@@ -21,7 +20,7 @@ from bitbots_common.connector.connector import BodyConnector
+ 
+ class BehaviourModule(StackMachineModule):
+     def __init__(self):
+-        super(BehaviourModule, self).__init__()
++        super().__init__()
+         self.connector = BodyConnector()
+         self.connector.config = rospy.get_param("Behaviour")
+ 
+diff --git b/bitbots_head_behaviour/scripts/testHeadBehaviour.py a/bitbots_head_behaviour/scripts/testHeadBehaviour.py
+index acd5c96..7b9d6eb 100644
+--- b/bitbots_head_behaviour/scripts/testHeadBehaviour.py
++++ a/bitbots_head_behaviour/scripts/testHeadBehaviour.py
+@@ -1,5 +1,4 @@
+ #!/usr/bin/env python2.7
+-# -*- coding:utf-8 -*-
+ 
+ import rospy
+ from humanoid_league_msgs.msg import BallInImage, BallRelative, BallsInImage
+diff --git b/bitbots_head_behaviour/setup.py a/bitbots_head_behaviour/setup.py
+index 5ad159a..58f2cac 100644
+--- b/bitbots_head_behaviour/setup.py
++++ a/bitbots_head_behaviour/setup.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ from distutils.core import setup
+ from catkin_pkg.python_setup import generate_distutils_setup
+ 
+@@ -8,4 +7,4 @@ d = generate_distutils_setup(
+     package_dir={'': 'src'}
+ )
+ 
+-setup(**d)
++setup(**d)
+\ No newline at end of file
+diff --git b/bitbots_head_behaviour/src/bitbots_head_behaviour/actions/head_to_pan_tilt.py a/bitbots_head_behaviour/src/bitbots_head_behaviour/actions/head_to_pan_tilt.py
+index 82b1cee..739dca9 100644
+--- b/bitbots_head_behaviour/src/bitbots_head_behaviour/actions/head_to_pan_tilt.py
++++ a/bitbots_head_behaviour/src/bitbots_head_behaviour/actions/head_to_pan_tilt.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ HeadToPanTilt
+ ^^^^^^^^^^^^^
+@@ -14,11 +13,12 @@ import time
+ 
+ import rospy
+ 
++from bitbots_common.connector.connector import HeadConnector
+ from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+ 
+ 
+ class HeadToPanTilt(AbstractActionModule):
+-    def __init__(self, connector, args):
++    def __init__(self, connector: HeadConnector, args):
+         super(HeadToPanTilt, self).__init__(connector)
+         # The head should not try to move to a position it cannot reach
+         self.pan = min(max(connector.head.min_pan, float(args[0])), connector.head.max_pan)
+@@ -26,7 +26,7 @@ class HeadToPanTilt(AbstractActionModule):
+         # TODO: move body when ball is too far left or right
+         self.at_position = rospy.get_time()
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: HeadConnector, reevaluate=False):
+         rospy.logdebug("HeadToPanTilt")
+         current_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
+ 
+diff --git b/bitbots_head_behaviour/src/bitbots_head_behaviour/actions/track_object.py a/bitbots_head_behaviour/src/bitbots_head_behaviour/actions/track_object.py
+index 117df22..44bbf4b 100644
+--- b/bitbots_head_behaviour/src/bitbots_head_behaviour/actions/track_object.py
++++ a/bitbots_head_behaviour/src/bitbots_head_behaviour/actions/track_object.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ ConfirmGoal
+ ^^^^^^^^^^
+@@ -8,6 +7,7 @@ ConfirmGoal
+ """
+ import rospy
+ 
++from bitbots_common.connector.connector import HeadConnector
+ from bitbots_stackmachine.abstract_init_action_module import AbstractInitActionModule
+ from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
+ 
+@@ -15,7 +15,8 @@ class AbstractTrackObject(AbstractInitActionModule):
+     """
+     Confirmed either the Ball, OwnGoal or EnemyGoal by passing it to the init arg
+     """
+-    def __init__(self, connector, args=None):
++
++    def __init__(self, connector: HeadConnector, args=None):
+         super(AbstractTrackObject, self).__init__(connector, args)
+ 
+         # this influences how precise the ball has to be in the center to make the head move
+@@ -40,7 +41,7 @@ class AbstractTrackObject(AbstractInitActionModule):
+         self.horizontal_factor = connector.config["Head"]["Camera"]["horizontalFactor"]
+         self.vertical_factor = connector.config["Head"]["Camera"]["verticalFactor"]
+ 
+-    def track_with_values(self, connector, u, v):
++    def track_with_values(self, connector: HeadConnector, u, v):
+         rospy.logdebug('Tracking...')
+         pan_tilt = connector.head.get_pantilt_from_uv(u, v)
+         return self.push(HeadToPanTilt, pan_tilt)
+@@ -50,13 +51,13 @@ class AbstractTrackObject(AbstractInitActionModule):
+ 
+ 
+ class TrackBall(AbstractTrackObject):
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: HeadConnector, reevaluate=False):
+         u, v = connector.world_model.get_ball_position_uv()
+         self.track_with_values(connector, u, v)
+ 
+ 
+ class TrackGoal(AbstractTrackObject):
+-    def perform(self, connector, reevaluate=None):
++    def perform(self, connector: HeadConnector, reevaluate=None):
+         # TODO: Distinguish between own and enemy goal (get data from world model)
+         a, b = connector.vision.get_goal_relative()
+         self.track_with_values(connector, a, b)
+diff --git b/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/continuous_search.py a/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/continuous_search.py
+index 1638e5f..973028a 100644
+--- b/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/continuous_search.py
++++ a/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/continuous_search.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ ContinuousSearch
+ ^^^^^^^^^^^^^^^^
+@@ -11,13 +10,14 @@ so only in special cases the ball will be tracked.
+ """
+ import rospy
+ 
++from bitbots_common.connector.connector import HeadConnector
+ from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
+ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+ 
+ 
+ class ContinuousSearch(AbstractDecisionModule):
+-    def __init__(self, connector, outcomes=()):
+-        super(ContinuousSearch, self).__init__(connector)
++    def __init__(self, connector: HeadConnector, outcomes=()):
++        super().__init__(connector)
+         self.pattern_pos = 0
+         self.goalie_pattern = connector.config["Head"]["SearchPattern"]["goalie"]
+         self.defender_pattern = connector.config["Head"]["SearchPattern"]["defender"]
+@@ -28,7 +28,7 @@ class ContinuousSearch(AbstractDecisionModule):
+         self.last_pattern = self.current_pattern
+         rospy.logdebug("Start new Search")
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: HeadConnector, reevaluate=False):
+         self.set_pattern(connector)
+ 
+         pos = self.pattern_pos
+@@ -37,7 +37,7 @@ class ContinuousSearch(AbstractDecisionModule):
+         self.pattern_pos = (pos + 1) % len(self.current_pattern)
+         return self.push(HeadToPanTilt, self.current_pattern[pos])
+ 
+-    def set_pattern(self, connector):
++    def set_pattern(self, connector: HeadConnector):
+         self.last_pattern = self.current_pattern
+         duty = connector.team_data.get_role()
+ 
+diff --git b/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/head_duty_decider.py a/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/head_duty_decider.py
+index 82a9471..6abe485 100644
+--- b/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/head_duty_decider.py
++++ a/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/head_duty_decider.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ HeadDutyDecider
+ ^^^^^^^^^^^^^^^
+@@ -8,6 +7,7 @@ import time
+ 
+ import rospy
+ import math
++from bitbots_common.connector.connector import HeadConnector
+ from bitbots_head_behaviour.decisions.search_and_confirm import SearchAndConfirmBall, SearchAndConfirmEnemyGoal
+ from bitbots_head_behaviour.decisions.continuous_search import ContinuousSearch
+ from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
+@@ -17,8 +17,8 @@ from humanoid_league_msgs.msg import HeadMode
+ 
+ class HeadDutyDecider(AbstractDecisionModule):
+ 
+-    def __init__(self, connector, _):
+-        super(HeadDutyDecider, self).__init__(connector)
++    def __init__(self, connector: HeadConnector, _):
++        super().__init__(connector)
+         self.toggle_goal_vision_tracking = connector.config["Head"]["Toggles"]["goalVisionTracking"]
+         self.toggle_switch_ball_goal = connector.config["Head"]["Toggles"]["switchBallGoalSearch"]
+         self.confirm_time = connector.config["Head"]["Search"]["confirmTime"]
+@@ -32,7 +32,7 @@ class HeadDutyDecider(AbstractDecisionModule):
+         self.goal_prio = 0
+         self.trackjustball_aftergoal = False
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: HeadConnector, reevaluate: bool=False):
+ 
+         # set priorities
+         if connector.vision.ball_seen():
+diff --git b/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/search_and_confirm.py a/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/search_and_confirm.py
+index a28726f..8f1c414 100644
+--- b/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/search_and_confirm.py
++++ a/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/search_and_confirm.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ SearchAndConfirm
+ ^^^^^^^^^^^^^^^^
+@@ -12,11 +11,12 @@ import rospy
+ 
+ from bitbots_head_behaviour.actions.track_object import TrackBall, TrackGoal
+ from bitbots_head_behaviour.decisions.search_for_object import SearchForBall, SearchForEnemyGoal
++from bitbots_common.connector.connector import HeadConnector
+ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+ 
+ 
+ class AbstractSearchAndConfirm(AbstractDecisionModule):
+-    def __init__(self, connector, _):
++    def __init__(self, connector: HeadConnector, _):
+         super(AbstractSearchAndConfirm, self).__init__(connector, _)
+         self.set_confirmed = None
+         self.get_started_confirm_time = None
+@@ -31,7 +31,7 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
+         self.track_ball_lost_time = connector.config["Head"]["Tracking"]["trackBallLost"]
+         self.ball_fail_conter_max = connector.config["Head"]["Tracking"]["ballFailCounterMax"]
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: HeadConnector, reevaluate=False):
+         rospy.logdebug("Ballseen: " + str(self.object_seen()))
+         if rospy.get_time() - self.get_started_confirm_time() > self.confirm_time and \
+                         self.get_started_confirm_time() != 0:
+@@ -65,7 +65,7 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
+ 
+ 
+ class SearchAndConfirmBall(AbstractSearchAndConfirm):
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: HeadConnector, reevaluate=False):
+         if self.fr:
+             self.fr = False
+             self.get_started_confirm_time = connector.head.get_started_confirm_ball
+@@ -86,7 +86,7 @@ class SearchAndConfirmBall(AbstractSearchAndConfirm):
+ 
+ 
+ class SearchAndConfirmEnemyGoal(AbstractSearchAndConfirm):
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: HeadConnector, reevaluate=False):
+         if self.fr:
+             # TODO: get data from world model to distinguish between own and enemy goal
+             self.fr = False
+diff --git b/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/search_for_object.py a/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/search_for_object.py
+index 59c2b38..cfd5df1 100644
+--- b/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/search_for_object.py
++++ a/bitbots_head_behaviour/src/bitbots_head_behaviour/decisions/search_for_object.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ SearchForBall
+ ^^^^^^^^^^^^^
+@@ -14,20 +13,21 @@ import math
+ 
+ from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
+ from bitbots_head_behaviour.decisions.continuous_search import ContinuousSearch
++from bitbots_common.connector.connector import HeadConnector
+ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+ 
+ 
+ class AbstractSearchForObject(AbstractDecisionModule):
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: HeadConnector, reevaluate=False):
+         pass
+ 
+-    def __init__(self, connector, _):
++    def __init__(self, connector: HeadConnector, _):
+         super(AbstractSearchForObject, self).__init__(connector)
+         self.run = 0
+         self.pattern = connector.config["Head"]["SearchPattern"]
+         self.look_at_old_position = connector.config["Head"]["Toggles"]["look_at_old_position"]
+ 
+-    def search(self, connector, u, v):
++    def search(self, connector: HeadConnector, u, v):
+         rospy.logdebug('Searching...')
+         self.run += 1
+ 
+@@ -58,14 +58,14 @@ class AbstractSearchForObject(AbstractDecisionModule):
+ 
+ 
+ class SearchForBall(AbstractSearchForObject):
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: HeadConnector, reevaluate=False):
+         rospy.logdebug("Start Search for ball")
+         u, v = connector.world_model.get_ball_position_uv()
+         return self.search(connector, u, v)
+ 
+ 
+ class SearchForEnemyGoal(AbstractSearchForObject):
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector: HeadConnector, reevaluate=False):
+         # Take any goal until we can distinguish between them
+         u, v = connector.vision.get_goal_relative()
+         return self.search(connector, u, v)
+diff --git b/bitbots_head_behaviour/src/bitbots_head_behaviour/head_node.py a/bitbots_head_behaviour/src/bitbots_head_behaviour/head_node.py
+index 721df37..f1cd3d4 100755
+--- b/bitbots_head_behaviour/src/bitbots_head_behaviour/head_node.py
++++ a/bitbots_head_behaviour/src/bitbots_head_behaviour/head_node.py
+@@ -1,5 +1,4 @@
+-#!/usr/bin/env python2.7
+-# -*- coding:utf-8 -*-
++#!/usr/bin/env python3
+ import rospy
+ from bitbots_common.connector.connector import HeadConnector
+ from bitbots_head_behaviour.decisions.head_duty_decider import HeadDutyDecider
+@@ -11,14 +10,12 @@ from trajectory_msgs.msg import JointTrajectory
+ 
+ class HeadNode(StackMachineModule):
+     def __init__(self):
+-        super(HeadNode, self).__init__()
++        super().__init__()
+         self.connector = HeadConnector()
+         self.connector.config = rospy.get_param("Behaviour")
+ 
+         self.connector.head.position_publisher = rospy.Publisher("head_motor_goals", JointTrajectory, queue_size=10)
+ 
+-        rospy.init_node("Headbehaviour")
+-
+         rospy.Subscriber("joint_states", JointState, self.connector.head.joint_state_cb)
+         rospy.Subscriber("head_duty", HeadMode, self.connector.head.cb_headmode, queue_size=10)
+         rospy.Subscriber("ball_relative", BallRelative, self.connector.vision.ball_callback)
+@@ -27,6 +24,7 @@ class HeadNode(StackMachineModule):
+         rospy.Subscriber("obstacle_relative", ObstacleRelative, self.connector.vision.obstacle_callback)
+ 
+         self.set_start_module(HeadDutyDecider)
++        rospy.init_node("Headbehaviour")
+ 
+     def run(self):
+         rate = rospy.Rate(4)
+diff --git b/bitbots_head_behaviour/src/bitbots_head_behaviour/tests/__init__.py a/bitbots_head_behaviour/src/bitbots_head_behaviour/tests/__init__.py
+index 455d9c8..00e6068 100644
+--- b/bitbots_head_behaviour/src/bitbots_head_behaviour/tests/__init__.py
++++ a/bitbots_head_behaviour/src/bitbots_head_behaviour/tests/__init__.py
+@@ -8,4 +8,4 @@
+ History:
+ * 5/7/14: Created (sheepy)
+ 
+-"""
++"""
+\ No newline at end of file
+diff --git b/bitbots_stackmachine/setup.py a/bitbots_stackmachine/setup.py
+index d994384..8648c88 100644
+--- b/bitbots_stackmachine/setup.py
++++ a/bitbots_stackmachine/setup.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ from distutils.core import setup
+ from catkin_pkg.python_setup import generate_distutils_setup
+ 
+@@ -8,4 +7,4 @@ d = generate_distutils_setup(
+     package_dir={'': 'src'}
+ )
+ 
+-setup(**d)
++setup(**d)
+\ No newline at end of file
+diff --git b/bitbots_stackmachine/src/bitbots_stackmachine/abstract_action_module.py a/bitbots_stackmachine/src/bitbots_stackmachine/abstract_action_module.py
+index 5912da5..b5a60fc 100644
+--- b/bitbots_stackmachine/src/bitbots_stackmachine/abstract_action_module.py
++++ a/bitbots_stackmachine/src/bitbots_stackmachine/abstract_action_module.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
+ 
+ 
+diff --git b/bitbots_stackmachine/src/bitbots_stackmachine/abstract_decision_module.py a/bitbots_stackmachine/src/bitbots_stackmachine/abstract_decision_module.py
+index 3b0662f..6fbae1d 100644
+--- b/bitbots_stackmachine/src/bitbots_stackmachine/abstract_decision_module.py
++++ a/bitbots_stackmachine/src/bitbots_stackmachine/abstract_decision_module.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
+ 
+ 
+diff --git b/bitbots_stackmachine/src/bitbots_stackmachine/abstract_module.py a/bitbots_stackmachine/src/bitbots_stackmachine/abstract_module.py
+index 23c640b..922c96c 100644
+--- b/bitbots_stackmachine/src/bitbots_stackmachine/abstract_module.py
++++ a/bitbots_stackmachine/src/bitbots_stackmachine/abstract_module.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ AbstractModule
+ ^^^^^^^^^^^^^^
+@@ -9,7 +8,7 @@ Dieses Modul ist die Basis aller VerhaltensModule
+ """
+ 
+ 
+-class AbstractModule(object):
++class AbstractModule:
+     _event_framework = None
+ 
+     def start(self, data):
+diff --git b/bitbots_stackmachine/src/bitbots_stackmachine/abstract_stack_element.py a/bitbots_stackmachine/src/bitbots_stackmachine/abstract_stack_element.py
+index 3631e83..20f7c74 100644
+--- b/bitbots_stackmachine/src/bitbots_stackmachine/abstract_stack_element.py
++++ a/bitbots_stackmachine/src/bitbots_stackmachine/abstract_stack_element.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ AbstractStackElement
+ ^^^^^^^^^^^^^^^^^^^^
+@@ -8,7 +7,7 @@ AbstractStackElement
+ """
+ 
+ 
+-class AbstractStackElement(object):
++class AbstractStackElement:
+     """
+     Das AbstractStackElement ist die Grundlager aller Module welche auf dem
+     Stack landen. Es hat dafür einige hilfsfunktionen welche nicht
+@@ -68,7 +67,7 @@ class AbstractStackElement(object):
+         """
+         self._behaviour.push(module, init_data)
+ 
+-    def perform(self, connector, reevaluate=False):
++    def perform(self, connector, reevaluate: bool=False):
+         """
+          Diese Methode wird aufgeruffen wenn das Modul im Stack ganz oben
+          liegt und drann ist. Diese Methode sollte überladen werden!
+diff --git b/bitbots_stackmachine/src/bitbots_stackmachine/stack_machine_module.py a/bitbots_stackmachine/src/bitbots_stackmachine/stack_machine_module.py
+index 3d88b17..c02d09b 100644
+--- b/bitbots_stackmachine/src/bitbots_stackmachine/stack_machine_module.py
++++ a/bitbots_stackmachine/src/bitbots_stackmachine/stack_machine_module.py
+@@ -1,4 +1,3 @@
+-# -*- coding:utf-8 -*-
+ """
+ StackMachineModule
+ ^^^^^^^^^^^^^^^^^^
+@@ -10,7 +9,7 @@ import rospy
+ from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
+ 
+ 
+-class StackMachineModule(object):
++class StackMachineModule:
+     """
+     Diese Klasse handeld die Verhaltensarchitektur
+     """
+@@ -104,7 +103,7 @@ class StackMachineModule(object):
+ 
+             rospy.logdebug("Stack1" + " ".join(b))
+ 
+-    def push(self, module, init_data=None):
++    def push(self, module: AbstractStackElement, init_data=None):
+         """
+         Ein neues Modul auf den Stack legen, es wird sofort ausgeführt
+ 
