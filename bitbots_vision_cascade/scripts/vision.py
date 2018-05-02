@@ -1,7 +1,7 @@
 #! /usr/bin/env python2
 
 
-from bitbots_vision_common.vision_modules import lines, horizon, color, debug, live_classifier, classifier, ball
+from bitbots_vision_common.vision_modules import lines, horizon, color, debug, live_classifier, classifier, ball, lines2
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
@@ -9,6 +9,7 @@ import rospy
 import rospkg
 import cv2
 import os
+from dynamic_reconfigure.server import Server
 
 
 class Vision:
@@ -16,6 +17,8 @@ class Vision:
     def __init__(self):
         rospack = rospkg.RosPack()
         package_path = rospack.get_path('bitbots_vision_cascade')
+
+        srv = Server(ColorTestConfig, self._dynamic_reconfigure_callback)
 
         self._ball_candidate_threshold = rospy.get_param(
             'visionparams/vision/ball_candidate_rating_threshold')
@@ -144,7 +147,7 @@ class Vision:
 
         top_ball_candidate = ball_classifier.get_top_candidate()
 
-        line_detector = lines.LineDetector(image,
+        line_detector = lines2.LineDetector2(image,
                                            [top_ball_candidate] if top_ball_candidate else list(),
                                            self.white_color_detector,
                                            horizon_detector,
@@ -197,9 +200,10 @@ class Vision:
         self.pub_lines.publish(line_msg)
         if self.debug:
             # draw linepoints in black
-            debug_image_dings.draw_points(
+            """debug_image_dings.draw_points(
                 line_detector.get_linepoints(),
-                (0, 0, 0))
+                (0, 0, 0))"""
+            debug_image_dings.draw_line_segments(line_detector.get_linesegments(), (0, 0, 0))
             debug_image_dings.imshow()
 
     def handle_image_no_balls(self, image_msg):
