@@ -10,7 +10,7 @@ visionparams:
         max_ball_diameter: 200
 
     field_color_detector:
-        path: '/config/color_spaces/Iran_Feld_nah.yaml'
+        path: '/config/color_spaces/f031test.yaml'
         use_dummy_green: false
         dummy_lower_values: [0, 0, 180]
         dummy_upper_values: [0, 0, 180]
@@ -26,7 +26,7 @@ visionparams:
         min_precision_pix: 3
 
     vision:
-        debug: false
+        debug: true
         no_balls: false  # when this is set to true, the vision won't search nor publish balls!
         ball_candidate_horizon_y_offset: 0
         ball_candidate_rating_threshold: 0.5
