@@ -1,4 +1,30 @@
 <launch>
-  <include file="$(find bitbots_vision)/launch/bitbots_vision.launch" />
-  <include file="$(find wolves_image_provider_v4l)/launch/image_provider_v4l.launch" />
+
+    <arg name="sim" default="false"/>
+    <arg name="minibot" default="false"/>
+    <arg name="wolfgang" default="false"/>
+    <arg name="debug" default="false"/>
+
+    <!-- start cascade vision for minibot -->
+    <group if="$(arg minibot)">
+        <include file="$(find bitbots_vision_cascade)/launch/bitbots_vision.launch">
+            <arg name="debug" value="$(arg debug)" />
+        </include>
+    </group>
+    <!-- start fcnn vision for wolfgang robot -->
+    <group if="$(arg wolfgang)">
+        <include file="$(find bitbots_vision_fcnn)/launch/bitbots_vision.launch">
+            <arg name="debug" value="$(arg debug)" />
+        </include>
+    </group>
+
+    <!-- start the camera only when necessary -->
+    <group unless="$(arg sim)">
+        <include file="$(find wolves_image_provider_v4l)/launch/image_provider_v4l.launch" />
+    </group>
+    <!-- remap stuff to fit the robot -->
+    <group if="$(arg sim)">
+        <remap to ="/minibot/camera/image_raw" from="/image_raw"/>
+    </group>
 </launch>
+

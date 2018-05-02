@@ -2,23 +2,31 @@
     <name>bitbots_vision_fcnn</name>
     <description>
         This is the vision package of the Hamburg Bit-Bots.
-        This FCNN Version uses the FCNN ball detection. It needs more power than the cascade version.
+        This FCNN Version uses the FCNN ball detection. It needs more power than
+        the cascade version.
+        It heavily relies on modules provided by the bitbots_vision_common
+        package.
         We use the wolves_image_provider_v4l package as image provider.
         Settings considering the vision are set in the visionparams.yaml
-        (bitbots_vision/config/visionparams.yaml). To be able to test new parameters,
-        the debug_visionparams.yaml are provided. These are used when the vision is
-        started via the bitbots_debug_vision launchscript.
+        (bitbots_vision_fcnn/config/visionparams.yaml). To be able to test new
+        parameters, the debug_visionparams.yaml are provided. These are used
+        when the vision is started with debug:=true as launchscript parameter.
         You do NOT want to enable DEBUG on the robot.
-        The color calibration files are created with the wolves colorpicker and a
-        rosbag.
-        The source code of the vision is located in bitbots_vision/scripts.
-        In bitbots_vision/models the tensorflow classifier models are stored. Due to
-        their size, these are not part of this repository.
+        The color calibration files are created with the wolves colorpicker and
+        a rosbag.
+        The vision.py is located in bitbots_vision_fcnn/scripts. It defines, how
+        the modules out of bitbots_vision_common are used.
+        In bitbots_vision_fcnn/models the tensorflow models are stored. Due to
+        their size, these are not part of this repository. Bit-Bots use the
+        pull_data script in bitbots_meta.
         To tweak the camera image, use the settings in the image provider.
-        WARNING: uvcdynctrl is required by the image provider. Make sure it is installed
+        WARNING: uvcdynctrl is required by the image provider. Make sure it is
+        installed
     </description>
-    <version>0.0.0</version>
+    <version>1.0.0</version>
     <maintainer email="5fiedler@informatik.uni-hamburg.de">Niklas Fiedler</maintainer>
+    <author email="5fiedler@informatik.uni-hamburg.de">Niklas Fiedler</author>
+    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
     <license>MIT</license>
     <buildtool_depend>catkin</buildtool_depend>
     <depend>rospy</depend>

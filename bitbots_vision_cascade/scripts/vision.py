@@ -19,6 +19,7 @@ class Vision:
         package_path = rospack.get_path('bitbots_vision_cascade')
 
         srv = Server(ColorTestConfig, self._dynamic_reconfigure_callback)
+        rospy.loginfo('Initializing cascade vision...')
 
         self._ball_candidate_threshold = rospy.get_param(
             'visionparams/vision/ball_candidate_rating_threshold')
