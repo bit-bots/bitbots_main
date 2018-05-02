@@ -6,7 +6,7 @@ from candidate import Candidate
 
 class DebugImage:
     def __init__(self, image):
-        self.raw_image = image[:]
+        self.raw_image = image.copy()
 
     def draw_horizon(self, horizon_points, color):
         """
@@ -36,6 +36,13 @@ class DebugImage:
     def draw_points(self, points, color, rad=2):
         for point in points:
             cv2.circle(self.raw_image, point, rad, color)
+
+    def draw_line_segments(self, segments, color, width=2):
+        for segment in segments:
+            cv2.line(self.raw_image,
+                     (segment[0], segment[1]),
+                     (segment[2], segment[3]),
+                     color)
 
     def imshow(self):
         """
