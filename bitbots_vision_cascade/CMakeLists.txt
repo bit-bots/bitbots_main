@@ -19,6 +19,9 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
 )
 
+
+
+
 FIND_PACKAGE (OpenCV REQUIRED)
 
 ## System dependencies are found with CMake's conventions
@@ -96,8 +99,12 @@ FIND_PACKAGE (OpenCV REQUIRED)
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
- generate_dynamic_reconfigure_options(
- )
+#add dynamic reconfigure api
+find_package(catkin REQUIRED dynamic_reconfigure)
+generate_dynamic_reconfigure_options(
+  cfg/vision.cfg
+  #...
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -190,3 +197,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
