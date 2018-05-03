@@ -90,12 +90,12 @@
             </geometry>
             <material name="black" />
         </visual>
-        <collision>
+        <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/left_thigh_link.dae" />
             </geometry>
-        </collision>
+        </collision>-->
     </link>
 
     <link name="r_lower_leg">
@@ -111,12 +111,12 @@
             </geometry>
             <material name="black" />
         </visual>
-        <collision>
+        <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/right_shank_link.dae" />
             </geometry>
-        </collision>
+        </collision>-->
     </link>
 
     <link name="r_ankle">
@@ -125,7 +125,7 @@
             <mass value="0.35844" />
             <inertia ixx="0.00015501" ixy="1.7299E-06" ixz="-8.5156E-06" iyy="0.00032958" iyz="-2.4435E-07" izz="0.00027786" />
         </inertial>
-        <visual>
+        <!--<visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/right_ankle_link.STL" />
@@ -137,7 +137,7 @@
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/right_ankle_link.dae" />
             </geometry>
-        </collision>
+        </collision>-->
     </link>
 
     <link name="r_foot">
@@ -147,14 +147,14 @@
             <inertia ixx="0.00018527" ixy="-1.1504E-05" ixz="-7.2667E-06" iyy="0.00060485" iyz="5.8883E-06" izz="0.00075217" />
         </inertial>
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 -0.012" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/right_foot_link.STL" />
             </geometry>
             <material name="black" />
         </visual>
         <collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 -0.012" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/right_foot_link.dae" />
             </geometry>
@@ -232,12 +232,12 @@
             </geometry>
             <material name="black" />
         </visual>
-        <collision>
+        <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/left_thigh_link.dae" />
             </geometry>
-        </collision>
+        </collision>-->
     </link>
 
     <link name="l_lower_leg">
@@ -253,12 +253,12 @@
             </geometry>
             <material name="black" />
         </visual>
-        <collision>
+        <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/left_shank_link.dae" />
             </geometry>
-        </collision>
+        </collision>-->
     </link>
 
     <link name="l_ankle">
@@ -267,7 +267,7 @@
             <mass value="0.35903" />
             <inertia ixx="0.00015503" ixy="-1.738E-06" ixz="-8.5148E-06" iyy="0.0003299" iyz="2.4403E-07" izz="0.0002782" />
         </inertial>
-        <visual>
+        <!--<visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/left_ankle_link.STL" />
@@ -279,7 +279,7 @@
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/left_ankle_link.dae" />
             </geometry>
-        </collision>
+        </collision>-->
     </link>
 
     <link name="l_foot">
@@ -289,14 +289,14 @@
             <inertia ixx="0.0001853" ixy="1.1466E-05" ixz="-8.3793E-06" iyy="0.00060485" iyz="-5.9046E-06" izz="0.00075213" />
         </inertial>
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 -0.012" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/left_foot_link.STL" />
             </geometry>
             <material name="black" />
         </visual>
         <collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 -0.012" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/left_foot_link.dae" />
             </geometry>
@@ -526,7 +526,7 @@
     </joint>
 
     <joint name="RKnee" type="revolute">
-        <origin xyz="0 0 -0.22" rpy="0 0 0" />
+        <origin xyz="-0.015 0 -0.17" rpy="0 0 0" />
         <parent link="r_upper_leg" />
         <child link="r_lower_leg" />
         <axis xyz="0 1 0" />
@@ -535,7 +535,7 @@
     </joint>
 
     <joint name="RAnklePitch" type="revolute">
-        <origin xyz="-0.00186 0 -0.22" rpy="0 0 0" />
+        <origin xyz="0.015 0 -0.17" rpy="0 0 0" />
         <parent link="r_lower_leg" />
         <child link="r_ankle" />
         <axis xyz="0 -1 0" />
@@ -553,14 +553,14 @@
     </joint>
 
     <joint name="r_foot_to_sole" type="fixed">
-        <origin xyz="0 0 -0.04" rpy="0 0 0" />
+        <origin xyz="0 0 -0.052" rpy="0 0 0" />
         <parent link="r_foot" />
         <child link="r_sole" />
         <axis xyz="0 0 0" />
     </joint>
 
     <joint name="r_foot_to_toe" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <origin xyz="0.105 0 0" rpy="0 0 0" />
         <parent link="r_sole" />
         <child link="r_toe" />
         <axis xyz="0 0 0" />
@@ -576,7 +576,7 @@
     </joint>
 
     <joint name="LHipRoll" type="revolute">
-        <origin xyz="-0.0072 0.0012 -0.0438" rpy="0 0 0" />
+        <origin xyz="-0.0072 0 -0.0438" rpy="0 0 0" />
         <parent link="l_hip_1" />
         <child link="l_hip_2" />
         <axis xyz="1 0 0" />
@@ -594,7 +594,7 @@
     </joint>
 
     <joint name="LKnee" type="revolute">
-        <origin xyz="0 0 -0.22" rpy="0 0 0" />
+        <origin xyz="-0.015 0 -0.17" rpy="0 0 0" />
         <parent link="l_upper_leg" />
         <child link="l_lower_leg" />
         <axis xyz="0 -1 0" />
@@ -603,7 +603,7 @@
     </joint>
 
     <joint name="LAnklePitch" type="revolute">
-        <origin xyz="-0.00186 0 -0.22" rpy="0 0 0" />
+        <origin xyz="0.015 0 -0.17" rpy="0 0 0" />
         <parent link="l_lower_leg" />
         <child link="l_ankle" />
         <axis xyz="0 1 0" />
@@ -621,14 +621,14 @@
     </joint>
 
     <joint name="left_foot_to_sole" type="fixed">
-        <origin xyz="0 0 -0.04" rpy="0 0 0" />
+        <origin xyz="0 0 -0.052" rpy="0 0 0" />
         <parent link="l_foot" />
         <child link="l_sole" />
         <axis xyz="0 0 0" />
     </joint>
 
     <joint name="left_foot_to_toe" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <origin xyz="0.105 0 0" rpy="0 0 0" />
         <parent link="l_sole" />
         <child link="l_toe" />
         <axis xyz="0 0 0" />
@@ -637,11 +637,11 @@
     <joint name="base_link_to_torso" type="fixed">
         <parent link="base_link" />
         <child link="torso" />
-        <origin rpy="0.019 0 0" xyz="0 0 0.0936" />
+        <origin rpy="0.0 0 0" xyz="0 0 0.09" />
     </joint>
 
     <joint name="RShoulderPitch" type="revolute">
-        <origin xyz="-0.0205 -0.0745 0.1075" rpy="0 0 0" />
+        <origin xyz="0.0 -0.075 0.11" rpy="0 0 0" />
         <parent link="torso" />
         <child link="r_shoulder" />
         <axis xyz="0 1 0" />
@@ -650,7 +650,7 @@
     </joint>
 
     <joint name="RShoulderRoll" type="revolute">
-        <origin xyz="0 -0.038 0" rpy="0 0 0" />
+        <origin xyz="0 -0.04 0" rpy="0 0 0" />
         <parent link="r_shoulder" />
         <child link="r_upper_arm" />
         <axis xyz="1 0 0" />
@@ -659,7 +659,7 @@
     </joint>
 
     <joint name="RElbow" type="revolute">
-        <origin xyz="0.0265 0 -0.1735" rpy="0 0 0" />
+        <origin xyz="-0.0075 0 -0.145" rpy="0 0 0" />
         <parent link="r_upper_arm" />
         <child link="r_lower_arm" />
         <axis xyz="0 1 0" />
@@ -670,11 +670,11 @@
     <joint name="r_elbow_to_wrist" type="fixed">
         <parent link="r_lower_arm" />
         <child link="r_wrist" />
-        <origin xyz="0.17 0 0" rpy="0 0 0"/> <!--todo-->
+        <origin xyz="0.225 0 0" rpy="0 0 0"/> 
     </joint>
 
     <joint name="LShoulderPitch" type="revolute">
-        <origin xyz="-0.0205 0.0745 0.1075" rpy="0 0 0" />
+        <origin xyz="0.0 0.075 0.11" rpy="0 0 0" />
         <parent link="torso" />
         <child link="l_shoulder" />
         <axis xyz="0 -1 0" />
@@ -683,7 +683,7 @@
     </joint>
 
     <joint name="LShoulderRoll" type="revolute">
-        <origin xyz="0 0.038 0" rpy="0 0 0" />
+        <origin xyz="0 0.04 0" rpy="0 0 0" />
         <parent link="l_shoulder" />
         <child link="l_upper_arm" />
         <axis xyz="1 0 0" />
@@ -692,7 +692,7 @@
     </joint>
 
     <joint name="LElbow" type="revolute">
-        <origin xyz="0.0265 0 -0.1735" rpy="0 0 0" />
+        <origin xyz="-0.0075 0 -0.145" rpy="0 0 0" />
         <parent link="l_upper_arm" />
         <child link="l_lower_arm" />
         <axis xyz="0 1 0" />
@@ -703,7 +703,7 @@
     <joint name="l_elbow_to_wrist" type="fixed">
         <parent link="l_lower_arm" />
         <child link="l_wrist" />
-        <origin xyz="0.17 0 0" rpy="0 0 0"/> <!--todo-->
+        <origin xyz="0.225 0 0" rpy="0 0 0"/>
     </joint>
 
     <joint name="HeadPan" type="revolute">
