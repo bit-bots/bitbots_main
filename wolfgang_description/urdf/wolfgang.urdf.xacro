@@ -589,7 +589,7 @@
         <parent link="l_hip_2" />
         <child link="l_upper_leg" />
         <axis xyz="0 -1 0" />
-        <limit effort="${tofa*8.4}" velocity="4.712388975" lower="-1.919862177189" upper="0.48869219055720003" />
+        <limit effort="${tofa*8.4}" velocity="4.712388975" lower="-0.48869219055720003" upper="1.919862177189" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
 
