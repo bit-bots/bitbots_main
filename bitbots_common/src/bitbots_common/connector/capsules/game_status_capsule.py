@@ -72,6 +72,6 @@ class GameStatusCapsule:
     def is_allowed_to_move(self):
         return self.gamestate.allowedToMove or rospy.get_time() - self.lastupdate > 15
 
-    def gamestate_callback(self, gs: GameState):
+    def gamestate_callback(self, gs):
         self.gamestate = gs
         self.lastupdate = rospy.get_time()

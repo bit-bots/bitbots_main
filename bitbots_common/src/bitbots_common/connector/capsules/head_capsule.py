@@ -48,7 +48,7 @@ class HeadCapsule:
 
         self.position_publisher = None  # type: rospy.Publisher
 
-    def send_motor_goals(self, pan_position: float, pan_speed: float, tilt_position: float, tilt_speed: float):
+    def send_motor_goals(self, pan_position, pan_speed, tilt_position, tilt_speed):
         self.current_pan_pos = pan_position
         self.current_tilt_pos = tilt_position
         posnew = math.radians(pan_position), math.radians(tilt_position)
@@ -67,10 +67,10 @@ class HeadCapsule:
     def get_confirmed_ball(self):
         return self.confirmedBall
 
-    def cb_headmode(self, headmode: HeadMode):
+    def cb_headmode(self, headmode):
         self._headmode = headmode.headMode
 
-    def joint_state_cb(self, msg: JointState):
+    def joint_state_cb(self, msg):
         i = 0
         for joint in msg.name:
             if joint == "HeadPan":

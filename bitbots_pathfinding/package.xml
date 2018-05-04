@@ -6,7 +6,7 @@
       the robot leading from the current position to a given position and direction
       while avoiding obstacles (e. g. other robots)</description>
 
-  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
 
 
   <license>BSD</license>

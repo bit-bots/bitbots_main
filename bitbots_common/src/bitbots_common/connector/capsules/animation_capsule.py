@@ -12,7 +12,7 @@ class AnimationCapsule:
         self.active = False
         self.anim_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
 
-    def play_animation(self, anim: str)->bool:
+    def play_animation(self, anim):
         """
         plays the animation "ani" and sets the flag "BusyAnimation"
 

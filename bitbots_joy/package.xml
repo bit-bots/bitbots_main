@@ -5,7 +5,7 @@
   <description>The bitbots_joy takes messages from the joy node and converts them to messages for /cmd_vel.</description>
 
   <author email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</author>
-  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
@@ -22,7 +22,7 @@
 
   <export>
     <bitbots_documentation>
-      <language>python3</language>
+      <language>python2</language>
     </bitbots_documentation>
   </export>
 </package>

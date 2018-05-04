@@ -55,7 +55,7 @@ class TeamDataCapsule:
 
         return position
 
-    def set_role(self, role: int):
+    def set_role(self, role):
         """ Set the Team Role - Need to be in data dict for Comm Modules """
         assert role in [ROLE_STRIKER, ROLE_DEFENDER, ROLE_SUPPORTER, ROLE_GOALIE]
         r = Strategy

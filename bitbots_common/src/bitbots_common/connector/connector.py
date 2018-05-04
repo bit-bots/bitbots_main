@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2.7
 
 import rospy
 from bitbots_common.connector.capsules.animation_capsule import AnimationCapsule
@@ -11,7 +11,7 @@ from bitbots_common.connector.capsules.head_capsule import HeadCapsule
 from bitbots_common.connector.capsules.vision_capsule import VisionCapsule
 
 
-class AbstractConnector:
+class AbstractConnector(object):
     def __init__(self):
         self.vision = VisionCapsule()
         self.world_model = WorldModelCapsule()
@@ -22,7 +22,7 @@ class AbstractConnector:
 
 class BodyConnector(AbstractConnector):
     def __init__(self):
-        super().__init__()
+        super(BodyConnector, self).__init__()
         self.blackboard = BlackboardCapsule()
         self.gamestate = GameStatusCapsule()
         self.walking = WalkingCapsule()
@@ -33,5 +33,5 @@ class BodyConnector(AbstractConnector):
 
 class HeadConnector(AbstractConnector):
     def __init__(self):
-        super().__init__()
+        super(HeadConnector, self).__init__()
         self.head = HeadCapsule()
