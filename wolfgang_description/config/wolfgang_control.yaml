@@ -58,7 +58,7 @@ trajcontroller:
   constraints:
       goal_time: 10
 
-controller:
+JointGroupController:
   type: effort_controllers/JointGroupPositionController
   joints:
     - HeadPan
@@ -81,26 +81,26 @@ controller:
     - RKnee
     - RAnklePitch
     - RAnkleRoll
-  HeadPan/pid:        { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  HeadTilt/pid:       { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  LShoulderPitch/pid: { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  LShoulderRoll/pid:  { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  LElbow/pid:         { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  RShoulderPitch/pid: { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  RShoulderRoll/pid:  { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  RElbow/pid:         { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  LHipYaw/pid:        { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  LHipRoll/pid:       { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  LHipPitch/pid:      { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  LKnee/pid:          { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  LAnklePitch/pid:    { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  LAnkleRoll/pid:     { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  RHipYaw/pid:        { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  RHipRoll/pid:       { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  RHipPitch/pid:      { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  RKnee/pid:          { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  RAnklePitch/pid:    { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
-  RAnkleRoll/pid:     { p: 50.0, i: 0.00, d: 0.1, i_clamp: 4.0 }
+  HeadPan/pid:        { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  HeadTilt/pid:       { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  LShoulderPitch/pid: { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  LShoulderRoll/pid:  { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  LElbow/pid:         { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  RShoulderPitch/pid: { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  RShoulderRoll/pid:  { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  RElbow/pid:         { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  LHipYaw/pid:        { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  LHipRoll/pid:       { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  LHipPitch/pid:      { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  LKnee/pid:          { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  LAnklePitch/pid:    { p: 50.0, i: 0.00, d: 0.2, i_clamp: 0.5 }
+  LAnkleRoll/pid:     { p: 50.0, i: 0.00, d: 0.2, i_clamp: 0.5 }
+  RHipYaw/pid:        { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  RHipRoll/pid:       { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  RHipPitch/pid:      { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  RKnee/pid:          { p: 50.0, i: 0.00, d: 1.0, i_clamp: 4.0 }
+  RAnklePitch/pid:    { p: 50.0, i: 0.00, d: 0.2, i_clamp: 0.5 }
+  RAnkleRoll/pid:     { p: 50.0, i: 0.00, d: 0.2, i_clamp: 0.5 }
 
 # Individual Joint Position Controllers ---------------------------------------
 
