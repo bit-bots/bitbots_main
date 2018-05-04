@@ -1,10 +1,13 @@
 <launch>
     <arg name="minibot" default="false"/>
     <arg name="wolfgang" default="false"/>
+    <arg name="davros" default="false"/>
+
 
     <include file="$(find bitbots_common)/launch/load_robot_description.launch">
         <arg name="minibot" value="$(arg minibot)"/>
         <arg name="wolfgang" value="$(arg wolfgang)"/>   
+        <arg name="davros" value="$(arg davros)"/>   
     </include>    
 
     <include file="$(find bitbots_cm730)/launch/cm730.launch"/>
