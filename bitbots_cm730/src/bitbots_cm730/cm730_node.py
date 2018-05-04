@@ -8,6 +8,7 @@ import traceback
 
 from trajectory_msgs.msg import JointTrajectory
 from std_msgs.msg import String, Float64MultiArray
+from geometry_msgs.msg import Vector3
 from sensor_msgs.msg import JointState, Temperature, Imu
 from humanoid_league_msgs.msg import AdditionalServoData
 from humanoid_league_msgs.msg import Speak
@@ -80,7 +81,7 @@ class CM730Node:
 
         # --- Initialize Topics ---
         rospy.Subscriber("motor_goals", JointTrajectory, self.update_motor_goals, queue_size=20)
-        rospy.Subscriber("davros_motor_goals", Float64MultiArray, self.update_davos_motor_goals, queue_size=20)
+        rospy.Subscriber("davros_motor_goals", Vector3, self.update_davos_motor_goals, queue_size=20)
         self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=1)
         self.speak_publisher = rospy.Publisher('speak', Speak, queue_size=1)
         self.temp_publisher = rospy.Publisher('servo_data', AdditionalServoData, queue_size=1)
@@ -153,13 +154,18 @@ class CM730Node:
 
     def update_davos_motor_goals(self, msg):
         """ specific callback for Davos"""
-        head_pan = msg.data[0]
-        head_roll = msg.data[1]
-        head_tilt = msg.data[2]
+        head_pan = math.degrees(msg.x)
+        head_roll = math.degrees(msg.y)
+        head_tilt = math.degrees(msg.z)
+
+        # update goal pose accordingly
+        if self.goal_pose is None:
+            # if its the first time initiate Pose object
+            self.goal_pose = Pose()
 
         self.pose_lock.acquire()
         # this is a hacky solution to use cIDs 1,2,3 for the head motors
-        self.goal_pose.set_positions_rad(["RShoulderPitch", "LShoulderPitch", "RShoulderRoll"], [head_pan, head_roll, head_tilt])
+        self.goal_pose.set_goals(["RShoulderPitch".encode("utf-8"), "LShoulderPitch".encode("utf-8"), "RShoulderRoll".encode("utf-8")], [head_pan, head_roll, head_tilt])
         self.pose_lock.release()
 
 
