@@ -29,9 +29,9 @@
     </group>
 
     <group if="$(arg wolfgang)">
-        <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg sim_ns)" type="spawn_model" args="-param /robot_description -urdf -model $(arg sim_ns) -x -1.5 -y 0.0 -z 0.55" output="screen" />
+        <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg sim_ns)" type="spawn_model" args="-param /robot_description -urdf -model $(arg sim_ns) -x -1.5 -y 0.0 -z 0.445" output="screen" />
         <rosparam file="$(find wolfgang_description)/config/wolfgang_control.yaml" command="load" ns="$(arg sim_ns)"/>
-        <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg sim_ns)" args="joint_state_controller controller" />
+        <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg sim_ns)" args="joint_state_controller JointGroupController" />
     </group>
                         
 </launch>
