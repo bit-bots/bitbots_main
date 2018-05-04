@@ -3,7 +3,7 @@
     This is a format for representing semantic information about the robot structure.
     A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined
 -->
-<robot name="wolves">
+<robot name="wolfgang">
 <group name="LeftLeg">
         <joint name="LHipYaw" />
         <joint name="LHipRoll" />
@@ -35,6 +35,7 @@
         <joint name="RAnkleRoll" />
     </group>
     <group name="All">
+        <!--<joint name="float" />-->
         <joint name="HeadPan" />
         <joint name="HeadTilt" />
         <joint name="LHipYaw" />
@@ -171,4 +172,7 @@
     <disable_collisions link1="r_shoulder" link2="r_upper_leg" reason="Never" />
     <disable_collisions link1="r_shoulder" link2="torso" reason="Adjacent" />
     <disable_collisions link1="r_upper_arm" link2="r_upper_leg" reason="Never" />
+
+    <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
+    <!--<virtual_joint name="float" type="floating" parent_frame="world" child_link="base_link" />-->
 </robot>
