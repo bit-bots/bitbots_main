@@ -7,7 +7,7 @@ import math
 import traceback
 
 from trajectory_msgs.msg import JointTrajectory
-from std_msgs.msg import String
+from std_msgs.msg import String, Float64MultiArray
 from sensor_msgs.msg import JointState, Temperature, Imu
 from humanoid_league_msgs.msg import AdditionalServoData
 from humanoid_league_msgs.msg import Speak
@@ -80,6 +80,7 @@ class CM730Node:
 
         # --- Initialize Topics ---
         rospy.Subscriber("motor_goals", JointTrajectory, self.update_motor_goals, queue_size=20)
+        rospy.Subscriber("davros_motor_goals", Float64MultiArray, self.update_davos_motor_goals, queue_size=20)
         self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=1)
         self.speak_publisher = rospy.Publisher('speak', Speak, queue_size=1)
         self.temp_publisher = rospy.Publisher('servo_data', AdditionalServoData, queue_size=1)
@@ -149,6 +150,18 @@ class CM730Node:
         self.goal_pose.set_speeds(joints, motor_speeds)
         self.goal_pose.set_efforts(joints, motor_efforts)
         self.pose_lock.release()
+
+    def update_davos_motor_goals(self, msg):
+        """ specific callback for Davos"""
+        head_pan = msg.data[0]
+        head_roll = msg.data[1]
+        head_tilt = msg.data[2]
+
+        self.pose_lock.acquire()
+        # this is a hacky solution to use cIDs 1,2,3 for the head motors
+        self.goal_pose.set_positions_rad(["RShoulderPitch", "LShoulderPitch", "RShoulderRoll"], [head_pan, head_roll, head_tilt])
+        self.pose_lock.release()
+
 
     def update_forever(self):
         """ Calls :func:`update_once` in an infinite loop """
