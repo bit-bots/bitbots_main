@@ -21,13 +21,10 @@ class HeadDutyDecider(AbstractDecisionModule):
         super(HeadDutyDecider, self).__init__(connector)
         self.toggle_goal_vision_tracking = connector.config["Head"]["Toggles"]["goalVisionTracking"]
         self.toggle_switch_ball_goal = connector.config["Head"]["Toggles"]["switchBallGoalSearch"]
-        self.confirm_time = connector.config["Head"]["Search"]["confirmTime"]
 
         self.min_tilt = connector.config["Head"]["Camera"]["minTilt"]
         self.max_tilt = connector.config["Head"]["Camera"]["maxTilt"]
 
-        self.last_confirmd_goal = 0
-        self.fail_goal_counter = 0
         self.ball_prio = 0
         self.goal_prio = 0
         self.trackjustball_aftergoal = False

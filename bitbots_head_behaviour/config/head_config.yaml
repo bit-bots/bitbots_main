@@ -77,12 +77,15 @@ Behaviour:
         # Time to confirm an object
         confirmTime: 2
 
-        # When the ball is lost, we are looking at these offsets around its last positions
-        # the offsets are in degrees of head rotation
+        # After this time (in s), the robot will not look next to the last position of a searched object
+        objectLostTime: 3
+
+        # When the ball is lost, we are looking at these offsets around its last position
+        # the offsets are in meters
         # TODO: evaluate offsets
-        offsetRight: 10
-        offsetDown: 10
-        offsetLeft: 10
+        offsetRight: 0.30
+        offsetDown: 0.30
+        offsetLeft: 0.30
 
     SearchPattern:
       help: |
