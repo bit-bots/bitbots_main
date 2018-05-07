@@ -60,6 +60,7 @@ class LookAtGoal(AbstractLookAt):
     LookAtGoal moves the head to look at the center of the goal
     """
     def perform(self, connector, reevaluate=False):
+        # TODO: Distinguish between own and enemy goal (get data from world model)
         goal = connector.personal_model.get_goal_relative_stamped()
         self.look_at(goal, connector)
 
@@ -74,9 +75,10 @@ class LookAtRelativePoint(AbstractLookAt):
     """
     def __init__(self, connector, args, init_data=None):
         super(LookAtRelativePoint, self).__init__(connector, init_data)
-        self.u = args[0]
-        self.v = args[1]
-        self.w = args[2]
+        point = args[0]
+        self.u = point[0]
+        self.v = point[1]
+        self.w = point[2]
 
     def perform(self, connector, reevaluate=False):
         point = PointStamped()
