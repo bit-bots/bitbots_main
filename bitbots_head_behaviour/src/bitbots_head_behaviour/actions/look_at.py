@@ -23,6 +23,8 @@ class AbstractLookAt(AbstractActionModule):
         super(AbstractLookAt, self).__init__(connector)
         self.tfBuffer = tf2_ros.Buffer(cache_time=rospy.Duration(10.0))
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
+        self.pan_speed_max = self.config["Search"]["maxPanSpeedSearch"]
+        self.tilt_speed_max = self.config["Search"]["maxTiltSpeedSearch"]
 
     def perform(self, connector, reevaluate=False):
         raise NotImplementedError
@@ -41,7 +43,7 @@ class AbstractLookAt(AbstractActionModule):
         angle_tilt = np.rad2deg(np.arctan2(point_camera.point.z, point_camera.point.x))
         angle_pan = np.rad2deg(np.arctan2(point_camera.point.y, point_camera.point.x))
 
-        connector.head.send_motor_goals(angle_pan, 60, angle_tilt, 60)
+        connector.head.send_motor_goals(angle_pan, self.pan_speed_max, angle_tilt, self.tilt_speed_max)
 
 
 class LookAtBall(AbstractLookAt):
