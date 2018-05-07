@@ -1,4 +1,13 @@
 visionparams:
+    ball_fcnn:
+        model_path: '/models/fcnn03'
+        debug: false  # only active when true and vision/debug is true, too!
+        threshold: .5  # minimal value for a candidate to be considered
+        expand_stepsize: 4
+        pointcloud_stepsize: 10
+        shuffle_candidate_list: true  # shuffles the list of possible candidate points
+        min_ball_diameter: 5
+        max_ball_diameter: 200
     classifier:
        model_path: '/models/classifier_01'
 
