@@ -1,12 +1,7 @@
-import time
-
 import math
-
-import rospy
 import numpy as np
-from humanoid_league_msgs.msg import HeadMode, BallInImage, BallsInImage
 import rosparam
-from sensor_msgs.msg import JointState
+import rospy
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
@@ -25,16 +20,11 @@ class HeadCapsule:
         self.initial_tilt = self.config["Camera"]["initialTilt"]
         self.camera_height = self.config["Camera"]["cameraHeight"]
         self.ball_height = self.config["Camera"]["ballHeight"]
-        self.offset_right = self.config["Search"]["offsetRight"]
-        self.offset_down = self.config["Search"]["offsetDown"]
-        self.offset_left = self.config["Search"]["offsetLeft"]
 
         # class variables
         self._headmode = 0
-        self.confirmedBall = -999
-        self.startedconfirmingball = -999
-        self.confirmedGoal = -999
-        self.startedconfirminggoal = -999
+        self.confirmed_ball_time = -999
+        self.confirmed_goal_time = -999
         self.current_pan_pos = 0
         self.current_tilt_pos = 0
         self.is_ball_tracking_still_active = False
@@ -48,6 +38,10 @@ class HeadCapsule:
         self.pos_msg.points = [self.point_msg]
 
         self.position_publisher = None  # type: rospy.Publisher
+
+    #################
+    # Head position #
+    #################
 
     def send_motor_goals(self, pan_position, pan_speed, tilt_position, tilt_speed):
         self.current_pan_pos = pan_position
@@ -66,9 +60,6 @@ class HeadCapsule:
 
     def get_headmode(self):
         return self._headmode
-
-    def get_confirmed_ball(self):
-        return self.confirmedBall
 
     def cb_headmode(self, headmode):
         self._headmode = headmode.headMode
@@ -98,30 +89,32 @@ class HeadCapsule:
         tilt = self.initial_tilt - math.degrees(math.atan((cam_height - ball_height / 2)/(math.sqrt(u ** 2 + v ** 2))))
         return pan, tilt
 
-    def get_started_confirm_ball(self):
-        return self.startedconfirmingball
+    ################
+    # Confirm ball #
+    ################
 
-    def set_started_confirm_ball(self, t=None):
+    def get_confirmed_ball_time(self):
+        return self.confirmed_ball_time
+
+    def set_confirmed_ball_time(self, t=None):
         if not t:
             t = rospy.get_time()
-        self.startedconfirmingball = t
+        self.confirmed_ball_time = t
 
-    def unset_started_confirm_ball(self):
-        self.startedconfirmingball = -999
+    def unset_confirmed_ball_time(self):
+        self.confirmed_ball_time = -999
 
-    def set_confirmed_ball(self):
-        self.startedconfirmingball = rospy.get_time()
-        
-    def get_started_confirm_goal(self):
-        return self.startedconfirminggoal
+    ################
+    # Confirm goal #
+    ################
 
-    def set_started_confirm_goal(self, t=None):
+    def get_confirmed_goal_time(self):
+        return self.confirmed_goal_time
+
+    def set_confirmed_goal_time(self, t=None):
         if not t:
             t = rospy.get_time()
-        self.startedconfirminggoal = t
+        self.confirmed_goal_time = t
 
-    def unset_started_confirm_goal(self):
-        self.startedconfirminggoal = -999
-
-    def set_confirmed_goal(self):
-        self.startedconfirminggoal = rospy.get_time()
+    def unset_confirmed_goal_time(self):
+        self.confirmed_goal_time = -999
