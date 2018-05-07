@@ -6,11 +6,8 @@ SearchAndConfirm
 Searches and confirms the goal or ball
 
 """
-import time
-
 import rospy
 
-from bitbots_head_behaviour.actions.track_object import TrackBall, TrackGoal
 from bitbots_head_behaviour.actions.look_at import LookAtBall, LookAtGoal
 from bitbots_head_behaviour.decisions.search_for_object import SearchForBall, SearchForEnemyGoal
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
@@ -19,41 +16,21 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 class AbstractSearchAndConfirm(AbstractDecisionModule):
     def __init__(self, connector, _):
         super(AbstractSearchAndConfirm, self).__init__(connector, _)
-        self.set_confirmed = None
-        self.get_started_confirm_time = None
-        self.set_started_confirm_time = None
-        self.unset_started_confirm_time = None
-        self.object_seen = None
-        self.object_last_seen = None
         self.fr = True
+        self.object_last_seen = None
+        self.set_confirmed_time = None
+        self.unset_confirmed_time = None
 
-        self.fail_counter = 0
-        self.confirm_time = connector.config["Head"]["Search"]["confirmTime"]
         self.track_ball_lost_time = connector.config["Head"]["Tracking"]["trackBallLost"]
-        self.ball_fail_conter_max = connector.config["Head"]["Tracking"]["ballFailCounterMax"]
 
     def perform(self, connector, reevaluate=False):
-        rospy.logdebug("Ballseen: " + str(self.object_seen()))
-        if rospy.get_time() - self.get_started_confirm_time() > self.confirm_time and \
-                        self.get_started_confirm_time() != 0:
-            self.set_confirmed()
-            self.unset_started_confirm_time()
-            #return self.pop()
-
-        if self.object_seen():
-            if rospy.get_time() - self.get_started_confirm_time() > self.confirm_time:
-                self.set_started_confirm_time()
-                self.fail_counter = 0
-            self.fail_counter -= 1
+        rospy.logdebug("Ball seen: " + str(self.object_last_seen()))
+        if rospy.get_time() - self.object_last_seen() < self.track_ball_lost_time:
+            self.set_confirmed_time()
             return self.track()
         else:
-            self.fail_counter += 2
-            if self.fail_counter >= self.ball_fail_conter_max:
-                self.unset_started_confirm_time()  # stop confirming, because ball was lost
-            if rospy.get_time() - self.object_last_seen() < self.track_ball_lost_time:
-                return self.track()
-            else:
-                return self.search()
+            self.unset_confirmed_time()
+            return self.search()
 
     def track(self):
         pass
@@ -69,11 +46,8 @@ class SearchAndConfirmBall(AbstractSearchAndConfirm):
     def perform(self, connector, reevaluate=False):
         if self.fr:
             self.fr = False
-            self.get_started_confirm_time = connector.head.get_started_confirm_ball
-            self.set_started_confirm_time = connector.head.set_started_confirm_ball
-            self.unset_started_confirm_time = connector.head.unset_started_confirm_ball
-            self.set_confirmed = connector.head.set_confirmed_ball
-            self.object_seen = connector.personal_model.ball_seen
+            self.set_confirmed_time = connector.head.set_confirmed_ball_time
+            self.unset_confirmed_time = connector.head.unset_confirmed_ball_time
             self.object_last_seen = connector.personal_model.ball_last_seen
         super(SearchAndConfirmBall, self).perform(connector, reevaluate)
 
@@ -91,11 +65,8 @@ class SearchAndConfirmEnemyGoal(AbstractSearchAndConfirm):
         if self.fr:
             # TODO: get data from world model to distinguish between own and enemy goal
             self.fr = False
-            self.get_started_confirm_time = connector.head.get_started_confirm_goal
-            self.set_started_confirm_time = connector.head.set_started_confirm_goal
-            self.unset_started_confirm_time = connector.head.unset_started_confirm_goal
-            self.set_confirmed = connector.head.set_confirmed_goal
-            self.object_seen = connector.personal_model.any_goal_seen
+            self.set_confirmed_time = connector.head.set_confirmed_goal_time
+            self.unset_confirmed_time = connector.head.unset_confirmed_goal_time
             self.object_last_seen = connector.personal_model.any_goal_last_seen
         super(SearchAndConfirmEnemyGoal, self).perform(connector, reevaluate)
 
