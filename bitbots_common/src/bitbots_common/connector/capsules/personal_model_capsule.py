@@ -5,7 +5,7 @@ import rospy
 from tf2_geometry_msgs import PointStamped
 from geometry_msgs.msg import Point
 
-class VisionCapsule:
+class PersonalModelCapsule:
     def __init__(self):
         self.ball = BallRelative()
         self.goal = GoalRelative()
@@ -81,7 +81,6 @@ class VisionCapsule:
             raise KeyError
 
     def get_obstacle_found(self):
-
         return len(self.obstacles.obstacles) > 0
 
     def get_obstacle_info(self):
@@ -96,7 +95,6 @@ class VisionCapsule:
         h, w: height and width of the Obstacle
         color: 0 nothing, 1 magenta, 2 only magenta, 4 cyan, 8 only cyan, 16 only colored
         """
-
         return self.obstacles.obstacles
 
     def ball_callback(self, ball):

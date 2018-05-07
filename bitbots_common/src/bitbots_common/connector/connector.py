@@ -8,12 +8,12 @@ from bitbots_common.connector.capsules.team_data_capsule import TeamDataCapsule
 from bitbots_common.connector.capsules.walking_capsule import WalkingCapsule
 from bitbots_common.connector.capsules.world_model_capsule import WorldModelCapsule
 from bitbots_common.connector.capsules.head_capsule import HeadCapsule
-from bitbots_common.connector.capsules.vision_capsule import VisionCapsule
+from bitbots_common.connector.capsules.personal_model_capsule import PersonalModelCapsule
 
 
 class AbstractConnector(object):
     def __init__(self):
-        self.vision = VisionCapsule()
+        self.personal_model = PersonalModelCapsule()
         self.world_model = WorldModelCapsule()
         self.team_data = TeamDataCapsule()
 
