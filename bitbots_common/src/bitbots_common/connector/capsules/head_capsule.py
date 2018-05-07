@@ -3,6 +3,7 @@ import time
 import math
 
 import rospy
+import numpy as np
 from humanoid_league_msgs.msg import HeadMode, BallInImage, BallsInImage
 import rosparam
 from sensor_msgs.msg import JointState
@@ -51,8 +52,10 @@ class HeadCapsule:
     def send_motor_goals(self, pan_position, pan_speed, tilt_position, tilt_speed):
         self.current_pan_pos = pan_position
         self.current_tilt_pos = tilt_position
-        posnew = math.radians(pan_position), math.radians(tilt_position)
-        velnew = pan_speed, tilt_speed
+        posnew = (math.radians(np.clip(pan_position, self.min_pan, self.max_pan)),
+                  math.radians(np.clip(tilt_position, self.min_tilt, self.max_tilt)))
+        velnew = (np.clip(pan_speed, 0, self.pan_speed_max),
+                  np.clip(tilt_speed, 0, self.tilt_speed_max))
         self.pos_msg.points[0].positions = posnew
         self.pos_msg.points[0].velocities = velnew
         self.pos_msg.header.stamp = rospy.Time.now()
