@@ -1,6 +1,4 @@
-import time
-
-from humanoid_league_msgs.msg import ObstacleRelative, BallRelative, ObstaclesRelative, GoalRelative
+from humanoid_league_msgs.msg import BallRelative, ObstaclesRelative, GoalRelative
 import rospy
 from tf2_geometry_msgs import PointStamped
 from geometry_msgs.msg import Point
@@ -53,7 +51,7 @@ class PersonalModelCapsule:
             return self.goal.center_direction
         else:
             # We have to calculate it
-            if self.get_right_post_relative():
+            if self.goal.right_post:
                 goal = Point()
                 goal.x = (self.goal.right_post.x + self.goal.left_post.x) / 2
                 goal.y = (self.goal.right_post.y + self.goal.left_post.y) / 2
