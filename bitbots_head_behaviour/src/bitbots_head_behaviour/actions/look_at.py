@@ -49,7 +49,7 @@ class LookAtBall(AbstractLookAt):
     LookAtBall moves the head to look at the ball
     """
     def perform(self, connector, reevaluate=False):
-        ball = connector.vision.get_ball_relative_stamped()
+        ball = connector.personal_model.get_ball_relative_stamped()
         self.look_at(ball, connector)
 
 
@@ -58,7 +58,7 @@ class LookAtGoal(AbstractLookAt):
     LookAtGoal moves the head to look at the center of the goal
     """
     def perform(self, connector, reevaluate=False):
-        goal = connector.vision.get_goal_relative_stamped()
+        goal = connector.personal_model.get_goal_relative_stamped()
         self.look_at(goal, connector)
 
 

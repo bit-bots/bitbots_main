@@ -20,13 +20,13 @@ class SupporterDecision(AbstractDecisionModule):
 
     def perform(self, connector, reevaluate=False):
 
-        if not (connector.vision.ball_seen() or
-                rospy.get_time() - connector.vision.ball_last_seen() < 1):
+        if not (connector.personal_model.ball_seen() or
+                rospy.get_time() - connector.personal_model.ball_last_seen() < 1):
             return self.push(Search)
 
-        if connector.vision.get_ball_distance() < 0.9:
+        if connector.personal_model.get_ball_distance() < 0.9:
             return self.push(Wait, 9999999)
-        elif connector.vision.get_ball_distance() > 1.1:
+        elif connector.personal_model.get_ball_distance() > 1.1:
             return self.push(GoToBallPathfinding)
         else:
             return self.push(Wait, 9999999)

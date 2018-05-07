@@ -15,12 +15,12 @@ from body.decisions.goalie.throw_or_raise_arm import ThrowOrRaiseArm
 
 class BallDangerous(AbstractDecisionModule):
     def perform(self, connector, reevaluate=False):
-        ufiltered = connector.vision.get_ball_relative()[0]
+        ufiltered = connector.personal_model.get_ball_relative()[0]
 
         # We saw the ball so we track it
         connector.blackboard.set_head_duty("BALL_MODE")
 
-        if ufiltered < 1500 and rospy.get_time() - connector.vision.get_last_seen("Ball") < 2:
+        if ufiltered < 1500 and rospy.get_time() - connector.personal_model.get_last_seen("Ball") < 2:
             return self.push(ThrowOrRaiseArm)
         else:
             return self.push(GoalieMovement)

@@ -62,12 +62,12 @@ class AbstractSearchForObject(AbstractDecisionModule):
 class SearchForBall(AbstractSearchForObject):
     def perform(self, connector, reevaluate=False):
         rospy.logdebug("Start Search for ball")
-        ball = connector.vision.get_ball_relative_msg()
+        ball = connector.personal_model.get_ball_relative_msg()
         return self.search(connector, ball)
 
 
 class SearchForEnemyGoal(AbstractSearchForObject):
     def perform(self, connector, reevaluate=False):
         # Take any goal until we can distinguish between them
-        goal = connector.vision.get_goal_relative()
+        goal = connector.personal_model.get_goal_relative()
         return self.search(connector, goal)

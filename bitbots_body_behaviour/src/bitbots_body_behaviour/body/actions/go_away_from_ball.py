@@ -17,7 +17,7 @@ class GoAwayFromBall(AbstractActionModule):
     """
     def perform(self, connector, reevaluate=False):
         t = Twist()
-        x, y = connector.vision.get_ball_relative()
+        x, y = connector.personal_model.get_ball_relative()
         if x > 0:
             xgo = -0.5
         else:

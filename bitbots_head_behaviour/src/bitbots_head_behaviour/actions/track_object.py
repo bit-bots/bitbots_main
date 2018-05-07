@@ -58,5 +58,5 @@ class TrackBall(AbstractTrackObject):
 class TrackGoal(AbstractTrackObject):
     def perform(self, connector, reevaluate=None):
         # TODO: Distinguish between own and enemy goal (get data from world model)
-        a, b = connector.vision.get_goal_relative()
+        a, b = connector.personal_model.get_goal_relative()
         self.track_with_values(connector, a, b)

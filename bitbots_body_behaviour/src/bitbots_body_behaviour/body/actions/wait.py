@@ -20,7 +20,7 @@ class Wait(AbstractActionModule):
         self.time = rospy.get_time() + args
 
     def perform(self, connector, reevaluate=False):
-        if connector.vision.ball_seen():
+        if connector.personal_model.ball_seen():
             connector.blackboard.set_head_duty("BALL_MODE")
 
         connector.walking.stop_walking()

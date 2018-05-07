@@ -21,10 +21,10 @@ class HeadNode(StackMachineModule):
 
         rospy.Subscriber("joint_states", JointState, self.connector.head.joint_state_cb)
         rospy.Subscriber("head_duty", HeadMode, self.connector.head.cb_headmode, queue_size=10)
-        rospy.Subscriber("ball_relative", BallRelative, self.connector.vision.ball_callback)
+        rospy.Subscriber("ball_relative", BallRelative, self.connector.personal_model.ball_callback)
         rospy.Subscriber("ball_relative", BallRelative, self.connector.world_model.ball_relative_cb)
-        rospy.Subscriber("goal_relative", GoalRelative, self.connector.vision.goal_callback)
-        rospy.Subscriber("obstacle_relative", ObstacleRelative, self.connector.vision.obstacle_callback)
+        rospy.Subscriber("goal_relative", GoalRelative, self.connector.personal_model.goal_callback)
+        rospy.Subscriber("obstacle_relative", ObstacleRelative, self.connector.personal_model.obstacle_callback)
 
         self.set_start_module(HeadDutyDecider)
 

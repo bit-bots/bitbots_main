@@ -40,7 +40,7 @@ class GoToBallPathfinding(AbstractActionModule):
         self.focus_ball_distance = connector.config["Body"]["Fieldie"]["focusBallDistance"]
 
         # Get ball data
-        bu, bv = connector.vision.get_ball_relative()
+        bu, bv = connector.personal_model.get_ball_relative()
         bdist = math.sqrt(bu ** 2 + bv ** 2)
 
         # Look to the Ball
@@ -69,7 +69,7 @@ class GoToBallPathfinding(AbstractActionModule):
 
             if False and align_to_goal:
                 pass
-                # gu, gv = connector.vision.get_local_goal_model_opp_goal()
+                # gu, gv = connector.personal_model.get_local_goal_model_opp_goal()
             else:
                 gu, gv = 0, 0
 
@@ -80,7 +80,7 @@ class GoToBallPathfinding(AbstractActionModule):
             walk_parameters = network.compute([pu, pv, gu, gv, self.f, self.t, self.s])
 
             obstacles = []
-            #obstacles.extend(connector.vision.get_obstacle_info())
+            #obstacles.extend(connector.personal_model.get_obstacle_info())
             obstacles.extend(additional_obstacles)
 
             potential_map = PotentialMap((len(obstacles), 0))

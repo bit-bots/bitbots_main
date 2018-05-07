@@ -44,7 +44,7 @@ class StandsCorrectDecision(AbstractDecisionModule):
 
         # Align sidewards to the ball
         # if abs(connector.filtered_vision_capsule().get_local_goal_model_ball()[1]) > self.config_kickalign_v:
-        if abs(connector.vision.get_ball_relative()[1]) > self.config_kickalign_v:
+        if abs(connector.personal_model.get_ball_relative()[1]) > self.config_kickalign_v:
             # todo wieder gefilterte daten verwenden
 
             # When positioning, the robot should only look to the ball

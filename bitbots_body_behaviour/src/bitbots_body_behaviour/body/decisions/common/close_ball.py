@@ -33,8 +33,8 @@ class AbstractCloseBall(AbstractDecisionModule):
         # When the ball is seen, the robot should switch between looking to the ball and the goal
         connector.blackboard.set_head_duty("BALL_GOAL_TRACKING")
         # if the robot is near to the ball
-        if self.min_kick_distance < connector.vision.get_ball_relative()[0] <= self.max_kick_distance \
-                and connector.vision.get_ball_distance() <= self.max_kick_distance * 5.0:
+        if self.min_kick_distance < connector.personal_model.get_ball_relative()[0] <= self.max_kick_distance \
+                and connector.personal_model.get_ball_distance() <= self.max_kick_distance * 5.0:
             # TODO config
             self.action(connector)
         else:
@@ -44,7 +44,7 @@ class AbstractCloseBall(AbstractDecisionModule):
         return self.push(StandsCorrectDecision)
 
     def go(self, connector):
-        return self.push(GoToAbsolutePosition, [connector.vision.get_ball_relative()[0], connector.vision.get_ball_relative()[1], 0])
+        return self.push(GoToAbsolutePosition, [connector.personal_model.get_ball_relative()[0], connector.personal_model.get_ball_relative()[1], 0])
 
     def get_reevaluate(self):
         return True

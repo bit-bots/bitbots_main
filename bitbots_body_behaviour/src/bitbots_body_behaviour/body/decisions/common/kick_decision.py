@@ -45,7 +45,7 @@ class AbstractKickDecision(AbstractDecisionModule):
         """
         Pushes a normal kick, depending on side of the Ball
         """
-        if connector.vision.get_ball_relative()[1] <= 0:
+        if connector.personal_model.get_ball_relative()[1] <= 0:
             return self.push(KickBall, init_data="R")
         else:
             return self.push(KickBall, init_data="L")
