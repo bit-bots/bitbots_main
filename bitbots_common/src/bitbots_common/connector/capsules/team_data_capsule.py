@@ -9,8 +9,7 @@ from bitbots_body_behaviour.keys import DATA_KEY_GOALIE_BALL_RELATIVE_POSITION, 
     DATA_KEY_FIELDIE_BALL_TIME_LIST, DATA_KEY_KICKOFF_OFFENSE_SIDE, \
     DATA_KEY_KICKOFF_OFFENSE_SIDE_RECEIVED
 from bitbots_body_behaviour.keys.grid_world_keys import DATA_KEY_OWN_POSITION_GRID
-from humanoid_league_msgs.msg import Strategy
-from humanoid_league_team_communication.mitecom.mitecom import ROLE_STRIKER, ROLE_DEFENDER, ROLE_SUPPORTER, ROLE_GOALIE
+from humanoid_league_msgs.msg import Strategy, TeamData
 
 
 class TeamDataCapsule:
@@ -57,7 +56,7 @@ class TeamDataCapsule:
 
     def set_role(self, role):
         """ Set the Team Role - Need to be in data dict for Comm Modules """
-        assert role in [ROLE_STRIKER, ROLE_DEFENDER, ROLE_SUPPORTER, ROLE_GOALIE]
+        assert role in [TeamData.ROLE_STRIKER, TeamData.ROLE_DEFENDER, TeamData.ROLE_SUPPORTER, TeamData.ROLE_GOALIE]
         r = Strategy
         r.role = role
         self.strategy_sender.publish(r)
