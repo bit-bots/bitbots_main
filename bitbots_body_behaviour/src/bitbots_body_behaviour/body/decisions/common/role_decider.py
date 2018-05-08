@@ -12,7 +12,7 @@ from bitbots_body_behaviour.body.decisions.team_player.center_decision import Ce
 from bitbots_body_behaviour.body.decisions.team_player.defender_decision import DefenderDecision
 from bitbots_body_behaviour.body.decisions.team_player.supporter_decision import SupporterDecision
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-from humanoid_league_team_communication.mitecom.mitecom import ROLE_STRIKER, ROLE_SUPPORTER, ROLE_OTHER, ROLE_DEFENDER
+from humanoid_league_msgs.msg import TeamData
 
 
 class RoleDecider(AbstractDecisionModule):
@@ -23,19 +23,19 @@ class RoleDecider(AbstractDecisionModule):
     def perform(self, connector, reevaluate=False):
         if self.forced:
             if self.forced == "Striker":
-                connector.team_data.set_role(ROLE_STRIKER)
+                connector.team_data.set_role(TeamData.ROLE_STRIKER)
                 return self.push(BallSeenFieldie)
 
             elif self.forced == "Supporter":
-                connector.team_data.set_role(ROLE_SUPPORTER)
+                connector.team_data.set_role(TeamData.ROLE_SUPPORTER)
                 return self.push(SupporterDecision)
 
             elif self.forced == "Center":
-                connector.team_data.set_role(ROLE_OTHER)
+                connector.team_data.set_role(TeamData.ROLE_OTHER)
                 return self.push(CenterDecision)
 
             elif self.forced == "Defender":
-                connector.team_data.set_role(ROLE_DEFENDER)
+                connector.team_data.set_role(TeamData.ROLE_DEFENDER)
                 return self.push(DefenderDecision)
             else:
                 raise NotImplementedError
@@ -48,19 +48,19 @@ class RoleDecider(AbstractDecisionModule):
             # print "I'm number ", rank_to_ball
             if rank_to_ball == 1:
                 # striker
-                connector.team_data_capsule().set_role(ROLE_STRIKER)
+                connector.team_data_capsule().set_role(TeamData.ROLE_STRIKER)
                 return self.push(BallSeenFieldie)
             elif rank_to_ball in [2, 3, 4]:
                 # Supporter
-                connector.team_data_capsule().set_role(ROLE_SUPPORTER)
+                connector.team_data_capsule().set_role(TeamData.ROLE_SUPPORTER)
                 return self.push(SupporterDecision)
             elif rank_to_ball in [5, 6]:
                 # Supporter
-                connector.team_data_capsule().set_role(ROLE_OTHER)
+                connector.team_data_capsule().set_role(TeamData.ROLE_OTHER)
                 return self.push(CenterDecision)
             else:
                 # defender... naja er sollte schon noch hinten stehen
-                connector.team_data_capsule().set_role(ROLE_DEFENDER)
+                connector.team_data_capsule().set_role(TeamData.ROLE_DEFENDER)
                 return self.push(DefenderDecision)
 
     def get_reevaluate(self):
