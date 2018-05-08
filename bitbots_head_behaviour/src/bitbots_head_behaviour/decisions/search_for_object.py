@@ -11,7 +11,6 @@ History:
 """
 import rospy
 
-from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
 from bitbots_head_behaviour.actions.look_at import LookAtRelativePoint
 from bitbots_head_behaviour.decisions.continuous_search import ContinuousSearch
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
