@@ -11,7 +11,7 @@ so only in special cases the ball will be tracked.
 """
 import rospy
 
-from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
+from bitbots_head_behaviour.actions.look_at import LookAtRelativePoint
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
@@ -35,7 +35,8 @@ class ContinuousSearch(AbstractDecisionModule):
         rospy.logdebug("Pattern pos" + str(pos))
         # Increment the to be reached postion with wrap around
         self.pattern_pos = (pos + 1) % len(self.current_pattern)
-        return self.push(HeadToPanTilt, self.current_pattern[pos])
+        point = (self.current_pattern[pos][0], self.current_pattern[pos][1], 0)
+        return self.push(LookAtRelativePoint, point)
 
     def set_pattern(self, connector):
         self.last_pattern = self.current_pattern
