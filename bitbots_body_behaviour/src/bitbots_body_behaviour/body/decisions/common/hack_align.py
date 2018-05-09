@@ -53,7 +53,7 @@ class HackAlign(AbstractDecisionModule):
             goal_v = goal_center[1]
             # compute angle to move
             if not right_goal:
-                say("Do not shot on own goal")
+                connector.speaker.say("Do not shot on own goal")
                 sign = self.sign(goal_angle)
                 goal_angle += 180 * sign
                 # ausgleich, wenns über 180 rüber geht, weil unsere polarwerte so funktionieren
@@ -75,11 +75,11 @@ class HackAlign(AbstractDecisionModule):
                     connector.blackboard_capsule().set_finished_align()
                     connector.blackboard_capsule().set_priorities(enemy_goal_priority=0, ball_priority=1000,
                                                                   own_goal_priority=0, align_priority=0)
-                    say("kick")
+                    connector.speaker.say("kick")
                     return self.interrupt()
                 # else (useful comment...)
                 else:
-                    say("start")
+                    connector.speaker.say("start")
                     # feste zahl drehen
                     # turn fixed value
                     factor = 0.2
@@ -129,7 +129,7 @@ class HackAlign(AbstractDecisionModule):
             connector.blackboard_capsule().unset_cant_find_complete_goal()
             # shoot, to do at least anything
             connector.blackboard_capsule().set_finished_align()
-            say("Cant find goal")
+            connector.speaker.say("Cant find goal")
             connector.blackboard_capsule().set_priorities(enemy_goal_priority=0, ball_priority=1000,
                                                           own_goal_priority=0, align_priority=0)
             if connector.raw_vision_capsule().get_ball_info("v") <= 0:

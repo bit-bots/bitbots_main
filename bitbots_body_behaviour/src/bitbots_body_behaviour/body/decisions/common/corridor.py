@@ -151,7 +151,7 @@ class CenterCorridor(AbstractCorridor):
             number_of_times_voted_for_yes = self.vote_for_switch_to_striker(connector)
 
         if number_of_times_voted_for_yes > self.required_number:
-            say("Going to Striker! Attack!")
+            connector.speaker.say("Going to Striker! Attack!")
             connector.set_duty("Striker")
             return self.interrupt()
         else:

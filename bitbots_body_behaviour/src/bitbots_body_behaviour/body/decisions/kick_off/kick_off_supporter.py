@@ -11,13 +11,13 @@ History:
 import rospy
 
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from humanoid_league_msgs.msg import Strategy
 
 
 class KickOffSupporterSideDecision(AbstractDecisionModule):
     def perform(self, connector, reevaluate=False):
-        say("KickOffSupporter")
-
-        ball_u, ball_v = connector.world_model_capsule().get_ball_position_uv()
+        connector.speaker.say("KickOffSupporter")
+        ball_u, ball_v = connector.personal_model.get_ball_relative()
         if ball_v > 0:
             say("Left")
             return self.push(KickOffSupporter, 1)

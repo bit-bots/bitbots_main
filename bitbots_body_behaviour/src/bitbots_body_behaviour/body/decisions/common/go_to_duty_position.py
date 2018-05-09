@@ -39,8 +39,8 @@ class GoToDutyPosition(AbstractDecisionModule):
             position = (-0.25 * self.length, 0)  # this is the middle point of our own half
 
         if connector.world_model.get_distance_to_xy(position[0], position[1]) > self.threshold:
-            say("Go to duty position")
+            connector.speaker.say("Go to duty position")
             return self.push(GoToAbsolutePosition, (position, True))
         else:
-            say("I am at position")
+            connector.speaker.say("I am at position")
             return self.pop()

@@ -25,7 +25,7 @@ class BehaviourModule(StackMachineModule):
         self.connector = BodyConnector()
         self.connector.config = rospy.get_param("Behaviour")
 
-        self.connector.speaker = rospy.Publisher("speak", Speak, queue_size=3)
+        self.connector.speaker.speaker = rospy.Publisher("speak", Speak, queue_size=3)
         self.connector.team_data.strategy_sender = rospy.Publisher("strategy", Strategy, queue_size=2)
         self.connector.walking.pub_walking_objective = rospy.Publisher("navigation_goal", Pose2D, queue_size=3)
         self.connector.walking.pub_walkin_params = rospy.Publisher("cmd_vel", Twist, queue_size=6)

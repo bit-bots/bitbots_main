@@ -50,7 +50,7 @@ class ThrowOrRaiseArm(AbstractDecisionModule):
 
         # If they are not valid - return - we can't do anything
         if uestimate is None or vestimate is None:
-            say("No valid Estimates")  # todo by Marc: better error handling. Why can there be None values?
+            connector.speaker.say("No valid Estimates")  # todo by Marc: better error handling. Why can there be None values?
             return
 
         self.richtung = self.get_throw_direction_on_vestimate(vestimate)
