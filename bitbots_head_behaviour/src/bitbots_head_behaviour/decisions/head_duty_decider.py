@@ -4,13 +4,10 @@ HeadDutyDecider
 ^^^^^^^^^^^^^^^
 
 """
-import time
-
 import rospy
-import math
 from bitbots_head_behaviour.decisions.search_and_confirm import SearchAndConfirmBall, SearchAndConfirmEnemyGoal
 from bitbots_head_behaviour.decisions.continuous_search import ContinuousSearch
-from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
+from bitbots_head_behaviour.actions.look_at import LookAtRelativePoint
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from humanoid_league_msgs.msg import HeadMode
 
@@ -75,16 +72,13 @@ class HeadDutyDecider(AbstractDecisionModule):
             return self.push(ContinuousSearch)
 
         if head_mode == HeadMode.LOOK_DOWN:
-            pan_tilt = 0, self.min_tilt
-            return self.push(HeadToPanTilt, pan_tilt)
+            return self.push(LookAtRelativePoint, (0, 0, 0))
 
         if head_mode == HeadMode.LOOK_FORWARD:
-            pan_tilt = 0, -12
-            return self.push(HeadToPanTilt, pan_tilt)
+            return self.push(LookAtRelativePoint, (100, 0, 0))
 
         if head_mode == HeadMode.LOOK_UP:
-            pan_tilt = 0, self.max_tilt
-            return self.push(HeadToPanTilt, pan_tilt)
+            return self.push(LookAtRelativePoint, (0, 0, 10))
 
         if self.toggle_switch_ball_goal:
             rospy.logdebug("Headdoes", "Priorities")
@@ -93,8 +87,7 @@ class HeadDutyDecider(AbstractDecisionModule):
             else:
                 return self.push(SearchAndConfirmEnemyGoal)
 
-        # Default Head Behaviour
-        return 'defaultSearch'
+        return self.interrupt()
 
     def get_reevaluate(self):
         return True
