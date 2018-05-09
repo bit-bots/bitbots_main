@@ -9,6 +9,7 @@ from bitbots_common.connector.capsules.walking_capsule import WalkingCapsule
 from bitbots_common.connector.capsules.world_model_capsule import WorldModelCapsule
 from bitbots_common.connector.capsules.head_capsule import HeadCapsule
 from bitbots_common.connector.capsules.personal_model_capsule import PersonalModelCapsule
+from bitbots_common.connector.capsules.speaker_capsule import SpeakerCapsule
 
 
 class AbstractConnector(object):
@@ -27,8 +28,7 @@ class BodyConnector(AbstractConnector):
         self.gamestate = GameStatusCapsule()
         self.walking = WalkingCapsule()
         self.animation = AnimationCapsule()
-
-        self.speaker = None  # type: rospy.Publisher
+        self.speaker = SpeakerCapsule()
 
 
 class HeadConnector(AbstractConnector):
