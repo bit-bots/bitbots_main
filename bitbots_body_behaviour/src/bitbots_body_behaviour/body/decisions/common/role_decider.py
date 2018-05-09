@@ -7,6 +7,8 @@ RoleDecider
 
 Decides on witch position our fieldie should play
 """
+import rospy
+
 from bitbots_body_behaviour.body.decisions.common.ball_seen import BallSeenFieldie
 from bitbots_body_behaviour.body.decisions.team_player.center_decision import CenterDecision
 from bitbots_body_behaviour.body.decisions.team_player.defender_decision import DefenderDecision
@@ -42,25 +44,23 @@ class RoleDecider(AbstractDecisionModule):
         else:
             # decide by our own
             # if status_ok() # test if robot is capable
-            # Todo richtig machen bitte (Martin 7.11.14)
-            return self.push(BallSeenFieldie)
-            rank_to_ball = connector.team_data_capsule().team_rank_to_ball()
-            # print "I'm number ", rank_to_ball
+            rank_to_ball = connector.team_data.team_rank_to_ball()
+            rospy.logdebug("I'm number %s to the ball" % rank_to_ball)
             if rank_to_ball == 1:
                 # striker
-                connector.team_data_capsule().set_role(TeamData.ROLE_STRIKER)
+                connector.team_data.set_role(TeamData.ROLE_STRIKER)
                 return self.push(BallSeenFieldie)
             elif rank_to_ball in [2, 3, 4]:
                 # Supporter
-                connector.team_data_capsule().set_role(TeamData.ROLE_SUPPORTER)
+                connector.team_data.set_role(TeamData.ROLE_SUPPORTER)
                 return self.push(SupporterDecision)
             elif rank_to_ball in [5, 6]:
                 # Supporter
-                connector.team_data_capsule().set_role(TeamData.ROLE_OTHER)
+                connector.team_data.set_role(TeamData.ROLE_OTHER)
                 return self.push(CenterDecision)
             else:
                 # defender... naja er sollte schon noch hinten stehen
-                connector.team_data_capsule().set_role(TeamData.ROLE_DEFENDER)
+                connector.team_data.set_role(TeamData.ROLE_DEFENDER)
                 return self.push(DefenderDecision)
 
     def get_reevaluate(self):
