@@ -12,7 +12,7 @@ import rospy
 
 from bitbots_pathfinding.potential_field import PotentialMap
 
-
+from humanoid_league_msgs.msg import HeadMode
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
 
@@ -45,9 +45,9 @@ class GoToBallPathfinding(AbstractActionModule):
 
         # Look to the Ball
         if self.toggle_track_both and bdist > self.focus_ball_distance:
-            connector.blackboard.set_head_duty("BALL_GOAL_TRACKING")
+            connector.blackboard.set_head_duty(HeadMode.BALL_GOAL_TRACKING)
         else:
-            connector.blackboard.set_head_duty("BALL_MODE")
+            connector.blackboard.set_head_duty(HeadMode.BALL_MODE)
 
         # The Ball is an obstacle, the Obstacles also and please avoid them
         obstacles = [

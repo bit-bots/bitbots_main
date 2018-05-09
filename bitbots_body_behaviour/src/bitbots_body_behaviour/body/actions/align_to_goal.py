@@ -6,9 +6,8 @@ AlignToGoal
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 The Robot repositionates so he is facing the opponent goal to score.
 """
-import time
-
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+from humanoid_league_msgs.msg import HeadMode
 
 import rospy
 
@@ -19,7 +18,7 @@ class AlignToGoal(AbstractActionModule):
         self.config_max_aligning_time = connector.config["Fieldie"]["maxGoalAlignTime"]
 
     def perform(self, connector, reevaluate=False):
-        connector.blackboard.set_head_duty("BALL_GOAL_TRACKING")
+        connector.blackboard.set_head_duty(HeadMode.BALL_GOAL_TRACKING)
 
         if not connector.blackboard.get_aligning_start_time():
             # First run, set the start time

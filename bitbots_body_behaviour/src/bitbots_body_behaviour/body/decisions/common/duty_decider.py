@@ -20,7 +20,7 @@ from bitbots_body_behaviour.body.decisions.goalie.goalie_decision import GoalieP
 from bitbots_body_behaviour.body.decisions.kick_off.kick_off import KickOff
 from bitbots_body_behaviour.body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
 from bitbots_body_behaviour.body.decisions.penalty.penalty_kicker_decision import PenaltyKickerDecision
-from humanoid_league_msgs.msg import Speak
+from humanoid_league_msgs.msg import Speak, HeadMode
 from bitbots_body_behaviour.keys import DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_READY, DATA_VALUE_STATE_SET, \
     DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
@@ -76,7 +76,7 @@ class DutyDecider(AbstractDecisionModule):
                                                     DATA_VALUE_STATE_FINISHED]:
             rospy.loginfo("Wait for Gamestate")
             # When not playing, the head should look around to find features on the field
-            connector.blackboard.set_head_duty("FIELD_FEATURES")
+            connector.blackboard.set_head_duty(HeadMode.FIELD_FEATURES)
             return self.push(Wait, 0.1)
 
         # Penalty Shoot but not mine, run away
@@ -88,7 +88,7 @@ class DutyDecider(AbstractDecisionModule):
         if self.toggle_self_positioning:
             if connector.gamestate.is_game_state_equals(DATA_VALUE_STATE_READY):  # Todo check if working
                 # Look for general field features to improve localization
-                connector.blackboard.set_head_duty("FIELD_FEATURES")
+                connector.blackboard.set_head_duty(HeadMode.FIELD_FEATURES)
                 return self.push(GoToDutyPosition)
 
         ################################

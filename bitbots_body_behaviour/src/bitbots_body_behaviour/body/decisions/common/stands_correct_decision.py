@@ -12,6 +12,7 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 import rospy
 from bitbots_body_behaviour.body.actions.align_on_ball import AlignOnBall
 from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionCommon
+from humanoid_league_msgs.msg import HeadMode
 
 
 class StandsCorrectDecision(AbstractDecisionModule):
@@ -48,7 +49,7 @@ class StandsCorrectDecision(AbstractDecisionModule):
             # todo wieder gefilterte daten verwenden
 
             # When positioning, the robot should only look to the ball
-            connector.blackboard.set_head_duty("BALL_MODE")
+            connector.blackboard.set_head_duty(HeadMode.BALL_MODE)
 
             return self.push(AlignOnBall)
 

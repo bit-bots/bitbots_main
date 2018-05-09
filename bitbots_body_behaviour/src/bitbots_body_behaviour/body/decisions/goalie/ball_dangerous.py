@@ -11,6 +11,7 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 from body.decisions.goalie.goalie_movement import GoalieMovement
 from body.decisions.goalie.throw_or_raise_arm import ThrowOrRaiseArm
+from humanoid_league_msgs.msg import HeadMode
 
 
 class BallDangerous(AbstractDecisionModule):
@@ -18,7 +19,7 @@ class BallDangerous(AbstractDecisionModule):
         ufiltered = connector.personal_model.get_ball_relative()[0]
 
         # We saw the ball so we track it
-        connector.blackboard.set_head_duty("BALL_MODE")
+        connector.blackboard.set_head_duty(HeadMode.BALL_MODE)
 
         if ufiltered < 1500 and rospy.get_time() - connector.personal_model.get_last_seen("Ball") < 2:
             return self.push(ThrowOrRaiseArm)

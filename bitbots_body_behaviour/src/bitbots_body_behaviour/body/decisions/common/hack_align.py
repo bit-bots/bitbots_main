@@ -20,6 +20,7 @@ from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCap
 from bitbots.util.config import get_config
 from bitbots.util.math_utils import convert_uv2polar
 from bitbots.util.speaker import say
+from humanoid_league_msgs.msg import HeadMode
 
 
 class HackAlign(AbstractDecisionModule):
@@ -29,7 +30,7 @@ class HackAlign(AbstractDecisionModule):
         connector.blackboard_capsule().set_priorities(enemy_goal_priority=0, ball_priority=0, own_goal_priority=0,
                                                       align_priority=1510)
         # Look at the goal
-        connector.blackboard.set_head_duty("POST_MODE")
+        connector.blackboard.set_head_duty(HeadMode.POST_MODE)
 
         connector.walking_capsule().stop_walking()
         self.do_not_reevaluate()

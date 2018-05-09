@@ -4,12 +4,13 @@ Search
 ^^^^^^
 """
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+from humanoid_league_msgs.msg import HeadMode
 
 
 class Search(AbstractActionModule):
     def perform(self, connector, reevaluate=False):
         # Tell the head that it should search for the ball
-        connector.blackboard.set_head_duty("BALL_MODE")
+        connector.blackboard.set_head_duty(HeadMode.BALL_MODE)
         self.pop()
 
 
