@@ -63,7 +63,7 @@ class PersonalModelCapsule:
     def get_goal_relative_stamped(self):
         msg = PointStamped()
         msg.point = self.get_goal_relative()
-        msg.header = self.goal.header()
+        msg.header = self.goal.header
 
     #############
     # ## Other ##
