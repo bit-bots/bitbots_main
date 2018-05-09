@@ -3,28 +3,29 @@ BehaviourBlackboardCapsule
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 """
-import os
-import time
+
+
 import math
-
-import sys
-
-import rosparam
+import os
 import pickle as Pickle
+import rosparam
 import rospkg
 import rospy
+import sys
 
 rospack = rospkg.RosPack()
 
 from bitbots_pathfinding import network
-from humanoid_league_msgs.msg import HeadMode
+from humanoid_league_msgs.msg import HeadMode, Strategy
 sys.modules['network'] = network
+
 
 class BlackboardCapsule:
     def __init__(self):
         self.my_data = {}
         self.config_stop_g_align_dur = rosparam.get_param("Behaviour/Body/Fieldie/stopGoalAlignDuration")
         self.head_pub = None  # type: rospy.Publisher
+        self.duty = None
 
     def freeze_till(self, ftime):
         self.my_data["freeze"] = ftime
@@ -119,14 +120,9 @@ class BlackboardCapsule:
         return self.my_data.get("OutOfGoal", False)
 
     def set_duty(self, duty):
-        self.my_data["Duty"] = duty
-        role = "Other"
-        if duty == "Goalie":
-            role = "Goalie"
-        if duty in ("Fieldie", "TeamPlayer"):
-            role = "Supporter"
-        self.my_data["Duty"] = duty
-        # TODO role Duty auseinaderdividieren
+        assert duty in [Strategy.ROLE_DEFENDER, Strategy.ROLE_GOALIE, Strategy.ROLE_IDLING,
+                        Strategy.ROLE_OTHER, Strategy.ROLE_STRIKER, Strategy.ROLE_SUPPORTER]
+        self.duty = duty
 
     def get_duty(self):
         return self.my_data.get("Duty", None)
@@ -137,27 +133,7 @@ class BlackboardCapsule:
 
     def set_head_duty(self, head_duty):
         head_duty_msg = HeadMode()
-        if head_duty == "BALL_MODE":
-            head_duty_msg.headMode = HeadMode.BALL_MODE
-        elif head_duty == "GOAL_MODE":
-            head_duty_msg.headMode = HeadMode.GOAL_MODE
-        elif head_duty == "BALL_GOAL_TRACKING":
-            head_duty_msg.headMode = HeadMode.BALL_GOAL_TRACKING
-        elif head_duty == "FIELD_FEATURES":
-            head_duty_msg.headMode = HeadMode.FIELD_FEATURES
-        elif head_duty == "NON_FIELD_FEATURES":
-            head_duty_msg.headMode = HeadMode.NON_FIELD_FEATURES
-        elif head_duty == "LOOK_DOWN":
-            head_duty_msg.headMode = HeadMode.LOOK_DOWN
-        elif head_duty == "LOOK_FORWARD":
-            head_duty_msg.headMode = HeadMode.LOOK_FORWARD
-        elif head_duty == "DONT_MOVE":
-            head_duty_msg.headMode = HeadMode.DONT_MOVE
-        elif head_duty == "LOOK_UP":
-            head_duty_msg.headMode = HeadMode.LOOK_UP
-        else:
-            rospy.logwarn("Unknown head duty %s" % head_duty)
-            return
+        head_duty_msg.headMode = head_duty
         self.head_pub.publish(head_duty_msg)
 
     ####################
