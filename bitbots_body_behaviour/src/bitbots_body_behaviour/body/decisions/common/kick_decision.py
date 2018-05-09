@@ -46,18 +46,18 @@ class AbstractKickDecision(AbstractDecisionModule):
         Pushes a normal kick, depending on side of the Ball
         """
         if connector.personal_model.get_ball_relative()[1] <= 0:
-            return self.push(KickBall, init_data="R")
+            return self.push(KickBall, init_data="RIGHT_KICK")
         else:
-            return self.push(KickBall, init_data="L")
+            return self.push(KickBall, init_data="LEFT_KICK")
 
     def kick_side_goal(self, connector):
         """
         Pushes a sidekick, depending on the side of the enemy goal
         """
         if connector.world_model.get_opp_goal_center_uv()[1] > 0:
-            return self.push(KickBall, init_data="SRK")
+            return self.push(KickBall, init_data="RIGHT_SIDE_KICK")
         else:
-            return self.push(KickBall, init_data="SLK")
+            return self.push(KickBall, init_data="LEFT_SIDE_KICK")
 
     def hard_kick(self, connector):
         """
@@ -67,9 +67,9 @@ class AbstractKickDecision(AbstractDecisionModule):
         """
 
         if connector.world_model.get_ball_position_uv()[1] <= 0:
-            return self.push(KickBall, init_data="RP")
+            return self.push(KickBall, init_data="RIGHT_KICK_STRONG")
         else:
-            return self.push(KickBall, init_data="LP")
+            return self.push(KickBall, init_data="LEFT_KICK_STRONG")
 
     def get_reevaluate(self):
         return True
@@ -82,6 +82,6 @@ class KickDecisionCommon(AbstractKickDecision):
 class KickDecisionPenaltyKick(AbstractKickDecision):
     def action(self, connector, reevaluate):
         if connector.raw_vision_capsule().get_ball_info("v") <= 0:
-            return self.push(KickBall, init_data="R")
+            return self.push(KickBall, init_data="RIGHT_KICK")
         else:
-            return self.push(KickBall, init_data="L")
+            return self.push(KickBall, init_data="LEFT_KICK")

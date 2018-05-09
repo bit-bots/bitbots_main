@@ -96,34 +96,34 @@ class HackAlign(AbstractDecisionModule):
 
             if False:  # should work
                 if goal_angle < -30:
-                    say("Kick Ball right")
-                    return self.push(KickBall, init_data="SRK")
+                    connector.speaker.say("Kick Ball right")
+                    return self.push(KickBall, init_data="RIGHT_SIDE_KICK")
                 elif goal_angle > 30:
-                    say("Kick Ball left")
-                    return self.push(KickBall, init_data="SLK")
+                    connector.speaker.say("Kick Ball left")
+                    return self.push(KickBall, init_data="LEFT_SIDE_KICK")
                 else:
                     if connector.raw_vision_capsule().get_ball_info("v") <= 0:
-                        say("Kick Strong")
-                        return self.push(KickBall, init_data="RP")
+                        connector.speaker.say("Kick Strong")
+                        return self.push(KickBall, init_data="RIGHT_KICK_STRONG")
                     else:
-                        say("Kick Strong")
-                        return self.push(KickBall, init_data="LP")
+                        connector.speaker.say("Kick Strong")
+                        return self.push(KickBall, init_data="LEFT_KICK_STRONG")
 
             if True:
                 if (goal_distance > 2000 and abs(goal_angle > 30)) or (goal_distance <= 2000 and abs(goal_v) > 1000):
                     if goal_angle < 0:
-                        say("Kick Ball right")
-                        return self.push(KickBall, init_data="SRK")
+                        connector.speaker.say("Kick Ball right")
+                        return self.push(KickBall, init_data="RIGHT_SIDE_KICK")
                     elif goal_angle >= 0:
-                        say("Kick Ball left")
-                        return self.push(KickBall, init_data="SLK")
+                        connector.speaker.say("Kick Ball left")
+                        return self.push(KickBall, init_data="LEFT_SIDE_KICK")
                 else:
                     if connector.raw_vision_capsule().get_ball_info("v") <= 0:
-                        say("Kick Strong")
-                        return self.push(KickBall, init_data="RP")
+                        connector.speaker.say("Kick Strong")
+                        return self.push(KickBall, init_data="RIGHT_KICK_STRONG")
                     else:
-                        say("Kick Strong")
-                        return self.push(KickBall, init_data="LP")
+                        connector.speaker.say("Kick Strong")
+                        return self.push(KickBall, init_data="LEFT_KICK_STRONG")
         else:
             connector.blackboard_capsule().unset_cant_find_complete_goal()
             # shoot, to do at least anything
@@ -132,11 +132,11 @@ class HackAlign(AbstractDecisionModule):
             connector.blackboard_capsule().set_priorities(enemy_goal_priority=0, ball_priority=1000,
                                                           own_goal_priority=0, align_priority=0)
             if connector.raw_vision_capsule().get_ball_info("v") <= 0:
-                say("Kick Strong")
-                return self.push(KickBall, init_data="RP")
+                connector.speaker.say("Kick Strong")
+                return self.push(KickBall, init_data="RIGHT_KICK_STRONG")
             else:
-                say("Kick Strong")
-                return self.push(KickBall, init_data="LP")
+                connector.speaker.say("Kick Strong")
+                return self.push(KickBall, init_data="LEFT_KICK_STRONG")
 
     def test_if_right_goal(self, connector, goal_distance):
         if connector.team_data_capsule().get_team_goalie_ball_position() == 0 or\

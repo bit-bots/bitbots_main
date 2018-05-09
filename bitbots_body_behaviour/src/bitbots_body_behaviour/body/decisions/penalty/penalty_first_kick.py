@@ -36,9 +36,9 @@ class PenaltyFirstKick(AbstractDecisionModule):  # todo not yet refactored 6.12.
 
         if self.direction == 0:  # direct shoot
             if connector.raw_vision_capsule().get_ball_info("v") <= 0:
-                self.push(KickBall, init_data="RP")
+                self.push(KickBall, init_data="RIGHT_KICK_STRONG")
             else:
-                self.push(KickBall, init_data="LP")
+                self.push(KickBall, init_data="LEFT_KICK_STRONG")
         elif self.direction == 1:  # left
             connector.animation_capsule().play_animation(self.first_left_kick)
         elif self.direction == 2:  # right
