@@ -15,7 +15,7 @@ import rospy
 from bitbots_stackmachine.stack_machine_module import StackMachineModule
 from bitbots_body_behaviour.body.decisions.common.duty_decider import DutyDecider
 from geometry_msgs.msg import Twist, Pose2D
-from humanoid_league_msgs.msg import BallRelative, ObstacleRelative, GameState, Speak, HeadMode, Strategy
+from humanoid_league_msgs.msg import BallRelative, ObstacleRelative, GameState, Speak, HeadMode, Strategy, TeamData
 from bitbots_common.connector.connector import BodyConnector
 
 
@@ -44,6 +44,7 @@ class BehaviourModule(StackMachineModule):
         rospy.Subscriber("ball_relative", BallRelative, self.connector.personal_model.ball_callback)
         rospy.Subscriber("obstacle_relative", ObstacleRelative, self.connector.personal_model.obstacle_callback)
         rospy.Subscriber("gamestate", GameState, self.connector.gamestate.gamestate_callback)
+        rospy.Subscriber("team_data", TeamData, self.connector.team_data.team_data_callback)
 
         # self.connector.animation.server = actionlib.SimpleActionClient("bitbots_animation", PlayAnimationAction)
 
