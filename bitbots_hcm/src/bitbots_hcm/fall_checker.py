@@ -29,66 +29,74 @@ class FallChecker(object):
 
         if not rospy.has_param("ZMPConfig/" + robot_type_name + "/HipPitch"):
             rospy.logwarn("HipPitch offset from walking was not found on parameter server, will use 0.")
-        self.falling_threshold_front = rospy.get_param("hcm/falling/" + robot_type_name + "/threshold_gyro_y_front") \
-                                       + math.radians(rospy.get_param("ZMPConfig/" + robot_type_name + "/HipPitch", -10))
+        self.falling_threshold_front = rospy.get_param("hcm/falling/" + robot_type_name + "/threshold_gyro_y_front")# \
+                                       #+ math.radians(rospy.get_param("ZMPConfig/" + robot_type_name + "/HipPitch", -10))
         rospy.set_param("hcm/threshold_gyro_y_front", self.falling_threshold_front)
         self.falling_threshold_side = rospy.get_param("hcm/falling/" + robot_type_name + "/threshold_gyro_x_right")
         rospy.set_param("hcm/threshold_gyro_x_right", self.falling_threshold_side)
+        self.falling_threshold_orientation_front_back = math.radians(rospy.get_param("hcm/falling/" + robot_type_name + "/falling_threshold_orientation_front_back"))
+        rospy.set_param("hcm/falling_threshold_orientation_front_back", self.falling_threshold_orientation_front_back)
+        self.falling_threshold_orientation_left_right = math.radians(rospy.get_param("hcm/falling/" + robot_type_name + "/falling_threshold_orientation_left_right"))
+        rospy.set_param("hcm/falling_threshold_orientation_left_right", self.falling_threshold_orientation_left_right)
 
         # Grenzwerte an Untergrund anpassen
         self.falling_threshold_front *= self.ground_coefficient
         self.falling_threshold_side *= self.ground_coefficient
 
         # Neue Werte für die Detectierung des Fallens, anhand der momentanen Lage. Schwellwerte in Grad.
-        self.falling_threshold_orientation_front_back = math.radians(20) 
-        self.falling_threshold_orientation_left_right = math.radians(20)
+        #self.falling_threshold_orientation_front_back = math.radians(45) 
+        #self.falling_threshold_orientation_left_right = math.radians(45)
         
 
     def update_reconfigurable_values(self, config, level):
-        self.dyn_falling_active = config["dyn_falling_active"]
-        self.ground_coefficient = config["ground_coefficient"]
-        self.falling_threshold_front = config["threshold_gyro_y_front"]
-        self.falling_threshold_side = config["threshold_gyro_x_right"]
+        #self.dyn_falling_active = config["dyn_falling_active"]
+        #self.ground_coefficient = config["ground_coefficient"]
+        #self.falling_threshold_front = config["threshold_gyro_y_front"]
+        #self.falling_threshold_side = config["threshold_gyro_x_right"]
+        pass
 
     def check_falling(self, not_much_smoothed_gyro, quaternion):
         """Checks if the robot is currently falling and in which direction. """
         # First decide if we fall more sidewards or more front-back-wards. Then decide if we fall badly enough
         # to do something about it
-        rospy.loginfo("Enter Check fall")
         euler = self.quaternion_to_euler_angle(*quaternion)
         return self.check_fall(not_much_smoothed_gyro, euler)
 
     def check_fall(self, not_much_smoothed_gyro, euler):
-        print("Enter Check fall")
         x_value = 0
+        print([math.degrees(x) for x in euler])
         y_value = 0
-        if numpy.sign(euler[0]) == numpy.sign(not_much_smoothed_gyro[0]):
-            skalar = (self.falling_threshold_orientation_left_right - abs(euler[0]))/self.falling_threshold_orientation_left_right
+        if numpy.sign(euler[0]) != numpy.sign(not_much_smoothed_gyro[0]):
+            skalar = max((self.falling_threshold_orientation_left_right - abs(euler[0]))/self.falling_threshold_orientation_left_right,0)
             if self.falling_threshold_front * skalar < abs(not_much_smoothed_gyro[0]):
+                print(abs(not_much_smoothed_gyro[0]), self.falling_threshold_front , skalar)
                 x_value = abs(not_much_smoothed_gyro[0]) * (1-skalar)
 
-        if numpy.sign(euler[1]) == numpy.sign(not_much_smoothed_gyro[1]):
-            skalar = (self.falling_threshold_orientation_front_back - abs(euler[1]))/self.falling_threshold_orientation_front_back
+        if numpy.sign(euler[1]) != numpy.sign(not_much_smoothed_gyro[1]):
+            skalar = max((self.falling_threshold_orientation_front_back - abs(euler[1]))/self.falling_threshold_orientation_front_back,0)
             if self.falling_threshold_side * skalar < abs(not_much_smoothed_gyro[1]):
                 y_value = abs(not_much_smoothed_gyro[1]) * (1-skalar)
 
+
+
         if x_value + y_value == 0:
             return None
+
         
         if y_value > x_value:
             if not_much_smoothed_gyro[1] > 0:
                 rospy.loginfo("FALLING TO THE FRONT")
-                return self.falling_motor_degrees_front
+                return #self.falling_motor_degrees_front
             else:
                 rospy.loginfo("FALLING TO THE BACK")
-                return self.falling_motor_degrees_back
+                return #self.falling_motor_degrees_back
         else:
             if not_much_smoothed_gyro[0] > 0:
                 rospy.loginfo("FALLING TO THE RIGHT")
-                return self.falling_motor_degrees_right
+                return #self.falling_motor_degrees_right
             else:
                 rospy.loginfo("FALLING TO THE LEFT")
-                return self.falling_motor_degrees_left
+                return #self.falling_motor_degrees_left
 
 
     def check_fallen(self, smooth_accel):
