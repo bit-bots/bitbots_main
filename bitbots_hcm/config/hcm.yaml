@@ -6,7 +6,7 @@ hcm:
   anim_server_wait_time: 10 # time the hcm waits for animation server
 
   animations:
-    walkready: "walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
+    walkready: "init" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
     goalie-walkready: "walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
     front-up: "standup-minibot-new-front-up"
     bottom-up: "standup-minibot-new-back-up"
@@ -34,10 +34,10 @@ hcm:
 
       #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
       #Grenzwerte sanfter --> zu spaete Raktion
-      "threshold_gyro_y_front":  -2.272 # > gyroY
-      "threshold_gyro_y_back":  2.272 # < gyroY
-      "threshold_gyro_x_right": -1.63 # > gyroX
-      "threshold_gyro_x_left":   1.63 # < gyroX
+      "threshold_gyro_y_front":  2.272 # > gyroY
+      "threshold_gyro_x_right": 1.63 # > gyroX
+      "falling_threshold_orientation_left_right": 45 # > Point of no return in degrees
+      "falling_threshold_orientation_front_back":   45 # < Point of no return in degrees
 
       #false = motoren werden bei fallerkennung abgeschaltet
       "dyn_falling_active": true
@@ -51,10 +51,10 @@ hcm:
 
       #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
       #Grenzwerte sanfter --> zu spaete Raktion
-      "threshold_gyro_y_front":  -2.272 # > gyroY
-      "threshold_gyro_y_back":  2.272 # < gyroY
-      "threshold_gyro_x_right": -1.63 # > gyroX
-      "threshold_gyro_x_left":   1.63 # < gyroX
+      "threshold_gyro_y_front":  2.272 # > gyroY
+      "threshold_gyro_x_right": 1.63 # > gyroX
+      "falling_threshold_orientation_left_right": 45 # > Point of no return in degrees
+      "falling_threshold_orientation_front_back":   45 # < Point of no return in degrees
 
       #false = motoren werden bei fallerkennung abgeschaltet
       "dyn_falling_active": true
