@@ -116,7 +116,7 @@ class Motion:
 
         self.accel = numpy.array([msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z])
         self.gyro = numpy.array([msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z])
-
+        self.quaternion = numpy.array(([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]))
 
         self.smooth_gyro = numpy.multiply(self.smooth_gyro, 0.95) + numpy.multiply(self.gyro, 0.05)  # gyro
         self.smooth_accel = numpy.multiply(self.smooth_accel, 0.99) + numpy.multiply(self.accel, 0.01)  # accel
@@ -126,6 +126,7 @@ class Motion:
         VALUES.smooth_gyro = self.smooth_gyro
         VALUES.not_so_smooth_gyro = self.not_much_smoothed_gyro
         VALUES.smooth_accel = self.smooth_accel
+        VALUES.quaternion = self.quaternion
 
         self.last_gyro_update_time = update_time
         VALUES.last_hardware_update = update_time
