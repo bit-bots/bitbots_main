@@ -69,6 +69,7 @@ public:
 
 private:
   bool loadDynamixels(ros::NodeHandle& nh);
+  bool writeROMRAM(ros::NodeHandle& nh);
   bool stringToControlMode(std::string control_mode_str, ControlMode &control_mode);
   bool switchDynamixelControlMode();
   diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map);

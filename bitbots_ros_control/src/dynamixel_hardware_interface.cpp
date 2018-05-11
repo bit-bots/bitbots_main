@@ -65,14 +65,16 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   }
 
   // Load dynamixel config from parameter server
-  bool onlyImu = false;
-  nh.getParam("IMU/onlyImu", onlyImu);
-  if(!onlyImu)
+  if (!loadDynamixels(nh))
   {
-    if (!loadDynamixels(nh))
-    {
-      ROS_ERROR_STREAM("Failed to ping all motors.");
-      return false;
+    ROS_ERROR_STREAM("Failed to ping all motors.");
+    return false;
+  }  
+
+  // write ROM and RAM values if wanted
+  if(nh.param("set_ROM_RAM", false)){
+    if (!writeROMRAM(nh)){
+        ROS_WARN("Couldn't write ROM and RAM values to all servos.");
     }
   }
 
@@ -199,6 +201,28 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
 
   return success;
 }
+
+bool DynamixelHardwareInterface::writeROMRAM(ros::NodeHandle& nh){
+  XmlRpc::XmlRpcValue dxls;
+  nh.getParam("dynamixels/ROM_RAM", dxls);
+  ROS_ASSERT(dxls.getType() == XmlRpc::XmlRpcValue::TypeStruct);
+  int i = 0;
+  for(XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = dxls.begin(); it != dxls.end(); ++it)
+  {
+    std::string register_name = (std::string)(it->first);
+    int register_value;
+    nh.param("dynamixels/ROM_RAM/" + register_name, register_value);
+    ROS_INFO("Setting %s on all servos to %s", (register_name.c_str(), std::to_string(register_value).c_str()));
+
+    int* values = (int*)malloc(_joint_names.size() * sizeof(int));
+    for (size_t num = 0; num < _joint_names.size(); num++) {
+      values[num] = register_value;      
+    }
+    _driver->syncWrite(register_name.c_str(), values);
+    free(values);
+  }
+}
+
 
 diagnostic_msgs::DiagnosticStatus DynamixelHardwareInterface::createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map){
   /**
