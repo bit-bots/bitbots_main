@@ -32,13 +32,25 @@ class WorldModelCapsule:
     def get_opp_goal_center_uv(self):
         raise NotImplementedError
 
+    def get_opp_goal_center_xy(self):
+        raise NotImplementedError
+
     def get_own_goal_center_uv(self):
+        raise NotImplementedError
+
+    def get_own_goal_center_xy(self):
         raise NotImplementedError
 
     def get_opp_goal_angle(self):
         raise NotImplementedError
 
     def get_opp_goal_distance(self):
+        raise NotImplementedError
+
+    def get_opp_goal_left_post_uv(self):
+        raise NotImplementedError
+
+    def get_opp_goal_right_post_uv(self):
         raise NotImplementedError
 
     def get_uv_from_xy(self, x, y):
