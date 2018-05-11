@@ -85,7 +85,7 @@ class CM730Node:
         self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=1)
         self.speak_publisher = rospy.Publisher('speak', Speak, queue_size=1)
         self.temp_publisher = rospy.Publisher('servo_data', AdditionalServoData, queue_size=1)
-        self.imu_publisher = rospy.Publisher('imu', Imu, queue_size=1)
+        self.imu_publisher = rospy.Publisher('imu/data_raw', Imu, queue_size=1)
         self.button_publisher = rospy.Publisher('buttons', Buttons, queue_size=1)
 
         # --- Initialize Services ---

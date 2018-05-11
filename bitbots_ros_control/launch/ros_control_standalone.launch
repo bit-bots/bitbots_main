@@ -12,6 +12,7 @@
     <include file="$(find bitbots_ros_control)/launch/ros_control.launch">
         <arg name="sim" value="$(arg sim)"/>
         <arg name="minibot" value="$(arg minibot)"/>
-        <arg name="wolfgang" value="$(arg wolfgang)"/>  
+        <arg name="wolfgang" value="$(arg wolfgang)"/>
+        <arg name="onlyImu" default="$(arg onlyImu)"/>
     </include>
 </launch>
