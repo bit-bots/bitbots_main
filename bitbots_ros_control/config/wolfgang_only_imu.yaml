@@ -1,0 +1,27 @@
+ros_control:
+  read_position: true
+  read_velocity: true
+  read_effort: true
+  read_volt_temp: true
+  VT_update_rate: 100
+  read_imu: true
+  control_loop_hz: 200
+
+  dynamixels:
+    port_info:
+      port_name: /dev/ttyACM0
+      baudrate: 2000000
+      protocol_version: 2
+    control_mode: position
+    auto_torque: false
+    device_info:
+     RShoulderPitch:
+        id: 32
+        model_number: 311
+        mounting_offset: 0.0
+        offset: 0.0
+
+  IMU:
+    name: IMU
+    frame: torso
+    onlyImu: true

@@ -18,10 +18,15 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this);
 
   // Load dynamixel config from parameter server
-  if (!loadDynamixels(nh))
+  bool onlyImu = false;
+  nh.getParam("IMU/onlyImu", onlyImu);
+  if(!onlyImu)
   {
-    ROS_ERROR_STREAM("Failed to ping all motors.");
-    return false;
+    if (!loadDynamixels(nh))
+    {
+      ROS_ERROR_STREAM("Failed to ping all motors.");
+      return false;
+    }
   }
 
   // Switch dynamixels to correct control mode (position, velocity, effort)
@@ -383,7 +388,7 @@ bool DynamixelHardwareInterface::syncReadAll() {
 bool DynamixelHardwareInterface::readImu(){
     uint8_t *data = (uint8_t *) malloc(110 * sizeof(uint8_t));
 
-    if(_driver->readMultipleRegisters(241, 36, 16, data)){
+    if(_driver->readMultipleRegisters(241, 36, 32, data)){
       //todo we have to check if we jumped one sequence number
         uint32_t highest_seq_number = 0;
         uint32_t new_value_index=0;
@@ -403,9 +408,9 @@ bool DynamixelHardwareInterface::readImu(){
       _linear_acceleration[1] = (((short) DXL_MAKEWORD(data[16*new_value_index+2], data[16*new_value_index+3])) / 256.0 ) * gravity * -1;
       _linear_acceleration[2] = (((short)DXL_MAKEWORD(data[16*new_value_index+4], data[16*new_value_index+5])) / 256.0 ) * gravity * -1;
       // angular velocity are two signed bytes with 14.375 per deg/s
-      _angular_velocity[0] = (((short)DXL_MAKEWORD(data[16*new_value_index+6], data[16*new_value_index+7])) / 14.375) * M_PI/180;
-      _angular_velocity[1] = (((short)DXL_MAKEWORD(data[16*new_value_index+8], data[16*new_value_index+9])) / 14.375) * M_PI/180;
-      _angular_velocity[2] = (((short)DXL_MAKEWORD(data[16*new_value_index+10], data[16*new_value_index+11])) / 14.375) * M_PI/180;
+      _angular_velocity[0] = (((short)DXL_MAKEWORD(data[16*new_value_index+6], data[16*new_value_index+7])) / 14.375) * M_PI/180 * 1;
+      _angular_velocity[1] = (((short)DXL_MAKEWORD(data[16*new_value_index+8], data[16*new_value_index+9])) / 14.375) * M_PI/180 * -1;
+      _angular_velocity[2] = (((short)DXL_MAKEWORD(data[16*new_value_index+10], data[16*new_value_index+11])) / 14.375) * M_PI/180 * - 1;
 
       return true;
     }else {

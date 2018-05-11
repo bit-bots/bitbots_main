@@ -76,6 +76,6 @@ ros_control:
         id: 20
         model_number: 321
   IMU:
-    name: IMU
-    frame: IMU_frame        
+    name: imu/data_raw
+    frame: imu
     
