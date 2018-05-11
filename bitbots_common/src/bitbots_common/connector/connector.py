@@ -29,6 +29,8 @@ class BodyConnector(AbstractConnector):
         self.walking = WalkingCapsule()
         self.animation = AnimationCapsule()
         self.speaker = SpeakerCapsule()
+        
+        self.pathfinding_publisher = None  # type: rospy.Publisher
 
 
 class HeadConnector(AbstractConnector):
