@@ -14,7 +14,7 @@ import rospy
 # from bitbots_animation.animation_node import PlayAnimationAction
 from bitbots_stackmachine.stack_machine_module import StackMachineModule
 from bitbots_body_behaviour.body.decisions.common.duty_decider import DutyDecider
-from geometry_msgs.msg import Twist, Pose2D
+from geometry_msgs.msg import Twist, PoseStamped
 from humanoid_league_msgs.msg import BallRelative, ObstacleRelative, GameState, Speak, HeadMode, Strategy, TeamData
 from bitbots_common.connector.connector import BodyConnector
 
@@ -27,8 +27,7 @@ class BehaviourModule(StackMachineModule):
 
         self.connector.speaker.speaker = rospy.Publisher("speak", Speak, queue_size=3)
         self.connector.team_data.strategy_sender = rospy.Publisher("strategy", Strategy, queue_size=2)
-        self.connector.walking.pub_walking_objective = rospy.Publisher("navigation_goal", Pose2D, queue_size=3)
-        self.connector.walking.pub_walkin_params = rospy.Publisher("cmd_vel", Twist, queue_size=6)
+        self.connector.pathfinding_publisher = rospy.Publisher("navigation_goal", PoseStamped, queue_size=3)
         self.connector.blackboard.head_pub = rospy.Publisher("head_duty", HeadMode, queue_size=10)
 
         if len(sys.argv) > 1:
