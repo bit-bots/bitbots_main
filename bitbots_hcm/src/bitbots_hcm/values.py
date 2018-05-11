@@ -62,10 +62,13 @@ class Values(object):
 
 
     def is_falling(self):
-        falling_pose = self.fall_checker.check_falling(self.not_so_smooth_gyro)
+        falling_pose = self.fall_checker.check_falling(self.not_so_smooth_gyro, self.quaternion)
         if falling_pose is not None:
             return True
         return False
+
+    def get_falling_pose(self):
+        return self.fall_checker.check_falling(self.not_so_smooth_gyro, self.quaternion)
 
     def is_fallen(self):
         return self.fall_checker.check_fallen(self.smooth_accel)

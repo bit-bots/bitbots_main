@@ -299,8 +299,7 @@ class Controllable(AbstractState):
 
         if VALUES.standup_flag:
             ## Falling detection
-            falling_pose = VALUES.fall_checker.check_falling(VALUES.not_so_smooth_gyro)
-            if falling_pose is not None:
+            if VALUES.is_falling():
                 return Falling()
             ### Standing up
             direction_animation = VALUES.fall_checker.check_fallen(VALUES.smooth_accel)
@@ -327,7 +326,7 @@ class Falling(AbstractState):
     def entry(self):
         self.wait_time = rospy.get_time()
         # go directly in falling pose
-        falling_pose = VALUES.fall_checker.check_falling(VALUES.not_so_smooth_gyro)
+        falling_pose = VALUES.get_falling_pose()
         if falling_pose is not None:
             # we're falling, stay in falling
             self.next_state = Falling()
