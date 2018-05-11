@@ -35,6 +35,7 @@ class Values(object):
         self.smooth_gyro = DataVector(0, 0, 0)
         self.not_so_smooth_gyro = DataVector(0, 0, 0)
         self.smooth_accel = DataVector(0, 0, 0)
+        self.quaternion  = DataVector(0, 0, 0, 0)
 
         self.fall_checker = FallChecker()
         # for internal animations
