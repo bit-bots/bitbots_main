@@ -71,6 +71,9 @@ private:
   bool loadDynamixels(ros::NodeHandle& nh);
   bool stringToControlMode(std::string control_mode_str, ControlMode &control_mode);
   bool switchDynamixelControlMode();
+  diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map);
+  void processVTE();
+
 
   bool goal_torque_;
   bool current_torque_;
@@ -82,6 +85,7 @@ private:
   bool syncReadEfforts();
   bool syncReadAll();
   bool syncReadVoltageAndTemp();
+  bool syncReadError();
   bool readImu();
 
   bool syncWritePosition();
@@ -122,10 +126,11 @@ private:
   std::vector<double> _current_effort;
   std::vector<double> _current_input_voltage;
   std::vector<double> _current_temperature;
+  std::vector<uint8_t> _current_error;
 
   int _read_VT_counter;
   int _VT_update_rate;
-
+  double _warn_temp;
 
 
   bool _read_imu;

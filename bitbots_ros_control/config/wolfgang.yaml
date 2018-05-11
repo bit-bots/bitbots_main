@@ -1,12 +1,15 @@
 ros_control:
+  # specifies which information should be read
   read_position: true
   read_velocity: true
   read_effort: true
-  read_volt_temp: true
-  VT_update_rate: 100
+  read_volt_temp: true # this also corresponds for the error byte
+  VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
+  warn_temp: 60
   read_imu: true
   control_loop_hz: 200
 
+  # specification of the connected dynamixel servos
   dynamixels:
     port_info:
       port_name: /dev/ttyACM0

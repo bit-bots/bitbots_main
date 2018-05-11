@@ -31,7 +31,6 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _driver->init(port_name.c_str(), uint32_t(baudrate));
   float protocol_version;
   nh.getParam("dynamixels/port_info/protocol_version", protocol_version);
-  
   _driver->setPacketHandler(protocol_version);
   
   // alloc memory for imu values
@@ -47,8 +46,8 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   std::fill(_linear_acceleration, _linear_acceleration+3, 0);
   _linear_acceleration_covariance = (double*) malloc(9 * sizeof(double));
   std::fill(_linear_acceleration_covariance, _linear_acceleration_covariance+9, 0);
-  ROS_INFO("3");
 
+  // init IMU
   std::string imu_name;
   std::string imu_frame;
   nh.getParam("IMU/name", imu_name);
@@ -58,9 +57,10 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _imu_interface.registerHandle(imu_handle);
   registerInterface(&_imu_interface);
 
+  // ignore rest of the code if we are running in special "only IMU" mode
   _onlyIMU = nh.param("onlyIMU", false);
   if(_onlyIMU){
-    ROS_WARN("ignoring servo errors since only IMU is set to true!");
+    ROS_WARN("Ignoring servo errors since only IMU is set to true!");
     return true;
   }
 
@@ -176,28 +176,34 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
     dxl_nh.getParam("model_number", model_number);
     uint16_t model_number_16 = uint16_t(model_number);
     uint16_t* model_number_16p = &model_number_16;
+    
+    std::map<std::string, std::string> map;
+    map.insert(std::make_pair("Joint Name", dxl_name));
 
     //ping it to very that it's there and to add it to the driver
     if(!_driver->ping(uint8_t(motor_id), model_number_16p)){
       ROS_ERROR("Was not able to ping motor with id %d", motor_id);
       success = false;
+      array.push_back(createServoDiagMsg(motor_id, diagnostic_msgs::DiagnosticStatus::STALE, "No ping response", map));
     }
+    array.push_back(createServoDiagMsg(motor_id, diagnostic_msgs::DiagnosticStatus::OK, "Ping sucessful", map));
     _joint_ids.push_back(uint8_t(motor_id));
     i++;
   }
 
-  if(!success){
-    return false;
-  }
   _status_board.level = diagnostic_msgs::DiagnosticStatus::OK;
   _status_board.message = "DXL board started";
   array.push_back(_status_board);
   array_msg.status = array;
+  _diagnostic_pub.publish(array_msg);
 
   return success;
 }
 
-diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id, char level, char* message, std::map<std::string, std::string> map){
+diagnostic_msgs::DiagnosticStatus DynamixelHardwareInterface::createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map){
+  /**
+   * Create a single Diagnostic message for one servo. This is used to build the array message which is then published.
+   */
     diagnostic_msgs::DiagnosticStatus servo_status = diagnostic_msgs::DiagnosticStatus();
     servo_status.level = level;
     servo_status.name = ("Servo %f", id);
@@ -213,6 +219,64 @@ diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id, char level, char* m
     }
     servo_status.values = keyValues;
     return servo_status;
+}
+
+void DynamixelHardwareInterface::processVTE(){
+  /**
+   *  This processses the data for voltage, temperature and error
+   */
+  // prepare diagnostic msg
+  diagnostic_msgs::DiagnosticArray array_msg = diagnostic_msgs::DiagnosticArray();
+  std::vector<diagnostic_msgs::DiagnosticStatus> array = std::vector<diagnostic_msgs::DiagnosticStatus>();
+  array_msg.header.stamp = ros::Time::now();
+
+  for (int i = 0; i < _joint_names.size(); i++){
+    char level = diagnostic_msgs::DiagnosticStatus::OK;
+    std::string message = "OK";
+    std::map<std::string, std::string> map;
+    map.insert(std::make_pair("Joint Name", _joint_names[i]));
+    map.insert(std::make_pair("Input Voltage", std::to_string(_current_input_voltage[i])));
+    map.insert(std::make_pair("Temperature", std::to_string(_current_temperature[i])));
+    if(_current_temperature[i] > _warn_temp){
+      message = "Too hot";
+      level = diagnostic_msgs::DiagnosticStatus::WARN;
+    }
+    map.insert(std::make_pair("Error Byte", std::to_string(_current_error[i])));
+    if(_current_error[i] != 0 ){
+      // some error is detected
+      level = diagnostic_msgs::DiagnosticStatus::ERROR;
+      message = "Error(s): ";
+      // check which one. Values taken from dynamixel documentation
+      char voltage_error = 0x1;
+      char overheat_error = 0x4;
+      char encoder_error = 0x8;
+      char shock_error = 0x10;
+      char overload_error = 0x20;
+      if(_current_error[i] & voltage_error){
+        message = message + "Voltage ";        
+      }
+      if(_current_error[i] & overheat_error){
+        message = message + "Overheat ";        
+      }
+      if(_current_error[i] & encoder_error){
+        message = message + "Encoder ";        
+      }
+      if(_current_error[i] & shock_error){
+        message = message + "Shock ";        
+      }
+      if(_current_error[i] & overload_error){
+        message = message + "Overload";
+        // turn off torque on all motors
+        // todo should also turn off power, but is not possible yet
+        setTorque(false);
+        ROS_ERROR("OVERLOAD ERROR!!! OVERLOAD ERROR!!! OVERLOAD ERROR!!!");
+      }
+    }
+    
+    array.push_back(createServoDiagMsg(_joint_ids[i], level, message, map));
+  }
+  array_msg.status = array;
+  _diagnostic_pub.publish(array_msg);
 }
 
 void DynamixelHardwareInterface::setTorque(bool enabled)
@@ -274,6 +338,11 @@ void DynamixelHardwareInterface::read()
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current input volatage and temperature!");
         _read_VT_counter = 0;
       }
+      if(!syncReadError()){
+        ROS_ERROR_THROTTLE(1.0, "Couldn't read current error bytes!");        
+        _read_VT_counter = 0;
+      }
+      processVTE();
     }else{
       _read_VT_counter++;
     }
@@ -395,14 +464,26 @@ bool DynamixelHardwareInterface::syncReadEfforts() {
   return success;
 }
 
+bool DynamixelHardwareInterface::syncReadError(){
+  bool success; 
+  int32_t *data = (int32_t *) malloc(_joint_count * sizeof(int32_t));
+  success = _driver->syncRead("Hardware_Error_Status", data);
+  for (int i = 0; i < _joint_count; i++) {
+    _current_error[i] = _driver->convertValue2Torque(_joint_ids[i], data[i]);
+  }
+  free(data);
+
+  return success;
+}
+
 bool DynamixelHardwareInterface::syncReadVoltageAndTemp(){
   std::vector<uint8_t> data;
   if(_driver->syncReadMultipleRegisters(144, 3, &data)) {
     uint32_t volt;
     uint32_t temp;    
     for (int i = 0; i < _joint_count; i++) {
-      volt = DXL_MAKEWORD(data[i * 10], data[i * 10 + 1]);
-      temp = data[i * 10 + 2];
+      volt = DXL_MAKEWORD(data[i * 3], data[i * 3 + 1]);
+      temp = data[i * 3 + 2];
       // convert value to voltage
       _current_input_voltage[i] = volt * 0.1;
       // is already in °C
@@ -504,6 +585,7 @@ void DynamixelHardwareInterface::reconf_callback(bitbots_ros_control::bitbots_ro
   _read_imu = config.read_imu;
   _read_volt_temp = config.read_volt_temp;
   _VT_update_rate = config.VT_update_rate;
+  _warn_temp = config.warn_temp;
 }
 
 }
