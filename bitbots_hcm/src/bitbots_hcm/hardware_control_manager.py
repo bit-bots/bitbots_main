@@ -88,7 +88,7 @@ class Motion:
         self.state_machine = HcmStateMachine(dieflag, standupflag, softoff_flag, softstart, start_test,
                                              self.hcm_state_publisher)
 
-        rospy.Subscriber("imu", Imu, self.update_imu, queue_size=1)
+        rospy.Subscriber("imu/data", Imu, self.update_imu, queue_size=1)
         rospy.Subscriber("walking_motor_goals", JointTrajectory, self.walking_goal_callback, queue_size=1)
         rospy.Subscriber("animation", AnimationMsg, self.animation_callback, queue_size=1)
         rospy.Subscriber("head_motor_goals", JointTrajectory, self.head_goal_callback, queue_size=1)

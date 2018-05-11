@@ -36,7 +36,7 @@ class Values(object):
         self.smooth_gyro = numpy.array([0, 0, 0])
         self.not_so_smooth_gyro = numpy.array([0, 0, 0])
         self.smooth_accel = numpy.array([0, 0, 0])
-        self.quaternion  = numpy.array([0,0,0,0])
+        self.quaternion  = numpy.array([0,0,0,0.21])
 
         self.fall_checker = FallChecker()
         # for internal animations
@@ -59,7 +59,7 @@ class Values(object):
 
         self.softoff_time = rospy.get_param("hcm/soft_off_time")
         self.die_time = rospy.get_param("hcm/die_time")
-        self.simulation_active = rospy.get_param("simulation_active")
+        self.simulation_active = True #rospy.get_param("simulation_active")
 
 
     def is_falling(self):
