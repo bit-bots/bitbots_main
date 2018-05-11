@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <node pkg="imu_complementary_filter" type="complementary_filter_node" name="imu_filter">
-        <remap from="/imu/data_raw" to="/IMU"/>
-        <param name="fixed_frame" value="torso"/>
-    </node>
-</launch>
