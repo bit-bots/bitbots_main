@@ -239,14 +239,18 @@ class GettingUp(AbstractState):
         # but lets check if we actually have to stand up
         fallen = VALUES.fall_checker.check_fallen(VALUES.smooth_accel)
         if fallen is not None:
+            print(1)
             self.start_animation(fallen)
+            pass
         else:
+            print(2)
             self.next_state = Controllable()
             self.start_animation(rospy.get_param("hcm/animations/walkready"))
 
     def evaluate(self):
         # wait for animation started in entry
         if self.animation_finished():
+            print(3)
             # head on
             return self.next_state
 
@@ -505,7 +509,9 @@ class ShutDown(AbstractState):
 
 def switch_motor_power(state):
     """ Calling service from CM730 to turn motor power on or off. But only if not using simulator"""
-    if rospy.get_param("simulation_active", False):
+    #TODO
+    if rospy.get_param("simulation_active", False) or True:
+        return
         rospy.loginfo("I'm simulating, not switching motorpower to " + state.__str__())
     else:
         try:
