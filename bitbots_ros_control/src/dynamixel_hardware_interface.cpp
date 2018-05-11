@@ -221,7 +221,7 @@ diagnostic_msgs::DiagnosticStatus DynamixelHardwareInterface::createServoDiagMsg
     return servo_status;
 }
 
-void DynamixelHardwareInterface::processVTE(){
+void DynamixelHardwareInterface::processVTE(bool success){
   /**
    *  This processses the data for voltage, temperature and error
    */
@@ -235,10 +235,21 @@ void DynamixelHardwareInterface::processVTE(){
     std::string message = "OK";
     std::map<std::string, std::string> map;
     map.insert(std::make_pair("Joint Name", _joint_names[i]));
+    if(!success){
+      // the read of VT or error failed, we will publish this and not the values
+      message = "No response";
+      level = diagnostic_msgs::DiagnosticStatus::STALE;
+      array.push_back(createServoDiagMsg(_joint_ids[i], level, message, map));
+      continue;
+    }
     map.insert(std::make_pair("Input Voltage", std::to_string(_current_input_voltage[i])));
-    map.insert(std::make_pair("Temperature", std::to_string(_current_temperature[i])));
+    if(_current_input_voltage[i] > _warn_volt){
+      message = "Power getting low";
+      level = diagnostic_msgs::DiagnosticStatus::WARN;
+    }
+    map.insert(std::make_pair("Temperature", std::to_string(_current_temperature[i])));    
     if(_current_temperature[i] > _warn_temp){
-      message = "Too hot";
+      message = "Getting hot";
       level = diagnostic_msgs::DiagnosticStatus::WARN;
     }
     map.insert(std::make_pair("Error Byte", std::to_string(_current_error[i])));
@@ -334,15 +345,17 @@ void DynamixelHardwareInterface::read()
 
   if (_read_volt_temp){
     if (_read_VT_counter > _VT_update_rate){
+      bool success = true;
       if(!syncReadVoltageAndTemp()){
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current input volatage and temperature!");
-        _read_VT_counter = 0;
+        success = false;
       }
       if(!syncReadError()){
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current error bytes!");        
-        _read_VT_counter = 0;
+        success = false;
       }
-      processVTE();
+      processVTE(success);
+      _read_VT_counter = 0;
     }else{
       _read_VT_counter++;
     }
@@ -586,6 +599,7 @@ void DynamixelHardwareInterface::reconf_callback(bitbots_ros_control::bitbots_ro
   _read_volt_temp = config.read_volt_temp;
   _VT_update_rate = config.VT_update_rate;
   _warn_temp = config.warn_temp;
+  _warn_volt = config.warn_volt;
 }
 
 }

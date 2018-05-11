@@ -72,7 +72,7 @@ private:
   bool stringToControlMode(std::string control_mode_str, ControlMode &control_mode);
   bool switchDynamixelControlMode();
   diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map);
-  void processVTE();
+  void processVTE(bool success);
 
 
   bool goal_torque_;
@@ -131,6 +131,7 @@ private:
   int _read_VT_counter;
   int _VT_update_rate;
   double _warn_temp;
+  double _warn_volt;
 
 
   bool _read_imu;
