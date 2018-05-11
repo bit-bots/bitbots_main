@@ -14,8 +14,13 @@ DynamixelHardwareInterface::DynamixelHardwareInterface()
 bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
 {
 
-  // Init subscriber
+  // Init subscriber / publisher
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this);
+  _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1, this);
+  _status_board.name = "DXL_board";
+  _status_board.hardware_id = 1;
+  _status_IMU.name = "IMU";
+  _status_IMU.hardware_id = 2;
 
   // Load dynamixel config from parameter server
   if (!loadDynamixels(nh))
@@ -100,6 +105,11 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
 
   ROS_INFO_STREAM("Loading parameters from namespace " << nh.getNamespace());
 
+  // prepare diagnostic msg
+  diagnostic_msgs::DiagnosticArray array_msg = diagnostic_msgs::DiagnosticArray();
+  std::vector<diagnostic_msgs::DiagnosticStatus> array = std::vector<diagnostic_msgs::DiagnosticStatus>();
+  array_msg.header.stamp = ros::Time::now();
+
   // get control mode
   std::string control_mode;
   nh.getParam("dynamixels/control_mode", control_mode);
@@ -128,6 +138,7 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
   int i = 0;
   for(XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = dxls.begin(); it != dxls.end(); ++it)
   {
+
     std::string dxl_name = (std::string)(it->first);
     _joint_names.push_back(dxl_name);
     ros::NodeHandle dxl_nh(nh, "dynamixels/device_info/" + dxl_name);
@@ -151,10 +162,14 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
     _joint_ids.push_back(uint8_t(motor_id));
     i++;
   }
-  //success = true; //todo!!! hack
+
   if(!success){
     return false;
   }
+  _status_board.level = diagnostic_msgs::DiagnosticStatus::OK;
+  _status_board.message = "DXL board started";
+  array.push_back(_status_board);
+  array_msg.status = array;
 
   _driver->setPacketHandler(protocol_version);
   _driver->addSyncWrite("Torque_Enable");
@@ -167,6 +182,24 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
   _driver->addSyncRead("Present_Position");
 
   return success;
+}
+
+diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id, char level, char* message, std::map<std::string, std::string> map){
+    diagnostic_msgs::DiagnosticStatus servo_status = diagnostic_msgs::DiagnosticStatus();
+    servo_status.level = level;
+    servo_status.name = ("Servo %f", id);
+    servo_status.message = message;
+    servo_status.hardware_id = 100 + id;
+    std::vector<diagnostic_msgs::KeyValue> keyValues = std::vector<diagnostic_msgs::KeyValue>();
+    // itarate through map and save it into values
+    for(auto const &ent1 : map) {
+      diagnostic_msgs::KeyValue key_value = diagnostic_msgs::KeyValue();
+      key_value.key = ent1.first;
+      key_value.value = ent1.second;
+      keyValues.push_back(key_value);
+    }
+    servo_status.values = keyValues;
+    return servo_status;
 }
 
 void DynamixelHardwareInterface::setTorque(bool enabled)

@@ -4,6 +4,8 @@
 #include <ros/ros.h>
 
 #include <std_msgs/Bool.h>
+#include <diagnostic_msgs/DiagnosticStatus.h>
+#include <diagnostic_msgs/DiagnosticArray.h>
 
 #include <hardware_interface/imu_sensor_interface.h>
 #include <hardware_interface/joint_command_interface.h>
@@ -135,8 +137,13 @@ private:
   double* _linear_acceleration;
   double* _linear_acceleration_covariance;
 
-  // subscriber
+
+  diagnostic_msgs::DiagnosticStatus _status_board;
+  diagnostic_msgs::DiagnosticStatus _status_IMU;
+  diagnostic_msgs::DiagnosticStatus _status_servo;
+  // subscriber / publisher
   ros::Subscriber _set_torque_sub;
+  ros::Publisher _diagnostic_pub;
 };
 }
 
