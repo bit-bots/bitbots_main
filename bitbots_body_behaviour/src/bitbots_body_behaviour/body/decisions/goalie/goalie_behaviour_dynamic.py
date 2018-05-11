@@ -17,7 +17,7 @@ from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCap
 from bitbots.util import get_config
 from bitbots.debug.test.debug_log import DebugLog
 
-from bitbots_common.connector.connector import BodyConnector
+from bitbots_connector.connector import BodyConnector
 import rospy
 
 class GoalieBehaviourDynamic(AbstractDecisionModule):

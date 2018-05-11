@@ -36,7 +36,7 @@ index 1ac2263..f74f037 100644
  
  """
  from bitbots_stackmachine.abstract_action_module import AbstractActionModule
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  
  
  class AlignOnBall(AbstractActionModule):
@@ -58,7 +58,7 @@ index c5cc1bb..124ac88 100644
  from bitbots_stackmachine.abstract_action_module import AbstractActionModule
  
  import rospy
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  
  
  class AlignToGoal(AbstractActionModule):
@@ -94,7 +94,7 @@ index 3f4bc25..b65716b 100644
  from bitbots_stackmachine.abstract_action_module import AbstractActionModule
  from geometry_msgs.msg import Twist
  
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
 +
  
  class GoToAbsolutePosition(AbstractActionModule):
@@ -125,7 +125,7 @@ index 30a6bff..aeb6fca 100644
  
  import rospy
  
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  from bitbots_pathfinding.potential_field import PotentialMap
  
  
@@ -171,7 +171,7 @@ index dce82e1..6e90ad6 100644
  
  from bitbots_stackmachine.abstract_action_module import AbstractActionModule
  
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  import rospy
  
  
@@ -206,7 +206,7 @@ index a0db1df..7504f41 100644
  
  from bitbots_stackmachine.abstract_init_action_module import AbstractInitActionModule
  
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
 +
  
  class PlainWalkAction(AbstractInitActionModule):
@@ -237,7 +237,7 @@ index 19857d8..f944eef 100644
  from body.actions.throw import LEFT, RIGHT, MIDDLE, BOTH_ARMS_HIGH
  from bitbots_stackmachine.abstract_action_module import AbstractActionModule
  
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
 +
  
  class RaiseArm(AbstractActionModule):
@@ -295,7 +295,7 @@ index d082859..06992f2 100644
  """
  from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
  
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
 +
  
  class TurnToAbsoluteDirection(AbstractDecisionModule):
@@ -323,7 +323,7 @@ index f49c464..31e28e8 100644
  import rospy
  
  from bitbots_stackmachine.abstract_action_module import AbstractActionModule
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  
  
  class Wait(AbstractActionModule):
@@ -361,7 +361,7 @@ index 8681d62..e66cde3 100644
  from bitbots_body_behaviour.body.decisions.goalie.ball_dangerous import BallDangerous
  from bitbots_body_behaviour.body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
  from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  
  
  class AbstractBallSeen(AbstractDecisionModule):
@@ -387,7 +387,7 @@ index ea4754b..3b7721d 100644
  from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionPenaltyKick
  from bitbots_body_behaviour.body.decisions.common.stands_correct_decision import StandsCorrectDecision
  from bitbots_body_behaviour.body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  
  
  class AbstractCloseBall(AbstractDecisionModule):
@@ -417,7 +417,7 @@ index f901c90..3742053 100644
  from body.actions.plain_walk_action import PlainWalkAction
  from body.actions.wait import Wait
  from body.decisions.team_player.defender_position_decider import DefenderPositionDecider
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  import rospy
  
  class AbstractCorridor(AbstractDecisionModule):
@@ -439,7 +439,7 @@ index 1bacac7..ec142d2 100644
  from bitbots_body_behaviour.keys import DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_READY, DATA_VALUE_STATE_SET, \
      DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
  from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  
  duty = None  # can be overwriten by the startup script (to force a behaviour)
  
@@ -472,7 +472,7 @@ index 8ca3704..e8db0da 100644
  from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
  
  from body.actions.go_to_absolute_position import GoToAbsolutePosition
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  
  
  class GoToDutyPosition(AbstractDecisionModule):
@@ -503,7 +503,7 @@ index cf33122..33c0804 100644
  """
  from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
  from bitbots_body_behaviour.body.actions.kick_ball import KickBall
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  
  
  class AbstractKickDecision(AbstractDecisionModule):
@@ -563,7 +563,7 @@ index f6f5328..13582e1 100644
  from bitbots_body_behaviour.body.decisions.team_player.defender_decision import DefenderDecision
  from bitbots_body_behaviour.body.decisions.team_player.supporter_decision import SupporterDecision
  from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  from humanoid_league_team_communication.mitecom.mitecom import ROLE_STRIKER, ROLE_SUPPORTER, ROLE_OTHER, ROLE_DEFENDER
  
  
@@ -585,7 +585,7 @@ index b389b33..1bf1281 100644
  from bitbots.modules.keys import DATA_VALUE_STATE_READY
  from bitbots.util import get_config
  
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
 +
  config = get_config()
  
@@ -609,7 +609,7 @@ index a757e15..878e21b 100644
  import rospy
  from bitbots_body_behaviour.body.actions.align_on_ball import AlignOnBall
  from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionCommon
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  
  
  class StandsCorrectDecision(AbstractDecisionModule):
@@ -675,7 +675,7 @@ index 1ad7fc1..211fd4e 100644
  
  from body.decisions.goalie.goalie_movement import GoalieMovement
  from body.decisions.goalie.throw_or_raise_arm import ThrowOrRaiseArm
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  
  
  class BallDangerous(AbstractDecisionModule):
@@ -719,7 +719,7 @@ index eca7d2b..330da2d 100644
  * 05.12.14: Complete Refactor (Marc Bestmann)
  """
  from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  
  
  class GoalieMovement(AbstractDecisionModule):
@@ -736,7 +736,7 @@ index 07b52bc..25c06b3 100644
  from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
  from bitbots.util import get_config
  
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
 +
  
  class PositionInGoal(AbstractDecisionModule):
@@ -767,7 +767,7 @@ index e18d866..8037756 100644
  from bitbots_body_behaviour.body.decisions.kick_off.kick_off_role_decider import KickOffRoleDecider
  from bitbots_body_behaviour.body.decisions.kick_off.wait_for_enemy_kick_off import WaitForEnemyKickOff
  
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
  
  
@@ -793,7 +793,7 @@ index 77bb2a2..ee2ff3c 100644
  """
  import rospy
  
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  from bitbots_common.util.math_utils import convert_uv2angular
  from bitbots_body_behaviour.body.actions.plain_walk_action import PlainWalkAction
  from bitbots_body_behaviour.body.actions.search import Search
@@ -819,8 +819,8 @@ index 33cc56d..46fbccf 100644
  from bitbots_body_behaviour.body.actions.plain_walk_action import PlainWalkAction
  from bitbots_body_behaviour.body.actions.search import StopAndSearch
  
-+from bitbots_common.connector.capsules.walking_capsule import WalkingCapsule
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.capsules.walking_capsule import WalkingCapsule
++from bitbots_connector.connector import BodyConnector
  from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
  
  
@@ -843,7 +843,7 @@ index acfa339..9e95aa3 100644
  from body.actions.search import Search
  from body.actions.wait import Wait
  from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-+from bitbots_common.connector.connector import BodyConnector
++from bitbots_connector.connector import BodyConnector
  
  
  class SupporterDecision(AbstractDecisionModule):
@@ -876,7 +876,7 @@ index 2cfab74..22c7fe7 100755
  """
  BehaviourModule
  ^^^^^^^^^^^^^^^
-@@ -21,7 +20,7 @@ from bitbots_common.connector.connector import BodyConnector
+@@ -21,7 +20,7 @@ from bitbots_connector.connector import BodyConnector
  
  class BehaviourModule(StackMachineModule):
      def __init__(self):
@@ -924,7 +924,7 @@ index 82b1cee..739dca9 100644
  
  import rospy
  
-+from bitbots_common.connector.connector import HeadConnector
++from bitbots_connector.connector import HeadConnector
  from bitbots_stackmachine.abstract_action_module import AbstractActionModule
  
  
@@ -956,7 +956,7 @@ index 117df22..44bbf4b 100644
  """
  import rospy
  
-+from bitbots_common.connector.connector import HeadConnector
++from bitbots_connector.connector import HeadConnector
  from bitbots_stackmachine.abstract_init_action_module import AbstractInitActionModule
  from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
  
@@ -1008,7 +1008,7 @@ index 1638e5f..973028a 100644
  """
  import rospy
  
-+from bitbots_common.connector.connector import HeadConnector
++from bitbots_connector.connector import HeadConnector
  from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
  from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
  
@@ -1052,7 +1052,7 @@ index 82a9471..6abe485 100644
  
  import rospy
  import math
-+from bitbots_common.connector.connector import HeadConnector
++from bitbots_connector.connector import HeadConnector
  from bitbots_head_behaviour.decisions.search_and_confirm import SearchAndConfirmBall, SearchAndConfirmEnemyGoal
  from bitbots_head_behaviour.decisions.continuous_search import ContinuousSearch
  from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
@@ -1089,7 +1089,7 @@ index a28726f..8f1c414 100644
  
  from bitbots_head_behaviour.actions.track_object import TrackBall, TrackGoal
  from bitbots_head_behaviour.decisions.search_for_object import SearchForBall, SearchForEnemyGoal
-+from bitbots_common.connector.connector import HeadConnector
++from bitbots_connector.connector import HeadConnector
  from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
  
  
@@ -1139,7 +1139,7 @@ index 59c2b38..cfd5df1 100644
  
  from bitbots_head_behaviour.actions.head_to_pan_tilt import HeadToPanTilt
  from bitbots_head_behaviour.decisions.continuous_search import ContinuousSearch
-+from bitbots_common.connector.connector import HeadConnector
++from bitbots_connector.connector import HeadConnector
  from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
  
  
@@ -1186,7 +1186,7 @@ index 721df37..f1cd3d4 100755
 -# -*- coding:utf-8 -*-
 +#!/usr/bin/env python3
  import rospy
- from bitbots_common.connector.connector import HeadConnector
+ from bitbots_connector.connector import HeadConnector
  from bitbots_head_behaviour.decisions.head_duty_decider import HeadDutyDecider
 @@ -11,14 +10,12 @@ from trajectory_msgs.msg import JointTrajectory
  

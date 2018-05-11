@@ -18,7 +18,7 @@ The robot stays in its corridor and finds back if it had leaved it.
 import math
 import time
 
-from bitbots_common.connector.capsules.walking_capsule import WalkingCapsule
+from bitbots_connector.capsules.walking_capsule import WalkingCapsule
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from body.actions.plain_walk_action import PlainWalkAction
 from body.actions.wait import Wait
