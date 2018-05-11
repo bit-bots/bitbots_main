@@ -2,13 +2,13 @@
 import math
 import numpy
 import rospy
-from tf.transformations import euler_from_quaternion
 
 class FallChecker(object):
     def __init__(self):
+
         # will be set by dynamic reconfigure
         robot_type_name = rospy.get_param("robot_type_name")
-
+        print("Enter Check init")
         # Fallanimation laden
         self.falling_motor_degrees_front = rospy.get_param(
             "hcm/falling/falling_front")
@@ -54,20 +54,22 @@ class FallChecker(object):
         """Checks if the robot is currently falling and in which direction. """
         # First decide if we fall more sidewards or more front-back-wards. Then decide if we fall badly enough
         # to do something about it
-        euler = euler_from_quaternion(quaternion)
-        self.check_falling_x_y(not_much_smoothed_gyro, euler)
+        rospy.loginfo("Enter Check fall")
+        euler = self.quaternion_to_euler_angle(*quaternion)
+        return self.check_fall(not_much_smoothed_gyro, euler)
 
-    def check_fall(not_much_smoothed_gyro, euler):
+    def check_fall(self, not_much_smoothed_gyro, euler):
+        print("Enter Check fall")
         x_value = 0
         y_value = 0
-        if numpy.sign(euler[0]) == numpy.sign(not_much_smoothed_gyro[0]:
+        if numpy.sign(euler[0]) == numpy.sign(not_much_smoothed_gyro[0]):
             skalar = (self.falling_threshold_orientation_left_right - abs(euler[0]))/self.falling_threshold_orientation_left_right
-            if self.falling_threshold_back * skalar < abs(not_much_smoothed_gyro[0]:
+            if self.falling_threshold_front * skalar < abs(not_much_smoothed_gyro[0]):
                 x_value = abs(not_much_smoothed_gyro[0]) * (1-skalar)
 
-        if numpy.sign(euler[1]) == numpy.sign(self.not_much_smoothed_gyro[1]:
-            skalar = (self.falling_threshold_orietation_front_back - abs(euler[1]))/self.falling_threshold_orientation_front_back
-            if self.falling_threshold_left * skalar < abs(not_much_smoothed_gyro[1]:
+        if numpy.sign(euler[1]) == numpy.sign(not_much_smoothed_gyro[1]):
+            skalar = (self.falling_threshold_orientation_front_back - abs(euler[1]))/self.falling_threshold_orientation_front_back
+            if self.falling_threshold_side * skalar < abs(not_much_smoothed_gyro[1]):
                 y_value = abs(not_much_smoothed_gyro[1]) * (1-skalar)
 
         if x_value + y_value == 0:
@@ -75,17 +77,17 @@ class FallChecker(object):
         
         if y_value > x_value:
             if not_much_smoothed_gyro[1] > 0:
-                rospy.logdebug("FALLING TO THE FRONT")
+                rospy.loginfo("FALLING TO THE FRONT")
                 return self.falling_motor_degrees_front
             else:
-                rospy.logdebug("FALLING TO THE BACK")
+                rospy.loginfo("FALLING TO THE BACK")
                 return self.falling_motor_degrees_back
         else:
             if not_much_smoothed_gyro[0] > 0:
-                rospy.logdebug("FALLING TO THE RIGHT")
+                rospy.loginfo("FALLING TO THE RIGHT")
                 return self.falling_motor_degrees_right
             else:
-                rospy.logdebug("FALLING TO THE LEFT")
+                rospy.loginfo("FALLING TO THE LEFT")
                 return self.falling_motor_degrees_left
 
 
@@ -104,3 +106,21 @@ class FallChecker(object):
             return rospy.get_param("hcm/animations/front-up")
 
         return None
+
+    def quaternion_to_euler_angle(self, x, y, z, w):
+        ysqr = y * y
+        
+        t0 = +2.0 * (w * x + y * z)
+        t1 = +1.0 - 2.0 * (x * x + ysqr)
+        X = math.atan2(t0, t1)
+        
+        t2 = +2.0 * (w * y - z * x)
+        t2 = +1.0 if t2 > +1.0 else t2
+        t2 = -1.0 if t2 < -1.0 else t2
+        Y = math.asin(t2)
+        
+        t3 = +2.0 * (w * z + x * y)
+        t4 = +1.0 - 2.0 * (ysqr + z * z)
+        Z = math.atan2(t3, t4)
+        
+        return X, Y, Z

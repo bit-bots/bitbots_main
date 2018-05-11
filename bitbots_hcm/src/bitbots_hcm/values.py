@@ -1,9 +1,10 @@
 import rospy
+import numpy
 from geometry_msgs.msg import Twist
 
 from .fall_checker import FallChecker
-from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
-from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
+#from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
+#from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
 
 import time
 
@@ -31,11 +32,11 @@ class Values(object):
         self.last_request = None  # last request on doing something
         self.start_up_time = 0
 
-        self.raw_gyro = DataVector(0, 0, 0)
-        self.smooth_gyro = DataVector(0, 0, 0)
-        self.not_so_smooth_gyro = DataVector(0, 0, 0)
-        self.smooth_accel = DataVector(0, 0, 0)
-        self.quaternion  = DataVector(0, 0, 0, 0)
+        self.raw_gyro = numpy.array([0, 0, 0])
+        self.smooth_gyro = numpy.array([0, 0, 0])
+        self.not_so_smooth_gyro = numpy.array([0, 0, 0])
+        self.smooth_accel = numpy.array([0, 0, 0])
+        self.quaternion  = numpy.array([0,0,0,0])
 
         self.fall_checker = FallChecker()
         # for internal animations
