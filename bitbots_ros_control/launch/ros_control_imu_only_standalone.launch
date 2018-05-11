@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="sim" default="false"/>
+    <arg name="minibot" default="false"/>
+    <arg name="wolfgang" default="false"/>
+
+    <include file="$(find bitbots_common)/launch/load_robot_description.launch">
+        <arg name="minibot" value="$(arg minibot)"/>
+        <arg name="wolfgang" value="$(arg wolfgang)"/>   
+    </include>
+
+    <group if="$(arg minibot)">
+        <rosparam file="$(find bitbots_ros_control)/config/minibot.yaml" command="load" />
+    </group>
+    <group if="$(arg wolfgang)">
+        <rosparam file="$(find bitbots_ros_control)/config/wolfgang_only_imu.yaml" command="load" />
+    </group>
+
+    <node pkg="bitbots_ros_control" type="dynamixel_controller_manager_node" name="ros_control" output="screen"/> 
+
+    <rosparam file="$(find bitbots_ros_control)/config/controller.yaml" command="load" />
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+      output="screen" args="imu_sensor_controller">
+    </node>
+</launch>

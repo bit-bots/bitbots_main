@@ -22,6 +22,48 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _status_IMU.name = "IMU";
   _status_IMU.hardware_id = 2;
 
+  // init driver
+  ROS_INFO_STREAM("Loading parameters from namespace " << nh.getNamespace());
+  std::string port_name;
+  nh.getParam("dynamixels/port_info/port_name", port_name);
+  int baudrate;
+  nh.getParam("dynamixels/port_info/baudrate", baudrate);
+  _driver->init(port_name.c_str(), uint32_t(baudrate));
+  float protocol_version;
+  nh.getParam("dynamixels/port_info/protocol_version", protocol_version);
+  
+  _driver->setPacketHandler(protocol_version);
+  
+  // alloc memory for imu values
+  _orientation = (double*) malloc(4 * sizeof(double));
+  std::fill(_orientation, _orientation+4, 0);
+  _orientation_covariance = (double*) malloc(9 * sizeof(double));
+  std::fill(_orientation_covariance, _orientation_covariance+9, 0);
+  _angular_velocity = (double*) malloc(3 * sizeof(double));
+  std::fill(_angular_velocity, _angular_velocity+3, 0);
+  _angular_velocity_covariance = (double*) malloc(9 * sizeof(double));
+  std::fill(_angular_velocity_covariance, _angular_velocity_covariance+9, 0);
+  _linear_acceleration = (double*) malloc(3 * sizeof(double));
+  std::fill(_linear_acceleration, _linear_acceleration+3, 0);
+  _linear_acceleration_covariance = (double*) malloc(9 * sizeof(double));
+  std::fill(_linear_acceleration_covariance, _linear_acceleration_covariance+9, 0);
+  ROS_INFO("3");
+
+  std::string imu_name;
+  std::string imu_frame;
+  nh.getParam("IMU/name", imu_name);
+  nh.getParam("IMU/frame", imu_frame);
+  nh.getParam("read_imu", _read_imu);
+  hardware_interface::ImuSensorHandle imu_handle(imu_name, imu_frame, _orientation, _orientation_covariance, _angular_velocity, _angular_velocity_covariance, _linear_acceleration, _linear_acceleration_covariance);
+  _imu_interface.registerHandle(imu_handle);
+  registerInterface(&_imu_interface);
+
+  _onlyIMU = nh.param("onlyIMU", false);
+  if(_onlyIMU){
+    ROS_WARN("ignoring servo errors since only IMU is set to true!");
+    return true;
+  }
+
   // Load dynamixel config from parameter server
   if (!loadDynamixels(nh))
   {
@@ -68,28 +110,14 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   }
   setTorque(nh.param("dynamixels/auto_torque", false));
 
-  // alloc memory for imu values
-  _orientation = (double*) malloc(4 * sizeof(double));
-  std::fill(_orientation, _orientation+4, 0);
-  _orientation_covariance = (double*) malloc(9 * sizeof(double));
-  std::fill(_orientation_covariance, _orientation_covariance+9, 0);
-  _angular_velocity = (double*) malloc(3 * sizeof(double));
-  std::fill(_angular_velocity, _angular_velocity+3, 0);
-  _angular_velocity_covariance = (double*) malloc(9 * sizeof(double));
-  std::fill(_angular_velocity_covariance, _angular_velocity_covariance+9, 0);
-  _linear_acceleration = (double*) malloc(3 * sizeof(double));
-  std::fill(_linear_acceleration, _linear_acceleration+3, 0);
-  _linear_acceleration_covariance = (double*) malloc(9 * sizeof(double));
-  std::fill(_linear_acceleration_covariance, _linear_acceleration_covariance+9, 0);
-
-  std::string imu_name;
-  std::string imu_frame;
-  nh.getParam("IMU/name", imu_name);
-  nh.getParam("IMU/frame", imu_frame);
-  nh.getParam("read_imu", _read_imu);
-  hardware_interface::ImuSensorHandle imu_handle(imu_name, imu_frame, _orientation, _orientation_covariance, _angular_velocity, _angular_velocity_covariance, _linear_acceleration, _linear_acceleration_covariance);
-  _imu_interface.registerHandle(imu_handle);
-  registerInterface(&_imu_interface);
+  _driver->addSyncWrite("Torque_Enable");
+  _driver->addSyncWrite("Goal_Position");
+  _driver->addSyncWrite("Goal_Velocity");
+  _driver->addSyncWrite("Goal_Current");
+  _driver->addSyncWrite("Operating_Mode");
+  _driver->addSyncRead("Present_Current");
+  _driver->addSyncRead("Present_Velocity");
+  _driver->addSyncRead("Present_Position");
 
   ROS_INFO("Hardware interface init finished.");
   return true;
@@ -102,8 +130,6 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
   Adds all dynamixel to the driver if they are pingable.
   */
   bool success = true;
-
-  ROS_INFO_STREAM("Loading parameters from namespace " << nh.getNamespace());
 
   // prepare diagnostic msg
   diagnostic_msgs::DiagnosticArray array_msg = diagnostic_msgs::DiagnosticArray();
@@ -123,14 +149,6 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
   nh.param("read_velocity", _read_velocity, false);
   nh.param("read_effort", _read_effort, false);
 
-  // get port info
-  std::string port_name;
-  nh.getParam("dynamixels/port_info/port_name", port_name);
-  int baudrate;
-  nh.getParam("dynamixels/port_info/baudrate", baudrate);
-  float protocol_version;
-  nh.getParam("dynamixels/port_info/protocol_version", protocol_version);
-  _driver->init(port_name.c_str(), uint32_t(baudrate));
 
   XmlRpc::XmlRpcValue dxls;
   nh.getParam("dynamixels/device_info", dxls);
@@ -171,16 +189,6 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
   array.push_back(_status_board);
   array_msg.status = array;
 
-  _driver->setPacketHandler(protocol_version);
-  _driver->addSyncWrite("Torque_Enable");
-  _driver->addSyncWrite("Goal_Position");
-  _driver->addSyncWrite("Goal_Velocity");
-  _driver->addSyncWrite("Goal_Current");
-  _driver->addSyncWrite("Operating_Mode");
-  _driver->addSyncRead("Present_Current");
-  _driver->addSyncRead("Present_Velocity");
-  _driver->addSyncRead("Present_Position");
-
   return success;
 }
 
@@ -218,6 +226,14 @@ void DynamixelHardwareInterface::setTorque(std_msgs::BoolConstPtr enabled)
 
 void DynamixelHardwareInterface::read()
 {
+  if(_read_imu){
+      if(!readImu()){
+          ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
+      }
+  }
+  if(_onlyIMU){
+    return;
+  }
   // either read all values or a single one, depending on config
   if (_read_position && _read_velocity && _read_effort ){
     if(syncReadAll()){
@@ -264,15 +280,14 @@ void DynamixelHardwareInterface::read()
     first_cycle_ = false;
   }
 
-  if(_read_imu){
-      if(!readImu()){
-          ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
-      }
-  }
+
 }
 
 void DynamixelHardwareInterface::write()
 {
+  if(_onlyIMU){
+    return;
+  }
   //check if we have to switch the torque
   if(current_torque_ != goal_torque_){
     setTorque(goal_torque_);
@@ -311,6 +326,9 @@ bool DynamixelHardwareInterface::stringToControlMode(std::string _control_modest
 
 bool DynamixelHardwareInterface::switchDynamixelControlMode()
 {
+  if(_onlyIMU){
+    return true;
+  }
   // Torque on dynamixels has to be disabled to change operating mode
   setTorque(false);
   ros::Duration(0.5).sleep();
@@ -414,7 +432,7 @@ bool DynamixelHardwareInterface::syncReadAll() {
 }
 
 bool DynamixelHardwareInterface::readImu(){
-    uint8_t *data = (uint8_t *) malloc(110 * sizeof(uint8_t));
+  uint8_t *data = (uint8_t *) malloc(110 * sizeof(uint8_t));
 
     if(_driver->readMultipleRegisters(241, 36, 16, data)){
       //todo we have to check if we jumped one sequence number
@@ -439,7 +457,6 @@ bool DynamixelHardwareInterface::readImu(){
       _angular_velocity[0] = (((short)DXL_MAKEWORD(data[16*new_value_index+6], data[16*new_value_index+7])) / 14.375) * M_PI/180;
       _angular_velocity[1] = (((short)DXL_MAKEWORD(data[16*new_value_index+8], data[16*new_value_index+9])) / 14.375) * M_PI/180;
       _angular_velocity[2] = (((short)DXL_MAKEWORD(data[16*new_value_index+10], data[16*new_value_index+11])) / 14.375) * M_PI/180;
-
       return true;
     }else {
       return false;

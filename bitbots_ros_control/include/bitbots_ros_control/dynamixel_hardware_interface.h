@@ -129,6 +129,7 @@ private:
 
 
   bool _read_imu;
+  bool _onlyIMU;
   uint32_t _last_seq_number;
   double* _orientation; //quaternion (x,y,z,w)
   double* _orientation_covariance;

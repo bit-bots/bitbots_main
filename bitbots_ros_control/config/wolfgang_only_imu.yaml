@@ -5,7 +5,7 @@ ros_control:
   read_volt_temp: true
   VT_update_rate: 100
   read_imu: true
-  read_servos: false
+  onlyIMU: true
   control_loop_hz: 200
 
   dynamixels:
