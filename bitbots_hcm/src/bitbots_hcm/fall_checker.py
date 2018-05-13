@@ -19,9 +19,9 @@ class FallChecker(object):
         self.falling_motor_degrees_left = rospy.get_param(
             "hcm/falling/falling_left")
 
-        # load config values depending on robot type and lode them into param server to set
-        # start values for dynamic reconfigure
-        # There are no default values set in dynamic reconfigure, in order to make it dependable on the robot
+        # load config fall_quantifications depending on robot type and lode them into param server to set
+        # start fall_quantifications for dynamic reconfigure
+        # There are no default fall_quantifications set in dynamic reconfigure, in order to make it dependable on the robot
         self.dyn_falling_active = rospy.get_param("hcm/falling/" + robot_type_name + "/dyn_falling_active")
         rospy.set_param("hcm/dyn_falling_active", self.dyn_falling_active)
         self.ground_coefficient = rospy.get_param("hcm/falling/" + robot_type_name + "/ground_coefficient")
@@ -48,7 +48,7 @@ class FallChecker(object):
         #self.falling_threshold_orientation_left_right = math.radians(45)
         
 
-    def update_reconfigurable_values(self, config, level):
+    def update_reconfigurable_fall_quantifications(self, config, level):
         #self.dyn_falling_active = config["dyn_falling_active"]
         #self.ground_coefficient = config["ground_coefficient"]
         #self.falling_threshold_front = config["threshold_gyro_y_front"]
@@ -57,47 +57,46 @@ class FallChecker(object):
 
     def check_falling(self, not_much_smoothed_gyro, quaternion):
         """Checks if the robot is currently falling and in which direction. """
-        # First decide if we fall more sidewards or more front-back-wards. Then decide if we fall badly enough
-        # to do something about it
+        # converting the Quaternion into Euler angles for better understanding
         euler = self.quaternion_to_euler_angle(*quaternion)
-        return self.check_fall(not_much_smoothed_gyro, euler)
+        # setting the fall quantification function
+        x_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_left_right, self.falling_threshold_front, euler[0], not_much_smoothed_gyro[0])
+        y_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_front_back, self.falling_threshold_side, euler[1], not_much_smoothed_gyro[1])
 
-    def check_fall(self, not_much_smoothed_gyro, euler):
-        x_value = 0
-        print([math.degrees(x) for x in euler])
-        y_value = 0
-        if numpy.sign(euler[0]) != numpy.sign(not_much_smoothed_gyro[0]):
-            skalar = max((self.falling_threshold_orientation_left_right - abs(euler[0]))/self.falling_threshold_orientation_left_right,0)
-            if self.falling_threshold_front * skalar < abs(not_much_smoothed_gyro[0]):
-                print(abs(not_much_smoothed_gyro[0]), self.falling_threshold_front , skalar)
-                x_value = abs(not_much_smoothed_gyro[0]) * (1-skalar)
-
-        if numpy.sign(euler[1]) != numpy.sign(not_much_smoothed_gyro[1]):
-            skalar = max((self.falling_threshold_orientation_front_back - abs(euler[1]))/self.falling_threshold_orientation_front_back,0)
-            if self.falling_threshold_side * skalar < abs(not_much_smoothed_gyro[1]):
-                y_value = abs(not_much_smoothed_gyro[1]) * (1-skalar)
-
-
-
-        if x_value + y_value == 0:
+        if x_fall_quantification + y_fall_quantification == 0:
             return None
-
         
-        if y_value > x_value:
+        # compare quantification functions
+        if y_fall_quantification > x_fall_quantification:
+            # detect the falling direction
             if not_much_smoothed_gyro[1] > 0:
                 rospy.loginfo("FALLING TO THE FRONT")
+                #TODO remove comments when out off static testing
                 return #self.falling_motor_degrees_front
+            # detect the falling direction
             else:
                 rospy.loginfo("FALLING TO THE BACK")
                 return #self.falling_motor_degrees_back
         else:
+            # detect the falling direction
             if not_much_smoothed_gyro[0] > 0:
                 rospy.loginfo("FALLING TO THE RIGHT")
                 return #self.falling_motor_degrees_right
+            # detect the falling direction
             else:
                 rospy.loginfo("FALLING TO THE LEFT")
                 return #self.falling_motor_degrees_left
 
+    def calc_fall_quantification(self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler, current_axis__gyro):
+        # check if you are moving forward or away from the perpendicular position, by comparing the signs.
+        if numpy.sign(current_axis_euler) != numpy.sign(current_axis__gyro):
+            # calculatiung the orentation skalar for the threshold
+            skalar = max((falling_threshold_orientation - abs(current_axis_euler))/falling_threshold_orientation,0)
+            # checking if the rotation velocity is lower than the thethreshold
+            if falling_threshold_gyro * skalar < abs(current_axis__gyro):
+                # returning the fall quantification function
+                return abs(current_axis__gyro) * (1-skalar)
+        return 0
 
     def check_fallen(self, smooth_accel):
         """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""
