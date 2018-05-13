@@ -239,18 +239,15 @@ class GettingUp(AbstractState):
         # but lets check if we actually have to stand up
         fallen = VALUES.fall_checker.check_fallen(VALUES.smooth_accel)
         if fallen is not None:
-            print(1)
             self.start_animation(fallen)
             pass
         else:
-            print(2)
             self.next_state = Controllable()
             self.start_animation(rospy.get_param("hcm/animations/walkready"))
 
     def evaluate(self):
         # wait for animation started in entry
         if self.animation_finished():
-            print(3)
             # head on
             return self.next_state
 
