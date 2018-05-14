@@ -510,7 +510,7 @@ class ShutDown(AbstractState):
 def switch_motor_power(state):
     """ Calling service from CM730 to turn motor power on or off. But only if not using simulator"""
     #TODO remove "or True" when out of testing
-    if rospy.get_param("simulation_active", False) or True:
+    if rospy.get_param("simulation_active", False):
         rospy.loginfo_throttle(rospy.Duration(2.0), "I'm simulating, not switching motorpower to " + state.__str__())
     else:
         try:

@@ -60,7 +60,7 @@ class Values(object):
         self.softoff_time = rospy.get_param("hcm/soft_off_time")
         self.die_time = rospy.get_param("hcm/die_time")
         # TODO disable Simulation
-        self.simulation_active = True #rospy.get_param("simulation_active")
+        self.simulation_active = False #rospy.get_param("simulation_active")
 
 
     def is_falling(self):
