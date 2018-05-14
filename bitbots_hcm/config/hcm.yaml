@@ -34,8 +34,8 @@ hcm:
 
       #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
       #Grenzwerte sanfter --> zu spaete Raktion
-      "threshold_gyro_y_front":  2.272 # > gyroY
-      "threshold_gyro_x_right": 1.63 # > gyroX
+      "threshold_gyro_y_front": 3 # > gyroY
+      "threshold_gyro_x_side": 3 # > gyroX
       "falling_threshold_orientation_left_right": 45 # > Point of no return in degrees
       "falling_threshold_orientation_front_back":   45 # < Point of no return in degrees
 
@@ -51,8 +51,8 @@ hcm:
 
       #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
       #Grenzwerte sanfter --> zu spaete Raktion
-      "threshold_gyro_y_front":  2.272 # > gyroY
-      "threshold_gyro_x_right": 1.63 # > gyroX
+      "threshold_gyro_y_front": 3 # > gyroY
+      "threshold_gyro_x_side": 3 # > gyroX
       "falling_threshold_orientation_left_right": 45 # > Point of no return in degrees
       "falling_threshold_orientation_front_back":   45 # < Point of no return in degrees
 

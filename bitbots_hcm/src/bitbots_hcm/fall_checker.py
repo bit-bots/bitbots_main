@@ -8,7 +8,7 @@ class FallChecker(object):
 
         # will be set by dynamic reconfigure
         robot_type_name = rospy.get_param("robot_type_name")
-        print("Enter Check init")
+        # print("Enter Check init 1")
         # Fallanimation laden
         self.falling_motor_degrees_front = rospy.get_param(
             "hcm/falling/falling_front")
@@ -19,9 +19,9 @@ class FallChecker(object):
         self.falling_motor_degrees_left = rospy.get_param(
             "hcm/falling/falling_left")
 
-        # load config fall_quantifications depending on robot type and lode them into param server to set
-        # start fall_quantifications for dynamic reconfigure
-        # There are no default fall_quantifications set in dynamic reconfigure, in order to make it dependable on the robot
+        # load config values depending on robot type and lode them into param server to set
+        # start values for dynamic reconfigure
+        # There are no default vaules set in dynamic reconfigure, in order to make it dependable on the robot
         self.dyn_falling_active = rospy.get_param("hcm/falling/" + robot_type_name + "/dyn_falling_active")
         rospy.set_param("hcm/dyn_falling_active", self.dyn_falling_active)
         self.ground_coefficient = rospy.get_param("hcm/falling/" + robot_type_name + "/ground_coefficient")
@@ -32,8 +32,8 @@ class FallChecker(object):
         self.falling_threshold_front = rospy.get_param("hcm/falling/" + robot_type_name + "/threshold_gyro_y_front")# \
                                        #+ math.radians(rospy.get_param("ZMPConfig/" + robot_type_name + "/HipPitch", -10))
         rospy.set_param("hcm/threshold_gyro_y_front", self.falling_threshold_front)
-        self.falling_threshold_side = rospy.get_param("hcm/falling/" + robot_type_name + "/threshold_gyro_x_right")
-        rospy.set_param("hcm/threshold_gyro_x_right", self.falling_threshold_side)
+        self.falling_threshold_side = rospy.get_param("hcm/falling/" + robot_type_name + "/threshold_gyro_x_side")
+        rospy.set_param("hcm/threshold_gyro_x_side", self.falling_threshold_side)
         self.falling_threshold_orientation_front_back = math.radians(rospy.get_param("hcm/falling/" + robot_type_name + "/falling_threshold_orientation_front_back"))
         rospy.set_param("hcm/falling_threshold_orientation_front_back", self.falling_threshold_orientation_front_back)
         self.falling_threshold_orientation_left_right = math.radians(rospy.get_param("hcm/falling/" + robot_type_name + "/falling_threshold_orientation_left_right"))
@@ -48,12 +48,14 @@ class FallChecker(object):
         #self.falling_threshold_orientation_left_right = math.radians(45)
         
 
-    def update_reconfigurable_fall_quantifications(self, config, level):
-        #self.dyn_falling_active = config["dyn_falling_active"]
-        #self.ground_coefficient = config["ground_coefficient"]
-        #self.falling_threshold_front = config["threshold_gyro_y_front"]
-        #self.falling_threshold_side = config["threshold_gyro_x_right"]
-        pass
+    def update_reconfigurable_values(self, config, level):
+        self.dyn_falling_active = config["dyn_falling_active"]
+        self.ground_coefficient = config["ground_coefficient"]
+        self.falling_threshold_front = config["threshold_gyro_y_front"]
+        self.falling_threshold_side = config["threshold_gyro_x_side"]
+        self.falling_threshold_orientation_front_back = math.radians(config["falling_threshold_orientation_front_back"])
+        self.falling_threshold_orientation_left_right = math.radians(config["falling_threshold_orientation_left_right"])
+        
 
     def check_falling(self, not_much_smoothed_gyro, quaternion):
         """Checks if the robot is currently falling and in which direction. """

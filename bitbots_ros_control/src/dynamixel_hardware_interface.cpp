@@ -136,10 +136,6 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
   */
   bool success = true;
 
-  // prepare diagnostic msg
-  diagnostic_msgs::DiagnosticArray array_msg = diagnostic_msgs::DiagnosticArray();
-  std::vector<diagnostic_msgs::DiagnosticStatus> array = std::vector<diagnostic_msgs::DiagnosticStatus>();
-  array_msg.header.stamp = ros::Time::now();
 
   // prepare diagnostic msg
   diagnostic_msgs::DiagnosticArray array_msg = diagnostic_msgs::DiagnosticArray();
