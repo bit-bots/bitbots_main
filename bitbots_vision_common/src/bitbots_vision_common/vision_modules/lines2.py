@@ -40,15 +40,15 @@ class LineDetector2:
         blurred = cv2.blur(self.image, (5, 5))
 
         # setting up vertical kernels
-        bkernel = np.array([0, 0, 0,
+        bkernel = np.array([1 * self.config["line_detector2_blue"], 2 * self.config["line_detector2_blue"], 1 * self.config["line_detector2_blue"],
                             0, 0, 0,
                             -1, -2, -1])
-        rkernel = np.array([0, 0, 0,
+        rkernel = np.array([1 * self.config["line_detector2_red"], 2 * self.config["line_detector2_red"], 1 * self.config["line_detector2_red"],
                             0, 0, 0,
                             -1, -2, -1])
-        gkernel = np.array([1, 2, 1,
+        gkernel = np.array([1 * self.config["green"], 2 * self.config["green"], 1 * self.config["green"],
                             0, 0, 0,
-                            -1, -2, -1])
+                            -1 * self.config["green"], -2 * self.config["green"], -1 * self.config["green"]])
         # correlating with kernels with each channel and adding results
         bfiltered = cv2.filter2D(blurred[:, :, 0], -1, bkernel)
         gfiltered = cv2.filter2D(blurred[:, :, 1], -1, gkernel)
@@ -61,15 +61,15 @@ class LineDetector2:
         filtered2 = cv2.add(cv2.add(bfiltered, gfiltered), rfiltered)
 
         # setting up horizontal kernels
-        bkernel2 = np.array([0, 0, -1,
-                             0, 0, -2,
-                             0, 0, -1])
-        rkernel2 = np.array([0, 0, -1,
-                             0, 0, -2,
-                             0, 0, -1])
-        gkernel2 = np.array([1, 0, -1,
-                             2, 0, -2,
-                             1, 0, -1])
+        bkernel2 = np.array([1 * self.config["line_detector2_blue"], 0, -1,
+                             2 * self.config["line_detector2_blue"], 0, -2,
+                             1 * self.config["line_detector2_blue"], 0, -1])
+        rkernel2 = np.array([1 * self.config["line_detector2_red"], 0, -1,
+                             2 * self.config["line_detector2_red"], 0, -2,
+                             1 * self.config["line_detector2_red"], 0, -1])
+        gkernel2 = np.array([1 * self.config["line_detector2_green"], 0, -1 * self.config["line_detector2_green"],
+                             2 * self.config["line_detector2_green"], 0, -2 * self.config["line_detector2_green"],
+                             1 * self.config["line_detector2_green"], 0, -1 * self.config["line_detector2_green"]])
         # correlating with kernels with each channel and adding results
         bfiltered = cv2.filter2D(blurred[:, :, 0], -1, bkernel2)
         gfiltered = cv2.filter2D(blurred[:, :, 1], -1, gkernel2)
@@ -86,10 +86,17 @@ class LineDetector2:
 
         # TODO better filter for low values
         # TODO ROSPARAM
-        filtered_sub = cv2.subtract(filtered, 40)
-        lines = cv2.HoughLinesP(filtered_sub, 1, math.pi / 180, 10, minLineLength=10)
+        filtered_sub = cv2.subtract(filtered, self.config["line_detector2_subtract"])
+
+        lines = cv2.HoughLinesP(filtered_sub,
+                                1,
+                                math.pi / 180,
+                                self.config["line_detector2_magic_value"],
+                                minLineLength=self.config["line_detector2_line_len"])
 
         self._linesegments = []
+        if lines is None:
+            return self._linesegments
         for l in lines:
             for x1, y1, x2, y2 in l:
                 # check if start or end is in any of the candidates
@@ -97,13 +104,21 @@ class LineDetector2:
                 for candidate in self.candidates:
                     if self._point_in_candidate((x1, x2), candidate) or self._point_in_candidate((x2,y2), candidate):
                         in_candidate = True
-                        break;
+                        break
+
                 # check if start and and is under horizon
-                under_horizon = self.horizon_detector.point_under_horizon((x1, y1), 50) and \
-                                self.horizon_detector.point_under_horizon((x1, y1), 50)
+                under_horizon = self.horizon_detector.point_under_horizon((x1, y1), self.config["line_detector2_horizon_offset"]) and \
+                                self.horizon_detector.point_under_horizon((x1, y1), self.config["line_detector2_horizon_offset"])
+
                 if not in_candidate and under_horizon:
                     self._linesegments.append((x1, y1, x2, y2))
         cv2.imshow("filtered_sub", filtered_sub)
+        hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+        cv2.imshow("hue", hsv[:, :, 0])
+        cv2.imshow("saturation", hsv[:, :, 1])
+        cv2.imshow("value", hsv[:, :, 2])
+        cv2.imshow("value", hsv)
+
         cv2.waitKey(1)
         return self._linesegments
 
