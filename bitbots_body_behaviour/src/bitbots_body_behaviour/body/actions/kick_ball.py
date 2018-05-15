@@ -22,12 +22,12 @@ class KickBall(AbstractActionModule):
         super(KickBall, self).__init__(connector)
         self.side = args
         self.begin = rospy.get_time()
-        self.right_kick = "rk_wm2016_unstable" # connector.animation.an_config["kicks"]["rk"]
-        self.left_kick = None # connector.animation.an_config["kicks"]["lk"]
-        self.right_kick_strong = None #  connector.animation.an_config["kicks"]["rkp"]
-        self.left_kick_strong = None # connector.animation.an_config["kicks"]["lkp"]
-        self.right_side_kick = None # connector.animation.an_config["kicks"]["lko"]
-        self.left_side_kick = None # connector.animation.an_config["kicks"]["rko"]
+        self.right_kick = "rk_wm2016_unstable"  # connector.animation.an_config["kicks"]["rk"]
+        self.left_kick = None  # connector.animation.an_config["kicks"]["lk"]
+        self.right_kick_strong = None  # connector.animation.an_config["kicks"]["rkp"]
+        self.left_kick_strong = None  # connector.animation.an_config["kicks"]["lkp"]
+        self.right_side_kick = None  # connector.animation.an_config["kicks"]["lko"]
+        self.left_side_kick = None  # connector.animation.an_config["kicks"]["rko"]
         self.anim_begin = False
 
     def perform(self, connector, reevaluate=False):

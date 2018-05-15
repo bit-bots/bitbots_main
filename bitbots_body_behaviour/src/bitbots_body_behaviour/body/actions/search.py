@@ -3,6 +3,7 @@
 Search
 ^^^^^^
 """
+from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 from humanoid_league_msgs.msg import HeadMode
 
@@ -16,5 +17,5 @@ class Search(AbstractActionModule):
 
 class StopAndSearch(Search):
     def perform(self, connector, reevaluate=False):
-        connector.walking.stop_walking()
-        super(StopAndSearch, self).perform(connector, reevaluate)
+        connector.blackboard.set_head_duty(HeadMode.BALL_MODE)
+        self.push(GoToRelativePosition, (0, 0, 0))
