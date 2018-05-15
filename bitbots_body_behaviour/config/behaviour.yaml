@@ -198,9 +198,28 @@ Behaviour:
       Positions:
           help: |
               All positions are given as per cent of
-              field length, field with
+              half field length, half field width so
+              that (0,0) is the center point, (1,1)
+              is the corner to the left of the opponent
+              goal and (-1,-1) is the right own corner
 
-          goalie: (0.95, 0)
-          teamPlayer: (0.1, 0)
-          defender: (0.5, 0.1)
-          center: (0.7, -0.1)
+                       _____________________
+              1    M  |          |          |  O
+              |    Y  |_ -x, y   |   x, y  _|  P
+              |       | |        |        | |  P
+              0    G  | |       ( )       | |  G
+              |    O  |_|        |        |_|  O
+              |    A  |  -x,-y   |   x,-y   |  A
+             -1    L  |__________|__________|  L
+
+                     -1----------0----------1
+
+
+          goalie: (-0.95, 0)
+          teamPlayer: (-0.1, 0)
+          defender: (-0.5, 0.2)
+          center: (-0.7, -0.2)
+
+      Field:
+          length: 9
+          width: 6
