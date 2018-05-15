@@ -32,7 +32,7 @@ for sub in subfolders:
 acts = os.listdir(path_to_behaviour + "/actions")
 
 for act in acts:
-    if ".py" in act and not ".pyc" in acts:
+    if ".py" in act and not ".pyc" in act:
         filelist.append(path_to_behaviour + "/actions/" + act)
 
 
@@ -115,16 +115,17 @@ for datei in filelist:
                     if to in action_nodes:
 
                         class_cache.append(to)
-                        to += str(a_count)
+                        #to += str(a_count)
                         #print to
                         a_count += 1
                     edges.append([name[0], to])
                 else:
                     if to in action_nodes:
-                        to += str(a_count)
+                        #to += str(a_count)
                         #print to
                         a_count += 1
                     edge_buffer.append([name[0], method[0], to])
+
 
     for edge in edge_buffer:
         #if [edge[0], edge[1]] in method_buffer: # wenn methode nicht überschrieben
