@@ -167,8 +167,9 @@ class Vision:
             else:
                 rospy.logerr(
                     'AAAAHHHH! The specified cascade config file doesn\'t exist!')
-        self.ball_classifier = live_classifier \
-            .LiveClassifier(self.package_path + config["classifier_model_path"])
+        if "classifier_model_path" not in self.config or \
+                self.config["classifier_model_path"] != config["classifier_model_path"]:
+            self.ball_classifier = live_classifier.LiveClassifier(self.package_path + config["classifier_model_path"])
 
         # set up ball config
         self.ball_config = {
@@ -200,6 +201,13 @@ class Vision:
             'horizon_offset': config["line_detector_horizon_offset"],
             'linepoints_range':  config["line_detector_linepoints_range"],
             'blur_kernel_size': config["line_detector_blur_kernel_size"],
+            'line_detector2_line_len': config["line_detector2_line_len"],
+            "line_detector2_red": config["line_detector2_red"],
+            "line_detector2_green": config["line_detector2_green"],
+            "line_detector2_blue": config["line_detector2_blue"],
+            "line_detector2_subtract": config["line_detector2_subtract"],
+            "line_detector2_magic_value": config["line_detector2_magic_value"],
+            "line_detector2_horizon_offset": config["line_detector2_horizon_offset"],
         }
 
 
