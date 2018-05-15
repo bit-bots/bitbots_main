@@ -29,14 +29,14 @@ class FallChecker(object):
 
         if not rospy.has_param("ZMPConfig/" + robot_type_name + "/HipPitch"):
             rospy.logwarn("HipPitch offset from walking was not found on parameter server, will use 0.")
-        self.falling_threshold_front = rospy.get_param("hcm/falling/" + robot_type_name + "/threshold_gyro_y_front")# \
+        self.falling_threshold_front = rospy.get_param("hcm/threshold_gyro_y_front")# \
                                        #+ math.radians(rospy.get_param("ZMPConfig/" + robot_type_name + "/HipPitch", -10))
         rospy.set_param("hcm/threshold_gyro_y_front", self.falling_threshold_front)
-        self.falling_threshold_side = rospy.get_param("hcm/falling/" + robot_type_name + "/threshold_gyro_x_side")
+        self.falling_threshold_side = rospy.get_param("hcm/threshold_gyro_x_side")
         rospy.set_param("hcm/threshold_gyro_x_side", self.falling_threshold_side)
-        self.falling_threshold_orientation_front_back = math.radians(rospy.get_param("hcm/falling/" + robot_type_name + "/falling_threshold_orientation_front_back"))
+        self.falling_threshold_orientation_front_back = math.radians(rospy.get_param("hcm/falling_threshold_orientation_front_back"))
         rospy.set_param("hcm/falling_threshold_orientation_front_back", self.falling_threshold_orientation_front_back)
-        self.falling_threshold_orientation_left_right = math.radians(rospy.get_param("hcm/falling/" + robot_type_name + "/falling_threshold_orientation_left_right"))
+        self.falling_threshold_orientation_left_right = math.radians(rospy.get_param("hcm/falling_threshold_orientation_left_right"))
         rospy.set_param("hcm/falling_threshold_orientation_left_right", self.falling_threshold_orientation_left_right)
 
         # Grenzwerte an Untergrund anpassen
@@ -61,6 +61,8 @@ class FallChecker(object):
         """Checks if the robot is currently falling and in which direction. """
         # converting the Quaternion into Euler angles for better understanding
         euler = self.quaternion_to_euler_angle(*quaternion)
+        if self.falling_threshold_front == 0 or self.falling_threshold_side == 0 or self.falling_threshold_orientation_front_back == 0 or self.falling_threshold_orientation_left_right == 0: 
+            return
         # setting the fall quantification function
         x_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_left_right, self.falling_threshold_front, euler[0], not_much_smoothed_gyro[0])
         y_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_front_back, self.falling_threshold_side, euler[1], not_much_smoothed_gyro[1])
@@ -74,20 +76,20 @@ class FallChecker(object):
             if not_much_smoothed_gyro[1] > 0:
                 rospy.loginfo("FALLING TO THE FRONT")
                 #TODO remove comments when out off static testing
-                return #self.falling_motor_degrees_front
+                return self.falling_motor_degrees_front
             # detect the falling direction
             else:
                 rospy.loginfo("FALLING TO THE BACK")
-                return #self.falling_motor_degrees_back
+                return self.falling_motor_degrees_back
         else:
             # detect the falling direction
             if not_much_smoothed_gyro[0] > 0:
                 rospy.loginfo("FALLING TO THE RIGHT")
-                return #self.falling_motor_degrees_right
+                return self.falling_motor_degrees_right
             # detect the falling direction
             else:
                 rospy.loginfo("FALLING TO THE LEFT")
-                return #self.falling_motor_degrees_left
+                return self.falling_motor_degrees_left
 
     def calc_fall_quantification(self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler, current_axis__gyro):
         # check if you are moving forward or away from the perpendicular position, by comparing the signs.
@@ -121,15 +123,15 @@ class FallChecker(object):
         
         t0 = +2.0 * (w * x + y * z)
         t1 = +1.0 - 2.0 * (x * x + ysqr)
-        Y = math.atan2(t0, t1)
+        X = math.atan2(t0, t1)
         
         t2 = +2.0 * (w * y - z * x)
         t2 = +1.0 if t2 > +1.0 else t2
         t2 = -1.0 if t2 < -1.0 else t2
-        X = math.asin(t2)
+        Y = math.asin(t2)
         
         t3 = +2.0 * (w * z + x * y)
         t4 = +1.0 - 2.0 * (ysqr + z * z)
         Z = math.atan2(t3, t4)
-        
+        print(math.degrees(X),math.degrees(Y),math.degrees(Z))
         return X, Y, Z

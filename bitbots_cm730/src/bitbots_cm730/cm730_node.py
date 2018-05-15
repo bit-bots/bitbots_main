@@ -319,6 +319,11 @@ class CM730Node:
         gyro = (math.radians(gyro[0] * f), math.radians(gyro[1] * f), math.radians(gyro[2] * f))
         f = (4 * 9.81) / 512
         accel = (accel[0] * f, accel[1] * f, accel[2] * f)
+
+        #mapping gyro to ros conv
+        gyro = (gyro[0] * -1, gyro[1], gyro[2])
+        accel = (accel[0], accel[1] * -1, accel[2]) 
+
         # axis are different in cm board, see cm730 documentation
         self.imu_msg.linear_acceleration = DataVector(accel[1], accel[0], accel[2])
         self.imu_msg.angular_velocity = DataVector(gyro[1], gyro[0], gyro[2])
