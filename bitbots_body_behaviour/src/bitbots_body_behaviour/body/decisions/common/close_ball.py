@@ -7,10 +7,9 @@ CloseBall
 """
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
-import rospy
+from math import atan2
 from bitbots_body_behaviour.body.actions.align_on_ball import AlignOnBall
-from bitbots_body_behaviour.body.actions.go_to_ball_pathfinding import GoToBallPathfinding
-from bitbots_body_behaviour.body.actions.go_to_absolute_position import GoToAbsolutePosition
+from bitbots_body_behaviour.body.actions.go_to import GoToBall
 from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionPenaltyKick
 from bitbots_body_behaviour.body.decisions.common.stands_correct_decision import StandsCorrectDecision
 from bitbots_body_behaviour.body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
@@ -45,7 +44,11 @@ class AbstractCloseBall(AbstractDecisionModule):
         return self.push(StandsCorrectDecision)
 
     def go(self, connector):
-        return self.push(GoToAbsolutePosition, [connector.personal_model.get_ball_relative()[0], connector.personal_model.get_ball_relative()[1], 0])
+        goal_relative = connector.personal_model.get_goal_relative()
+        direction = atan2(goal_relative[1], goal_relative[0])
+        connector.pathfinding.go_to(connector.personal_model.get_ball_relative()[0],
+                                    connector.personal_model.get_ball_relative()[1],
+                                    direction)
 
     def get_reevaluate(self):
         return True
@@ -55,35 +58,29 @@ class CloseBallCommon(AbstractCloseBall):
     pass
 
 
-class CloseBallPenaltyKick(AbstractCloseBall):  # todo not yet refactored 6.12.14.
-    def __init__(self, _):
-        super(CloseBallPenaltyKick, self).__init__(_)
-        self.toggle_direct_penalty = config["Behaviour"]["Toggles"]["PenaltyFieldie"]["directPenaltyKick"]
-        self.use_special_pathfinfing = config["Behaviour"]["Toggles"]["PenaltyFieldie"]["useSpecialPathfinding"]
+class CloseBallPenaltyKick(AbstractCloseBall):
+    def __init__(self, connector):
+        super(CloseBallPenaltyKick, self).__init__(connector)
+        self.toggle_direct_penalty = connector.config["Behaviour"]["Toggles"]["PenaltyFieldie"]["directPenaltyKick"]
+        self.use_special_pathfinding = connector.config["Behaviour"]["Toggles"]["PenaltyFieldie"]["useSpecialPathfinding"]
 
     def action(self, connector):
-        if not self.toggle_direct_penalty and not connector.blackboard_capsule().get_first_kick_done():
-                # todo first kick müsste eigenlich nicht extra abgecheckt werden, später raus nehmen
-            # the penatly kick is different for now
+        if not self.toggle_direct_penalty and not connector.blackboard.get_first_kick_done():
+            # todo first kick müsste eigenlich nicht extra abgecheckt werden, später raus nehmen
+            # the penalty kick is different for now
             return self.push(PenaltyFirstKick)
-
         else:
-            if abs(connector.raw_vision_capsule().get_ball_info(
-                    "v")) > self.config_kickalign_v:  # todo wieder gefilterte daten verwenden
-
+            if abs(connector.personal_model.get_ball_relative()[1]) > self.config_kickalign_v:
                 return self.push(AlignOnBall)
             else:
                 return self.push(KickDecisionPenaltyKick)
 
-    def go(self):
-        if self.use_special_pathfinfing:
-            return self.push(GoToBallPenaltykick)
-        else:
-            return self.push(GoToBallPathfinding)
+    def go(self, connector):
+        return self.push(GoToBall)
 
 
 class CloseBallGoalie(AbstractCloseBall):
     def perform(self, connector, reevaluate=False):
         if connector.blackboard_capsule().has_goalie_kicked():
             return self.interrupt()
-        super(AbstractCloseBall, self).perform(connector, reevaluate)  # perform an normal closeball
+        super(AbstractCloseBall, self).perform(connector, reevaluate)  # perform an normal CloseBall

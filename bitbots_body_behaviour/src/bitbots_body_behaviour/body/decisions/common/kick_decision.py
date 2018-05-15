@@ -11,9 +11,8 @@ from bitbots_body_behaviour.body.actions.kick_ball import KickBall
 
 class AbstractKickDecision(AbstractDecisionModule):
     """
-    Decides wich leg he has to use to kick the ball and if he has te repositionate before kicking
+    Decides which leg he has to use to kick the ball and if he has te reposition before kicking
     """
-
     def __init__(self, connector, _):
         super(AbstractKickDecision, self).__init__(connector)
         self.max_goal_hard_distance = connector.config["Body"]["Fieldie"]["maxGoalHardKickDistance"]
@@ -21,7 +20,6 @@ class AbstractKickDecision(AbstractDecisionModule):
         self.use_dynamic_kick_toggle = connector.config["Body"]["Toggles"]["Fieldie"]["useDynamicKick"]
 
     def perform(self, connector, reevaluate=False):
-
         self.action(connector, reevaluate)
 
     def action(self, connector, reevaluate):

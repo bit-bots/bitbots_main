@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 BallSeen
-^^^^^^^^^^^^^
+^^^^^^^^
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 

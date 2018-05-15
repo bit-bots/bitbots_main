@@ -10,7 +10,6 @@ import time
 
 import rospy
 from bitbots_body_behaviour.body.actions.go_away_from_ball import GoAwayFromBall
-from bitbots_body_behaviour.body.actions.go_to_absolute_position import GoToAbsolutePosition
 from bitbots_body_behaviour.body.actions.testing.test_walking_dynamic import TestWalkingDynamic
 from bitbots_body_behaviour.body.actions.testing.test_walking_static import TestWalkingStatic
 from bitbots_body_behaviour.body.actions.wait import Wait
@@ -30,7 +29,7 @@ duty = None  # can be overwriten by the startup script (to force a behaviour)
 
 class DutyDecider(AbstractDecisionModule):
     """
-    Decides what kind of behavoiur the robot performs
+    Decides what kind of behaviour the robot performs
     """
 
     def __init__(self, connector, _):
@@ -57,9 +56,10 @@ class DutyDecider(AbstractDecisionModule):
         if not connector.blackboard.get_duty():
             if duty is not None:
                 # get information about his duty which was set by the startup script
+                # TODO: role vs duty?
                 connector.blackboard.set_duty(duty)
             else:
-                connector.blackboard.set_duty("TeamPlayer")
+                connector.blackboard.set_duty()
 
         if not connector.gamestate.is_game_state_equals(DATA_VALUE_STATE_PLAYING):
             # resets all behaviours if the gamestate is not playing, because the robots are positioned again

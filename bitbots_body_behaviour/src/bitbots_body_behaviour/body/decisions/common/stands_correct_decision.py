@@ -13,7 +13,6 @@ import rospy
 from bitbots_body_behaviour.body.actions.align_on_ball import AlignOnBall
 from bitbots_body_behaviour.body.actions.align_to_goal import AlignToGoal
 from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionCommon
-from humanoid_league_msgs.msg import HeadMode
 
 
 class StandsCorrectDecision(AbstractDecisionModule):
