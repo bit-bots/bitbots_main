@@ -8,11 +8,12 @@ Provides informations about the world model.
 import math
 
 from humanoid_league_msgs.msg import Position2D
+from tf.transformations import euler_from_quaternion
 
 
 class WorldModelCapsule:
     def __init__(self, ):
-        self.position = Position2D()
+        self.position = None  # type: Position2D
         self.ball_position_u = None
         self.ball_position_v = None
 
@@ -20,7 +21,11 @@ class WorldModelCapsule:
         return self.position.pose.x, self.position.pose.y, self.position.pose.theta
 
     def get_ball_position_xy(self):
-        raise NotImplementedError
+        """Calculate the absolute position of the ball"""
+        pos_x, pos_y, theta = self.get_current_position()
+        ball_angle = math.atan2(self.ball_position_v, self.ball_position_u) + theta
+        hypotenuse = math.sqrt(self.ball_position_u ** 2 + self.ball_position_v ** 2)
+        return pos_x + math.sin(ball_angle) * hypotenuse, pos_y + math.cos(ball_angle) * hypotenuse
 
     def ball_relative_cb(self, msg):
         self.ball_position_u = msg.ball_relative.x
@@ -65,7 +70,6 @@ class WorldModelCapsule:
 
     def get_distance_to_xy(self, x, y):
         """ Returns distance from robot to given position """
-
         u, v = self.get_uv_from_xy(x, y)
         dist = math.sqrt(u ** 2 + v ** 2)
 
@@ -75,4 +79,11 @@ class WorldModelCapsule:
         raise NotImplementedError
 
     def position_callback(self, pos):
-        self.position = pos
+        # Convert PositionWithCovarianceStamped to Position2D
+        position2d = Position2D()
+        position2d.header = pos.header
+        position2d.pose.x = pos.pose.pose.position.x
+        position2d.pose.y = pos.pose.pose.position.y
+        rotation = pos.pose.pose.orientation
+        position2d.pose.theta = euler_from_quaternion(rotation.x, rotation.y, rotation.z, rotation.w)[2]
+        self.position = position2d
