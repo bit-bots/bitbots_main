@@ -14,10 +14,10 @@ class RaiseArm(AbstractActionModule):
         super(RaiseArm, self).__init__(connector)
         self.direction = args
         self.use_both_arms = connector.config["Behaviour"]["Toggles"]["Goalie"]["useBothArms"]
-        self.both_arms = connector.config["animations"]["goalie"]["raiseBoth"]
-        self.left_arm = connector.config["animations"]["goalie"]["raiseLeft"]
-        self.right_arm = connector.config["animations"]["goalie"]["raiseRight"]
-        self.middle_arm = connector.config["animations"]["goalie"]["raiseMiddle"]
+        self.both_arms = connector.animation.config["Goalie"]["raiseBothArms"]
+        self.left_arm = connector.animation.config["Goalie"]["raiseLeftArm"]
+        self.right_arm = connector.animation.config["Goalie"]["raiseRightArm"]
+        self.middle_arm = connector.animation.config["Goalie"]["lowerBothArms"]
 
     def perform(self, connector, reevaluate=False):
         """ These animations are only correcting the arm positions """

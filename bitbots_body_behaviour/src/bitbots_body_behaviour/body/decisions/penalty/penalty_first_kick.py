@@ -23,10 +23,10 @@ class PenaltyFirstKick(AbstractDecisionModule):
         super(PenaltyFirstKick, self).__init__(connector)
         self.first_run = True
         self.direction = 0
-        self.first_left_kick = connector.config["animations"]["flk"]
-        self.first_right_kick = connector.config["animations"]["frk"]
-        self.first_front_left_kick = connector.config["animations"]["fflk"]
-        self.first_front_right_kick = connector.config["animations"]["ffrk"]
+        self.first_left_kick = connector.animation.config["Penalty"]["leftKick"]
+        self.first_right_kick = connector.animation.config["Penalty"]["rightKick"]
+        self.first_front_left_kick = connector.animation.config["Penalty"]["frontLeftKick"]
+        self.first_front_right_kick = connector.animation.config["Penalty"]["frontRightKick"]
         self.toggle_direct_penalty = connector.config["Behaviour"]["Body"]["Toggles"]["PenaltyFieldie"]["directPenaltyKick"]
         self.penalty_direction = connector.config["Behaviour"]["Body"]["PenaltyFieldie"]["penaltyDirection"]
 

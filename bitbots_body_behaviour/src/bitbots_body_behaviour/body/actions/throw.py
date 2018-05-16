@@ -27,9 +27,9 @@ class Throw(AbstractActionModule):
         self.direction = args
         self.initializationTime = rospy.get_time()
         self.played = False
-        self.left_animation = connector.config["animations"]["goalie"]["throw_left"]
-        self.middle_animation = connector.config["animations"]["goalie"]["throw_middle"]
-        self.right_animation = connector.config["animations"]["goalie"]["throw_right"]
+        self.left_animation = connector.animation.config["Goalie"]["throwLeft"]
+        self.middle_animation = connector.animation.config["Goalie"]["throwMiddle"]
+        self.right_animation = connector.animation.config["Goalie"]["throwRight"]
 
     def perform(self, connector, reevaluate=False):
         # The head should not move when being thrown
