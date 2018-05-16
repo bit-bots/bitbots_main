@@ -17,7 +17,7 @@ from bitbots_body_behaviour.body.decisions.common.ball_seen import BallSeenField
 class OneTimeKickerDecision(AbstractDecisionModule):  # todo make this player shoot always with the hard kick
     def __init__(self, connector):
         super(OneTimeKickerDecision, self).__init__(connector)
-        self.reset_time = connector.config["Behaviour"]["OneTimeKicker"]["resetTime"]
+        self.reset_time = connector.config["Body"]["OneTimeKicker"]["resetTime"]
 
     def perform(self, connector, reevaluate=False):
         # sets the robot back to its original role if the time is up

@@ -17,7 +17,7 @@ from humanoid_league_msgs.msg import HeadMode
 class BallDangerous(AbstractDecisionModule):
     def __init__(self, connector):
         super(BallDangerous, self).__init__(connector)
-        self.react_distance = connector.config["Behaviour"]["Body"]["Goalie"]["reactDistance"]
+        self.react_distance = connector.config["Body"]["Goalie"]["reactDistance"]
 
     def perform(self, connector, reevaluate=False):
         ball_u = connector.personal_model.get_ball_relative()[0]

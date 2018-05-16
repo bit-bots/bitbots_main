@@ -24,6 +24,5 @@ class Wait(AbstractActionModule):
             connector.blackboard.set_head_duty(HeadMode.BALL_MODE)
 
         self.push(GoToRelativePosition, (0, 0, 0))
-        connector.walking.stop_walking()
         if self.time > rospy.get_time():
             self.pop()

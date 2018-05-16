@@ -18,7 +18,7 @@ class AfterThrowDecision(AbstractDecisionModule):
 
     def __init__(self, connector, _):
         super(AfterThrowDecision, self).__init__(connector)
-        self.relocateTurn = connector.config["Behaviour"]["Toggles"]["Goalie"]["relocateTurn"]
+        self.relocateTurn = connector.config["Body"]["Toggles"]["Goalie"]["relocateTurn"]
         self.anim_goalie_walkready = connector.config["animations"]["motion"]["goalie-walkready"]
 
     def perform(self, connector, reevaluate=False):

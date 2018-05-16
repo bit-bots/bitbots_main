@@ -30,9 +30,9 @@ class KickOffSupporterSideDecision(AbstractDecisionModule):
 class KickOffSupporter(AbstractDecisionModule):
     def __init__(self, connector, args):
         super(KickOffSupporter, self).__init__(connector)
-        self.ignore_kick_off_time = connector.config["Behaviour"]["Fieldie"]["KickOff"]["ignoreKickOffTime"]
-        self.strategy_outdated = connector.config["Behaviour"]["Fieldie"]["KickOff"]["strategyOutdateTime"]
-        self.toggle_one_time_defender = connector.config["Behaviour"]["Toggles"]["Fielde"]["kickOffOneTimeDefender"]
+        self.ignore_kick_off_time = connector.config["Body"]["Fieldie"]["KickOff"]["ignoreKickOffTime"]
+        self.strategy_outdated = connector.config["Body"]["Fieldie"]["KickOff"]["strategyOutdateTime"]
+        self.toggle_one_time_defender = connector.config["Body"]["Toggles"]["Fielde"]["kickOffOneTimeDefender"]
         self.start_time = rospy.get_time()
         self.direction = args
         self.walked = False

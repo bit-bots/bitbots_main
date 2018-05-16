@@ -36,9 +36,8 @@ class DutyDecider(AbstractDecisionModule):
     def perform(self, connector, reevaluate=False):
 
         if connector.blackboard.is_frozen() or not connector.gamestate.is_allowed_to_move():
-            connector.walking.stop_walking()
             rospy.logwarn("Not allowed to move")
-            return
+            return self.push(Wait, 0.1)
 
         if not connector.blackboard.get_duty():
             if duty is not None:

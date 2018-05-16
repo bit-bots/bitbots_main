@@ -18,7 +18,7 @@ from humanoid_league_msgs.msg import HeadMode
 class AlignToGoal(AbstractActionModule):
     def __init__(self, connector, _):
         super(AlignToGoal, self).__init__(connector)
-        self.config_max_aligning_time = connector.config["Fieldie"]["maxGoalAlignTime"]
+        self.config_max_aligning_time = connector.config["Body"]["Fieldie"]["maxGoalAlignTime"]
 
     def perform(self, connector, reevaluate=False):
         connector.blackboard.set_head_duty(HeadMode.BALL_GOAL_TRACKING)

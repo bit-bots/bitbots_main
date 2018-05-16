@@ -13,7 +13,7 @@ class RaiseArm(AbstractActionModule):
     def __init__(self, connector, args):
         super(RaiseArm, self).__init__(connector)
         self.direction = args
-        self.use_both_arms = connector.config["Behaviour"]["Toggles"]["Goalie"]["useBothArms"]
+        self.use_both_arms = connector.config["Body"]["Toggles"]["Goalie"]["useBothArms"]
         self.both_arms = connector.animation.config["Goalie"]["raiseBothArms"]
         self.left_arm = connector.animation.config["Goalie"]["raiseLeftArm"]
         self.right_arm = connector.animation.config["Goalie"]["raiseRightArm"]

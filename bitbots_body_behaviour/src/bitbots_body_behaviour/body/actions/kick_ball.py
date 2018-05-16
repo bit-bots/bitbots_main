@@ -32,7 +32,6 @@ class KickBall(AbstractActionModule):
 
     def perform(self, connector, reevaluate=False):
         self.do_not_reevaluate()
-        connector.walking.stop_walking()
 
         if rospy.get_time() - self.begin > 3.5:  # wait one moment
             self.do_not_reevaluate()  # dont interrrupt the kick

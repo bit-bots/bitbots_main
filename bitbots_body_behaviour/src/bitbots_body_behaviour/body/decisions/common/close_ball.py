@@ -61,8 +61,8 @@ class CloseBallCommon(AbstractCloseBall):
 class CloseBallPenaltyKick(AbstractCloseBall):
     def __init__(self, connector):
         super(CloseBallPenaltyKick, self).__init__(connector)
-        self.toggle_direct_penalty = connector.config["Behaviour"]["Toggles"]["PenaltyFieldie"]["directPenaltyKick"]
-        self.use_special_pathfinding = connector.config["Behaviour"]["Toggles"]["PenaltyFieldie"]["useSpecialPathfinding"]
+        self.toggle_direct_penalty = connector.config["Body"]["Toggles"]["PenaltyFieldie"]["directPenaltyKick"]
+        self.use_special_pathfinding = connector.config["Body"]["Toggles"]["PenaltyFieldie"]["useSpecialPathfinding"]
 
     def action(self, connector):
         if not self.toggle_direct_penalty and not connector.blackboard.get_first_kick_done():

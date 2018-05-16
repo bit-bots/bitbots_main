@@ -27,8 +27,8 @@ class PenaltyFirstKick(AbstractDecisionModule):
         self.first_right_kick = connector.animation.config["Penalty"]["rightKick"]
         self.first_front_left_kick = connector.animation.config["Penalty"]["frontLeftKick"]
         self.first_front_right_kick = connector.animation.config["Penalty"]["frontRightKick"]
-        self.toggle_direct_penalty = connector.config["Behaviour"]["Body"]["Toggles"]["PenaltyFieldie"]["directPenaltyKick"]
-        self.penalty_direction = connector.config["Behaviour"]["Body"]["PenaltyFieldie"]["penaltyDirection"]
+        self.toggle_direct_penalty = connector.config["Body"]["Toggles"]["PenaltyFieldie"]["directPenaltyKick"]
+        self.penalty_direction = connector.config["Body"]["PenaltyFieldie"]["penaltyDirection"]
 
     def perform(self, connector, reevaluate=False):
 

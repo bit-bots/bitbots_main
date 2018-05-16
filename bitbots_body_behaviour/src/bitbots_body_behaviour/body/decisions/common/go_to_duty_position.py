@@ -14,15 +14,15 @@ from bitbots_body_behaviour.body.actions.go_to import GoToAbsolutePosition
 
 
 class GoToDutyPosition(AbstractDecisionModule):
-    def __init__(self, connector):
+    def __init__(self, connector, _):
         super(GoToDutyPosition, self).__init__(connector)
-        self.half_length = connector.config["Behaviour"]["Common"]["Field"]["length"] / 2.0
-        self.half_width = connector.config["Behaviour"]["Common"]["Field"]["width"] / 2.0
-        self.goalie_position = connector.config["Behaviour"]["Common"]["Positions"]["goalie"]
-        self.teamplayer_position = connector.config["Behaviour"]["Common"]["Positions"]["teamPlayer"]
-        self.defender_position = connector.config["Behaviour"]["Common"]["Positions"]["defender"]
-        self.center_position = connector.config["Behaviour"]["Common"]["Positions"]["center"]
-        self.threshold = connector.config["Behaviour"]["Common"]["positioningThreshold"]
+        self.half_length = connector.config["Body"]["Common"]["Field"]["length"] / 2.0
+        self.half_width = connector.config["Body"]["Common"]["Field"]["width"] / 2.0
+        self.goalie_position = connector.config["Body"]["Common"]["Positions"]["goalie"]
+        self.teamplayer_position = connector.config["Body"]["Common"]["Positions"]["teamPlayer"]
+        self.defender_position = connector.config["Body"]["Common"]["Positions"]["defender"]
+        self.center_position = connector.config["Body"]["Common"]["Positions"]["center"]
+        self.threshold = connector.config["Body"]["Common"]["positioningThreshold"]
 
     def perform(self, connector, reevaluate=False):
         duty = connector.blackboard.get_duty()

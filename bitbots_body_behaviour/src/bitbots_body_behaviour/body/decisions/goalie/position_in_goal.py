@@ -16,9 +16,9 @@ from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
 class PositionInGoal(AbstractDecisionModule):
     def __init__(self,  connector, _):
         super(PositionInGoal, self).__init__(connector)
-        goal_width = connector.config["Behaviour"]["Body"]["Common"]["Field"]["goalWidth"]
-        max_side_move = connector.config["Behaviour"]["Body"]["Goalie"]["maxSidewardMovement"]
-        self.angle_threshold = connector.config["Behaviour"]["Body"]["Goalie"]["sidewardMoveAngleThreshold"]
+        goal_width = connector.config["Body"]["Common"]["Field"]["goalWidth"]
+        max_side_move = connector.config["Body"]["Goalie"]["maxSidewardMovement"]
+        self.angle_threshold = connector.config["Body"]["Goalie"]["sidewardMoveAngleThreshold"]
         self.max_side = goal_width * max_side_move
 
     def perform(self, connector, reevaluate=False):
