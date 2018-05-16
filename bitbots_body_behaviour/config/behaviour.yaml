@@ -74,6 +74,12 @@ Behaviour:
       # Seitlicher versatz bei dem er sich noch sitlich zum Ball ausrichten soll
       kickAlign: 0.1
 
+      # Zeit, die beim Suchen des Balls gewartet wird, bis der Roboter sich dreht
+      searchWaitTime: 4
+
+      # Wie oft der Roboter sich dreht und nach dem Ball sucht, bevor er zum Mittelpunkt geht
+      turnCenterpointTime: 6
+
       # Der absolut Wert des angularen Wertes des Walkings mit dem er sich dreht wenn er nach dem Ball sucht.
       searchingTurnAngularAbsolute: 8
 
