@@ -185,7 +185,8 @@ for node in decisions_nodes:
 writer.write("\n")
 
 
-for edge in edges:
+unique_edges = list([list(j) for j in set([tuple(i) for i in edges])])
+for edge in unique_edges:
     if edge in filtered_edges:
         writer.write(edge[0] + "->" + edge[1] + "\n")
 
