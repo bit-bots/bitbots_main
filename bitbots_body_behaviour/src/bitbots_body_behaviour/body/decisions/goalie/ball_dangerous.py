@@ -15,13 +15,17 @@ from humanoid_league_msgs.msg import HeadMode
 
 
 class BallDangerous(AbstractDecisionModule):
+    def __init__(self, connector):
+        super(BallDangerous, self).__init__(connector)
+        self.react_distance = connector.config["Behaviour"]["Body"]["Goalie"]["reactDistance"]
+
     def perform(self, connector, reevaluate=False):
         ufiltered = connector.personal_model.get_ball_relative()[0]
 
         # We saw the ball so we track it
         connector.blackboard.set_head_duty(HeadMode.BALL_MODE)
 
-        if ufiltered < 1500 and rospy.get_time() - connector.personal_model.get_last_seen("Ball") < 2:
+        if ufiltered < self.react_distance and rospy.get_time() - connector.personal_model.ball_last_seen() < 2:
             return self.push(ThrowOrRaiseArm)
         else:
             return self.push(GoalieMovement)

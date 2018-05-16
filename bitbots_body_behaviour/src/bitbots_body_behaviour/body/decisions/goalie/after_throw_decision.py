@@ -6,10 +6,9 @@ InGoal
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
 """
-from stackmachine.abstract_decision_module import AbstractDecisionModule
-
-from body.actions.throw import MIDDLE
-from body.decisions.goalie.turn_after_throw import TurnAfterThrow
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_body_behaviour.body.actions.throw import MIDDLE
+from bitbots_body_behaviour.body.decisions.common.go_to_duty_position import GoToDutyPosition
 
 
 class AfterThrowDecision(AbstractDecisionModule):
@@ -19,17 +18,17 @@ class AfterThrowDecision(AbstractDecisionModule):
 
     def __init__(self, connector, _):
         super(AfterThrowDecision, self).__init__(connector)
-        self.relocateTurn = config["Behaviour"]["Toggles"]["Goalie"]["relocateTurn"]
-        self.anim_goalie_walkready = config["animations"]["motion"]["goalie-walkready"]
+        self.relocateTurn = connector.config["Behaviour"]["Toggles"]["Goalie"]["relocateTurn"]
+        self.anim_goalie_walkready = connector.config["animations"]["motion"]["goalie-walkready"]
 
     def perform(self, connector, reevaluate=False):
-        richtung = connector.blackboard.get_throw_direction()
-        if richtung == MIDDLE:
+        direction = connector.blackboard.get_throw_direction()
+        if direction == MIDDLE:
             connector.blackboard.delete_was_thrown()
-            connector.animation.play_animation()
 
         if self.relocateTurn:
-            return self.push(TurnAfterThrow)
+            # Turn back to the right angle after throw
+            return self.push(GoToDutyPosition)
         else:
             connector.blackboard.delete_was_thrown()
             return self.pop()

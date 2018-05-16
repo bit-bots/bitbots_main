@@ -113,6 +113,9 @@ Behaviour:
           strategyOutdateTime: 30
 
     Goalie:
+    # Distance where the goalie reacts to the ball in meter
+    reactDistance: 1.5
+
     ### Go To Ball ###
       # geschwindigkeit, bei der der Torwart denkt, dass der Ball liegt und er zu ihm geht
       goToBallVelocity: 0.1
@@ -223,3 +226,4 @@ Behaviour:
       Field:
           length: 9
           width: 6
+          goalWidth: 2.6

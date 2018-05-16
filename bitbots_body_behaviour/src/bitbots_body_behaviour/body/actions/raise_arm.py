@@ -5,7 +5,7 @@ RaiseArm
 
 Raising Arms to get ready to throw the goalie.
 """
-from body.actions.throw import LEFT, RIGHT, MIDDLE, BOTH_ARMS_HIGH
+from bitbots_body_behaviour.body.actions.throw import LEFT, RIGHT, MIDDLE, BOTH_ARMS_HIGH
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
 
