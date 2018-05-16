@@ -9,7 +9,6 @@
 
   <license>TODO</license>
 
-
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>rospy</build_depend>
@@ -43,5 +42,6 @@
       <language>python2</language>
       <status>sim_tested</status>
     </bitbots_documentation>
+    <rosdoc config="rosdoc.yaml"/>
   </export>
 </package>

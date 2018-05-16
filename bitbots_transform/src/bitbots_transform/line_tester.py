@@ -1,18 +1,21 @@
 #!/usr/bin/env python2.7
+"""
+Command line tool to publish lines on the /line_in_image topic
+"""
 import rospy
 from humanoid_league_msgs.msg import LineInformationInImage, LineSegmentInImage
 import sys
 import signal
 
 
-def signal_term_handler(signal, frame):
+def _signal_term_handler(signal, frame):
     rospy.logerr('User Keyboard interrupt')
     sys.exit(0)
 
 
 if __name__ == "__main__":
     # handle keyboard interrupts
-    signal.signal(signal.SIGINT, signal_term_handler)
+    signal.signal(signal.SIGINT, _signal_term_handler)
 
     rospy.init_node("line_tester")
     pub = rospy.Publisher("line_in_image", LineInformationInImage, queue_size=10)
