@@ -5,7 +5,7 @@ RoleDecider
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
-Decides on witch position our fieldie should play
+Decides on which position our fieldie should play
 """
 import rospy
 

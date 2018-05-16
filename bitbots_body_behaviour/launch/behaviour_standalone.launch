@@ -18,9 +18,4 @@
 
     <node name="body_behaviour" pkg="bitbots_body_behaviour" type="body_behaviour.py" respawn="true"  output="screen" args="$(arg duty)" />
     <node name="head_behaviour"  pkg="bitbots_head_behaviour" type="head_node.py" respawn="true" output="screen"/>
-
-    <rosparam command="load" file="$(find bitbots_pathfinding)/config/pathfinding_config.yaml"/>
-    <node name="pathfinding" pkg="bitbots_pathfinding" type="pathfinding_rnn.py" respawn="true">
-        <param name="runpath" value="$(find bitbots_pathfinding)"/>
-    </node>
 </launch>

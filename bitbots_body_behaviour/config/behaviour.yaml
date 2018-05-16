@@ -1,10 +1,9 @@
 Behaviour:
   Body:
-
-    Toggles: # toggles für das Kopfverhalten
-      # toggles für den Fieldie
+    Toggles: # toggles fuer das Kopfverhalten
+      # toggles fuer den Fieldie
       Fieldie:
-          # lässt den Defender warten bis der ball bei sich in der nähe ist oder niemand sonst auf dem Feld ist um bis
+          # lässt den Defender warten bis der ball bei sich in der nahe ist oder niemand sonst auf dem Feld ist um bis
           # zum nächsten set ein striker zu werden
           oneTimeDefender: True
 
@@ -39,7 +38,7 @@ Behaviour:
           penaltykick_go_away: False
 
 
-      # Toggles für den Goalie
+      # Toggles fuer den Goalie
       Goalie:
           # Aktiviert das Relocate, das der Torwart sich im Tor richtig dreht, wenn er sich beim Hinwerfen umgedreht hat
           relocateTurn : True
@@ -54,12 +53,12 @@ Behaviour:
           # if the goalie tries to turn itself to the right direction, facing the opposite goal
           checkDirection: False
 
-      # toggles für elfmeter schütze
+      # toggles fuer elfmeter schuetze
       PenaltyFieldie:
           #lässt ihn direkt ohne weiteres verhalten schießen
           directPenaltyKick: True
 
-          # benutze ein besonderes pathfinding für den penaltykick
+          # benutze ein besonderes pathfinding fuer den penaltykick
           useSpecialPathfinding: True
 
     Fieldie:
@@ -103,7 +102,7 @@ Behaviour:
           goStrikerTime: 1.0
           # die wie viel letzte ball entfernenungen betrachtet werden um zu entscheiden ob der defender zum striker wird
           ballHistoryLenght: 20
-          # Wie viele Trues in der History sein müssen zum striekr zu werden
+          # Wie viele Trues in der History sein muessen zum striekr zu werden
           requiredNumberTrues: 18
           # Zeit die der Defender am Anfang nichts macht um nicht zum striker zu werden
           waitAtStart: 10
@@ -119,8 +118,8 @@ Behaviour:
           strategyOutdateTime: 30
 
     Goalie:
-    # Distance where the goalie reacts to the ball in meter
-    reactDistance: 1.5
+      # Distance where the goalie reacts to the ball in meter
+      reactDistance: 1.5
 
     ### Go To Ball ###
       # geschwindigkeit, bei der der Torwart denkt, dass der Ball liegt und er zu ihm geht
@@ -146,7 +145,7 @@ Behaviour:
       # u estimation distance between befor throwing
       uThrowThreshold: 0.5
 
-    # elfemter schütze
+    # elfemter schuetze
     PenaltyFieldie:
         # verhaltensrichtung festlegen
         # -1 zufällig entscheiden lassen
@@ -219,7 +218,7 @@ Behaviour:
               0    G  | |       ( )       | |  G
               |    O  |_|        |        |_|  O
               |    A  |  -x,-y   |   x,-y   |  A
-             -1    L  |__________|__________|  L
+              -1   L  |__________|__________|  L
 
                      -1----------0----------1
 

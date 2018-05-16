@@ -5,7 +5,6 @@ from bitbots_connector.capsules.animation_capsule import AnimationCapsule
 from bitbots_connector.capsules.blackboard_capsule import BlackboardCapsule
 from bitbots_connector.capsules.game_status_capsule import GameStatusCapsule
 from bitbots_connector.capsules.team_data_capsule import TeamDataCapsule
-from bitbots_connector.capsules.walking_capsule import WalkingCapsule
 from bitbots_connector.capsules.world_model_capsule import WorldModelCapsule
 from bitbots_connector.capsules.head_capsule import HeadCapsule
 from bitbots_connector.capsules.personal_model_capsule import PersonalModelCapsule
@@ -26,7 +25,6 @@ class BodyConnector(AbstractConnector):
         super(BodyConnector, self).__init__()
         self.blackboard = BlackboardCapsule()
         self.gamestate = GameStatusCapsule()
-        self.walking = WalkingCapsule()
         self.animation = AnimationCapsule()
         self.speaker = SpeakerCapsule()
         

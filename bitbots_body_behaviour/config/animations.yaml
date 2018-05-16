@@ -1,27 +1,27 @@
 Animations:
   Kicks:
-    leftKick:
-    leftKickStrong:
-    leftKickSide:
-    rightKick:
-    rightKickStrong:
-    rightKickSide:
+    leftKick: ""
+    leftKickStrong: ""
+    leftKickSide: ""
+    rightKick: ""
+    rightKickStrong: ""
+    rightKickSide: ""
 
   Goalie:
-    raiseLeftArm:
-    raiseRightArm:
-    raiseBothArms:
+    raiseLeftArm: ""
+    raiseRightArm: ""
+    raiseBothArms: ""
     # For throwing to the middle
-    lowerBothArms:
+    lowerBothArms: ""
 
-    throwLeft:
-    throwRight:
-    throwMiddle:
+    throwLeft: ""
+    throwRight: ""
+    throwMiddle: ""
 
   Penalty:
     # Penalty kicks to the left/right
-    leftKick:
-    rightKick:
+    leftKick: ""
+    rightKick: ""
     # Penalty kicks to the front, with left/right leg
-    frontLeftKick:
-    frontRightKick:
+    frontLeftKick: ""
+    frontRightKick: ""

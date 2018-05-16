@@ -11,7 +11,6 @@ import time
 import rospy
 from bitbots_body_behaviour.body.actions.search import Search
 from bitbots_body_behaviour.body.decisions.common.close_ball import CloseBallPenaltyKick, CloseBallCommon
-from bitbots_body_behaviour.body.decisions.goalie.ball_dangerous import BallDangerous
 from bitbots_body_behaviour.body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
@@ -40,21 +39,6 @@ class AbstractBallSeen(AbstractDecisionModule):
 
     def ball_not_seen(self, connector):
         raise NotImplementedError
-
-
-class BallSeenGoalie(AbstractBallSeen):
-    def perform(self, connector, reevaluate=False):
-
-        if rospy.get_time() - connector.personal_model.ball_last_seen() < 2:
-            return self.has_ball_seen(connector)
-        else:
-            return self.ball_not_seen(connector)
-
-    def has_ball_seen(self, connector):
-        return self.push(BallDangerous)
-
-    def ball_not_seen(self, connector):
-        return self.push(Search)
 
 
 class BallSeenFieldie(AbstractBallSeen):
