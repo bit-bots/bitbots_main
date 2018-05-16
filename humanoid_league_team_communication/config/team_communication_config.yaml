@@ -3,12 +3,6 @@ team_communication:
   # The port to be used
   port: 12321
 
-  # Team number
-  team: 8
-
-  # Player number
-  player: 1
-
   # Rate of published messages in Hz
   rate: 1
 
