@@ -62,7 +62,7 @@ void BaseFootprintBroadcaster::imu_callback(const sensor_msgs::Imu::ConstPtr& im
     tf.transform.rotation = imu_msg->orientation;
     if((imu_msg->orientation.x + imu_msg->orientation.y + imu_msg->orientation.z + imu_msg->orientation.w) == 0.0)
     {
-        ROS_WARN("imu message has no orientation set, use complementary filter to get one ")
+        ROS_WARN("imu message has no orientation set, use complementary filter to get one ");
         return;
     }
 
