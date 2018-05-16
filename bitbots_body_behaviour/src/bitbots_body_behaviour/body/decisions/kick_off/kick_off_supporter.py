@@ -60,14 +60,14 @@ class KickOffSupporter(AbstractDecisionModule):
                     self.walked = True
                     connector.speaker.say("I am Defending")
                     if self.toggle_one_time_defender:
-                        connector.set_duty(Strategy.ROLE_DEFENDER)
+                        connector.team_data.set_role(Strategy.ROLE_DEFENDER)
                         if self.direction == Strategy.SIDE_RIGHT:
                             # TODO: adjust distances
                             return self.push(GoToRelativePosition, (-1, -1, 0))
                         else:
                             return self.push(GoToRelativePosition, (-1, 1, 0))
                     else:
-                        connector.set_duty(Strategy.ROLE_DEFENDER)
+                        connector.team_data.set_role(Strategy.ROLE_DEFENDER)
                         # the defender should automatically go to its position
 
         if self.walked:

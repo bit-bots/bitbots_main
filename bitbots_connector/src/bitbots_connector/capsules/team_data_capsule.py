@@ -63,7 +63,8 @@ class TeamDataCapsule:
 
         :param role: Has to be a role from humanoid_league_msgs/Strategy
         """
-        assert role in [TeamData.ROLE_STRIKER, TeamData.ROLE_DEFENDER, TeamData.ROLE_SUPPORTER, TeamData.ROLE_GOALIE]
+        assert role in [Strategy.ROLE_STRIKER, Strategy.ROLE_SUPPORTER, Strategy.ROLE_DEFENDER,
+                        Strategy.ROLE_OTHER, Strategy.ROLE_GOALIE, Strategy.ROLE_IDLING]
         self.strategy.role = role
         self.strategy_sender.publish(self.strategy)
         self.role_update = rospy.get_time()

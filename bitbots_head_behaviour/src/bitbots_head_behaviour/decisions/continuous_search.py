@@ -13,6 +13,7 @@ import rospy
 
 from bitbots_head_behaviour.actions.look_at import LookAtRelativePoint
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from humanoid_league_msgs.msg import TeamData
 
 
 class ContinuousSearch(AbstractDecisionModule):
@@ -40,17 +41,17 @@ class ContinuousSearch(AbstractDecisionModule):
 
     def set_pattern(self, connector):
         self.last_pattern = self.current_pattern
-        duty = connector.team_data.get_role()
+        role = connector.team_data.get_role()
 
         if connector.head.is_ball_tracking_still_active:
             # we only come here if the continuousSearch is called by the SearchForBall Module
             # in this case we want to search the ball
             self.current_pattern = self.ball_pattern
-        elif duty == "Goalie":
+        elif role == TeamData.ROLE_GOALIE:
             self.current_pattern = self.goalie_pattern
-        elif duty == "Defender":
+        elif role == TeamData.ROLE_DEFENDER:
             self.current_pattern = self.defender_pattern
-        elif duty == "Center":
+        elif role == TeamData.ROLE_OTHER:
             self.current_pattern = self.center_pattern
         else:
             self.current_pattern = self.default_pattern

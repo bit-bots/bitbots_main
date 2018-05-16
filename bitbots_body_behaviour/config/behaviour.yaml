@@ -8,7 +8,7 @@ Behaviour:
           oneTimeDefender: True
 
           # Tries to self positionate at start of the geame
-          trySelfPositioning : False
+          trySelfPositioning : True
 
           # Cares about the Kickoff, for example wait for enemies
           careAboutKickoff : False

@@ -11,13 +11,13 @@ History:
 * 05.12.14: Complete Refactor (Marc Bestmann)
 """
 import math
-from humanoid_league_msgs.msg import Strategy
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from bitbots_body_behaviour.body.decisions.goalie.after_throw_decision import AfterThrowDecision
 from bitbots_body_behaviour.body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
 from bitbots_body_behaviour.body.decisions.goalie.position_in_goal import PositionInGoal
 from bitbots_body_behaviour.body.actions.search import Search
 from bitbots_body_behaviour.body.actions.go_to import GoToAbsolutePosition
+from bitbots_connector.capsules.blackboard_capsule import DUTY_TEAMPLAYER
 
 
 class GoalieMovement(AbstractDecisionModule):
@@ -46,7 +46,7 @@ class GoalieMovement(AbstractDecisionModule):
         if self.toggle_goalie_becomes_fieldie \
                 and self.game_situation_needs_fieldie():
             connector.blackboard.set_goalie_out_of_goal(True)
-            connector.blackboard.set_duty(Strategy.ROLE_OTHER)
+            connector.blackboard.set_duty(DUTY_TEAMPLAYER)
 
         # Decide if we want to shoot the ball (also known as Manuel-Neuer-Mode)
         if self.toggle_goalie_go_to_ball \

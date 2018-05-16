@@ -16,8 +16,13 @@ import sys
 rospack = rospkg.RosPack()
 
 from bitbots_pathfinding import network
-from humanoid_league_msgs.msg import HeadMode, Strategy
+from humanoid_league_msgs.msg import HeadMode
 sys.modules['network'] = network
+
+DUTY_TEAMPLAYER = "TeamPlayer"
+DUTY_GOALIE = "Goalie"
+DUTY_PENALTYKICKER = "PenaltyKicker"
+DUTY_POSITIONING = "Positioning"
 
 
 class BlackboardCapsule:
@@ -101,6 +106,12 @@ class BlackboardCapsule:
     # ## Duty Flags ##
     ##################
 
+    def set_is_one_time_kicker(self, key):
+        self.my_data["OneTimeKicker"] = key
+
+    def get_is_one_time_kicker(self):
+        return self.my_data.get("OneTimeKicker", False)
+
     def set_one_time_kicker_timer(self, key):
         self.my_data["OneTimeKickerTimer"] = key
 
@@ -120,12 +131,11 @@ class BlackboardCapsule:
         return self.my_data.get("OutOfGoal", False)
 
     def set_duty(self, duty):
-        assert duty in [Strategy.ROLE_DEFENDER, Strategy.ROLE_GOALIE, Strategy.ROLE_IDLING,
-                        Strategy.ROLE_OTHER, Strategy.ROLE_STRIKER, Strategy.ROLE_SUPPORTER]
+        assert duty in [DUTY_GOALIE, DUTY_TEAMPLAYER, DUTY_PENALTYKICKER, DUTY_POSITIONING]
         self.duty = duty
 
     def get_duty(self):
-        return self.my_data.get("Duty", None)
+        return self.duty
 
     #####################
     # ## Tracking Part ##

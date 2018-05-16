@@ -14,7 +14,7 @@ import random
 
 from bitbots_body_behaviour.body.actions.kick_ball import KickBall
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-from humanoid_league_msgs.msg import Strategy
+from humanoid_league_msgs.msg import TeamData
 
 
 class PenaltyFirstKick(AbstractDecisionModule):
@@ -54,7 +54,7 @@ class PenaltyFirstKick(AbstractDecisionModule):
 
         connector.blackboard.set_first_kick_done()
         connector.blackboard.set_force_hard_kick()
-        connector.blackboard.set_duty(Strategy.ROLE_STRIKER)
+        connector.team_data.set_role(TeamData.ROLE_STRIKER)
 
         self.interrupt()
 

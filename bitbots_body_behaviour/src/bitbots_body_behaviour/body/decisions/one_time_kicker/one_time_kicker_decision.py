@@ -22,13 +22,13 @@ class OneTimeKickerDecision(AbstractDecisionModule):  # todo make this player sh
     def perform(self, connector, reevaluate=False):
         # sets the robot back to its original role if the time is up
         if connector.blackboard.get_one_time_kicker_timer() + self.reset_time < rospy.get_time():
-            connector.set_duty(None)
+            connector.blackboard.set_is_one_time_kicker(True)
             return self.interrupt()
 
         # sets the robot back to its original role if he has kicked
         if connector.blackboard.get_one_time_kicked():
-            connector.set_duty(None)
             connector.blackboard.set_one_time_kicked(False)
+            connector.blackboard.set_is_one_time_kicker(False)
             return self.interrupt()
 
         # if we stay in this duty, we will behave like a fieldie
