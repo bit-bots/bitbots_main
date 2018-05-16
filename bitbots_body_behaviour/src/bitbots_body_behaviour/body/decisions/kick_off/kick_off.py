@@ -8,7 +8,7 @@ KickOff
 """
 from bitbots_body_behaviour.body.decisions.common.role_decider import RoleDecider
 from bitbots_body_behaviour.body.decisions.kick_off.kick_off_role_decider import KickOffRoleDecider
-from bitbots_body_behaviour.body.decisions.kick_off.wait_for_enemy_kick_off import WaitForEnemyKickOff
+from bitbots_body_behaviour.body.decisions.kick_off.enemy_kick_off import EnemyKickOff
 
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
@@ -39,7 +39,7 @@ class KickOff(AbstractDecisionModule):
                     return self.push(KickOffRoleDecider)
                 else:
                     # the other team has kickoff
-                    return self.push(WaitForEnemyKickOff)
+                    return self.push(EnemyKickOff)
             else:
                 return self.push(RoleDecider)
 

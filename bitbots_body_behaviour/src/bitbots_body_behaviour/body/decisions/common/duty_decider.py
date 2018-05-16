@@ -19,9 +19,7 @@ from bitbots_body_behaviour.body.decisions.goalie.goalie_decision import GoalieP
 from bitbots_body_behaviour.body.decisions.kick_off.kick_off import KickOff
 from bitbots_body_behaviour.body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
 from bitbots_body_behaviour.body.decisions.penalty.penalty_kicker_decision import PenaltyKickerDecision
-from humanoid_league_msgs.msg import Speak, HeadMode
-from bitbots_body_behaviour.keys import DATA_VALUE_STATE_PLAYING, DATA_VALUE_STATE_READY, DATA_VALUE_STATE_SET, \
-    DATA_VALUE_STATE_FINISHED, DATA_VALUE_STATE_INITIAL
+from humanoid_league_msgs.msg import Speak, HeadMode, GameState
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 duty = None  # can be overwriten by the startup script (to force a behaviour)
@@ -45,7 +43,7 @@ class DutyDecider(AbstractDecisionModule):
             rospy.logwarn("Not allowed to move")
             return
 
-        if connector.gamestate.is_game_state_equals(DATA_VALUE_STATE_READY):
+        if connector.gamestate.is_game_state_equals(GameState.GAMESTATE_READY):
             if self.start_self_pos is None:
                 self.start_self_pos = rospy.get_time() + 20
             if self.start_self_pos > rospy.get_time():
@@ -61,7 +59,7 @@ class DutyDecider(AbstractDecisionModule):
             else:
                 connector.blackboard.set_duty()
 
-        if not connector.gamestate.is_game_state_equals(DATA_VALUE_STATE_PLAYING):
+        if not connector.gamestate.is_game_state_equals(GameState.GAMESTATE_PLAYING):
             # resets all behaviours if the gamestate is not playing, because the robots are positioned again
             if duty is not None:
                 connector.blackboard.set_duty(duty)
@@ -71,9 +69,9 @@ class DutyDecider(AbstractDecisionModule):
         ############################
 
         # If we do not Play  or Ready we do nothing
-        if connector.gamestate.get_gamestatus() in [DATA_VALUE_STATE_INITIAL,
-                                                    DATA_VALUE_STATE_SET,
-                                                    DATA_VALUE_STATE_FINISHED]:
+        if connector.gamestate.get_gamestatus() in [GameState.GAMESTATE_INITAL,
+                                                    GameState.GAMESTATE_SET,
+                                                    GameState.GAMESTATE_FINISHED]:
             rospy.loginfo("Wait for Gamestate")
             # When not playing, the head should look around to find features on the field
             connector.blackboard.set_head_duty(HeadMode.FIELD_FEATURES)
@@ -81,12 +79,12 @@ class DutyDecider(AbstractDecisionModule):
 
         # Penalty Shoot but not mine, run away
         elif connector.config["Body"]["Toggles"]["Fieldie"]["penaltykick_go_away"] and connector.blackboard.get_duty() is not "Goalie" and\
-                        connector.gamestate.get_gamestatus() is STATE_PENALTYSHOOT and connector.gamestate.has_penaltykick():
+                        connector.gamestate.has_penalty_kick():
             return self.push(GoAwayFromBall)
 
         # Positioning ourself on the Field
         if self.toggle_self_positioning:
-            if connector.gamestate.is_game_state_equals(DATA_VALUE_STATE_READY):  # Todo check if working
+            if connector.gamestate.is_game_state_equals(GameState.GAMESTATE_READY):  # Todo check if working
                 # Look for general field features to improve localization
                 connector.blackboard.set_head_duty(HeadMode.FIELD_FEATURES)
                 return self.push(GoToDutyPosition)

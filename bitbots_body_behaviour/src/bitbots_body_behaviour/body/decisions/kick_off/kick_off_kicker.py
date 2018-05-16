@@ -24,7 +24,7 @@ class KickOffKicker(AbstractDecisionModule):
     def perform(self, connector, reevaluate=False):
         if not self.kicked:
             self.direction = Strategy.SIDE_LEFT if random.random() < 0.5 else Strategy.SIDE_RIGHT
-            connector.team_data_capsule().publish_kickoff_strategy(self.direction)
+            connector.team_data.publish_kickoff_strategy(self.direction)
             self.kicked = True
             if self.direction == Strategy.SIDE_RIGHT:
                 return self.push(KickBall, "RIGHT_SIDE_KICK")

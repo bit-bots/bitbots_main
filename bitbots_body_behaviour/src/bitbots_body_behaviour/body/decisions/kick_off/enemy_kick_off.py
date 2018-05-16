@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
-KickOff
-^^^^^^^
+EnemyKickOff
+^^^^^^^^^^^^
 
 Waits if the other team has kickoff till the ball moves or the 10 seconds are over
 
@@ -10,31 +10,30 @@ Waits if the other team has kickoff till the ball moves or the 10 seconds are ov
 History:
 * 18.07.14: Created (Marc Bestmann)
 """
-from body.actions.wait import Wait
-from keys import DATA_VALUE_STATE_PLAYING
+from bitbots_body_behaviour.body.actions.wait import Wait
+from humanoid_league_msgs.msg import GameState
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
 class EnemyKickOff(AbstractDecisionModule):
-    def __init__(self, _):
-        super(EnemyKickOff, self).__init__()
-        self.initilized = False
-        self.ball_distance_Saved = 0
+    def __init__(self, connector):
+        super(EnemyKickOff, self).__init__(connector)
+        self.initialized = False
+        self.ball_distance_saved = 0
 
     def perform(self, connector, reevaluate=False):
-        if not connector.gamestatus_capsule().is_game_state_equals(DATA_VALUE_STATE_PLAYING):
+        if not connector.gamestatus.is_game_state_equals(GameState.GAMESTATE_PLAYING):
             return self.interrupt()
 
-        if not self.initilized:
-            self.initilized = True
-            self.ball_distance_saved = connector.raw_vision_capsule().get_ball_info("distance")
+        if not self.initialized:
+            self.initialized = True
+            self.ball_distance_saved = connector.personal_model.get_ball_distance()
 
-        seconds_remaining = connector.gamestatus_capsule().get_secondary_seconds_remaining()
-        ball_distance_now = connector.raw_vision_capsule().get_ball_info("distance")
+        seconds_remaining = connector.gamestatus.get_secondary_seconds_remaining()
+        ball_distance_now = connector.personal_model.get_ball_distance()
 
-        if seconds_remaining == 0 or abs(ball_distance_now - self.ball_distance_saved) > 200:
-
-            connector.blackboard_capsule().set_enemy_kick_off_done()
+        if seconds_remaining == 0 or abs(ball_distance_now - self.ball_distance_saved) > 0.2:
+            connector.blackboard.set_enemy_kick_off_done()
             return self.pop()
         else:
             return self.push(Wait, 0.1)

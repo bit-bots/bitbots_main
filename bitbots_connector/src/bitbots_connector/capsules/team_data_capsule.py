@@ -86,7 +86,7 @@ class TeamDataCapsule:
 
     def publish_kickoff_strategy(self, strategy):
         """Set the kickoff strategy"""
-        assert strategy in [TeamData.SIDE_LEFT, TeamData.SIDE_MIDDLE, TeamData.SIDE_RIGHT]
+        assert strategy in [Strategy.SIDE_LEFT, Strategy.SIDE_MIDDLE, Strategy.SIDE_RIGHT]
         self.strategy.offensive_side = strategy
         self.strategy_sender.publish(self.strategy)
         self.strategy_update = rospy.get_time()

@@ -10,6 +10,7 @@ History:
 """
 import rospy
 
+from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 from humanoid_league_msgs.msg import Strategy
 
@@ -62,9 +63,9 @@ class KickOffSupporter(AbstractDecisionModule):
                         connector.set_duty(Strategy.ROLE_DEFENDER)
                         if self.direction == Strategy.SIDE_RIGHT:
                             # TODO: adjust distances
-                            connector.pathfinding.go_to(-1, -1, 0)
+                            return self.push(GoToRelativePosition, (-1, -1, 0))
                         else:
-                            connector.pathfinding.go_to(-1, 1, 0)
+                            return self.push(GoToRelativePosition, (-1, 1, 0))
                     else:
                         connector.set_duty(Strategy.ROLE_DEFENDER)
                         # the defender should automatically go to its position
