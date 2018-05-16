@@ -114,8 +114,8 @@ class Motion:
         self.arrt.append(update_time - msg.header.stamp.to_sec())
         self.arrn.append(msg.header.seq)
 
-        self.accel = numpy.array([msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z])
-        self.gyro = numpy.array([msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z])
+        self.accel = numpy.array([msg.linear_acceleration.x , msg.linear_acceleration.y, msg.linear_acceleration.z])
+        self.gyro = numpy.array([msg.angular_velocity.x, msg.angular_velocity.y , msg.angular_velocity.z])
         self.quaternion = numpy.array(([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]))
 
         self.smooth_gyro = numpy.multiply(self.smooth_gyro, 0.95) + numpy.multiply(self.gyro, 0.05)  # gyro

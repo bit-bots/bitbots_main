@@ -28,6 +28,7 @@ class HcmStateMachine(AbstractStateMachine):
     def __init__(self, die_flag, standup_flag, soft_off_flag, soft_start, start_test, state_publisher):
         super(HcmStateMachine, self).__init__()
         VALUES.standup_flag = standup_flag
+        #Comment if not working 
         VALUES.die_flag = die_flag
         VALUES.soft_off_flag = soft_off_flag
         VALUES.soft_start = soft_start
@@ -118,18 +119,20 @@ class Softoff(AbstractState):
                 self.next_state = Record()
                 # don't directly change state, we wait for animation to finish
                 self.start_animation(rospy.get_param("hcm/animations/walkready"))
-                return
+                return Record()
             if rospy.get_time() - VALUES.last_request < 10:
+                print("Exiting Softoff")
                 # got a new move request
                 switch_motor_power(True)
                 self.next_state = Controllable()
                 self.start_animation(rospy.get_param("hcm/animations/walkready"))
-                return
+                return Controllable()
             if VALUES.is_die_time():
                 return ShutDown()
             if VALUES.external_animation_requested:
                 switch_motor_power(True)
                 return Controllable()
+            print("keep soft off")
             rospy.sleep(0.1)
         else:
             if self.animation_finished():
