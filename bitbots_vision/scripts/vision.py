@@ -1,7 +1,8 @@
 #! /usr/bin/env python2
 
 
-from bitbots_vision_common.vision_modules import lines, horizon, color, debug, live_classifier, classifier, ball, lines2, fcnn_handler, live_fcnn_03 #conflict classifier and live classifier
+from bitbots_vision_common.vision_modules import lines, horizon, color, debug, live_classifier, classifier, ball, \
+    lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
@@ -19,13 +20,14 @@ class Vision:
         rospack = rospkg.RosPack()
         self.package_path = rospack.get_path('bitbots_vision')
 
+        self.bridge = CvBridge()
+
         rospy.init_node('bitbots_vision')
         rospy.loginfo('Initializing vision...')
+
         self.config = {}
         # register config callback and set config
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
-
-        self.bridge = CvBridge()
 
         rospy.spin()
 
@@ -40,17 +42,21 @@ class Vision:
         horizon_detector = horizon.HorizonDetector(image,
                                                    self.field_color_detector,
                                                    self.horizon_config)
-        if(self.config['vision_ball_classifier'] == 'cascade'):
+        if (self.config['vision_ball_classifier'] == 'cascade'):
             ball_finder = ball.BallFinder(image, self.cascade, self.ball_config)
             ball_classifier = classifier. \
                 Classifier(image,
-                       self.ball_classifier,
-                       horizon_detector.
-                       balls_under_horizon(
-                           ball_finder.get_ball_candidates(),
-                           self._ball_candidate_y_offset))
-        elif(self.config['vision_ball_classifier'] == 'fcnn'):
+                           self.ball_classifier,
+                           horizon_detector.
+                           balls_under_horizon(
+                               ball_finder.get_ball_candidates(),
+                               self._ball_candidate_y_offset))
+
+        elif (self.config['vision_ball_classifier'] == 'fcnn'):
             ball_classifier = fcnn_handler.FcnnHandler(image, self.ball_fcnn, self.ball_fcnn_config)
+
+        elif (self.config['vision_ball_classifier'] == 'dummy'):
+            ball_classifier = dummy_ballfinder.DummyClassifier(None, None, None)
 
         top_ball_candidate = ball_classifier.get_top_candidate()
 
@@ -60,26 +66,8 @@ class Vision:
                                            horizon_detector,
                                            self.lines_config)
 
-        # do debug stuff
-        if self.debug:
-            debug_image_dings = debug.DebugImage(image)
-            debug_image_dings.draw_horizon(
-                horizon_detector.get_horizon_points(),
-                (0, 0, 255))
-            debug_image_dings.draw_ball_candidates(
-                ball_classifier.get_candidates(),
-                (0, 0, 255))
-            debug_image_dings.draw_ball_candidates(
-                horizon_detector.balls_under_horizon(
-                    ball_classifier.get_candidates(),
-                    self._ball_candidate_y_offset),
-                (0, 255, 255))
-
         # create ball msg
         if top_ball_candidate and top_ball_candidate.rating > self._ball_candidate_threshold:
-            if self.debug:
-                debug_image_dings.draw_ball_candidates([top_ball_candidate],
-                                                       (0, 255, 0))
             balls_msg = BallsInImage()
             balls_msg.header.frame_id = image_msg.header.frame_id
             balls_msg.header.stamp = image_msg.header.stamp
@@ -105,7 +93,24 @@ class Vision:
             ls.end = ls.start
             line_msg.segments.append(ls)
         self.pub_lines.publish(line_msg)
+
+        # do debug stuff
         if self.debug:
+            debug_image_dings = debug.DebugImage(image)
+            debug_image_dings.draw_horizon(
+                horizon_detector.get_horizon_points(),
+                (0, 0, 255))
+            debug_image_dings.draw_ball_candidates(
+                ball_classifier.get_candidates(),
+                (0, 0, 255))
+            debug_image_dings.draw_ball_candidates(
+                horizon_detector.balls_under_horizon(
+                    ball_classifier.get_candidates(),
+                    self._ball_candidate_y_offset),
+                (0, 255, 255))
+            # draw top candidate in
+            debug_image_dings.draw_ball_candidates([top_ball_candidate],
+                                                   (0, 255, 0))
             # draw linepoints in black
             debug_image_dings.draw_points(
                 line_detector.get_linepoints(),
@@ -113,45 +118,7 @@ class Vision:
             # debug_image_dings.draw_line_segments(line_detector.get_linesegments(), (255, 0, 0))
             debug_image_dings.imshow()
 
-    def handle_image_no_balls(self, image_msg):
-        # converting the ROS image message to CV2-image
-        image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
-
-        # setup detectors
-        horizon_detector = horizon.HorizonDetector(image,
-                                                   self.field_color_detector,
-                                                   self.horizon_config)
-
-        line_detector = lines.LineDetector(image,
-                                           list(),
-                                           self.white_color_detector,
-                                           horizon_detector,
-                                           self.lines_config)
-
-        # create line msg
-        line_msg = LineInformationInImage()  # Todo: add lines
-        line_msg.header.frame_id = image_msg.header.frame_id
-        line_msg.header.stamp = image_msg.header.stamp
-        for lp in line_detector.get_linepoints():
-            ls = LineSegmentInImage()
-            ls.start.x = lp[0]
-            ls.start.y = lp[1]
-            ls.end = ls.start
-            line_msg.segments.append(ls)
-        self.pub_lines.publish(line_msg)
-        if self.debug:
-            # draw linepoints in black
-            debug_image_dings = debug.DebugImage(image)
-            debug_image_dings.draw_horizon(
-                horizon_detector.get_horizon_points(),
-                (0, 0, 255))
-            debug_image_dings.draw_points(
-                line_detector.get_linepoints(),
-                (0, 0, 0))
-            debug_image_dings.imshow()
-
     def _dynamic_reconfigure_callback(self, config, level):
-
 
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
         self._ball_candidate_y_offset = config['vision_ball_candidate_horizon_y_offset']
@@ -161,8 +128,6 @@ class Vision:
             rospy.logwarn('Debug windows are enabled')
         else:
             rospy.loginfo('Debug windows are disabled')
-
-
 
         # load cascade
         if (config['vision_ball_classifier'] == 'cascade'):
@@ -178,7 +143,8 @@ class Vision:
             if 'classifier_model_path' not in self.config or \
                     self.config['classifier_model_path'] != config['classifier_model_path'] or \
                     self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                self.ball_classifier = live_classifier.LiveClassifier(self.package_path + config['classifier_model_path'])
+                self.ball_classifier = live_classifier.LiveClassifier(
+                    self.package_path + config['classifier_model_path'])
                 rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
 
         # set up ball config for cascade
@@ -188,7 +154,6 @@ class Vision:
             'min_neighbors': config['ball_finder_min_neighbors'],
             'min_size': config['ball_finder_min_size'],
         }
-
 
         # load fcnn
         if (config['vision_ball_classifier'] == 'fcnn'):
@@ -204,7 +169,7 @@ class Vision:
 
         # set up ball config for fcnn
         self.ball_fcnn_config = {
-            'debug': config['ball_fcnn_debug'],
+            'debug': config['ball_fcnn_debug'] and config['vision_debug'],
             'threshold': config['ball_fcnn_threshold'],
             'expand_stepsize': config['ball_fcnn_expand_stepsize'],
             'pointcloud_stepsize': config['ball_fcnn_pointcloud_stepsize'],
@@ -216,8 +181,10 @@ class Vision:
 
         # color config
         self.white_color_detector = color.HsvSpaceColorDetector(
-            [config['white_color_detector_lower_values_h'], config['white_color_detector_lower_values_s'], config['white_color_detector_lower_values_v']],
-            [config['white_color_detector_upper_values_h'], config['white_color_detector_upper_values_s'], config['white_color_detector_upper_values_v']])
+            [config['white_color_detector_lower_values_h'], config['white_color_detector_lower_values_s'],
+             config['white_color_detector_lower_values_v']],
+            [config['white_color_detector_upper_values_h'], config['white_color_detector_upper_values_s'],
+             config['white_color_detector_upper_values_v']])
 
         self.field_color_detector = color.PixelListColorDetector(
             self.package_path +
@@ -234,7 +201,7 @@ class Vision:
         # set up lines config
         self.lines_config = {
             'horizon_offset': config['line_detector_horizon_offset'],
-            'linepoints_range':  config['line_detector_linepoints_range'],
+            'linepoints_range': config['line_detector_linepoints_range'],
             'blur_kernel_size': config['line_detector_blur_kernel_size'],
             'line_detector2_line_len': config['line_detector2_line_len'],
             'line_detector2_red': config['line_detector2_red'],
@@ -244,7 +211,6 @@ class Vision:
             'line_detector2_magic_value': config['line_detector2_magic_value'],
             'line_detector2_horizon_offset': config['line_detector2_horizon_offset'],
         }
-
 
         # subscribers
         if 'ROS_img_msg_topic' not in self.config or \
@@ -271,7 +237,7 @@ class Vision:
         if 'ROS_line_msg_topic' not in self.config or \
                 self.config['ROS_line_msg_topic'] != config['ROS_line_msg_topic']:
             if hasattr(self, 'pub_lines'):
-                    self.pub_lines.unregister()
+                self.pub_lines.unregister()
             self.pub_lines = rospy.Publisher(
                 config['ROS_line_msg_topic'],
                 LineInformationInImage,
@@ -280,9 +246,5 @@ class Vision:
         return config
 
 
-
 if __name__ == '__main__':
     Vision()
-
-
-

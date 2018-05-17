@@ -1,5 +1,5 @@
 ball_fcnn_model_path: '/models/fcnn03'
-ball_fcnn_debug: true  # only active when true and vision/debug is true, too!
+ball_fcnn_debug: false  # only active when true and vision/debug is true, too!
 ball_fcnn_threshold: .5  # minimal value for a candidate to be considered
 ball_fcnn_expand_stepsize: 4
 ball_fcnn_pointcloud_stepsize: 10
