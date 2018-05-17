@@ -1,8 +1,0 @@
-<launch>
-    <arg name="debug" default="false"/>
-
-    <node pkg="bitbots_vision_cascade" type="vision.py" name="bitbots_vision_cascade" output="screen">
-        <rosparam command="load" file="$(find bitbots_vision_cascade)/config/visionparams.yaml"/>
-        <param name="vision_debug" value="$(arg debug)"/>
-    </node>
-</launch>

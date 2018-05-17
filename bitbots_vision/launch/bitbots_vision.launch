@@ -1,0 +1,10 @@
+<launch>
+    <arg name="debug" default="false"/>
+    <arg name="classifier" default="cascade" />
+
+    <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision_cascade" output="screen">
+        <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
+        <param name="vision_debug" value="$(arg debug)"/>
+        <param name="vision_ball_classifier" value="$(arg classifier)"/>
+    </node>
+</launch>

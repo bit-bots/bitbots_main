@@ -1,27 +1,26 @@
 <package format="2">
-    <name>bitbots_vision_fcnn</name>
+    <name>bitbots_vision</name>
     <description>
-        This is the vision package of the Hamburg Bit-Bots.
-        This FCNN Version uses the FCNN ball detection. It needs more power than
-        the cascade version.
+        This is the cascade vision package of the Hamburg Bit-Bots.
+        The ball detection is realized with a cascade classifier, which makes it
+        compatible with Odroids.
         It heavily relies on modules provided by the bitbots_vision_common
         package.
         We use the wolves_image_provider_v4l package as image provider.
         Settings considering the vision are set in the visionparams.yaml
-        (bitbots_vision_fcnn/config/visionparams.yaml). To be able to test new
-        parameters, the debug_visionparams.yaml are provided. These are used
+        (bitbots_vision_cascade/config/visionparams.yaml). To be able to test
+        new parameters, the debug_visionparams.yaml are provided. These are used
         when the vision is started with debug:=true as launchscript parameter.
         You do NOT want to enable DEBUG on the robot.
         The color calibration files are created with the wolves colorpicker and
-        a rosbag.
-        The vision.py is located in bitbots_vision_fcnn/scripts. It defines, how
-        the modules out of bitbots_vision_common are used.
-        In bitbots_vision_fcnn/models the tensorflow models are stored. Due to
-        their size, these are not part of this repository. Bit-Bots use the
-        pull_data script in bitbots_meta.
+        a rosbag. The vision.py is located in bitbots_vision_cascade/scripts. It
+        defines, how the modules out of bitbots_vision_common are used. In
+        bitbots_vision_cascade/models the tensorflow classifier models are
+        stored. Due to their size, these are not part of this repository.
+        Bit-Bots use the pull_data script in bitbots_meta.
         To tweak the camera image, use the settings in the image provider.
         WARNING: uvcdynctrl is required by the image provider. Make sure it is
-        installed
+        installed.
     </description>
     <version>1.0.0</version>
     <maintainer email="5fiedler@informatik.uni-hamburg.de">Niklas Fiedler</maintainer>

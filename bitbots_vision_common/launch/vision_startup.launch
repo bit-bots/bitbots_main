@@ -5,16 +5,18 @@
     <arg name="wolfgang" default="false"/>
     <arg name="debug" default="false"/>
 
-    <!-- start cascade vision for minibot -->
+    <!-- start vision for minibot (cascade)-->
     <group if="$(arg minibot)">
-        <include file="$(find bitbots_vision_cascade)/launch/bitbots_vision.launch">
+        <include file="$(find bitbots_vision)/launch/bitbots_vision.launch">
             <arg name="debug" value="$(arg debug)" />
+            <arg name="classifier" value="cascade" />
         </include>
     </group>
-    <!-- start fcnn vision for wolfgang robot -->
+    <!-- start vision for wolfgang (fcnn)-->
     <group if="$(arg wolfgang)">
-        <include file="$(find bitbots_vision_fcnn)/launch/bitbots_vision.launch">
+        <include file="$(find bitbots_vision)/launch/bitbots_vision.launch">
             <arg name="debug" value="$(arg debug)" />
+            <arg name="classifier" value="fcnn" />
         </include>
     </group>
 

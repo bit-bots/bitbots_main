@@ -1,5 +1,5 @@
 ball_fcnn_model_path: '/models/fcnn03'
-ball_fcnn_debug: false  # only active when true and vision/debug is true, too!
+ball_fcnn_debug: true  # only active when true and vision/debug is true, too!
 ball_fcnn_threshold: .5  # minimal value for a candidate to be considered
 ball_fcnn_expand_stepsize: 4
 ball_fcnn_pointcloud_stepsize: 10
@@ -29,7 +29,7 @@ horizon_finder_precision_pix: 5
 horizon_finder_min_precision_pix: 3
 
 vision_debug: true
-vision_no_balls: false  # when this is set to true, the vision won't search nor publish balls!
+vision_ball_classifier: 'fcnn'  # cascade, fcnn or dummy
 vision_ball_candidate_horizon_y_offset: 0
 vision_ball_candidate_rating_threshold: 0.5
 
@@ -37,7 +37,7 @@ line_detector_horizon_offset: 50
 line_detector_linepoints_range: 5000
 line_detector_blur_kernel_size: 9
 
-ROS_img_msg_topic: '/image_raw'
+ROS_img_msg_topic: 'image_raw'
 ROS_img_queue_size: 1
 ROS_ball_msg_topic: 'ball_in_image'
 ROS_line_msg_topic: 'line_in_image'
