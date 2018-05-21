@@ -7,6 +7,7 @@ StackMachineModule
 
 """
 import rospy
+from std_msgs.msg import String
 from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
 
 
@@ -23,8 +24,12 @@ class StackMachineModule(object):
     do_not_reevaluate = False
     old_representation = ""
 
-    def __init__(self):
+    def __init__(self, debug_topic):
         self.connector = None
+
+        self.debug_active = rospy.get_param("debug_active", False)
+        if self.debug_active:
+            self.debug_pub = rospy.Publisher(debug_topic, String, queue_size=100)
 
     def _init_module(self, module, init_data=None):
         """
@@ -75,6 +80,8 @@ class StackMachineModule(object):
         :param: reevaluate: Ob der Stack reevaluiert werden soll
         :type reevaluate: bool
         """
+        self.publish_debug_msg()
+
         if reevaluate and not self.do_not_reevaluate:
             self.stack_excec_index = 0
             self.stack_reevaluate = True
@@ -122,7 +129,6 @@ class StackMachineModule(object):
         :param init_data: init Data wird dem neuen Modul zum Init
             übergeben, optional
         """
-        rospy.logdebug("Pushed: " + str(module).split(".")[-1][:-2])
         if self.stack_reevaluate:
             # wir sind gerade dabei die vorbedingungen zu prüfen
             # testen op die entscheidung noch die gleiche ist:
@@ -169,3 +175,9 @@ class StackMachineModule(object):
         Gibt den Aktuellen Stack zurück
         """
         return self.stack
+    
+    def publish_debug_msg(self):
+        if self.debug_active:
+            msg_data = ",".join([repr(x) for x in self.stack])
+            msg = String(data=msg_data)
+            self.debug_pub.publish(msg)

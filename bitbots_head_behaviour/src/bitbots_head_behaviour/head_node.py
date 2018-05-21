@@ -11,7 +11,7 @@ from trajectory_msgs.msg import JointTrajectory
 
 class HeadNode(StackMachineModule):
     def __init__(self):
-        super(HeadNode, self).__init__()
+        super(HeadNode, self).__init__(debug_topic="/debug_head_behaviour")
         self.connector = HeadConnector()
         self.connector.config = rospy.get_param("Behaviour")
 

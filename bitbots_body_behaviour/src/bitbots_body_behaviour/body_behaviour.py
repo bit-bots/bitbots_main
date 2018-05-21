@@ -21,7 +21,7 @@ from bitbots_common.connector.connector import BodyConnector
 
 class BehaviourModule(StackMachineModule):
     def __init__(self):
-        super(BehaviourModule, self).__init__()
+        super(BehaviourModule, self).__init__(debug_topic="/debug_body_behaviour")
         self.connector = BodyConnector()
         self.connector.config = rospy.get_param("Behaviour")
 
