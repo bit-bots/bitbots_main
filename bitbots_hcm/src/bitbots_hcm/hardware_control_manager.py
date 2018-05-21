@@ -316,8 +316,9 @@ def calc_sin_angle(fst, sec):
 
 
 def main():
+    """
     parser = argparse.ArgumentParser(description='Start the hcm node')
-    parser.add_argument('--no', dest='dieflag', action='store_false',
+    parser.add_argument('--nodie', dest='dieflag', action='store_false',
                         help='Supress the autmatical deactivating of the hcm after some time without updates')
     parser.add_argument('--nostandup', dest='standup', action='store_false',
                         help='Surpress automatical stand up')
@@ -328,11 +329,11 @@ def main():
     parser.add_argument('--starttest', dest='starttest', action='store_true',
                         help='Ping motors on startup')
     args, unknown = parser.parse_known_args()
+    """
 
-    hcm = Motion(dieflag=args.dieflag, standupflag=args.standup,
-                    softoff_flag=args.soft, softstart=args.softstart,
-                    start_test=args.starttest)
-
+    hcm = Motion(dieflag=False, standupflag=False,
+                    softoff_flag=True, softstart=False,
+                    start_test=False)
 
 if __name__ == "__main__":
     try:
