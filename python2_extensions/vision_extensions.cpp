@@ -45,9 +45,9 @@ static PyMethodDef VisionMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
-PyMODINIT_FUNC initvision(void) {
+PyMODINIT_FUNC initVisionExtensions(void) {
     import_array();
-    (void) Py_InitModule("vision", VisionMethods);
+    (void) Py_InitModule("VisionExtensions", VisionMethods);
 }
 
 int main(int argc, char *argv[]) {
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     /* Initialize the Python interpreter.  Required. */
     Py_Initialize();
 
-    initvision();
+    initVisionExtensions();
 
     return 0;
 }
