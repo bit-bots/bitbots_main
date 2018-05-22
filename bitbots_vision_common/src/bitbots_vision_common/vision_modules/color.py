@@ -1,4 +1,5 @@
 import numpy as np
+import VisionExtensions
 import yaml
 import abc
 import cv2
@@ -31,7 +32,7 @@ class ColorDetector:
 class PixelListColorDetector(ColorDetector):
     def __init__(self, color_path):
         ColorDetector.__init__(self)
-        self.color_space = np.full((256, 256, 256), False, dtype=bool)
+        self.color_space = np.zeros((256, 256, 256), dtype=np.uint8)
         self.init_color_space(color_path)
 
     def init_color_space(self, color_path):
@@ -56,7 +57,7 @@ class PixelListColorDetector(ColorDetector):
             for x in range(length):
                 self.color_space[color_values['blue'][x],
                                  color_values['green'][x],
-                                 color_values['red'][x]] = True
+                                 color_values['red'][x]] = 1
 
     def match_pixel(self, pixel):
         """
@@ -74,12 +75,7 @@ class PixelListColorDetector(ColorDetector):
         :param image: image to mask
         :return: masked image
         """
-        imgshape = image.shape
-        mask = np.zeros((imgshape[0], imgshape[1]))
-        for row in range(imgshape[0]):
-            for col in range(imgshape[1]):
-                if self.match_pixel(image[row, col]):
-                    mask[row, col] = 255
+        mask = VisionExtensions.maskImg(image, self.color_space)
         return mask
 
 
