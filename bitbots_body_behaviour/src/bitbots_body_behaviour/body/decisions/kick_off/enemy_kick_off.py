@@ -27,10 +27,10 @@ class EnemyKickOff(AbstractDecisionModule):
 
         if not self.initialized:
             self.initialized = True
-            self.ball_distance_saved = connector.personal_model.get_ball_distance()
+            self.ball_distance_saved = connector.world_model.get_ball_distance()
 
         seconds_remaining = connector.gamestatus.get_secondary_seconds_remaining()
-        ball_distance_now = connector.personal_model.get_ball_distance()
+        ball_distance_now = connector.world_model.get_ball_distance()
 
         if seconds_remaining == 0 or abs(ball_distance_now - self.ball_distance_saved) > 0.2:
             connector.blackboard.set_enemy_kick_off_done()

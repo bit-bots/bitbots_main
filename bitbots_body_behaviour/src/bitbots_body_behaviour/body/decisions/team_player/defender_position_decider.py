@@ -24,7 +24,7 @@ class DefenderPositionDecider(AbstractDecisionModule):
         self.wait_goal_time = 1
 
     def perform(self, connector, reevaluate=False):
-        if not connector.personal_model.ball_seen():
+        if not connector.world_model.ball_seen():
             return self.push(Search)
 
         ball = connector.world_model.get_ball_position_xy()

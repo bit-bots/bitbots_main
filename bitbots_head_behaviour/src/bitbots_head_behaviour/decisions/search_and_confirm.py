@@ -48,7 +48,7 @@ class SearchAndConfirmBall(AbstractSearchAndConfirm):
             self.fr = False
             self.set_confirmed_time = connector.head.set_confirmed_ball_time
             self.unset_confirmed_time = connector.head.unset_confirmed_ball_time
-            self.object_last_seen = connector.personal_model.ball_last_seen
+            self.object_last_seen = connector.world_model.ball_last_seen
         super(SearchAndConfirmBall, self).perform(connector, reevaluate)
 
     def track(self):
@@ -67,7 +67,7 @@ class SearchAndConfirmEnemyGoal(AbstractSearchAndConfirm):
             self.fr = False
             self.set_confirmed_time = connector.head.set_confirmed_goal_time
             self.unset_confirmed_time = connector.head.unset_confirmed_goal_time
-            self.object_last_seen = connector.personal_model.any_goal_last_seen
+            self.object_last_seen = connector.world_model.any_goal_last_seen
         super(SearchAndConfirmEnemyGoal, self).perform(connector, reevaluate)
 
     def track(self):

@@ -29,12 +29,12 @@ class HeadDutyDecider(AbstractDecisionModule):
     def perform(self, connector, reevaluate=False):
 
         # set priorities
-        if connector.personal_model.ball_seen():
+        if connector.world_model.ball_seen():
             self.ball_prio = max(0, self.ball_prio - 3)
         else:
             self.ball_prio = min(120, self.ball_prio + 5)
 
-        if connector.personal_model.any_goal_seen():
+        if connector.world_model.any_goal_seen():
             self.goal_prio = max(0, self.goal_prio - 2)
         else:
             self.goal_prio = min(100, self.goal_prio + 3)

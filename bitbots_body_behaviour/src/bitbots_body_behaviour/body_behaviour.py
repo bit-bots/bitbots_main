@@ -39,8 +39,7 @@ class BehaviourModule(StackMachineModule):
 
         self.set_start_module(DutyDecider)
 
-        rospy.Subscriber("ball_relative", BallRelative, self.connector.personal_model.ball_callback)
-        rospy.Subscriber("obstacle_relative", ObstacleRelative, self.connector.personal_model.obstacle_callback)
+        rospy.Subscriber("ball_relative", BallRelative, self.connector.world_model.ball_callback)
         rospy.Subscriber("gamestate", GameState, self.connector.gamestate.gamestate_callback)
         rospy.Subscriber("team_data", TeamData, self.connector.team_data.team_data_callback)
         rospy.Subscriber("amcl_pose", PoseWithCovarianceStamped, self.connector.world_model.position_callback)

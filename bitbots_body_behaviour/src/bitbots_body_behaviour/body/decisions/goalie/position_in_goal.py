@@ -22,10 +22,10 @@ class PositionInGoal(AbstractDecisionModule):
         self.max_side = goal_width * max_side_move
 
     def perform(self, connector, reevaluate=False):
-        ball_position = connector.personal_model.get_ball_position()
-        ball_angle = math.degrees(math.atan2(ball_position[1], ball_position[0]))
+        ball_u, ball_v = connector.world_model.get_ball_position_uv()
+        ball_angle = math.degrees(math.atan2(ball_v, ball_u))
         robot_position = connector.world_model.get_current_position()
 
         # is it necessary to move
         if math.fabs(ball_angle) > self.angle_threshold and abs(robot_position[1]) < self.max_side:
-            return self.push(GoToRelativePosition, (0, ball_position[1], 0))
+            return self.push(GoToRelativePosition, (0, ball_v, 0))

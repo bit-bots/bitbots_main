@@ -20,12 +20,12 @@ class BallDangerous(AbstractDecisionModule):
         self.react_distance = connector.config["Body"]["Goalie"]["reactDistance"]
 
     def perform(self, connector, reevaluate=False):
-        ball_u = connector.personal_model.get_ball_relative()[0]
+        ball_u = connector.world_model.get_ball_position_uv()[0]
 
         # We saw the ball so we track it
         connector.blackboard.set_head_duty(HeadMode.BALL_MODE)
 
-        if ball_u < self.react_distance and rospy.get_time() - connector.personal_model.ball_last_seen() < 2:
+        if ball_u < self.react_distance and rospy.get_time() - connector.world_model.ball_last_seen() < 2:
             return self.push(ThrowOrRaiseArm)
         else:
             return self.push(GoalieMovement)

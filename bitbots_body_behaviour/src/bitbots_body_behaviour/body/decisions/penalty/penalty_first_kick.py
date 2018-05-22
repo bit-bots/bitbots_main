@@ -36,7 +36,7 @@ class PenaltyFirstKick(AbstractDecisionModule):
             self.set_direction()
 
         if self.direction == 0:  # direct shoot
-            if connector.personal_model.get_ball_relative()[1] <= 0:
+            if connector.world_model.get_ball_position_uv()[1] <= 0:
                 self.push(KickBall, init_data="RIGHT_KICK_STRONG")
             else:
                 self.push(KickBall, init_data="LEFT_KICK_STRONG")
@@ -45,7 +45,7 @@ class PenaltyFirstKick(AbstractDecisionModule):
         elif self.direction == 2:  # right
             connector.animation.play_animation(self.first_right_kick)
         elif self.direction == 3:  # short to front
-            if connector.personal_model.get_ball_relative()[1] <= 0:
+            if connector.world_model.get_ball_position_uv()[1] <= 0:
                 connector.animation.play_animation(self.first_front_right_kick)
             else:
                 connector.animation.play_animation(self.first_front_left_kick)

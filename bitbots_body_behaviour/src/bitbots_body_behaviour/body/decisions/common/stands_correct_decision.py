@@ -34,9 +34,11 @@ class StandsCorrectDecision(AbstractDecisionModule):
         right_post = connector.world_model.get_opp_goal_right_post_uv()
 
         # Align sidewards to the ball
-        if abs(connector.personal_model.get_ball_relative()[1]) > self.config_kickalign_v:
+        if abs(connector.world_model.get_ball_position_uv()[1]) > self.config_kickalign_v:
             # todo wieder gefilterte daten verwenden
-            return self.push(AlignOnBall)
+            goal = connector.world_model.get_opp_goal_center_xy()
+            direction = atan2(goal[1], goal[0])
+            return self.push(GoToBall, direction)
 
         # Align to the goal
         elif self.toggle_align_to_goal and not connector.blackboard_capsule().has_stopped_aligning():

@@ -18,7 +18,6 @@ class AlignOnBall(AbstractActionModule):
 
         # Position yourself about 20 centimeters behind the ball
         # TODO: parameter
-        point = (connector.personal_model.get_ball_relative()[0] - 0.2,
-                 connector.personal_model.get_ball_relative()[1],
-                 0)
+        ball_u, ball_v = connector.world_model.get_ball_position_uv()
+        point = (ball_u - 0.2, ball_v[1], 0)
         return self.push(GoToRelativePosition, point)

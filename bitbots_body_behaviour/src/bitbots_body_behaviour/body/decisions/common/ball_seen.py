@@ -26,7 +26,7 @@ class AbstractBallSeen(AbstractDecisionModule):
         self.max_ball_time = connector.config["Body"]["Common"]["maxBallTime"]
 
     def perform(self, connector, reevaluate=False):
-        if (rospy.get_time() - connector.personal_model.ball_last_seen()) < self.max_ball_time:
+        if (rospy.get_time() - connector.world_model.ball_last_seen()) < self.max_ball_time:
             return self.has_ball_seen(connector)
         else:
             return self.ball_not_seen(connector)

@@ -34,8 +34,8 @@ class GoalieMovement(AbstractDecisionModule):
 
     def perform(self, connector, reevaluate=False):
 
-        ball_u = connector.personal_model.get_ball_relative()[0]
-        speed = connector.personal_model.get_ball_speed()
+        ball_u = connector.world_model.get_ball_position_uv[0]
+        speed = connector.world_model.get_ball_speed()
         robot_direction = math.degrees(connector.world_model.get_current_position()[2])
 
         # If interrupt from throw comes here we want to wait until its over. Because the vision values will also be bad

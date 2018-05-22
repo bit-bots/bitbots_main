@@ -18,7 +18,7 @@ from humanoid_league_msgs.msg import Strategy
 class KickOffSupporterSideDecision(AbstractDecisionModule):
     def perform(self, connector, reevaluate=False):
         connector.speaker.say("KickOffSupporter")
-        ball_u, ball_v = connector.personal_model.get_ball_relative()
+        ball_u, ball_v = connector.world_model.get_ball_position_uv()
         if ball_v > 0:
             connector.speaker.say("Left")
             return self.push(KickOffSupporter, Strategy.SIDE_LEFT)

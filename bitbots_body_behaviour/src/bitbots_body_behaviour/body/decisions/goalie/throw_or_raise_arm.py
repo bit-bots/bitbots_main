@@ -48,7 +48,7 @@ class ThrowOrRaiseArm(AbstractDecisionModule):
 
         # Get the estimated values from the BallDataInfoFilterModule
 
-        ball_u, ball_v = connector.personal_model.get_ball_relative()
+        ball_u, ball_v = connector.world_model.get_ball_position_uv()
 
         # If they are not valid - return - we can't do anything
         if ball_u == ball_v == 0:

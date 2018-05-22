@@ -20,11 +20,11 @@ class SupporterDecision(AbstractDecisionModule):
 
     def perform(self, connector, reevaluate=False):
 
-        if not (connector.personal_model.ball_seen() or
-                rospy.get_time() - connector.personal_model.ball_last_seen() < 1):
+        if not (connector.world_model.ball_seen() or
+                rospy.get_time() - connector.world_model.ball_last_seen() < 1):
             return self.push(Search)
 
-        if connector.personal_model.get_ball_distance() > 1.1:
+        if connector.world_model.get_ball_distance() > 1.1:
             return self.push(GoToBall)
         else:
             return self.push(Wait)

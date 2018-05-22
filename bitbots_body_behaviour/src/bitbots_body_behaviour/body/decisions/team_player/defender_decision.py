@@ -35,8 +35,8 @@ class DefenderDecision(AbstractDecisionModule):
         self.start = rospy.get_time()
 
     def vote_for_switch_to_striker(self, connector):
-        if (connector.personal_model.ball_seen() and
-                connector.personal_model.get_ball_relative()[0] < self.go_striker_range):
+        if (connector.world_model.ball_seen() and
+                connector.world_model.get_ball_position_uv()[0] < self.go_striker_range):
             self.ball_distance_history.append(True)
         else:
             self.ball_distance_history.append(False)

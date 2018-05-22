@@ -14,6 +14,7 @@ import numpy as np
 import rospy
 import tf2_ros as tf2
 from tf2_geometry_msgs import PointStamped
+from geometry_msgs.msg import Point
 
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
@@ -66,7 +67,7 @@ class LookAtBall(AbstractLookAt):
     LookAtBall moves the head to look at the ball
     """
     def perform(self, connector, reevaluate=False):
-        ball = connector.personal_model.get_ball_relative_stamped()
+        ball = connector.world_model.get_ball_stamped()
         self.look_at(ball, connector)
 
 
@@ -75,8 +76,10 @@ class LookAtGoal(AbstractLookAt):
     LookAtGoal moves the head to look at the center of the goal
     """
     def perform(self, connector, reevaluate=False):
-        # TODO: Distinguish between own and enemy goal (get data from world model)
-        goal = connector.personal_model.get_goal_relative_stamped()
+        goal_u, goal_v = connector.world_model.get_opp_goal_center_uv()
+        goal = PointStamped()
+        goal.header.frame_id = 'base_footprint'
+        goal.point = Point(goal_u, goal_v, 0)
         self.look_at(goal, connector)
 
 
@@ -99,8 +102,7 @@ class LookAtRelativePoint(AbstractLookAt):
         point.point.x = self.u
         point.point.y = self.v
         point.point.z = self.w
-        # TODO: use base_foot_print
-        point.header.frame_id = 'r_sole'
+        point.header.frame_id = 'base_footprint'
 
         self.look_at(point, connector)
 

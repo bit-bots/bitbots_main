@@ -22,7 +22,7 @@ class KickOffRoleDecider(AbstractDecisionModule):
     def perform(self, connector, reevaluate=False):
         # decide which role we have in the kick off
 
-        if connector.personal_model.get_ball_distance() < self.decision_distance:
+        if connector.world_model.get_ball_distance() < self.decision_distance:
             return self.push(KickOffKicker)
         else:
             return self.push(KickOffSupporterSideDecision)

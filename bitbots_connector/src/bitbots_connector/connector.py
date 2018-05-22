@@ -7,13 +7,11 @@ from bitbots_connector.capsules.game_status_capsule import GameStatusCapsule
 from bitbots_connector.capsules.team_data_capsule import TeamDataCapsule
 from bitbots_connector.capsules.world_model_capsule import WorldModelCapsule
 from bitbots_connector.capsules.head_capsule import HeadCapsule
-from bitbots_connector.capsules.personal_model_capsule import PersonalModelCapsule
 from bitbots_connector.capsules.speaker_capsule import SpeakerCapsule
 
 
 class AbstractConnector(object):
     def __init__(self):
-        self.personal_model = PersonalModelCapsule()
         self.world_model = WorldModelCapsule()
         self.team_data = TeamDataCapsule()
 

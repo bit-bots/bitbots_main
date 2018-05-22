@@ -33,8 +33,8 @@ class AbstractCloseBall(AbstractDecisionModule):
         # When the ball is seen, the robot should switch between looking to the ball and the goal
         connector.blackboard.set_head_duty(HeadMode.BALL_GOAL_TRACKING)
         # if the robot is near to the ball
-        if self.min_kick_distance < connector.personal_model.get_ball_relative()[0] <= self.max_kick_distance \
-                and connector.personal_model.get_ball_distance() <= self.max_kick_distance * 5.0:
+        if self.min_kick_distance < connector.world_model.get_ball_position_uv()[0] <= self.max_kick_distance \
+                and connector.world_model.get_ball_distance() <= self.max_kick_distance * 5.0:
             # TODO config
             self.action(connector)
         else:
@@ -44,8 +44,8 @@ class AbstractCloseBall(AbstractDecisionModule):
         return self.push(StandsCorrectDecision)
 
     def go(self, connector):
-        goal_relative = connector.personal_model.get_goal_relative()
-        direction = atan2(goal_relative.y, goal_relative.x)
+        goal = connector.world_model.get_opp_goal_center_xy()
+        direction = atan2(goal[1], goal[0])
         return self.push(GoToBall, direction)
 
     def get_reevaluate(self):
@@ -68,8 +68,8 @@ class CloseBallPenaltyKick(AbstractCloseBall):
             # the penalty kick is different for now
             return self.push(PenaltyFirstKick)
         else:
-            if abs(connector.personal_model.get_ball_relative()[1]) > self.config_kickalign_v:
-                return self.push(AlignOnBall)
+            if abs(connector.world_model.get_ball_position_uv()[1]) > self.config_kickalign_v:
+                return self.push(GoToBall)
             else:
                 return self.push(KickDecisionPenaltyKick)
 

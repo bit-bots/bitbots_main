@@ -33,8 +33,8 @@ class AbstractSearchForObject(AbstractDecisionModule):
     def search(self, point, last_seen):
         rospy.logdebug('Searching...')
         self.run += 1
-        u = point.x
-        v = point.y
+        u = point[0]
+        v = point[1]
 
         if self.look_at_old_position and self.run <= 4 and rospy.get_time() - last_seen < self.object_lost_time:
             if self.run == 1:
@@ -59,12 +59,12 @@ class AbstractSearchForObject(AbstractDecisionModule):
 class SearchForBall(AbstractSearchForObject):
     def perform(self, connector, reevaluate=False):
         rospy.logdebug("Start Search for ball")
-        ball = connector.personal_model.get_ball_relative_msg()
-        return self.search(ball, connector.personal_model.ball_last_seen())
+        ball = connector.world_model.get_ball_position_uv()
+        return self.search(ball, connector.world_model.ball_last_seen())
 
 
 class SearchForEnemyGoal(AbstractSearchForObject):
     def perform(self, connector, reevaluate=False):
         # Take any goal until we can distinguish between them
-        goal = connector.personal_model.get_goal_relative()
-        return self.search(goal, connector.personal_model.any_goal_last_seen())
+        goal = connector.world_model.get_opp_goal_center_uv()
+        return self.search(goal, connector.world_model.any_goal_last_seen())

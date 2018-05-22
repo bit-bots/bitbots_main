@@ -12,7 +12,7 @@ from bitbots_body_behaviour.body.actions.search import Search
 class BallSeenGoalie(AbstractDecisionModule):
     def perform(self, connector, reevaluate=False):
 
-        if rospy.get_time() - connector.personal_model.ball_last_seen() < 2:
+        if rospy.get_time() - connector.world_model.ball_last_seen() < 2:
             return self.push(BallDangerous)
         else:
             return self.push(Search)
