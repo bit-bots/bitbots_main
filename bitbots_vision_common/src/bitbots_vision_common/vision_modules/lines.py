@@ -1,7 +1,6 @@
 
 import sys
 from random import randint
-from .color import ColorDetector
 from .horizon import HorizonDetector
 from .candidate import Candidate
 import math
@@ -43,7 +42,7 @@ class LineDetector:
                         is_candidate = False
                         if self._candidates is not None:
                             for candidate in self._candidates:
-                                if self._point_in_candidate(p, candidate):
+                                if candidate and self._point_in_candidate(p, candidate):
                                     is_candidate = True
                                     break
                         if is_candidate:

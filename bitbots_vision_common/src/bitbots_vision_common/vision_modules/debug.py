@@ -65,7 +65,8 @@ class DebugPrinter:
         else:
             rospy.loginfo('0 candidates.')
         for candidate in candidates:
-            DebugPrinter.print_candidate_info(candidate, name=name, prefix='- ')
+            if candidate:
+                DebugPrinter.print_candidate_info(candidate, name=name, prefix='- ')
 
     @staticmethod
     def print_candidate_info(candidate, name='candidate', prefix=''):

@@ -1,6 +1,5 @@
 #! /usr/bin/env python2
 import numpy as np
-from .color import ColorDetector
 from .horizon import HorizonDetector
 from .candidate import Candidate
 import cv2
@@ -102,7 +101,7 @@ class LineDetector2:
                 # check if start or end is in any of the candidates
                 in_candidate = False
                 for candidate in self.candidates:
-                    if self._point_in_candidate((x1, x2), candidate) or self._point_in_candidate((x2,y2), candidate):
+                    if candidate and self._point_in_candidate((x1, x2), candidate) or self._point_in_candidate((x2,y2), candidate):
                         in_candidate = True
                         break
 

@@ -2,8 +2,8 @@ from .candidate import CandidateFinder
 
 class DummyClassifier(CandidateFinder):
     def __init__(self, image, classifier, candidates):
-        self._classified_candidates = None
-        self._sorted_candidates = None
+        self._classified_candidates = []
+        self._sorted_candidates = []
         self._top_candidate = None
 
     def get_candidates(self):
