@@ -277,6 +277,8 @@ class CM730Node:
         else:
             button1 = None
             button2 = None
+        # mapping gyro
+        raw_gyro = (raw_gyro[1],raw_gyro[0],raw_gyro[2])
 
         return robo_pose, raw_gyro, raw_accel, button1, button2
 

@@ -67,8 +67,8 @@ class FallChecker(object):
         if self.falling_threshold_front == 0 or self.falling_threshold_side == 0 or self.falling_threshold_orientation_front_back == 0 or self.falling_threshold_orientation_left_right == 0: 
             return
         # setting the fall quantification function
-        x_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_left_right, self.falling_threshold_front, euler[0], not_much_smoothed_gyro[1])
-        y_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_front_back, self.falling_threshold_side, euler[1], not_much_smoothed_gyro[0])
+        x_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_left_right, self.falling_threshold_front, euler[0], not_much_smoothed_gyro[0])
+        y_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_front_back, self.falling_threshold_side, euler[1], not_much_smoothed_gyro[1])
 
         if x_fall_quantification + y_fall_quantification == 0:
             return None
@@ -76,7 +76,7 @@ class FallChecker(object):
         # compare quantification functions
         if y_fall_quantification > x_fall_quantification:
             # detect the falling direction
-            if not_much_smoothed_gyro[0] < 0:
+            if not_much_smoothed_gyro[1] > 0:
                 rospy.loginfo("FALLING TO THE FRONT")
                 #TODO remove comments when out off static testing
                 return self.falling_motor_degrees_front
@@ -86,7 +86,7 @@ class FallChecker(object):
                 return self.falling_motor_degrees_back
         else:
             # detect the falling direction
-            if not_much_smoothed_gyro[1] > 0:
+            if not_much_smoothed_gyro[0] > 0:
                 rospy.loginfo("FALLING TO THE RIGHT")
                 return self.falling_motor_degrees_right
             # detect the falling direction
