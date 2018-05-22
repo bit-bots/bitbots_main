@@ -13,7 +13,7 @@ from tf.transformations import euler_from_quaternion
 
 class WorldModelCapsule:
     def __init__(self, ):
-        self.position = None  # type: Position2D
+        self.position = Position2D()
         self.ball_position_u = None
         self.ball_position_v = None
 

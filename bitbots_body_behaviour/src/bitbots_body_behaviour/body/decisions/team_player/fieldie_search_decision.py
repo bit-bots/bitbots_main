@@ -25,8 +25,8 @@ class FieldieSearchDecision(AbstractDecisionModule):
     def __init__(self, connector, _):
         super(FieldieSearchDecision, self).__init__(connector, _)
         self.start_time = rospy.get_time()
-        self.turn_wait_time = connector.config["Body"]["Kieldie"]["searchWaitTime"]
-        self.turns_before_going_to_center_point = connector.config["Body"]["Kieldie"]["turnCenterpointTime"]
+        self.turn_wait_time = connector.config["Body"]["Fieldie"]["searchWaitTime"]
+        self.turns_before_going_to_center_point = connector.config["Body"]["Fieldie"]["turnCenterpointTime"]
         self.turn_angle = connector.config["Body"]["Fieldie"]["searchingTurnAngularAbsolute"]
         self.counter = 0
 

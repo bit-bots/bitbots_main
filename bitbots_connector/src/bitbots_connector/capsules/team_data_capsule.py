@@ -11,7 +11,7 @@ from humanoid_league_msgs.msg import Strategy, TeamData
 class TeamDataCapsule:
     def __init__(self):
         self.strategy_sender = None  # type: rospy.Publisher
-        self.team_data = None
+        self.team_data = TeamData()
         self.strategy = Strategy()
         self.last_update_team_data = None
         self.strategy_update = None

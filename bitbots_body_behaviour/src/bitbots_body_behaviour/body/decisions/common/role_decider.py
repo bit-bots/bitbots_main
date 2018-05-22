@@ -44,7 +44,7 @@ class RoleDecider(AbstractDecisionModule):
         else:
             # decide by our own
             # if status_ok() # test if robot is capable
-            rank_to_ball = connector.team_data.team_rank_to_ball()
+            rank_to_ball = connector.team_data.team_rank_to_ball(connector.personal_model.get_ball_relative())
             rospy.logdebug("I'm number %s to the ball" % rank_to_ball)
             if rank_to_ball == 1:
                 # striker

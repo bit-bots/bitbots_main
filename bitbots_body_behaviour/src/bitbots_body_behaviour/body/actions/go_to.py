@@ -57,7 +57,7 @@ class GoToAbsolutePosition(AbstractActionModule):
     def perform(self, connector, reevaluate=False):
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
-        pose_msg.header.frame_id = 'map_frame'
+        pose_msg.header.frame_id = 'map'
 
         pose_msg.pose.position.x = self.point[0]
         pose_msg.pose.position.y = self.point[1]
@@ -71,7 +71,7 @@ class GoToAbsolutePosition(AbstractActionModule):
 
 
 class GoToBall(GoToRelativePosition):
-    def __init__(self, connector, args):
+    def __init__(self, connector, args=0):
         """Go to the ball
 
         :param args: the angle of relative rotation in degrees

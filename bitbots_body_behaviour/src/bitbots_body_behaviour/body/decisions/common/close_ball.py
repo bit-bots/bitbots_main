@@ -45,10 +45,8 @@ class AbstractCloseBall(AbstractDecisionModule):
 
     def go(self, connector):
         goal_relative = connector.personal_model.get_goal_relative()
-        direction = atan2(goal_relative[1], goal_relative[0])
-        connector.pathfinding.go_to(connector.personal_model.get_ball_relative()[0],
-                                    connector.personal_model.get_ball_relative()[1],
-                                    direction)
+        direction = atan2(goal_relative.y, goal_relative.x)
+        return self.push(GoToBall, direction)
 
     def get_reevaluate(self):
         return True

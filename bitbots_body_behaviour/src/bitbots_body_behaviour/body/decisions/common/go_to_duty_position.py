@@ -36,7 +36,7 @@ class GoToDutyPosition(AbstractDecisionModule):
         elif duty == TeamData.ROLE_SUPPORTER:
             position = (self.center_position[0] * self.half_length, self.center_position[1] * self.half_width, 0)
         else:
-            position = (-0.5 * self.half_length, 0)  # this is the middle point of our own half
+            position = (-0.5 * self.half_length, 0, 0)  # this is the middle point of our own half
 
         if connector.world_model.get_distance_to_xy(position[0], position[1]) > self.threshold:
             connector.speaker.say("Go to duty position")
