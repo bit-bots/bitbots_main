@@ -332,7 +332,7 @@ def main():
     args, unknown = parser.parse_known_args()
     """
 
-    hcm = Motion(dieflag=False, standupflag=False,
+    hcm = Motion(dieflag=False, standupflag=True,
                     softoff_flag=True, softstart=False,
                     start_test=False)
 

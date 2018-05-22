@@ -63,6 +63,7 @@ class HcmStateMachine(AbstractStateMachine):
 
 class Startup(AbstractState):
     def entry(self):
+        print("Startup")
         self.start_time_limit = rospy.get_param("hcm/start_time", 10)
 
     def evaluate(self):
@@ -102,6 +103,7 @@ class Startup(AbstractState):
         pass
 
     def hcm_state(self):
+
         return STATE_STARTUP
 
     def shutdown(self):
@@ -110,6 +112,7 @@ class Startup(AbstractState):
 
 class Softoff(AbstractState):
     def entry(self):
+        print("Softoff")
         switch_motor_power(False)
 
     def evaluate(self):
@@ -288,15 +291,19 @@ class GettingUpSecond(AbstractState):
 
 class Controllable(AbstractState):
     def entry(self):
+        print("Controllable")
         pass
 
     def evaluate(self):
         #rospy.loginfo(VALUES.die_flag)
         if VALUES.record:
+            print("1")
             return Record()
         if VALUES.penalized:
+            print("2")
             return PenaltyAnimationIn()
         if VALUES.is_soft_off_time():
+            print("3")
             return Softoff()
         if VALUES.is_die_time():
             rospy.logwarn("die time")
@@ -312,9 +319,11 @@ class Controllable(AbstractState):
                 return Fallen()
 
         if VALUES.external_animation_playing:
+            print("5")
             return AnimationRunning()
 
         if VALUES.walking_active:
+            print("6")
             return Walking()
 
     def exit(self):
@@ -445,6 +454,7 @@ class WalkingStopping(AbstractState):
 
 class AnimationRunning(AbstractState):
     def entry(self):
+        print("Animation running")
         # reset flags
         VALUES.external_animation_playing = False
         VALUES.external_animation_requested = False

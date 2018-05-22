@@ -49,23 +49,26 @@ class FallChecker(object):
         
 
     def update_reconfigurable_values(self, config, level):
+        """
         self.dyn_falling_active = config["dyn_falling_active"]
         self.ground_coefficient = config["ground_coefficient"]
         self.falling_threshold_front = config["threshold_gyro_y_front"]
         self.falling_threshold_side = config["threshold_gyro_x_side"]
         self.falling_threshold_orientation_front_back = math.radians(config["falling_threshold_orientation_front_back"])
         self.falling_threshold_orientation_left_right = math.radians(config["falling_threshold_orientation_left_right"])
-        
+        """
+
 
     def check_falling(self, not_much_smoothed_gyro, quaternion):
         """Checks if the robot is currently falling and in which direction. """
         # converting the Quaternion into Euler angles for better understanding
         euler = self.quaternion_to_euler_angle(*quaternion)
+        print(not_much_smoothed_gyro)
         if self.falling_threshold_front == 0 or self.falling_threshold_side == 0 or self.falling_threshold_orientation_front_back == 0 or self.falling_threshold_orientation_left_right == 0: 
             return
         # setting the fall quantification function
-        x_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_left_right, self.falling_threshold_front, euler[0], not_much_smoothed_gyro[0])
-        y_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_front_back, self.falling_threshold_side, euler[1], not_much_smoothed_gyro[1])
+        x_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_left_right, self.falling_threshold_front, euler[0], not_much_smoothed_gyro[1])
+        y_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_front_back, self.falling_threshold_side, euler[1], not_much_smoothed_gyro[0])
 
         if x_fall_quantification + y_fall_quantification == 0:
             return None
@@ -73,7 +76,7 @@ class FallChecker(object):
         # compare quantification functions
         if y_fall_quantification > x_fall_quantification:
             # detect the falling direction
-            if not_much_smoothed_gyro[1] > 0:
+            if not_much_smoothed_gyro[0] < 0:
                 rospy.loginfo("FALLING TO THE FRONT")
                 #TODO remove comments when out off static testing
                 return self.falling_motor_degrees_front
@@ -83,7 +86,7 @@ class FallChecker(object):
                 return self.falling_motor_degrees_back
         else:
             # detect the falling direction
-            if not_much_smoothed_gyro[0] > 0:
+            if not_much_smoothed_gyro[1] > 0:
                 rospy.loginfo("FALLING TO THE RIGHT")
                 return self.falling_motor_degrees_right
             # detect the falling direction
@@ -93,7 +96,7 @@ class FallChecker(object):
 
     def calc_fall_quantification(self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler, current_axis__gyro):
         # check if you are moving forward or away from the perpendicular position, by comparing the signs.
-        if numpy.sign(current_axis_euler) != numpy.sign(current_axis__gyro):
+        if numpy.sign(current_axis_euler) == numpy.sign(current_axis__gyro):
             # calculatiung the orentation skalar for the threshold
             skalar = max((falling_threshold_orientation - abs(current_axis_euler))/falling_threshold_orientation,0)
             # checking if the rotation velocity is lower than the thethreshold
@@ -123,12 +126,12 @@ class FallChecker(object):
         
         t0 = +2.0 * (w * x + y * z)
         t1 = +1.0 - 2.0 * (x * x + ysqr)
-        X = math.atan2(t0, t1)
+        X = -math.atan2(t0, t1)
         
         t2 = +2.0 * (w * y - z * x)
         t2 = +1.0 if t2 > +1.0 else t2
         t2 = -1.0 if t2 < -1.0 else t2
-        Y = -math.asin(t2)
+        Y = math.asin(t2)
         
         t3 = +2.0 * (w * z + x * y)
         t4 = +1.0 - 2.0 * (ysqr + z * z)
