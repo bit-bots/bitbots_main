@@ -27,11 +27,12 @@ class DebugImage:
         :return void:
         """
         for candidate in ball_candidates:
-            cv2.circle(self.raw_image,
-                       (candidate.get_center_x(), candidate.get_center_y()),
-                       candidate.get_radius(),
-                       color,
-                       thickness=thickness)
+            if candidate:
+                cv2.circle(self.raw_image,
+                           (candidate.get_center_x(), candidate.get_center_y()),
+                           candidate.get_radius(),
+                           color,
+                           thickness=thickness)
 
     def draw_points(self, points, color, rad=2):
         for point in points:

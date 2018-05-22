@@ -163,7 +163,6 @@ class Vision:
                 ball_fcnn_path = self.package_path + config['ball_fcnn_model_path']
                 if not os.path.exists(ball_fcnn_path):
                     rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
-                rospy.logerr(ball_fcnn_path)
                 self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
                 rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
 
