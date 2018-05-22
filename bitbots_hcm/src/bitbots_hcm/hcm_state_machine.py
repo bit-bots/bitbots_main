@@ -291,6 +291,7 @@ class Controllable(AbstractState):
         pass
 
     def evaluate(self):
+        #rospy.loginfo(VALUES.die_flag)
         if VALUES.record:
             return Record()
         if VALUES.penalized:
