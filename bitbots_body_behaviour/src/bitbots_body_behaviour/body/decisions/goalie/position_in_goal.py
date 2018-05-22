@@ -9,37 +9,23 @@ History:
 * 06.12.14: Created using code from GoalieBehaviourDynamic by Daniel Speck (Marc Bestmann)
 """
 import math
-from bitbots.modules.abstract.abstract_decision_module import AbstractDecisionModule
-from bitbots.modules.behaviour.body.actions.plain_walk_action import PlainWalkAction
-from bitbots.modules.behaviour.modell.capsules.walking_capsule import WalkingCapsule
-from bitbots.util import get_config
+from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
 
 
 class PositionInGoal(AbstractDecisionModule):
     def __init__(self,  connector, _):
         super(PositionInGoal, self).__init__(connector)
-        config = get_config()
-        goal_width = config["field"]["goal-width"]
-        max_side_move = config["Behaviour"]["Goalie"]["maxSidewardMovement"]
-        self.angle_threshold = config["Behaviour"]["Goalie"]["sidewardMoveAngleThreshold"]
+        goal_width = connector.config["Body"]["Common"]["Field"]["goalWidth"]
+        max_side_move = connector.config["Body"]["Goalie"]["maxSidewardMovement"]
+        self.angle_threshold = connector.config["Body"]["Goalie"]["sidewardMoveAngleThreshold"]
         self.max_side = goal_width * max_side_move
 
     def perform(self, connector, reevaluate=False):
-
-        ball_angle = connector.filtered_vision_capsule().get_simple_filtered_ball_info().angle
-        # todo allgemeinen filter benutzen #todo was bedeutet dieses todo?
-        robot_position = connector.world_model_capsule().get_current_position()  # todo
+        ball_position = connector.personal_model.get_ball_position()
+        ball_angle = math.degrees(math.atan2(ball_position[1], ball_position[0]))
+        robot_position = connector.world_model.get_current_position()
 
         # is it necessary to move
-        if math.fabs(ball_angle) > self.angle_threshold:
-
-            # left or right
-            if ball_angle < 0:
-                # are we not to far away from the middle of the goal
-                if robot_position[1] < self.max_side:
-                    return self.push(PlainWalkAction, [
-                        [WalkingCapsule.ZERO, WalkingCapsule.ZERO, WalkingCapsule.SLOW_SIDEWARDS_LEFT, 3]])
-            else:
-                if robot_position[1] > self.max_side:
-                    return self.push(PlainWalkAction, [
-                        [WalkingCapsule.ZERO, WalkingCapsule.ZERO, WalkingCapsule.SLOW_SIDEWARDS_RIGHT, 3]])
+        if math.fabs(ball_angle) > self.angle_threshold and abs(robot_position[1]) < self.max_side:
+            return self.push(GoToRelativePosition, (0, ball_position[1], 0))

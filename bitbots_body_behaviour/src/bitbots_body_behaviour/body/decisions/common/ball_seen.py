@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 BallSeen
-^^^^^^^^^^^^^
+^^^^^^^^
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
@@ -11,7 +11,6 @@ import time
 import rospy
 from bitbots_body_behaviour.body.actions.search import Search
 from bitbots_body_behaviour.body.decisions.common.close_ball import CloseBallPenaltyKick, CloseBallCommon
-from bitbots_body_behaviour.body.decisions.goalie.ball_dangerous import BallDangerous
 from bitbots_body_behaviour.body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
@@ -27,7 +26,6 @@ class AbstractBallSeen(AbstractDecisionModule):
         self.max_ball_time = connector.config["Body"]["Common"]["maxBallTime"]
 
     def perform(self, connector, reevaluate=False):
-
         if (rospy.get_time() - connector.personal_model.ball_last_seen()) < self.max_ball_time:
             return self.has_ball_seen(connector)
         else:
@@ -43,35 +41,7 @@ class AbstractBallSeen(AbstractDecisionModule):
         raise NotImplementedError
 
 
-class BallSeenGoalie(AbstractBallSeen):
-    def perform(self, connector, reevaluate=False):
-
-        if rospy.get_time() - connector.blackboard.get_confirmed_ball() < 2:
-            return self.has_ball_seen(connector)
-        else:
-            return self.ball_not_seen(connector)
-
-    def has_ball_seen(self, connector):
-        return self.push(BallDangerous)
-
-    def ball_not_seen(self, connector):
-        return self.push(Search)
-
-
 class BallSeenFieldie(AbstractBallSeen):
-    """
-    def perform(self, connector, reevaluate=False):
-
-        if connector.raw_vision_capsule().ball_seen() or \
-                ((rospy.get_time() - connector.blackboard_capsule().get_confirmed_ball() < 5 and
-                connector.filtered_vision_capsule().get_local_goal_model_ball_distance() > 1000)
-            or (rospy.get_time() - connector.blackboard_capsule().get_confirmed_ball() < 2 and
-                connector.filtered_vision_capsule().get_local_goal_model_ball_distance() < 1000)):
-            return self.has_ball_seen(connector)
-        else:
-            return self.ball_not_seen(connector)
-    """
-
     def has_ball_seen(self, connector):
         return self.push(CloseBallCommon)
 

@@ -22,17 +22,16 @@ class KickBall(AbstractActionModule):
         super(KickBall, self).__init__(connector)
         self.side = args
         self.begin = rospy.get_time()
-        self.rk = "rk_wm2016_unstable" # connector.animation.an_config["kicks"]["rk"]
-        self.lk = None # connector.animation.an_config["kicks"]["lk"]
-        self.rkp = None #  connector.animation.an_config["kicks"]["rkp"]
-        self.lkp = None # connector.animation.an_config["kicks"]["lkp"]
-        self.side_right = None # connector.animation.an_config["kicks"]["lko"]
-        self.side_left = None # connector.animation.an_config["kicks"]["rko"]
+        self.right_kick = connector.animation.config["Kicks"]["rightKick"]
+        self.left_kick = connector.animation.config["Kicks"]["leftKick"]
+        self.right_kick_strong = connector.animation.config["Kicks"]["rightKickStrong"]
+        self.left_kick_strong = connector.animation.config["Kicks"]["leftKickString"]
+        self.right_side_kick = connector.animation.config["Kicks"]["rightKickSide"]
+        self.left_side_kick = connector.animation.config["Kicks"]["leftKickSide"]
         self.anim_begin = False
 
     def perform(self, connector, reevaluate=False):
         self.do_not_reevaluate()
-        connector.walking.stop_walking()
 
         if rospy.get_time() - self.begin > 3.5:  # wait one moment
             self.do_not_reevaluate()  # dont interrrupt the kick
@@ -46,17 +45,17 @@ class KickBall(AbstractActionModule):
 
             self.anim_begin = True
 
-            if self.side == "R":
-                connector.animation.play_animation(self.rk)
-            elif self.side == "L":
-                connector.animation.play_animation(self.lk)
-            elif self.side == "RP":
-                connector.animation.play_animation(self.rkp)
-            elif self.side == "LP":
-                connector.animation.play_animation(self.lkp)
-            elif self.side == "SLK":
-                connector.animation.play_animation(self.side_left)
-            elif self.side == "SRK":
-                connector.animation.play_animation(self.side_right)
+            if self.side == "RIGHT_KICK":
+                connector.animation.play_animation(self.right_kick)
+            elif self.side == "LEFT_KICK":
+                connector.animation.play_animation(self.left_kick)
+            elif self.side == "RIGHT_KICK_STRONG":
+                connector.animation.play_animation(self.right_kick_strong)
+            elif self.side == "LEFT_KICK_STRONG":
+                connector.animation.play_animation(self.left_kick_strong)
+            elif self.side == "LEFT_SIDE_KICK":
+                connector.animation.play_animation(self.left_side_kick)
+            elif self.side == "RIGHT_SIDE_KICK":
+                connector.animation.play_animation(self.right_side_kick)
             else:
                 raise NotImplementedError("This kick does not exist")

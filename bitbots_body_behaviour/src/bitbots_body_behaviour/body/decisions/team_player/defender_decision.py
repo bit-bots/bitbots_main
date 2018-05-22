@@ -13,7 +13,8 @@ Decides what a defender does
 import rospy
 
 from bitbots_body_behaviour.body.actions.wait import Wait
-from bitbots_body_behaviour.body.decisions.common.corridor import DefenderCorridor
+from bitbots_body_behaviour.body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
+from bitbots_body_behaviour.body.decisions.team_player.defender_position_decider import DefenderPositionDecider
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 
@@ -21,21 +22,21 @@ class DefenderDecision(AbstractDecisionModule):
     def __init__(self, connector, _):
         super(DefenderDecision, self).__init__(connector, _)
 
-        self.toggle_one_time_defender = config["Toggles"]["Fieldie"]["oneTimeDefender"]
-        self.go_striker_range = config["Fieldie"]["Defender"]["goStrikerRange"]
-        self.go_striker_time = config["Fieldie"]["Defender"]["goStrikerTime"]
-        self.ball_history_length = config["Fieldie"]["Defender"]["ballHistoryLenght"]
+        self.toggle_one_time_defender = connector.config["Body"]["Behaviour"]["Toggles"]["Fieldie"]["oneTimeDefender"]
+        self.go_striker_range = connector.config["Body"]["Behaviour"]["Fieldie"]["Defender"]["goStrikerRange"]
+        self.go_striker_time = connector.config["Body"]["Behaviour"]["Fieldie"]["Defender"]["goStrikerTime"]
+        self.ball_history_length = connector.config["Body"]["Behaviour"]["Fieldie"]["Defender"]["ballHistoryLenght"]
         self.first_first_time = None
-        self.required_number = config["Fieldie"]["Defender"]["requiredNumberTrues"]
+        self.required_number = connector.config["Body"]["Behaviour"]["Fieldie"]["Defender"]["requiredNumberTrues"]
         self.start_time = rospy.get_time()
-        self.wait_at_start = config["Fieldie"]["Defender"]["waitAtStart"]
+        self.wait_at_start = connector.config["Body"]["Behaviour"]["Fieldie"]["Defender"]["waitAtStart"]
         self.ball_distance_history = []
         self.started = None
         self.start = rospy.get_time()
 
     def vote_for_switch_to_striker(self, connector):
-        if (connector.raw_vision_capsule().ball_seen() and connector.raw_vision_capsule().get_ball_info("u") <
-            self.go_striker_range):
+        if (connector.personal_model.ball_seen() and
+                connector.personal_model.get_ball_relative()[0] < self.go_striker_range):
             self.ball_distance_history.append(True)
         else:
             self.ball_distance_history.append(False)
@@ -46,18 +47,17 @@ class DefenderDecision(AbstractDecisionModule):
 
     def perform(self, connector, reevaluate=False):
         number_of_times_voted_for_yes = 0
-        if connector.raw_vision_capsule().is_new_frame() and self.is_waiting_period_over():
+        if self.is_waiting_period_over():
             number_of_times_voted_for_yes = self.vote_for_switch_to_striker(connector)
 
         if number_of_times_voted_for_yes > self.required_number:
-            become_one_time_kicker(connector)
-            return self.interrupt()
+            return self.push(OneTimeKickerDecision)
         else:
             # Standard defender is moving in front of own goal
             if self.toggle_one_time_defender:
                 return self.push(Wait, 1)
             else:
-                return self.push(DefenderCorridor)
+                return self.push(DefenderPositionDecider)
 
     def get_reevaluate(self):
         return True

@@ -10,25 +10,25 @@ History:
 """
 import random
 
+from bitbots_body_behaviour.body.actions.kick_ball import KickBall
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from humanoid_league_msgs.msg import Strategy
 
 
 class KickOffKicker(AbstractDecisionModule):
-    def __init__(self, _):
-        super(KickOffKicker, self).__init__()
+    def __init__(self, connector):
+        super(KickOffKicker, self).__init__(connector)
         self.kicked = False
         self.direction = None
 
     def perform(self, connector, reevaluate=False):
         if not self.kicked:
-            self.direction = -1 if random.random() < 0.5 else 1
-            connector.team_data_capsule().publish_kickoff_strategy(self.direction)
-            direction_string = "left" if self.direction == -1 else "right"
-            say("Kick off to the " + direction_string)
+            self.direction = Strategy.SIDE_LEFT if random.random() < 0.5 else Strategy.SIDE_RIGHT
+            connector.team_data.publish_kickoff_strategy(self.direction)
             self.kicked = True
-            if self.direction == -1:
-                return self.push(KickBall, "SRK")
+            if self.direction == Strategy.SIDE_RIGHT:
+                return self.push(KickBall, "RIGHT_SIDE_KICK")
             else:
-                return self.push(KickBall, "SLK")
+                return self.push(KickBall, "LEFT_SIDE_KICK")
 
         return self.interrupt()

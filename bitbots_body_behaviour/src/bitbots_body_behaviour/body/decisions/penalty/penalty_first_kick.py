@@ -12,22 +12,23 @@ History:
 """
 import random
 
-from body.actions.kick_ball import KickBall
+from bitbots_body_behaviour.body.actions.kick_ball import KickBall
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from humanoid_league_msgs.msg import TeamData
 
 
-class PenaltyFirstKick(AbstractDecisionModule):  # todo not yet refactored 6.12.14.
+class PenaltyFirstKick(AbstractDecisionModule):
 
-    def __init__(self, _):
-        super(PenaltyFirstKick, self).__init__()
+    def __init__(self, connector):
+        super(PenaltyFirstKick, self).__init__(connector)
         self.first_run = True
         self.direction = 0
-        self.first_left_kick = config["animations"]["flk"]
-        self.first_right_kick = config["animations"]["frk"]
-        self.first_front_left_kick = config["animations"]["fflk"]
-        self.first_front_right_kick = config["animations"]["ffrk"]
-        self.toggle_direct_penalty = config["Behaviour"]["Toggles"]["PenaltyFieldie"]["directPenaltyKick"]
-        self.penalty_direction = config["Behaviour"]["PenaltyFieldie"]["penaltyDirection"]
+        self.first_left_kick = connector.animation.config["Penalty"]["leftKick"]
+        self.first_right_kick = connector.animation.config["Penalty"]["rightKick"]
+        self.first_front_left_kick = connector.animation.config["Penalty"]["frontLeftKick"]
+        self.first_front_right_kick = connector.animation.config["Penalty"]["frontRightKick"]
+        self.toggle_direct_penalty = connector.config["Body"]["Toggles"]["PenaltyFieldie"]["directPenaltyKick"]
+        self.penalty_direction = connector.config["Body"]["PenaltyFieldie"]["penaltyDirection"]
 
     def perform(self, connector, reevaluate=False):
 
@@ -35,26 +36,26 @@ class PenaltyFirstKick(AbstractDecisionModule):  # todo not yet refactored 6.12.
             self.set_direction()
 
         if self.direction == 0:  # direct shoot
-            if connector.raw_vision_capsule().get_ball_info("v") <= 0:
-                self.push(KickBall, init_data="RP")
+            if connector.personal_model.get_ball_relative()[1] <= 0:
+                self.push(KickBall, init_data="RIGHT_KICK_STRONG")
             else:
-                self.push(KickBall, init_data="LP")
+                self.push(KickBall, init_data="LEFT_KICK_STRONG")
         elif self.direction == 1:  # left
-            connector.animation_capsule().play_animation(self.first_left_kick)
+            connector.animation.play_animation(self.first_left_kick)
         elif self.direction == 2:  # right
-            connector.animation_capsule().play_animation(self.first_right_kick)
+            connector.animation.play_animation(self.first_right_kick)
         elif self.direction == 3:  # short to front
-
-            if connector.raw_vision_capsule().get_ball_info("v") <= 0:
-                connector.animation_capsule().play_animation(self.first_front_right_kick)
+            if connector.personal_model.get_ball_relative()[1] <= 0:
+                connector.animation.play_animation(self.first_front_right_kick)
             else:
-                connector.animation_capsule().play_animation(self.first_front_left_kick)
+                connector.animation.play_animation(self.first_front_left_kick)
         else:
-            raise NotImplementedError("This direction is not implented")
+            raise NotImplementedError("This direction is not implemented")
 
-        connector.blackboard_capsule().set_first_kick_done()
-        connector.blackboard_capsule().set_force_hard_kick()
-        connector.set_duty("Striker")
+        connector.blackboard.set_first_kick_done()
+        connector.blackboard.set_force_hard_kick()
+        connector.team_data.set_role(TeamData.ROLE_STRIKER)
+
         self.interrupt()
 
     def set_direction(self):

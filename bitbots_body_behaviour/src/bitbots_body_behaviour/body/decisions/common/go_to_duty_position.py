@@ -9,38 +9,38 @@ History:
 * 05.12.14: Created (Marc Bestmann & Nils Rokita)
 """
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
-
-from body.actions.go_to_absolute_position import GoToAbsolutePosition
+from humanoid_league_msgs.msg import TeamData
+from bitbots_body_behaviour.body.actions.go_to import GoToAbsolutePosition
 
 
 class GoToDutyPosition(AbstractDecisionModule):
-    def __init__(self, connector):
+    def __init__(self, connector, _):
         super(GoToDutyPosition, self).__init__(connector)
-        self.length = config["field"]["length"]
-        self.width = config["field"]["width"]
-        self.goalie_position = config["Behaviour"]["Common"]["Positions"]["goalie"]
-        self.teamplayer_position = config["Behaviour"]["Common"]["Positions"]["teamPlayer"]
-        self.defender_position = config["Behaviour"]["Common"]["Positions"]["defender"]
-        self.center_position = config["Behaviour"]["Common"]["Positions"]["center"]
-        self.threshold = config["Behaviour"]["Common"]["positioningThreshold"]
+        self.half_length = connector.config["Body"]["Common"]["Field"]["length"] / 2.0
+        self.half_width = connector.config["Body"]["Common"]["Field"]["width"] / 2.0
+        self.goalie_position = connector.config["Body"]["Common"]["Positions"]["goalie"]
+        self.teamplayer_position = connector.config["Body"]["Common"]["Positions"]["teamPlayer"]
+        self.defender_position = connector.config["Body"]["Common"]["Positions"]["defender"]
+        self.center_position = connector.config["Body"]["Common"]["Positions"]["center"]
+        self.threshold = connector.config["Body"]["Common"]["positioningThreshold"]
 
     def perform(self, connector, reevaluate=False):
         duty = connector.blackboard.get_duty()
 
-        if duty == "Goalie":
-            position = (self.goalie_position[0] * self.length, self.goalie_position[1] * self.width)
-        elif duty == "TeamPlayer":
-            position = (self.teamplayer_position[0] * self.length, self.teamplayer_position[1] * self.width)
-        elif duty == "Defender":
-            position = (self.defender_position[0] * self.length, self.defender_position[1] * self.width)
-        elif duty == "Center":
-            position = (self.center_position[0] * self.length, self.center_position[1] * self.width)
+        if duty == TeamData.ROLE_GOALIE:
+            position = (self.goalie_position[0] * self.half_length, self.goalie_position[1] * self.half_width, 0)
+        elif duty == TeamData.ROLE_STRIKER:
+            position = (self.teamplayer_position[0] * self.half_length, self.teamplayer_position[1] * self.half_width, 0)
+        elif duty == TeamData.ROLE_DEFENDER:
+            position = (self.defender_position[0] * self.half_length, self.defender_position[1] * self.half_width, 0)
+        elif duty == TeamData.ROLE_SUPPORTER:
+            position = (self.center_position[0] * self.half_length, self.center_position[1] * self.half_width, 0)
         else:
-            position = (-0.25 * self.length, 0)  # this is the middle point of our own half
+            position = (-0.5 * self.half_length, 0, 0)  # this is the middle point of our own half
 
         if connector.world_model.get_distance_to_xy(position[0], position[1]) > self.threshold:
-            say("Go to duty position")
-            return self.push(GoToAbsolutePosition, (position, True))
+            connector.speaker.say("Go to duty position")
+            return self.push(GoToAbsolutePosition, position)
         else:
-            say("I am at position")
+            connector.speaker.say("I am at position")
             return self.pop()

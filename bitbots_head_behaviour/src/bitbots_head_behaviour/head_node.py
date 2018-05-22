@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding:utf-8 -*-
 import rospy
-from bitbots_common.connector.connector import HeadConnector
+from bitbots_connector.connector import HeadConnector
 from bitbots_head_behaviour.decisions.head_duty_decider import HeadDutyDecider
 from bitbots_stackmachine.stack_machine_module import StackMachineModule
 from humanoid_league_msgs.msg import HeadMode, BallRelative, ObstacleRelative, GoalRelative

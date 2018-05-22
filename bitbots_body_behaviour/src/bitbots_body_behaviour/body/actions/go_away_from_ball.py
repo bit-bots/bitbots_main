@@ -6,24 +6,16 @@ GotToBallPathfinding
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
 """
-from geometry_msgs.msg import Pose2D, Twist
-
+from math import atan2
+from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 
 
 class GoAwayFromBall(AbstractActionModule):
-    """
-    Goes to the ball
-    """
+    """Goes away from the ball"""
     def perform(self, connector, reevaluate=False):
-        t = Twist()
-        x, y = connector.personal_model.get_ball_relative()
-        if x > 0:
-            xgo = -0.5
-        else:
-            xgo = 0.5
-        if y > 0:
-            ygo = -0.5
-        else:
-            ygo = 0.5
-        connector.walking.start_walking_plain(xgo, 0, ygo)
+        ball_relative = connector.personal_model.get_ball_relative()
+        point = (-ball_relative[0],
+                 -ball_relative[1],
+                 atan2(ball_relative[1], ball_relative[0]))
+        return self.push(GoToRelativePosition, point)

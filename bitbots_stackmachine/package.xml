@@ -2,7 +2,14 @@
 <package>
   <name>bitbots_stackmachine</name>
   <version>0.0.0</version>
-  <description>The bitbots_stackmachine package</description>
+  <description>The bitbots_stackmachine is an extended form
+    of a behaviour state machine. It works like a stack where
+    classes describing decisions or actions are pushed on top,
+    executed, and popped off again. In difference to a state
+    machine, the stack machine keeps track of the previously
+    executed behaviour classes and re-executes them whenever
+    the top class is popped off.
+  </description>
 
   <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
@@ -16,7 +23,7 @@
   <export>
     <bitbots_documentation>
       <status>compiles</status>
-      <language>python3</language>
+      <language>python2</language>
     </bitbots_documentation>
   </export>
 </package>

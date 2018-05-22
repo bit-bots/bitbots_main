@@ -1,15 +1,14 @@
 Behaviour:
   Body:
-
-    Toggles: # toggles für das Kopfverhalten
-      # toggles für den Fieldie
+    Toggles: # toggles fuer das Kopfverhalten
+      # toggles fuer den Fieldie
       Fieldie:
-          # lässt den Defender warten bis der ball bei sich in der nähe ist oder niemand sonst auf dem Feld ist um bis
+          # lässt den Defender warten bis der ball bei sich in der nahe ist oder niemand sonst auf dem Feld ist um bis
           # zum nächsten set ein striker zu werden
           oneTimeDefender: True
 
           # Tries to self positionate at start of the geame
-          trySelfPositioning : False
+          trySelfPositioning : True
 
           # Cares about the Kickoff, for example wait for enemies
           careAboutKickoff : False
@@ -39,7 +38,7 @@ Behaviour:
           penaltykick_go_away: False
 
 
-      # Toggles für den Goalie
+      # Toggles fuer den Goalie
       Goalie:
           # Aktiviert das Relocate, das der Torwart sich im Tor richtig dreht, wenn er sich beim Hinwerfen umgedreht hat
           relocateTurn : True
@@ -54,12 +53,12 @@ Behaviour:
           # if the goalie tries to turn itself to the right direction, facing the opposite goal
           checkDirection: False
 
-      # toggles für elfmeter schütze
+      # toggles fuer elfmeter schuetze
       PenaltyFieldie:
           #lässt ihn direkt ohne weiteres verhalten schießen
           directPenaltyKick: True
 
-          # benutze ein besonderes pathfinding für den penaltykick
+          # benutze ein besonderes pathfinding fuer den penaltykick
           useSpecialPathfinding: True
 
     Fieldie:
@@ -73,6 +72,12 @@ Behaviour:
 
       # Seitlicher versatz bei dem er sich noch sitlich zum Ball ausrichten soll
       kickAlign: 0.1
+
+      # Zeit, die beim Suchen des Balls gewartet wird, bis der Roboter sich dreht
+      searchWaitTime: 4
+
+      # Wie oft der Roboter sich dreht und nach dem Ball sucht, bevor er zum Mittelpunkt geht
+      turnCenterpointTime: 6
 
       # Der absolut Wert des angularen Wertes des Walkings mit dem er sich dreht wenn er nach dem Ball sucht.
       searchingTurnAngularAbsolute: 8
@@ -97,7 +102,7 @@ Behaviour:
           goStrikerTime: 1.0
           # die wie viel letzte ball entfernenungen betrachtet werden um zu entscheiden ob der defender zum striker wird
           ballHistoryLenght: 20
-          # Wie viele Trues in der History sein müssen zum striekr zu werden
+          # Wie viele Trues in der History sein muessen zum striekr zu werden
           requiredNumberTrues: 18
           # Zeit die der Defender am Anfang nichts macht um nicht zum striker zu werden
           waitAtStart: 10
@@ -113,6 +118,9 @@ Behaviour:
           strategyOutdateTime: 30
 
     Goalie:
+      # Distance where the goalie reacts to the ball in meter
+      reactDistance: 1.5
+
     ### Go To Ball ###
       # geschwindigkeit, bei der der Torwart denkt, dass der Ball liegt und er zu ihm geht
       goToBallVelocity: 0.1
@@ -137,7 +145,7 @@ Behaviour:
       # u estimation distance between befor throwing
       uThrowThreshold: 0.5
 
-    # elfemter schütze
+    # elfemter schuetze
     PenaltyFieldie:
         # verhaltensrichtung festlegen
         # -1 zufällig entscheiden lassen
@@ -198,9 +206,29 @@ Behaviour:
       Positions:
           help: |
               All positions are given as per cent of
-              field length, field with
+              half field length, half field width so
+              that (0,0) is the center point, (1,1)
+              is the corner to the left of the opponent
+              goal and (-1,-1) is the right own corner
 
-          goalie: (0.95, 0)
-          teamPlayer: (0.1, 0)
-          defender: (0.5, 0.1)
-          center: (0.7, -0.1)
+                       _____________________
+              1    M  |          |          |  O
+              |    Y  |_ -x, y   |   x, y  _|  P
+              |       | |        |        | |  P
+              0    G  | |       ( )       | |  G
+              |    O  |_|        |        |_|  O
+              |    A  |  -x,-y   |   x,-y   |  A
+              -1   L  |__________|__________|  L
+
+                     -1----------0----------1
+
+
+          goalie: (-0.95, 0)
+          teamPlayer: (-0.1, 0)
+          defender: (-0.5, 0.2)
+          center: (-0.7, -0.2)
+
+      Field:
+          length: 9
+          width: 6
+          goalWidth: 2.6
