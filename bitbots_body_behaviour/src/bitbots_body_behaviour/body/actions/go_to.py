@@ -10,6 +10,7 @@ Goes to a position or an object
 
 import math
 import rospy
+import tf2_ros
 from tf.transformations import quaternion_from_euler
 from geometry_msgs.msg import PoseStamped, Quaternion
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
@@ -24,6 +25,8 @@ class GoToRelativePosition(AbstractActionModule):
                      of rotation in degrees
         """
         super(GoToRelativePosition, self).__init__(connector)
+        self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(5.0))
+        tf_listener = tf2_ros.TransformListener(self.tf_buffer)
         self.point = args
 
     def perform(self, connector, reevaluate=False):
@@ -38,7 +41,9 @@ class GoToRelativePosition(AbstractActionModule):
         rotation = quaternion_from_euler(0, 0, math.radians(self.point[2]))
         pose_msg.pose.orientation = Quaternion(*rotation)
 
-        connector.pathfinding_publisher.publish(pose_msg)
+        absolute_pose = self.tf_buffer.transform(pose_msg, 'map')
+
+        connector.pathfinding_publisher.publish(absolute_pose)
         return self.pop()
 
 
