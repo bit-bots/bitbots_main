@@ -15,7 +15,7 @@ from humanoid_league_msgs.msg import Position2D, ObstaclesRelative, GoalRelative
 
 
 class WorldModelCapsule:
-    def __init__(self):
+    def __init__(self, config):
         self.position = Position2D()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5.0))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
@@ -24,6 +24,8 @@ class WorldModelCapsule:
         self.obstacles = ObstaclesRelative()
         self.my_data = dict()
         self.counter = 0
+        self.field_length = config["Body"]["Common"]["Field"]["length"]
+        self.goal_width = config["Body"]["Common"]["Field"]["length"]
 
     def get_current_position(self):
         return self.position.pose.x, self.position.pose.y, self.position.pose.theta
@@ -78,22 +80,21 @@ class WorldModelCapsule:
         # We are currently not seeing any goal, we know where they are based
         # on the localisation. Therefore, any_goal_last_seen returns the time
         # from the stamp of the last position update
-        return self.position.header.stamp
+        return self.position.header.stamp.to_time()
 
     def get_opp_goal_center_uv(self):
         x, y = self.get_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
     def get_opp_goal_center_xy(self):
-        # TODO: from yaml!
-        return 3, 0
+        return self.field_length / 2, 0
 
     def get_own_goal_center_uv(self):
         x, y = self.get_own_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
     def get_own_goal_center_xy(self):
-        return -3, 0
+        return -self.field_length / 2, 0
 
     def get_opp_goal_angle_from_ball(self):
         ball_x, ball_y = self.get_ball_position_xy()
@@ -106,11 +107,11 @@ class WorldModelCapsule:
 
     def get_opp_goal_left_post_uv(self):
         x, y = self.get_opp_goal_center_xy()
-        return self.get_uv_from_xy(x, y - 0.9)
+        return self.get_uv_from_xy(x, y - self.goal_width / 2)
 
     def get_opp_goal_right_post_uv(self):
         x, y = self.get_opp_goal_center_xy()
-        return self.get_uv_from_xy(x, y + 0.9)
+        return self.get_uv_from_xy(x, y + self.goal_width / 2)
 
     def goal_callback(self):
         # Currently not used

@@ -12,10 +12,10 @@ from bitbots_connector.capsules.speaker_capsule import SpeakerCapsule
 
 class AbstractConnector(object):
     def __init__(self):
-        self.world_model = WorldModelCapsule()
-        self.team_data = TeamDataCapsule()
+        self.config = rospy.get_param("Behaviour")
 
-        self.config = None  # type: dict
+        self.world_model = WorldModelCapsule(self.config)
+        self.team_data = TeamDataCapsule()
 
 
 class BodyConnector(AbstractConnector):
