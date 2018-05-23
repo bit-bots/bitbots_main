@@ -29,16 +29,19 @@ class FieldieSearchDecision(AbstractDecisionModule):
         self.turns_before_going_to_center_point = connector.config["Body"]["Fieldie"]["turnCenterpointTime"]
         self.turn_angle = connector.config["Body"]["Fieldie"]["searchingTurnAngularAbsolute"]
         self.counter = 0
+        self.at_centerpoint = False
 
     def perform(self, connector, reevaluate=False):
         # if we have looked too long in the same direktion without seeing we want to walk
         if rospy.get_time() - self.start_time > self.turn_wait_time:
             # reset the timer and increment counter
-            self.start_time = rospy.get_time()
-            self.counter += 1
-            return self.push(GoToRelativePosition, (0, 0, self.turn_angle))
+            if not connector.pathfinding.is_walking_active():
+                self.start_time = rospy.get_time()
+                self.counter += 1
+                return self.push(GoToRelativePosition, (0, 0, self.turn_angle))
         else:
-            if self.counter >= self.turns_before_going_to_center_point:
+            if self.counter >= self.turns_before_going_to_center_point and not self.at_centerpoint:
+                self.at_centerpoint = True
                 return self.push(GoToCenterpoint)
             else:
                 # Just Search
