@@ -18,9 +18,9 @@ field_color_detector_dummy_upper_values_v: 180
 
 white_color_detector_lower_values_h: 0
 white_color_detector_lower_values_s: 0
-white_color_detector_lower_values_v: 180
-white_color_detector_upper_values_h: 255
-white_color_detector_upper_values_s: 140
+white_color_detector_lower_values_v: 90
+white_color_detector_upper_values_h: 180
+white_color_detector_upper_values_s: 178
 white_color_detector_upper_values_v: 255
 
 horizon_finder_vertical_steps: 30

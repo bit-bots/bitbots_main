@@ -63,6 +63,7 @@ class Vision:
         line_detector = lines.LineDetector(image,
                                            [top_ball_candidate] if top_ball_candidate else list(),
                                            self.white_color_detector,
+                                           self.field_color_detector,
                                            horizon_detector,
                                            self.lines_config)
 
@@ -115,7 +116,7 @@ class Vision:
             debug_image_dings.draw_points(
                 line_detector.get_linepoints(),
                 (0, 0, 0))
-            # debug_image_dings.draw_line_segments(line_detector.get_linesegments(), (255, 0, 0))
+            debug_image_dings.draw_line_segments(line_detector.get_linesegments(), (180, 105, 255))
             debug_image_dings.imshow()
 
     def _dynamic_reconfigure_callback(self, config, level):
