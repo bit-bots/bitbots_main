@@ -110,6 +110,6 @@ class LineDetector:
             green_mask = (np.ones_like(green_mask) - (green_mask/255))
             self._preprocessed_image = cv2.bitwise_and(self._preprocessed_image, self._preprocessed_image, mask=green_mask)
 
-            cv2.imshow('', self._preprocessed_image)
-            cv2.waitKey(1)
+            # cv2.imshow('', self._preprocessed_image)
+            # cv2.waitKey(1)
         return self._preprocessed_image
