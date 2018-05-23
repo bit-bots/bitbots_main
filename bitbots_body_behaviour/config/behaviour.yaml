@@ -80,7 +80,7 @@ Behaviour:
       turnCenterpointTime: 6
 
       # Der absolut Wert des angularen Wertes des Walkings mit dem er sich dreht wenn er nach dem Ball sucht.
-      searchingTurnAngularAbsolute: 8
+      searchingTurnAngularAbsolute: 45
 
       # The maximum time the robot tries to align to the goal
       maxGoalAlignTime: 15
@@ -229,6 +229,6 @@ Behaviour:
           center: (-0.7, -0.2)
 
       Field:
-          length: 9
-          width: 6
+          length: 5.62
+          width: 4.16
           goalWidth: 2.6

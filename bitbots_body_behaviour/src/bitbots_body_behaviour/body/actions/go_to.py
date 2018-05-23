@@ -48,9 +48,9 @@ class GoToRelativePosition(AbstractActionModule):
             return
 
         # To have the object we are going to in front of us, go to a point behind it
-        absolute_pose.pose.position.x -= 0.2
-        connector.pathfinding_publisher.publish(absolute_pose)
-        return self.pop()
+        connector.pathfinding.call_action(absolute_pose)
+        if connector.pathfinding.is_walking_active():
+            return self.pop()
 
 
 class Stand(AbstractActionModule):
@@ -64,8 +64,9 @@ class Stand(AbstractActionModule):
         pose_msg.pose.position.z = 0
 
         pose_msg.pose.orientation = Quaternion(0, 0, 0, 1)
-        connector.pathfinding_publisher.publish(pose_msg)
-        return self.pop()
+        connector.pathfinding.call_action(pose_msg)
+        if connector.pathfinding.is_walking_active():
+            return self.pop()
 
 
 class GoToAbsolutePosition(AbstractActionModule):
@@ -92,8 +93,9 @@ class GoToAbsolutePosition(AbstractActionModule):
         rotation = quaternion_from_euler(0, 0, math.radians(self.point[2]))
         pose_msg.pose.orientation = Quaternion(*rotation)
 
-        connector.pathfinding_publisher.publish(pose_msg)
-        self.pop()
+        connector.pathfinding.call_action(pose_msg)
+        if connector.pathfinding.is_walking_active():
+            return self.pop()
 
 
 class GoToBall(GoToRelativePosition):
@@ -104,7 +106,7 @@ class GoToBall(GoToRelativePosition):
         """
         ball_u, ball_v = connector.world_model.get_ball_position_uv()
         point = (ball_u, ball_v, connector.world_model.get_opp_goal_angle_from_ball())
-        print("Going to ball", point)
+        #print("Going to ball", point)
         super(GoToBall, self).__init__(connector, point)
 
     def perform(self, connector, reevaluate=False):
@@ -125,13 +127,12 @@ class GoToBall(GoToRelativePosition):
         # To have the object we are going to in front of us, go to a point behind it
         absolute_pose.pose.position.x -= 0.2
 
-        print(self.point)
         rotation = quaternion_from_euler(0, 0, self.point[2])
         absolute_pose.pose.orientation = Quaternion(*rotation)
 
-        connector.pathfinding_publisher.publish(absolute_pose)
-        return self.pop()
-
+        connector.pathfinding.call_action(absolute_pose)
+        if connector.pathfinding.is_walking_active():
+            return self.pop()
 
 
 class GoToOwnGoal(GoToAbsolutePosition):
@@ -159,7 +160,7 @@ class GoToEnemyGoal(GoToAbsolutePosition):
 
 
 class GoToCenterpoint(GoToAbsolutePosition):
-    def __init__(self, connector):
+    def __init__(self, connector, args=None):
         """Go to the center of the field and look towards the enemy goal"""
         point = 0, 0, 0
         super(GoToCenterpoint, self).__init__(connector, point)

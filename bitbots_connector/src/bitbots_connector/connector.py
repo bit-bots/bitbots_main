@@ -8,6 +8,7 @@ from bitbots_connector.capsules.team_data_capsule import TeamDataCapsule
 from bitbots_connector.capsules.world_model_capsule import WorldModelCapsule
 from bitbots_connector.capsules.head_capsule import HeadCapsule
 from bitbots_connector.capsules.speaker_capsule import SpeakerCapsule
+from bitbots_connector.capsules.pathfinding_capsule import PathfindingCapsule
 
 
 class AbstractConnector(object):
@@ -25,8 +26,7 @@ class BodyConnector(AbstractConnector):
         self.gamestate = GameStatusCapsule()
         self.animation = AnimationCapsule()
         self.speaker = SpeakerCapsule()
-        
-        self.pathfinding_publisher = None  # type: rospy.Publisher
+        self.pathfinding = PathfindingCapsule()
 
 
 class HeadConnector(AbstractConnector):

@@ -9,7 +9,7 @@ Just waits for something (i.e. that preconditions will be fullfilled)
 """
 import rospy
 
-from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
+from bitbots_body_behaviour.body.actions.go_to import Stand
 from bitbots_stackmachine.abstract_action_module import AbstractActionModule
 from humanoid_league_msgs.msg import HeadMode
 
@@ -23,6 +23,6 @@ class Wait(AbstractActionModule):
         if connector.world_model.ball_seen():
             connector.blackboard.set_head_duty(HeadMode.BALL_MODE)
 
-        self.push(GoToRelativePosition, (0, 0, 0))
+        self.push(Stand)
         if self.time > rospy.get_time():
             self.pop()

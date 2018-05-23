@@ -22,11 +22,9 @@ class BehaviourModule(StackMachineModule):
     def __init__(self):
         super(BehaviourModule, self).__init__(debug_topic="/debug_body_behaviour")
         self.connector = BodyConnector()
-        self.connector.config = rospy.get_param("Behaviour")
 
         self.connector.speaker.speaker = rospy.Publisher("speak", Speak, queue_size=3)
         self.connector.team_data.strategy_sender = rospy.Publisher("strategy", Strategy, queue_size=2)
-        self.connector.pathfinding_publisher = rospy.Publisher("move_base_simple/goal", PoseStamped, queue_size=3)
         self.connector.blackboard.head_pub = rospy.Publisher("head_duty", HeadMode, queue_size=10)
 
         if len(sys.argv) > 1:
@@ -38,6 +36,7 @@ class BehaviourModule(StackMachineModule):
         bitbots_body_behaviour.body.decisions.common.duty_decider.duty = duty
 
         self.set_start_module(DutyDecider)
+        rospy.init_node("Bodybehaviour")
 
         rospy.Subscriber("ball_relative", BallRelative, self.connector.world_model.ball_callback)
         rospy.Subscriber("gamestate", GameState, self.connector.gamestate.gamestate_callback)
@@ -46,7 +45,6 @@ class BehaviourModule(StackMachineModule):
 
         # self.connector.animation.server = actionlib.SimpleActionClient("bitbots_animation", PlayAnimationAction)
 
-        rospy.init_node("Bodybehaviour")
 
     def run(self):
         rate = rospy.Rate(5)
