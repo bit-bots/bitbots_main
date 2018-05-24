@@ -57,7 +57,7 @@ class Stand(AbstractActionModule):
     def perform(self, connector, reevaluate=False):
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
-        pose_msg.header.frame_id = 'base_link'
+        pose_msg.header.frame_id = 'base_footprint'
 
         pose_msg.pose.position.x = 0
         pose_msg.pose.position.y = 0
@@ -99,20 +99,19 @@ class GoToAbsolutePosition(AbstractActionModule):
 
 
 class GoToBall(GoToRelativePosition):
-    def __init__(self, connector, args=0.0):
+    def __init__(self, connector, args):
         """Go to the ball
 
         :param args: the angle of relative rotation in degrees
         """
         ball_u, ball_v = connector.world_model.get_ball_position_uv()
         point = (ball_u, ball_v, connector.world_model.get_opp_goal_angle_from_ball())
-        #print("Going to ball", point)
         super(GoToBall, self).__init__(connector, point)
 
     def perform(self, connector, reevaluate=False):
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
-        pose_msg.header.frame_id = 'base_link'
+        pose_msg.header.frame_id = 'base_footprint'
 
         pose_msg.pose.position.x = self.point[0]
         pose_msg.pose.position.y = self.point[1]
