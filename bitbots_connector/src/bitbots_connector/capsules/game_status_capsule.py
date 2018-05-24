@@ -12,7 +12,7 @@ from humanoid_league_msgs.msg import GameState
 
 class GameStatusCapsule:
     def __init__(self):
-        self.team_id = rospy.get_param("teamid", 8)
+        self.team_id = rospy.get_param("team_id", 8)
         self.kick_off_valid_time = rosparam.get_param("Behaviour/Body/Common/kickOffValidTime")
         self.drop_ball_valid_time = rosparam.get_param("Behaviour/Body/Common/dropBallValidTime")
         self.gamestate = GameState()

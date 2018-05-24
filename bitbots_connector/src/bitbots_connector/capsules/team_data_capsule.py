@@ -10,6 +10,7 @@ from humanoid_league_msgs.msg import Strategy, TeamData
 
 class TeamDataCapsule:
     def __init__(self):
+        self.bot_id = rospy.get_param("bot_id", 1)
         self.strategy_sender = None  # type: rospy.Publisher
         self.team_data = TeamData()
         self.strategy = Strategy()
