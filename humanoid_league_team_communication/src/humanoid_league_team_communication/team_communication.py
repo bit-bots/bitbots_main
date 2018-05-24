@@ -22,8 +22,8 @@ class TeamCommunication:
 
         # --- Params ---
         self.port = rospy.get_param("team_communication/port")
-        self.team = rospy.get_param("teamid")
-        self.player = rospy.get_param("botid")
+        self.team = rospy.get_param("team_id")
+        self.player = rospy.get_param("bot_id")
         # publishing rate in Hz
         self.rate = rospy.Rate(rospy.get_param("team_communication/rate"))
         self.avg_walking_speed = rospy.get_param("team_communication/avg_walking_speed")
