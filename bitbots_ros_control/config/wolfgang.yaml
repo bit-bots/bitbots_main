@@ -1,8 +1,8 @@
 ros_control:
   read_position: true
-  read_velocity: true
-  read_effort: true
-  read_volt_temp: true
+  read_velocity: false
+  read_effort: false
+  read_volt_temp: false
   VT_update_rate: 100
   read_imu: true
   control_loop_hz: 200

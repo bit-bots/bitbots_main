@@ -16,6 +16,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
 
   // Init subscriber
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this);
+  _set_torque_indiv_sub = nh.subscribe<std_msgs::Int32MultiArray>("set_torque_individual", 1, &DynamixelHardwareInterface::setTorqueForServos, this);
 
   // Load dynamixel config from parameter server
   bool onlyImu = false;
@@ -182,6 +183,21 @@ void DynamixelHardwareInterface::setTorque(bool enabled)
   current_torque_ = enabled;
 }
 
+void DynamixelHardwareInterface::setTorqueForServos(std::vector<int32_t> torque)
+{
+  int32_t* t = &torque[0];
+  _driver->syncWrite("Torque_Enable", t);
+}
+
+
+void DynamixelHardwareInterface::setTorqueForServos(std_msgs::Int32MultiArray torque)
+{
+  // we save the goal torque value. It will be set during write process
+  _goal_torque_individual = torque.data;
+  _switch_individual_torque = true;
+  ROS_WARN("switch");
+}
+
 void DynamixelHardwareInterface::setTorque(std_msgs::BoolConstPtr enabled)
 {
   // we save the goal torque value. It will be set during write process
@@ -248,6 +264,11 @@ void DynamixelHardwareInterface::write()
   //check if we have to switch the torque
   if(current_torque_ != goal_torque_){
     setTorque(goal_torque_);
+  }
+
+  if(_switch_individual_torque){
+    setTorqueForServos(_goal_torque_individual);
+    _switch_individual_torque = false;
   }
 
   if (_control_mode == PositionControl)
