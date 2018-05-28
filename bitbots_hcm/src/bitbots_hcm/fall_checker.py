@@ -63,7 +63,6 @@ class FallChecker(object):
         """Checks if the robot is currently falling and in which direction. """
         # converting the Quaternion into Euler angles for better understanding
         euler = self.quaternion_to_euler_angle(*quaternion)
-        print(not_much_smoothed_gyro)
         if self.falling_threshold_front == 0 or self.falling_threshold_side == 0 or self.falling_threshold_orientation_front_back == 0 or self.falling_threshold_orientation_left_right == 0: 
             return
         # setting the fall quantification function
@@ -76,9 +75,8 @@ class FallChecker(object):
         # compare quantification functions
         if y_fall_quantification > x_fall_quantification:
             # detect the falling direction
-            if not_much_smoothed_gyro[1] > 0:
+            if not_much_smoothed_gyro[1] < 0:
                 rospy.loginfo("FALLING TO THE FRONT")
-                #TODO remove comments when out off static testing
                 return self.falling_motor_degrees_front
             # detect the falling direction
             else:
@@ -96,7 +94,7 @@ class FallChecker(object):
 
     def calc_fall_quantification(self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler, current_axis__gyro):
         # check if you are moving forward or away from the perpendicular position, by comparing the signs.
-        if numpy.sign(current_axis_euler) == numpy.sign(current_axis__gyro):
+        if numpy.sign(current_axis_euler) != numpy.sign(current_axis__gyro):
             # calculatiung the orentation skalar for the threshold
             skalar = max((falling_threshold_orientation - abs(current_axis_euler))/falling_threshold_orientation,0)
             # checking if the rotation velocity is lower than the thethreshold
@@ -126,7 +124,7 @@ class FallChecker(object):
         
         t0 = +2.0 * (w * x + y * z)
         t1 = +1.0 - 2.0 * (x * x + ysqr)
-        X = -math.atan2(t0, t1)
+        X = math.atan2(t0, t1)
         
         t2 = +2.0 * (w * y - z * x)
         t2 = +1.0 if t2 > +1.0 else t2
@@ -136,5 +134,4 @@ class FallChecker(object):
         t3 = +2.0 * (w * z + x * y)
         t4 = +1.0 - 2.0 * (ysqr + z * z)
         Z = math.atan2(t3, t4)
-        print(math.degrees(X),math.degrees(Y),math.degrees(Z))
         return X, Y, Z

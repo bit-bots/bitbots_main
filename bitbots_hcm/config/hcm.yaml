@@ -7,10 +7,10 @@ hcm:
 
   #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
   #Grenzwerte sanfter --> zu spaete Raktion
-  "threshold_gyro_y_front": 3 # > gyroY
-  "threshold_gyro_x_side": 3 # > gyroX
-  "falling_threshold_orientation_left_right": 45 # > Point of no return in degrees
-  "falling_threshold_orientation_front_back":   45 # < Point of no return in degrees
+  "threshold_gyro_y_front": 2.5 # > gyroY
+  "threshold_gyro_x_side": 2.5 # > gyroX
+  "falling_threshold_orientation_left_right": 30 # > Point of no return in degrees
+  "falling_threshold_orientation_front_back":   30 # < Point of no return in degrees
 
   animations:
     walkready: "walkready" # TODO change init to walkready. Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
@@ -39,13 +39,6 @@ hcm:
       #dies erfolgt mit dem boden_koeffizient
       "ground_coefficient": 1.0  #WEICH(kunstrasen Spielfeld)= 1.0 , HART(teppich Spielfeld)= 1.25
 
-      #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
-      #Grenzwerte sanfter --> zu spaete Raktion
-      "threshold_gyro_y_front": 3 # > gyroY
-      "threshold_gyro_x_side": 3 # > gyroX
-      "falling_threshold_orientation_left_right": 45 # > Point of no return in degrees
-      "falling_threshold_orientation_front_back":   45 # < Point of no return in degrees
-
       #false = motoren werden bei fallerkennung abgeschaltet
       "dyn_falling_active": true
 
@@ -55,13 +48,6 @@ hcm:
       #Grenzwerte müssen auf härterem boden auch härter eingestellt werden,
       #dies erfolgt mit dem boden_koeffizient
       "ground_coefficient": 1.0  #WEICH(kunstrasen Spielfeld)= 1.0 , HART(teppich Spielfeld)= 1.25
-
-      #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
-      #Grenzwerte sanfter --> zu spaete Raktion
-      "threshold_gyro_y_front": 3 # > gyroY
-      "threshold_gyro_x_side": 3 # > gyroX
-      "falling_threshold_orientation_left_right": 45 # > Point of no return in degrees
-      "falling_threshold_orientation_front_back":   45 # < Point of no return in degrees
 
       #false = motoren werden bei fallerkennung abgeschaltet
       "dyn_falling_active": true

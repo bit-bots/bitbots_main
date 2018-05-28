@@ -526,8 +526,8 @@ def switch_motor_power(state):
     else:
         try:
             rospy.wait_for_service("switch_motor_power", timeout=1)
-        except rospy.ROSException:
-            rospy.logfatal("Can't switch of motorpower, seems like the CM730 is missing.")
+        except rospy.ROSException as e:
+            rospy.logfatal("Can't switch of motorpower, seems like the CM730 is missing. \n Message: {}".format(e.message))
             return
         power_switch = rospy.ServiceProxy("switch_motor_power", SwitchMotorPower)
         try:

@@ -278,7 +278,7 @@ class CM730Node:
             button1 = None
             button2 = None
         # mapping gyro
-        raw_gyro = (raw_gyro[1],raw_gyro[0],raw_gyro[2])
+        raw_gyro = (-raw_gyro[1],-raw_gyro[0],raw_gyro[2])
 
         return robo_pose, raw_gyro, raw_accel, button1, button2
 
@@ -321,10 +321,6 @@ class CM730Node:
         gyro = (math.radians(gyro[0] * f), math.radians(gyro[1] * f), math.radians(gyro[2] * f))
         f = (4 * 9.81) / 512
         accel = (accel[0] * f, accel[1] * f, accel[2] * f)
-
-        #mapping gyro to ros conv
-        gyro = (gyro[0] * -1, gyro[1], gyro[2])
-        accel = (accel[0], accel[1] * -1, accel[2]) 
 
         # axis are different in cm board, see cm730 documentation
         self.imu_msg.linear_acceleration = DataVector(accel[1], accel[0], accel[2])
