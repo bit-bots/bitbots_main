@@ -12,6 +12,7 @@ class ColorDetector:
 
     @abc.abstractmethod
     def match_pixel(self, pixel):
+        # type: (np.array) -> bool
         """
         Returns if bgr pixel is in color space
 
@@ -21,12 +22,44 @@ class ColorDetector:
 
     @abc.abstractmethod
     def mask_image(self, image):
+        # type: (np.array) -> np.array
         """
         Creates a color mask
         (0 for not in color range and 255 for in color range)
         :param image: image to mask
         :return: masked image
         """
+
+    def match_adjacent(self, image, point, offset=5, threshold=200):
+        # type: (np.array, tuple[int, int], int, float) -> bool
+        """
+        Returns if an area is in color space
+
+        :param image: the full image
+        :param point: a x-, y-tuple defining coordinates in the image
+        :param offset: the number of pixels to check in the surounding of the
+        point (like a radius but for a square)
+        :param threshold: the mean needed to accept the area to match (0-255)
+        :return whether area is in color space or not
+        """
+        area = image[
+               max(0, point[1] - offset):
+               min(image.shape[0] - 1, point[1] + offset),
+               max(0, point[0] - offset):
+               min(image.shape[1] - 1, point[0] + offset)
+               ]
+        return self.match_area(area, threshold=threshold)
+
+    def match_area(self, area, threshold=200):
+        # type: (np.array, float) -> bool
+        """
+        Returns if an area is in color space
+
+        :param area: the image area to check
+        :param threshold: the mean needed to accept the area to match (0-255)
+        :return whether area is in color space or not
+        """
+        return np.mean(self.mask_image(area)) > threshold
 
 
 class PixelListColorDetector(ColorDetector):
