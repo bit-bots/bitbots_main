@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 import math
 import numpy
+from sensor_msgs.msg import Imu
 import rospy
 
 class FallChecker(object):
@@ -43,6 +44,9 @@ class FallChecker(object):
         self.falling_threshold_front *= self.ground_coefficient
         self.falling_threshold_side *= self.ground_coefficient
 
+        self.imu_msg = Imu()
+        self.imu_publisher = rospy.Publisher('imu/data_raw_euler', Imu, queue_size=1)
+
         # Neue Werte für die Detectierung des Fallens, anhand der momentanen Lage. Schwellwerte in Grad.
         #self.falling_threshold_orientation_front_back = math.radians(45) 
         #self.falling_threshold_orientation_left_right = math.radians(45)
@@ -69,13 +73,24 @@ class FallChecker(object):
         x_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_left_right, self.falling_threshold_front, euler[0], not_much_smoothed_gyro[0])
         y_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_front_back, self.falling_threshold_side, euler[1], not_much_smoothed_gyro[1])
 
+        euler1 = [math.degrees(x)for x in euler]
+        print(euler1)
+
+        self.imu_msg.linear_acceleration.x = euler1[0]
+        self.imu_msg.linear_acceleration.y = euler1[1] 
+        self.imu_msg.linear_acceleration.z = euler1[2]
+        self.imu_msg.header.stamp = rospy.Time.now()  # rospy.Time.now()
+        self.imu_msg.header.frame_id = "L_IMU"
+
+        self.imu_publisher.publish(self.imu_msg)
+
         if x_fall_quantification + y_fall_quantification == 0:
             return None
         
         # compare quantification functions
         if y_fall_quantification > x_fall_quantification:
             # detect the falling direction
-            if not_much_smoothed_gyro[1] < 0:
+            if not_much_smoothed_gyro[1] > 0:
                 rospy.loginfo("FALLING TO THE FRONT")
                 return self.falling_motor_degrees_front
             # detect the falling direction
@@ -94,7 +109,7 @@ class FallChecker(object):
 
     def calc_fall_quantification(self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler, current_axis__gyro):
         # check if you are moving forward or away from the perpendicular position, by comparing the signs.
-        if numpy.sign(current_axis_euler) != numpy.sign(current_axis__gyro):
+        if numpy.sign(current_axis_euler) == numpy.sign(current_axis__gyro):
             # calculatiung the orentation skalar for the threshold
             skalar = max((falling_threshold_orientation - abs(current_axis_euler))/falling_threshold_orientation,0)
             # checking if the rotation velocity is lower than the thethreshold

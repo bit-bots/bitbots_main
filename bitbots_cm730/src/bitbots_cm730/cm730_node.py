@@ -324,10 +324,10 @@ class CM730Node:
 
         #mapping gyro to ros conv
         gyro = (gyro[0], gyro[1], gyro[2])
-        accel = (accel[0], accel[1] * -1, accel[2] * -1) 
+        accel = (-accel[0], -accel[1], accel[2] ) 
 
         # axis are different in cm board, see cm730 documentation
-        self.imu_msg.linear_acceleration = DataVector(accel[1], accel[0], accel[2])
+        self.imu_msg.linear_acceleration = DataVector(-accel[1], accel[0], accel[2])
         self.imu_msg.angular_velocity = DataVector(gyro[1], gyro[0], gyro[2])
         self.imu_msg.header.stamp = rospy.Time.now()  # rospy.Time.now()
         self.imu_msg.header.frame_id = "L_IMU"
