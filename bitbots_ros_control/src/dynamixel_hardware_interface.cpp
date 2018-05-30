@@ -17,6 +17,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   // Init subscriber / publisher
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this);
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1, this);
+  _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
   _status_board.name = "DXL_board";
   _status_board.hardware_id = 1;
   _status_IMU.name = "IMU";
@@ -68,6 +69,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   if (!loadDynamixels(nh))
   {
     ROS_ERROR_STREAM("Failed to ping all motors.");
+    speak("Failed to ping all motors.");
     return false;
   }  
 
@@ -127,6 +129,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _driver->addSyncRead("Present_Position");
 
   ROS_INFO("Hardware interface init finished.");
+  speak("ROS control startup successfull");
   return true;
 }
 
@@ -148,6 +151,7 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
   nh.getParam("dynamixels/control_mode", control_mode);
   if (!stringToControlMode(control_mode, _control_mode)) {
     ROS_ERROR_STREAM("Unknown control mode'" << control_mode << "'.");
+    speak("Wrong control mode specified");
     return false;
   }
 
@@ -185,6 +189,7 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
     //ping it to very that it's there and to add it to the driver
     if(!_driver->ping(uint8_t(motor_id), model_number_16p)){
       ROS_ERROR("Was not able to ping motor with id %d", motor_id);
+      speak("No ping motor " + motor_id);
       success = false;
       array.push_back(createServoDiagMsg(motor_id, diagnostic_msgs::DiagnosticStatus::STALE, "No ping response", map));
     }
@@ -333,6 +338,7 @@ void DynamixelHardwareInterface::read()
   if(_read_imu){
       if(!readImu()){
           ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
+          speak("Could not read IMU");
       }
   }
   if(_onlyIMU){
@@ -343,26 +349,32 @@ void DynamixelHardwareInterface::read()
     if(syncReadAll()){
       for (size_t num = 0; num < _joint_names.size(); num++)
         _current_position[num] += _joint_mounting_offsets[num] + _joint_offsets[num];
-    } else
+    } else{
       ROS_ERROR_THROTTLE(1.0, "Couldn't read all current joint values!");
+      speak("Could not read all current joint values!");
+    }
   }else {
     if (_read_position) {
       if (syncReadPositions()) {
         for (size_t num = 0; num < _joint_names.size(); num++)
           _current_position[num] += _joint_mounting_offsets[num] + _joint_offsets[num];
-      } else
+      } else{
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint position!");
+        speak("Couldn't read current joint position!");
+      }
     }
 
     if (_read_velocity) {
       if (!syncReadVelocities()) {
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint velocity!");
+        speak("Couldn't read current joint velocity!");
       }
     }
 
     if (_read_effort) {
       if (!syncReadEfforts()) {
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint effort!");
+        speak("Couldn't read current joint effort!");
       }
     }
   }
@@ -372,10 +384,12 @@ void DynamixelHardwareInterface::read()
       bool success = true;
       if(!syncReadVoltageAndTemp()){
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current input volatage and temperature!");
+        speak("Couldn't read current input volatage and temperature!");
         success = false;
       }
       if(!syncReadError()){
-        ROS_ERROR_THROTTLE(1.0, "Couldn't read current error bytes!");        
+        ROS_ERROR_THROTTLE(1.0, "Couldn't read current error bytes!");  
+        speak("Couldn't read current error bytes!");      
         success = false;
       }
       processVTE(success);
@@ -414,6 +428,13 @@ void DynamixelHardwareInterface::write()
   {
       syncWriteCurrent();
   }
+}
+
+void DynamixelHardwareInterface::speak(std::string text){
+  humanoid_league_msgs::Speak msg = humanoid_league_msgs::Speak();
+  msg.text = text;
+  msg.priority = humanoid_league_msgs::Speak::HIGH_PRIORITY;
+  _speak_pub.publish(msg);
 }
 
 bool DynamixelHardwareInterface::stringToControlMode(std::string _control_modestr, ControlMode& control_mode)

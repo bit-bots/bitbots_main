@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   hardware_interface
   controller_manager
   dynamic_reconfigure
+  humanoid_league_msgs
 )
 
 

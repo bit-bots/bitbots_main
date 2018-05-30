@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 
 #include <std_msgs/Bool.h>
+#include <humanoid_league_msgs/Speak.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
 
@@ -75,6 +76,7 @@ private:
   diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map);
   void processVTE(bool success);
 
+  void speak(std::string text);
 
   bool goal_torque_;
   bool current_torque_;
@@ -152,6 +154,7 @@ private:
   // subscriber / publisher
   ros::Subscriber _set_torque_sub;
   ros::Publisher _diagnostic_pub;
+  ros::Publisher _speak_pub;
 };
 }
 
