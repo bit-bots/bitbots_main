@@ -14,6 +14,8 @@ DynamixelHardwareInterface::DynamixelHardwareInterface()
 bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
 {
 
+  //TODO RESET TTY PORT
+  // tput reset > /dev/ttyACM0
   // Init subscriber / publisher
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this);
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1, this);
