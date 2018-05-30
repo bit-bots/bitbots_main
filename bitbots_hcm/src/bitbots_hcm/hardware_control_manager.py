@@ -13,7 +13,7 @@ import rospy
 from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAction
 
 from humanoid_league_speaker.speaker import speak
-from std_msgs.msg import Bool, String
+from std_msgs.msg import Bool, String, Float64MultiArray
 
 from bitbots_cm730.srv import SwitchMotorPower
 
@@ -78,6 +78,7 @@ class Motion:
         self.last_gyro_update_time = rospy.get_time()
 
         self.joint_goal_publisher = rospy.Publisher('motor_goals', JointTrajectory, queue_size=1)
+        self.joint_goal_group_publisher = rospy.Publisher('JointGroupController/command', Float64MultiArray, queue_size=1)
         self.hcm_state_publisher = rospy.Publisher('robot_state', RobotControlState, queue_size=1, latch=True)
         self.speak_publisher = rospy.Publisher('speak', Speak, queue_size=1)
         VALUES.speak_publisher = self.speak_publisher
@@ -217,6 +218,9 @@ class Motion:
         # forward positions to cm730, if some where transmitted
         if len(msg.position.points) > 0:
             self.joint_goal_publisher.publish(msg.position)
+            # also send it to ros control
+            array_msg = trajectory_to_array_msg(msg.position)
+            self.joint_goal_group_publisher.publish(array_msg)
 
     def main_loop(self):
         """ Calls :func:`update_once` until ROS is shutting down """
@@ -314,6 +318,17 @@ def calc_sin_angle(fst, sec):
         return 0
     return math.degrees(asin(numpy.dot(fst, sec) / (fst_norm * sec_norm)))
 
+def trajectory_to_array_msg(msg):
+    array_msg = Float64MultiArray()
+    joint_name_order = ['HeadPan', 'HeadTilt', 'LAnklePitch', 'LAnkleRoll', 'LElbow', 'LHipPitch', 'LHipRoll', 'LKnee', 'LShoulderPitch', 'LShoulderRoll', 'RAnklePitch', 'RAnkleRoll', 'RElbow', 'RHipPitch', 'RHipRoll', 'RKnee', 'RShoulderPitch', 'RShoulderRoll']
+    for joint in joint_name_order:
+        i = 0
+        for traj_joint in msg.joint_names:
+            if traj_joint == joint:
+                break
+            i +=1
+        array_msg.data[i] = msg.points[0].positions[i]
+    return array_msg
 
 def main():
     parser = argparse.ArgumentParser(description='Start the hcm node')
