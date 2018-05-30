@@ -24,8 +24,8 @@ class StackMachineModule(object):
     do_not_reevaluate = False
     old_representation = ""
 
-    def __init__(self, debug_topic):
-        self.connector = None
+    def __init__(self, connector, debug_topic):
+        self.connector = connector
 
         self.debug_active = rospy.get_param("debug_active", False)
         if self.debug_active:
