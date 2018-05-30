@@ -11,7 +11,7 @@ from std_msgs.msg import String
 from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
 
 
-class StackMachineModule(object):
+class StackMachine(object):
     """
     Diese Klasse handeld die Verhaltensarchitektur
     """

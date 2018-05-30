@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import json
 from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
 
 
@@ -8,6 +9,9 @@ class AbstractDecisionModule(AbstractStackElement):
         Wir kürzen die Repräsentation ab, ist so kürzer, und sagt
         trotzdem noch genug
         """
-        return "<Decision: " + \
-               self.__class__.__module__.split('.')[-2] \
-               + "." + self.__class__.__name__ + ">"
+        shortname = self.__class__.__module__.split('.')[-2] \
+                    + "." + self.__class__.__name__
+
+        data = json.dumps(self.repr_data)
+
+        return "<Decision: %s>[%s]" % (shortname, data)

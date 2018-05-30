@@ -6,6 +6,7 @@ AbstractStackElement
 .. moduleauthor:: Nils Rokita <0rokita@informatik.uni-hamburg.de>
 
 """
+import json
 
 
 class AbstractStackElement(object):
@@ -21,7 +22,8 @@ class AbstractStackElement(object):
     _init_data = None
 
     def __init__(self, connector, args=None):
-        pass
+        self.repr_data = {}
+        '''This is a dict in which data can be saved that should get represented on a __repr__ call'''
 
     def setup_internals(self, behaviour, init_data):
         """
@@ -99,12 +101,16 @@ class AbstractStackElement(object):
 
     def __repr__(self):
         """
-        Wir kürzen die Repräsentation ab, ist so kürzer, und sagt
-        trotzdem noch genug
+        Wir kürzen die Repräsentation ab, ist so kürzer, und sagt trotzdem noch genug.
+
+        Auserdem hängen wir die aktuellen Daten aus self.repr_data als JSON hinten dran.
         """
-        return "<AbstractStrackElement: " + \
-               self.__class__.__module__.split('.')[-2] \
-               + "." + self.__class__.__name__ + ">"
+        shortname = self.__class__.__module__.split('.')[-2] \
+               + "." + self.__class__.__name__
+
+        data = json.dumps(self.repr_data)
+
+        return "<AbstractStackElement: %s>[%s]" % (shortname, data)
 
     @staticmethod
     def sign(x):
