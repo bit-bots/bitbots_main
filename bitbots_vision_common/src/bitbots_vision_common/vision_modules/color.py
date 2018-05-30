@@ -17,7 +17,7 @@ class ColorDetector:
         Returns if bgr pixel is in color space
 
         :param bgr pixel:
-        :return whether pixel is in color space or not
+        :return: whether pixel is in color space or not
         """
 
     @abc.abstractmethod
@@ -26,6 +26,7 @@ class ColorDetector:
         """
         Creates a color mask
         (0 for not in color range and 255 for in color range)
+
         :param image: image to mask
         :return: masked image
         """
@@ -35,12 +36,12 @@ class ColorDetector:
         """
         Returns if an area is in color space
 
-        :param image: the full image
-        :param point: a x-, y-tuple defining coordinates in the image
-        :param offset: the number of pixels to check in the surounding of the
+        :param np.array image: the full image
+        :param tuple[int, int] point: a x-, y-tuple defining coordinates in the image
+        :param int offset: the number of pixels to check in the surounding of the
         point (like a radius but for a square)
-        :param threshold: the mean needed to accept the area to match (0-255)
-        :return: whether area is in color space or not
+        :param float threshold: the mean needed to accept the area to match (0-255)
+        :return bool: whether area is in color space or not
         """
         area = image[
                max(0, point[1] - offset):
@@ -55,9 +56,9 @@ class ColorDetector:
         """
         Returns if an area is in color space
 
-        :param area: the image area to check
-        :param threshold: the mean needed to accept the area to match (0-255)
-        :return: whether area is in color space or not
+        :param np.array area: the image area to check
+        :param float threshold: the mean needed to accept the area to match (0-255)
+        :return bool: whether area is in color space or not
         """
         return np.mean(self.mask_image(area)) > threshold
 
@@ -76,8 +77,10 @@ class PixelListColorDetector(ColorDetector):
         self.init_color_space(color_path)
 
     def init_color_space(self, color_path):
+        # type: (str) -> None
         """
         Initializes color space from yaml file
+
         :param color_path: path to yaml file containing the accepted colors
 
         """
@@ -100,20 +103,22 @@ class PixelListColorDetector(ColorDetector):
                                  color_values['red'][x]] = 1
 
     def match_pixel(self, pixel):
+        # type: (tuple) -> bool
         """
         Returns if bgr pixel is in color space
 
-        :param bgr pixel:
-        :return whether pixel is in color space or not
+        :param tuple pixel:
+        :return bool: whether pixel is in color space or not
         """
         return self.color_space[pixel[0], pixel[1], pixel[2]]
 
     def mask_image(self, image):
+        # type: (np.array) -> np.array
         """
         Creates a color mask
         (0 for not in color range and 255 for in color range)
-        :param image: image to mask
-        :return: masked image
+        :param np.array image: image to mask
+        :return: np.array masked image
         """
         mask = VisionExtensions.maskImg(image, self.color_space)
         return mask
@@ -122,8 +127,10 @@ class PixelListColorDetector(ColorDetector):
 class HsvSpaceColorDetector(ColorDetector):
 
     def __init__(self, min_vals, max_vals):
+        # type: (tuple, tuple) -> None
         """
         the hsv-space color detector
+
         :param min_vals: a tuple of the minimal accepted hsv-values
         :param max_vals: a tuple of the maximal accepted hsv-values
         :return: None
@@ -133,6 +140,7 @@ class HsvSpaceColorDetector(ColorDetector):
         self.max_vals = np.array(max_vals)
 
     def set_config(self, min_vals, max_vals):
+        # type: (tuple[int, int], tuple[int, int]) -> None
         """
         updates the hsv-space configuration
         :param min_vals: a tuple of the minimal accepted hsv-values
@@ -151,6 +159,7 @@ class HsvSpaceColorDetector(ColorDetector):
                (self.max_vals[2] >= pixel[2] >= self.min_vals[2])
 
     def mask_image(self, image):
+        # type: (np.array) -> np.array
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         return cv2.inRange(image, self.min_vals, self.max_vals)
 
