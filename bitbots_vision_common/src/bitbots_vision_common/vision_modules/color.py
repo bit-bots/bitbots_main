@@ -30,7 +30,7 @@ class ColorDetector:
         :return: masked image
         """
 
-    def match_adjacent(self, image, point, offset=5, threshold=200):
+    def match_adjacent(self, image, point, offset=1, threshold=200):
         # type: (np.array, tuple[int, int], int, float) -> bool
         """
         Returns if an area is in color space
@@ -40,7 +40,7 @@ class ColorDetector:
         :param offset: the number of pixels to check in the surounding of the
         point (like a radius but for a square)
         :param threshold: the mean needed to accept the area to match (0-255)
-        :return whether area is in color space or not
+        :return: whether area is in color space or not
         """
         area = image[
                max(0, point[1] - offset):
@@ -57,18 +57,18 @@ class ColorDetector:
 
         :param area: the image area to check
         :param threshold: the mean needed to accept the area to match (0-255)
-        :return whether area is in color space or not
+        :return: whether area is in color space or not
         """
         return np.mean(self.mask_image(area)) > threshold
-
-
 
     @staticmethod
     def pixel_bgr2hsv(pixel):
         # type: (np.array) -> np.array
         pic = np.zeros((1, 1, 3), np.uint8)
         pic[0][0] = pixel
-        return cv2
+        return cv2.cvtColor(pic, cv2.COLOR_BGR2HSV)[0][0]
+
+
 class PixelListColorDetector(ColorDetector):
     def __init__(self, color_path):
         ColorDetector.__init__(self)
@@ -122,15 +122,28 @@ class PixelListColorDetector(ColorDetector):
 class HsvSpaceColorDetector(ColorDetector):
 
     def __init__(self, min_vals, max_vals):
+        """
+        the hsv-space color detector
+        :param min_vals: a tuple of the minimal accepted hsv-values
+        :param max_vals: a tuple of the maximal accepted hsv-values
+        :return: None
+        """
         ColorDetector.__init__(self)
         self.min_vals = np.array(min_vals)
         self.max_vals = np.array(max_vals)
 
     def set_config(self, min_vals, max_vals):
+        """
+        updates the hsv-space configuration
+        :param min_vals: a tuple of the minimal accepted hsv-values
+        :param max_vals: a tuple of the maximal accepted hsv-values
+        :return: None
+        """
         self.min_vals = np.array(min_vals)
         self.max_vals = np.array(max_vals)
 
     def match_pixel(self, pixel):
+        # type: (np.array) -> bool
         pixel = self.pixel_bgr2hsv(pixel)
         # TODO: optimize comparisons
         return (self.max_vals[0] >= pixel[0] >= self.min_vals[0]) and \
