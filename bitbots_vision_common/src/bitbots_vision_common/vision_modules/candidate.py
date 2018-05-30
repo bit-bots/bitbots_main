@@ -39,6 +39,23 @@ class Candidate:
     def get_upper_left_y(self):
         return self._y1
 
+    def point_in_candidate(self, point):
+        # type: (tuple) -> bool
+        """
+        Returns whether the point is in the candidate or not.
+        In the process, the candidate gets treated as a rectangle.
+        :param point: an x- y-int-tuple defining thhe point to inspect
+        :return: whether the point is in the candidate or not
+        """
+        return (
+                self.get_upper_left_x()
+                <= point[0]
+                <= self.get_upper_left_x() + self.get_width()) \
+            and (
+                self.get_upper_left_y()
+                <= point[1]
+                <= self.get_upper_left_y() + self.get_height())
+
 
 class CandidateFinder(object):
 

@@ -45,7 +45,7 @@ class LineDetector:
                         is_candidate = False
                         if self._candidates is not None:
                             for candidate in self._candidates:
-                                if candidate and self._point_in_candidate(p, candidate):
+                                if candidate and candidate.point_in_candidate(p):
                                     is_candidate = True
                                     break
                         if is_candidate:
@@ -70,13 +70,13 @@ class LineDetector:
                 # check if start or end is in any of the candidates
                 in_candidate = False
                 for candidate in self._candidates:
-                    if candidate and self._point_in_candidate((x1, x2),
-                                                              candidate) or self._point_in_candidate(
-                            (x2, y2), candidate):
+                    if candidate and (
+                            candidate.point_in_candidate((x1, x2)) or
+                            candidate.point_in_candidate((x2, y2))):
                         in_candidate = True
                         break
 
-                # check if start and and is under horizon
+                # check if start and end is under horizon
                 under_horizon = self._horizon_detector.point_under_horizon(
                     (x1, y1), self._horizon_offset) and \
                                 self._horizon_detector.point_under_horizon(
@@ -86,11 +86,6 @@ class LineDetector:
                     self._linesegments.append((x1, y1, x2, y2))
 
         return self._linesegments
-
-    def _point_in_candidate(self, point, candidate):
-        # type: (tuple, Candidate) -> bool
-        return candidate.get_upper_left_x() <= point[0] <= candidate.get_upper_left_x() + candidate.get_width() and \
-               candidate.get_upper_left_y() <= point[1] <= candidate.get_upper_left_y() + candidate.get_height()
 
     def _get_preprocessed_image(self):
         if self._preprocessed_image is None:
