@@ -10,6 +10,7 @@
 
 #include <hardware_interface/imu_sensor_interface.h>
 #include <hardware_interface/joint_command_interface.h>
+#include <bitbots_ros_control/posvelacccur_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
 #include <transmission_interface/simple_transmission.h>
@@ -55,7 +56,8 @@ struct Joint
 enum ControlMode {
   PositionControl,
   VelocityControl,
-  EffortControl
+  EffortControl,
+  CurrentBasedPositionControl
 };
 
 class DynamixelHardwareInterface : public hardware_interface::RobotHW
@@ -93,7 +95,11 @@ private:
 
   bool syncWritePosition();
   bool syncWriteVelocity();
+  bool syncWriteProfileVelocity();
   bool syncWriteCurrent();
+  bool syncWriteProfileAcceleration();
+
+
 
   bool first_cycle_;
 
@@ -104,6 +110,7 @@ private:
   hardware_interface::PositionJointInterface _jnt_pos_interface;
   hardware_interface::VelocityJointInterface _jnt_vel_interface;
   hardware_interface::EffortJointInterface _jnt_eff_interface;
+  hardware_interface::PosVelAccCurJointInterface _jnt_posvelacccur_interface;
 
   hardware_interface::ImuSensorInterface _imu_interface;
 
@@ -119,6 +126,7 @@ private:
   std::vector<double> _goal_position;
   std::vector<double> _goal_effort;
   std::vector<double> _goal_velocity;
+  std::vector<double> _goal_acceleration;
 
   bool _read_position;
   bool _read_velocity;

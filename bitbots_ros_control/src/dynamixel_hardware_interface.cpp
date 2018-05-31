@@ -14,8 +14,9 @@ DynamixelHardwareInterface::DynamixelHardwareInterface()
 bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
 {
 
-  //TODO RESET TTY PORT
-  // tput reset > /dev/ttyACM0
+  //reset tty port
+  system("tput reset > /dev/ttyACM0");
+
   // Init subscriber / publisher
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this);
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1, this);
@@ -31,11 +32,18 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   nh.getParam("dynamixels/port_info/port_name", port_name);
   int baudrate;
   nh.getParam("dynamixels/port_info/baudrate", baudrate);
-  _driver->init(port_name.c_str(), uint32_t(baudrate));
+  if(!_driver->init(port_name.c_str(), uint32_t(baudrate))){
+    ROS_ERROR("Error opening serial port %s", port_name.c_str());
+    speak("Error opening serial port");
+    sleep(1);
+    exit(1);
+  }
   float protocol_version;
   nh.getParam("dynamixels/port_info/protocol_version", protocol_version);
   _driver->setPacketHandler(protocol_version);
   
+  ROS_WARN("0");
+
   // alloc memory for imu values
   _orientation = (double*) malloc(4 * sizeof(double));
   std::fill(_orientation, _orientation+4, 0);
@@ -74,16 +82,34 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
     speak("Failed to ping all motors.");
     return false;
   }  
-
+  ROS_WARN("1");
   // write ROM and RAM values if wanted
   if(nh.param("set_ROM_RAM", false)){
     if (!writeROMRAM(nh)){
         ROS_WARN("Couldn't write ROM and RAM values to all servos.");
     }
+    //magic sleep preventing problems after setting ROM values
+    // not sure if still needed for newer firmware, but better keep it to be save
+    sleep(1);
   }
+  ROS_WARN("2");
+
+  _driver->addSyncWrite("Torque_Enable");
+  _driver->addSyncWrite("Goal_Position");
+  _driver->addSyncWrite("Goal_Velocity");
+  _driver->addSyncWrite("Goal_Current");
+  _driver->addSyncWrite("Operating_Mode");
+  _driver->addSyncRead("Present_Current");
+  _driver->addSyncRead("Present_Velocity");
+  _driver->addSyncRead("Present_Position");
+  
+    ROS_WARN("2.1");
+
 
   // Switch dynamixels to correct control mode (position, velocity, effort)
   switchDynamixelControlMode();
+  
+  ROS_WARN("2.5");  
 
   _joint_count = _joint_names.size();
   _current_position.resize(_joint_count, 0);
@@ -91,6 +117,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _current_effort.resize(_joint_count, 0);
   _goal_position.resize(_joint_count, 0);
   _goal_velocity.resize(_joint_count, 0);
+  _goal_acceleration.resize(_joint_count, 0);
   _goal_effort.resize(_joint_count, 0);
   // register interfaces
   for (unsigned int i = 0; i < _joint_names.size(); i++)
@@ -107,7 +134,12 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
     hardware_interface::JointHandle eff_handle(state_handle, &_goal_effort[i]);
     _jnt_eff_interface.registerHandle(eff_handle);
 
+      ROS_WARN("2.75");  
+    hardware_interface::PosVelAccCurJointHandle posvelacccur_handle(state_handle, &_goal_position[i], &_goal_velocity[i], &_goal_acceleration[i], &_goal_effort[i]);
+    _jnt_posvelacccur_interface.registerHandle(posvelacccur_handle);
+
   }
+  ROS_WARN("3");
   registerInterface(&_jnt_state_interface);
   if (_control_mode == PositionControl)
   {
@@ -118,17 +150,12 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   } else if (_control_mode == EffortControl)
   {
     registerInterface(&_jnt_eff_interface);
+  } else if(_control_mode == CurrentBasedPositionControl ){
+    registerInterface(&_jnt_posvelacccur_interface);
   }
-  setTorque(nh.param("dynamixels/auto_torque", false));
 
-  _driver->addSyncWrite("Torque_Enable");
-  _driver->addSyncWrite("Goal_Position");
-  _driver->addSyncWrite("Goal_Velocity");
-  _driver->addSyncWrite("Goal_Current");
-  _driver->addSyncWrite("Operating_Mode");
-  _driver->addSyncRead("Present_Current");
-  _driver->addSyncRead("Present_Velocity");
-  _driver->addSyncRead("Present_Position");
+  ROS_WARN("4");
+  setTorque(nh.param("dynamixels/auto_torque", false));
 
   ROS_INFO("Hardware interface init finished.");
   speak("ROS control startup successfull");
@@ -191,7 +218,6 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
     //ping it to very that it's there and to add it to the driver
     if(!_driver->ping(uint8_t(motor_id), model_number_16p)){
       ROS_ERROR("Was not able to ping motor with id %d", motor_id);
-      speak("No ping motor " + motor_id);
       success = false;
       array.push_back(createServoDiagMsg(motor_id, diagnostic_msgs::DiagnosticStatus::STALE, "No ping response", map));
     }
@@ -323,9 +349,13 @@ void DynamixelHardwareInterface::processVTE(bool success){
 
 void DynamixelHardwareInterface::setTorque(bool enabled)
 {
+  ROS_WARN("torque1");  
   std::vector<int32_t> torque(_joint_names.size(), enabled);
+  ROS_WARN("torque2");  
   int32_t* t = &torque[0];
+  ROS_WARN("torque3");  
   _driver->syncWrite("Torque_Enable", t);
+  ROS_WARN("torque4");  
   current_torque_ = enabled;
 }
 
@@ -429,6 +459,9 @@ void DynamixelHardwareInterface::write()
   } else if (_control_mode == EffortControl)
   {
       syncWriteCurrent();
+  }else if (_control_mode == CurrentBasedPositionControl){
+    syncWriteCurrent();
+    syncWritePosition();
   }
 }
 
@@ -453,7 +486,10 @@ bool DynamixelHardwareInterface::stringToControlMode(std::string _control_modest
   {
     control_mode = EffortControl;
     return true;
-  } else {
+  } else if (_control_modestr == "current_based"){
+    control_mode = CurrentBasedPositionControl;
+  }  else {
+    ROS_WARN("Trying to set unknown control mode");
     return false;
   }
 }
@@ -463,9 +499,12 @@ bool DynamixelHardwareInterface::switchDynamixelControlMode()
   if(_onlyIMU){
     return true;
   }
+  ROS_WARN("i0");  
   // Torque on dynamixels has to be disabled to change operating mode
   setTorque(false);
+  ROS_WARN("i0.1");  
   ros::Duration(0.5).sleep();
+  ROS_WARN("i0.2");  
 
   int32_t value = 3;
   if (_control_mode == PositionControl)
@@ -477,12 +516,18 @@ bool DynamixelHardwareInterface::switchDynamixelControlMode()
   } else if (_control_mode == EffortControl)
   {
     value = 0;
+  }else if (_control_mode == CurrentBasedPositionControl){
+    value = 5;
+  }else{
+    ROS_WARN("control_mode is wrong, will use position control");
   }
 
+  ROS_WARN("i1");  
   std::vector<int32_t> operating_mode(_joint_names.size(), value);
   int32_t* o = &operating_mode[0];
   _driver->syncWrite("Operating_Mode", o);
 
+  ROS_WARN("i2");  
   ros::Duration(0.5).sleep();
   //reenable torque
   setTorque(true);
@@ -629,6 +674,24 @@ bool DynamixelHardwareInterface::syncWriteVelocity() {
   free(goal_velocity);
 }
 
+bool DynamixelHardwareInterface::syncWriteProfileVelocity() {
+  int* goal_velocity = (int*)malloc(_joint_names.size() * sizeof(int));
+  for (size_t num = 0; num < _joint_names.size(); num++) {
+    goal_velocity[num] = _driver->convertRadian2Value(_joint_ids[num], _goal_velocity[num]);
+  }
+  _driver->syncWrite("Profile_Velocity", goal_velocity);
+  free(goal_velocity);
+}
+
+bool DynamixelHardwareInterface::syncWriteProfileAcceleration() {
+  int* goal_acceleration = (int*)malloc(_joint_names.size() * sizeof(int));
+  for (size_t num = 0; num < _joint_names.size(); num++) {
+    goal_acceleration[num] = _goal_acceleration[num] / 60 / 60 / (2*M_PI) / 214.577; //214.577 rev/min^2 per LSB
+  }
+  _driver->syncWrite("Profile_Acceleration", goal_acceleration);
+  free(goal_acceleration);
+}
+
 bool DynamixelHardwareInterface::syncWriteCurrent() {
   int* goal_current = (int*)malloc(_joint_names.size() * sizeof(int));
   for (size_t num = 0; num < _joint_names.size(); num++) {
@@ -637,6 +700,27 @@ bool DynamixelHardwareInterface::syncWriteCurrent() {
   _driver->syncWrite("Goal_Current", goal_current);
   free(goal_current);
 }
+
+/*bool DynamixelHardwareInterface::syncWriteAll(){
+  int goal_position;
+  int goal_velocity;
+  int goal_acceleration;
+  int goal_current;
+  float radian;
+  std::vector<uint8_t*> data;
+
+  for (size_t num = 0; num < _joint_names.size(); num++) {
+    unit8_t * d;
+    radian = _goal_position[num] - _joint_mounting_offsets[num] - _joint_offsets[num];
+    goal_position = _driver->convertRadian2Value(_joint_ids[num], radian);
+    goal_velocity = _driver->convertRadian2Value(_joint_ids[num], _goal_velocity[num]);
+    goal_acceleration = _goal_acceleration[num] / 60 / 60 / (2*M_PI) / 214.577; //214.577 rev/min^2 per LSB
+    goal_current = _driver->convertRadian2Value(_joint_ids[num], _goal_effort[num]);
+    //todo fill data
+  }
+  _driver->syncReadMultipleRegisters(102, 18, data);
+
+}*/
 
 void DynamixelHardwareInterface::reconf_callback(bitbots_ros_control::bitbots_ros_control_paramsConfig &config, uint32_t level) {
   _read_position = config.read_position;

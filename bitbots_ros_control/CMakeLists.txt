@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_ros_control)
 
 find_package(catkin REQUIRED COMPONENTS
+  message_generation
   roscpp
   std_msgs
   dynamixel_workbench_toolbox
@@ -11,13 +12,25 @@ find_package(catkin REQUIRED COMPONENTS
   humanoid_league_msgs
 )
 
+add_message_files(
+  FILES
+  JointCommand.msg
+)
+
+ generate_messages(
+   DEPENDENCIES
+   std_msgs
+ )
 
 set(HEADERS
   include/${PROJECT_NAME}/dynamixel_hardware_interface.h
+  include/${PROJECT_NAME}/dynamixel_controller.hpp
+  include/${PROJECT_NAME}/posvelacccur_command_interface.h
 )
 
 set(SOURCES
   src/dynamixel_hardware_interface.cpp
+  src/dynamixel_controller.cpp
 )
 
 generate_dynamic_reconfigure_options(
@@ -52,3 +65,18 @@ target_link_libraries(bitbots_ros_control
 add_executable(dynamixel_controller_manager_node src/dynamixel_controller_manager_node.cpp)
 add_dependencies(dynamixel_controller_manager_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 target_link_libraries(dynamixel_controller_manager_node bitbots_ros_control)
+
+
+
+# Install
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  )
+
+install(FILES dynamixel_controllers_plugins.xml
+DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

@@ -16,7 +16,7 @@
     <rosparam file="$(find bitbots_ros_control)/config/controller.yaml" command="load" />
 
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-          output="screen" args="joint_state_controller imu_sensor_controller JointGroupController">
+          output="screen" args="joint_state_controller imu_sensor_controller DynamixelController">
     </node>
 
 </launch>

@@ -9,6 +9,31 @@ joint_state_controller:
   type: joint_state_controller/JointStateController
   publish_rate: 1000
 
+DynamixelController:
+  type: bitbots_ros_control/DynamixelController
+  joints:
+      - HeadPan
+      - HeadTilt
+      - LShoulderPitch
+      - LShoulderRoll
+      - LElbow
+      - RShoulderPitch
+      - RShoulderRoll
+      - RElbow
+      - LHipYaw
+      - LHipRoll
+      - LHipPitch
+      - LKnee
+      - LAnklePitch
+      - LAnkleRoll
+      - RHipYaw
+      - RHipRoll
+      - RHipPitch
+      - RKnee
+      - RAnklePitch
+      - RAnkleRoll
+
+
 TestController:
   type: position_controllers/JointPositionController
   joint: No4

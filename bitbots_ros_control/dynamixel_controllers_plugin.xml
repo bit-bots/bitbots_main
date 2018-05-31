@@ -1,0 +1,9 @@
+<library path="lib/libposition_controllers">
+
+  <class name="dynamixel_controller/DynamixelController" type="dynamixel_controller::DynamixelController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      Hacky controller
+    </description>
+  </class>
+
+</library>
