@@ -5,7 +5,7 @@ analyzers:
     type: GenericAnalyzer
     path: Boards
     startswith: DXL_board 
-    timeout: 10
+    timeout: 1
   servos:
     type: GenericAnalyzer
     path: Sevos

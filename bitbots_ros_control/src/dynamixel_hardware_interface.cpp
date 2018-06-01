@@ -22,9 +22,9 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1, this);
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
   _status_board.name = "DXL_board";
-  _status_board.hardware_id = 1;
+  _status_board.hardware_id = std::to_string(1);
   _status_IMU.name = "IMU";
-  _status_IMU.hardware_id = 2;
+  _status_IMU.hardware_id = std::to_string(2);
 
   // init driver
   ROS_INFO_STREAM("Loading parameters from namespace " << nh.getNamespace());
@@ -101,12 +101,17 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _driver->addSyncRead("Present_Current");
   _driver->addSyncRead("Present_Velocity");
   _driver->addSyncRead("Present_Position");
+  _driver->addSyncRead("Hardware_Error_Status");
+
   // Switch dynamixels to correct control mode (position, velocity, effort)
   switchDynamixelControlMode();
   _joint_count = _joint_names.size();
   _current_position.resize(_joint_count, 0);
   _current_velocity.resize(_joint_count, 0);
   _current_effort.resize(_joint_count, 0);
+  _current_input_voltage.resize(_joint_count, 0);
+  _current_temperature.resize(_joint_count, 0);
+  _current_error.resize(_joint_count, 0);
   _goal_position.resize(_joint_count, 0);
   _goal_velocity.resize(_joint_count, 0);
   _goal_acceleration.resize(_joint_count, 0);
@@ -126,12 +131,10 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
     hardware_interface::JointHandle eff_handle(state_handle, &_goal_effort[i]);
     _jnt_eff_interface.registerHandle(eff_handle);
 
-      ROS_WARN("2.75");  
     hardware_interface::PosVelAccCurJointHandle posvelacccur_handle(state_handle, &_goal_position[i], &_goal_velocity[i], &_goal_acceleration[i], &_goal_effort[i]);
     _jnt_posvelacccur_interface.registerHandle(posvelacccur_handle);
 
   }
-  ROS_WARN("3");
   registerInterface(&_jnt_state_interface);
   if (_control_mode == PositionControl)
   {
@@ -143,11 +146,9 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   {
     registerInterface(&_jnt_eff_interface);
   } else if(_control_mode == CurrentBasedPositionControl ){
-    ROS_WARN("registering currentbased");
     registerInterface(&_jnt_posvelacccur_interface);
   }
 
-  ROS_WARN("4");
   setTorque(nh.param("dynamixels/auto_torque", false));
 
   ROS_INFO("Hardware interface init finished.");
@@ -223,6 +224,9 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
   _status_board.level = diagnostic_msgs::DiagnosticStatus::OK;
   _status_board.message = "DXL board started";
   array.push_back(_status_board);
+  _status_IMU.level = diagnostic_msgs::DiagnosticStatus::OK;
+  _status_IMU.message = "IMU started";
+  array.push_back(_status_IMU);
   array_msg.status = array;
   _diagnostic_pub.publish(array_msg);
 
@@ -451,11 +455,6 @@ void DynamixelHardwareInterface::write()
       syncWriteCurrent();
   }else if (_control_mode == CurrentBasedPositionControl){
     // only write things if it is necessary
-    if(_goal_position!= _last_goal_position){
-      syncWritePosition();
-      _last_goal_position =_goal_position;
-    }
-
     if(_goal_effort != _last_goal_effort){
       syncWriteCurrent();
       _last_goal_effort = _goal_effort;
@@ -469,6 +468,11 @@ void DynamixelHardwareInterface::write()
     if(_goal_acceleration != _last_goal_acceleration){
       syncWriteProfileAcceleration();
       _last_goal_acceleration = _goal_acceleration;
+    }
+
+    if(_goal_position!= _last_goal_position){
+      syncWritePosition();
+      _last_goal_position =_goal_position;
     }
 
   }
@@ -582,15 +586,14 @@ bool DynamixelHardwareInterface::syncReadError(){
     _current_error[i] = data[i];
   }
   free(data);
-
   return success;
 }
 
 bool DynamixelHardwareInterface::syncReadVoltageAndTemp(){
   std::vector<uint8_t> data;
   if(_driver->syncReadMultipleRegisters(144, 3, &data)) {
-    uint32_t volt;
-    uint32_t temp;    
+    uint16_t volt;
+    uint8_t temp;    
     for (int i = 0; i < _joint_count; i++) {
       volt = DXL_MAKEWORD(data[i * 3], data[i * 3 + 1]);
       temp = data[i * 3 + 2];
@@ -682,7 +685,13 @@ bool DynamixelHardwareInterface::syncWriteVelocity() {
 bool DynamixelHardwareInterface::syncWriteProfileVelocity() {
   int* goal_velocity = (int*)malloc(_joint_names.size() * sizeof(int));
   for (size_t num = 0; num < _joint_names.size(); num++) {
-    goal_velocity[num] = _driver->convertVelocity2Value(_joint_ids[num], _goal_velocity[num]);
+    if(_goal_velocity[num] < 0){
+      // we want to set to maximum, which is 0
+      goal_velocity[num] = 0;  
+    }else{
+      // use max to prevent accidentially setting 0
+      goal_velocity[num] = std::max(_driver->convertVelocity2Value(_joint_ids[num], _goal_velocity[num]), 1);      
+    }
   }
   _driver->syncWrite("Profile_Velocity", goal_velocity);
   free(goal_velocity);
@@ -691,9 +700,12 @@ bool DynamixelHardwareInterface::syncWriteProfileVelocity() {
 bool DynamixelHardwareInterface::syncWriteProfileAcceleration() {
   int* goal_acceleration = (int*)malloc(_joint_names.size() * sizeof(int));
   for (size_t num = 0; num < _joint_names.size(); num++) {
-    ROS_WARN("%f", _goal_acceleration[num] );
-    goal_acceleration[num] = _goal_acceleration[num] * 572.9577952 / 214.577; //572.9577952 for change of units, 214.577 rev/min^2 per LSB
-    ROS_INFO("%d", goal_acceleration[num] );
+    if(_goal_acceleration[num] < 0){
+      // we want to set to maximum, which is 0
+      goal_acceleration[num] = 0;  
+    }else{
+      goal_acceleration[num] = std::max(static_cast<int>(_goal_acceleration[num] * 572.9577952 / 214.577), 1); //572.9577952 for change of units, 214.577 rev/min^2 per LSB
+    }
   }
   _driver->syncWrite("Profile_Acceleration", goal_acceleration);
   free(goal_acceleration);
@@ -702,11 +714,13 @@ bool DynamixelHardwareInterface::syncWriteProfileAcceleration() {
 bool DynamixelHardwareInterface::syncWriteCurrent() {
   int* goal_current = (int*)malloc(_joint_names.size() * sizeof(int));
   for (size_t num = 0; num < _joint_names.size(); num++) {
-    goal_current[num] = _driver->convertTorque2Value(_joint_ids[num], _goal_effort[num]); 
-    //max to current limit
-    if (goal_current[num] > 1941){
-        goal_current[num] = 1941;
-    }
+    if(_goal_effort[num] < 0){
+      // we want to set to maximum, which is 1941
+      // todo the maximum for MX-106 is a bit higher but setting a to high value to mx 64 will prevent it from working
+      goal_current[num] = 1941;
+    }else{
+      goal_current[num] = _driver->convertTorque2Value(_joint_ids[num], _goal_effort[num]); 
+    }    
   }
   _driver->syncWrite("Goal_Current", goal_current);
   free(goal_current);
@@ -741,7 +755,7 @@ void DynamixelHardwareInterface::reconf_callback(bitbots_ros_control::bitbots_ro
   _read_volt_temp = config.read_volt_temp;
   _VT_update_rate = config.VT_update_rate;
   _warn_temp = config.warn_temp;
-  _warn_volt = config.warn_volt;
+  _warn_volt = config.warn_volt;  
 }
 
 }
