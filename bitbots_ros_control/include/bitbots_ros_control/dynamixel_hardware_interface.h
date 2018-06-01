@@ -2,8 +2,9 @@
 #define DYNAMIXEL_HARWARE_INTERFACE_H
 
 #include <ros/ros.h>
+#include <string> 
 
-#include <std_msgs/Bool.h>
+#include <std_msgs/Bool.h>  
 #include <humanoid_league_msgs/Speak.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
@@ -127,6 +128,12 @@ private:
   std::vector<double> _goal_effort;
   std::vector<double> _goal_velocity;
   std::vector<double> _goal_acceleration;
+
+  std::vector<double> _last_goal_position;
+  std::vector<double> _last_goal_effort;
+  std::vector<double> _last_goal_velocity;
+  std::vector<double> _last_goal_acceleration;
+
 
   bool _read_position;
   bool _read_velocity;

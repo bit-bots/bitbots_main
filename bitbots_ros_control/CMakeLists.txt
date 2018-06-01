@@ -10,6 +10,8 @@ find_package(catkin REQUIRED COMPONENTS
   controller_manager
   dynamic_reconfigure
   humanoid_league_msgs
+  pluginlib
+  controller_interface
 )
 
 add_message_files(
@@ -40,7 +42,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES bitbots_ros_control
-  CATKIN_DEPENDS roscpp std_msgs dynamixel_workbench_toolbox hardware_interface controller_manager
+  CATKIN_DEPENDS roscpp std_msgs dynamixel_workbench_toolbox hardware_interface controller_manager controller_interface
 )
 
 
@@ -63,20 +65,6 @@ target_link_libraries(bitbots_ros_control
 )
 
 add_executable(dynamixel_controller_manager_node src/dynamixel_controller_manager_node.cpp)
+
 add_dependencies(dynamixel_controller_manager_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 target_link_libraries(dynamixel_controller_manager_node bitbots_ros_control)
-
-
-
-# Install
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
-
-install(TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  )
-
-install(FILES dynamixel_controllers_plugins.xml
-DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

@@ -15,7 +15,7 @@ ros_control:
       port_name: /dev/ttyACM0
       baudrate: 2000000
       protocol_version: 2
-    control_mode: position
+    control_mode: current_based
     auto_torque: true
     set_ROM_RAM: true # set the following values on startup to all motors
     ROM_RAM:

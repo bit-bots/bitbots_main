@@ -1,0 +1,16 @@
+pub_rate: 1.0 # Optional
+base_path: '' # Optional, prepended to all diagnostic output
+analyzers:
+  DXL_Board:
+    type: GenericAnalyzer
+    path: Boards
+    startswith: DXL_board 
+    timeout: 10
+  servos:
+    type: GenericAnalyzer
+    path: Sevos
+    startswith: Servo 
+    timeout: 0.1
+    find_and_remove_prefix: Servo
+
+    
