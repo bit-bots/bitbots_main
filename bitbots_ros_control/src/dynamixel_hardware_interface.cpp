@@ -81,8 +81,12 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
     speak("Failed to ping all motors.");
     return false;
   }  
+
+  // todo reboot all dynamixels to prevent old error bytes
+  // this need a possibility of setting the motor power off and on
+  
   // write ROM and RAM values if wanted
-  if(nh.param("set_ROM_RAM", false)){
+  if(nh.param("dynamixels/set_ROM_RAM", false)){
     if (!writeROMRAM(nh)){
         ROS_WARN("Couldn't write ROM and RAM values to all servos.");
     }
@@ -172,7 +176,7 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
   // get control mode
   std::string control_mode;
   nh.getParam("dynamixels/control_mode", control_mode);
-  ROS_WARN("control mdoe: %s", control_mode.c_str() );
+  ROS_INFO("Control mode: %s", control_mode.c_str() );
   if (!stringToControlMode(control_mode, _control_mode)) {
     ROS_ERROR_STREAM("Unknown control mode'" << control_mode << "'.");
     speak("Wrong control mode specified");
@@ -234,24 +238,28 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
 }
 
 bool DynamixelHardwareInterface::writeROMRAM(ros::NodeHandle& nh){
+  ROS_INFO("Writing ROM and RAM values");
   XmlRpc::XmlRpcValue dxls;
   nh.getParam("dynamixels/ROM_RAM", dxls);
   ROS_ASSERT(dxls.getType() == XmlRpc::XmlRpcValue::TypeStruct);
-  int i = 0;
+  bool sucess = true;
+  int i = 0;  
   for(XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = dxls.begin(); it != dxls.end(); ++it)
   {
     std::string register_name = (std::string)(it->first);
     int register_value;
-    nh.param("dynamixels/ROM_RAM/" + register_name, register_value);
-    ROS_INFO("Setting %s on all servos to %s", (register_name.c_str(), std::to_string(register_value).c_str()));
+    nh.getParam(("dynamixels/ROM_RAM/" + register_name).c_str(), register_value);
+    ROS_INFO("Setting %s on all servos to %d", register_name.c_str(), register_value);
 
     int* values = (int*)malloc(_joint_names.size() * sizeof(int));
     for (size_t num = 0; num < _joint_names.size(); num++) {
       values[num] = register_value;      
     }
-    _driver->syncWrite(register_name.c_str(), values);
+    _driver->addSyncWrite(register_name.c_str());
+    sucess = sucess && _driver->syncWrite(register_name.c_str(), values);
     free(values);
   }
+  return sucess;
 }
 
 
@@ -318,19 +326,19 @@ void DynamixelHardwareInterface::processVTE(bool success){
       char encoder_error = 0x8;
       char shock_error = 0x10;
       char overload_error = 0x20;
-      if(_current_error[i] & voltage_error){
+      if((_current_error[i] & voltage_error) != 0){
         message = message + "Voltage ";        
       }
-      if(_current_error[i] & overheat_error){
+      if((_current_error[i] & overheat_error) != 0){
         message = message + "Overheat ";        
       }
-      if(_current_error[i] & encoder_error){
+      if((_current_error[i] & encoder_error) != 0){
         message = message + "Encoder ";        
       }
-      if(_current_error[i] & shock_error){
+      if((_current_error[i] & shock_error) != 0){
         message = message + "Shock ";        
       }
-      if(_current_error[i] & overload_error){
+      if((_current_error[i] & overload_error) != 0){
         message = message + "Overload";
         // turn off torque on all motors
         // todo should also turn off power, but is not possible yet

@@ -6,8 +6,9 @@ ros_control:
   read_volt_temp: true # this also corresponds for the error byte
   VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
   warn_temp: 60
+  warn_volt: 12
   read_imu: true
-  control_loop_hz: 200
+  control_loop_hz: 1000
 
   # specification of the connected dynamixel servos
   dynamixels:
@@ -27,7 +28,7 @@ ros_control:
       Max_Voltage_Limit: 160 #[About 0.1V]
       Min_Voltage_Limit: 95 #[About 0.1V]
       PWM_Limit: 885 # 885 = 100%
-      Current_Limit: 2047 #[ 3.36 mA]
+      #Current_Limit: 2047 #[ 3.36 mA] #currently not used since MX-64 and MX-106 have different max values
       Acceleration_Limit: 32767 # [214.577 Rev/min2]
       Velocity_Limit: 360 # [0.229rpm]
       Max_Position_Limit: 4095 # [0.088 deg]

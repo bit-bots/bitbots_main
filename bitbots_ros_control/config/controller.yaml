@@ -13,8 +13,6 @@ DynamixelController:
   type: bitbots_ros_control/DynamixelController
   joints:
       - RShoulderPitch
-      - LShoulderRoll
-      - RShoulderRoll
 
 
 TestController:
