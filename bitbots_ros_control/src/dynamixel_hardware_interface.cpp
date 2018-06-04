@@ -20,7 +20,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   // Init subscriber / publisher
   _switch_individual_torque = false;
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this);
-  _set_torque_indiv_sub = nh.subscribe<std_msgs::Int32MultiArray>("set_torque_individual", 1, &DynamixelHardwareInterface::setTorqueForServos, this);
+  _set_torque_indiv_sub = nh.subscribe<bitbots_ros_control::JointTorque>("set_torque_individual", 1, &DynamixelHardwareInterface::setTorqueForServos, this);
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1, this);
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
   _status_board.name = "DXL_board";
@@ -122,6 +122,8 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _goal_velocity.resize(_joint_count, 0);
   _goal_acceleration.resize(_joint_count, 0);
   _goal_effort.resize(_joint_count, 0);
+  _goal_torque_individual.resize(_joint_count, 0);
+
   // register interfaces
   for (unsigned int i = 0; i < _joint_names.size(); i++)
   {
@@ -370,12 +372,26 @@ void DynamixelHardwareInterface::setTorqueForServos(std::vector<int32_t> torque)
 }
 
 
-void DynamixelHardwareInterface::setTorqueForServos(std_msgs::Int32MultiArray torque)
+void DynamixelHardwareInterface::setTorqueForServos(bitbots_ros_control::JointTorque msg)
 {
   // we save the goal torque value. It will be set during write process
-  _goal_torque_individual = torque.data;
+  for(int i = 0; i < msg.joint_names.size(); i++){
+    bool success = false;
+    for(int j = 0; j < _joint_names.size(); j++){
+      if(msg.joint_names[i] == _joint_names[j]){
+        if(i < msg.joint_names.size()){
+          _goal_torque_individual[j] = msg.on[i];
+          success = true;
+        }else{
+          ROS_WARN("Somethings wrong with your message to set torques.");
+        }
+      }
+    }
+    if(!success){
+      ROS_WARN("Couldn't set torque for servo %s ", msg.joint_names[i].c_str());
+    }
+  }
   _switch_individual_torque = true;
-  ROS_WARN("switch");
 }
 
 void DynamixelHardwareInterface::setTorque(std_msgs::BoolConstPtr enabled)

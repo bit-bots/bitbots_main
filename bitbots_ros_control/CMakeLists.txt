@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   JointCommand.msg
+  JointTorque.msg
 )
 
  generate_messages(
