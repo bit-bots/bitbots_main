@@ -18,6 +18,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   system("tput reset > /dev/ttyACM0");
 
   // Init subscriber / publisher
+  _switch_individual_torque = false;
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this);
   _set_torque_indiv_sub = nh.subscribe<std_msgs::Int32MultiArray>("set_torque_individual", 1, &DynamixelHardwareInterface::setTorqueForServos, this);
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1, this);
