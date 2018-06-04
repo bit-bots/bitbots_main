@@ -723,9 +723,14 @@ bool DynamixelHardwareInterface::syncWriteCurrent() {
   int* goal_current = (int*)malloc(_joint_names.size() * sizeof(int));
   for (size_t num = 0; num < _joint_names.size(); num++) {
     if(_goal_effort[num] < 0){
-      // we want to set to maximum, which is 1941
-      // todo the maximum for MX-106 is a bit higher but setting a to high value to mx 64 will prevent it from working
-      goal_current[num] = 1941;
+      // we want to set to maximum, which is different for MX-64 and MX-106      
+      if(_driver->getModelNum(_joint_ids[num]) == 311){
+        goal_current[num] = 1941;
+      }else if (_driver->getModelNum(_joint_ids[num]) == 321){
+        goal_current[num] = 2047;
+      }else{
+        ROS_WARN("Maximal current for this dynamixel model is not defined");
+      }      
     }else{
       goal_current[num] = _driver->convertTorque2Value(_joint_ids[num], _goal_effort[num]); 
     }    
