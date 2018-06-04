@@ -4,10 +4,15 @@
 #include <ros/ros.h>
 #include <string> 
 
+<<<<<<< HEAD
 #include <std_msgs/Bool.h>  
 #include <humanoid_league_msgs/Speak.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
+=======
+#include <std_msgs/Bool.h>
+#include <std_msgs/Int32MultiArray.h>
+>>>>>>> master
 
 #include <hardware_interface/imu_sensor_interface.h>
 #include <hardware_interface/joint_command_interface.h>
@@ -85,6 +90,9 @@ private:
   bool current_torque_;
   void setTorque(bool enabled);
   void setTorque(std_msgs::BoolConstPtr enabled);
+  void setTorqueForServos(std::vector<int32_t> torque);
+  void setTorqueForServos(std_msgs::Int32MultiArray torque);
+
 
   bool syncReadPositions();
   bool syncReadVelocities();
@@ -103,6 +111,8 @@ private:
 
 
   bool first_cycle_;
+  bool _switch_individual_torque;
+  std::vector<int32_t> _goal_torque_individual;
 
   boost::shared_ptr<DynamixelDriver> _driver;
 
@@ -170,6 +180,7 @@ private:
   ros::Subscriber _set_torque_sub;
   ros::Publisher _diagnostic_pub;
   ros::Publisher _speak_pub;
+  ros::Subscriber _set_torque_indiv_sub;
 };
 }
 

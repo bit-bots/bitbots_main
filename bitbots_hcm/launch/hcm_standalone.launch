@@ -1,4 +1,3 @@
-<?xml version="1.0"?>
 <launch>
     <arg name="sim" default="false"/>
     <arg name="minibot" default="false"/>
@@ -6,12 +5,13 @@
 
     <include file="$(find bitbots_common)/launch/load_robot_description.launch">
         <arg name="minibot" value="$(arg minibot)"/>
-        <arg name="wolfgang" value="$(arg wolfgang)"/>   
+        <arg name="wolfgang" value="$(arg wolfgang)"/>
     </include>
 
-    <include file="$(find bitbots_ros_control)/launch/ros_control.launch">
+    <include file="$(find bitbots_hcm)/launch/hcm.launch">
         <arg name="sim" value="$(arg sim)"/>
         <arg name="minibot" value="$(arg minibot)"/>
         <arg name="wolfgang" value="$(arg wolfgang)"/>
     </include>
+
 </launch>
