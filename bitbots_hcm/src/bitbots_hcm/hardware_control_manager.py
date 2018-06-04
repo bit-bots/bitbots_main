@@ -13,7 +13,8 @@ import rospy
 from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAction
 
 from humanoid_league_speaker.speaker import speak
-from std_msgs.msg import Bool, String, Float64MultiArray
+from std_msgs.msg import Bool, String
+from bitbots_ros_control.msg import JointCommand, JointTorque
 
 from bitbots_cm730.srv import SwitchMotorPower
 
@@ -78,7 +79,7 @@ class Motion:
         self.last_gyro_update_time = rospy.get_time()
 
         self.joint_goal_publisher = rospy.Publisher('motor_goals', JointTrajectory, queue_size=1)
-        self.joint_goal_group_publisher = rospy.Publisher('JointGroupController/command', Float64MultiArray, queue_size=1)
+        self.joint_goal_command_publisher = rospy.Publisher('DynamixelController/command', JointCommand, queue_size=1)
         self.hcm_state_publisher = rospy.Publisher('robot_state', RobotControlState, queue_size=1, latch=True)
         self.speak_publisher = rospy.Publisher('speak', Speak, queue_size=1)
         VALUES.speak_publisher = self.speak_publisher
@@ -156,6 +157,9 @@ class Motion:
         if self.state_machine.get_current_state() == STATE_CONTROLABLE or self.state_machine.get_current_state() == STATE_WALKING or self.state_machine.get_current_state() == STATE_ANIMATION_RUNNING:
             # we can move our head
             self.joint_goal_publisher.publish(msg)
+            # also send it to ros control
+            command_msg = trajectory_to_joint_command_msg(msg.position)
+            self.joint_goal_command_publisher.publish(command_msg)
 
     def record_goal_callback(self, msg):
         if msg is None:
@@ -164,6 +168,9 @@ class Motion:
         else:
             VALUES.record = True
             self.joint_goal_publisher.publish(msg)
+            # also send it to ros control
+            command_msg = trajectory_to_joint_command_msg(msg.position)
+            self.joint_goal_command_publisher.publish(command_msg)
 
     def animation_callback(self, msg):
         """ The animation server is sending us goal positions for the next keyframe"""
@@ -219,8 +226,8 @@ class Motion:
         if len(msg.position.points) > 0:
             self.joint_goal_publisher.publish(msg.position)
             # also send it to ros control
-            array_msg = trajectory_to_array_msg(msg.position)
-            self.joint_goal_group_publisher.publish(array_msg)
+            command_msg = trajectory_to_joint_command_msg(msg.position)
+            self.joint_goal_command_publisher.publish(command_msg)
 
     def main_loop(self):
         """ Calls :func:`update_once` until ROS is shutting down """
@@ -318,17 +325,23 @@ def calc_sin_angle(fst, sec):
         return 0
     return math.degrees(asin(numpy.dot(fst, sec) / (fst_norm * sec_norm)))
 
-def trajectory_to_array_msg(msg):
-    array_msg = Float64MultiArray()
-    joint_name_order = ['HeadPan', 'HeadTilt', 'LAnklePitch', 'LAnkleRoll', 'LElbow', 'LHipPitch', 'LHipRoll', 'LKnee', 'LShoulderPitch', 'LShoulderRoll', 'RAnklePitch', 'RAnkleRoll', 'RElbow', 'RHipPitch', 'RHipRoll', 'RKnee', 'RShoulderPitch', 'RShoulderRoll']
-    for joint in joint_name_order:
-        i = 0
-        for traj_joint in msg.joint_names:
-            if traj_joint == joint:
-                break
-            i +=1
-        array_msg.data[i] = msg.points[0].positions[i]
-    return array_msg
+def trajectory_to_joint_command_msg(msg):
+    command_msg = JointCommand()
+    command_msg.joint_names = msg.joint_names
+    command_msg.positions = msg.points[0].positions
+    if len(msg.points[0].velocities) == len(msg.joint_names):
+        command_msg.velocities = msg.points[0].velocities
+    else:
+        # if vels are not set use max value
+        command_msg.velocities = [-1.0] * len(msg.joint_names)
+    if len(msg.points[0].velocities) == len(msg.joint_names):
+        command_msg.accelerations = msg.points[0].velocities
+    else:
+        command_msg.accelerations = [-1.0] * len(msg.joint_names)
+
+    command_msg.max_currents  = [-1.0] * len(msg.joint_names)
+    
+    return command_msg
 
 def main():
     """
