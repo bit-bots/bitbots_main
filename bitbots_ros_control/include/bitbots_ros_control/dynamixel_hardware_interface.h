@@ -4,15 +4,12 @@
 #include <ros/ros.h>
 #include <string> 
 
-<<<<<<< HEAD
 #include <std_msgs/Bool.h>  
 #include <humanoid_league_msgs/Speak.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
-=======
 #include <std_msgs/Bool.h>
 #include <std_msgs/Int32MultiArray.h>
->>>>>>> master
 
 #include <hardware_interface/imu_sensor_interface.h>
 #include <hardware_interface/joint_command_interface.h>
