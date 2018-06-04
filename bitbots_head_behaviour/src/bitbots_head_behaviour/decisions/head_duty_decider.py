@@ -27,6 +27,7 @@ class HeadDutyDecider(AbstractDecisionModule):
         self.trackjustball_aftergoal = False
 
     def perform(self, connector, reevaluate=False):
+        self.repr_data = {}
 
         # set priorities
         if connector.world_model.ball_seen():
@@ -51,12 +52,16 @@ class HeadDutyDecider(AbstractDecisionModule):
             return self.interrupt()
 
         if head_mode == HeadMode.BALL_MODE:
+            self.repr_data["head_mode"] = "BALL_MODE"
             return self.push(SearchAndConfirmBall)
 
         if head_mode == HeadMode.POST_MODE:
+            self.repr_data["head_mode"] = "POST_MODE"
             return self.push(SearchAndConfirmEnemyGoal)
 
         if head_mode == HeadMode.BALL_GOAL_TRACKING:
+            self.repr_data["head_mode"] = "BALL_GOAL_TRACKING"
+
             rospy.logdebug("TrackbothTime", rospy.get_time())
             if rospy.get_time() - connector.head.get_confirmed_ball_time() > 5:
                 return self.push(SearchAndConfirmBall)
@@ -66,22 +71,31 @@ class HeadDutyDecider(AbstractDecisionModule):
                 return self.push(SearchAndConfirmEnemyGoal)
 
             elif self.trackjustball_aftergoal:
+                self.repr_data["trackjustball_aftergoal"] = True
                 return self.push(SearchAndConfirmBall)
 
         if head_mode == HeadMode.FIELD_FEATURES:
+            self.repr_data["head_mode"] = "FIELD_FEATURES"
             return self.push(ContinuousSearch)
 
         if head_mode == HeadMode.LOOK_DOWN:
+            self.repr_data["head_mode"] = "LOOK_DOWN"
             return self.push(LookAtRelativePoint, (0, 0, 0))
 
         if head_mode == HeadMode.LOOK_FORWARD:
+            self.repr_data["head_mode"] = "LOOK_FORWARD"
             return self.push(LookAtRelativePoint, (100, 0, 0))
 
         if head_mode == HeadMode.LOOK_UP:
+            self.repr_data["head_mode"] = "LOOK_UP"
             return self.push(LookAtRelativePoint, (0, 0, 10))
 
+        self.repr_data["toggle_switch_ball_goal"] = self.toggle_switch_ball_goal
         if self.toggle_switch_ball_goal:
             rospy.logdebug("Headdoes", "Priorities")
+            self.repr_data["ball_prio"] = self.ball_prio
+            self.repr_data["goal_prio"] = self.goal_prio
+
             if self.ball_prio >= self.goal_prio:
                 return self.push(SearchAndConfirmBall)
             else:

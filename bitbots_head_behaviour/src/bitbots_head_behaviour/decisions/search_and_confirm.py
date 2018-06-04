@@ -24,11 +24,28 @@ class AbstractSearchAndConfirm(AbstractDecisionModule):
         self.track_ball_lost_time = connector.config["Head"]["Tracking"]["trackBallLost"]
 
     def perform(self, connector, reevaluate=False):
-        rospy.logdebug("Ball seen: " + str(self.object_last_seen()))
+        self.repr_data = {}
+
+        rospy.logdebug("Last seen: " + str(self.object_last_seen()))
+
+        # Only output sensible debug information
+        if self.object_last_seen() == -999:
+            self.repr_data["last_seen"] = "never"
+        else:
+            self.repr_data["last_seen"] = self.object_last_seen()
+            self.repr_data["confirmed_object_time"] = (rospy.get_time() - self.object_last_seen())
+
         if rospy.get_time() - self.object_last_seen() < self.track_ball_lost_time:
+            # We have seen the object very recently and are still able to track it
+            self.repr_data["mode"] = "track"
+
             self.set_confirmed_time()
             return self.track()
+
         else:
+            # We have lost the object and need to search for it
+            self.repr_data["mode"] = "search"
+
             self.unset_confirmed_time()
             return self.search()
 
@@ -49,6 +66,7 @@ class SearchAndConfirmBall(AbstractSearchAndConfirm):
             self.set_confirmed_time = connector.head.set_confirmed_ball_time
             self.unset_confirmed_time = connector.head.unset_confirmed_ball_time
             self.object_last_seen = connector.world_model.ball_last_seen
+
         super(SearchAndConfirmBall, self).perform(connector, reevaluate)
 
     def track(self):
@@ -68,6 +86,7 @@ class SearchAndConfirmEnemyGoal(AbstractSearchAndConfirm):
             self.set_confirmed_time = connector.head.set_confirmed_goal_time
             self.unset_confirmed_time = connector.head.unset_confirmed_goal_time
             self.object_last_seen = connector.world_model.any_goal_last_seen
+
         super(SearchAndConfirmEnemyGoal, self).perform(connector, reevaluate)
 
     def track(self):

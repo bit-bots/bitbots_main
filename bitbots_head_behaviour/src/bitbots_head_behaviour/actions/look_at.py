@@ -36,6 +36,8 @@ class AbstractLookAt(AbstractActionModule):
         This method moves the head to a given point
         :param point: a PointStamped describing the point to look at
         """
+        self.repr_data = {}
+
         try:
             point_camera = self.tfBuffer.transform(point, 'camera_fixed')
         except (tf2.LookupException, tf2.ConnectivityException):
@@ -55,11 +57,21 @@ class AbstractLookAt(AbstractActionModule):
             if rospy.get_time() - self.position_reached_time > connector.head.wait_time:
                 # We waited long enough, go back
                 return self.pop()
+            else:
+                # Represent remaining wait time
+                self.repr_data["remaining_wait_time"] = connector.head.wait_time - (rospy.get_time() - self.position_reached_time)
+
         else:
             # We haven't reached it
             # Update when we should reach it
             self.position_reached_time = rospy.get_time()
             connector.head.send_motor_goals(angle_pan, self.pan_speed_max, angle_tilt, self.tilt_speed_max)
+
+            # Represent remaining tilt
+            self.repr_data["remaining_tilt"] = abs(current_pan_pos - angle_pan)
+            self.repr_data["remaining_pan"] = abs(current_tilt_pos - angle_tilt)
+
+        rospy.logdebug("Test")
 
 
 class LookAtBall(AbstractLookAt):

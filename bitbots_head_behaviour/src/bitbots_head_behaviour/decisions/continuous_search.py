@@ -30,9 +30,11 @@ class ContinuousSearch(AbstractDecisionModule):
         rospy.logdebug("Start new Search")
 
     def perform(self, connector, reevaluate=False):
+        self.repr_data = {}
         self.set_pattern(connector)
 
         pos = self.pattern_pos
+        self.repr_data["pattern_pos"] = pos
         rospy.logdebug("Pattern pos" + str(pos))
         # Increment the to be reached postion with wrap around
         self.pattern_pos = (pos + 1) % len(self.current_pattern)
@@ -46,14 +48,19 @@ class ContinuousSearch(AbstractDecisionModule):
         if connector.head.is_ball_tracking_still_active:
             # we only come here if the continuousSearch is called by the SearchForBall Module
             # in this case we want to search the ball
+            self.repr_data["pattern"] = "ball_pattern"
             self.current_pattern = self.ball_pattern
         elif role == TeamData.ROLE_GOALIE:
+            self.repr_data["pattern"] = "goalie_pattern"
             self.current_pattern = self.goalie_pattern
         elif role == TeamData.ROLE_DEFENDER:
+            self.repr_data["pattern"] = "defender_pattern"
             self.current_pattern = self.defender_pattern
         elif role == TeamData.ROLE_OTHER:
+            self.repr_data["pattern"] = "center_pattern"
             self.current_pattern = self.center_pattern
         else:
+            self.repr_data["pattern"] = "default_pattern"
             self.current_pattern = self.default_pattern
 
         # reset the pattern pos if we changed our pattern
