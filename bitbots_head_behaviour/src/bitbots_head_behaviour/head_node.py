@@ -3,16 +3,15 @@
 import rospy
 from bitbots_connector.connector import HeadConnector
 from bitbots_head_behaviour.decisions.head_duty_decider import HeadDutyDecider
-from bitbots_stackmachine.stack_machine_module import StackMachineModule
+from bitbots_stackmachine.stack_machine import StackMachine
 from humanoid_league_msgs.msg import HeadMode, BallRelative, ObstacleRelative, GoalRelative
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory
 
 
-class HeadNode(StackMachineModule):
+class HeadNode(StackMachine):
     def __init__(self):
-        super(HeadNode, self).__init__(debug_topic="/debug_head_behaviour")
-        self.connector = HeadConnector()
+        super(HeadNode, self).__init__(HeadConnector(), debug_topic="/debug_head_behaviour")
 
         self.connector.head.position_publisher = rospy.Publisher("head_motor_goals", JointTrajectory, queue_size=10)
 
