@@ -39,5 +39,9 @@
 
   <export>
     <controller_interface plugin="${prefix}/dynamixel_controllers_plugin.xml"/>
+    <bitbots_documentation>
+      <status>tested_robot</status>
+      <language>c++</language>
+    </bitbots_documentation>
 </export>
 </package>
