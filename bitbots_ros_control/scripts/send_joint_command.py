@@ -33,7 +33,7 @@ pos_msg.joint_names = ids.keys()
 pos_msg.velocities = [-1.0] * 20
 pos_msg.positions = [0.0] * 20
 pos_msg.accelerations = [-1.0] * 20
-pos_msg.max_currents = [1.0] * 20
+pos_msg.max_currents = [-1.0] * 20
 
 pub = rospy.Publisher("/DynamixelController/command", JointCommand, queue_size=1)
 print(pos_msg)

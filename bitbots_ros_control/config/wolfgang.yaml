@@ -1,9 +1,9 @@
 ros_control:
   # specifies which information should be read
   read_position: true
-  read_velocity: true
-  read_effort: true
-  read_volt_temp: true # this also corresponds for the error byte
+  read_velocity: false
+  read_effort: false
+  read_volt_temp: false # this also corresponds for the error byte
   VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
   warn_temp: 60
   warn_volt: 12
@@ -16,7 +16,7 @@ ros_control:
       port_name: /dev/ttyACM0
       baudrate: 2000000
       protocol_version: 2
-    control_mode: current_based
+    control_mode: position
     auto_torque: true
     set_ROM_RAM: true # set the following values on startup to all motors
     ROM_RAM:
@@ -37,7 +37,7 @@ ros_control:
       Status_Return_Level: 2 # 0 status for all instructions(not sync or bulk), 1 ping and read, 2 only ping
       Velocity_I_Gain: 1920 # [/ 65,536]
       Velocity_P_Gain: 100 # [/128]
-      Position_D_Gain: 0 # [/16]
+      Position_D_Gain: 0 # [/16] 
       Position_I_Gain: 0 # [/ 65,536]
       Position_P_Gain: 850 # [/ 128]
       Feedforward_2nd_Gain: 0 # [/4]
@@ -79,9 +79,11 @@ ros_control:
       RHipPitch:
         id: 11
         model_number: 321
+        offset: -0.15  
       LHipPitch:
         id: 12
         model_number: 321
+        offset: 0.15
       RKnee:
         id: 13
         model_number: 321
@@ -91,9 +93,11 @@ ros_control:
       RAnklePitch:
         id: 15
         model_number: 321
+        offset: 0.13
       LAnklePitch:
         id: 16
         model_number: 321
+        offset: -0.13
       RAnkleRoll:
         id: 17
         model_number: 321

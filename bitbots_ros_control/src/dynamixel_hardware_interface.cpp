@@ -17,10 +17,13 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   //reset tty port
   system("tput reset > /dev/ttyACM0");
 
+  _nh = nh;
+  _update_pid = false;
   // Init subscriber / publisher
   _switch_individual_torque = false;
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this);
   _set_torque_indiv_sub = nh.subscribe<bitbots_ros_control::JointTorque>("set_torque_individual", 1, &DynamixelHardwareInterface::setTorqueForServos, this);
+  _update_pid_sub = nh.subscribe<std_msgs::BoolConstPtr>("update_pid", 1, &DynamixelHardwareInterface::update_pid, this);
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1, this);
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
   _status_board.name = "DXL_board";
@@ -86,16 +89,6 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
 
   // todo reboot all dynamixels to prevent old error bytes
   // this need a possibility of setting the motor power off and on
-  
-  // write ROM and RAM values if wanted
-  if(nh.param("dynamixels/set_ROM_RAM", false)){
-    if (!writeROMRAM(nh)){
-        ROS_WARN("Couldn't write ROM and RAM values to all servos.");
-    }
-    //magic sleep preventing problems after setting ROM values
-    // not sure if still needed for newer firmware, but better keep it to be save
-    sleep(1);
-  }
 
   _driver->addSyncWrite("Torque_Enable");
   _driver->addSyncWrite("Goal_Position");
@@ -103,6 +96,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _driver->addSyncWrite("Profile_Velocity");
   _driver->addSyncWrite("Profile_Acceleration");
   _driver->addSyncWrite("Goal_Current");
+  _driver->addSyncWrite("Goal_PWM");
   _driver->addSyncWrite("Operating_Mode");
   _driver->addSyncRead("Present_Current");
   _driver->addSyncRead("Present_Velocity");
@@ -123,6 +117,16 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _goal_acceleration.resize(_joint_count, 0);
   _goal_effort.resize(_joint_count, 0);
   _goal_torque_individual.resize(_joint_count, 0);
+
+  // write ROM and RAM values if wanted
+  if(nh.param("dynamixels/set_ROM_RAM", false)){
+    if (!writeROMRAM(nh)){
+        ROS_WARN("Couldn't write ROM and RAM values to all servos.");
+    }
+    //magic sleep preventing problems after setting ROM values
+    // not sure if still needed for newer firmware, but better keep it to be save
+    sleep(1);
+  }
 
   // register interfaces
   for (unsigned int i = 0; i < _joint_names.size(); i++)
@@ -146,7 +150,9 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   registerInterface(&_jnt_state_interface);
   if (_control_mode == PositionControl)
   {
-    registerInterface(&_jnt_pos_interface);
+    //registerInterface(&_jnt_pos_interface);
+    //todo hack
+    registerInterface(&_jnt_posvelacccur_interface);
   } else if (_control_mode == VelocityControl)
   {
     registerInterface(&_jnt_vel_interface);
@@ -160,8 +166,12 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   setTorque(nh.param("dynamixels/auto_torque", false));
 
   ROS_INFO("Hardware interface init finished.");
-  speak("ROS control startup successfull");
+  speak("ross control startup successfull");
   return true;
+}
+
+void DynamixelHardwareInterface::update_pid(std_msgs::BoolConstPtr msg){
+  _update_pid = true;
 }
 
 bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
@@ -480,6 +490,12 @@ void DynamixelHardwareInterface::write()
   if(_onlyIMU){
     return;
   }
+
+  if(_update_pid){
+    writeROMRAM(_nh);
+    _update_pid = false;
+  }
+
   //check if we have to switch the torque
   if(current_torque_ != goal_torque_){
     setTorque(goal_torque_);
@@ -492,7 +508,25 @@ void DynamixelHardwareInterface::write()
 
   if (_control_mode == PositionControl)
   {
+      if(_goal_effort != _last_goal_effort){
+      syncWritePWM();
+      _last_goal_effort = _goal_effort;
+    }
+
+    if(_goal_velocity != _last_goal_velocity){
+      syncWriteProfileVelocity();
+      _last_goal_velocity = _goal_velocity;
+    }
+    
+    if(_goal_acceleration != _last_goal_acceleration){
+      syncWriteProfileAcceleration();
+      _last_goal_acceleration = _goal_acceleration;
+    }
+
+    if(_goal_position!= _last_goal_position){
       syncWritePosition();
+      _last_goal_position =_goal_position;
+    }
   } else if (_control_mode == VelocityControl)
   {
       syncWriteVelocity();
@@ -776,6 +810,21 @@ bool DynamixelHardwareInterface::syncWriteCurrent() {
   _driver->syncWrite("Goal_Current", goal_current);
   free(goal_current);
 }
+
+bool DynamixelHardwareInterface::syncWritePWM() {
+  int* goal_current = (int*)malloc(_joint_names.size() * sizeof(int));
+  for (size_t num = 0; num < _joint_names.size(); num++) {
+    if(_goal_effort[num] < 0){
+      // we want to set to maximum    
+      goal_current[num] = 855;
+    }else{
+      goal_current[num] = _goal_effort[num] / 100 * 855; 
+    }    
+  }
+  _driver->syncWrite("Goal_PWM", goal_current);
+  free(goal_current);
+}
+
 
 /*bool DynamixelHardwareInterface::syncWriteAll(){
   int goal_position;

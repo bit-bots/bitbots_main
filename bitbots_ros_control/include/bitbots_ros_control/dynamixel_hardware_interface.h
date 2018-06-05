@@ -75,6 +75,11 @@ public:
   void write();
 
 private:
+  void update_pid(std_msgs::BoolConstPtr);
+  ros::NodeHandle _nh; 
+
+  bool syncWritePWM();
+
   bool loadDynamixels(ros::NodeHandle& nh);
   bool writeROMRAM(ros::NodeHandle& nh);
   bool stringToControlMode(std::string control_mode_str, ControlMode &control_mode);
@@ -147,6 +152,7 @@ private:
   bool _read_velocity;
   bool _read_effort;
   bool _read_volt_temp;
+  bool _update_pid;
   std::vector<double> _current_position;
   std::vector<double> _current_velocity;
   std::vector<double> _current_effort;
@@ -179,6 +185,9 @@ private:
   ros::Publisher _diagnostic_pub;
   ros::Publisher _speak_pub;
   ros::Subscriber _set_torque_indiv_sub;
+  ros::Subscriber _update_pid_sub;
+
+
 };
 }
 
