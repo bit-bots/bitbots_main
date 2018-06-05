@@ -25,7 +25,7 @@
 
 
   <export>
-      <status>tested_simulator</status>
+      <status>tested_robot</status>
       <language>xacro</language>
   </export>
 </package>
