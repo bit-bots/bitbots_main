@@ -151,7 +151,7 @@ class FcnnHandler(CandidateFinder):
             rx, ly = point
             # expand to the left
             if not out_bin[point[1]][point[0]]:
-                points = [other_point for other_point in points if point != other_point]
+                points.remove(point)
                 continue
             next_lx = max(lx - self._expand_stepsize, 0)
             while next_lx > 0 and out_bin[point[1]][next_lx]:
