@@ -53,14 +53,14 @@ class FallChecker(object):
         
 
     def update_reconfigurable_values(self, config, level):
-        #"""
+        """
         self.dyn_falling_active = config["hcm/dyn_falling_active"]
         self.ground_coefficient = config["hcm/ground_coefficient"]
         self.falling_threshold_front = config["hcm/threshold_gyro_y_front"]
         self.falling_threshold_side = config["hcm/threshold_gyro_x_side"]
         self.falling_threshold_orientation_front_back = math.radians(config["hcm/falling_threshold_orientation_front_back"])
         self.falling_threshold_orientation_left_right = math.radians(config["hcm/falling_threshold_orientation_left_right"])
-        #"""
+        """
 
 
     def check_falling(self, not_much_smoothed_gyro, quaternion):
@@ -93,20 +93,20 @@ class FallChecker(object):
             # detect the falling direction
             if not_much_smoothed_gyro[1] > 0:
                 rospy.loginfo("FALLING TO THE FRONT")
-                return self.falling_motor_degrees_front
+                #return self.falling_motor_degrees_front
             # detect the falling direction
             else:
                 rospy.loginfo("FALLING TO THE BACK")
-                return self.falling_motor_degrees_back
+                #return self.falling_motor_degrees_back
         else:
             # detect the falling direction
             if not_much_smoothed_gyro[0] > 0:
                 rospy.loginfo("FALLING TO THE RIGHT")
-                return self.falling_motor_degrees_right
+                #return self.falling_motor_degrees_right
             # detect the falling direction
             else:
                 rospy.loginfo("FALLING TO THE LEFT")
-                return self.falling_motor_degrees_left
+                #return self.falling_motor_degrees_left
 
     def calc_fall_quantification(self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler, current_axis__gyro):
         # check if you are moving forward or away from the perpendicular position, by comparing the signs.
@@ -150,4 +150,9 @@ class FallChecker(object):
         t3 = +2.0 * (w * z + x * y)
         t4 = +1.0 - 2.0 * (ysqr + z * z)
         Z = math.atan2(t3, t4)
-        return X, Y, Z
+
+        X = (X-math.pi)%(2*math.pi)
+        if(X >= math.pi):
+            X = -(2*math.pi - X) 
+
+        return X, -Y, Z
