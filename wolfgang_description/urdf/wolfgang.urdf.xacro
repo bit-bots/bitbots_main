@@ -644,7 +644,7 @@
         <origin xyz="0.0 -0.075 0.11" rpy="0 0 0" />
         <parent link="torso" />
         <child link="r_shoulder" />
-        <axis xyz="0 1 0" />
+        <axis xyz="0 -1 0" />
         <limit effort="${tofa*6.0}" velocity="6.597344565" lower="-3.1415926535820002" upper="3.1415926535820002" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
@@ -653,7 +653,7 @@
         <origin xyz="0 -0.04 0" rpy="0 0 0" />
         <parent link="r_shoulder" />
         <child link="r_upper_arm" />
-        <axis xyz="1 0 0" />
+        <axis xyz="-1 0 0" />
         <limit effort="${tofa*2.5}" velocity="5.648668" lower="-0.7853981633955001" upper="2.3561944901865" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
@@ -677,7 +677,7 @@
         <origin xyz="0.0 0.075 0.11" rpy="0 0 0" />
         <parent link="torso" />
         <child link="l_shoulder" />
-        <axis xyz="0 -1 0" />
+        <axis xyz="0 1 0" />
         <limit effort="${tofa*6.0}" velocity="6.597344565" lower="-3.1415926535820002" upper="3.1415926535820002" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
@@ -686,7 +686,7 @@
         <origin xyz="0 0.04 0" rpy="0 0 0" />
         <parent link="l_shoulder" />
         <child link="l_upper_arm" />
-        <axis xyz="1 0 0" />
+        <axis xyz="-1 0 0" />
         <limit effort="${tofa*2.5}" velocity="5.648668" lower="-2.3561944901865" upper="0.7853981633955001" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
@@ -695,7 +695,7 @@
         <origin xyz="-0.0075 0 -0.145" rpy="0 0 0" />
         <parent link="l_upper_arm" />
         <child link="l_lower_arm" />
-        <axis xyz="0 1 0" />
+        <axis xyz="0 -1 0" />
         <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-1.1344640137935" upper="1.5707963267910001" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
