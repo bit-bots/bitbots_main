@@ -308,7 +308,6 @@ class Controllable(AbstractState):
         if VALUES.is_die_time():
             rospy.logwarn("die time")
             return ShutDownAnimation()
-
         if VALUES.standup_flag:
             ## Falling detection
             if VALUES.is_falling():
@@ -317,7 +316,6 @@ class Controllable(AbstractState):
             direction_animation = VALUES.fall_checker.check_fallen(VALUES.smooth_accel)
             if direction_animation is not None:
                 return Fallen()
-
         if VALUES.external_animation_playing:
             print("5")
             return AnimationRunning()
@@ -526,8 +524,8 @@ def switch_motor_power(state):
     else:
         try:
             rospy.wait_for_service("switch_motor_power", timeout=1)
-        except rospy.ROSException as e:
-            rospy.logfatal("Can't switch of motorpower, seems like the CM730 is missing. \n Message: {}".format(e.message))
+        except rospy.ROSException:
+            rospy.logfatal("Can't switch of motorpower, seems like the CM730 is missing.")
             return
         power_switch = rospy.ServiceProxy("switch_motor_power", SwitchMotorPower)
         try:

@@ -22,7 +22,7 @@ class Values(object):
         self.record = False  # record UI running
         self.shut_down = False  # do we want to shut down
 
-        self.standup_flag = False  # stand up disabled
+        self.standup_flag = True  # stand up disabled
         self.soft_off_flag = True  # soft of enablbed
         self.soft_start = False  # starting in softoff
         self.die_flag = False  # stop the hcm after some time without command

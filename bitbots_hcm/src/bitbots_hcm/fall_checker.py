@@ -53,14 +53,15 @@ class FallChecker(object):
         
 
     def update_reconfigurable_values(self, config, level):
-        """
-        self.dyn_falling_active = config["hcm/dyn_falling_active"]
-        self.ground_coefficient = config["hcm/ground_coefficient"]
-        self.falling_threshold_front = config["hcm/threshold_gyro_y_front"]
-        self.falling_threshold_side = config["hcm/threshold_gyro_x_side"]
-        self.falling_threshold_orientation_front_back = math.radians(config["hcm/falling_threshold_orientation_front_back"])
-        self.falling_threshold_orientation_left_right = math.radians(config["hcm/falling_threshold_orientation_left_right"])
-        """
+        #"""
+        #self.dyn_falling_active = config["hcm/dyn_falling_active"]
+        #self.ground_coefficient = config["hcm/ground_coefficient"]
+        self.falling_threshold_front = config["threshold_gyro_y_front"]
+        self.falling_threshold_side = config["threshold_gyro_x_side"]
+        self.falling_threshold_orientation_front_back = math.radians(config["falling_threshold_orientation_front_back"])
+        self.falling_threshold_orientation_left_right = math.radians(config["falling_threshold_orientation_left_right"])
+        return config
+        #"""
 
 
     def check_falling(self, not_much_smoothed_gyro, quaternion):
