@@ -297,13 +297,10 @@ class Controllable(AbstractState):
     def evaluate(self):
         #rospy.loginfo(VALUES.die_flag)
         if VALUES.record:
-            print("1")
             return Record()
         if VALUES.penalized:
-            print("2")
             return PenaltyAnimationIn()
         if VALUES.is_soft_off_time():
-            print("3")
             return Softoff()
         if VALUES.is_die_time():
             rospy.logwarn("die time")
@@ -317,11 +314,9 @@ class Controllable(AbstractState):
             if direction_animation is not None:
                 return Fallen()
         if VALUES.external_animation_playing:
-            print("5")
             return AnimationRunning()
 
         if VALUES.walking_active:
-            print("6")
             return Walking()
 
     def exit(self):

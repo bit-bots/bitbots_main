@@ -13,8 +13,8 @@ hcm:
   falling_threshold_orientation_front_back:   30 # < Point of no return in degrees
 
   animations:
-    walkready: "init" # TODO change init to walkready. Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
-    goalie-walkready: "init" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
+    walkready: "walkready" # TODO change init to walkready. Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
+    goalie-walkready: "walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
     front-up: "standup-minibot-new-front-up"
     bottom-up: "standup-minibot-new-back-up"
     toSquat: "sit-down"
