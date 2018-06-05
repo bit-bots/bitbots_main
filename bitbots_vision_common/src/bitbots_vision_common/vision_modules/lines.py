@@ -34,14 +34,17 @@ class LineDetector:
     def get_linepoints(self):
         if self._linepoints is None:
             self._linepoints = list()
+            imgshape = self._get_preprocessed_image().shape
+            white_masked_image = self._white_detector.mask_image(
+                self._get_preprocessed_image())
             for x in range(self._linepoints_range):
                 # point (x, y)
-                p = tuple((randint(0, self._get_preprocessed_image().shape[1] - 1),
+                p = tuple((randint(0, imgshape[1] - 1),
                            randint(self._horizon_detector.get_upper_bound(self._horizon_offset),
-                                   self._get_preprocessed_image().shape[0] - 1)))
+                                   imgshape[0] - 1)))
 
                 if self._horizon_detector.point_under_horizon(p, self._horizon_offset):
-                    if self._white_detector.match_pixel(self._get_preprocessed_image()[p[1]][p[0]]):
+                    if white_masked_image[p[1]][p[0]]:
                         is_candidate = False
                         if self._candidates is not None:
                             for candidate in self._candidates:
