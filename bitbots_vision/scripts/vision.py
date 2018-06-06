@@ -54,9 +54,6 @@ class Vision:
         elif (self.config['vision_ball_classifier'] == 'fcnn'):
             self.ball_detector = fcnn_handler.FcnnHandler(image, self.ball_fcnn, self.ball_fcnn_config)
 
-        elif (self.config['vision_ball_classifier'] == 'dummy'):
-            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, None)
-
         top_ball_candidate = self.ball_detector.get_top_candidate()
 
         line_detector = lines.LineDetector(image,
@@ -169,6 +166,9 @@ class Vision:
                 self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
                 rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
 
+
+        if (config['vision_ball_classifier'] == 'dummy'):
+            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None)
 
         # set up ball config for fcnn
         self.ball_fcnn_config = {
