@@ -32,8 +32,31 @@ class HorizonDetector:
         :return list of x,y tuples of the horizon:
         """
         if self._horizon_points is None:
-            self._horizon_points = self._mask_horizon()
+            self._horizon_points = self._sub_horizon()
         return self._horizon_points
+
+    def _sub_horizon(self):
+        mask = self._color_detector.mask_image(self._image)
+        mask = cv2.morphologyEx(
+            mask,
+            cv2.MORPH_CLOSE,
+            np.ones((5, 5), dtype=np.uint8),
+            iterations=2)
+        mask = cv2.resize(mask, (self._y_steps, self._y_steps), interpolation=cv2.INTER_LINEAR)
+        min_y = self._image.shape[0] - 1
+        y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
+        x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
+        horizon_points = []
+        for x_step in range(self._x_steps):  # traverse columns
+            firstgreen = min_y  # set horizon point to worst case
+            x = int(round(x_step * x_stepsize))  # get x value of step (depends on image size)
+            for y_step in range(self._y_steps):  # traverse rows
+                y = int(round(y_step * y_stepsize))  # get y value of step (depends on image size)
+                if mask[y_step, x_step] > 100:  # when the pixel is in the color space
+                    firstgreen = y
+                    break
+            horizon_points.append((x, firstgreen))
+        return horizon_points
 
     def _mask_horizon(self):
         mask = self._color_detector.mask_image(self._image)
