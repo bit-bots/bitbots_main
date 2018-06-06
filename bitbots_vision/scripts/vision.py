@@ -40,13 +40,11 @@ class Vision:
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
         # setup detectors
-        horizon_detector = horizon.HorizonDetector(image,
-                                                   self.field_color_detector,
-                                                   self.horizon_config)
+        self.horizon_detector.set_image(image)
         if (self.config['vision_ball_classifier'] == 'cascade'):
             self.ball_finder.set_image(image)
             self.ball_detector.set_image(image,
-                                         horizon_detector.
+                                         self.horizon_detector.
                                          balls_under_horizon(
                                             self.ball_finder.get_ball_candidates(),
                                             self._ball_candidate_y_offset))
@@ -94,13 +92,13 @@ class Vision:
         if self.debug:
             self.debug_image_dings.set_image(image)
             self.debug_image_dings.draw_horizon(
-                horizon_detector.get_horizon_points(),
+                self.horizon_detector.get_horizon_points(),
                 (0, 0, 255))
             self.debug_image_dings.draw_ball_candidates(
                 self.ball_detector.get_candidates(),
                 (0, 0, 255))
             self.debug_image_dings.draw_ball_candidates(
-                horizon_detector.balls_under_horizon(
+                self.horizon_detector.balls_under_horizon(
                     self.ball_detector.get_candidates(),
                     self._ball_candidate_y_offset),
                 (0, 255, 255))
@@ -203,6 +201,9 @@ class Vision:
             'precise_pixel': config['horizon_finder_precision_pix'],
             'min_precise_pixel': config['horizon_finder_min_precision_pix'],
         }
+        self.horizon_detector = horizon.HorizonDetector(
+            self.field_color_detector,
+            self.horizon_config)
 
         # set up lines config
         self.lines_config = {

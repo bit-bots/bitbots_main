@@ -7,9 +7,9 @@ from operator import itemgetter
 
 class HorizonDetector:
 
-    def __init__(self, image, color_detector, config):
+    def __init__(self, color_detector, config):
         # type: (np.matrix, ColorDetector, dict) -> None
-        self._image = image
+        self._image = None
         self._color_detector = color_detector
         self._horizon_points = None
         self._horizon_full = None
@@ -18,6 +18,11 @@ class HorizonDetector:
         self._y_steps = config['y_steps']
         self._precise_pixel = config['precise_pixel']
         self._min_precise_pixel = config['min_precise_pixel']
+
+    def set_image(self, image):
+        self._image = image
+        self._horizon_points = None
+        self._horizon_full = None
 
     def get_horizon_points(self):
         # type: () -> list
