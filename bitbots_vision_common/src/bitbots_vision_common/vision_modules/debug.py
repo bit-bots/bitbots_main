@@ -5,7 +5,10 @@ from candidate import Candidate
 
 
 class DebugImage:
-    def __init__(self, image):
+    def __init__(self):
+        self.raw_image = None
+
+    def set_image(self, image):
         self.raw_image = image.copy()
 
     def draw_horizon(self, horizon_points, color):

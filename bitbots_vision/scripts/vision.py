@@ -26,6 +26,7 @@ class Vision:
         rospy.loginfo('Initializing vision...')
 
         self.config = {}
+        self.debug_image_dings = debug.DebugImage()
         # register config callback and set config
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
 
@@ -94,27 +95,27 @@ class Vision:
 
         # do debug stuff
         if self.debug:
-            debug_image_dings = debug.DebugImage(image)
-            debug_image_dings.draw_horizon(
+            self.debug_image_dings.set_image(image)
+            self.debug_image_dings.draw_horizon(
                 horizon_detector.get_horizon_points(),
                 (0, 0, 255))
-            debug_image_dings.draw_ball_candidates(
+            self.debug_image_dings.draw_ball_candidates(
                 self.ball_detector.get_candidates(),
                 (0, 0, 255))
-            debug_image_dings.draw_ball_candidates(
+            self.debug_image_dings.draw_ball_candidates(
                 horizon_detector.balls_under_horizon(
                     self.ball_detector.get_candidates(),
                     self._ball_candidate_y_offset),
                 (0, 255, 255))
             # draw top candidate in
-            debug_image_dings.draw_ball_candidates([top_ball_candidate],
+            self.debug_image_dings.draw_ball_candidates([top_ball_candidate],
                                                    (0, 255, 0))
             # draw linepoints in black
-            debug_image_dings.draw_points(
+            self.debug_image_dings.draw_points(
                 line_detector.get_linepoints(),
                 (0, 0, 0))
             debug_image_dings.draw_line_segments(line_detector.get_linesegments(), (180, 105, 255))
-            debug_image_dings.imshow()
+            self.debug_image_dings.imshow()
 
     def _dynamic_reconfigure_callback(self, config, level):
 
