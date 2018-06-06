@@ -11,12 +11,15 @@
     <arg name="duty" default="TeamPlayer"/>
 
     <include file="$(find bitbots_common)/launch/load_robot_description.launch">
+        <arg name="sim" value="$(arg sim)"/>
         <arg name="minibot" value="$(arg minibot)"/>
         <arg name="wolfgang" value="$(arg wolfgang)"/>   
     </include>
 
     <include file="$(find bitbots_vision_common)/launch/vision_startup.launch">
         <arg name="sim" value="$(arg sim)" />
+        <arg name="minibot" value="$(arg minibot)"/>
+        <arg name="wolfgang" value="$(arg wolfgang)"/>
     </include>
 
     <include file="$(find bitbots_transform)/launch/transformer.launch"/>
