@@ -508,7 +508,7 @@ void DynamixelHardwareInterface::write()
 
   if (_control_mode == PositionControl)
   {
-    /*if(_goal_effort != _last_goal_effort){
+    if(_goal_effort != _last_goal_effort){
       syncWritePWM();
       _last_goal_effort = _goal_effort;
     }
@@ -521,12 +521,12 @@ void DynamixelHardwareInterface::write()
     if(_goal_acceleration != _last_goal_acceleration){
       syncWriteProfileAcceleration();
       _last_goal_acceleration = _goal_acceleration;
-    } */
+    }
 
-    //if(_goal_position!= _last_goal_position){
+    if(_goal_position!= _last_goal_position){
       syncWritePosition();
       _last_goal_position =_goal_position;
-    //}
+    }
   } else if (_control_mode == VelocityControl)
   {
       syncWriteVelocity();
