@@ -6,6 +6,8 @@ namespace dynamixel_controller
 {
 bool DynamixelController::init(hardware_interface::PosVelAccCurJointInterface* hw, ros::NodeHandle &n){
     // List of controlled joints
+        _pubControllerCommand = n.advertise<bitbots_ros_control::JointCommand>("/DynamixelController/command_test", 1);
+
     std::string param_name = "joints";
     if(!n.getParam(param_name, joint_names_))
     {
@@ -22,7 +24,8 @@ bool DynamixelController::init(hardware_interface::PosVelAccCurJointInterface* h
     {
         try
         {
-        joints_.push_back(hw->getHandle(joint_names_[i]));          
+        joints_.push_back(hw->getHandle(joint_names_[i]));
+        _joint_map[joint_names_[i]] = i;          
         }
         catch (const hardware_interface::HardwareInterfaceException& e)
         {
@@ -33,30 +36,19 @@ bool DynamixelController::init(hardware_interface::PosVelAccCurJointInterface* h
 
     //commands_buffer_.writeFromNonRT(std::vector<double>(n_joints_, 0.0));
 
-    sub_command_ = n.subscribe("command", 1, &DynamixelController::commandCB, this);
+    sub_command_ = n.subscribe("command", 1, &DynamixelController::commandCB, this, ros::TransportHints().tcpNoDelay());
     return true;
 }
 
 void DynamixelController::starting(const ros::Time& time){}
-void DynamixelController::update(const ros::Time& /*time*/, const ros::Duration& /*period*/) {
-    bitbots_ros_control::JointCommand & command_msg = *commands_buffer_.readFromRT();
+void DynamixelController::update(const ros::Time& /*time*/, const ros::Duration& /*period*/) {    
+    std::vector<JointCommandData> & buf_data  = *commands_buffer_.readFromRT();
 
-    //Todo check if length of joint names and commands is the same
-    //iterate over all joint names in the message
-    for(unsigned int i = 0; i < command_msg.joint_names.size(); i++){
-        // find the index of this joint name by iterating over the saved joint name order
-        for(unsigned int j = 0; j < n_joints_; j++){
-            if(command_msg.joint_names[i] == joint_names_[j]){
-                joints_[j].setCommand(command_msg.positions[i], command_msg.velocities[i], command_msg.accelerations[i], command_msg.max_currents[i]);
-                continue;
-            }
-            // if the name is not know, skip it
-            if(i == n_joints_){
-                ROS_WARN("Joint %s in JointCommand message is not known.", command_msg.joint_names[i]);
-                continue;
-            }
-        }        
+    for(unsigned int i = 0; i < buf_data.size(); i++){
+        joints_[buf_data[i].id].setCommand(buf_data[i].pos, buf_data[i].vel, buf_data[i].acc, buf_data[i].cur);        
     }
+   //std::cout << ::getpid();
+
 }
 }
 PLUGINLIB_EXPORT_CLASS(dynamixel_controller::DynamixelController, controller_interface::ControllerBase)

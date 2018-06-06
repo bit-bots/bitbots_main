@@ -21,9 +21,9 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _update_pid = false;
   // Init subscriber / publisher
   _switch_individual_torque = false;
-  _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this);
-  _set_torque_indiv_sub = nh.subscribe<bitbots_ros_control::JointTorque>("set_torque_individual", 1, &DynamixelHardwareInterface::setTorqueForServos, this);
-  _update_pid_sub = nh.subscribe<std_msgs::BoolConstPtr>("update_pid", 1, &DynamixelHardwareInterface::update_pid, this);
+  _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this, ros::TransportHints().tcpNoDelay());
+  _set_torque_indiv_sub = nh.subscribe<bitbots_ros_control::JointTorque>("set_torque_individual", 1, &DynamixelHardwareInterface::setTorqueForServos, this, ros::TransportHints().tcpNoDelay());
+  _update_pid_sub = nh.subscribe<std_msgs::BoolConstPtr>("update_pid", 1, &DynamixelHardwareInterface::update_pid, this, ros::TransportHints().tcpNoDelay());
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1, this);
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
   _status_board.name = "DXL_board";
@@ -508,7 +508,7 @@ void DynamixelHardwareInterface::write()
 
   if (_control_mode == PositionControl)
   {
-      if(_goal_effort != _last_goal_effort){
+    /*if(_goal_effort != _last_goal_effort){
       syncWritePWM();
       _last_goal_effort = _goal_effort;
     }
@@ -521,12 +521,12 @@ void DynamixelHardwareInterface::write()
     if(_goal_acceleration != _last_goal_acceleration){
       syncWriteProfileAcceleration();
       _last_goal_acceleration = _goal_acceleration;
-    }
+    } */
 
-    if(_goal_position!= _last_goal_position){
+    //if(_goal_position!= _last_goal_position){
       syncWritePosition();
       _last_goal_position =_goal_position;
-    }
+    //}
   } else if (_control_mode == VelocityControl)
   {
       syncWriteVelocity();
@@ -627,7 +627,7 @@ bool DynamixelHardwareInterface::syncReadPositions(){
   int32_t *data = (int32_t *) malloc(_joint_count * sizeof(int32_t));
   success = _driver->syncRead("Present_Position", data);
   for(int i = 0; i < _joint_count; i++){
-    _current_position[i] = _driver->convertValue2Radian(_joint_ids[i], data[i]);
+    _current_position[i] = _driver->convertValue2Radian(_joint_ids[i], data[i]) + _joint_mounting_offsets[i] + _joint_offsets[i];
   }
 
   free(data);
@@ -702,7 +702,7 @@ bool DynamixelHardwareInterface::syncReadAll() {
                           DXL_MAKEWORD(data[i * 10 + 8], data[i * 10 + 9]));
       _current_effort[i] = _driver->convertValue2Torque(_joint_ids[i], eff);
       _current_velocity[i] = _driver->convertValue2Velocity(_joint_ids[i], vel);
-      _current_position[i] = _driver->convertValue2Radian(_joint_ids[i], pos);
+      _current_position[i] = _driver->convertValue2Radian(_joint_ids[i], pos) + _joint_mounting_offsets[i] + _joint_offsets[i];
     }
     return true;
   }else{
@@ -818,7 +818,7 @@ bool DynamixelHardwareInterface::syncWritePWM() {
       // we want to set to maximum    
       goal_current[num] = 855;
     }else{
-      goal_current[num] = _goal_effort[num] / 100 * 855; 
+      goal_current[num] = _goal_effort[num] / 100.0 * 855.0; 
     }    
   }
   _driver->syncWrite("Goal_PWM", goal_current);

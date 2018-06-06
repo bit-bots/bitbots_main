@@ -12,6 +12,14 @@
 namespace dynamixel_controller
 {
 
+struct JointCommandData
+{
+  int id;
+  double pos;
+  double vel;
+  double acc;
+  double cur;
+};  
 class DynamixelController: public controller_interface::Controller<hardware_interface::PosVelAccCurJointInterface>
 {
 public:
@@ -25,13 +33,29 @@ public:
 
   std::vector< std::string > joint_names_;
   std::vector< hardware_interface::PosVelAccCurJointHandle > joints_;
-  realtime_tools::RealtimeBuffer<bitbots_ros_control::JointCommand> commands_buffer_;
+  realtime_tools::RealtimeBuffer<std::vector<JointCommandData>> commands_buffer_;
   unsigned int n_joints_;
 
 private:
   ros::Subscriber sub_command_;
-  void commandCB(const bitbots_ros_control::JointCommand& msg) {
-    commands_buffer_.writeFromNonRT(msg);
+  std::map<std::string, int> _joint_map;
+  void commandCB(const bitbots_ros_control::JointCommand& command_msg) {
+    //std::cout << ::getpid();
+    std::vector<JointCommandData> buf_data;
+    for(unsigned int i = 0; i < command_msg.joint_names.size(); i++){
+      /*if(_joint_map.find(command_msg.joint_names[i] == _joint_map.end())){
+          ROS_WARN("Joint %s in JointCommand message is not known.", command_msg.joint_names[i].c_str());
+          continue;
+      }*/
+      JointCommandData strct;
+      strct.id = _joint_map[command_msg.joint_names[i]];
+      strct.pos = command_msg.positions[i];
+      strct.vel = command_msg.velocities[i];
+      strct.acc = command_msg.accelerations[i];
+      strct.cur = command_msg.max_currents[i];
+      buf_data.push_back(strct);   
+    }
+    commands_buffer_.writeFromNonRT(buf_data);
   }
 };
 

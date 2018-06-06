@@ -1,9 +1,9 @@
 ros_control:
   # specifies which information should be read
   read_position: true
-  read_velocity: false
-  read_effort: false
-  read_volt_temp: false # this also corresponds for the error byte
+  read_velocity: true
+  read_effort: true
+  read_volt_temp: true # this also corresponds for the error byte
   VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
   warn_temp: 60
   warn_volt: 12
@@ -18,7 +18,7 @@ ros_control:
       protocol_version: 2
     control_mode: position
     auto_torque: true
-    set_ROM_RAM: true # set the following values on startup to all motors
+    set_ROM_RAM: false # set the following values on startup to all motors
     ROM_RAM:
       # all names of parameters have to be the same as on the dynamixel table (see dynamixel_workbench_toolbox/src/dynamixel_item.cpp )
       # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
