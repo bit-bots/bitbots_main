@@ -627,7 +627,7 @@ bool DynamixelHardwareInterface::syncReadPositions(){
   int32_t *data = (int32_t *) malloc(_joint_count * sizeof(int32_t));
   success = _driver->syncRead("Present_Position", data);
   for(int i = 0; i < _joint_count; i++){
-    _current_position[i] = _driver->convertValue2Radian(_joint_ids[i], data[i]) + _joint_mounting_offsets[i] + _joint_offsets[i];
+    _current_position[i] = _driver->convertValue2Radian(_joint_ids[i], data[i]);
   }
 
   free(data);
@@ -702,7 +702,7 @@ bool DynamixelHardwareInterface::syncReadAll() {
                           DXL_MAKEWORD(data[i * 10 + 8], data[i * 10 + 9]));
       _current_effort[i] = _driver->convertValue2Torque(_joint_ids[i], eff);
       _current_velocity[i] = _driver->convertValue2Velocity(_joint_ids[i], vel);
-      _current_position[i] = _driver->convertValue2Radian(_joint_ids[i], pos) + _joint_mounting_offsets[i] + _joint_offsets[i];
+      _current_position[i] = _driver->convertValue2Radian(_joint_ids[i], pos);
     }
     return true;
   }else{
