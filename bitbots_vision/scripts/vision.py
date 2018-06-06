@@ -52,7 +52,7 @@ class Vision:
                                             self._ball_candidate_y_offset))
 
         elif (self.config['vision_ball_classifier'] == 'fcnn'):
-            self.ball_detector = fcnn_handler.FcnnHandler(image, self.ball_fcnn, self.ball_fcnn_config)
+            self.ball_detector.set_image(image)
 
         top_ball_candidate = self.ball_detector.get_top_candidate()
 
@@ -125,6 +125,15 @@ class Vision:
         else:
             rospy.loginfo('Debug windows are disabled')
 
+
+        # set up ball config for cascade
+        self.ball_config = {
+            'classify_threshold': config['ball_finder_classify_threshold'],
+            'scale_factor': config['ball_finder_scale_factor'],
+            'min_neighbors': config['ball_finder_min_neighbors'],
+            'min_size': config['ball_finder_min_size'],
+        }
+
         # load cascade
         if (config['vision_ball_classifier'] == 'cascade'):
             self.cascade_path = self.package_path + config['cascade_classifier_path']
@@ -144,31 +153,8 @@ class Vision:
                 rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
             self.ball_detector = classifier.ClassifierHandler(self.ball_classifier)
 
+            self.ball_finder = ball.BallFinder(self.cascade, self.ball_config)
 
-        # set up ball config for cascade
-        self.ball_config = {
-            'classify_threshold': config['ball_finder_classify_threshold'],
-            'scale_factor': config['ball_finder_scale_factor'],
-            'min_neighbors': config['ball_finder_min_neighbors'],
-            'min_size': config['ball_finder_min_size'],
-        }
-        self.ball_finder = ball.BallFinder(self.cascade, self.ball_config)
-
-
-        # load fcnn
-        if (config['vision_ball_classifier'] == 'fcnn'):
-            if 'ball_fcnn_model_path' not in self.config or \
-                    self.config['ball_fcnn_model_path'] != config['ball_fcnn_model_path'] or \
-                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                ball_fcnn_path = self.package_path + config['ball_fcnn_model_path']
-                if not os.path.exists(ball_fcnn_path):
-                    rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
-                self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
-                rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
-
-
-        if (config['vision_ball_classifier'] == 'dummy'):
-            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None)
 
         # set up ball config for fcnn
         self.ball_fcnn_config = {
@@ -182,6 +168,23 @@ class Vision:
             'candidate_refinement_iteration_count': config['ball_fcnn_candidate_refinement_iteration_count'],
         }
 
+
+        # load fcnn
+        if (config['vision_ball_classifier'] == 'fcnn'):
+            if 'ball_fcnn_model_path' not in self.config or \
+                    self.config['ball_fcnn_model_path'] != config['ball_fcnn_model_path'] or \
+                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
+                ball_fcnn_path = self.package_path + config['ball_fcnn_model_path']
+                if not os.path.exists(ball_fcnn_path):
+                    rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
+                self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
+                rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
+            self.ball_detector = fcnn_handler.FcnnHandler(self.ball_fcnn,
+                                                          self.ball_fcnn_config)
+
+
+        if (config['vision_ball_classifier'] == 'dummy'):
+            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None)
         # color config
         self.white_color_detector = color.HsvSpaceColorDetector(
             [config['white_color_detector_lower_values_h'], config['white_color_detector_lower_values_s'],

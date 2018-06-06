@@ -25,14 +25,28 @@ class FcnnHandler(CandidateFinder):
         candidate_refinement_iteration_count: 1
     """
 
-    def __init__(self, image, fcnn, config):
-        self._image = image
+    def __init__(self, fcnn, config):
+        self._image = None
         self._fcnn = fcnn
         self._rated_candidates = None
         self._sorted_rated_candidates = None
         self._top_candidate = None
         self._fcnn_output = None
         # init config
+        self.set_config(config)
+
+
+    def set_image(self, image):
+        self._image = image
+        self._rated_candidates = None
+        self._sorted_rated_candidates = None
+        self._top_candidate = None
+        self._fcnn_output = None
+        
+        # draw the output when debug is enabled
+        self.draw_debug_image()
+
+    def set_config(self, config):
         self._debug = config['debug']
         self._threshold = config['threshold']  # minimal activation
         self._expand_stepsize = config['expand_stepsize']  #
@@ -43,8 +57,6 @@ class FcnnHandler(CandidateFinder):
         self._candidate_refinement_iteration_count = \
             config['candidate_refinement_iteration_count']
 
-        # draw the output when debug is enabled
-        self.draw_debug_image()
 
     def get_candidates(self):
         """
