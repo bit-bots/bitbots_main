@@ -78,4 +78,6 @@
         </node>
         <param name="simulation_active" value="false"/>
     </group>
+
+    <include file="$(find bitbots_transform)/launch/base_footprint.launch"/>
 </launch>
