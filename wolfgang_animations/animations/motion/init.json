@@ -6,9 +6,9 @@
             "duration": 1.0,
             "pause": 0.0,
             "goals": {
-                "LShoulderPitch": 50,
-                "LShoulderRoll": 25.0,
-                "RShoulderRoll": -25.0,
+                "LShoulderPitch": 0.0,
+                "LShoulderRoll": 0.0,
+                "RShoulderRoll": 0.0,
                 "HeadTilt": 0.0,
                 "LKnee": 0.0,
                 "RHipYaw": 0.0,
@@ -21,8 +21,8 @@
                 "LHipRoll": 0.0,
                 "RHipRoll": 0.0,
                 "LAnkleRoll": 0.0,
-                "LElbow": -10,
-                "RElbow": 10,
+                "LElbow": 0,
+                "RElbow": 0,
                 "RHipPitch": 0,
                 "HeadPan": 0.0,
                 "BellyRoll": 0.0,
@@ -31,7 +31,7 @@
                 "LToe": 0.0,
                 "RSchoulderYaw": 0.0,
                 "LShoulderYaw": 0.0,
-                "RShoulderPitch": -50
+                "RShoulderPitch": 0.0
             }
         }
     ]
