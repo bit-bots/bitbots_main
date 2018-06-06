@@ -61,7 +61,6 @@ class Vision:
         top_ball_candidate = ball_classifier.get_top_candidate()
 
         line_detector = lines.LineDetector(image,
-                                           [top_ball_candidate] if top_ball_candidate else list(),
                                            self.white_color_detector,
                                            self.field_color_detector,
                                            horizon_detector,
@@ -221,6 +220,7 @@ class Vision:
                                               Image,
                                               self._image_callback,
                                               queue_size=config['ROS_img_queue_size'],
+                                              tcp_nodelay=True,
                                               buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
 
