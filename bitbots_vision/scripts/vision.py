@@ -43,13 +43,13 @@ class Vision:
                                                    self.field_color_detector,
                                                    self.horizon_config)
         if (self.config['vision_ball_classifier'] == 'cascade'):
-            ball_finder = ball.BallFinder(image, self.cascade, self.ball_config)
+            self.ball_finder.set_image(image)
             ball_classifier = classifier. \
                 Classifier(image,
                            self.ball_classifier,
                            horizon_detector.
                            balls_under_horizon(
-                               ball_finder.get_ball_candidates(),
+                               self.ball_finder.get_ball_candidates(),
                                self._ball_candidate_y_offset))
 
         elif (self.config['vision_ball_classifier'] == 'fcnn'):
@@ -146,7 +146,6 @@ class Vision:
                 self.ball_classifier = live_classifier.LiveClassifier(
                     self.package_path + config['classifier_model_path'])
                 rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
-
         # set up ball config for cascade
         self.ball_config = {
             'classify_threshold': config['ball_finder_classify_threshold'],
@@ -154,6 +153,8 @@ class Vision:
             'min_neighbors': config['ball_finder_min_neighbors'],
             'min_size': config['ball_finder_min_size'],
         }
+        self.ball_finder = ball.BallFinder(self.cascade, self.ball_config)
+
 
         # load fcnn
         if (config['vision_ball_classifier'] == 'fcnn'):
@@ -165,6 +166,7 @@ class Vision:
                     rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
                 self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
                 rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
+
 
         # set up ball config for fcnn
         self.ball_fcnn_config = {

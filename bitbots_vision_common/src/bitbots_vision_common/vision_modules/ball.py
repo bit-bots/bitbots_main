@@ -5,12 +5,12 @@ import cv2
 
 
 class BallFinder():
-    def __init__(self, image, cascade, config):
+    def __init__(self, cascade, config):
         # type: (np.matrix, cv2.CascadeClassifier, dict) -> None
         self._candidates = None
         self._ball = None
         self._cascade = cascade
-        self._image = image
+        self._image = None
 
         self._debug = False
 
@@ -19,6 +19,19 @@ class BallFinder():
         self._scale_factor = config['scale_factor']
         self._min_neighbors = config['min_neighbors']
         self._min_size = config['min_size']
+
+    def set_image(self, image):
+        self._image = image
+        self._candidates = None
+        self._ball = None
+
+    def set_config(self, config):
+
+        self._classify_threshold = config['classify_threshold']
+        self._scale_factor = config['scale_factor']
+        self._min_neighbors = config['min_neighbors']
+        self._min_size = config['min_size']
+
 
     def get_ball_candidates(self):
         # type: () -> list
