@@ -561,7 +561,7 @@
     </joint>
 
     <joint name="r_foot_to_toe" type="fixed">
-        <origin xyz="0.105 0 0" rpy="0 0 0" />
+        <origin xyz="0.11 -0.01 0" rpy="0 0 0" />
         <parent link="r_sole" />
         <child link="r_toe" />
         <axis xyz="0 0 0" />
@@ -622,14 +622,14 @@
     </joint>
 
     <joint name="left_foot_to_sole" type="fixed">
-        <origin xyz="0 0 -0.06" rpy="0 0 0" />
+        <origin xyz="0 0 -0.06" rpy="0 0 0" /> <!-- -0.04 - stollen-->
         <parent link="l_foot" />
         <child link="l_sole" />
         <axis xyz="0 0 0" />
     </joint>
 
     <joint name="left_foot_to_toe" type="fixed">
-        <origin xyz="0.105 0 0" rpy="0 0 0" />
+        <origin xyz="0.11 -0.01 0" rpy="0 0 0" />
         <parent link="l_sole" />
         <child link="l_toe" />
         <axis xyz="0 0 0" />
