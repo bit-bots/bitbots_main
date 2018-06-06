@@ -90,12 +90,12 @@ class Motion:
         self.state_machine = HcmStateMachine(dieflag, standupflag, softoff_flag, softstart, start_test,
                                              self.hcm_state_publisher)
 
-        rospy.Subscriber("imu", Imu, self.update_imu, queue_size=1)
-        rospy.Subscriber("walking_motor_goals", JointTrajectory, self.walking_goal_callback, queue_size=1)
-        rospy.Subscriber("animation", AnimationMsg, self.animation_callback, queue_size=1)
-        rospy.Subscriber("head_motor_goals", JointTrajectory, self.head_goal_callback, queue_size=1)
-        rospy.Subscriber("record_motor_goals", JointTrajectory, self.record_goal_callback, queue_size=1)
-        rospy.Subscriber("pause", Bool, self.pause, queue_size=1)
+        rospy.Subscriber("imu", Imu, self.update_imu, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("walking_motor_goals", JointTrajectory, self.walking_goal_callback, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("animation", AnimationMsg, self.animation_callback, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("head_motor_goals", JointTrajectory, self.head_goal_callback, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("record_motor_goals", JointTrajectory, self.record_goal_callback, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("pause", Bool, self.pause, queue_size=1, tcp_nodelay=True)
 
         self.animation_action_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
         VALUES.animation_client = self.animation_action_client
@@ -339,6 +339,9 @@ def trajectory_to_joint_command_msg(msg):
     else:
         command_msg.accelerations = [-1.0] * len(msg.joint_names)
 
+    #todo this is a hotfix
+    command_msg.velocities = [-1.0] * len(msg.joint_names)
+    command_msg.accelerations = [-1.0] * len(msg.joint_names)
     command_msg.max_currents  = [-1.0] * len(msg.joint_names)
     
     return command_msg

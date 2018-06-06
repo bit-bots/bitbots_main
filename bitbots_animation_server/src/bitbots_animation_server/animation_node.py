@@ -90,7 +90,7 @@ class PlayAnimationAction(object):
             return
         animator = Animator(parsed_animation, self.current_pose)
         animfunc = animator.playfunc(0.02)  # todo dynamic reconfigure this value
-        rate = rospy.Rate(50)
+        rate = rospy.Rate(200)
         iteration = 0
         duration_avg = 0
         start = rospy.get_time()
