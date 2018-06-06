@@ -53,12 +53,7 @@ class Vision:
             self.ball_detector.set_image(image)
 
         top_ball_candidate = self.ball_detector.get_top_candidate()
-
-        line_detector = lines.LineDetector(image,
-                                           self.white_color_detector,
-                                           self.field_color_detector,
-                                           horizon_detector,
-                                           self.lines_config)
+        self.line_detector.set_image(image)
 
         # create ball msg
         if top_ball_candidate and top_ball_candidate.rating > self._ball_candidate_threshold:
@@ -80,7 +75,7 @@ class Vision:
         line_msg = LineInformationInImage()  # Todo: add lines
         line_msg.header.frame_id = image_msg.header.frame_id
         line_msg.header.stamp = image_msg.header.stamp
-        for lp in line_detector.get_linepoints():
+        for lp in self.line_detector.get_linepoints():
             ls = LineSegmentInImage()
             ls.start.x = lp[0]
             ls.start.y = lp[1]
@@ -107,9 +102,9 @@ class Vision:
                                                    (0, 255, 0))
             # draw linepoints in black
             self.debug_image_dings.draw_points(
-                line_detector.get_linepoints(),
-                (0, 0, 0))
             debug_image_dings.draw_line_segments(line_detector.get_linesegments(), (180, 105, 255))
+                self.line_detector.get_linepoints(),
+                (0, 0, 255))
             self.debug_image_dings.imshow()
 
     def _dynamic_reconfigure_callback(self, config, level):
@@ -218,6 +213,11 @@ class Vision:
             'line_detector2_magic_value': config['line_detector2_magic_value'],
             'line_detector2_horizon_offset': config['line_detector2_horizon_offset'],
         }
+
+        self.line_detector = lines.LineDetector(self.white_color_detector,
+                                                self.field_color_detector,
+                                                self.horizon_detector,
+                                                self.lines_config)
 
         # subscribers
         if 'ROS_img_msg_topic' not in self.config or \

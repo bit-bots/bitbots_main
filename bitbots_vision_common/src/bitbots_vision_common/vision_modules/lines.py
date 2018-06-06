@@ -10,19 +10,25 @@ import cv2
 
 
 class LineDetector:
-    def __init__(self, image, white_detector, field_color_detector, horizon_detector, config):
+    def __init__(self, white_detector, field_color_detector, horizon_detector, config):
         # type: (np.matrix, list, ColorDetector, ColorDetector, HorizonDetector, dict) -> None
-        self._image = image
+        self._image = None
         self._preprocessed_image = None
         self._linepoints = None
+        self._linesegments = None
         self._white_detector = white_detector
         self._field_color_detector = field_color_detector
         self._horizon_detector = horizon_detector
         # init config
-        self._linesegments = None
         self._horizon_offset = config['horizon_offset']
         self._linepoints_range = config['linepoints_range']
         self._blur_kernel_size = config['blur_kernel_size']
+
+    def set_image(self, image):
+        self._image = image
+        self._preprocessed_image = None
+        self._linepoints = None
+        self._linesegments = None
 
     def set_candidates(self, candidates):
         # type: (list) -> None
