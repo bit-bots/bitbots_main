@@ -24,6 +24,7 @@ class FcnnHandler(CandidateFinder):
         max_candidate_diameter: 200
         candidate_refinement_iteration_count: 1
     """
+
     def __init__(self, image, fcnn, config):
         self._image = image
         self._fcnn = fcnn
@@ -206,7 +207,8 @@ class FcnnHandler(CandidateFinder):
             # calculate final width and height
             width, height = rx - lx, ly - uy
             candidates.append(Candidate(lx, uy, width, height))
-            points = [other_point for other_point in points if point != other_point and not (lx <= other_point[0] <= rx and uy <= other_point[1] <= ly)]
+            points.remove(point)
+            points = [other_point for other_point in points if not (lx <= other_point[0] <= rx and uy <= other_point[1] <= ly)]
         return candidates
 
     def draw_debug_image(self):
