@@ -6,8 +6,6 @@ namespace dynamixel_controller
 {
 bool DynamixelController::init(hardware_interface::PosVelAccCurJointInterface* hw, ros::NodeHandle &n){
     // List of controlled joints
-        _pubControllerCommand = n.advertise<bitbots_ros_control::JointCommand>("/DynamixelController/command_test", 1);
-
     std::string param_name = "joints";
     if(!n.getParam(param_name, joint_names_))
     {
