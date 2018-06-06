@@ -24,5 +24,5 @@ class Wait(AbstractActionModule):
             connector.blackboard.set_head_duty(HeadMode.BALL_MODE)
 
         self.push(Stand)
-        if self.time > rospy.get_time():
+        if self.time < rospy.get_time():
             self.pop()
