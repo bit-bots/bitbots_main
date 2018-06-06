@@ -54,7 +54,7 @@ class TransformBall(object):
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(10.0))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
-        self.ball_height = rospy.get_param("transformer/ball_radius", 0.1)
+        self.ball_height = rospy.get_param("transformer/ball/ball_radius", 0.075)
 
         rospy.spin()
 
@@ -149,6 +149,8 @@ class TransformBall(object):
     def _callback_lines_pc(self, msg):
         points = []
         field = self.get_plane(msg.header.stamp, 0)
+        if field is None:
+            return
         for seg in msg.segments:
             transformed = self.transform(seg.start,field)
             points.append([transformed.x, transformed.y, transformed.z])
@@ -167,40 +169,26 @@ class TransformBall(object):
 
     def get_plane(self, stamp, object_height):
         """ returns a plane which an object is believed to be on as a tuple of a point on this plane and a normal"""
-        try:
-            tf_right = self.tf_buffer.lookup_transform("camera", "r_sole", stamp)
-            tf_left = self.tf_buffer.lookup_transform("camera", "l_sole", stamp)
-        except tf2_ros.LookupException:
-            rospy.logwarn("still waiting for transforms")
-            return
 
-        len_r = math.sqrt(tf_right.transform.translation.x ** 2 +
-                          tf_right.transform.translation.y ** 2 +
-                          tf_right.transform.translation.z ** 2)
-        len_l = math.sqrt(tf_left.transform.translation.x ** 2 +
-                          tf_left.transform.translation.y ** 2 +
-                          tf_left.transform.translation.z ** 2)
-
-        if len_r > len_l:
-            ground_foot = "r_sole"
-        else:
-            ground_foot = "l_sole"
+        base_frame = "base_footprint"
 
         field_normal = PointStamped()
-        field_normal.header.frame_id = ground_foot
+        field_normal.header.frame_id = base_frame
         field_normal.header.stamp = stamp
         field_normal.point.x = 0.0
         field_normal.point.y = 0.0
         field_normal.point.z = 1.0
         try:
-            field_normal = self.tf_buffer.transform(field_normal, "camera")
+            field_normal = self.tf_buffer.transform(field_normal, "camera", timeout=rospy.Duration(0.2))
         except tf2_ros.LookupException:
-            rospy.logwarn("Could not transform from " + ground_foot + " to camera")
+            rospy.logwarn("Could not transform from " + base_frame + " to camera")
+            return None
+        except tf2_ros.ExtrapolationException:
+            rospy.logwarn("Waiting for transforms to become available...")
             return None
 
-
         field_point = PointStamped()
-        field_point.header.frame_id = ground_foot
+        field_point.header.frame_id = base_frame
         field_point.header.stamp = stamp
         field_point.point.x = 0.0
         field_point.point.y = 0.0
@@ -208,7 +196,7 @@ class TransformBall(object):
         try:
             field_point = self.tf_buffer.transform(field_point, "camera")
         except tf2_ros.LookupException:
-            rospy.logwarn("Could not transform from " + ground_foot + " to camera")
+            rospy.logwarn("Could not transform from " + base_frame + " to camera")
             return None
 
         field_normal = np.array([field_normal.point.x, field_normal.point.y, field_normal.point.z])

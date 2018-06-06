@@ -3,7 +3,7 @@ transformer:
   ball:
     ball_topic: 'ball_in_image'
     # ballradius in meter
-    ball_radius: 0.1
+    ball_radius: 0.075
 
   lines:
     lines_topic: 'line_in_image'

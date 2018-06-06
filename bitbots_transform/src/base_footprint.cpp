@@ -13,23 +13,23 @@ class BaseFootprintBroadcaster
 public:
     BaseFootprintBroadcaster();
 private:
-    void imu_callback(const sensor_msgs::Imu::ConstPtr& imu_msg);
-    ros::Subscriber imu_subscriber;
+    //void imu_callback(const sensor_msgs::Imu::ConstPtr& imu_msg);
+    //ros::Subscriber imu_subscriber;
     geometry_msgs::TransformStamped tf;
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener tfListener;
-    bool imu;
+    //bool imu;
 };
 
-BaseFootprintBroadcaster::BaseFootprintBroadcaster() : tfListener(tfBuffer) 
+BaseFootprintBroadcaster::BaseFootprintBroadcaster() : tfBuffer(ros::Duration(10.0)),  tfListener(tfBuffer)
 {
     //setup tf listener and broadcaster
     //register callback
-    //
+
     ros::NodeHandle n("~");
-    std::string imu_topic;
-    n.getParam("imu_topic", imu_topic);
-    imu_subscriber = n.subscribe(imu_topic, 1, &BaseFootprintBroadcaster::imu_callback, this);
+    //std::string imu_topic;
+    //n.getParam("imu_topic", imu_topic);
+    //imu_subscriber = n.subscribe(imu_topic, 1, &BaseFootprintBroadcaster::imu_callback, this);
 
     
 
@@ -40,39 +40,33 @@ BaseFootprintBroadcaster::BaseFootprintBroadcaster() : tfListener(tfBuffer)
 
     static tf2_ros::TransformBroadcaster br;
     ros::Rate r(30.0);
-    imu = false;
     while(ros::ok())
     {
-        ros::spinOnce();
+        /*ros::spinOnce();
         if(!imu)
         {
             tf.header.stamp = ros::Time::now();
-        }
+        }*/
 
         geometry_msgs::TransformStamped tf_right, tf_left;
         try{
-            tf_right = tfBuffer.lookupTransform("base_link", "r_sole", tf.header.stamp, ros::Duration(0.1));
-            tf_left = tfBuffer.lookupTransform("base_link", "l_sole", tf.header.stamp, ros::Duration(0.1));
+            tf_right = tfBuffer.lookupTransform("base_link", "r_sole", ros::Time::now(), ros::Duration(0.1));
+            tf_left = tfBuffer.lookupTransform("base_link", "l_sole",  ros::Time::now(), ros::Duration(0.1));
         }catch(...){
-            //continue;
+            continue;
         }
-
         // check which foot is support foot (which foot is on the ground)
         if(tf_right.transform.translation.z < tf_left.transform.translation.z) {
             tf.transform.translation.z = tf_right.transform.translation.z;
+            tf.transform.rotation = tf_right.transform.rotation;
+            tf.header.stamp = tf_right.header.stamp;
         } else {
             tf.transform.translation.z = tf_left.transform.translation.z;
+            tf.transform.rotation = tf_left.transform.rotation;
+            tf.header.stamp = tf_left.header.stamp;
         }
 
         tf.transform.translation.y = (tf_left.transform.translation.y + tf_right.transform.translation.y)/2;
-
-        if (!imu)
-        {
-            tf.transform.rotation.x = 0.0;
-            tf.transform.rotation.y = 0.0;
-            tf.transform.rotation.z = 0.0;
-            tf.transform.rotation.w = 1.0;
-        }
 
         br.sendTransform(tf);
         r.sleep();
@@ -81,7 +75,7 @@ BaseFootprintBroadcaster::BaseFootprintBroadcaster() : tfListener(tfBuffer)
     ros::spin();
 }
 
-void BaseFootprintBroadcaster::imu_callback(const sensor_msgs::Imu::ConstPtr& imu_msg)
+/*void BaseFootprintBroadcaster::imu_callback(const sensor_msgs::Imu::ConstPtr& imu_msg)
 {
 
     imu = true;
@@ -94,7 +88,7 @@ void BaseFootprintBroadcaster::imu_callback(const sensor_msgs::Imu::ConstPtr& im
     tf.transform.rotation = imu_msg->orientation;
 
 
-}
+}*/
 
 int main(int argc, char **argv)
 {
