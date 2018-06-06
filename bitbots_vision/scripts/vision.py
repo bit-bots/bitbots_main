@@ -44,21 +44,19 @@ class Vision:
                                                    self.horizon_config)
         if (self.config['vision_ball_classifier'] == 'cascade'):
             self.ball_finder.set_image(image)
-            ball_classifier = classifier. \
-                Classifier(image,
-                           self.ball_classifier,
-                           horizon_detector.
-                           balls_under_horizon(
-                               self.ball_finder.get_ball_candidates(),
-                               self._ball_candidate_y_offset))
+            self.ball_detector.set_image(image,
+                                         horizon_detector.
+                                         balls_under_horizon(
+                                            self.ball_finder.get_ball_candidates(),
+                                            self._ball_candidate_y_offset))
 
         elif (self.config['vision_ball_classifier'] == 'fcnn'):
-            ball_classifier = fcnn_handler.FcnnHandler(image, self.ball_fcnn, self.ball_fcnn_config)
+            self.ball_detector = fcnn_handler.FcnnHandler(image, self.ball_fcnn, self.ball_fcnn_config)
 
         elif (self.config['vision_ball_classifier'] == 'dummy'):
-            ball_classifier = dummy_ballfinder.DummyClassifier(None, None, None)
+            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, None)
 
-        top_ball_candidate = ball_classifier.get_top_candidate()
+        top_ball_candidate = self.ball_detector.get_top_candidate()
 
         line_detector = lines.LineDetector(image,
                                            self.white_color_detector,
@@ -101,11 +99,11 @@ class Vision:
                 horizon_detector.get_horizon_points(),
                 (0, 0, 255))
             debug_image_dings.draw_ball_candidates(
-                ball_classifier.get_candidates(),
+                self.ball_detector.get_candidates(),
                 (0, 0, 255))
             debug_image_dings.draw_ball_candidates(
                 horizon_detector.balls_under_horizon(
-                    ball_classifier.get_candidates(),
+                    self.ball_detector.get_candidates(),
                     self._ball_candidate_y_offset),
                 (0, 255, 255))
             # draw top candidate in
@@ -146,6 +144,9 @@ class Vision:
                 self.ball_classifier = live_classifier.LiveClassifier(
                     self.package_path + config['classifier_model_path'])
                 rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
+            self.ball_detector = classifier.ClassifierHandler(self.ball_classifier)
+
+
         # set up ball config for cascade
         self.ball_config = {
             'classify_threshold': config['ball_finder_classify_threshold'],

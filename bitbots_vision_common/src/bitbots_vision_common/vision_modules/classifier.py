@@ -3,11 +3,19 @@ import cv2
 from .candidate import Candidate, CandidateFinder
 
 
-class Classifier(CandidateFinder):
-    def __init__(self, image, classifier, candidates):
+class ClassifierHandler(CandidateFinder):
+    def __init__(self, classifier):
+        # type: (LiveClassifier) -> None
+        self._image = None
+        self._input_candidates = None
+        self._classifier = classifier
+        self._classified_candidates = None
+        self._sorted_candidates = None
+        self._top_candidate = None
+
+    def set_image(self, image, candidates):
         self._image = image
         self._input_candidates = candidates
-        self._classifier = classifier
         self._classified_candidates = None
         self._sorted_candidates = None
         self._top_candidate = None
