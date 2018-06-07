@@ -1,4 +1,5 @@
 import cv2
+import VisionExtensions
 import numpy as np
 from candidate import CandidateFinder, Candidate
 import itertools
@@ -42,7 +43,7 @@ class FcnnHandler(CandidateFinder):
         self._sorted_rated_candidates = None
         self._top_candidate = None
         self._fcnn_output = None
-        
+
         # draw the output when debug is enabled
         self.draw_debug_image()
 
@@ -65,7 +66,7 @@ class FcnnHandler(CandidateFinder):
         """
         if self._rated_candidates is None:
             self._rated_candidates = list()
-            for candidate in self._get_raw_candidates():
+            for candidate in self._get_raw_candidates_cpp():
                 out = self.get_fcnn_output()
                 candidate.rating = np.mean(
                     out[
@@ -129,6 +130,25 @@ class FcnnHandler(CandidateFinder):
             out = (out * 255).astype(np.uint8)
             self._fcnn_output = cv2.resize(out, (self._image.shape[1], self._image.shape[0]))
         return self._fcnn_output
+
+    def _get_raw_candidates_cpp(self):
+
+        start = cv2.getTickCount()
+        out = self.get_fcnn_output()
+        end = cv2.getTickCount()
+        print('Net:' + str((end - start) / cv2.getTickFrequency()))
+        start = cv2.getTickCount()
+        r, out_bin = cv2.threshold(out, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        tuple_candidates = VisionExtensions.findSpots(out_bin, self._pointcloud_stepsize, self._expand_stepsize, self._candidate_refinement_iteration_count)
+        candidates = list()
+        print(len(tuple_candidates))
+        for candidate in tuple_candidates:
+            # calculate final width and height
+            width, height = candidate[0] - candidate[1], candidate[3] - candidate[2]
+            candidates.append(Candidate(candidate[1], candidate[2], width, height))
+        end = cv2.getTickCount()
+        print('Cluster:' + str((end - start) / cv2.getTickFrequency()))
+        return candidates
 
     def _get_raw_candidates(self):
         """
