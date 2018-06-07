@@ -1,12 +1,16 @@
 ros_control:
+  # specifies which information should be read
   read_position: true
   read_velocity: true
   read_effort: true
-  read_volt_temp: true
-  VT_update_rate: 100
+  read_volt_temp: true # this also corresponds for the error byte
+  VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
+  warn_temp: 60
+  warn_volt: 12
   read_imu: true
-  control_loop_hz: 200
+  control_loop_hz: 1000
 
+  # specification of the connected dynamixel servos
   dynamixels:
     port_info:
       port_name: /dev/ttyACM0
@@ -14,6 +18,31 @@ ros_control:
       protocol_version: 2
     control_mode: position
     auto_torque: true
+    set_ROM_RAM: true # set the following values on startup to all motors
+    ROM_RAM:
+      # all names of parameters have to be the same as on the dynamixel table (see dynamixel_workbench_toolbox/src/dynamixel_item.cpp )
+      # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
+      # ROM
+      Return_Delay_Time: 0 # this is a stupid function which has always to be zero or nothing will work correctly anymore
+      Temperature_Limit: 60 # [about 1 deg C]
+      Max_Voltage_Limit: 160 #[About 0.1V]
+      Min_Voltage_Limit: 95 #[About 0.1V]
+      PWM_Limit: 885 # 885 = 100%
+      #Current_Limit: 2047 #[ 3.36 mA] #currently not used since MX-64 and MX-106 have different max values
+      Acceleration_Limit: 32767 # [214.577 Rev/min2]
+      Velocity_Limit: 360 # [0.229rpm]
+      Max_Position_Limit: 4095 # [0.088 deg]
+      Min_Position_Limit : 0 # [0.088 deg]
+      # RAM
+      Status_Return_Level: 2 # 0 status for all instructions(not sync or bulk), 1 ping and read, 2 only ping
+      Velocity_I_Gain: 1920 # [/ 65,536]
+      Velocity_P_Gain: 100 # [/128]
+      Position_D_Gain: 0 # [/16] 
+      Position_I_Gain: 0 # [/ 65,536]
+      Position_P_Gain: 850 # [/ 128]
+      Feedforward_2nd_Gain: 0 # [/4]
+      Feedforward_1st_Gain: 0 # [/4]
+
     device_info:
       RShoulderPitch:
         id: 1
@@ -50,9 +79,11 @@ ros_control:
       RHipPitch:
         id: 11
         model_number: 321
+        offset: -0.15  
       LHipPitch:
         id: 12
         model_number: 321
+        offset: 0.15
       RKnee:
         id: 13
         model_number: 321
@@ -62,9 +93,11 @@ ros_control:
       RAnklePitch:
         id: 15
         model_number: 321
+        offset: 0.13
       LAnklePitch:
         id: 16
         model_number: 321
+        offset: -0.13
       RAnkleRoll:
         id: 17
         model_number: 321

@@ -2,13 +2,19 @@
 #define DYNAMIXEL_HARWARE_INTERFACE_H
 
 #include <ros/ros.h>
+#include <string> 
 
-#include <std_msgs/Bool.h>
+#include <std_msgs/Bool.h>  
+#include <humanoid_league_msgs/Speak.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
+#include <std_msgs/Bool.h>
+#include <std_msgs/Int32MultiArray.h>
+#include <bitbots_ros_control/JointTorque.h>
 
 #include <hardware_interface/imu_sensor_interface.h>
 #include <hardware_interface/joint_command_interface.h>
+#include <bitbots_ros_control/posvelacccur_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
 #include <transmission_interface/simple_transmission.h>
@@ -54,7 +60,8 @@ struct Joint
 enum ControlMode {
   PositionControl,
   VelocityControl,
-  EffortControl
+  EffortControl,
+  CurrentBasedPositionControl
 };
 
 class DynamixelHardwareInterface : public hardware_interface::RobotHW
@@ -68,27 +75,47 @@ public:
   void write();
 
 private:
+  void update_pid(std_msgs::BoolConstPtr);
+  ros::NodeHandle _nh; 
+
+  bool syncWritePWM();
+
   bool loadDynamixels(ros::NodeHandle& nh);
+  bool writeROMRAM(ros::NodeHandle& nh);
   bool stringToControlMode(std::string control_mode_str, ControlMode &control_mode);
   bool switchDynamixelControlMode();
+  diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map);
+  void processVTE(bool success);
+
+  void speak(std::string text);
 
   bool goal_torque_;
   bool current_torque_;
   void setTorque(bool enabled);
   void setTorque(std_msgs::BoolConstPtr enabled);
+  void setTorqueForServos(std::vector<int32_t> torque);
+  void setTorqueForServos(bitbots_ros_control::JointTorque msg);
+
 
   bool syncReadPositions();
   bool syncReadVelocities();
   bool syncReadEfforts();
   bool syncReadAll();
   bool syncReadVoltageAndTemp();
+  bool syncReadError();
   bool readImu();
 
   bool syncWritePosition();
   bool syncWriteVelocity();
+  bool syncWriteProfileVelocity();
   bool syncWriteCurrent();
+  bool syncWriteProfileAcceleration();
+
+
 
   bool first_cycle_;
+  bool _switch_individual_torque;
+  std::vector<int32_t> _goal_torque_individual;
 
   boost::shared_ptr<DynamixelDriver> _driver;
 
@@ -97,6 +124,7 @@ private:
   hardware_interface::PositionJointInterface _jnt_pos_interface;
   hardware_interface::VelocityJointInterface _jnt_vel_interface;
   hardware_interface::EffortJointInterface _jnt_eff_interface;
+  hardware_interface::PosVelAccCurJointInterface _jnt_posvelacccur_interface;
 
   hardware_interface::ImuSensorInterface _imu_interface;
 
@@ -112,20 +140,30 @@ private:
   std::vector<double> _goal_position;
   std::vector<double> _goal_effort;
   std::vector<double> _goal_velocity;
+  std::vector<double> _goal_acceleration;
+
+  std::vector<double> _last_goal_position;
+  std::vector<double> _last_goal_effort;
+  std::vector<double> _last_goal_velocity;
+  std::vector<double> _last_goal_acceleration;
+
 
   bool _read_position;
   bool _read_velocity;
   bool _read_effort;
   bool _read_volt_temp;
+  bool _update_pid;
   std::vector<double> _current_position;
   std::vector<double> _current_velocity;
   std::vector<double> _current_effort;
   std::vector<double> _current_input_voltage;
   std::vector<double> _current_temperature;
+  std::vector<uint8_t> _current_error;
 
   int _read_VT_counter;
   int _VT_update_rate;
-
+  double _warn_temp;
+  double _warn_volt;
 
 
   bool _read_imu;
@@ -145,6 +183,11 @@ private:
   // subscriber / publisher
   ros::Subscriber _set_torque_sub;
   ros::Publisher _diagnostic_pub;
+  ros::Publisher _speak_pub;
+  ros::Subscriber _set_torque_indiv_sub;
+  ros::Subscriber _update_pid_sub;
+
+
 };
 }
 

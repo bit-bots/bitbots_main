@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<library path="lib/libbitbots_ros_control">
+
+  <class name="bitbots_ros_control/DynamixelController" type="dynamixel_controller::DynamixelController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      Hacky controller
+    </description>
+  </class>
+
+</library>
