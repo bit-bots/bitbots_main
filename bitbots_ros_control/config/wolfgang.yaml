@@ -114,4 +114,4 @@ ros_control:
 
   IMU:
     name: imu/data_raw
-    frame: torso
+    frame: imu_frame

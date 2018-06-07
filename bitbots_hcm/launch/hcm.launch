@@ -5,17 +5,17 @@
     <arg name="minibot" default="false"/>
     <arg name="wolfgang" default="false"/>
 
-    <rosparam file="$(find bitbots_hcm)/config/hcm.yaml" command="load"/>
     <rosparam file="$(find bitbots_hcm)/config/hcm_state_machine.yaml" command="load"/>
     
     <group if="$(arg wolfgang)">
-        <node name="HCM" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" respawn="true">
-            <remap from="/motor_goals" to="/JointGroupController/command"/>
+        <rosparam file="$(find bitbots_hcm)/config/hcm_wolfgang.yaml" command="load"/>
+        <node name="hcm" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" respawn="true">
         </node>
     </group>
 
     <group if="$(arg minibot)">
-        <node name="HCM" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" respawn="true">
+        <rosparam file="$(find bitbots_hcm)/config/hcm_minibot.yaml" command="load"/>
+        <node name="hcm" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" respawn="true">
         </node>
     </group>
 

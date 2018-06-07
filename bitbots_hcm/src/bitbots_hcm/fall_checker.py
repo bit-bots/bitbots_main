@@ -31,13 +31,13 @@ class FallChecker(object):
             rospy.logwarn("HipPitch offset from walking was not found on parameter server, will use 0.")
         self.falling_threshold_front = rospy.get_param("hcm/threshold_gyro_y_front")# \
                                        #+ math.radians(rospy.get_param("ZMPConfig/" + robot_type_name + "/HipPitch", -10))
-        rospy.set_param("hcm/threshold_gyro_y_front", self.falling_threshold_front)
+        #rospy.set_param("hcm/threshold_gyro_y_front", self.falling_threshold_front)
         self.falling_threshold_side = rospy.get_param("hcm/threshold_gyro_x_side")
-        rospy.set_param("hcm/threshold_gyro_x_side", self.falling_threshold_side)
+        #rospy.set_param("hcm/threshold_gyro_x_side", self.falling_threshold_side)
         self.falling_threshold_orientation_front_back = math.radians(rospy.get_param("hcm/falling_threshold_orientation_front_back"))
-        rospy.set_param("hcm/falling_threshold_orientation_front_back", self.falling_threshold_orientation_front_back)
+        #rospy.set_param("hcm/falling_threshold_orientation_front_back", self.falling_threshold_orientation_front_back)
         self.falling_threshold_orientation_left_right = math.radians(rospy.get_param("hcm/falling_threshold_orientation_left_right"))
-        rospy.set_param("hcm/falling_threshold_orientation_left_right", self.falling_threshold_orientation_left_right)
+        #rospy.set_param("hcm/falling_threshold_orientation_left_right", self.falling_threshold_orientation_left_right)
 
         # Grenzwerte an Untergrund anpassen
         self.falling_threshold_front *= self.ground_coefficient
@@ -116,15 +116,15 @@ class FallChecker(object):
     def check_fallen(self, smooth_accel):
         """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""
         if smooth_accel[0] > 7:
-            rospy.logdebug("Lying on belly, should stand up")
+            rospy.loginfo("Lying on belly, should stand up")
             return rospy.get_param("hcm/animations/front-up")
 
         if smooth_accel[0] < -7:
-            rospy.logdebug("Lying on my back, should stand up!")
+            rospy.loginfo("Lying on my back, should stand up!")
             return rospy.get_param("hcm/animations/bottom-up")
 
         if abs(smooth_accel[1]) > 7:
-            rospy.logdebug("Lying on the side, should stand up. Trying to stand up from front. Is that right?")
+            rospy.loginfo("Lying on the side, should stand up. Trying to stand up from front. Is that right?")
             return rospy.get_param("hcm/animations/front-up")
 
         return None
