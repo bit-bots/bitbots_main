@@ -47,7 +47,9 @@ class FCNN03:
 
 
     def _initialize_network(self):
-        self.session = tf.Session()
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        self.session = tf.Session(config=config)
         self.init = tf.global_variables_initializer()
         self.session.run(self.init)
         self.saver = tf.train.Saver()
