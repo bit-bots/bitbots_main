@@ -47,15 +47,15 @@ class AbstractSearchForObject(AbstractDecisionModule):
             elif self.run == 2:
                 # Search to the right of the object
                 self.repr_data["strategy"] = "search to the right of last position"
-                look_at_point = (u + self.offset_right, v)
+                look_at_point = (u + self.offset_right, v, 0)
             elif self.run == 3:
                 # Search in front of the object
                 self.repr_data["strategy"] = "search in front of last position"
-                look_at_point = (u, v - self.offset_down)
+                look_at_point = (u, v - self.offset_down, 0)
             elif self.run == 4:
                 # Search left of the object
                 self.repr_data["strategy"] = "search to the left of last position"
-                look_at_point = (u - self.offset_left, v)
+                look_at_point = (u - self.offset_left, v, 0)
 
             return self.push(LookAtRelativePoint, look_at_point)
 
