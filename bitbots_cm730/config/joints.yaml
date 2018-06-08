@@ -114,7 +114,7 @@ joints_yaml:
     opposing: 0
     inverted: True
   - id: 20
-    limits: {default: 0, max: 5, min: -65}
+    limits: {default: 0, max: 5, min: -90}
     name: HeadTilt
     tags: [head, '20']
     opposing: 0
