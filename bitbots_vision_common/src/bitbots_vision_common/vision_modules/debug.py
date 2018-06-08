@@ -37,9 +37,9 @@ class DebugImage:
                            color,
                            thickness=thickness)
 
-    def draw_points(self, points, color, rad=2):
+    def draw_points(self, points, color, rad=2, thickness=-1):
         for point in points:
-            cv2.circle(self.raw_image, point, rad, color)
+            cv2.circle(self.raw_image, point, rad, color, thickness=thickness)
 
     def draw_line_segments(self, segments, color, width=2):
         for segment in segments:
