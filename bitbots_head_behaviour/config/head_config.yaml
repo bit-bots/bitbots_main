@@ -19,7 +19,7 @@ Behaviour:
 
     Camera:
             minPan: -125
-            minTilt: -65
+            minTilt: -90
             maxPan: 125
             maxTilt: 0
 
@@ -94,6 +94,7 @@ Behaviour:
 
       ball:
             # TODO: Evaluate patterns
+            - [ 0.05,   0]
             - [ 0.3,   0]
             - [ 0.5,   1]
             - [ 0.5,  -1]

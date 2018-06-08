@@ -80,7 +80,7 @@ class HeadDutyDecider(AbstractDecisionModule):
 
         if head_mode == HeadMode.LOOK_DOWN:
             self.repr_data["head_mode"] = "LOOK_DOWN"
-            return self.push(LookAtRelativePoint, (0, 0, 0))
+            return self.push(LookAtRelativePoint, (0.05, 0, 0))
 
         if head_mode == HeadMode.LOOK_FORWARD:
             self.repr_data["head_mode"] = "LOOK_FORWARD"
