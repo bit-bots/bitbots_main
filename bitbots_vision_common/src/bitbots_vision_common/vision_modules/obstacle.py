@@ -45,10 +45,10 @@ class ObstacleDetector(CandidateFinder):
             for point in horizon_points[1:]:
                 b = point
                 if not obstacle_begin:
-                    if b[0] - a[0] > self._horizon_diff_threshold:
+                    if b[1] - a[1] > self._horizon_diff_threshold:
                         obstacle_begin = a
                 else:
-                    if a[0] - b[0] > self._horizon_diff_threshold:
+                    if a[1] - b[1] > self._horizon_diff_threshold:
                         self._obstacles.append(
                             Candidate(
                                 obstacle_begin[0],
