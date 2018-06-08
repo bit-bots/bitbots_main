@@ -28,8 +28,9 @@ horizon_finder_horizontal_steps: 30
 horizon_finder_precision_pix: 5
 horizon_finder_min_precision_pix: 3
 
-vision_debug: true
 vision_ball_classifier: 'fcnn'  # cascade, fcnn or dummy
+vision_debug_image: false
+vision_debug_image_msg: false
 vision_ball_candidate_horizon_y_offset: 0
 vision_ball_candidate_rating_threshold: 0.5
 

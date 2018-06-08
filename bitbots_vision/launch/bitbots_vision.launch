@@ -4,7 +4,7 @@
 
     <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
         <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
-        <param name="vision_debug" value="$(arg debug)"/>
+        <param name="vision_debug_image_msg" value="$(arg debug)"/>
         <param name="vision_ball_classifier" value="$(arg classifier)"/>
     </node>
 </launch>

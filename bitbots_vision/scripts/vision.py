@@ -46,8 +46,8 @@ class Vision:
             self.ball_detector.set_image(image,
                                          self.horizon_detector.
                                          balls_under_horizon(
-                                            self.ball_finder.get_ball_candidates(),
-                                            self._ball_candidate_y_offset))
+                                             self.ball_finder.get_ball_candidates(),
+                                             self._ball_candidate_y_offset))
 
         elif (self.config['vision_ball_classifier'] == 'fcnn'):
             self.ball_detector.set_image(image)
@@ -99,20 +99,26 @@ class Vision:
                 (0, 255, 255))
             # draw top candidate in
             self.debug_image_dings.draw_ball_candidates([top_ball_candidate],
-                                                   (0, 255, 0))
+                                                        (0, 255, 0))
             # draw linepoints in black
             self.debug_image_dings.draw_points(
                 self.line_detector.get_linepoints(),
                 (0, 0, 255))
-            #debug_image_dings.draw_line_segments(line_detector.get_linesegments(), (180, 105, 255))
-            self.debug_image_dings.imshow()
+            # debug_image_dings.draw_line_segments(line_detector.get_linesegments(), (180, 105, 255))
+            if self.debug_image:
+                self.debug_image_dings.imshow()
+            if self.debug_image_msg:
+                self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(self.debug_image_dings.get_image(), 'bgr8'))
+
 
     def _dynamic_reconfigure_callback(self, config, level):
 
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
         self._ball_candidate_y_offset = config['vision_ball_candidate_horizon_y_offset']
 
-        self.debug = config['vision_debug']
+        self.debug_image = config['vision_debug_image']
+        self.debug_image_msg = config['vision_debug_image_msg']
+        self.debug = self.debug_image or self.debug_image_msg
         if self.debug:
             rospy.logwarn('Debug windows are enabled')
         else:
@@ -151,7 +157,7 @@ class Vision:
 
         # set up ball config for fcnn
         self.ball_fcnn_config = {
-            'debug': config['ball_fcnn_debug'] and config['vision_debug'],
+            'debug': config['ball_fcnn_debug'] and self.debug_image,
             'threshold': config['ball_fcnn_threshold'],
             'expand_stepsize': config['ball_fcnn_expand_stepsize'],
             'pointcloud_stepsize': config['ball_fcnn_pointcloud_stepsize'],
@@ -250,9 +256,13 @@ class Vision:
                 config['ROS_line_msg_topic'],
                 LineInformationInImage,
                 queue_size=5)
+        self.pub_debug_image = rospy.Publisher(
+            'debug_image',
+            Image,
+            queue_size=1,
+        )
         self.config = config
         return config
-
 
 if __name__ == '__main__':
     Vision()
