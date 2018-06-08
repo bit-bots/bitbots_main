@@ -102,9 +102,9 @@ class Vision:
                                                    (0, 255, 0))
             # draw linepoints in black
             self.debug_image_dings.draw_points(
-            debug_image_dings.draw_line_segments(line_detector.get_linesegments(), (180, 105, 255))
                 self.line_detector.get_linepoints(),
                 (0, 0, 255))
+            #debug_image_dings.draw_line_segments(line_detector.get_linesegments(), (180, 105, 255))
             self.debug_image_dings.imshow()
 
     def _dynamic_reconfigure_callback(self, config, level):
