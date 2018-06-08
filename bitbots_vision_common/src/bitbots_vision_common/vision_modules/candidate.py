@@ -39,6 +39,12 @@ class Candidate:
     def get_upper_left_y(self):
         return self._y1
 
+    def get_lower_right_x(self):
+        return self._x1 + self._width
+
+    def get_lower_right_y(self):
+        return self._y1 + self._height
+
     def point_in_candidate(self, point):
         # type: (tuple) -> bool
         """
