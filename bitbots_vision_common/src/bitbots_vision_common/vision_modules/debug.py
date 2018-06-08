@@ -48,6 +48,9 @@ class DebugImage:
                      (segment[2], segment[3]),
                      color)
 
+    def get_image(self):
+        return self.raw_image
+
     def imshow(self):
         """
         Shows the drawn debug image.
