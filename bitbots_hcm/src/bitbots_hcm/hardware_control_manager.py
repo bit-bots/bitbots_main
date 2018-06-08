@@ -159,7 +159,7 @@ class Motion:
             # we can move our head
             self.joint_goal_publisher.publish(msg)
             # also send it to ros control
-            command_msg = trajectory_to_joint_command_msg(msg.position)
+            command_msg = trajectory_to_joint_command_msg(msg)
             self.joint_goal_command_publisher.publish(command_msg)
 
     def record_goal_callback(self, msg):
@@ -170,7 +170,7 @@ class Motion:
             VALUES.record = True
             self.joint_goal_publisher.publish(msg)
             # also send it to ros control
-            command_msg = trajectory_to_joint_command_msg(msg.position)
+            command_msg = trajectory_to_joint_command_msg(msg)
             self.joint_goal_command_publisher.publish(command_msg)
 
     def animation_callback(self, msg):
