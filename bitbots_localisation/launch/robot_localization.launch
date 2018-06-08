@@ -1,6 +1,11 @@
 <launch>
-  <node pkg="robot_localization" type="ukf_localization_node" name="ukf_se" clear_params="true">
-    <rosparam command="load" file="$(find bitbots_localisation)/config/test_localize.yaml"/>
 
+  <rosparam command="load" file="$(find bitbots_localisation)/config/dual_ekf_navsat_example.yaml" />
+
+  <!--<node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true"/>-->
+
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map" clear_params="true">
+    <remap from="odometry/filtered" to="odometry/filtered_map"/>
   </node>
+
 </launch>

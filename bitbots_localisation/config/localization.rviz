@@ -9,13 +9,14 @@ Panels:
         - /Grid1
         - /Grid1/Offset1
         - /Axes1
+        - /Axes1/Status1
         - /Marker1
         - /TF1
         - /Map1
         - /Map1/Status1
         - /LaserScan1
       Splitter Ratio: 0.5
-    Tree Height: 706
+    Tree Height: 545
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -34,7 +35,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -214,19 +215,18 @@ Visualization Manager:
       Value: true
       Visual Enabled: true
     - Class: rviz/Axes
-      Enabled: true
+      Enabled: false
       Length: 0.300000012
       Name: Axes
       Radius: 0.0500000007
       Reference Frame: ball
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /robocup_markers
       Name: Marker
       Namespaces:
-        "": true
-        lines: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -294,13 +294,7 @@ Visualization Manager:
           Value: false
         L_SHOULDER_ROLL_R:
           Value: false
-        ball:
-          Value: false
-        base_link:
-          Value: false
         left_foot_sole_link:
-          Value: false
-        map:
           Value: false
         right_foot_sole_link:
           Value: false
@@ -308,57 +302,48 @@ Visualization Manager:
           Value: false
         trunk_link:
           Value: false
-        world:
-          Value: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        world:
-          ball:
-            {}
-          base_link:
-            {}
-          map:
-            {}
-          trunk_link:
-            L_HIP_YAW_L:
-              L_HIP_ROLL_L:
-                L_HIP_PITCH_L:
-                  L_KNEE_L:
-                    L_ANKLE_PITCH_L:
-                      L_ANKLE_ROLL_L:
-                        left_foot_sole_link:
-                          L_FOOT_FRONT_L:
-                            {}
-            L_HIP_YAW_R:
-              L_HIP_ROLL_R:
-                L_HIP_PITCH_R:
-                  L_KNEE_R:
-                    L_ANKLE_PITCH_R:
-                      L_ANKLE_ROLL_R:
-                        right_foot_sole_link:
-                          L_FOOT_FRONT_R:
-                            {}
-            torso_link:
-              L_HEAD_PAN:
-                L_HEAD_TILT:
-                  L_CAMERA:
+        trunk_link:
+          L_HIP_YAW_L:
+            L_HIP_ROLL_L:
+              L_HIP_PITCH_L:
+                L_KNEE_L:
+                  L_ANKLE_PITCH_L:
+                    L_ANKLE_ROLL_L:
+                      left_foot_sole_link:
+                        L_FOOT_FRONT_L:
+                          {}
+          L_HIP_YAW_R:
+            L_HIP_ROLL_R:
+              L_HIP_PITCH_R:
+                L_KNEE_R:
+                  L_ANKLE_PITCH_R:
+                    L_ANKLE_ROLL_R:
+                      right_foot_sole_link:
+                        L_FOOT_FRONT_R:
+                          {}
+          torso_link:
+            L_HEAD_PAN:
+              L_HEAD_TILT:
+                L_CAMERA:
+                  {}
+            L_IMU:
+              {}
+            L_SHOULDER_PITCH_L:
+              L_SHOULDER_ROLL_L:
+                L_ELBOW_L:
+                  L_Hand_L:
                     {}
-              L_IMU:
-                {}
-              L_SHOULDER_PITCH_L:
-                L_SHOULDER_ROLL_L:
-                  L_ELBOW_L:
-                    L_Hand_L:
-                      {}
-              L_SHOULDER_PITCH_R:
-                L_SHOULDER_ROLL_R:
-                  L_ELBOW_R:
-                    L_Hand_R:
-                      {}
+            L_SHOULDER_PITCH_R:
+              L_SHOULDER_ROLL_R:
+                L_ELBOW_R:
+                  L_Hand_R:
+                    {}
       Update Interval: 0
       Value: true
     - Class: rviz/Camera
@@ -372,9 +357,9 @@ Visualization Manager:
       Unreliable: false
       Value: false
       Visibility:
-        "": true
         Axes: true
         Grid: true
+        LaserScan: true
         Map: true
         Marker: true
         RobotModel: true
@@ -425,7 +410,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: world
+    Fixed Frame: left_foot_sole_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -471,10 +456,10 @@ Window Geometry:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 1013
+  Height: 851
   Hide Left Dock: false
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd00000004000000000000016f00000352fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000004000000352000000d800fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d006500720061020000035500000096000002ab000002b0000000010000010f00000355fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000004000000355000000af00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000003480000003efc0100000002fb0000000800540069006d0065010000000000000348000002cd00fffffffb0000000800540069006d00650100000000000004500000000000000000000001d30000035200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016f000002b0fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000041000002b0000000d700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610200000000000000410000016a00000396000000010000010f00000355fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000004000000355000000ad00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000006400000003efc0100000002fb0000000800540069006d00650100000000000006400000030000fffffffb0000000800540069006d00650100000000000004500000000000000000000004cb000002b000000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -483,6 +468,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: true
-  Width: 840
-  X: 1920
-  Y: 0
+  Width: 1600
+  X: 0
+  Y: 27

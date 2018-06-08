@@ -1,26 +1,35 @@
 <launch>
 
-
-    <!--<node name="fake_laser" pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" />-->
-    <!--<node name="fake_laserdata"  pkg="bitbots_localisation" type="fake_laserdata.py" />-->
-
-    <!--<node name="init_pose" pkg="bitbots_localisation" type="init_position.py" />-->
-
      <include file="$(find bitbots_localisation)/launch/pointcloud_to_laserscan.launch" />
 
     <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localisation)/models/f031.yaml"/>
 
 
-
     <node name="amcl_particlefilter"  pkg="amcl" type="amcl" output="screen">
 
-        <param name="/use_map_topic" value="true" />
-        <param name="/odom_frame_id" value="base_link" />
-        <param name="/base_frame_id" value="base_link" />
-        <param name="/global_frame_id" value="map" />
-        <param name="initial_pose_x" value="0.0"/>
-         <param name="initial_pose_y" value="0.0"/>
-         <param name="initial_pose_a" value="0.0"/>
+        <param name="use_map_topic" value="true" />
+        <param name="first_map_only" value="true"/>
+
+        <param name="initial_pose_x" value="1.5"/>
+        <param name="initial_pose_y" value="2.0"/>
+        <param name="initial_pose_a" value="0.0"/>
+        <param name="initial_cov_xx" value="1.0"/>
+        <param name="initial_cov_yy" value="4.0"/>
+        <param name="initial_cov_aa" value="2.25"/>
+
+        <param name="gui_publish_rate" value="1.0"/>
+
+        <param name="update_min_d" value="0.01"/>
+        <param name="update_min_a" value="0.01"/>
+
+        <param name="recovery_alpha_slow" value="0.001"/>
+        <param name="recovery_alpha_fast" value="0.1"/>
+
+
+
+        <param name="resample_interval" value="1"/>
+
+        <param name="tf_broadcast" value="true"/>
 
     </node>
 </launch>
