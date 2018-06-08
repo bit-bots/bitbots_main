@@ -359,6 +359,7 @@ void DynamixelHardwareInterface::processVTE(bool success){
         // todo should also turn off power, but is not possible yet
         setTorque(false);
         ROS_ERROR("OVERLOAD ERROR!!! OVERLOAD ERROR!!! OVERLOAD ERROR!!!");
+        speak("Overload Error!");
       }
     }
     
