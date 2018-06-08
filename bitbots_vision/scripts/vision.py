@@ -2,7 +2,7 @@
 
 
 from bitbots_vision_common.vision_modules import lines, horizon, color, debug, live_classifier, classifier, ball, \
-    lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder
+    lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
@@ -41,6 +41,9 @@ class Vision:
 
         # setup detectors
         self.horizon_detector.set_image(image)
+        self.obstacle_detector.set_image(image)
+        self.line_detector.set_image(image)
+
         if (self.config['vision_ball_classifier'] == 'cascade'):
             self.ball_finder.set_image(image)
             self.ball_detector.set_image(image,
@@ -53,7 +56,6 @@ class Vision:
             self.ball_detector.set_image(image)
 
         top_ball_candidate = self.ball_detector.get_top_candidate()
-        self.line_detector.set_image(image)
 
         # create ball msg
         if top_ball_candidate and top_ball_candidate.rating > self._ball_candidate_threshold:
@@ -86,6 +88,11 @@ class Vision:
         # do debug stuff
         if self.debug:
             self.debug_image_dings.set_image(image)
+            self.debug_image_dings.draw_obstacle_candidates(
+                self.obstacle_detector.get_candidates(),
+                (0, 0, 0),
+                thickness=3
+            )
             self.debug_image_dings.draw_horizon(
                 self.horizon_detector.get_horizon_points(),
                 (0, 0, 255))
@@ -191,6 +198,18 @@ class Vision:
             [config['white_color_detector_upper_values_h'], config['white_color_detector_upper_values_s'],
              config['white_color_detector_upper_values_v']])
 
+        self.red_color_detector = color.HsvSpaceColorDetector(
+            [config['red_color_detector_lower_values_h'], config['red_color_detector_lower_values_s'],
+             config['red_color_detector_lower_values_v']],
+            [config['red_color_detector_upper_values_h'], config['red_color_detector_upper_values_s'],
+             config['red_color_detector_upper_values_v']])
+
+        self.blue_color_detector = color.HsvSpaceColorDetector(
+            [config['blue_color_detector_lower_values_h'], config['blue_color_detector_lower_values_s'],
+             config['blue_color_detector_lower_values_v']],
+            [config['blue_color_detector_upper_values_h'], config['blue_color_detector_upper_values_s'],
+             config['blue_color_detector_upper_values_v']])
+
         self.field_color_detector = color.PixelListColorDetector(
             self.package_path +
             config['field_color_detector_path'])
@@ -224,6 +243,18 @@ class Vision:
                                                 self.field_color_detector,
                                                 self.horizon_detector,
                                                 self.lines_config)
+
+        self.obstacles_config = {
+            'color_threshold': config['obstacle_color_threshold'],
+            'horizon_diff_threshold': config['obstacle_horizon_diff_threshold'],
+            'candidate_horizon_offset': config['obstacle_candidate_horizon_offset'],
+        }
+        self.obstacle_detector = obstacle.ObstacleDetector(
+            self.red_color_detector,
+            self.blue_color_detector,
+            self.horizon_detector,
+            self.obstacles_config
+        )
 
         # subscribers
         if 'ROS_img_msg_topic' not in self.config or \
