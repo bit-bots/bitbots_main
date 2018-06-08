@@ -2,15 +2,17 @@
 # -*- coding: utf8 -*-
 import actionlib
 import rospy
+import sys
 
 import humanoid_league_msgs.msg
 import time
 
 
-def anim_run():
+def anim_run(anim=None):
     anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
     rospy.init_node('anim_sender', anonymous=False)
-    anim = rospy.get_param("~anim")
+    if anim is None:
+        anim = rospy.get_param("~anim")
     if anim is None or anim == "":
         rospy.logwarn("Tried to play an animation with an empty name!")
         return False
@@ -29,6 +31,11 @@ def anim_run():
     rospy.sleep(0.5)
 
 if __name__ == '__main__':
-    # run with "rosrun bitbots_animation_server run_animation.py _anim:=NAME"
+    # run with "rosrun bitbots_animation_server run_animation.py NAME"
     #print("Deactivate evaluation of state machine in hcm befor using this, maybe")
-    anim_run()
+    if len(sys.argv) > 1:
+        # Support for _anim:=NAME -style execution for legacy reasons
+        if sys.argv[1].startswith('_anim:=') or sys.argv[1].startswith('anim:='):
+            anim_run(sys.argv[1].split(':=')[1])
+        else:
+            anim_run(sys.argv[1])
