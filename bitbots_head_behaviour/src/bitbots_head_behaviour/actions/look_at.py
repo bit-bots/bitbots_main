@@ -11,6 +11,7 @@ The module expects a tuple containing the relative coordinates.
 """
 
 import numpy as np
+import math
 import rospy
 import tf2_ros as tf2
 from tf2_geometry_msgs import PointStamped
@@ -40,15 +41,16 @@ class AbstractLookAt(AbstractActionModule):
 
         try:
             point_camera = self.tfBuffer.transform(point, 'camera_fixed')
-        except (tf2.LookupException, tf2.ConnectivityException):
+        except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException):
             rospy.logdebug("Waiting for transform...")
             return
 
         # Calculate the head joint angles and clip them to the right range
-        angle_tilt = np.rad2deg(np.arctan2(point_camera.point.z, point_camera.point.x))
-        angle_tilt = np.clip(angle_tilt, connector.head.min_tilt, connector.head.max_tilt)
         angle_pan = np.rad2deg(np.arctan2(point_camera.point.y, point_camera.point.x))
+        angle_tilt = np.rad2deg(np.arctan2(point_camera.point.z,
+                                           math.sqrt(point_camera.point.x ** 2 + point_camera.point.y ** 2)))
         angle_pan = np.clip(angle_pan, connector.head.min_pan, connector.head.max_pan)
+        angle_tilt = np.clip(angle_tilt, connector.head.min_tilt, connector.head.max_tilt)
 
         current_pan_pos, current_tilt_pos = connector.head.get_current_head_pos()
         if (abs(current_pan_pos - angle_pan) < connector.head.delta and
