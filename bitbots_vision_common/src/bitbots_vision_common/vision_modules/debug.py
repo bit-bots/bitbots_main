@@ -37,6 +37,15 @@ class DebugImage:
                            color,
                            thickness=thickness)
 
+    def draw_obstacle_candidates(self, obstacle_candidates, color, thickness=1):
+        for candidate in obstacle_candidates:
+            if candidate:
+                cv2.rectangle(self.raw_image,
+                              candidate.get_upper_left_point(),
+                              candidate.get_lower_right_point(),
+                              color,
+                              thickness=thickness)
+
     def draw_points(self, points, color, rad=2, thickness=-1):
         for point in points:
             cv2.circle(self.raw_image, point, rad, color, thickness=thickness)
