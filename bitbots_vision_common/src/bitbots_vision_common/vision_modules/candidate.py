@@ -39,6 +39,15 @@ class Candidate:
     def get_upper_left_y(self):
         return self._y1
 
+    def get_lower_right_point(self):
+        # type: () -> tuple[int, int]
+        """
+        returns...
+
+        :return tuple[int,int]: lower right point
+        """
+        return self._x1 + self._width, self._y1 + self._height
+
     def get_lower_right_x(self):
         return self._x1 + self._width
 
