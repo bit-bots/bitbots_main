@@ -1,0 +1,37 @@
+{
+    "author": "Tanja", 
+    "description": "", 
+    "hostname": "compi-u", 
+    "keyframes": [
+        {
+            "duration": 1.0, 
+            "goals": {
+                "HeadPan": 0, 
+                "HeadTilt": 0, 
+                "LAnklePitch": -36, 
+                "LAnkleRoll": 4, 
+                "LElbow": 45, 
+                "LHipPitch": 52, 
+                "LHipRoll": 5, 
+                "LHipYaw": 0, 
+                "LKnee": -84, 
+                "LShoulderPitch": 0, 
+                "LShoulderRoll": 0, 
+                "RAnklePitch": 34, 
+                "RAnkleRoll": -4, 
+                "RElbow": -45, 
+                "RHipPitch": -52, 
+                "RHipRoll": -4, 
+                "RHipYaw": 0, 
+                "RKnee": 84, 
+                "RShoulderPitch": 0, 
+                "RShoulderRoll": 0
+            }, 
+            "name": "walkready", 
+            "pause": 0.0
+        }
+    ], 
+    "last_edited": "2018-06-08 14:35:29.436275", 
+    "name": "falling_back", 
+    "version": "1.0"
+}

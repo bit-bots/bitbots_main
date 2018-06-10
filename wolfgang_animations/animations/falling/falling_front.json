@@ -1,0 +1,37 @@
+{
+    "author": "", 
+    "description": "", 
+    "hostname": "compi-u", 
+    "keyframes": [
+        {
+            "duration": 1.0, 
+            "goals": {
+                "HeadPan": 0, 
+                "HeadTilt": 0, 
+                "LAnklePitch": -36, 
+                "LAnkleRoll": 4, 
+                "LElbow": 45, 
+                "LHipPitch": -11, 
+                "LHipRoll": -1, 
+                "LHipYaw": 6, 
+                "LKnee": -13, 
+                "LShoulderPitch": 78, 
+                "LShoulderRoll": 0, 
+                "RAnklePitch": 36, 
+                "RAnkleRoll": -4, 
+                "RElbow": -45, 
+                "RHipPitch": 11, 
+                "RHipRoll": 1, 
+                "RHipYaw": 6, 
+                "RKnee": 13, 
+                "RShoulderPitch": -78, 
+                "RShoulderRoll": 0
+            }, 
+            "name": "frame0", 
+            "pause": 0.0
+        }
+    ], 
+    "last_edited": "2018-06-08 14:33:41.824340", 
+    "name": "falling_front", 
+    "version": "1.0"
+}
