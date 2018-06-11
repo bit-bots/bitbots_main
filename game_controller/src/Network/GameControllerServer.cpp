@@ -104,7 +104,6 @@ void GameControllerServer::HandlePacket(char* data) {
     ROS_DEBUG( "Received RGme packet");
 	//lint -e(826)
 	struct RoboCupGameControlData* msg = (struct RoboCupGameControlData*)data;
-
 	// Check version
 	if (msg->version == GAMECONTROLLER_STRUCT_VERSION) {
 		// Check if we are one of the teams
@@ -247,7 +246,7 @@ void GameControllerServer::HandlePacket(char* data) {
 		}
 	} else {
 		//Debugger::DEBUG("GameControllerServer", "Wrong RGme protocol version (%d:%d)!", msg->version, GAMECONTROLLER_STRUCT_VERSION);
-		ROS_DEBUG("Wrong RGme protocol version (%d:%d)!", msg->version, GAMECONTROLLER_STRUCT_VERSION);
+		ROS_WARN("Wrong RGme protocol version (%d:%d)!", msg->version, GAMECONTROLLER_STRUCT_VERSION);
 	}
 }
 
