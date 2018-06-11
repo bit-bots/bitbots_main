@@ -93,6 +93,16 @@ class Vision:
                 (0, 0, 0),
                 thickness=3
             )
+            self.debug_image_dings.draw_obstacle_candidates(
+                self.obstacle_detector.get_red_obstacles(),
+                (0, 0, 255),
+                thickness=3
+            )
+            self.debug_image_dings.draw_obstacle_candidates(
+                self.obstacle_detector.get_blue_obstacles(),
+                (255, 0, 0),
+                thickness=3
+            )
             self.debug_image_dings.draw_horizon(
                 self.horizon_detector.get_horizon_points(),
                 (0, 0, 255))
