@@ -7,7 +7,7 @@
 #define GAMECONTROLLER_RETURN_PORT     3939
 
 #define GAMECONTROLLER_STRUCT_HEADER   "RGme"
-#define GAMECONTROLLER_STRUCT_VERSION  11
+#define GAMECONTROLLER_STRUCT_VERSION  12
 
 #define MAX_NUM_PLAYERS             11
 
@@ -42,44 +42,41 @@
 #define STATE2_PENALTYSHOOT         1
 #define STATE2_OVERTIME             2
 #define STATE2_TIMEOUT              3
-#define STATE2_FREEKICK             4
-#define STATE2_PENALTYKICK          5
+#define STATE2_DIRECT_FREEKICK      4
+#define STATE2_INDIRECT_FREEKICK    5
+#define STATE2_PENALTYKICK          6
 
 #define PENALTY_NONE                        0
-// SPL
-#define PENALTY_SPL_ILLEGAL_BALL_CONTACT    1 // ball holding / playing with hands
-#define PENALTY_SPL_PLAYER_PUSHING          2
-#define PENALTY_SPL_ILLEGAL_MOTION_IN_SET   3 // heard whistle too early?
-#define PENALTY_SPL_INACTIVE_PLAYER         4 // fallen, inactive, local game stuck
-#define PENALTY_SPL_ILLEGAL_DEFENDER        5 // own penalty area, center circle during kick-off
-#define PENALTY_SPL_LEAVING_THE_FIELD       6
-#define PENALTY_SPL_KICK_OFF_GOAL           7 // scored from inside center circle after kick-off
-#define PENALTY_SPL_REQUEST_FOR_PICKUP      8
-#define PENALTY_SPL_COACH_MOTION            9
-// HL Kid Size
-#define PENALTY_HL_KID_BALL_MANIPULATION    1
-#define PENALTY_HL_KID_PHYSICAL_CONTACT     2
-#define PENALTY_HL_KID_ILLEGAL_ATTACK       3
-#define PENALTY_HL_KID_ILLEGAL_DEFENSE      4
-#define PENALTY_HL_KID_REQUEST_FOR_PICKUP   5
-#define PENALTY_HL_KID_REQUEST_FOR_SERVICE  6
-#define PENALTY_HL_KID_REQUEST_FOR_PICKUP_2_SERVICE 7
-// HL Teen Size
-#define PENALTY_HL_TEEN_BALL_MANIPULATION   1
-#define PENALTY_HL_TEEN_PHYSICAL_CONTACT    2
-#define PENALTY_HL_TEEN_ILLEGAL_ATTACK      3
-#define PENALTY_HL_TEEN_ILLEGAL_DEFENSE     4
-#define PENALTY_HL_TEEN_REQUEST_FOR_PICKUP  5
-#define PENALTY_HL_TEEN_REQUEST_FOR_SERVICE 6
-#define PENALTY_HL_TEEN_REQUEST_FOR_PICKUP_2_SERVICE 7
 
-#define PENALTY_SUBSTITUTE                  14
-#define PENALTY_MANUAL                      15
+#define UNKNOWN                             255
+#define NONE                                0
+#define SUBSTITUTE                          14
+#define MANUAL                              15
+
+#define SPL_ILLEGAL_BALL_CONTACT            1
+#define SPL_PLAYER_PUSHING                  2
+#define SPL_ILLEGAL_MOTION_IN_SET           3
+#define SPL_INACTIVE_PLAYER                 4
+#define SPL_ILLEGAL_DEFENDER                5
+#define SPL_LEAVING_THE_FIELD               6
+#define SPL_KICK_OFF_GOAL                   7
+#define SPL_REQUEST_FOR_PICKUP              8
+#define SPL_COACH_MOTION                    9
+
+
+#define HL_BALL_MANIPULATION                30
+#define HL_PHYSICAL_CONTACT                 31
+#define HL_ILLEGAL_ATTACK                   32
+#define HL_ILLEGAL_DEFENSE                  33
+#define HL_PICKUP_OR_INCAPABLE              34
+#define HL_SERVICE                          35
 
 struct RobotInfo
 {
   uint8_t penalty;              // penalty state of the player
   uint8_t secsTillUnpenalised;  // estimate of time till unpenalised
+  uint8_t yellowCardCount;  // number of yellow cards
+  uint8_t redCardCount;  // number of red cards
 };
 
 struct TeamInfo
