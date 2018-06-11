@@ -23,6 +23,20 @@ white_color_detector_upper_values_h: 180
 white_color_detector_upper_values_s: 178
 white_color_detector_upper_values_v: 255
 
+red_color_detector_lower_values_h: 151
+red_color_detector_lower_values_s: 140
+red_color_detector_lower_values_v: 132
+red_color_detector_upper_values_h: 255
+red_color_detector_upper_values_s: 255
+red_color_detector_upper_values_v: 255
+
+blue_color_detector_lower_values_h: 103
+blue_color_detector_lower_values_s: 140
+blue_color_detector_lower_values_v: 132
+blue_color_detector_upper_values_h: 157
+blue_color_detector_upper_values_s: 255
+blue_color_detector_upper_values_v: 255
+
 horizon_finder_vertical_steps: 30
 horizon_finder_horizontal_steps: 30
 horizon_finder_precision_pix: 5
@@ -37,6 +51,10 @@ vision_ball_candidate_rating_threshold: 0.5
 line_detector_horizon_offset: 50
 line_detector_linepoints_range: 5000
 line_detector_blur_kernel_size: 9
+
+obstacle_color_threshold: 50
+obstacle_horizon_diff_threshold: 20
+obstacle_candidate_horizon_offset: 30
 
 ROS_img_msg_topic: 'image_raw'
 ROS_img_queue_size: 1
