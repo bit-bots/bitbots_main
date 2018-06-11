@@ -15,8 +15,8 @@ hcm:
   animations:
     walkready: "walkready" # TODO change init to walkready. Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
     goalie-walkready: "walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
-    front-up: "init"
-    bottom-up: "init"
+    front-up: "stand_up_front"
+    bottom-up: "stand_up_back"
     toSquat: "sit-down"
     stand-up: "stand-up"
     penalized: "sit-down"
