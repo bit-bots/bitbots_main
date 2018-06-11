@@ -28,10 +28,10 @@ hcm:
   falling:
 
     #falling animations
-    "falling_front": "init"
-    "falling_back": "init"
-    "falling_left": "init"
-    "falling_right": "init"
+    "falling_front": "falling_front"
+    "falling_back": "falling_back"
+    "falling_left": "falling_left"
+    "falling_right": "falling_right"
 
     "Minibot":
 
