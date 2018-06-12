@@ -470,7 +470,7 @@
         </collision>
     </link>
     <link name="camera" />
-    <link name="imu" />
+    <link name="imu_frame" />
     <link name="camera_fixed">
     </link>
 
@@ -645,7 +645,7 @@
 
     <joint name="torso_to_imu" type="fixed">
         <parent link="torso" />
-        <child link="imu" />
+        <child link="imu_frame" />
         <origin rpy="0.0 0 0" xyz="-0.045 0.025 0.023" />
     </joint>
     <joint name="torso_to_camera_fixed" type="fixed">
