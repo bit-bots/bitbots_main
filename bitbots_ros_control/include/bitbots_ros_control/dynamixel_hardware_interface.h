@@ -6,6 +6,7 @@
 
 #include <std_msgs/Bool.h>  
 #include <humanoid_league_msgs/Speak.h>
+#include <bitbots_buttons/Buttons.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
 #include <std_msgs/Bool.h>
@@ -24,6 +25,7 @@
 #include <bitbots_ros_control/bitbots_ros_control_paramsConfig.h>
 
 #include <dynamixel_workbench/dynamixel_driver.h>
+#include <bitset>
 
 namespace bitbots_ros_control
 {
@@ -104,6 +106,8 @@ private:
   bool syncReadVoltageAndTemp();
   bool syncReadError();
   bool readImu();
+  bool readButtons();
+
 
   bool syncWritePosition();
   bool syncWriteVelocity();
@@ -184,6 +188,7 @@ private:
   ros::Subscriber _set_torque_sub;
   ros::Publisher _diagnostic_pub;
   ros::Publisher _speak_pub;
+  ros::Publisher _button_pub;
   ros::Subscriber _set_torque_indiv_sub;
   ros::Subscriber _update_pid_sub;
 

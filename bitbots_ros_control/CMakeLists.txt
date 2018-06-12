@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   humanoid_league_msgs
   pluginlib
   controller_interface
+  bitbots_buttons
 )
 
 add_message_files(

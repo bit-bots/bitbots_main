@@ -26,6 +26,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _update_pid_sub = nh.subscribe<std_msgs::BoolConstPtr>("update_pid", 1, &DynamixelHardwareInterface::update_pid, this, ros::TransportHints().tcpNoDelay());
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1, this);
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
+  _button_pub = nh.advertise<bitbots_buttons::Buttons>("/buttons", 1, this);
   _status_board.name = "DXL_board";
   _status_board.hardware_id = std::to_string(1);
   _status_IMU.name = "IMU";
@@ -420,6 +421,10 @@ void DynamixelHardwareInterface::read()
           speak("Could not read IMU");
       }
   }
+
+  if(!readButtons()){
+    ROS_ERROR_THROTTLE(1.0, "Couldn't read Buttons");
+  }
   if(_onlyIMU){
     return;
   }
@@ -440,6 +445,7 @@ void DynamixelHardwareInterface::read()
       } else{
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint position!");
         speak("Couldn't read current joint position!");
+          _driver->reinitSyncReadHandler("Present_Position");
       }
     }
 
@@ -447,6 +453,7 @@ void DynamixelHardwareInterface::read()
       if (!syncReadVelocities()) {
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint velocity!");
         speak("Couldn't read current joint velocity!");
+        _driver->reinitSyncReadHandler("Present_Velocity");
       }
     }
 
@@ -454,6 +461,7 @@ void DynamixelHardwareInterface::read()
       if (!syncReadEfforts()) {
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint effort!");
         speak("Couldn't read current joint effort!");
+        _driver->reinitSyncReadHandler("Present_Current");
       }
     }
   }
@@ -470,6 +478,7 @@ void DynamixelHardwareInterface::read()
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current error bytes!");  
         speak("Couldn't read current error bytes!");      
         success = false;
+        _driver->reinitSyncReadHandler("Hardware_Error_Status");
       }
       processVTE(success);
       _read_VT_counter = 0;
@@ -743,6 +752,19 @@ bool DynamixelHardwareInterface::readImu(){
       return false;
     }
 }
+
+bool DynamixelHardwareInterface::readButtons(){
+  uint8_t *data = (uint8_t *) malloc(sizeof(uint8_t));
+  if(_driver->readMultipleRegisters(242, 36, 8, data)){;
+    bitbots_buttons::Buttons msg;
+    msg.button1 = !(*data & 64);
+    msg.button2 = !(*data & 32);
+    _button_pub.publish(msg);
+    return true;
+  }
+  return false;
+}
+
 
 bool DynamixelHardwareInterface::syncWritePosition(){
   int* goal_position = (int*)malloc(_joint_names.size() * sizeof(int));
