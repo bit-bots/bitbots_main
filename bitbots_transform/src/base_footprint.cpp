@@ -38,6 +38,9 @@ BaseFootprintBroadcaster::BaseFootprintBroadcaster() : tfBuffer(ros::Duration(10
     tf.child_frame_id = "base_footprint";
     tf.transform.translation.x = 0.0;
 
+    // for not sending broken transforms
+    tf.transform.rotation.w = 1;
+
     static tf2_ros::TransformBroadcaster br;
     ros::Rate r(30.0);
     while(ros::ok())
@@ -52,21 +55,22 @@ BaseFootprintBroadcaster::BaseFootprintBroadcaster() : tfBuffer(ros::Duration(10
         try{
             tf_right = tfBuffer.lookupTransform("base_link", "r_sole", ros::Time::now(), ros::Duration(0.1));
             tf_left = tfBuffer.lookupTransform("base_link", "l_sole",  ros::Time::now(), ros::Duration(0.1));
+            // check which foot is support foot (which foot is on the ground)
+            if(tf_right.transform.translation.z < tf_left.transform.translation.z) {
+                tf.transform.translation.z = tf_right.transform.translation.z;
+                tf.transform.rotation = tf_right.transform.rotation;
+                tf.header.stamp = tf_right.header.stamp;
+            } else {
+                tf.transform.translation.z = tf_left.transform.translation.z;
+                tf.transform.rotation = tf_left.transform.rotation;
+                tf.header.stamp = tf_left.header.stamp;
+            }
+
+            tf.transform.translation.y = (tf_left.transform.translation.y + tf_right.transform.translation.y)/2;
         }catch(...){
             continue;
         }
-        // check which foot is support foot (which foot is on the ground)
-        if(tf_right.transform.translation.z < tf_left.transform.translation.z) {
-            tf.transform.translation.z = tf_right.transform.translation.z;
-            tf.transform.rotation = tf_right.transform.rotation;
-            tf.header.stamp = tf_right.header.stamp;
-        } else {
-            tf.transform.translation.z = tf_left.transform.translation.z;
-            tf.transform.rotation = tf_left.transform.rotation;
-            tf.header.stamp = tf_left.header.stamp;
-        }
 
-        tf.transform.translation.y = (tf_left.transform.translation.y + tf_right.transform.translation.y)/2;
 
         br.sendTransform(tf);
         r.sleep();
