@@ -74,7 +74,6 @@ static PyObject* findSpots(PyObject *self, PyObject *args)
         {
             lx = next;
             next = std::max(lx - expand_stepsize, 0);
-            std::cerr << "left! \n";
         }
 
         // expand to the right
@@ -83,7 +82,6 @@ static PyObject* findSpots(PyObject *self, PyObject *args)
         {
             rx = next;
             next = std::min(rx + expand_stepsize, (int) binary_image->dimensions[1] - 1);
-            std::cerr << "right! \n";
         }
 
         // expand upwards
@@ -92,7 +90,6 @@ static PyObject* findSpots(PyObject *self, PyObject *args)
         {
             uy = next;
             next = std::max(uy - expand_stepsize, 0);
-            std::cerr << "up! \n";
         }
 
         // expand downwards
@@ -101,7 +98,6 @@ static PyObject* findSpots(PyObject *self, PyObject *args)
         {
             ly = next;
             next = std::min(ly + expand_stepsize, (int) binary_image->dimensions[0] - 1);
-            std::cerr << "down! \n";
         }
 
         // TODO: the refinement stuff
