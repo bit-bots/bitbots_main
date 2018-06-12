@@ -103,6 +103,11 @@ class Vision:
                 (255, 0, 0),
                 thickness=3
             )
+            self.debug_image_dings.draw_obstacle_candidates(
+                self.obstacle_detector.get_white_obstacles(),
+                (255, 255, 255),
+                thickness=3
+            )
             self.debug_image_dings.draw_horizon(
                 self.horizon_detector.get_horizon_points(),
                 (0, 0, 255))
@@ -256,12 +261,14 @@ class Vision:
 
         self.obstacles_config = {
             'color_threshold': config['obstacle_color_threshold'],
+            'white_threshold': config['obstacle_white_threshold'],
             'horizon_diff_threshold': config['obstacle_horizon_diff_threshold'],
             'candidate_horizon_offset': config['obstacle_candidate_horizon_offset'],
         }
         self.obstacle_detector = obstacle.ObstacleDetector(
             self.red_color_detector,
             self.blue_color_detector,
+            self.white_color_detector,
             self.horizon_detector,
             self.obstacles_config
         )

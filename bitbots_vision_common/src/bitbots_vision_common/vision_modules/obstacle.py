@@ -6,29 +6,38 @@ from .horizon import HorizonDetector
 
 
 class ObstacleDetector(CandidateFinder):
-    def __init__(self, red_color_detector, blue_color_detector, horizon_detector, config):
-        # type: (ColorDetector, ColorDetector, HorizonDetector, dict) -> None
+    def __init__(self, red_color_detector, blue_color_detector, white_color_detector, horizon_detector, config):
+        # type: (ColorDetector, ColorDetector, ColorDetector, HorizonDetector, dict) -> None
         self._red_color_detector = red_color_detector
         self._blue_color_detector = blue_color_detector
+        self._white_color_detector = white_color_detector
         self._horizon_detector = horizon_detector
         self._color_threshold = config['color_threshold']
+        self._white_threshold = config['white_threshold']
         self._horizon_diff_threshold = config['horizon_diff_threshold']
         self._candidate_horizon_offset = config['candidate_horizon_offset']
 
         self._image = None
         self._blue_mask = None
         self._red_mask = None
+        self._white_mask = None
+
         self._obstacles = None
         self._blue_obstacles = None
         self._red_obstacles = None
+        self._white_obstacles = None
+        self._other_obstacles = None
 
     def set_image(self, image):
         self._image = image
         self._blue_mask = None
         self._red_mask = None
+        self._white_mask = None
         self._obstacles = None
         self._blue_obstacles = None
         self._red_obstacles = None
+        self._white_obstacles = None
+        self._other_obstacles = None
 
     def get_top_candidates(self, count=1):
         """ This is bullshit for the abstract class"""
@@ -78,6 +87,9 @@ class ObstacleDetector(CandidateFinder):
                 )
         return self._obstacles
 
+    def get_all_obstacles(self):
+        self.get_candidates()
+
     def get_red_obstacles(self):
         if self._red_obstacles is None:
             self._colorsort_obstacles()
@@ -88,13 +100,27 @@ class ObstacleDetector(CandidateFinder):
             self._colorsort_obstacles()
         return self._blue_obstacles
 
+    def get_white_obstacles(self):
+        if self._white_obstacles is None:
+            self._colorsort_obstacles()
+        return self._white_obstacles
+
+    def get_other_obstacles(self):
+        if self._other_obstacles is None:
+            self._colorsort_obstacles()
+        return self._other_obstacles
+
     def _colorsort_obstacles(self):
         if not self._blue_mask:
             self._blue_mask = self._blue_color_detector.mask_image(self._image)
         if not self._red_mask:
             self._red_mask = self._red_color_detector.mask_image(self._image)
+        if not self._white_mask:
+            self._white_mask = self._white_color_detector.mask_image(self._image)
         self._red_obstacles = list()
         self._blue_obstacles = list()
+        self._white_obstacles = list()
+        self._other_obstacles = list()
         for obstacle in self.get_candidates():
             blueness = np.mean(
                 self._blue_mask[
@@ -108,9 +134,22 @@ class ObstacleDetector(CandidateFinder):
                     obstacle.get_upper_left_x():obstacle.get_lower_right_x()
                 ]
             )
+            whiteness = np.mean(
+                self._white_mask[
+                    obstacle.get_upper_left_y():obstacle.get_lower_right_y(),
+                    obstacle.get_upper_left_x():obstacle.get_lower_right_x()
+                ]
+            )
+
+            # players are the priority here
             if redness > self._color_threshold and redness > blueness:
                 self._red_obstacles.append(obstacle)
                 continue
-            if blueness > self._color_threshold:
+            elif blueness > self._color_threshold:
                 self._blue_obstacles.append(obstacle)
                 continue
+            elif whiteness > self._white_threshold:
+                self._white_obstacles.append(obstacle)
+                continue
+            else:
+                self._other_obstacles.append(obstacle)
