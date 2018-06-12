@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>bitbots_transform</name>
-  <version>0.1.0</version>
+  <version>1.0.0</version>
   <description>bitbots_transform provides a node to transform from a pixel in an image to real world coordinates.
     CameraInfo and the TF-Tree needs to be available for it to properly work</description>
 
@@ -40,7 +40,7 @@
   <export>
     <bitbots_documentation>
       <language>python2</language>
-      <status>sim_tested</status>
+      <status>tested_robot</status>
     </bitbots_documentation>
     <rosdoc config="rosdoc.yaml"/>
   </export>

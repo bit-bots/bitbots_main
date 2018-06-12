@@ -31,8 +31,8 @@ class TransformBall(object):
                              LineInformationInImage,
                              self._callback_lines_pc, queue_size=1)
 
-        # rospy.Subscriber("goal_in_image", GoalInImage, self._callback_goal, queue_size=1)
-        # rospy.Subscriber("obstacles_in_image", ObstaclesInImage, self._callback_obstacles, queue_size=1)
+        rospy.Subscriber("goal_in_image", GoalInImage, self._callback_goal, queue_size=1)
+        rospy.Subscriber("obstacles_in_image", ObstaclesInImage, self._callback_obstacles, queue_size=1)
 
         rospy.Subscriber(rospy.get_param("transformer/camera_info/camera_info_topic", "/minibot/camera/camera_info"),
                          CameraInfo,
@@ -112,7 +112,7 @@ class TransformBall(object):
 
         for circle in msg.circles:
             rel_circle = LineCircleRelative()
-            rel_circle.left = self.transform(circle.left,field)
+            rel_circle.left = self.transform(circle.left, field)
             rel_circle.middle = self.transform(circle.middle, field)
             rel_circle.right = self.transform(circle.right, field)
 
@@ -147,6 +147,9 @@ class TransformBall(object):
         self.line_relative_pub.publish(line)
 
     def _callback_lines_pc(self, msg):
+        if self.camera_info is None:
+            rospy.logerr("did not receive camerainfo")
+            return
         points = []
         field = self.get_plane(msg.header.stamp, 0)
         if field is None:
@@ -159,13 +162,54 @@ class TransformBall(object):
         self.line_relative_pc_pub.publish(pc2.create_cloud_xyz32(pc_header, points))
 
     def _callback_goal(self, msg):
-        gr = GoalRelative()
-        gr.header.stamp = msg.header.stamp
-        gr.header.frame_id = "camera"
-        return
+        if self.camera_info is None:
+            rospy.logerr("did not receive camerainfo")
+            return
+
+        field = self.get_plane(msg.header.stamp, 0.0)
+        if field is None:
+            return
+
+        goal = GoalRelative()
+        goal.header.stamp = msg.header.stamp
+        goal.header.frame_id = "camera"
+
+        transformed_left = self.transform(msg.left_post.foot_point, field)
+        goal.left_post = transformed_left
+
+        if msg.right_post.foot_point.x != 0:
+            transformed_right = self.transform(msg.right_post.foot_point, field)
+            goal.right_post = transformed_right
+
+        goal.confidence = msg.confidence
+
+        self.goal_relative_pub.publish(goal)
 
     def _callback_obstacles(self, msg):
-        return
+        if self.camera_info is None:
+            rospy.logerr("did not receive camerainfo")
+            return
+
+        field = self.get_plane(msg.header.stamp, 0.0)
+        if field is None:
+            return
+
+        obstacles = ObstaclesRelative()
+        obstacles.header = msg.header
+        obstacles.header.frame_id = "camera"
+
+        for o in msg.obstacles:
+            obstacle = ObstacleRelative()
+            obstacle.playerNumber = o.playerNumber
+            obstacle.confidence = o.confidence
+            obstacle.color = o.color
+            point = o
+            point.x = point.x + o.height
+            point.y = point.y + o.width/2
+            obstacle.position = self.transform(point, field)
+            obstacles.obstacles.append(obstacle)
+
+        self.obstacle_relative_pub(obstacles)
 
     def get_plane(self, stamp, object_height):
         """ returns a plane which an object is believed to be on as a tuple of a point on this plane and a normal"""
