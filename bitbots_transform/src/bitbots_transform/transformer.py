@@ -209,7 +209,7 @@ class TransformBall(object):
             obstacle.position = self.transform(point, field)
             obstacles.obstacles.append(obstacle)
 
-        self.obstacle_relative_pub(obstacles)
+        self.obstacle_relative_pub.publish(obstacles)
 
     def get_plane(self, stamp, object_height):
         """ returns a plane which an object is believed to be on as a tuple of a point on this plane and a normal"""
