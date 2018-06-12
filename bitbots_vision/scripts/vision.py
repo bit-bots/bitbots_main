@@ -3,7 +3,7 @@
 
 from bitbots_vision_common.vision_modules import lines, horizon, color, debug, live_classifier, classifier, ball, \
     lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle
-from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage
+from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, ObstacleInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import rospy
@@ -72,6 +72,41 @@ class Vision:
             balls_msg.candidates.append(ball_msg)
             rospy.loginfo('found a ball! \o/')
             self.pub_balls.publish(balls_msg)
+
+        # create obstacle msg
+        obstacles_msg = ObstaclesInImage()
+        obstacles_msg.header.frame_id = image_msg.header.frame_id
+        obstacles_msg.header.stamp = image_msg.header.stamp
+        for red_obs in self.obstacle_detector.get_red_obstacles():
+            obstacle_msg = ObstacleInImage()
+            obstacle_msg.color = ObstacleInImage.ROBOT_MAGENTA
+            obstacle_msg.top_left.x = red_obs.get_upper_left_x()
+            obstacle_msg.top_left.y = red_obs.get_upper_left_y()
+            obstacle_msg.height = red_obs.get_height()
+            obstacle_msg.width = red_obs.get_width()
+            obstacle_msg.confidence = 1.0
+            obstacle_msg.playerNumber = 42
+            obstacles_msg.obstacles.append(obstacle_msg)
+        for blue_obs in self.obstacle_detector.get_blue_obstacles():
+            obstacle_msg = ObstacleInImage()
+            obstacle_msg.color = ObstacleInImage.ROBOT_CYAN
+            obstacle_msg.top_left.x = blue_obs.get_upper_left_x()
+            obstacle_msg.top_left.y = blue_obs.get_upper_left_y()
+            obstacle_msg.height = blue_obs.get_height()
+            obstacle_msg.width = blue_obs.get_width()
+            obstacle_msg.confidence = 1.0
+            obstacle_msg.playerNumber = 42
+            obstacles_msg.obstacles.append(obstacle_msg)
+        for other_obs in self.obstacle_detector.get_other_obstacles():
+            obstacle_msg = ObstacleInImage()
+            obstacle_msg.color = ObstacleInImage.UNDEFINED
+            obstacle_msg.top_left.x = other_obs.get_upper_left_x()
+            obstacle_msg.top_left.y = other_obs.get_upper_left_y()
+            obstacle_msg.height = other_obs.get_height()
+            obstacle_msg.width = other_obs.get_width()
+            obstacle_msg.confidence = 1.0
+            obstacles_msg.obstacles.append(obstacle_msg)
+        self.pub_obstacle.publish(obstacles_msg)
 
         # create line msg
         line_msg = LineInformationInImage()  # Todo: add lines
@@ -304,6 +339,16 @@ class Vision:
                 config['ROS_line_msg_topic'],
                 LineInformationInImage,
                 queue_size=5)
+
+        if 'ROS_obstacle_msg_topic' not in self.config or \
+                self.config['ROS_obstacle_msg_topic'] != config['ROS_obstacle_msg_topic']:
+            if hasattr(self, 'pub_obstacle'):
+                self.pub_obstacle.unregister()
+            self.pub_obstacle = rospy.Publisher(
+                config['ROS_obstacle_msg_topic'],
+                ObstaclesInImage,
+                queue_size=3)
+
         self.pub_debug_image = rospy.Publisher(
             'debug_image',
             Image,
