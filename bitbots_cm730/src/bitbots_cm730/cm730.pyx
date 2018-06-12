@@ -93,7 +93,7 @@ cdef class CM730(object):
                 self.ctrl.write_register(i,MX28_REGISTER.led, 0)
             rospy.loginfo("Rom der Motoren gesetzt")
 
-        self.switch_motor_power(old_dxl_power)
+        #self.switch_motor_power(old_dxl_power)
 
     cpdef init_read_packet(self):
         """
