@@ -17,6 +17,90 @@ static bool pointInCandidate(std::pair<int, int> point, int lx, int uy, int rx, 
     return (point.first <= rx && point.first >= lx) && (point.second <= ly && point.second >= uy);
 }
 
+static PyObject* expandPoints(PyObject *self, PyObject *args)
+{
+    PyArrayObject *binary_image;
+    std::pair<int, int> point;
+    int expand_stepsize;
+    float expand_threshold;
+
+    if (!PyArg_ParseTuple(args, "O!(ii)fi", &PyArray_Type, &binary_image, &point.first, &point.second, &expand_threshold, &expand_stepsize))
+        return NULL;
+    if (binary_image->nd != 2 || binary_image->descr->type_num != PyArray_FLOAT) {
+        PyErr_SetString(PyExc_ValueError,
+            "image must be two-dimensional and of type float");
+        return NULL;
+    }
+
+    int lx, uy, rx, ly, next;
+
+
+    // std::cout << (int) *(binary_image->data + point.second * binary_image->strides[0] + point.first * binary_image->strides[1]) << "\n";
+    // point is not activated
+    if (! *(binary_image->data + point.second * binary_image->strides[0] + point.first * binary_image->strides[1]) > expand_threshold)
+    {
+        Py_RETURN_NONE;
+    }
+    // std::cout << "hi!\n";
+    // expand the area
+    lx = point.first;
+    rx = point.first;
+    uy = point.second;
+    ly = point.second;
+
+    // expand to the left
+    next = std::max(lx - expand_stepsize, 0);
+    while (next > 0 && *(binary_image->data + point.second * binary_image->strides[0] + next * binary_image->strides[1]) > expand_threshold)
+    {
+        lx = next;
+        next = std::max(lx - expand_stepsize, 0);
+    }
+
+    // expand to the right
+    next = std::min(rx + expand_stepsize, (int) binary_image->dimensions[1] - 1);
+    while (next < binary_image->dimensions[1] - 1 && *(binary_image->data + point.second * binary_image->strides[0] + next * binary_image->strides[1]) > expand_threshold)
+    {
+        rx = next;
+        next = std::min(rx + expand_stepsize, (int) binary_image->dimensions[1] - 1);
+    }
+
+    // expand upwards
+    next = std::max(uy - expand_stepsize, 0);
+    while (next > 0 && *(binary_image->data + next * binary_image->strides[0] + point.first * binary_image->strides[1]) > expand_threshold)
+    {
+        uy = next;
+        next = std::max(uy - expand_stepsize, 0);
+    }
+
+    // expand downwards
+    next = std::min(ly + expand_stepsize, (int) binary_image->dimensions[0] - 1);
+    while (next < binary_image->dimensions[0] - 1 && *(binary_image->data + next * binary_image->strides[0] + point.first * binary_image->strides[1]) > expand_threshold)
+    {
+        ly = next;
+        next = std::min(ly + expand_stepsize, (int) binary_image->dimensions[0] - 1);
+    }
+
+    PyObject* pyCandidate = PyTuple_New(4);
+    Py_INCREF(pyCandidate);
+    if (!pyCandidate) throw logic_error("Unable to allocate memory for candidate");
+
+    PyObject *py_rx = PyInt_FromLong(rx);
+    PyObject *py_lx = PyInt_FromLong(lx);
+    PyObject *py_uy = PyInt_FromLong(uy);
+    PyObject *py_ly = PyInt_FromLong(ly);
+    if (! (py_rx && py_lx && py_uy && py_ly))
+    {
+        Py_DECREF(pyCandidate);
+        throw logic_error("Unable to allocate memory for candidate");
+    }
+    PyTuple_SET_ITEM(pyCandidate, 0, py_rx);
+    PyTuple_SET_ITEM(pyCandidate, 1, py_lx);
+    PyTuple_SET_ITEM(pyCandidate, 2, py_uy);
+    PyTuple_SET_ITEM(pyCandidate, 3, py_ly);
+
+	return pyCandidate;
+}
+
 static PyObject* findSpots(PyObject *self, PyObject *args)
 {
     PyArrayObject *binary_image;
@@ -181,6 +265,7 @@ static PyObject* maskImg(PyObject *self, PyObject *args) {
 
 static PyMethodDef VisionMethods[] = {
     {"findSpots", findSpots, METH_VARARGS, ""},
+    {"expandPoints", expandPoints, METH_VARARGS, ""},
     {"maskImg", maskImg, METH_VARARGS, ""},
     {NULL, NULL, 0, NULL}
 };
