@@ -1,7 +1,8 @@
 <launch>
     <arg name="sim" default="false"/>
-    <arg name="hcm" default="true"/>
+    <arg name="motion" default="true"/>
     <arg name="behave" default="true"/>
+    <arg name="vision" default="true"/>
     
     <arg name="minibot" default="false"/>
     <arg name="wolfgang" default="false"/>
@@ -16,15 +17,18 @@
         <arg name="wolfgang" value="$(arg wolfgang)"/>   
     </include>
 
-    <include file="$(find bitbots_vision_common)/launch/vision_startup.launch">
-        <arg name="sim" value="$(arg sim)" />
-        <arg name="minibot" value="$(arg minibot)"/>
-        <arg name="wolfgang" value="$(arg wolfgang)"/>
-    </include>
+    <group if="$(arg vision)">
+        <include file="$(find bitbots_vision_common)/launch/vision_startup.launch">
+            <arg name="sim" value="$(arg sim)" />
+            <arg name="minibot" value="$(arg minibot)"/>
+            <arg name="wolfgang" value="$(arg wolfgang)"/>
+        </include>
+    </group>
 
     <include file="$(find bitbots_transform)/launch/transformer.launch"/>
     <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch"/>
     <include file="$(find bitbots_localisation)/launch/localisation_amcl.launch"/>
+    <include file="$(find bitbots_pathfinding)/launch/pathfinding_move_base.launch"/>
     
 
     <group if="$(arg behave)">
@@ -33,7 +37,7 @@
         </include>
     </group>
 
-    <group if="$(arg hcm)">
+    <group if="$(arg motion)">
         <include file="$(find bitbots_common)/launch/motion.launch">
             <arg name="sim" value="$(arg sim)"/>
             <arg name="minibot" value="$(arg minibot)"/>
