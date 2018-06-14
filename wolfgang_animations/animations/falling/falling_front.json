@@ -4,7 +4,7 @@
     "hostname": "compi-u", 
     "keyframes": [
         {
-            "duration": 1.0, 
+            "duration": 0.1, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 0, 
