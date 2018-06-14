@@ -11,7 +11,7 @@
                 "LAnklePitch": -36, 
                 "LAnkleRoll": 4, 
                 "LElbow": 45, 
-                "LHipPitch": 52, 
+                "LHipPitch": 73, 
                 "LHipRoll": 5, 
                 "LHipYaw": 0, 
                 "LKnee": -84, 
@@ -20,7 +20,7 @@
                 "RAnklePitch": 34, 
                 "RAnkleRoll": -4, 
                 "RElbow": -45, 
-                "RHipPitch": -52, 
+                "RHipPitch": -74, 
                 "RHipRoll": -4, 
                 "RHipYaw": 0, 
                 "RKnee": 84, 
@@ -31,7 +31,7 @@
             "pause": 0.0
         }
     ], 
-    "last_edited": "2018-06-07 15:17:27.238354", 
+    "last_edited": "2018-06-14 15:37:36.520414", 
     "name": "walkready", 
     "version": "1.0"
 }
