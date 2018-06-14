@@ -1,9 +1,9 @@
 Animations:
   Kicks:
-    leftKick: ""
+    leftKick: "kickleft"
     leftKickStrong: ""
     leftKickSide: ""
-    rightKick: ""
+    rightKick: "kickright"
     rightKickStrong: ""
     rightKickSide: ""
 
