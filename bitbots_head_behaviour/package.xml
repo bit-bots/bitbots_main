@@ -17,12 +17,14 @@
   <build_depend>humanoid_league_msgs</build_depend>
   <build_depend>bitbots_stackmachine</build_depend>
   <build_depend>bitbots_body_behaviour</build_depend>
+  <build_depend>bitbots_ik</build_depend>
 
   <run_depend>std_msgs</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>humanoid_league_msgs</run_depend>
   <run_depend>bitbots_stackmachine</run_depend>
   <run_depend>bitbots_body_behaviour</run_depend>
+  <run_depend>bitbots_ik</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>

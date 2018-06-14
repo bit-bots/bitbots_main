@@ -2,6 +2,8 @@ import math
 import numpy as np
 import rosparam
 import rospy
+from geometry_msgs.msg import Vector3
+from bitbots_ik.srv import LookAt
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
@@ -38,6 +40,11 @@ class HeadCapsule:
         self.pos_msg.points = [self.point_msg]
 
         self.position_publisher = None  # type: rospy.Publisher
+
+        # Service proxy for LookAt
+        rospy.wait_for_service('look_at')
+        self.look_at = rospy.ServiceProxy('look_at', LookAt)
+
 
     #################
     # Head position #
@@ -118,3 +125,13 @@ class HeadCapsule:
 
     def unset_confirmed_goal_time(self):
         self.confirmed_goal_time = -999
+
+    ##################
+    # LookAt Service #
+    ##################
+
+    def get_motor_goals_from_point(self, point):
+        """Call the look at service to calculate head motor goals"""
+        vector = Vector3(point.x, point.y, point.z)
+        goals = self.look_at(vector)
+        return goals.head_pan, goals.head_tilt

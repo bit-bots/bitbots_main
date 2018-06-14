@@ -11,11 +11,10 @@ from trajectory_msgs.msg import JointTrajectory
 
 class HeadNode(StackMachine):
     def __init__(self):
+        rospy.init_node("Headbehaviour")
         super(HeadNode, self).__init__(HeadConnector(), debug_topic="/debug_head_behaviour")
 
         self.connector.head.position_publisher = rospy.Publisher("head_motor_goals", JointTrajectory, queue_size=10)
-
-        rospy.init_node("Headbehaviour")
 
         rospy.Subscriber("joint_states", JointState, self.connector.head.joint_state_cb)
         rospy.Subscriber("head_duty", HeadMode, self.connector.head.cb_headmode, queue_size=10)

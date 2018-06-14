@@ -14,6 +14,6 @@
         <arg name="wolfgang" value="$(arg wolfgang)"/>   
     </include>
 
-    <node name="head_behaviour"  pkg="bitbots_head_behaviour" type="head_node.py" respawn="true" output="screen"/>
-
+    <node name="head_behaviour" pkg="bitbots_head_behaviour" type="head_node.py" respawn="true" output="screen"/>
+    <node name="IK_service" pkg="bitbots_ik" type="ik_service" respawn="true" output="screen"/>
 </launch>
