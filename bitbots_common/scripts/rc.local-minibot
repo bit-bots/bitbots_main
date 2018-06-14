@@ -12,12 +12,12 @@
 # By default this script does nothing.
 
 
-# Defualt odroid ubuntu
+# Default odroid ubuntu
 if [ -f /aafirstboot ]; then /aafirstboot start ; fi
 
 # Start our software
-if [ -f /home/odroid/catkin_ws/src/bitbots_meta/bitbots_misc/bitbots_common/scripts/bootup.sh ] ; then
-     sudo -iu odroid screen -d -m /home/odroid/catkin_ws/src/bitbots_meta/bitbots_misc/bitbots_common/scripts/bootup.sh
+if [ -x /home/bitbots/minibot_ws/src/bitbots_misc/bitbots_common/scripts/bootup.sh ]; then
+    sudo -iu bitbots screen -d -m /home/bitbots/minibot_ws/src/bitbots_misc/bitbots_common/scripts/bootup.sh
 fi
 
 exit 0
