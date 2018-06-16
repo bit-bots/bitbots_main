@@ -10,9 +10,8 @@ StandsCorrectDecision
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
 
 import rospy
-from math import atan2
-from bitbots_body_behaviour.body.actions.go_to import GoToBall
-from bitbots_body_behaviour.body.actions.align_on_ball import AlignOnBall
+from math import atan2, sqrt
+from bitbots_body_behaviour.body.actions.go_to import GoToBall, GoToRelativePosition
 from bitbots_body_behaviour.body.actions.align_to_goal import AlignToGoal
 from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionCommon
 
@@ -28,6 +27,10 @@ class StandsCorrectDecision(AbstractDecisionModule):
         self.toggle_use_side_kick_in_game = connector.config["Body"]["Toggles"]["Fieldie"]["useSideKickInGame"]
         self.toggle_hack_align = connector.config["Body"]["Toggles"]["Fieldie"]["hackAlign"]
         self.config_kickalign_v = connector.config["Body"]["Fieldie"]["kickAlign"]
+        self.ball_lost_time = connector.config["Body"]["Common"]["maxBallTime"]
+        self.ball_moved_threshold = connector.config["Body"]["Common"]["ballMovedThreshold"]
+        self.max_kick_attempts = connector.config["Body"]["Common"]["maxKickAttempts"]
+        self.ball_lost_forward_distance = connector.config["Body"]["Common"]["ballLostForwardDistance"]
 
     def perform(self, connector, reevaluate=False):
 
@@ -79,4 +82,27 @@ class StandsCorrectDecision(AbstractDecisionModule):
 
     def action_stands_correct(self, connector):
         connector.blackboard.stop_aligning()
-        return self.push(KickDecisionCommon)
+        # The robot tries to kick several times. When the kick was successful
+        # (the ball moved), he finished kicking. Else, he retries until the
+        # maximum number of kicks is reached, the ball has moved or he does
+        # not see the ball anymore.
+        if connector.blackboard.get_kick_attempts() > 0:
+            if connector.blackboard_capsule.get_kick_attempts() >= self.max_kick_attempts:
+                position = (self.ball_lost_forward_distance, 0, 0)
+                return self.push(GoToRelativePosition, position)
+
+            last_ball = connector.blackboard_capsule.get_saved_ball_position()[0]
+            current_ball = connector.world_model.get_ball_position_uv()
+            ball_moved = sqrt((last_ball[0] - current_ball[0])**2 + (last_ball[1] - current_ball[1])**2) > self.ball_moved_threshold
+            ball_lost = rospy.get_time() - connector.blackboard_capsule.get_saved_ball_position()[1] > self.ball_lost_time
+            if ball_moved or ball_lost:
+                connector.blackboard_capsule.reset_kick_attempts()
+                return self.pop()
+            else:
+                connector.blackboard_capsule.save_ball_position(connector.world_model.get_ball_position_uv())
+                connector.blackboard_capsule.increase_kick_attempts()
+                return self.push(KickDecisionCommon)
+        else:
+            connector.blackboard_capsule.save_ball_position(connector.world_model.get_ball_position_uv())
+            connector.blackboard_capsule.increase_kick_attempts()
+            return self.push(KickDecisionCommon)

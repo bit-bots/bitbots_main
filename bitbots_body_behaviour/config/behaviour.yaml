@@ -94,7 +94,6 @@ Behaviour:
       # Distance when he starts to track only the ball
       focusBallDistance: 0.8
 
-
       Defender:
           # distanz zum ball bei der der defender direkt zum normalen spieler wird
           goStrikerRange: 1.5
@@ -174,6 +173,15 @@ Behaviour:
 
       # threshold at which the current position of the robot is counted as right
       positioningThreshold: 0.5
+
+      # how far the ball has to move to make the robot think he kicked it
+      ballMovedThreshold: 0.2
+
+      # maximum number of attempts to kick a ball
+      maxKickAttempts: 3
+
+      # Distance (in meters) to go forward when we cannot kick the ball
+      ballLostForwardDistance: 0.15
 
       Walking:
           # Forward-Backward

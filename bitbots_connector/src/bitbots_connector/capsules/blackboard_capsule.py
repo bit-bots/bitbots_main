@@ -58,6 +58,21 @@ class BlackboardCapsule:
     def get_aligning_start_time(self):
         return self.my_data.get("StartAlignTime", 0)
 
+    def increase_kick_attempts(self):
+        self.my_data["KickAttempts"] = self.my_data.get("KickAttempts", 0) + 1
+
+    def reset_kick_attempts(self):
+        self.my_data["KickAttempts"] = 0
+
+    def get_kick_attempts(self):
+        return self.my_data.get("KickAttempts", 0)
+
+    def save_ball_postition(self, ball_position):
+        self.my_data["LastBallPosition"] = (ball_position, rospy.get_time())
+
+    def get_saved_ball_position(self):
+        return self.my_data.get("LastBallPosition", None)
+
     ##############
     # ## Goalie ##
     ##############
