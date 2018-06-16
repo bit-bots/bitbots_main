@@ -2,7 +2,8 @@
 <package>
   <name>bitbots_localisation</name>
   <version>0.0.0</version>
-  <description>The bitbots_localisation package</description>
+  <description>The bitbots_localisation package.
+    Field models can be created with the map_generator script in bitbots_tools. </description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
