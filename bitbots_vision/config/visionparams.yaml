@@ -53,8 +53,12 @@ line_detector_linepoints_range: 5000
 line_detector_blur_kernel_size: 9
 
 obstacle_color_threshold: 50
+obstacle_white_threshold: 50
 obstacle_horizon_diff_threshold: 20
 obstacle_candidate_horizon_offset: 30
+
+goalpost_expand_stepsize: 5
+goalpost_white_threshold: 100
 
 ROS_img_msg_topic: 'image_raw'
 ROS_img_queue_size: 1
