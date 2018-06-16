@@ -25,15 +25,15 @@ class GoToDutyPosition(AbstractDecisionModule):
         self.threshold = connector.config["Body"]["Common"]["positioningThreshold"]
 
     def perform(self, connector, reevaluate=False):
-        duty = connector.blackboard.get_duty()
+        role = connector.team_data.get_role()[0]
 
-        if duty == TeamData.ROLE_GOALIE:
+        if role == TeamData.ROLE_GOALIE:
             position = (self.goalie_position[0] * self.half_length, self.goalie_position[1] * self.half_width, 0)
-        elif duty == TeamData.ROLE_STRIKER:
+        elif role == TeamData.ROLE_STRIKER:
             position = (self.teamplayer_position[0] * self.half_length, self.teamplayer_position[1] * self.half_width, 0)
-        elif duty == TeamData.ROLE_DEFENDER:
+        elif role == TeamData.ROLE_DEFENDER:
             position = (self.defender_position[0] * self.half_length, self.defender_position[1] * self.half_width, 0)
-        elif duty == TeamData.ROLE_SUPPORTER:
+        elif role == TeamData.ROLE_SUPPORTER:
             position = (self.center_position[0] * self.half_length, self.center_position[1] * self.half_width, 0)
         else:
             position = (-0.5 * self.half_length, 0, 0)  # this is the middle point of our own half
