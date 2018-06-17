@@ -1,5 +1,5 @@
-ball_fcnn_model_path: '/models/fcnn03'
 ball_fcnn_debug: false  # only active when true and vision/debug is true, too!
+ball_fcnn_model_path: '/models/fcnn031'
 ball_fcnn_threshold: .5  # minimal value for a candidate to be considered
 ball_fcnn_expand_stepsize: 4
 ball_fcnn_pointcloud_stepsize: 10
@@ -7,33 +7,33 @@ ball_fcnn_shuffle_candidate_list: false  # shuffles the list of possible candida
 ball_fcnn_min_ball_diameter: 5
 ball_fcnn_max_ball_diameter: 200
 
-field_color_detector_path: '/config/color_spaces/f031test.yaml'
-field_color_detector_use_dummy_green: false
-field_color_detector_dummy_lower_values_h: 0
-field_color_detector_dummy_lower_values_s: 0
-field_color_detector_dummy_lower_values_v: 180
-field_color_detector_dummy_upper_values_h: 0
-field_color_detector_dummy_upper_values_s: 0
-field_color_detector_dummy_upper_values_v: 180
+field_color_detector_path: '/config/color_spaces/montreal2.yaml'
+field_color_detector_use_hsv_green: false
+field_color_detector_hsv_lower_values_h: 46
+field_color_detector_hsv_lower_values_s: 101
+field_color_detector_hsv_lower_values_v: 12
+field_color_detector_hsv_upper_values_h: 98
+field_color_detector_hsv_upper_values_s: 255
+field_color_detector_hsv_upper_values_v: 255
 
 white_color_detector_lower_values_h: 0
 white_color_detector_lower_values_s: 0
-white_color_detector_lower_values_v: 90
+white_color_detector_lower_values_v: 84
 white_color_detector_upper_values_h: 180
-white_color_detector_upper_values_s: 178
+white_color_detector_upper_values_s: 103
 white_color_detector_upper_values_v: 255
 
-red_color_detector_lower_values_h: 151
-red_color_detector_lower_values_s: 140
-red_color_detector_lower_values_v: 132
+red_color_detector_lower_values_h: 154
+red_color_detector_lower_values_s: 83
+red_color_detector_lower_values_v: 34
 red_color_detector_upper_values_h: 255
 red_color_detector_upper_values_s: 255
 red_color_detector_upper_values_v: 255
 
-blue_color_detector_lower_values_h: 103
+blue_color_detector_lower_values_h: 109
 blue_color_detector_lower_values_s: 140
-blue_color_detector_lower_values_v: 132
-blue_color_detector_upper_values_h: 157
+blue_color_detector_lower_values_v: 93
+blue_color_detector_upper_values_h: 145
 blue_color_detector_upper_values_s: 255
 blue_color_detector_upper_values_v: 255
 
