@@ -11,6 +11,10 @@ hcm:
   threshold_gyro_x_side: 2.5 # > gyroX
   falling_threshold_orientation_left_right: 30 # > Point of no return in degrees
   falling_threshold_orientation_front_back:   30 # < Point of no return in degrees
+  falling_new_front: 32
+  falling_new_back: -6
+  falling_new_left: -18
+  falling_new_right: 18
 
   animations:
     walkready: "walkready" # TODO change init to walkready. Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before

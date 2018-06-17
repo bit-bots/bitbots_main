@@ -4,6 +4,8 @@ import numpy
 from sensor_msgs.msg import Imu
 import rospy
 
+#todo hip pitch offset
+
 class FallChecker(object):
     def __init__(self):
 
@@ -55,10 +57,38 @@ class FallChecker(object):
         self.falling_threshold_side = config["threshold_gyro_x_side"]
         self.falling_threshold_orientation_front_back = math.radians(config["falling_threshold_orientation_front_back"])
         self.falling_threshold_orientation_left_right = math.radians(config["falling_threshold_orientation_left_right"])
+        
+        self.falling_new_front = config["falling_new_front"]
+        self.falling_new_back = config["falling_new_back"]
+        self.falling_new_left = config["falling_new_left"]
+        self.falling_new_right = config["falling_new_right"]
         return config
 
-
     def check_falling(self, not_much_smoothed_gyro, quaternion):
+        euler = self.quaternion_to_euler_angle(*quaternion)
+        if self.falling_threshold_front == 0 or self.falling_threshold_side == 0 or self.falling_threshold_orientation_front_back == 0 or self.falling_threshold_orientation_left_right == 0: 
+            return
+
+        euler_deg = [math.degrees(x)for x in euler]
+        rospy.logwarn_throttle(1, str(euler_deg))
+        rospy.logwarn_throttle(1, str(self.falling_new_front))
+
+        if euler_deg[1] > self.falling_new_front:
+            rospy.logerr(str(euler_deg[1]) + " > " + str(self.falling_new_front))
+            rospy.loginfo("FALLING TO THE FRONT")
+            return self.falling_motor_degrees_front
+        elif euler_deg[1] < self.falling_new_back:
+            rospy.loginfo("FALLING TO THE BACK")
+            return self.falling_motor_degrees_back
+        elif euler_deg[0] > self.falling_new_right:
+            rospy.loginfo("FALLING TO THE RIGHT")
+            return self.falling_motor_degrees_right
+        elif euler_deg[0] < self.falling_new_left:
+            rospy.loginfo("FALLING TO THE LEFT")
+            return self.falling_motor_degrees_left
+
+
+    def check_falling_old(self, not_much_smoothed_gyro, quaternion):
         """Checks if the robot is currently falling and in which direction. """
         # converting the Quaternion into Euler angles for better understanding
         euler = self.quaternion_to_euler_angle(*quaternion)
@@ -115,6 +145,7 @@ class FallChecker(object):
 
     def check_fallen(self, smooth_accel):
         """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""
+        return None
         if smooth_accel[0] > 7:
             rospy.loginfo("Lying on belly, should stand up")
             return rospy.get_param("hcm/animations/front-up")
