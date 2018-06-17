@@ -65,11 +65,15 @@ class FallChecker(object):
         return config
 
     def check_falling(self, not_much_smoothed_gyro, quaternion):
+        return
+        
+    def check_falling_new(self, not_much_smoothed_gyro, quaternion):
         euler = self.quaternion_to_euler_angle(*quaternion)
         if self.falling_threshold_front == 0 or self.falling_threshold_side == 0 or self.falling_threshold_orientation_front_back == 0 or self.falling_threshold_orientation_left_right == 0: 
             return
 
         euler_deg = [math.degrees(x)for x in euler]
+        #euler_deg[0] += 180 #hack minibot
         rospy.logwarn_throttle(1, str(euler_deg))
         rospy.logwarn_throttle(1, str(self.falling_new_front))
 

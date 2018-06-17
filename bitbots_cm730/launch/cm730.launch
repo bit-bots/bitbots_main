@@ -5,4 +5,6 @@
   <rosparam file="$(find bitbots_cm730)/config/offset.yaml" command="load"/>
 
   <node name="cm730" pkg="bitbots_cm730" type="cm730_node.py" output="screen" respawn="true"/>
+  <include file="$(find bitbots_cm730)/launch/imu.launch"/>
+
 </launch>

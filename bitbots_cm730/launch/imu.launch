@@ -4,7 +4,7 @@
     <remap from="IMU" to="imu/data_raw"/>
     <param name="fixed_frame" value="imu"/>
     <param name="publish_tf" value="true"/>
-    <param name="do_bias_estimation" value="true"/>
+    <param name="do_bias_estimation" value="false"/>
     <param name="bias_alpha" value="0.05"/>
     <param name="do_adaptive_gain" value="false"/>
     <param name="use_mag" value="false"/>
