@@ -44,7 +44,7 @@ class HeadDutyDecider(AbstractDecisionModule):
         rospy.logdebug("BallPrio" + str(self.ball_prio))
         rospy.logdebug("BallLastConfirmed" + str(rospy.get_time() - connector.head.get_confirmed_ball_time()))
 
-        head_mode = connector.head.get_headmode()
+        head_mode = HeadMode.BALL_MODE #connector.head.get_headmode()
         if head_mode == "":
             return self.interrupt()
 
