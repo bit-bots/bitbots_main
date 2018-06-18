@@ -7,6 +7,9 @@
 
     <node name="amcl_particlefilter"  pkg="amcl" type="amcl" output="screen">
 
+        <param name="max_particles" value="10000"/>
+        <param name="kld_err" value="0.3"/>
+
         <param name="use_map_topic" value="true" />
         <param name="first_map_only" value="true"/>
 
