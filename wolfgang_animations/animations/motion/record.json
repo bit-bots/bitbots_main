@@ -1,7 +1,4 @@
 {
-    "author": "", 
-    "description": "", 
-    "hostname": "keks-ThinkPad-T450s", 
     "keyframes": [
         {
             "duration": 1.0, 
@@ -392,7 +389,7 @@
                 "LHipPitch": 65, 
                 "LHipRoll": -7, 
                 "LHipYaw": 2, 
-                "LKnee": -157, 
+                "LKnee": -150, 
                 "LShoulderPitch": 11, 
                 "LShoulderRoll": -10, 
                 "RAnklePitch": 92, 
@@ -542,9 +539,34 @@
             }, 
             "name": "frame19", 
             "pause": 0.0
+        }, 
+        {
+            "duration": 1.0, 
+            "goals": {
+                "HeadPan": 0, 
+                "HeadTilt": 0, 
+                "LAnklePitch": -29, 
+                "LAnkleRoll": 0, 
+                "LElbow": 47, 
+                "LHipPitch": 51, 
+                "LHipRoll": 0, 
+                "LHipYaw": 0, 
+                "LKnee": -64, 
+                "LShoulderPitch": 1, 
+                "LShoulderRoll": 0, 
+                "RAnklePitch": 28, 
+                "RAnkleRoll": -4, 
+                "RElbow": -45, 
+                "RHipPitch": -50, 
+                "RHipRoll": -1, 
+                "RHipYaw": 1, 
+                "RKnee": 61, 
+                "RShoulderPitch": 0, 
+                "RShoulderRoll": 0
+            }, 
+            "name": "walkready", 
+            "pause": 0.5
         }
     ], 
-    "last_edited": "2018-06-18 14:26:09.760775", 
-    "name": "stand_up_front", 
-    "version": "1.0"
+    "name": "Record-play"
 }

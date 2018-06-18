@@ -1,7 +1,4 @@
 {
-    "author": "", 
-    "description": "", 
-    "hostname": "keks-ThinkPad-T450s", 
     "keyframes": [
         {
             "duration": 1.0, 
@@ -544,7 +541,5 @@
             "pause": 0.0
         }
     ], 
-    "last_edited": "2018-06-18 14:26:09.760775", 
-    "name": "stand_up_front", 
-    "version": "1.0"
+    "name": "Record-play"
 }
