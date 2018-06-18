@@ -39,14 +39,14 @@ class TransformBall(object):
                          self._callback_camera_info,
                          queue_size=1)
 
-        self.marker_pub = rospy.Publisher("ballpoint", Marker, queue_size=10)
-        self.ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=10)
+        self.marker_pub = rospy.Publisher("ballpoint", Marker, queue_size=1)
+        self.ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=1)
         if rospy.get_param("transformer/lines/lines_relative", True):
-            self.line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=10)
+            self.line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=1)
         if rospy.get_param("transformer/lines/pointcloud", False):
-            self.line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=10)
-        self.goal_relative_pub = rospy.Publisher("goal_relative", GoalRelative, queue_size=10)
-        self.obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=10)
+            self.line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=1)
+        self.goal_relative_pub = rospy.Publisher("goal_relative", GoalRelative, queue_size=1)
+        self.obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=1)
 
         self.camera_info = None
         self.focal_length = None
@@ -108,7 +108,7 @@ class TransformBall(object):
             if rel_seg.start is not None and rel_seg.end is not None:
                 line.segments.append(rel_seg)
             else:
-                rospy.logwarn("got a segment i could not transform")
+                rospy.logwarn_throttle(1.0, "got a segment i could not transform")
 
         for circle in msg.circles:
             rel_circle = LineCircleRelative()
