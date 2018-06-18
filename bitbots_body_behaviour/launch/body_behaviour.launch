@@ -6,4 +6,5 @@
     <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
     <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
     <node name="body_behaviour" pkg="bitbots_body_behaviour" type="body_behaviour.py" respawn="true"  output="screen" args="$(arg duty)" />
+    <include file="$(find bitbots_pathfinding_simple)/launch/pathfinding.launch"/>
 </launch>
