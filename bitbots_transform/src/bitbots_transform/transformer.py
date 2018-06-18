@@ -156,7 +156,8 @@ class TransformBall(object):
             return
         for seg in msg.segments:
             transformed = self.transform(seg.start,field)
-            points.append([transformed.x, transformed.y, transformed.z])
+            if transformed is not None:
+                points.append([transformed.x, transformed.y, transformed.z])
         pc_header = msg.header
         pc_header.frame_id = "camera"
         self.line_relative_pc_pub.publish(pc2.create_cloud_xyz32(pc_header, points))
