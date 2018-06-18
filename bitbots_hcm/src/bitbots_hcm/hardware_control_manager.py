@@ -341,8 +341,8 @@ def trajectory_to_joint_command_msg(msg):
         command_msg.accelerations = [-1.0] * len(msg.joint_names)
 
     #todo this is a hotfix
-    command_msg.velocities = [-1.0] * len(msg.joint_names)
-    command_msg.accelerations = [-1.0] * len(msg.joint_names)
+    #command_msg.velocities = [-1.0] * len(msg.joint_names)
+    #command_msg.accelerations = [-1.0] * len(msg.joint_names)
     command_msg.max_currents  = [-1.0] * len(msg.joint_names)
     
     return command_msg
