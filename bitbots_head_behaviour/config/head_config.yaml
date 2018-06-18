@@ -18,9 +18,9 @@ Behaviour:
       look_at_old_position: True
 
     Camera:
-            minPan: -125
+            minPan: -74
             minTilt: -90
-            maxPan: 125
+            maxPan: 74
             maxTilt: 0
 
             # The tilt where the robot looks straight forward

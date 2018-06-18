@@ -39,7 +39,7 @@ class AbstractLookAt(AbstractActionModule):
         self.repr_data = {}
 
         try:
-            point_camera = self.tfBuffer.transform(point, 'base_link')
+            point_camera = self.tfBuffer.transform(point, 'base_footprint')
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
             rospy.loginfo("Waiting for transform... ({})".format(e))
             return
@@ -64,7 +64,7 @@ class AbstractLookAt(AbstractActionModule):
             # We haven't reached it
             # Update when we should reach it
             self.position_reached_time = rospy.get_time()
-            connector.head.send_motor_goals(angle_pan, self.pan_speed_max, angle_tilt, self.tilt_speed_max)
+            connector.head.send_motor_goals(angle_pan, 30.0, angle_tilt, 30.0)
 
             # Represent remaining tilt
             self.repr_data["remaining_tilt"] = abs(current_pan_pos - angle_pan)

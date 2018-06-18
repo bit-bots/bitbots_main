@@ -53,12 +53,12 @@ class HeadCapsule:
     def send_motor_goals(self, pan_position, pan_speed, tilt_position, tilt_speed):
         self.current_pan_pos = pan_position
         self.current_tilt_pos = tilt_position
+        print((pan_position, tilt_position))
         posnew = (math.radians(np.clip(pan_position, self.min_pan, self.max_pan)),
                   math.radians(np.clip(tilt_position, self.min_tilt, self.max_tilt)))
-        velnew = (np.clip(pan_speed, 0, self.pan_speed_max),
-                  np.clip(tilt_speed, 0, self.tilt_speed_max))
         self.pos_msg.points[0].positions = posnew
-        self.pos_msg.points[0].velocities = velnew
+        self.pos_msg.points[0].velocities = [pan_speed, tilt_speed]
+        self.pos_msg.points[0].effort = [-1, -1]
         self.pos_msg.header.stamp = rospy.Time.now()
         self.position_publisher.publish(self.pos_msg)
 
@@ -132,6 +132,7 @@ class HeadCapsule:
 
     def get_motor_goals_from_point(self, point):
         """Call the look at service to calculate head motor goals"""
-        vector = Vector3(point.x, point.y, point.z)
+        # z axis is inverted because something is fishy. maybe double axis invert, see bitbots_ik. TODO
+        vector = Vector3(point.x, point.y, -point.z)
         goals = self.look_at(vector)
         return goals.head_pan, goals.head_tilt
