@@ -1,6 +1,7 @@
 Behaviour:
   Body:
-    Toggles: # toggles fuer das Kopfverhalten
+    Toggles: # toggles fuer das Verhalten
+      useMoveBase: False
       # toggles fuer den Fieldie
       Fieldie:
           # lässt den Defender warten bis der ball bei sich in der nahe ist oder niemand sonst auf dem Feld ist um bis
@@ -157,8 +158,6 @@ Behaviour:
     OneTimeKicker:
         #time in seconds till the one time kicker is reseted to its original duty
         resetTime: 20
-
-
 
 
     Common:

@@ -30,6 +30,9 @@ class GoToRelativePosition(AbstractActionModule):
         self.point = args
 
     def perform(self, connector, reevaluate=False):
+        if not connector.pathfinding.useMoveBase:
+            connector.pathfinding.pub_simple_pathfinding(self.point[0], self.point[1])
+            return self.pop()
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = 'base_link'
@@ -55,6 +58,8 @@ class GoToRelativePosition(AbstractActionModule):
 
 class Stand(AbstractActionModule):
     def perform(self, connector, reevaluate=False):
+        if not connector.pathfinding.useMoveBase:
+            connector.pathfinding.pub_simple_pathfinding(0, 0)
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = 'base_footprint'
@@ -82,6 +87,8 @@ class GoToAbsolutePosition(AbstractActionModule):
         self.point = args
 
     def perform(self, connector, reevaluate=False):
+        if not connector.pathfinding.useMoveBase:
+            return self.pop()
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = 'map'
@@ -109,6 +116,8 @@ class GoToBall(GoToRelativePosition):
         super(GoToBall, self).__init__(connector, point)
 
     def perform(self, connector, reevaluate=False):
+        if not connector.pathfinding.useMoveBase:
+            connector.pathfinding.pub_simple_pathfinding(self.point[0], self.point[1])
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = 'base_footprint'

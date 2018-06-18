@@ -2,6 +2,7 @@ import rospy
 import actionlib
 import math
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
+from geometry_msgs.msg import Pose2D
 from tf.transformations import euler_from_quaternion
 
 
@@ -16,6 +17,12 @@ class PathfindingCapsule:
         # Thresholds to determine whether the transmitted goal is a new one
         self.position_threshold = 0.5
         self.orientation_threshold = 30
+        self.pathfinding_simple_pub = None
+        self.useMoveBase = rospy.get_param('Behaviour/Body/Toggles/useMoveBase')
+
+    def pub_simple_pathfinding(self, x, y, t=0):
+        rospy.loginfo('Using simple pathfinding to go to relative position ' + str(x) + str(y))
+        self.pathfinding_simple_pub.publish(Pose2D(x, y, t))
 
     def _is_new_goal_far_from_old_goal(self, new_goal_action_msg):
         old_goal = self.goal.target_pose
