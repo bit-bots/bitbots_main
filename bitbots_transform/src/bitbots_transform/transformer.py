@@ -31,8 +31,10 @@ class TransformBall(object):
                              LineInformationInImage,
                              self._callback_lines_pc, queue_size=1)
 
-        rospy.Subscriber("goal_in_image", GoalInImage, self._callback_goal, queue_size=1)
-        rospy.Subscriber("obstacles_in_image", ObstaclesInImage, self._callback_obstacles, queue_size=1)
+        rospy.Subscriber(rospy.get_param("transformer/goals/goals_topic", "goal_in_image"),
+                         GoalInImage, self._callback_goal, queue_size=1)
+        rospy.Subscriber(rospy.get_param("transformer/obstacles/obstacles_topic", "obstacles_in_image"),
+                         ObstaclesInImage, self._callback_obstacles, queue_size=1)
 
         rospy.Subscriber(rospy.get_param("transformer/camera_info/camera_info_topic", "/minibot/camera/camera_info"),
                          CameraInfo,

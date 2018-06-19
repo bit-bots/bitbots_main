@@ -1,21 +1,21 @@
 transformer:
 
   ball:
-    ball_topic: 'ball_in_image'
+    ball_topic: 'ball_in_image_fixed'
     # ballradius in meter
     ball_radius: 0.075
 
   lines:
-    lines_topic: 'line_in_image'
+    lines_topic: 'line_in_image_fixed'
     # if the line_in_image message is used to only to sent points and a point cloud should be published
     lines_relative: true
     pointcloud: true
 
   goals:
-    goals_topic: 'goal_in_image'
+    goals_topic: 'goal_in_image_fixed'
 
   obstacles:
-    obstacles_topic: 'obstacles_in_image'
+    obstacles_topic: 'obstacles_in_image_fixed'
 
   camera_info:
     camera_info_topic: 'camera_info'
