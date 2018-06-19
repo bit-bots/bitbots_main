@@ -21,7 +21,7 @@ class PathfindingCapsule:
         self.useMoveBase = rospy.get_param('Behaviour/Body/Toggles/useMoveBase')
 
     def pub_simple_pathfinding(self, x, y, t=0):
-        rospy.loginfo('Using simple pathfinding to go to relative position ' + str(x) + str(y))
+        rospy.loginfo('Using simple pathfinding to go to relative position ' + str(x) + str(y) + str(t))
         self.pathfinding_simple_pub.publish(Pose2D(x, y, t))
 
     def _is_new_goal_far_from_old_goal(self, new_goal_action_msg):

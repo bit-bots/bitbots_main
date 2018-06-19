@@ -33,6 +33,7 @@ class StandsCorrectDecision(AbstractDecisionModule):
         self.ball_lost_forward_distance = connector.config["Body"]["Common"]["ballLostForwardDistance"]
 
     def perform(self, connector, reevaluate=False):
+        return self.action_stands_correct(connector)
 
         # get data
         left_post = connector.world_model.get_opp_goal_left_post_uv()

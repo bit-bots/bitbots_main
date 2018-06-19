@@ -83,7 +83,7 @@ class DutyDecider(AbstractDecisionModule):
         ################################
         # #load cetain part of behaviour
         ################################
-        rospy.logdebug("Current duty: " + connector.blackboard.get_duty())
+        rospy.loginfo("Current duty: " + connector.blackboard.get_duty())
 
         # If the robot is a OneTimeKicker, kick instead of executing its normal behaviour
         if connector.blackboard.get_is_one_time_kicker():

@@ -11,6 +11,7 @@ from bitbots_body_behaviour.body.decisions.kick_off.kick_off_role_decider import
 from bitbots_body_behaviour.body.decisions.kick_off.enemy_kick_off import EnemyKickOff
 
 from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from humanoid_league_msgs.msg import TeamData
 
 
 class KickOff(AbstractDecisionModule):
@@ -41,5 +42,5 @@ class KickOff(AbstractDecisionModule):
                     # the other team has kickoff
                     return self.push(EnemyKickOff)
             else:
-                return self.push(RoleDecider)
+                return self.push(RoleDecider, TeamData.ROLE_STRIKER)
 

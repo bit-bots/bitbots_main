@@ -31,7 +31,7 @@ class GoToRelativePosition(AbstractActionModule):
 
     def perform(self, connector, reevaluate=False):
         if not connector.pathfinding.useMoveBase:
-            connector.pathfinding.pub_simple_pathfinding(self.point[0], self.point[1])
+            connector.pathfinding.pub_simple_pathfinding(self.point[0], self.point[1], self.point[2])
             return self.pop()
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
