@@ -6,6 +6,7 @@ from bitbots_buttons.msg import Buttons
 from humanoid_league_msgs.msg import Speak
 
 from humanoid_league_speaker.speaker import speak
+from std_msgs.msg import Bool
 from bitbots_pause.srv import ManualPenalize
 
 
@@ -32,6 +33,7 @@ class ButtonNode(object):
         # --- Initialize Topics ---
         rospy.Subscriber("/buttons", Buttons, self.button_cb)
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
+        self.shoot_publisher = rospy.Publisher('/shoot_button', Bool, queue_size=1)
 
         rospy.spin()
 
@@ -65,6 +67,7 @@ class ButtonNode(object):
     def button1_short(self):
         rospy.logwarn('Button 1 Pressed short')
         speak("Button 1 pressed short", self.speak_publisher, speaking_active=self.speaking_active)
+        self.shoot_publisher.publish(Bool(True))
 
     def button1_long(self):
         rospy.logwarn('Button 1 Pressed long')
