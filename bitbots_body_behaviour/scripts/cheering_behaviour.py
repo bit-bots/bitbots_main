@@ -8,7 +8,7 @@ class CheeringBehaviour:
     def __init__(self):
         rospy.init_node('cheering_behvaiour')
 
-        self.opponent_goals = 0
+        self.goals = 0
         self.animation_running = False
 
         rospy.Subscriber('/gamestate', GameState, self.gamestate_callback, queue_size=10)
@@ -17,12 +17,13 @@ class CheeringBehaviour:
         rospy.spin()
 
     def gamestate_callback(self, msg: GameState):
-        if msg.rivalScore > self.opponent_goals and not self.animation_running:
+        if msg.rivalScore + msg.ownScore > self.goals and not self.animation_running:
             goal = PlayAnimationGoal()
             goal.animation = 'cheering'  # TODO
             goal.hcm = False
             self.animation_client.send_goal(goal, done_cb=self.animation_done)
             self.animation_running = True
+            self.goals = msg.rivalScore + msg.ownScore
 
     def animation_done(self, arg1, arg2):
         self.animation_running = False
