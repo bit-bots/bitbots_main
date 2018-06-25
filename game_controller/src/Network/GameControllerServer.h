@@ -40,6 +40,7 @@ private:
 	Network* mNetwork;
 	Game* mGame;
     uint8_t mPreviousGameState;
+    uint8_t mPreviousSecondaryState;
     uint8_t mPreviousPenaltyState[MAX_NUM_PLAYERS];
     uint8_t mPreviousTeamColor;
     uint64_t mLastMsgReceived;

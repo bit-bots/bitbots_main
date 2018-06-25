@@ -19,6 +19,7 @@ GameControllerServer::GameControllerServer(Game* game) {
 	/*ConfigFile *config = Config::getInstance();
 	//mTeamID = config->get<uint8_t>("Game", "teamID", 22);
 	mTeamID = config->get<int>("Game", "teamID", 22);*/
+	mPreviousSecondaryState = 255;
 	mPreviousGameState = 255;
 	for (int i = 0; i < MAX_NUM_PLAYERS; i++) {
 		mPreviousPenaltyState[i] = 255;
@@ -117,7 +118,6 @@ void GameControllerServer::HandlePacket(char* data) {
 			ourTeam = &msg->teams[1];
 			rivalTeam = &msg->teams[0];
 		}
-
 		if (ourTeam != NULL) {
 			//Debugger::DEBUG("GameControllerServer", "Packet received");
 			ROS_DEBUG( "Packet received");
@@ -125,7 +125,7 @@ void GameControllerServer::HandlePacket(char* data) {
 			// Check if game state changed
 			if (msg->state != mPreviousGameState) {
 				//Debugger::DEBUG("GameControllerServer", "Game state changed to %i", msg->state);
-				 ROS_DEBUG("Game state changed to %i", msg->state);
+                ROS_DEBUG("Game state changed to %i", msg->state);
 				switch (msg->state) {
 					case STATE_INITIAL:
 						//Debugger::INFO("GameControllerServer", "GameState: INITIAL");
@@ -157,7 +157,7 @@ void GameControllerServer::HandlePacket(char* data) {
 					case STATE_PLAYING:
 						//Debugger::INFO("GameControllerServer", "GameState: PLAYING");
 						//Debugger::DEBUG("GameControllerServer", "Kickoff for team %d", msg->kickOffTeam);
-						ROS_INFO("GameState: PLAYINGs");
+						ROS_INFO("GameState: PLAYING");
 						ROS_INFO("KickoffTeam %d",msg->kickOffTeam);
 						if (msg->kickOffTeam <  128 ) {
                             ROS_INFO("KickoffTeam %d",msg->kickOffTeam);
@@ -203,11 +203,41 @@ void GameControllerServer::HandlePacket(char* data) {
 				}
 				mPreviousGameState = msg->state;
 			}
-
+			// Check for secondary state
+			if (msg->secondaryState != mPreviousSecondaryState) {
+			    switch (msg->secondaryState) {
+			        case STATE2_NORMAL:
+			            mGame->setSecondaryState(Game::NORMAL);
+			            break;
+			        case STATE2_PENALTYSHOOT:
+			            mGame->setSecondaryState(Game::PENALTYSHOOT);
+			            break;
+			        case STATE2_OVERTIME:
+			            mGame->setSecondaryState(Game::OVERTIME);
+			            break;
+			        case STATE2_TIMEOUT:
+			            mGame->setSecondaryState(Game::TIMEOUT);
+			            break;
+			        case STATE2_DIRECT_FREEKICK:
+                        mGame->setSecondaryState(Game::DIRECT_FREEKICK);
+                        break;
+			        case STATE2_INDIRECT_FREEKICK:
+			            mGame->setSecondaryState(Game::INDIRECT_FREEKICK);
+			            break;
+			        case STATE2_PENALTYKICK:
+			            mGame->setSecondaryState(Game::PENALTYKICK);
+			            break;
+			        default:
+			            ROS_WARN("Unknown secondary state (%d)!", msg->secondaryState);
+			            break;
+			    }
+			    mPreviousSecondaryState = msg->secondaryState;
+			}
 			// Check if penalty state changed
 			uint8_t botID = mGame->getBotID() - 1;
 			if (botID < MAX_NUM_PLAYERS) {
 				uint8_t penalty = ourTeam->players[botID].penalty;
+				mGame->setSecondsTillUnpenalized(ourTeam->players[botID].secsTillUnpenalized);
 				if (penalty != mPreviousPenaltyState[botID]) {
 				/*	Debugger::INFO("GameControllerServer",
 							"Penalty state of bot %i changed to %i",
@@ -226,7 +256,6 @@ void GameControllerServer::HandlePacket(char* data) {
 					mPreviousPenaltyState[botID] = penalty;
 				}
 			}
-
 			// Check our team color
 			if (ourTeam->teamColour != mPreviousTeamColor) {
 				//Debugger::INFO("GameControllerServer", "Team color changed to %i", ourTeam->teamColour);
@@ -238,7 +267,10 @@ void GameControllerServer::HandlePacket(char* data) {
 				}
 				mPreviousTeamColor = ourTeam->teamColour;
 			}
-
+            // Check for result of penalty shots
+            mGame->setPenaltyShot(ourTeam->penaltyShot);
+            mGame->setSingleShots(ourTeam->singleShots);
+			mGame->setSecondsRemaining(msg->secsRemaining);
 			mGame->setIsFirstHalf(msg->firstHalf == 1);
 		} else {
 			//Debugger::INFO("GameControllerServer", "Message was for other teams (not %d)", mGame->getTeamID());

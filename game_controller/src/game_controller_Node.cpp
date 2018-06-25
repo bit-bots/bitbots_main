@@ -43,7 +43,10 @@ int main(int argc, char **argv) {
 	 {
 		 humanoid_league_msgs::GameState gameState;
                  //gameState.teamColor=mGame->getTeamColor();
-		 gameState.gameState=mGame->getGameState();
+         gameState.header.stamp = ros::Time::now();
+		 gameState.secondsRemaining = mGame->getSecondsRemaining();
+		 gameState.gameState = mGame->getGameState();
+		 gameState.secondaryState = mGame->getSecondaryState();
                  //gameState.gameResult=mGame->getGameResult();
                  //gameState.botId=mGame->getBotID();
                  //gameState.teamId=mGame->getTeamID();
@@ -53,15 +56,17 @@ int main(int argc, char **argv) {
 		 gameState.allowedToMove = mGame->isAllowedToMove();
 		 gameState.hasKickOff = mGame->haveKickOff();
 		 gameState.penalized = mGame->isPenalized();
+		 gameState.secondsTillUnpenalized = mGame->getSecondsTillUnpenalized();
 		 gameState.firstHalf = mGame->isFirstHalf();
+		 gameState.penaltyShot = mGame->getPenaltyShot();
+		 gameState.singleShots = mGame->getSingleShots();
          const bool isWifi = mGameController->isWifiConnected;
          std_msgs::Bool wifiMsg;
          wifiMsg.data = isWifi;
-         networkStatePub.publish(wifiMsg);
                  //gameState.kickoff_sec = mGame->getKickOffTime().tv_sec;
+         networkStatePub.publish(wifiMsg);
                  //gameState.kickoff_nsec = mGame->getKickOffTime().tv_usec;
 		 gameStatePub.publish(gameState);
-		 //TODO PENALTY SHOT COUNTER, singleShots
 		 ros::spinOnce();
 		 r.sleep();
 	 }

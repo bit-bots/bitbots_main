@@ -17,6 +17,7 @@ using namespace std;
 
 Game::Game()
 :	mGameState( Game::PLAYING),
+	mSecondaryState( Game::NORMAL),
 	mTeamColor( Game::CYAN),
 	mGameResult( Game::DRAW),
 	mOwnScore( 0),
@@ -65,8 +66,28 @@ uint8_t Game::getBotID() const {
 	return mBotID;
 }
 
+uint16_t Game::getSecondsRemaining() const {
+	return mSecondsRemaining;
+}
+
+uint8_t Game::getPenaltyShot() const {
+    return mPenaltyShot;
+}
+
+uint16_t Game::getSingleShots() const {
+    return mSingleShots;
+}
+
 Game::GameState Game::getGameState() const {
 	return mGameState;
+}
+
+Game::SecondaryState Game::getSecondaryState() const {
+	return mSecondaryState;
+}
+
+uint8_t Game::getSecondsTillUnpenalized() const {
+    return mSecondsTillUnpenalized;
 }
 
 Game::GameResult Game::getGameResult() const {
@@ -131,6 +152,18 @@ void Game::setBotPenalized(bool state) {
 	}
 }
 
+void Game::setSecondsTillUnpenalized(uint8_t seconds) {
+    mSecondsTillUnpenalized = seconds;
+}
+
+void Game::setPenaltyShot(uint8_t number) {
+    mPenaltyShot = number;
+}
+
+void Game::setSingleShots(uint16_t pattern) {
+    mSingleShots = pattern;
+}
+
 void Game::setTeamColor(TeamColor color) {
 	mTeamColor = color;
 	//Debugger::WARN("Game", "Now playing as team %s", mTeamColor == Game::CYAN ? "CYAN" : "MAGENTA");
@@ -147,6 +180,13 @@ void Game::setGameState(GameState state) {
 		//Debugger::DEBUG("Game", "GameState changed to: %d", mGameState);
 		ROS_DEBUG("GameState changed to: %d", mGameState);
 	}
+}
+
+void Game::setSecondaryState(SecondaryState state) {
+    if (mSecondaryState != state) {
+        mSecondaryState = state;
+        ROS_DEBUG("SecondaryState changed to: %d", mSecondaryState);
+    }
 }
 
 void Game::setIsFirstHalf(bool state) {
@@ -209,6 +249,11 @@ void Game::setBotId(int id){
     mBotID = id;
     ROS_INFO("Now I have the bot ID %d", id);
 }
+
+void Game::setSecondsRemaining(uint16_t seconds) {
+	mSecondsRemaining = static_cast<int16_t>(seconds);
+}
+
 void Game::setKickoff(bool haveKickoff) {
 	mHaveKickOff = haveKickoff;
 	if( mHaveKickOff) {
