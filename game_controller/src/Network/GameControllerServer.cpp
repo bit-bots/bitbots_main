@@ -237,11 +237,11 @@ void GameControllerServer::HandlePacket(char *data) {
             }
             // Check our team color
             if (ourTeam->teamColour != mPreviousTeamColor) {
-                ROS_INFO("Team color changed to %i", ourTeam->teamColour);
-                if (ourTeam->teamColour == TEAM_CYAN) {
-                    mGame->setTeamColor(Game::CYAN);
-                } else if (ourTeam->teamColour == TEAM_MAGENTA) {
-                    mGame->setTeamColor(Game::MAGENTA);
+                ROS_DEBUG("Team color changed to %i", ourTeam->teamColour);
+                if (ourTeam->teamColour == TEAM_BLUE) {
+                    mGame->setTeamColor(Game::BLUE);
+                } else if (ourTeam->teamColour == TEAM_RED) {
+                    mGame->setTeamColor(Game::RED);
                 }
                 mPreviousTeamColor = ourTeam->teamColour;
             }

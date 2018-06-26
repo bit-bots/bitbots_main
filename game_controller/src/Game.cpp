@@ -15,7 +15,7 @@ using namespace std;
 Game::Game()
         : mGameState(Game::PLAYING),
           mSecondaryState(Game::NORMAL),
-          mTeamColor(Game::CYAN),
+          mTeamColor(Game::BLUE),
           mGameResult(Game::DRAW),
           mOwnScore(0),
           mRivalScore(0),
@@ -136,7 +136,7 @@ void Game::setSingleShots(uint16_t pattern) {
 
 void Game::setTeamColor(TeamColor color) {
     mTeamColor = color;
-    ROS_WARN("Now playing as team %s", mTeamColor == Game::CYAN ? "CYAN" : "MAGENTA");
+    ROS_WARN("Now playing as team %s", mTeamColor == Game::BLUE ? "BLUE" : "RED");
 }
 
 void Game::setGameState(GameState state) {

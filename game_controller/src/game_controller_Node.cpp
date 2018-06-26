@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
     ros::Rate r(3);
     while (ros::ok()) {
         humanoid_league_msgs::GameState gameState;
-        //gameState.teamColor=mGame->getTeamColor();
+        gameState.teamColor=mGame->getTeamColor();
         gameState.header.stamp = ros::Time::now();
         gameState.secondsRemaining = mGame->getSecondsRemaining();
         gameState.gameState = mGame->getGameState();

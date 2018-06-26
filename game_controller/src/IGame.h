@@ -17,8 +17,8 @@ public:
      * team colors
      */
     enum TeamColor {
-        CYAN,            //!< cyan
-        MAGENTA            //!< magenta
+        BLUE = 0,       //!< blue
+        RED = 1         //!< red
     };
 
     /**
@@ -26,7 +26,7 @@ public:
      */
     enum GameState {
         INITIAL = 0,    //!< initial, state before READY
-        READY = 1,        //!< READY, robots should take their positions
+        READY = 1,      //!< READY, robots should take their positions
         SET = 2,        //!< SET, robots should be in position now
         PLAYING = 3,    //!< PLAY, game is in play
         FINISHED = 4    //!< game is finished
