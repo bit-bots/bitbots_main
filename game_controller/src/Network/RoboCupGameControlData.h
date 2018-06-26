@@ -71,44 +71,41 @@
 #define HL_PICKUP_OR_INCAPABLE              34
 #define HL_SERVICE                          35
 
-struct RobotInfo
-{
-  uint8_t penalty;              // penalty state of the player
-  uint8_t secsTillUnpenalized;  // estimate of time till unpenalised
-  uint8_t yellowCardCount;  // number of yellow cards
-  uint8_t redCardCount;  // number of red cards
+struct RobotInfo {
+    uint8_t penalty;              // penalty state of the player
+    uint8_t secsTillUnpenalized;  // estimate of time till unpenalised
+    uint8_t yellowCardCount;  // number of yellow cards
+    uint8_t redCardCount;  // number of red cards
 };
 
-struct TeamInfo
-{
-  uint8_t teamNumber;           // unique team number
-  uint8_t teamColour;           // colour of the team
-  uint8_t score;                // team's score
-  uint8_t penaltyShot;          // penalty shot counter
-  uint16_t singleShots;         // bits represent penalty shot success
-  uint8_t coachSequence;        // sequence number of the coach's message
-  uint8_t coachMessage[SPL_COACH_MESSAGE_SIZE]; // the coach's message to the team
-  RobotInfo coach;
-  RobotInfo players[MAX_NUM_PLAYERS]; // the team's players
+struct TeamInfo {
+    uint8_t teamNumber;           // unique team number
+    uint8_t teamColour;           // colour of the team
+    uint8_t score;                // team's score
+    uint8_t penaltyShot;          // penalty shot counter
+    uint16_t singleShots;         // bits represent penalty shot success
+    uint8_t coachSequence;        // sequence number of the coach's message
+    uint8_t coachMessage[SPL_COACH_MESSAGE_SIZE]; // the coach's message to the team
+    RobotInfo coach;
+    RobotInfo players[MAX_NUM_PLAYERS]; // the team's players
 };
 
-struct RoboCupGameControlData
-{
-  char header[4];               // header to identify the structure
-  uint16_t version;             // version of the data structure
-  uint8_t packetNumber;         // number incremented with each packet sent (with wraparound)
-  uint8_t playersPerTeam;       // the number of players on a team
-  uint8_t gameType;             // type of the game (GAME_ROUNDROBIN, GAME_PLAYOFF, GAME_DROPIN)
-  uint8_t state;                // state of the game (STATE_READY, STATE_PLAYING, etc)
-  uint8_t firstHalf;            // 1 = game in first half, 0 otherwise
-  uint8_t kickOffTeam;          // the team number of the next team to kick off or DROPBALL
-  uint8_t secondaryState;       // extra state information - (STATE2_NORMAL, STATE2_PENALTYSHOOT, etc)
-  char secondaryStateInfo[4];   // Extra info on the secondary state
-  uint8_t dropInTeam;           // number of team that caused last drop in
-  uint16_t dropInTime;          // number of seconds passed since the last drop in. -1 (0xffff) before first dropin
-  uint16_t secsRemaining;       // estimate of number of seconds remaining in the half
-  uint16_t secondaryTime;       // number of seconds shown as secondary time (remaining ready, until free ball, etc)
-  TeamInfo teams[2];
+struct RoboCupGameControlData {
+    char header[4];               // header to identify the structure
+    uint16_t version;             // version of the data structure
+    uint8_t packetNumber;         // number incremented with each packet sent (with wraparound)
+    uint8_t playersPerTeam;       // the number of players on a team
+    uint8_t gameType;             // type of the game (GAME_ROUNDROBIN, GAME_PLAYOFF, GAME_DROPIN)
+    uint8_t state;                // state of the game (STATE_READY, STATE_PLAYING, etc)
+    uint8_t firstHalf;            // 1 = game in first half, 0 otherwise
+    uint8_t kickOffTeam;          // the team number of the next team to kick off or DROPBALL
+    uint8_t secondaryState;       // extra state information - (STATE2_NORMAL, STATE2_PENALTYSHOOT, etc)
+    char secondaryStateInfo[4];   // Extra info on the secondary state
+    uint8_t dropInTeam;           // number of team that caused last drop in
+    uint16_t dropInTime;          // number of seconds passed since the last drop in. -1 (0xffff) before first dropin
+    uint16_t secsRemaining;       // estimate of number of seconds remaining in the half
+    uint16_t secondaryTime;       // number of seconds shown as secondary time (remaining ready, until free ball, etc)
+    TeamInfo teams[2];
 };
 
 // data structure header
@@ -119,22 +116,21 @@ struct RoboCupGameControlData
 #define GAMECONTROLLER_RETURN_MSG_MAN_UNPENALISE 1
 #define GAMECONTROLLER_RETURN_MSG_ALIVE          2
 
-struct RoboCupGameControlReturnData
-{
-  char header[4];
-  uint8_t version;
-  uint8_t team;    // team number
-  uint8_t player;  // player number starts with 1
-  uint8_t message; // one of the three messages defined above
+struct RoboCupGameControlReturnData {
+    char header[4];
+    uint8_t version;
+    uint8_t team;    // team number
+    uint8_t player;  // player number starts with 1
+    uint8_t message; // one of the three messages defined above
 
 #ifdef __cplusplus
-  // constructor
-  RoboCupGameControlReturnData() : version(GAMECONTROLLER_RETURN_STRUCT_VERSION)
-  {
-    const char* init = GAMECONTROLLER_RETURN_STRUCT_HEADER;
-    for(unsigned int i = 0; i < sizeof(header); ++i)
-      header[i] = init[i];
-  }
+    // constructor
+    RoboCupGameControlReturnData() : version(GAMECONTROLLER_RETURN_STRUCT_VERSION)
+    {
+      const char* init = GAMECONTROLLER_RETURN_STRUCT_HEADER;
+      for(unsigned int i = 0; i < sizeof(header); ++i)
+        header[i] = init[i];
+    }
 #endif
 };
 

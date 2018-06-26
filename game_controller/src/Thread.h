@@ -11,8 +11,9 @@ extern "C" {
  * Then you can start and stop the thread when needed.
  */
 class Thread {
-  public:
+public:
     Thread();
+
     virtual ~Thread();
 
     /**
@@ -27,7 +28,7 @@ class Thread {
      */
     void stop();
 
-  protected:
+protected:
     /**
      * run
      * @param arg		arguments
@@ -38,28 +39,30 @@ class Thread {
      * entry point
      * @param pthis		point to this
      */
-    static void* entryPoint(void *pthis);
+    static void *entryPoint(void *pthis);
 
     /**
      * arg
      */
-    void *Arg() {return mArg;}
+    void *Arg() { return mArg; }
 
     /**
      * arg with arguments
      * @param a		arguments
      */
-    void Arg(void *a) {mArg = a;}
+    void Arg(void *a) { mArg = a; }
 
     /**
      * is currently running
      */
     bool IsRunning();
 
-  private:
+private:
     virtual bool setup();
+
     virtual void terminate();
-    virtual void execute(void* arg) = 0;
+
+    virtual void execute(void *arg) = 0;
 
     pthread_t mThreadId;
     pthread_mutex_t mRunningMutex;
