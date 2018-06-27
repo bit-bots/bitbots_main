@@ -1,8 +1,8 @@
 <launch>
 
-     <include file="$(find bitbots_localisation)/launch/pointcloud_to_laserscan.launch" />
+     <include file="$(find bitbots_localization)/launch/pointcloud_to_laserscan.launch" />
 
-    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localisation)/models/f031.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/f031.yaml"/>
 
 
     <node name="amcl_particlefilter"  pkg="amcl" type="amcl" output="screen">

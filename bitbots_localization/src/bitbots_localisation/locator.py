@@ -29,7 +29,7 @@ class Locator:
         # Setup variables
         self._setup()
 
-        rospy.init_node('bitbots_localisation', anonymous=False)
+        rospy.init_node('bitbots_localization', anonymous=False)
 
         # update model
         rate = rospy.Rate(10)
