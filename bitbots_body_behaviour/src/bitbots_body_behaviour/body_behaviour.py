@@ -35,7 +35,7 @@ class BehaviourModule(StackMachine):
 
         bitbots_body_behaviour.body.decisions.common.duty_decider.duty = duty
 
-        self.set_start_module(DutyDecider)
+        self.set_start_element(DutyDecider)
         rospy.init_node("Bodybehaviour")
 
         rospy.Subscriber("ball_relative", BallRelative, self.connector.world_model.ball_callback)

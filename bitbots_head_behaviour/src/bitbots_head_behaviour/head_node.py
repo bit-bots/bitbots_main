@@ -21,7 +21,7 @@ class HeadNode(StackMachine):
         rospy.Subscriber("ball_relative", BallRelative, self.connector.world_model.ball_callback)
         rospy.Subscriber("goal_relative", GoalRelative, self.connector.world_model.goal_callback)
 
-        self.set_start_module(HeadDutyDecider)
+        self.set_start_element(HeadDutyDecider)
 
     def run(self):
         rate = rospy.Rate(4)

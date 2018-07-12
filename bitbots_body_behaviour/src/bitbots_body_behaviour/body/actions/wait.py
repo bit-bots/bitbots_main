@@ -23,6 +23,7 @@ class Wait(AbstractActionElement):
         if connector.world_model.ball_seen():
             connector.blackboard.set_head_duty(HeadMode.BALL_MODE)
 
-        self.push(Stand)
+        #todo this was an old push which is not correct, since it is an action
+        #self.push(Stand)
         if self.time < rospy.get_time():
             self.pop()
