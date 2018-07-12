@@ -66,7 +66,7 @@ class FallChecker(object):
 
     def check_falling(self, not_much_smoothed_gyro, quaternion):
         return
-        
+
     def check_falling_new(self, not_much_smoothed_gyro, quaternion):
         euler = self.quaternion_to_euler_angle(*quaternion)
         if self.falling_threshold_front == 0 or self.falling_threshold_side == 0 or self.falling_threshold_orientation_front_back == 0 or self.falling_threshold_orientation_left_right == 0: 
@@ -146,6 +146,9 @@ class FallChecker(object):
                 # returning the fall quantification function
                 return abs(current_axis__gyro) * (1-skalar)
         return 0
+
+    #def check_fallen(self, smooth_accel):
+    #    return None
 
     def check_fallen(self, smooth_accel):
         """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""

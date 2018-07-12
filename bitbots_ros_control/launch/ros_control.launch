@@ -1,15 +1,8 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="sim" default="false"/>
-    <arg name="minibot" default="false"/>
-    <arg name="wolfgang" default="false"/>
 
-    <group if="$(arg minibot)">
-        <rosparam file="$(find bitbots_ros_control)/config/minibot.yaml" command="load" />
-    </group>
-    <group if="$(arg wolfgang)">
-        <rosparam file="$(find bitbots_ros_control)/config/wolfgang.yaml" command="load" />
-    </group>
+    <rosparam file="$(find bitbots_ros_control)/config/wolfgang.yaml" command="load" />
 
     <node pkg="bitbots_ros_control" type="dynamixel_controller_manager_node" name="ros_control" output="screen"/> 
 

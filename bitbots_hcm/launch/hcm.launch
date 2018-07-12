@@ -3,7 +3,7 @@
 
     <arg name="sim" default="false"/>
     <arg name="minibot" default="false"/>
-    <arg name="wolfgang" default="false"/>
+    <arg name="wolfgang" default="true"/>
 
     <rosparam file="$(find bitbots_hcm)/config/hcm_state_machine.yaml" command="load"/>
     
