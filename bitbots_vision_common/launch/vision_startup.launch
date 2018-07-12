@@ -1,25 +1,14 @@
 <launch>
 
     <arg name="sim" default="false"/>
-    <arg name="minibot" default="false"/>
-    <arg name="wolfgang" default="false"/>
     <arg name="dummyball" default="false"/>
     <arg name="debug" default="false"/>
 
-    <!-- start vision for minibot (cascade)-->
-    <group if="$(arg minibot)">
-        <include file="$(find bitbots_vision)/launch/bitbots_vision.launch">
-            <arg name="debug" value="$(arg debug)" />
-            <arg name="classifier" value="cascade" />
-        </include>
-    </group>
     <!-- start vision for wolfgang (fcnn)-->
-    <group if="$(arg wolfgang)">
-        <include file="$(find bitbots_vision)/launch/bitbots_vision.launch">
-            <arg name="debug" value="$(arg debug)" />
-            <arg name="classifier" value="fcnn" />
-        </include>
-    </group>
+    <include file="$(find bitbots_vision)/launch/bitbots_vision.launch">
+        <arg name="debug" value="$(arg debug)" />
+        <arg name="classifier" value="fcnn" />
+    </include>
     <!-- start vision without balldetection-->
     <group if="$(arg dummyball)">
         <include file="$(find bitbots_vision)/launch/bitbots_vision.launch">
