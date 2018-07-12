@@ -4,24 +4,17 @@
     <arg name="behave" default="true"/>
     <arg name="vision" default="true"/>
     
-    <arg name="minibot" default="false"/>
-    <arg name="wolfgang" default="false"/>
-    
     <arg name="sim_ns" default="/" />
 
     <arg name="duty" default="TeamPlayer"/>
 
     <include file="$(find bitbots_common)/launch/load_robot_description.launch">
         <arg name="sim" value="$(arg sim)"/>
-        <arg name="minibot" value="$(arg minibot)"/>
-        <arg name="wolfgang" value="$(arg wolfgang)"/>   
     </include>
 
     <group if="$(arg vision)">
         <include file="$(find bitbots_vision_common)/launch/vision_startup.launch">
             <arg name="sim" value="$(arg sim)" />
-            <arg name="minibot" value="$(arg minibot)"/>
-            <arg name="wolfgang" value="$(arg wolfgang)"/>
         </include>
     </group>
 
@@ -39,9 +32,7 @@
 
     <group if="$(arg motion)">
         <include file="$(find bitbots_common)/launch/motion.launch">
-            <arg name="sim" value="$(arg sim)"/>
-            <arg name="minibot" value="$(arg minibot)"/>
-            <arg name="wolfgang" value="$(arg wolfgang)"/>            
+            <arg name="sim" value="$(arg sim)"/>           
         </include>
     </group>
 

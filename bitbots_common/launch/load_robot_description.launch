@@ -2,7 +2,7 @@
 <launch>
     
     <arg name="minibot" default="false"/>
-    <arg name="wolfgang" default="false"/>
+    <arg name="wolfgang" default="true"/>
     <arg name="davros" default="false"/>
     <arg name="sim" default="false"/>
     <arg name="sim_ns" default="sim_robot" />

@@ -5,12 +5,7 @@
     <param name="/use_sim_time" value="true" />
     <param name="/simulation_active" value="true"/>   
 
-    <arg name="minibot" default="false"/>
-    <arg name="wolfgang" default="false"/>
-    
     <include file="$(find bitbots_common)/launch/load_robot_description.launch">
-        <arg name="minibot" value="$(arg minibot)"/>
-        <arg name="wolfgang" value="$(arg wolfgang)"/>
         <arg name="sim" value="true"/>   
         <arg name="sim_ns" default="$(arg sim_ns)" />
     </include>
@@ -22,16 +17,9 @@
 	</include>
     
     <!-- spawn URDF and load the controllers -->
-    <group if="$(arg minibot)">    
-        <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg sim_ns)" type="spawn_model" args="-param /robot_description -urdf -model $(arg sim_ns) -x -1.0 -y 0.0 -z 0.379" output="screen" />
-        <rosparam file="$(find minibot_description)/config/minibot_control.yaml" command="load" ns="$(arg sim_ns)"/>
-        <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg sim_ns)" args="joint_state_controller controller " />
-    </group>
+    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg sim_ns)" type="spawn_model" args="-param /robot_description -urdf -model $(arg sim_ns) -x -1.5 -y 0.0 -z 0.445" output="screen" />
+    <rosparam file="$(find wolfgang_description)/config/wolfgang_control.yaml" command="load" ns="$(arg sim_ns)"/>
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg sim_ns)" args="joint_state_controller JointGroupController" />
 
-    <group if="$(arg wolfgang)">
-        <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg sim_ns)" type="spawn_model" args="-param /robot_description -urdf -model $(arg sim_ns) -x -1.5 -y 0.0 -z 0.445" output="screen" />
-        <rosparam file="$(find wolfgang_description)/config/wolfgang_control.yaml" command="load" ns="$(arg sim_ns)"/>
-        <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg sim_ns)" args="joint_state_controller JointGroupController" />
-    </group>
                   
 </launch>
