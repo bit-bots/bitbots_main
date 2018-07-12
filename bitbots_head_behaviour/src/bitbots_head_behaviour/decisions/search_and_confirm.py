@@ -10,10 +10,10 @@ import rospy
 
 from bitbots_head_behaviour.actions.look_at import LookAtBall, LookAtGoal
 from bitbots_head_behaviour.decisions.search_for_object import SearchForBall, SearchForEnemyGoal
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 
-class AbstractSearchAndConfirm(AbstractDecisionModule):
+class AbstractSearchAndConfirm(AbstractDecisionElement):
     def __init__(self, connector, _):
         super(AbstractSearchAndConfirm, self).__init__(connector, _)
         self.fr = True

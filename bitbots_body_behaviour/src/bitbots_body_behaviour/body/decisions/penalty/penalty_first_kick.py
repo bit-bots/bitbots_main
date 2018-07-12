@@ -13,11 +13,11 @@ History:
 import random
 
 from bitbots_body_behaviour.body.actions.kick_ball import KickBall
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import TeamData
 
 
-class PenaltyFirstKick(AbstractDecisionModule):
+class PenaltyFirstKick(AbstractDecisionElement):
 
     def __init__(self, connector):
         super(PenaltyFirstKick, self).__init__(connector)

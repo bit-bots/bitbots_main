@@ -8,12 +8,12 @@ Go back to the position where a robot with this duty should stand.
 History:
 * 05.12.14: Created (Marc Bestmann & Nils Rokita)
 """
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import TeamData
 from bitbots_body_behaviour.body.actions.go_to import GoToAbsolutePosition
 
 
-class GoToDutyPosition(AbstractDecisionModule):
+class GoToDutyPosition(AbstractDecisionElement):
     def __init__(self, connector, _):
         super(GoToDutyPosition, self).__init__(connector)
         self.half_length = connector.config["Body"]["Common"]["Field"]["length"] / 2.0

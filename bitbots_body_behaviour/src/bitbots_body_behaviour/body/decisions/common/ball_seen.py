@@ -12,10 +12,10 @@ import rospy
 from bitbots_body_behaviour.body.actions.search import Search
 from bitbots_body_behaviour.body.decisions.common.close_ball import CloseBallPenaltyKick, CloseBallCommon
 from bitbots_body_behaviour.body.decisions.team_player.fieldie_search_decision import FieldieSearchDecision
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 
-class AbstractBallSeen(AbstractDecisionModule):
+class AbstractBallSeen(AbstractDecisionElement):
     """
     Entscheidet ob der Ball gesehen wurde bzw. ob die Informationen zuverlässig genug sind
     Decides if the ball was seen rspectively if the information is  authentic enough.

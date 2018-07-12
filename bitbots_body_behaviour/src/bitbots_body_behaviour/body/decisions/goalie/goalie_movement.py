@@ -11,7 +11,7 @@ History:
 * 05.12.14: Complete Refactor (Marc Bestmann)
 """
 import math
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from bitbots_body_behaviour.body.decisions.goalie.after_throw_decision import AfterThrowDecision
 from bitbots_body_behaviour.body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
 from bitbots_body_behaviour.body.decisions.goalie.position_in_goal import PositionInGoal
@@ -20,7 +20,7 @@ from bitbots_body_behaviour.body.actions.go_to import GoToAbsolutePosition
 from bitbots_connector.capsules.blackboard_capsule import DUTY_TEAMPLAYER
 
 
-class GoalieMovement(AbstractDecisionModule):
+class GoalieMovement(AbstractDecisionElement):
     def __init__(self,  connector, _):
         super(GoalieMovement, self).__init__(connector)
         self.toggle_goalie_becomes_fieldie = connector.config["Body"]["Behaviour"]["Toggles"]["Goalie"]["goalieGoFieldie"]

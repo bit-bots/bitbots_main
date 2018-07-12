@@ -17,12 +17,12 @@ from bitbots_body_behaviour.body.decisions.penalty.penalty_kicker_decision impor
 from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
 from bitbots_connector.capsules.blackboard_capsule import DUTY_GOALIE, DUTY_PENALTYKICKER, DUTY_TEAMPLAYER, DUTY_POSITIONING
 from humanoid_league_msgs.msg import Speak, HeadMode, GameState
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 duty = None  # can be overwriten by the startup script (to force a behaviour)
 
 
-class DutyDecider(AbstractDecisionModule):
+class DutyDecider(AbstractDecisionElement):
     """
     Decides what kind of behaviour the robot performs
     """

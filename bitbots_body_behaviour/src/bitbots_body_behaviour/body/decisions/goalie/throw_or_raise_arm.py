@@ -10,11 +10,11 @@ History:
 """
 from bitbots_body_behaviour.body.actions.raise_arm import RaiseArm
 from bitbots_body_behaviour.body.actions.throw import Throw
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from bitbots_body_behaviour.body.actions.throw import MIDDLE, LEFT, RIGHT
 
 
-class ThrowOrRaiseArm(AbstractDecisionModule):
+class ThrowOrRaiseArm(AbstractDecisionElement):
     """
     Tests if the ball is dangerous (for the goalie)
     """

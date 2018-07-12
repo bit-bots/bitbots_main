@@ -5,11 +5,11 @@ Kick Decision
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 """
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from bitbots_body_behaviour.body.actions.kick_ball import KickBall
 
 
-class AbstractKickDecision(AbstractDecisionModule):
+class AbstractKickDecision(AbstractDecisionElement):
     """
     Decides which leg he has to use to kick the ball and if he has te reposition before kicking
     """

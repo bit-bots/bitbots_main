@@ -10,10 +10,10 @@ History:
 """
 from bitbots_body_behaviour.body.decisions.goalie.ball_seen import BallSeenGoalie
 from bitbots_body_behaviour.body.decisions.common.go_to_duty_position import GoToDutyPosition
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 
-class GoaliePositionDecision(AbstractDecisionModule):
+class GoaliePositionDecision(AbstractDecisionElement):
     def perform(self, connector, reevaluate=False):
         if connector.blackboard.get_goalie_out_of_goal():
             return self.push(GoToDutyPosition)

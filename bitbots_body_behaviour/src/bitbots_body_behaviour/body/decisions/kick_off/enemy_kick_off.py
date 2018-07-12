@@ -12,10 +12,10 @@ History:
 """
 from bitbots_body_behaviour.body.actions.wait import Wait
 from humanoid_league_msgs.msg import GameState
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 
-class EnemyKickOff(AbstractDecisionModule):
+class EnemyKickOff(AbstractDecisionElement):
     def __init__(self, connector):
         super(EnemyKickOff, self).__init__(connector)
         self.initialized = False

@@ -18,10 +18,10 @@ import rospy
 from bitbots_body_behaviour.body.actions.search import Search
 from bitbots_body_behaviour.body.actions.go_to import GoToCenterpoint, GoToRelativePosition
 
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 
-class FieldieSearchDecision(AbstractDecisionModule):
+class FieldieSearchDecision(AbstractDecisionElement):
     def __init__(self, connector, _):
         super(FieldieSearchDecision, self).__init__(connector, _)
         self.start_time = rospy.get_time()

@@ -9,12 +9,12 @@ History:
 * 5/7/14: Created (sheepy)
 * 07.01.15: Complete Refactoring (Marc Bestmann)
 """
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from bitbots_body_behaviour.body.decisions.kick_off.kick_off_kicker import KickOffKicker
 from bitbots_body_behaviour.body.decisions.kick_off.kick_off_supporter import KickOffSupporterSideDecision
 
 
-class KickOffRoleDecider(AbstractDecisionModule):
+class KickOffRoleDecider(AbstractDecisionElement):
     def __init__(self, connector):
         super(KickOffRoleDecider, self).__init__(connector)
         self.decision_distance = connector.config["Body"]["Fieldie"]["KickOff"]["roleDecisionDistance"]

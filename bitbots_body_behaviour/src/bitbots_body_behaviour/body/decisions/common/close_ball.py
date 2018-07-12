@@ -5,7 +5,7 @@ CloseBall
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 """
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 from math import atan2
 from bitbots_body_behaviour.body.actions.align_on_ball import AlignOnBall
@@ -16,7 +16,7 @@ from bitbots_body_behaviour.body.decisions.penalty.penalty_first_kick import Pen
 from humanoid_league_msgs.msg import HeadMode
 
 
-class AbstractCloseBall(AbstractDecisionModule):
+class AbstractCloseBall(AbstractDecisionElement):
     """
     Test if the ball is in kick distance
     """

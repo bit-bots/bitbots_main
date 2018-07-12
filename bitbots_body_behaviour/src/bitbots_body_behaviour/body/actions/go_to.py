@@ -13,10 +13,10 @@ import rospy
 import tf2_ros as tf2
 from tf.transformations import quaternion_from_euler
 from geometry_msgs.msg import PoseStamped, Quaternion
-from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+from bitbots_stackmachine.abstract_action_element import AbstractActionElement
 
 
-class GoToRelativePosition(AbstractActionModule):
+class GoToRelativePosition(AbstractActionElement):
     def __init__(self, connector, args):
         """Go to a position relative to the robot
 
@@ -56,7 +56,7 @@ class GoToRelativePosition(AbstractActionModule):
             return self.pop()
 
 
-class Stand(AbstractActionModule):
+class Stand(AbstractActionElement):
     def perform(self, connector, reevaluate=False):
         if not connector.pathfinding.useMoveBase:
             connector.pathfinding.pub_simple_pathfinding(0, 0)
@@ -74,7 +74,7 @@ class Stand(AbstractActionModule):
             return self.pop()
 
 
-class GoToAbsolutePosition(AbstractActionModule):
+class GoToAbsolutePosition(AbstractActionElement):
     def __init__(self, connector, args):
         """Go to an absolute position on the field
 

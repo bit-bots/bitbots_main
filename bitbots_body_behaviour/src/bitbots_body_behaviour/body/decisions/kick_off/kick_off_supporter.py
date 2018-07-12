@@ -11,11 +11,11 @@ History:
 import rospy
 
 from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import Strategy
 
 
-class KickOffSupporterSideDecision(AbstractDecisionModule):
+class KickOffSupporterSideDecision(AbstractDecisionElement):
     def perform(self, connector, reevaluate=False):
         connector.speaker.say("KickOffSupporter")
         ball_u, ball_v = connector.world_model.get_ball_position_uv()
@@ -27,7 +27,7 @@ class KickOffSupporterSideDecision(AbstractDecisionModule):
             return self.push(KickOffSupporter, Strategy.SIDE_RIGHT)
 
 
-class KickOffSupporter(AbstractDecisionModule):
+class KickOffSupporter(AbstractDecisionElement):
     def __init__(self, connector, args):
         super(KickOffSupporter, self).__init__(connector)
         self.ignore_kick_off_time = connector.config["Body"]["Fieldie"]["KickOff"]["ignoreKickOffTime"]

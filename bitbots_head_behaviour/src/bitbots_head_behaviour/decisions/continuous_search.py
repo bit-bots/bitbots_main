@@ -12,11 +12,11 @@ so only in special cases the ball will be tracked.
 import rospy
 
 from bitbots_head_behaviour.actions.look_at import LookAtRelativePoint
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import TeamData
 
 
-class ContinuousSearch(AbstractDecisionModule):
+class ContinuousSearch(AbstractDecisionElement):
     def __init__(self, connector, outcomes=()):
         super(ContinuousSearch, self).__init__(connector)
         self.pattern_pos = 0

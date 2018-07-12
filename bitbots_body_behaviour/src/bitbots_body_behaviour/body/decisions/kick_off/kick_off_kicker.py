@@ -11,11 +11,11 @@ History:
 import random
 
 from bitbots_body_behaviour.body.actions.kick_ball import KickBall
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import Strategy
 
 
-class KickOffKicker(AbstractDecisionModule):
+class KickOffKicker(AbstractDecisionElement):
     def __init__(self, connector):
         super(KickOffKicker, self).__init__(connector)
         self.kicked = False

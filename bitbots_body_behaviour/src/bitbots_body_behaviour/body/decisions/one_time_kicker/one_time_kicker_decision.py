@@ -10,11 +10,11 @@ History:
 """
 import rospy
 
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from bitbots_body_behaviour.body.decisions.common.ball_seen import BallSeenFieldie
 
 
-class OneTimeKickerDecision(AbstractDecisionModule):  # todo make this player shoot always with the hard kick
+class OneTimeKickerDecision(AbstractDecisionElement):  # todo make this player shoot always with the hard kick
     def __init__(self, connector):
         super(OneTimeKickerDecision, self).__init__(connector)
         self.reset_time = connector.config["Body"]["OneTimeKicker"]["resetTime"]

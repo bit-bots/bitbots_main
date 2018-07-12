@@ -8,11 +8,11 @@ import rospy
 from bitbots_head_behaviour.decisions.search_and_confirm import SearchAndConfirmBall, SearchAndConfirmEnemyGoal
 from bitbots_head_behaviour.decisions.continuous_search import ContinuousSearch
 from bitbots_head_behaviour.actions.look_at import LookAtRelativePoint
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import HeadMode
 
 
-class HeadDutyDecider(AbstractDecisionModule):
+class HeadDutyDecider(AbstractDecisionElement):
 
     def __init__(self, connector, _):
         super(HeadDutyDecider, self).__init__(connector)

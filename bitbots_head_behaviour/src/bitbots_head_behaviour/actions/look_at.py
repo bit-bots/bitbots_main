@@ -16,10 +16,10 @@ import tf2_ros as tf2
 from tf2_geometry_msgs import PointStamped
 from geometry_msgs.msg import Point
 
-from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+from bitbots_stackmachine.abstract_action_element import AbstractActionElement
 
 
-class AbstractLookAt(AbstractActionModule):
+class AbstractLookAt(AbstractActionElement):
     def __init__(self, connector, args):
         super(AbstractLookAt, self).__init__(connector)
         self.tfBuffer = tf2.Buffer(cache_time=rospy.Duration(10.0))

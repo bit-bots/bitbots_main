@@ -6,12 +6,12 @@ InGoal
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
 """
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from bitbots_body_behaviour.body.actions.throw import MIDDLE
 from bitbots_body_behaviour.body.decisions.common.go_to_duty_position import GoToDutyPosition
 
 
-class AfterThrowDecision(AbstractDecisionModule):
+class AfterThrowDecision(AbstractDecisionElement):
     """
     Decides how the robot will turn after it has thrown itself.
     """

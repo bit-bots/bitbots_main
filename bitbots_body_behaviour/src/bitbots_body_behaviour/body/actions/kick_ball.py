@@ -5,12 +5,12 @@ KickBall
 
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 """
-from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+from bitbots_stackmachine.abstract_action_element import AbstractActionElement
 from bitbots_body_behaviour.body.actions.go_to import Stand
 import rospy
 
 
-class KickBall(AbstractActionModule):
+class KickBall(AbstractActionElement):
     """
     Kickt nach dem Ball, bekommt im init_data die Information ob links oder rechts gekickt werden soll
     Kicks the ball, gets in init_data the information about the side.

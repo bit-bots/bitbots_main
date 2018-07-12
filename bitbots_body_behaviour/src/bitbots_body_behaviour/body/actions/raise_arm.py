@@ -6,10 +6,10 @@ RaiseArm
 Raising Arms to get ready to throw the goalie.
 """
 from bitbots_body_behaviour.body.actions.throw import LEFT, RIGHT, MIDDLE, BOTH_ARMS_HIGH
-from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+from bitbots_stackmachine.abstract_action_element import AbstractActionElement
 
 
-class RaiseArm(AbstractActionModule):
+class RaiseArm(AbstractActionElement):
     def __init__(self, connector, args):
         super(RaiseArm, self).__init__(connector)
         self.direction = args

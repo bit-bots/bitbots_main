@@ -5,18 +5,16 @@ SearchForBall
 
 Lets the head search only for the ball
 
-History:
-
 
 """
 import rospy
 
 from bitbots_head_behaviour.actions.look_at import LookAtRelativePoint
 from bitbots_head_behaviour.decisions.continuous_search import ContinuousSearch
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 
-class AbstractSearchForObject(AbstractDecisionModule):
+class AbstractSearchForObject(AbstractDecisionElement):
     def __init__(self, connector, _):
         super(AbstractSearchForObject, self).__init__(connector)
         self.run = 0

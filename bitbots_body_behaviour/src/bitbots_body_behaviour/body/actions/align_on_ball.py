@@ -6,12 +6,12 @@ AlignOnBall
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
 """
-from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+from bitbots_stackmachine.abstract_action_element import AbstractActionElement
 from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
 from humanoid_league_msgs.msg import HeadMode
 
 
-class AlignOnBall(AbstractActionModule):
+class AlignOnBall(AbstractActionElement):
     def perform(self, connector, reevaluate=False):
         # When positioning, the robot should only look to the ball
         connector.blackboard.set_head_duty(HeadMode.BALL_MODE)

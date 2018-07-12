@@ -15,10 +15,10 @@ import rospy
 from bitbots_body_behaviour.body.actions.wait import Wait
 from bitbots_body_behaviour.body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
 from bitbots_body_behaviour.body.decisions.team_player.defender_position_decider import DefenderPositionDecider
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 
-class DefenderDecision(AbstractDecisionModule):
+class DefenderDecision(AbstractDecisionElement):
     def __init__(self, connector, _):
         super(DefenderDecision, self).__init__(connector, _)
 

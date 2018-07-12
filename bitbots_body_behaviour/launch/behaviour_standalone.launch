@@ -4,18 +4,10 @@
     <arg name="minibot" default="false" />
     <arg name="wolfgang" default="false" />
 
-    <rosparam command="load" file="$(find bitbots_body_behaviour)/config/behaviour.yaml"/>
-    <rosparam command="load" file="$(find bitbots_body_behaviour)/config/animations.yaml"/>
-    <rosparam command="load" file="$(find bitbots_head_behaviour)/config/head_config.yaml"/>
-<!--    <rosparam command="load" file="$(find game_controller)/config/game_controller.yaml"/>-->
-    <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
-    <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
-
     <include file="$(find bitbots_common)/launch/load_robot_description.launch">
         <arg name="minibot" value="$(arg minibot)"/>
         <arg name="wolfgang" value="$(arg wolfgang)"/>   
     </include>
 
-    <node name="body_behaviour" pkg="bitbots_body_behaviour" type="body_behaviour.py" respawn="true"  output="screen" args="$(arg duty)" />
-    <node name="head_behaviour"  pkg="bitbots_head_behaviour" type="head_node.py" respawn="true" output="screen"/>
+    <include file="$(find bitbots_body_behaviour)/launch/behaviour.launch"/>    
 </launch>

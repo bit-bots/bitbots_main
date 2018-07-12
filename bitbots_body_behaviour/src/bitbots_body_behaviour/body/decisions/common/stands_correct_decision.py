@@ -7,7 +7,7 @@ StandsCorrectDecision
 
 """
 
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 import rospy
 from math import atan2, sqrt
@@ -16,7 +16,7 @@ from bitbots_body_behaviour.body.actions.align_to_goal import AlignToGoal
 from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionCommon
 
 
-class StandsCorrectDecision(AbstractDecisionModule):
+class StandsCorrectDecision(AbstractDecisionElement):
     """
     Decides if the robot stands correct and takes care if it doesn't
     """

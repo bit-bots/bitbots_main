@@ -14,10 +14,10 @@ import math
 
 from bitbots_body_behaviour.body.actions.search import Search
 from bitbots_body_behaviour.body.actions.go_to import GoToAbsolutePosition
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 
-class DefenderPositionDecider(AbstractDecisionModule):
+class DefenderPositionDecider(AbstractDecisionElement):
     def __init__(self, connector, _):
         super(DefenderPositionDecider, self).__init__(connector, _)
         self.timestamp_goal = 0

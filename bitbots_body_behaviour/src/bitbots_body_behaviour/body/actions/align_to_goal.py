@@ -11,11 +11,11 @@ import math
 import rospy
 
 from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
-from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+from bitbots_stackmachine.abstract_action_element import AbstractActionElement
 from humanoid_league_msgs.msg import HeadMode
 
 
-class AlignToGoal(AbstractActionModule):
+class AlignToGoal(AbstractActionElement):
     def __init__(self, connector, _):
         super(AlignToGoal, self).__init__(connector)
         self.config_max_aligning_time = connector.config["Body"]["Fieldie"]["maxGoalAlignTime"]

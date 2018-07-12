@@ -8,10 +8,10 @@ GotToBallPathfinding
 """
 from math import atan2
 from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
-from bitbots_stackmachine.abstract_action_module import AbstractActionModule
+from bitbots_stackmachine.abstract_action_element import AbstractActionElement
 
 
-class GoAwayFromBall(AbstractActionModule):
+class GoAwayFromBall(AbstractActionElement):
     """Goes away from the ball"""
     def perform(self, connector, reevaluate=False):
         ball_u, ball_v = connector.world_model.get_ball_position_uv()

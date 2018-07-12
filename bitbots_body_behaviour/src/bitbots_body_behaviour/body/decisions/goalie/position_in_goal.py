@@ -9,11 +9,11 @@ History:
 * 06.12.14: Created using code from GoalieBehaviourDynamic by Daniel Speck (Marc Bestmann)
 """
 import math
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
 
 
-class PositionInGoal(AbstractDecisionModule):
+class PositionInGoal(AbstractDecisionElement):
     def __init__(self,  connector, _):
         super(PositionInGoal, self).__init__(connector)
         goal_width = connector.config["Body"]["Common"]["Field"]["goalWidth"]

@@ -13,11 +13,11 @@ from bitbots_body_behaviour.body.decisions.common.ball_seen import BallSeenField
 from bitbots_body_behaviour.body.decisions.team_player.center_decision import CenterDecision
 from bitbots_body_behaviour.body.decisions.team_player.defender_decision import DefenderDecision
 from bitbots_body_behaviour.body.decisions.team_player.supporter_decision import SupporterDecision
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import TeamData
 
 
-class RoleDecider(AbstractDecisionModule):
+class RoleDecider(AbstractDecisionElement):
     def __init__(self, connector, args):
         super(RoleDecider, self).__init__(connector)
         self.forced = args[0] if args else None

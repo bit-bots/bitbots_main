@@ -11,10 +11,10 @@ import rospy
 from bitbots_body_behaviour.body.actions.go_to import GoToBall
 from bitbots_body_behaviour.body.actions.search import Search
 from bitbots_body_behaviour.body.actions.wait import Wait
-from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 
-class SupporterDecision(AbstractDecisionModule):
+class SupporterDecision(AbstractDecisionElement):
     def __init__(self, connector, args=None):
         super(SupporterDecision, self).__init__(connector, args)
 
