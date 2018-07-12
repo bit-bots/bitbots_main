@@ -1,11 +1,5 @@
 # -*- coding:utf-8 -*-
-"""
-StackMachineModule
-^^^^^^^^^^^^^^^^^^
 
-.. moduleauthor:: Nils Rokita <0rokita@informatik.uni-hamburg.de>
-
-"""
 import rospy
 from std_msgs.msg import String
 from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
@@ -13,12 +7,23 @@ from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
 
 class StackMachine(object):
     """
-    Diese Klasse handeld die Verhaltensarchitektur
+    One decision is defined as the root decision, the starting point.
+    Each decision element, which is pushed on the stack, is immediately executed until no further element is pushed. 
+    Following, each iteration, for each element, is checked if it requires to be reevaluated and finally the top element of the stack will be executed, usually an action.
+    If the outcome of a reevaluated element changes, the entire stack on top of this element will be dropped and the stack newly constructed.
+    As soon as the action is complete, the element will be popped off the stack and the module underneath will be executed in the next iteration.
+    If this is a decision, it again pushes a further decision or an action and the new top element will be executed.
+
+    By this structure, it is always visible which action the robot tries to perform and which decisions were made.
+
+    If a new element is pushed on top of the stack, it is directly executed.
+    In most cases, the pushing element is completing its execution with the push of another element. 
+    Any following code will be executed as soon as the stack is not further expanded.
     """
 
     stack = []
-    start_module = None
-    start_module_data = None
+    start_element = None
+    start_element_data = None
     stack_excec_index = -1
     stack_reevaluate = False
     do_not_reevaluate = False
@@ -31,53 +36,44 @@ class StackMachine(object):
         if self.debug_active:
             self.debug_pub = rospy.Publisher(debug_topic, String, queue_size=100)
 
-    def _init_module(self, module, init_data=None):
+    def _init_element(self, element, init_data=None):
         """
-        Initialisiert das Modul module
+            Initialises the element.
         """
-        mod = module(self.connector, init_data)
+        mod = element(self.connector, init_data)
         mod.setup_internals(self, init_data)
         return mod
 
-    def set_start_module(self, start_module, init_data=None):
+    def set_start_element(self, start_element, init_data=None):
         """
-        Mit Dieser Methode wird das Start DecisionModule festgelegt,
-        welches immer als unterstes auf dem Stack verbleibt.
+            This method dfines the start element on the stack, which stays always on the bottom of the stack.
 
-        Diese Methode sollte meist im __init__ aufgeruffen werden
+            This method should be called in __init__.
         """
         self.stack = []
-        self.start_module = start_module
-        self.start_module_data = init_data
-        self.stack.append(self._init_module(start_module, init_data))
+        self.start_element = start_element
+        self.start_element_data = init_data
+        self.stack.append(self._init_element(start_element, init_data))
 
     def interrupt(self):
         """
-        es ist etwas passiert so das das verhalten sich komplett neu
-        entscheiden muss, und den stack daher neu aufbaut.
+            An interrupt is an event which clears the complete stack to reset the behavior.
+            In the special case of RoboCup, we use it when the game-state changes, but it can also be used for example if the robot is kidnapped or paused.
+            In the following iteration, the stack will be newly created starting at the root element.
         """
         if self.stack_reevaluate:
-            # wir waren gerade dabei vorbedingungen zu prüfen
-            # wir höhren natürlich damit auf...
-            self.stack_reevaluate = False
-            # damit merkt update() das es aufhöhren muss
-        self.stack = [self._init_module(self.start_module,
-                                        self.start_module_data)]
-
-    def event_interrupt(self):
-        """
-        Diese Methode wird aufgerufen wenn ein GLOBAL_INTERRUPT Event kommt.
-
-        Tut in der Standartimplementation nichts außer es durchreichen.
-        """
-        self.interrupt()
+            # we were currently checking preconditions 
+            # we stop this, so that update() knows that it has to stop
+            self.stack_reevaluate = False        
+        self.stack = [self._init_element(self.start_element,
+                                        self.start_element_data)]
 
     def update(self, reevaluate=True):
         """
-        Führt das Modul was oben auf dem Stack liegt aus. Prüft vorher
-        etwagige vorbedingungen (Module die Reevaluate gesetzt haben)
-
-        :param: reevaluate: Ob der Stack reevaluiert werden soll
+        Calls the element which is currently on top of the stack.
+        Before doing this, all preconditions are checked (all decision elements where reevaluate is true).
+        
+        :param: reevaluate: Can be set to False to inhibit the reevaluation
         :type reevaluate: bool
         """
         self.publish_debug_msg()
@@ -86,80 +82,62 @@ class StackMachine(object):
             self.stack_excec_index = 0
             self.stack_reevaluate = True
             for element in self.stack[:-1]:
-                # alle elemente außer das letzte überprüfen ob wir
-                # die entscheidung reevaluieren müssen
+                # check all elements, exept the top one
                 if element.get_reevaluate():
                     element.perform(self.connector, True)
                     if not self.stack_reevaluate:
-                        # Beim reeavluieren ist irgendwo abgebrochen
-                        # worden, wir höhren hier auf
+                        # We had some external interrupt, we stop here
                         return
                 self.stack_excec_index += 1
-            self.stack_reevaluate = False
-        # Die eigendliche ausführung des Moduls
+            self.stack_reevaluate = False        
         if reevaluate:
-            # flag zurücksetzten dass wir nicht reevaluieren
+            # reset flag
             self.do_not_reevaluate = False
+        # run the top module
         self.stack[-1].perform(self.connector)
-
-    def post(self):
-
-        if self.stack != self.old_representation:
-            self.old_representation = self.stack
-            a = [str(e).split(" ")[1][0:-1] for e in self.stack]
-            b = [str(c).split(".")[-1] for c in a]
-
-            rospy.logdebug("Stack1" + " ".join(b))
-
-    def push(self, module, init_data=None):
+  
+    def push(self, element, init_data=None):
         """
-        Ein neues Modul auf den Stack legen, es wird sofort ausgeführt
+        Put a new element on the stack and start it directly. 
 
         .. warning::
-            Nach push sollte niemals noch etwas ausgefphrt werden, es kann
-            sonst zu massiven verwirrungen kommen. Am besten immer::
+            After using push, you should not have further code, since this
+            leads to difficult to debug behavior. Try to use::
 
-                return self.push(xxxDecisionModule, data)
+                return self.push(xxxElement, data)            
 
-            nutzen
-
-        :param module: Das auf den Stack zu legende Modul
-            (Nicht inizialisierne!)
-        :type module: Module
-        :param init_data: init Data wird dem neuen Modul zum Init
-            übergeben, optional
+        :param element: The element that should be put on top of the stack. Do not initilize!            
+        :type element: Element
+        :param init_data: This data will be given to the new module during its init, optional
         """
         if self.stack_reevaluate:
-            # wir sind gerade dabei die vorbedingungen zu prüfen
-            # testen op die entscheidung noch die gleiche ist:
-            if type(self.stack[self.stack_excec_index + 1]) == module and \
+            # we are currently checking pre conditions
+            # check if we made the same decision (push) as last time
+            if type(self.stack[self.stack_excec_index + 1]) == element and \
                             self.stack[self.stack_excec_index + 1].get_init_data() \
                             == init_data:
-                # entscheidung ist gleich wir tun nichts
+                # decision was the same, reevaluation passed, precondition did not change
                 return
             else:
-                # andere entscheidung, wir bauen den Stack bis hier
-                # ab und puschen das neue rauf.
+                # result changed. we clear all stack above us and push the new element on top
                 self.stack = self.stack[0:self.stack_excec_index + 1]
-                # reevaluate ist hiermit zuende
+                # reevaluate is finished
                 self.stack_reevaluate = False
-        self.stack.append(self._init_module(module, init_data))
-        # wir rufen das neue Modul ohne reevaluation auf
+        self.stack.append(self._init_element(element, init_data))
+        # we call the new element without another reevaluate
         self.update(False)
 
     def pop(self):
         """
-        Entfern sich selber vom Stack, der vorgänger wird in diesem
-        Frame _nicht_ mehr aufgeruffen.
+        Removes the element from the stack. The previous element will not be called again.
         """
         if len(self.stack) > 1:
             if self.stack_reevaluate:
-                # wir reevaluieren gerade, wir kürzen den stack hier ein
-                # inklusive das aktuelle Modul
+                # we are currently reevaluating. we shorten the stack here                
                 if self.stack_excec_index > 0:
-                    # nur stack kürzen wenn er dann noch ein element hatt
+                    # only shorten stack if it still has one element
                     self.stack = self.stack[0:self.stack_excec_index]
-                # mit dem reevaluieren aufhöhren
+                # stop reevaluating
                 self.stack_reevaluate = False
             else:
                 self.stack.pop()
@@ -167,16 +145,19 @@ class StackMachine(object):
             rospy.logwarn("Can't pop in %s: stack is empty, Module: %s" % (repr(self), repr(self.stack[0])))
 
     def set_do_not_reevaluate(self):
-        """Beim nächsten update wird nicht reevaluiert"""
+        """No reevaluation on next iteration"""
         self.do_not_reevaluate = True
 
     def get_stack(self):
         """
-        Gibt den Aktuellen Stack zurück
+        Returns the current stack
         """
         return self.stack
     
     def publish_debug_msg(self):
+        """
+        Helper method to publish debug data
+        """
         if self.debug_active:
             msg_data = ",".join([repr(x) for x in self.stack])
             msg = String(data=msg_data)

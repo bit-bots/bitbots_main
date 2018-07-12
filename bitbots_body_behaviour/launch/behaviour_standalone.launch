@@ -7,7 +7,7 @@
     <rosparam command="load" file="$(find bitbots_body_behaviour)/config/behaviour.yaml"/>
     <rosparam command="load" file="$(find bitbots_body_behaviour)/config/animations.yaml"/>
     <rosparam command="load" file="$(find bitbots_head_behaviour)/config/head_config.yaml"/>
-    <rosparam command="load" file="$(find game_controller)/config/game_controller.yaml"/>
+<!--    <rosparam command="load" file="$(find game_controller)/config/game_controller.yaml"/>-->
     <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
     <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
 
