@@ -58,7 +58,7 @@ for datei in filelist[:]:
             else:
                 decisions_nodes[name[0]] = "decision"
 
-            if name[1] not in ["AbstractDecisionModule", "AbstractActionModule", "AbstractInitActionModule"]:
+            if name[1] not in ["AbstractDecisionElement", "AbstractActionElement"]:
                 #erbt[name[0]] = name[1]
                 #nodes[name[0]].update(nodes[name[1]])
                 #print edges

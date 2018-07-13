@@ -61,8 +61,4 @@ class AbstractDecisionElement(AbstractStackElement):
         """
         return self._reevaluate
 
-    def do_not_reevaluate(self):
-        """
-        Prohibits the next reevaluate.
-        """
-        self._behaviour.set_do_not_reevaluate()
+    

@@ -14,6 +14,13 @@ class AbstractActionElement(AbstractStackElement):
         If the action is complete, it can remove itself from the stack by performing a pop command.     
     """
 
+    def do_not_reevaluate(self):
+        """
+        Prohibits the next reevaluate.
+        This is usefull if you have an action which has to be completed without interruption, e.g. a kick animation.
+        """
+        self._behaviour.set_do_not_reevaluate()
+
     def __repr__(self):
         """
             Overlaod from the AbstractStackElement to have "Action" at the start.
