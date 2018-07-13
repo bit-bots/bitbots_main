@@ -168,6 +168,7 @@ class FallChecker(object):
         return None
 
     def quaternion_to_euler_angle(self, x, y, z, w):
+        #todo use standard ros tf implementation
         ysqr = y * y
         
         t0 = +2.0 * (w * x + y * z)

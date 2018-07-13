@@ -4,13 +4,17 @@ import traceback
 import rospy
 from humanoid_league_msgs.msg import Speak
 
-from bitbots_hcm.values import VALUES
+from bitbots_hcm.values import BLACKBOARD
 import humanoid_league_msgs.msg
 from std_msgs.msg import String
 from humanoid_league_speaker.speaker import speak
 
 
 class AbstractState(object):
+    """
+    This is a very basic class of a state for the state machine used for the HCM.
+    """
+
     def __init__(self):
         # bool, is an animation started, where we want to wait for its finish
         self.animation_started = False
@@ -35,13 +39,17 @@ class AbstractState(object):
         raise NotImplementedError(msg)
 
     def hcm_state(self):
-        """Gives back the name that will be displayed in the hcm state message to the outside"""
+        """
+        Gives back the name that will be displayed in the hcm state message to the outside
+        """
         msg = "You should overwrite hcm_state() in %s" % self.__class__.__name__
         raise NotImplementedError(msg)
 
     def shutdown(self):
-        """Tells the state machine to which state it shall go, if there is an external shutdown.
-        Should normally be ShutDown or ShutDownAnimation."""
+        """
+        Tells the state machine to which state it shall go, if there is an external shutdown.
+        Should normally be ShutDown or ShutDownAnimation.
+        """
         msg = "You should overwrite shutdown() in %s" % self.__class__.__name__
         raise NotImplementedError(msg)
 
@@ -53,32 +61,35 @@ class AbstractState(object):
         :param anim: animation to play
         :return:
         """
-        VALUES.hcm_animation_playing = False  # will be set true when the hcm receives keyframe callback
-        VALUES.hcm_animation_finished = False
+        BLACKBOARD.hcm_animation_playing = False  # will be set true when the hcm receives keyframe callback
+        BLACKBOARD.hcm_animation_finished = False
 
         rospy.loginfo("Playing animation " + anim)
         if anim is None or anim == "":
             rospy.logwarn("Tried to play an animation with an empty name!")
             return False
-        first_try = VALUES.animation_client.wait_for_server(
+        first_try = BLACKBOARD.animation_client.wait_for_server(
             rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 10)))
         if not first_try:
             rospy.logerr(
                 "Animation Action Server not running! Motion can not work without animation action server. "
                 "Will now wait until server is accessible!")
-            VALUES.animation_client.wait_for_server()
+            BLACKBOARD.animation_client.wait_for_server()
             rospy.logwarn("Animation server now running, hcm will go on.")
         goal = humanoid_league_msgs.msg.PlayAnimationGoal()
         goal.animation = anim
         goal.hcm = True  # the animation is from the hcm
-        VALUES.animation_client.send_goal(goal)
+        BLACKBOARD.animation_client.send_goal(goal)
         self.animation_started = True
 
     def animation_finished(self):
-        return VALUES.hcm_animation_finished
+        return BLACKBOARD.hcm_animation_finished
 
 
 class AbstractStateMachine(object):
+    """
+    Small abstract state machine class for use in the HCM.
+    """
     def __init__(self):
         self.state = None
         self.connections = []
@@ -102,7 +113,7 @@ class AbstractStateMachine(object):
             self.debug_publisher.publish(self.state.__class__.__name__)
             rospy.logdebug("Current state: " + self.state.__class__.__name__)
             # also say the state name with los priority
-            speak(self.state.__class__.__name__, VALUES.speak_publisher, Speak.LOW_PRIORITY)
+            speak(self.state.__class__.__name__, BLACKBOARD.speak_publisher, Speak.LOW_PRIORITY)
         entry_switch = self.state.entry()
         if entry_switch is not None:
             # we directly do another state switch
@@ -115,7 +126,7 @@ class AbstractStateMachine(object):
         """
 
         # do we need to shut down the hcm
-        if VALUES.shut_down:
+        if BLACKBOARD.shut_down:
             # get shutdown state of current state
             shutdown_state = self.state.shutdown()
             if shutdown_state is None:

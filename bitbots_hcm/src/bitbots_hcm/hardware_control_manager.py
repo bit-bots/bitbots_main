@@ -26,9 +26,11 @@ from sensor_msgs.msg import Imu
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
-from bitbots_hcm.values import VALUES
+from bitbots_hcm.values import BLACKBOARD
 from bitbots_hcm.cfg import hcm_paramsConfig
 
+from bitbots_stackmachine.stack_machine import StackMachine
+from bitbots_connector.connector import AbstractConnector
 
 
 class Motion:
@@ -69,6 +71,10 @@ class Motion:
         self.aw1 = []
         self.aw2 = []
 
+        # stack machine
+        self.connector = 
+        self.stack_machine = StackMachine(self.connector, "debug_hcm_stack_machine")
+
         # --- Initialize Node ---
         log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_hcm', log_level=log_level, anonymous=False)
@@ -82,13 +88,13 @@ class Motion:
         self.joint_goal_command_publisher = rospy.Publisher('DynamixelController/command', JointCommand, queue_size=1)
         self.hcm_state_publisher = rospy.Publisher('robot_state', RobotControlState, queue_size=1, latch=True)
         self.speak_publisher = rospy.Publisher('speak', Speak, queue_size=1)
-        VALUES.speak_publisher = self.speak_publisher
+        BLACKBOARD.speak_publisher = self.speak_publisher
 
         rospy.sleep(0.1)  # important to make sure the connection to the speaker is established, for next line
         speak("Starting hcm", self.speak_publisher, priority=Speak.HIGH_PRIORITY)
 
         self.state_machine = HcmStateMachine(dieflag, standupflag, softoff_flag, softstart, start_test,
-                                             self.hcm_state_publisher)
+                                             self.hcm_state_publisher)                    
 
         rospy.Subscriber("imu/data", Imu, self.update_imu, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("walking_motor_goals", JointTrajectory, self.walking_goal_callback, queue_size=1, tcp_nodelay=True)
@@ -98,7 +104,7 @@ class Motion:
         rospy.Subscriber("pause", Bool, self.pause, queue_size=1, tcp_nodelay=True)
 
         self.animation_action_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
-        VALUES.animation_client = self.animation_action_client
+        BLACKBOARD.animation_client = self.animation_action_client
 
         self.dyn_reconf = Server(hcm_paramsConfig, self.reconfigure)
 
@@ -106,7 +112,7 @@ class Motion:
 
     def pause(self, msg):
         """ Updates the pause state for the state machine"""
-        VALUES.penalized = msg.data
+        BLACKBOARD.penalized = msg.data
 
     def update_imu(self, msg):
         """Gets new IMU values and computes the smoothed values of these"""
@@ -124,20 +130,20 @@ class Motion:
         self.smooth_accel = numpy.multiply(self.smooth_accel, 0.99) + numpy.multiply(self.accel, 0.01)  # accel
         self.not_much_smoothed_gyro = numpy.multiply(self.not_much_smoothed_gyro, 0.5) + numpy.multiply(self.gyro, 0.5)
 
-        VALUES.raw_gyro = self.gyro
-        VALUES.smooth_gyro = self.smooth_gyro
-        VALUES.not_so_smooth_gyro = self.not_much_smoothed_gyro
-        VALUES.smooth_accel = self.smooth_accel
-        VALUES.quaternion = self.quaternion
+        BLACKBOARD.raw_gyro = self.gyro
+        BLACKBOARD.smooth_gyro = self.smooth_gyro
+        BLACKBOARD.not_so_smooth_gyro = self.not_much_smoothed_gyro
+        BLACKBOARD.smooth_accel = self.smooth_accel
+        BLACKBOARD.quaternion = self.quaternion
 
         self.last_gyro_update_time = update_time
-        VALUES.last_hardware_update = update_time
+        BLACKBOARD.last_hardware_update = update_time
 
 
     def reconfigure(self, config, level):
         """ Dynamic reconfigure of the fall checker values."""
         # just pass on to the StandupHandler, as all the variables are located there
-        VALUES.fall_checker.update_reconfigurable_values(config, level)
+        BLACKBOARD.fall_checker.update_reconfigurable_values(config, level)
         return config
 
     def walking_goal_callback(self, msg):
@@ -148,7 +154,7 @@ class Motion:
         self.aw1.append(t - msg.header.stamp.to_sec())
         self.aw2.append(msg.header.seq)
 
-        VALUES.walking_active = True
+        BLACKBOARD.walking_active = True
         self.last_walking_update = t
         if self.state_machine.get_current_state() == STATE_CONTROLABLE or \
                         self.state_machine.get_current_state() == STATE_WALKING:
@@ -165,9 +171,9 @@ class Motion:
     def record_goal_callback(self, msg):
         if msg is None:
             # record tells us that its finished
-            VALUES.record = False
+            BLACKBOARD.record = False
         else:
-            VALUES.record = True
+            BLACKBOARD.record = True
             self.joint_goal_publisher.publish(msg)
             # also send it to ros control
             command_msg = trajectory_to_joint_command_msg(msg)
@@ -180,39 +186,39 @@ class Motion:
         self.anim_sum += t - mt
         self.anim_count +=1
 
-        VALUES.last_request = mt
+        BLACKBOARD.last_request = mt
         self.animation_request_time = t
         # VALUES.last_request = msg.header.stamp.to_sec()
         #self.animation_request_time = rospy.get_time()
         if msg.first:
             self.animation_running = True
-            VALUES.external_animation_finished = False
+            BLACKBOARD.external_animation_finished = False
             if msg.hcm:
                 # comming from ourselves
                 # state machine already know that we're playing it, but we set the value to be sure
-                VALUES.hcm_animation_playing = True
-                VALUES.hcm_animation_finished = False
+                BLACKBOARD.hcm_animation_playing = True
+                BLACKBOARD.hcm_animation_finished = False
             else:
                 # comming from outside
                 if self.state_machine.get_current_state() != STATE_CONTROLABLE:
                     rospy.logwarn("Motion is not controllable, animation refused.")
                     # animation has to wait
                     # state machine should try to become controllable
-                    VALUES.animation_requested = True
+                    BLACKBOARD.animation_requested = True
                     return
                 else:
                     # we're already controllable, go to animation running
-                    VALUES.external_animation_playing = True
+                    BLACKBOARD.external_animation_playing = True
 
         if msg.last:
             if msg.hcm:
                 # This was an animation from the state machine
-                VALUES.hcm_animation_playing = False
-                VALUES.hcm_animation_finished = True
+                BLACKBOARD.hcm_animation_playing = False
+                BLACKBOARD.hcm_animation_finished = True
             else:
                 # this is the last frame, we want to tell the state machine, that we're finished with the animations
                 self.animation_running = False
-                VALUES.external_animation_finished = True
+                BLACKBOARD.external_animation_finished = True
                 if msg.position is None:
                     # probably this was just to tell us we're finished
                     # we don't need to set another position to the motors
@@ -265,7 +271,7 @@ class Motion:
                 exit()
 
         # we got external shutdown, tell it to the state machine, it will handle it
-        VALUES.shut_down = True
+        BLACKBOARD.shut_down = True
         # now wait for it finishing the shutdown procedure
         # while not self.state_machine.is_shutdown():
         #    # we still have to update everything
@@ -294,7 +300,7 @@ class Motion:
     def update_once(self):
         # check if we're still walking
         if rospy.get_time() - self.last_walking_update > 0.2:
-            VALUES.walking_active = False
+            BLACKBOARD.walking_active = False
 
         # let statemachine run
         self.state_machine.evaluate()

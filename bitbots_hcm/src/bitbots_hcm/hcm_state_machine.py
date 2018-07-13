@@ -6,11 +6,13 @@ from bitbots_cm730.srv import SwitchMotorPower
 from geometry_msgs.msg import Twist
 from humanoid_league_msgs.msg import RobotControlState
 
-from .abstract_state_machine import AbstractState, VALUES
+from .abstract_state_machine import AbstractState, BLACKBOARD
 from .abstract_state_machine import AbstractStateMachine
 from humanoid_league_speaker.speaker import speak
 from humanoid_league_msgs.msg import Speak
 
+# robot states that are published to the rest of the software
+# definition from humanoid_league_msgs/RobotControlState.msg
 STATE_CONTROLABLE = 0
 STATE_FALLING = 1
 STATE_FALLEN = 2
@@ -22,19 +24,23 @@ STATE_PENALTY = 7
 STATE_PENALTY_ANIMATION = 8
 STATE_RECORD = 9
 STATE_WALKING = 10
+STATE_MOTOR_OFF=11
+STATE_HCM_OFF=12
+STATE_HARDWARE_PROBLEM=13
+STATE_PICKED_UP = 14
 
 
 class HcmStateMachine(AbstractStateMachine):
     def __init__(self, die_flag, standup_flag, soft_off_flag, soft_start, start_test, state_publisher):
         super(HcmStateMachine, self).__init__()
-        VALUES.standup_flag = standup_flag
+        BLACKBOARD.standup_flag = standup_flag
         #Comment if not working 
-        VALUES.die_flag = die_flag
-        VALUES.soft_off_flag = soft_off_flag
-        VALUES.soft_start = soft_start
-        VALUES.start_test = start_test
-        VALUES.last_request = 0
-        VALUES.last_hardware_update = None
+        BLACKBOARD.die_flag = die_flag
+        BLACKBOARD.soft_off_flag = soft_off_flag
+        BLACKBOARD.soft_start = soft_start
+        BLACKBOARD.start_test = start_test
+        BLACKBOARD.last_request = 0
+        BLACKBOARD.last_hardware_update = None
 
         self.error_state = ShutDown()
         self.state_publisher = state_publisher
@@ -69,25 +75,25 @@ class Startup(AbstractState):
     def evaluate(self):
         if not self.animation_started:
             # leave this if we got a hardware response, or after some time
-            if VALUES.last_hardware_update is not None or rospy.get_time() - VALUES.start_up_time > self.start_time_limit:
+            if BLACKBOARD.last_hardware_update is not None or rospy.get_time() - BLACKBOARD.start_up_time > self.start_time_limit:
                 # check if we directly go into a special state, if not, got to get up
-                if VALUES.start_test:
+                if BLACKBOARD.start_test:
                     pass
                     return
-                if VALUES.record:
+                if BLACKBOARD.record:
                     switch_motor_power(True)
                     return Record()
-                if VALUES.soft_start:
+                if BLACKBOARD.soft_start:
                     switch_motor_power(False)
                     # to prohibit getting directly out of softoff
-                    VALUES.last_client_update = rospy.get_time() - 120
+                    BLACKBOARD.last_client_update = rospy.get_time() - 120
                     return Softoff()
                 switch_motor_power(True)
-                if VALUES.penalized:
+                if BLACKBOARD.penalized:
                     return PenaltyAnimationIn()
 
                 # normal states
-                if VALUES.standup_flag:
+                if BLACKBOARD.standup_flag:
                     self.next_state = GettingUp()
                 else:
                     self.next_state = Controllable()
@@ -117,22 +123,22 @@ class Softoff(AbstractState):
 
     def evaluate(self):
         if not self.animation_started:
-            if VALUES.record:
+            if BLACKBOARD.record:
                 switch_motor_power(True)
                 self.next_state = Record()
                 # don't directly change state, we wait for animation to finish
                 self.start_animation(rospy.get_param("hcm/animations/walkready"))
                 return Record()
-            if rospy.get_time() - VALUES.last_request < 10:
+            if rospy.get_time() - BLACKBOARD.last_request < 10:
                 print("Exiting Softoff")
                 # got a new move request
                 switch_motor_power(True)
                 self.next_state = Controllable()
                 self.start_animation(rospy.get_param("hcm/animations/walkready"))
                 return Controllable()
-            if VALUES.is_die_time():
+            if BLACKBOARD.is_die_time():
                 return ShutDown()
-            if VALUES.external_animation_requested:
+            if BLACKBOARD.external_animation_requested:
                 switch_motor_power(True)
                 return Controllable()
             print("keep soft off")
@@ -157,7 +163,7 @@ class Record(AbstractState):
         pass
 
     def evaluate(self):
-        if not VALUES.record:
+        if not BLACKBOARD.record:
             return Controllable()
 
     def exit(self):
@@ -218,11 +224,11 @@ class Penalty(AbstractState):
         rospy.loginfo("Im now penalized")
 
     def evaluate(self):
-        if VALUES.penalized:
+        if BLACKBOARD.penalized:
             # still penalized, lets wait a bit
             rospy.sleep(0.05)
             # prohibit soft off
-            VALUES.last_client_update = rospy.get_time()
+            BLACKBOARD.last_client_update = rospy.get_time()
         else:
             return PenaltyAnimationOut()
 
@@ -243,7 +249,7 @@ class GettingUp(AbstractState):
         # normally we should got to getting up second after this
         self.next_state = GettingUpSecond()
         # but lets check if we actually have to stand up
-        fallen = VALUES.fall_checker.check_fallen(VALUES.smooth_accel)
+        fallen = BLACKBOARD.fall_checker.check_fallen(BLACKBOARD.smooth_accel)
         if fallen is not None:
             self.start_animation(fallen)
             pass
@@ -296,27 +302,27 @@ class Controllable(AbstractState):
 
     def evaluate(self):
         #rospy.loginfo(VALUES.die_flag)
-        if VALUES.record:
+        if BLACKBOARD.record:
             return Record()
-        if VALUES.penalized:
+        if BLACKBOARD.penalized:
             return PenaltyAnimationIn()
-        if VALUES.is_soft_off_time():
+        if BLACKBOARD.is_soft_off_time():
             return Softoff()
-        if VALUES.is_die_time():
+        if BLACKBOARD.is_die_time():
             rospy.logwarn("die time")
             return ShutDownAnimation()
-        if VALUES.standup_flag:
+        if BLACKBOARD.standup_flag:
             ## Falling detection
-            if VALUES.is_falling():
+            if BLACKBOARD.is_falling():
                 return Falling()
             ### Standing up
-            direction_animation = VALUES.fall_checker.check_fallen(VALUES.smooth_accel)
+            direction_animation = BLACKBOARD.fall_checker.check_fallen(BLACKBOARD.smooth_accel)
             if direction_animation is not None:
                 return Fallen()
-        if VALUES.external_animation_playing:
+        if BLACKBOARD.external_animation_playing:
             return AnimationRunning()
 
-        if VALUES.walking_active:
+        if BLACKBOARD.walking_active:
             return Walking()
 
     def exit(self):
@@ -333,14 +339,14 @@ class Falling(AbstractState):
     def entry(self):
         self.wait_time = rospy.get_time()
         # go directly in falling pose
-        falling_pose = VALUES.get_falling_pose()
+        falling_pose = BLACKBOARD.get_falling_pose()
         if falling_pose is not None:
             # we're falling, stay in falling
             self.next_state = Falling()
             self.start_animation(falling_pose)
         else:
             # we're not falling anymore
-            if VALUES.is_fallen():
+            if BLACKBOARD.is_fallen():
                 # go directly to fallen
                 return Fallen()
             else:
@@ -364,7 +370,7 @@ class Falling(AbstractState):
 
 class Fallen(AbstractState):
     def entry(self):
-        direction_animation = VALUES.is_fallen()
+        direction_animation = BLACKBOARD.is_fallen()
         if direction_animation is None:
             # we don't have to stand up, go directly to controllable
             return Controllable()
@@ -392,26 +398,26 @@ class Walking(AbstractState):
         pass
 
     def evaluate(self):
-        if VALUES.record:
+        if BLACKBOARD.record:
             return Record()
-        if VALUES.penalized:
+        if BLACKBOARD.penalized:
             return PenaltyAnimationIn()
-        if VALUES.is_soft_off_time():
+        if BLACKBOARD.is_soft_off_time():
             return Softoff()
-        if VALUES.is_die_time():
+        if BLACKBOARD.is_die_time():
             return ShutDownAnimation()
-        if VALUES.standup_flag:
+        if BLACKBOARD.standup_flag:
             # Falling detection
-            if VALUES.is_falling():
+            if BLACKBOARD.is_falling():
                 return Falling()
             # Standing up
-            if VALUES.is_fallen():
+            if BLACKBOARD.is_fallen():
                 return Fallen()
 
-        if VALUES.external_animation_requested:
+        if BLACKBOARD.external_animation_requested:
             return WalkingStopping()
 
-        if not VALUES.walking_active:
+        if not BLACKBOARD.walking_active:
             return Controllable()
 
     def exit(self):
@@ -428,11 +434,11 @@ class WalkingStopping(AbstractState):
     def entry(self):
         # publish 0 twist message to stop the walking
         twist = Twist()
-        VALUES.cmd_vel_pub.publish()
+        BLACKBOARD.cmd_vel_pub.publish()
 
     def evaluate(self):
         # wait till the walking stopped and go to controlable
-        if not VALUES.walking_active:
+        if not BLACKBOARD.walking_active:
             return Controllable()
 
     def exit(self):
@@ -449,12 +455,12 @@ class AnimationRunning(AbstractState):
     def entry(self):
         print("Animation running")
         # reset flags
-        VALUES.external_animation_playing = False
-        VALUES.external_animation_requested = False
+        BLACKBOARD.external_animation_playing = False
+        BLACKBOARD.external_animation_requested = False
 
     def evaluate(self):
         # if external animation finished
-        if not VALUES.external_animation_finished:
+        if not BLACKBOARD.external_animation_finished:
             return Controllable()
 
     def exit(self):
@@ -470,7 +476,7 @@ class AnimationRunning(AbstractState):
 class ShutDownAnimation(AbstractState):
     def entry(self):
         rospy.loginfo("Motion will shut off")
-        speak("Motion will shut off", VALUES.speak_publisher, priority=Speak.HIGH_PRIORITY)
+        speak("Motion will shut off", BLACKBOARD.speak_publisher, priority=Speak.HIGH_PRIORITY)
         self.start_animation(rospy.get_param("hcm/animations/shut-down"))
 
     def evaluate(self):
@@ -490,7 +496,7 @@ class ShutDownAnimation(AbstractState):
 
 class ShutDown(AbstractState):
     def entry(self):
-        speak("Motion says good bye", VALUES.speak_publisher, priority=Speak.HIGH_PRIORITY)
+        speak("Motion says good bye", BLACKBOARD.speak_publisher, priority=Speak.HIGH_PRIORITY)
         # give humans the chance to hold the robot before turning it off
         rospy.sleep(3)
         switch_motor_power(False)

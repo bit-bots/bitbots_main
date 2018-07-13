@@ -3,13 +3,11 @@ import numpy
 from geometry_msgs.msg import Twist
 
 from .fall_checker import FallChecker
-#from bitbots_common.utilCython.pydatavector import PyIntDataVector as IntDataVector
-#from bitbots_common.utilCython.pydatavector import PyDataVector as DataVector
 
 import time
 
 
-class Values(object):
+class Blackboard(object):
     """
     We use this class as a singleton to share these public variables over all
     different classes of states, the state machine and the hcm node.
@@ -22,15 +20,14 @@ class Values(object):
         self.record = False  # record UI running
         self.shut_down = False  # do we want to shut down
 
-        self.standup_flag = True  # stand up disabled
-        self.soft_off_flag = True  # soft of enablbed
-        self.soft_start = False  # starting in softoff
-        self.die_flag = False  # stop the hcm after some time without command
-        self.start_test = False  # run motor ping on startup
+        self.stand_up_active = True # should the robot stand up        
+        self.motors_on = False  # are the motors on
+        self.motors_on_start = False  # should the motors be turned on at start
+        self.timed_motor_off = False  # deactivate motors after some time without commands
 
-        self.last_hardware_update = None  # time of last update from hardware
-        self.last_request = None  # last request on doing something
-        self.start_up_time = 0
+        self.last_motor_update = None  # time of last update from hardware
+        self.last_motor_command = None  # last request on doing something
+        self.start_up_time = 0 # time at start of HCM
 
         self.raw_gyro = numpy.array([0, 0, 0])
         self.smooth_gyro = numpy.array([0, 0, 0])
@@ -55,10 +52,10 @@ class Values(object):
         self.walking_active = False
 
         # used to stop the walking
+        # TODO evaluate if necessary
         self.cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
 
-        self.softoff_time = rospy.get_param("hcm/soft_off_time")
-        self.die_time = rospy.get_param("hcm/die_time")
+        self.motor_off_time = rospy.get_param("hcm/motor_off_time")        
         # TODO disable Simulation
         self.simulation_active = rospy.get_param("simulation_active")
 
@@ -93,4 +90,4 @@ class Values(object):
             return self.die_flag and rospy.get_time() - self.start_up_time > self.die_time
 
 
-VALUES = Values()
+BLACKBOARD = Blackboard()
