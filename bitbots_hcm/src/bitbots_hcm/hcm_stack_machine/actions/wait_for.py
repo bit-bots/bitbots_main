@@ -28,11 +28,8 @@ class WaitForMotors(AbstractActionElement):
         super(WaitForMotors, self).__init__(connector)
 
     def perform(self, connector, reevaluate=False):        
-        if connector.hcm.is_imu_active():
+        if connector.hcm.are_motors_active():
             rospy.logwarn("HCM has connection, will now resume.")            
             return self.pop()
         else:
-            rospy.logwarn_throttle(1, "HCM gets no data from the motors. Will now wait for the motoros to connect.")
-
-    def get_reevaluate(self):
-        return False
+            rospy.logwarn_throttle(1, "HCM gets no data from the motors. Will now wait for the motors to connect.")

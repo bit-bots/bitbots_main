@@ -27,6 +27,29 @@ class HcmConnector(AbstractConnector):
 
 class HcmCapsule:
     def __init__(self):
+        self.penalized = False
+
+        # Imu
+        self.accel = numpy.array([0, 0, 0])
+        self.gyro = numpy.array([0, 0, 0])
+        self.smooth_accel = numpy.array([0, 0, 0])
+        self.smooth_gyro = numpy.array([0, 0, 0])
+        self.not_much_smoothed_gyro = numpy.array([0, 0, 0])
+
+
+        self.current_state = STATE_STARTUP
+
+        self.last_animation_goal_time = 0
+        self.external_animation_running = True
+
+        self.last_walking_goal_time = 0
+
+        self.record_active = False
+
+        self.fall_checker = FallChecker()
+        self.connector.animation_action_client = None
+
+        ####
         self.speak_publisher = None
 
         self.penalized = False  # paused
@@ -48,7 +71,6 @@ class HcmCapsule:
         self.smooth_accel = numpy.array([0, 0, 0])
         self.quaternion  = numpy.array([0,0,0,0.21])
 
-        self.fall_checker = FallChecker()
         # for internal animations
         self.animation_client = None
         self.hcm_animation_playing = False
@@ -71,7 +93,14 @@ class HcmCapsule:
         self.motor_off_time = rospy.get_param("hcm/motor_off_time")        
         # TODO disable Simulation
         self.simulation_active = rospy.get_param("simulation_active")
+        
 
+
+
+
+
+
+####
 
     def is_falling(self):
         falling_pose = self.fall_checker.check_falling(self.not_so_smooth_gyro, self.quaternion)

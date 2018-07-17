@@ -10,7 +10,7 @@ class AbstractChangeMotorPower(AbstractActionElement):
     """
 
     def __init__(self, connector, _):
-        super(AbstractPlayAnimation, self).__init__(connector)
+        super(AbstractChangeMotorPower, self).__init__(connector)
         self.called = False
         self.last_service_call = 0
         self.time_between_calls = 1000000
@@ -19,7 +19,8 @@ class AbstractChangeMotorPower(AbstractActionElement):
         raise NotImplementedError
 
     def call_motor_power_service(self, on):
-
+        #TODO
+        pass
 
 class TurnMotorsOn(AbstractChangeMotorPower):
 

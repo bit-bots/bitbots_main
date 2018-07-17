@@ -12,8 +12,7 @@ class AbstractStay(AbstractActionElement):
     """
 
     def __init__(self, connector, _):
-        super(AbstractPlayAnimation, self).__init__(connector)
-        self.first_perform = True
+        super(AbstractStay, self).__init__(connector)
 
     def perform(self, connector, reevaluate=False):        
         # just do nothing
