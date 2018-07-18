@@ -13,11 +13,11 @@ class WaitForIMU(AbstractActionElement):
         super(WaitForIMU, self).__init__(connector)
 
     def perform(self, connector, reevaluate=False):        
-        if connector.hcm.is_imu_active():
+        if connector.is_imu_timeout():
+            rospy.logwarn_throttle(1, "HCM gets no IMU data. Will now wait for IMU to connect.")
+        else:
             rospy.logwarn("HCM has IMU connection, will now resume.")            
             return self.pop()
-        else:
-            rospy.logwarn_throttle(1, "HCM gets no IMU data. Will now wait for IMU to connect.")
 
 class WaitForMotors(AbstractActionElement):
     """

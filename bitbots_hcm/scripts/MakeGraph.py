@@ -23,10 +23,10 @@ path_to_behaviour = "../src/bitbots_hcm/hcm_stack_machine"
 subfolders = [""]
 
 for sub in subfolders:
-    decs = os.listdir(path_to_behaviour + "/decisions/"+sub)
+    decs = os.listdir(path_to_behaviour + ""+sub)
     for dec in decs:
         if ".py" in dec and not ".pyc" in dec:
-            filelist.append(path_to_behaviour + "/decisions/" + sub + "/" + dec)
+            filelist.append(path_to_behaviour + "" + sub + "/" + dec)
 
 
 acts = os.listdir(path_to_behaviour + "/actions")

@@ -115,3 +115,9 @@ class PlayWalkreadyAnimation(AbstractPlayAnimation):
     def chose_animation(self, connector):
         #TODO implement
         pass
+
+class PlayMotorOffAnimation(AbstractPlayAnimation):
+
+    def chose_animation(self, connector):
+        #TODO
+        pass

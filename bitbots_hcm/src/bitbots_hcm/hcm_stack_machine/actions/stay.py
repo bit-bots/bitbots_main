@@ -18,20 +18,23 @@ class AbstractStay(AbstractActionElement):
         # just do nothing
         return 
 
-class StayControlable(AbstractActionElement):
+class StayControlable(AbstractStay):
     pass
 
-class StayWalking(AbstractActionElement):
+class StayWalking(AbstractStay):
     pass
 
-class StayAnimationRunning(AbstractActionElement):
+class StayAnimationRunning(AbstractStay):
     pass
 
-class StayPickedUp(AbstractActionElement):
+class StayPickedUp(AbstractStay):
     pass
 
-class StayMotorsOff(AbstractActionElement):
+class StayMotorsOff(AbstractStay):
     pass
 
-class StayInPenalty(AbstractActionElement):
+class StayInPenalty(AbstractStay):
+    pass
+
+class StayShutDown(AbstractStay):
     pass

@@ -13,7 +13,7 @@ from sensor_msgs.msg import Imu
 from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAction, RobotControlState, Speak
 from humanoid_league_speaker.speaker import speak
 
-from bitbots_ros_control.msg import JointCommand, JointTorque
+from bitbots_ros_control.msg import JointCommand
 from bitbots_hcm.hcm_stack_machine.hmc_connector import HcmStateMachine, STATE_CONTROLABLE, AnimationRunning, STATE_WALKING, STATE_ANIMATION_RUNNING, STATE_SHUT_DOWN
 from bitbots_hcm.cfg import hcm_paramsConfig
 from bitbots_connector.connector import AbstractConnector
@@ -57,7 +57,7 @@ class HardwareControlManager:
 
     def update_imu(self, msg):
         """Gets new IMU values and computes the smoothed values of these"""
-        self.connector.last_imu_update = msg.header.stamp
+        self.connector.last_imu_update_time = msg.header.stamp
 
         self.connector.accel = numpy.array([msg.linear_acceleration.x , msg.linear_acceleration.y, msg.linear_acceleration.z])
         self.connector.gyro = numpy.array([msg.angular_velocity.x, msg.angular_velocity.y , msg.angular_velocity.z])
@@ -135,7 +135,8 @@ class HardwareControlManager:
         rate = rospy.Rate(20)
 
         while not rospy.is_shutdown():
-            self.stack_machine.evaluate()            
+            self.stack_machine.evaluate()
+            self.hcm_state_publisher.publish(self.connector.current_state)
 
             try:
                 # catch exeption of moving backwarts in time, when restarting simulator
@@ -146,12 +147,13 @@ class HardwareControlManager:
                 exit()
 
         # we got external shutdown, tell it to the state machine, it will handle it
-        self.connector.shut_down = True
+        self.connector.shut_down_request = True
         rospy.logwarn("You're stopping the Hcm. The robot will sit down and power off its motors.")
+        self.hcm_state_publisher.publish(STATE_SHUT_DOWN)        
         # now wait for it finishing the shutdown procedure
         while not self.connector.current_state == STATE_SHUT_DOWN:
             # we still have to update everything
-            self.update_once()
+            self.stack_machine.evaluate()            
             rospy.sleep(0.01)        
 
 def main():
