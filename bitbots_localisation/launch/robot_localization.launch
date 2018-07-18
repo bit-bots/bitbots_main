@@ -1,6 +1,6 @@
 <launch>
 
-  <rosparam command="load" file="$(find bitbots_localisation)/config/dual_ekf_navsat_example.yaml" />
+  <rosparam command="load" file="$(find bitbots_localisation)/config/tri_localization.yaml" />
 
   <!--<node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true"/>-->
 

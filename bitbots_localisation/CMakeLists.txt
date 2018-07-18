@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   humanoid_league_msgs
   geometry_msgs
   nav_msgs
+  sensor_msgs
 )
 
 ## System dependencies are found with CMake's conventions

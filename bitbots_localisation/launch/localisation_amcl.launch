@@ -2,7 +2,7 @@
 
      <include file="$(find bitbots_localisation)/launch/pointcloud_to_laserscan.launch" />
 
-    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localisation)/models/f031.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localisation)/models/field2018.yaml"/>
 
 
     <node name="amcl_particlefilter"  pkg="amcl" type="amcl" output="screen">
@@ -32,7 +32,7 @@
 
         <param name="resample_interval" value="1"/>
 
-        <param name="tf_broadcast" value="true"/>
+        <param name="tf_broadcast" value="false"/>
 
     </node>
 </launch>
