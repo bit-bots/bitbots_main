@@ -96,7 +96,7 @@ class StackMachine(object):
         # run the top module
         self.stack[-1].perform(self.connector)
   
-    def push(self, element, init_data=None):
+    def push(self, element, init_data=None, perform=True):
         """
         Put a new element on the stack and start it directly. 
 
@@ -109,6 +109,7 @@ class StackMachine(object):
         :param element: The element that should be put on top of the stack. Do not initilize!            
         :type element: Element
         :param init_data: This data will be given to the new module during its init, optional
+        :param perform: Optional parameter to disable direct call of the perform method during this cycle
         """
         if self.stack_reevaluate:
             # we are currently checking pre conditions
@@ -125,52 +126,8 @@ class StackMachine(object):
                 self.stack_reevaluate = False
         self.stack.append(self._init_element(element, init_data))
         # we call the new element without another reevaluate
-        self.update(False)
-
-    def push_action_sequence(self, actions, init_datas=None):
-        """
-        Puts a list of action on the stack so that they are executed as an action sequence in order of the list. This means first item is executed first, therefore put on the stack last.
-        :param actions: List of actions that should be put on top of the stack. Do not initilize!            
-        :type actionst: AbstractActionElement
-        :param init_datas: List of data that will be given to the new module during its init, optional
-        """
-
-        if self.stack_reevaluate:
-            # we are currently checking pre conditions
-            # check if we made the same decision (push) as last time
-
-            list_of_next_elements = self.stack[self.stack_excec_index:]
-            list_of_next_elements = list_of_next_elements[::-1] #since the actions are in inverse order
-            if len(actions) + self.stack_excec_index == len(self.stack): # stack length didnt changed                                            
-                same = True
-                for i in range(0, len(actions)):
-                    if type(list_of_next_elements[i]) != actions[i] or \
-                            (init_datas is None and not list_of_next_elements[i].get_init_data() is None) or\
-                            (init_datas is not None and list_of_next_elements[i].get_init_data() != init_datas[i]):
-                        same = False                        
-                        break
-                
-                if same:
-                    # decision was the same, reevaluation passed, precondition did not change
-                    return
-        
-            # result changed. we clear all stack above us and push the new elements on top
-            self.stack = self.stack[0:self.stack_excec_index + 1]
-            # reevaluate is finished
-            self.stack_reevaluate = False
-
-        # put actions on stack
-        i = 0
-        for action in reversed(actions):
-            if init_datas is not None:
-               self.stack.append(self._init_element(action, init_datas[-(i+1)]))
-            else:
-                self.stack.append(self._init_element(action))
-            i+=1
-        # we call the new element without another reevaluate
-        self.update(False)
-        
-
+        if perform:
+            self.update(False)    
 
     def pop(self):
         """

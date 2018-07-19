@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import json
 from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
-
+from bitbots_stackmachine.sequence_element import SequenceElement
 
 class AbstractDecisionElement(AbstractStackElement):
     """
@@ -29,7 +29,7 @@ class AbstractDecisionElement(AbstractStackElement):
         return "<Decision: %s>[%s]" % (shortname, data)
 
 
-    def push(self, element, init_data=None):
+    def push(self, element, init_data=None, perform=True):
             """        
             Help method for easy pushing on the stack.
 
@@ -45,7 +45,16 @@ class AbstractDecisionElement(AbstractStackElement):
             :param init_data: Data which is given to the class on init
             :type init_data: object
             """
-            self._behaviour.push(element, init_data)
+            self._behaviour.push(element, init_data, perform)
+
+
+    def push_action_sequence(self, actions, init_datas):
+        """
+        Small helper method to push action sequences
+        """
+        dic = {"actions": actions, "action_datas": init_datas}
+        self.push(SequenceElement, dic)
+
 
     def get_reevaluate(self):
         """
