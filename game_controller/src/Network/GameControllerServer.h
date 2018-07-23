@@ -21,25 +21,30 @@
  */
 class GameControllerServer : public Thread {
 public:
-	/**
-	 * Constructor
-	 * @param game		the data of the game
-	 */
-	GameControllerServer(Game* game);
-	virtual ~GameControllerServer();
+    /**
+     * Constructor
+     * @param game		the data of the game
+     */
+    GameControllerServer(Game *game);
+
+    virtual ~GameControllerServer();
+
     bool isWifiConnected;
 private:
-	//lint -e(1704)
-	GameControllerServer(const GameControllerServer& cSource);
-	GameControllerServer& operator=(const GameControllerServer& cSource);
+    GameControllerServer(const GameControllerServer &cSource);
 
-	void execute(void* arg);
-	void HandlePacket(char* data);
-	void SendKeepAlive(void);
+    GameControllerServer &operator=(const GameControllerServer &cSource);
 
-	Network* mNetwork;
-	Game* mGame;
+    void execute(void *arg);
+
+    void HandlePacket(char *data);
+
+    void SendKeepAlive(void);
+
+    Network *mNetwork;
+    Game *mGame;
     uint8_t mPreviousGameState;
+    uint8_t mPreviousSecondaryState;
     uint8_t mPreviousPenaltyState[MAX_NUM_PLAYERS];
     uint8_t mPreviousTeamColor;
     uint64_t mLastMsgReceived;
