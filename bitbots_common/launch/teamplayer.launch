@@ -21,7 +21,7 @@
     <include file="$(find bitbots_transform)/launch/transformer.launch"/>
     <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch"/>
     <include file="$(find bitbots_localization)/launch/localization_amcl.launch"/>
-    <include file="$(find bitbots_pathfinding)/launch/pathfinding_move_base.launch"/>
+    <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch"/>
     
 
     <group if="$(arg behave)">
