@@ -15,9 +15,9 @@ import sys
 
 rospack = rospkg.RosPack()
 
-from bitbots_pathfinding import network
+
 from humanoid_league_msgs.msg import HeadMode
-sys.modules['network'] = network
+
 
 DUTY_TEAMPLAYER = "TeamPlayer"
 DUTY_GOALIE = "Goalie"
@@ -251,9 +251,4 @@ class BlackboardCapsule:
     def get_finished_align(self):
         return rospy.get_time() - self.my_data.get("FinishedAlign", 0) < 10
 
-    def get_pathfinding_net(self):
-        if "pathfinding_net" not in self.my_data:
-            path = os.path.join(rospack.get_path("bitbots_pathfinding"), "include/network.pickle")
-            self.my_data["pathfinding_net"] = Pickle.load(open(path, "rb"))
-        return self.my_data["pathfinding_net"]
 
