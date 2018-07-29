@@ -1,7 +1,7 @@
 <launch>
     <group ns="goalpost">
-        <include file="$(find bitbots_localisation)/launch/pointcloud_to_laserscan.launch" />
-        <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localisation)/models/goalposts"/>
+        <include file="$(find bitbots_localization)/launch/pointcloud_to_laserscan.launch" />
+        <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/goalposts"/>
         <node name="amcl_particlefilter"  pkg="amcl" type="amcl" output="screen">
 
             <param name="use_map_topic" value="true" />
