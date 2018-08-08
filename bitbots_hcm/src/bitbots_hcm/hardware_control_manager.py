@@ -151,7 +151,7 @@ class HardwareControlManager:
         rospy.logwarn("You're stopping the Hcm. The robot will sit down and power off its motors.")
         self.hcm_state_publisher.publish(STATE_SHUT_DOWN)        
         # now wait for it finishing the shutdown procedure
-        while not self.connector.current_state == STATE_SHUT_DOWN:
+        while not self.connector.current_state == STATE_HCM_OFF:
             # we still have to update everything
             self.stack_machine.evaluate()            
             rospy.sleep(0.01)        

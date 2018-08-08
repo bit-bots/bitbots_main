@@ -10,11 +10,7 @@ class AbstractStay(AbstractActionElement):
     This can be used to stay in a certain state till some precondition changes.
     Implementations can be used to change the name
     """
-
-    def __init__(self, connector, _):
-        super(AbstractStay, self).__init__(connector)
-
-    def perform(self, connector, reevaluate=False):        
+    def perform(self, connector):        
         # just do nothing
         return 
 
@@ -36,5 +32,11 @@ class StayMotorsOff(AbstractStay):
 class StayInPenalty(AbstractStay):
     pass
 
-class StayShutDown(AbstractStay):
+class StayRecord(AbstractStay):
     pass
+
+
+class StayShutDown(AbstractStay):
+    
+    def perform(self, connector):
+        connector.current_state = STATE_HCM_OFF

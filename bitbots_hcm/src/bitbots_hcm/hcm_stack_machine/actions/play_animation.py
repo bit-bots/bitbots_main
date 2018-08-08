@@ -23,7 +23,7 @@ class AbstractPlayAnimation(AbstractActionElement):
 
             # get the animation that should be played
             # defined by implementations of this abstract class
-            anim = self.get_animation_to_play()
+            anim = self.chose_animation()
             
             #start animation
             self.start_animation(connector, anim)
@@ -72,7 +72,7 @@ class AbstractPlayAnimation(AbstractActionElement):
     def animation_finished(self, connector):
         return connector.hcm.hcm_animation_finished
 
-class PlayStandUpAnimation(AbstractPlayAnimation):
+class PlayAnimationStandUp(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
         # publish that we are getting up
@@ -88,36 +88,24 @@ class PlayStandUpAnimation(AbstractPlayAnimation):
             return 
 
 
-class PlayFallingAnimation(AbstractPlayAnimation):
+class PlayAnimationFalling(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
         #TODO implement
         pass
 
-class PlayPenaltyAnimation(AbstractPlayAnimation):
+class PlayAnimationPenalty(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
-        # publish that we are getting up
-        connector.hcm.publish_state(STATE_PENALTY_ANIMATION)
-
-        side = connector.hcm.get_fallen_side()
-        if side == "FRONT":
-            return "StandUpFront"
-        elif side == "BACK":
-            return "StandUpBack"
-        else:
-            rospy.logerr("Fallen side " + side + " not known!")
-            return 
+        return "SitDown"        
 
 
-class PlayWalkreadyAnimation(AbstractPlayAnimation):
+class PlayAnimationWalkready(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
-        #TODO implement
-        pass
+        return "Walkready"
 
-class PlayMotorOffAnimation(AbstractPlayAnimation):
+class PlayAnimationSitDown(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
-        #TODO
-        pass
+        return "SitDown"        
