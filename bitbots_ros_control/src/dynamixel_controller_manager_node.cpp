@@ -27,7 +27,7 @@ int main(int argc, char** argv)
   }
 
 
-  // Create separate queue, because otherwise CM will freeze
+  // Create separate queue, because otherwise controller manager will freeze
   ros::NodeHandle nh;
   ros::CallbackQueue queue;
   nh.setCallbackQueue(&queue);

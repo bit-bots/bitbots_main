@@ -19,6 +19,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
 
   _nh = nh;
   _update_pid = false;
+
   // Init subscriber / publisher
   _switch_individual_torque = false;
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this, ros::TransportHints().tcpNoDelay());
@@ -44,6 +45,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
     sleep(1);
     exit(1);
   }
+
   float protocol_version;
   nh.getParam("dynamixels/port_info/protocol_version", protocol_version);
   _driver->setPacketHandler(protocol_version);
@@ -80,6 +82,9 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
     return true;
   }
 
+  // TODO reboot all dynamixels to prevent old error bytes
+  // this need a possibility of setting the motor power off and on
+
   // Load dynamixel config from parameter server
   if (!loadDynamixels(nh))
   {
@@ -87,9 +92,6 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
     speak("Failed to ping all motors.");
     return false;
   }  
-
-  // todo reboot all dynamixels to prevent old error bytes
-  // this need a possibility of setting the motor power off and on
 
   _driver->addSyncWrite("Torque_Enable");
   _driver->addSyncWrite("Goal_Position");
@@ -125,7 +127,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
         ROS_WARN("Couldn't write ROM and RAM values to all servos.");
     }
     //magic sleep preventing problems after setting ROM values
-    // not sure if still needed for newer firmware, but better keep it to be save
+    // not sure if still needed for never firmware, but better keep it to be save
     sleep(1);
   }
 
