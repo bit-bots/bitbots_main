@@ -36,14 +36,14 @@ class JoyNode(object):
 
     def joy_cb(self, msg):
         if msg.axes[1] > 0:
-            self.walk_msg.linear.x = 0.08 * msg.axes[1]
+            self.walk_msg.linear.x = 0.05 * msg.axes[1]
         else:
             self.walk_msg.linear.x = 0.03 * msg.axes[1]
 
         self.walk_msg.linear.y = 0.03 * msg.axes[0]
 
 
-        self.walk_msg.angular.z = 0.1 * msg.axes[2]
+        self.walk_msg.angular.z = -0.05 * msg.axes[2]
 
 if __name__ == "__main__":
     joy = JoyNode()
