@@ -10,11 +10,9 @@
 
     <include file="$(find bitbots_animation_server)/launch/animation.launch"/>
 
-    <group if="$(arg wolfgang)">
-        <group unless="$(arg sim)">
-            <include file="$(find bitbots_ros_control)/launch/ros_control.launch">
-            </include>
-        </group>
+    <group unless="$(arg sim)">
+        <include file="$(find bitbots_ros_control)/launch/ros_control.launch">
+        </include>
     </group>
     
     <include file="$(find bitbots_quintic_walk)/launch/quintic_walk.launch">
