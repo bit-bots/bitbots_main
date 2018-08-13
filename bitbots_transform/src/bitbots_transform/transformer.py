@@ -36,7 +36,7 @@ class TransformBall(object):
         rospy.Subscriber(rospy.get_param("transformer/obstacles/obstacles_topic", "obstacles_in_image"),
                          ObstaclesInImage, self._callback_obstacles, queue_size=1)
 
-        rospy.Subscriber(rospy.get_param("transformer/camera_info/camera_info_topic", "/minibot/camera/camera_info"),
+        rospy.Subscriber(rospy.get_param("transformer/camera_info/camera_info_topic", "camera_info"),
                          CameraInfo,
                          self._callback_camera_info,
                          queue_size=1)
