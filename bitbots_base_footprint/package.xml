@@ -38,7 +38,7 @@
   <export>
     <bitbots_documentation>
       <language>python2</language>
-      <status>tested_robot</status>
+      <status>starts</status>
     </bitbots_documentation>
     <rosdoc config="rosdoc.yaml"/>
   </export>

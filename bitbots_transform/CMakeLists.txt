@@ -26,9 +26,9 @@ include_directories(
 )
 
 ## Declare a C++ executable
-add_executable(base_footprint src/base_footprint.cpp)
+#add_executable(base_footprint src/base_footprint.cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(base_footprint
-    ${catkin_LIBRARIES}
-)
+#target_link_libraries(base_footprint
+#    ${catkin_LIBRARIES}
+#)
