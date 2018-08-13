@@ -3,6 +3,7 @@
 import rospy
 from std_msgs.msg import String
 from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 
 class StackMachine(object):
@@ -82,8 +83,8 @@ class StackMachine(object):
             self.stack_excec_index = 0
             self.stack_reevaluate = True
             for element in self.stack[:-1]:
-                # check all elements, exept the top one
-                if element.get_reevaluate():
+                # check all elements, exept the top one not the actions
+                if isinstance(element, AbstractDecisionElement) and element.get_reevaluate():
                     element.perform(self.connector, True)
                     if not self.stack_reevaluate:
                         # We had some external interrupt, we stop here
