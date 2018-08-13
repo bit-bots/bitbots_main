@@ -39,7 +39,7 @@ BaseFootprintBroadcaster::BaseFootprintBroadcaster() : tfBuffer(ros::Duration(10
     tf.transform.translation.x = 0.0;
 
     // for not sending broken transforms
-    tf.transform.rotation.w = 1;
+    tf.transform.rotation.w = 1.0;
 
     static tf2_ros::TransformBroadcaster br;
     ros::Rate r(30.0);
