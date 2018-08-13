@@ -23,7 +23,7 @@ class AbstractPlayAnimation(AbstractActionElement):
 
             # get the animation that should be played
             # defined by implementations of this abstract class
-            anim = self.chose_animation()
+            anim = self.chose_animation(connector)
             
             #start animation
             self.start_animation(connector, anim)
@@ -33,7 +33,7 @@ class AbstractPlayAnimation(AbstractActionElement):
             # we are finished playing this animation
             return self.pop()
 
-    def chose_animation(self):
+    def chose_animation(self, connector):
         # this is what has to be implemented returning the animation to play
         raise NotImplementedError
 
@@ -48,35 +48,35 @@ class AbstractPlayAnimation(AbstractActionElement):
         :param anim: animation to play
         :return:
         """
-        connector.hcm.hcm_animation_playing = False  # will be set true when the hcm receives keyframe callback
-        connector.hcm.hcm_animation_finished = False
+        connector.hcm_animation_playing = False  # will be set true when the hcm receives keyframe callback
+        connector.hcm_animation_finished = False
 
         rospy.loginfo("Playing animation " + anim)
         if anim is None or anim == "":
             rospy.logwarn("Tried to play an animation with an empty name!")
             return False
-        first_try = connector.hcm.animation_client.wait_for_server(
+        first_try = connector.animation_action_client.wait_for_server(
             rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 10)))
         if not first_try:
             rospy.logerr(
                 "Animation Action Server not running! Motion can not work without animation action server. "
                 "Will now wait until server is accessible!")
-            connector.hcm.animation_client.wait_for_server()
+            connector.animation_action_client.wait_for_server()
             rospy.logwarn("Animation server now running, hcm will go on.")
         goal = humanoid_league_msgs.msg.PlayAnimationGoal()
         goal.animation = anim
         goal.hcm = True  # the animation is from the hcm
-        connector.hcm.animation_client.send_goal(goal)
+        connector.animation_action_client.send_goal(goal)
         self.animation_started = True
 
     def animation_finished(self, connector):
-        return connector.hcm.hcm_animation_finished
+        return connector.hcm_animation_finished
 
 class PlayAnimationStandUp(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
         # publish that we are getting up
-        connector.hcm.publish_state(STATE_GETTING_UP)
+        connector.publish_state(STATE_GETTING_UP)
 
         side = connector.hcm.get_fallen_side()
         if side == "FRONT":

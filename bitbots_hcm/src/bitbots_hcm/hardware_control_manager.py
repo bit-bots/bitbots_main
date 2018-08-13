@@ -99,10 +99,9 @@ class HardwareControlManager:
 
     def animation_callback(self, msg):
         """ The animation server is sending us goal positions for the next keyframe"""        
-        self.connector.last_animation_goal_time = msg.header.stamp.to_sec() #TODO nano sec?
+        self.connector.last_animation_goal_time = msg.header.stamp.to_sec()
 
         if msg.first:
-            self.animation_running = True
             if msg.hcm:
                 # comming from ourselves
                 pass
@@ -121,10 +120,10 @@ class HardwareControlManager:
         if msg.last:
             if msg.hcm:
                 # This was an animation from the state machine
+                self.connector.hcm_animation_finished = True
                 pass
             else:
                 # this is the last frame, we want to tell the state machine, that we're finished with the animations
-                self.animation_running = False
                 self.connector.external_animation_running= False
                 if msg.position is None:
                     # probably this was just to tell us we're finished
@@ -133,7 +132,13 @@ class HardwareControlManager:
 
         # forward positions to motors, if some where transmitted
         if len(msg.position.points) > 0:
-            self.joint_goal_publisher.publish(msg.position)
+            out_msg = JointCommand()
+            out_msg.positions = msg.position.points[0].positions
+            out_msg.joint_names = msg.position.joint_names
+            out_msg.accelerations = [-1] * len(out_msg.joint_names)
+            out_msg.velocities = [-1] * len(out_msg.joint_names)
+            out_msg.max_currents = [-1] * len(out_msg.joint_names)
+            self.joint_goal_publisher.publish(out_msg)
 
     def joint_state_callback(self, msg):
         self.connector.last_motor_update_time = msg.header.stamp
@@ -157,7 +162,7 @@ class HardwareControlManager:
 
         # we got external shutdown, tell it to the state machine, it will handle it
         self.connector.shut_down_request = True
-        rospy.logwarn("You're stopping the Hcm. The robot will sit down and power off its motors.")
+        rospy.logwarn("You're stopping the HCM. The robot will sit down and power off its motors.")
         self.hcm_state_publisher.publish(STATE_SHUT_DOWN)        
         # now wait for it finishing the shutdown procedure
         while not self.connector.current_state == STATE_HCM_OFF:

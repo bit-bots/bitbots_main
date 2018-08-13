@@ -4,6 +4,7 @@ import rospy
 from bitbots_hcm.fall_checker import FallChecker
 from geometry_msgs.msg import Twist
 from bitbots_stackmachine.stack_machine import StackMachine
+from humanoid_league_msgs.msg import RobotControlState
 
 
 # robot states that are published to the rest of the software
@@ -29,7 +30,7 @@ class HcmConnector(AbstractConnector):
     def __init__(self):
         super(HcmConnector, self).__init__()
 
-        self.current_state = STATE_STARTUP        
+        self.current_state = STATE_STARTUP 
         self.penalized = False
         self.shut_down_request = False
 
@@ -52,6 +53,7 @@ class HcmConnector(AbstractConnector):
         self.last_animation_goal_time = rospy.Time()
         self.external_animation_running = False
         self.animation_requested = False
+        self.hcm_animation_finished = False
 
         # motors
         self.last_motor_goal_time = rospy.Time.now() # initilize with current time, or motors will be turned off on start
@@ -107,3 +109,9 @@ class HcmConnector(AbstractConnector):
 
     def is_walkready(self):
         return True #TODO implement this
+
+    def publish_state(self, state):
+        self.current_state = state
+        msg = RobotControlState()
+        msg.state = state
+        self.state_publisher.publish(msg)

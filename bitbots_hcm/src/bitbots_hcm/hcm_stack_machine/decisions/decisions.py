@@ -32,7 +32,11 @@ class CheckIMU(AbstractDecisionElement):
     """
 
     def perform(self, connector, reevaluate=False):      
-        if connector.is_imu_timeout():
+        if  connector.last_imu_update_time.to_sec == 0:
+            # wait for the IMU to start
+            connector.current_state = STATE_STARTUP
+            return self.push(WaitForIMU)
+        elif connector.is_imu_timeout():
             # tell that we have a hardware problem
             connector.current_state = STATE_HARDWARE_PROBLEM
             # wait for IMU
@@ -51,8 +55,9 @@ class Penalty(AbstractDecisionElement):
     def perform(self, connector, reevaluate=False):        
         if connector.penalized:
             connector.current_state = STATE_PENALTY
-            # we do an action sequence to go into penalty and to stay there                        
-            return self.push_action_sequence([PlayAnimationPenalty, StayInPenalty])
+            # we do an action sequence to go into penalty and to stay there      
+            dic = {"actions": [PlayAnimationPenalty, StayInPenalty], "action_datas": [None, None]}                            
+            return self.push(SequenceElement, dic)  
         else:
             return self.push(MotorOffTimer)
 
@@ -68,8 +73,7 @@ class MotorOffTimer(AbstractDecisionElement):
     def perform(self, connector, reevaluate=False):
         # check if the time is reached
         if connector.is_motor_off_time():
-            if not reevaluate:
-                rospy.logwarn("Didn't recieve goals for " + str(connector.motor_timeout_duration) + " seconds. Will shut down the motors and wait for commands.")
+            rospy.logwarn("Didn't recieve goals for " + str(connector.motor_off_time) + " seconds. Will shut down the motors and wait for commands.")
             connector.current_state = STATE_MOTOR_OFF
             # we do an action sequence to turn off the motors and stay in motor off  
             dic = {"actions": [PlayAnimationSitDown, TurnMotorsOff, StayMotorsOff], "action_datas": [None, None, None]}          
