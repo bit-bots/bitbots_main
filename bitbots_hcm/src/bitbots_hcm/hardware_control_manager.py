@@ -14,10 +14,12 @@ from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAct
 from humanoid_league_speaker.speaker import speak
 
 from bitbots_ros_control.msg import JointCommand
-from bitbots_hcm.hcm_stack_machine.hmc_connector import HcmStateMachine, STATE_CONTROLABLE, AnimationRunning, STATE_WALKING, STATE_ANIMATION_RUNNING, STATE_SHUT_DOWN
+from bitbots_hcm.hcm_stack_machine.hcm_connector import STATE_CONTROLABLE, STATE_WALKING, STATE_ANIMATION_RUNNING, STATE_SHUT_DOWN, STATE_HCM_OFF
 from bitbots_hcm.cfg import hcm_paramsConfig
-from bitbots_connector.connector import AbstractConnector
-from bitbots_hcm.hcm_stack_machine import HcmConnector
+from bitbots_connector.abstract_connector import AbstractConnector
+from bitbots_hcm.hcm_stack_machine.hcm_connector import HcmConnector
+from bitbots_stackmachine.stack_machine import StackMachine
+from bitbots_hcm.hcm_stack_machine.decisions.decisions import StartHcm
 
 class HardwareControlManager:
     def __init__(self):
@@ -25,7 +27,8 @@ class HardwareControlManager:
         # stack machine
         self.connector = HcmConnector()        
         self.connector.animation_action_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
-        self.stack_machine = StackMachine(self.connector, "debug_hcm_stack_machine")
+        self.stack_machine = StackMachine(self.connector, "debug_hcm_stack")
+        self.stack_machine.set_start_element(StartHcm)
 
         # --- Initialize Node ---
         log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
@@ -135,7 +138,7 @@ class HardwareControlManager:
         rate = rospy.Rate(20)
 
         while not rospy.is_shutdown():
-            self.stack_machine.evaluate()
+            self.stack_machine.update()
             self.hcm_state_publisher.publish(self.connector.current_state)
 
             try:
@@ -153,7 +156,7 @@ class HardwareControlManager:
         # now wait for it finishing the shutdown procedure
         while not self.connector.current_state == STATE_HCM_OFF:
             # we still have to update everything
-            self.stack_machine.evaluate()            
+            self.stack_machine.update()            
             rospy.sleep(0.01)        
 
 def main():

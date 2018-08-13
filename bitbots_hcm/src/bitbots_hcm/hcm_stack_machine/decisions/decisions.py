@@ -1,8 +1,10 @@
 import rospy 
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 import humanoid_league_msgs.msg
-from bitbots_hcm.hcm_stack_machine.hcm_connector import STATE_ANIMATION_RUNNING, STATE_CONTROLABLE, STATE_FALLEN, STATE_FALLING, STATE_HARDWARE_PROBLEM, STATE_MOTOR_OFF, STATE_PENALTY, STATE_PICKED_UP, STATE_RECORD, STATE_SHUT_DOWN, STATE_START_UP, STATE_WALKING
-from bitbots_hcm.hcm_stack_machine.actions import WaitForIMU, WaitForMotors, StayShutDown, StayAnimationRunning, StayControlable, StayInPenalty, StayMotorsOff, StayPickedUp, StayRecord, StayWalking, PlayAnimationStandUp, PlayAnimationFalling, PlayAnimationPenalty, PlayAnimationMotorOff, PlayAnimationSitDown, PlayAnimationWalkready
+from bitbots_hcm.hcm_stack_machine.hcm_connector import STATE_ANIMATION_RUNNING, STATE_CONTROLABLE, STATE_FALLEN, STATE_FALLING, STATE_HARDWARE_PROBLEM, STATE_MOTOR_OFF, STATE_PENALTY, STATE_PICKED_UP, STATE_RECORD, STATE_SHUT_DOWN, STATE_STARTUP, STATE_WALKING
+from bitbots_hcm.hcm_stack_machine.actions.wait_for import WaitForIMU, WaitForMotors
+from bitbots_hcm.hcm_stack_machine.actions.stay import StayShutDown, StayAnimationRunning, StayControlable, StayInPenalty, StayMotorsOff, StayPickedUp, StayRecord, StayWalking
+from bitbots_hcm.hcm_stack_machine.actions.play_animation import PlayAnimationStandUp, PlayAnimationFalling, PlayAnimationPenalty, PlayAnimationMotorOff, PlayAnimationSitDown, PlayAnimationWalkready
 from bitbots_hcm.hcm_stack_machine.actions.change_motor_power import TurnMotorsOff, TurnMotorsOn
 from bitbots_hcm.hcm_stack_machine.actions.stop_walking import StopWalking
 
@@ -15,7 +17,7 @@ class StartHcm(AbstractDecisionElement):
             connector.current_state = STATE_SHUT_DOWN
             return self.push_action_sequence([PlayAnimationSitDown, StayShutDown])
         else:
-            connector.current_state = STATE_START_UP
+            connector.current_state = STATE_STARTUP
             return self.push(CheckIMU)
 
     def get_reevaluate(self):
@@ -122,7 +124,7 @@ class PickedUp(AbstractDecisionElement):
 
     def perform(self, connector, reevaluate=False):
         # check if the robot is currently beeing picked up
-        if connector.robot_picked_up:
+        if connector.is_robot_picked_up():
             connector.current_state = STATE_PICKED_UP
             # we do an action sequence to tgo to walkready and stay in picked up state            
             return self.push_action_sequence([PlayAnimationWalkready, StayPickedUp])

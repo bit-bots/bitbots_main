@@ -109,3 +109,8 @@ class PlayAnimationSitDown(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
         return "SitDown"        
+
+class PlayAnimationMotorOff(AbstractPlayAnimation):
+
+    def chose_animation(self, connector):
+        return "SitDown" 

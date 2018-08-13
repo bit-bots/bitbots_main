@@ -1,7 +1,9 @@
-from bitbots_connector.connector import AbstractConnector
+from bitbots_connector.abstract_connector import AbstractConnector
 import numpy
 import rospy
-from bitbots_hcm import FallChecker
+from bitbots_hcm.fall_checker import FallChecker
+from geometry_msgs.msg import Twist
+from bitbots_stackmachine.stack_machine import StackMachine
 
 
 # robot states that are published to the rest of the software
@@ -37,7 +39,7 @@ class HcmConnector(AbstractConnector):
 
         # Imu
         self.last_imu_update_time = 0
-        self.imu_timeout_duration = rospy.get_param("imu_timeout_duration")
+        self.imu_timeout_duration = rospy.get_param("hcm/imu_timeout_duration")
         self.accel = numpy.array([0, 0, 0])
         self.gyro = numpy.array([0, 0, 0])
         self.smooth_accel = numpy.array([0, 0, 0])
@@ -50,12 +52,19 @@ class HcmConnector(AbstractConnector):
         self.last_animation_goal_time = 0
         self.external_animation_running = True
 
+        # motors
+        self.last_motor_goal_time = 0
+        self.last_motor_update_time = 0
+
         self.last_walking_goal_time = 0
 
         self.record_active = False
 
+        # falling
         self.fall_checker = FallChecker()
-        
+        self.is_stand_up_active = False
+        self.falling_detection_active = False
+
         self.simulation_active = rospy.get_param("simulation_active")
         self.motor_off_time = rospy.get_param("hcm/motor_off_time")        
         self.cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
@@ -77,3 +86,16 @@ class HcmConnector(AbstractConnector):
         After a duration without any commands, the motors should go off for safty reasons, e.g. user forgot to turn off robot
         """
         return self.current_time - self.last_motor_goal_time > self.motor_off_time
+
+    def are_motors_on(self):
+        """
+        """
+        return self.current_time - self.last_motor_update_time < 1
+
+    def are_motors_available(self):
+        """
+        """
+        return self.current_time - self.last_motor_update_time < 1
+
+    def is_robot_picked_up(self):
+        return False #TODO
