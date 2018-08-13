@@ -21,8 +21,7 @@ class AbstractDecisionElement(AbstractStackElement):
         """
         Overlaod from the AbstractStackElement to have "Decision" at the start.
         """
-        shortname = self.__class__.__module__.split('.')[-2] \
-                    + "." + self.__class__.__name__
+        shortname = self.__class__.__name__
 
         data = json.dumps(self.repr_data)
 

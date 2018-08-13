@@ -67,8 +67,7 @@ class AbstractStackElement(object):
 
         Furthermore, we append the current data of self.rer_data as a JSON.
         """
-        shortname = self.__class__.__module__.split('.')[-2] \
-               + "." + self.__class__.__name__
+        shortname = self.__class__.__name__
 
         data = json.dumps(self.repr_data)
 
