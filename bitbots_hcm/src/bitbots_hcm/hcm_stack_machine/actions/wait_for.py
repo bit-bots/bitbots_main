@@ -11,7 +11,7 @@ class WaitForIMU(AbstractActionElement):
 
     def perform(self, connector, reevaluate=False):        
         if connector.is_imu_timeout():
-            rospy.logwarn_throttle(1, "HCM gets no IMU data. Will now wait for IMU to connect.")
+            rospy.logwarn_throttle(5, "HCM gets no IMU data. Will now wait for IMU to connect.")
         else:
             rospy.logwarn("HCM has IMU connection, will now resume.")            
             return self.pop()

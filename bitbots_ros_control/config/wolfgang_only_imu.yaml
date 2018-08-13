@@ -80,5 +80,5 @@ ros_control:
         model_number: 311   
 
   IMU:
-    name: IMU
-    frame: torso                
+    name: imu/data_raw
+    frame: imu_frame                

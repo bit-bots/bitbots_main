@@ -2,7 +2,8 @@ hcm:
 
   start_time: 0 # time we wait for getting motor updates before leaving startup state
   motor_off_time: 30 # time of no use or updates when the hcm goes to soft off
-  imu_timeout_duration: 1 # time without messages from the IMU when error is produced [s]
+  imu_timeout_duration: 0.1 # time without messages from the IMU when error is produced [s]
+  motor_timeout_duration: 0.1 # time without messages from the IMU when error is produced [s]
   anim_server_wait_time: 10 # time the hcm waits for animation server
 
   #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen

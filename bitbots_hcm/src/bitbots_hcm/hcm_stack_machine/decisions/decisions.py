@@ -1,5 +1,6 @@
 import rospy 
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
+from bitbots_stackmachine.sequence_element import SequenceElement
 import humanoid_league_msgs.msg
 from bitbots_hcm.hcm_stack_machine.hcm_connector import STATE_ANIMATION_RUNNING, STATE_CONTROLABLE, STATE_FALLEN, STATE_FALLING, STATE_HARDWARE_PROBLEM, STATE_MOTOR_OFF, STATE_PENALTY, STATE_PICKED_UP, STATE_RECORD, STATE_SHUT_DOWN, STATE_STARTUP, STATE_WALKING
 from bitbots_hcm.hcm_stack_machine.actions.wait_for import WaitForIMU, WaitForMotors
@@ -67,9 +68,12 @@ class MotorOffTimer(AbstractDecisionElement):
     def perform(self, connector, reevaluate=False):
         # check if the time is reached
         if connector.is_motor_off_time():
+            if not reevaluate:
+                rospy.logwarn("Didn't recieve goals for " + str(connector.motor_timeout_duration) + " seconds. Will shut down the motors and wait for commands.")
             connector.current_state = STATE_MOTOR_OFF
-            # we do an action sequence to turn off the motors and stay in motor off            
-            return self.push_action_sequence([PlayAnimationSitDown, TurnMotorsOff, StayMotorsOff])
+            # we do an action sequence to turn off the motors and stay in motor off  
+            dic = {"actions": [PlayAnimationSitDown, TurnMotorsOff, StayMotorsOff], "action_datas": [None, None, None]}          
+            return self.push(SequenceElement, dic)   
         elif not connector.are_motors_on():
             # we have to turn the motors on
             return self.push(TurnMotorsOn)

@@ -8,7 +8,7 @@ import actionlib
 from dynamic_reconfigure.server import Server
 
 from std_msgs.msg import Bool, String
-from sensor_msgs.msg import Imu
+from sensor_msgs.msg import Imu, JointState
 
 from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAction, RobotControlState, Speak
 from humanoid_league_speaker.speaker import speak
@@ -24,18 +24,19 @@ from bitbots_hcm.hcm_stack_machine.decisions.decisions import StartHcm
 class HardwareControlManager:
     def __init__(self):
 
-        # stack machine
-        self.connector = HcmConnector()        
-        self.connector.animation_action_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
-        self.stack_machine = StackMachine(self.connector, "debug_hcm_stack")
-        self.stack_machine.set_start_element(StartHcm)
-
         # --- Initialize Node ---
         log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_hcm', log_level=log_level, anonymous=False)
         rospy.sleep(0.1)  # Otherwise messages will get lost, bc the init is not finished
         rospy.loginfo("Starting hcm")
 
+        # stack machine
+        self.connector = HcmConnector()        
+        self.connector.animation_action_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
+        self.stack_machine = StackMachine(self.connector, "debug_hcm_stack")
+        self.stack_machine.set_start_element(StartHcm)
+
+        # Publisher / subscriber
         self.joint_goal_publisher = rospy.Publisher('DynamixelController/command', JointCommand, queue_size=1)
         self.hcm_state_publisher = rospy.Publisher('robot_state', RobotControlState, queue_size=1, latch=True)
         self.connector.speak_publisher = rospy.Publisher('speak', Speak, queue_size=1)
@@ -49,6 +50,7 @@ class HardwareControlManager:
         rospy.Subscriber("head_motor_goals", JointCommand, self.head_goal_callback, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("record_motor_goals", JointCommand, self.record_goal_callback, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("pause", Bool, self.pause, queue_size=1, tcp_nodelay=True)    
+        rospy.Subscriber("joint_states", JointState, self.joint_state_callback, queue_size=1, tcp_nodelay=True)
 
         self.dyn_reconf = Server(hcm_paramsConfig, self.reconfigure)
 
@@ -133,11 +135,15 @@ class HardwareControlManager:
         if len(msg.position.points) > 0:
             self.joint_goal_publisher.publish(msg.position)
 
+    def joint_state_callback(self, msg):
+        self.connector.last_motor_update_time = msg.header.stamp
+
     def main_loop(self):
         """  """
         rate = rospy.Rate(20)
 
         while not rospy.is_shutdown():
+            self.connector.current_time = rospy.Time.now()
             self.stack_machine.update()
             self.hcm_state_publisher.publish(self.connector.current_state)
 

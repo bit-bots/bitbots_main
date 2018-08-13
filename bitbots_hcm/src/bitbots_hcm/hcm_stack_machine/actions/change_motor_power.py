@@ -25,7 +25,7 @@ class AbstractChangeMotorPower(AbstractActionElement):
 class TurnMotorsOn(AbstractChangeMotorPower):
 
     def perform(self, connector, reevaluate=False):        
-        if connector.hcm.motors_active():
+        if connector.are_motors_on():
             rospy.logwarn("HCM got motor connection, will resume")
             return self.pop()
         

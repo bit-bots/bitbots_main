@@ -12,4 +12,8 @@
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
       output="screen" args="imu_sensor_controller">
     </node>
+
+    <include file="$(find bitbots_ros_control)/launch/imu.launch">
+    </include>
+    
 </launch>
