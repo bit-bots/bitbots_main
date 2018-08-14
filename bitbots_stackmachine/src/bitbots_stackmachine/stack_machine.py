@@ -3,6 +3,7 @@
 import rospy
 from std_msgs.msg import String
 from bitbots_stackmachine.abstract_stack_element import AbstractStackElement
+from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 
 class StackMachine(object):
@@ -32,7 +33,7 @@ class StackMachine(object):
     def __init__(self, connector, debug_topic):
         self.connector = connector
 
-        self.debug_active = rospy.get_param("debug_active", False)
+        self.debug_active = rospy.get_param("/debug_active", False)
         if self.debug_active:
             self.debug_pub = rospy.Publisher(debug_topic, String, queue_size=100)
 
@@ -82,8 +83,8 @@ class StackMachine(object):
             self.stack_excec_index = 0
             self.stack_reevaluate = True
             for element in self.stack[:-1]:
-                # check all elements, exept the top one
-                if element.get_reevaluate():
+                # check all elements, exept the top one not the actions
+                if isinstance(element, AbstractDecisionElement) and element.get_reevaluate():
                     element.perform(self.connector, True)
                     if not self.stack_reevaluate:
                         # We had some external interrupt, we stop here
@@ -96,7 +97,7 @@ class StackMachine(object):
         # run the top module
         self.stack[-1].perform(self.connector)
   
-    def push(self, element, init_data=None):
+    def push(self, element, init_data=None, perform=True):
         """
         Put a new element on the stack and start it directly. 
 
@@ -109,6 +110,7 @@ class StackMachine(object):
         :param element: The element that should be put on top of the stack. Do not initilize!            
         :type element: Element
         :param init_data: This data will be given to the new module during its init, optional
+        :param perform: Optional parameter to disable direct call of the perform method during this cycle
         """
         if self.stack_reevaluate:
             # we are currently checking pre conditions
@@ -125,7 +127,8 @@ class StackMachine(object):
                 self.stack_reevaluate = False
         self.stack.append(self._init_element(element, init_data))
         # we call the new element without another reevaluate
-        self.update(False)
+        if perform:
+            self.update(False)    
 
     def pop(self):
         """
