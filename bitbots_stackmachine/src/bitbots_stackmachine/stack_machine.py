@@ -33,7 +33,7 @@ class StackMachine(object):
     def __init__(self, connector, debug_topic):
         self.connector = connector
 
-        self.debug_active = rospy.get_param("debug_active", False)
+        self.debug_active = rospy.get_param("/debug_active", False)
         if self.debug_active:
             self.debug_pub = rospy.Publisher(debug_topic, String, queue_size=100)
 
