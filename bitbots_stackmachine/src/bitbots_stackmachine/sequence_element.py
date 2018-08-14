@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import json
+import rospy
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 
@@ -21,7 +22,7 @@ class SequenceElement(AbstractDecisionElement):
     def perform(self, connector, reevaluate=False):        
         if self.first:
             # push all the actions on the stack
-            for i in range(0, len(self.actions)):
+            for i in range(len(self.actions)-1, -1, -1):
                 # perform is deactivated to inhibit calling all the actions now
                 self.push(self.actions[i], self.action_datas[i], False)
             self.first = False
