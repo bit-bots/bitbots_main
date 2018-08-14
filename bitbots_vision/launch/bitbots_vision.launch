@@ -1,6 +1,6 @@
 <launch>
     <arg name="debug" default="false"/>
-    <arg name="classifier" default="cascade" />
+    <arg name="classifier" default="fcnn" />
 
     <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
         <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
