@@ -46,12 +46,12 @@ class AbstractDecisionElement(AbstractStackElement):
             self._behaviour.push(element, init_data, perform)
 
 
-    #def push_action_sequence(self, actions, init_datas):
-    #    """
-    #    Small helper method to push action sequences
-    #    """
-    #    dic = {"actions": actions, "action_datas": init_datas}
-    #    self.push(SequenceElement, dic)
+    def push_action_sequence(self, SequenceElement, actions, init_datas):
+        """
+        Small helper method to push action sequences
+        """
+        dic = {"actions": actions, "action_datas": init_datas}
+        self.push(SequenceElement, dic)
 
 
     def get_reevaluate(self):
