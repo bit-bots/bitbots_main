@@ -29,6 +29,7 @@ class HardwareControlManager:
         rospy.init_node('bitbots_hcm', log_level=log_level, anonymous=False)
         rospy.sleep(0.1)  # Otherwise messages will get lost, bc the init is not finished
         rospy.loginfo("Starting hcm")
+        rospy.on_shutdown(self.on_shutdown_hook)
 
         # stack machine
         self.connector = HcmConnector()        
@@ -124,7 +125,7 @@ class HardwareControlManager:
                 pass
             else:
                 # this is the last frame, we want to tell the state machine, that we're finished with the animations
-                self.connector.external_animation_running= False
+                self.connector.external_animation_running = False
                 if msg.position is None:
                     # probably this was just to tell us we're finished
                     # we don't need to set another position to the motors
@@ -142,6 +143,7 @@ class HardwareControlManager:
 
     def joint_state_callback(self, msg):
         self.connector.last_motor_update_time = msg.header.stamp
+        self.connector.current_joint_positions = msg
 
     def main_loop(self):
         """  """
@@ -160,15 +162,17 @@ class HardwareControlManager:
             except rospy.exceptions.ROSInterruptException:
                 exit()
 
+    def on_shutdown_hook(self):
         # we got external shutdown, tell it to the state machine, it will handle it
         self.connector.shut_down_request = True
         rospy.logwarn("You're stopping the HCM. The robot will sit down and power off its motors.")
-        self.hcm_state_publisher.publish(STATE_SHUT_DOWN)        
         # now wait for it finishing the shutdown procedure
         while not self.connector.current_state == STATE_HCM_OFF:
             # we still have to update everything
-            self.stack_machine.update()            
-            rospy.sleep(0.01)        
+            self.connector.current_time = rospy.Time.now()
+            self.stack_machine.update()          
+            self.hcm_state_publisher.publish(self.connector.current_state)  
+            rospy.sleep(1)
 
 def main():
     hcm = HardwareControlManager()

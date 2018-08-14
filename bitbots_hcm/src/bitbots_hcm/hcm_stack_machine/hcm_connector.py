@@ -1,6 +1,7 @@
 from bitbots_connector.abstract_connector import AbstractConnector
 import numpy
 import rospy
+import math
 from bitbots_hcm.fall_checker import FallChecker
 from geometry_msgs.msg import Twist
 from bitbots_stackmachine.stack_machine import StackMachine
@@ -54,13 +55,24 @@ class HcmConnector(AbstractConnector):
         self.external_animation_running = False
         self.animation_requested = False
         self.hcm_animation_finished = False
+        self.walkready_animation = rospy.get_param("hcm/animations/walkready")
+        self.falling_animation = rospy.get_param("hcm/animations/falling")
+        self.penalty_animation = rospy.get_param("hcm/animations/penalty")
+        self.sit_down_animation = rospy.get_param("hcm/animations/sit_down")
+        self.motor_off_animation = rospy.get_param("hcm/animations/motor_off")
+        self.stand_up_front_animation = rospy.get_param("hcm/animations/stand_up_front")
+        self.stand_up_back_animation = rospy.get_param("hcm/animations/stand_up_back")
 
         # motors
         self.last_motor_goal_time = rospy.Time.now() # initilize with current time, or motors will be turned off on start
         self.last_motor_update_time = rospy.Time()
         self.motor_timeout_duration = rospy.get_param("hcm/motor_timeout_duration")
         self.motor_off_time = rospy.get_param("hcm/motor_off_time")
+        self.current_joint_positions = None
+        self.walkready_pose_dict = rospy.get_param("hcm/animations/walkready_pose")
+        self.walkready_pose_threshold = rospy.get_param("hcm/animations/walkready_pose_threshold")
 
+        # walking
         self.last_walking_goal_time = rospy.Time()
 
         self.record_active = False
@@ -108,7 +120,15 @@ class HcmConnector(AbstractConnector):
         return self.current_time.to_sec() - self.last_walking_goal_time.to_sec() < 1
 
     def is_walkready(self):
-        return True #TODO implement this
+        """
+        We check if any joint is has an offset from the walkready pose which is higher than a threshold
+        """
+        i = 0
+        for joint_name in self.current_joint_positions.name:
+            if abs(math.degrees(self.current_joint_positions.position[i]) - self.walkready_pose_dict[joint_name]) > self.walkready_pose_threshold:
+                return False
+            i +=1 
+        return True
 
     def publish_state(self, state):
         self.current_state = state

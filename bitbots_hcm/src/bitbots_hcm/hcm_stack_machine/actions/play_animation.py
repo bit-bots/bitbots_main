@@ -1,7 +1,7 @@
 import rospy 
 import humanoid_league_msgs.msg
 from bitbots_stackmachine.abstract_action_element import AbstractActionElement
-import bitbots_hcm.hcm_stack_machine.hcm_connector
+from bitbots_hcm.hcm_stack_machine.hcm_connector import HcmConnector, STATE_GETTING_UP
 
 
 class AbstractPlayAnimation(AbstractActionElement):
@@ -97,20 +97,20 @@ class PlayAnimationFalling(AbstractPlayAnimation):
 class PlayAnimationPenalty(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
-        return "SitDown"        
+        return connector.penalty_animation        
 
 
 class PlayAnimationWalkready(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
-        return "Walkready"
+        return connector.walkready_animation
 
 class PlayAnimationSitDown(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
-        return "SitDown"        
+        return connector.sit_down_animation      
 
 class PlayAnimationMotorOff(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
-        return "SitDown" 
+        return connector.motor_off_animation 

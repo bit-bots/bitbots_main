@@ -1,7 +1,7 @@
 import rospy 
 import humanoid_league_msgs.msg
 from bitbots_stackmachine.abstract_action_element import AbstractActionElement
-import bitbots_hcm.hcm_stack_machine.hcm_connector
+from bitbots_hcm.hcm_stack_machine.hcm_connector import HcmConnector, STATE_HCM_OFF
 
 
 class AbstractStay(AbstractActionElement):

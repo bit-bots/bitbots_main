@@ -11,24 +11,42 @@ hcm:
   threshold_gyro_y_front: 2.5 # > gyroY
   threshold_gyro_x_side: 2.5 # > gyroX
   falling_threshold_orientation_left_right: 30 # > Point of no return in degrees
-  falling_threshold_orientation_front_back:   30 # < Point of no return in degrees
+  falling_threshold_orientation_front_back: 30 # < Point of no return in degrees
   falling_new_front: 32
   falling_new_back: -6
   falling_new_left: -18
   falling_new_right: 18
 
   animations:
-    walkready: "walkready" # TODO change init to walkready. Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
-    goalie-walkready: "walkready" # Gibt eine Dynamische Walkready #todo change to dynamic pose from walking, like it was before
-    front-up: "stand_up_front"
-    bottom-up: "stand_up_back"
-    toSquat: "sit-down"
-    stand-up: "stand-up"
-    penalized: "sit-down"
-    penalized_end: "stand-up"
-    sit-down: "sit-down"
-    shut-down: "sit-down"
+    walkready: "walkready" 
+    falling: "falling"
+    stand_up_front: "stand_up_front"
+    stand_up_back: "stand_up_back"
+    sit_down: "walkready"
+    penalty: "walkready"
+    motor_off: "walkready"
     init: "init"
+    walkready_pose: {"HeadPan": 0, # [deg]
+                    "HeadTilt": 0, 
+                    "LAnklePitch": -29, 
+                    "LAnkleRoll": 0, 
+                    "LElbow": 47, 
+                    "LHipPitch": 51, 
+                    "LHipRoll": 0, 
+                    "LHipYaw": 0, 
+                    "LKnee": -64, 
+                    "LShoulderPitch": 1, 
+                    "LShoulderRoll": 0, 
+                    "RAnklePitch": 28, 
+                    "RAnkleRoll": -4, 
+                    "RElbow": -45, 
+                    "RHipPitch": -50, 
+                    "RHipRoll": -1, 
+                    "RHipYaw": 1, 
+                    "RKnee": 61, 
+                    "RShoulderPitch": 0, 
+                    "RShoulderRoll": 0}
+    walkready_pose_threshold: 5 # [deg]
 
   falling:
 
@@ -37,16 +55,6 @@ hcm:
     "falling_back": "falling_back"
     "falling_left": "falling_left"
     "falling_right": "falling_right"
-
-    "Minibot":
-
-      #Grenzwerte müssen auf härterem boden auch härter eingestellt werden,
-      #dies erfolgt mit dem boden_koeffizient
-      "ground_coefficient": 1.0  #WEICH(kunstrasen Spielfeld)= 1.0 , HART(teppich Spielfeld)= 1.25
-
-      #false = motoren werden bei fallerkennung abgeschaltet
-      "dyn_falling_active": true
-
 
     "Wolfgang":
 

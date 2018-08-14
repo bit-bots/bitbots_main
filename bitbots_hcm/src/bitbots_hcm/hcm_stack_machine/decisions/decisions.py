@@ -2,7 +2,7 @@ import rospy
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from bitbots_stackmachine.sequence_element import SequenceElement
 import humanoid_league_msgs.msg
-from bitbots_hcm.hcm_stack_machine.hcm_connector import STATE_ANIMATION_RUNNING, STATE_CONTROLABLE, STATE_FALLEN, STATE_FALLING, STATE_HARDWARE_PROBLEM, STATE_MOTOR_OFF, STATE_PENALTY, STATE_PICKED_UP, STATE_RECORD, STATE_SHUT_DOWN, STATE_STARTUP, STATE_WALKING
+from bitbots_hcm.hcm_stack_machine.hcm_connector import STATE_ANIMATION_RUNNING, STATE_CONTROLABLE, STATE_FALLEN, STATE_FALLING, STATE_HARDWARE_PROBLEM, STATE_MOTOR_OFF, STATE_PENALTY, STATE_PICKED_UP, STATE_RECORD, STATE_SHUT_DOWN, STATE_STARTUP, STATE_WALKING, STATE_HCM_OFF
 from bitbots_hcm.hcm_stack_machine.actions.wait_for import WaitForIMU, WaitForMotors
 from bitbots_hcm.hcm_stack_machine.actions.stay import StayShutDown, StayAnimationRunning, StayControlable, StayInPenalty, StayMotorsOff, StayPickedUp, StayRecord, StayWalking
 from bitbots_hcm.hcm_stack_machine.actions.play_animation import PlayAnimationStandUp, PlayAnimationFalling, PlayAnimationPenalty, PlayAnimationMotorOff, PlayAnimationSitDown, PlayAnimationWalkready
@@ -16,7 +16,8 @@ class StartHcm(AbstractDecisionElement):
     def perform(self, connector, reevaluate=False):
         if connector.shut_down_request:
             connector.current_state = STATE_SHUT_DOWN
-            return self.push_action_sequence([PlayAnimationSitDown, StayShutDown])
+            dic = {"actions": [PlayAnimationSitDown, StayShutDown], "action_datas": [None, None]}                            
+            return self.push(SequenceElement, dic)  
         else:
             connector.current_state = STATE_STARTUP
             return self.push(CheckIMU)
@@ -226,7 +227,7 @@ class Controlable(AbstractDecisionElement):
     def perform(self, connector, reevaluate=False):
         # check if the robot is in a walkready pose
         if not connector.is_walkready():
-            connector.current_state = STATE_PLAY_ANIMATION
+            connector.current_state = STATE_ANIMATION_RUNNING
             self.push(PlayAnimationWalkready)
         else:
             connector.current_state = STATE_CONTROLABLE
