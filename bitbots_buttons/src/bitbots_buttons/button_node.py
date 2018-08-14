@@ -78,7 +78,11 @@ class ButtonNode(object):
         speak("Button 2 pressed short", self.speak_publisher, speaking_active=self.speaking_active)
         if self.manual_penality_mode:
             # switch penalty state by calling service on motion
-            rospy.wait_for_service("manual_penalize")
+            try:
+                rospy.wait_for_service("manual_penalize", 0.5)
+            except rospy.exceptions.ROSException as exc:
+                rospy.logerr("service 'manual_penalize' not available")
+
             manual_penalize_method = rospy.ServiceProxy("manual_penalize", ManualPenalize)
             try:
                 response = manual_penalize_method(2)  # argument 3 for switch

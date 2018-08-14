@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>bitbots_buttons</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>The bitbots_buttons package handles actions after pressing buttons on a robot.</description>
 
   <maintainer email="0bestman@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
@@ -24,7 +24,7 @@
   <export>
     <bitbots_documentation>
       <language>python3</language>
-      <status>unknown</status>
+      <status>tested_robot</status>
     </bitbots_documentation>
   </export>
 </package>
