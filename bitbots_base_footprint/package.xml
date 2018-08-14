@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>bitbots_base_footprint</name>
-  <version>0.1.0</version>
+  <version>1.0.0</version>
   <description>publishes a transform to the base footprint of the robot, currently based on the orientation of the lower foot,
   in the future this is going to be based on the imu readings</description>
 
@@ -38,7 +38,7 @@
   <export>
     <bitbots_documentation>
       <language>python2</language>
-      <status>starts</status>
+      <status>tested_robot</status>
     </bitbots_documentation>
     <rosdoc config="rosdoc.yaml"/>
   </export>
