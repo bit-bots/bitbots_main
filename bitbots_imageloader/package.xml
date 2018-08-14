@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>bitbots_imageloader</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>loads images from a path specified in config and publishes them to </description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
@@ -52,7 +52,7 @@
   <export>
     <bitbots_documentation>
       <language>python2</language>
-      <status>tested_robot</status>
+      <status>stable</status>
     </bitbots_documentation>
 
   </export>
