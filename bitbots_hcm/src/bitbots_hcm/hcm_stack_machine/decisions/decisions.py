@@ -72,7 +72,7 @@ class MotorOffTimer(AbstractDecisionElement):
     def perform(self, connector, reevaluate=False):
         # check if the time is reached
         if connector.is_motor_off_time():
-            rospy.logwarn("Didn't recieve goals for " + str(connector.motor_off_time) + " seconds. Will shut down the motors and wait for commands.")
+            rospy.logwarn_throttle(5, "Didn't recieve goals for " + str(connector.motor_off_time) + " seconds. Will shut down the motors and wait for commands.")
             connector.current_state = STATE_MOTOR_OFF
             # we do an action sequence to turn off the motors and stay in motor off  
             return self.push_action_sequence(SequenceElement, [PlayAnimationSitDown, TurnMotorsOff, StayMotorsOff], [None, None, None])   
