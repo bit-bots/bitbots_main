@@ -11,15 +11,15 @@ class Loadimg:
     def __init__(self):
         rospy.init_node("bitbots_imageloader")
         print("started")
-        self.pub_im = rospy.Publisher("/image_raw", Image, queue_size=1)
+        self.pub_im = rospy.Publisher(rospy.get_param("/imageloader/topic", "image_raw"), Image, queue_size=1)
         self.bridge = CvBridge()
 
-        path = rospy.get_param("/bitbots_imageloader/load_from")
+        path = rospy.get_param("/imageloader/load_from")
 
         nr = 1000
         listdir = list(os.listdir(path))
 
-        rate = rospy.Rate(25)
+        rate = rospy.Rate(rospy.get_param("/imageloader/framerate", 25))
 
         img_id = 3
         while not rospy.is_shutdown():
@@ -32,6 +32,8 @@ class Loadimg:
                 img_id += 1
                 msg.header.stamp = rospy.get_rostime()
                 self.pub_im.publish(msg)
+                if rospy.is_shutdown():
+                    break;
                 rate.sleep()
 
 

@@ -2,7 +2,7 @@
 <package>
   <name>bitbots_imageloader</name>
   <version>0.0.0</version>
-  <description>The imageloader package</description>
+  <description>loads images from a path specified in config and publishes them to </description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <maintainer email="5fiedler@informatik.uni-hamburg.de">Niklas Fiedler</maintainer>
@@ -50,7 +50,10 @@
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <!-- Other tools can request additional information be placed here -->
+    <bitbots_documentation>
+      <language>python2</language>
+      <status>tested_robot</status>
+    </bitbots_documentation>
 
   </export>
 </package>
