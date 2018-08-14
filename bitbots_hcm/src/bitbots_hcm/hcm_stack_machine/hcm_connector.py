@@ -129,9 +129,3 @@ class HcmConnector(AbstractConnector):
                 return False
             i +=1 
         return True
-
-    def publish_state(self, state):
-        self.current_state = state
-        msg = RobotControlState()
-        msg.state = state
-        self.state_publisher.publish(msg)

@@ -16,8 +16,7 @@ class StartHcm(AbstractDecisionElement):
     def perform(self, connector, reevaluate=False):
         if connector.shut_down_request:
             connector.current_state = STATE_SHUT_DOWN
-            dic = {"actions": [PlayAnimationSitDown, StayShutDown], "action_datas": [None, None]}                            
-            return self.push(SequenceElement, dic)  
+            return self.push_action_sequence(SequenceElement, [PlayAnimationSitDown, StayShutDown], [None, None])  
         else:
             connector.current_state = STATE_STARTUP
             return self.push(CheckIMU)
@@ -57,8 +56,7 @@ class Penalty(AbstractDecisionElement):
         if connector.penalized:
             connector.current_state = STATE_PENALTY
             # we do an action sequence to go into penalty and to stay there      
-            dic = {"actions": [PlayAnimationPenalty, StayInPenalty], "action_datas": [None, None]}                            
-            return self.push(SequenceElement, dic)  
+            return self.push_action_sequence(SequenceElement, [PlayAnimationPenalty, StayInPenalty], [None, None])  
         else:
             return self.push(MotorOffTimer)
 
@@ -77,8 +75,7 @@ class MotorOffTimer(AbstractDecisionElement):
             rospy.logwarn("Didn't recieve goals for " + str(connector.motor_off_time) + " seconds. Will shut down the motors and wait for commands.")
             connector.current_state = STATE_MOTOR_OFF
             # we do an action sequence to turn off the motors and stay in motor off  
-            dic = {"actions": [PlayAnimationSitDown, TurnMotorsOff, StayMotorsOff], "action_datas": [None, None, None]}          
-            return self.push(SequenceElement, dic)   
+            return self.push_action_sequence(SequenceElement, [PlayAnimationSitDown, TurnMotorsOff, StayMotorsOff], [None, None, None])   
         elif not connector.are_motors_on():
             # we have to turn the motors on
             return self.push(TurnMotorsOn)
@@ -136,7 +133,7 @@ class PickedUp(AbstractDecisionElement):
         if connector.is_robot_picked_up():
             connector.current_state = STATE_PICKED_UP
             # we do an action sequence to tgo to walkready and stay in picked up state            
-            return self.push_action_sequence([PlayAnimationWalkready, StayPickedUp])
+            return self.push_action_sequence(SequenceElement, [PlayAnimationWalkready, StayPickedUp], [None, None])
         else:
             # robot is not picked up
             return self.push(Fallen)
