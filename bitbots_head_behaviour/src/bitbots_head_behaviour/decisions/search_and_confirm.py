@@ -24,27 +24,27 @@ class AbstractSearchAndConfirm(AbstractDecisionElement):
         self.track_ball_lost_time = connector.config["Head"]["Tracking"]["trackBallLost"]
 
     def perform(self, connector, reevaluate=False):
-        self.repr_data = {}
+
 
         rospy.logdebug("Last seen: " + str(self.object_last_seen()))
 
         # Only output sensible debug information
         if self.object_last_seen() == -999:
-            self.repr_data["last_seen"] = "never"
+            self.publish_debug_data("last_seen","never")
         else:
-            self.repr_data["last_seen"] = self.object_last_seen()
-            self.repr_data["confirmed_object_time"] = (rospy.get_time() - self.object_last_seen())
+            self.publish_debug_data("last_seen",self.object_last_seen())
+            self.publish_debug_data("confirmed_object_time",(rospy.get_time() - self.object_last_seen()))
 
         if rospy.get_time() - self.object_last_seen() < self.track_ball_lost_time:
             # We have seen the object very recently and are still able to track it
-            self.repr_data["mode"] = "track"
+            self.publish_debug_data("mode","track")
 
             self.set_confirmed_time()
             return self.track()
 
         else:
             # We have lost the object and need to search for it
-            self.repr_data["mode"] = "search"
+            self.publish_debug_data("mode","search")
 
             self.unset_confirmed_time()
             return self.search()

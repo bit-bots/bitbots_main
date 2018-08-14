@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 import json
 
+import rospy
+
 
 class AbstractStackElement(object):
     """
@@ -13,7 +15,7 @@ class AbstractStackElement(object):
     _init_data = None
 
     def __init__(self, connector, args=None):
-        self.repr_data = {}
+        self.debug_data = {}
         '''This is a dict in which data can be saved that should get represented on a __repr__ call'''
 
     def setup_internals(self, behaviour, init_data):
@@ -59,6 +61,23 @@ class AbstractStackElement(object):
         An interrupt leads to a complete clearing of the stack.
         """
         self._behaviour.interrupt()
+
+    def publish_debug_data(self, label, data):
+        """
+        Publish debug data. Can be viewed using the stackmachine-visualization
+
+        :type label: str or None
+        :type data: dict or list or int or float or str or bool
+        """
+
+        if type(data) not in (dict, list, int, float, str, bool):
+            rospy.logwarn_throttle(1, "The supplied debug data of type %s is not JSON serializable and will not be published" % type(data))
+            return
+
+        if label is None:
+            label = len(self.debug_data)
+
+        self.debug_data[label] = data
     
 
     def __repr__(self):
@@ -69,7 +88,8 @@ class AbstractStackElement(object):
         """
         shortname = self.__class__.__name__
 
-        data = json.dumps(self.repr_data)
+        data = json.dumps(self.debug_data)
+        self.debug_data = {}
 
         return "<AbstractStackElement: %s>[%s]" % (shortname, data)
 

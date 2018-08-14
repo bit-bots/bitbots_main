@@ -27,7 +27,8 @@ class AbstractActionElement(AbstractStackElement):
         """
         shortname = self.__class__.__name__
 
-        data = json.dumps(self.repr_data)
+        data = json.dumps(self.debug_data)
+        self.debug_data = {}
 
         return "<Action: %s>[%s]" % (shortname, data)
 
