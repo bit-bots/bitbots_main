@@ -5,10 +5,13 @@
     <arg name="debug" default="false"/>
 
     <!-- start vision for wolfgang (fcnn)-->
-    <include file="$(find bitbots_vision)/launch/bitbots_vision.launch">
-        <arg name="debug" value="$(arg debug)" />
-        <arg name="classifier" value="fcnn" />
-    </include>
+    <group unless="$(arg dummyball)">
+        <include file="$(find bitbots_vision)/launch/bitbots_vision.launch">
+            <arg name="debug" value="$(arg debug)" />
+            <arg name="classifier" value="fcnn" />
+        </include>
+    </group>
+
     <!-- start vision without balldetection-->
     <group if="$(arg dummyball)">
         <include file="$(find bitbots_vision)/launch/bitbots_vision.launch">
