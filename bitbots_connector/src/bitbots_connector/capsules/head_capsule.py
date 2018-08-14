@@ -2,8 +2,9 @@ import math
 import numpy as np
 import rosparam
 import rospy
-from geometry_msgs.msg import Vector3
-from bitbots_ik.srv import LookAt
+from geometry_msgs.msg import Point
+from bio_ik_msgs.srv import GetIK
+from bio_ik_msgs.msg import IKRequest, LookAtGoal
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
@@ -42,8 +43,17 @@ class HeadCapsule:
         self.position_publisher = None  # type: rospy.Publisher
 
         # Service proxy for LookAt
-        rospy.wait_for_service('look_at')
-        self.look_at = rospy.ServiceProxy('look_at', LookAt)
+        rospy.wait_for_service('/bio_ik/get_bio_ik')
+        self.get_bio_ik = rospy.ServiceProxy('/bio_ik/get_bio_ik', GetIK)
+        self.request = IKRequest()
+        self.request.group_name = "Head"
+        self.request.timeout.secs = 1
+        self.request.attempts = 1
+        self.request.approximate = True
+        self.request.look_at_goals.append(LookAtGoal())
+        self.request.look_at_goals[0].link_name = "head"
+        self.request.look_at_goals[0].weight = 1
+        self.request.look_at_goals[0].axis.x = 1
 
 
     #################
@@ -132,7 +142,8 @@ class HeadCapsule:
 
     def get_motor_goals_from_point(self, point):
         """Call the look at service to calculate head motor goals"""
-        # z axis is inverted because something is fishy. maybe double axis invert, see bitbots_ik. TODO
-        vector = Vector3(point.x, point.y, -point.z)
-        goals = self.look_at(vector)
-        return goals.head_pan, goals.head_tilt
+        target = Point(point.x, point.y, point.z)
+        self.request.look_at_goals[0].target = target
+        response = self.get_bio_ik(self.request).ik_response
+        states = response.solution.joint_state
+        return states.position[states.name.index('HeadPan')], states.position[states.name.index('HeadTilt')]

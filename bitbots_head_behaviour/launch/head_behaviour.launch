@@ -5,5 +5,5 @@
     <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
     <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
     <node name="head_behaviour" pkg="bitbots_head_behaviour" type="head_node.py" respawn="true" output="screen"/>
-    <node name="IK_service" pkg="bitbots_ik" type="ik_service" respawn="true" output="screen"/>
+    <node name="bio_ik_service" pkg="bio_ik_service" type="bio_ik_service" respawn="true" output="screen"/>
 </launch>

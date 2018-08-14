@@ -39,7 +39,7 @@ class AbstractLookAt(AbstractActionElement):
 
 
         try:
-            point_camera = self.tfBuffer.transform(point, 'base_footprint')
+            point_camera = self.tfBuffer.transform(point, 'head')
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
             rospy.loginfo("Waiting for transform... ({})".format(e))
             return
