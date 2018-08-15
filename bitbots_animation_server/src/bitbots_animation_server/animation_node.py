@@ -12,13 +12,12 @@ from humanoid_league_msgs.msg import PlayAnimationAction as PlayAction
 from humanoid_league_msgs.msg import Animation as AnimationMsg
 from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
 
-from bitbots_animation_server.animation import Animator, parse
-from bitbots_common.pose.pypose import PyPose as Pose
+from bitbots_animation_server.animation import parse
+from bitbots_animation_server.pose import Pose
 from sensor_msgs.msg import Imu, JointState
 from bitbots_animation_server.resource_manager import find_animation
 from humanoid_league_msgs.msg import RobotControlState
-from bitbots_common.util.pose_to_message import pose_goal_to_traj_msg
-
+from bitbots_animation_server.spline_animator import SplineAnimator
 
 class AnimationNode:
     def __init__(self):
@@ -36,19 +35,17 @@ class PlayAnimationAction(object):
     _result = PlayAnimationResult
 
     def __init__(self, name):
-        self.current_pose = Pose()
+        self.current_joint_states = None
+        self.used_motor_names = ["HeadPan", "HeadTilt", "LShoulderPitch", "LShoulderRoll", "LElbow", "RShoulderPitch", "RShoulderRoll", "RElbow", "LHipYaw", "LHipRoll", "LHipPitch", "LKnee", "LAnklePitch", "LAnkleRoll", "RHipYaw", "RHipRoll", "RHipPitch", "RKnee", "RAnklePitch", "RAnkleRoll"]
         self._action_name = name
         self.hcm_state = 0
 
         self.dynamic_animation = rospy.get_param("animation/dynamic", False)
         robot_type_name = rospy.get_param("robot_type_name")
-        self.used_motor_cids = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 1, 2, 3, 4, 5, 6, 19, 20] #rospy.get_param("cm730/" + robot_type_name + "/motors")
-        self.used_motor_names = Pose().get_joint_names_cids(self.used_motor_cids)
 
         # pre defiened messages for performance
         self.anim_msg = AnimationMsg()
         self.traj_msg = JointTrajectory()
-        self.traj_msg.joint_names = [x.decode() for x in self.used_motor_names]
         self.traj_point = JointTrajectoryPoint()
 
         rospy.Subscriber("joint_states", JointState, self.update_current_pose, queue_size=1)
@@ -89,12 +86,9 @@ class PlayAnimationAction(object):
             traceback.print_exc()
             self._as.set_aborted(False, "Animation not found")
             return
-        animator = Animator(parsed_animation, self.current_pose)
-        animfunc = animator.playfunc(0.02)  # todo dynamic reconfigure this value
+        animator = SplineAnimator(parsed_animation, self.current_joint_states)
         rate = rospy.Rate(200)
-        iteration = 0
-        duration_avg = 0
-        start = rospy.get_time()
+        start_time = rospy.get_time()
 
         while not rospy.is_shutdown():
             # first check if we have another goal
@@ -116,7 +110,8 @@ class PlayAnimationAction(object):
 
             # if we're here we want to play the next keyframe, cause there is no other goal
             # compute next pose
-            pose = animfunc(self.current_pose)
+            t = rospy.get_time() - animator.get_start_time()
+            pose = animator.get_positions(t)
             if pose is None:
                 # see walking node reset
 
@@ -142,25 +137,9 @@ class PlayAnimationAction(object):
             except rospy.exceptions.ROSInterruptException:
                 exit()
 
-            if False:
-                # Count to get the update frequency
-                iteration += 1
-                if iteration < 100:
-                    continue
-
-                if duration_avg > 0:
-                    duration_avg = 0.5 * duration_avg + 0.5 * (rospy.get_time() - start)
-                else:
-                    duration_avg = (rospy.get_time() - start)
-
-                rospy.logdebug("Updates/Sec %f", iteration / duration_avg)
-                iteration = 0
-                start = rospy.get_time()
-
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
-        names = [x.encode("utf-8") for x in msg.name]
-        self.current_pose.set_positions_rad(names, list(msg.position))
+        self.current_joint_states = msg
 
     def update_hcm_state(self, msg):
         self.hcm_state = msg.state
@@ -176,7 +155,13 @@ class PlayAnimationAction(object):
         self.anim_msg.last = last
         self.anim_msg.hcm = hcm
         if pose is not None:
-            self.anim_msg.position = pose_goal_to_traj_msg(pose, self.used_motor_names, self.traj_msg, self.traj_point)
+            self.traj_msg.joint_names = []
+            self.traj_msg.points = [JointTrajectoryPoint()]
+            self.traj_msg.points[0].positions = []
+            for joint in pose:
+                self.traj_msg.joint_names.append(joint)
+                self.traj_msg.points[0].positions.append(pose[joint])
+            self.anim_msg.position = self.traj_msg
         self.anim_msg.header.stamp = rospy.Time.now()
         self.hcm_publisher.publish(self.anim_msg)
 
