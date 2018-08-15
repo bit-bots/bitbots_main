@@ -57,9 +57,9 @@ class Pause(object):
     def set_pause(self, state):
         self.pause = state
         if state:
-            text = "Pause was set"
+            text = "Pause!"
         else:
-            text = "Pause was removed"
+            text = "Unpause!"
         rospy.logwarn(text)
         speak(text, self.speak_publisher, speaking_active=self.talking, priority=Speak.HIGH_PRIORITY)
         self.pause_publisher.publish(Bool(state))

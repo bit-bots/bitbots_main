@@ -23,7 +23,8 @@ from bitbots_common.util.pose_to_message import pose_goal_to_traj_msg
 class AnimationNode:
     def __init__(self):
         """Starts a simple action server and waits for requests."""
-        log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
+        # currently we set log level to info since the action server is spamming to much
+        log_level = rospy.INFO if rospy.get_param("debug_active", False) else rospy.INFO
         rospy.init_node("bitbots_animation_server", log_level=log_level, anonymous=False)
         rospy.logdebug("Starting Animation Server")
         server = PlayAnimationAction(rospy.get_name())
@@ -176,7 +177,6 @@ class PlayAnimationAction(object):
         self.anim_msg.hcm = hcm
         if pose is not None:
             self.anim_msg.position = pose_goal_to_traj_msg(pose, self.used_motor_names, self.traj_msg, self.traj_point)
-        rospy.logdebug(self.anim_msg.position)
         self.anim_msg.header.stamp = rospy.Time.now()
         self.hcm_publisher.publish(self.anim_msg)
 
