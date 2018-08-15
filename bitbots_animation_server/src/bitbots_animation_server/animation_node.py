@@ -13,7 +13,6 @@ from humanoid_league_msgs.msg import Animation as AnimationMsg
 from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
 
 from bitbots_animation_server.animation import parse
-from bitbots_animation_server.pose import Pose
 from sensor_msgs.msg import Imu, JointState
 from bitbots_animation_server.resource_manager import find_animation
 from humanoid_league_msgs.msg import RobotControlState

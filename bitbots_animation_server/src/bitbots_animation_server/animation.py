@@ -4,7 +4,6 @@ import time
 
 import math
 import rospy
-from bitbots_animation_server.pose import Pose
 
 #from bitbots_common.pose.pypose import PyJoint as Joint
 
