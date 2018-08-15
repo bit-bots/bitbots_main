@@ -23,6 +23,7 @@ class ButtonNode(object):
         self.speaking_active = rospy.get_param("/buttons/speak_active", False)
         self.short_time = rospy.get_param("/buttons/short_time", 2)
         self.manual_penality_mode = rospy.get_param("/buttons/manual_penalty", False)
+        self.debounce_time = rospy.get_param("/buttons/debounce_time", 0)
 
         # --- Class variables ---
         self.button1 = False
@@ -50,32 +51,36 @@ class ButtonNode(object):
         elif not msg.button1 and self.button1:
             # button1 not pressed anymore
             self.button1 = False
-            if rospy.get_time() - self.button1_time < self.short_time:
-                self.button1_short()
-            else:
-                self.button1_long()
+            current_time = rospy.get_time() 
+            if current_time - self.button1_time > self.debounce_time:
+                if current_time - self.button1_time < self.short_time:
+                    self.button1_short()
+                else:
+                    self.button1_long()
             self.button1_time = 0
         elif not msg.button2 and self.button2:
             # button2 not pressed anymore
             self.button2 = False
-            if rospy.get_time() - self.button2_time < self.short_time:
-                self.button2_short()
-            else:
-                self.button2_long()
+            current_time = rospy.get_time() 
+            if current_time - self.button2_time > self.debounce_time:
+                if current_time - self.button2_time < self.short_time:
+                    self.button2_short()
+                else:
+                    self.button2_long()
             self.button2_time = 0
 
     def button1_short(self):
         rospy.logwarn('Button 1 Pressed short')
-        speak("Button 1 pressed short", self.speak_publisher, speaking_active=self.speaking_active)
+        speak("1 short", self.speak_publisher, speaking_active=self.speaking_active)
         self.shoot_publisher.publish(Bool(True))
 
     def button1_long(self):
         rospy.logwarn('Button 1 Pressed long')
-        speak("Button 1 pressed long", self.speak_publisher, speaking_active=self.speaking_active)
+        speak("1 long", self.speak_publisher, speaking_active=self.speaking_active)
 
     def button2_short(self):
         rospy.logwarn('Button 2 Pressed short')
-        speak("Button 2 pressed short", self.speak_publisher, speaking_active=self.speaking_active)
+        speak("2 short", self.speak_publisher, speaking_active=self.speaking_active)
         if self.manual_penality_mode:
             # switch penalty state by calling service on motion
             try:
@@ -91,7 +96,7 @@ class ButtonNode(object):
 
     def button2_long(self):
         rospy.logwarn('Button 2 Pressed long')
-        speak("Button 2 pressed long", self.speak_publisher, speaking_active=self.speaking_active)
+        speak("2 long", self.speak_publisher, speaking_active=self.speaking_active)
 
 
 if __name__ == "__main__":
