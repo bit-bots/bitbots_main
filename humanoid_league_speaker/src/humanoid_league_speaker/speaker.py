@@ -4,6 +4,7 @@ import rosparam
 import rospy
 import subprocess
 import os
+import traceback
 
 from dynamic_reconfigure.server import Server
 # todo find the problem with this import
@@ -92,9 +93,9 @@ class Speaker(object):
                 try:
                     process.terminate()
                 except Exception:  # pylint: disable=W0703
-                    pass
+                    print(traceback.format_exc())
         except OSError:
-            pass
+            print(traceback.format_exc())
 
     def speak_cb(self, msg):
         """ Handles incoming msg on speak topic."""
