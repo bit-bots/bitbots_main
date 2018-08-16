@@ -1,5 +1,0 @@
-add_subdirectory(utilCython)
-#add_subdirectory(armadillo)
-#add_subdirectory(robot)
-#add_subdirectory(util)
-add_subdirectory(pose)

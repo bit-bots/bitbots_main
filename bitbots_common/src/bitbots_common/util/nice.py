@@ -8,8 +8,8 @@ Dieses Modul vereinfacht die Manipulation des Nicelevels
 import os
 import time
 import multiprocessing
+import rospy
 
-from bitbots_common.debug import Scope
 from bitbots_common.util import get_config
 
 
@@ -22,10 +22,6 @@ class Nice(object):
     möglich ist wird aus gründen der sicherheit nichts getan.
     """
     def __init__(self, debug=None):
-        if not debug:
-            self.debug = Scope("Nice")
-        else:
-            self.debug = debug.sub("Nice")
         config = get_config()
         if config['nice']:
             try:
@@ -36,7 +32,7 @@ class Nice(object):
                 self.nice_ok = False
                 raise  # fehler weiterwerfen
         else:
-            self.debug.log("Nice ist in der Config deaktiviert")
+            rospy.loginfo("Nice ist in der Config deaktiviert")
             self.nice_ok = False
 
     def __test_nice(self):
@@ -61,8 +57,7 @@ class Nice(object):
                 if not (self.get_nice() == -1):
                     # wir dürfen nicht.... :(
                     self.nice_ok = False
-                    self.debug.warning(
-                        "Nicelevel darf nicht reduziert werden, disable Nice")
+                    rospy.logwarn("Nicelevel darf nicht reduziert werden, disable Nice")
                 else:
                     self.nice_ok = 2
                     self.set_normal(True)
@@ -87,7 +82,7 @@ class Nice(object):
         :return type: int
         """
         self.level = os.nice(0)
-        self.debug.log("niceines", self.level)
+        rospy.loginfo("niceines", self.level)
         return self.level
 
     def set_nice(self, change, silence=False):
@@ -115,10 +110,10 @@ class Nice(object):
                 time.sleep(1)
                 self.get_nice()
             if not silence:
-                self.debug("Set Nicelevel to %d" % self.level)
+                rospy.loginfo("Set Nicelevel to %d" % self.level)
             return True
         else:
-            self.debug.warning("Setzen von Nice nicht möglich")
+            rospy.logwarn("Setzen von Nice nicht möglich")
             return False
 
     def set_realtime(self):
@@ -128,7 +123,7 @@ class Nice(object):
         if self.nice_ok:
             return self.set_level(-20)
         else:
-            self.debug.warning("Set (Soft-) Realtime Priorität nicht möglich!")
+            rospy.logwarn("Set (Soft-) Realtime Priorität nicht möglich!")
             return False
 
     def set_normal(self, silence=False):

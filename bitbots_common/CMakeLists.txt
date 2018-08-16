@@ -32,4 +32,3 @@ install(DIRECTORY cmake
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 
-add_subdirectory(src/bitbots_common)
