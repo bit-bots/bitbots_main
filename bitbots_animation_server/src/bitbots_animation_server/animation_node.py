@@ -47,7 +47,7 @@ class PlayAnimationAction(object):
         self.traj_msg = JointTrajectory()
         self.traj_point = JointTrajectoryPoint()
 
-        rospy.Subscriber("joint_states", JointState, self.update_current_pose, queue_size=1)
+        rospy.Subscriber("/joint_states", JointState, self.update_current_pose, queue_size=1)
         rospy.Subscriber("robot_state", RobotControlState, self.update_hcm_state, queue_size=1)
         self.hcm_publisher = rospy.Publisher("animation", AnimationMsg, queue_size=1)
 
@@ -110,7 +110,7 @@ class PlayAnimationAction(object):
             # if we're here we want to play the next keyframe, cause there is no other goal
             # compute next pose
             t = rospy.get_time() - animator.get_start_time()
-            pose = animator.get_positions(t)
+            pose = animator.get_positions_rad(t)
             if pose is None:
                 # see walking node reset
 
