@@ -35,12 +35,8 @@ class PlayAnimationAction(object):
 
     def __init__(self, name):
         self.current_joint_states = None
-        self.used_motor_names = ["HeadPan", "HeadTilt", "LShoulderPitch", "LShoulderRoll", "LElbow", "RShoulderPitch", "RShoulderRoll", "RElbow", "LHipYaw", "LHipRoll", "LHipPitch", "LKnee", "LAnklePitch", "LAnkleRoll", "RHipYaw", "RHipRoll", "RHipPitch", "RKnee", "RAnklePitch", "RAnkleRoll"]
-        self._action_name = name
+        self.action_name = name
         self.hcm_state = 0
-
-        self.dynamic_animation = rospy.get_param("animation/dynamic", False)
-        robot_type_name = rospy.get_param("robot_type_name")
 
         # pre defiened messages for performance
         self.anim_msg = AnimationMsg()
@@ -48,10 +44,10 @@ class PlayAnimationAction(object):
         self.traj_point = JointTrajectoryPoint()
 
         rospy.Subscriber("/joint_states", JointState, self.update_current_pose, queue_size=1)
-        rospy.Subscriber("robot_state", RobotControlState, self.update_hcm_state, queue_size=1)
+        rospy.Subscriber("/robot_state", RobotControlState, self.update_hcm_state, queue_size=1)
         self.hcm_publisher = rospy.Publisher("animation", AnimationMsg, queue_size=1)
 
-        self._as = actionlib.SimpleActionServer(self._action_name, PlayAction,
+        self._as = actionlib.SimpleActionServer(self.action_name, PlayAction,
                                                 execute_cb=self.execute_cb, auto_start=False)
 
         self._as.start()
@@ -70,11 +66,8 @@ class PlayAnimationAction(object):
 
         # start animation
         try:
-            if not self.dynamic_animation:
-                with open(find_animation(goal.animation)) as fp:
-                    parsed_animation = parse(json.load(fp))
-            else:
-                parsed_animation = parse(goal.animation)
+            with open(find_animation(goal.animation)) as fp:
+                parsed_animation = parse(json.load(fp))
         except IOError:
             rospy.logwarn("Animation '%s' not found" % goal.animation)
             self._as.set_aborted(False, "Animation not found")

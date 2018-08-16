@@ -27,7 +27,6 @@ class Animation:
 
     def __init__(self, name, keyframes, default_interpolator=None):
         self.name = name
-        self.interpolators = {}
         self.keyframes = keyframes
 
 def parse(info):
@@ -36,12 +35,6 @@ def parse(info):
         :func:`as_dict` erzeugt wurde.
     '''
     anim = Animation(info["name"], ())
-
-    if "default_interpolator" in info:
-        anim.default_interpolator = INTERPOLATORS[info["default_interpolator"]]
-
-    interpolators = info.get("interpolators", {})
-    anim.interpolators = {name: INTERPOLATORS[ip] for name, ip in interpolators.items()}
 
     keyframes = info.get("keyframes", ())
     anim.keyframes = [Keyframe(k.get('goals', {}), k.get('duration', 1), k.get('pause', 0), k.get('p', {})) for k in
