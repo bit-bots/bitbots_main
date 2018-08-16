@@ -12,11 +12,11 @@ History:
 """
 import math
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
-from bitbots_body_behaviour.body.decisions.goalie.after_throw_decision import AfterThrowDecision
-from bitbots_body_behaviour.body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
-from bitbots_body_behaviour.body.decisions.goalie.position_in_goal import PositionInGoal
-from bitbots_body_behaviour.body.actions.search import Search
-from bitbots_body_behaviour.body.actions.go_to import GoToAbsolutePosition
+from bitbots_body_behaviour.decisions.goalie.after_throw_decision import AfterThrowDecision
+from bitbots_body_behaviour.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
+from bitbots_body_behaviour.decisions.goalie.position_in_goal import PositionInGoal
+from bitbots_body_behaviour.actions.search import Search
+from bitbots_body_behaviour.actions.go_to import GoToAbsolutePosition
 from bitbots_connector.capsules.blackboard_capsule import DUTY_TEAMPLAYER
 
 

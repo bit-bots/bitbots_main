@@ -7,8 +7,8 @@ InGoal
 
 """
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
-from bitbots_body_behaviour.body.actions.throw import MIDDLE
-from bitbots_body_behaviour.body.decisions.common.go_to_duty_position import GoToDutyPosition
+from bitbots_body_behaviour.actions.throw import MIDDLE
+from bitbots_body_behaviour.decisions.common.go_to_duty_position import GoToDutyPosition
 
 
 class AfterThrowDecision(AbstractDecisionElement):

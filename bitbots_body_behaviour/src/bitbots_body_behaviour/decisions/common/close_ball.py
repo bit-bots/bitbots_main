@@ -8,11 +8,11 @@ CloseBall
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 from math import atan2
-from bitbots_body_behaviour.body.actions.align_on_ball import AlignOnBall
-from bitbots_body_behaviour.body.actions.go_to import GoToBall
-from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionPenaltyKick
-from bitbots_body_behaviour.body.decisions.common.stands_correct_decision import StandsCorrectDecision
-from bitbots_body_behaviour.body.decisions.penalty.penalty_first_kick import PenaltyFirstKick
+from bitbots_body_behaviour.actions.align_on_ball import AlignOnBall
+from bitbots_body_behaviour.actions.go_to import GoToBall
+from bitbots_body_behaviour.decisions.common.kick_decision import KickDecisionPenaltyKick
+from bitbots_body_behaviour.decisions.common.stands_correct_decision import StandsCorrectDecision
+from bitbots_body_behaviour.decisions.penalty.penalty_first_kick import PenaltyFirstKick
 from humanoid_league_msgs.msg import HeadMode
 
 

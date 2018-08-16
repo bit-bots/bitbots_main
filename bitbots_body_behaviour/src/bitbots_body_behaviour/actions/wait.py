@@ -9,7 +9,7 @@ Just waits for something (i.e. that preconditions will be fullfilled)
 """
 import rospy
 
-from bitbots_body_behaviour.body.actions.go_to import Stand
+from bitbots_body_behaviour.actions.go_to import Stand
 from bitbots_stackmachine.abstract_action_element import AbstractActionElement
 from humanoid_league_msgs.msg import HeadMode
 

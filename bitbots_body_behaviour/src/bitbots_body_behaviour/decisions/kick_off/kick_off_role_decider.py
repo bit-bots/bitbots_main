@@ -10,8 +10,8 @@ History:
 * 07.01.15: Complete Refactoring (Marc Bestmann)
 """
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
-from bitbots_body_behaviour.body.decisions.kick_off.kick_off_kicker import KickOffKicker
-from bitbots_body_behaviour.body.decisions.kick_off.kick_off_supporter import KickOffSupporterSideDecision
+from bitbots_body_behaviour.decisions.kick_off.kick_off_kicker import KickOffKicker
+from bitbots_body_behaviour.decisions.kick_off.kick_off_supporter import KickOffSupporterSideDecision
 
 
 class KickOffRoleDecider(AbstractDecisionElement):

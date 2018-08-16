@@ -7,7 +7,7 @@ AlignOnBall
 
 """
 from bitbots_stackmachine.abstract_action_element import AbstractActionElement
-from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
+from bitbots_body_behaviour.actions.go_to import GoToRelativePosition
 from humanoid_league_msgs.msg import HeadMode
 
 

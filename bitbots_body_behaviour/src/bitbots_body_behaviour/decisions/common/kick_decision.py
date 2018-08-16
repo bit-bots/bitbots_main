@@ -6,7 +6,7 @@ Kick Decision
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 """
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
-from bitbots_body_behaviour.body.actions.kick_ball import KickBall
+from bitbots_body_behaviour.actions.kick_ball import KickBall
 
 
 class AbstractKickDecision(AbstractDecisionElement):

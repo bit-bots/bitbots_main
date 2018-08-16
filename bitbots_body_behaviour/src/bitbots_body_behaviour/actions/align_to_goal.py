@@ -10,7 +10,7 @@ The Robot repositionates so he is facing the opponent goal to score.
 import math
 import rospy
 
-from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
+from bitbots_body_behaviour.actions.go_to import GoToRelativePosition
 from bitbots_stackmachine.abstract_action_element import AbstractActionElement
 from humanoid_league_msgs.msg import HeadMode
 

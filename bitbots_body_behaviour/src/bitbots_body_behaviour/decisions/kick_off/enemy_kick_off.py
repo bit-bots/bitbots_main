@@ -10,7 +10,7 @@ Waits if the other team has kickoff till the ball moves or the 10 seconds are ov
 History:
 * 18.07.14: Created (Marc Bestmann)
 """
-from bitbots_body_behaviour.body.actions.wait import Wait
+from bitbots_body_behaviour.actions.wait import Wait
 from humanoid_league_msgs.msg import GameState
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 

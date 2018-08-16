@@ -12,7 +12,7 @@ import sys
 import bitbots_body_behaviour
 import rospy
 from bitbots_stackmachine.stack_machine import StackMachine
-from bitbots_body_behaviour.body.decisions.common.duty_decider import DutyDecider
+from bitbots_body_behaviour.decisions.common.duty_decider import DutyDecider
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, Pose2D
 from humanoid_league_msgs.msg import BallRelative, GameState, Speak, HeadMode, Strategy, TeamData
 from bitbots_connector.connector import BodyConnector
@@ -33,7 +33,7 @@ class BehaviourModule(StackMachine):
         else:
             duty = None
 
-        bitbots_body_behaviour.body.decisions.common.duty_decider.duty = duty
+        bitbots_body_behaviour.decisions.common.duty_decider.duty = duty
 
         self.set_start_element(DutyDecider)
         rospy.init_node("Bodybehaviour")

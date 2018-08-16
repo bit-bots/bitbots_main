@@ -8,10 +8,10 @@ Handling decsision if we throw ourself or if we just raise a arm.
 History:
 * 29.11.13: Created (Martin Poppinga)
 """
-from bitbots_body_behaviour.body.actions.raise_arm import RaiseArm
-from bitbots_body_behaviour.body.actions.throw import Throw
+from bitbots_body_behaviour.actions.raise_arm import RaiseArm
+from bitbots_body_behaviour.actions.throw import Throw
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
-from bitbots_body_behaviour.body.actions.throw import MIDDLE, LEFT, RIGHT
+from bitbots_body_behaviour.actions.throw import MIDDLE, LEFT, RIGHT
 
 
 class ThrowOrRaiseArm(AbstractDecisionElement):

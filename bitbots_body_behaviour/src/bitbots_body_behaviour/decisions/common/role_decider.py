@@ -9,10 +9,10 @@ Decides on which position our fieldie should play
 """
 import rospy
 
-from bitbots_body_behaviour.body.decisions.common.ball_seen import BallSeenFieldie
-from bitbots_body_behaviour.body.decisions.team_player.center_decision import CenterDecision
-from bitbots_body_behaviour.body.decisions.team_player.defender_decision import DefenderDecision
-from bitbots_body_behaviour.body.decisions.team_player.supporter_decision import SupporterDecision
+from bitbots_body_behaviour.decisions.common.ball_seen import BallSeenFieldie
+from bitbots_body_behaviour.decisions.team_player.center_decision import CenterDecision
+from bitbots_body_behaviour.decisions.team_player.defender_decision import DefenderDecision
+from bitbots_body_behaviour.decisions.team_player.supporter_decision import SupporterDecision
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import TeamData
 

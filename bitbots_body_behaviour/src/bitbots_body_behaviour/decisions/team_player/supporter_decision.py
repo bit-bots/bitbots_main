@@ -8,9 +8,9 @@ SupporterDecision
 """
 import rospy
 
-from bitbots_body_behaviour.body.actions.go_to import GoToBall
-from bitbots_body_behaviour.body.actions.search import Search
-from bitbots_body_behaviour.body.actions.wait import Wait
+from bitbots_body_behaviour.actions.go_to import GoToBall
+from bitbots_body_behaviour.actions.search import Search
+from bitbots_body_behaviour.actions.wait import Wait
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 

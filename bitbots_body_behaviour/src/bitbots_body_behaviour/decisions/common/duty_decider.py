@@ -7,14 +7,14 @@ DutyDecider
 
 """
 import rospy
-from bitbots_body_behaviour.body.actions.go_away_from_ball import GoAwayFromBall
-from bitbots_body_behaviour.body.actions.wait import Wait
-from bitbots_body_behaviour.body.decisions.common.go_to_duty_position import GoToDutyPosition
-from bitbots_body_behaviour.body.decisions.goalie.goalie_decision import GoaliePositionDecision
-from bitbots_body_behaviour.body.decisions.kick_off.kick_off import KickOff
-from bitbots_body_behaviour.body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
-from bitbots_body_behaviour.body.decisions.penalty.penalty_kicker_decision import PenaltyKickerDecision
-from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
+from bitbots_body_behaviour.actions.go_away_from_ball import GoAwayFromBall
+from bitbots_body_behaviour.actions.wait import Wait
+from bitbots_body_behaviour.decisions.common.go_to_duty_position import GoToDutyPosition
+from bitbots_body_behaviour.decisions.goalie.goalie_decision import GoaliePositionDecision
+from bitbots_body_behaviour.decisions.kick_off.kick_off import KickOff
+from bitbots_body_behaviour.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
+from bitbots_body_behaviour.decisions.penalty.penalty_kicker_decision import PenaltyKickerDecision
+from bitbots_body_behaviour.actions.go_to import GoToRelativePosition
 from bitbots_connector.capsules.blackboard_capsule import DUTY_GOALIE, DUTY_PENALTYKICKER, DUTY_TEAMPLAYER, DUTY_POSITIONING
 from humanoid_league_msgs.msg import Speak, HeadMode, GameState
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement

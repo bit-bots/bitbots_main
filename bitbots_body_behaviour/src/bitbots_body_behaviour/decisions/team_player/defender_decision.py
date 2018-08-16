@@ -12,9 +12,9 @@ Decides what a defender does
 """
 import rospy
 
-from bitbots_body_behaviour.body.actions.wait import Wait
-from bitbots_body_behaviour.body.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
-from bitbots_body_behaviour.body.decisions.team_player.defender_position_decider import DefenderPositionDecider
+from bitbots_body_behaviour.actions.wait import Wait
+from bitbots_body_behaviour.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
+from bitbots_body_behaviour.decisions.team_player.defender_position_decider import DefenderPositionDecider
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
 
