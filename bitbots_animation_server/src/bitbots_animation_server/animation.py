@@ -5,8 +5,6 @@ import time
 import math
 import rospy
 
-#from bitbots_common.pose.pypose import PyJoint as Joint
-
 class Keyframe:
     '''
     A pose which the robot reaches at :attr:`duration` seconds in the future.

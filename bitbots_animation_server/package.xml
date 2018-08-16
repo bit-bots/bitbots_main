@@ -32,7 +32,7 @@
 
   <export>
     <bitbots_documentation>
-      <status>tested_rviz</status>
+      <status>tested_viz</status>
       <language>python3</language>
     </bitbots_documentation>
   </export>

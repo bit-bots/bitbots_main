@@ -1,7 +1,1 @@
 animation:
-
-  # This is a empirical magical value. We don't really know why we have to do this.
-  # But without it the speed is to high and the animation is therefore not smooth.
-  # Turn it lower for smoother animations
-  # Turn it higher to make shure the motors are fast enough
-  speed_factor: 5.0
