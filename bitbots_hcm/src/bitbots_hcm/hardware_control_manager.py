@@ -91,7 +91,7 @@ class HardwareControlManager:
             self.joint_goal_publisher.publish(msg)
 
     def record_goal_callback(self, msg):
-        if msg is None:
+        if msg.joint_names == []:
             # record tells us that its finished
             self.connector.record_active = False
         else:
