@@ -7,7 +7,7 @@ GotToBallPathfinding
 
 """
 from math import atan2
-from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
+from bitbots_body_behaviour.actions.go_to import GoToRelativePosition
 from bitbots_stackmachine.abstract_action_element import AbstractActionElement
 
 

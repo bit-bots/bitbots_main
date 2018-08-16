@@ -9,8 +9,8 @@ import rospy
 
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 
-from bitbots_body_behaviour.body.decisions.goalie.goalie_movement import GoalieMovement
-from bitbots_body_behaviour.body.decisions.goalie.throw_or_raise_arm import ThrowOrRaiseArm
+from bitbots_body_behaviour.decisions.goalie.goalie_movement import GoalieMovement
+from bitbots_body_behaviour.decisions.goalie.throw_or_raise_arm import ThrowOrRaiseArm
 from humanoid_league_msgs.msg import HeadMode
 
 

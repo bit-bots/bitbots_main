@@ -10,7 +10,7 @@ History:
 """
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import TeamData
-from bitbots_body_behaviour.body.actions.go_to import GoToAbsolutePosition
+from bitbots_body_behaviour.actions.go_to import GoToAbsolutePosition
 
 
 class GoToDutyPosition(AbstractDecisionElement):

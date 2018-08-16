@@ -11,9 +11,9 @@ from bitbots_stackmachine.abstract_decision_element import AbstractDecisionEleme
 
 import rospy
 from math import atan2, sqrt
-from bitbots_body_behaviour.body.actions.go_to import GoToBall, GoToRelativePosition
-from bitbots_body_behaviour.body.actions.align_to_goal import AlignToGoal
-from bitbots_body_behaviour.body.decisions.common.kick_decision import KickDecisionCommon
+from bitbots_body_behaviour.actions.go_to import GoToBall, GoToRelativePosition
+from bitbots_body_behaviour.actions.align_to_goal import AlignToGoal
+from bitbots_body_behaviour.decisions.common.kick_decision import KickDecisionCommon
 
 
 class StandsCorrectDecision(AbstractDecisionElement):

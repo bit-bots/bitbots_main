@@ -5,8 +5,8 @@ BallSeenGoalie
 import rospy
 
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
-from bitbots_body_behaviour.body.decisions.goalie.ball_dangerous import BallDangerous
-from bitbots_body_behaviour.body.actions.search import Search
+from bitbots_body_behaviour.decisions.goalie.ball_dangerous import BallDangerous
+from bitbots_body_behaviour.actions.search import Search
 
 
 class BallSeenGoalie(AbstractDecisionElement):

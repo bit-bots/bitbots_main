@@ -10,7 +10,7 @@ History:
 """
 import math
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
-from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
+from bitbots_body_behaviour.actions.go_to import GoToRelativePosition
 
 
 class PositionInGoal(AbstractDecisionElement):

@@ -12,7 +12,7 @@ History:
 """
 import random
 
-from bitbots_body_behaviour.body.actions.kick_ball import KickBall
+from bitbots_body_behaviour.actions.kick_ball import KickBall
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import TeamData
 

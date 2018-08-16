@@ -9,8 +9,8 @@ History:
 * 06.12.14: Created (Marc Bestmann)
 """
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
-from bitbots_body_behaviour.body.decisions.common.ball_seen import BallSeenPenaltyKick
-from bitbots_body_behaviour.body.actions.go_to import GoToRelativePosition
+from bitbots_body_behaviour.decisions.common.ball_seen import BallSeenPenaltyKick
+from bitbots_body_behaviour.actions.go_to import GoToRelativePosition
 
 
 class PenaltyKickerDecision(AbstractDecisionElement):

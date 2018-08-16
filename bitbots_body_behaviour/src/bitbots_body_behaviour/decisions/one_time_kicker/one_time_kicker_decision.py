@@ -11,7 +11,7 @@ History:
 import rospy
 
 from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
-from bitbots_body_behaviour.body.decisions.common.ball_seen import BallSeenFieldie
+from bitbots_body_behaviour.decisions.common.ball_seen import BallSeenFieldie
 
 
 class OneTimeKickerDecision(AbstractDecisionElement):  # todo make this player shoot always with the hard kick
