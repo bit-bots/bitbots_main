@@ -29,5 +29,9 @@
   <build_depend>wolfgang_description</build_depend>
   <run_depend>wolfgang_description</run_depend>
 
-
+  <export>
+      <bitbots_documentation>
+        <status>tested_robot</status>
+      </bitbots_documentation>
+  </export>
 </package>

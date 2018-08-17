@@ -25,7 +25,9 @@
 
 
   <export>
-      <status>tested_robot</status>
-      <language>xacro</language>
+      <bitbots_documentation>
+        <status>starts</status>
+        <language>xacro</language>
+      </bitbots_documentation>
   </export>
 </package>
