@@ -19,6 +19,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
 
   _nh = nh;
   _update_pid = false;
+  _lost_servo_connection = false;
 
   // Init subscriber / publisher
   _switch_individual_torque = false;
@@ -119,7 +120,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _goal_velocity.resize(_joint_count, 0);
   _goal_acceleration.resize(_joint_count, 0);
   _goal_effort.resize(_joint_count, 0);
-  _goal_torque_individual.resize(_joint_count, 0);
+  _goal_torque_individual.resize(_joint_count, 1);
 
   // write ROM and RAM values if wanted
   if(nh.param("dynamixels/set_ROM_RAM", false)){
@@ -438,6 +439,7 @@ void DynamixelHardwareInterface::read()
     } else{
       ROS_ERROR_THROTTLE(1.0, "Couldn't read all current joint values!");
       speak("Could not read all current joint values!");
+      _lost_servo_connection = true;
     }
   }else {
     if (_read_position) {
@@ -447,7 +449,8 @@ void DynamixelHardwareInterface::read()
       } else{
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint position!");
         speak("Couldn't read current joint position!");
-          _driver->reinitSyncReadHandler("Present_Position");
+        _driver->reinitSyncReadHandler("Present_Position");
+        _lost_servo_connection = true;
       }
     }
 
@@ -456,6 +459,7 @@ void DynamixelHardwareInterface::read()
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint velocity!");
         speak("Couldn't read current joint velocity!");
         _driver->reinitSyncReadHandler("Present_Velocity");
+        _lost_servo_connection = true;
       }
     }
 
@@ -464,6 +468,7 @@ void DynamixelHardwareInterface::read()
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint effort!");
         speak("Couldn't read current joint effort!");
         _driver->reinitSyncReadHandler("Present_Current");
+        _lost_servo_connection = true;
       }
     }
   }
@@ -517,6 +522,13 @@ void DynamixelHardwareInterface::write()
   if(_switch_individual_torque){
     setTorqueForServos(_goal_torque_individual);
     _switch_individual_torque = false;
+  }
+
+  // reset torques if we lost connection to them
+  if(_lost_servo_connection){
+    ROS_INFO_THROTTLE(5, "resetting torque after lost connection");
+    setTorqueForServos(_goal_torque_individual);
+    _lost_servo_connection = false;
   }
 
   if (_control_mode == PositionControl)

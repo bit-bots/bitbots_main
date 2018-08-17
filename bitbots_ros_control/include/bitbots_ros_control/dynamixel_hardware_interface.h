@@ -118,6 +118,8 @@ private:
 
 
   bool first_cycle_;
+  bool _lost_servo_connection;
+  
   bool _switch_individual_torque;
   std::vector<int32_t> _goal_torque_individual;
 
