@@ -63,6 +63,10 @@ class PlayAnimationAction(object):
             # we cant play an animation right now
             # but we send a request, so that we may can soon
             self.send_animation_request()
+            rospy.loginfo("HCM not controlable. Only sended request to make it come controlable.")
+            #rospy.loginfo("Will now wait for HCM to get controlable.")
+            self._as.set_aborted(text="HCM not controlable. Will now come controlable. Try again later.")
+            return
 
         # start animation
         try:
@@ -84,22 +88,7 @@ class PlayAnimationAction(object):
 
         while not rospy.is_shutdown():
             # first check if we have another goal
-            if self._as.is_new_goal_available():
-                next_goal = self._as.next_goal
-                rospy.logwarn("New goal: " + next_goal.get_goal().animation)
-                if next_goal.get_goal().hcm:
-                    rospy.logdebug("Accepted hcm animation %s", next_goal.get_goal().animation)
-                    # cancel old stuff and restart
-                    self._as.current_goal.set_aborted()
-                    self._as.accept_new_goal()
-                    return
-                else:
-                    # can't run this animation now
-                    self._as.next_goal.set_rejected()
-                    # delete the next goal to make sure, that we can accept something else
-                    self._as.next_goal = None
-                    rospy.logdebug("Couldn't start non hcm animation, bc another one is already running.")
-
+            self.check_for_new_goal()
             # if we're here we want to play the next keyframe, cause there is no other goal
             # compute next pose
             t = rospy.get_time() - animator.get_start_time()
@@ -128,6 +117,23 @@ class PlayAnimationAction(object):
                 rospy.logwarn("We moved backwards in time. I hope you just resetted the simulation. If not there is something wrong")
             except rospy.exceptions.ROSInterruptException:
                 exit()
+
+    def check_for_new_goal(self):
+        if self._as.is_new_goal_available():
+                next_goal = self._as.next_goal
+                rospy.logwarn("New goal: " + next_goal.get_goal().animation)
+                if next_goal.get_goal().hcm:
+                    rospy.logdebug("Accepted hcm animation %s", next_goal.get_goal().animation)
+                    # cancel old stuff and restart
+                    self._as.current_goal.set_aborted()
+                    self._as.accept_new_goal()
+                    return
+                else:
+                    # can't run this animation now
+                    self._as.next_goal.set_rejected()
+                    # delete the next goal to make sure, that we can accept something else
+                    self._as.next_goal = None
+                    rospy.logdebug("Couldn't start non hcm animation, bc another one is already running.")
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""

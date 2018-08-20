@@ -26,7 +26,7 @@ def anim_run(anim=None):
         rospy.logwarn("Animation server now running, hcm will go on.")
     goal = humanoid_league_msgs.msg.PlayAnimationGoal()
     goal.animation = anim
-    goal.hcm = True  # the animation is from the hcm
+    goal.hcm = False
     print(anim_client.send_goal_and_wait(goal))
     rospy.sleep(0.5)
 
