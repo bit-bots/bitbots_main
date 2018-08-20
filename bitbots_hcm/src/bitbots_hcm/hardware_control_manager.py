@@ -102,17 +102,23 @@ class HardwareControlManager:
         """ The animation server is sending us goal positions for the next keyframe"""        
         self.connector.last_animation_goal_time = msg.header.stamp.to_sec()
 
+        if msg.request:
+            rospy.loginfo("Got Animation request. HCM will try to get controllable now.")
+            # animation has to wait
+            # state machine should try to become controllable
+            self.connector.animation_requested = True
+            return 
+
         if msg.first:
             if msg.hcm:
                 # comming from ourselves
+                # we don't have to do anything, since we must be in the right state
                 pass
             else:
                 # comming from outside
+                # check if we can run an animation now
                 if self.connector.current_state != STATE_CONTROLABLE:
-                    rospy.logwarn("Motion is not controllable, animation refused.")
-                    # animation has to wait
-                    # state machine should try to become controllable
-                    self.connector.animation_requested = True
+                    rospy.logwarn("HCM is not controllable, animation refused.")
                     return
                 else:
                     # we're already controllable, go to animation running

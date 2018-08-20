@@ -1,7 +1,7 @@
 import rospy 
 import humanoid_league_msgs.msg
 from bitbots_stackmachine.abstract_action_element import AbstractActionElement
-from bitbots_hcm.hcm_stack_machine.hcm_connector import HcmConnector, STATE_HCM_OFF
+from bitbots_hcm.hcm_stack_machine.hcm_connector import HcmConnector, STATE_HCM_OFF, STATE_PENALTY
 
 
 class AbstractStay(AbstractActionElement):
@@ -30,7 +30,9 @@ class StayMotorsOff(AbstractStay):
     pass
 
 class StayInPenalty(AbstractStay):
-    pass
+    
+    def perform(self, connector):
+        connector.current_state = STATE_PENALTY
 
 class StayRecord(AbstractStay):
     pass

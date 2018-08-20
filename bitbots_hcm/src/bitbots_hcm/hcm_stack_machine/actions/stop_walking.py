@@ -9,6 +9,9 @@ class StopWalking(AbstractActionElement):
     Stop the walking
     """
 
-    def perform(self, connector, reevaluate=False):        
-        connector.stop_walking()
-        return 
+    def perform(self, connector, reevaluate=False): 
+        self.do_not_reevaluate()
+        if connector.is_currently_walking():
+            connector.stop_walking()
+        else:
+            return self.pop()        

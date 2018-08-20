@@ -18,8 +18,12 @@ class StartHcm(AbstractDecisionElement):
             connector.current_state = STATE_SHUT_DOWN
             return self.push_action_sequence(SequenceElement, [PlayAnimationSitDown, StayShutDown], [None, None])  
         else:
-            connector.current_state = STATE_STARTUP
-            return self.push(CheckIMU)
+            if not reevaluate:
+                connector.current_state = STATE_STARTUP
+            if connector.simulation_active:
+                return self.push(Penalty)      
+            else:                
+                return self.push(CheckIMU)
 
     def get_reevaluate(self):
         return True
@@ -31,7 +35,7 @@ class CheckIMU(AbstractDecisionElement):
     Since the HCM can not detect falls without it, we will shut everything down if we dont have an imu.
     """
 
-    def perform(self, connector, reevaluate=False):      
+    def perform(self, connector, reevaluate=False):
         if  connector.last_imu_update_time.to_sec == 0:
             # wait for the IMU to start
             connector.current_state = STATE_STARTUP
@@ -54,9 +58,8 @@ class Penalty(AbstractDecisionElement):
 
     def perform(self, connector, reevaluate=False):        
         if connector.penalized:
-            connector.current_state = STATE_PENALTY
             # we do an action sequence to go into penalty and to stay there      
-            return self.push_action_sequence(SequenceElement, [PlayAnimationPenalty, StayInPenalty], [None, None])  
+            return self.push_action_sequence(SequenceElement, [StopWalking, PlayAnimationPenalty, StayInPenalty], [None, None, None])  
         else:
             return self.push(MotorOffTimer)
 
@@ -70,6 +73,8 @@ class MotorOffTimer(AbstractDecisionElement):
     """
 
     def perform(self, connector, reevaluate=False):
+        if connector.simulation_active:
+            return self.push(Fallen)
         # check if the time is reached
         if connector.is_motor_off_time():
             rospy.logwarn_throttle(5, "Didn't recieve goals for " + str(connector.motor_off_time) + " seconds. Will shut down the motors and wait for commands.")
@@ -204,6 +209,7 @@ class Walking(AbstractDecisionElement):
         if connector.is_currently_walking():            
             connector.current_state = STATE_WALKING
             if connector.animation_requested:
+                connector.animation_requested = False
                 # we are walking but we have to stop to play an animation
                 return self.push(StopWalking)
             else:                

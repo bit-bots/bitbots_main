@@ -74,6 +74,7 @@ class HcmConnector(AbstractConnector):
 
         # walking
         self.last_walking_goal_time = rospy.Time()
+        self.walk_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
 
         self.record_active = False
 
@@ -82,7 +83,7 @@ class HcmConnector(AbstractConnector):
         self.is_stand_up_active = False
         self.falling_detection_active = False
 
-        self.simulation_active = rospy.get_param("simulation_active")
+        self.simulation_active = rospy.get_param("/simulation_active")
         self.cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
 
     def is_imu_timeout(self):
@@ -106,26 +107,35 @@ class HcmConnector(AbstractConnector):
     def are_motors_on(self):
         """
         """
-        return self.current_time.to_sec() - self.last_motor_update_time.to_sec() < 1
+        return self.current_time.to_sec() - self.last_motor_update_time.to_sec() < 0.1
 
     def are_motors_available(self):
         """
         """
-        return self.current_time.to_sec() - self.last_motor_update_time.to_sec() < 1
+        return self.current_time.to_sec() - self.last_motor_update_time.to_sec() < 0.1
 
     def is_robot_picked_up(self):
         return False #TODO needs feet sensors
     
     def is_currently_walking(self):
-        return self.current_time.to_sec() - self.last_walking_goal_time.to_sec() < 1
+        return self.current_time.to_sec() - self.last_walking_goal_time.to_sec() < 0.1
 
     def is_walkready(self):
         """
         We check if any joint is has an offset from the walkready pose which is higher than a threshold
         """
+        if self.current_joint_positions is None:
+            return False
         i = 0
         for joint_name in self.current_joint_positions.name:
             if abs(math.degrees(self.current_joint_positions.position[i]) - self.walkready_pose_dict[joint_name]) > self.walkready_pose_threshold:
                 return False
             i +=1 
         return True
+
+    def stop_walking(self):
+        msg= Twist()
+        msg.linear.x = 0
+        msg.linear.y = 0
+        msg.angular.z = 0
+        self.walk_pub.publish(msg)

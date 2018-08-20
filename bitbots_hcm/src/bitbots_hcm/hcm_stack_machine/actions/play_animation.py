@@ -1,4 +1,5 @@
 import rospy 
+import actionlib
 import humanoid_league_msgs.msg
 from bitbots_stackmachine.abstract_action_element import AbstractActionElement
 from bitbots_hcm.hcm_stack_machine.hcm_connector import HcmConnector, STATE_GETTING_UP
@@ -70,7 +71,8 @@ class AbstractPlayAnimation(AbstractActionElement):
         self.animation_started = True
 
     def animation_finished(self, connector):
-        return connector.hcm_animation_finished
+        state = connector.animation_action_client.get_state()
+        return state == 3 
 
 class PlayAnimationStandUp(AbstractPlayAnimation):
 
