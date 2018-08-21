@@ -9,28 +9,14 @@
     <arg name="davros_length" default="0" />
 
 
-    <group unless="$(arg minibot)">
-        <group unless="$(arg wolfgang)">
-            <group unless="$(arg davros)">
-                <node pkg="bitbots_common" type="launch_warning.py" name="warning">                
-                </node>
-            </group>
+
+    <group unless="$(arg wolfgang)">
+        <group unless="$(arg davros)">
+            <node pkg="bitbots_common" type="launch_warning.py" name="warning">                
+            </node>
         </group>
     </group>
 
-    <group if="$(arg minibot)">
-        <param name="robot_description" command="$(find xacro)/xacro $(find minibot_description)/urdf/minibot.urdf.xacro sim_ns:=$(arg sim_ns) --inorder" />                
-        <param name="robot_description_semantic" textfile="$(find minibot_moveit_config)/config/Minibot.srdf" />
-        <param name="robot_type_name" value="Minibot"/>    
-        <!-- Load updated joint limits (override information from URDF) -->
-        <group ns="robot_description_planning">
-            <rosparam command="load" file="$(find minibot_moveit_config)/config/joint_limits.yaml"/>
-        </group>
-        <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->
-        <group ns="robot_description_kinematics">
-            <rosparam command="load" file="$(find minibot_moveit_config)/config/kinematics.yaml"/>
-        </group>
-    </group>
 
     <group if="$(arg wolfgang)">
         <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/wolfgang.urdf.xacro sim_ns:=$(arg sim_ns) --inorder" />                
@@ -70,13 +56,13 @@
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">        
             <remap from="/joint_states" to="joint_states" />    
         </node>
-        <param name="simulation_active" value="true"/>
+        <param name="/simulation_active" value="true"/>
     </group>
 
     <group unless="$(arg sim)">
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">        
         </node>
-        <param name="simulation_active" value="false"/>
+        <param name="/simulation_active" value="false"/>
     </group>
 
     <include file="$(find bitbots_base_footprint)/launch/base_footprint.launch"/>
