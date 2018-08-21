@@ -34,6 +34,7 @@ class HcmConnector(AbstractConnector):
         self.current_state = STATE_STARTUP 
         self.penalized = False
         self.shut_down_request = False
+        self.simulation_active = rospy.get_param("/simulation_active")
 
         # this is used to prevent calling rospy.Time a lot, which takes some time
         # we assume that the time does not change during one update cycle
@@ -80,11 +81,8 @@ class HcmConnector(AbstractConnector):
 
         # falling
         self.fall_checker = FallChecker()
-        self.is_stand_up_active = False
-        self.falling_detection_active = False
-
-        self.simulation_active = rospy.get_param("/simulation_active")
-        self.cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
+        self.is_stand_up_active = not self.simulation_active and rospy.get_param("hcm/stand_up_active", False) 
+        self.falling_detection_active = not self.simulation_active and rospy.get_param("hcm/falling_active", False)             
 
     def is_imu_timeout(self):
         """
