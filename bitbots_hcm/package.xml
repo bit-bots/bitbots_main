@@ -32,7 +32,7 @@
   <export>
     <bitbots_documentation>
       <language>python3</language>
-      <status>unknown</status>
+      <status>tested_viz</status>
     </bitbots_documentation>
   </export>
 </package>
