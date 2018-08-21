@@ -17,10 +17,13 @@ class SequenceElement(AbstractDecisionElement):
         self.actions = init_data["actions"]
         self.action_datas = init_data["action_datas"]
         self.first = True
+        # sanity check
+        if len(self.actions) != len(self.action_datas):
+            rospy.logerror("ActionSequence: Number of actions and init data is not the same!")                
 
     
     def perform(self, connector, reevaluate=False):        
-        if self.first:
+        if self.first:            
             # push all the actions on the stack
             for i in range(len(self.actions)-1, -1, -1):
                 # perform is deactivated to inhibit calling all the actions now
