@@ -416,7 +416,7 @@ void DynamixelHardwareInterface::setTorque(std_msgs::BoolConstPtr enabled)
   goal_torque_ = enabled->data;
 }
 
-void DynamixelHardwareInterface::read()
+bool DynamixelHardwareInterface::read()
 {
   if(_read_imu){
       if(!readImu()){
@@ -429,8 +429,10 @@ void DynamixelHardwareInterface::read()
     ROS_ERROR_THROTTLE(1.0, "Couldn't read Buttons");
   }
   if(_onlyIMU){
-    return;
+    return true;
   }
+  bool read_successful = true;
+
   // either read all values or a single one, depending on config
   if (_read_position && _read_velocity && _read_effort ){
     if(syncReadAll()){
@@ -439,7 +441,7 @@ void DynamixelHardwareInterface::read()
     } else{
       ROS_ERROR_THROTTLE(1.0, "Couldn't read all current joint values!");
       speak("Could not read all current joint values!");
-      _lost_servo_connection = true;
+      read_successful = false;
     }
   }else {
     if (_read_position) {
@@ -450,7 +452,7 @@ void DynamixelHardwareInterface::read()
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint position!");
         speak("Couldn't read current joint position!");
         _driver->reinitSyncReadHandler("Present_Position");
-        _lost_servo_connection = true;
+        read_successful = false;
       }
     }
 
@@ -459,7 +461,7 @@ void DynamixelHardwareInterface::read()
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint velocity!");
         speak("Couldn't read current joint velocity!");
         _driver->reinitSyncReadHandler("Present_Velocity");
-        _lost_servo_connection = true;
+        read_successful = false;
       }
     }
 
@@ -468,7 +470,7 @@ void DynamixelHardwareInterface::read()
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint effort!");
         speak("Couldn't read current joint effort!");
         _driver->reinitSyncReadHandler("Present_Current");
-        _lost_servo_connection = true;
+        read_successful = false;
       }
     }
   }
@@ -500,6 +502,7 @@ void DynamixelHardwareInterface::read()
     first_cycle_ = false;
   }
 
+  return read_successful;
 
 }
 

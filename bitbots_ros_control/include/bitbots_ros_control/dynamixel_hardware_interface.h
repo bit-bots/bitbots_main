@@ -73,7 +73,7 @@ public:
   void reconf_callback(bitbots_ros_control::bitbots_ros_control_paramsConfig &config, uint32_t level);
 
   bool init(ros::NodeHandle& nh);
-  void read();
+  bool read();
   void write();
 
 private:

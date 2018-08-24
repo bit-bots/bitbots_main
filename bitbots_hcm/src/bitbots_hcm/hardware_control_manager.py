@@ -24,6 +24,9 @@ from bitbots_hcm.hcm_stack_machine.decisions.decisions import StartHcm
 class HardwareControlManager:
     def __init__(self):
 
+        # necessary for on shutdown hook, incase of direct shutdown before finished initilization
+        self.connector = None
+
         # --- Initialize Node ---
         log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
         rospy.init_node('bitbots_hcm', log_level=log_level, anonymous=False)
@@ -169,6 +172,8 @@ class HardwareControlManager:
                 exit()
 
     def on_shutdown_hook(self):
+        if not self.connector:
+            return
         # we got external shutdown, tell it to the state machine, it will handle it
         self.connector.shut_down_request = True
         rospy.logwarn("You're stopping the HCM. The robot will sit down and power off its motors.")

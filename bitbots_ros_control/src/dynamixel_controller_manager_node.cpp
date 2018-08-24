@@ -26,6 +26,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
+  bool controller_stopped = false;
 
   // Create separate queue, because otherwise controller manager will freeze
   ros::NodeHandle nh;
@@ -41,13 +42,25 @@ int main(int argc, char** argv)
   ros::Rate rate(pnh.param("control_loop_hz", 200));
 
   while (ros::ok())
-  {
-    hw.read();
+  {    
+    bool read_sucessfull = hw.read();
     ros::Duration period = ros::Time::now() - current_time;
-    current_time = ros::Time::now();
+    current_time = ros::Time::now();  
     if (first_update) {
       first_update = false;
     } else {
+      // start or stop joint state controller if connection lost / restored
+      /*if(read_sucessfull && controller_stopped){
+        ROS_WARN("start");
+        cm.getControllerByName("joint_state_controller")->startRequest(current_time);
+        if(cm.getControllerByName("joint_state_controller")->isRunning()){
+          controller_stopped = false;
+        }
+      }else if (!read_sucessfull && !controller_stopped){
+        ROS_WARN("stop");
+        cm.getControllerByName("joint_state_controller")->stopRequest(current_time);
+        controller_stopped = true;
+      }*/
       cm.update(current_time, period);
     }
     hw.write();
