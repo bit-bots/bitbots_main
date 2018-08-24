@@ -130,6 +130,12 @@ class HcmConnector(AbstractConnector):
                 return False
             i +=1 
         return True
+    
+    def is_falling(self):
+        return False #TODO
+    
+    def is_fallen(self):
+        return False # TODO
 
     def stop_walking(self):
         msg= Twist()
