@@ -6,7 +6,7 @@ from bitbots_head_behaviour.decisions.head_duty_decider import HeadDutyDecider
 from bitbots_stackmachine.stack_machine import StackMachine
 from humanoid_league_msgs.msg import HeadMode, BallRelative, ObstacleRelative, GoalRelative
 from sensor_msgs.msg import JointState
-from trajectory_msgs.msg import JointTrajectory
+from bitbots_ros_control.msg import JointCommand
 
 
 class HeadNode(StackMachine):
@@ -14,7 +14,7 @@ class HeadNode(StackMachine):
         rospy.init_node("Headbehaviour")
         super(HeadNode, self).__init__(HeadConnector(), debug_topic="/debug_head_behaviour")
 
-        self.connector.head.position_publisher = rospy.Publisher("head_motor_goals", JointTrajectory, queue_size=10)
+        self.connector.head.position_publisher = rospy.Publisher("head_motor_goals", JointCommand, queue_size=10)
 
         rospy.Subscriber("joint_states", JointState, self.connector.head.joint_state_cb)
         rospy.Subscriber("head_duty", HeadMode, self.connector.head.cb_headmode, queue_size=10)

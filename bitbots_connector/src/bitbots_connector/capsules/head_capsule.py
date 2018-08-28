@@ -5,7 +5,7 @@ import rospy
 from geometry_msgs.msg import Point
 from bio_ik_msgs.srv import GetIK
 from bio_ik_msgs.msg import IKRequest, LookAtGoal
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from bitbots_ros_control.msg import JointCommand
 
 
 class HeadCapsule:
@@ -33,12 +33,10 @@ class HeadCapsule:
         self.is_ball_tracking_still_active = False
 
         # preparing message for more performance
-        self.pos_msg = JointTrajectory()
+        self.pos_msg = JointCommand()
         self.pos_msg.joint_names = ["HeadPan", "HeadTilt"]
-        self.point_msg = JointTrajectoryPoint()
-        self.point_msg.positions = [0, 0]
-        self.point_msg.velocities = [0, 0]
-        self.pos_msg.points = [self.point_msg]
+        self.pos_msg.positions = [0, 0]
+        self.pos_msg.velocities = [0, 0]
 
         self.position_publisher = None  # type: rospy.Publisher
 
@@ -66,9 +64,8 @@ class HeadCapsule:
         print((pan_position, tilt_position))
         posnew = (math.radians(np.clip(pan_position, self.min_pan, self.max_pan)),
                   math.radians(np.clip(tilt_position, self.min_tilt, self.max_tilt)))
-        self.pos_msg.points[0].positions = posnew
-        self.pos_msg.points[0].velocities = [pan_speed, tilt_speed]
-        self.pos_msg.points[0].effort = [-1, -1]
+        self.pos_msg.positions = posnew
+        self.pos_msg.velocities = [pan_speed, tilt_speed]
         self.pos_msg.header.stamp = rospy.Time.now()
         self.position_publisher.publish(self.pos_msg)
 
