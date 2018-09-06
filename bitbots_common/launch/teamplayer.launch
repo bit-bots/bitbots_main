@@ -2,7 +2,7 @@
     <arg name="sim" default="false"/>
     <arg name="motion" default="true"/>
     <arg name="behave" default="true"/>
-    <arg name="vision" default="true"/>
+    <arg name="vision" default="false"/>
     
     <arg name="sim_ns" default="/" />
 
