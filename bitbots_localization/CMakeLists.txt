@@ -11,6 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_msgs
   sensor_msgs
+  robot_localization
+  pointcloud_to_laserscan
+  map_server
+  viso2_ros
 )
 
 ## System dependencies are found with CMake's conventions
