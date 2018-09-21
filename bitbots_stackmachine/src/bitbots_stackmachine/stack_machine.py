@@ -77,7 +77,8 @@ class StackMachine(object):
         :param: reevaluate: Can be set to False to inhibit the reevaluation
         :type reevaluate: bool
         """
-        self.publish_debug_msg()
+        if not reevaluate:
+            self.publish_debug_msg()
 
         if reevaluate and not self.do_not_reevaluate:
             self.stack_excec_index = 0
