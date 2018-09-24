@@ -28,9 +28,9 @@ include_directories(
 )
 
 
-# add_library(${PROJECT_NAME}_lib src/limited_marker_queue.cpp include/${PROJECT_NAME}/limited_marker_queue.h)
-# add_dependencies(${PROJECT_NAME}_lib ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES})
+add_library(libPF_lib src/CRandomNumberGenerator.cpp include/libPF)
+add_dependencies(libPF_lib ${catkin_EXPORTED_TARGETS})
+target_link_libraries(libPF_lib ${catkin_LIBRARIES})
 
 
 add_executable(world_model src/world_model.cpp)
