@@ -4,6 +4,10 @@ ObstacleState::ObstacleState() :
     xPos_(0.0),
     yPos_(0.0) {}
 
+ObstacleState::ObstacleState(float x, float y) :
+    xPos_(x),
+    yPos_(y) {}
+
 ObstacleState::~ObstacleState() {}
 
 void ObstacleState::setXPos(float x) {
@@ -27,6 +31,10 @@ ObstacleStateW::ObstacleStateW() :
     ObstacleState(),
     width_(0.0) {}
 
+ObstacleStateW::ObstacleStateW(float x, float y, float w) :
+    ObstacleState(x, y),
+    width_(w) {}
+
 ObstacleStateW::~ObstacleStateW() {}
 
 void ObstacleStateW::setWidth(float w) {
@@ -41,6 +49,10 @@ float ObstacleStateW::getWidth() const {
 ObstacleStateO::ObstacleStateO() :
     ObstacleState(),
     orientation_(0.0) {}
+
+ObstacleStateO::ObstacleStateO(float x, float y, float o) :
+    ObstacleState(x, y),
+    orientation_(o) {}
 
 ObstacleStateO::~ObstacleStateO() {}
 

@@ -5,6 +5,7 @@ class ObstacleState
 {
 public:
     ObstacleState();
+    ObstacleState(float x, float y);
     ~ObstacleState();
 
     // ObstacleState operator*(float factor) const;
@@ -47,6 +48,7 @@ class ObstacleStateW :  ObstacleState
 {
 public:
     ObstacleStateW();
+    ObstacleStateW(float x, float y, float w);
     ~ObstacleStateW();
 
     float getWidth() const;
@@ -67,6 +69,7 @@ class ObstacleStateO :  ObstacleState
 {
 public:
     ObstacleStateO();
+    ObstacleStateO(float x, float y, float o);
     ~ObstacleStateO();
 
     float getOrientation() const;
