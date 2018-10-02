@@ -1,15 +1,15 @@
-#ifndef ROBOT_STATE
-#define ROBOT_STATE
+#ifndef OBSTACLE_STATE
+#define OBSTACLE_STATE
 
-class RobotState
+class ObstacleState
 {
 public:
-    RobotState();
-    ~RobotState();
+    ObstacleState();
+    ~ObstacleState();
 
-    // RobotState operator*(float factor) const;
+    // ObstacleState operator*(float factor) const;
 
-    // RobotState& operator+=(const RobotState& other);
+    // ObstacleState& operator+=(const ObstacleState& other);
 
 
     float getXPos() const;
@@ -40,14 +40,14 @@ protected:
 };
 
 /*
- * RobotStateW - the robot state with width
+ * ObstacleStateW - the obstacle state with width
  */
 
-class RobotStateW :  RobotState
+class ObstacleStateW :  ObstacleState
 {
 public:
-    RobotStateW();
-    ~RobotStateW();
+    ObstacleStateW();
+    ~ObstacleStateW();
 
     float getWidth() const;
 
@@ -60,14 +60,14 @@ private:
 
 
 /*
- * RobotStateO - the robot state with orientation
+ * ObstacleStateO - the obstacle state with orientation
  */
 
-class RobotStateO :  RobotState
+class ObstacleStateO :  ObstacleState
 {
 public:
-    RobotStateO();
-    ~RobotStateO();
+    ObstacleStateO();
+    ~ObstacleStateO();
 
     float getOrientation() const;
 
