@@ -8,6 +8,14 @@ ObstacleState::ObstacleState(float x, float y) :
     xPos_(x),
     yPos_(y) {}
 
+ObstacleState& ObstacleState::operator=(const ObstacleState& other) {
+  if (this != &other) {
+    setXPos(other.getXPos());
+    setYPos(other.getYPos());
+  }
+  return *this;
+}
+
 ObstacleState::~ObstacleState() {}
 
 void ObstacleState::setXPos(float x) {
@@ -35,6 +43,15 @@ ObstacleStateW::ObstacleStateW(float x, float y, float w) :
     ObstacleState(x, y),
     width_(w) {}
 
+ObstacleStateW& ObstacleStateW::operator=(const ObstacleStateW& other) {
+  if (this != &other) {
+    setXPos(other.getXPos());
+    setYPos(other.getYPos());
+    setWidth(other.getWidth());
+  }
+  return *this;
+}
+
 ObstacleStateW::~ObstacleStateW() {}
 
 void ObstacleStateW::setWidth(float w) {
@@ -53,6 +70,15 @@ ObstacleStateO::ObstacleStateO() :
 ObstacleStateO::ObstacleStateO(float x, float y, float o) :
     ObstacleState(x, y),
     orientation_(o) {}
+
+ObstacleStateO& ObstacleStateO::operator=(const ObstacleStateO& other) {
+  if (this != &other) {
+    setXPos(other.getXPos());
+    setYPos(other.getYPos());
+    setOrientation(other.getOrientation());
+  }
+  return *this;
+}
 
 ObstacleStateO::~ObstacleStateO() {}
 
