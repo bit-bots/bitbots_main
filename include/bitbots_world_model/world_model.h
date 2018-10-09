@@ -24,7 +24,8 @@ class WorldModel {
 
         ros::Subscriber obstacle_subscriber_;
 
-        ros::Publisher model_publisher_;
+        ros::Publisher local_model_publisher_;
+        ros::Publisher global_model_publisher_;
 
         dynamic_reconfigure::Server<bitbots_world_model::WorldModelConfig> server;
         dynamic_reconfigure::Server<bitbots_world_model::WorldModelConfig>::CallbackType f;
@@ -32,6 +33,9 @@ class WorldModel {
         std::vector<hlm::ObstaclesRelative> obstacles_;
         std::vector<hlm::ObstaclesRelative> mates_;
         std::vector<hlm::ObstaclesRelative> opponents_;
+
+        int team_color_;
+        int opponent_color_;
 };
 
 #endif
