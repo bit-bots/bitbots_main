@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="bitbots_world_model" type="world_model" name="bitbots_world_model" output="screen">
+        <rosparam command="load" file="$(find bitbots_world_model)/config/world_model_config.yaml"/>
+    </node>
+</launch>
