@@ -17,9 +17,11 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     if (config.team_color != team_color_) {
         if (config.team_color == hlm::ObstacleRelative::ROBOT_MAGENTA) {
             team_color_ = config.team_color;
+            opponent_color_ = hlm::ObstacleRelative::ROBOT_CYAN;
             ROS_INFO("Switched team color to red");
         } else if (config.team_color == hlm::ObstacleRelative::ROBOT_CYAN) {
             team_color_ = config.team_color;
+            opponent_color_ = hlm::ObstacleRelative::ROBOT_MAGENTA;
             ROS_INFO("Switched team color to blue");
         } else {
             ROS_INFO_STREAM(
@@ -31,9 +33,13 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
 
 }
 
-void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {}
+void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
+    for (hlm::ObstacleRelative obstacle : msg.obstacles) {
+    }
+}
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "world_model");
     return 0;
 }
+

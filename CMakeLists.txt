@@ -32,9 +32,12 @@ add_library(libPF_lib src/CRandomNumberGenerator.cpp include/libPF)
 add_dependencies(libPF_lib ${catkin_EXPORTED_TARGETS})
 target_link_libraries(libPF_lib ${catkin_LIBRARIES})
 
+add_library(${PROJECT_NAME}_lib src/ObstacleStates.cpp include/${PROJECT_NAME}/ObstacleStates.h src/ObservationModels.cpp include/${PROJECT_NAME}/ObservationModels.h src/MovementModels.cpp include/${PROJECT_NAME}/MovementModels.h)
+add_dependencies(${PROJECT_NAME}_lib ${catkin_EXPORTED_TARGETS})
+target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES})
 
 add_executable(world_model src/world_model.cpp)
-target_link_libraries(world_model ${catkin_LIBRARIES})
+target_link_libraries(world_model ${catkin_LIBRARIES} libPF_lib ${PROJECT_NAME}_lib)
 add_dependencies(world_model ${PROJECT_NAME}_gencfg)
 add_dependencies(world_model ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 

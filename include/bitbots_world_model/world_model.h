@@ -6,16 +6,24 @@
 
 #include <ros/ros.h>
 #include <humanoid_league_msgs/ObstaclesRelative.h>
+#include <humanoid_league_msgs/Model.h>
 #include <dynamic_reconfigure/server.h>
 #include <bitbots_world_model/WorldModelConfig.h>
+#include <bitbots_world_model/ObstacleStates.h>
+#include <bitbots_world_model/MovementModels.h>
+#include <bitbots_world_model/ObservationModels.h>
+
+#include <libPF/ParticleFilter.h>
+
 
 namespace hlm = humanoid_league_msgs;
+namespace wm = bitbots_world_model;
 
 class WorldModel {
     public:
         WorldModel();
 
-        void dynamic_reconfigure_callback(bitbots_world_model::WorldModelConfig &config, uint32_t level);
+        void dynamic_reconfigure_callback(wm::WorldModelConfig &config, uint32_t level);
         void obstacles_callback(const hlm::ObstaclesRelative &msg);
 
     private:
@@ -27,12 +35,20 @@ class WorldModel {
         ros::Publisher local_model_publisher_;
         ros::Publisher global_model_publisher_;
 
-        dynamic_reconfigure::Server<bitbots_world_model::WorldModelConfig> server;
-        dynamic_reconfigure::Server<bitbots_world_model::WorldModelConfig>::CallbackType f;
+        dynamic_reconfigure::Server<wm::WorldModelConfig> server;
+        dynamic_reconfigure::Server<wm::WorldModelConfig>::CallbackType f;
 
-        std::vector<hlm::ObstaclesRelative> obstacles_;
-        std::vector<hlm::ObstaclesRelative> mates_;
-        std::vector<hlm::ObstaclesRelative> opponents_;
+        unsigned int pnum = 5;
+
+        LocalObstacleObservationModel local_obstacle_observation_model_;
+        LocalObstacleObservationModel local_robot_observation_model_;
+
+        LocalObstacleMovementModel local_obstacle_movement_model_;
+        LocalObstacleMovementModel local_robot_movement_model_;
+
+        libPF::ParticleFilter<ObstacleStateW> local_obstacle_pf_ = libPF::ParticleFilter<ObstacleStateW>(pnum, &local_obstacle_observation_model_, &local_obstacle_movement_model_);
+        libPF::ParticleFilter<ObstacleStateW> local_mate_pf_ = libPF::ParticleFilter<ObstacleStateW>(pnum, &local_robot_observation_model_, &local_robot_movement_model_);
+        libPF::ParticleFilter<ObstacleStateW> local_opponent_pf_ = libPF::ParticleFilter<ObstacleStateW>(pnum, &local_robot_observation_model_, &local_robot_movement_model_);
 
         int team_color_;
         int opponent_color_;
