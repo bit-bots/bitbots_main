@@ -1,0 +1,32 @@
+
+# set the color of your team
+# 2: red
+# 3: blue
+# other values are invalid
+team_color: 2
+
+
+#############
+# ROS-Stuff #
+#############
+
+obstacles_topic: '/obstacles'
+
+local_model_topic: '/local_world_model'
+
+global_model_topic: '/global_world_model'
+
+
+####################
+# Particle Filters #
+####################
+
+# Local Filters
+# -------------
+
+local_mate_particle_number: 100
+
+local_opponent_particle_number: 100
+
+local_obstacle_particle_number: 100
+
