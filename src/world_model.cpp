@@ -9,6 +9,8 @@ WorldModel::WorldModel() : nh_() {
 }
 
 void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelConfig &config, uint32_t level) {
+    ROS_INFO("Dynamic reconfigure callback was called...");
+
     obstacle_subscriber_ = nh_.subscribe(config.obstacles_topic.c_str(), 1, &WorldModel::obstacles_callback, this);
     local_model_publisher_ = nh_.advertise<hlm::Model>(config.local_model_topic.c_str(), 1);
     global_model_publisher_ = nh_.advertise<hlm::Model>(config.global_model_topic.c_str(), 1);
@@ -46,6 +48,8 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "world_model");
+    WorldModel world_model;
+    ros::spin();
     return 0;
 }
 
