@@ -46,9 +46,9 @@ class WorldModel {
         LocalObstacleMovementModel local_obstacle_movement_model_;
         LocalObstacleMovementModel local_robot_movement_model_;
 
-        libPF::ParticleFilter<ObstacleStateW> local_obstacle_pf_ = libPF::ParticleFilter<ObstacleStateW>(pnum, &local_obstacle_observation_model_, &local_obstacle_movement_model_);
-        libPF::ParticleFilter<ObstacleStateW> local_mate_pf_ = libPF::ParticleFilter<ObstacleStateW>(pnum, &local_robot_observation_model_, &local_robot_movement_model_);
-        libPF::ParticleFilter<ObstacleStateW> local_opponent_pf_ = libPF::ParticleFilter<ObstacleStateW>(pnum, &local_robot_observation_model_, &local_robot_movement_model_);
+        std::unique_ptr<libPF::ParticleFilter<ObstacleStateW>> local_obstacle_pf_;
+        std::unique_ptr<libPF::ParticleFilter<ObstacleStateW>> local_mate_pf_;
+        std::unique_ptr<libPF::ParticleFilter<ObstacleStateW>> local_opponent_pf_;
 
         int team_color_;
         int opponent_color_;
