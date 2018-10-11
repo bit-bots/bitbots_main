@@ -1,5 +1,5 @@
-#ifndef OBSTACLE_STATE
-#define OBSTACLE_STATE
+#ifndef OBSTACLE_STATES
+#define OBSTACLE_STATES
 
 class ObstacleState
 {
