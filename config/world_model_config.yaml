@@ -1,3 +1,6 @@
+########
+# MISC #
+########
 
 # set the color of your team
 # 2: red
@@ -5,6 +8,9 @@
 # other values are invalid
 team_color: 2
 
+# the field size in meters
+field_width: 6
+field_height: 9
 
 #############
 # ROS-Stuff #
@@ -29,4 +35,6 @@ local_mate_particle_number: 100
 local_opponent_particle_number: 100
 
 local_obstacle_particle_number: 100
+local_obstacle_min_width: 0.1
+local_obstacle_max_width: 2
 
