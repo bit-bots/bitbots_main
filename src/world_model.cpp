@@ -14,7 +14,7 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     global_model_publisher_ = nh_.advertise<hlm::Model>(config.global_model_topic.c_str(), 1);
 
     // team color
-    if (config.team_color != team_color_) {
+    if (config.team_color != config_.team_color) {
         if (config.team_color == hlm::ObstacleRelative::ROBOT_MAGENTA) {
             team_color_ = config.team_color;
             opponent_color_ = hlm::ObstacleRelative::ROBOT_CYAN;
@@ -37,6 +37,7 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     local_obstacle_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(pnum, &local_obstacle_observation_model_, &local_obstacle_movement_model_));
     local_mate_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(pnum, &local_robot_observation_model_, &local_robot_movement_model_));
     local_opponent_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(pnum, &local_robot_observation_model_, &local_robot_movement_model_));
+    config_ = config;
 }
 
 void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
