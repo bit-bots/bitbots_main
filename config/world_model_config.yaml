@@ -8,6 +8,10 @@
 # other values are invalid
 team_color: 2
 
+# the initial pose of the robot
+initial_robot_x: 0
+initial_robot_y: 0
+
 # the field size in meters
 field_width: 6
 field_height: 9
