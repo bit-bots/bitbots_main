@@ -40,9 +40,18 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     // initializing particle filters
     //
     // using reset because they are unique pointers
-    local_obstacle_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(pnum, &local_obstacle_observation_model_, &local_obstacle_movement_model_));
-    local_mate_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(pnum, &local_robot_observation_model_, &local_robot_movement_model_));
-    local_opponent_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(pnum, &local_robot_observation_model_, &local_robot_movement_model_));
+    if (config.local_obstacle_particle_number != config_.local_obstacle_particle_number || config.local_mate_particle_number != config_.local_mate_particle_number || config.local_opponent_particle_number != config_.local_opponent_particle_number) {
+        ROS_INFO_STREAM("You changed the particle number to the following: \nlocal_obstacle_particle_number: " <<
+                         config.local_obstacle_particle_number <<
+                         "\nlocal_mate_particle_number: " <<
+                         config.local_mate_particle_number <<
+                         "\nlocal_opponent_particle_number: " <<
+                         config.local_opponent_particle_number <<
+                         "\nTo use the updated particle numbers, you need to reset the filters.");
+    }
+    // local_mate_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(config.local_mate_particle_number, &local_robot_observation_model_, &local_robot_movement_model_));
+    // local_opponent_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(config.local_opponent_particle_number, &local_robot_observation_model_, &local_robot_movement_model_));
+
     config_ = config;
 }
 

@@ -35,7 +35,6 @@ class WorldModel {
         ros::Publisher local_model_publisher_;
         ros::Publisher global_model_publisher_;
 
-        unsigned int pnum = 5;
         bitbots_world_model::WorldModelConfig config_;
 
         LocalObstacleObservationModel local_obstacle_observation_model_;
