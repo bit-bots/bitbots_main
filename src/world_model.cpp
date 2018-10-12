@@ -1,9 +1,9 @@
 #include "bitbots_world_model/world_model.h"
 
 
-WorldModel::WorldModel() : nh_() {
+WorldModel::WorldModel() : nh_(), valid_configuration_(false) {
 
-    ROS_INFO("Initialized Bit-Bots world model");
+    ROS_INFO("Created Bit-Bots world model");
 }
 
 void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelConfig &config, uint32_t level) {
@@ -53,6 +53,11 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     // local_opponent_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(config.local_opponent_particle_number, &local_robot_observation_model_, &local_robot_movement_model_));
 
     config_ = config;
+    if (!valid_configuration_) {
+        valid_configuration_ = true;
+        ROS_INFO("Trying to initialize world_model...");
+        init();
+    }
 }
 
 void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
@@ -67,6 +72,10 @@ void WorldModel::reset_all_filters() {
 }
 
 void WorldModel::init() {
+    if (!valid_configuration_) {
+        ROS_ERROR("You tried to initialize the world model with an invalid configuration!\n The dynamic_reconfigure_callback has to be called at least once with a valif configuration before initializing the world model!");
+        return;
+    }
     reset_all_filters();
 }
 

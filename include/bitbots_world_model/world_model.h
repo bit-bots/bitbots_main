@@ -52,6 +52,8 @@ class WorldModel {
 
         int team_color_;
         int opponent_color_;
+
+        bool valid_configuration_;
 };
 
 #endif
