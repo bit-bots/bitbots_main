@@ -9,9 +9,15 @@ WorldModel::WorldModel() : nh_() {
 void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelConfig &config, uint32_t level) {
     ROS_INFO("Dynamic reconfigure callback was called...");
 
-    obstacle_subscriber_ = nh_.subscribe(config.obstacles_topic.c_str(), 1, &WorldModel::obstacles_callback, this);
-    local_model_publisher_ = nh_.advertise<hlm::Model>(config.local_model_topic.c_str(), 1);
-    global_model_publisher_ = nh_.advertise<hlm::Model>(config.global_model_topic.c_str(), 1);
+    if (config.obstacles_topic != config_.obstacles_topic) {
+        obstacle_subscriber_ = nh_.subscribe(config.obstacles_topic.c_str(), 1, &WorldModel::obstacles_callback, this);
+    }
+    if (config.local_model_topic != config_.local_model_topic) {
+        local_model_publisher_ = nh_.advertise<hlm::Model>(config.local_model_topic.c_str(), 1);
+    }
+    if (config.global_model_topic != config_.global_model_topic) {
+        global_model_publisher_ = nh_.advertise<hlm::Model>(config.global_model_topic.c_str(), 1);
+    }
 
     // team color
     if (config.team_color != config_.team_color) {
