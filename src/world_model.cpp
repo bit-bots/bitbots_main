@@ -60,6 +60,16 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
     }
 }
 
+void WorldModel::reset_all_filters() {
+    ROS_INFO("Resetting all particle filters...");
+    local_obstacle_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(config_.local_obstacle_particle_number, &local_obstacle_observation_model_, &local_obstacle_movement_model_));
+
+}
+
+void WorldModel::init() {
+    reset_all_filters();
+}
+
 int main(int argc, char **argv) {
     ros::init(argc, argv, "world_model");
     WorldModel world_model;

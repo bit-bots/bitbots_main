@@ -26,6 +26,9 @@ class WorldModel {
         void dynamic_reconfigure_callback(wm::WorldModelConfig &config, uint32_t level);
         void obstacles_callback(const hlm::ObstaclesRelative &msg);
 
+        void init();
+        void reset_all_filters();
+
     private:
 
         ros::NodeHandle nh_;
