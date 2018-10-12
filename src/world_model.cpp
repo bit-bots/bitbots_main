@@ -2,8 +2,6 @@
 
 
 WorldModel::WorldModel() : nh_() {
-    // server(nh_);
-    // server.setCallback(&WorldModel::dynamic_reconfigure_callback);
 
     ROS_INFO("Initialized Bit-Bots world model");
 }
@@ -49,6 +47,13 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
 int main(int argc, char **argv) {
     ros::init(argc, argv, "world_model");
     WorldModel world_model;
+
+
+    // dynamic reconfigure
+    dynamic_reconfigure::Server<wm::WorldModelConfig> dynamic_reconfigure_server;
+    dynamic_reconfigure::Server<wm::WorldModelConfig>::CallbackType f = boost::bind(&WorldModel::dynamic_reconfigure_callback, &world_model, _1, _2);
+    dynamic_reconfigure_server.setCallback(f); // automatically calls the callback
+
     ros::spin();
     return 0;
 }

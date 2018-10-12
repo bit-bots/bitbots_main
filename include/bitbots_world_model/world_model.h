@@ -35,9 +35,6 @@ class WorldModel {
         ros::Publisher local_model_publisher_;
         ros::Publisher global_model_publisher_;
 
-        dynamic_reconfigure::Server<wm::WorldModelConfig> server;
-        dynamic_reconfigure::Server<wm::WorldModelConfig>::CallbackType f;
-
         unsigned int pnum = 5;
 
         LocalObstacleObservationModel local_obstacle_observation_model_;
