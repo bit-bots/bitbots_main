@@ -25,6 +25,8 @@ public:
 
     void setYPos(float y);
 
+    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list);
+
     // float getTheta() const;
 
     // void setTheta(float t);
@@ -83,6 +85,9 @@ public:
     float getOrientation() const;
 
     void setOrientation(float t);
+
+    // a marker is not useful for visualization here.
+    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list) = delete;
 
 private:
 

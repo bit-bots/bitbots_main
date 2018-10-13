@@ -34,6 +34,28 @@ float ObstacleState::getYPos() const {
     return yPos_;
 }
 
+visualization_msgs::Marker ObstacleState::renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list) {
+    visualization_msgs::Marker msg;
+    msg.header.stamp = ros::Time::now();
+    msg.header.frame_id = "/world";
+    msg.action = visualization_msgs::Marker::ADD;
+    msg.type = visualization_msgs::Marker::POINTS;
+    msg.pose.orientation.w = 1;
+    msg.scale.x = 0.05;
+    msg.scale.y = 0.05;
+    msg.scale.z = 0.05;
+    msg.color.r = 1;
+    msg.color.a = 1;
+    msg.lifetime = ros::Duration(0.1);
+    for (libPF::Particle<ObstacleState> *particle : particle_list) {
+        geometry_msgs::Point point_msg;
+        point_msg.x = particle->getState().getXPos();
+        point_msg.y = particle->getState().getYPos();
+        msg.points.push_back(point_msg);
+    }
+    return msg;
+}
+
 
 ObstacleStateW::ObstacleStateW() :
     ObstacleState(),
