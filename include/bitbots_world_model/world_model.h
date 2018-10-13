@@ -40,6 +40,8 @@ class WorldModel {
         ros::Publisher local_model_publisher_;
         ros::Publisher global_model_publisher_;
 
+        ros::Timer publishing_timer_;
+
         libPF::CRandomNumberGenerator random_number_generator_;
 
         bitbots_world_model::WorldModelConfig config_;
@@ -60,6 +62,8 @@ class WorldModel {
         int opponent_color_;
 
         bool valid_configuration_;
+
+        void publishing_timer_callback(const ros::TimerEvent&);
 };
 
 #endif

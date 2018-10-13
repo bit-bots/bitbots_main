@@ -4,6 +4,7 @@
 WorldModel::WorldModel() : nh_(), valid_configuration_(false) {
 
     ROS_INFO("Created Bit-Bots world model");
+
 }
 
 void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelConfig &config, uint32_t level) {
@@ -18,6 +19,9 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     if (config.global_model_topic != config_.global_model_topic) {
         global_model_publisher_ = nh_.advertise<hlm::Model>(config.global_model_topic.c_str(), 1);
     }
+
+    // initializing timer
+    publishing_timer_ = nh_.createTimer(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)), &WorldModel::publishing_timer_callback, this);
 
     // team color
     if (config.team_color != config_.team_color) {
@@ -86,6 +90,9 @@ void WorldModel::init() {
     reset_all_filters();
 }
 
+void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
+}
+
 int main(int argc, char **argv) {
     ros::init(argc, argv, "world_model");
     WorldModel world_model;
@@ -94,7 +101,8 @@ int main(int argc, char **argv) {
     // dynamic reconfigure
     dynamic_reconfigure::Server<wm::WorldModelConfig> dynamic_reconfigure_server;
     dynamic_reconfigure::Server<wm::WorldModelConfig>::CallbackType f = boost::bind(&WorldModel::dynamic_reconfigure_callback, &world_model, _1, _2);
-    dynamic_reconfigure_server.setCallback(f); // automatically calls the callback
+    dynamic_reconfigure_server.setCallback(f); // automatically calls the callback once
+
 
     ros::spin();
     return 0;

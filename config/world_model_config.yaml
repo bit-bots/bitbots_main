@@ -13,8 +13,8 @@ initial_robot_x: 0
 initial_robot_y: 0
 
 # the field size in meters
-field_width: 6
 field_height: 9
+field_width: 6
 
 #############
 # ROS-Stuff #
@@ -25,6 +25,8 @@ obstacles_topic: '/obstacles'
 local_model_topic: '/local_world_model'
 
 global_model_topic: '/global_world_model'
+
+publishing_frequency: 10
 
 
 ####################
