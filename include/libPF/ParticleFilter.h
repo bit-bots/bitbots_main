@@ -248,7 +248,7 @@ class ParticleFilter {
      * Draws all particle states from the given distribution.
      * @param distribution The state distribution to draw the states from.
      */
-    void drawAllFromDistribution(const StateDistribution<StateType>& distribution);
+    void drawAllFromDistribution(const std::shared_ptr<StateDistribution<StateType>>& distribution);
 
     /**
      * Resets the filter timer. Call this function after pausing the filter

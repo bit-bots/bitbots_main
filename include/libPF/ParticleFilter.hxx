@@ -97,11 +97,11 @@ void ParticleFilter<StateType>::setPriorState(const StateType& priorState) {
 }
 
 template <class StateType>
-void ParticleFilter<StateType>::drawAllFromDistribution(const StateDistribution<StateType>& distribution) {
+void ParticleFilter<StateType>::drawAllFromDistribution(const std::shared_ptr<StateDistribution<StateType>>& distribution) {
     ConstParticleIterator iter;
     for (iter = m_CurrentList.begin(); iter != m_CurrentList.end(); ++iter)
     {
-        (*iter)->setState(distribution.draw());
+        (*iter)->setState(distribution->draw());
     }
 }
 
