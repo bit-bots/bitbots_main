@@ -4,6 +4,7 @@
 #include <ctime> // for time measurement
 #include <cassert>
 #include <limits>
+#include <memory>
 
 #include "libPF/ObservationModel.h"
 #include "libPF/MovementModel.h"
@@ -12,6 +13,8 @@
 #include "libPF/CompareParticleWeights.h"
 #include "libPF/Particle.h"
 #include "libPF/StateDistribution.h"
+
+#include <visualization_msgs/Marker.h>
 
 namespace libPF
 {
@@ -352,6 +355,7 @@ class ParticleFilter {
      */
     ConstParticleIterator particleListEnd();
 
+    visualization_msgs::Marker renderMarker();
 
   protected:
 

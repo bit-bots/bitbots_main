@@ -10,6 +10,7 @@ WorldModel::WorldModel() : nh_(), valid_configuration_(false) {
 void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelConfig &config, uint32_t level) {
     ROS_INFO("Dynamic reconfigure callback was called...");
 
+    // updating topic names when neccessary
     if (config.obstacles_topic != config_.obstacles_topic) {
         obstacle_subscriber_ = nh_.subscribe(config.obstacles_topic.c_str(), 1, &WorldModel::obstacles_callback, this);
     }
@@ -18,6 +19,9 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     }
     if (config.global_model_topic != config_.global_model_topic) {
         global_model_publisher_ = nh_.advertise<hlm::Model>(config.global_model_topic.c_str(), 1);
+    }
+    if (config.local_obstacle_particles_topic != config_.local_obstacle_particles_topic) {
+        local_obstacle_particles_publisher_ = nh_.advertise<visualization_msgs::Marker>(config.local_obstacle_particles_topic.c_str(), 1);
     }
 
     // initializing timer
@@ -90,7 +94,16 @@ void WorldModel::init() {
     reset_all_filters();
 }
 
+void WorldModel::publish_visualization() {
+    if (!config_.debug_visualization) {
+        return;
+    }
+    local_obstacle_particles_publisher_.publish(local_obstacle_pf_->renderMarker());
+    ROS_INFO("DEBUG");
+}
+
 void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
+    publish_visualization();
 }
 
 int main(int argc, char **argv) {

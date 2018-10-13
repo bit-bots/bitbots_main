@@ -26,8 +26,15 @@ local_model_topic: '/local_world_model'
 
 global_model_topic: '/global_world_model'
 
+local_obstacle_particles_topic: '/local_obstacle_particles'
+
 publishing_frequency: 10
 
+#################
+# Visualization #
+#################
+
+debug_visualization: true
 
 ####################
 # Particle Filters #

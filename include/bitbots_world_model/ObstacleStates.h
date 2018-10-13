@@ -1,5 +1,9 @@
 #ifndef OBSTACLE_STATES
 #define OBSTACLE_STATES
+#include <ros/ros.h>
+#include <libPF/ParticleFilter.h>
+#include <visualization_msgs/Marker.h>
+#include <geometry_msgs/Point.h>
 
 class ObstacleState
 {
@@ -55,6 +59,8 @@ public:
     float getWidth() const;
 
     void setWidth(float t);
+
+    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleStateW>::ParticleList& particle_list);
 
 private:
 

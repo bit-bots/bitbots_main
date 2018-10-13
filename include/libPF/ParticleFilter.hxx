@@ -156,6 +156,11 @@ double ParticleFilter<StateType>::getWeight(unsigned int particleNo) const {
 
 
 template <class StateType>
+visualization_msgs::Marker ParticleFilter<StateType>::renderMarker(){
+    return StateType::renderMarker(m_CurrentList);
+}
+
+template <class StateType>
 void ParticleFilter<StateType>::sort() {
   std::sort(m_CurrentList.begin(), m_CurrentList.end(), CompareParticleWeights<StateType>());
 }

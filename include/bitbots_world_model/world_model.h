@@ -3,8 +3,10 @@
 #define WORLD_MODEL
 
 #include <vector>
+#include <memory>
 
 #include <ros/ros.h>
+#include <visualization_msgs/Marker.h>
 #include <humanoid_league_msgs/ObstaclesRelative.h>
 #include <humanoid_league_msgs/Model.h>
 #include <dynamic_reconfigure/server.h>
@@ -40,6 +42,8 @@ class WorldModel {
         ros::Publisher local_model_publisher_;
         ros::Publisher global_model_publisher_;
 
+        ros::Publisher local_obstacle_particles_publisher_;
+
         ros::Timer publishing_timer_;
 
         libPF::CRandomNumberGenerator random_number_generator_;
@@ -64,6 +68,8 @@ class WorldModel {
         bool valid_configuration_;
 
         void publishing_timer_callback(const ros::TimerEvent&);
+        void publish_visualization();
+
 };
 
 #endif
