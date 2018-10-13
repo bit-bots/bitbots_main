@@ -37,6 +37,8 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
         }
     }
 
+    local_obstacle_state_distribution_.reset(new LocalObstacleStateWDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width), config.local_obstacle_min_width, config.local_obstacle_max_width));
+
     // initializing particle filters
     //
     // using reset because they are unique pointers
@@ -67,7 +69,12 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
 
 void WorldModel::reset_all_filters() {
     ROS_INFO("Resetting all particle filters...");
+
     local_obstacle_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(config_.local_obstacle_particle_number, &local_obstacle_observation_model_, &local_obstacle_movement_model_));
+
+    // resetting the particles
+    local_obstacle_pf_->drawAllFromDistribution(local_obstacle_state_distribution_);
+
 
 }
 

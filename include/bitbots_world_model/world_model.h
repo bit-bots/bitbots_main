@@ -12,8 +12,10 @@
 #include <bitbots_world_model/ObstacleStates.h>
 #include <bitbots_world_model/MovementModels.h>
 #include <bitbots_world_model/ObservationModels.h>
+#include <bitbots_world_model/StateDistributions.h>
 
 #include <libPF/ParticleFilter.h>
+#include <libPF/CRandomNumberGenerator.h>
 
 
 namespace hlm = humanoid_league_msgs;
@@ -38,6 +40,8 @@ class WorldModel {
         ros::Publisher local_model_publisher_;
         ros::Publisher global_model_publisher_;
 
+        libPF::CRandomNumberGenerator random_number_generator_;
+
         bitbots_world_model::WorldModelConfig config_;
 
         LocalObstacleObservationModel local_obstacle_observation_model_;
@@ -49,6 +53,8 @@ class WorldModel {
         std::unique_ptr<libPF::ParticleFilter<ObstacleStateW>> local_obstacle_pf_;
         std::unique_ptr<libPF::ParticleFilter<ObstacleStateW>> local_mate_pf_;
         std::unique_ptr<libPF::ParticleFilter<ObstacleStateW>> local_opponent_pf_;
+        std::shared_ptr<LocalObstacleStateWDistribution> local_obstacle_state_distribution_;
+
 
         int team_color_;
         int opponent_color_;
