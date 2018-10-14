@@ -50,6 +50,8 @@ class WorldModel {
 
         bitbots_world_model::WorldModelConfig config_;
 
+        std::vector<ObstacleStateW> obstacle_measurements_;
+
         LocalObstacleObservationModel local_obstacle_observation_model_;
         LocalObstacleObservationModel local_robot_observation_model_;
 
