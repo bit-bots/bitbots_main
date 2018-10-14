@@ -1,5 +1,7 @@
 #ifndef OBSTACLE_STATES
 #define OBSTACLE_STATES
+#include <cmath>
+
 #include <ros/ros.h>
 #include <libPF/ParticleFilter.h>
 #include <visualization_msgs/Marker.h>
@@ -26,6 +28,8 @@ public:
     void setYPos(float y);
 
     static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list);
+
+    double calcDistance(ObstacleState& state);
 
     // float getTheta() const;
 
@@ -64,6 +68,8 @@ public:
 
     static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleStateW>::ParticleList& particle_list);
 
+    double calcDistance(ObstacleStateW& state);
+
 private:
 
     float width_;
@@ -88,6 +94,8 @@ public:
 
     // a marker is not useful for visualization here.
     static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list) = delete;
+
+    double calcDistance(ObstacleStateO& state);
 
 private:
 
