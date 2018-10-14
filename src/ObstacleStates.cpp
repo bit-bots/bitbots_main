@@ -112,7 +112,11 @@ visualization_msgs::Marker ObstacleStateW::renderMarker(libPF::ParticleFilter<Ob
 
 double ObstacleStateW::calcDistance(const ObstacleStateW& state) const {
     // TODO
-    return 1.0 / (std::abs(getXPos() - state.getXPos()) + std::abs(getYPos() - state.getYPos()));
+    double diff = std::abs(getXPos() - state.getXPos()) + std::abs(getYPos() - state.getYPos());
+    if (diff == 0.0) {
+        diff = 0.0001;
+    }
+    return 1.0 / diff;
 }
 
 ObstacleStateO::ObstacleStateO() :
