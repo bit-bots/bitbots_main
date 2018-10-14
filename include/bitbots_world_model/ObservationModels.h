@@ -2,8 +2,8 @@
 #define OBSERVATIONMODELS
 
 #include <vector>
+#include <algorithm>
 #include <bitbots_world_model/ObstacleStates.h>
-
 #include <libPF/ObservationModel.h>
 
 

@@ -29,7 +29,7 @@ public:
 
     static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list);
 
-    double calcDistance(ObstacleState& state);
+    double calcDistance(const ObstacleState& state) const;
 
     // float getTheta() const;
 
@@ -68,7 +68,7 @@ public:
 
     static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleStateW>::ParticleList& particle_list);
 
-    double calcDistance(ObstacleStateW& state);
+    double calcDistance(const ObstacleStateW& state) const;
 
 private:
 
@@ -95,7 +95,7 @@ public:
     // a marker is not useful for visualization here.
     static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list) = delete;
 
-    double calcDistance(ObstacleStateO& state);
+    double calcDistance(const ObstacleStateO& state) const;
 
 private:
 

@@ -56,7 +56,7 @@ visualization_msgs::Marker ObstacleState::renderMarker(libPF::ParticleFilter<Obs
     return msg;
 }
 
-double ObstacleState::calcDistance(ObstacleState& state) {
+double ObstacleState::calcDistance(const ObstacleState& state) const {
     // TODO
     return 1.0 / (std::abs(getXPos() - state.getXPos()) + std::abs(getYPos() - state.getYPos()));
 }
@@ -110,7 +110,7 @@ visualization_msgs::Marker ObstacleStateW::renderMarker(libPF::ParticleFilter<Ob
     return msg;
 }
 
-double ObstacleStateW::calcDistance(ObstacleStateW& state) {
+double ObstacleStateW::calcDistance(const ObstacleStateW& state) const {
     // TODO
     return 1.0 / (std::abs(getXPos() - state.getXPos()) + std::abs(getYPos() - state.getYPos()));
 }
@@ -142,7 +142,7 @@ float ObstacleStateO::getOrientation() const {
     return orientation_;
 }
 
-double ObstacleStateO::calcDistance(ObstacleStateO& state) {
+double ObstacleStateO::calcDistance(const ObstacleStateO& state) const {
     // TODO
     return 1.0 / (std::abs(getXPos() - state.getXPos()) + std::abs(getYPos() - state.getYPos()));
 }
