@@ -77,6 +77,7 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
             obstacle_measurements_.push_back(ObstacleStateW(obstacle.position.x, obstacle.position.z, obstacle.width));
         }
     }
+    local_obstacle_observation_model_.set_measurement(obstacle_measurements_);
 }
 
 void WorldModel::reset_all_filters() {
@@ -103,11 +104,13 @@ void WorldModel::publish_visualization() {
         return;
     }
     local_obstacle_particles_publisher_.publish(local_obstacle_pf_->renderMarker());
-    ROS_INFO("DEBUG");
 }
 
 void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     publish_visualization();
+    // TODO: do this only when stuff is measured
+    local_obstacle_pf_->measure();
+    local_obstacle_pf_->resample();
 }
 
 int main(int argc, char **argv) {

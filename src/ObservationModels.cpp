@@ -7,6 +7,10 @@ LocalObstacleObservationModel::~LocalObstacleObservationModel () {
 }
 
 double LocalObstacleObservationModel::measure(const ObstacleStateW& state) const {
+    if (last_measurement_.empty()) {
+        ROS_ERROR_STREAM("measure function called with empty measurement list. Prevent this by not calling the function of the particle filter on empty measurements.");
+        return 1.0;
+    }
     return state.calcDistance(*std::min_element(last_measurement_.begin(), last_measurement_.end(), [&state](ObstacleStateW a, ObstacleStateW b) {return state.calcDistance(a) < state.calcDistance(b); }));
 }
 
