@@ -6,6 +6,7 @@
 
 #include <libPF/ObservationModel.h>
 
+
 /**
  * @class MyObservationModel
  *
@@ -45,9 +46,13 @@ class LocalObstacleObservationModel : public libPF::ObservationModel<ObstacleSta
      */
     double measure(const ObstacleStateW& state) const;
 
+    void set_measurement(std::vector<ObstacleStateW> measurement);
+
   protected:
 
   private:
+
+    std::vector<ObstacleStateW> last_measurement_;
 
 };
 
