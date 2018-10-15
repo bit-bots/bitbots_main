@@ -81,7 +81,7 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
     obstacle_measurements_.clear();
     for (hlm::ObstacleRelative obstacle : msg.obstacles) {
         if (obstacle.color == hlm::ObstacleRelative::UNDEFINED) {  // make this the else-case
-            obstacle_measurements_.push_back(ObstacleStateW(obstacle.position.x, obstacle.position.z, obstacle.width));
+            obstacle_measurements_.push_back(ObstacleStateW(obstacle.position.x, obstacle.position.y, obstacle.width));
         }
     }
     local_obstacle_observation_model_->set_measurement(obstacle_measurements_);

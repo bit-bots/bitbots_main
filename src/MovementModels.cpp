@@ -3,7 +3,7 @@
 LocalObstacleMovementModel::LocalObstacleMovementModel(libPF::CRandomNumberGenerator& random_number_generator, double xStdDev, double yStdDev, double multiplicator) : libPF::MovementModel<ObstacleStateW>(),
                                                                                                                                                                   random_number_generator_(random_number_generator),
                                                                                                                                                                   xStdDev_(xStdDev),
-                                                                                                                                                                  yStdDev_(yStdDev_),
+                                                                                                                                                                  yStdDev_(yStdDev),
                                                                                                                                                                   multiplicator_(multiplicator){
 }
 

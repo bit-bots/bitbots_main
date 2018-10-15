@@ -47,10 +47,10 @@ local_mate_particle_number: 100
 
 local_opponent_particle_number: 100
 
-local_obstacle_particle_number: 100
+local_obstacle_particle_number: 2000
 local_obstacle_min_width: 0.1
 local_obstacle_max_width: 2
 local_obstacle_diffusion_x_std_dev: 1
 local_obstacle_diffusion_y_std_dev: 1
-local_obstacle_diffusion_multiplicator: 0.01
+local_obstacle_diffusion_multiplicator: 0.1
 
