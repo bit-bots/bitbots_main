@@ -50,6 +50,8 @@ class LocalObstacleObservationModel : public libPF::ObservationModel<ObstacleSta
 
     void clear_measurement();
 
+    bool measurements_available();
+
   protected:
 
   private:
@@ -82,6 +84,8 @@ class LocalRobotObservationModel : public libPF::ObservationModel<ObstacleState>
     void set_measurement(std::vector<ObstacleState> measurement);
 
     void clear_measurement();
+
+    bool measurements_available();
 
   protected:
 

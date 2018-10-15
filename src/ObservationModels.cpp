@@ -22,6 +22,10 @@ void LocalObstacleObservationModel::clear_measurement() {
     last_measurement_.clear();
 }
 
+bool LocalObstacleObservationModel::measurements_available() {
+    return (!last_measurement_.empty());
+}
+
 LocalRobotObservationModel::LocalRobotObservationModel () : libPF::ObservationModel<ObstacleState>() {
 }
 
@@ -42,5 +46,9 @@ void LocalRobotObservationModel::set_measurement(std::vector<ObstacleState> meas
 
 void LocalRobotObservationModel::clear_measurement() {
     last_measurement_.clear();
+}
+
+bool LocalRobotObservationModel::measurements_available() {
+    return (!last_measurement_.empty());
 }
 
