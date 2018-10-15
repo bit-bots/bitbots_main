@@ -58,4 +58,38 @@ class LocalObstacleObservationModel : public libPF::ObservationModel<ObstacleSta
 
 };
 
+class LocalRobotObservationModel : public libPF::ObservationModel<ObstacleState> {
+
+  public:
+
+    /**
+     * empty
+     */
+    LocalRobotObservationModel ();
+
+    /**
+     * empty
+     */
+    ~LocalRobotObservationModel ();
+
+    /**
+     *
+     * @param state Reference to the state that has to be weightened.
+     * @return weight for the given state.
+     */
+    double measure(const ObstacleState& state) const;
+
+    void set_measurement(std::vector<ObstacleState> measurement);
+
+    void clear_measurement();
+
+  protected:
+
+  private:
+
+    std::vector<ObstacleState> last_measurement_;
+
+};
+
 #endif
+

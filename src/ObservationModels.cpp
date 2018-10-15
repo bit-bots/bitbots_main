@@ -22,3 +22,25 @@ void LocalObstacleObservationModel::clear_measurement() {
     last_measurement_.clear();
 }
 
+LocalRobotObservationModel::LocalRobotObservationModel () : libPF::ObservationModel<ObstacleState>() {
+}
+
+LocalRobotObservationModel::~LocalRobotObservationModel () {
+}
+
+double LocalRobotObservationModel::measure(const ObstacleState& state) const {
+    if (last_measurement_.empty()) {
+        ROS_ERROR_STREAM("measure function called with empty measurement list. Prevent this by not calling the function of the particle filter on empty measurements.");
+        return 1.0;
+    }
+    return state.calcDistance(*std::min_element(last_measurement_.begin(), last_measurement_.end(), [&state](ObstacleState a, ObstacleState b) {return state.calcDistance(a) < state.calcDistance(b); }));
+}
+
+void LocalRobotObservationModel::set_measurement(std::vector<ObstacleState> measurement) {
+    last_measurement_ = measurement;
+}
+
+void LocalRobotObservationModel::clear_measurement() {
+    last_measurement_.clear();
+}
+
