@@ -54,7 +54,7 @@ protected:
  * ObstacleStateW - the obstacle state with width
  */
 
-class ObstacleStateW :  ObstacleState
+class ObstacleStateW : public ObstacleState
 {
 public:
     ObstacleStateW();
@@ -80,7 +80,7 @@ private:
  * ObstacleStateO - the obstacle state with orientation
  */
 
-class ObstacleStateO :  ObstacleState
+class ObstacleStateO : public ObstacleState
 {
 public:
     ObstacleStateO();

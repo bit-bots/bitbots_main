@@ -1,6 +1,7 @@
 #ifndef MOVEMENTMODELS
 #define MOVEMENTMODELS
 
+#include <memory>
 
 #include <libPF/MovementModel.h>
 #include <bitbots_world_model/ObstacleStates.h>
@@ -21,7 +22,7 @@ class LocalObstacleMovementModel : public libPF::MovementModel<ObstacleStateW> {
     /**
      * empty
      */
-    LocalObstacleMovementModel();
+    LocalObstacleMovementModel(libPF::CRandomNumberGenerator& random_number_generator, double xStdDev, double yStdDev, double multiplicator);
 
     /**
      * empty
@@ -46,7 +47,10 @@ class LocalObstacleMovementModel : public libPF::MovementModel<ObstacleStateW> {
   private:
 
     // The random number generator
-    // libPF::CRandomNumberGenerator m_RNG;
+    libPF::CRandomNumberGenerator random_number_generator_;
+
+    // standard deviations and multiplicator for the diffuse step
+    double xStdDev_, yStdDev_, multiplicator_;
 
 };
 

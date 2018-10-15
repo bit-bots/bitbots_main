@@ -52,11 +52,11 @@ class WorldModel {
 
         std::vector<ObstacleStateW> obstacle_measurements_;
 
-        LocalObstacleObservationModel local_obstacle_observation_model_;
-        LocalObstacleObservationModel local_robot_observation_model_;
+        std::shared_ptr<LocalObstacleObservationModel> local_obstacle_observation_model_;
+        std::shared_ptr<LocalObstacleObservationModel> local_robot_observation_model_;
 
-        LocalObstacleMovementModel local_obstacle_movement_model_;
-        LocalObstacleMovementModel local_robot_movement_model_;
+        std::shared_ptr<LocalObstacleMovementModel> local_obstacle_movement_model_;
+        std::shared_ptr<LocalObstacleMovementModel> local_robot_movement_model_;
 
         std::unique_ptr<libPF::ParticleFilter<ObstacleStateW>> local_obstacle_pf_;
         std::unique_ptr<libPF::ParticleFilter<ObstacleStateW>> local_mate_pf_;

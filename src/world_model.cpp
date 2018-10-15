@@ -45,6 +45,13 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
         }
     }
 
+    // initializing observation models
+    local_obstacle_observation_model_.reset(new LocalObstacleObservationModel());
+
+    // initializing movement models
+    local_obstacle_movement_model_.reset(new LocalObstacleMovementModel(random_number_generator_, config.local_obstacle_diffusion_x_std_dev, config.local_obstacle_diffusion_y_std_dev, config.local_obstacle_diffusion_multiplicator));
+
+    // initializing state distributions
     local_obstacle_state_distribution_.reset(new LocalObstacleStateWDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width), config.local_obstacle_min_width, config.local_obstacle_max_width));
 
     // initializing particle filters
@@ -77,13 +84,13 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
             obstacle_measurements_.push_back(ObstacleStateW(obstacle.position.x, obstacle.position.z, obstacle.width));
         }
     }
-    local_obstacle_observation_model_.set_measurement(obstacle_measurements_);
+    local_obstacle_observation_model_->set_measurement(obstacle_measurements_);
 }
 
 void WorldModel::reset_all_filters() {
     ROS_INFO("Resetting all particle filters...");
 
-    local_obstacle_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(config_.local_obstacle_particle_number, &local_obstacle_observation_model_, &local_obstacle_movement_model_));
+    local_obstacle_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(config_.local_obstacle_particle_number, local_obstacle_observation_model_, local_obstacle_movement_model_));
 
     // resetting the particles
     local_obstacle_pf_->drawAllFromDistribution(local_obstacle_state_distribution_);
@@ -111,6 +118,7 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     // TODO: do this only when stuff is measured
     local_obstacle_pf_->measure();
     local_obstacle_pf_->resample();
+    local_obstacle_pf_->diffuse(.1);
 }
 
 int main(int argc, char **argv) {
