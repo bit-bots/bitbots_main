@@ -1,5 +1,5 @@
 #ifndef PARTICLEFILTER_H
-#define PARTICLEFILTER_H  
+#define PARTICLEFILTER_H
 #include <iostream>
 #include <ctime> // for time measurement
 #include <cassert>
@@ -19,7 +19,7 @@
 namespace libPF
 {
 
-/** 
+/**
  * @class ParticleFilter
  *
  * @author Stephan Wirth
@@ -148,7 +148,7 @@ enum ResamplingMode
 
 template <class StateType>
 class ParticleFilter {
-    
+
   public:
 
     /**
@@ -166,7 +166,7 @@ class ParticleFilter {
      */
     typedef typename ParticleList::const_iterator ConstParticleIterator;
 
-    /** 
+    /**
      * The constructor allocates the memory for the particle lists and saves
      * <b>pointers</b> to ObservationModel and MovementModel in member variables.
      * Be sure that these objects are valid through the lifetime of ParticleFilter!
@@ -178,7 +178,7 @@ class ParticleFilter {
      * @param os ObservationModel to use for weightening particles
      * @param ms MovementModel to use for propagation of particles
      */
-    ParticleFilter<StateType>(unsigned int numParticles, ObservationModel<StateType>* os, MovementModel<StateType>* ms);
+    ParticleFilter<StateType>(unsigned int numParticles, std::shared_ptr<ObservationModel<StateType>> os, std::shared_ptr<MovementModel<StateType>> ms);
 
     /**
      * The destructor releases the particle lists.
@@ -193,22 +193,22 @@ class ParticleFilter {
     /**
      * @param os new observation model
      */
-    void setObservationModel(ObservationModel<StateType>* os);
+    void setObservationModel(std::shared_ptr<ObservationModel<StateType>>& os);
 
     /**
      * @return the observation model the particle filter currently uses
      */
-    ObservationModel<StateType>* getObservationModel() const;
+    std::shared_ptr<ObservationModel<StateType>> getObservationModel() const;
 
     /**
      * @param ms new movement model
      */
-    void setMovementModel(MovementModel<StateType>* ms);
+    void setMovementModel(std::shared_ptr<MovementModel<StateType>>& ms);
 
     /**
      * @return the movement model the particle filter currently uses
      */
-    MovementModel<StateType>* getMovementModel() const;
+    std::shared_ptr<MovementModel<StateType>> getMovementModel() const;
 
     /**
      * @param rs new resampling strategy
@@ -300,7 +300,7 @@ class ParticleFilter {
      * @return Pointer to the state of particle at index particleNo.
      */
     const StateType& getState(unsigned int particleNo) const;
-  
+
     /**
      * Returns the "mean" state, i.e. the sum of the weighted states. You can use this only if you implemented operator*(double) and
      * operator+=(MyState) in your derived State MyState.
@@ -386,10 +386,10 @@ class ParticleFilter {
     unsigned int m_NumParticles;
 
     // Holds a pointer to the observation strategy (used for weighting)
-    ObservationModel<StateType>* m_ObservationModel;
+    std::shared_ptr<ObservationModel<StateType>> m_ObservationModel;
 
     // Holds a pointer to the movement strategy (used for moving and diffusing)
-    MovementModel<StateType>* m_MovementModel;
+    std::shared_ptr<MovementModel<StateType>> m_MovementModel;
 
     // Stores a pointer to the resampling strategy.
     ResamplingStrategy<StateType>* m_ResamplingStrategy;

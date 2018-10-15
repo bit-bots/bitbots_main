@@ -3,7 +3,7 @@ namespace libPF
 
 
 template <class StateType>
-ParticleFilter<StateType>::ParticleFilter(unsigned int numParticles, ObservationModel<StateType>* os, MovementModel<StateType>* ms) :
+ParticleFilter<StateType>::ParticleFilter(unsigned int numParticles, std::shared_ptr<ObservationModel<StateType>> os, std::shared_ptr<MovementModel<StateType>> ms) :
     m_NumParticles(numParticles),
     m_ObservationModel(os),
     m_MovementModel(ms),
@@ -48,22 +48,22 @@ unsigned int ParticleFilter<StateType>::numParticles() const {
 }
 
 template <class StateType>
-void ParticleFilter<StateType>::setObservationModel(ObservationModel<StateType>* os) {
+void ParticleFilter<StateType>::setObservationModel(std::shared_ptr<ObservationModel<StateType>>& os) {
     m_ObservationModel = os;
 }
 
 template <class StateType>
-ObservationModel<StateType>* ParticleFilter<StateType>::getObservationModel() const {
+std::shared_ptr<ObservationModel<StateType>> ParticleFilter<StateType>::getObservationModel() const {
     return m_ObservationModel;
 }
 
 template <class StateType>
-void ParticleFilter<StateType>::setMovementModel(MovementModel<StateType>* ms) {
+void ParticleFilter<StateType>::setMovementModel(std::shared_ptr<MovementModel<StateType>>& ms) {
     m_MovementModel = ms;
 }
 
 template <class StateType>
-MovementModel<StateType>* ParticleFilter<StateType>::getMovementModel() const {
+std::shared_ptr<MovementModel<StateType>> ParticleFilter<StateType>::getMovementModel() const {
     return m_MovementModel;
 }
 
