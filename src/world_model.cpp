@@ -117,6 +117,8 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     publish_visualization();
     // TODO: do this only when stuff is measured
     local_obstacle_pf_->measure();
+    // manually clearing the list of mearurements
+    local_obstacle_observation_model_->clear_measurement();
     local_obstacle_pf_->resample();
     local_obstacle_pf_->diffuse(.1);
 }

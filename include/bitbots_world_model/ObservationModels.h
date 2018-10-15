@@ -48,6 +48,8 @@ class LocalObstacleObservationModel : public libPF::ObservationModel<ObstacleSta
 
     void set_measurement(std::vector<ObstacleStateW> measurement);
 
+    void clear_measurement();
+
   protected:
 
   private:

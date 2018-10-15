@@ -6,7 +6,7 @@
 namespace libPF
 {
 
-/** 
+/**
  * @class ObservationModel
  *
  * @brief Templated interface for observation models for particle filters.
@@ -21,7 +21,7 @@ namespace libPF
  * Use this reference to extract the state's variables and use your measurement
  * function to compute a state-dependent weight. The weight has to be a positive,
  * non-zero value.
- * 
+ *
  * @author Stephan Wirth
  * @see ParticleFilter
  * @see Particle
@@ -29,7 +29,7 @@ namespace libPF
 
 template <class StateType>
 class ObservationModel {
-    
+
   public:
 
     /**
@@ -46,6 +46,8 @@ class ObservationModel {
      * @return importance weight for the given state (positive, non-zero value).
      */
     virtual double measure(const StateType& state) const = 0;
+
+    // virtual void clear_measurement();
 
   private:
 

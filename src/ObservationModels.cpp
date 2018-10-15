@@ -17,3 +17,8 @@ double LocalObstacleObservationModel::measure(const ObstacleStateW& state) const
 void LocalObstacleObservationModel::set_measurement(std::vector<ObstacleStateW> measurement) {
     last_measurement_ = measurement;
 }
+
+void LocalObstacleObservationModel::clear_measurement() {
+    last_measurement_.clear();
+}
+
