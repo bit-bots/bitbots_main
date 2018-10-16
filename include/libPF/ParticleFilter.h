@@ -357,6 +357,8 @@ class ParticleFilter {
 
     visualization_msgs::Marker renderMarker();
 
+    void setMarkerColor(float r, float g, float b, float a);
+
   protected:
 
     /**
@@ -405,6 +407,8 @@ class ParticleFilter {
 
     // Stores which resampling mode is set, default is ResamplingMode::RESAMPLE_NEFF
     ResamplingMode m_ResamplingMode;
+
+    std_msgs::ColorRGBA color_;
 
 
 };

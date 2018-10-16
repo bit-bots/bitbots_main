@@ -18,6 +18,10 @@ ParticleFilter<StateType>::ParticleFilter(unsigned int numParticles, std::shared
   m_CurrentList.resize(numParticles);
   m_LastList.resize(numParticles);
 
+  // red by default
+  color_.r = 1.0;
+  color_.a = 1.0;
+
   double initialWeight = 1.0 / numParticles;
   // fill particle lists
   for (unsigned int i = 0; i < numParticles; i++) {
@@ -157,7 +161,7 @@ double ParticleFilter<StateType>::getWeight(unsigned int particleNo) const {
 
 template <class StateType>
 visualization_msgs::Marker ParticleFilter<StateType>::renderMarker(){
-    return StateType::renderMarker(m_CurrentList);
+    return StateType::renderMarker(m_CurrentList, color_);
 }
 
 template <class StateType>
@@ -272,6 +276,14 @@ template <class StateType>
 typename ParticleFilter<StateType>::ConstParticleIterator ParticleFilter<StateType>::particleListEnd()
 {
     return m_CurrentList.end();
+}
+
+template <class StateType>
+void ParticleFilter<StateType>::setMarkerColor(float r, float g, float b, float a) {
+    color_.r = r;
+    color_.g = g;
+    color_.b = b;
+    color_.a = a;
 }
 
 } // end of namespace

@@ -75,6 +75,8 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
         ROS_INFO("Trying to initialize world_model...");
         init();
     }
+
+    local_obstacle_pf_->setMarkerColor(0,0,1,.8);
 }
 
 void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {

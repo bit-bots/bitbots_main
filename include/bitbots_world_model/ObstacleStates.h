@@ -5,6 +5,7 @@
 #include <ros/ros.h>
 #include <libPF/ParticleFilter.h>
 #include <visualization_msgs/Marker.h>
+#include <std_msgs/ColorRGBA.h>
 #include <geometry_msgs/Point.h>
 
 class ObstacleState
@@ -27,7 +28,7 @@ public:
 
     void setYPos(float y);
 
-    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list);
+    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list, std_msgs::ColorRGBA color);
 
     double calcDistance(const ObstacleState& state) const;
 
@@ -66,7 +67,7 @@ public:
 
     void setWidth(float t);
 
-    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleStateW>::ParticleList& particle_list);
+    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color);
 
     double calcDistance(const ObstacleStateW& state) const;
 
@@ -93,7 +94,7 @@ public:
     void setOrientation(float t);
 
     // a marker is not useful for visualization here.
-    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list) = delete;
+    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list, std_msgs::ColorRGBA color) = delete;
 
     double calcDistance(const ObstacleStateO& state) const;
 
