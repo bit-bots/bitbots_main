@@ -290,4 +290,9 @@ void ParticleFilter<StateType>::setMarkerColor(float r, float g, float b, float 
     color_.a = a;
 }
 
+template <class StateType>
+void ParticleFilter<StateType>::setMarkerColor(std_msgs::ColorRGBA color) {
+    color_ = color;
+}
+
 } // end of namespace

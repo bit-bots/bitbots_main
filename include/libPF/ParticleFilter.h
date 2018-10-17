@@ -359,6 +359,8 @@ class ParticleFilter {
 
     void setMarkerColor(float r, float g, float b, float a);
 
+    void setMarkerColor(std_msgs::ColorRGBA color);
+
   protected:
 
     /**
