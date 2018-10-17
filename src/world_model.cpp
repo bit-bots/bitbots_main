@@ -77,7 +77,7 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
         init();
     }
 
-    local_obstacle_pf_->setMarkerColor(0,0,1,.8);
+    local_obstacle_pf_->setMarkerColor(get_color_msg(config.obstacle_marker_color));
 }
 
 void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {

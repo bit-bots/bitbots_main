@@ -48,7 +48,12 @@ class WorldModel {
 
         libPF::CRandomNumberGenerator random_number_generator_;
 
+        // config - stuff
         bitbots_world_model::WorldModelConfig config_;
+        std_msgs::ColorRGBA mate_marker_color, opponent_marker_color, obstacle_marker_color;
+
+        int team_color_;
+        int opponent_color_;
 
         // measurements
         std::vector<ObstacleStateW> obstacle_measurements_;
@@ -67,8 +72,6 @@ class WorldModel {
         std::shared_ptr<LocalObstacleStateWDistribution> local_obstacle_state_distribution_;
 
 
-        int team_color_;
-        int opponent_color_;
 
         bool valid_configuration_;
 
