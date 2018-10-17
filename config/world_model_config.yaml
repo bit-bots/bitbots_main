@@ -36,6 +36,10 @@ publishing_frequency: 10
 
 debug_visualization: true
 
+mate_marker_color: 5  # green
+opponent_marker_color: 4  # red
+obstacle_marker_color: 3 # blue
+
 ####################
 # Particle Filters #
 ####################
