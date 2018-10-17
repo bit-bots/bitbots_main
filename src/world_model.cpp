@@ -20,6 +20,12 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     if (config.global_model_topic != config_.global_model_topic) {
         global_model_publisher_ = nh_.advertise<hlm::Model>(config.global_model_topic.c_str(), 1);
     }
+    if (config.local_mate_particles_topic != config_.local_mate_particles_topic) {
+        local_mate_particles_publisher_ = nh_.advertise<visualization_msgs::Marker>(config.local_mate_particles_topic.c_str(), 1);
+    }
+    if (config.local_opponent_particles_topic != config_.local_opponent_particles_topic) {
+        local_opponent_particles_publisher_ = nh_.advertise<visualization_msgs::Marker>(config.local_opponent_particles_topic.c_str(), 1);
+    }
     if (config.local_obstacle_particles_topic != config_.local_obstacle_particles_topic) {
         local_obstacle_particles_publisher_ = nh_.advertise<visualization_msgs::Marker>(config.local_obstacle_particles_topic.c_str(), 1);
     }

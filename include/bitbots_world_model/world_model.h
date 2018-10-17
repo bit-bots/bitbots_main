@@ -42,6 +42,8 @@ class WorldModel {
         ros::Publisher local_model_publisher_;
         ros::Publisher global_model_publisher_;
 
+        ros::Publisher local_mate_particles_publisher_;
+        ros::Publisher local_opponent_particles_publisher_;
         ros::Publisher local_obstacle_particles_publisher_;
 
         ros::Timer publishing_timer_;
