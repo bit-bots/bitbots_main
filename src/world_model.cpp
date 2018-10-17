@@ -81,9 +81,17 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
 }
 
 void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
+    // clear the measurement vectors of the 3 filtered classes
     obstacle_measurements_.clear();
+    mate_measurements_.clear();
+    opponent_measurements_.clear();
     for (hlm::ObstacleRelative obstacle : msg.obstacles) {
-        if (obstacle.color == hlm::ObstacleRelative::UNDEFINED) {  // make this the else-case
+        if (obstacle.color == team_color_) {
+            mate_measurements_.push_back(ObstacleState(obstacle.position.x, obstacle.position.y));
+        } else if (obstacle.color == opponent_color_) {
+            opponent_measurements_.push_back(ObstacleStateW(obstacle.position.x, obstacle.position.y, obstacle.width));
+        } else {
+            // everything else is threated as an obstacle
             obstacle_measurements_.push_back(ObstacleStateW(obstacle.position.x, obstacle.position.y, obstacle.width));
         }
     }
