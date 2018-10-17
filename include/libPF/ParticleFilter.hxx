@@ -184,7 +184,11 @@ void ParticleFilter<StateType>::normalize() {
             (*iter)->setWeight(newWeight);
         }
     } else {
-        std::cerr << "WARNING: ParticleFilter::normalize(): Particle weights *very* small!" << std::endl;
+        // std::cerr << "WARNING: ParticleFilter::normalize(): Particle weights *very* small!" << std::endl;
+        ROS_WARN_STREAM("The particle weights got extremely small. \nResetting them all to .8");
+        for (iter = m_CurrentList.begin(); iter != m_CurrentList.end(); ++iter) {
+            (*iter)->setWeight(.8);
+        }
     }
 }
 
