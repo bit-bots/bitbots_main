@@ -75,6 +75,8 @@ class WorldModel {
         void publishing_timer_callback(const ros::TimerEvent&);
         void publish_visualization();
 
+        std_msgs::ColorRGBA get_color_msg(int color_id);
+
 };
 
 #endif

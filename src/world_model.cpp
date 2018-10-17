@@ -134,6 +134,41 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     local_obstacle_pf_->diffuse(.1);
 }
 
+std_msgs::ColorRGBA WorldModel::get_color_msg(int color_id) {
+    double r, g, b, a = 0.8;
+    switch (color_id) {
+        case 0:  // White
+            r = 1, g = 1, b = 1;
+            break;
+        case 1:  // Black
+            r = 0, g = 0, b = 0;
+            break;
+        case 2:  // Yellow
+            r = 1, g = 1, b = 0;
+            break;
+        case 3:  // Blue
+            r = 0, g = 0, b = 1;
+            break;
+        case 4:  // Red
+            r = 1, g = 0, b = 0;
+            break;
+        case 5:  // Green
+            r = 0, g = 1, b = 0;
+            break;
+        case 6:  // Orange
+            r = 1, g = .5, b = 0;
+            break;
+        case 7:  // Violet
+            r = .8, g = 0, b = 1;
+            break;
+        default:
+            ROS_WARN_STREAM("Got an unknown color id!");
+    }
+    std_msgs::ColorRGBA color;
+    color.r = r, color.g = g, color.b = b, color.a = a;
+    return color;
+}
+
 int main(int argc, char **argv) {
     ros::init(argc, argv, "world_model");
     WorldModel world_model;
