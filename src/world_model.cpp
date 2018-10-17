@@ -47,6 +47,7 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
 
     // initializing observation models
     local_obstacle_observation_model_.reset(new LocalObstacleObservationModel());
+    local_obstacle_observation_model_->set_min_weight(config.local_obstacle_min_weight);
 
     // initializing movement models
     local_obstacle_movement_model_.reset(new LocalObstacleMovementModel(random_number_generator_, config.local_obstacle_diffusion_x_std_dev, config.local_obstacle_diffusion_y_std_dev, config.local_obstacle_diffusion_multiplicator));

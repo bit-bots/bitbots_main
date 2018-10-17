@@ -53,4 +53,5 @@ local_obstacle_max_width: 2
 local_obstacle_diffusion_x_std_dev: 1
 local_obstacle_diffusion_y_std_dev: 1
 local_obstacle_diffusion_multiplicator: 0.1
+local_obstacle_min_weight: 0.001
 

@@ -48,6 +48,8 @@ class LocalObstacleObservationModel : public libPF::ObservationModel<ObstacleSta
 
     void set_measurement(std::vector<ObstacleStateW> measurement);
 
+    void set_min_weight(double min_weight);
+
     void clear_measurement();
 
     bool measurements_available();
@@ -57,6 +59,8 @@ class LocalObstacleObservationModel : public libPF::ObservationModel<ObstacleSta
   private:
 
     std::vector<ObstacleStateW> last_measurement_;
+
+    double min_weight_;
 
 };
 
@@ -83,6 +87,8 @@ class LocalRobotObservationModel : public libPF::ObservationModel<ObstacleState>
 
     void set_measurement(std::vector<ObstacleState> measurement);
 
+    void set_min_weight(double min_weight);
+
     void clear_measurement();
 
     bool measurements_available();
@@ -92,6 +98,8 @@ class LocalRobotObservationModel : public libPF::ObservationModel<ObstacleState>
   private:
 
     std::vector<ObstacleState> last_measurement_;
+
+    double min_weight_;
 
 };
 

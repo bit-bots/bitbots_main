@@ -47,6 +47,7 @@ class ObservationModel {
      */
     virtual double measure(const StateType& state) const = 0;
 
+    virtual bool measurements_available() = 0;
     // virtual void clear_measurement();
 
   private:
