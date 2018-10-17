@@ -52,18 +52,23 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     }
 
     // initializing observation models
+    local_mate_observation_model_.reset(new LocalRobotObservationModel());
+    local_mate_observation_model_->set_min_weight(config.local_mate_min_weight);
+    local_opponent_observation_model_.reset(new LocalRobotObservationModel());
+    local_opponent_observation_model_->set_min_weight(config.local_opponent_min_weight);
     local_obstacle_observation_model_.reset(new LocalObstacleObservationModel());
     local_obstacle_observation_model_->set_min_weight(config.local_obstacle_min_weight);
 
     // initializing movement models
+    local_mate_movement_model_.reset(new LocalRobotMovementModel(random_number_generator_, config.local_mate_diffusion_x_std_dev, config.local_mate_diffusion_y_std_dev, config.local_mate_diffusion_multiplicator));
+    local_opponent_movement_model_.reset(new LocalRobotMovementModel(random_number_generator_, config.local_opponent_diffusion_x_std_dev, config.local_opponent_diffusion_y_std_dev, config.local_opponent_diffusion_multiplicator));
     local_obstacle_movement_model_.reset(new LocalObstacleMovementModel(random_number_generator_, config.local_obstacle_diffusion_x_std_dev, config.local_obstacle_diffusion_y_std_dev, config.local_obstacle_diffusion_multiplicator));
 
     // initializing state distributions
+    local_mate_state_distribution_.reset(new LocalObstacleStateDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width)));
+    local_opponent_state_distribution_.reset(new LocalObstacleStateDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width)));
     local_obstacle_state_distribution_.reset(new LocalObstacleStateWDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width), config.local_obstacle_min_width, config.local_obstacle_max_width));
 
-    // initializing particle filters
-    //
-    // using reset because they are unique pointers
     if (config.local_obstacle_particle_number != config_.local_obstacle_particle_number || config.local_mate_particle_number != config_.local_mate_particle_number || config.local_opponent_particle_number != config_.local_opponent_particle_number) {
         ROS_INFO_STREAM("You changed the particle number to the following: \nlocal_obstacle_particle_number: " <<
                          config.local_obstacle_particle_number <<
@@ -73,8 +78,6 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
                          config.local_opponent_particle_number <<
                          "\nTo use the updated particle numbers, you need to reset the filters.");
     }
-    // local_mate_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(config.local_mate_particle_number, &local_robot_observation_model_, &local_robot_movement_model_));
-    // local_opponent_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(config.local_opponent_particle_number, &local_robot_observation_model_, &local_robot_movement_model_));
 
     config_ = config;
     if (!valid_configuration_) {
@@ -83,6 +86,8 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
         init();
     }
 
+    local_mate_pf_->setMarkerColor(get_color_msg(config.mate_marker_color));
+    local_opponent_pf_->setMarkerColor(get_color_msg(config.opponent_marker_color));
     local_obstacle_pf_->setMarkerColor(get_color_msg(config.obstacle_marker_color));
 }
 
@@ -95,21 +100,27 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
         if (obstacle.color == team_color_) {
             mate_measurements_.push_back(ObstacleState(obstacle.position.x, obstacle.position.y));
         } else if (obstacle.color == opponent_color_) {
-            opponent_measurements_.push_back(ObstacleStateW(obstacle.position.x, obstacle.position.y, obstacle.width));
+            opponent_measurements_.push_back(ObstacleState(obstacle.position.x, obstacle.position.y));
         } else {
             // everything else is threated as an obstacle
             obstacle_measurements_.push_back(ObstacleStateW(obstacle.position.x, obstacle.position.y, obstacle.width));
         }
     }
+    local_mate_observation_model_->set_measurement(mate_measurements_);
+    local_opponent_observation_model_->set_measurement(opponent_measurements_);
     local_obstacle_observation_model_->set_measurement(obstacle_measurements_);
 }
 
 void WorldModel::reset_all_filters() {
     ROS_INFO("Resetting all particle filters...");
 
+    local_mate_pf_.reset(new libPF::ParticleFilter<ObstacleState>(config_.local_mate_particle_number, local_mate_observation_model_, local_mate_movement_model_));
+    local_opponent_pf_.reset(new libPF::ParticleFilter<ObstacleState>(config_.local_opponent_particle_number, local_opponent_observation_model_, local_opponent_movement_model_));
     local_obstacle_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(config_.local_obstacle_particle_number, local_obstacle_observation_model_, local_obstacle_movement_model_));
 
     // resetting the particles
+    local_mate_pf_->drawAllFromDistribution(local_mate_state_distribution_);
+    local_opponent_pf_->drawAllFromDistribution(local_opponent_state_distribution_);
     local_obstacle_pf_->drawAllFromDistribution(local_obstacle_state_distribution_);
 
 
@@ -128,15 +139,25 @@ void WorldModel::publish_visualization() {
         return;
     }
     local_obstacle_particles_publisher_.publish(local_obstacle_pf_->renderMarker());
+    local_mate_particles_publisher_.publish(local_mate_pf_->renderMarker());
+    local_opponent_particles_publisher_.publish(local_opponent_pf_->renderMarker());
 }
 
 void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     publish_visualization();
     // TODO: do this only when stuff is measured
+    local_mate_pf_->measure();
+    local_opponent_pf_->measure();
     local_obstacle_pf_->measure();
     // manually clearing the list of mearurements
+    local_mate_observation_model_->clear_measurement();
+    local_opponent_observation_model_->clear_measurement();
     local_obstacle_observation_model_->clear_measurement();
+    local_mate_pf_->resample();
+    local_opponent_pf_->resample();
     local_obstacle_pf_->resample();
+    local_mate_pf_->diffuse(.1);
+    local_opponent_pf_->diffuse(.1);
     local_obstacle_pf_->diffuse(.1);
 }
 

@@ -62,17 +62,21 @@ class WorldModel {
         std::vector<ObstacleState> mate_measurements_;
         std::vector<ObstacleState> opponent_measurements_;
 
+        std::shared_ptr<LocalRobotObservationModel> local_mate_observation_model_;
+        std::shared_ptr<LocalRobotObservationModel> local_opponent_observation_model_;
         std::shared_ptr<LocalObstacleObservationModel> local_obstacle_observation_model_;
-        std::shared_ptr<LocalObstacleObservationModel> local_robot_observation_model_;
 
+        std::shared_ptr<LocalRobotMovementModel> local_mate_movement_model_;
+        std::shared_ptr<LocalRobotMovementModel> local_opponent_movement_model_;
         std::shared_ptr<LocalObstacleMovementModel> local_obstacle_movement_model_;
-        std::shared_ptr<LocalObstacleMovementModel> local_robot_movement_model_;
 
-        std::unique_ptr<libPF::ParticleFilter<ObstacleStateW>> local_obstacle_pf_;
-        std::unique_ptr<libPF::ParticleFilter<ObstacleStateW>> local_mate_pf_;
-        std::unique_ptr<libPF::ParticleFilter<ObstacleStateW>> local_opponent_pf_;
+        std::shared_ptr<LocalObstacleStateDistribution> local_mate_state_distribution_;
+        std::shared_ptr<LocalObstacleStateDistribution> local_opponent_state_distribution_;
         std::shared_ptr<LocalObstacleStateWDistribution> local_obstacle_state_distribution_;
 
+        std::shared_ptr<libPF::ParticleFilter<ObstacleStateW>> local_obstacle_pf_;
+        std::shared_ptr<libPF::ParticleFilter<ObstacleState>> local_mate_pf_;
+        std::shared_ptr<libPF::ParticleFilter<ObstacleState>> local_opponent_pf_;
 
 
         bool valid_configuration_;
