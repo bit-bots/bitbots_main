@@ -54,4 +54,42 @@ class LocalObstacleMovementModel : public libPF::MovementModel<ObstacleStateW> {
 
 };
 
+class LocalRobotMovementModel : public libPF::MovementModel<ObstacleState> {
+
+  public:
+    /**
+     * empty
+     */
+    LocalRobotMovementModel(libPF::CRandomNumberGenerator& random_number_generator, double xStdDev, double yStdDev, double multiplicator);
+
+    /**
+     * empty
+     */
+    ~LocalRobotMovementModel();
+
+    /**
+     * The drift method is empty in this example.
+     * @param state Pointer to the state that has to be manipulated.
+     */
+    void drift(ObstacleState& state, double dt) const;
+
+    /**
+     * The diffusion consists of a very small gaussian jitter on the
+     * state's variable.
+     * @param state Pointer to the state that has to be manipulated.
+     */
+    void diffuse(ObstacleState& state, double dt) const;
+
+  protected:
+
+  private:
+
+    // The random number generator
+    libPF::CRandomNumberGenerator random_number_generator_;
+
+    // standard deviations and multiplicator for the diffuse step
+    double xStdDev_, yStdDev_, multiplicator_;
+
+};
+
 #endif

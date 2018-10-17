@@ -17,3 +17,22 @@ void LocalObstacleMovementModel::diffuse(ObstacleStateW& state, double /*dt*/) c
     state.setXPos(state.getXPos() + random_number_generator_.getGaussian(xStdDev_) * multiplicator_);
     state.setYPos(state.getYPos() + random_number_generator_.getGaussian(yStdDev_) * multiplicator_);
 }
+
+LocalRobotMovementModel::LocalRobotMovementModel(libPF::CRandomNumberGenerator& random_number_generator, double xStdDev, double yStdDev, double multiplicator) : libPF::MovementModel<ObstacleState>(),
+                                                                                                                                                                  random_number_generator_(random_number_generator),
+                                                                                                                                                                  xStdDev_(xStdDev),
+                                                                                                                                                                  yStdDev_(yStdDev),
+                                                                                                                                                                  multiplicator_(multiplicator){
+}
+
+LocalRobotMovementModel::~LocalRobotMovementModel() {
+}
+
+void LocalRobotMovementModel::drift(ObstacleState& /*state*/, double /*dt*/) const {
+}
+
+void LocalRobotMovementModel::diffuse(ObstacleState& state, double /*dt*/) const {
+    state.setXPos(state.getXPos() + random_number_generator_.getGaussian(xStdDev_) * multiplicator_);
+    state.setYPos(state.getYPos() + random_number_generator_.getGaussian(yStdDev_) * multiplicator_);
+}
+
