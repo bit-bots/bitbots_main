@@ -10,10 +10,10 @@ hcm:
   falling_active: false # enables the check for falling and coresponding counter meassurements
   #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
   #Grenzwerte sanfter --> zu spaete Raktion
-  threshold_gyro_y_front: 2.5 # > gyroY
-  threshold_gyro_x_side: 2.5 # > gyroX
-  falling_threshold_orientation_left_right: 30 # > Point of no return in degrees
-  falling_threshold_orientation_front_back: 30 # < Point of no return in degrees
+  threshold_gyro_y_front: 4 # > gyroY
+  threshold_gyro_x_side: 4 # > gyroX
+  falling_threshold_orientation_left_right: 60 # > Point of no return in degrees
+  falling_threshold_orientation_front_back: 60 # < Point of no return in degrees
   falling_new_front: 32
   falling_new_back: -6
   falling_new_left: -18

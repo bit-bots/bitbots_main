@@ -132,6 +132,7 @@ class HcmConnector(AbstractConnector):
         return True
     
     def is_falling(self):
+        self.fall_checker.check_falling_old(self.gyro, self.quaternion)
         return False #TODO
     
     def is_fallen(self):

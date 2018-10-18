@@ -24,7 +24,6 @@ class StartHcm(AbstractDecisionElement):
                 return self.push(Penalty)      
             else:                
                 return self.push(CheckIMU)
-
     def get_reevaluate(self):
         return True
 
