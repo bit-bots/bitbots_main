@@ -57,7 +57,11 @@ visualization_msgs::Marker ObstacleState::renderMarker(libPF::ParticleFilter<Obs
 
 double ObstacleState::calcDistance(const ObstacleState& state) const {
     // TODO
-    return 1.0 / (std::abs(getXPos() - state.getXPos()) + std::abs(getYPos() - state.getYPos()));
+    double diff =  std::sqrt(std::pow(getXPos() - state.getXPos(), 2) + std::pow(getYPos() - state.getYPos(), 2));
+    if (diff == 0.0) {
+        diff = 0.0001;
+    }
+    return diff;
 }
 
 ObstacleStateW::ObstacleStateW() :
@@ -110,11 +114,11 @@ visualization_msgs::Marker ObstacleStateW::renderMarker(libPF::ParticleFilter<Ob
 
 double ObstacleStateW::calcDistance(const ObstacleStateW& state) const {
     // TODO
-    double diff = std::abs(getXPos() - state.getXPos()) + std::abs(getYPos() - state.getYPos());
+    double diff =  std::sqrt(std::pow(getXPos() - state.getXPos(), 2) + std::pow(getYPos() - state.getYPos(), 2));
     if (diff == 0.0) {
         diff = 0.0001;
     }
-    return 1.0 / diff;
+    return diff;
 }
 
 ObstacleStateO::ObstacleStateO() :
@@ -146,6 +150,10 @@ float ObstacleStateO::getOrientation() const {
 
 double ObstacleStateO::calcDistance(const ObstacleStateO& state) const {
     // TODO
-    return 1.0 / (std::abs(getXPos() - state.getXPos()) + std::abs(getYPos() - state.getYPos()));
+    double diff =  std::sqrt(std::pow(getXPos() - state.getXPos(), 2) + std::pow(getYPos() - state.getYPos(), 2));
+    if (diff == 0.0) {
+        diff = 0.0001;
+    }
+    return diff;
 }
 
