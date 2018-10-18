@@ -9,7 +9,8 @@ ParticleFilter<StateType>::ParticleFilter(unsigned int numParticles, std::shared
     m_MovementModel(ms),
     m_ResamplingStrategy(&m_DefaultResamplingStrategy),
     m_FirstRun(true),
-    m_ResamplingMode(RESAMPLE_NEFF)
+    m_ResamplingMode(RESAMPLE_NEFF),
+    marker_lifetime_(.1) //initializing marker lifetime with 10 Hz by default
 {
 
   assert(numParticles > 0);
@@ -161,7 +162,7 @@ double ParticleFilter<StateType>::getWeight(unsigned int particleNo) const {
 
 template <class StateType>
 visualization_msgs::Marker ParticleFilter<StateType>::renderMarker(){
-    return StateType::renderMarker(m_CurrentList, color_);
+    return StateType::renderMarker(m_CurrentList, color_, marker_lifetime_);
 }
 
 template <class StateType>
@@ -217,6 +218,10 @@ void ParticleFilter<StateType>::diffuse(double dt) {
 
 template <class StateType>
 void ParticleFilter<StateType>::measure() {
+    // measure only, if there are measurements available
+    if (!m_ObservationModel->measurements_available()) {
+    //    return;
+    }
   for (unsigned int i = 0; i < m_NumParticles; i++) {
     // apply observation model
     double weight = m_ObservationModel->measure(m_CurrentList[i]->getState());
@@ -293,6 +298,11 @@ void ParticleFilter<StateType>::setMarkerColor(float r, float g, float b, float 
 template <class StateType>
 void ParticleFilter<StateType>::setMarkerColor(std_msgs::ColorRGBA color) {
     color_ = color;
+}
+
+template <class StateType>
+void ParticleFilter<StateType>::setMarkerLifetime(ros::Duration lifetime) {
+    marker_lifetime_ = lifetime;
 }
 
 } // end of namespace

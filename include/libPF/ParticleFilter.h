@@ -357,6 +357,8 @@ class ParticleFilter {
 
     visualization_msgs::Marker renderMarker();
 
+    void setMarkerLifetime(ros::Duration lifetime);
+
     void setMarkerColor(float r, float g, float b, float a);
 
     void setMarkerColor(std_msgs::ColorRGBA color);
@@ -412,6 +414,7 @@ class ParticleFilter {
 
     std_msgs::ColorRGBA color_;
 
+    ros::Duration marker_lifetime_;
 
 };
 

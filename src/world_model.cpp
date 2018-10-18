@@ -87,8 +87,11 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     }
 
     local_mate_pf_->setMarkerColor(get_color_msg(config.mate_marker_color));
+    local_mate_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)));
     local_opponent_pf_->setMarkerColor(get_color_msg(config.opponent_marker_color));
+    local_opponent_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)));
     local_obstacle_pf_->setMarkerColor(get_color_msg(config.obstacle_marker_color));
+    local_obstacle_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)));
 }
 
 void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
@@ -128,7 +131,7 @@ void WorldModel::reset_all_filters() {
 
 void WorldModel::init() {
     if (!valid_configuration_) {
-        ROS_ERROR("You tried to initialize the world model with an invalid configuration!\n The dynamic_reconfigure_callback has to be called at least once with a valif configuration before initializing the world model!");
+        ROS_ERROR("You tried to initialize the world model with an invalid configuration!\n The dynamic_reconfigure_callback has to be called at least once with a valid configuration before initializing the world model!");
         return;
     }
     reset_all_filters();
