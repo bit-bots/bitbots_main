@@ -12,7 +12,7 @@ hcm:
   #Grenzwerte sanfter --> zu spaete Raktion
   threshold_gyro_y_front: 4 # > gyroY
   threshold_gyro_x_side: 4 # > gyroX
-  falling_threshold_orientation_left_right: 60 # > Point of no return in degrees
+  falling_threshold_orientation_left_right: 30 # > Point of no return in degrees
   falling_threshold_orientation_front_back: 60 # < Point of no return in degrees
   falling_new_front: 32
   falling_new_back: -6
