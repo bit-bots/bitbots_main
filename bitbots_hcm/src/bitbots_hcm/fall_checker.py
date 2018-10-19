@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 import math
 import numpy
+import tf
 from sensor_msgs.msg import Imu
 import rospy
 
@@ -95,7 +96,7 @@ class FallChecker(object):
     def check_falling_old(self, not_much_smoothed_gyro, quaternion):
         """Checks if the robot is currently falling and in which direction. """
         # converting the Quaternion into Euler angles for better understanding
-        euler = self.quaternion_to_euler_angle(*quaternion)
+        euler = tf.transformations.euler_from_quaternion(quaternion) #self.quaternion_to_euler_angle(*quaternion)
         if self.falling_threshold_front == 0 or self.falling_threshold_side == 0 or self.falling_threshold_orientation_front_back == 0 or self.falling_threshold_orientation_left_right == 0: 
             return
         # setting the fall quantification function
@@ -120,20 +121,20 @@ class FallChecker(object):
         if y_fall_quantification > x_fall_quantification:
             # detect the falling direction
             if not_much_smoothed_gyro[1] > 0:
-                rospy.loginfo("FALLING TO THE FRONT")
+                rospy.loginfo("FALLING TO THE BACK")
                 return self.falling_motor_degrees_front
             # detect the falling direction
             else:
-                rospy.loginfo("FALLING TO THE BACK")
+                rospy.loginfo("FALLING TO THE FRONT")
                 return self.falling_motor_degrees_back
         else:
             # detect the falling direction
             if not_much_smoothed_gyro[0] > 0:
-                rospy.loginfo("FALLING TO THE RIGHT")
+                rospy.loginfo("FALLING TO THE LEFT")
                 return self.falling_motor_degrees_right
             # detect the falling direction
             else:
-                rospy.loginfo("FALLING TO THE LEFT")
+                rospy.loginfo("FALLING TO THE RIGHT")
                 return self.falling_motor_degrees_left
 
     def calc_fall_quantification(self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler, current_axis__gyro):
@@ -166,26 +167,3 @@ class FallChecker(object):
             return rospy.get_param("hcm/animations/front-up")
 
         return None
-
-    def quaternion_to_euler_angle(self, x, y, z, w):
-        #todo use standard ros tf implementation
-        ysqr = y * y
-        
-        t0 = +2.0 * (w * x + y * z)
-        t1 = +1.0 - 2.0 * (x * x + ysqr)
-        X = math.atan2(t0, t1)
-        
-        t2 = +2.0 * (w * y - z * x)
-        t2 = +1.0 if t2 > +1.0 else t2
-        t2 = -1.0 if t2 < -1.0 else t2
-        Y = math.asin(t2)
-        
-        t3 = +2.0 * (w * z + x * y)
-        t4 = +1.0 - 2.0 * (ysqr + z * z)
-        Z = math.atan2(t3, t4)
-
-        X = (X-math.pi)%(2*math.pi)
-        if(X >= math.pi):
-            X = -(2*math.pi - X) 
-
-        return X, -Y, Z
