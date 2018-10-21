@@ -14,7 +14,7 @@
 #include "humanoid_league_msgs/Strategy.h"
 #include <ros/ros.h>
 #include <geometry_msgs/Pose2D.h>
-#include "mitecom/mitecom.hpp"
+#include "mitecom.hpp"
 
 /*
  * This node provides ROS connections to a mitecom object. Two threads are started, one for receiving information
