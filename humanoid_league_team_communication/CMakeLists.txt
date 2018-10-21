@@ -6,9 +6,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(Includes)
 
 find_package(catkin REQUIRED COMPONENTS
-  rospy
+  roscpp
   std_msgs
   humanoid_league_msgs
+  geometry_msgs
 )
 
 catkin_python_setup()

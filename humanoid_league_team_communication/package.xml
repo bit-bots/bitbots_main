@@ -22,7 +22,7 @@
   <export>
     <bitbots_documentation>
       <status>unknown</status>
-      <language>python3</language>
+      <language>c++</language>
     </bitbots_documentation>
   </export>
 </package>
