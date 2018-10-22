@@ -6,6 +6,7 @@
   protocol developed by the FUmanoids. </description>
 
   <author email="0bestman@informatik.uni-hamburg.de">Marc Bestmann</author>
+  <author email="5flemmin@informatik.uni-hamburg.de">Tanja Flemming</author>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
   <license>BSD</license>
 
@@ -13,11 +14,13 @@
 
   <build_depend>std_msgs</build_depend>
   <build_depend>humanoid_league_msgs</build_depend>
-  <build_depend>rospy</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>geometry_msgs</build_depend>
 
   <run_depend>std_msgs</run_depend>
   <run_depend>humanoid_league_msgs</run_depend>
-  <run_depend>rospy</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>geometry_msgs</run_depend>
 
   <export>
     <bitbots_documentation>
