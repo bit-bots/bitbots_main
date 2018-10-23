@@ -11,3 +11,9 @@ team_communication:
 
   # in mm
   max_kicking_distance: 1000
+
+  # set the color of your team
+  # 2: red
+  # 3: blue
+  # other values are invalid
+  team_color: 2

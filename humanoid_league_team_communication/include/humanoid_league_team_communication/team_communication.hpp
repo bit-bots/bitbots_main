@@ -42,6 +42,7 @@ private:
 
     int avg_walking_speed;
     int max_kicking_distance;
+    uint8_t team_color;
 
     uint64_t role = humanoid_league_msgs::Strategy::ROLE_IDLING;
     uint64_t action = humanoid_league_msgs::Strategy::ACTION_UNDEFINED;

@@ -14,6 +14,9 @@ TeamCommunication::TeamCommunication() {
     _nh.getParam("team_communication/rate", frequency);
     _nh.getParam("team_communication/avg_walking_speed", avg_walking_speed);
     _nh.getParam("team_communication/max_kicking_distance", max_kicking_distance);
+    int teamcolor;
+    _nh.getParam("team_communication/team_color", teamcolor);
+    team_color = teamcolor;
 
     //init mitecom
     _mitecom.set_team_id(team);
@@ -325,9 +328,21 @@ void TeamCommunication::obstacles_callback(const humanoid_league_msgs::Obstacles
     // clear team_robots and obstacle:robots because of new data from vision
     team_robots.clear();
     opponent_robots.clear();
-    //todo get own team color
-    uint8_t team_color = humanoid_league_msgs::ObstacleRelative::ROBOT_CYAN;
-    uint8_t opponent_color = humanoid_league_msgs::ObstacleRelative::ROBOT_MAGENTA;
+
+    // team color
+    uint8_t opponent_color;
+    if (team_color == humanoid_league_msgs::ObstacleRelative::ROBOT_MAGENTA) {
+        opponent_color = humanoid_league_msgs::ObstacleRelative::ROBOT_CYAN;
+    }
+    else if (team_color == humanoid_league_msgs::ObstacleRelative::ROBOT_CYAN) {
+        opponent_color = humanoid_league_msgs::ObstacleRelative::ROBOT_MAGENTA;
+    }
+    else {
+        ROS_INFO_STREAM("Could not set the input \""
+                            << team_color
+                            << "\" as team color. the value has to correspond with either ROBOT_MAGENTA or ROBOT_CYAN set in the ObstacleRelative message");
+        return;
+    }
     uint64_t x;
     uint64_t y;
     uint64_t belief;
