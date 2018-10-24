@@ -12,10 +12,12 @@
 #include "humanoid_league_msgs/Position2D.h"
 #include "humanoid_league_msgs/RobotControlState.h"
 #include "humanoid_league_msgs/Strategy.h"
+#include "humanoid_league_msgs/Model.h"
 #include <ros/ros.h>
 #include <geometry_msgs/Pose2D.h>
 #include <geometry_msgs/Point.h>
 #include "mitecom.hpp"
+#include <tf/transform_datatypes.h>
 
 /*
  * This node provides ROS connections to a mitecom object. Two threads are started, one for receiving information
@@ -39,6 +41,7 @@ private:
     void ball_callback(const humanoid_league_msgs::BallRelative);
     void goal_callback(const humanoid_league_msgs::GoalRelative);
     void obstacles_callback(const humanoid_league_msgs::ObstaclesRelative);
+    void world_callback(const humanoid_league_msgs::Model);
 
     int avg_walking_speed;
     int max_kicking_distance;
@@ -57,9 +60,9 @@ private:
     uint64_t ball_relative_y;
     uint64_t ball_belief = 0;
 
-    uint64_t oppgoal_relative_x;
+    /*uint64_t oppgoal_relative_x;
     uint64_t oppgoal_relative_y;
-    uint64_t oppgoal_belief = 0;
+    uint64_t oppgoal_belief = 0;*/
 
     using tuple3 = std::array<uint64_t, 3>;
     std::vector<tuple3> opponent_robots;
@@ -73,6 +76,7 @@ private:
     MiTeCom::mitecom _mitecom;
     double frequency = 0.0;
     ros::Publisher publisher;
+    bool world_model;
 };
 
 #endif

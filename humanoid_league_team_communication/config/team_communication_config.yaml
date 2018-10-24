@@ -17,3 +17,6 @@ team_communication:
   # 3: blue
   # other values are invalid
   team_color: 2
+
+  #use world model
+  world_model: False

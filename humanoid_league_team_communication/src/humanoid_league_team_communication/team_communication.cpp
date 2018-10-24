@@ -9,7 +9,6 @@ TeamCommunication::TeamCommunication() {
     _nh.getParam("team_communication/port", port);
     _nh.getParam("team_id", team);
     _nh.getParam("bot_id", player);
-
     //publishing rate in Hz
     _nh.getParam("team_communication/rate", frequency);
     _nh.getParam("team_communication/avg_walking_speed", avg_walking_speed);
@@ -17,6 +16,7 @@ TeamCommunication::TeamCommunication() {
     int teamcolor;
     _nh.getParam("team_communication/team_color", teamcolor);
     team_color = teamcolor;
+    _nh.getParam("team_communication/world_model", world_model);
 
     //init mitecom
     _mitecom.set_team_id(team);
@@ -28,16 +28,24 @@ TeamCommunication::TeamCommunication() {
 
     ros::Subscriber sub_role = _nh.subscribe("role", 1, &TeamCommunication::strategy_callback, this,
             ros::TransportHints().tcpNoDelay());
-    ros::Subscriber sub_position = _nh.subscribe("position", 1, &TeamCommunication::position_callback, this,
-            ros::TransportHints().tcpNoDelay());
     ros::Subscriber sub_motion_state = _nh.subscribe("motion_state", 1, &TeamCommunication::motion_state_callback,
             this, ros::TransportHints().tcpNoDelay());
-    ros::Subscriber sub_ball = _nh.subscribe("ball_relative", 1, &TeamCommunication::ball_callback, this,
-            ros::TransportHints().tcpNoDelay());
     ros::Subscriber sub_goal = _nh.subscribe("goal_relative", 1, &TeamCommunication::goal_callback, this,
             ros::TransportHints().tcpNoDelay());
-    ros::Subscriber sub_obstacles = _nh.subscribe("obstacle_relative", 1, &TeamCommunication::obstacles_callback,
-            this, ros::TransportHints().tcpNoDelay());
+
+
+    if(world_model){
+        ros::Subscriber sub_world = _nh.subscribe("/local_world_model", 1, &TeamCommunication::world_callback, this,
+                                                  ros::TransportHints().tcpNoDelay());
+    }
+    else{
+        ros::Subscriber sub_position = _nh.subscribe("position", 1, &TeamCommunication::position_callback, this,
+                                                     ros::TransportHints().tcpNoDelay());
+        ros::Subscriber sub_ball = _nh.subscribe("ball_relative", 1, &TeamCommunication::ball_callback, this,
+                                                 ros::TransportHints().tcpNoDelay());
+        ros::Subscriber sub_obstacles = _nh.subscribe("obstacle_relative", 1, &TeamCommunication::obstacles_callback,
+                                                      this, ros::TransportHints().tcpNoDelay());
+    }
 }
 
 void TeamCommunication::run() {
@@ -82,10 +90,10 @@ void TeamCommunication::send_thread() {
         if (ball_belief > 0) {
             _mitecom.set_relative_ball(ball_relative_x, ball_relative_y, ball_belief);
         }
-        //opponent goal
+        /*//opponent goal
         if (oppgoal_belief > 0) {
             _mitecom.set_opp_goal_relative(oppgoal_relative_x, oppgoal_relative_y, oppgoal_belief);
-        }
+        }*/
         //opponent robots
         if (opponent_robots.size() > 0) {
             _mitecom.set_opponent_robot_a(opponent_robots[0][0], opponent_robots[0][1], opponent_robots[0][2]);
@@ -131,7 +139,7 @@ void TeamCommunication::publish_data(MiTeCom::TeamRobotData team_data){
     std::vector<geometry_msgs::Pose2D> own_position;
     //std::vector<uint8_t> own_position_beliefs;   unnecessary because of TeamData.msg
     std::vector<humanoid_league_msgs::Position2D> ball_relative;
-    std::vector<humanoid_league_msgs::Position2D> oppgoal_relative;
+    //std::vector<humanoid_league_msgs::Position2D> oppgoal_relative;
     std::vector<humanoid_league_msgs::Position2D> opponent_robot_a;
     std::vector<humanoid_league_msgs::Position2D> opponent_robot_b;
     std::vector<humanoid_league_msgs::Position2D> opponent_robot_c;
@@ -155,6 +163,7 @@ void TeamCommunication::publish_data(MiTeCom::TeamRobotData team_data){
         states.push_back(rob_data.get_state());
 
         //own position
+        //TODO position confidence
         geometry_msgs::Pose2D pos_msg;
         pos_msg.x = rob_data.get_absolute_x() / 1000;
         pos_msg.y = rob_data.get_absolute_y() / 1000;
@@ -169,12 +178,12 @@ void TeamCommunication::publish_data(MiTeCom::TeamRobotData team_data){
         ball_msg.confidence = rob_data.get_ball_belief() / 255;
         ball_relative.push_back(ball_msg);
 
-        //oppgoal
+        /*//oppgoal
         humanoid_league_msgs::Position2D oppgoal_msg;
         oppgoal_msg.pose.x = rob_data.get_oppgoal_relative_x() / 1000;
         oppgoal_msg.pose.y = rob_data.get_oppgoal_relative_y() / 1000;
         oppgoal_msg.confidence = rob_data.get_oppgoal_belief() / 255;
-        oppgoal_relative.push_back(oppgoal_msg);
+        oppgoal_relative.push_back(oppgoal_msg);*/
 
         //opponent_robot_a
         humanoid_league_msgs::Position2D opponent_robot_a_msg;
@@ -247,7 +256,7 @@ void TeamCommunication::publish_data(MiTeCom::TeamRobotData team_data){
 
     message.ball_relative = ball_relative;
 
-    message.oppgoal_relative = oppgoal_relative;
+    //message.oppgoal_relative = oppgoal_relative;
 
     message.opponent_robot_a = opponent_robot_a;
     message.opponent_robot_b = opponent_robot_b;
@@ -289,19 +298,19 @@ void TeamCommunication::motion_state_callback(const humanoid_league_msgs::RobotC
 
 void TeamCommunication::position_callback(const humanoid_league_msgs::Position2D msg) {
     //conversion from m (ROS message) to mm (self.mitecom)
-    position_x = int(msg.pose.x * 1000);
-    position_y = int(msg.pose.y * 1000);
-    position_orientation = int(msg.pose.theta);
+    position_x = static_cast<uint64_t>(msg.pose.x * 1000);
+    position_y = static_cast<uint64_t>(msg.pose.y * 1000);
+    position_orientation = static_cast<uint64_t>(msg.pose.theta);
     //the scale is different in _mitecom, so we have to transfer from 0...1 to 0...255
-    position_belief = int(msg.confidence * 255);
+    position_belief = static_cast<uint64_t>(msg.confidence * 255);
 }
 
 void TeamCommunication::ball_callback(const humanoid_league_msgs::BallRelative msg){
     //conversion from m (ROS message) to mm (self.mitecom)
-    ball_relative_x = int(msg.ball_relative.x * 1000);
-    ball_relative_y = int(msg.ball_relative.y * 1000);
+    ball_relative_x = static_cast<uint64_t>(msg.ball_relative.x * 1000);
+    ball_relative_y = static_cast<uint64_t>(msg.ball_relative.y * 1000);
     //the scale is different in _mitecom, so we have to transfer from 0...1 to 0...255
-    ball_belief = int(msg.confidence * 255);
+    ball_belief = static_cast<uint64_t>(msg.confidence * 255);
     //use pythagoras to compute time to ball
     time_to_position_at_ball = sqrt((pow(ball_relative_x, 2) + pow(ball_relative_y, 2))) / avg_walking_speed;
 }
@@ -363,6 +372,28 @@ void TeamCommunication::obstacles_callback(const humanoid_league_msgs::Obstacles
               opponent_robots.push_back({x, y, belief});
           }
       }
+}
+
+void TeamCommunication::world_callback(const humanoid_league_msgs::Model msg){
+    //ball
+    ball_callback(msg.ball);
+
+    //position
+    //conversion from m (ROS message) to mm (self.mitecom)
+    position_x = static_cast<uint64_t>(msg.position.pose.pose.position.x * 1000);
+    position_y = static_cast<uint64_t>(msg.position.pose.pose.position.y * 1000);
+    tf::Quaternion quaternion(msg.position.pose.pose.orientation.x, msg.position.pose.pose.orientation.y,
+                              msg.position.pose.pose.orientation.z, msg.position.pose.pose.orientation.w);
+    tf::Matrix3x3 matrix_quaternion(quaternion);
+    double roll, pitch, yaw;
+    matrix_quaternion.getRPY(roll, pitch, yaw);
+    position_orientation = static_cast<uint64_t>(yaw);
+    // TODO Umwandlung covariance matrix to confidence
+    //the scale is different in _mitecom, so we have to transfer from 0...1 to 0...255
+    //position_belief = int(msg.confidence * 255);
+
+    //obstcales
+    obstacles_callback(msg.obstacles);
 }
 
 
