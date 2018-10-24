@@ -130,13 +130,22 @@ class HcmConnector(AbstractConnector):
                 return False
             i +=1 
         return True
-    
+
+    def robot_falling_direction(self):
+        return self.fall_checker.check_falling(self.gyro, self.quaternion)
+
     def is_falling(self):
-        self.fall_checker.check_falling_old(self.gyro, self.quaternion)
-        return False #TODO
-    
+        if self.robot_falling_direction() is None:
+            return False
+        return True
+
+    def get_fallen_side(self):
+        self.fall_checker.check_fallen(self.smooth_accel)
+
     def is_fallen(self):
-        return False # TODO
+        if self.get_fallen_side() is None:
+            return False
+        return True
 
     def stop_walking(self):
         msg= Twist()

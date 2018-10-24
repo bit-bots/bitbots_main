@@ -2,7 +2,7 @@ import rospy
 import actionlib
 import humanoid_league_msgs.msg
 from bitbots_stackmachine.abstract_action_element import AbstractActionElement
-from bitbots_hcm.hcm_stack_machine.hcm_connector import HcmConnector, STATE_GETTING_UP
+from bitbots_hcm.hcm_stack_machine.hcm_connector import HcmConnector, STATE_GETTING_UP, fall_checker
 
 
 class AbstractPlayAnimation(AbstractActionElement):
@@ -79,22 +79,28 @@ class PlayAnimationStandUp(AbstractPlayAnimation):
     def chose_animation(self, connector):
         # publish that we are getting up
         connector.publish_state(STATE_GETTING_UP)
-
-        side = connector.hcm.get_fallen_side()
-        if side == "FRONT":
-            return "StandUpFront"
-        elif side == "BACK":
-            return "StandUpBack"
-        else:
-            rospy.logerr("Fallen side " + side + " not known!")
-            return 
+        side = get_fallen_side()
+        if side == connector.fall_ckecker.FRONT:
+            return connector.stand_up_front_animation
+        if side == connector.fall_ckecker.BACK:
+            return connector.stand_up_back_animation
+        if side == connector.fall_ckecker.SIDE:
+            pass # TODO side animation
 
 
 class PlayAnimationFalling(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
-        #TODO implement
-        pass
+        # TODO different falling animations
+        side = connector.robot_falling_direction()
+        if side == connector.fall_ckecker.FRONT:
+            return connector.falling_animation
+        if side == connector.fall_ckecker.BACK:
+            return connector.falling_animation
+        if side == connector.fall_ckecker.LEFT:
+            return connector.falling_animation
+        if side == connector.fall_ckecker.RIGHT:
+            return connector.falling_animation
 
 class PlayAnimationPenalty(AbstractPlayAnimation):
 
