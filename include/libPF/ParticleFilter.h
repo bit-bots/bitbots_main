@@ -213,12 +213,12 @@ class ParticleFilter {
     /**
      * @param rs new resampling strategy
      */
-    void setResamplingStrategy(ResamplingStrategy<StateType>* rs);
+    void setResamplingStrategy(std::shared_ptr<ResamplingStrategy<StateType>> rs);
 
     /**
      * @return the resampling strategy the particle filter currently uses
      */
-    ResamplingStrategy<StateType>* getResamplingStrategy() const;
+    std::shared_ptr<ResamplingStrategy<StateType>> getResamplingStrategy() const;
 
     /**
      * Changes the resampling mode
@@ -398,10 +398,9 @@ class ParticleFilter {
     std::shared_ptr<MovementModel<StateType>> m_MovementModel;
 
     // Stores a pointer to the resampling strategy.
-    ResamplingStrategy<StateType>* m_ResamplingStrategy;
+    std::shared_ptr<ResamplingStrategy<StateType>> m_ResamplingStrategy;
 
     // The default resampling strategy.
-    ImportanceResampling<StateType> m_DefaultResamplingStrategy;
 
     // Stores the last filter time to have the right dt value for drift.
     clock_t m_LastDriftTime;

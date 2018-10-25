@@ -7,11 +7,11 @@ ParticleFilter<StateType>::ParticleFilter(unsigned int numParticles, std::shared
     m_NumParticles(numParticles),
     m_ObservationModel(os),
     m_MovementModel(ms),
-    m_ResamplingStrategy(&m_DefaultResamplingStrategy),
     m_FirstRun(true),
     m_ResamplingMode(RESAMPLE_NEFF),
     marker_lifetime_(.1) //initializing marker lifetime with 10 Hz by default
 {
+  m_ResamplingStrategy.reset(new ImportanceResampling<StateType>());
 
   assert(numParticles > 0);
 
@@ -73,12 +73,12 @@ std::shared_ptr<MovementModel<StateType>> ParticleFilter<StateType>::getMovement
 }
 
 template <class StateType>
-void ParticleFilter<StateType>::setResamplingStrategy(ResamplingStrategy<StateType>* rs) {
+void ParticleFilter<StateType>::setResamplingStrategy(std::shared_ptr<ResamplingStrategy<StateType>> rs) {
     m_ResamplingStrategy = rs;
 }
 
 template <class StateType>
-ResamplingStrategy<StateType>* ParticleFilter<StateType>::getResamplingStrategy() const {
+std::shared_ptr<ResamplingStrategy<StateType>> ParticleFilter<StateType>::getResamplingStrategy() const {
     return m_ResamplingStrategy;
 }
 

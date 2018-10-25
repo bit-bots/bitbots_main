@@ -47,11 +47,7 @@ class ImportanceResamplingWE : public libPF::ImportanceResampling <StateType> {
     int explorer_count_;
     std::shared_ptr<libPF::StateDistribution<StateType>> distribution_;
 
-    // Stores a pointer to the random number generator.
-    const libPF::RandomNumberGenerationStrategy* m_RNG;
-
-    // The default random number generator
-    libPF::CRandomNumberGenerator m_DefaultRNG;
+    libPF::CRandomNumberGenerator m_RNG;
 
 };
 
@@ -76,7 +72,7 @@ void ImportanceResamplingWE<StateType>::resample(const ParticleList& sourceList,
   // some particles (most of them usually) get resampled and explorer_count particles get assigned a random state
   int resample_max = sourceList.size() - explorer_count_;
   double inverseNum = 1.0f / resample_max;
-  double start = m_RNG->getUniform() * inverseNum;  // random start in CDF
+  double start = m_RNG.getUniform() * inverseNum;  // random start in CDF
   double cumulativeWeight = 0.0f;
   unsigned int sourceIndex = 0;                     // index to draw from
   cumulativeWeight += sourceList[sourceIndex]->getWeight();
@@ -92,6 +88,11 @@ void ImportanceResamplingWE<StateType>::resample(const ParticleList& sourceList,
     }
     *(destinationList[destIndex]) = *(sourceList[sourceIndex]);  // copy particle (via assignment operator)
   }
+  for (unsigned int destIndex = resample_max; destIndex < destinationList.size(); destIndex++) {
+    // drawing the remaining particles randomly
+    destinationList[destIndex]->setState(distribution_->draw());
+  }
+
 
 }
 

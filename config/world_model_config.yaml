@@ -54,12 +54,14 @@ local_mate_diffusion_x_std_dev: 1
 local_mate_diffusion_y_std_dev: 1
 local_mate_diffusion_multiplicator: 0.1
 local_mate_min_weight: 0.001
+local_mate_explorer_rate: .0
 
 local_opponent_particle_number: 100
 local_opponent_diffusion_x_std_dev: 1
 local_opponent_diffusion_y_std_dev: 1
 local_opponent_diffusion_multiplicator: 0.1
 local_opponent_min_weight: 0.001
+local_opponent_explorer_rate: .0
 
 local_obstacle_particle_number: 2000
 local_obstacle_min_width: 0.1
@@ -68,4 +70,5 @@ local_obstacle_diffusion_x_std_dev: 1
 local_obstacle_diffusion_y_std_dev: 1
 local_obstacle_diffusion_multiplicator: 0.1
 local_obstacle_min_weight: 0.001
+local_obstacle_explorer_rate: .0
 

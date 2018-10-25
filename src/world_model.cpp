@@ -69,6 +69,7 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     local_opponent_state_distribution_.reset(new LocalObstacleStateDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width)));
     local_obstacle_state_distribution_.reset(new LocalObstacleStateWDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width), config.local_obstacle_min_width, config.local_obstacle_max_width));
 
+    // setting particle counts
     if (config.local_obstacle_particle_number != config_.local_obstacle_particle_number || config.local_mate_particle_number != config_.local_mate_particle_number || config.local_opponent_particle_number != config_.local_opponent_particle_number) {
         ROS_INFO_STREAM("You changed the particle number to the following: \nlocal_obstacle_particle_number: " <<
                          config.local_obstacle_particle_number <<
@@ -78,6 +79,11 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
                          config.local_opponent_particle_number <<
                          "\nTo use the updated particle numbers, you need to reset the filters.");
     }
+
+    // initializing resampling methods
+    local_mate_resampling_.reset(new ImportanceResamplingWE<ObstacleState>(static_cast<int>(config.local_mate_particle_number * config.local_mate_explorer_rate), local_mate_state_distribution_));
+    local_opponent_resampling_.reset(new ImportanceResamplingWE<ObstacleState>(static_cast<int>(config.local_opponent_particle_number * config.local_opponent_explorer_rate), local_opponent_state_distribution_));
+    local_obstacle_resampling_.reset(new ImportanceResamplingWE<ObstacleStateW>(static_cast<int>(config.local_obstacle_particle_number * config.local_obstacle_explorer_rate), local_obstacle_state_distribution_));
 
     config_ = config;
     if (!valid_configuration_) {
@@ -120,6 +126,10 @@ void WorldModel::reset_all_filters() {
     local_mate_pf_.reset(new libPF::ParticleFilter<ObstacleState>(config_.local_mate_particle_number, local_mate_observation_model_, local_mate_movement_model_));
     local_opponent_pf_.reset(new libPF::ParticleFilter<ObstacleState>(config_.local_opponent_particle_number, local_opponent_observation_model_, local_opponent_movement_model_));
     local_obstacle_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(config_.local_obstacle_particle_number, local_obstacle_observation_model_, local_obstacle_movement_model_));
+    //setting the resampling strategies
+    local_mate_pf_->setResamplingStrategy(local_mate_resampling_);
+    local_opponent_pf_->setResamplingStrategy(local_opponent_resampling_);
+    local_obstacle_pf_->setResamplingStrategy(local_obstacle_resampling_);
 
     // resetting the particles
     local_mate_pf_->drawAllFromDistribution(local_mate_state_distribution_);

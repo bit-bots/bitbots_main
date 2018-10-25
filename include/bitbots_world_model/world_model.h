@@ -63,7 +63,9 @@ class WorldModel {
         std::vector<ObstacleState> mate_measurements_;
         std::vector<ObstacleState> opponent_measurements_;
 
-        std::shared_ptr<ImportanceResamplingWE<ObstacleState>> mate_resampling_;
+        std::shared_ptr<ImportanceResamplingWE<ObstacleState>> local_mate_resampling_;
+        std::shared_ptr<ImportanceResamplingWE<ObstacleState>> local_opponent_resampling_;
+        std::shared_ptr<ImportanceResamplingWE<ObstacleStateW>> local_obstacle_resampling_;
 
         std::shared_ptr<LocalRobotObservationModel> local_mate_observation_model_;
         std::shared_ptr<LocalRobotObservationModel> local_opponent_observation_model_;
