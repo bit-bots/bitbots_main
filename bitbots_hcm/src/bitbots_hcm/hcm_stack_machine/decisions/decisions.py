@@ -156,6 +156,7 @@ class Fallen(AbstractDecisionElement):
         if connector.is_stand_up_active and connector.is_fallen():
             connector.current_state = STATE_FALLEN
             # we play a stand up animation            
+            rospy.loginfo("FALLEN")
             return self.push(PlayAnimationStandUp)
         else:
             # robot is not fallen
@@ -173,7 +174,7 @@ class Falling(AbstractDecisionElement):
         # check if the robot is currently falling
         if connector.falling_detection_active and connector.is_falling():
             connector.current_state = STATE_FALLING
-            # we play a stand up animation            
+            # we play a falling animation            
             return self.push(PlayAnimationFalling)
         else:
             # robot is not fallen

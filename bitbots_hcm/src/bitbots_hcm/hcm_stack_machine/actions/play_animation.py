@@ -2,7 +2,7 @@ import rospy
 import actionlib
 import humanoid_league_msgs.msg
 from bitbots_stackmachine.abstract_action_element import AbstractActionElement
-from bitbots_hcm.hcm_stack_machine.hcm_connector import HcmConnector, STATE_GETTING_UP, fall_checker
+from bitbots_hcm.hcm_stack_machine.hcm_connector import HcmConnector, STATE_GETTING_UP
 
 
 class AbstractPlayAnimation(AbstractActionElement):
@@ -78,30 +78,34 @@ class PlayAnimationStandUp(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
         # publish that we are getting up
-        connector.publish_state(STATE_GETTING_UP)
+        # connector.publish_state(STATE_GETTING_UP)
         side = connector.get_fallen_side()
-        if side == connector.fall_ckecker.FRONT:
+        if side == connector.fall_checker.FRONT:
+            rospy.loginfo("PLAYING STAND UP FRONT ANIMATION")
             return connector.stand_up_front_animation
-        if side == connector.fall_ckecker.BACK:
+        if side == connector.fall_checker.BACK:
+            rospy.loginfo("PLAYING STAND UP BACK ANIMATION")
             return connector.stand_up_back_animation
-        if side == connector.fall_ckecker.SIDE:
+        if side == connector.fall_checker.SIDE:
+            rospy.loginfo("PLAYING STAND UP SIDE ANIMATION")
             return connector.stand_up_side_animation
 
 
 class PlayAnimationFalling(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
+        # connector.publish_state(Fallen)
         side = connector.robot_falling_direction()
-        if side == connector.fall_ckecker.FRONT:
+        if side == connector.fall_checker.FRONT:
             rospy.loginfo("PLAYING FALLING FRONT ANIMATION")
             return connector.falling_animation_front
-        if side == connector.fall_ckecker.BACK:
+        if side == connector.fall_checker.BACK:
             rospy.loginfo("PLAYING FALLING BACK ANIMATION")
             return connector.falling_animation_back
-        if side == connector.fall_ckecker.LEFT:
+        if side == connector.fall_checker.LEFT:
             rospy.loginfo("PLAYING FALLING LEFT ANIMATION")
             return connector.falling_animation_left
-        if side == connector.fall_ckecker.RIGHT:
+        if side == connector.fall_checker.RIGHT:
             rospy.loginfo("PLAYING FALLING RIGHT ANIMATION")
             return connector.falling_animation_right
 

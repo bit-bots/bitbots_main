@@ -53,6 +53,10 @@ class FallChecker(object):
 
     def check_falling(self, not_much_smoothed_gyro, quaternion):
         """Checks if the robot is currently falling and in which direction. """
+        # Checks if robot is still
+        if all(abs(n) < 0.1 for n in not_much_smoothed_gyro):
+            return
+
         # converting the Quaternion into Euler angles for better understanding
         euler = tf.transformations.euler_from_quaternion(quaternion)
         if self.falling_threshold_front == 0 or self.falling_threshold_side == 0 or self.falling_threshold_orientation_front_back == 0 or self.falling_threshold_orientation_left_right == 0: 
@@ -99,15 +103,12 @@ class FallChecker(object):
     def check_fallen(self, smooth_accel):
         """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""
         if smooth_accel[0] > 7:
-            rospy.loginfo("Lying on belly, should stand up")
             return self.FRONT
 
         if smooth_accel[0] < -7:
-            rospy.loginfo("Lying on my back, should stand up!")
             return self.BACK
 
         if abs(smooth_accel[1]) > 7:
-            rospy.loginfo("Lying on the side, should stand up. Trying to stand up from front. Is that right?")
             return self.SIDE
 
         return None
