@@ -277,7 +277,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": -56, 
+                "HeadTilt": 47, 
                 "LAnklePitch": -47, 
                 "LAnkleRoll": -1, 
                 "LElbow": -74, 
@@ -304,7 +304,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": -56, 
+                "HeadTilt": 47, 
                 "LAnklePitch": -94, 
                 "LAnkleRoll": 0, 
                 "LElbow": -74, 
@@ -331,7 +331,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": -56, 
+                "HeadTilt": 47, 
                 "LAnklePitch": -94, 
                 "LAnkleRoll": 0, 
                 "LElbow": -74, 
@@ -358,7 +358,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": -56, 
+                "HeadTilt": 47, 
                 "LAnklePitch": -94, 
                 "LAnkleRoll": 0, 
                 "LElbow": -88, 
@@ -385,7 +385,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": -56, 
+                "HeadTilt": 47, 
                 "LAnklePitch": -91, 
                 "LAnkleRoll": 0, 
                 "LElbow": -88, 
@@ -412,7 +412,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": -56, 
+                "HeadTilt": 47, 
                 "LAnklePitch": -75, 
                 "LAnkleRoll": -6, 
                 "LElbow": -88, 
@@ -439,7 +439,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": -56, 
+                "HeadTilt": 47, 
                 "LAnklePitch": -69, 
                 "LAnkleRoll": -6, 
                 "LElbow": -88, 
@@ -466,7 +466,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": -56, 
+                "HeadTilt": 47, 
                 "LAnklePitch": -46, 
                 "LAnkleRoll": -4, 
                 "LElbow": -88, 
@@ -493,7 +493,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": -56, 
+                "HeadTilt": 47, 
                 "LAnklePitch": -33, 
                 "LAnkleRoll": -4, 
                 "LElbow": -88, 
@@ -520,7 +520,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": -56, 
+                "HeadTilt": 47, 
                 "LAnklePitch": -21, 
                 "LAnkleRoll": -6, 
                 "LElbow": -88, 
