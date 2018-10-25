@@ -80,8 +80,8 @@ void ImportanceResamplingWE<StateType>::resample(const ParticleList& sourceList,
     double probSum = start + inverseNum * destIndex;     // amount of cumulative weight to reach
     while (probSum > cumulativeWeight) {                 // sum weights until
       sourceIndex++;
-      if (sourceIndex >= resample_max) {
-        sourceIndex = resample_max - 1;
+      if (sourceIndex >= sourceList.size()) {
+        sourceIndex = sourceList.size() - 1;
         break;
       }
       cumulativeWeight += sourceList[sourceIndex]->getWeight(); // target sum reached

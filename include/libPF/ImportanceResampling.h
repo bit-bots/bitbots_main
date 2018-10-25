@@ -1,19 +1,20 @@
 #ifndef IMPORTANCERESAMPLING_H
 #define IMPORTANCERESAMPLING_H
 
+#include "libPF/Particle.h"
 #include "libPF/CRandomNumberGenerator.h"
 
 namespace libPF
 {
 
-/** 
+/**
  * @class ImportanceResampling
  *
  * @brief A resampling strategy that performs importance resampling
  *
  * The resampling strategy defines how the resampling is performed in the resample step
  * of a particle filter.
- * 
+ *
  * @author Stephan Wirth
  *
  * @see ResamplingStrategy
@@ -26,9 +27,9 @@ class ImportanceResampling : public ResamplingStrategy<StateType>{
      * A ParticleList is an array of pointers to Particles.
      */
     typedef std::vector< Particle<StateType>* > ParticleList;
-    
+
   public:
-    /** 
+    /**
      * The constructor of this base class inits some members.
      */
     ImportanceResampling<StateType>();
@@ -50,26 +51,23 @@ class ImportanceResampling : public ResamplingStrategy<StateType>{
     /**
      * Sets the Random Number Generator to use in resample() to generate uniformly distributed random numbers.
      */
-    void setRNG(RandomNumberGenerationStrategy* rng);
 
-  private:
+  protected:
 
-    // Stores a pointer to the random number generator.
-    const RandomNumberGenerationStrategy* m_RNG;
 
     // The default random number generator
-    CRandomNumberGenerator m_DefaultRNG;
+    CRandomNumberGenerator m_RNG;
 
 };
 
 
 template <class StateType>
-ImportanceResampling<StateType>::ImportanceResampling() :
-    m_RNG(&m_DefaultRNG) {
+ImportanceResampling<StateType>::ImportanceResampling() {
 }
 
 template <class StateType>
 ImportanceResampling<StateType>::~ImportanceResampling() {
+
 }
 
 
@@ -78,7 +76,7 @@ template <class StateType>
 void ImportanceResampling<StateType>::resample(const ParticleList& sourceList, const ParticleList& destinationList) const {
 
   double inverseNum = 1.0f / sourceList.size();
-  double start = m_RNG->getUniform() * inverseNum;  // random start in CDF
+  double start = m_RNG.getUniform() * inverseNum;  // random start in CDF
   double cumulativeWeight = 0.0f;
   unsigned int sourceIndex = 0;                     // index to draw from
   cumulativeWeight += sourceList[sourceIndex]->getWeight();
@@ -95,14 +93,6 @@ void ImportanceResampling<StateType>::resample(const ParticleList& sourceList, c
     *(destinationList[destIndex]) = *(sourceList[sourceIndex]);  // copy particle (via assignment operator)
   }
 }
-
-
-template <class StateType>
-void ImportanceResampling<StateType>::setRNG(RandomNumberGenerationStrategy* rng)
-{
-    m_RNG = rng;
-}
-
 } // end of namespace
 #endif // IMPORTANCERESAMPLING_H
 
