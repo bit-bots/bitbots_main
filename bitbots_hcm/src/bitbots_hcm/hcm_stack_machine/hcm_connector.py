@@ -57,12 +57,16 @@ class HcmConnector(AbstractConnector):
         self.animation_requested = False
         self.hcm_animation_finished = False
         self.walkready_animation = rospy.get_param("hcm/animations/walkready")
-        self.falling_animation = rospy.get_param("hcm/animations/falling")
+        self.falling_animation_front = rospy.get_param("hcm/animations/falling_front")
+        self.falling_animation_back = rospy.get_param("hcm/animations/falling_back")
+        self.falling_animation_left = rospy.get_param("hcm/animations/falling_left")
+        self.falling_animation_right = rospy.get_param("hcm/animations/falling_right")
         self.penalty_animation = rospy.get_param("hcm/animations/penalty")
         self.sit_down_animation = rospy.get_param("hcm/animations/sit_down")
         self.motor_off_animation = rospy.get_param("hcm/animations/motor_off")
         self.stand_up_front_animation = rospy.get_param("hcm/animations/stand_up_front")
         self.stand_up_back_animation = rospy.get_param("hcm/animations/stand_up_back")
+        self.stand_up_side_animation = rospy.get_param("hcm/animations/stand_up_side")
 
         # motors
         self.last_motor_goal_time = rospy.Time.now() # initilize with current time, or motors will be turned off on start

@@ -79,28 +79,31 @@ class PlayAnimationStandUp(AbstractPlayAnimation):
     def chose_animation(self, connector):
         # publish that we are getting up
         connector.publish_state(STATE_GETTING_UP)
-        side = get_fallen_side()
+        side = connector.get_fallen_side()
         if side == connector.fall_ckecker.FRONT:
             return connector.stand_up_front_animation
         if side == connector.fall_ckecker.BACK:
             return connector.stand_up_back_animation
         if side == connector.fall_ckecker.SIDE:
-            pass # TODO side animation
+            return connector.stand_up_side_animation
 
 
 class PlayAnimationFalling(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
-        # TODO different falling animations
         side = connector.robot_falling_direction()
         if side == connector.fall_ckecker.FRONT:
-            return connector.falling_animation
+            rospy.loginfo("PLAYING FALLING FRONT ANIMATION")
+            return connector.falling_animation_front
         if side == connector.fall_ckecker.BACK:
-            return connector.falling_animation
+            rospy.loginfo("PLAYING FALLING BACK ANIMATION")
+            return connector.falling_animation_back
         if side == connector.fall_ckecker.LEFT:
-            return connector.falling_animation
+            rospy.loginfo("PLAYING FALLING LEFT ANIMATION")
+            return connector.falling_animation_left
         if side == connector.fall_ckecker.RIGHT:
-            return connector.falling_animation
+            rospy.loginfo("PLAYING FALLING RIGHT ANIMATION")
+            return connector.falling_animation_right
 
 class PlayAnimationPenalty(AbstractPlayAnimation):
 

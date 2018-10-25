@@ -41,11 +41,6 @@ class FallChecker(object):
         self.LEFT = "LEFT"
         self.RIGHT = "RIGHT"
         self.SIDE = "SIDE"
-
-        #Debug Euler printout
-
-        # self.imu_msg = Imu()
-        # self.imu_publisher = rospy.Publisher('imu/data_raw_euler', Imu, queue_size=1)
         
 
     def update_reconfigurable_values(self, config, level):
@@ -65,17 +60,6 @@ class FallChecker(object):
         # setting the fall quantification function
         x_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_left_right, self.falling_threshold_front, euler[0], not_much_smoothed_gyro[0])
         y_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_front_back, self.falling_threshold_side, euler[1], not_much_smoothed_gyro[1])
-
-        # euler1 = [math.degrees(x)for x in euler]
-
-        # self.imu_msg.orientation.x = euler1[0]
-        # self.imu_msg.orientation.y = euler1[1]
-        # self.imu_msg.orientation.z = euler1[2]
-        # self.imu_msg.orientation.w = 0
-        # self.imu_msg.header.stamp = rospy.Time.now()  # rospy.Time.now()
-        # self.imu_msg.header.frame_id = "L_IMU"
-
-        # self.imu_publisher.publish(self.imu_msg)
 
         if x_fall_quantification + y_fall_quantification == 0:
             return None
