@@ -15,6 +15,7 @@
 #include <bitbots_world_model/MovementModels.h>
 #include <bitbots_world_model/ObservationModels.h>
 #include <bitbots_world_model/StateDistributions.h>
+#include <bitbots_world_model/Resampling.h>
 
 #include <libPF/ParticleFilter.h>
 #include <libPF/CRandomNumberGenerator.h>
@@ -61,6 +62,8 @@ class WorldModel {
         std::vector<ObstacleStateW> obstacle_measurements_;
         std::vector<ObstacleState> mate_measurements_;
         std::vector<ObstacleState> opponent_measurements_;
+
+        std::shared_ptr<ImportanceResamplingWE<ObstacleState>> mate_resampling_;
 
         std::shared_ptr<LocalRobotObservationModel> local_mate_observation_model_;
         std::shared_ptr<LocalRobotObservationModel> local_opponent_observation_model_;

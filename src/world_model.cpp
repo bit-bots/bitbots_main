@@ -156,6 +156,8 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     local_mate_observation_model_->clear_measurement();
     local_opponent_observation_model_->clear_measurement();
     local_obstacle_observation_model_->clear_measurement();
+
+    // we need to resample after every step because the world is changing constantly - even if we don't move.
     local_mate_pf_->resample();
     local_opponent_pf_->resample();
     local_obstacle_pf_->resample();
