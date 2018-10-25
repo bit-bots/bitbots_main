@@ -29,6 +29,9 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     if (config.local_obstacle_particles_topic != config_.local_obstacle_particles_topic) {
         local_obstacle_particles_publisher_ = nh_.advertise<visualization_msgs::Marker>(config.local_obstacle_particles_topic.c_str(), 1);
     }
+    if (config.reset_filters_service_name != config_.reset_filters_service_name) {
+        reset_filters_service_ = nh_.advertiseService(config.reset_filters_service_name, &WorldModel::reset_filters_callback, this);
+    }
 
     // initializing timer
     publishing_timer_ = nh_.createTimer(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)), &WorldModel::publishing_timer_callback, this);
@@ -118,6 +121,13 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
     local_mate_observation_model_->set_measurement(mate_measurements_);
     local_opponent_observation_model_->set_measurement(opponent_measurements_);
     local_obstacle_observation_model_->set_measurement(obstacle_measurements_);
+}
+
+bool WorldModel::reset_filters_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
+    reset_all_filters();
+    res.success = true;
+    res.message = "resetted all particle filters";
+    return true;
 }
 
 void WorldModel::reset_all_filters() {

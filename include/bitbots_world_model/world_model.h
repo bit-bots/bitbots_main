@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <ros/ros.h>
+#include <std_srvs/Trigger.h>
 #include <visualization_msgs/Marker.h>
 #include <humanoid_league_msgs/ObstaclesRelative.h>
 #include <humanoid_league_msgs/Model.h>
@@ -28,6 +29,14 @@ class WorldModel {
     public:
         WorldModel();
 
+        // Needed services:
+        // - reset all filters
+        // - reset a specific filter?
+        // - start/stop filtering
+        // - start/stop sending?
+
+        bool reset_filters_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+
         void dynamic_reconfigure_callback(wm::WorldModelConfig &config, uint32_t level);
         void obstacles_callback(const hlm::ObstaclesRelative &msg);
 
@@ -46,6 +55,8 @@ class WorldModel {
         ros::Publisher local_mate_particles_publisher_;
         ros::Publisher local_opponent_particles_publisher_;
         ros::Publisher local_obstacle_particles_publisher_;
+
+        ros::ServiceServer reset_filters_service_;
 
         ros::Timer publishing_timer_;
 

@@ -30,6 +30,8 @@ local_mate_particles_topic: '/local_mate_particles'
 local_opponent_particles_topic: '/local_opponent_particles'
 local_obstacle_particles_topic: '/local_obstacle_particles'
 
+reset_filters_service_name: 'WorldModel/reset_filters'
+
 publishing_frequency: 10
 
 #################
