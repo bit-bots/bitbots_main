@@ -206,12 +206,12 @@ class TransformBall(object):
             obstacle.playerNumber = o.playerNumber
             obstacle.confidence = o.confidence
             obstacle.color = o.color
-            point = o
-            point.x = point.x + o.height
-            point.y = point.y + o.width/2
+            point = Point()
+            point.x = o.top_left.x + o.height
+            point.y = o.top_left.y + o.width/2
             obstacle.position = self.transform(point, field)
             obstacles.obstacles.append(obstacle)
-
+        print("fooo")
         self.obstacle_relative_pub.publish(obstacles)
 
     def get_plane(self, stamp, object_height):
