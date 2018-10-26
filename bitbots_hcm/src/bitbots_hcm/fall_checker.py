@@ -100,8 +100,13 @@ class FallChecker(object):
                 return abs(current_axis__gyro) * (1-skalar)
         return 0
 
-    def check_fallen(self, smooth_accel):
+    def check_fallen(self, smooth_accel, not_much_smoothed_gyro):
         """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""
+        # Checks if the robot is still moving.
+        if any(abs(n) >= 0.1 for n in not_much_smoothed_gyro):
+            return None
+
+        # Decides which side is facing downwards.
         if smooth_accel[0] > 7:
             return self.FRONT
 
@@ -111,4 +116,5 @@ class FallChecker(object):
         if abs(smooth_accel[1]) > 7:
             return self.SIDE
 
+        # If no side is facing downwards, the robot is not fallen yet.
         return None

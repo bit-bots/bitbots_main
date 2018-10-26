@@ -144,7 +144,7 @@ class HcmConnector(AbstractConnector):
         return True
 
     def get_fallen_side(self):
-        return self.fall_checker.check_fallen(self.smooth_accel)
+        return self.fall_checker.check_fallen(self.smooth_accel, self.gyro)
 
     def is_fallen(self):
         if self.get_fallen_side() is None:
