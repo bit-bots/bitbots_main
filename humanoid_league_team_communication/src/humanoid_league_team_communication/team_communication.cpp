@@ -166,73 +166,74 @@ void TeamCommunication::publish_data(MiTeCom::TeamRobotData team_data){
         //own position
         //TODO position confidence
         geometry_msgs::Pose2D pos_msg;
-        pos_msg.x = rob_data.get_absolute_x() / 1000;
-        pos_msg.y = rob_data.get_absolute_y() / 1000;
+        pos_msg.x = rob_data.get_absolute_x() / 1000.0;
+        pos_msg.y = rob_data.get_absolute_y() / 1000.0;
         pos_msg.theta = rob_data.get_absolute_orientation();
         own_position.push_back(pos_msg);
-        //own_position_beliefs.push_back(rob_data.get_absolute_belief() / 255);   unnecessary because of TeamData.msg
+        //own_position_beliefs.push_back(rob_data.get_absolute_belief() / 255.0);   unnecessary because of TeamData.msg
 
         //ball
         humanoid_league_msgs::Position2D ball_msg;
-        ball_msg.pose.x = rob_data.get_relative_ball_x() / 1000;
-        ball_msg.pose.y = rob_data.get_relative_ball_y() / 1000;
-        ball_msg.confidence = rob_data.get_ball_belief() / 255;
+        ball_msg.pose.x = rob_data.get_relative_ball_x() / 1000.0;
+        ball_msg.pose.y = rob_data.get_relative_ball_y() / 1000.0;
+        ball_msg.confidence = rob_data.get_ball_belief() / 255.0;
         ball_relative.push_back(ball_msg);
 
         /*//oppgoal
         humanoid_league_msgs::Position2D oppgoal_msg;
-        oppgoal_msg.pose.x = rob_data.get_oppgoal_relative_x() / 1000;
-        oppgoal_msg.pose.y = rob_data.get_oppgoal_relative_y() / 1000;
-        oppgoal_msg.confidence = rob_data.get_oppgoal_belief() / 255;
+        oppgoal_msg.pose.x = rob_data.get_oppgoal_relative_x() / 1000.0;
+        oppgoal_msg.pose.y = rob_data.get_oppgoal_relative_y() / 1000.0;
+        oppgoal_msg.confidence = rob_data.get_oppgoal_belief() / 255.0;
         oppgoal_relative.push_back(oppgoal_msg);*/
 
         //opponent_robot_a
         humanoid_league_msgs::Position2D opponent_robot_a_msg;
-        opponent_robot_a_msg.pose.x = rob_data.get_opponent_robot_a_x() / 1000;
-        opponent_robot_a_msg.pose.y = rob_data.get_opponent_robot_a_y() / 1000;
-        opponent_robot_a_msg.confidence = rob_data.get_opponent_robot_a_belief() / 255;
+        opponent_robot_a_msg.pose.x = rob_data.get_opponent_robot_a_x() / 1000.0;
+        opponent_robot_a_msg.pose.y = rob_data.get_opponent_robot_a_y() / 1000.0;
+        opponent_robot_a_msg.confidence = rob_data.get_opponent_robot_a_belief() / 255.0;
         opponent_robot_a.push_back(opponent_robot_a_msg);
 
         //opponent_robot_b
         humanoid_league_msgs::Position2D opponent_robot_b_msg;
-        opponent_robot_b_msg.pose.x = rob_data.get_opponent_robot_b_x() / 1000;
-        opponent_robot_b_msg.pose.y = rob_data.get_opponent_robot_b_y() / 1000;
-        opponent_robot_b_msg.confidence = rob_data.get_opponent_robot_b_belief() / 255;
+        opponent_robot_b_msg.pose.x = rob_data.get_opponent_robot_b_x() / 1000.0;
+        opponent_robot_b_msg.pose.y = rob_data.get_opponent_robot_b_y() / 1000.0;
+        opponent_robot_b_msg.confidence = rob_data.get_opponent_robot_b_belief() / 255.0;
         opponent_robot_b.push_back(opponent_robot_b_msg);
 
         //opponent_robot_c
         humanoid_league_msgs::Position2D opponent_robot_c_msg;
-        opponent_robot_c_msg.pose.x = rob_data.get_opponent_robot_c_x() / 1000;
-        opponent_robot_c_msg.pose.y = rob_data.get_opponent_robot_c_y() / 1000;
-        opponent_robot_c_msg.confidence = rob_data.get_opponent_robot_c_belief() / 255;
+        opponent_robot_c_msg.pose.x = rob_data.get_opponent_robot_c_x() / 1000.0;
+        opponent_robot_c_msg.pose.y = rob_data.get_opponent_robot_c_y() / 1000.0;
+        opponent_robot_c_msg.confidence = rob_data.get_opponent_robot_c_belief() / 255.0;
         opponent_robot_c.push_back(opponent_robot_c_msg);
 
         //opponent_robot_d
         humanoid_league_msgs::Position2D opponent_robot_d_msg;
-        opponent_robot_d_msg.pose.x = rob_data.get_opponent_robot_d_x() / 1000;
-        opponent_robot_d_msg.pose.y = rob_data.get_opponent_robot_d_y() / 1000;
-        opponent_robot_d_msg.confidence = rob_data.get_opponent_robot_d_belief() / 255;
+        opponent_robot_d_msg.pose.x = rob_data.get_opponent_robot_d_x() / 1000.0;
+        opponent_robot_d_msg.pose.y = rob_data.get_opponent_robot_d_y() / 1000.0;
+        opponent_robot_d_msg.confidence = rob_data.get_opponent_robot_d_belief() / 255.0;
         opponent_robot_d.push_back(opponent_robot_d_msg);
 
         //team_robot_a
         humanoid_league_msgs::Position2D team_robot_a_msg;
-        team_robot_a_msg.pose.x = rob_data.get_team_robot_a_x() / 1000;
-        team_robot_a_msg.pose.y = rob_data.get_team_robot_a_y() / 1000;
-        team_robot_a_msg.confidence = rob_data.get_team_robot_a_belief() / 255;
+        team_robot_a_msg.pose.x = rob_data.get_team_robot_a_x() / 1000.0;
+        ROS_ERROR_STREAM(rob_data.get_team_robot_a_x() / 1000.0);
+        team_robot_a_msg.pose.y = rob_data.get_team_robot_a_y() / 1000.0;
+        team_robot_a_msg.confidence = rob_data.get_team_robot_a_belief() / 255.0;
         team_robot_a.push_back(team_robot_a_msg);
 
         //team_robot_b
         humanoid_league_msgs::Position2D team_robot_b_msg;
-        team_robot_b_msg.pose.x = rob_data.get_team_robot_b_x() / 1000;
-        team_robot_b_msg.pose.y = rob_data.get_team_robot_b_y() / 1000;
-        team_robot_b_msg.confidence = rob_data.get_team_robot_b_belief() / 255;
+        team_robot_b_msg.pose.x = rob_data.get_team_robot_b_x() / 1000.0;
+        team_robot_b_msg.pose.y = rob_data.get_team_robot_b_y() / 1000.0;
+        team_robot_b_msg.confidence = rob_data.get_team_robot_b_belief() / 255.0;
         team_robot_b.push_back(team_robot_b_msg);
 
         //team_robot_c
         humanoid_league_msgs::Position2D team_robot_c_msg;
-        team_robot_c_msg.pose.x = rob_data.get_team_robot_c_x() / 1000;
-        team_robot_c_msg.pose.y = rob_data.get_team_robot_c_y() / 1000;
-        team_robot_c_msg.confidence = rob_data.get_team_robot_c_belief() / 255;
+        team_robot_c_msg.pose.x = rob_data.get_team_robot_c_x() / 1000.0;
+        team_robot_c_msg.pose.y = rob_data.get_team_robot_c_y() / 1000.0;
+        team_robot_c_msg.confidence = rob_data.get_team_robot_c_belief() / 255.0;
         team_robot_c.push_back(team_robot_c_msg);
 
         avg_walking_speeds.push_back(rob_data.get_avg_walking_speed());
