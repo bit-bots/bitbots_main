@@ -1,7 +1,6 @@
 #include "humanoid_league_team_communication/team_communication.hpp"
 
-TeamCommunication::TeamCommunication() {
-    ros::NodeHandle _nh;
+TeamCommunication::TeamCommunication() : _nh() {
     //--- Params ---
     int port;
     int team;
@@ -26,24 +25,25 @@ TeamCommunication::TeamCommunication() {
     // --- Initialize Topics ---
     publisher = _nh.advertise<humanoid_league_msgs::TeamData>("/team_data", 10);
 
-    ros::Subscriber sub_role = _nh.subscribe("role", 1, &TeamCommunication::strategy_callback, this,
+    sub_role = _nh.subscribe("role", 1, &TeamCommunication::strategy_callback, this,
             ros::TransportHints().tcpNoDelay());
-    ros::Subscriber sub_motion_state = _nh.subscribe("motion_state", 1, &TeamCommunication::motion_state_callback,
+    sub_motion_state = _nh.subscribe("motion_state", 1, &TeamCommunication::motion_state_callback,
             this, ros::TransportHints().tcpNoDelay());
-    ros::Subscriber sub_goal = _nh.subscribe("goal_relative", 1, &TeamCommunication::goal_callback, this,
+    sub_goal = _nh.subscribe("goal_relative", 1, &TeamCommunication::goal_callback, this,
             ros::TransportHints().tcpNoDelay());
 
 
     if(world_model){
-        ros::Subscriber sub_world = _nh.subscribe("/local_world_model", 1, &TeamCommunication::world_callback, this,
+        sub_world = _nh.subscribe("/local_world_model", 1, &TeamCommunication::world_callback, this,
                                                   ros::TransportHints().tcpNoDelay());
     }
     else{
-        ros::Subscriber sub_position = _nh.subscribe("position", 1, &TeamCommunication::position_callback, this,
+        ROS_INFO_STREAM("sub");
+        sub_position = _nh.subscribe("position", 1, &TeamCommunication::position_callback, this,
                                                      ros::TransportHints().tcpNoDelay());
-        ros::Subscriber sub_ball = _nh.subscribe("ball_relative", 1, &TeamCommunication::ball_callback, this,
+        sub_ball = _nh.subscribe("/ball_relative", 1, &TeamCommunication::ball_callback, this,
                                                  ros::TransportHints().tcpNoDelay());
-        ros::Subscriber sub_obstacles = _nh.subscribe("obstacle_relative", 1, &TeamCommunication::obstacles_callback,
+        sub_obstacles = _nh.subscribe("/obstacle_relative", 1, &TeamCommunication::obstacles_callback,
                                                       this, ros::TransportHints().tcpNoDelay());
     }
 }
@@ -52,13 +52,14 @@ void TeamCommunication::run() {
     // TODO: std::thread nutzen?
     pthread_t thread;
     pthread_create (&thread, NULL, TeamCommunication::start_recv_thread, this);
-    ros::Rate rate(frequency);
+    timer = _nh.createTimer(ros::Duration(1.0f / frequency), &TeamCommunication::send_thread, this);
+    /*ros::Rate rate(frequency);
     while(ros::ok())
     {
         send_thread();
         // let the main thread wait
         rate.sleep();
-    }
+    }*/
 }
 
 void *TeamCommunication::start_recv_thread(void * context) {
@@ -76,7 +77,7 @@ void TeamCommunication::recv_thread() {
     }
 }
 
-void TeamCommunication::send_thread() {
+void TeamCommunication::send_thread(const ros::TimerEvent& _t) {
     //state
     _mitecom.set_state(state);
     _mitecom.set_action(action);
@@ -404,5 +405,6 @@ int main(int argc, char **argv){
     TeamCommunication node = TeamCommunication();
     // run the node
     node.run();
+    ros::spin();
 }
 

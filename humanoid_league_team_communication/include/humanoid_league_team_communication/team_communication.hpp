@@ -29,11 +29,11 @@ class TeamCommunication{
 public:
     TeamCommunication();
     void run();
+    void send_thread(const ros::TimerEvent&);
 
 private:
     static void* start_recv_thread(void*);
     void recv_thread(void);
-    void send_thread();
     void publish_data(MiTeCom::TeamRobotData);
     void strategy_callback(const humanoid_league_msgs::Strategy);
     void motion_state_callback(const humanoid_league_msgs::RobotControlState);
@@ -77,6 +77,17 @@ private:
     double frequency = 0.0;
     ros::Publisher publisher;
     bool world_model;
+
+    ros::NodeHandle _nh;
+    ros::Timer timer;
+
+    ros::Subscriber sub_role;
+    ros::Subscriber sub_motion_state;
+    ros::Subscriber sub_goal;
+    ros::Subscriber sub_world;
+    ros::Subscriber sub_position;
+    ros::Subscriber sub_ball;
+    ros::Subscriber sub_obstacles;
 };
 
 #endif
