@@ -59,6 +59,8 @@ namespace libPF
              */
             inline void setWeight(double newWeight);
 
+            bool is_explorer_;
+
          private:
             // make ParticleFilter a friend that can have non-const access
             // to m_State
@@ -74,7 +76,8 @@ namespace libPF
     template <class StateType>
     Particle<StateType>::Particle(const StateType& state, double weight) :
         m_State(state),
-        m_Weight(weight)
+        m_Weight(weight),
+        is_explorer_(false)
     {
     }
 

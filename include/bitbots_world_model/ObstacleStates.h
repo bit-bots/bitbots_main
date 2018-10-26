@@ -44,11 +44,14 @@ public:
 
     // void setRotationSpeed(float s);
 
+    bool is_explorer_;
+
 
 protected:
 
     float xPos_;
     float yPos_;
+
 };
 
 /*

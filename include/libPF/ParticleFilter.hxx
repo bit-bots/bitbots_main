@@ -221,10 +221,18 @@ void ParticleFilter<StateType>::measure() {
     // measure only, if there are measurements available
     if (!m_ObservationModel->measurements_available()) {
     //    return;
+    //    currently, this results in a problem, as the particle weight does not decay
     }
   for (unsigned int i = 0; i < m_NumParticles; i++) {
     // apply observation model
-    double weight = m_ObservationModel->measure(m_CurrentList[i]->getState());
+    double weight;
+
+    // set explorer particle weight to minimal value if there are no measurements available to reduce noise
+    if (m_CurrentList[i]->is_explorer_ && !m_ObservationModel->measurements_available()) {
+        weight = m_ObservationModel->get_min_weight();
+    } else {
+        weight = m_ObservationModel->measure(m_CurrentList[i]->getState());
+    }
     m_CurrentList[i]->setWeight(weight);
   }
   // after measurement we have to re-sort and normalize the particles

@@ -87,10 +87,12 @@ void ImportanceResamplingWE<StateType>::resample(const ParticleList& sourceList,
       cumulativeWeight += sourceList[sourceIndex]->getWeight(); // target sum reached
     }
     *(destinationList[destIndex]) = *(sourceList[sourceIndex]);  // copy particle (via assignment operator)
+    destinationList[destIndex]->is_explorer_ = false;
   }
   for (unsigned int destIndex = resample_max; destIndex < destinationList.size(); destIndex++) {
     // drawing the remaining particles randomly
     destinationList[destIndex]->setState(distribution_->draw());
+    destinationList[destIndex]->is_explorer_ = true;
   }
 
 
