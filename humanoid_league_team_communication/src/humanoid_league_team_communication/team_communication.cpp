@@ -38,7 +38,6 @@ TeamCommunication::TeamCommunication() : _nh() {
                                                   ros::TransportHints().tcpNoDelay());
     }
     else{
-        ROS_INFO_STREAM("sub");
         sub_position = _nh.subscribe("position", 1, &TeamCommunication::position_callback, this,
                                                      ros::TransportHints().tcpNoDelay());
         sub_ball = _nh.subscribe("/ball_relative", 1, &TeamCommunication::ball_callback, this,
@@ -82,6 +81,10 @@ void TeamCommunication::send_thread(const ros::TimerEvent& _t) {
     _mitecom.set_state(state);
     _mitecom.set_action(action);
     _mitecom.set_role(role);
+
+    _mitecom.set_max_kicking_distance(max_kicking_distance);
+    _mitecom.set_get_avg_walking_speed(avg_walking_speed);
+
     if (state != STATE_PENALIZED) {
         //position
         if (position_belief > 0) {
@@ -217,7 +220,6 @@ void TeamCommunication::publish_data(MiTeCom::TeamRobotData team_data){
         //team_robot_a
         humanoid_league_msgs::Position2D team_robot_a_msg;
         team_robot_a_msg.pose.x = rob_data.get_team_robot_a_x() / 1000.0;
-        ROS_ERROR_STREAM(rob_data.get_team_robot_a_x() / 1000.0);
         team_robot_a_msg.pose.y = rob_data.get_team_robot_a_y() / 1000.0;
         team_robot_a_msg.confidence = rob_data.get_team_robot_a_belief() / 255.0;
         team_robot_a.push_back(team_robot_a_msg);
@@ -300,21 +302,21 @@ void TeamCommunication::motion_state_callback(const humanoid_league_msgs::RobotC
 
 void TeamCommunication::position_callback(const humanoid_league_msgs::Position2D msg) {
     //conversion from m (ROS message) to mm (self.mitecom)
-    position_x = static_cast<uint64_t>(msg.pose.x * 1000);
-    position_y = static_cast<uint64_t>(msg.pose.y * 1000);
+    position_x = static_cast<uint64_t>(msg.pose.x * 1000.0);
+    position_y = static_cast<uint64_t>(msg.pose.y * 1000.0);
     position_orientation = static_cast<uint64_t>(msg.pose.theta);
     //the scale is different in _mitecom, so we have to transfer from 0...1 to 0...255
-    position_belief = static_cast<uint64_t>(msg.confidence * 255);
+    position_belief = static_cast<uint64_t>(msg.confidence * 255.0);
 }
 
 void TeamCommunication::ball_callback(const humanoid_league_msgs::BallRelative msg){
     //conversion from m (ROS message) to mm (self.mitecom)
-    ball_relative_x = static_cast<uint64_t>(msg.ball_relative.x * 1000);
-    ball_relative_y = static_cast<uint64_t>(msg.ball_relative.y * 1000);
+    ball_relative_x = static_cast<uint64_t>(msg.ball_relative.x * 1000.0);
+    ball_relative_y = static_cast<uint64_t>(msg.ball_relative.y * 1000.0);
     //the scale is different in _mitecom, so we have to transfer from 0...1 to 0...255
-    ball_belief = static_cast<uint64_t>(msg.confidence * 255);
+    ball_belief = static_cast<uint64_t>(msg.confidence * 255.0);
     //use pythagoras to compute time to ball
-    time_to_position_at_ball = sqrt((pow(ball_relative_x, 2) + pow(ball_relative_y, 2))) / avg_walking_speed;
+    time_to_position_at_ball = sqrt((pow(ball_relative_x, 2.0) + pow(ball_relative_y, 2.0))) / avg_walking_speed;
 }
 
 void TeamCommunication::goal_callback(const humanoid_league_msgs::GoalRelative msg) {
@@ -362,15 +364,15 @@ void TeamCommunication::obstacles_callback(const humanoid_league_msgs::Obstacles
           //only take obstacles that are team mates or opponents
           if( obstacle.color == team_color)
           {
-              x = static_cast<uint64_t>(obstacle.position.x);
-              y = static_cast<uint64_t>(obstacle.position.y);
-              belief = static_cast<uint64_t>(obstacle.confidence);
+              x = static_cast<uint64_t>(obstacle.position.x * 1000.0);
+              y = static_cast<uint64_t>(obstacle.position.y * 1000.0);
+              belief = static_cast<uint64_t>(obstacle.confidence * 255.0);
               team_robots.push_back({x, y, belief});
           }
           else if (obstacle.color == opponent_color){
-              x = static_cast<uint64_t>(obstacle.position.x);
-              y = static_cast<uint64_t>(obstacle.position.y);
-              belief = static_cast<uint64_t>(obstacle.confidence);
+              x = static_cast<uint64_t>(obstacle.position.x * 1000.0);
+              y = static_cast<uint64_t>(obstacle.position.y * 1000.0);
+              belief = static_cast<uint64_t>(obstacle.confidence * 255.0);
               opponent_robots.push_back({x, y, belief});
           }
       }

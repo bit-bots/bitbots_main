@@ -47,9 +47,9 @@ private:
     int max_kicking_distance;
     uint8_t team_color;
 
-    uint64_t role = humanoid_league_msgs::Strategy::ROLE_IDLING;
-    uint64_t action = humanoid_league_msgs::Strategy::ACTION_UNDEFINED;
-    uint64_t state = STATE_INACTIVE;
+    uint8_t role = humanoid_league_msgs::Strategy::ROLE_IDLING;
+    uint8_t action = humanoid_league_msgs::Strategy::ACTION_UNDEFINED;
+    uint8_t state = STATE_INACTIVE;
 
     uint64_t position_x;
     uint64_t position_y;
