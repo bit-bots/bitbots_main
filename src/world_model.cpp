@@ -136,6 +136,7 @@ void WorldModel::reset_all_filters() {
     local_mate_pf_.reset(new libPF::ParticleFilter<ObstacleState>(config_.local_mate_particle_number, local_mate_observation_model_, local_mate_movement_model_));
     local_opponent_pf_.reset(new libPF::ParticleFilter<ObstacleState>(config_.local_opponent_particle_number, local_opponent_observation_model_, local_opponent_movement_model_));
     local_obstacle_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(config_.local_obstacle_particle_number, local_obstacle_observation_model_, local_obstacle_movement_model_));
+
     //setting the resampling strategies
     local_mate_pf_->setResamplingStrategy(local_mate_resampling_);
     local_opponent_pf_->setResamplingStrategy(local_opponent_resampling_);
@@ -146,6 +147,13 @@ void WorldModel::reset_all_filters() {
     local_opponent_pf_->drawAllFromDistribution(local_opponent_state_distribution_);
     local_obstacle_pf_->drawAllFromDistribution(local_obstacle_state_distribution_);
 
+    // setting marker settings
+    local_mate_pf_->setMarkerColor(get_color_msg(config_.mate_marker_color));
+    local_mate_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)));
+    local_opponent_pf_->setMarkerColor(get_color_msg(config_.opponent_marker_color));
+    local_opponent_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)));
+    local_obstacle_pf_->setMarkerColor(get_color_msg(config_.obstacle_marker_color));
+    local_obstacle_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)));
 
 }
 
