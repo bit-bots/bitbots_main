@@ -22,6 +22,10 @@ void LocalObstacleObservationModel::set_min_weight(double min_weight) {
     min_weight_ = min_weight;
 }
 
+double LocalObstacleObservationModel::get_min_weight() const {
+    return min_weight_;
+}
+
 void LocalObstacleObservationModel::clear_measurement() {
     last_measurement_.clear();
 }
@@ -50,6 +54,10 @@ void LocalRobotObservationModel::set_measurement(std::vector<ObstacleState> meas
 
 void LocalRobotObservationModel::set_min_weight(double min_weight) {
     min_weight_ = min_weight;
+}
+
+double LocalRobotObservationModel::get_min_weight() const {
+    return min_weight_;
 }
 
 void LocalRobotObservationModel::clear_measurement() {

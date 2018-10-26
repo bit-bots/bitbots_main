@@ -49,6 +49,7 @@ class ObservationModel {
 
     virtual bool measurements_available() = 0;
     // virtual void clear_measurement();
+    virtual double get_min_weight() const = 0;
 
   private:
 

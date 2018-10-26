@@ -50,6 +50,8 @@ class LocalObstacleObservationModel : public libPF::ObservationModel<ObstacleSta
 
     void set_min_weight(double min_weight);
 
+    double get_min_weight() const;
+
     void clear_measurement();
 
     bool measurements_available();
@@ -88,6 +90,8 @@ class LocalRobotObservationModel : public libPF::ObservationModel<ObstacleState>
     void set_measurement(std::vector<ObstacleState> measurement);
 
     void set_min_weight(double min_weight);
+
+    double get_min_weight() const;
 
     void clear_measurement();
 
