@@ -171,7 +171,7 @@ void TeamCommunication::publish_data(MiTeCom::TeamRobotData team_data){
         geometry_msgs::Pose2D pos_msg;
         pos_msg.x = rob_data.get_absolute_x() / 1000.0;
         pos_msg.y = rob_data.get_absolute_y() / 1000.0;
-        pos_msg.theta = rob_data.get_absolute_orientation();
+        pos_msg.theta = rob_data.get_absolute_orientation() / 1000.0;
         own_position.push_back(pos_msg);
         //own_position_beliefs.push_back(rob_data.get_absolute_belief() / 255.0);   unnecessary because of TeamData.msg
 
@@ -283,6 +283,8 @@ void TeamCommunication::publish_data(MiTeCom::TeamRobotData team_data){
 void TeamCommunication::strategy_callback(const humanoid_league_msgs::Strategy msg) {
     role = msg.role;
     action = msg.action;
+    offensive_side = msg.offensive_side;
+    offensive_side_set = true;
 }
 
 void TeamCommunication::motion_state_callback(const humanoid_league_msgs::RobotControlState msg) {
@@ -304,7 +306,7 @@ void TeamCommunication::position_callback(const humanoid_league_msgs::Position2D
     //conversion from m (ROS message) to mm (self.mitecom)
     position_x = static_cast<uint64_t>(msg.pose.x * 1000.0);
     position_y = static_cast<uint64_t>(msg.pose.y * 1000.0);
-    position_orientation = static_cast<uint64_t>(msg.pose.theta);
+    position_orientation = static_cast<uint64_t>(msg.pose.theta * 1000.0);
     //the scale is different in _mitecom, so we have to transfer from 0...1 to 0...255
     position_belief = static_cast<uint64_t>(msg.confidence * 255.0);
 }
@@ -316,7 +318,8 @@ void TeamCommunication::ball_callback(const humanoid_league_msgs::BallRelative m
     //the scale is different in _mitecom, so we have to transfer from 0...1 to 0...255
     ball_belief = static_cast<uint64_t>(msg.confidence * 255.0);
     //use pythagoras to compute time to ball
-    time_to_position_at_ball = sqrt((pow(ball_relative_x, 2.0) + pow(ball_relative_y, 2.0))) / avg_walking_speed;
+    time_to_position_at_ball = static_cast<uint64_t>((sqrt((pow(msg.ball_relative.x, 2.0) + pow(msg.ball_relative.y, 2.0))) * 1000.0) / avg_walking_speed);
+    time_to_position_at_ball_set = true;
 }
 
 void TeamCommunication::goal_callback(const humanoid_league_msgs::GoalRelative msg) {
@@ -391,7 +394,7 @@ void TeamCommunication::world_callback(const humanoid_league_msgs::Model msg){
     tf::Matrix3x3 matrix_quaternion(quaternion);
     double roll, pitch, yaw;
     matrix_quaternion.getRPY(roll, pitch, yaw);
-    position_orientation = static_cast<uint64_t>(yaw);
+    position_orientation = static_cast<uint64_t>(yaw * 1000.0);
     // TODO Umwandlung covariance matrix to confidence
     //the scale is different in _mitecom, so we have to transfer from 0...1 to 0...255
     //position_belief = int(msg.confidence * 255);
