@@ -72,7 +72,7 @@ int TeamMateData::get_relative_ball_y(void)
 
 int TeamMateData::get_ball_belief(void)
 {
-    return data.data[BALL_RELATIVE_Y];
+    return data.data[BALL_BELIEF];
 }
 
 int TeamMateData::get_oppgoal_relative_x(void)
@@ -356,6 +356,7 @@ void mitecom::set_relative_ball(int x, int y, int belief)
 {
     ownData->data[BALL_RELATIVE_X] = x;
     ownData->data[BALL_RELATIVE_Y] = y;
+    ownData->data[BALL_BELIEF] = belief;
 }
 
 void mitecom::set_opp_goal_relative(int x, int y, int belief)
