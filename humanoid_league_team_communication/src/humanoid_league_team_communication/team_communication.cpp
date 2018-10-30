@@ -16,6 +16,7 @@ TeamCommunication::TeamCommunication() : _nh() {
     _nh.getParam("team_communication/team_color", teamcolor);
     team_color = teamcolor;
     _nh.getParam("team_communication/world_model", world_model);
+    _nh.getParam("team_communication/lifetime", lifetime);
 
     //init mitecom
     _mitecom.set_team_id(team);
@@ -87,44 +88,47 @@ void TeamCommunication::send_thread(const ros::TimerEvent& _t) {
 
     if (state != STATE_PENALIZED) {
         //position
-        if (position_belief > 0) {
+        if (position_belief > 0 && ros::Time::now().sec - position_exists > lifetime) {
             _mitecom.set_pos(position_x, position_y, position_orientation, position_belief);
         }
         //ball
-        if (ball_belief > 0) {
+        if (ball_belief > 0 && ros::Time::now().sec - ball_exists > lifetime) {
+            ROS_INFO_STREAM("sent ball");
             _mitecom.set_relative_ball(ball_relative_x, ball_relative_y, ball_belief);
         }
         /*//opponent goal
         if (oppgoal_belief > 0) {
             _mitecom.set_opp_goal_relative(oppgoal_relative_x, oppgoal_relative_y, oppgoal_belief);
         }*/
-        //opponent robots
-        if (opponent_robots.size() > 0) {
-            _mitecom.set_opponent_robot_a(opponent_robots[0][0], opponent_robots[0][1], opponent_robots[0][2]);
-        }
-        if (opponent_robots.size() > 1) {
-            _mitecom.set_opponent_robot_b(opponent_robots[1][0], opponent_robots[1][1], opponent_robots[1][2]);
-        }
-        if (opponent_robots.size() > 2) {
-            _mitecom.set_opponent_robot_c(opponent_robots[2][0], opponent_robots[2][1], opponent_robots[2][2]);
-        }
-        if (opponent_robots.size() > 3) {
-            _mitecom.set_opponent_robot_d(opponent_robots[3][0], opponent_robots[3][1], opponent_robots[3][2]);
-        }
+        if(ros::Time::now().sec - obstacles_exists > lifetime) {
+            //opponent robots
+            if (opponent_robots.size() > 0) {
+                _mitecom.set_opponent_robot_a(opponent_robots[0][0], opponent_robots[0][1], opponent_robots[0][2]);
+            }
+            if (opponent_robots.size() > 1) {
+                _mitecom.set_opponent_robot_b(opponent_robots[1][0], opponent_robots[1][1], opponent_robots[1][2]);
+            }
+            if (opponent_robots.size() > 2) {
+                _mitecom.set_opponent_robot_c(opponent_robots[2][0], opponent_robots[2][1], opponent_robots[2][2]);
+            }
+            if (opponent_robots.size() > 3) {
+                _mitecom.set_opponent_robot_d(opponent_robots[3][0], opponent_robots[3][1], opponent_robots[3][2]);
+            }
 
-        //team robots
-        if (team_robots.size() > 0) {
-            _mitecom.set_team_robot_a(team_robots[0][0], team_robots[0][1], team_robots[0][1]);
-        }
-        if (team_robots.size() > 1) {
-            _mitecom.set_team_robot_b(team_robots[1][0], team_robots[1][1], team_robots[1][2]);
-        }
-        if (team_robots.size() > 2) {
-            _mitecom.set_team_robot_c(team_robots[2][0], team_robots[2][1], team_robots[2][2]);
+            //team robots
+            if (team_robots.size() > 0) {
+                _mitecom.set_team_robot_a(team_robots[0][0], team_robots[0][1], team_robots[0][2]);
+            }
+            if (team_robots.size() > 1) {
+                _mitecom.set_team_robot_b(team_robots[1][0], team_robots[1][1], team_robots[1][2]);
+            }
+            if (team_robots.size() > 2) {
+                _mitecom.set_team_robot_c(team_robots[2][0], team_robots[2][1], team_robots[2][2]);
+            }
         }
 
         //time to ball
-        if(time_to_position_at_ball_set) {
+        if(time_to_position_at_ball_set && ros::Time::now().sec - ball_exists > lifetime) {
             _mitecom.set_time_to_ball(time_to_position_at_ball);
         }
         // strategy
@@ -309,6 +313,7 @@ void TeamCommunication::position_callback(const humanoid_league_msgs::Position2D
     position_orientation = static_cast<uint64_t>(msg.pose.theta * 1000.0);
     //the scale is different in _mitecom, so we have to transfer from 0...1 to 0...255
     position_belief = static_cast<uint64_t>(msg.confidence * 255.0);
+    position_exists = msg.header.stamp.sec;
 }
 
 void TeamCommunication::ball_callback(const humanoid_league_msgs::BallRelative msg){
@@ -320,6 +325,7 @@ void TeamCommunication::ball_callback(const humanoid_league_msgs::BallRelative m
     //use pythagoras to compute time to ball
     time_to_position_at_ball = static_cast<uint64_t>((sqrt((pow(msg.ball_relative.x, 2.0) + pow(msg.ball_relative.y, 2.0))) * 1000.0) / avg_walking_speed);
     time_to_position_at_ball_set = true;
+    ball_exists = msg.header.stamp.sec;
 }
 
 void TeamCommunication::goal_callback(const humanoid_league_msgs::GoalRelative msg) {
@@ -379,6 +385,7 @@ void TeamCommunication::obstacles_callback(const humanoid_league_msgs::Obstacles
               opponent_robots.push_back({x, y, belief});
           }
       }
+    obstacles_exists = ros::Time::now().sec;
 }
 
 void TeamCommunication::world_callback(const humanoid_league_msgs::Model msg){

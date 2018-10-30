@@ -20,3 +20,6 @@ team_communication:
 
   #use world model
   world_model: False
+
+  #lifetime of data [s]
+  lifetime: 3

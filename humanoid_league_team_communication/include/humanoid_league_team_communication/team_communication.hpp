@@ -88,6 +88,11 @@ private:
     ros::Subscriber sub_position;
     ros::Subscriber sub_ball;
     ros::Subscriber sub_obstacles;
+
+    int lifetime;
+    int ball_exists = 0;
+    int position_exists = 0;
+    int obstacles_exists = 0;
 };
 
 #endif
