@@ -1,0 +1,96 @@
+
+//***
+Prefixes:
+---> Start point
+@ Actions
+    OUTCOMES
+$ Decisions
+# Subtrees (References)
+
+
+
+
+$CloseBall
+	CLOSE
+	FAR
+$AbstractBallSeen
+	YES
+	NO
+$DutyDecider
+	NOTHING
+	TEAMPLAYER
+	GOALIE
+@Search
+@StopAndSearch
+@Wait
+@GoAwayFromBall
+@RaiseArm
+@AlignOnBall
+@AlignToGoal
+@KickBall
+@GoToRelativePosition
+@Stand
+@GoToAbsolutePosition
+@GoToBall
+@GoToOwnGoal
+@GoToEnemyGoal
+@GoToCenterpoint
+@Throw
+
+
+
+***//
+
+
+
+
+#RATest
+~$BallSeen
+    YES --> $BallLeftRight
+        LEFT --> @RaiseArm + side:left
+        RIGHT --> @RaiseArm + side:right
+    NO --> @Stand
+
+
+#GenericSearchBall
+@ToggleSearchBall
+
+
+#TeamPlayerBehaviour
+$BallSeen
+    NO --> #GenericSearchBall
+    YES --> $CloseBall
+        FAR --> @Gotoball + speed:fast
+        MID --> @Gotoball + speed:medium
+        CLOSE --> $KickDecision
+            STRAIGT --> @KickAction + side:$side
+            SIDE --> @SideKickAction + side:$side
+
+
+
+
+-->RoboCupDemo
+$DutyDecider
+    TEST2 --> $BallSeen
+        YES --> $BallLeftRight
+            LEFT --> @RaiseArm + side:left
+            RIGHT --> @RaiseArm + side:right
+        NO --> @Stand
+    TEST --> #RATest
+    TEAMPLAYER --> $DoesKnowPosition
+        CONFIRMED --> #TeamPlayerBehaviour
+    //    YES --> #TeamPlayerBehaviour
+    //    NO --> #VerifyOwnPosition
+    //GOALIE --> #GoalieBehavior
+    NOTHING --> @Wait
+
+
+//**
+{
+"DutyDecider":[("TEST2", "~$BallSeen",{})],
+"DutyDecider.BallSeen": [("NO", "@Stand", {}), ("YES", "~$BallLeftRight",{})],
+"DutyDecider.BallSeen.Stand": None,
+"DutyDecider.BallSeen.BallLeftRight": [("LEFT", !~@RaiseArm,{"side":"left"}),("RIGHT", !~@RaiseArm, "side":"right"}),
+"DutyDecider.BallSeen.BallLeftRight.RaiseArm": None
+}
+**//

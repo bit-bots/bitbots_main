@@ -39,7 +39,7 @@ class ContinuousSearch(AbstractDecisionElement):
         # Increment the to be reached postion with wrap around
         self.pattern_pos = (pos + 1) % len(self.current_pattern)
         point = (self.current_pattern[pos][0], self.current_pattern[pos][1], 0)
-        return self.push(LookAtRelativePoint, point)
+        return "FoundPosition", point
 
     def set_pattern(self, connector):
         self.last_pattern = self.current_pattern

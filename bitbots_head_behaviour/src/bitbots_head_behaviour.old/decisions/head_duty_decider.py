@@ -53,42 +53,42 @@ class HeadDutyDecider(AbstractDecisionElement):
 
         if head_mode == HeadMode.BALL_MODE:
             self.publish_debug_data("head_mode","BALL_MODE")
-            return self.push(SearchAndConfirmBall)
+            return "BALL", None
 
         if head_mode == HeadMode.POST_MODE:
             self.publish_debug_data("head_mode","POST_MODE")
-            return self.push(SearchAndConfirmEnemyGoal)
+            return "POST", None
 
         if head_mode == HeadMode.BALL_GOAL_TRACKING:
             self.publish_debug_data("head_mode","BALL_GOAL_TRACKING")
 
             rospy.logdebug("TrackbothTime", rospy.get_time())
             if rospy.get_time() - connector.head.get_confirmed_ball_time() > 5:
-                return self.push(SearchAndConfirmBall)
+                return "BOTH", None
 
             # ball long enough seen
             elif rospy.get_time() - connector.head.get_confirmed_goal_time() > 6:
-                return self.push(SearchAndConfirmEnemyGoal)
+                return "EnemyGoal", None
 
             elif self.trackjustball_aftergoal:
                 self.publish_debug_data("trackjustball_aftergoal",True)
-                return self.push(SearchAndConfirmBall)
+                return "AfterGoal", None
 
         if head_mode == HeadMode.FIELD_FEATURES:
             self.publish_debug_data("head_mode","FIELD_FEATURES")
-            return self.push(ContinuousSearch)
+            return "FIELD", None
 
         if head_mode == HeadMode.LOOK_DOWN:
             self.publish_debug_data("head_mode","LOOK_DOWN")
-            return self.push(LookAtRelativePoint, (0.05, 0, 0))
+            return "Position", (0.05, 0, 0)
 
         if head_mode == HeadMode.LOOK_FORWARD:
             self.publish_debug_data("head_mode","LOOK_FORWARD")
-            return self.push(LookAtRelativePoint, (100, 0, 0))
+            return "Position" ,(100, 0, 0)
 
         if head_mode == HeadMode.LOOK_UP:
             self.publish_debug_data("head_mode","LOOK_UP")
-            return self.push(LookAtRelativePoint, (0, 0, 10))
+            return "Position", (0, 0, 10)
 
         self.publish_debug_data("toggle_switch_ball_goal",self.toggle_switch_ball_goal)
         if self.toggle_switch_ball_goal:
@@ -97,11 +97,11 @@ class HeadDutyDecider(AbstractDecisionElement):
             self.publish_debug_data("goal_prio",self.goal_prio)
 
             if self.ball_prio >= self.goal_prio:
-                return self.push(SearchAndConfirmBall)
+                return "BALL", None
             else:
-                return self.push(SearchAndConfirmEnemyGoal)
+                return "BALL", None
 
-        return self.interrupt()
+        return "Interrupt", None
 
     def get_reevaluate(self):
         return True

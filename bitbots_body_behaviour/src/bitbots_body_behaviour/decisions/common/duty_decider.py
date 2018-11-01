@@ -17,7 +17,7 @@ from bitbots_body_behaviour.decisions.penalty.penalty_kicker_decision import Pen
 from bitbots_body_behaviour.actions.go_to import GoToRelativePosition
 from bitbots_connector.capsules.blackboard_capsule import DUTY_GOALIE, DUTY_PENALTYKICKER, DUTY_TEAMPLAYER, DUTY_POSITIONING
 from humanoid_league_msgs.msg import Speak, HeadMode, GameState
-from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
+from dsd.abstract_decision_element import AbstractDecisionElement
 
 duty = None  # can be overwriten by the startup script (to force a behaviour)
 
@@ -27,53 +27,58 @@ class DutyDecider(AbstractDecisionElement):
     Decides what kind of behaviour the robot performs
     """
 
+    def _register(self):
+        return ["Nothing", "TeamPlayer", "Goalie", "Test"]
+
     def __init__(self, connector, _):
         super(DutyDecider, self).__init__(connector)
         self.max_fieldie_time = connector.config["Body"]["Fieldie"]["Defender"]["maxFieldieTime"]
         self.toggle_self_positioning = connector.config["Body"]["Toggles"]["Fieldie"]["trySelfPositioning"]
         self.start_self_pos = None
 
-    def perform(self, connector, reevaluate=False):
+    def perform(self, blackboard, reevaluate=False):
 
-        if connector.blackboard.is_frozen() or not connector.gamestate.is_allowed_to_move():
+        if blackboard.blackboard.is_frozen() or not blackboard.gamestate.is_allowed_to_move():
             rospy.logwarn("Not allowed to move")
-            return self.push(Wait, 0.1)
+            return "Nothing", None
 
-        if not connector.blackboard.get_duty():
+        return "Test", None
+
+        if not blackboard.blackboard.get_duty():
             if duty is not None:
                 # get information about his duty which was set by the startup script
-                connector.blackboard.set_duty(duty)
+                blackboard.blackboard.set_duty(duty)
             else:
-                connector.blackboard.set_duty(DUTY_TEAMPLAYER)
+                blackboard.blackboard.set_duty(DUTY_TEAMPLAYER)
 
-        if not connector.gamestate.is_game_state_equals(GameState.GAMESTATE_PLAYING):
+        if not blackboard.gamestate.is_game_state_equals(GameState.GAMESTATE_PLAYING):
             # resets all behaviours if the gamestate is not playing, because the robots are positioned again
             if duty is not None:
-                connector.blackboard.set_duty(duty)
+                blackboard.blackboard.set_duty(duty)
 
         ############################
         # # Gamestate related Stuff#
         ############################
 
         # If we do not Play  or Ready we do nothing
-        if connector.gamestate.get_gamestatus() in [GameState.GAMESTATE_INITAL,
-                                                    GameState.GAMESTATE_SET,
-                                                    GameState.GAMESTATE_FINISHED]:
+        if blackboard.gamestate.get_gamestatus() in [GameState.GAMESTATE_INITAL,
+                                                     GameState.GAMESTATE_SET,
+                                                     GameState.GAMESTATE_FINISHED]:
             rospy.loginfo("Wait for Gamestate")
             # When not playing, the head should look around to find features on the field
-            connector.blackboard.set_head_duty(HeadMode.FIELD_FEATURES)
-            return self.push(Wait, 0.1)
+            blackboard.blackboard.set_head_duty(HeadMode.FIELD_FEATURES)
+            return "Nothing", None
 
         # Penalty Shoot but not mine, run away
-        elif (connector.config["Body"]["Toggles"]["Fieldie"]["penaltykick_go_away"] and
-              connector.blackboard.get_duty() is not DUTY_GOALIE and
-              connector.gamestate.has_penalty_kick()):
+        elif (blackboard.config["Body"]["Toggles"]["Fieldie"]["penaltykick_go_away"] and
+              blackboard.blackboard.get_duty() is not DUTY_GOALIE and
+              blackboard.gamestate.has_penalty_kick()):
             return self.push(GoAwayFromBall)
 
         # Positioning ourself on the Field
-        if connector.gamestate.is_game_state_equals(GameState.GAMESTATE_READY):
+        if blackboard.gamestate.is_game_state_equals(GameState.GAMESTATE_READY):
             # Look for general field features to improve localization
-            connector.blackboard.set_head_duty(HeadMode.FIELD_FEATURES)
+            blackboard.blackboard.set_head_duty(HeadMode.FIELD_FEATURES)
             if self.toggle_self_positioning:
                 return self.push(GoToDutyPosition)
             else:
@@ -83,33 +88,33 @@ class DutyDecider(AbstractDecisionElement):
         ################################
         # #load cetain part of behaviour
         ################################
-        rospy.loginfo("Current duty: " + connector.blackboard.get_duty())
+        rospy.loginfo("Current duty: " + blackboard.blackboard.get_duty())
 
         # If the robot is a OneTimeKicker, kick instead of executing its normal behaviour
-        if connector.blackboard.get_is_one_time_kicker():
+        if blackboard.blackboard.get_is_one_time_kicker():
             return self.push(OneTimeKickerDecision)
 
-        if connector.blackboard.get_duty() == DUTY_TEAMPLAYER:
+        if blackboard.blackboard.get_duty() == DUTY_TEAMPLAYER:
             return self.push(KickOff)
 
-        elif connector.blackboard.get_duty() == DUTY_GOALIE:
-            return self.push(GoaliePositionDecision)
+        elif blackboard.blackboard.get_duty() == DUTY_GOALIE:
+            return "Goalie", None
 
-        elif connector.blackboard.get_duty() == DUTY_PENALTYKICKER:
+        elif blackboard.blackboard.get_duty() == DUTY_PENALTYKICKER:
             return self.push(PenaltyKickerDecision)
 
         ###########################
         # # Other TestStuff
         ###########################
 
-        elif connector.blackboard.get_duty() == DUTY_POSITIONING:
+        elif blackboard.blackboard.get_duty() == DUTY_POSITIONING:
             return self.push(GoToDutyPosition)
 
         else:
             s = Speak()
-            s.text = "Overridden duty not found: %s" % connector.blackboard.get_duty()
+            s.text = "Overridden duty not found: %s" % blackboard.blackboard.get_duty()
             s.priority = Speak.LOW_PRIORITY
-            connector.speaker.publish(s)
+            blackboard.speaker.publish(s)
 
             raise NotImplementedError
 
