@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>bitbots_stackmachine</name>
+  <name>bitbots_dsd</name>
   <version>0.0.0</version>
-  <description>The bitbots_stackmachine is an extended form
+  <description>The bitbots_dsd is an extended form
     of a behaviour state machine. It works like a stack where
     classes describing decisions or actions are pushed on top,
     executed, and popped off again. In difference to a state
