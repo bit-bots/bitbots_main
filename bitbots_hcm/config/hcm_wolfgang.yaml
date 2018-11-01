@@ -28,26 +28,25 @@ hcm:
     penalty: "walkready"
     motor_off: "walkready"
     init: "init"
-    walkready_pose: {"HeadPan": 0, # [deg]
-                    "HeadTilt": 0, 
-                    "LAnklePitch": -29, 
-                    "LAnkleRoll": 0, 
-                    "LElbow": 47, 
-                    "LHipPitch": 51, 
-                    "LHipRoll": 0, 
-                    "LHipYaw": 0, 
-                    "LKnee": -64, 
-                    "LShoulderPitch": 1, 
-                    "LShoulderRoll": 0, 
-                    "RAnklePitch": 28, 
-                    "RAnkleRoll": -4, 
-                    "RElbow": -45, 
-                    "RHipPitch": -50, 
-                    "RHipRoll": -1, 
-                    "RHipYaw": 1, 
-                    "RKnee": 61, 
-                    "RShoulderPitch": 0, 
-                    "RShoulderRoll": 0}
+    walkready_pose: {"HeadPan": 0, 
+    "HeadTilt": 0, 
+    "LElbow": 45, 
+    "LShoulderPitch": 0, 
+    "LShoulderRoll": 0, 
+    "RElbow": -45, 
+    "RShoulderPitch": 0, 
+    "RShoulderRoll": 0, "LHipYaw" : -0.9201349940933852,
+    "LHipRoll" : 2.442961025290042,
+    "LHipPitch" : 50.31854042205566,
+    "LKnee" : -58.438368356309766,
+    "LAnklePitch" : -28.765928610673875,
+    "LAnkleRoll" : 2.6104015763666046,
+    "RHipYaw" : 0.9201343746780442,
+    "RHipRoll" : -2.4429603552214245,
+    "RHipPitch" : -50.31855053488634,
+    "RKnee" : 58.43838767715415,
+    "RAnklePitch" : 28.76593741901185,
+    "RAnkleRoll" : -2.610399717389955}
     walkready_pose_threshold: 5 # [deg]
 
   falling:
