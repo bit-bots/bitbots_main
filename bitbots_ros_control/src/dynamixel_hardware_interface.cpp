@@ -655,7 +655,16 @@ bool DynamixelHardwareInterface::syncReadPositions(){
   int32_t *data = (int32_t *) malloc(_joint_count * sizeof(int32_t));
   success = _driver->syncRead("Present_Position", data);
   for(int i = 0; i < _joint_count; i++){
-    _current_position[i] = _driver->convertValue2Radian(_joint_ids[i], data[i]);
+    if (data[i] == 0){
+      // this is most propably an reading error
+      // TODO better solution for this hack
+      continue;
+    }
+    double current_pos = _driver->convertValue2Radian(_joint_ids[i], data[i]);
+    if(current_pos < 3.15 || current_pos > -3.15){
+      //only write values which are possible
+      _current_position[i] = current_pos;
+    }
   }
 
   free(data);
@@ -723,6 +732,11 @@ bool DynamixelHardwareInterface::syncReadAll() {
     uint32_t vel;
     uint32_t pos;
     for (int i = 0; i < _joint_count; i++) {
+      if (data[i] == 0){
+        // this is most propably an reading error
+        // TODO better solution for this hack
+        continue;
+      }
       eff = DXL_MAKEWORD(data[i * 10], data[i * 10 + 1]);
       vel = DXL_MAKEDWORD(DXL_MAKEWORD(data[i * 10 + 2], data[i * 10 + 3]),
                           DXL_MAKEWORD(data[i * 10 + 4], data[i * 10 + 5]));
@@ -730,7 +744,11 @@ bool DynamixelHardwareInterface::syncReadAll() {
                           DXL_MAKEWORD(data[i * 10 + 8], data[i * 10 + 9]));
       _current_effort[i] = _driver->convertValue2Torque(_joint_ids[i], eff);
       _current_velocity[i] = _driver->convertValue2Velocity(_joint_ids[i], vel);
-      _current_position[i] = _driver->convertValue2Radian(_joint_ids[i], pos);
+      double current_pos = _driver->convertValue2Radian(_joint_ids[i], pos);
+      if(current_pos < 3.15 || current_pos > -3.15){
+        //only write values which are possible
+        _current_position[i] = current_pos;
+      }
     }
     return true;
   }else{
