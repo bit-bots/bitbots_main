@@ -6,14 +6,14 @@ hcm:
   motor_timeout_duration: 0.1 # time without messages from the IMU when error is produced [s]
   anim_server_wait_time: 10 # time the hcm waits for animation server
 
-  stand_up_active: false # enables the robot to stand up automatically
-  falling_active: false # enables the check for falling and coresponding counter meassurements
+  stand_up_active: true # enables the robot to stand up automatically
+  falling_active: true # enables the check for falling and coresponding counter meassurements
   #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
   #Grenzwerte sanfter --> zu spaete Raktion
-  threshold_gyro_y_front: 2.5 # > gyroY
-  threshold_gyro_x_side: 2.5 # > gyroX
+  threshold_gyro_y_front: 4 # > gyroY
+  threshold_gyro_x_side: 4 # > gyroX
   falling_threshold_orientation_left_right: 30 # > Point of no return in degrees
-  falling_threshold_orientation_front_back: 30 # < Point of no return in degrees
+  falling_threshold_orientation_front_back: 60 # < Point of no return in degrees
   falling_new_front: 32
   falling_new_back: -6
   falling_new_left: -18
@@ -21,9 +21,13 @@ hcm:
 
   animations:
     walkready: "walkready" 
-    falling: "falling"
+    falling_front: "walkready" # TODO Animation Falling
+    falling_back: "walkready"
+    falling_left: "walkready"
+    falling_right: "walkready"
     stand_up_front: "stand_up_front"
     stand_up_back: "stand_up_back"
+    stand_up_side: "stand_up_back"
     sit_down: "walkready"
     penalty: "walkready"
     motor_off: "walkready"

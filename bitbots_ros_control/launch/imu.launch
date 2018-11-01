@@ -7,7 +7,7 @@
     <param name="bias_alpha" value="0.05"/>
     <param name="do_adaptive_gain" value="false"/>
     <param name="use_mag" value="false"/>
-    <param name="gain_acc" value="0.0007"/>
+    <param name="gain_acc" value="0.04"/>
     <param name="gain_mag" value="0.01"/>
 </node>
 </launch>

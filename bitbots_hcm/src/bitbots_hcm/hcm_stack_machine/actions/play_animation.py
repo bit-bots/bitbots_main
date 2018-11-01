@@ -78,23 +78,36 @@ class PlayAnimationStandUp(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
         # publish that we are getting up
-        connector.publish_state(STATE_GETTING_UP)
-
-        side = connector.hcm.get_fallen_side()
-        if side == "FRONT":
-            return "StandUpFront"
-        elif side == "BACK":
-            return "StandUpBack"
-        else:
-            rospy.logerr("Fallen side " + side + " not known!")
-            return 
+        # connector.publish_state(STATE_GETTING_UP)
+        side = connector.get_fallen_side()
+        if side == connector.fall_checker.FRONT:
+            rospy.loginfo("PLAYING STAND UP FRONT ANIMATION")
+            return connector.stand_up_front_animation
+        if side == connector.fall_checker.BACK:
+            rospy.loginfo("PLAYING STAND UP BACK ANIMATION")
+            return connector.stand_up_back_animation
+        if side == connector.fall_checker.SIDE:
+            rospy.loginfo("PLAYING STAND UP SIDE ANIMATION")
+            return connector.stand_up_side_animation
 
 
 class PlayAnimationFalling(AbstractPlayAnimation):
 
     def chose_animation(self, connector):
-        #TODO implement
-        pass
+        # connector.publish_state(Fallen)
+        side = connector.robot_falling_direction()
+        if side == connector.fall_checker.FRONT:
+            rospy.loginfo("PLAYING FALLING FRONT ANIMATION")
+            return connector.falling_animation_front
+        if side == connector.fall_checker.BACK:
+            rospy.loginfo("PLAYING FALLING BACK ANIMATION")
+            return connector.falling_animation_back
+        if side == connector.fall_checker.LEFT:
+            rospy.loginfo("PLAYING FALLING LEFT ANIMATION")
+            return connector.falling_animation_left
+        if side == connector.fall_checker.RIGHT:
+            rospy.loginfo("PLAYING FALLING RIGHT ANIMATION")
+            return connector.falling_animation_right
 
 class PlayAnimationPenalty(AbstractPlayAnimation):
 
