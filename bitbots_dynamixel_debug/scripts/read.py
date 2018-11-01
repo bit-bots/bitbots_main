@@ -8,10 +8,13 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--p1", help="use old protocol version", action="store_true")
 parser.add_argument("id")
+parser.add_argument("register")
 args = parser.parse_args()
 
 
 id = int(args.id)
+reg = int(args.register)
+
 if args.p1:
     protocol = 1
 else:
@@ -21,17 +24,8 @@ device ="/dev/ttyUSB0".encode('utf-8')
 
 c = Connector(protocol, device, baudrate)
 
-successful_pings = 0
-error_pings = 0
-numberPings = 100
-for i in range(numberPings):
-    sucess = c.ping(id)
-    if sucess:
-        successful_pings += 1
-    else:
-        error_pings += 1
-
-print("Servo " + str(id) + " got pinged " + str(numberPings) + "\n Successful pings: " + str(successful_pings) + "\n Error pings: " + str(error_pings))
+for i in range(1):
+	c.read_4(id, reg, doPrint=True)
 
 c.closePort()
 

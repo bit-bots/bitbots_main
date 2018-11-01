@@ -12,13 +12,13 @@ parser.add_argument("maxId")
 args = parser.parse_args()
 
 
-maxId = args.maxId
+maxId = int(args.maxId)
 if args.p1:
     protocol = 1
 else:
     protocol = 2
 protocol = 2
-baudrate = 1000000
+baudrate = 2000000
 device ="/dev/ttyUSB0".encode('utf-8')
 
 c = Connector(protocol, device, baudrate)

@@ -95,12 +95,20 @@ class Connector(object):
         dynamixel.broadcastPing(self.port_num, self.protocol)
         dxl_comm_result = dynamixel.getLastTxRxResult(self.port_num, self.protocol)
         if dxl_comm_result != COMM_SUCCESS:
-            print(dynamixel.getTxRxResult(self.protocol, dxl_comm_result))
+            if doPrint:
+                print(dynamixel.getTxRxResult(self.protocol, dxl_comm_result))
+            return False
 
-        print("Detected Dynamixel : ")
-        for id in range(0, int(maxId)):
+        if doPrint:
+            print("Detected Dynamixel : ")
+        nb_detected = 0
+        for id in range(1, int(maxId)+1):
             if ctypes.c_ubyte(dynamixel.getBroadcastPingResult(self.port_num, self.protocol, id)).value:
-                print("[ID:%03d]" % (id))
+                nb_detected += 1
+                if doPrint:
+                    print("[ID:%03d]" % (id))
+        if nb_detected == maxId:
+            return True
 
     def reboot(self, id):
         print("The LED should flicker")
@@ -154,6 +162,20 @@ class Connector(object):
         if doPrint:
             print("[ID:%03d] PresPos:%03d" % (id, dxl_present_position))
         return dxl_present_position
+
+    def read_4(self, id, reg, doPrint=False):
+        read_res = dynamixel.read4ByteTxRx(self.port_num, self.protocol, id, reg)
+        dxl_comm_result = dynamixel.getLastTxRxResult(self.port_num, self.protocol)
+        dxl_error = dynamixel.getLastRxPacketError(self.port_num, self.protocol)
+        if dxl_comm_result != COMM_SUCCESS:
+            print(dynamixel.getTxRxResult(self.protocol, dxl_comm_result))            
+        elif dxl_error != 0:
+            print(dynamixel.getRxPacketError(self.protocol, dxl_error))
+
+        if doPrint:
+            print("[ID:%03d] Regist %03d: %03d" % (id, reg, read_res))
+        return read_res
+
 
     def writeLED(self, id, enable):
         dynamixel.write1ByteTxRx(self.port_num, self.protocol, id, 65, enable)
