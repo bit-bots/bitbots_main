@@ -19,6 +19,7 @@ add_message_files(
   FILES
   JointCommand.msg
   JointTorque.msg
+  FootPressure.msg
 )
 
  generate_messages(

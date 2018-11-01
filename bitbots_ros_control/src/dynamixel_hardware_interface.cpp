@@ -29,6 +29,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1, this);
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
   _button_pub = nh.advertise<bitbots_buttons::Buttons>("/buttons", 1, this);
+  _pressure_pub = nh.advertise<bitbots_ros_control::FootPressure>("/foot_pressure", 1, this);
   _status_board.name = "DXL_board";
   _status_board.hardware_id = std::to_string(1);
   _status_IMU.name = "IMU";
@@ -116,6 +117,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _current_input_voltage.resize(_joint_count, 0);
   _current_temperature.resize(_joint_count, 0);
   _current_error.resize(_joint_count, 0);
+  _current_pressure.resize(8, 0);
   _goal_position.resize(_joint_count, 0);
   _goal_velocity.resize(_joint_count, 0);
   _goal_acceleration.resize(_joint_count, 0);
@@ -496,6 +498,12 @@ bool DynamixelHardwareInterface::read()
     }
   }
 
+  if (_read_pressure){
+    if(!readFootSensors()){
+      ROS_ERROR_THROTTLE(1.0, "Couldn't read foot sensor values");
+    }
+  }
+
   if (first_cycle_)
   {
     _goal_position = _current_position;
@@ -800,6 +808,40 @@ bool DynamixelHardwareInterface::readButtons(){
   return false;
 }
 
+bool DynamixelHardwareInterface::readFootSensors(){
+  uint8_t *data = (uint8_t *) malloc(sizeof(uint8_t));
+  // read first foot
+  if(_driver->readMultipleRegisters(101, 36, 16, data)){
+    for (int i = 0; i < 4; i++) {
+      _current_pressure[i] = DXL_MAKEDWORD(DXL_MAKEWORD(data[i], data[i+1]),
+                                         DXL_MAKEWORD(data[i+2], data[i+3]));
+    }
+  }else{
+    return false;
+  }                                
+  // read second foot
+  if(_driver->readMultipleRegisters(102, 36, 16, data)){
+    for (int i = 0; i < 4; i++) {
+      _current_pressure[i+4] = DXL_MAKEDWORD(DXL_MAKEWORD(data[i], data[i+1]),
+                                         DXL_MAKEWORD(data[i+2], data[i+3]));
+    }
+  }else{
+    return false;
+  }
+
+  bitbots_ros_control::FootPressure msg;
+  msg.l_l_b = _current_pressure[0];
+  msg.l_l_f = _current_pressure[1];
+  msg.l_r_f = _current_pressure[2];
+  msg.l_r_b = _current_pressure[3];
+  msg.r_l_b = _current_pressure[4];
+  msg.r_l_f = _current_pressure[5];
+  msg.r_r_f = _current_pressure[6];
+  msg.r_r_b = _current_pressure[7];
+  _pressure_pub.publish(msg);
+  return true;
+}
+
 
 bool DynamixelHardwareInterface::syncWritePosition(){
   int* goal_position = (int*)malloc(_joint_names.size() * sizeof(int));
@@ -912,6 +954,7 @@ void DynamixelHardwareInterface::reconf_callback(bitbots_ros_control::bitbots_ro
   _read_effort = config.read_effort;
   _read_imu = config.read_imu;
   _read_volt_temp = config.read_volt_temp;
+  _read_pressure = config.read_pressure;
   _VT_update_rate = config.VT_update_rate;
   _warn_temp = config.warn_temp;
   _warn_volt = config.warn_volt;  

@@ -12,6 +12,7 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Int32MultiArray.h>
 #include <bitbots_ros_control/JointTorque.h>
+#include <bitbots_ros_control/FootPressure.h>
 
 #include <hardware_interface/imu_sensor_interface.h>
 #include <hardware_interface/joint_command_interface.h>
@@ -107,6 +108,7 @@ private:
   bool syncReadError();
   bool readImu();
   bool readButtons();
+  bool readFootSensors();
 
 
   bool syncWritePosition();
@@ -158,6 +160,7 @@ private:
   bool _read_velocity;
   bool _read_effort;
   bool _read_volt_temp;
+  bool _read_pressure;
   bool _update_pid;
   std::vector<double> _current_position;
   std::vector<double> _current_velocity;
@@ -165,6 +168,8 @@ private:
   std::vector<double> _current_input_voltage;
   std::vector<double> _current_temperature;
   std::vector<uint8_t> _current_error;
+
+  std::vector<double> _current_pressure;
 
   int _read_VT_counter;
   int _VT_update_rate;
@@ -191,6 +196,7 @@ private:
   ros::Publisher _diagnostic_pub;
   ros::Publisher _speak_pub;
   ros::Publisher _button_pub;
+  ros::Publisher _pressure_pub;
   ros::Subscriber _set_torque_indiv_sub;
   ros::Subscriber _update_pid_sub;
 
