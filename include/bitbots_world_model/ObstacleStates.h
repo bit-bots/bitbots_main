@@ -15,10 +15,11 @@ public:
     ObstacleState(float x, float y);
     ~ObstacleState();
 
-    // ObstacleState operator*(float factor) const;
+    ObstacleState operator*(float factor) const;
 
     ObstacleState& operator=(const ObstacleState& other);
 
+    ObstacleState& operator+=(const ObstacleState& other);
 
     float getXPos() const;
 
@@ -63,6 +64,11 @@ class ObstacleStateW : public ObstacleState
 public:
     ObstacleStateW();
     ObstacleStateW(float x, float y, float w);
+
+    ObstacleStateW operator*(float factor) const;
+
+    ObstacleStateW& operator+=(const ObstacleStateW& other);
+
     ObstacleStateW& operator=(const ObstacleStateW& other);
     ~ObstacleStateW();
 
@@ -89,6 +95,11 @@ class ObstacleStateO : public ObstacleState
 public:
     ObstacleStateO();
     ObstacleStateO(float x, float y, float o);
+
+    ObstacleStateO operator*(float factor) const;
+
+    ObstacleStateO& operator+=(const ObstacleStateO& other);
+
     ObstacleStateO& operator=(const ObstacleStateO& other);
     ~ObstacleStateO();
 
