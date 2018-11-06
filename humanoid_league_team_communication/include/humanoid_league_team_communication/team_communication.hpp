@@ -93,6 +93,15 @@ private:
     int ball_exists = 0;
     int position_exists = 0;
     int obstacles_exists = 0;
+
+    std::string teamdata_topic;
+    std::string strategy_topic;
+    std::string motion_state_topic;
+    std::string goal_topic;
+    std::string world_model_topic;
+    std::string position_topic;
+    std::string ball_topic;
+    std::string obstacles_topic;
 };
 
 #endif

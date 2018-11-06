@@ -18,32 +18,40 @@ TeamCommunication::TeamCommunication() : _nh() {
     _nh.getParam("team_communication/world_model", world_model);
     _nh.getParam("team_communication/lifetime", lifetime);
 
+    _nh.getParam("team_communication/team_data", teamdata_topic);
+    _nh.getParam("team_communication/strategy", strategy_topic);
+    _nh.getParam("team_communication/motion_state", motion_state_topic);
+    _nh.getParam("team_communication/goal", goal_topic);
+    _nh.getParam("team_communication/world_model_node", world_model_topic);
+    _nh.getParam("team_communication/position", position_topic);
+    _nh.getParam("team_communication/ball", ball_topic);
+    _nh.getParam("team_communication/obstacles", obstacles_topic);
+
     //init mitecom
     _mitecom.set_team_id(team);
     _mitecom.open_socket(port);
     _mitecom.set_robot_id(player);
 
     // --- Initialize Topics ---
-    publisher = _nh.advertise<humanoid_league_msgs::TeamData>("/team_data", 10);
+    publisher = _nh.advertise<humanoid_league_msgs::TeamData>(teamdata_topic, 10);
 
-    sub_role = _nh.subscribe("role", 1, &TeamCommunication::strategy_callback, this,
+    sub_role = _nh.subscribe(strategy_topic, 1, &TeamCommunication::strategy_callback, this,
             ros::TransportHints().tcpNoDelay());
-    sub_motion_state = _nh.subscribe("motion_state", 1, &TeamCommunication::motion_state_callback,
+    sub_motion_state = _nh.subscribe(motion_state_topic, 1, &TeamCommunication::motion_state_callback,
             this, ros::TransportHints().tcpNoDelay());
-    sub_goal = _nh.subscribe("goal_relative", 1, &TeamCommunication::goal_callback, this,
+    sub_goal = _nh.subscribe(goal_topic, 1, &TeamCommunication::goal_callback, this,
             ros::TransportHints().tcpNoDelay());
-
 
     if(world_model){
-        sub_world = _nh.subscribe("/local_world_model", 1, &TeamCommunication::world_callback, this,
+        sub_world = _nh.subscribe(world_model_topic, 1, &TeamCommunication::world_callback, this,
                                                   ros::TransportHints().tcpNoDelay());
     }
     else{
-        sub_position = _nh.subscribe("position", 1, &TeamCommunication::position_callback, this,
+        sub_position = _nh.subscribe(position_topic, 1, &TeamCommunication::position_callback, this,
                                                      ros::TransportHints().tcpNoDelay());
-        sub_ball = _nh.subscribe("/ball_relative", 1, &TeamCommunication::ball_callback, this,
+        sub_ball = _nh.subscribe(ball_topic, 1, &TeamCommunication::ball_callback, this,
                                                  ros::TransportHints().tcpNoDelay());
-        sub_obstacles = _nh.subscribe("/obstacle_relative", 1, &TeamCommunication::obstacles_callback,
+        sub_obstacles = _nh.subscribe(obstacles_topic, 1, &TeamCommunication::obstacles_callback,
                                                       this, ros::TransportHints().tcpNoDelay());
     }
 }
@@ -88,19 +96,18 @@ void TeamCommunication::send_thread(const ros::TimerEvent& _t) {
 
     if (state != STATE_PENALIZED) {
         //position
-        if (position_belief > 0 && ros::Time::now().sec - position_exists > lifetime) {
+        if (position_belief > 0 && ros::Time::now().sec - position_exists < lifetime) {
             _mitecom.set_pos(position_x, position_y, position_orientation, position_belief);
         }
         //ball
-        if (ball_belief > 0 && ros::Time::now().sec - ball_exists > lifetime) {
-            ROS_INFO_STREAM("sent ball");
+        if (ball_belief > 0 && ros::Time::now().sec - ball_exists < lifetime) {
             _mitecom.set_relative_ball(ball_relative_x, ball_relative_y, ball_belief);
         }
         /*//opponent goal
         if (oppgoal_belief > 0) {
             _mitecom.set_opp_goal_relative(oppgoal_relative_x, oppgoal_relative_y, oppgoal_belief);
         }*/
-        if(ros::Time::now().sec - obstacles_exists > lifetime) {
+        if(ros::Time::now().sec - obstacles_exists < lifetime) {
             //opponent robots
             if (opponent_robots.size() > 0) {
                 _mitecom.set_opponent_robot_a(opponent_robots[0][0], opponent_robots[0][1], opponent_robots[0][2]);
@@ -128,7 +135,7 @@ void TeamCommunication::send_thread(const ros::TimerEvent& _t) {
         }
 
         //time to ball
-        if(time_to_position_at_ball_set && ros::Time::now().sec - ball_exists > lifetime) {
+        if(time_to_position_at_ball_set && ros::Time::now().sec - ball_exists < lifetime) {
             _mitecom.set_time_to_ball(time_to_position_at_ball);
         }
         // strategy

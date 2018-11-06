@@ -23,3 +23,13 @@ team_communication:
 
   #lifetime of data [s]
   lifetime: 3
+
+  # ROS Topics
+  team_data: '/team_data'
+  strategy: 'role'
+  motion_state: 'motion_state'
+  goal: 'goal_relative'
+  world_model_node: '/local_world_model'
+  position: 'position'
+  ball: '/ball_relative'
+  obstacles: '/obstacle_relative'
