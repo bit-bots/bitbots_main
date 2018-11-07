@@ -44,7 +44,7 @@ float ObstacleState::getYPos() const {
     return yPos_;
 }
 
-visualization_msgs::Marker ObstacleState::renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime) {
+visualization_msgs::Marker ObstacleState::renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
     visualization_msgs::Marker msg;
     msg.header.stamp = ros::Time::now();
     msg.header.frame_id = "/world";
@@ -56,6 +56,7 @@ visualization_msgs::Marker ObstacleState::renderMarker(libPF::ParticleFilter<Obs
     msg.scale.z = 0.05;
     msg.color = color;
     msg.lifetime = lifetime;
+    msg.ns = n_space;
     for (libPF::Particle<ObstacleState> *particle : particle_list) {
         geometry_msgs::Point point_msg;
         point_msg.x = particle->getState().getXPos();
@@ -132,7 +133,7 @@ float ObstacleStateW::getWidth() const {
     return width_;
 }
 
-visualization_msgs::Marker ObstacleStateW::renderMarker(libPF::ParticleFilter<ObstacleStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime) {
+visualization_msgs::Marker ObstacleStateW::renderMarker(libPF::ParticleFilter<ObstacleStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
     visualization_msgs::Marker msg;
     msg.header.stamp = ros::Time::now();
     msg.header.frame_id = "/world";
@@ -144,6 +145,7 @@ visualization_msgs::Marker ObstacleStateW::renderMarker(libPF::ParticleFilter<Ob
     msg.scale.z = 0.05;
     msg.color = color;
     msg.lifetime = lifetime;
+    msg.ns = n_space;
     for (libPF::Particle<ObstacleStateW> *particle : particle_list) {
         geometry_msgs::Point point_msg;
         point_msg.x = particle->getState().getXPos();

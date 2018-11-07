@@ -29,7 +29,7 @@ public:
 
     void setYPos(float y);
 
-    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime);
+    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
 
     static visualization_msgs::Marker renderMarker(ObstacleState particle_state, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
 
@@ -78,7 +78,7 @@ public:
 
     void setWidth(float t);
 
-    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime);
+    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
 
     double calcDistance(const ObstacleStateW& state) const;
 
@@ -110,7 +110,7 @@ public:
     void setOrientation(float t);
 
     // a marker is not useful for visualization here.
-    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list, std_msgs::ColorRGBA color) = delete;
+    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list, std_msgs::ColorRGBA color, std::string n_space) = delete;
 
     double calcDistance(const ObstacleStateO& state) const;
 

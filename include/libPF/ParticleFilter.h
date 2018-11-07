@@ -363,6 +363,8 @@ class ParticleFilter {
 
     void setMarkerColor(std_msgs::ColorRGBA color);
 
+    void setMarkerNamespace(std::string);
+
   protected:
 
     /**
@@ -414,6 +416,8 @@ class ParticleFilter {
     std_msgs::ColorRGBA color_;
 
     ros::Duration marker_lifetime_;
+
+    std::string marker_namespace_;
 
 };
 

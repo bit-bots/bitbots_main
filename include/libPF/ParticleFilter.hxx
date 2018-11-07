@@ -9,7 +9,8 @@ ParticleFilter<StateType>::ParticleFilter(unsigned int numParticles, std::shared
     m_MovementModel(ms),
     m_FirstRun(true),
     m_ResamplingMode(RESAMPLE_NEFF),
-    marker_lifetime_(.1) //initializing marker lifetime with 10 Hz by default
+    marker_lifetime_(.1), //initializing marker lifetime with 10 Hz by default
+    marker_namespace_("")
 {
   m_ResamplingStrategy.reset(new ImportanceResampling<StateType>());
 
@@ -162,7 +163,7 @@ double ParticleFilter<StateType>::getWeight(unsigned int particleNo) const {
 
 template <class StateType>
 visualization_msgs::Marker ParticleFilter<StateType>::renderMarker(){
-    return StateType::renderMarker(m_CurrentList, color_, marker_lifetime_);
+    return StateType::renderMarker(m_CurrentList, color_, marker_lifetime_, marker_namespace_);
 }
 
 template <class StateType>
@@ -311,6 +312,11 @@ void ParticleFilter<StateType>::setMarkerColor(std_msgs::ColorRGBA color) {
 template <class StateType>
 void ParticleFilter<StateType>::setMarkerLifetime(ros::Duration lifetime) {
     marker_lifetime_ = lifetime;
+}
+
+template <class StateType>
+void ParticleFilter<StateType>::setMarkerNamespace(std::string marker_namespace) {
+    marker_namespace_ = marker_namespace;
 }
 
 } // end of namespace
