@@ -141,6 +141,11 @@ void WorldModel::reset_all_filters() {
     local_opponent_pf_->drawAllFromDistribution(local_opponent_state_distribution_);
     local_obstacle_pf_->drawAllFromDistribution(local_obstacle_state_distribution_);
 
+    // setting up the distributions for the further game
+    *local_mate_state_distribution_ = LocalObstacleStateDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_mate_max_distance * 2, config_.local_mate_max_distance * 2));
+    *local_opponent_state_distribution_ = LocalObstacleStateDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_opponent_max_distance * 2, config_.local_opponent_max_distance * 2));
+    *local_obstacle_state_distribution_ = LocalObstacleStateWDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_obstacle_max_distance * 2, config_.local_obstacle_max_distance * 2), config_.local_obstacle_min_width, config_.local_obstacle_max_width);
+
     // setting marker settings
     local_mate_pf_->setMarkerColor(get_color_msg(config_.mate_marker_color));
     local_mate_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)));
@@ -174,20 +179,31 @@ void WorldModel::publish_visualization() {
 }
 
 void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
+    // the content of this function is what happens in a single timestep
+
+    // publishing marker messages if debug_visualization is activated
     publish_visualization();
+
+    // setting the weights of the particles according to the measurements taken
     // TODO: do this only when stuff is measured
     local_mate_pf_->measure();
     local_opponent_pf_->measure();
     local_obstacle_pf_->measure();
-    // manually clearing the list of mearurements
+
+    // manually clearing the list of measurements
+    // TODO: just age the measurements instead of removing them
     local_mate_observation_model_->clear_measurement();
     local_opponent_observation_model_->clear_measurement();
     local_obstacle_observation_model_->clear_measurement();
 
     // we need to resample after every step because the world is changing constantly - even if we don't move.
+    // the filters have got a resampling strategy with explorers, meaning they spread some particles randomly in the distribution
     local_mate_pf_->resample();
     local_opponent_pf_->resample();
     local_obstacle_pf_->resample();
+
+    // diffuse the particles (add normal distributed uncertainty)
+    // the .1 parameter is only there for legacy reasons and has no effect at all.
     local_mate_pf_->diffuse(.1);
     local_opponent_pf_->diffuse(.1);
     local_obstacle_pf_->diffuse(.1);
