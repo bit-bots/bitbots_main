@@ -20,14 +20,8 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     if (config.global_model_topic != config_.global_model_topic) {
         global_model_publisher_ = nh_.advertise<hlm::Model>(config.global_model_topic.c_str(), 1);
     }
-    if (config.local_mate_particles_topic != config_.local_mate_particles_topic) {
-        local_mate_particles_publisher_ = nh_.advertise<visualization_msgs::Marker>(config.local_mate_particles_topic.c_str(), 1);
-    }
-    if (config.local_opponent_particles_topic != config_.local_opponent_particles_topic) {
-        local_opponent_particles_publisher_ = nh_.advertise<visualization_msgs::Marker>(config.local_opponent_particles_topic.c_str(), 1);
-    }
-    if (config.local_obstacle_particles_topic != config_.local_obstacle_particles_topic) {
-        local_obstacle_particles_publisher_ = nh_.advertise<visualization_msgs::Marker>(config.local_obstacle_particles_topic.c_str(), 1);
+    if (config.local_particles_topic != config_.local_particles_topic) {
+        local_particles_publisher_ = nh_.advertise<visualization_msgs::Marker>(config.local_particles_topic.c_str(), 1);
     }
     if (config.reset_filters_service_name != config_.reset_filters_service_name) {
         reset_filters_service_ = nh_.advertiseService(config.reset_filters_service_name, &WorldModel::reset_filters_callback, this);
@@ -150,10 +144,13 @@ void WorldModel::reset_all_filters() {
     // setting marker settings
     local_mate_pf_->setMarkerColor(get_color_msg(config_.mate_marker_color));
     local_mate_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)));
+    local_mate_pf_->setMarkerNamespace("local_mate");
     local_opponent_pf_->setMarkerColor(get_color_msg(config_.opponent_marker_color));
     local_opponent_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)));
+    local_opponent_pf_->setMarkerNamespace("local_opponent");
     local_obstacle_pf_->setMarkerColor(get_color_msg(config_.obstacle_marker_color));
     local_obstacle_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)));
+    local_obstacle_pf_->setMarkerNamespace("local_obstacle");
 
 }
 
@@ -169,9 +166,11 @@ void WorldModel::publish_visualization() {
     if (!config_.debug_visualization) {
         return;
     }
-    local_obstacle_particles_publisher_.publish(local_obstacle_pf_->renderMarker());
-    local_mate_particles_publisher_.publish(local_mate_pf_->renderMarker());
-    local_opponent_particles_publisher_.publish(local_opponent_pf_->renderMarker());
+    local_particles_publisher_.publish(local_obstacle_pf_->renderMarker());
+    local_particles_publisher_.publish(local_mate_pf_->renderMarker());
+
+    local_particles_publisher_.publish(ObstacleState::renderMarker(local_mate_pf_->getBestXPercentEstimate(10.0), get_color_msg(2), ros::Duration(.1), "mates_mean"));
+    local_particles_publisher_.publish(local_opponent_pf_->renderMarker());
 }
 
 void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
