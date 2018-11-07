@@ -65,6 +65,26 @@ visualization_msgs::Marker ObstacleState::renderMarker(libPF::ParticleFilter<Obs
     return msg;
 }
 
+visualization_msgs::Marker ObstacleState::renderMarker(ObstacleState particle_state, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
+    visualization_msgs::Marker msg;
+    msg.header.stamp = ros::Time::now();
+    msg.header.frame_id = "/world";
+    msg.action = visualization_msgs::Marker::ADD;
+    msg.type = visualization_msgs::Marker::POINTS;
+    msg.pose.orientation.w = 1;
+    msg.scale.x = 0.05;
+    msg.scale.y = 0.05;
+    msg.scale.z = 0.05;
+    msg.color = color;
+    msg.lifetime = lifetime;
+    msg.ns = n_space;
+    geometry_msgs::Point point_msg;
+    point_msg.x = particle_state.getXPos();
+    point_msg.y = particle_state.getYPos();
+    msg.points.push_back(point_msg);
+    return msg;
+}
+
 double ObstacleState::calcDistance(const ObstacleState& state) const {
     // TODO
     double diff =  std::sqrt(std::pow(getXPos() - state.getXPos(), 2) + std::pow(getYPos() - state.getYPos(), 2));

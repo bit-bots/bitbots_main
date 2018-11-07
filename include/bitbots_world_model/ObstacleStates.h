@@ -31,6 +31,8 @@ public:
 
     static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime);
 
+    static visualization_msgs::Marker renderMarker(ObstacleState particle_state, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
+
     double calcDistance(const ObstacleState& state) const;
 
     // float getTheta() const;
