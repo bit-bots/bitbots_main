@@ -4,13 +4,13 @@
 #include <libPF/StateDistribution.h>
 #include <bitbots_world_model/ObstacleStates.h>
 
-class LocalObstacleStateDistribution : public libPF::StateDistribution<ObstacleState> {
+class LocalPositionStateDistribution : public libPF::StateDistribution<PositionState> {
   public:
-      LocalObstacleStateDistribution(libPF::CRandomNumberGenerator &random_number_generator, std::pair<double, double> initial_robot_pose, std::pair<double, double> field_size);
-      // LocalObstacleStateDistribution(libPF::CRandomNumberGenerator &random_number_generator, std::pair<double, double> initial_robot_pose, std::pair<double, double> field_size, double obstacle_min_width, double obstacle_max_width);
-      ~LocalObstacleStateDistribution(){};
+      LocalPositionStateDistribution(libPF::CRandomNumberGenerator &random_number_generator, std::pair<double, double> initial_robot_pose, std::pair<double, double> field_size);
+      // LocalPositionStateDistribution(libPF::CRandomNumberGenerator &random_number_generator, std::pair<double, double> initial_robot_pose, std::pair<double, double> field_size, double obstacle_min_width, double obstacle_max_width);
+      ~LocalPositionStateDistribution(){};
 
-      const ObstacleState draw() const;
+      const PositionState draw() const;
 
  private:
       libPF::CRandomNumberGenerator random_number_generator_;
@@ -21,12 +21,12 @@ class LocalObstacleStateDistribution : public libPF::StateDistribution<ObstacleS
 };
 
 
-class LocalObstacleStateWDistribution : public libPF::StateDistribution<ObstacleStateW> {
+class LocalPositionStateWDistribution : public libPF::StateDistribution<PositionStateW> {
   public:
-      LocalObstacleStateWDistribution(libPF::CRandomNumberGenerator &random_number_generator, std::pair<double, double> initial_robot_pose, std::pair<double, double> field_size, double obstacle_min_width, double obstacle_max_width);
-      ~LocalObstacleStateWDistribution(){};
+      LocalPositionStateWDistribution(libPF::CRandomNumberGenerator &random_number_generator, std::pair<double, double> initial_robot_pose, std::pair<double, double> field_size, double obstacle_min_width, double obstacle_max_width);
+      ~LocalPositionStateWDistribution(){};
 
-      const ObstacleStateW draw() const;
+      const PositionStateW draw() const;
 
  private:
       libPF::CRandomNumberGenerator random_number_generator_;

@@ -25,7 +25,7 @@
  * @brief Test class for ParticleFilter.
  *
  */
-class LocalObstacleObservationModel : public libPF::ObservationModel<ObstacleStateW> {
+class LocalObstacleObservationModel : public libPF::ObservationModel<PositionStateW> {
 
   public:
 
@@ -44,9 +44,9 @@ class LocalObstacleObservationModel : public libPF::ObservationModel<ObstacleSta
      * @param state Reference to the state that has to be weightened.
      * @return weight for the given state.
      */
-    double measure(const ObstacleStateW& state) const;
+    double measure(const PositionStateW& state) const;
 
-    void set_measurement(std::vector<ObstacleStateW> measurement);
+    void set_measurement(std::vector<PositionStateW> measurement);
 
     void set_min_weight(double min_weight);
 
@@ -60,13 +60,13 @@ class LocalObstacleObservationModel : public libPF::ObservationModel<ObstacleSta
 
   private:
 
-    std::vector<ObstacleStateW> last_measurement_;
+    std::vector<PositionStateW> last_measurement_;
 
     double min_weight_;
 
 };
 
-class LocalRobotObservationModel : public libPF::ObservationModel<ObstacleState> {
+class LocalRobotObservationModel : public libPF::ObservationModel<PositionState> {
 
   public:
 
@@ -85,9 +85,9 @@ class LocalRobotObservationModel : public libPF::ObservationModel<ObstacleState>
      * @param state Reference to the state that has to be weightened.
      * @return weight for the given state.
      */
-    double measure(const ObstacleState& state) const;
+    double measure(const PositionState& state) const;
 
-    void set_measurement(std::vector<ObstacleState> measurement);
+    void set_measurement(std::vector<PositionState> measurement);
 
     void set_min_weight(double min_weight);
 
@@ -101,7 +101,7 @@ class LocalRobotObservationModel : public libPF::ObservationModel<ObstacleState>
 
   private:
 
-    std::vector<ObstacleState> last_measurement_;
+    std::vector<PositionState> last_measurement_;
 
     double min_weight_;
 

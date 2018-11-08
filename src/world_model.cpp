@@ -62,9 +62,9 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     local_obstacle_movement_model_.reset(new LocalObstacleMovementModel(random_number_generator_, config.local_obstacle_diffusion_x_std_dev, config.local_obstacle_diffusion_y_std_dev, config.local_obstacle_diffusion_multiplicator));
 
     // initializing state distributions
-    local_mate_state_distribution_.reset(new LocalObstacleStateDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width)));
-    local_opponent_state_distribution_.reset(new LocalObstacleStateDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width)));
-    local_obstacle_state_distribution_.reset(new LocalObstacleStateWDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width), config.local_obstacle_min_width, config.local_obstacle_max_width));
+    local_mate_state_distribution_.reset(new LocalPositionStateDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width)));
+    local_opponent_state_distribution_.reset(new LocalPositionStateDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width)));
+    local_obstacle_state_distribution_.reset(new LocalPositionStateWDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width), config.local_obstacle_min_width, config.local_obstacle_max_width));
 
     // setting particle counts
     if (config.local_obstacle_particle_number != config_.local_obstacle_particle_number || config.local_mate_particle_number != config_.local_mate_particle_number || config.local_opponent_particle_number != config_.local_opponent_particle_number) {
@@ -78,9 +78,9 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     }
 
     // initializing resampling methods
-    local_mate_resampling_.reset(new ImportanceResamplingWE<ObstacleState>(static_cast<int>(config.local_mate_particle_number * config.local_mate_explorer_rate), local_mate_state_distribution_));
-    local_opponent_resampling_.reset(new ImportanceResamplingWE<ObstacleState>(static_cast<int>(config.local_opponent_particle_number * config.local_opponent_explorer_rate), local_opponent_state_distribution_));
-    local_obstacle_resampling_.reset(new ImportanceResamplingWE<ObstacleStateW>(static_cast<int>(config.local_obstacle_particle_number * config.local_obstacle_explorer_rate), local_obstacle_state_distribution_));
+    local_mate_resampling_.reset(new ImportanceResamplingWE<PositionState>(static_cast<int>(config.local_mate_particle_number * config.local_mate_explorer_rate), local_mate_state_distribution_));
+    local_opponent_resampling_.reset(new ImportanceResamplingWE<PositionState>(static_cast<int>(config.local_opponent_particle_number * config.local_opponent_explorer_rate), local_opponent_state_distribution_));
+    local_obstacle_resampling_.reset(new ImportanceResamplingWE<PositionStateW>(static_cast<int>(config.local_obstacle_particle_number * config.local_obstacle_explorer_rate), local_obstacle_state_distribution_));
 
     config_ = config;
     if (!valid_configuration_) {
@@ -104,12 +104,12 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
     opponent_measurements_.clear();
     for (hlm::ObstacleRelative obstacle : msg.obstacles) {
         if (obstacle.color == team_color_) {
-            mate_measurements_.push_back(ObstacleState(obstacle.position.x, obstacle.position.y));
+            mate_measurements_.push_back(PositionState(obstacle.position.x, obstacle.position.y));
         } else if (obstacle.color == opponent_color_) {
-            opponent_measurements_.push_back(ObstacleState(obstacle.position.x, obstacle.position.y));
+            opponent_measurements_.push_back(PositionState(obstacle.position.x, obstacle.position.y));
         } else {
             // everything else is threated as an obstacle
-            obstacle_measurements_.push_back(ObstacleStateW(obstacle.position.x, obstacle.position.y, obstacle.width));
+            obstacle_measurements_.push_back(PositionStateW(obstacle.position.x, obstacle.position.y, obstacle.width));
         }
     }
     local_mate_observation_model_->set_measurement(mate_measurements_);
@@ -127,9 +127,9 @@ bool WorldModel::reset_filters_callback(std_srvs::Trigger::Request &req, std_srv
 void WorldModel::reset_all_filters() {
     ROS_INFO("Resetting all particle filters...");
 
-    local_mate_pf_.reset(new libPF::ParticleFilter<ObstacleState>(config_.local_mate_particle_number, local_mate_observation_model_, local_mate_movement_model_));
-    local_opponent_pf_.reset(new libPF::ParticleFilter<ObstacleState>(config_.local_opponent_particle_number, local_opponent_observation_model_, local_opponent_movement_model_));
-    local_obstacle_pf_.reset(new libPF::ParticleFilter<ObstacleStateW>(config_.local_obstacle_particle_number, local_obstacle_observation_model_, local_obstacle_movement_model_));
+    local_mate_pf_.reset(new libPF::ParticleFilter<PositionState>(config_.local_mate_particle_number, local_mate_observation_model_, local_mate_movement_model_));
+    local_opponent_pf_.reset(new libPF::ParticleFilter<PositionState>(config_.local_opponent_particle_number, local_opponent_observation_model_, local_opponent_movement_model_));
+    local_obstacle_pf_.reset(new libPF::ParticleFilter<PositionStateW>(config_.local_obstacle_particle_number, local_obstacle_observation_model_, local_obstacle_movement_model_));
 
     //setting the resampling strategies
     local_mate_pf_->setResamplingStrategy(local_mate_resampling_);
@@ -142,9 +142,9 @@ void WorldModel::reset_all_filters() {
     local_obstacle_pf_->drawAllFromDistribution(local_obstacle_state_distribution_);
 
     // setting up the distributions for the further game
-    *local_mate_state_distribution_ = LocalObstacleStateDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_mate_max_distance * 2, config_.local_mate_max_distance * 2));
-    *local_opponent_state_distribution_ = LocalObstacleStateDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_opponent_max_distance * 2, config_.local_opponent_max_distance * 2));
-    *local_obstacle_state_distribution_ = LocalObstacleStateWDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_obstacle_max_distance * 2, config_.local_obstacle_max_distance * 2), config_.local_obstacle_min_width, config_.local_obstacle_max_width);
+    *local_mate_state_distribution_ = LocalPositionStateDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_mate_max_distance * 2, config_.local_mate_max_distance * 2));
+    *local_opponent_state_distribution_ = LocalPositionStateDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_opponent_max_distance * 2, config_.local_opponent_max_distance * 2));
+    *local_obstacle_state_distribution_ = LocalPositionStateWDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_obstacle_max_distance * 2, config_.local_obstacle_max_distance * 2), config_.local_obstacle_min_width, config_.local_obstacle_max_width);
 
     // setting marker settings
     local_mate_pf_->setMarkerColor(get_color_msg(config_.mate_marker_color));
@@ -174,7 +174,7 @@ void WorldModel::publish_visualization() {
     local_particles_publisher_.publish(local_obstacle_pf_->renderMarker());
     local_particles_publisher_.publish(local_mate_pf_->renderMarker());
 
-    local_particles_publisher_.publish(ObstacleState::renderMarker(local_mate_pf_->getBestXPercentEstimate(10.0), get_color_msg(2), ros::Duration(.1), "mates_mean"));
+    local_particles_publisher_.publish(PositionState::renderMarker(local_mate_pf_->getBestXPercentEstimate(10.0), get_color_msg(2), ros::Duration(.1), "mates_mean"));
     local_particles_publisher_.publish(local_opponent_pf_->renderMarker());
 }
 

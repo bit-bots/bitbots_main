@@ -8,18 +8,18 @@
 #include <std_msgs/ColorRGBA.h>
 #include <geometry_msgs/Point.h>
 
-class ObstacleState
+class PositionState
 {
 public:
-    ObstacleState();
-    ObstacleState(float x, float y);
-    ~ObstacleState();
+    PositionState();
+    PositionState(float x, float y);
+    ~PositionState();
 
-    ObstacleState operator*(float factor) const;
+    PositionState operator*(float factor) const;
 
-    ObstacleState& operator=(const ObstacleState& other);
+    PositionState& operator=(const PositionState& other);
 
-    ObstacleState& operator+=(const ObstacleState& other);
+    PositionState& operator+=(const PositionState& other);
 
     float getXPos() const;
 
@@ -29,11 +29,11 @@ public:
 
     void setYPos(float y);
 
-    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
+    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<PositionState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
 
-    static visualization_msgs::Marker renderMarker(ObstacleState particle_state, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
+    static visualization_msgs::Marker renderMarker(PositionState particle_state, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
 
-    double calcDistance(const ObstacleState& state) const;
+    double calcDistance(const PositionState& state) const;
 
     // float getTheta() const;
 
@@ -58,29 +58,29 @@ protected:
 };
 
 /*
- * ObstacleStateW - the obstacle state with width
+ * PositionStateW - the obstacle state with width
  */
 
-class ObstacleStateW : public ObstacleState
+class PositionStateW : public PositionState
 {
 public:
-    ObstacleStateW();
-    ObstacleStateW(float x, float y, float w);
+    PositionStateW();
+    PositionStateW(float x, float y, float w);
 
-    ObstacleStateW operator*(float factor) const;
+    PositionStateW operator*(float factor) const;
 
-    ObstacleStateW& operator+=(const ObstacleStateW& other);
+    PositionStateW& operator+=(const PositionStateW& other);
 
-    ObstacleStateW& operator=(const ObstacleStateW& other);
-    ~ObstacleStateW();
+    PositionStateW& operator=(const PositionStateW& other);
+    ~PositionStateW();
 
     float getWidth() const;
 
     void setWidth(float t);
 
-    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
+    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<PositionStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
 
-    double calcDistance(const ObstacleStateW& state) const;
+    double calcDistance(const PositionStateW& state) const;
 
 private:
 
@@ -89,30 +89,30 @@ private:
 
 
 /*
- * ObstacleStateO - the obstacle state with orientation
+ * PoseState - the obstacle state with orientation
  */
 
-class ObstacleStateO : public ObstacleState
+class PoseState : public PositionState
 {
 public:
-    ObstacleStateO();
-    ObstacleStateO(float x, float y, float o);
+    PoseState();
+    PoseState(float x, float y, float o);
 
-    ObstacleStateO operator*(float factor) const;
+    PoseState operator*(float factor) const;
 
-    ObstacleStateO& operator+=(const ObstacleStateO& other);
+    PoseState& operator+=(const PoseState& other);
 
-    ObstacleStateO& operator=(const ObstacleStateO& other);
-    ~ObstacleStateO();
+    PoseState& operator=(const PoseState& other);
+    ~PoseState();
 
     float getOrientation() const;
 
     void setOrientation(float t);
 
     // a marker is not useful for visualization here.
-    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list, std_msgs::ColorRGBA color, std::string n_space) = delete;
+    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<PositionState>::ParticleList& particle_list, std_msgs::ColorRGBA color, std::string n_space) = delete;
 
-    double calcDistance(const ObstacleStateO& state) const;
+    double calcDistance(const PoseState& state) const;
 
 private:
 

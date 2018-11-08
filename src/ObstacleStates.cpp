@@ -1,24 +1,24 @@
 #include <bitbots_world_model/ObstacleStates.h>
 
-ObstacleState::ObstacleState() :
+PositionState::PositionState() :
     xPos_(0.0),
     yPos_(0.0) {}
 
-ObstacleState::ObstacleState(float x, float y) :
+PositionState::PositionState(float x, float y) :
     xPos_(x),
     yPos_(y) {}
 
-ObstacleState ObstacleState::operator*(float factor) const {
-    return(ObstacleState(getXPos() * factor, getYPos() * factor));
+PositionState PositionState::operator*(float factor) const {
+    return(PositionState(getXPos() * factor, getYPos() * factor));
 }
 
-ObstacleState& ObstacleState::operator+=(const ObstacleState& other) {
+PositionState& PositionState::operator+=(const PositionState& other) {
     setXPos(getXPos() + other.getXPos());
     setYPos(getYPos() + other.getYPos());
     return *this;
 }
 
-ObstacleState& ObstacleState::operator=(const ObstacleState& other) {
+PositionState& PositionState::operator=(const PositionState& other) {
   if (this != &other) {
     setXPos(other.getXPos());
     setYPos(other.getYPos());
@@ -26,25 +26,25 @@ ObstacleState& ObstacleState::operator=(const ObstacleState& other) {
   return *this;
 }
 
-ObstacleState::~ObstacleState() {}
+PositionState::~PositionState() {}
 
-void ObstacleState::setXPos(float x) {
+void PositionState::setXPos(float x) {
     xPos_ = x;
 }
 
-void ObstacleState::setYPos(float y) {
+void PositionState::setYPos(float y) {
     yPos_ = y;
 }
 
-float ObstacleState::getXPos() const {
+float PositionState::getXPos() const {
     return xPos_;
 }
 
-float ObstacleState::getYPos() const {
+float PositionState::getYPos() const {
     return yPos_;
 }
 
-visualization_msgs::Marker ObstacleState::renderMarker(libPF::ParticleFilter<ObstacleState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
+visualization_msgs::Marker PositionState::renderMarker(libPF::ParticleFilter<PositionState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
     visualization_msgs::Marker msg;
     msg.header.stamp = ros::Time::now();
     msg.header.frame_id = "/world";
@@ -57,7 +57,7 @@ visualization_msgs::Marker ObstacleState::renderMarker(libPF::ParticleFilter<Obs
     msg.color = color;
     msg.lifetime = lifetime;
     msg.ns = n_space;
-    for (libPF::Particle<ObstacleState> *particle : particle_list) {
+    for (libPF::Particle<PositionState> *particle : particle_list) {
         geometry_msgs::Point point_msg;
         point_msg.x = particle->getState().getXPos();
         point_msg.y = particle->getState().getYPos();
@@ -66,7 +66,7 @@ visualization_msgs::Marker ObstacleState::renderMarker(libPF::ParticleFilter<Obs
     return msg;
 }
 
-visualization_msgs::Marker ObstacleState::renderMarker(ObstacleState particle_state, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
+visualization_msgs::Marker PositionState::renderMarker(PositionState particle_state, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
     visualization_msgs::Marker msg;
     msg.header.stamp = ros::Time::now();
     msg.header.frame_id = "/world";
@@ -86,7 +86,7 @@ visualization_msgs::Marker ObstacleState::renderMarker(ObstacleState particle_st
     return msg;
 }
 
-double ObstacleState::calcDistance(const ObstacleState& state) const {
+double PositionState::calcDistance(const PositionState& state) const {
     // TODO
     double diff =  std::sqrt(std::pow(getXPos() - state.getXPos(), 2) + std::pow(getYPos() - state.getYPos(), 2));
     if (diff == 0.0) {
@@ -95,26 +95,26 @@ double ObstacleState::calcDistance(const ObstacleState& state) const {
     return diff;
 }
 
-ObstacleStateW::ObstacleStateW() :
-    ObstacleState(),
+PositionStateW::PositionStateW() :
+    PositionState(),
     width_(0.0) {}
 
-ObstacleStateW::ObstacleStateW(float x, float y, float w) :
-    ObstacleState(x, y),
+PositionStateW::PositionStateW(float x, float y, float w) :
+    PositionState(x, y),
     width_(w) {}
 
-ObstacleStateW ObstacleStateW::operator*(float factor) const {
-    return(ObstacleStateW(getXPos() * factor, getYPos() * factor, getWidth() * factor));
+PositionStateW PositionStateW::operator*(float factor) const {
+    return(PositionStateW(getXPos() * factor, getYPos() * factor, getWidth() * factor));
 }
 
-ObstacleStateW& ObstacleStateW::operator+=(const ObstacleStateW& other) {
+PositionStateW& PositionStateW::operator+=(const PositionStateW& other) {
     setXPos(getXPos() + other.getXPos());
     setYPos(getYPos() + other.getYPos());
     setWidth(getWidth() + other.getWidth());
     return *this;
 }
 
-ObstacleStateW& ObstacleStateW::operator=(const ObstacleStateW& other) {
+PositionStateW& PositionStateW::operator=(const PositionStateW& other) {
   if (this != &other) {
     setXPos(other.getXPos());
     setYPos(other.getYPos());
@@ -123,17 +123,17 @@ ObstacleStateW& ObstacleStateW::operator=(const ObstacleStateW& other) {
   return *this;
 }
 
-ObstacleStateW::~ObstacleStateW() {}
+PositionStateW::~PositionStateW() {}
 
-void ObstacleStateW::setWidth(float w) {
+void PositionStateW::setWidth(float w) {
     width_ = w;
 }
 
-float ObstacleStateW::getWidth() const {
+float PositionStateW::getWidth() const {
     return width_;
 }
 
-visualization_msgs::Marker ObstacleStateW::renderMarker(libPF::ParticleFilter<ObstacleStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
+visualization_msgs::Marker PositionStateW::renderMarker(libPF::ParticleFilter<PositionStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
     visualization_msgs::Marker msg;
     msg.header.stamp = ros::Time::now();
     msg.header.frame_id = "/world";
@@ -146,7 +146,7 @@ visualization_msgs::Marker ObstacleStateW::renderMarker(libPF::ParticleFilter<Ob
     msg.color = color;
     msg.lifetime = lifetime;
     msg.ns = n_space;
-    for (libPF::Particle<ObstacleStateW> *particle : particle_list) {
+    for (libPF::Particle<PositionStateW> *particle : particle_list) {
         geometry_msgs::Point point_msg;
         point_msg.x = particle->getState().getXPos();
         point_msg.y = particle->getState().getYPos();
@@ -155,7 +155,7 @@ visualization_msgs::Marker ObstacleStateW::renderMarker(libPF::ParticleFilter<Ob
     return msg;
 }
 
-double ObstacleStateW::calcDistance(const ObstacleStateW& state) const {
+double PositionStateW::calcDistance(const PositionStateW& state) const {
     // TODO
     double diff =  std::sqrt(std::pow(getXPos() - state.getXPos(), 2) + std::pow(getYPos() - state.getYPos(), 2));
     if (diff == 0.0) {
@@ -164,26 +164,26 @@ double ObstacleStateW::calcDistance(const ObstacleStateW& state) const {
     return diff;
 }
 
-ObstacleStateO::ObstacleStateO() :
-    ObstacleState(),
+PoseState::PoseState() :
+    PositionState(),
     orientation_(0.0) {}
 
-ObstacleStateO::ObstacleStateO(float x, float y, float o) :
-    ObstacleState(x, y),
+PoseState::PoseState(float x, float y, float o) :
+    PositionState(x, y),
     orientation_(o) {}
 
-ObstacleStateO ObstacleStateO::operator*(float factor) const {
-    return(ObstacleStateO(getXPos() * factor, getYPos() * factor, getOrientation() * factor));
+PoseState PoseState::operator*(float factor) const {
+    return(PoseState(getXPos() * factor, getYPos() * factor, getOrientation() * factor));
 }
 
-ObstacleStateO& ObstacleStateO::operator+=(const ObstacleStateO& other) {
+PoseState& PoseState::operator+=(const PoseState& other) {
     setXPos(getXPos() + other.getXPos());
     setYPos(getYPos() + other.getYPos());
     setOrientation(getOrientation() + other.getOrientation());
     return *this;
 }
 
-ObstacleStateO& ObstacleStateO::operator=(const ObstacleStateO& other) {
+PoseState& PoseState::operator=(const PoseState& other) {
   if (this != &other) {
     setXPos(other.getXPos());
     setYPos(other.getYPos());
@@ -192,17 +192,17 @@ ObstacleStateO& ObstacleStateO::operator=(const ObstacleStateO& other) {
   return *this;
 }
 
-ObstacleStateO::~ObstacleStateO() {}
+PoseState::~PoseState() {}
 
-void ObstacleStateO::setOrientation(float o) {
+void PoseState::setOrientation(float o) {
     orientation_ = o;
 }
 
-float ObstacleStateO::getOrientation() const {
+float PoseState::getOrientation() const {
     return orientation_;
 }
 
-double ObstacleStateO::calcDistance(const ObstacleStateO& state) const {
+double PoseState::calcDistance(const PoseState& state) const {
     // TODO
     double diff =  std::sqrt(std::pow(getXPos() - state.getXPos(), 2) + std::pow(getYPos() - state.getYPos(), 2));
     if (diff == 0.0) {

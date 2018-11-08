@@ -16,7 +16,7 @@
  * nothing in drift().
  * @author Stephan Wirth
  */
-class LocalObstacleMovementModel : public libPF::MovementModel<ObstacleStateW> {
+class LocalObstacleMovementModel : public libPF::MovementModel<PositionStateW> {
 
   public:
     /**
@@ -33,14 +33,14 @@ class LocalObstacleMovementModel : public libPF::MovementModel<ObstacleStateW> {
      * The drift method is empty in this example.
      * @param state Pointer to the state that has to be manipulated.
      */
-    void drift(ObstacleStateW& state, double dt) const;
+    void drift(PositionStateW& state, double dt) const;
 
     /**
      * The diffusion consists of a very small gaussian jitter on the
      * state's variable.
      * @param state Pointer to the state that has to be manipulated.
      */
-    void diffuse(ObstacleStateW& state, double dt) const;
+    void diffuse(PositionStateW& state, double dt) const;
 
   protected:
 
@@ -54,7 +54,7 @@ class LocalObstacleMovementModel : public libPF::MovementModel<ObstacleStateW> {
 
 };
 
-class LocalRobotMovementModel : public libPF::MovementModel<ObstacleState> {
+class LocalRobotMovementModel : public libPF::MovementModel<PositionState> {
 
   public:
     /**
@@ -71,14 +71,14 @@ class LocalRobotMovementModel : public libPF::MovementModel<ObstacleState> {
      * The drift method is empty in this example.
      * @param state Pointer to the state that has to be manipulated.
      */
-    void drift(ObstacleState& state, double dt) const;
+    void drift(PositionState& state, double dt) const;
 
     /**
      * The diffusion consists of a very small gaussian jitter on the
      * state's variable.
      * @param state Pointer to the state that has to be manipulated.
      */
-    void diffuse(ObstacleState& state, double dt) const;
+    void diffuse(PositionState& state, double dt) const;
 
   protected:
 

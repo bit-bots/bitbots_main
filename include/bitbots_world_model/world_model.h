@@ -68,29 +68,34 @@ class WorldModel {
         int opponent_color_;
 
         // measurements
-        std::vector<ObstacleStateW> obstacle_measurements_;
-        std::vector<ObstacleState> mate_measurements_;
-        std::vector<ObstacleState> opponent_measurements_;
+        std::vector<PositionStateW> obstacle_measurements_;
+        std::vector<PositionState> mate_measurements_;
+        std::vector<PositionState> opponent_measurements_;
 
-        std::shared_ptr<ImportanceResamplingWE<ObstacleState>> local_mate_resampling_;
-        std::shared_ptr<ImportanceResamplingWE<ObstacleState>> local_opponent_resampling_;
-        std::shared_ptr<ImportanceResamplingWE<ObstacleStateW>> local_obstacle_resampling_;
+        // resampling strategies
+        std::shared_ptr<ImportanceResamplingWE<PositionState>> local_mate_resampling_;
+        std::shared_ptr<ImportanceResamplingWE<PositionState>> local_opponent_resampling_;
+        std::shared_ptr<ImportanceResamplingWE<PositionStateW>> local_obstacle_resampling_;
 
+        // observation models
         std::shared_ptr<LocalRobotObservationModel> local_mate_observation_model_;
         std::shared_ptr<LocalRobotObservationModel> local_opponent_observation_model_;
         std::shared_ptr<LocalObstacleObservationModel> local_obstacle_observation_model_;
 
+        // movement models
         std::shared_ptr<LocalRobotMovementModel> local_mate_movement_model_;
         std::shared_ptr<LocalRobotMovementModel> local_opponent_movement_model_;
         std::shared_ptr<LocalObstacleMovementModel> local_obstacle_movement_model_;
 
-        std::shared_ptr<LocalObstacleStateDistribution> local_mate_state_distribution_;
-        std::shared_ptr<LocalObstacleStateDistribution> local_opponent_state_distribution_;
-        std::shared_ptr<LocalObstacleStateWDistribution> local_obstacle_state_distribution_;
+        //state distributions
+        std::shared_ptr<LocalPositionStateDistribution> local_mate_state_distribution_;
+        std::shared_ptr<LocalPositionStateDistribution> local_opponent_state_distribution_;
+        std::shared_ptr<LocalPositionStateWDistribution> local_obstacle_state_distribution_;
 
-        std::shared_ptr<libPF::ParticleFilter<ObstacleStateW>> local_obstacle_pf_;
-        std::shared_ptr<libPF::ParticleFilter<ObstacleState>> local_mate_pf_;
-        std::shared_ptr<libPF::ParticleFilter<ObstacleState>> local_opponent_pf_;
+        // particle filters
+        std::shared_ptr<libPF::ParticleFilter<PositionState>> local_mate_pf_;
+        std::shared_ptr<libPF::ParticleFilter<PositionState>> local_opponent_pf_;
+        std::shared_ptr<libPF::ParticleFilter<PositionStateW>> local_obstacle_pf_;
 
 
         bool valid_configuration_;
