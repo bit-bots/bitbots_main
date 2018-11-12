@@ -211,7 +211,6 @@ class TransformBall(object):
             point.y = o.top_left.y + o.width/2
             obstacle.position = self.transform(point, field)
             obstacles.obstacles.append(obstacle)
-        print("fooo")
         self.obstacle_relative_pub.publish(obstacles)
 
     def get_plane(self, stamp, object_height):
@@ -256,11 +255,11 @@ class TransformBall(object):
     def transform(self, point, field):
 
         # normalized camera coordinates coordinate system
-        #  -1,0 ------------- 1,1
+        #  -1,1 ------------- 1,1
         #       |           |
         #       |    0,0    |
         #       |           |
-        # -1,-1 ------------- 1,0
+        # -1,-1 ------------- 1,-1
         normalized_x = 2 * (float(point.x) - (float(self.camera_info.width) / 2)) / float(self.camera_info.width)
         normalized_y = (-2 * (float(point.y) - (float(self.camera_info.height) / 2)) / float(self.camera_info.height)) * \
                        (float(self.camera_info.height) / float(self.camera_info.width))
