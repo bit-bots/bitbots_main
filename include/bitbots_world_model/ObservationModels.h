@@ -3,8 +3,11 @@
 
 #include <vector>
 #include <algorithm>
-#include <bitbots_world_model/ObstacleStates.h>
 #include <libPF/ObservationModel.h>
+
+#include <bitbots_world_model/ObstacleStates.h>
+#include <bitbots_image_transformer/PixelsRelative.h>
+#include <bitbots_image_transformer/PixelRelative.h>
 
 
 /**
@@ -104,6 +107,55 @@ class LocalRobotObservationModel : public libPF::ObservationModel<PositionState>
     std::vector<PositionState> last_measurement_;
 
     double min_weight_;
+
+};
+
+class LocalFcnnObservationModel : public libPF::ObservationModel<PositionState> {
+
+  public:
+
+    /**
+     * empty
+     */
+    LocalFcnnObservationModel ();
+
+    /**
+     * empty
+     */
+    ~LocalFcnnObservationModel ();
+
+    typedef struct {
+        double distance;
+        double weight;
+    } WeightedMeasurement;
+
+    /**
+     *
+     * @param state Reference to the state that has to be weightened.
+     * @return weight for the given state.
+     */
+    double measure(const PositionState& state) const;
+
+    void set_measurement(bitbots_image_transformer::PixelsRelative measurement);
+
+    void set_min_weight(double min_weight);
+
+    void set_k(int k);
+
+    double get_min_weight() const;
+
+    void clear_measurement();
+
+    bool measurements_available();
+
+  protected:
+
+  private:
+
+    std::vector<bitbots_image_transformer::PixelRelative> last_measurement_;
+
+    double min_weight_;
+    int k_; // count of elements considered as "near"
 
 };
 
