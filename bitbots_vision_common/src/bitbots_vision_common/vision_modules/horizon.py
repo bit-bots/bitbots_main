@@ -178,7 +178,7 @@ class HorizonDetector:
         returns the y-value of highest point of the horizon (lowest y-value)
         :return: int(), y-value of highest point of the horizon (lowest y-value)
         """
-        return int(min(self.get_horizon_points(), key=itemgetter(1))[1])
+        return max(0, int(min(self.get_horizon_points(), key=itemgetter(1))[1] - y_offset))
 
     def _equalize_points(self, points):
         # type: (list) -> list
