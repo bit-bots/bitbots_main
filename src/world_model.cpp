@@ -112,6 +112,7 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
 
 void WorldModel::ball_callback(const bitbots_image_transformer::PixelsRelative &msg) {
     ball_measurements_ = msg;
+    local_ball_observation_model_->set_measurement(ball_measurements_);
 }
 
 void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
@@ -131,7 +132,6 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
             obstacle_measurements_.push_back(PositionStateW(obstacle.position.x, obstacle.position.y, obstacle.width));
         }
     }
-    local_ball_observation_model_->set_measurement(ball_measurements_);
     local_mate_observation_model_->set_measurement(mate_measurements_);
     local_opponent_observation_model_->set_measurement(opponent_measurements_);
     local_obstacle_observation_model_->set_measurement(obstacle_measurements_);
