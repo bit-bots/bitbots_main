@@ -211,6 +211,7 @@ class TransformBall(object):
             point.y = o.top_left.y + o.width/2
             obstacle.position = self.transform(point, field)
             obstacles.obstacles.append(obstacle)
+
         self.obstacle_relative_pub.publish(obstacles)
 
     def get_plane(self, stamp, object_height):
