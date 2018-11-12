@@ -20,6 +20,8 @@ field_width: 6
 # ROS-Stuff #
 #############
 
+ball_topic: '/ball_pixels'
+
 obstacles_topic: '/obstacles'
 
 local_model_topic: '/local_world_model'
