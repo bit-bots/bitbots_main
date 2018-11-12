@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   humanoid_league_msgs
   dynamic_reconfigure
+  bitbots_image_transformer
 )
 
 generate_dynamic_reconfigure_options(
