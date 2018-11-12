@@ -470,6 +470,7 @@
         </collision>
     </link>
     <link name="camera" />
+    <link name="camera_optical_frame"/>
     <link name="imu_frame" />
     <link name="camera_fixed">
     </link>
@@ -746,6 +747,12 @@
         <axis xyz="0 0 0" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
+    <joint name="camera__optical_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}" />
+      <parent link="camera" />
+      <child link="camera_optical_frame" />
+    </joint>
+
 
     <transmission name="HeadPanTransmission">
         <type>transmission_interface/SimpleTransmission</type>
