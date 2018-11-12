@@ -17,6 +17,8 @@
 #include <bitbots_world_model/ObservationModels.h>
 #include <bitbots_world_model/StateDistributions.h>
 #include <bitbots_world_model/Resampling.h>
+#include <bitbots_image_transformer/PixelsRelative.h>
+#include <bitbots_image_transformer/PixelRelative.h>
 
 #include <libPF/ParticleFilter.h>
 #include <libPF/CRandomNumberGenerator.h>
@@ -38,6 +40,7 @@ class WorldModel {
         bool reset_filters_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
 
         void dynamic_reconfigure_callback(wm::WorldModelConfig &config, uint32_t level);
+        void ball_callback(const bitbots_image_transformer::PixelsRelative &msg);
         void obstacles_callback(const hlm::ObstaclesRelative &msg);
 
         void init();
@@ -48,6 +51,7 @@ class WorldModel {
         ros::NodeHandle nh_;
 
         ros::Subscriber obstacle_subscriber_;
+        ros::Subscriber ball_subscriber_;
 
         ros::Publisher local_model_publisher_;
         ros::Publisher global_model_publisher_;
@@ -62,37 +66,43 @@ class WorldModel {
 
         // config - stuff
         bitbots_world_model::WorldModelConfig config_;
-        std_msgs::ColorRGBA mate_marker_color, opponent_marker_color, obstacle_marker_color;
+        std_msgs::ColorRGBA ball_marker_color, mate_marker_color, opponent_marker_color, obstacle_marker_color;
 
         int team_color_;
         int opponent_color_;
 
         // measurements
-        std::vector<PositionStateW> obstacle_measurements_;
+        bitbots_image_transformer::PixelsRelative ball_measurements_;
         std::vector<PositionState> mate_measurements_;
         std::vector<PositionState> opponent_measurements_;
+        std::vector<PositionStateW> obstacle_measurements_;
 
         // resampling strategies
+        std::shared_ptr<ImportanceResamplingWE<PositionState>> local_ball_resampling_;
         std::shared_ptr<ImportanceResamplingWE<PositionState>> local_mate_resampling_;
         std::shared_ptr<ImportanceResamplingWE<PositionState>> local_opponent_resampling_;
         std::shared_ptr<ImportanceResamplingWE<PositionStateW>> local_obstacle_resampling_;
 
         // observation models
+        std::shared_ptr<LocalFcnnObservationModel> local_ball_observation_model_;
         std::shared_ptr<LocalRobotObservationModel> local_mate_observation_model_;
         std::shared_ptr<LocalRobotObservationModel> local_opponent_observation_model_;
         std::shared_ptr<LocalObstacleObservationModel> local_obstacle_observation_model_;
 
         // movement models
+        std::shared_ptr<LocalRobotMovementModel> local_ball_movement_model_;
         std::shared_ptr<LocalRobotMovementModel> local_mate_movement_model_;
         std::shared_ptr<LocalRobotMovementModel> local_opponent_movement_model_;
         std::shared_ptr<LocalObstacleMovementModel> local_obstacle_movement_model_;
 
         //state distributions
+        std::shared_ptr<LocalPositionStateDistribution> local_ball_state_distribution_;
         std::shared_ptr<LocalPositionStateDistribution> local_mate_state_distribution_;
         std::shared_ptr<LocalPositionStateDistribution> local_opponent_state_distribution_;
         std::shared_ptr<LocalPositionStateWDistribution> local_obstacle_state_distribution_;
 
         // particle filters
+        std::shared_ptr<libPF::ParticleFilter<PositionState>> local_ball_pf_;
         std::shared_ptr<libPF::ParticleFilter<PositionState>> local_mate_pf_;
         std::shared_ptr<libPF::ParticleFilter<PositionState>> local_opponent_pf_;
         std::shared_ptr<libPF::ParticleFilter<PositionStateW>> local_obstacle_pf_;

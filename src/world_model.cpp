@@ -14,6 +14,9 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     if (config.obstacles_topic != config_.obstacles_topic) {
         obstacle_subscriber_ = nh_.subscribe(config.obstacles_topic.c_str(), 1, &WorldModel::obstacles_callback, this);
     }
+    if (config.ball_topic != config_.ball_topic) {
+        ball_subscriber_ = nh_.subscribe(config.ball_topic.c_str(), 1, &WorldModel::ball_callback, this);
+    }
     if (config.local_model_topic != config_.local_model_topic) {
         local_model_publisher_ = nh_.advertise<hlm::Model>(config.local_model_topic.c_str(), 1);
     }
@@ -49,6 +52,8 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     }
 
     // initializing observation models
+    local_ball_observation_model_.reset(new LocalFcnnObservationModel());
+    local_ball_observation_model_->set_min_weight(config.local_ball_min_weight);
     local_mate_observation_model_.reset(new LocalRobotObservationModel());
     local_mate_observation_model_->set_min_weight(config.local_mate_min_weight);
     local_opponent_observation_model_.reset(new LocalRobotObservationModel());
@@ -57,18 +62,23 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     local_obstacle_observation_model_->set_min_weight(config.local_obstacle_min_weight);
 
     // initializing movement models
+    local_ball_movement_model_.reset(new LocalRobotMovementModel(random_number_generator_, config.local_ball_diffusion_x_std_dev, config.local_ball_diffusion_y_std_dev, config.local_ball_diffusion_multiplicator));
     local_mate_movement_model_.reset(new LocalRobotMovementModel(random_number_generator_, config.local_mate_diffusion_x_std_dev, config.local_mate_diffusion_y_std_dev, config.local_mate_diffusion_multiplicator));
     local_opponent_movement_model_.reset(new LocalRobotMovementModel(random_number_generator_, config.local_opponent_diffusion_x_std_dev, config.local_opponent_diffusion_y_std_dev, config.local_opponent_diffusion_multiplicator));
     local_obstacle_movement_model_.reset(new LocalObstacleMovementModel(random_number_generator_, config.local_obstacle_diffusion_x_std_dev, config.local_obstacle_diffusion_y_std_dev, config.local_obstacle_diffusion_multiplicator));
 
     // initializing state distributions
+    local_ball_state_distribution_.reset(new LocalPositionStateDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width)));
     local_mate_state_distribution_.reset(new LocalPositionStateDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width)));
     local_opponent_state_distribution_.reset(new LocalPositionStateDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width)));
     local_obstacle_state_distribution_.reset(new LocalPositionStateWDistribution(random_number_generator_, std::make_pair(config.initial_robot_x, config.initial_robot_y), std::make_pair(config.field_height, config.field_width), config.local_obstacle_min_width, config.local_obstacle_max_width));
 
     // setting particle counts
     if (config.local_obstacle_particle_number != config_.local_obstacle_particle_number || config.local_mate_particle_number != config_.local_mate_particle_number || config.local_opponent_particle_number != config_.local_opponent_particle_number) {
-        ROS_INFO_STREAM("You changed the particle number to the following: \nlocal_obstacle_particle_number: " <<
+        ROS_INFO_STREAM("You changed the particle number to the following: " <<
+                         "\nlocal_ball_particle_number: " <<
+                         config.local_ball_particle_number <<
+                         "\nlocal_obstacle_particle_number: " <<
                          config.local_obstacle_particle_number <<
                          "\nlocal_mate_particle_number: " <<
                          config.local_mate_particle_number <<
@@ -78,6 +88,7 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     }
 
     // initializing resampling methods
+    local_ball_resampling_.reset(new ImportanceResamplingWE<PositionState>(static_cast<int>(config.local_ball_particle_number * config.local_ball_explorer_rate), local_ball_state_distribution_));
     local_mate_resampling_.reset(new ImportanceResamplingWE<PositionState>(static_cast<int>(config.local_mate_particle_number * config.local_mate_explorer_rate), local_mate_state_distribution_));
     local_opponent_resampling_.reset(new ImportanceResamplingWE<PositionState>(static_cast<int>(config.local_opponent_particle_number * config.local_opponent_explorer_rate), local_opponent_state_distribution_));
     local_obstacle_resampling_.reset(new ImportanceResamplingWE<PositionStateW>(static_cast<int>(config.local_obstacle_particle_number * config.local_obstacle_explorer_rate), local_obstacle_state_distribution_));
@@ -89,6 +100,8 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
         init();
     }
 
+    local_ball_pf_->setMarkerColor(get_color_msg(config.ball_marker_color));
+    local_ball_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)));
     local_mate_pf_->setMarkerColor(get_color_msg(config.mate_marker_color));
     local_mate_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)));
     local_opponent_pf_->setMarkerColor(get_color_msg(config.opponent_marker_color));
@@ -97,8 +110,14 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     local_obstacle_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)));
 }
 
+void WorldModel::ball_callback(const bitbots_image_transformer::PixelsRelative &msg) {
+    ball_measurements_ = msg;
+}
+
 void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
-    // clear the measurement vectors of the 3 filtered classes
+    // clear the measurement vectors of the 4 filtered classes
+
+    ball_measurements_.pixels.clear();
     obstacle_measurements_.clear();
     mate_measurements_.clear();
     opponent_measurements_.clear();
@@ -112,6 +131,7 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
             obstacle_measurements_.push_back(PositionStateW(obstacle.position.x, obstacle.position.y, obstacle.width));
         }
     }
+    local_ball_observation_model_->set_measurement(ball_measurements_);
     local_mate_observation_model_->set_measurement(mate_measurements_);
     local_opponent_observation_model_->set_measurement(opponent_measurements_);
     local_obstacle_observation_model_->set_measurement(obstacle_measurements_);
@@ -127,26 +147,33 @@ bool WorldModel::reset_filters_callback(std_srvs::Trigger::Request &req, std_srv
 void WorldModel::reset_all_filters() {
     ROS_INFO("Resetting all particle filters...");
 
+    local_ball_pf_.reset(new libPF::ParticleFilter<PositionState>(config_.local_ball_particle_number, local_ball_observation_model_, local_ball_movement_model_));
     local_mate_pf_.reset(new libPF::ParticleFilter<PositionState>(config_.local_mate_particle_number, local_mate_observation_model_, local_mate_movement_model_));
     local_opponent_pf_.reset(new libPF::ParticleFilter<PositionState>(config_.local_opponent_particle_number, local_opponent_observation_model_, local_opponent_movement_model_));
     local_obstacle_pf_.reset(new libPF::ParticleFilter<PositionStateW>(config_.local_obstacle_particle_number, local_obstacle_observation_model_, local_obstacle_movement_model_));
 
     //setting the resampling strategies
+    local_ball_pf_->setResamplingStrategy(local_ball_resampling_);
     local_mate_pf_->setResamplingStrategy(local_mate_resampling_);
     local_opponent_pf_->setResamplingStrategy(local_opponent_resampling_);
     local_obstacle_pf_->setResamplingStrategy(local_obstacle_resampling_);
 
     // resetting the particles
+    local_ball_pf_->drawAllFromDistribution(local_ball_state_distribution_);
     local_mate_pf_->drawAllFromDistribution(local_mate_state_distribution_);
     local_opponent_pf_->drawAllFromDistribution(local_opponent_state_distribution_);
     local_obstacle_pf_->drawAllFromDistribution(local_obstacle_state_distribution_);
 
     // setting up the distributions for the further game
+    *local_ball_state_distribution_ = LocalPositionStateDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_ball_max_distance * 2, config_.local_ball_max_distance * 2));
     *local_mate_state_distribution_ = LocalPositionStateDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_mate_max_distance * 2, config_.local_mate_max_distance * 2));
     *local_opponent_state_distribution_ = LocalPositionStateDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_opponent_max_distance * 2, config_.local_opponent_max_distance * 2));
     *local_obstacle_state_distribution_ = LocalPositionStateWDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_obstacle_max_distance * 2, config_.local_obstacle_max_distance * 2), config_.local_obstacle_min_width, config_.local_obstacle_max_width);
 
     // setting marker settings
+    local_ball_pf_->setMarkerColor(get_color_msg(config_.ball_marker_color));
+    local_ball_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)));
+    local_ball_pf_->setMarkerNamespace("local_ball");
     local_mate_pf_->setMarkerColor(get_color_msg(config_.mate_marker_color));
     local_mate_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)));
     local_mate_pf_->setMarkerNamespace("local_mate");
@@ -171,9 +198,9 @@ void WorldModel::publish_visualization() {
     if (!config_.debug_visualization) {
         return;
     }
+    local_particles_publisher_.publish(local_ball_pf_->renderMarker());
     local_particles_publisher_.publish(local_obstacle_pf_->renderMarker());
     local_particles_publisher_.publish(local_mate_pf_->renderMarker());
-
     local_particles_publisher_.publish(PositionState::renderMarker(local_mate_pf_->getBestXPercentEstimate(10.0), get_color_msg(2), ros::Duration(.1), "mates_mean"));
     local_particles_publisher_.publish(local_opponent_pf_->renderMarker());
 }
@@ -186,24 +213,28 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
 
     // setting the weights of the particles according to the measurements taken
     // TODO: do this only when stuff is measured
+    local_ball_pf_->measure();
     local_mate_pf_->measure();
     local_opponent_pf_->measure();
     local_obstacle_pf_->measure();
 
     // manually clearing the list of measurements
     // TODO: just age the measurements instead of removing them
+    local_ball_observation_model_->clear_measurement();
     local_mate_observation_model_->clear_measurement();
     local_opponent_observation_model_->clear_measurement();
     local_obstacle_observation_model_->clear_measurement();
 
     // we need to resample after every step because the world is changing constantly - even if we don't move.
     // the filters have got a resampling strategy with explorers, meaning they spread some particles randomly in the distribution
+    local_ball_pf_->resample();
     local_mate_pf_->resample();
     local_opponent_pf_->resample();
     local_obstacle_pf_->resample();
 
     // diffuse the particles (add normal distributed uncertainty)
     // the .1 parameter is only there for legacy reasons and has no effect at all.
+    local_ball_pf_->diffuse(.1);
     local_mate_pf_->diffuse(.1);
     local_opponent_pf_->diffuse(.1);
     local_obstacle_pf_->diffuse(.1);
