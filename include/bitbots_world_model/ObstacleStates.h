@@ -7,6 +7,7 @@
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/ColorRGBA.h>
 #include <geometry_msgs/Point.h>
+#include <bitbots_image_transformer/PixelRelative.h>
 
 class PositionState
 {
@@ -34,6 +35,8 @@ public:
     static visualization_msgs::Marker renderMarker(PositionState particle_state, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
 
     double calcDistance(const PositionState& state) const;
+
+    double calcDistance(const bitbots_image_transformer::PixelRelative &pixel) const;
 
     // float getTheta() const;
 

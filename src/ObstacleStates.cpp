@@ -95,6 +95,16 @@ double PositionState::calcDistance(const PositionState& state) const {
     return diff;
 }
 
+double PositionState::calcDistance(const bitbots_image_transformer::PixelRelative &pixel) const {
+    // TODO
+    double diff =  std::sqrt(std::pow(getXPos() - pixel.position.x, 2) + std::pow(getYPos() - pixel.position.y, 2));
+    if (diff == 0.0) {
+        diff = 0.0001;
+    }
+    return diff;
+}
+
+
 PositionStateW::PositionStateW() :
     PositionState(),
     width_(0.0) {}
