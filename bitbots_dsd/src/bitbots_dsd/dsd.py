@@ -6,24 +6,31 @@ from typing import List
 
 from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
 
-def defaultdict_lsitfactory():
+
+def defaultdict_listfactory():
     return collections.defaultdict(list)
 
 
-def register_element(modulepath: str, path: str) -> dict:
+def register_element(path: str) -> dict:
+    """
+    Extract all the classes from the files in the given path and return a dictionary containing them
 
+    :param path: The path containing the files that should be registered
+    :return: A dictionary with classnames as keys and classes as values
+    """
     elements = {}
-
-    files = [f for f in os.listdir(os.path.join(modulepath, path)) if f.endswith('.py')]
+    files = [f for f in os.listdir(path) if f.endswith('.py')]
     for file in files:
-        with open(os.path.join(modulepath, path, file), "r") as dp:
+        with open(os.path.join(path, file), "r") as dp:
             for line in dp:
                 try:
-                    m = re.findall(r"(?<=class\s)[a-zA-Z0-9]*", line)
+                    m = re.search(r"(?<=class\s)[a-zA-Z0-9]*", line)
                     if m:
-                        module = importlib.import_module(
-                            os.path.join(os.path.basename(modulepath), path, file).replace("/", ".").replace("\\", ".").replace(".py", ""))
-                        elements[m[0]] = getattr(module, m[0])
+                        classname = m.group()
+                        # relative_filename is the name relative to the src directory (from where it will be imported)
+                        relative_filename = os.path.join(os.path.relpath(os.path.relpath(path), os.path.dirname(os.path.dirname(path))), file)
+                        module = importlib.import_module(relative_filename.replace("/", ".").replace("\\", ".").replace(".py", ""))
+                        elements[classname] = getattr(module, classname)
                 except Exception as e:
                     print(e)
     return elements
@@ -74,7 +81,7 @@ class DSD:
 
     def load_behavior(self, path):
 
-        tree_build = collections.defaultdict(defaultdict_lsitfactory)
+        tree_build = collections.defaultdict(defaultdict_listfactory)
         curr_path = ""
 
         # Parsing the behavior file
@@ -101,19 +108,19 @@ class DSD:
                         continue
                     if not comment:
 
-                        ident = len(oline) - len(oline.lstrip())
-                        if ident % 4 != 0:
+                        indent = len(oline) - len(oline.lstrip())
+                        if indent % 4 != 0:
                             raise AssertionError(f"Ident in line {lnr} is not a multiple of 4")
-                        last_ident = len(lastline) - len(lastline.lstrip())
+                        last_indent = len(lastline) - len(lastline.lstrip())
 
                         line = oline.lstrip()
 
-                        if ident == 0 and line[0] == "#":
+                        if indent == 0 and line[0] == "#":
                             # create subtree
                             sub = line[1:]
                             curr_path = ""
 
-                        if ident == 0 and line[0:3] == "-->":
+                        if indent == 0 and line[0:3] == "-->":
                             next_is_start = True
                             sub = "root"
                             lastline = oline
@@ -126,9 +133,9 @@ class DSD:
                             self.set_start_element(self.decisions[line.strip('$')])
 
                         # Go one layer up
-                        if ident < last_ident:
+                        if indent < last_indent:
                             curr_path = ".".join(curr_path.split(".")
-                                                 [:len(curr_path.split(".")) - ((last_ident - ident) // 4)])
+                                                 [:len(curr_path.split(".")) - ((last_indent - indent) // 4)])
                         # Handle sub-behaviors
                         snd = re.split(r"\s*-?->\s*", line)
                         if len(snd) >= 2 and snd[1][0] == "#":
@@ -158,8 +165,8 @@ class DSD:
                                     tuple((x.strip() for x in re.split(r"-?->|\+", line))))
 
                         # Go one layer deeper fox next line
-                        if (ident >= last_ident and "@" not in line and "#" not in line) or (
-                                ident == 0 and line[0] != "#"):
+                        if (indent >= last_indent and "@" not in line and "#" not in line) or (
+                                indent == 0 and line[0] != "#"):
                             curr_path += "." if curr_path else ""
                             curr_path += re.sub(r"[#]", "",
                                                 re.split(r"-?->|\+", line.strip())[1].strip()
