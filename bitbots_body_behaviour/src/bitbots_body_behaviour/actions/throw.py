@@ -8,7 +8,7 @@ Handling throwing of the goalie.
 
 import rospy
 
-from bitbots_stackmachine.abstract_action_element import AbstractActionElement
+from bitbots_dsd.abstract_action_element import AbstractActionElement
 from humanoid_league_msgs.msg import HeadMode
 
 LEFT = "LEFT"

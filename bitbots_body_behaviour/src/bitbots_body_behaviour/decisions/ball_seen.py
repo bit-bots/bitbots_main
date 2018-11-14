@@ -7,7 +7,7 @@ BallSeen
 """
 
 import rospy
-from dsd.abstract_decision_element import AbstractDecisionElement
+from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
 
 
 class AbstractBallSeen(AbstractDecisionElement):
@@ -21,12 +21,16 @@ class AbstractBallSeen(AbstractDecisionElement):
 
     def perform(self, connector, reevaluate=False):
         if (rospy.get_time() - connector.world_model.ball_last_seen()) < self.max_ball_time:
-            return "YES", None
+            return "YES"
         else:
-            return "NO", None
+            return "NO"
 
     def get_reevaluate(self):
         return True
 
     def _register(self):
         return ["YES", "NO"]
+
+
+class BallSeen(AbstractBallSeen):
+    pass

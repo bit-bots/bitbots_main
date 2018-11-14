@@ -7,17 +7,9 @@ DutyDecider
 
 """
 import rospy
-from bitbots_body_behaviour.actions.go_away_from_ball import GoAwayFromBall
-from bitbots_body_behaviour.actions.wait import Wait
-from bitbots_body_behaviour.decisions.common.go_to_duty_position import GoToDutyPosition
-from bitbots_body_behaviour.decisions.goalie.goalie_decision import GoaliePositionDecision
-from bitbots_body_behaviour.decisions.kick_off.kick_off import KickOff
-from bitbots_body_behaviour.decisions.one_time_kicker.one_time_kicker_decision import OneTimeKickerDecision
-from bitbots_body_behaviour.decisions.penalty.penalty_kicker_decision import PenaltyKickerDecision
-from bitbots_body_behaviour.actions.go_to import GoToRelativePosition
 from bitbots_connector.capsules.blackboard_capsule import DUTY_GOALIE, DUTY_PENALTYKICKER, DUTY_TEAMPLAYER, DUTY_POSITIONING
 from humanoid_league_msgs.msg import Speak, HeadMode, GameState
-from dsd.abstract_decision_element import AbstractDecisionElement
+from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
 
 duty = None  # can be overwriten by the startup script (to force a behaviour)
 
@@ -40,9 +32,9 @@ class DutyDecider(AbstractDecisionElement):
 
         if blackboard.blackboard.is_frozen() or not blackboard.gamestate.is_allowed_to_move():
             rospy.logwarn("Not allowed to move")
-            return "Nothing", None
+            return "Nothing"
 
-        return "Test", None
+        return "TEST"
 
         if not blackboard.blackboard.get_duty():
             if duty is not None:
@@ -67,7 +59,7 @@ class DutyDecider(AbstractDecisionElement):
             rospy.loginfo("Wait for Gamestate")
             # When not playing, the head should look around to find features on the field
             blackboard.blackboard.set_head_duty(HeadMode.FIELD_FEATURES)
-            return "Nothing", None
+            return "Nothing"
 
         # Penalty Shoot but not mine, run away
         elif (blackboard.config["Body"]["Toggles"]["Fieldie"]["penaltykick_go_away"] and
@@ -98,7 +90,7 @@ class DutyDecider(AbstractDecisionElement):
             return self.push(KickOff)
 
         elif blackboard.blackboard.get_duty() == DUTY_GOALIE:
-            return "Goalie", None
+            return "Goalie"
 
         elif blackboard.blackboard.get_duty() == DUTY_PENALTYKICKER:
             return self.push(PenaltyKickerDecision)

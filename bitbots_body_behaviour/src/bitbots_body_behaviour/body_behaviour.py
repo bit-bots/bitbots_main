@@ -9,12 +9,13 @@ Starts the body behaviour
 """
 
 import actionlib
+import os
 import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose2D
 from humanoid_league_msgs.msg import BallRelative, GameState, Speak, HeadMode, Strategy, TeamData, PlayAnimationAction
 
 from bitbots_connector.blackboard import BodyBlackboard
-from dsd import dsd
+from bitbots_dsd import dsd
 
 
 def run(self):
@@ -33,10 +34,12 @@ if __name__ == "__main__":
     D.blackboard.pathfinding.pathfinding_simple_pub = rospy.Publisher('bitbots_pathfinding/relative_goal', Pose2D,
                                                                       queue_size=10)
 
-    D.register_actions("actions", recursive=True)
-    D.register_decisions("decisions", recursive=True)
+    dirname = os.path.dirname(os.path.realpath(__file__))
 
-    D.load_behavior("main.dsd")
+    D.register_actions(dirname, "actions")
+    D.register_decisions(dirname, "decisions")
+
+    D.load_behavior(os.path.join(dirname, "main.dsd"))
 
     rospy.init_node("Bodybehavior")
 

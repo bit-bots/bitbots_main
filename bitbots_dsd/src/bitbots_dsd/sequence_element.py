@@ -1,4 +1,4 @@
-from dsd.abstract_decision_element import AbstractDecisionElement
+from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
 
 
 class SequenceElement(AbstractDecisionElement):

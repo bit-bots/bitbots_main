@@ -5,7 +5,7 @@ RaiseArm
 
 Raising Arms to get ready to throw the goalie.
 """
-from dsd.abstract_action_element import AbstractActionElement
+from bitbots_dsd.abstract_action_element import AbstractActionElement
 
 
 class RaiseArm(AbstractActionElement):

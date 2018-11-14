@@ -1,6 +1,6 @@
 import json
 
-from dsd.abstract_stack_element import AbstractStackElement
+from bitbots_dsd.abstract_stack_element import AbstractStackElement
 
 
 class AbstractDecisionElement(AbstractStackElement):

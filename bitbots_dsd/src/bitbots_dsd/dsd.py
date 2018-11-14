@@ -4,32 +4,29 @@ import os
 import re
 from typing import List
 
-from dsd.abstract_decision_element import AbstractDecisionElement
-
+from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
 
 def defaultdict_lsitfactory():
     return collections.defaultdict(list)
 
 
-def register_element(path: str, recursive=True) -> dict:
+def register_element(modulepath: str, path: str) -> dict:
 
     elements = {}
 
-    for r, _, afs in os.walk(path):
-        for af in afs:
-            with open(os.path.join(r, af), "r") as dp:
-                for line in dp:
-                    try:
-                        m = re.findall(r"(?<=class\s)[a-zA-Z0-9]*", line)
-                        if m:
-                            module = importlib.import_module(
-                                os.path.join(r, af).replace("/", ".").replace("\\", ".").replace(".py", ""))
-                            elements[m[0]] = getattr(module, m[0])
-                    except Exception as e:
-                        print(e)
-            if not recursive:
-                break
-        return elements
+    files = [f for f in os.listdir(os.path.join(modulepath, path)) if f.endswith('.py')]
+    for file in files:
+        with open(os.path.join(modulepath, path, file), "r") as dp:
+            for line in dp:
+                try:
+                    m = re.findall(r"(?<=class\s)[a-zA-Z0-9]*", line)
+                    if m:
+                        module = importlib.import_module(
+                            os.path.join(os.path.basename(modulepath), path, file).replace("/", ".").replace("\\", ".").replace(".py", ""))
+                        elements[m[0]] = getattr(module, m[0])
+                except Exception as e:
+                    print(e)
+    return elements
 
 
 class DSD:
@@ -69,11 +66,11 @@ class DSD:
         self.actions = {}
         self.decisions = {}
 
-    def register_actions(self, path, recursive=True):
-        self.actions = register_element(path, recursive)
+    def register_actions(self, modulepath, path):
+        self.actions = register_element(modulepath, path)
 
-    def register_decisions(self, path, recursive=True):
-        self.decisions = register_element(path, recursive)
+    def register_decisions(self, modulepath, path):
+        self.decisions = register_element(modulepath, path)
 
     def load_behavior(self, path):
 
@@ -125,7 +122,8 @@ class DSD:
                         if next_is_start:
                             next_is_start = False
                             curr_path = ""  # line[1:]
-                            self.set_start_element(line)
+                            self.path = line
+                            self.set_start_element(self.decisions[line.strip('$')])
 
                         # Go one layer up
                         if ident < last_ident:

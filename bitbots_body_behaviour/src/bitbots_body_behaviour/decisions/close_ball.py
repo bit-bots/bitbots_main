@@ -6,10 +6,7 @@ CloseBall
 """
 from humanoid_league_msgs.msg import HeadMode
 
-from bitbots_body_behaviour.actions.go_to import GoToBall
-from bitbots_body_behaviour.decisions.common.kick_decision import KickDecisionPenaltyKick
-from bitbots_body_behaviour.decisions.penalty.penalty_first_kick import PenaltyFirstKick
-from dsd.abstract_decision_element import AbstractDecisionElement
+from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
 
 
 class CloseBall(AbstractDecisionElement):
@@ -39,7 +36,7 @@ class CloseBall(AbstractDecisionElement):
         return "CLOSE"
 
     def go(self, connector):
-        return "FAR", None
+        return "FAR"
 
     def get_reevaluate(self):
         return True
