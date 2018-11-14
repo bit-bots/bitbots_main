@@ -24,7 +24,7 @@
 
   <export>
     <bitbots_documentation>
-      <status>unknown</status>
+        <status>tested_simulator</status>
       <language>c++</language>
     </bitbots_documentation>
   </export>
