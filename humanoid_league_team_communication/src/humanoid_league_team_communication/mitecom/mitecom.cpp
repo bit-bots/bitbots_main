@@ -72,7 +72,7 @@ int TeamMateData::get_relative_ball_y(void)
 
 int TeamMateData::get_ball_belief(void)
 {
-    return data.data[BALL_RELATIVE_Y];
+    return data.data[BALL_BELIEF];
 }
 
 int TeamMateData::get_oppgoal_relative_x(void)
@@ -248,8 +248,8 @@ void mitecom::open_socket(int port)
 void mitecom::send_data(void)
 {
     ownData->robotID = m_robotID;
-    ownData->data[ROBOT_MAX_KICKING_DISTANCE] = 250000;
-    ownData->data[ROBOT_AVG_WALKING_SPEED_IN_CM_PER_SECOND] = 1;
+    //ownData->data[ROBOT_MAX_KICKING_DISTANCE] = 250000;
+    //ownData->data[ROBOT_AVG_WALKING_SPEED_IN_CM_PER_SECOND] = 1;
 
     MixedTeamCommMessage *messageDataPtr = NULL;
     uint32_t messageDataLength = 0;
@@ -356,6 +356,7 @@ void mitecom::set_relative_ball(int x, int y, int belief)
 {
     ownData->data[BALL_RELATIVE_X] = x;
     ownData->data[BALL_RELATIVE_Y] = y;
+    ownData->data[BALL_BELIEF] = belief;
 }
 
 void mitecom::set_opp_goal_relative(int x, int y, int belief)
@@ -425,7 +426,7 @@ void mitecom::set_time_to_ball(int sec)
 
 void mitecom::set_max_kicking_distance(int distance)
 {
-    ownData->data[ROBOT_TIME_TO_POSITION_AT_BALL_IN_SECONDS] = distance;
+    ownData->data[ROBOT_MAX_KICKING_DISTANCE] = distance;
 }
 
 

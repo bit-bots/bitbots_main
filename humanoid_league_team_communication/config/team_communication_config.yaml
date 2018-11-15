@@ -11,3 +11,25 @@ team_communication:
 
   # in mm
   max_kicking_distance: 1000
+
+  # set the color of your team
+  # 2: red
+  # 3: blue
+  # other values are invalid
+  team_color: 2
+
+  #use world model
+  world_model: False
+
+  #lifetime of data [s]
+  lifetime: 3
+
+  # ROS Topics
+  team_data: '/team_data'
+  strategy: 'role'
+  motion_state: 'motion_state'
+  goal: 'goal_relative'
+  world_model_node: '/local_world_model'
+  position: 'position'
+  ball: '/ball_relative'
+  obstacles: '/obstacle_relative'
