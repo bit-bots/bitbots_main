@@ -1,14 +1,12 @@
-import collections
 import importlib
 import os
 import re
-from typing import List
+from typing import Tuple, List
 
+from bitbots_dsd.abstract_action_element import AbstractActionElement
 from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
-
-
-def defaultdict_listfactory():
-    return collections.defaultdict(list)
+from bitbots_dsd.abstract_stack_element import AbstractStackElement
+from bitbots_dsd.parser import DSDParser, Tree, ActionTreeElement, DecisionTreeElement, TreeElement
 
 
 def register_element(path: str) -> dict:
@@ -39,7 +37,7 @@ def register_element(path: str) -> dict:
 class DSD:
     """
     One decision is defined as the root decision, the starting point.
-    Each decision element, which is pushed on the stack, is immediately executed until no further element is pushed. 
+    Each decision element, which is pushed on the stack, is immediately executed until no further element is pushed.
     Following, each iteration, for each element, is checked if it requires to be reevaluated and finally the
      top element of the stack will be executed, usually an action.
     If the outcome of a reevaluated element changes, the entire stack on top of this element will be dropped and the
@@ -51,14 +49,13 @@ class DSD:
     By this structure, it is always visible which action the robot tries to perform and which decisions were made.
 
     If a new element is pushed on top of the stack, it is directly executed.
-    In most cases, the pushing element is completing its execution with the push of another element. 
+    In most cases, the pushing element is completing its execution with the push of another element.
     Any following code will be executed as soon as the stack is not further expanded.
     """
 
-    stack = []
     start_element = None
     start_element_data = None
-    stack_excec_index = -1
+    stack_exec_index = -1
     stack_reevaluate = False
     do_not_reevaluate = False
     old_representation = ""
@@ -66,124 +63,44 @@ class DSD:
     def __init__(self, blackboard):
         self.blackboard = blackboard
 
-        self.tree = {}
-        self.stack = []
-        self.path: str = ""
+        self.tree = None  # type: Tree
+        # The stack is implemented as a list of tuples consisting of the tree element
+        # and the actual module instance
+        self.stack = []  # type: List[Tuple[TreeElement, AbstractStackElement]]
 
-        self.actions = {}
-        self.decisions = {}
+        self.actions = {}  # type: Dict[str, AbstractActionElement]
+        self.decisions = {}  # type: Dict[str, AbstractDecisionElement]
 
-    def register_actions(self, modulepath, path):
-        self.actions = register_element(modulepath, path)
+    def register_actions(self, modulepath):
+        self.actions = register_element(modulepath)
 
-    def register_decisions(self, modulepath, path):
-        self.decisions = register_element(modulepath, path)
+    def register_decisions(self, modulepath):
+        self.decisions = register_element(modulepath)
 
     def load_behavior(self, path):
+        dsd_parser = DSDParser()
+        self.tree = dsd_parser.parse(path)
+        self._bind_modules(self.tree.root_element)
+        self.set_start_element(self.tree.root_element)
 
-        tree_build = collections.defaultdict(defaultdict_listfactory)
-        curr_path = ""
-
-        # Parsing the behavior file
-
-        sub = ""
-        next_is_start = False
-        lastline = ""
-        with open(path, "r") as bfile:
-            comment = False
-            lnr = 0
-            for line in bfile:
-                lnr += 1
-                try:
-                    oline = line.rstrip()
-                    if not oline:
-                        continue
-                    if "**//" in oline:
-                        comment = False
-                        continue
-                    if "//**" in oline:
-                        comment = True
-                        continue
-                    if oline.strip()[:2] == "//":
-                        continue
-                    if not comment:
-
-                        indent = len(oline) - len(oline.lstrip())
-                        if indent % 4 != 0:
-                            raise AssertionError(f"Ident in line {lnr} is not a multiple of 4")
-                        last_indent = len(lastline) - len(lastline.lstrip())
-
-                        line = oline.lstrip()
-
-                        if indent == 0 and line[0] == "#":
-                            # create subtree
-                            sub = line[1:]
-                            curr_path = ""
-
-                        if indent == 0 and line[0:3] == "-->":
-                            next_is_start = True
-                            sub = "root"
-                            lastline = oline
-                            continue
-
-                        if next_is_start:
-                            next_is_start = False
-                            curr_path = ""  # line[1:]
-                            self.path = line
-                            self.set_start_element(self.decisions[line.strip('$')])
-
-                        # Go one layer up
-                        if indent < last_indent:
-                            curr_path = ".".join(curr_path.split(".")
-                                                 [:len(curr_path.split(".")) - ((last_indent - indent) // 4)])
-                        # Handle sub-behaviors
-                        snd = re.split(r"\s*-?->\s*", line)
-                        if len(snd) >= 2 and snd[1][0] == "#":
-                            if snd[1][1:] not in tree_build:
-                                raise AssertionError(f"#{snd[1][1:]} not defined")
-                            for k, v in tree_build[snd[1][1:]].items():
-                                tree_build[sub][curr_path + "." + k].extend(v)
-                                tree_build[sub][curr_path + "." + k] = list(set(tree_build[sub][curr_path + "." + k]))
-
-                            tree_build[sub][curr_path].append(
-                                (snd[0], list(tree_build[snd[1][1:]].keys())[0].split(".")[0]))
-
-                        elif "->" in line or "@" in line:
-
-                            # Add path with None for Actions
-                            if "@" in line:
-                                if curr_path:
-                                    ecp = curr_path + "."
-                                else:
-                                    ecp = ""
-                                tree_build[sub][ecp + re.split(r"-?->|\+", line.strip())[1].strip()
-                                                if "->" in line else line.strip()] = [None]
-
-                            # Add (or extend) return option for current path wich is specified in this line
-                            if curr_path:
-                                tree_build[sub][curr_path].append(
-                                    tuple((x.strip() for x in re.split(r"-?->|\+", line))))
-
-                        # Go one layer deeper fox next line
-                        if (indent >= last_indent and "@" not in line and "#" not in line) or (
-                                indent == 0 and line[0] != "#"):
-                            curr_path += "." if curr_path else ""
-                            curr_path += re.sub(r"[#]", "",
-                                                re.split(r"-?->|\+", line.strip())[1].strip()
-                                                if "->" in line else line.strip())
-                        lastline = oline
-                except Exception as e:
-                    print("Error parsing line ", lnr, e)
-                    # raise e
-        self.tree = tree_build["root"]
+    def _bind_modules(self, element):
+        # Traverse the tree and bind the modules to the stack elements
+        if isinstance(element, ActionTreeElement):
+            element.module = self.actions[element.name]
+        elif isinstance(element, DecisionTreeElement):
+            element.module = self.decisions[element.name]
+            for child in element.children.values():
+                self._bind_modules(child)
+        else:
+            raise KeyError
 
     def _init_element(self, element, init_data=None):
         """
             Initialises the element.
         """
-        mod = element(self.blackboard, init_data)
-        mod.setup_internals(self, init_data)
-        return mod
+        instance = element.module(self.blackboard, init_data)
+        instance.setup_internals(self, init_data)
+        return instance
 
     def set_start_element(self, start_element, init_data=None):
         """
@@ -191,10 +108,9 @@ class DSD:
 
             This method should be called in __init__.
         """
-        self.stack = []
         self.start_element = start_element
         self.start_element_data = init_data
-        self.stack.append(self._init_element(start_element, init_data))
+        self.stack = [(self.start_element, self._init_element(self.start_element, self.start_element_data))]
 
     def interrupt(self):
         """
@@ -204,16 +120,16 @@ class DSD:
             In the following iteration, the stack will be newly created starting at the root element.
         """
         if self.stack_reevaluate:
-            # we were currently checking preconditions 
+            # we were currently checking preconditions
             # we stop this, so that update() knows that it has to stop
             self.stack_reevaluate = False
-        self.stack = [self._init_element(self.start_element, self.start_element_data)]
+        self.stack = [(self.start_element, self._init_element(self.start_element, self.start_element_data))]
 
     def update(self, reevaluate=True):
         """
         Calls the element which is currently on top of the stack.
         Before doing this, all preconditions are checked (all decision elements where reevaluate is true).
-        
+
         :param: reevaluate: Can be set to False to inhibit the reevaluation
         :type reevaluate: bool
         """
@@ -221,70 +137,56 @@ class DSD:
             self.publish_debug_msg()
 
         if reevaluate and not self.do_not_reevaluate:
-            self.stack_excec_index = 0
+            self.stack_exec_index = 0
             self.stack_reevaluate = True
-            for element in self.stack[:-1]:
-                # check all elements, exept the top one not the actions
-                if isinstance(element, AbstractDecisionElement) and element.get_reevaluate():
-                    ret = element.perform(self.blackboard, True)
-                    self.push(ret)
+            for tree_element, instance in self.stack[:-1]:
+                # check all elements except the top one, but not the actions
+                if isinstance(instance, AbstractDecisionElement) and instance.get_reevaluate():
+                    ret = instance.perform(self.blackboard, True)
+                    self.push(tree_element.get_child(ret))
 
                     if not self.stack_reevaluate:
                         # We had some external interrupt, we stop here
                         return
-                self.stack_excec_index += 1
+                self.stack_exec_index += 1
             self.stack_reevaluate = False
         if reevaluate:
             # reset flag
             self.do_not_reevaluate = False
         # run the top module
-        ret = self.stack[-1].perform(self.blackboard)
-        self.push(ret)
+        current_tree_element, current_instance = self.stack[-1]
+        ret = current_instance.perform(self.blackboard)
+        if isinstance(current_instance, AbstractDecisionElement):
+            self.push(current_tree_element.get_child(ret))
 
-    def push(self, element_name, init_data=None, perform=True):
+    def push(self, element, init_data=None, perform=True):
         """
-        Put a new element on the stack and start it directly. 
+        Put a new element on the stack and start it directly.
 
         .. warning::
             After using push, you should not have further code, since this
             leads to difficult to debug behavior. Try to use::
 
-                return self.push(xxxElement, data)            
+                return self.push(xxxElement, data)
 
-        :param element: The element that should be put on top of the stack. Do not initilize!            
+        :param element: The element that should be put on top of the stack. Do not initilize!
         :type element: Element
         :param init_data: This data will be given to the new module during its init, optional
         :param perform: Optional parameter to disable direct call of the perform method during this cycle
         """
-
-        choices: List[tuple] = self.tree[self.path]
-        next_t = tuple(x[1] for x in choices if x[0] == element_name)
-        next_name: str = next_t[0]
-        if len(next_t) == 2:
-            init_data: dict = next_t[1]
-
-        if "@" in next_name:
-            element = self.actions[re.sub(r"[$@~!]", "", next_name)]
-        elif "$" in next_name:
-            element = self.decisions[re.sub(r"[$@~!]", "", next_name)]
-        else:
-            raise AssertionError()
-
         if self.stack_reevaluate:
             # we are currently checking pre conditions
             # check if we made the same decision (push) as last time
-            if type(self.stack[self.stack_excec_index + 1]) == element and \
-                    self.stack[self.stack_excec_index + 1].get_init_data() == init_data:
+            if type(self.stack[self.stack_exec_index + 1][0]) == element and \
+                    self.stack[self.stack_exec_index + 1][1].get_init_data() == init_data:
                 # decision was the same, reevaluation passed, precondition did not change
                 return
             else:
                 # result changed. we clear all stack above us and push the new element on top
-                self.stack = self.stack[0:self.stack_excec_index + 1]
-                self.path = ".".join(self.path.split(".")[0:self.stack_excec_index + 1])
+                self.stack = self.stack[0:self.stack_exec_index + 1]
                 # reevaluate is finished
                 self.stack_reevaluate = False
-        self.stack.append(self._init_element(element, init_data))
-        self.path += "." + next_name
+        self.stack.append((element, self._init_element(element, init_data)))
         # we call the new element without another reevaluate
         if perform:
             self.update(False)
@@ -295,10 +197,10 @@ class DSD:
         """
         if len(self.stack) > 1:
             if self.stack_reevaluate:
-                # we are currently reevaluating. we shorten the stack here                
-                if self.stack_excec_index > 0:
+                # we are currently reevaluating. we shorten the stack here
+                if self.stack_exec_index > 0:
                     # only shorten stack if it still has one element
-                    self.stack = self.stack[0:self.stack_excec_index]
+                    self.stack = self.stack[0:self.stack_exec_index]
                 # stop reevaluating
                 self.stack_reevaluate = False
             else:

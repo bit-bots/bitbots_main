@@ -45,7 +45,7 @@ $DutyDecider
 
 
 #RATest
-~$BallSeen
+$BallSeen
     YES --> $BallLeftRight
         LEFT --> @RaiseArm + side:left
         RIGHT --> @RaiseArm + side:right
@@ -60,8 +60,8 @@ $DutyDecider
 $BallSeen
     NO --> #GenericSearchBall
     YES --> $CloseBall
-        FAR --> @Gotoball + speed:fast
-        MID --> @Gotoball + speed:medium
+        FAR --> @GoToBall + speed:fast
+        MID --> @GoToBall + speed:medium
         CLOSE --> $KickDecision
             STRAIGT --> @KickAction + side:$side
             SIDE --> @SideKickAction + side:$side

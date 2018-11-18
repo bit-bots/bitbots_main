@@ -36,8 +36,8 @@ if __name__ == "__main__":
 
     dirname = os.path.dirname(os.path.realpath(__file__))
 
-    D.register_actions(dirname, "actions")
-    D.register_decisions(dirname, "decisions")
+    D.register_actions(os.path.join(dirname, "actions"))
+    D.register_decisions(os.path.join(dirname, "decisions"))
 
     D.load_behavior(os.path.join(dirname, "main.dsd"))
 

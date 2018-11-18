@@ -34,3 +34,12 @@ class AbstractBallSeen(AbstractDecisionElement):
 
 class BallSeen(AbstractBallSeen):
     pass
+
+class BallLeftRight(AbstractBallSeen):
+    pass
+
+class DoesKnowPosition(AbstractBallSeen):
+    pass
+
+class KickDecision(AbstractBallSeen):
+    pass

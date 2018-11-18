@@ -58,3 +58,9 @@ class KickBall(AbstractActionElement):
             connector.animation.play_animation(self.right_side_kick)
         else:
             raise NotImplementedError("This kick does not exist")
+
+class KickAction(AbstractActionElement):
+    pass
+
+class SideKickAction(AbstractActionElement):
+    pass

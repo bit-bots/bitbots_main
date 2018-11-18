@@ -172,3 +172,7 @@ class GoToCenterpoint(GoToAbsolutePosition):
         """Go to the center of the field and look towards the enemy goal"""
         point = 0, 0, 0
         super(GoToCenterpoint, self).__init__(connector, point)
+
+
+class ToggleSearchBall(GoToAbsolutePosition):
+    pass
