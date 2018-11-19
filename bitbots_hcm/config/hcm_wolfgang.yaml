@@ -32,26 +32,7 @@ hcm:
     penalty: "walkready"
     motor_off: "walkready"
     init: "init"
-    walkready_pose: {"HeadPan": 0, 
-                "HeadTilt": 0, 
-                "LAnklePitch": -29, 
-                "LAnkleRoll": 0, 
-                "LElbow": 47, 
-                "LHipPitch": 51, 
-                "LHipRoll": 0, 
-                "LHipYaw": 0, 
-                "LKnee": -64, 
-                "LShoulderPitch": 1, 
-                "LShoulderRoll": 0, 
-                "RAnklePitch": 28, 
-                "RAnkleRoll": -4, 
-                "RElbow": -45, 
-                "RHipPitch": -50, 
-                "RHipRoll": -1, 
-                "RHipYaw": 1, 
-                "RKnee": 61, 
-                "RShoulderPitch": 0, 
-                "RShoulderRoll": 0}
+    anim_package: "wolfgang_animations"
     walkready_pose_threshold: 5 # [deg]
 
   falling:

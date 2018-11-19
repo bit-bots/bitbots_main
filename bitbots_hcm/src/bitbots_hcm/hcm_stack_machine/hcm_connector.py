@@ -2,6 +2,9 @@ from bitbots_connector.abstract_connector import AbstractConnector
 import numpy
 import rospy
 import math
+import json
+import rospkg
+import os
 from bitbots_hcm.fall_checker import FallChecker
 from geometry_msgs.msg import Twist
 from bitbots_stackmachine.stack_machine import StackMachine
@@ -74,7 +77,14 @@ class HcmConnector(AbstractConnector):
         self.motor_timeout_duration = rospy.get_param("hcm/motor_timeout_duration")
         self.motor_off_time = rospy.get_param("hcm/motor_off_time")
         self.current_joint_positions = None
-        self.walkready_pose_dict = rospy.get_param("hcm/animations/walkready_pose")
+        anim_package = rospy.get_param("hcm/animations/anim_package")
+        rospack = rospkg.RosPack()
+        path = rospack.get_path(anim_package)
+        path = os.path.join(path, 'animations/motion/', self.walkready_animation +'.json')
+        with open(path, 'r') as f:
+            json_data = json.load(f)
+        keyframes = json_data["keyframes"]
+        self.walkready_pose_dict = keyframes[-1]["goals"]
         self.walkready_pose_threshold = rospy.get_param("hcm/animations/walkready_pose_threshold")
 
         # walking
