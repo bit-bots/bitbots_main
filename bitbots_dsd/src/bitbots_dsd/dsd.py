@@ -1,20 +1,21 @@
 import importlib
 import os
 import re
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 from bitbots_dsd.abstract_action_element import AbstractActionElement
 from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
 from bitbots_dsd.abstract_stack_element import AbstractStackElement
-from bitbots_dsd.parser import DSDParser, Tree, ActionTreeElement, DecisionTreeElement, TreeElement
+from bitbots_dsd.parser import DSDParser
+from bitbots_dsd.tree import Tree, TreeElement, ActionTreeElement, DecisionTreeElement
 
 
-def register_element(path: str) -> dict:
+def register_element(path: str) -> Dict[str, AbstractStackElement]:
     """
     Extract all the classes from the files in the given path and return a dictionary containing them
 
     :param path: The path containing the files that should be registered
-    :return: A dictionary with classnames as keys and classes as values
+    :return: A dictionary with class names as keys and classes as values
     """
     elements = {}
     files = [f for f in os.listdir(path) if f.endswith('.py')]
@@ -38,7 +39,7 @@ class DSD:
     """
     One decision is defined as the root decision, the starting point.
     Each decision element, which is pushed on the stack, is immediately executed until no further element is pushed.
-    Following, each iteration, for each element, is checked if it requires to be reevaluated and finally the
+    Following, each iteration, for each element is checked if it requires to be reevaluated and finally the
      top element of the stack will be executed, usually an action.
     If the outcome of a reevaluated element changes, the entire stack on top of this element will be dropped and the
      stack newly constructed.
@@ -72,19 +73,37 @@ class DSD:
         self.decisions = {}  # type: Dict[str, AbstractDecisionElement]
 
     def register_actions(self, modulepath):
+        """
+        Register every class in a given path as an action
+        :param modulepath: A path containing files with classes extending AbstractActionElement
+        """
         self.actions = register_element(modulepath)
 
     def register_decisions(self, modulepath):
+        """
+        Register every class in a given path as a decision
+        :param modulepath: A path containing files with classes extending AbstractDecisionElement
+        """
         self.decisions = register_element(modulepath)
 
     def load_behavior(self, path):
+        """
+        Load a .dsd file into the behaviour to execute it. This should be called after the actions
+        and decisions have been loaded.
+        :param path: The path to the .dsd file describing the behaviour
+        :return:
+        """
         dsd_parser = DSDParser()
         self.tree = dsd_parser.parse(path)
         self._bind_modules(self.tree.root_element)
         self.set_start_element(self.tree.root_element)
 
     def _bind_modules(self, element):
-        # Traverse the tree and bind the modules to the stack elements
+        """
+        Recursively rraverse the tree and bind the registered action and decision classes to
+        the corresponding tree elements
+        :param element: The starting element
+        """
         if isinstance(element, ActionTreeElement):
             element.module = self.actions[element.name]
         elif isinstance(element, DecisionTreeElement):
@@ -95,18 +114,15 @@ class DSD:
             raise KeyError
 
     def _init_element(self, element, init_data=None):
-        """
-            Initialises the element.
-        """
+        """ Initialises the module belonging to the given element. """
         instance = element.module(self.blackboard, init_data)
         instance.setup_internals(self, init_data)
         return instance
 
     def set_start_element(self, start_element, init_data=None):
         """
-            This method dfines the start element on the stack, which stays always on the bottom of the stack.
-
-            This method should be called in __init__.
+        This method defines the start element on the stack, which stays always on the bottom of the stack.
+        It should be called in __init__.
         """
         self.start_element = start_element
         self.start_element_data = init_data
@@ -114,10 +130,10 @@ class DSD:
 
     def interrupt(self):
         """
-            An interrupt is an event which clears the complete stack to reset the behavior.
-            In the special case of RoboCup, we use it when the game-state changes, but it can also be used for
-            example if the robot is kidnapped or paused.
-            In the following iteration, the stack will be newly created starting at the root element.
+        An interrupt is an event which clears the complete stack to reset the behavior.
+        In the special case of RoboCup, we use it when the game-state changes, but it can also be used for
+        example if the robot is kidnapped or paused.
+        In the following iteration, the stack will be newly created starting at the root element.
         """
         if self.stack_reevaluate:
             # we were currently checking preconditions
@@ -130,7 +146,7 @@ class DSD:
         Calls the element which is currently on top of the stack.
         Before doing this, all preconditions are checked (all decision elements where reevaluate is true).
 
-        :param: reevaluate: Can be set to False to inhibit the reevaluation
+        :param: reevaluate: Can be set to False to avoid the reevaluation
         :type reevaluate: bool
         """
         if not reevaluate:
@@ -142,8 +158,8 @@ class DSD:
             for tree_element, instance in self.stack[:-1]:
                 # check all elements except the top one, but not the actions
                 if isinstance(instance, AbstractDecisionElement) and instance.get_reevaluate():
-                    ret = instance.perform(self.blackboard, True)
-                    self.push(tree_element.get_child(ret))
+                    result = instance.perform(self.blackboard, True)
+                    self.push(tree_element.get_child(result))
 
                     if not self.stack_reevaluate:
                         # We had some external interrupt, we stop here
@@ -155,9 +171,9 @@ class DSD:
             self.do_not_reevaluate = False
         # run the top module
         current_tree_element, current_instance = self.stack[-1]
-        ret = current_instance.perform(self.blackboard)
+        result = current_instance.perform(self.blackboard)
         if isinstance(current_instance, AbstractDecisionElement):
-            self.push(current_tree_element.get_child(ret))
+            self.push(current_tree_element.get_child(result))
 
     def push(self, element, init_data=None, perform=True):
         """
@@ -169,13 +185,13 @@ class DSD:
 
                 return self.push(xxxElement, data)
 
-        :param element: The element that should be put on top of the stack. Do not initilize!
-        :type element: Element
+        :param element: The tree element that should be put on top of the stack.
+        :type element: TreeElement
         :param init_data: This data will be given to the new module during its init, optional
         :param perform: Optional parameter to disable direct call of the perform method during this cycle
         """
         if self.stack_reevaluate:
-            # we are currently checking pre conditions
+            # we are currently checking preconditions
             # check if we made the same decision (push) as last time
             if type(self.stack[self.stack_exec_index + 1][0]) == element and \
                     self.stack[self.stack_exec_index + 1][1].get_init_data() == init_data:
@@ -205,9 +221,6 @@ class DSD:
                 self.stack_reevaluate = False
             else:
                 self.stack.pop()
-        else:
-            # rospy.logwarn("Can't pop in %s: stack is empty, Module: %s" % (repr(self), repr(self.stack[0])))
-            pass
 
     def set_do_not_reevaluate(self):
         """No reevaluation on next iteration"""

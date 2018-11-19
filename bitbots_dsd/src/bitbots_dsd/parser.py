@@ -1,8 +1,14 @@
 import re
+from bitbots_dsd.tree import Tree, TreeElement, DecisionTreeElement, ActionTreeElement
 
 
 class DSDParser:
     def parse(self, file):
+        """
+        Parse a .dsd file to a Tree
+        :param file: the path to the .dsd file to be parsed
+        :return: a Tree object containing the parsed elements
+        """
         # The root tree
         tree = Tree()
         # Dictionary of subtrees that are created
@@ -18,85 +24,102 @@ class DSDParser:
         with open(file, 'r') as bfile:
             for line in bfile:
                 lnr += 1
-                try:
-                    line = line.rstrip()
-                    if not line:
-                        continue
-                    if '**//' in line:
-                        # TODO: the line with the block comment end should not be ignored
-                        comment = False
-                        continue
-                    if '//**' in line:
-                        comment = True
-                        continue
-                    if line.strip().startswith('//'):
+                line = line.rstrip()
+                if not line:
+                    continue
+                if '**//' in line:
+                    # TODO: the line with the block comment end should not be ignored
+                    comment = False
+                    continue
+                if '//**' in line:
+                    comment = True
+                    continue
+                if line.strip().startswith('//'):
+                    continue
+
+                if not comment:
+                    indent = len(line) - len(line.lstrip())
+                    if indent % 4 != 0:
+                        raise ParseError(f'Error parsing line {lnr}: Indent is not a multiple of 4')
+
+                    line_content = line.lstrip()
+
+                    if indent == 0 and line_content.startswith('-->'):
+                        # This is the declaration of the start. Next line contains root element
+                        next_is_start = True
+                        current_subtree = tree
+                        last_indent = indent
                         continue
 
-                    if not comment:
-                        indent = len(line) - len(line.lstrip())
-                        if indent % 4 != 0:
-                            raise AssertionError(f'Indent in line {lnr} is not a multiple of 4')
+                    if next_is_start:
+                        # This line contains the root element of the main tree
+                        next_is_start = False
+                        element = self.create_tree_element(line_content, current_tree_element)
+                        tree.set_root_element(element)
+                        current_tree_element = element
 
-                        line_content = line.lstrip()
+                    if indent == 0 and line_content.startswith('#'):
+                        # This is the declaration of a new subtree
+                        current_subtree = Tree()
+                        subtrees[line_content[1:]] = current_subtree
+                        current_tree_element = None
+                        last_indent = indent
+                        continue
 
-                        if indent == 0 and line_content.startswith('-->'):
-                            next_is_start = True
-                            current_subtree = tree
-                            last_indent = indent
-                            continue
+                    if indent < last_indent:
+                        # Go layers up, depending on indent difference
+                        for _ in range(indent, last_indent, 4):
+                            current_tree_element = current_tree_element.parent
 
-                        if next_is_start:
-                            next_is_start = False
-                            element = self.create_tree_element(line_content, current_tree_element)
-                            tree.set_root_element(element)
+                    if re.search(r'\s*-?->\s*', line_content):
+                        # Arrow in line, split in decision result and call
+                        result, call = re.split(r'\s*-?->\s*', line_content, 1)
+
+                        if call.startswith('#'):
+                            # A subtree is called here.
+                            subtree_name = call.strip('#')
+                            if subtree_name not in subtrees:
+                                raise AssertionError(f'Error parsing line {lnr}: {call} not defined')
+                            # The root element of the subtree should be placed in this tree position
+                            if current_tree_element is None:
+                                # The current subtree is empty, set the subtree as its root element
+                                current_subtree.set_root_element(subtrees[subtree_name].root_element)
+                            else:
+                                # Append this subtree in the current position
+                                current_tree_element.add_child_element(subtrees[subtree_name].root_element, result)
+
+                        elif call.startswith('@'):
+                            # An action is called
+                            element = self.create_tree_element(call, current_tree_element)
+                            current_tree_element.add_child_element(element, result)
+
+                        elif call.startswith('$'):
+                            # A decision is called
+                            element = self.create_tree_element(call, current_tree_element)
+                            current_tree_element.add_child_element(element, result)
                             current_tree_element = element
-
-                        if indent < last_indent:
-                            # Go layers up, depending on indent difference
-                            for _ in range(indent, last_indent, 4):
-                                current_tree_element = current_tree_element.parent
-
-                        if indent == 0 and line_content.startswith('#'):
-                            current_subtree = Tree()
-                            subtrees[line_content[1:]] = current_subtree
-                            current_tree_element = None
-
-                        if re.search(r'\s*-?->\s*', line_content):
-                            # Arrow in line, split in decision result and call
-                            result, call = re.split(r'\s*-?->\s*', line_content, 1)
-
-                            if call.startswith('#'):
-                                # Handle sub-behaviour
-                                subtree_name = call.strip('#')
-                                if subtree_name not in subtrees:
-                                    raise AssertionError(f'Line {lnr}: {call} not defined')
-                                if current_tree_element is None:
-                                    current_subtree.set_root_element(subtrees[subtree_name].root_element)
-                                else:
-                                    current_tree_element.add_child_element(subtrees[subtree_name].root_element, result)
-
-                            if call.startswith('@'):
-                                element = self.create_tree_element(call, current_tree_element)
-                                current_tree_element.add_child_element(element, result)
-
-                            if call.startswith('$'):
-                                element = self.create_tree_element(call, current_tree_element)
-                                current_tree_element.add_child_element(element, result)
-                                current_tree_element = element
 
                         else:
-                            # No arrow, must be the beginning of a new subtree
-                            element = self.create_tree_element(line_content, current_tree_element)
-                            current_subtree.set_root_element(element)
-                            current_tree_element = element
+                            raise ParseError(f'Error parsing line {lnr}: Element {call} is neither an action nor a decision')
 
-                        last_indent = indent
-                except Exception as e:
-                    print('Error parsing line ', lnr, e)
-                    # raise e
+                    else:
+                        # No arrow, must be the beginning of a new subtree
+                        element = self.create_tree_element(line_content, current_tree_element)
+                        current_subtree.set_root_element(element)
+                        current_tree_element = element
+
+                    last_indent = indent
         return tree
 
     def create_tree_element(self, name, parent):
+        """
+        Create a tree element given a name and a parent.
+        The method derives the type (Action/Decision) and optional parameters from the name
+        :param name: the string describing the element in the dsd description
+        :param parent: the parent element of the new element, None for root
+        :type parent: DecisionTreeElement
+        :return: a TreeElement containing the information given in name
+        """
         if name.startswith('$'):
             name = name[1:]
             element = DecisionTreeElement(name, parent)
@@ -112,70 +135,9 @@ class DSDParser:
                 # There is no parameter
                 element = ActionTreeElement(name, parent)
         else:
-            element = TreeElement(name, parent)
+            raise ParseError()
         return element
 
 
-class Tree:
-    def __init__(self):
-        self.root_element = None
-
-    def set_root_element(self, element):
-        self.root_element = element
-
-    def __repr__(self):
-        return repr(self.root_element)
-
-
-class TreeElement:
-    def __init__(self, name: str, parent):
-        self.name = name
-        self.parent = parent
-        self.module = None
-
-    def get_child(self, activating_result):
-        return None
-
-    def __repr__(self):
-        return self.name
-
-
-class DecisionTreeElement(TreeElement):
-    def __init__(self, name: str, parent):
-        super().__init__(name, parent)
-
-        # Dictionary that maps results of the decision to the corresponding child
-        self.children = dict()
-
-    def add_child_element(self, element, activating_result):
-        self.children[activating_result] = element
-
-    def get_child(self, activating_result):
-        return self.children[activating_result]
-
-    def __str__(self):
-        r = '$' + self.name + ': '
-        for result, child in self.children.items():
-            r += result + ': {' + repr(child) + '} '
-        return r
-
-    def __call__(self, *args, **kwargs):
-        if self.module is None:
-            raise TypeError('Missing module')
-        else:
-            self.module(*args, **kwargs)
-
-
-class ActionTreeElement(TreeElement):
-    def __init__(self, name: str, parent, parameters=None):
-        super().__init__(name, parent)
-        self.parameters = parameters
-
-    def __str__(self):
-        return f'@{self.name} ({self.parameters})'
-
-    def __call__(self, *args, **kwargs):
-        if self.module is None:
-            raise TypeError('Missing module')
-        else:
-            self.module(*args, **kwargs)
+class ParseError(AssertionError):
+    pass

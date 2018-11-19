@@ -1,7 +1,7 @@
 
 //***
 Prefixes:
----> Start point
+--> Start point
 @ Actions
     OUTCOMES
 $ Decisions
@@ -63,7 +63,7 @@ $BallSeen
         FAR --> @GoToBall + speed:fast
         MID --> @GoToBall + speed:medium
         CLOSE --> $KickDecision
-            STRAIGT --> @KickAction + side:$side
+            STRAIGHT --> @KickAction + side:$side
             SIDE --> @SideKickAction + side:$side
 
 
