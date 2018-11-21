@@ -175,7 +175,7 @@ class DSD:
         if isinstance(current_instance, AbstractDecisionElement):
             self.push(current_tree_element.get_child(result))
 
-    def push(self, element, init_data=None, perform=True):
+    def push(self, element):
         """
         Put a new element on the stack and start it directly.
 
@@ -187,14 +187,11 @@ class DSD:
 
         :param element: The tree element that should be put on top of the stack.
         :type element: TreeElement
-        :param init_data: This data will be given to the new module during its init, optional
-        :param perform: Optional parameter to disable direct call of the perform method during this cycle
         """
         if self.stack_reevaluate:
             # we are currently checking preconditions
             # check if we made the same decision (push) as last time
-            if type(self.stack[self.stack_exec_index + 1][0]) == element and \
-                    self.stack[self.stack_exec_index + 1][1].get_init_data() == init_data:
+            if self.stack[self.stack_exec_index + 1][0] == element:
                 # decision was the same, reevaluation passed, precondition did not change
                 return
             else:
@@ -204,8 +201,7 @@ class DSD:
                 self.stack_reevaluate = False
         self.stack.append((element, self._init_element(element, element.parameters)))
         # we call the new element without another reevaluate
-        if perform:
-            self.update(False)
+        self.update(False)
 
     def pop(self):
         """
