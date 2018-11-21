@@ -202,7 +202,7 @@ class DSD:
                 self.stack = self.stack[0:self.stack_exec_index + 1]
                 # reevaluate is finished
                 self.stack_reevaluate = False
-        self.stack.append((element, self._init_element(element, init_data)))
+        self.stack.append((element, self._init_element(element, element.parameters)))
         # we call the new element without another reevaluate
         if perform:
             self.update(False)

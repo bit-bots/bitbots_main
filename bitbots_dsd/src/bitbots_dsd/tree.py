@@ -20,6 +20,7 @@ class TreeElement:
         self.name = name
         self.parent = parent
         self.module = None
+        self.parameters = None
 
     def get_child(self, activating_result):
         return None
