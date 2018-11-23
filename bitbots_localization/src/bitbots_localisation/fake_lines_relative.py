@@ -15,7 +15,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_term_handler)
 
     rospy.init_node("fake_lines_relative")
-    pub = rospy.Publisher("lines_relative", LineInformationRelative, queue_size=10)
+    pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=10)
 
     x_start_str = raw_input("x_start:")
     try:
