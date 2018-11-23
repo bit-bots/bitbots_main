@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   controller_interface
   bitbots_buttons
+  transmission_interface
+  realtime_tools
 )
 
 add_message_files(
