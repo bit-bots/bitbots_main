@@ -28,33 +28,6 @@ class AbstractDecisionElement(AbstractStackElement):
 
         return "<Decision: %s>[%s]" % (shortname, data)
 
-    def push(self, element, init_data=None, perform=True):
-        """
-        Help method for easy pushing on the stack.
-
-        Should normally called with a return::
-            return self.push(NewElement, data)
-
-        If no return is used, there is code execution after the push which leads to difficult to debug behavior.
-        This should only be done if you want to push multiple actions as a sequence. But then the last push should also have a return.
-
-
-        :param element: The element which should be put on the stack
-        :type element: Class, inheritate from AbstractStacklement
-        :param init_data: Data which is given to the class on init
-        :type init_data: object
-        """
-        raise DeprecationWarning()
-        self._behaviour.push(element, init_data, perform)
-
-    def push_action_sequence(self, SequenceElement, actions, init_datas):
-        """
-        Small helper method to push action sequences
-        """
-        dic = {"actions": actions, "action_datas": init_datas}
-        raise DeprecationWarning()
-        self.push(SequenceElement, dic)
-
     def get_reevaluate(self):
         """
         Each decision element may define a \textit{reevaluate} criteria.

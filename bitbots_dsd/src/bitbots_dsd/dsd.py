@@ -113,10 +113,10 @@ class DSD:
         else:
             raise KeyError
 
-    def _init_element(self, element, init_data=None):
+    def _init_element(self, element, parameters=None):
         """ Initialises the module belonging to the given element. """
-        instance = element.module(self.blackboard, init_data)
-        instance.setup_internals(self, init_data)
+        instance = element.module(self.blackboard, parameters)
+        instance.setup_internals(self)
         return instance
 
     def set_start_element(self, start_element, init_data=None):

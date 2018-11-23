@@ -23,7 +23,7 @@ class AbstractActionElement(AbstractStackElement):
 
     def __repr__(self):
         """
-            Overlaod from the AbstractStackElement to have "Action" at the start.
+            Overload from the AbstractStackElement to have "Action" at the start.
         """
         shortname = self.__class__.__name__
 
@@ -31,17 +31,3 @@ class AbstractActionElement(AbstractStackElement):
         self.debug_data = {}
 
         return "<Action: %s>[%s]" % (shortname, data)
-
-
-class AbstractOneStepActionElement(AbstractActionElement):
-    """ One Step Actions are actions which are performed on the fly, they are pushed to the stack by a decision additionally to another element and remove them self from the stack in the same iteration. 
-        They allow performing second level tasks like scheduling communication with other robots. 
-        The pushing decision element has the ability to push further actions in the same iteration.
-    """
-
-    def perform(self, blackboard, reevaluate=None):
-        self.perform_one_step(blackboard)
-        return self.pop()
-
-    def perform_one_step(self, blackboard, reevaluate=None):
-        raise NotImplementedError()

@@ -11,25 +11,17 @@ class AbstractStackElement(object):
     _behaviour = None
     _init_data = None
 
-    def __init__(self, blackboard, args=None):
+    def __init__(self, blackboard, paramters=None):
         self.debug_data = {}
         '''This is a dict in which data can be saved that should get represented on a __repr__ call'''
 
-    def setup_internals(self, behaviour, init_data):
+    def setup_internals(self, behaviour):
         """
         This method initilizes the internal variables and gets called by the stack machine.
 
         :param behaviour: The stack machine which has this element on its stack.
-        :param init_data: The data which was passed on bei __init__.
         """
         self._behaviour = behaviour
-        self._init_data = init_data
-
-    def get_init_data(self):
-        """
-        Polls the init data of the element to check if something changed in between.
-        """
-        return self._init_data
 
     def pop(self):
         """
@@ -50,7 +42,7 @@ class AbstractStackElement(object):
 
         :param reevaluate: True if the current method call is a reevaluate of the state. Meaning the modul is not on top of the stack.
         """
-        msg = "You schuld overrride perform() in %s" % self.__class__.__name__
+        msg = "You should override perform() in %s" % self.__class__.__name__
         raise NotImplementedError(msg)
 
     def interrupt(self):
