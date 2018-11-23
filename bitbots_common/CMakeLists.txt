@@ -6,7 +6,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(BitBotsIncludes)
 
 ## Find catkin macros and libraries
-find_package(catkin REQUIRED COMPONENTS roscpp rosconsole rospy humanoid_league_msgs)
+find_package(catkin REQUIRED COMPONENTS roscpp rosconsole rospy humanoid_league_msgs std_msgs bitbots_ros_control)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system thread date_time iostreams)

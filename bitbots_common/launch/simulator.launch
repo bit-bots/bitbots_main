@@ -21,5 +21,8 @@
     <rosparam file="$(find wolfgang_description)/config/wolfgang_control.yaml" command="load" ns="$(arg sim_ns)"/>
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg sim_ns)" args="joint_state_controller JointGroupController" />
 
+    <!-- map motion goals for simulator -->
+    <node name="pub_goals_sim" pkg="bitbots_common" type="motion_in_gazebo.py" output="screen" respawn="true"/>
+
                   
 </launch>
