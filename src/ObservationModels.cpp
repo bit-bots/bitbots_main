@@ -8,7 +8,7 @@ LocalObstacleObservationModel::~LocalObstacleObservationModel () {
 
 double LocalObstacleObservationModel::measure(const PositionStateW& state) const {
     if (last_measurement_.empty()) {
-        ROS_ERROR_STREAM("measure function called with empty measurement list. Prevent this by not calling the function of the particle filter on empty measurements.");
+        // ROS_ERROR_STREAM("measure function called with empty measurement list. Prevent this by not calling the function of the particle filter on empty measurements.");
         return 1.0;
     }
     return std::max(min_weight_, 1/state.calcDistance(*std::min_element(last_measurement_.begin(), last_measurement_.end(), [&state](PositionStateW a, PositionStateW b) {return state.calcDistance(a) < state.calcDistance(b); })));
@@ -42,7 +42,7 @@ LocalRobotObservationModel::~LocalRobotObservationModel () {
 
 double LocalRobotObservationModel::measure(const PositionState& state) const {
     if (last_measurement_.empty()) {
-        ROS_ERROR_STREAM("measure function called with empty measurement list. Prevent this by not calling the function of the particle filter on empty measurements.");
+        // ROS_ERROR_STREAM("measure function called with empty measurement list. Prevent this by not calling the function of the particle filter on empty measurements.");
         return 1.0;
     }
     return std::max(min_weight_, 1/state.calcDistance(*std::min_element(last_measurement_.begin(), last_measurement_.end(), [&state](PositionState a, PositionState b) {return state.calcDistance(a) < state.calcDistance(b); })));
@@ -87,7 +87,7 @@ double LocalFcnnObservationModel::measure(const PositionState& state) const {
     std::nth_element(weighted_measurements.begin(), weighted_measurements.begin() + (k - 1), weighted_measurements.end(), [](WeightedMeasurement &a, WeightedMeasurement &b){return (a.distance < b.distance);});
     double weighted_weight = 0;
     for (std::vector<WeightedMeasurement>::iterator it = weighted_measurements.begin(); it != weighted_measurements.begin() + k; ++it) {
-        weighted_weight += it->weight/it->distance;
+        weighted_weight += it->weight / it->distance;
     }
 
     return std::max(min_weight_, weighted_weight);
