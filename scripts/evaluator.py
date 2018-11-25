@@ -45,12 +45,13 @@ class Evaluator(object):
             if self.count <= 100:
                 self.init_initvals = (self.init_initvals[0] + dist_fcnn, self.init_initvals[1] + dist_classic)
             else:
-                self.initvals = (round(self.init_initvals[0] / 100.0), round(self.init_initvals[1] / 100.0))
-                self.count = 1
+                self.initvals = (self.init_initvals[0] / 100.0, self.init_initvals[1] / 100.0)
+                print(self.initvals)
+                self.count = 0
         else:
             dist_fcnn = abs(dist_fcnn-self.initvals[0])
             dist_classic = abs(dist_classic-self.initvals[1])
-            print('{}, {}, {}'.format(self.count, dist_fcnn, dist_classic))
+            print('{}, {}, {}, {}, {}'.format(self.count, dist_fcnn, dist_classic, dist_classic-dist_fcnn, dist_fcnn-dist_classic))
 
 
 
