@@ -8,7 +8,9 @@
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
 #include <visualization_msgs/Marker.h>
+#include <humanoid_league_msgs/ObstacleRelative.h>
 #include <humanoid_league_msgs/ObstaclesRelative.h>
+#include <humanoid_league_msgs/BallRelative.h>
 #include <humanoid_league_msgs/Model.h>
 #include <dynamic_reconfigure/server.h>
 #include <bitbots_world_model/WorldModelConfig.h>

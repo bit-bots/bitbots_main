@@ -238,6 +238,31 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     local_mate_pf_->diffuse(.1);
     local_opponent_pf_->diffuse(.1);
     local_obstacle_pf_->diffuse(.1);
+
+    // publish the output
+    // THIS IS JUST FOR EVALUATION AND BY NO MEANS USABLE IN PRAXIS
+    hlm::Model model_msg;
+    model_msg.header.stamp = ros::Time.now(); // or by input?
+    model_msg.header.frame = "base_link"; // this has to be defined based on incoming messages
+
+    hlm::BallRelative ball_msg;
+    ball_msg.header = model_msg.header; //or this by input and the other now?
+    PositionState ball_position_state = local_ball_pf_->getBestXPercentEstimate(20);
+    ball_msg.position.x = ball_position_state.getXPos();
+    ball_msg.position.y = ball_position_state.getYPos();
+    ball_msg.confidence = 1.0;
+
+    model_msg.ball = ball_msg;
+
+    hlm::ObstacleRelative obstacle_msg;
+    obstacle_msg.header = model_msg.header; //or this by input and the other now?
+    PositionState obstacle_position_state = local_mate_pf_->getBestXPercentEstimate(20);
+    obstacle_msg.position.x = obstacle_position_state.getXPos();
+    obstacle_msg.position.y = obstacle_position_state.getYPos();
+    obstacle_msg.confidence = 1.0;
+
+    model_msg.obstacles.push_back(obstacle_msg);
+    local_model_publisher_.publish(model_msg);
 }
 
 std_msgs::ColorRGBA WorldModel::get_color_msg(int color_id) {
