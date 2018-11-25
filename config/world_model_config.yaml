@@ -22,7 +22,7 @@ field_width: 6
 
 ball_topic: '/pixels_relative'
 
-obstacles_topic: '/obstacles'
+obstacles_topic: '/obstacles_relative'
 
 local_model_topic: '/local_world_model'
 
@@ -65,7 +65,7 @@ local_mate_diffusion_x_std_dev: 1
 local_mate_diffusion_y_std_dev: 1
 local_mate_diffusion_multiplicator: 0.1
 local_mate_min_weight: 0.001
-local_mate_explorer_rate: .05
+local_mate_explorer_rate: .2
 local_mate_max_distance: 18
 
 local_opponent_particle_number: 100
