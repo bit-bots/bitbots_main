@@ -20,7 +20,7 @@ field_width: 6
 # ROS-Stuff #
 #############
 
-ball_topic: '/ball_pixels'
+ball_topic: '/pixels_relative'
 
 obstacles_topic: '/obstacles'
 
@@ -52,7 +52,6 @@ obstacle_marker_color: 3 # blue
 # Local Filters
 # -------------
 
-local_mate_particle_number: 100
 local_ball_particle_number: 2000
 local_ball_diffusion_x_std_dev: 1
 local_ball_diffusion_y_std_dev: 1
@@ -61,6 +60,7 @@ local_ball_min_weight: 0.001
 local_ball_explorer_rate: .05
 local_ball_max_distance: 18
 
+local_mate_particle_number: 2000
 local_mate_diffusion_x_std_dev: 1
 local_mate_diffusion_y_std_dev: 1
 local_mate_diffusion_multiplicator: 0.1
