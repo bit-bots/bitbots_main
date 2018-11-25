@@ -54,6 +54,7 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     // initializing observation models
     local_ball_observation_model_.reset(new LocalFcnnObservationModel());
     local_ball_observation_model_->set_min_weight(config.local_ball_min_weight);
+    local_ball_observation_model_->set_k(1);
     local_mate_observation_model_.reset(new LocalRobotObservationModel());
     local_mate_observation_model_->set_min_weight(config.local_mate_min_weight);
     local_opponent_observation_model_.reset(new LocalRobotObservationModel());
@@ -198,9 +199,10 @@ void WorldModel::publish_visualization() {
         return;
     }
     local_particles_publisher_.publish(local_ball_pf_->renderMarker());
+    local_particles_publisher_.publish(PositionState::renderMarker(local_ball_pf_->getBestXPercentEstimate(80.0), get_color_msg(3), ros::Duration(.1), "ball_mean"));
     local_particles_publisher_.publish(local_obstacle_pf_->renderMarker());
     local_particles_publisher_.publish(local_mate_pf_->renderMarker());
-    local_particles_publisher_.publish(PositionState::renderMarker(local_mate_pf_->getBestXPercentEstimate(10.0), get_color_msg(2), ros::Duration(.1), "mates_mean"));
+    local_particles_publisher_.publish(PositionState::renderMarker(local_mate_pf_->getBestXPercentEstimate(80.0), get_color_msg(2), ros::Duration(.1), "mates_mean"));
     local_particles_publisher_.publish(local_opponent_pf_->renderMarker());
 }
 
