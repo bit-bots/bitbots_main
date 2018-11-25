@@ -47,7 +47,7 @@ float PositionState::getYPos() const {
 visualization_msgs::Marker PositionState::renderMarker(libPF::ParticleFilter<PositionState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
     visualization_msgs::Marker msg;
     msg.header.stamp = ros::Time::now();
-    msg.header.frame_id = "/world";
+    msg.header.frame_id = "/base_link";
     msg.action = visualization_msgs::Marker::ADD;
     msg.type = visualization_msgs::Marker::POINTS;
     msg.pose.orientation.w = 1;
@@ -69,7 +69,7 @@ visualization_msgs::Marker PositionState::renderMarker(libPF::ParticleFilter<Pos
 visualization_msgs::Marker PositionState::renderMarker(PositionState particle_state, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
     visualization_msgs::Marker msg;
     msg.header.stamp = ros::Time::now();
-    msg.header.frame_id = "/world";
+    msg.header.frame_id = "/base_link";
     msg.action = visualization_msgs::Marker::ADD;
     msg.type = visualization_msgs::Marker::POINTS;
     msg.pose.orientation.w = 1;
@@ -146,7 +146,7 @@ float PositionStateW::getWidth() const {
 visualization_msgs::Marker PositionStateW::renderMarker(libPF::ParticleFilter<PositionStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
     visualization_msgs::Marker msg;
     msg.header.stamp = ros::Time::now();
-    msg.header.frame_id = "/world";
+    msg.header.frame_id = "/base_link";
     msg.action = visualization_msgs::Marker::ADD;
     msg.type = visualization_msgs::Marker::POINTS;
     msg.pose.orientation.w = 1;

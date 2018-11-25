@@ -127,8 +127,7 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
             mate_measurements_.push_back(PositionState(obstacle.position.x, obstacle.position.y));
         } else if (obstacle.color == opponent_color_) {
             opponent_measurements_.push_back(PositionState(obstacle.position.x, obstacle.position.y));
-        } else {
-            // everything else is threated as an obstacle
+        } else if (obstacle.color < 2) { // robot unknown or unknown
             obstacle_measurements_.push_back(PositionStateW(obstacle.position.x, obstacle.position.y, obstacle.width));
         }
     }
