@@ -7,7 +7,7 @@ from bitbots_dsd.abstract_action_element import AbstractActionElement
 from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
 from bitbots_dsd.abstract_stack_element import AbstractStackElement
 from bitbots_dsd.parser import DSDParser
-from bitbots_dsd.tree import Tree, TreeElement, ActionTreeElement, DecisionTreeElement
+from bitbots_dsd.tree import Tree, AbstractTreeElement, ActionTreeElement, DecisionTreeElement
 
 
 def register_element(path: str) -> Dict[str, AbstractStackElement]:
@@ -67,7 +67,7 @@ class DSD:
         self.tree = None  # type: Tree
         # The stack is implemented as a list of tuples consisting of the tree element
         # and the actual module instance
-        self.stack = []  # type: List[Tuple[TreeElement, AbstractStackElement]]
+        self.stack = []  # type: List[Tuple[AbstractTreeElement, AbstractStackElement]]
 
         self.actions = {}  # type: Dict[str, AbstractActionElement]
         self.decisions = {}  # type: Dict[str, AbstractDecisionElement]
@@ -186,7 +186,7 @@ class DSD:
                 return self.push(xxxElement, data)
 
         :param element: The tree element that should be put on top of the stack.
-        :type element: TreeElement
+        :type element: AbstractTreeElement
         """
         if self.stack_reevaluate:
             # we are currently checking preconditions

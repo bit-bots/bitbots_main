@@ -11,7 +11,7 @@ class Tree:
         return repr(self.root_element)
 
 
-class TreeElement:
+class AbstractTreeElement:
     """
     An element (node) in the tree. Do not use directly,
     use one of DecisionTreeElement and ActionTreeElement instead
@@ -26,7 +26,7 @@ class TreeElement:
         return None
 
 
-class DecisionTreeElement(TreeElement):
+class DecisionTreeElement(AbstractTreeElement):
     """
     A tree element describing a decision. A decision has children that are executed on a certain result.
     Children can be added with add_child_element
@@ -61,7 +61,7 @@ class DecisionTreeElement(TreeElement):
         return self.name
 
 
-class ActionTreeElement(TreeElement):
+class ActionTreeElement(AbstractTreeElement):
     """
     A tree element describing an action. An action has optional
     parameters that will be passed to the module on creation
