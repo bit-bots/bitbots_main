@@ -3,6 +3,7 @@ import rospy
 from humanoid_league_msgs.msg import Model, BallRelative, ObstaclesRelative, ObstacleRelative
 from apriltags2_ros.msg import AprilTagDetection
 from apriltags2_ros.msg import AprilTagDetectionArray
+from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
 import tf2_ros
 import math
@@ -19,12 +20,12 @@ class Evaluator(object):
         self.init_initvals = (0, 0)
         self.count = 0
 
-        rospy.Subscriber('local_world_model',
+        sub = rospy.Subscriber('local_world_model',
                          Model,
                          self._callback_model,
                          queue_size=1,
                          tcp_nodelay=True)
-
+        gt_pub = rospy.Publisher('ground_truth_marker', Marker, queue_size=1)
 
         rospy.spin()
 
@@ -37,6 +38,18 @@ class Evaluator(object):
         #print(trans)
         self.count += 1
         self.last_ground_truth_position = trans.transform.translation
+        marker_msg = Marker()
+        marker_msg.type = Marker.POINTS
+        marker_msg.action = Marker.ADD
+        marker_msg.header.frame_id = 'base_link'
+        marker_msg.header.stamp = rospy.Time.now()
+        point = Point()
+        point.x = self.last_ground_truth_position.x
+        point.y = self.last_ground_truth_position.y
+        point.z = 0
+        marker_msg.points.append(point)
+        gt_pub.publish(marker_msg)
+
         fcnn_pos = msg.ball.ball_relative
         classic_pos = msg.obstacles.obstacles[0].position
         dist_fcnn =  math.sqrt((fcnn_pos.x - self.last_ground_truth_position.x) ** 2 + (fcnn_pos.y - self.last_ground_truth_position.y)**2)# calc distance to ground truth
