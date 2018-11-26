@@ -115,9 +115,7 @@ class DSD:
 
     def _init_element(self, element, parameters=None):
         """ Initialises the module belonging to the given element. """
-        instance = element.module(self.blackboard, parameters)
-        instance.setup_internals(self)
-        return instance
+        return element.module(self.blackboard, self, parameters)
 
     def set_start_element(self, start_element, init_data=None):
         """
@@ -158,7 +156,7 @@ class DSD:
             for tree_element, instance in self.stack[:-1]:
                 # check all elements except the top one, but not the actions
                 if isinstance(instance, AbstractDecisionElement) and instance.get_reevaluate():
-                    result = instance.perform(self.blackboard, True)
+                    result = instance.perform(True)
                     self.push(tree_element.get_child(result))
 
                     if not self.stack_reevaluate:
@@ -171,7 +169,7 @@ class DSD:
             self.do_not_reevaluate = False
         # run the top module
         current_tree_element, current_instance = self.stack[-1]
-        result = current_instance.perform(self.blackboard)
+        result = current_instance.perform()
         if isinstance(current_instance, AbstractDecisionElement):
             self.push(current_tree_element.get_child(result))
 

@@ -8,20 +8,27 @@ class AbstractStackElement(object):
     The work of an element is done in the :func:`perform`.
     Each element which inheritaces the AbstractStackElement can be used as a root element on the stack.
     """
-    _behaviour = None
+    dsd = None
     _init_data = None
 
-    def __init__(self, blackboard, paramters=None):
+    def __init__(self, blackboard, dsd, parameters=None):
+        """
+        :param blackboard: Shared blackboard for data exchange between elements
+        :param dsd: The stack decider which has this element on its stack.
+        :param parameters: Optional parameters which serve as arguments to this element
+        """
         self.debug_data = {}
         '''This is a dict in which data can be saved that should get represented on a __repr__ call'''
+
+        self.dsd = dsd
+        self.blackboard = blackboard
 
     def setup_internals(self, behaviour):
         """
         This method initilizes the internal variables and gets called by the stack machine.
 
-        :param behaviour: The stack machine which has this element on its stack.
+
         """
-        self._behaviour = behaviour
 
     def pop(self):
         """
@@ -33,9 +40,9 @@ class AbstractStackElement(object):
         If no return is used, further code is executed after the pop, which leads to difficult to debug behavior.
 
         """
-        self._behaviour.pop()
+        self.dsd.pop()
 
-    def perform(self, blackboard, reevaluate=False):
+    def perform(self, reevaluate=False):
         """
         This method is called when the element is on top of the stack. 
         This method has to be overloaded by the implementation!
@@ -49,7 +56,7 @@ class AbstractStackElement(object):
         """
         An interrupt leads to a complete clearing of the stack.
         """
-        self._behaviour.interrupt()
+        self.dsd.interrupt()
 
     def publish_debug_data(self, label, data):
         """

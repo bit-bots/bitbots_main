@@ -18,10 +18,10 @@ from bitbots_connector.blackboard import BodyBlackboard
 from bitbots_dsd import dsd
 
 
-def run(self):
+def run(d):
     rate = rospy.Rate(5)
     while not rospy.is_shutdown():
-        self.update()
+        d.update()
         rate.sleep()
 
 

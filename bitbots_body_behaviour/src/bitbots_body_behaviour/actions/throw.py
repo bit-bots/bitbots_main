@@ -22,32 +22,32 @@ class Throw(AbstractActionElement):
     Basic version. Throwing to one direction and remembering where we threw ourselves.
     """
 
-    def __init__(self, connector, args):
-        super(Throw, self).__init__(connector)
-        self.direction = args
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(Throw, self).__init__(blackboard, dsd)
+        self.direction = parameters
         self.initializationTime = rospy.get_time()
         self.played = False
-        self.left_animation = connector.animation.config["Goalie"]["throwLeft"]
-        self.middle_animation = connector.animation.config["Goalie"]["throwMiddle"]
-        self.right_animation = connector.animation.config["Goalie"]["throwRight"]
+        self.left_animation = blackboard.animation.config["Goalie"]["throwLeft"]
+        self.middle_animation = blackboard.animation.config["Goalie"]["throwMiddle"]
+        self.right_animation = blackboard.animation.config["Goalie"]["throwRight"]
 
-    def perform(self, connector, reevaluate=False):
+    def perform(self, reevaluate=False):
         # The head should not move when being thrown
-        connector.blackboard.set_head_duty(HeadMode.LOOK_FORWARD)
+        self.blackboard.blackboard.set_head_duty(HeadMode.LOOK_FORWARD)
         if self.direction == LEFT:
             # Returns true if can be performed
-            if connector.animation.play_animation(self.left_animation):
-                connector.blackboard.set_thrown(LEFT)
+            if self.blackboard.animation.play_animation(self.left_animation):
+                self.blackboard.blackboard.set_thrown(LEFT)
                 return self.interrupt()
         elif self.direction == RIGHT:
-            if connector.animation.play_animation(self.right_animation):
-                connector.blackboard.set_thrown(RIGHT)
-                connector.blackboard.freeze_till(rospy.get_time() + 4)
+            if self.blackboard.animation.play_animation(self.right_animation):
+                self.blackboard.blackboard.set_thrown(RIGHT)
+                self.blackboard.blackboard.freeze_till(rospy.get_time() + 4)
                 return self.interrupt()
         elif self.direction == MIDDLE:  # MIDDLE
-            if connector.animation.play_animation(self.middle_animation):
-                connector.blackboard.set_thrown(MIDDLE)
-                connector.blackboard.freeze_till(rospy.get_time() + 4)
+            if self.blackboard.animation.play_animation(self.middle_animation):
+                self.blackboard.blackboard.set_thrown(MIDDLE)
+                self.blackboard.blackboard.freeze_till(rospy.get_time() + 4)
                 return self.interrupt()
         else:
             raise ValueError('%s is not a possible throw direction.' % self.direction)

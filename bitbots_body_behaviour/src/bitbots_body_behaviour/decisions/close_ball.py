@@ -14,23 +14,23 @@ class CloseBall(AbstractDecisionElement):
     Test if the ball is in kick distance
     """
 
-    def __init__(self, blackboard, _):
+    def __init__(self, blackboard, dsd, parameters=None):
         self.last_goalie_dist = 0
         self.last_goalie_dist_time = 0
         self.max_kick_distance = blackboard.config["Body"]["Fieldie"]["kickDistance"]
         self.min_kick_distance = blackboard.config["Body"]["Fieldie"]["minKickDistance"]
         self.config_kickalign_v = blackboard.config["Body"]["Fieldie"]["kickAlign"]
 
-    def perform(self, connector, reevaluate=False):
+    def perform(self, reevaluate=False):
         # When the ball is seen, the robot should switch between looking to the ball and the goal
-        connector.blackboard.set_head_duty(HeadMode.BALL_GOAL_TRACKING)  # todo in action
+        blackboard.blackboard.set_head_duty(HeadMode.BALL_GOAL_TRACKING)  # todo in action
         # if the robot is near to the ball
-        if self.min_kick_distance < connector.world_model.get_ball_position_uv()[0] <= self.max_kick_distance \
-                and connector.world_model.get_ball_distance() <= self.max_kick_distance * 5.0:
+        if self.min_kick_distance < blackboard.world_model.get_ball_position_uv()[0] <= self.max_kick_distance \
+                and blackboard.world_model.get_ball_distance() <= self.max_kick_distance * 5.0:
             # TODO config
-            self.action(connector)
+            self.action(blackboard)
         else:
-            self.go(connector)
+            self.go(blackboard)
 
     def action(self, connector):
         return "CLOSE"

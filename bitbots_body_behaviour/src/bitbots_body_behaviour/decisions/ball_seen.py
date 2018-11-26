@@ -15,12 +15,12 @@ class AbstractBallSeen(AbstractDecisionElement):
     Decides if the ball was seen rspectively if the information is authentic enough.
     """
 
-    def __init__(self, blackboard, _):
-        super(AbstractBallSeen, self).__init__(blackboard)
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(AbstractBallSeen, self).__init__(blackboard, dsd)
         self.max_ball_time = blackboard.config["Body"]["Common"]["maxBallTime"]
 
-    def perform(self, connector, reevaluate=False):
-        if (rospy.get_time() - connector.world_model.ball_last_seen()) < self.max_ball_time:
+    def perform(self, reevaluate=False):
+        if (rospy.get_time() - self.blackboard.world_model.ball_last_seen()) < self.max_ball_time:
             return "YES"
         else:
             return "NO"
@@ -35,11 +35,14 @@ class AbstractBallSeen(AbstractDecisionElement):
 class BallSeen(AbstractBallSeen):
     pass
 
+
 class BallLeftRight(AbstractBallSeen):
     pass
 
+
 class DoesKnowPosition(AbstractBallSeen):
     pass
+
 
 class KickDecision(AbstractBallSeen):
     pass

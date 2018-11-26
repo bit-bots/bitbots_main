@@ -19,7 +19,7 @@ class AbstractActionElement(AbstractStackElement):
         Prohibits the next reevaluate.
         This is usefull if you have an action which has to be completed without interruption, e.g. a kick animation.
         """
-        self._behaviour.set_do_not_reevaluate()
+        self.dsd.set_do_not_reevaluate()
 
     def __repr__(self):
         """

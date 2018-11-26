@@ -15,29 +15,28 @@ History:
 """
 import rospy
 
-
 from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
 
 
 class FieldieSearchDecision(AbstractDecisionElement):
-    def __init__(self, connector, _):
-        super(FieldieSearchDecision, self).__init__(connector, _)
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(FieldieSearchDecision, self).__init__(blackboard, dsd, _)
         self.start_time = rospy.get_time()
-        self.turn_wait_time = connector.config["Body"]["Fieldie"]["searchWaitTime"]
-        self.turns_before_going_to_center_point = connector.config["Body"]["Fieldie"]["turnCenterpointTime"]
-        self.turn_angle = connector.config["Body"]["Fieldie"]["searchingTurnAngularAbsolute"]
+        self.turn_wait_time = blackboard.config["Body"]["Fieldie"]["searchWaitTime"]
+        self.turns_before_going_to_center_point = blackboard.config["Body"]["Fieldie"]["turnCenterpointTime"]
+        self.turn_angle = blackboard.config["Body"]["Fieldie"]["searchingTurnAngularAbsolute"]
         self.counter = 0
         self.at_centerpoint = False
 
-    def perform(self, connector, reevaluate=False):
+    def perform(self, reevaluate=False):
         # if we have looked too long in the same direction without seeing we want to walk
-        if rospy.get_time() - connector.pathfinding.arrive_time > self.turn_wait_time:
+        if rospy.get_time() - self.blackboard.pathfinding.arrive_time > self.turn_wait_time:
             if self.counter >= self.turns_before_going_to_center_point and not self.at_centerpoint:
                 self.push(GoToCenterpoint)
                 self.at_centerpoint = True
             else:
                 # reset the timer and increment counter
-                if not connector.pathfinding.is_walking_active():
+                if not self.blackboard.pathfinding.is_walking_active():
                     self.counter += 1
                 self.push(GoToRelativePosition, (0, 0, self.turn_angle))
         else:

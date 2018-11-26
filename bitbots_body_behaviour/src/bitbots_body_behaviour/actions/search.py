@@ -9,14 +9,14 @@ from humanoid_league_msgs.msg import HeadMode
 
 
 class Search(AbstractActionElement):
-    def perform(self, connector, reevaluate=False):
+    def perform(self, reevaluate=False):
         # Tell the head that it should search for the ball
-        connector.blackboard.set_head_duty(HeadMode.BALL_MODE)
+        blackboard.blackboard.set_head_duty(HeadMode.BALL_MODE)
         self.pop()
 
 
 class StopAndSearch(Search):
-    def perform(self, connector, reevaluate=False):
-        connector.blackboard.set_head_duty(HeadMode.BALL_MODE)
+    def perform(self, reevaluate=False):
+        blackboard.blackboard.set_head_duty(HeadMode.BALL_MODE)
         self.push(Stand)
         self.pop()
