@@ -10,7 +10,7 @@ from bitbots_dsd.parser import DSDParser
 from bitbots_dsd.tree import Tree, AbstractTreeElement, ActionTreeElement, DecisionTreeElement
 
 
-def register_element(path: str) -> Dict[str, AbstractStackElement]:
+def discover_elements(path: str) -> Dict[str, AbstractStackElement]:
     """
     Extract all the classes from the files in the given path and return a dictionary containing them
 
@@ -77,14 +77,14 @@ class DSD:
         Register every class in a given path as an action
         :param modulepath: A path containing files with classes extending AbstractActionElement
         """
-        self.actions = register_element(modulepath)
+        self.actions = discover_elements(modulepath)
 
     def register_decisions(self, modulepath):
         """
         Register every class in a given path as a decision
         :param modulepath: A path containing files with classes extending AbstractDecisionElement
         """
-        self.decisions = register_element(modulepath)
+        self.decisions = discover_elements(modulepath)
 
     def load_behavior(self, path):
         """
@@ -100,7 +100,7 @@ class DSD:
 
     def _bind_modules(self, element):
         """
-        Recursively rraverse the tree and bind the registered action and decision classes to
+        Recursively traverse the tree and bind the registered action and decision classes to
         the corresponding tree elements
         :param element: The starting element
         """
@@ -111,7 +111,7 @@ class DSD:
             for child in element.children.values():
                 self._bind_modules(child)
         else:
-            raise KeyError
+            raise KeyError('Provided element ' + str(element) + 'was not found in registered actions or decisions')
 
     def _init_element(self, element, parameters=None):
         """ Initialises the module belonging to the given element. """
