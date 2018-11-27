@@ -44,7 +44,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_hip_yaw_link.STL" />
+                <mesh filename="package://wolfgang_description/mesh/right_hip_yaw_link.dae" />
             </geometry>
             <material name="black" />
         </visual>
