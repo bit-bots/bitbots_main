@@ -23,7 +23,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/trunk_link.STL" />
+                <mesh filename="package://wolfgang_description/mesh_new/torso_link.stl" />
             </geometry>
             <material name="black" />
         </visual>
