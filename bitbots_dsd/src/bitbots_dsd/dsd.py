@@ -249,6 +249,11 @@ class DSD:
         """
 
         if self.debug_active:
-            msg_data = ",".join([repr(x[1]) for x in self.stack])
+            # Construct representing stack-string
+            msg_data = ''
+            for tree_elem, reason, elem_instance in self.stack:
+                msg_data += f'|-{reason}->{repr(elem_instance)};'
+
+
             msg = String(data=msg_data)
             self.debug_publisher.publish(msg)

@@ -30,4 +30,4 @@ class AbstractActionElement(AbstractStackElement):
         data = json.dumps(self.debug_data)
         self.debug_data = {}
 
-        return f"<@{shortname}>[{data}]"
+        return f"@{shortname}[{data}]"

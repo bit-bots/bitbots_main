@@ -88,7 +88,7 @@ class AbstractStackElement(object):
         data = json.dumps(self.debug_data)
         self.debug_data = {}
 
-        return f"<:abstract:{shortname}>[{data}]"
+        return f":abstract:{shortname}[{data}]"
 
     @staticmethod
     def sign(x):
