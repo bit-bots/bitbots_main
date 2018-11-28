@@ -8,8 +8,7 @@
         <arg name="wolfgang" value="$(arg wolfgang)"/>   
     </include>
 
-
-    <include file="$(find bitbots_head_behaviour)/launch/head_behaviour.launch"/>
+    <include file="$(find bitbots_head_behavior)/launch/head_behavior.launch"/>
 
     
 </launch>

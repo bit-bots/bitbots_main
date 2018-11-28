@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+This is the ROS-Node which contains the head behavior, starts the appropriate DSD, initializes the HeadBlackboard
+and subscribes to head_behavior specific ROS-Topics.
+"""
 import os
 
 import rospy
@@ -10,6 +14,10 @@ from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
 
 
 def run(dsd: DSD):
+    """
+    Main run-loop
+    :returns: Never
+    """
     rate = rospy.Rate(5)
     while not rospy.is_shutdown():
         dsd.update()
@@ -17,6 +25,10 @@ def run(dsd: DSD):
 
 
 def init() -> DSD:
+    """
+    Initialize new components needed for head_behavior:
+    blackboard, dsd, rostopic subscriber
+    """
     blackboard = HeadBlackboard()
 
     rospy.Subscriber('/head_mode', HeadModeMsg, blackboard.head_capsule.head_mode_callback, queue_size=1)
