@@ -7,7 +7,7 @@ from bitbots_connector.capsules.blackboard_capsule import BlackboardCapsule
 from bitbots_connector.capsules.game_status_capsule import GameStatusCapsule
 from bitbots_connector.capsules.team_data_capsule import TeamDataCapsule
 from bitbots_connector.capsules.world_model_capsule import WorldModelCapsule
-from bitbots_connector.capsules.head_capsule import HeadCapsule
+from bitbots_connector.capsules.head_capsule_old import HeadCapsule
 from bitbots_connector.capsules.speaker_capsule import SpeakerCapsule
 from bitbots_connector.capsules.pathfinding_capsule import PathfindingCapsule
 
