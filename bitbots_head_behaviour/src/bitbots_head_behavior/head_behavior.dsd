@@ -1,0 +1,9 @@
+$HeadModeDecider
+    BALL_MODE --> @Wait + time:1
+    POST_MODE --> @Wait + time:1
+    BALL_GOAL_TRACKING --> @Wait + time:1
+    FIELD_FEATURES --> @Wait + time:1
+    LOOK_DOWN --> @Wait + time:1
+    LOOK_FORWARD --> @Wait + time:1
+    LOOK_UP --> @Wait + time:1
+    DONT_MOVE --> @Wait + time:1
