@@ -1,4 +1,4 @@
-$HeadModeDecider
+$HeadModeDecision
     BALL_MODE --> @Wait + time:1
     POST_MODE --> @Wait + time:1
     BALL_GOAL_TRACKING --> @Wait + time:1

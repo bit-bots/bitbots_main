@@ -1,0 +1,6 @@
+behaviour:
+  head:
+    rosnode: head_behaviour
+
+    defaults:
+      head_mode: 7    # Look forward
