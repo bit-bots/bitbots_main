@@ -23,7 +23,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/torso_link.stl" />
+                <mesh filename="package://wolfgang_description/mesh/torso_link.stl"  />
             </geometry>
             <material name="black" />
         </visual>
@@ -44,7 +44,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_hip_yaw_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/right_hip_yaw_link.dae" scale="0.001 0.001 0.001"/>
             </geometry>
             <material name="black" />
         </visual>
