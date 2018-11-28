@@ -21,6 +21,7 @@ class AbstractTreeElement:
         self.parent = parent
         self.module = None
         self.parameters = None
+        self.activation_reason = None
 
     def get_child(self, activating_result):
         return None
@@ -46,6 +47,7 @@ class DecisionTreeElement(AbstractTreeElement):
     def add_child_element(self, element, activating_result):
         """Add a child that will be executed when activating_result is returned"""
         self.children[activating_result] = element
+        element.activation_reason = activating_result
 
     def get_child(self, activating_result):
         """Get the child for a given result"""

@@ -78,7 +78,7 @@ class DSD:
         self.tree = None  # type: Tree
         # The stack is implemented as a list of tuples consisting of the tree element
         # and the actual module instance
-        self.stack = []  # type: List[Tuple[AbstractTreeElement, str, AbstractStackElement]]
+        self.stack = []  # type: List[Tuple[AbstractTreeElement, AbstractStackElement]]
 
         self.actions = {}  # type: Dict[str, AbstractActionElement]
         self.decisions = {}  # type: Dict[str, AbstractDecisionElement]
@@ -141,7 +141,7 @@ class DSD:
         """
         self.start_element = start_element
         self.start_element_data = init_data
-        self.stack = [(self.start_element, '__root__', self._init_element(self.start_element, self.start_element_data))]
+        self.stack = [(self.start_element, self._init_element(self.start_element, self.start_element_data))]
 
     def interrupt(self):
         """
@@ -169,11 +169,11 @@ class DSD:
         if reevaluate and not self.do_not_reevaluate:
             self.stack_exec_index = 0
             self.stack_reevaluate = True
-            for tree_element, reason, instance in self.stack[:-1]:
+            for tree_element, instance in self.stack[:-1]:
                 # check all elements except the top one, but not the actions
                 if isinstance(instance, AbstractDecisionElement) and instance.get_reevaluate():
                     result = instance.perform(True)
-                    self.push(result, tree_element.get_child(result))
+                    self.push(tree_element.get_child(result))
 
                     if not self.stack_reevaluate:
                         # We had some external interrupt, we stop here
@@ -184,12 +184,12 @@ class DSD:
             # reset flag
             self.do_not_reevaluate = False
         # run the top module
-        current_tree_element, reason, current_instance = self.stack[-1]
+        current_tree_element, current_instance = self.stack[-1]
         result = current_instance.perform()
         if isinstance(current_instance, AbstractDecisionElement):
-            self.push(result, current_tree_element.get_child(result))
+            self.push(current_tree_element.get_child(result))
 
-    def push(self, activating_result, element):
+    def push(self, element):
         """
         Put a new element on the stack and start it directly.
 
@@ -199,7 +199,6 @@ class DSD:
 
                 return self.push(xxxElement, data)
 
-        :param activating_result: The activating_result of the parent element
         :param element: The tree element that should be put on top of the stack.
         :type element: AbstractTreeElement
         """
@@ -214,7 +213,7 @@ class DSD:
                 self.stack = self.stack[0:self.stack_exec_index + 1]
                 # reevaluate is finished
                 self.stack_reevaluate = False
-        self.stack.append((element, activating_result, self._init_element(element, element.parameters)))
+        self.stack.append((element, self._init_element(element, element.parameters)))
         # we call the new element without another reevaluate
         self.update(False)
 
@@ -251,9 +250,8 @@ class DSD:
         if self.debug_active:
             # Construct representing stack-string
             msg_data = ''
-            for tree_elem, reason, elem_instance in self.stack:
-                msg_data += f'|-{reason}->{repr(elem_instance)};'
-
+            for tree_elem, elem_instance in self.stack:
+                msg_data += f'|-{tree_elem.activation_reason}->{repr(elem_instance)};'
 
             msg = String(data=msg_data)
             self.debug_publisher.publish(msg)
