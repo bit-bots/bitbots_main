@@ -3,6 +3,10 @@ import os
 import re
 from typing import Tuple, List, Dict
 
+import rosparam
+import rospy
+from std_msgs.msg import String
+
 from bitbots_dsd.abstract_action_element import AbstractActionElement
 from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
 from bitbots_dsd.abstract_stack_element import AbstractStackElement
@@ -27,8 +31,10 @@ def discover_elements(path: str) -> Dict[str, AbstractStackElement]:
                     if m:
                         classname = m.group()
                         # relative_filename is the name relative to the src directory (from where it will be imported)
-                        relative_filename = os.path.join(os.path.relpath(os.path.relpath(path), os.path.dirname(os.path.dirname(path))), file)
-                        module = importlib.import_module(relative_filename.replace("/", ".").replace("\\", ".").replace(".py", ""))
+                        relative_filename = os.path.join(
+                            os.path.relpath(os.path.relpath(path), os.path.dirname(os.path.dirname(path))), file)
+                        module = importlib.import_module(
+                            relative_filename.replace("/", ".").replace("\\", ".").replace(".py", ""))
                         elements[classname] = getattr(module, classname)
                 except Exception as e:
                     print(e)
@@ -61,7 +67,12 @@ class DSD:
     do_not_reevaluate = False
     old_representation = ""
 
-    def __init__(self, blackboard):
+    def __init__(self, blackboard, debug_topic=None):
+        """
+        :param blackboard: Blackboard instance which will be available to all modules
+        :param debug_topic:  Topic on which debug data should be published
+        :type debug_topic: str
+        """
         self.blackboard = blackboard
 
         self.tree = None  # type: Tree
@@ -71,6 +82,12 @@ class DSD:
 
         self.actions = {}  # type: Dict[str, AbstractActionElement]
         self.decisions = {}  # type: Dict[str, AbstractDecisionElement]
+
+        # Setup debug publisher if needed
+        self.debug_active = debug_topic is not None
+        if self.debug_active:
+            rospy.loginfo(f'Debugging is active. Publishing on {debug_topic}')
+            self.debug_publisher = rospy.Publisher(debug_topic, String, queue_size=10)
 
     def register_actions(self, modulepath):
         """
@@ -147,8 +164,7 @@ class DSD:
         :param: reevaluate: Can be set to False to avoid the reevaluation
         :type reevaluate: bool
         """
-        if not reevaluate:
-            self.publish_debug_msg()
+        self.publish_debug_msg()
 
         if reevaluate and not self.do_not_reevaluate:
             self.stack_exec_index = 0
@@ -230,8 +246,8 @@ class DSD:
         """
         Helper method to publish debug data
         """
-        pass
-        # if self.debug_active:
-        #    msg_data = ",".join([repr(x) for x in self.stack])
-        #    msg = String(data=msg_data)
-        # self.debug_pub.publish(msg)
+
+        if self.debug_active:
+            msg_data = ",".join([repr(x[1]) for x in self.stack])
+            msg = String(data=msg_data)
+            self.debug_publisher.publish(msg)

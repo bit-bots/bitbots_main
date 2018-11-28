@@ -26,7 +26,7 @@ def run(d):
 
 
 if __name__ == "__main__":
-    D = dsd.DSD(BodyBlackboard())
+    D = dsd.DSD(BodyBlackboard(), '/debug/dsd/body_behaviour')
 
     D.blackboard.speaker.speaker = rospy.Publisher("speak", Speak, queue_size=3)
     D.blackboard.team_data.strategy_sender = rospy.Publisher("strategy", Strategy, queue_size=2)

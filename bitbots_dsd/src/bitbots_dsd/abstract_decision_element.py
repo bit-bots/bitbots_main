@@ -26,7 +26,7 @@ class AbstractDecisionElement(AbstractStackElement):
         data = json.dumps(self.debug_data)
         self.debug_data = {}
 
-        return "<Decision: %s>[%s]" % (shortname, data)
+        return f"<${shortname}>[{data}]"
 
     def get_reevaluate(self):
         """

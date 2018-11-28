@@ -26,7 +26,7 @@ class AbstractBallSeen(AbstractDecisionElement):
             return "NO"
 
     def get_reevaluate(self):
-        return True
+        return False
 
     def _register(self):
         return ["YES", "NO"]

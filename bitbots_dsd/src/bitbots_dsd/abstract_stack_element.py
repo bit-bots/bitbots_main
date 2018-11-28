@@ -1,5 +1,7 @@
 import json
 
+import rospy
+
 
 class AbstractStackElement(object):
     """
@@ -67,9 +69,7 @@ class AbstractStackElement(object):
         """
 
         if type(data) not in (dict, list, int, float, str, bool):
-            #rospy.logwarn_throttle(1,
-            #                       "The supplied debug data of type %s is not JSON serializable and will not be published" % type(
-            #                           data))
+            rospy.logdebug_throttle(1, f"The supplied debug data of type {type(data)} is not JSON serializable and will not be published")
             return
 
         if label is None:
@@ -81,14 +81,14 @@ class AbstractStackElement(object):
         """
         We shorten the representation. It is shorter but has enough information.
 
-        Furthermore, we append the current data of self.rer_data as a JSON.
+        Furthermore, we append the current data of self.repr_data as a JSON.
         """
         shortname = self.__class__.__name__
 
         data = json.dumps(self.debug_data)
         self.debug_data = {}
 
-        return "<AbstractStackElement: %s>[%s]" % (shortname, data)
+        return f"<:abstract:{shortname}>[{data}]"
 
     @staticmethod
     def sign(x):
