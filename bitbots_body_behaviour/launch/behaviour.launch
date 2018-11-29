@@ -1,7 +1,0 @@
-<launch>
-    <arg name="minibot" default="false" />
-    <arg name="wolfgang" default="false" />
-
-    <include file="$(find bitbots_body_behaviour)/launch/body_behaviour.launch"/>
-    <!--<include file="$(find bitbots_head_behaviour)/launch/head_behaviour.launch"/>-->
-</launch>

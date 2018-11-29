@@ -3,8 +3,7 @@ from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup(
-    packages=['bitbots_body_behaviour'],
-    #scripts=['bin/myscript'],
+    packages=['bitbots_body_behavior'],
     package_dir={'': 'src'}
 )
 

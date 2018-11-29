@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 """
-BehaviourModule
-^^^^^^^^^^^^^^^
+BehaviorModule
+^^^^^^^^^^^^^^
 .. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
 
-Starts the body behaviour
+Starts the body behavior
 """
 
 import actionlib
@@ -19,7 +19,7 @@ from bitbots_dsd import dsd
 
 
 if __name__ == "__main__":
-    D = dsd.DSD(BodyBlackboard(), '/debug/dsd/body_behaviour')
+    D = dsd.DSD(BodyBlackboard(), '/debug/dsd/body_behavior')
 
     D.blackboard.team_data.strategy_sender = rospy.Publisher("strategy", Strategy, queue_size=2)
     D.blackboard.blackboard.head_pub = rospy.Publisher("head_duty", HeadMode, queue_size=10)

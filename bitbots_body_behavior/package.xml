@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <package>
-  <name>bitbots_body_behaviour</name>
+  <name>bitbots_body_behavior</name>
   <version>0.9.1</version>
-  <description>The bitbots_body_behaviour package determines the
-        behaviour of the robot including strategy decisions and
+  <description>The bitbots_body_behavior package determines the
+        behavior of the robot including strategy decisions and
         kick or walk actions. The node controls the walking indirecty via
-        /navigation_goal or directly via /cmd_vel and the head behaviour
+        /navigation_goal or directly via /cmd_vel and the head behavior
         via /head_duty.</description>
 
   <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
