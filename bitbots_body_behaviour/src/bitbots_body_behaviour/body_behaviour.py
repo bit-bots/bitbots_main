@@ -18,17 +18,9 @@ from bitbots_connector.blackboard import BodyBlackboard
 from bitbots_dsd import dsd
 
 
-def run(d):
-    rate = rospy.Rate(5)
-    while not rospy.is_shutdown():
-        d.update()
-        rate.sleep()
-
-
 if __name__ == "__main__":
     D = dsd.DSD(BodyBlackboard(), '/debug/dsd/body_behaviour')
 
-    D.blackboard.speaker.speaker = rospy.Publisher("speak", Speak, queue_size=3)
     D.blackboard.team_data.strategy_sender = rospy.Publisher("strategy", Strategy, queue_size=2)
     D.blackboard.blackboard.head_pub = rospy.Publisher("head_duty", HeadMode, queue_size=10)
     D.blackboard.pathfinding.pathfinding_simple_pub = rospy.Publisher('bitbots_pathfinding/relative_goal', Pose2D,
@@ -50,9 +42,7 @@ if __name__ == "__main__":
 
     D.blackboard.animation.server = actionlib.SimpleActionClient("bitbots_animation", PlayAnimationAction)
 
-    # for k, v in D.tree.items():
-    #    print(k, v)
-
-    # print(D.tree)
-    # print(json.dumps(D.tree,  indent=4))
-    run(D)
+    rate = rospy.Rate(5)
+    while not rospy.is_shutdown():
+        D.update()
+        rate.sleep()

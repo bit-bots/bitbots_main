@@ -15,17 +15,18 @@ from humanoid_league_msgs.msg import Position2D, ObstaclesRelative, GoalRelative
 
 
 class WorldModelCapsule:
-    def __init__(self, config):
+    def __init__(self, field_length, field_width):
         self.position = Position2D()
-        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5.0))
+        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
         self.ball = PointStamped()  # The ball in the base footprint frame
         self.goal = GoalRelative()
         self.obstacles = ObstaclesRelative()
         self.my_data = dict()
         self.counter = 0
-        self.field_length = config["Body"]["Common"]["Field"]["length"]
-        self.goal_width = config["Body"]["Common"]["Field"]["length"]
+        self.ball_seen_time = 0
+        self.field_length = field_length
+        self.field_width = field_width
 
     def get_current_position(self):
         return self.position.pose.x, self.position.pose.y, self.position.pose.theta
@@ -34,11 +35,8 @@ class WorldModelCapsule:
     # ## Ball ##
     ############
 
-    def ball_seen(self):
-        return rospy.get_time() - self.ball_last_seen() < 0.5
-
     def ball_last_seen(self):
-        return self.my_data.get("BallLastSeen", -999)
+        return self.ball_seen_time
 
     def get_ball_position_xy(self):
         """Calculate the absolute position of the ball"""
@@ -65,9 +63,10 @@ class WorldModelCapsule:
         ball_stamped = PointStamped(ball.header, ball.ball_relative)
         try:
             self.ball = self.tf_buffer.transform(ball_stamped, 'base_footprint', timeout=rospy.Duration(0.3))
-        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException):
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
             return
-        self.my_data["BallLastSeen"] = rospy.get_time()
+        self.ball_seen_time = rospy.get_time()
 
     ###########
     # ## Goal #

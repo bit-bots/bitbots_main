@@ -1,5 +1,4 @@
 <launch>
-    <arg name="duty" default="TeamPlayer"/>
     <arg name="minibot" default="false" />
     <arg name="wolfgang" default="false" />
 

@@ -13,17 +13,15 @@ from humanoid_league_msgs.msg import GameState
 class GameStatusCapsule:
     def __init__(self):
         self.team_id = rospy.get_param("team_id", 8)
-        self.kick_off_valid_time = rosparam.get_param("Behaviour/Body/Common/kickOffValidTime")
-        self.drop_ball_valid_time = rosparam.get_param("Behaviour/Body/Common/dropBallValidTime")
         self.gamestate = GameState()
         self.last_update = 0
 
     def is_game_state_equals(self, value):
         assert value in [GameState.GAMESTATE_PLAYING, GameState.GAMESTATE_FINISHED, GameState.GAMESTATE_INITAL,
                          GameState.GAMESTATE_READY, GameState.GAMESTATE_SET]
-        return value == self.get_gamestatus()
+        return value == self.get_gamestate()
 
-    def get_gamestatus(self):
+    def get_gamestate(self):
         return self.gamestate.gameState
 
     def get_secondary_state(self):

@@ -18,7 +18,6 @@ class PathfindingCapsule:
         self.position_threshold = 0.5
         self.orientation_threshold = 30
         self.pathfinding_simple_pub = None
-        self.useMoveBase = rospy.get_param('Behaviour/Body/Toggles/useMoveBase')
 
     def pub_simple_pathfinding(self, x, y, t=0):
         rospy.loginfo('Using simple pathfinding to go to relative position ' + str(x) + str(y) + str(t))

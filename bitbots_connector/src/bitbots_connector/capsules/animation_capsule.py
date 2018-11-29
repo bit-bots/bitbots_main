@@ -11,7 +11,6 @@ class AnimationCapsule:
     def __init__(self):
         self.active = False
         self.animation_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
-        self.config = rospy.get_param("Animations")
 
     def play_animation(self, animation):
         """

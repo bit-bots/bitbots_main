@@ -1,0 +1,37 @@
+behavior:
+  body:
+    roles:
+      - "goalie"
+      - "offense"
+      - "defense"
+      - "penalty"
+
+    use_move_base: False
+
+    # Position format as in humanoid_league_msg/Position2D
+    #      y
+    #      ^       ______________________
+    #      |    M  |          |          |  O
+    #      |    Y  |_ -x, y   |   x, y  _|  P
+    #      |    G  | |        |        | |  P
+    # 0    +    O  | |       ( )       | |  G
+    #      |    A  |_|        |        |_|  O
+    #      |    L  |  -x,-y   |   x,-y   |  A
+    #      |       |__________|__________|  L
+    #      |
+    #      +------------------+--------------> x
+    #                         0
+    # To be useful for different field sizes, use values in [-1, 1] for x and y
+
+    role_positions:
+      goalie: [-0.95, 0]
+      defense: [-0.5, 0.5]
+      offense: [-0.2, 0]
+
+    # When the ball has not been seen for `ball_lost_time` seconds,
+    # it is considered lost and will be searched
+    ball_lost_time: 0.5
+
+    # When the ball is closer than `max_kick_distance` meters
+    # it is close enough to be kicked
+    max_kick_distance: 0.3

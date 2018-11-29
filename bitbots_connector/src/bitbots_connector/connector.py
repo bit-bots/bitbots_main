@@ -26,7 +26,6 @@ class BodyConnector(AbstractConnector):
         self.team_data = TeamDataCapsule()
 
 
-
 class HeadConnector(AbstractConnector):
     def __init__(self):
         super(HeadConnector, self).__init__()

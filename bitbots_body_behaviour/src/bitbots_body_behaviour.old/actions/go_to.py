@@ -28,7 +28,7 @@ class GoToRelativePosition(AbstractActionElement):
         self.point = parameters
 
     def perform(self, reevaluate=False):
-        if not self.blackboard.config['use_move_base']:
+        if not self.blackboard.pathfinding.useMoveBase:
             self.blackboard.pathfinding.pub_simple_pathfinding(self.point[0], self.point[1], self.point[2])
             return self.pop()
         pose_msg = PoseStamped()
@@ -50,6 +50,24 @@ class GoToRelativePosition(AbstractActionElement):
 
         # To have the object we are going to in front of us, go to a point behind it
         self.blackboard.pathfinding.call_action(absolute_pose)
+        if self.blackboard.pathfinding.is_walking_active():
+            return self.pop()
+
+
+class Stand(AbstractActionElement):
+    def perform(self, reevaluate=False):
+        if not self.blackboard.pathfinding.useMoveBase:
+            self.blackboard.pathfinding.pub_simple_pathfinding(0, 0)
+        pose_msg = PoseStamped()
+        pose_msg.header.stamp = rospy.Time.now()
+        pose_msg.header.frame_id = 'base_footprint'
+
+        pose_msg.pose.position.x = 0
+        pose_msg.pose.position.y = 0
+        pose_msg.pose.position.z = 0
+
+        pose_msg.pose.orientation = Quaternion(0, 0, 0, 1)
+        self.blackboard.pathfinding.call_action(pose_msg)
         if self.blackboard.pathfinding.is_walking_active():
             return self.pop()
 
@@ -81,6 +99,43 @@ class GoToAbsolutePosition(AbstractActionElement):
         if self.blackboard.pathfinding.is_walking_active():
             return self.pop()
 
+
+class GoToBall(GoToRelativePosition):
+    def __init__(self, blackboard, dsd, parameters=None):
+        """Go to the ball
+        :param dsd:
+
+        """
+        ball_u, ball_v = blackboard.world_model.get_ball_position_uv()
+        point = (ball_u, ball_v, blackboard.world_model.get_opp_goal_angle_from_ball())
+        super(GoToBall, self).__init__(blackboard, dsd, point)
+
+    def perform(self, reevaluate=False):
+        if not self.blackboard.pathfinding.useMoveBase:
+            self.blackboard.pathfinding.pub_simple_pathfinding(self.point[0], self.point[1])
+        pose_msg = PoseStamped()
+        pose_msg.header.stamp = rospy.Time.now()
+        pose_msg.header.frame_id = 'base_footprint'
+
+        pose_msg.pose.position.x = self.point[0]
+        pose_msg.pose.position.y = self.point[1]
+        pose_msg.pose.position.z = 0
+
+        try:
+            absolute_pose = self.tf_buffer.transform(pose_msg, 'map', timeout=rospy.Duration(0.3))
+        except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
+            rospy.loginfo("Waiting for transform...")
+            return
+
+        # To have the object we are going to in front of us, go to a point behind it
+        absolute_pose.pose.position.x -= 0.2
+
+        rotation = quaternion_from_euler(0, 0, self.point[2])
+        absolute_pose.pose.orientation = Quaternion(*rotation)
+
+        self.blackboard.pathfinding.call_action(absolute_pose)
+        if self.blackboard.pathfinding.is_walking_active():
+            return self.pop()
 
 
 class GoToOwnGoal(GoToAbsolutePosition):
@@ -115,6 +170,9 @@ class GoToCenterpoint(GoToAbsolutePosition):
         point = 0, 0, 0
         super(GoToCenterpoint, self).__init__(blackboard, dsd, point)
 
+
+class ToggleSearchBall(GoToAbsolutePosition):
+    pass
 
 class GoToDutyPosition(GoToAbsolutePosition):
     pass

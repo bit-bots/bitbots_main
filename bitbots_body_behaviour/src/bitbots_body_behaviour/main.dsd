@@ -1,96 +1,68 @@
+#KickBall
+$AlignedToGoal
+    YES --> @KickBall
+    NO --> @AlignToGoal
 
-//***
-Prefixes:
---> Start point
-@ Actions
-    OUTCOMES
-$ Decisions
-# Subtrees (References)
-
-
-
-
-$CloseBall
-	CLOSE
-	FAR
-$AbstractBallSeen
-	YES
-	NO
-$DutyDecider
-	NOTHING
-	TEAMPLAYER
-	GOALIE
-@Search
-@StopAndSearch
-@Wait
-@GoAwayFromBall
-@RaiseArm
-@AlignOnBall
-@AlignToGoal
-@KickBall
-@GoToRelativePosition
-@Stand
-@GoToAbsolutePosition
-@GoToBall
-@GoToOwnGoal
-@GoToEnemyGoal
-@GoToCenterpoint
-@Throw
-
-
-
-***//
-
-
-
-
-#RATest
+#GoalieBehavior
 $BallSeen
-    YES --> $BallLeftRight
-        LEFT --> @RaiseArm + side:left
-        RIGHT --> @RaiseArm + side:right
-    NO --> @Stand
+    YES --> $BallDangerous
+        YES --> $BallClose
+            YES --> #KickBall
+            NO --> @GoToBall
+        NO --> @LookAtBall
+    NO --> @SearchBall
 
-
-#GenericSearchBall
-@ToggleSearchBall
-
-
-#TeamPlayerBehaviour
+#OffenseBehavior
 $BallSeen
-    NO --> #GenericSearchBall
-    YES --> $CloseBall
-        FAR --> @GoToBall + speed:fast
-        MID --> @GoToBall + speed:medium
-        CLOSE --> $KickDecision
-            STRAIGHT --> @KickAction + side:$side
-            SIDE --> @SideKickAction + side:$side
+    YES --> $BallClose
+        YES --> #KickBall
+        NO --> @GoToBall
+    NO --> @SearchBall
 
+#DefenseBehavior
+$BallSeen
+    YES --> $BallClose
+        YES --> #KickBall
+        NO --> @GoToDefensePosition
+    NO --> @SearchBall
 
+#PenaltyBehavior
+$BallSeen
+    YES --> $BallClose
+        YES --> $AlignedToGoal
+            YES --> @KickBallVeryHard
+            NO --> @AlignToGoal
+        NO --> @GoToBall
+    NO --> @SearchBall
 
-
--->RoboCupDemo
-$DutyDecider
-    TEST2 --> $BallSeen
-        YES --> $BallLeftRight
-            LEFT --> @RaiseArm + side:left
-            RIGHT --> @RaiseArm + side:right
-        NO --> @Stand
-    TEST --> #RATest
-    TEAMPLAYER --> $DoesKnowPosition
-        CONFIRMED --> #TeamPlayerBehaviour
-    //    YES --> #TeamPlayerBehaviour
-    //    NO --> #VerifyOwnPosition
-    //GOALIE --> #GoalieBehavior
-    NOTHING --> @Wait
-
-
-//**
-{
-"DutyDecider":[("TEST2", "~$BallSeen",{})],
-"DutyDecider.BallSeen": [("NO", "@Stand", {}), ("YES", "~$BallLeftRight",{})],
-"DutyDecider.BallSeen.Stand": None,
-"DutyDecider.BallSeen.BallLeftRight": [("LEFT", !~@RaiseArm,{"side":"left"}),("RIGHT", !~@RaiseArm, "side":"right"}),
-"DutyDecider.BallSeen.BallLeftRight.RaiseArm": None
-}
-**//
+-->BodyBehavior
+$RoleDecider
+    goalie --> $GameStateDecider
+        Initial --> @Stand
+        Ready --> @GoToRolePosition
+        // In set, look for field features to localize
+        Set --> @Stand
+        Playing --> #GoalieBehavior
+        Finished --> @Stand
+        NOT_ALLOWED_TO_MOVE --> @Stand
+    offense --> $GameStateDecider
+        Initial --> @Stand
+        Ready --> @GoToRolePosition
+        Set --> @Stand
+        Playing --> #OffenseBehavior
+        Finished --> @Stand
+        NOT_ALLOWED_TO_MOVE --> @Stand
+    defense --> $GameStateDecider
+        Initial --> @Stand
+        Ready --> @GoToRolePosition
+        Set --> @Stand
+        Playing --> #DefenseBehavior
+        Finished --> @Stand
+        NOT_ALLOWED_TO_MOVE --> @Stand
+    penalty --> $GameStateDecider
+        Initial --> @Stand
+        Ready --> @Stand
+        Set --> @Stand
+        Playing --> #PenaltyBehavior
+        Finished --> @Stand
+        NOT_ALLOWED_TO_MOVE --> @Stand

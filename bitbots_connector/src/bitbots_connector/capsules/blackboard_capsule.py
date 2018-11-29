@@ -1,37 +1,31 @@
 """
 BehaviourBlackboardCapsule
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 """
 
-
 import math
-import os
-import pickle as Pickle
 import rosparam
-import rospkg
 import rospy
-import sys
-
-rospack = rospkg.RosPack()
-
 
 from humanoid_league_msgs.msg import HeadMode
-
-
-DUTY_TEAMPLAYER = "TeamPlayer"
-DUTY_GOALIE = "Goalie"
-DUTY_PENALTYKICKER = "PenaltyKicker"
-DUTY_POSITIONING = "Positioning"
 
 
 class BlackboardCapsule:
     def __init__(self):
         self.my_data = {}
-        self.config_stop_g_align_dur = rosparam.get_param("Behaviour/Body/Fieldie/stopGoalAlignDuration")
         self.head_pub = None  # type: rospy.Publisher
-        self.duty = None
+        self.duty = rospy.get_param('game_settings/role')  # TODO: adapt to Leo's script
 
+
+
+
+
+
+
+
+######################################################################################################
+######################################################################################################
+######################################################################################################
     def freeze_till(self, ftime):
         self.my_data["freeze"] = ftime
 
@@ -250,5 +244,4 @@ class BlackboardCapsule:
 
     def get_finished_align(self):
         return rospy.get_time() - self.my_data.get("FinishedAlign", 0) < 10
-
 

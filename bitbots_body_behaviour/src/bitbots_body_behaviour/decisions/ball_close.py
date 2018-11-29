@@ -1,15 +1,13 @@
-import rospy
-
 from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
 
 
-class BallSeen(AbstractDecisionElement):
+class BallClose(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
-        self.ball_lost_time = self.blackboard.config['ball_lost_time']
+        self.max_kick_distance = self.blackboard.config['max_kick_distance']
 
     def perform(self, reevaluate=False):
-        if rospy.get_time() - self.blackboard.world_model.ball_last_seen() < self.ball_lost_time:
+        if self.blackboard.world_model.get_ball_distance() < self.max_kick_distance:
             return 'YES'
         return 'NO'
 
