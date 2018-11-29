@@ -23,8 +23,8 @@ class AbstractDecisionElement(AbstractStackElement):
         """
         shortname = self.__class__.__name__
 
-        data = json.dumps(self.debug_data)
-        self.debug_data = {}
+        data = json.dumps(self._debug_data)
+        self._debug_data = {}
 
         return f"${shortname}[{data}]"
 

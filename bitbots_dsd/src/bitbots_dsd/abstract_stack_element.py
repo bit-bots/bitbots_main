@@ -19,7 +19,7 @@ class AbstractStackElement(object):
         :param dsd: The stack decider which has this element on its stack.
         :param parameters: Optional parameters which serve as arguments to this element
         """
-        self.debug_data = {}
+        self._debug_data = {}
         '''This is a dict in which data can be saved that should get represented on a __repr__ call'''
 
         self.dsd = dsd
@@ -73,9 +73,10 @@ class AbstractStackElement(object):
             return
 
         if label is None:
-            label = len(self.debug_data)
+            label = len(self._debug_data)
 
-        self.debug_data[label] = data
+        rospy.logdebug(f'{label}    :   {data}')
+        self._debug_data[label] = data
 
     def __repr__(self):
         """
@@ -85,8 +86,8 @@ class AbstractStackElement(object):
         """
         shortname = self.__class__.__name__
 
-        data = json.dumps(self.debug_data)
-        self.debug_data = {}
+        data = json.dumps(self._debug_data)
+        self._debug_data = {}
 
         return f":abstract:{shortname}[{data}]"
 
