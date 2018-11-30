@@ -1,6 +1,11 @@
 behaviour:
   head:
+    # Name of the head_behaviors ros-node
     rosnode: head_behaviour
 
+    # Name of the head transform for tf2-point-transformation
+    head_transform_frame: head
+
+    # Sane default values for some modules
     defaults:
       head_mode: 7    # Look forward

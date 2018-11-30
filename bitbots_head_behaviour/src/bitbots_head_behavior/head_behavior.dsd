@@ -3,7 +3,7 @@ $HeadModeDecision
     POST_MODE --> @Wait + time:1
     BALL_GOAL_TRACKING --> @Wait + time:1
     FIELD_FEATURES --> @Wait + time:1
-    LOOK_DOWN --> @Wait + time:1
-    LOOK_FORWARD --> @Wait + time:1
-    LOOK_UP --> @Wait + time:1
+    LOOK_DOWN --> @LookDirection + direction:DOWN
+    LOOK_FORWARD --> @LookDirection + direction:FORWARD
+    LOOK_UP --> @LookDirection + direction:UP
     DONT_MOVE --> @Wait + time:1

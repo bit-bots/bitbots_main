@@ -12,15 +12,18 @@ class HeadModeDecision(AbstractDecisionElement):
                 'NON_FIELD_FEATURES', 'LOOK_DOWN', 'LOOK_UP', 'LOOK_FORWARD', 'DONT_MOVE']
 
     def perform(self, reevaluate=False) -> str:
-
+        """
+        Map the saved head_mode from blackboard to corresponding decision results
+        """
         # Ensure that a head_mode value is set
         if self.blackboard.head_capsule.head_mode is None:
+            # configured default value
             self.publish_debug_data('using_default', True)
             head_mode = self.blackboard.config['defaults']['head_mode']
         else:
             head_mode = self.blackboard.head_capsule.head_mode
 
-        # Return the value as string for further DSD processing
+        # map results to all possible values of head_mode
         if head_mode == HeadMode.BALL_MODE:
             return 'BALL_MODE'
         elif head_mode == HeadMode.POST_MODE:
@@ -42,3 +45,11 @@ class HeadModeDecision(AbstractDecisionElement):
 
         else:
             raise Exception(f'the set head_mode ({head_mode}) is not known')
+
+    def get_reevaluate(self):
+        """
+        True
+
+        because we always need to know when the role changes as soon as possible
+        """
+        return True
