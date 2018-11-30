@@ -4,10 +4,10 @@
 
     <include file="$(find bitbots_common)/launch/load_robot_description.launch" />
     <!--include file="$(find bitbots_transform)/launch/transformer.launch" /-->
-    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock /home/judith/Dokumente/BitBots/rosbags/no-walking.bag" respawn="true"/>
+    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock /home/judith/Dokumente/BitBots/rosbags/init.bag" respawn="true"/>
     <!--no-walking.bag-->
 
-    <!--<node name="rosbaglive" pkg="rosbaglive" type="play.py" args="/home/judith/Dokumente/BitBots/rosbags/20180828.bag" respawn="true"/>-->
+    <!--node name="rosbaglive" pkg="rosbaglive" type="play.py" args="/home/judith/Dokumente/BitBots/rosbags/init.bag" respawn="true"/-->
     <!--<node name="rosbaglive" pkg="rosbaglive" type="play.py" args="/home/judith/Dokumente/BitBots/rosbags/mitTF/2018-05-09-11-59-29.bag" respawn="true"/>-->
 
     <!--node pkg="tf" type="static_transform_publisher" name="odom_broadcaster" args="42 1 -8 0 0 1 0 odom base_link 100" /-->
@@ -19,7 +19,7 @@
     <include file="$(find bitbots_localization)/launch/pointcloud_to_laserscan.launch" />
 
     <!-- load map -->
-    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/f031.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/f031Lines.yaml"/>
 
     <!-- particle filter -->
     <node name="amcl_particlefilter"  pkg="amcl" type="amcl" output="screen">
@@ -42,6 +42,7 @@
 
         <param name="gui_publish_rate" value="1.0"/>
 
+
         <param name="use_map_topic" value="true" />
         <param name="first_map_only" value="true"/>
 
@@ -50,6 +51,7 @@
 
 
         <param name="tf_broadcast" value="true"/>
+        <param name="base_frame_id" value="base_footprint"/>
 
     </node>
 
