@@ -69,13 +69,13 @@ class AbstractStackElement(object):
         """
 
         if type(data) not in (dict, list, int, float, str, bool):
-            rospy.logdebug_throttle(1, f"The supplied debug data of type {type(data)} is not JSON serializable and will not be published")
+            rospy.logdebug_throttle(1, "The supplied debug data of type {} is not JSON serializable and will not be published".format(type(data)))
             return
 
         if label is None:
             label = len(self._debug_data)
 
-        rospy.logdebug(f'{label}    :   {data}')
+        rospy.logdebug('{}    :   {}'.format(label, data))
         self._debug_data[label] = data
 
     def __repr__(self):
@@ -89,7 +89,7 @@ class AbstractStackElement(object):
         data = json.dumps(self._debug_data)
         self._debug_data = {}
 
-        return f":abstract:{shortname}[{data}]"
+        return ":abstract:{}[{}]".format(shortname, data)
 
     @staticmethod
     def sign(x):

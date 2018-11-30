@@ -40,7 +40,7 @@ class DSDParser:
                 if not comment:
                     indent = len(line) - len(line.lstrip())
                     if indent % 4 != 0:
-                        raise ParseError(f'Error parsing line {lnr}: Indent is not a multiple of 4')
+                        raise ParseError('Error parsing line {}: Indent is not a multiple of 4'.format(lnr))
 
                     line_content = line.lstrip()
 
@@ -79,7 +79,7 @@ class DSDParser:
                             # A subtree is called here.
                             subtree_name = call.strip('#')
                             if subtree_name not in subtrees:
-                                raise AssertionError(f'Error parsing line {lnr}: {call} not defined')
+                                raise AssertionError('Error parsing line {}: {} not defined'.format(lnr, call))
                             # The root element of the subtree should be placed in this tree position
                             if current_tree_element is None:
                                 # The current subtree is empty, set the subtree as its root element
@@ -100,7 +100,7 @@ class DSDParser:
                             current_tree_element = element
 
                         else:
-                            raise ParseError(f'Error parsing line {lnr}: Element {call} is neither an action nor a decision')
+                            raise ParseError('Error parsing line {}: Element {} is neither an action nor a decision'.format(lnr, call))
 
                     else:
                         # No arrow, must be the beginning of a new subtree

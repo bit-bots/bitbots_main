@@ -9,5 +9,5 @@
         <arg name="wolfgang" value="$(arg wolfgang)"/>   
     </include>
 
-    <include file="$(find bitbots_body_behaviour)/launch/behaviour.launch"/>    
+    <include file="$(find bitbots_body_behavior)/launch/behavior.launch"/>
 </launch>

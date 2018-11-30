@@ -16,7 +16,7 @@ class AbstractTreeElement:
     An element (node) in the tree. Do not use directly,
     use one of DecisionTreeElement and ActionTreeElement instead
     """
-    def __init__(self, name: str, parent):
+    def __init__(self, name, parent):
         self.name = name
         self.parent = parent
         self.module = None
@@ -32,14 +32,14 @@ class DecisionTreeElement(AbstractTreeElement):
     A tree element describing a decision. A decision has children that are executed on a certain result.
     Children can be added with add_child_element
     """
-    def __init__(self, name: str, parent):
+    def __init__(self, name, parent):
         """
         Create a new DecisionTreeElement
         :param name: the class name of the corresponding AbstractDecisionElement
         :param parent: the parent element, None for the root element
         :type parent: DecisionTreeElement
         """
-        super().__init__(name, parent)
+        AbstractTreeElement.__init__(self, name, parent)
 
         # Dictionary that maps results of the decision to the corresponding child
         self.children = dict()
@@ -68,7 +68,7 @@ class ActionTreeElement(AbstractTreeElement):
     A tree element describing an action. An action has optional
     parameters that will be passed to the module on creation
     """
-    def __init__(self, name: str, parent, parameters=None):
+    def __init__(self, name, parent, parameters=None):
         """
         Create a new ActionTreeElement
         :param name: the class name of the corresponding AbstractActionElement
@@ -76,11 +76,11 @@ class ActionTreeElement(AbstractTreeElement):
         :type parent: DecisionTreeElement
         :param parameters: A dictionary of parameters
         """
-        super().__init__(name, parent)
+        AbstractTreeElement.__init__(self, name, parent)
         self.parameters = parameters
 
     def __repr__(self):
-        return f'@{self.name} ({self.parameters})'
+        return '@{} ({})'.format(self.name, self.parameters)
 
     def __str__(self):
         return self.name

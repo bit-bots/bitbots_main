@@ -1,9 +1,7 @@
 import importlib
 import os
 import re
-from typing import Tuple, List, Dict
 
-import rosparam
 import rospy
 from std_msgs.msg import String
 
@@ -14,12 +12,14 @@ from bitbots_dsd.parser import DSDParser
 from bitbots_dsd.tree import Tree, AbstractTreeElement, ActionTreeElement, DecisionTreeElement
 
 
-def discover_elements(path: str) -> Dict[str, AbstractStackElement]:
+def discover_elements(path):
     """
     Extract all the classes from the files in the given path and return a dictionary containing them
 
     :param path: The path containing the files that should be registered
+    :type path: str
     :return: A dictionary with class names as keys and classes as values
+    :rtype: Dict[str, AbstractStackElement]
     """
     elements = {}
     files = [f for f in os.listdir(path) if f.endswith('.py')]
@@ -86,7 +86,7 @@ class DSD:
         # Setup debug publisher if needed
         self.debug_active = debug_topic is not None
         if self.debug_active:
-            rospy.loginfo(f'Debugging is active. Publishing on {debug_topic}')
+            rospy.loginfo('Debugging is active. Publishing on {}'.format(debug_topic))
             self.debug_publisher = rospy.Publisher(debug_topic, String, queue_size=10)
 
     def register_actions(self, modulepath):
@@ -251,7 +251,7 @@ class DSD:
             # Construct representing stack-string
             msg_data = ''
             for tree_elem, elem_instance in self.stack:
-                msg_data += f'|-{tree_elem.activation_reason}->{repr(elem_instance)};'
+                msg_data += '|-{}->{};'.format(tree_elem.activation_reason, repr(elem_instance))
 
             msg = String(data=msg_data)
             self.debug_publisher.publish(msg)
