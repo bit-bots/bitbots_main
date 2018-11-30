@@ -6,7 +6,7 @@
     <include file="$(find bitbots_localization)/launch/pointcloud_to_laserscan.launch" />
 
     <!-- load map -->
-    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/f031Lines.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/spl.yaml"/>
 
     <!-- particle filter -->
     <node name="amcl_particlefilter"  pkg="amcl" type="amcl" output="screen">
@@ -37,6 +37,7 @@
 
 
         <param name="tf_broadcast" value="true"/>
+        <param name="base_frame_id" value="base_footprint" />
 
 
     </node>
