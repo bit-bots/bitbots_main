@@ -1,7 +1,7 @@
-behaviour:
+behavior:
   head:
     # Name of the head_behaviors ros-node
-    rosnode: head_behaviour
+    rosnode: head_behavior
 
     # Name of the head transform for tf2-point-transformation
     head_transform_frame: head

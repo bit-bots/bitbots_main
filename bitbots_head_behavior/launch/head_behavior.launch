@@ -1,0 +1,5 @@
+<launch>
+    <rosparam command="load" file="$(find bitbots_head_behavior)/config/head_config.yaml"/>
+    <node name="bio_ik_service" pkg="bio_ik_service" type="bio_ik_service" respawn="true" output="screen"/>
+    <node name="head_behavior" pkg="bitbots_head_behavior" type="head_node.py" respawn="true" output="screen"/>
+</launch>

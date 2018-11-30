@@ -6,5 +6,5 @@
     <param name="game_settings/role" value="offense" />
 
     <include file="$(find bitbots_body_behavior)/launch/body_behavior.launch"/>
-    <!--<include file="$(find bitbots_head_behaviour)/launch/head_behavior.launch"/>-->
+    <!--<include file="$(find bitbots_head_behavior)/launch/head_behavior.launch"/>-->
 </launch>

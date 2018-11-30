@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package>
-  <name>bitbots_head_behaviour</name>
+  <name>bitbots_head_behavior</name>
   <version>0.2.2</version>
-  <description>The bitbots_head_behaviour package is used to control the behaviour of the head.
-      The head searches for balls, goals and lines and tracks them. The head behaviour can be 
+  <description>The bitbots_head_behavior package is used to control the behavior of the head.
+      The head searches for balls, goals and lines and tracks them. The head behavior can be
       controlled by the /head_duty topic and publishes the head motion in the /head_motor_goals topic.
   </description>
   <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
@@ -16,14 +16,12 @@
   <build_depend>rospy</build_depend>
   <build_depend>humanoid_league_msgs</build_depend>
   <build_depend>bitbots_stackmachine</build_depend>
-  <build_depend>bitbots_body_behaviour</build_depend>
   <build_depend>bitbots_ik</build_depend>
 
   <run_depend>std_msgs</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>humanoid_league_msgs</run_depend>
   <run_depend>bitbots_stackmachine</run_depend>
-  <run_depend>bitbots_body_behaviour</run_depend>
   <run_depend>bitbots_ik</run_depend>
 
   <export>

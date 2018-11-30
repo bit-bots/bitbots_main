@@ -26,5 +26,5 @@ class BodyBlackboard:
 
 class HeadBlackboard:
     def __init__(self):
-        self.config = rospy.get_param("behaviour/head")
+        self.config = rospy.get_param("behavior/head")
         self.head_capsule = HeadCapsule(self)
