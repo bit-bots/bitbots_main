@@ -669,7 +669,7 @@ bool DynamixelHardwareInterface::syncReadPositions(){
       continue;
     }
     double current_pos = _driver->convertValue2Radian(_joint_ids[i], data[i]);
-    if(current_pos < 3.15 || current_pos > -3.15){
+    if(current_pos < 3.15 && current_pos > -3.15){
       //only write values which are possible
       _current_position[i] = current_pos;
     }
@@ -753,7 +753,7 @@ bool DynamixelHardwareInterface::syncReadAll() {
       _current_effort[i] = _driver->convertValue2Torque(_joint_ids[i], eff);
       _current_velocity[i] = _driver->convertValue2Velocity(_joint_ids[i], vel);
       double current_pos = _driver->convertValue2Radian(_joint_ids[i], pos);
-      if(current_pos < 3.15 || current_pos > -3.15){
+      if(current_pos < 3.15 && current_pos > -3.15){
         //only write values which are possible
         _current_position[i] = current_pos;
       }
