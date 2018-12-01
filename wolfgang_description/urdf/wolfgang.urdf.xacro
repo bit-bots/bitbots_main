@@ -497,7 +497,7 @@
             <inertia ixx="7.5209E-05" ixy="-1.8422E-06" ixz="-4.9817E-07" iyy="6.2999E-05" iyz="-9.9088E-08" izz="3.826E-05" />
         </inertial>
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="0 0 ${pi}" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/neck.stl" />
             </geometry>
@@ -527,9 +527,7 @@
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/head.stl" />
             </geometry>
-            <material name="">
-                <color rgba="0.8 0.8 0.8 1" />
-            </material>
+            <material name="black" />
         </visual>
         <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -693,7 +691,7 @@
     <joint name="torso_to_camera_fixed" type="fixed">
         <parent link="torso" />
         <child link="camera_fixed" />
-        <origin rpy="0.0 0 0" xyz="0 0 0.237" />
+        <origin rpy="0.0 0 0" xyz="0.05815 0 0.2791" />
     </joint>
 
     <joint name="RShoulderPitch" type="revolute">
@@ -782,7 +780,7 @@
 
 
     <joint name="head_to_camera" type="fixed">
-        <origin xyz="0.03 0 0.05" rpy="0 0 0" />
+        <origin xyz="0.028 0 0.1115" rpy="0 0 0" />
         <parent link="head" />
         <child link="camera" />
         <axis xyz="0 0 0" />
