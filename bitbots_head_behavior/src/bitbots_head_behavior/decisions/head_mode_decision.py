@@ -11,7 +11,7 @@ class HeadModeDecision(AbstractDecisionElement):
         return ['BALL_MODE', 'POST_MODE', 'BALL_GOAL_TRACKING', 'FIELD_FEATURES',
                 'NON_FIELD_FEATURES', 'LOOK_DOWN', 'LOOK_UP', 'LOOK_FORWARD', 'DONT_MOVE']
 
-    def perform(self, reevaluate=False) -> str:
+    def perform(self, reevaluate=False):
         """
         Map the saved head_mode from blackboard to corresponding decision results
         """
@@ -44,7 +44,7 @@ class HeadModeDecision(AbstractDecisionElement):
             return 'DONT_MOVE'
 
         else:
-            raise Exception(f'the set head_mode ({head_mode}) is not known')
+            raise Exception('the set head_mode ({}) is not known'.format(head_mode))
 
     def get_reevaluate(self):
         """

@@ -1,4 +1,5 @@
 import rospy
+from bio_ik_msgs.srv import GetIK
 from bitbots_connector.capsules.animation_capsule import AnimationCapsule
 from bitbots_connector.capsules.blackboard_capsule import BlackboardCapsule
 from bitbots_connector.capsules.game_status_capsule import GameStatusCapsule
@@ -28,3 +29,6 @@ class HeadBlackboard:
     def __init__(self):
         self.config = rospy.get_param("behavior/head")
         self.head_capsule = HeadCapsule(self)
+        self.world_model = WorldModelCapsule(6, 9)  # TODO move this to a good place
+        rospy.wait_for_service('/bio_ik/get_bio_ik')
+        self.bio_ik = rospy.ServiceProxy('/bio_ik/get_bio_ik', GetIK)

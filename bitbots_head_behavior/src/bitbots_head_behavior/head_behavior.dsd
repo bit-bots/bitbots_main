@@ -1,5 +1,8 @@
+-->HeadBehavior
 $HeadModeDecision
-    BALL_MODE --> @Wait + time:1
+    BALL_MODE --> $BallSeen
+        YES --> @TrackBall
+        NO --> @SearchBall
     POST_MODE --> @Wait + time:1
     BALL_GOAL_TRACKING --> @Wait + time:1
     FIELD_FEATURES --> @Wait + time:1

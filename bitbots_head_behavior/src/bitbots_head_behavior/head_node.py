@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 This is the ROS-Node which contains the head behavior, starts the appropriate DSD, initializes the HeadBlackboard
 and subscribes to head_behavior specific ROS-Topics.
@@ -11,9 +11,10 @@ from bitbots_connector.blackboard import HeadBlackboard
 from bitbots_dsd.dsd import DSD
 
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
+from bitbots_ros_control.msg import JointCommand
 
 
-def run(dsd: DSD):
+def run(dsd):
     """
     Main run-loop
     :returns: Never
@@ -24,7 +25,8 @@ def run(dsd: DSD):
         rate.sleep()
 
 
-def init() -> DSD:
+
+def init():
     """
     Initialize new components needed for head_behavior:
     blackboard, dsd, rostopic subscriber
@@ -32,6 +34,7 @@ def init() -> DSD:
     blackboard = HeadBlackboard()
 
     rospy.Subscriber('/head_mode', HeadModeMsg, blackboard.head_capsule.head_mode_callback, queue_size=1)
+    blackboard.head_capsule.position_publisher = rospy.Publisher("head_motor_goals", JointCommand, queue_size=10)
 
     dirname = os.path.dirname(os.path.realpath(__file__))
 
