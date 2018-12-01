@@ -5,7 +5,7 @@ $HeadModeDecision
         NO --> @SearchBall
     POST_MODE --> @Wait + time:1
     BALL_GOAL_TRACKING --> @Wait + time:1
-    FIELD_FEATURES --> @Wait + time:1
+    FIELD_FEATURES --> @SearchBall
     LOOK_DOWN --> @LookDirection + direction:DOWN
     LOOK_FORWARD --> @LookDirection + direction:FORWARD
     LOOK_UP --> @LookDirection + direction:UP

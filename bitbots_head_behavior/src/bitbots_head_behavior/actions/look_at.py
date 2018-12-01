@@ -14,6 +14,8 @@ class AbstractLookAt(AbstractActionElement):
 
         self.head_tf_frame = self.blackboard.config['head_transform_frame']
         self.tf_buffer = tf2.Buffer(rospy.Duration(5))
+        # tf_listener is necessary, even though unused!
+        self.tf_listener = tf2.TransformListener(self.tf_buffer)
         self.bio_ik_request = IKRequest()
 
         # Service proxy for LookAt
@@ -53,7 +55,7 @@ class AbstractLookAt(AbstractActionElement):
             rospy.logerr('No connection to transform\n{}'.format(e))
             return
 
-        head_pan, head_tilt = self.get_motor_goals_from_point(point)
+        head_pan, head_tilt = self.get_motor_goals_from_point(point.point)
         self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt)
 
 

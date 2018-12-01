@@ -31,6 +31,7 @@ def init():
     Initialize new components needed for head_behavior:
     blackboard, dsd, rostopic subscriber
     """
+    rospy.init_node('head_behavior')
     blackboard = HeadBlackboard()
 
     rospy.Subscriber('/head_mode', HeadModeMsg, blackboard.head_capsule.head_mode_callback, queue_size=1)
@@ -44,7 +45,6 @@ def init():
     dsd.register_decisions(os.path.join(dirname, 'decisions'))
     dsd.load_behavior(os.path.join(dirname, 'head_behavior.dsd'))
 
-    rospy.init_node(blackboard.config['rosnode'])
 
     return dsd
 
