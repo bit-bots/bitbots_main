@@ -140,6 +140,9 @@ class HcmConnector(AbstractConnector):
             return False
         i = 0
         for joint_name in self.current_joint_positions.name:
+            if joint_name == "HeadPan" or joint_name == "HeadTilt":
+                #we dont care about the head position
+                continue
             if abs(math.degrees(self.current_joint_positions.position[i]) - self.walkready_pose_dict[joint_name]) > self.walkready_pose_threshold:
                 return False
             i +=1 
