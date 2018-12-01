@@ -7,7 +7,7 @@ ball_fcnn_shuffle_candidate_list: false  # shuffles the list of possible candida
 ball_fcnn_min_ball_diameter: 5
 ball_fcnn_max_ball_diameter: 200
 
-field_color_detector_path: '/config/color_spaces/montreal2.yaml'
+field_color_detector_path: '/config/color_spaces/RoHow2018_daylight_interpolated.yaml'
 field_color_detector_use_hsv_green: false
 field_color_detector_hsv_lower_values_h: 46
 field_color_detector_hsv_lower_values_s: 101
@@ -18,7 +18,7 @@ field_color_detector_hsv_upper_values_v: 255
 
 white_color_detector_lower_values_h: 0
 white_color_detector_lower_values_s: 0
-white_color_detector_lower_values_v: 84
+white_color_detector_lower_values_v: 190
 white_color_detector_upper_values_h: 180
 white_color_detector_upper_values_s: 103
 white_color_detector_upper_values_v: 255
