@@ -499,7 +499,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/neck_link.STL" />
+                <mesh filename="package://wolfgang_description/mesh/neck.stl" />
             </geometry>
             <material name="black" />
         </visual>
@@ -522,16 +522,16 @@
             <mass value="0.40746" />
             <inertia ixx="0.0014813" ixy="3.1631E-07" ixz="-4.1003E-05" iyy="0.0016361" iyz="6.7483E-07" izz="0.0017353" />
         </inertial>
-        <!--<visual>
+        <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/head_link.STL" />
+                <mesh filename="package://wolfgang_description/mesh/head.stl" />
             </geometry>
             <material name="">
                 <color rgba="0.8 0.8 0.8 1" />
             </material>
         </visual>
-        <collision>
+        <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/head_link.dae" />
@@ -763,7 +763,7 @@
     </joint>
 
     <joint name="HeadPan" type="revolute">
-        <origin xyz="-0.0285 0 0.1365" rpy="0 0 0" />
+        <origin xyz="0.00155 0 0.1471" rpy="0 0 0" />
         <parent link="torso" />
         <child link="neck" />
         <axis xyz="0 0 1" />
@@ -772,7 +772,7 @@
     </joint>
 
     <joint name="HeadTilt" type="revolute">
-        <origin xyz="0 0 0.0505" rpy="0 0 0" />
+        <origin xyz="0.0286 0 0.0205" rpy="0 0 0" />
         <parent link="neck" />
         <child link="head" />
         <axis xyz="0 1 0" />
