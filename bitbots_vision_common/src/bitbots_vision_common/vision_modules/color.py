@@ -1,6 +1,7 @@
 import numpy as np
 import VisionExtensions
 import yaml
+import pickle
 import abc
 import cv2
 
@@ -84,12 +85,21 @@ class PixelListColorDetector(ColorDetector):
         :param color_path: path to yaml file containing the accepted colors
 
         """
-        with open(color_path, 'r') as stream:
+        if color_path.endswith('.yaml'):
+            with open(color_path, 'r') as stream:
+                try:
+                    color_values = yaml.load(stream)
+                except yaml.YAMLError as exc:
+                    print(exc)
+                    # Todo: what now??? Handle the error?
+        # our pickle is stored as .txt
+        elif color_path.endswith('.txt'):
             try:
-                color_values = yaml.load(stream)
-            except yaml.YAMLError as exc:
+                with open(color_path, 'rb') as f:
+                    color_values = pickle.load(f)
+            except pickle.PickleError as exc:
                 print(exc)
-                # Todo: what now??? Handle the error?
+            
         # compatibility with colorpicker
         if 'color_values' in color_values.keys():
             color_values = color_values['color_values']['greenField']
