@@ -15,7 +15,7 @@
         <color rgba="0.85 0.85 0.85 1" />
     </material>
     <material name="carbon">
-        <color rgba="0.5 0.5 0.5 1" />
+        <color rgba="0.3 0.3 0.3 1" />
     </material>
 
     <link name="base_link" />
@@ -30,15 +30,15 @@
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/torso_link.stl"  />
-		<material name="metal" />
             </geometry>
+            <material name="metal" />
         </visual>
-	<visual>
+        <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/torso_link_motors.stl"/>
-        	<material name="black" />    
-	    </geometry>
+            </geometry>
+            <material name="black" /> 
         </visual>
         <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -58,8 +58,8 @@
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/hip_connector.stl"/>
-        	<material name="metal" />    
-	    </geometry>
+            </geometry>
+            <material name="metal" />    
         </visual>
         <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -99,23 +99,23 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 ${pi} 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/upper_leg_motor.stl" />
+                <mesh filename="package://wolfgang_description/mesh/upper_leg_carbon.stl" />
             </geometry>
-            <material name="black" />
+            <material name="carbon" />
         </visual>
         <visual>
             <origin xyz="0 0 0" rpy="0 ${pi} 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/upper_leg_metal.stl" />
             </geometry>
-            <material name="metal" />
+            <material name="metal"/>
         </visual>
         <visual>
             <origin xyz="0 0 0" rpy="0 ${pi} 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/upper_leg_carbon.stl" />
+                <mesh filename="package://wolfgang_description/mesh/upper_leg_motor.stl" />
             </geometry>
-            <material name="carbon" />
+            <material name="black" />
         </visual>
         <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -174,7 +174,7 @@
             <inertia ixx="0.00018527" ixy="-1.1504E-05" ixz="-7.2667E-06" iyy="0.00060485" iyz="5.8883E-06" izz="0.00075217" />
         </inertial>
         <visual>
-            <origin xyz="0 0 -0.012" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/right_foot.stl" />
             </geometry>
@@ -214,8 +214,8 @@
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/hip_connector.stl"/>
-        	<material name="metal" />    
-	    </geometry>
+            </geometry>
+            <material name="metal" />    
         </visual>
         <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -252,7 +252,14 @@
             <mass value="0.38276" />
             <inertia ixx="0.0020952" ixy="-1.9541E-07" ixz="-0.00017822" iyy="0.0020044" iyz="5.4912E-06" izz="0.00027919" />
         </inertial>
-                <visual>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
+            <geometry>
+                <mesh filename="package://wolfgang_description/mesh/upper_leg_carbon.stl" />
+            </geometry>
+            <material name="carbon" />
+        </visual>
+        <visual>
             <origin xyz="0 0 0" rpy="0 ${pi} 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/upper_leg_motor.stl" />
@@ -265,13 +272,6 @@
                 <mesh filename="package://wolfgang_description/mesh/upper_leg_metal.stl" />
             </geometry>
             <material name="metal" />
-        </visual>
-        <visual>
-            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
-            <geometry>
-                <mesh filename="package://wolfgang_description/mesh/upper_leg_carbon.stl" />
-            </geometry>
-            <material name="carbon" />
         </visual>
         <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -330,7 +330,7 @@
             <inertia ixx="0.0001853" ixy="1.1466E-05" ixz="-8.3793E-06" iyy="0.00060485" iyz="-5.9046E-06" izz="0.00075213" />
         </inertial>
         <visual>
-            <origin xyz="0 0 -0.012" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/left_foot.stl" />
             </geometry>
@@ -553,7 +553,7 @@
     </joint>
 
     <joint name="RHipRoll" type="revolute">
-        <origin xyz="-0.0072 0 -0.0438" rpy="0 0 0" />
+        <origin xyz="-0.046 0 -0.042" rpy="0 0 0" />
         <parent link="r_hip_1" />
         <child link="r_hip_2" />
         <axis xyz="1 0 0" />
@@ -562,7 +562,7 @@
     </joint>
 
     <joint name="RHipPitch" type="revolute">
-        <origin xyz="0.0303 0 0" rpy="0 0 0" />
+        <origin xyz="0.0692 0 0" rpy="0 0 0" />
         <parent link="r_hip_2" />
         <child link="r_upper_leg" />
         <axis xyz="0 1 0" />
@@ -571,7 +571,7 @@
     </joint>
 
     <joint name="RKnee" type="revolute">
-        <origin xyz="-0.03 0 -0.17" rpy="0 0 0" />
+        <origin xyz="-0.004 0 -0.1692" rpy="0 0 0" />
         <parent link="r_upper_leg" />
         <child link="r_lower_leg" />
         <axis xyz="0 1 0" />
@@ -580,7 +580,7 @@
     </joint>
 
     <joint name="RAnklePitch" type="revolute">
-        <origin xyz="0.02 0 -0.17" rpy="0 0 0" />
+        <origin xyz="0.0 0 -0.17" rpy="0 0 0" />
         <parent link="r_lower_leg" />
         <child link="r_ankle" />
         <axis xyz="0 -1 0" />
@@ -589,7 +589,7 @@
     </joint>
 
     <joint name="RAnkleRoll" type="revolute">
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <origin xyz="-0.0692 0 0" rpy="0 0 0" />
         <parent link="r_ankle" />
         <child link="r_foot" />
         <axis xyz="-1 0 0" />
@@ -598,14 +598,14 @@
     </joint>
 
     <joint name="r_foot_to_sole" type="fixed">
-        <origin xyz="0 0 -0.06" rpy="0 0 0" /> <!-- -0.04 - stollen-->
+        <origin xyz="0.082 0 -0.036" rpy="0 0 0" /> <!-- stollen todo-->
         <parent link="r_foot" />
         <child link="r_sole" />
         <axis xyz="0 0 0" />
     </joint>
 
     <joint name="r_foot_to_toe" type="fixed">
-        <origin xyz="0.11 -0.01 0" rpy="0 0 0" />
+        <origin xyz="0.095 -0.003 0" rpy="0 0 0" />
         <parent link="r_sole" />
         <child link="r_toe" />
         <axis xyz="0 0 0" />
@@ -621,7 +621,7 @@
     </joint>
 
     <joint name="LHipRoll" type="revolute">
-        <origin xyz="-0.0072 0 -0.0438" rpy="0 0 0" />
+        <origin xyz="-0.046 0 -0.042" rpy="0 0 0" />
         <parent link="l_hip_1" />
         <child link="l_hip_2" />
         <axis xyz="1 0 0" />
@@ -630,7 +630,7 @@
     </joint>
 
     <joint name="LHipPitch" type="revolute">
-        <origin xyz="0.0303 0 0" rpy="0 0 0" />
+        <origin xyz="0.0692 0 0" rpy="0 0 0" />
         <parent link="l_hip_2" />
         <child link="l_upper_leg" />
         <axis xyz="0 -1 0" />
@@ -639,7 +639,7 @@
     </joint>
 
     <joint name="LKnee" type="revolute">
-        <origin xyz="-0.030 0 -0.17" rpy="0 0 0" />
+        <origin xyz="-0.004 0 -0.1692" rpy="0 0 0" />
         <parent link="l_upper_leg" />
         <child link="l_lower_leg" />
         <axis xyz="0 -1 0" />
@@ -648,7 +648,7 @@
     </joint>
 
     <joint name="LAnklePitch" type="revolute">
-        <origin xyz="0.020 0 -0.17" rpy="0 0 0" />
+        <origin xyz="0.0 0 -0.17" rpy="0 0 0" />
         <parent link="l_lower_leg" />
         <child link="l_ankle" />
         <axis xyz="0 1 0" />
@@ -657,7 +657,7 @@
     </joint>
 
     <joint name="LAnkleRoll" type="revolute">
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <origin xyz="-0.0692 0 0" rpy="0 0 0" />
         <parent link="l_ankle" />
         <child link="l_foot" />
         <axis xyz="-1 0 0" />
@@ -666,14 +666,14 @@
     </joint>
 
     <joint name="left_foot_to_sole" type="fixed">
-        <origin xyz="0 0 -0.06" rpy="0 0 0" /> <!-- -0.04 - stollen-->
+        <origin xyz="0.082 0 -0.036" rpy="0 0 0" /> <!-- todo mit stollen!-->
         <parent link="l_foot" />
         <child link="l_sole" />
         <axis xyz="0 0 0" />
     </joint>
 
     <joint name="left_foot_to_toe" type="fixed">
-        <origin xyz="0.11 -0.01 0" rpy="0 0 0" />
+        <origin xyz="0.095 -0.003 0" rpy="0 0 0" />
         <parent link="l_sole" />
         <child link="l_toe" />
         <axis xyz="0 0 0" />
@@ -682,7 +682,7 @@
     <joint name="base_link_to_torso" type="fixed">
         <parent link="base_link" />
         <child link="torso" />
-        <origin rpy="0.0 0 0" xyz="0 0 0.09" />
+        <origin rpy="0.0 0 0" xyz="-0.0095 0 0.0905" />
     </joint>
 
     <joint name="torso_to_imu" type="fixed">
