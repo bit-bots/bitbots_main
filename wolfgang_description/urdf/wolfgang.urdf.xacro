@@ -362,7 +362,7 @@
 
     <link name="r_shoulder">
         <inertial>
-            <origin xyz="0 -0.014621 0" rpy="0 0 0" />
+            <origin xyz="0 -0.014621 0" rpy="${pi} 0 0" />
             <mass value="0.025434" />
             <inertia ixx="6.7511E-06" ixy="1.5595E-20" ixz="-5.4198E-21" iyy="1.2425E-05" iyz="-2.4006E-20" izz="1.4317E-05" />
         </inertial>
@@ -371,7 +371,7 @@
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/shoulder.stl" />
             </geometry>
-            <material name="black" />
+            <material name="metal" />
         </visual>
         <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -388,7 +388,7 @@
             <inertia ixx="0.00081539" ixy="1.1134E-07" ixz="-5.114E-05" iyy="0.0007994" iyz="-2.4756E-06" izz="0.00012883" />
         </inertial>
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/upper_arm.stl" />
             </geometry>
@@ -409,7 +409,7 @@
             <inertia ixx="0.0011613" ixy="-5.8221E-07" ixz="-7.4224E-05" iyy="0.0011747" iyz="2.0082E-05" izz="0.00010273" />
         </inertial>
         <visual>
-            <origin xyz="0 0 0" rpy="0 -1.57 0" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/lower_arm.stl" />
             </geometry>
@@ -436,7 +436,7 @@
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/shoulder.stl" />
             </geometry>
-            <material name="black" />
+            <material name="metal" />
         </visual>
         <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -453,7 +453,7 @@
             <inertia ixx="0.00081539" ixy="1.1134E-07" ixz="-5.114E-05" iyy="0.0007994" iyz="-2.4756E-06" izz="0.00012883" />
         </inertial>
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/upper_arm.stl" />
             </geometry>
@@ -474,7 +474,7 @@
             <inertia ixx="0.0011616" ixy="-2.6303E-07" ixz="-7.2367E-05" iyy="0.0011751" iyz="9.5624E-06" izz="0.00010214" />
         </inertial>
         <visual>
-            <origin xyz="0 0 0" rpy="0 -1.57 0" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/lower_arm.stl" />
             </geometry>
@@ -779,7 +779,7 @@
     </joint>
 	
     <joint name="head_to_camera" type="fixed">
-        <origin xyz="0.028 0 0.1115" rpy="0 0 0" /> <!--evtl 0.0289-->
+        <origin xyz="0.028 0 0.1115" rpy="0 0 0" />
         <parent link="head" />
         <child link="camera" />
         <axis xyz="0 0 0" />
