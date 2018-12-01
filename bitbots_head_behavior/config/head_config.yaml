@@ -4,7 +4,7 @@ behavior:
     rosnode: head_behavior
 
     # Name of the head transform for tf2-point-transformation
-    head_transform_frame: head
+    head_transform_frame: camera_fixed
 
     # Sane default values for some modules
     defaults:
@@ -12,8 +12,11 @@ behavior:
 
     # Search patterns in degrees
     search_pattern:
+      - [23, -40]
+      - [-23, -40]
       - [30, -30]
-      - [1, 1]
+      - [-30, -23]
+      - [0, -11]
 
     # After `ball_lost_time` seconds, the ball is considered lost and will be searched
     ball_lost_time: 1

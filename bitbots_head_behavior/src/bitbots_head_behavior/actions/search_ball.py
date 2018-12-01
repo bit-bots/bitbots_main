@@ -10,10 +10,11 @@ class SearchBall(AbstractActionElement):
         self.pattern = self.blackboard.config['search_pattern']
 
     def perform(self, reevaluate=False):
-        head_pan, head_tilt = self.pattern[self.index]
+        head_pan, head_tilt = self.pattern[int(self.index)]
         # Convert to radians
-        head_pan = head_pan / 180 * math.pi
-        head_tilt = head_tilt / 180 * math.pi
-        self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt)
+        head_pan = head_pan / 180.0 * math.pi
+        head_tilt = head_tilt / 180.0 * math.pi
+        print("Searching at {}, {}".format(head_pan, head_tilt))
+        self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, 1.5, 1.5)
         # Increment index
-        self.index = (self.index + 1) % len(self.pattern)
+        self.index = (self.index + 0.2) % len(self.pattern)

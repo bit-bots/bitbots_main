@@ -10,7 +10,7 @@ import rospy
 from bitbots_connector.blackboard import HeadBlackboard
 from bitbots_dsd.dsd import DSD
 
-from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
+from humanoid_league_msgs.msg import HeadMode as HeadModeMsg, BallRelative
 from bitbots_ros_control.msg import JointCommand
 
 
@@ -34,6 +34,7 @@ def init():
     blackboard = HeadBlackboard()
 
     rospy.Subscriber('/head_mode', HeadModeMsg, blackboard.head_capsule.head_mode_callback, queue_size=1)
+    rospy.Subscriber("/ball_relative", BallRelative, blackboard.world_model.ball_callback)
     blackboard.head_capsule.position_publisher = rospy.Publisher("head_motor_goals", JointCommand, queue_size=10)
 
     dirname = os.path.dirname(os.path.realpath(__file__))

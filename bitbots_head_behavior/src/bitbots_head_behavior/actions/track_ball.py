@@ -18,4 +18,3 @@ class TrackBall(AbstractLookAt):
 
         # Call internal look-at to turn head to this point
         self._look_at(point)
-        pass

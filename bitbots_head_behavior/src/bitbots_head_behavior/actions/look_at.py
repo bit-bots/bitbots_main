@@ -1,6 +1,6 @@
 import rospy
 import tf2_ros as tf2
-from bio_ik_msgs.msg import IKRequest
+from bio_ik_msgs.msg import IKRequest, LookAtGoal
 from geometry_msgs.msg import PointStamped, Point
 
 from bitbots_connector.blackboard import HeadBlackboard
@@ -10,7 +10,7 @@ from bitbots_dsd.abstract_action_element import AbstractActionElement
 class AbstractLookAt(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters)
+        super(AbstractLookAt, self).__init__(blackboard, dsd, parameters)
 
         self.head_tf_frame = self.blackboard.config['head_transform_frame']
         self.tf_buffer = tf2.Buffer(rospy.Duration(5))
