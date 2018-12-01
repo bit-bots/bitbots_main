@@ -522,13 +522,13 @@
             <mass value="0.40746" />
             <inertia ixx="0.0014813" ixy="3.1631E-07" ixz="-4.1003E-05" iyy="0.0016361" iyz="6.7483E-07" izz="0.0017353" />
         </inertial>
-        <visual>
+        <!--<visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/head.stl" />
             </geometry>
             <material name="black" />
-        </visual>
+        </visual>-->
         <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
