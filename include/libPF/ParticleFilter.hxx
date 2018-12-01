@@ -204,9 +204,9 @@ void ParticleFilter<StateType>::resample() {
 
 
 template <class StateType>
-void ParticleFilter<StateType>::drift(double dt) {
+void ParticleFilter<StateType>::drift(geometry_msgs::Vector3 linear, geometry_msgs::Vector3 angular) {
   for (unsigned int i = 0; i < m_NumParticles; i++) {
-    m_MovementModel->drift(m_CurrentList[i]->m_State, dt);
+    m_MovementModel->drift(m_CurrentList[i]->m_State, linear, angular);
   }
 }
 

@@ -15,6 +15,7 @@
 #include "libPF/StateDistribution.h"
 
 #include <visualization_msgs/Marker.h>
+#include <geometry_msgs/Vector3.h>
 
 namespace libPF
 {
@@ -332,7 +333,7 @@ class ParticleFilter {
      * the movement model of the particle filter. dt defines the time interval
      * that has to be used in drifting (in seconds).
      */
-    void drift(double dt);
+    void drift(geometry_msgs::Vector3 linear, geometry_msgs::Vector3 angular);
 
     /**
      * This method "diffuses" the particles using the movement model of the particle filter to add a small jitter
