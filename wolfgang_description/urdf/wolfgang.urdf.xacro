@@ -369,7 +369,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_shoulder_pitch_link.STL" />
+                <mesh filename="package://wolfgang_description/mesh/shoulder.stl" />
             </geometry>
             <material name="black" />
         </visual>
@@ -390,7 +390,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_shoulder_arm_link.STL" />
+                <mesh filename="package://wolfgang_description/mesh/upper_arm.stl" />
             </geometry>
             <material name="black" />
         </visual>
@@ -411,7 +411,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 -1.57 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_lower_arm_link.STL" />
+                <mesh filename="package://wolfgang_description/mesh/lower_arm.stl" />
             </geometry>
             <material name="black" />
         </visual>
@@ -434,7 +434,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_shoulder_pitch_link.STL" />
+                <mesh filename="package://wolfgang_description/mesh/shoulder.stl" />
             </geometry>
             <material name="black" />
         </visual>
@@ -455,7 +455,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_upper_arm_link.STL" />
+                <mesh filename="package://wolfgang_description/mesh/upper_arm.stl" />
             </geometry>
             <material name="black" />
         </visual>
@@ -476,7 +476,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 -1.57 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_lower_arm_link.STL" />
+                <mesh filename="package://wolfgang_description/mesh/lower_arm.stl" />
             </geometry>
             <material name="black" />
         </visual>
@@ -706,7 +706,7 @@
     </joint>
 
     <joint name="RShoulderRoll" type="revolute">
-        <origin xyz="0 -0.04 0" rpy="0 0 0" />
+        <origin xyz="0 -0.042 0" rpy="0 0 0" />
         <parent link="r_shoulder" />
         <child link="r_upper_arm" />
         <axis xyz="-1 0 0" />
@@ -715,7 +715,7 @@
     </joint>
 
     <joint name="RElbow" type="revolute">
-        <origin xyz="-0.0075 0 -0.145" rpy="0 0 0" />
+        <origin xyz="0 0 -0.144" rpy="0 0 0" />
         <parent link="r_upper_arm" />
         <child link="r_lower_arm" />
         <axis xyz="0 1 0" />
@@ -739,7 +739,7 @@
     </joint>
 
     <joint name="LShoulderRoll" type="revolute">
-        <origin xyz="0 0.04 0" rpy="0 0 0" />
+        <origin xyz="0 0.042 0" rpy="0 0 0" />
         <parent link="l_shoulder" />
         <child link="l_upper_arm" />
         <axis xyz="-1 0 0" />
@@ -748,7 +748,7 @@
     </joint>
 
     <joint name="LElbow" type="revolute">
-        <origin xyz="-0.0075 0 -0.145" rpy="0 0 0" />
+        <origin xyz="0 0 -0.144" rpy="0 0 0" />
         <parent link="l_upper_arm" />
         <child link="l_lower_arm" />
         <axis xyz="0 -1 0" />
@@ -779,16 +779,16 @@
         <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-1.5707963267910001" upper="0" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
-
-
+	
     <joint name="head_to_camera" type="fixed">
-        <origin xyz="0.03 0 0.05" rpy="0 0 0" />
+        <origin xyz="0.0289 0 0.1115" rpy="0 0 0" />
         <parent link="head" />
         <child link="camera" />
         <axis xyz="0 0 0" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
-    <joint name="camera__optical_joint" type="fixed">
+    
+	<joint name="camera__optical_joint" type="fixed">
       <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}" />
       <parent link="camera" />
       <child link="camera_optical_frame" />
