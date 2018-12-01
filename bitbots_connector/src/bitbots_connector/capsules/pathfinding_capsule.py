@@ -20,7 +20,7 @@ class PathfindingCapsule:
         self.pathfinding_simple_pub = None
 
     def pub_simple_pathfinding(self, x, y, t=0):
-        rospy.loginfo('Using simple pathfinding to go to relative position ' + str(x) + str(y) + str(t))
+        rospy.loginfo('Using simple pathfinding to go to relative position {} {} {}'.format(x, y, t))
         self.pathfinding_simple_pub.publish(Pose2D(x, y, t))
 
     def _is_new_goal_far_from_old_goal(self, new_goal_action_msg):
@@ -46,9 +46,12 @@ class PathfindingCapsule:
         self.active = True
         self.arrive_time = rospy.get_time() + self.timeout
         self.counter = 0
-        print("New Goal!")
+        print("New Goal: ", action_msg)
         self.goal.target_pose = action_msg
         self.action_client.send_goal(self.goal, done_cb=self.done_cb)
+
+    def cancel_path(self):
+        self.action_client.cancel_goal()
 
     def done_cb(self, id, msg):
         rospy.loginfo("Arrived at goal!")

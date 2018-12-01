@@ -3,7 +3,7 @@ from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
 
 class BallClose(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters)
+        super(BallClose, self).__init__(blackboard, dsd, parameters)
         self.max_kick_distance = self.blackboard.config['max_kick_distance']
 
     def perform(self, reevaluate=False):

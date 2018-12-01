@@ -6,7 +6,7 @@ from bitbots_dsd.abstract_action_element import AbstractActionElement
 
 class GoToRolePosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters)
+        super(GoToRolePosition, self).__init__(blackboard, dsd, parameters)
         role_positions = self.blackboard.config['role_positions']
         try:
             position_relative = role_positions[self.blackboard.blackboard.duty]
@@ -19,6 +19,8 @@ class GoToRolePosition(AbstractActionElement):
                               position_relative[1] * self.blackboard.field_width / 2]
 
     def perform(self, reevaluate=False):
+        if not self.blackboard.config['use_move_base']:
+            self.blackboard.pathfinding.pub_simple_pathfinding(self.role_position[0], self.role_position[1])
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()

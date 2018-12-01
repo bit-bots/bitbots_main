@@ -5,7 +5,7 @@ from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
 
 class BallSeen(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters)
+        super(BallSeen, self).__init__(blackboard, dsd, parameters)
         self.ball_lost_time = self.blackboard.config['ball_lost_time']
 
     def perform(self, reevaluate=False):

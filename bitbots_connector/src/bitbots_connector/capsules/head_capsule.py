@@ -9,5 +9,5 @@ class HeadCapsule:
         # possible variables
         self.head_mode = None
 
-    def head_mode_callback(self, msg: HeadModeMsg):
+    def head_mode_callback(self, msg):
         self.head_mode = msg.headMode

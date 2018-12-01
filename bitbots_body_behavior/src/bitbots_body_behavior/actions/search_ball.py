@@ -4,7 +4,7 @@ from humanoid_league_msgs.msg import HeadMode
 
 class SearchBall(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters)
+        super(SearchBall, self).__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
         self.blackboard.blackboard.set_head_duty(HeadMode.BALL_MODE)
