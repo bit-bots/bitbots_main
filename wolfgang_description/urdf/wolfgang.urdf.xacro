@@ -2,6 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="wolfgang">
 
     <xacro:arg name="sim_ns" default="/" />
+    <xacro:arg name="cleats" default="-0.013" />
 
     <xacro:property name="tofa" value="1" /> <!--Torque factor-->
     <xacro:property name="infa" value="1" /> <!--inertia factor-->
@@ -512,9 +513,18 @@
     </link>
     <link name="camera" />
     <link name="camera_optical_frame"/>
+    <link name="camera_fixed"/>
+
     <link name="imu_frame" />
-    <link name="camera_fixed">
-    </link>
+
+    <link name="l_cleat_l_front"/>
+    <link name="l_cleat_r_front"/>
+    <link name="l_cleat_l_back"/>
+    <link name="l_cleat_r_back"/>
+    <link name="r_cleat_l_front"/>
+    <link name="r_cleat_r_front"/>
+    <link name="r_cleat_l_back"/>
+    <link name="r_cleat_r_back"/>
 
     <link name="head">
         <inertial>
@@ -539,7 +549,7 @@
 
 
 
-
+    <!-- JOINTS JOINTS JOINTS JOINTS JOINTS JOINTS JOINTS JOINTS JOINTS JOINTS --> 
 
     <joint name="RHipYaw" type="revolute">
         <origin xyz="0 -0.055 0" rpy="0 0 0" />
@@ -596,14 +606,14 @@
     </joint>
 
     <joint name="r_foot_to_sole" type="fixed">
-        <origin xyz="0.082 0 -0.036" rpy="0 0 0" /> <!-- stollen todo-->
+        <origin xyz="0.078 -0.015 -0.039" rpy="0 0 0" /> 
         <parent link="r_foot" />
         <child link="r_sole" />
         <axis xyz="0 0 0" />
     </joint>
 
     <joint name="r_foot_to_toe" type="fixed">
-        <origin xyz="0.095 -0.003 0" rpy="0 0 0" />
+        <origin xyz="0.095 0 0" rpy="0 0 0" />
         <parent link="r_sole" />
         <child link="r_toe" />
         <axis xyz="0 0 0" />
@@ -664,14 +674,14 @@
     </joint>
 
     <joint name="left_foot_to_sole" type="fixed">
-        <origin xyz="0.082 0 -0.036" rpy="0 0 0" /> <!-- todo mit stollen!-->
+        <origin xyz="0.078 0.015 -0.039" rpy="0 0 0" /> <!-- todo mit stollen!-->
         <parent link="l_foot" />
         <child link="l_sole" />
         <axis xyz="0 0 0" />
     </joint>
 
     <joint name="left_foot_to_toe" type="fixed">
-        <origin xyz="0.095 -0.003 0" rpy="0 0 0" />
+        <origin xyz="0.095 0 0" rpy="0 0 0" />
         <parent link="l_sole" />
         <child link="l_toe" />
         <axis xyz="0 0 0" />
@@ -792,6 +802,57 @@
       <child link="camera_optical_frame" />
     </joint>
 
+    <!-- left foot cleats -->
+    <joint name="l_sole_to_l_cleat_l_front" type="fixed">
+      <origin xyz="0.085 0.045 $(arg cleats)" rpy="0 0 0" />
+      <parent link="l_sole" />
+      <child link="l_cleat_l_front" />
+    </joint>
+
+    <joint name="l_sole_to_l_cleat_r_front" type="fixed">
+      <origin xyz="0.085 -0.045 $(arg cleats)" rpy="0 0 0" />
+      <parent link="l_sole" />
+      <child link="l_cleat_r_front" />
+    </joint>
+
+    <joint name="l_sole_to_l_cleat_l_back" type="fixed">
+      <origin xyz="-0.085 0.045 $(arg cleats)" rpy="0 0 0" />
+      <parent link="l_sole" />
+      <child link="l_cleat_l_back" />
+    </joint>
+
+    <joint name="l_sole_to_l_cleat_r_back" type="fixed">
+      <origin xyz="-0.085 -0.045 $(arg cleats)" rpy="0 0 0" />
+      <parent link="l_sole" />
+      <child link="l_cleat_r_back" />
+    </joint>
+
+    <!-- right foot cleats -->
+    <joint name="r_sole_to_r_cleat_l_front" type="fixed">
+      <origin xyz="0.085 0.045 $(arg cleats)" rpy="0 0 0" />
+      <parent link="r_sole" />
+      <child link="r_cleat_l_front" />
+    </joint>
+
+    <joint name="r_sole_to_r_cleat_r_front" type="fixed">
+      <origin xyz="0.085 -0.045 $(arg cleats)" rpy="0 0 0" />
+      <parent link="r_sole" />
+      <child link="r_cleat_r_front" />
+    </joint>
+
+    <joint name="r_sole_to_r_cleat_l_back" type="fixed">
+      <origin xyz="-0.085 0.045 $(arg cleats)" rpy="0 0 0" />
+      <parent link="r_sole" />
+      <child link="r_cleat_l_back" />
+    </joint>
+
+    <joint name="r_sole_to_r_cleat_r_back" type="fixed">
+      <origin xyz="-0.085 -0.045 $(arg cleats)" rpy="0 0 0" />
+      <parent link="r_sole" />
+      <child link="r_cleat_r_back" />
+    </joint>
+
+    <!-- TRANSMISSIONS TRANSMISSIONS TRANSMISSIONS TRANSMISSIONS TRANSMISSIONS TRANSMISSIONS TRANSMISSIONS -->
 
     <transmission name="HeadPanTransmission">
         <type>transmission_interface/SimpleTransmission</type>
