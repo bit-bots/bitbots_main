@@ -3,6 +3,7 @@
     <arg name="motion" default="true"/>
     <arg name="behave" default="true"/>
     <arg name="vision" default="false"/>
+    <arg name="use_game_settings" default="false"/>
     
     <arg name="sim_ns" default="/" />
 
@@ -19,7 +20,9 @@
     </group>
 
     <include file="$(find bitbots_transform)/launch/transformer.launch"/>
-    <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch"/>
+    <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch">
+            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+    </include>
     <include file="$(find bitbots_localization)/launch/localization_amcl.launch"/>
     <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch"/>
     
@@ -34,6 +37,12 @@
         <include file="$(find bitbots_common)/launch/motion.launch">
             <arg name="sim" value="$(arg sim)"/>           
         </include>
+    </group>
+
+    <group if="$(arg use_game_settings)">
+        <include file="$(find game_controller)/launch/game_controller.launch"/>
+         <node name="$(game_settings)" pkg="bitbots_common" type="game_settings.py" />
+
     </group>
 
 </launch>
