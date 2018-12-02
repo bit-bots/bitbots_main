@@ -3,11 +3,12 @@
 
 #include <cmath>
 #include <algorithm>
+#include <geometry_msgs/Vector3.h>
 
 namespace libPF
 {
 
-/** 
+/**
  * @class MovementModel
  *
  * @brief Templated interface for movement models for particle filters.
@@ -21,7 +22,7 @@ namespace libPF
  * to implement the function diffuse() to define a jitter that is added to
  * a state after drift() (which may be empty of course). You can use the function
  * randomGauss() to obtain Gaussian-distributed random variables.
- * 
+ *
  * @author Stephan Wirth
  *
  * @see ParticleFilter
@@ -30,7 +31,7 @@ namespace libPF
 
 template <class StateType>
 class MovementModel {
-    
+
   public:
 
     /**
@@ -47,7 +48,7 @@ class MovementModel {
      * @param state Reference to the state that has to be manipulated.
      * @param dt time that has passed since the last filter update in seconds.
      */
-    virtual void drift(StateType& state, double dt) const = 0;
+    virtual void drift(StateType& state, geometry_msgs::Vector3 linear, geometry_msgs::Vector3 angular) const = 0;
 
     /**
      * This method will be applied in a ParticleFilter after drift(). It can be

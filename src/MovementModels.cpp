@@ -10,7 +10,14 @@ LocalObstacleMovementModel::LocalObstacleMovementModel(libPF::CRandomNumberGener
 LocalObstacleMovementModel::~LocalObstacleMovementModel() {
 }
 
-void LocalObstacleMovementModel::drift(PositionStateW& /*state*/, double /*dt*/) const {
+void LocalObstacleMovementModel::drift(PositionStateW& state, geometry_msgs::Vector3 linear, geometry_msgs::Vector3 angular) const {
+    // apply linear movement
+    // calculate polar coordinates of state
+    // make sure not to mix up radian and degree!
+    // apply angular movement on polar coordinate
+    // calculate cartesian coordinate of state
+    // write into state
+    // this can be done more sophisticated by combining the movement (thr robot walks a curve and does not move first and turn then) this can be irrelevant due to high update rates.
 }
 
 void LocalObstacleMovementModel::diffuse(PositionStateW& state, double /*dt*/) const {
@@ -28,7 +35,14 @@ LocalRobotMovementModel::LocalRobotMovementModel(libPF::CRandomNumberGenerator& 
 LocalRobotMovementModel::~LocalRobotMovementModel() {
 }
 
-void LocalRobotMovementModel::drift(PositionState& /*state*/, double /*dt*/) const {
+void LocalRobotMovementModel::drift(PositionState& state, geometry_msgs::Vector3 linear, geometry_msgs::Vector3 angular) const {
+    // apply linear movement
+    // calculate polar coordinates of state
+    // make sure not to mix up radian and degree!
+    // apply angular movement on polar coordinate
+    // calculate cartesian coordinate of state
+    // write into state
+    // this can be done more sophisticated by combining the movement (thr robot walks a curve and does not move first and turn then) this can be irrelevant due to high update rates.
 }
 
 void LocalRobotMovementModel::diffuse(PositionState& state, double /*dt*/) const {

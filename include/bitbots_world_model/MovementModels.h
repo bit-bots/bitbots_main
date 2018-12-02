@@ -5,6 +5,7 @@
 
 #include <libPF/MovementModel.h>
 #include <bitbots_world_model/ObstacleStates.h>
+#include <geometry_msgs/Vector3.h>
 // #include <libPF/CRandomNumberGenerator.h>
 
 /**
@@ -33,7 +34,7 @@ class LocalObstacleMovementModel : public libPF::MovementModel<PositionStateW> {
      * The drift method is empty in this example.
      * @param state Pointer to the state that has to be manipulated.
      */
-    void drift(PositionStateW& state, double dt) const;
+    void drift(PositionStateW& state, geometry_msgs::Vector3 linear, geometry_msgs::Vector3 angular) const;
 
     /**
      * The diffusion consists of a very small gaussian jitter on the
@@ -71,7 +72,7 @@ class LocalRobotMovementModel : public libPF::MovementModel<PositionState> {
      * The drift method is empty in this example.
      * @param state Pointer to the state that has to be manipulated.
      */
-    void drift(PositionState& state, double dt) const;
+    void drift(PositionState& state, geometry_msgs::Vector3 linear, geometry_msgs::Vector3 angular) const;
 
     /**
      * The diffusion consists of a very small gaussian jitter on the
