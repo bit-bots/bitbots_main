@@ -1,9 +1,9 @@
 <launch>
     <arg name="use_game_settings" default="false"/>
-        <rosparam command="load" file="$(find game_controller)/config/game_controller.yaml" />
 
-    <node pkg="game_controller" type="game_controller_node" name="game_controller_node" output="screen" respawn="true">
-    </node>
+    <rosparam command="load" file="$(find game_controller)/config/game_controller.yaml" />
+
+    <node pkg="game_controller" type="game_controller_node" name="game_controller_node" output="screen" respawn="true"/>
 
      <group if="$(arg use_game_settings)">
         <rosparam command="load" file="~/.ros/game_settings.yaml" />
