@@ -45,25 +45,28 @@ int main(int argc, char** argv)
   {    
     bool read_sucessfull = hw.read();
     ros::Duration period = ros::Time::now() - current_time;
-    current_time = ros::Time::now();  
-    if (first_update) {
-      first_update = false;
-    } else {
-      // start or stop joint state controller if connection lost / restored
-      /*if(read_sucessfull && controller_stopped){
-        ROS_WARN("start");
-        cm.getControllerByName("joint_state_controller")->startRequest(current_time);
-        if(cm.getControllerByName("joint_state_controller")->isRunning()){
-          controller_stopped = false;
-        }
-      }else if (!read_sucessfull && !controller_stopped){
-        ROS_WARN("stop");
-        cm.getControllerByName("joint_state_controller")->stopRequest(current_time);
-        controller_stopped = true;
-      }*/
-      cm.update(current_time, period);
+    current_time = ros::Time::now(); 
+    if(read_sucessfull){ 
+      // only write something to hardware 
+      if (first_update) {
+        first_update = false;
+      } else {
+        // start or stop joint state controller if connection lost / restored
+        /*if(read_sucessfull && controller_stopped){
+          ROS_WARN("start");
+          cm.getControllerByName("joint_state_controller")->startRequest(current_time);
+          if(cm.getControllerByName("joint_state_controller")->isRunning()){
+            controller_stopped = false;
+          }
+        }else if (!read_sucessfull && !controller_stopped){
+          ROS_WARN("stop");
+          cm.getControllerByName("joint_state_controller")->stopRequest(current_time);
+          controller_stopped = true;
+        }*/
+        cm.update(current_time, period);
+      }
+      hw.write();
     }
-    hw.write();
     rate.sleep();
     ros::spinOnce();
   }
