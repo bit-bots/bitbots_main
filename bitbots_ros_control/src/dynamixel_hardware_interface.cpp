@@ -430,6 +430,12 @@ bool DynamixelHardwareInterface::read()
   if(!readButtons()){
     ROS_ERROR_THROTTLE(1.0, "Couldn't read Buttons");
   }
+
+  if (_read_pressure){
+    if(!readFootSensors()){
+      ROS_ERROR_THROTTLE(1.0, "Couldn't read foot sensor values");
+    }
+  }
   if(_onlyIMU){
     return true;
   }
@@ -495,12 +501,6 @@ bool DynamixelHardwareInterface::read()
       _read_VT_counter = 0;
     }else{
       _read_VT_counter++;
-    }
-  }
-
-  if (_read_pressure){
-    if(!readFootSensors()){
-      ROS_ERROR_THROTTLE(1.0, "Couldn't read foot sensor values");
     }
   }
 

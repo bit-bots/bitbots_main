@@ -3,6 +3,7 @@ ros_control:
   read_velocity: true
   read_effort: true
   read_volt_temp: true
+  read_pressure: false
   VT_update_rate: 100
   read_imu: true
   onlyIMU: true
