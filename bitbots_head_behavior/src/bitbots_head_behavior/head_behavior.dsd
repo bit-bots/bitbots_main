@@ -2,10 +2,10 @@
 $HeadModeDecision
     BALL_MODE --> $BallSeen
         YES --> @TrackBall
-        NO --> @SearchBall
+        NO --> @PatternSearch
     POST_MODE --> @Wait + time:1
     BALL_GOAL_TRACKING --> @Wait + time:1
-    FIELD_FEATURES --> @SearchBall
+    FIELD_FEATURES --> @PatternSearch
     LOOK_DOWN --> @LookDirection + direction:DOWN
     LOOK_FORWARD --> @LookDirection + direction:FORWARD
     LOOK_UP --> @LookDirection + direction:UP

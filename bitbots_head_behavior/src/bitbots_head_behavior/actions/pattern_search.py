@@ -3,9 +3,9 @@ import math
 from bitbots_dsd.abstract_action_element import AbstractActionElement
 
 
-class SearchBall(AbstractActionElement):
+class PatternSearch(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
-        super(SearchBall, self).__init__(blackboard, dsd, parameters)
+        super(PatternSearch, self).__init__(blackboard, dsd, parameters)
         self.index = 0
         self.pattern = self.blackboard.config['search_pattern']
 
