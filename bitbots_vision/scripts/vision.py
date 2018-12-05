@@ -2,7 +2,7 @@
 
 
 from bitbots_vision_common.vision_modules import lines, horizon, color, debug, live_classifier, classifier, ball, \
-    lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle
+    lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, ObstacleInImage
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
@@ -26,9 +26,12 @@ class Vision:
         rospy.loginfo('Initializing vision...')
 
         self.config = {}
-        self.debug_image_dings = debug.DebugImage()
+        self.debug_image_dings = debug.DebugImage()  # Todo: better variable name
+        if self.debug_image_dings:
+            self.runtime_evaluator = evaluator.RuntimeEvaluator()
         # register config callback and set config
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
+
 
         rospy.spin()
 
@@ -43,6 +46,8 @@ class Vision:
         self.horizon_detector.set_image(image)
         self.obstacle_detector.set_image(image)
         self.line_detector.set_image(image)
+
+        self.runtime_evaluator.set_image()
 
         if (self.config['vision_ball_classifier'] == 'cascade'):
             self.ball_finder.set_image(image)
@@ -299,12 +304,15 @@ class Vision:
             'white_threshold': config['obstacle_white_threshold'],
             'horizon_diff_threshold': config['obstacle_horizon_diff_threshold'],
             'candidate_horizon_offset': config['obstacle_candidate_horizon_offset'],
+            'candidate_min_width': config['obstacle_candidate_min_width'],
+            'finder_step_length': config['obstacle_finder_step_length'],
         }
         self.obstacle_detector = obstacle.ObstacleDetector(
             self.red_color_detector,
             self.blue_color_detector,
             self.white_color_detector,
             self.horizon_detector,
+            self.runtime_evaluator,
             self.obstacles_config
         )
 

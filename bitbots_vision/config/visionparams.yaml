@@ -56,6 +56,8 @@ obstacle_color_threshold: 50
 obstacle_white_threshold: 50
 obstacle_horizon_diff_threshold: 20
 obstacle_candidate_horizon_offset: 30
+obstacle_candidate_min_width: 30
+obstacle_finder_step_length: 5
 
 goalpost_expand_stepsize: 5
 goalpost_white_threshold: 100

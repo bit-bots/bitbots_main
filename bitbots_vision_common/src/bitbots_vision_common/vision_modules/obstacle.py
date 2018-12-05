@@ -1,21 +1,26 @@
-import numpy as np
-
 from .candidate import CandidateFinder, Candidate
 from .color import ColorDetector
 from .horizon import HorizonDetector
+from .evaluator import RuntimeEvaluator
+import cv2
+import numpy as np
 
 
 class ObstacleDetector(CandidateFinder):
-    def __init__(self, red_color_detector, blue_color_detector, white_color_detector, horizon_detector, config):
-        # type: (ColorDetector, ColorDetector, ColorDetector, HorizonDetector, dict) -> None
+    def __init__(self, red_color_detector, blue_color_detector, white_color_detector, horizon_detector,
+                 runtime_evaluator, config):
+        # type: (ColorDetector, ColorDetector, ColorDetector, HorizonDetector, RuntimeEvaluator, dict) -> None
         self._red_color_detector = red_color_detector
         self._blue_color_detector = blue_color_detector
         self._white_color_detector = white_color_detector
         self._horizon_detector = horizon_detector
+        self._runtime_evaluator = runtime_evaluator
         self._color_threshold = config['color_threshold']
         self._white_threshold = config['white_threshold']
         self._horizon_diff_threshold = config['horizon_diff_threshold']
         self._candidate_horizon_offset = config['candidate_horizon_offset']
+        self._candidate_min_width = config['candidate_min_width']
+        self._finder_step_length = config['finder_step_length']
 
         self._image = None
         self._blue_mask = None
@@ -44,20 +49,32 @@ class ObstacleDetector(CandidateFinder):
         return self.get_candidates()
 
     def get_candidates(self):
+        """ this method can be used to switch between get_candidates_fast and get_candidates_accurate"""
+        return self._get_convex_horizon_candidates()
+
+    def _get_step_horizon_candidates(self):
         # type: () -> list[Candidate]
+        """
+        finds candidates by comparing the height of adjacent horizon points
+        faster, less accurate alternative to get_candidates_convex
+        :return: candidate(int: x upper left point, int: y upper left point, int: width, int: height)
+        """
         if self._obstacles is None:
+            self._runtime_evaluator.start_timer() # for runtime testing
             self._obstacles = list()
             obstacle_begin = None
             horizon_points = self._horizon_detector.get_horizon_points()
-            a = horizon_points[0]
+            a = horizon_points[0]  # first point of horizon_points
             b = None
-            for point in horizon_points[1:]:
-                b = point
-                if not obstacle_begin:
+            for point in horizon_points[1:]:  # traverses horizon_points from left to right
+                b = point  # assigns the next point of horizon_points
+                if not obstacle_begin:  # checks whether the beginning of an obstacle has already bin found
                     if b[1] - a[1] > self._horizon_diff_threshold:
-                        obstacle_begin = a
+                        # checks whether the horizon goes downhill by comparing the heights of b and a
+                        obstacle_begin = a  # the obstacle begins at the left point of these two
                 else:
                     if a[1] - b[1] > self._horizon_diff_threshold:
+                        # checks whether the horizon goes uphill again by comparing the heights of a and b
                         self._obstacles.append(
                             Candidate(
                                 obstacle_begin[0],
@@ -72,7 +89,7 @@ class ObstacleDetector(CandidateFinder):
                         )
                         obstacle_begin = None
                 a = b
-            if obstacle_begin:
+            if obstacle_begin:  # obstacle began but never ended (problematic edge-case):
                 self._obstacles.append(
                     Candidate(
                         obstacle_begin[0],
@@ -85,6 +102,72 @@ class ObstacleDetector(CandidateFinder):
                                    obstacle_begin[1] - self._candidate_horizon_offset)
                     )
                 )
+            self._runtime_evaluator.stop_timer()  # for runtime testing
+            self._runtime_evaluator.print_timer()  # for runtime testing
+        return self._obstacles
+
+    def _get_convex_horizon_candidates(self):
+        # type: () -> list[Candidate]
+        """
+        finds candidates using the difference of the convex horizon and the normal horizon.
+        Alternative to get_candidates (more accurate, about 0.0015 seconds slower)
+        :return: candidate(int: x upper left point, int: y upper left point, int: width, int: height)
+        """
+        # Todo: fix rarely finding not existent obstacles at the edge (vectors + orthogonal distance?)
+        # Todo: increase step length before beginning of obstacle has been found, decrease it afterwards
+        # Todo: interpolate individual points instead of the whole list (see get_full_horizon)
+        if self._obstacles is None:
+            self._runtime_evaluator.start_timer()  # for runtime testing
+            self._obstacles = list()
+            obstacle_begin = None
+            """
+            the ordinary horizon and convex_horizon consist out of a limited amount of points (usually 30).
+            the full_horizon/full_convex_horizon have interpolated points
+             to have as many points as the width of the picture.
+            """
+            full_convex_horizon = np.array(self._horizon_detector.get_full_convex_horizon()).astype(int)
+            full_horizon = np.array(self._horizon_detector.get_full_horizon()).astype(int)
+            """
+            calculates the distance between the points of the full_horizon and full_convex_horizon
+            horizon_distance is a list of distances with the index being the corresponding x-coordinate
+            """
+            horizon_distance = full_horizon-full_convex_horizon
+            """
+            threshold determines the minimum distance of the two horizons for an object to be found
+            minWidth determines the minimum width of potential objects to be identified as candidates
+            step is the length of one step in pixel: lager step -> faster, but more inaccurate
+            """
+            # Todo: value of minWidth and step has to be tested
+            threshold = self._horizon_diff_threshold
+            min_width = 30 #self._candidate_min_witdh
+            step = 5 #self._finder_step_length
+            pic_width = len(horizon_distance)  # Width of picture
+            for i in range(0, pic_width, step):  # traverses horizon_distance
+                if not obstacle_begin:
+                    if horizon_distance[i] > threshold:
+                        obstacle_begin = (i, full_convex_horizon[i])  # found beginning of obstacle
+                else:
+                    if horizon_distance[i] < threshold:  # found end of obstacle
+                        # candidate(x upper left point, y upper left point, width, height)
+                        x = obstacle_begin[0]
+                        w = i-x
+                        if w > min_width:
+                            y = max(0, obstacle_begin[1] - self._candidate_horizon_offset)
+                            h = np.round(full_horizon[i - w / 2] - y)
+                            self._obstacles.append(Candidate(x, y, w, h))
+                        obstacle_begin = None
+            if obstacle_begin:
+                # obstacle began but never ended (problematic edge-case):
+                # candidate(x upper left point, y upper left point, width, height)
+                i = pic_width  # we have to reinitialise i because it was only usable in the for-loop
+                x = obstacle_begin[0]
+                w = i - x
+                if w > min_width:
+                    y = max(0, obstacle_begin[1] - self._candidate_horizon_offset)
+                    h = full_horizon[i - w / 2] - y
+                    self._obstacles.append(Candidate(x, y, w, h))
+            self._runtime_evaluator.stop_timer()  # for runtime testing
+            self._runtime_evaluator.print_timer()  # for runtime testing
         return self._obstacles
 
     def get_all_obstacles(self):
