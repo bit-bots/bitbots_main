@@ -2,6 +2,7 @@
 #include "mitecom-data.h"
 #include "mitecom-network.h"
 #include "mitecom-handler.h"
+#include <ros/console.h>
 
 namespace MiTeCom {
 

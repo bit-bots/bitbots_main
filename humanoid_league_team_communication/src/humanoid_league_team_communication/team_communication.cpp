@@ -17,6 +17,7 @@ TeamCommunication::TeamCommunication() : _nh() {
     team_color = teamcolor;
     _nh.getParam("team_communication/world_model", world_model);
     _nh.getParam("team_communication/lifetime", lifetime);
+    _nh.getParam("team_communication/belief_threshold", belief_threshold);
 
     _nh.getParam("team_communication/team_data", teamdata_topic);
     _nh.getParam("team_communication/strategy", strategy_topic);
@@ -96,11 +97,11 @@ void TeamCommunication::send_thread(const ros::TimerEvent& _t) {
 
     if (state != STATE_PENALIZED) {
         //position
-        if (position_belief > 0 && ros::Time::now().sec - position_exists < lifetime) {
+        if (position_belief > belief_threshold && ros::Time::now().sec - position_exists < lifetime) {
             _mitecom.set_pos(position_x, position_y, position_orientation, position_belief);
         }
         //ball
-        if (ball_belief > 0 && ros::Time::now().sec - ball_exists < lifetime) {
+        if (ball_belief > belief_threshold && ros::Time::now().sec - ball_exists < lifetime) {
             _mitecom.set_relative_ball(ball_relative_x, ball_relative_y, ball_belief);
         }
         /*//opponent goal
@@ -178,7 +179,7 @@ void TeamCommunication::publish_data(MiTeCom::TeamRobotData team_data){
         states.push_back(rob_data.get_state());
 
         //own position
-        //TODO position confidence
+        //TODO position confidence -> msg definitions
         geometry_msgs::Pose2D pos_msg;
         pos_msg.x = rob_data.get_absolute_x() / 1000.0;
         pos_msg.y = rob_data.get_absolute_y() / 1000.0;
@@ -249,9 +250,9 @@ void TeamCommunication::publish_data(MiTeCom::TeamRobotData team_data){
         team_robot_c_msg.confidence = rob_data.get_team_robot_c_belief() / 255.0;
         team_robot_c.push_back(team_robot_c_msg);
 
-        avg_walking_speeds.push_back(rob_data.get_avg_walking_speed());
+        avg_walking_speeds.push_back(rob_data.get_avg_walking_speed() / 1000.0);
         time_to_position_at_balls.push_back(rob_data.get_time_to_ball());
-        max_kicking_distances.push_back(rob_data.get_max_kicking_distance());
+        max_kicking_distances.push_back(rob_data.get_max_kicking_distance() / 1000.0);
 
         offensive_side.push_back(rob_data.get_offensive_side());
     }
@@ -336,8 +337,8 @@ void TeamCommunication::ball_callback(const humanoid_league_msgs::BallRelative m
 }
 
 void TeamCommunication::goal_callback(const humanoid_league_msgs::GoalRelative msg) {
-    //todo check if this is a good way to compute the position
     /* todo von python nach c++ (es gibt keine positions in der msg)
+     * todo improve computation of position
      * if msg.positions is None or msg.positions == []:
      * return
      * post_a = msg.positions[0]
@@ -409,11 +410,23 @@ void TeamCommunication::world_callback(const humanoid_league_msgs::Model msg){
     double roll, pitch, yaw;
     matrix_quaternion.getRPY(roll, pitch, yaw);
     position_orientation = static_cast<uint64_t>(yaw * 1000.0);
-    // TODO Umwandlung covariance matrix to confidence
+    // convert covariance matrix to confidence, so Mitecom can send it as int
+    double sum;
+    int elements;
+    for (auto const& matrixelement : msg.position.pose.covariance){
+        sum += matrixelement;
+        if (matrixelement > 0){
+        // count number of significant elements in the matrix
+        elements += 1;
+        }
+    }
+    // TODO sinnvollerere Normalisierung
+    double covariance_mean = sum/elements;
     //the scale is different in _mitecom, so we have to transfer from 0...1 to 0...255
-    //position_belief = int(msg.confidence * 255);
+    position_belief = static_cast<uint64_t>(covariance_mean * 255);
+    ROS_INFO_STREAM(covariance_mean);
 
-    //obstcales
+    //obstacles
     obstacles_callback(msg.obstacles);
 }
 

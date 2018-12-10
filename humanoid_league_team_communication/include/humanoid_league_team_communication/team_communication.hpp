@@ -93,6 +93,7 @@ private:
     int ball_exists = 0;
     int position_exists = 0;
     int obstacles_exists = 0;
+    double belief_threshold;
 
     std::string teamdata_topic;
     std::string strategy_topic;

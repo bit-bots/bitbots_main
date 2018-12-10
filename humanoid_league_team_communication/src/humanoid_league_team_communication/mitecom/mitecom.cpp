@@ -248,8 +248,6 @@ void mitecom::open_socket(int port)
 void mitecom::send_data(void)
 {
     ownData->robotID = m_robotID;
-    //ownData->data[ROBOT_MAX_KICKING_DISTANCE] = 250000;
-    //ownData->data[ROBOT_AVG_WALKING_SPEED_IN_CM_PER_SECOND] = 1;
 
     MixedTeamCommMessage *messageDataPtr = NULL;
     uint32_t messageDataLength = 0;
@@ -264,7 +262,7 @@ void mitecom::send_data(void)
     {
         if ((it->second)->get_lastUpdate() + 3000 < getCurrentTime())
         {
-            printf("Mitecom: I didn't hear from %d for a while. Good bye, %d.\n", it->first, it->first); //todo change to ROS debug
+            ROS_WARN("Mitecom: I didn't hear from %d for a while. Good bye, %d.", it->first, it->first);
             delete teamRobotData[it->first];
             teamRobotData.erase(it++);
             //delete teamRobotData[teamMate.robotID]
@@ -285,36 +283,31 @@ void mitecom::send_data(void)
 void mitecom::recieve_data(void)
 {
     char buff[BUFF_SIZE];
-    ssize_t messageLength = mitecom_receive(m_sock, buff, BUFF_SIZE);
-    if (messageLength > 0)
+    ssize_t messageLength;
+    while ((messageLength = mitecom_receive(m_sock, buff, BUFF_SIZE)) > 0)
     {
         // message received, process it
         MixedTeamMate teamMate = MixedTeamParser::parseIncoming(buff, messageLength, m_teamID);
-        if (teamMate.robotID == -1)
+        if (teamMate.robotID == 0)
         {
-            printf("Mitecom: Invalid Data\n"); //todo change to ROS debug
+            ROS_ERROR("Mitecom: Teammate RobotID is invalid");
         }
-        else if (teamMate.robotID > 30)
+        // Gamecontroller accepts only robotIDs from 1 to 5
+        else if (teamMate.robotID > 5)
         {
-            printf("Mitecom: Too high RobotID: %d\n", teamMate.robotID); //todo change to ROS debug
+            ROS_ERROR("Mitecom: Teammate has too high RobotID: %d", teamMate.robotID);
         }
         else if (teamMate.robotID != m_robotID)
         {
             if (teamRobotData.find(teamMate.robotID) == teamRobotData.end()) {
-                printf("Mitecom: Adding robot %d to my list of team mates. Welcome.\n", teamMate.robotID); //todo change to ROS debug
+                ROS_INFO("Mitecom: Adding robot %d to my list of team mates. Welcome.", teamMate.robotID);
                 teamRobotData[teamMate.robotID] = new TeamMateData();
             }
-
             // add team mate to our map
             teamRobotData[teamMate.robotID]->setData(teamMate);
             // remember the last time (i.e. now) that we heard from this robot
             teamRobotData[teamMate.robotID]->set_lastUpdate(getCurrentTime());
         }
-    }
-    else
-    {
-        // add some delay
-        //usleep(100*1000 /* microseconds */);
     }
 }
 

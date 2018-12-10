@@ -6,7 +6,7 @@ team_communication:
   # Rate of published messages in Hz
   rate: 1
 
-  # avarange walking speed in mm / s !!!
+  # average walking speed in mm / s !!!
   avg_walking_speed: 10
 
   # in mm
@@ -23,6 +23,9 @@ team_communication:
 
   #lifetime of data [s]
   lifetime: 3
+
+  #threshold for necessary belief in data to be send to teammates [0,1]
+  belief_threshold: 0
 
   # ROS Topics
   team_data: '/team_data'
