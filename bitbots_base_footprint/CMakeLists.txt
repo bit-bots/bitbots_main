@@ -7,9 +7,10 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   tf2
-  tf_conversions
+  tf2_geometry_msgs
   message_generation
   geometry_msgs
+  bitbots_quintic_walk
 )
 
 catkin_python_setup()
