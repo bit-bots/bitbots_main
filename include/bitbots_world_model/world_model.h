@@ -116,6 +116,7 @@ class WorldModel {
         void publish_visualization();
 
         std_msgs::ColorRGBA get_color_msg(int color_id);
+        void publish_results();
 
 };
 

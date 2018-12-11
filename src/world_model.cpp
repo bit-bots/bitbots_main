@@ -241,6 +241,12 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     local_obstacle_pf_->diffuse(.1);
 
     // publish the output
+    publish_results();
+}
+
+void WorldModel::publish_results() {
+    // result acquisition and publishing
+
     // THIS IS JUST FOR EVALUATION AND BY NO MEANS USABLE IN PRAXIS
     hlm::Model model_msg;
 
