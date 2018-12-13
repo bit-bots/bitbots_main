@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<package>
+  <name>bitbots_transform</name>
+  <version>1.0.0</version>
+  <description>bitbots_transform provides a node to transform from a pixel in an image to real world coordinates.
+    CameraInfo and the TF-Tree needs to be available for it to properly work</description>
+
+  <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rosconsole</build_depend>
+  <build_depend>humanoid_league_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf_conversions</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+
+
+  <run_depend>rospy</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rosconsole</run_depend>
+  <run_depend>humanoid_league_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>tf2</run_depend>
+  <run_depend>tf_conversions</run_depend>
+  <run_depend>message_generation</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+
+
+  <export>
+    <bitbots_documentation>
+      <language>python2</language>
+      <status>tested_robot</status>
+    </bitbots_documentation>
+    <rosdoc config="rosdoc.yaml"/>
+  </export>
+</package>

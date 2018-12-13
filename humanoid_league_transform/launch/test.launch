@@ -1,0 +1,4 @@
+<launch>
+    <!--include file="$(find bitbots_common)/launch/start_simulator_base.launch" /-->
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/linemap.yaml"/>
+</launch>
