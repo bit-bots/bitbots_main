@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>bitbots_blackboard</name>
     <version>0.1.0</version>
     <description>The bitbots_blackboard is used to share information
@@ -19,11 +19,16 @@
 
     <buildtool_depend>catkin</buildtool_depend>
 
-    <build_depend>humanoid_league_msgs</build_depend>
-    <build_depend>rospy</build_depend>
+    <depend>rospy</depend>
 
-    <run_depend>humanoid_league_msgs</run_depend>
-    <run_depend>rospy</run_depend>
+    <exec_depend>tf2</exec_depend>
+    <exec_depend>tf2_geometry_msgs</exec_depend>
+    <exec_depend>geometry_msgs</exec_depend>
+    <exec_depend>bio_ik_msgs</exec_depend>
+    <exec_depend>humanoid_league_msgs</exec_depend>    
+    <exec_depend>bitbots_ros_control</exec_depend>
+
+
 
     <export>
         <bitbots_documentation>

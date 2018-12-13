@@ -14,8 +14,8 @@ import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose2D
 from humanoid_league_msgs.msg import BallRelative, GameState, Speak, HeadMode, Strategy, TeamData, PlayAnimationAction
 
-from bitbots_connector.blackboard import BodyBlackboard
-from bitbots_dsd import dsd
+from bitbots_blackboard.blackboard import BodyBlackboard
+from dynamic_stack_decider import dsd
 
 
 if __name__ == "__main__":

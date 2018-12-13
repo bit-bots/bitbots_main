@@ -1,12 +1,12 @@
 import rospy
 from bio_ik_msgs.srv import GetIK
-from bitbots_connector.capsules.animation_capsule import AnimationCapsule
-from bitbots_connector.capsules.blackboard_capsule import BlackboardCapsule
-from bitbots_connector.capsules.game_status_capsule import GameStatusCapsule
-from bitbots_connector.capsules.head_capsule import HeadCapsule
-from bitbots_connector.capsules.pathfinding_capsule import PathfindingCapsule
-from bitbots_connector.capsules.team_data_capsule import TeamDataCapsule
-from bitbots_connector.capsules.world_model_capsule import WorldModelCapsule
+from bitbots_blackboard.capsules.animation_capsule import AnimationCapsule
+from bitbots_blackboard.capsules.blackboard_capsule import BlackboardCapsule
+from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
+from bitbots_blackboard.capsules.head_capsule import HeadCapsule
+from bitbots_blackboard.capsules.pathfinding_capsule import PathfindingCapsule
+from bitbots_blackboard.capsules.team_data_capsule import TeamDataCapsule
+from bitbots_blackboard.capsules.world_model_capsule import WorldModelCapsule
 
 
 class BodyBlackboard:

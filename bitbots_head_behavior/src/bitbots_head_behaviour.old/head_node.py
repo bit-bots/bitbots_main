@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 import rospy
-from bitbots_connector.connector import HeadConnector
+from bitbots_blackboard.connector import HeadConnector
 from bitbots_head_behaviour.decisions.head_duty_decider import HeadDutyDecider
-from bitbots_stackmachine.stack_machine import StackMachine
+from dynamic_stack_decider.stack_machine import StackMachine
 from humanoid_league_msgs.msg import HeadMode, BallRelative, ObstacleRelative, GoalRelative
 from sensor_msgs.msg import JointState
 from bitbots_ros_control.msg import JointCommand

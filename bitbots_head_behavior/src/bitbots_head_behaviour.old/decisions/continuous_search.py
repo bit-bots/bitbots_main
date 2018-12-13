@@ -12,7 +12,7 @@ so only in special cases the ball will be tracked.
 import rospy
 
 from bitbots_head_behaviour.actions.look_at import LookAtRelativePoint
-from bitbots_stackmachine.abstract_decision_element import AbstractDecisionElement
+from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import TeamData
 
 
