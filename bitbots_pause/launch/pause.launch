@@ -1,3 +1,0 @@
-<launch>
-    <node name="pause" pkg="bitbots_pause" type="pause.py" respawn="true"/>
-</launch>
