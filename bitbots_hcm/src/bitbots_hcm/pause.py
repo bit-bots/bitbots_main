@@ -4,7 +4,7 @@ import rospy
 from humanoid_league_msgs.msg import Speak
 from std_msgs.msg import Bool
 
-from bitbots_pause.srv import ManualPenalize
+from bitbots_msgs.srv import ManualPenalize
 from humanoid_league_msgs.msg import GameState
 from humanoid_league_speaker.speaker import speak
 
