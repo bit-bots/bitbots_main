@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="sim" default="false"/>
+    <arg name="minibot" default="false"/>
+    <arg name="wolfgang" default="true"/>
+    
+    <group if="$(arg wolfgang)">
+        <rosparam file="$(find bitbots_hcm)/config/hcm_wolfgang.yaml" command="load"/>
+        <node name="hcm" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" respawn="true">
+        </node>
+    </group>
+
+
+</launch>

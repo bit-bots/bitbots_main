@@ -1,0 +1,17 @@
+<launch>
+  <arg name="sim" default="false"/>
+  <arg name="minibot" default="false"/>
+  <arg name="wolfgang" default="false"/>
+
+
+  <group if="$(arg sim)">
+    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_simulator.yaml" command="load"/>
+  </group>
+  <group unless="$(arg sim)">
+    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
+  </group>   
+    
+  <node name="walking" pkg="bitbots_quintic_walk" type="QuinticWalkingNode" respawn="false" output="screen"/>
+
+
+</launch>

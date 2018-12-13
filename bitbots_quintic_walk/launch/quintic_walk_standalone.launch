@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="sim" default="false"/>
+
+    <include file="$(find bitbots_common)/launch/load_robot_description.launch">
+ 
+    </include>
+
+    <include file="$(find bitbots_quintic_walk)/launch/quintic_walk.launch">
+        <arg name="sim" value="$(arg sim)"/>
+    </include>
+</launch>

@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<package>
+  <name>bitbots_quintic_walk</name>
+  <version>1.0.0</version>
+  <description>This is a simple open-loop walking engine which uses quintic splines to define the trajectories of both feet in cartesian space. An inverse kinematic is used to translate these into joint space. The parameters of the walking can be adjusted using dynamic_reconfigure.</description>
+
+  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+  <author>Rhoban FC</author>
+
+  <license>BSD</license>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>humanoid_league_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>rosconsole</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+  <build_depend>eigen_conversions</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>bio_ik</build_depend>
+  <build_depend>tf_conversions</build_depend>
+  <build_depend>swri_profiler</build_depend>
+  <build_depend>moveit_core</build_depend>
+  <build_depend>moveit_ros_move_group</build_depend>
+  <build_depend>bitbots_splines</build_depend>
+  <build_depend>bitbots_ik</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>message_runtime</build_depend>
+  <build_depend>bitbots_ros_control</build_depend>
+  <build_depend>moveit_ros_robot_interaction</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>humanoid_league_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>rosconsole</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
+  <run_depend>eigen_conversions</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>bio_ik</run_depend>
+  <run_depend>tf_conversions</run_depend>
+  <run_depend>swri_profiler</run_depend>
+  <run_depend>moveit_core</run_depend>
+  <run_depend>moveit_ros_move_group</run_depend>
+  <run_depend>bitbots_splines</run_depend>
+  <run_depend>bitbots_ik</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>moveit_ros_robot_interaction</run_depend>
+
+  <export>
+    <bitbots_documentation>
+      <status>tested_simulator</status>
+      <language>c++</language>
+    </bitbots_documentation>
+  </export>
+</package>

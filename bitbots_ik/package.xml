@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<package>
+  <name>bitbots_ik</name>
+  <version>1.0.0</version>
+  <description>This package provides an analytic IK solver for robots with a Darwin-OP like kinematic chain and a solver which uses BioIK.</description>
+
+  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+  <license>BSD</license>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>rosconsole</build_depend>
+  <build_depend>eigen_conversions</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>bio_ik</build_depend>
+  <build_depend>tf_conversions</build_depend>
+  <build_depend>moveit_core</build_depend>
+  <build_depend>moveit_ros_move_group</build_depend>
+  <build_depend>moveit_ros_planning</build_depend>
+  <build_depend>moveit_ros_planning_interface</build_depend>
+  <build_depend>swri_profiler</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>rosconsole</run_depend>
+  <run_depend>eigen_conversions</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>bio_ik</run_depend>
+  <run_depend>tf_conversions</run_depend>
+  <run_depend>moveit_core</run_depend>
+  <run_depend>moveit_ros_move_group</run_depend>
+  <run_depend>moveit_ros_planning</run_depend>
+  <run_depend>moveit_ros_planning_interface</run_depend>
+  <run_depend>swri_profiler</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+
+  <export>
+    <bitbots_documentation>
+      <status>tested_robot</status>
+      <language>c++</language>
+    </bitbots_documentation>
+  </export>
+</package>

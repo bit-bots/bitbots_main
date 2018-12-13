@@ -1,0 +1,92 @@
+walking:
+  # Full walk cycle frequency
+  # (in Hz, > 0)
+  freq: 0.588
+  # Length of double support phase in half cycle
+  # (ratio, [0:1])
+  doubleSupportRatio: 0.2
+  # Lateral distance between the feet center
+  # (in m, >= 0)
+  footDistance: 0.14
+  # Maximum flying foot height
+  # (in m, >= 0)
+  footRise: 0.07
+  # Pause of Z movement on highest point
+  # (single support cycle ratio, [0,1])
+  footZPause: 0.0  
+  # Phase of flying foot apex
+  # (single support cycle phase, [0:1])
+  footApexPhase: 0.5
+  # Let the foot's downward trajectory end above the ground
+  # this is helpful if the support leg bends
+  # (in m, >= 0)
+  footPutDownZOffset: 0.0
+  #Phase time for moving the foot from Z offset to ground
+  #(in half cycle ratio [0:1])
+  footPutDownPhase: 1.0
+  # Foot X/Y overshoot in ratio of step length
+  # (ratio, >= 0)
+  footOvershootRatio: 0.1
+  # Foot X/Y overshoot phase
+  # (single support cycle phase, [footApexPhase:1]
+  footOvershootPhase: 0.85
+  # Height of the trunk from ground
+  # (in m, > 0)
+  trunkHeight: 0.40
+  # Trunk pitch orientation
+  # (in rad)
+  trunkPitch: 0.36
+  # Phase offset of trunk oscillation
+  # (half cycle phase, [-1:1])
+  trunkPhase: 0.0
+  # Trunk forward offset
+  # (in m)
+  trunkXOffset: 0.0
+  # Trunk lateral offset
+  # (in m)
+  trunkYOffset: 0.0
+  # Trunk lateral oscillation amplitude ratio
+  # (ratio, >= 0)
+  trunkSwing: 0.8
+  # Trunk swing pause length in phase at apex
+  # (half cycle ratio, [0:1])
+  trunkPause: 0.0
+  # Trunk forward offset proportional to forward step
+  # (in 1)
+  trunkXOffsetPCoefForward: 0.0
+  # Trunk forward offset proportional to rotation step
+  # (in m/rad)
+  trunkXOffsetPCoefTurn: 0.0
+  # Trunk pitch orientation proportional to forward step
+  # (in rad/m)
+  trunkPitchPCoefForward: 0.0
+  # Trunk pitch orientation proportional to rotation step
+  # (in 1)
+  trunkPitchPCoefTurn: 0.0
+
+  # update frequency of the engine
+  engineFreq: 200.0
+  
+  # parameters for bioIK
+  bioIKTime: 0.01
+  bioIKApprox: True
+
+  debugActive: True
+  pubModelJointStates: False
+
+  # type of IK to use, either bio_ik or analytic
+  useAnalyticSolver: False
+  
+  trunkYOnlyInDoubleSupport: False
+
+  maxStepX: 0.05
+  maxStepY: 0.02
+  maxStepZ: 0.05
+
+  vel: -1
+  acc: -1
+  pwm: -1
+
+  imuActive: False
+  imuPitchThreshold: 1
+  imuRollThreshold: 1
