@@ -1,0 +1,13 @@
+<launch>
+	<arg name="send_to_ip" default="127.0.0.1"/>
+	<node pkg="hardware_info" type="cpu_info_publisher.py" name="cpu_info" output="screen">
+		<param name="cpu_name" value="cpu_name"/>
+	</node>
+	<node pkg="hardware_info" type="cpu_info_publisher.py" name="cpu_info2" output="screen">
+			<param name="cpu_name" value="cpu_name2"/>
+	</node>
+	<!-- <node pkg="hardware_info" type="battery_info_publisher.py" name="battery_info" output="screen"/> -->
+	<node pkg="hardware_info" type="hardware_tool.py" name="hardware_tool" output="screen">
+		<param name="send_to_ip" value="$(arg send_to_ip)"/>
+	</node>
+</launch>

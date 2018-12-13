@@ -1,0 +1,21 @@
+<library path="scripts">
+  <class name="HardwareUI" type="udp_receiver.HardwareUI" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      TODO
+    </description>
+    <qtgui>
+      <group>
+        <label>RoboCup</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to RoboCup.</statustip>
+      </group>
+      <label>Hardware Info</label>
+      <icon type="theme">preferences-system-network</icon>
+      <statustip>TODO</statustip>
+    </qtgui>
+  </class>
+</library>
+
+
+
+
