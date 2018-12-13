@@ -1,19 +1,17 @@
 <?xml version="1.0"?>
-<package>
-  <name>game_controller</name>
+<package format="2">
+  <name>humanoid_league_game_controller</name>
   <version>1.0.0</version>
-  <description>The game_controller package</description>
+  <description>The humanoid_league_game_controller package</description>
 
   <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
 
   <license>TODO</license>
+
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>humanoid_league_msgs</build_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>humanoid_league_msgs</run_depend>
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>humanoid_league_msgs</depend>
 
   <export>
     <bitbots_documentation>

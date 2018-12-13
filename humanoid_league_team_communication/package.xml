@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>humanoid_league_team_communication</name>
   <version>1.0.0</version>
   <description>The humanoid_league_team_communication package provides a ROS wrapper for the MiteCom standard communication
@@ -12,15 +12,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>std_msgs</build_depend>
-  <build_depend>humanoid_league_msgs</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-
-  <run_depend>std_msgs</run_depend>
-  <run_depend>humanoid_league_msgs</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>geometry_msgs</run_depend>
+  <depend>std_msgs</depend>
+  <depend>humanoid_league_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>geometry_msgs</depend>
 
   <export>
     <bitbots_documentation>

@@ -14,12 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_python_setup()
 
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES lasertag
-#  CATKIN_DEPENDS actionlib geometry_msgs move_base_msgs roscpp sensor_msgs
-#  DEPENDS system_lib
-)
+catkin_package()
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
