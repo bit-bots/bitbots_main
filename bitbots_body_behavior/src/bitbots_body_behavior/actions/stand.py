@@ -1,7 +1,7 @@
 import rospy
 from geometry_msgs.msg import PoseStamped, Quaternion, Point
 
-from bitbots_dsd.abstract_action_element import AbstractActionElement
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class Stand(AbstractActionElement):

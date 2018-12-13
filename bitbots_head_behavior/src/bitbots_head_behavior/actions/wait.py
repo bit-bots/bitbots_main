@@ -9,7 +9,7 @@ Just waits for something (i.e. that preconditions will be fullfilled)
 """
 import rospy
 
-from bitbots_dsd.abstract_action_element import AbstractActionElement
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class Wait(AbstractActionElement):

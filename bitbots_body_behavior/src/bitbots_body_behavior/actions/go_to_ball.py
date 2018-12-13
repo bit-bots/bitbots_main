@@ -3,7 +3,7 @@ import tf2_ros as tf2
 from geometry_msgs.msg import PoseStamped, Point, Quaternion
 from tf.transformations import quaternion_from_euler
 
-from bitbots_dsd.abstract_action_element import AbstractActionElement
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class GoToBall(AbstractActionElement):

@@ -3,8 +3,8 @@ import tf2_ros as tf2
 from bio_ik_msgs.msg import IKRequest, LookAtGoal
 from geometry_msgs.msg import PointStamped, Point
 
-from bitbots_connector.blackboard import HeadBlackboard
-from bitbots_dsd.abstract_action_element import AbstractActionElement
+from bitbots_blackboard.blackboard import HeadBlackboard
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class AbstractLookAt(AbstractActionElement):

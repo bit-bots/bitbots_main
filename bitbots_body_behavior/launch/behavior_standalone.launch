@@ -1,11 +1,9 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="duty" default="TeamPlayer"/>
-    <arg name="minibot" default="false" />
     <arg name="wolfgang" default="true" />
 
-    <include file="$(find bitbots_common)/launch/load_robot_description.launch">
-        <arg name="minibot" value="$(arg minibot)"/>
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
         <arg name="wolfgang" value="$(arg wolfgang)"/>   
     </include>
 

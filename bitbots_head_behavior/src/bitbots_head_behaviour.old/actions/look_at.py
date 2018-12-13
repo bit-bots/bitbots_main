@@ -16,7 +16,7 @@ import tf2_ros as tf2
 from tf2_geometry_msgs import PointStamped
 from geometry_msgs.msg import Point
 
-from bitbots_stackmachine.abstract_action_element import AbstractActionElement
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class AbstractLookAt(AbstractActionElement):

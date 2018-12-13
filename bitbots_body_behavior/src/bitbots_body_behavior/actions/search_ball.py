@@ -1,4 +1,4 @@
-from bitbots_dsd.abstract_action_element import AbstractActionElement
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from humanoid_league_msgs.msg import HeadMode
 
 

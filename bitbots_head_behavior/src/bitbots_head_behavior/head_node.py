@@ -7,8 +7,8 @@ import os
 
 import rospy
 
-from bitbots_connector.blackboard import HeadBlackboard
-from bitbots_dsd.dsd import DSD
+from bitbots_blackboard.blackboard import HeadBlackboard
+from dynamic_stack_decider.dsd import DSD
 
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg, BallRelative
 from bitbots_ros_control.msg import JointCommand

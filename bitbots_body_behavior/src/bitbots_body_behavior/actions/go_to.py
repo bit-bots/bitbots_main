@@ -13,7 +13,7 @@ import rospy
 import tf2_ros as tf2
 from tf.transformations import quaternion_from_euler
 from geometry_msgs.msg import PoseStamped, Quaternion
-from bitbots_dsd.abstract_action_element import AbstractActionElement
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class GoToRelativePosition(AbstractActionElement):

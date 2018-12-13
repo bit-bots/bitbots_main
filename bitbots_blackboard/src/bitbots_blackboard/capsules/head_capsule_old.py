@@ -5,7 +5,7 @@ import rospy
 from geometry_msgs.msg import Point
 from bio_ik_msgs.srv import GetIK
 from bio_ik_msgs.msg import IKRequest, LookAtGoal
-from bitbots_ros_control.msg import JointCommand
+from bitbots_msgs.msg import JointCommand
 
 
 class HeadCapsule:

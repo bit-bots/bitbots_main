@@ -1,6 +1,6 @@
 import math
 
-from bitbots_dsd.abstract_action_element import AbstractActionElement
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class PatternSearch(AbstractActionElement):

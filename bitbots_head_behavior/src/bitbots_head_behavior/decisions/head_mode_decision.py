@@ -1,7 +1,7 @@
 import rospy
 from humanoid_league_msgs.msg import HeadMode
 
-from bitbots_dsd.abstract_decision_element import AbstractDecisionElement
+from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
 
 class HeadModeDecision(AbstractDecisionElement):

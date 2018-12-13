@@ -1,6 +1,6 @@
 import rospy
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
-from bitbots_ros_control.msg import JointCommand
+from bitbots_msgs.msg import JointCommand
 
 
 class HeadCapsule:
