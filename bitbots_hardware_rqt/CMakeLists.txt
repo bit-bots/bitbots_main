@@ -1,29 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(hardware_info)
+project(bitbots_hardware_rqt)
 
-find_package(catkin REQUIRED COMPONENTS
-  message_generation
-)
+find_package(catkin)
 
-catkin_python_setup()
-## Generate messages in the 'msg' folder
-add_message_files(
-    FILES
-  CpuMessage.msg
-  BatteryMessage.msg
-)
-
-
-
-## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
- )
-
-catkin_package(
-   CATKIN_DEPENDS
-   message_runtime
-)
+catkin_package(CATKIN_DEPENDS)
 
 install(FILES plugin.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}

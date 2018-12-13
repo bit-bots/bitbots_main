@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_ros_control)
 
 find_package(catkin REQUIRED COMPONENTS
-  message_generation
   roscpp
   std_msgs
   dynamixel_workbench_toolbox
@@ -15,19 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   bitbots_buttons
   transmission_interface
   realtime_tools
+  bitbots_msgs
 )
-
-add_message_files(
-  FILES
-  JointCommand.msg
-  JointTorque.msg
-  FootPressure.msg
-)
-
- generate_messages(
-   DEPENDENCIES
-   std_msgs
- )
 
 set(HEADERS
   include/${PROJECT_NAME}/dynamixel_hardware_interface.h
