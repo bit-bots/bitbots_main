@@ -1,5 +1,4 @@
 #include "bitbots_ik/BioIKSolver.hpp"
-#include "swri_profiler/profiler.h"
 
 namespace bitbots_ik{
 

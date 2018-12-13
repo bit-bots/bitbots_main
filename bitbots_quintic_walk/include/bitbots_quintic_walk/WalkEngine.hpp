@@ -20,7 +20,6 @@ https://github.com/Rhoban/model/
 #include "bitbots_splines/Euler.h"
 #include "bitbots_quintic_walk/common.h"
 #include <math.h>       
-#include "swri_profiler/profiler.h"
 
 namespace bitbots_quintic_walk {
 

@@ -15,7 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_core
   moveit_ros_move_group
   moveit_ros_planning_interface
-  swri_profiler
 )
 find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -30,7 +29,6 @@ catkin_package(
         roscpp
         tf
         tf_conversions
-        swri_profiler
 )
 
 

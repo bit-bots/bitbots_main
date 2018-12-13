@@ -47,7 +47,6 @@ https://github.com/Rhoban/model/
 #include <std_msgs/Bool.h>  
 
 
-#include "swri_profiler/profiler.h"
 
 class QuinticWalkingNode {
 public:

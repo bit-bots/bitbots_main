@@ -13,7 +13,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   bio_ik
-  swri_profiler
   moveit_core
   moveit_ros_move_group  
   bitbots_ik

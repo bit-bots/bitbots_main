@@ -23,7 +23,6 @@
   <build_depend>tf</build_depend>
   <build_depend>bio_ik</build_depend>
   <build_depend>tf_conversions</build_depend>
-  <build_depend>swri_profiler</build_depend>
   <build_depend>moveit_core</build_depend>
   <build_depend>moveit_ros_move_group</build_depend>
   <build_depend>bitbots_splines</build_depend>
@@ -42,7 +41,6 @@
   <run_depend>tf</run_depend>
   <run_depend>bio_ik</run_depend>
   <run_depend>tf_conversions</run_depend>
-  <run_depend>swri_profiler</run_depend>
   <run_depend>moveit_core</run_depend>
   <run_depend>moveit_ros_move_group</run_depend>
   <run_depend>bitbots_splines</run_depend>
