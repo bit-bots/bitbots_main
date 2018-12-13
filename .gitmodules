@@ -61,3 +61,6 @@
 [submodule "wolves_image_provider"]
 	path = wolves_image_provider
 	url = git@github.com:bit-bots/wolves_image_provider.git
+[submodule "bitbots_msgs"]
+	path = bitbots_msgs
+	url = git@github.com:bit-bots/bitbots_msgs.git
