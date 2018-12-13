@@ -1,0 +1,19 @@
+color_test_params:
+    color_detector_implementation:
+        # true = PixelListColorDetector, false = HsvSpaceColorDetector
+        use_PixelListColorDetector: true
+
+    field_color_detector:
+        path: '/config/testfield_color01.yaml'
+
+    white_color_detector:
+        lower_values: [0, 0, 180]
+        upper_values: [255, 60, 255]
+
+    ROS:
+        # Subscriber
+        img_msg_topic: 'image_raw'
+        img_queue_size: 1
+        # Publisher
+        ball_msg_topic: 'ball_in_image'
+        line_msg_topic: 'line_in_image'

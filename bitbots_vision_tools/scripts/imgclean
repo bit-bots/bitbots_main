@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+Goals="goalposts"
+Balls="balls"
+Trash="unusable" 
+
+mkdir  $Trash
+
+feh -Z -F -d --action1 "mv '%f' $Trash"
+

@@ -1,0 +1,11 @@
+<launch>
+  <arg name="folder" default="img"/>
+  <param name="img_folder" value="$(arg folder)" />
+  <include file="$(find wolves_image_provider_v4l)/launch/image_provider_v4l.launch" />
+  <node name="extract" pkg="image_view" type="extract_images" respawn="false" output="screen" cwd="ROS_HOME">
+    <remap from="image" to="/image_raw"/>
+    <param name="filename_format" value="frame%05d.png"/>
+    <param name="img_folder" value="$(arg folder)" />
+  </node>
+  <node name="tf_extractoor" pkg="vision_tools" type="tf_collector.py"/>
+</launch>
