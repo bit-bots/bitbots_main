@@ -1,0 +1,6 @@
+<launch>
+    <!-- just a convenience launch script -->
+    <include file="$(find bitbots_common)/launch/robocup_teamplayer.launch" >
+        <arg name="behave" value="false"/>
+    </include>
+</launch>

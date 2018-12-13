@@ -1,0 +1,28 @@
+<launch>
+    <!-- set parameter -->
+    <arg name="sim_ns" default="/" />
+    <arg name="hcm" default="false"/>
+    <param name="/use_sim_time" value="true" />
+    <param name="/simulation_active" value="true"/>   
+
+    <include file="$(find bitbots_common)/launch/load_robot_description.launch">
+        <arg name="sim" value="true"/>   
+        <arg name="sim_ns" default="$(arg sim_ns)" />
+    </include>
+
+    <!-- launch gazebo with soccer field -->
+	<include file="$(find gazebo_ros)/launch/empty_world.launch">
+		<arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer.world"/>
+		<arg name="paused" value="false"/>		
+	</include>
+    
+    <!-- spawn URDF and load the controllers -->
+    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg sim_ns)" type="spawn_model" args="-param /robot_description -urdf -model $(arg sim_ns) -x -1.5 -y 0.0 -z 0.445" output="screen" />
+    <rosparam file="$(find wolfgang_description)/config/wolfgang_control.yaml" command="load" ns="$(arg sim_ns)"/>
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg sim_ns)" args="joint_state_controller JointGroupController" />
+
+    <!-- map motion goals for simulator -->
+    <node name="pub_goals_sim" pkg="bitbots_common" type="motion_in_gazebo.py" output="screen" respawn="true"/>
+
+                  
+</launch>

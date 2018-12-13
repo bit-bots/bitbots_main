@@ -1,0 +1,7 @@
+HOW TO USE:
+
+1. On the robot, in ip_config.yaml set IP_SEND_TO to your ip.
+2. Start roscore and rosrun live_tool_udp.py on the robot. Start test_node.py, if you want to send test data.
+3. On your computer, in the ip_config.yaml set IP_RECEIVE_FROM to your ip.
+4. Start roscore and rqt on your computer. Make sure, you have build and sourced.
+5. Select Live Tool from the Plugins tab.

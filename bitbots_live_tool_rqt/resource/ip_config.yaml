@@ -1,0 +1,12 @@
+IP_SEND_TO: 127.0.0.1 # ip of the liveTool
+IP_RECEIVE_FROM: 192.168.2.228 # "" for empty string
+UDP_PORT: 5005
+SEND_DELAY: 50 # all udp packages are send every n milliseconds
+RECEIVE_TIMEOUT: 1.0 # receive timeout in seconds
+FIELD_IMAGE: field2018Lines.png # the field image
+FIELD_SCALE: 0.01 # converts cm to m if one pixel = 1cm
+DEFAULT_POSITIONS:
+- {x: -2, y: -2}
+- {x: 2, y: -2}
+- {x: -2, y: 2}
+- {x: 2, y: 2}

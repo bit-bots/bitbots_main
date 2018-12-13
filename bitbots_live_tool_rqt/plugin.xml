@@ -1,0 +1,19 @@
+<library path="src">
+
+  <class name="LiveTool" type="rqt_live_tool.live_tool.LiveTool" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      The super awesome Live Tool
+    </description>
+    <qtgui>
+      <group>
+        <label>RoboCup</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to RoboCup.</statustip>
+      </group>
+      <label>Live Tool</label>
+      <icon type="theme">preferences-system-network</icon>
+      <statustip>TODO</statustip>
+    </qtgui>
+  </class>
+
+</library>
