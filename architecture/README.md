@@ -1,3 +1,8 @@
+This script generates an interactive overview of the software architecture based on information from the ROS packages and from a general definition in a .dia file.
+
+To generate the overview just run update_architecture_svg.py in a terminal where you sourced your catkin workspace.
+
+
 The architecture script works in the following steps
     1. export .dia file to .svg
     2. search the xml of the .svg for <rect> and <ellipse> to read which topics, services, actions and nodes are displayed
