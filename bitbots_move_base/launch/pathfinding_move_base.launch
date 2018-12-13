@@ -1,0 +1,32 @@
+<launch>
+  <include file="$(find bitbots_move_base)/launch/velocity_smoother.launch"/>
+
+  <arg name="odom_frame_id"   default="odom"/>
+  <arg name="base_frame_id"   default="base_footprint"/>
+  <arg name="global_frame_id" default="map"/>
+  <arg name="odom_topic" default="walk_odometry" />
+  <arg name="laser_topic" default="scan" />
+
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <!--<rosparam file="$(find bitbots_move_base)/config/costmap_common_config.yaml" command="load" ns="global_costmap" />-->
+    <!--<rosparam file="$(find bitbots_move_base)/config/costmap_common_config.yaml" command="load" ns="local_costmap" /> -->
+    <rosparam file="$(find bitbots_move_base)/config/local_costmap_config.yaml" command="load" />
+    <rosparam file="$(find bitbots_move_base)/config/global_costmap_config.yaml" command="load" />
+    <rosparam file="$(find bitbots_move_base)/config/move_base_config.yaml" command="load" />
+    <rosparam file="$(find bitbots_move_base)/config/dwa_local_planner_config.yaml" command="load" />
+    <rosparam file="$(find bitbots_move_base)/config/global_planner_config.yaml" command="load" />
+    
+    
+    <!-- reset frame_id parameters using user input data -->
+    <param name="global_costmap/global_frame" value="$(arg global_frame_id)"/>
+    <param name="global_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
+    <param name="local_costmap/global_frame" value="$(arg odom_frame_id)"/>
+    <param name="local_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
+    <param name="DWAPlannerROS/global_frame_id" value="$(arg odom_frame_id)"/>
+    <remap from="odom" to="$(arg odom_topic)"/>
+    <remap from="scan" to="$(arg laser_topic)"/>
+    <remap from="cmd_vel" to="raw_cmd_vel"/>
+  </node>
+
+  <include file="$(find bitbots_move_base)/launch/obstacle_publisher.launch" />
+</launch>

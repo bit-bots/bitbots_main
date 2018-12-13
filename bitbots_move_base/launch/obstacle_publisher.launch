@@ -1,0 +1,3 @@
+<launch>
+    <node name="obstacle_publisher" pkg="bitbots_move_base" type="obstacle_publisher.py" output="screen"/>
+</launch>

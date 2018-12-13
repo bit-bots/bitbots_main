@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package>
+  <name>bitbots_pathfinding_simple</name>
+  <version>0.0.0</version>
+  <description>bitbots_pathfinding_simple republishes Pose2D as cmd_vel</description>
+
+  <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
+
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>humanoid_league_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>std_msgs</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>humanoid_league_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>move_base</run_depend>
+
+
+  <export>
+    <bitbots_documentation>
+      <language>python3</language>
+      <status>untested</status>
+    </bitbots_documentation>
+  </export>
+</package>

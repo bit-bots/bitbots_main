@@ -1,0 +1,3 @@
+<launch>
+    <node name="pathfinding" pkg="bitbots_pathfinding_simple" type="pathfinding.py"/>
+</launch>
