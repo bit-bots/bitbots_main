@@ -1,6 +1,0 @@
-<launch>
-    <rosparam file="$(find bitbots_buttons)/config/buttons.yaml" command="load"/>
-
-    <node name="Bittons" pkg="bitbots_buttons" type="button_node.py" args="" output="screen" respawn="false"/>
-
-</launch>

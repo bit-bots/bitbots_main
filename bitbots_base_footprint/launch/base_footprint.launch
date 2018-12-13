@@ -1,5 +1,0 @@
-<launch>
-    <node name="base_footprint_publisher" pkg="bitbots_base_footprint" type="base_footprint">
-    	<rosparam file="$(find bitbots_base_footprint)/config/base_footprint.yaml" command="load"/>
-    </node>
-</launch>
