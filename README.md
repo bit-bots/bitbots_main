@@ -1,19 +1,6 @@
-The Dynamic Stack Decider
--------------------------
+#bitbots_behavior
 
-
-A leightweight framework for decision making and behavior defining for robots and other agents in chnaging enviroments.
-
-
-
-Programming:
-
-    * Simple Definitoin of thresholds and connections via yaml files.
-        * Reprogramming software Within Seconds
-        * Building a kind of tree
-    * Python for Core logic using as-complex-as wished decions
-    * Stack based architecture to structure the Execution flow
-
-
-
-
+This is the behavior code of the RoboCup Humanoid League team Hamburg Bit-Bots.
+It is divided into a behavior for the head and the body.
+Both are programmed using the dynamic_stack_decider package (https://github.com/bit-bots/dynamic_stack_decider).
+ 
