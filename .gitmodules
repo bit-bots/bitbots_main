@@ -1,6 +1,7 @@
 [submodule "lib/pointcloud_to_laserscan"]
 	path = lib/pointcloud_to_laserscan
 	url = https://github.com/ros-perception/pointcloud_to_laserscan.git
+	branch = lunar-devel
 [submodule "lib/bio_ik"]
 	path = lib/bio_ik
 	url = https://github.com/TAMS-Group/bio_ik.git
