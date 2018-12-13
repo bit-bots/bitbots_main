@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-    <name>bitbots_connector</name>
+    <name>bitbots_blackboard</name>
     <version>0.1.0</version>
-    <description>The bitbots_connector is used to share information
+    <description>The bitbots_blackboard is used to share information
         between the different classes in the behaviour. It consists
         of several capsules each for there own purpose. For example
         there is a team_data_capsule dealing with messages received
