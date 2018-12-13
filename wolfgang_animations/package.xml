@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>wolfgang_animations</name>
   <version>0.0.0</version>
   <description>Animation files for the wolfgang robot</description>
