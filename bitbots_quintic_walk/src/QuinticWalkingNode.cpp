@@ -29,8 +29,8 @@ QuinticWalkingNode::QuinticWalkingNode(){
     /* init publisher and subscriber */
     _joint_state_msg = sensor_msgs::JointState();
     _pubModelJointState = _nh.advertise<sensor_msgs::JointState>("joint_states", 1);
-    _command_msg = bitbots_ros_control::JointCommand();
-    _pubControllerCommand = _nh.advertise<bitbots_ros_control::JointCommand>("walking_motor_goals", 1);
+    _command_msg = bitbots_msgs::JointCommand();
+    _pubControllerCommand = _nh.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
 
     _odom_msg = nav_msgs::Odometry();
     _pubOdometry = _nh.advertise<nav_msgs::Odometry>("walk_odometry", 1);

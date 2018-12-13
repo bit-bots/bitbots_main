@@ -29,7 +29,7 @@ https://github.com/Rhoban/model/
 #include <moveit_msgs/RobotState.h>
 #include <humanoid_league_msgs/RobotControlState.h>
 #include <bitbots_quintic_walk/WalkingDebug.h>
-#include <bitbots_ros_control/JointCommand.h>
+#include <bitbots_msgs/JointCommand.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <eigen_conversions/eigen_msg.h>
@@ -118,7 +118,7 @@ private:
     bitbots_quintic_walk::QuinticWalk _walkEngine;
 
     sensor_msgs::JointState _joint_state_msg;
-    bitbots_ros_control::JointCommand _command_msg;
+    bitbots_msgs::JointCommand _command_msg;
     nav_msgs::Odometry _odom_msg;
     geometry_msgs::TransformStamped _odom_trans;
     trajectory_msgs::JointTrajectory _joint_traj_msg;

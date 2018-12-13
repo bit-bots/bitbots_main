@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>bitbots_quintic_walk</name>
   <version>1.0.0</version>
   <description>This is a simple open-loop walking engine which uses quintic splines to define the trajectories of both feet in cartesian space. An inverse kinematic is used to translate these into joint space. The parameters of the walking can be adjusted using dynamic_reconfigure.</description>
@@ -14,40 +14,23 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>roscpp</build_depend>
-  <build_depend>humanoid_league_msgs</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>rosconsole</build_depend>
-  <build_depend>dynamic_reconfigure</build_depend>
-  <build_depend>eigen_conversions</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>bio_ik</build_depend>
-  <build_depend>tf_conversions</build_depend>
-  <build_depend>moveit_core</build_depend>
-  <build_depend>moveit_ros_move_group</build_depend>
-  <build_depend>bitbots_splines</build_depend>
-  <build_depend>bitbots_ik</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>message_runtime</build_depend>
-  <build_depend>bitbots_ros_control</build_depend>
-  <build_depend>moveit_ros_robot_interaction</build_depend>
-
-  <run_depend>roscpp</run_depend>
-  <run_depend>humanoid_league_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>rosconsole</run_depend>
-  <run_depend>dynamic_reconfigure</run_depend>
-  <run_depend>eigen_conversions</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>bio_ik</run_depend>
-  <run_depend>tf_conversions</run_depend>
-  <run_depend>moveit_core</run_depend>
-  <run_depend>moveit_ros_move_group</run_depend>
-  <run_depend>bitbots_splines</run_depend>
-  <run_depend>bitbots_ik</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>message_runtime</run_depend>
-  <run_depend>moveit_ros_robot_interaction</run_depend>
+  <depend>roscpp</depend>
+  <depend>humanoid_league_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>rosconsole</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>eigen_conversions</depend>
+  <depend>tf</depend>
+  <depend>bio_ik</depend>
+  <depend>tf_conversions</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_ros_move_group</depend>
+  <depend>bitbots_splines</depend>
+  <depend>bitbots_ik</depend>
+  <depend>geometry_msgs</depend>
+  <depend>message_runtime</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>moveit_ros_robot_interaction</depend>
 
   <export>
     <bitbots_documentation>

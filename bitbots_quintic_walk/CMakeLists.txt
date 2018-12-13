@@ -5,7 +5,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  rosconsole
   std_msgs
   humanoid_league_msgs
   dynamic_reconfigure
@@ -19,9 +18,10 @@ find_package(catkin REQUIRED COMPONENTS
   bitbots_splines  
   message_generation
   geometry_msgs
-  bitbots_ros_control
   moveit_ros_robot_interaction
+  bitbots_msgs
 )
+
 find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 
