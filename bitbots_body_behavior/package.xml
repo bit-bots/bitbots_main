@@ -16,13 +16,12 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>humanoid_league_msgs</build_depend>
-  <build_depend>bitbots_stackmachine</build_depend>
-  <run_depend>bitbots_dsd</run_depend>
+  <build_depend>dynamic_stack_decider</build_depend>
   <build_depend>rospy</build_depend>
 
   <run_depend>humanoid_league_msgs</run_depend>
-  <run_depend>bitbots_stackmachine</run_depend>
-  <run_depend>bitbots_dsd</run_depend>
+  <run_depend>dynamic_stack_decider</run_depend>
+  <run_depend>bitbots_blackboard</run_depend>
   <run_depend>rospy</run_depend>
 
   <export>
