@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>rqt_live_tool</name>
+  <name>bitbots_live_tool_rqt</name>
   <version>0.0.0</version>
-  <description>The rqt_live_tool package</description>
+  <description>The bitbots_live_tool_rqt package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
