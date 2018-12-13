@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import rospy, rospkg, os
-from hardware_info.msg import BatteryMessage
+from hardware_info.msg import BatteryMessage #todo use ros sensor_msgs/Battery
 import subprocess
 
 

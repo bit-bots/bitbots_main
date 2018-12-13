@@ -1,6 +1,6 @@
 #include <bitbots_ros_control/dynamixel_controller.hpp>
 #include <pluginlib/class_list_macros.hpp>
-#include <bitbots_ros_control/JointCommand.h>
+#include <bitbots_msgs/JointCommand.h>
 
 namespace dynamixel_controller
 {

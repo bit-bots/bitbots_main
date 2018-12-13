@@ -1,2 +1,0 @@
-string voltage
-string charge_percentage

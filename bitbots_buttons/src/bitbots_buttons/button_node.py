@@ -7,7 +7,7 @@ from humanoid_league_msgs.msg import Speak
 
 from humanoid_league_speaker.speaker import speak
 from std_msgs.msg import Bool
-from bitbots_pause.srv import ManualPenalize
+from bitbots_msgs.srv import ManualPenalize
 
 
 class ButtonNode(object):

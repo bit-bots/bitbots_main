@@ -24,12 +24,12 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   // Init subscriber / publisher
   _switch_individual_torque = false;
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this, ros::TransportHints().tcpNoDelay());
-  _set_torque_indiv_sub = nh.subscribe<bitbots_ros_control::JointTorque>("set_torque_individual", 1, &DynamixelHardwareInterface::setTorqueForServos, this, ros::TransportHints().tcpNoDelay());
+  _set_torque_indiv_sub = nh.subscribe<bitbots_msgs::JointTorque>("set_torque_individual", 1, &DynamixelHardwareInterface::setTorqueForServos, this, ros::TransportHints().tcpNoDelay());
   _update_pid_sub = nh.subscribe<std_msgs::BoolConstPtr>("update_pid", 1, &DynamixelHardwareInterface::update_pid, this, ros::TransportHints().tcpNoDelay());
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1, this);
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
   _button_pub = nh.advertise<bitbots_buttons::Buttons>("/buttons", 1, this);
-  _pressure_pub = nh.advertise<bitbots_ros_control::FootPressure>("/foot_pressure", 1, this);
+  _pressure_pub = nh.advertise<bitbots_msgs::FootPressure>("/foot_pressure", 1, this);
   _status_board.name = "DXL_board";
   _status_board.hardware_id = std::to_string(1);
   _status_IMU.name = "IMU";
@@ -390,7 +390,7 @@ void DynamixelHardwareInterface::setTorqueForServos(std::vector<int32_t> torque)
 }
 
 
-void DynamixelHardwareInterface::setTorqueForServos(bitbots_ros_control::JointTorque msg)
+void DynamixelHardwareInterface::setTorqueForServos(bitbots_msgs::JointTorque msg)
 {
   // we save the goal torque value. It will be set during write process
   for(int i = 0; i < msg.joint_names.size(); i++){
@@ -829,7 +829,7 @@ bool DynamixelHardwareInterface::readFootSensors(){
     return false;
   }
 
-  bitbots_ros_control::FootPressure msg;
+  bitbots_msgs::FootPressure msg;
   msg.l_l_b = _current_pressure[0];
   msg.l_l_f = _current_pressure[1];
   msg.l_r_f = _current_pressure[2];

@@ -6,7 +6,7 @@
 #include <controller_interface/controller.h>
 #include <std_msgs/Float64.h>
 #include <realtime_tools/realtime_buffer.h>
-#include <bitbots_ros_control/JointCommand.h>
+#include <bitbots_msgs/JointCommand.h>
 #include <bitbots_ros_control/posvelacccur_command_interface.h>
 
 namespace dynamixel_controller
@@ -39,7 +39,7 @@ public:
 private:
   ros::Subscriber sub_command_;
   std::map<std::string, int> _joint_map;
-  void commandCB(const bitbots_ros_control::JointCommand& command_msg) {
+  void commandCB(const bitbots_msgs::JointCommand& command_msg) {
     //std::cout << ::getpid();
     std::vector<JointCommandData> buf_data;
     for(unsigned int i = 0; i < command_msg.joint_names.size(); i++){

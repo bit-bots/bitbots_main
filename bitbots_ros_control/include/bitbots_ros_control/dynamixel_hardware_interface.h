@@ -11,8 +11,8 @@
 #include <diagnostic_msgs/DiagnosticArray.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Int32MultiArray.h>
-#include <bitbots_ros_control/JointTorque.h>
-#include <bitbots_ros_control/FootPressure.h>
+#include <bitbots_msgs/JointTorque.h>
+#include <bitbots_msgs/FootPressure.h>
 
 #include <hardware_interface/imu_sensor_interface.h>
 #include <hardware_interface/joint_command_interface.h>
@@ -97,7 +97,7 @@ private:
   void setTorque(bool enabled);
   void setTorque(std_msgs::BoolConstPtr enabled);
   void setTorqueForServos(std::vector<int32_t> torque);
-  void setTorqueForServos(bitbots_ros_control::JointTorque msg);
+  void setTorqueForServos(bitbots_msgs::JointTorque msg);
 
 
   bool syncReadPositions();
