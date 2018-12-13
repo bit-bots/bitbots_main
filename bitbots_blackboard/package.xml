@@ -26,7 +26,7 @@
     <exec_depend>geometry_msgs</exec_depend>
     <exec_depend>bio_ik_msgs</exec_depend>
     <exec_depend>humanoid_league_msgs</exec_depend>    
-    <exec_depend>bitbots_ros_control</exec_depend>
+    <exec_depend>bitbots_msgs</exec_depend>
 
 
 
