@@ -1,0 +1,12 @@
+#request
+
+# 0: off
+# 1:on
+# 2: switch
+uint8 penalize
+
+---
+#response
+
+# returns false if was already in this state
+bool success
