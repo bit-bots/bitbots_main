@@ -1,0 +1,19 @@
+include:
+    - bitbots_behaviour:
+        - bitbots_body_behaviour
+        - bitbots_connector
+        - bitbots_head_behaviour
+        - bitbots_stackmachine
+    - bitbots_misc:
+        - bitbots_pathfinding
+        - bitbots_transform
+    - humanoid_league_misc:
+        - game_controller
+        - humanoid_league_team_communication
+    - bitbots_localization:
+        - bitbots_localization
+    - humanoid_league_msgs
+    - scripts
+exclude:
+    - "*.bag"
+    - "*.pyc"

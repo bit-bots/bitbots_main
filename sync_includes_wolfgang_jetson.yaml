@@ -1,0 +1,13 @@
+include:
+    - bitbots_vision:
+        - bitbots_vision
+        - bitbots_vision_common
+        - python2_extensions
+    - humanoid_league_msgs
+    - wolves_image_provider_v4l
+    - scripts
+    - bitbots_misc:
+        - bitbots_common
+exclude:
+    - "*.bag"
+    - "*.pyc"
