@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package>
+  <name>bitbots_buttons</name>
+  <version>1.1.0</version>
+  <description>The bitbots_buttons package handles actions after pressing buttons on a robot.</description>
+
+  <maintainer email="0bestman@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <author email="0bestman@informatik.uni-hamburg.de">Marc Bestmann</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>humanoid_league_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>std_msgs</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>humanoid_league_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+
+  <export>
+    <bitbots_documentation>
+      <language>python3</language>
+      <status>tested_robot</status>
+    </bitbots_documentation>
+  </export>
+</package>
