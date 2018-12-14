@@ -1,7 +1,7 @@
 import rospy 
 import humanoid_league_msgs.msg
-from bitbots_stackmachine.abstract_action_element import AbstractActionElement
-from bitbots_hcm.hcm_stack_machine.hcm_connector import HcmConnector, STATE_HCM_OFF, STATE_PENALTY
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard, STATE_HCM_OFF, STATE_PENALTY
 
 
 class AbstractStay(AbstractActionElement):
@@ -10,7 +10,7 @@ class AbstractStay(AbstractActionElement):
     This can be used to stay in a certain state till some precondition changes.
     Implementations can be used to change the name
     """
-    def perform(self, connector):        
+    def perform(self, blackboard):
         # just do nothing
         return 
 
@@ -31,8 +31,8 @@ class StayMotorsOff(AbstractStay):
 
 class StayInPenalty(AbstractStay):
     
-    def perform(self, connector):
-        connector.current_state = STATE_PENALTY
+    def perform(self, blackboard):
+        blackboard.current_state = STATE_PENALTY
 
 class StayRecord(AbstractStay):
     pass
@@ -40,5 +40,5 @@ class StayRecord(AbstractStay):
 
 class StayShutDown(AbstractStay):
     
-    def perform(self, connector):
-        connector.current_state = STATE_HCM_OFF
+    def perform(self, blackboard):
+        blackboard.current_state = STATE_HCM_OFF

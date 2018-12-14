@@ -15,7 +15,7 @@ from python_qt_binding.QtWidgets import QMainWindow, QTreeWidget, QTreeWidgetIte
     QInputDialog, QShortcut
 from python_qt_binding.QtGui import QDoubleValidator, QKeySequence
 
-from bitbots_ros_control.msg import JointCommand, JointTorque
+from bitbots_msgs.msg import JointCommand, JointTorque
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 

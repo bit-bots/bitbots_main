@@ -19,7 +19,7 @@
 
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>humanoid_league_msgs</exec_depend>
-  <exec_depend>bitbots_common</exec_depend>
+  <exec_depend>bitbots_bringup</exec_depend>
   <exec_depend>dynamic_reconfigure</exec_depend>
   <exec_depend>bitbots_msgs</exec_depend>
 

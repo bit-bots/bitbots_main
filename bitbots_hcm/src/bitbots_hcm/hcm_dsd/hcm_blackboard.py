@@ -1,4 +1,3 @@
-from bitbots_connector.abstract_connector import AbstractConnector
 import numpy
 import rospy
 import math
@@ -7,7 +6,6 @@ import rospkg
 import os
 from bitbots_hcm.fall_checker import FallChecker
 from geometry_msgs.msg import Twist
-from bitbots_stackmachine.stack_machine import StackMachine
 from humanoid_league_msgs.msg import RobotControlState
 
 
@@ -30,10 +28,8 @@ STATE_HARDWARE_PROBLEM=13
 STATE_PICKED_UP = 14
 
 
-class HcmConnector(AbstractConnector):
+class HcmBlackboard():
     def __init__(self):
-        super(HcmConnector, self).__init__()
-
         self.current_state = STATE_STARTUP 
         self.penalized = False
         self.shut_down_request = False

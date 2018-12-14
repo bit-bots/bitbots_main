@@ -11,5 +11,7 @@
         </node>
     </group>
 
+    <node name="pause" pkg="bitbots_hcm" type="pause.py" respawn="true"/>
+
 
 </launch>

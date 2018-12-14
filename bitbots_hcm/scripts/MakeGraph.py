@@ -19,7 +19,7 @@ except IndexError:
 
 filelist = []
 
-path_to_behaviour = "../src/bitbots_hcm/hcm_stack_machine"
+path_to_behaviour = "../src/bitbots_hcm/hcm_dsd"
 subfolders = [""]
 
 for sub in subfolders:

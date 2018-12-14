@@ -2,7 +2,7 @@
 
 import rospy
 from geometry_msgs.msg import Twist
-from bitbots_ros_control.msg import JointCommand
+from bitbots_msgs.msg import JointCommand
 import math
 
 
