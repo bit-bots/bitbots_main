@@ -19,7 +19,7 @@
         </include>
     </group>
 
-    <include file="$(find bitbots_transform)/launch/transformer.launch"/>
+    <include file="$(find humanoid_league_transform)/launch/transformer.launch"/>
     <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch">
             <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
