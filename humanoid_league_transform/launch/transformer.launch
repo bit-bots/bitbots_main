@@ -1,4 +1,4 @@
 <launch>
     <rosparam file="$(find bitbots_transform)/config/transformer.yaml" command="load"/>
-    <node name="bitbots_transformer" pkg="bitbots_transform" type="transformer.py"/>
+    <node name="humanoid_league_transformer" pkg="bitbots_transform" type="transformer.py"/>
 </launch>

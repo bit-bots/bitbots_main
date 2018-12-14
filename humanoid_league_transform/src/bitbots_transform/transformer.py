@@ -16,7 +16,7 @@ import numpy as np
 
 class TransformBall(object):
     def __init__(self):
-        rospy.init_node("bitbots_transformer")
+        rospy.init_node("humanoid_league_transformer")
 
         rospy.Subscriber(rospy.get_param("transformer/ball/ball_topic", "ball_in_image"),
                          BallsInImage,
