@@ -32,7 +32,7 @@
 
     <export>
         <bitbots_documentation>
-            <status>compiles</status>
+            <status>unknown</status>
             <language>python2</language>
         </bitbots_documentation>
     </export>
