@@ -15,7 +15,7 @@
 
   <export>
     <bitbots_documentation>
-      <status>broken</status>
+      <status>unknown</status>
     </bitbots_documentation>
   </export>
 </package>

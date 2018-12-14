@@ -21,7 +21,7 @@
 
   <export>
       <bitbots_documentation>
-        <status>starts</status>
+        <status>unknown</status>
         <language>xacro</language>
       </bitbots_documentation>
   </export>
