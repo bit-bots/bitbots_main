@@ -26,5 +26,9 @@
 
 
   <export>
+     <bitbots_documentation>
+      <language>python</language>
+      <status>unknown</status>
+    </bitbots_documentation>
   </export>
 </package>
