@@ -1,6 +1,6 @@
 <library path="src">
 
-  <class name="LiveTool" type="rqt_live_tool.live_tool.LiveTool" base_class_type="rqt_gui_py::Plugin">
+  <class name="LiveTool" type="bitbots_live_tool_rqt.live_tool.LiveTool" base_class_type="rqt_gui_py::Plugin">
     <description>
       The super awesome Live Tool
     </description>

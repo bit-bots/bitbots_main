@@ -11,7 +11,7 @@
 
     <group unless="$(arg wolfgang)">
         <group unless="$(arg davros)">
-            <node pkg="bitbots_common" type="launch_warning.py" name="warning">                
+            <node pkg="bitbots_bringup" type="launch_warning.py" name="warning">
             </node>
         </group>
     </group>

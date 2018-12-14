@@ -9,7 +9,7 @@
 
     <arg name="duty" default="TeamPlayer"/>
 
-    <include file="$(find bitbots_common)/launch/load_robot_description.launch">
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
         <arg name="sim" value="$(arg sim)"/>
     </include>
 
@@ -34,14 +34,14 @@
     </group>
 
     <group if="$(arg motion)">
-        <include file="$(find bitbots_common)/launch/motion.launch">
+        <include file="$(find bitbots_bringup)/launch/motion.launch">
             <arg name="sim" value="$(arg sim)"/>           
         </include>
     </group>
 
     <group if="$(arg use_game_settings)">
         <include file="$(find game_controller)/launch/game_controller.launch"/>
-         <node name="$(game_settings)" pkg="bitbots_common" type="game_settings.py" />
+         <node name="$(game_settings)" pkg="bitbots_bringup" type="game_settings.py" />
 
     </group>
 

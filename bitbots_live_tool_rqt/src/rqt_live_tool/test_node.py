@@ -21,7 +21,7 @@ actionDecoder = {'ROLE_IDLING': 0, 'ROLE_OTHER': 1, 'ROLE_STRIKER': 2, 'ROLE_SUP
 # Loads the dictonary of coordinates from pathmaker
 def getCoordinates(filename):
     rp = rospkg.RosPack()
-    fname = os.path.join(rp.get_path('rqt_live_tool'), 'resource', 'paths', filename)
+    fname = os.path.join(rp.get_path('bitbots_live_tool_rqt'), 'resource', 'paths', filename)
 
     with open(fname, "r") as file:
         positions = yaml.load(file) # da ist ein Dictonary drin

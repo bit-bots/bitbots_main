@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #  -*- coding: utf8 -*-
 import rospy
-from bitbots_ros_control.msg import JointCommand
+from bitbots_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
 
 def goal_cb(msg):    

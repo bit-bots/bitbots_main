@@ -120,7 +120,7 @@ class LiveTool(Plugin):
 
     def receiveIPconfig(self):
         rp = rospkg.RosPack()
-        ip_filename = os.path.join(rp.get_path('rqt_live_tool'), 'resource', 'ip_config.yaml')
+        ip_filename = os.path.join(rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ip_config.yaml')
 
         with open(ip_filename, "r") as file:
             ip_config = yaml.load(file)
@@ -135,7 +135,7 @@ class LiveTool(Plugin):
     def loadUI(self):
         self._widget = QMainWindow()
         rp = rospkg.RosPack()
-        ui_file = os.path.join(rp.get_path('rqt_live_tool'), 'resource', LiveTool.UI_FILE)
+        ui_file = os.path.join(rp.get_path('bitbots_live_tool_rqt'), 'resource', LiveTool.UI_FILE)
         loadUi(ui_file, self._widget, {})
 
 

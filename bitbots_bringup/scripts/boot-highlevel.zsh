@@ -8,9 +8,9 @@ while true ; do
         . ~/boot-configuration.sh
         if $START_BEHAVIOUR ; then
             if [[ $ROBOT != "wolfgang" ]]; then
-                roslaunch bitbots_common teamplayer.launch $ROBOT:=true motion:=false
+                roslaunch bitbots_bringup teamplayer.launch $ROBOT:=true motion:=false
             elif [[ $HOST == nuc* || $HOST == odroid* ]]; then
-                roslaunch bitbots_common teamplayer.launch $ROBOT:=true motion:=false vision:=false
+                roslaunch bitbots_bringup teamplayer.launch $ROBOT:=true motion:=false vision:=false
             elif [[ $HOST == jetson* ]]; then
                 roslaunch bitbots_vision_common vision_startup.launch $ROBOT:=true
             fi

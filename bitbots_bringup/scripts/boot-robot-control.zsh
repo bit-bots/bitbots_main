@@ -8,7 +8,7 @@ while true ; do
         . ~/boot-configuration.sh
         if $START_MOTION; then
             if [[ $ROBOT != "wolfgang" || $HOST == nuc* ]]; then
-                roslaunch bitbots_common motion.launch $ROBOT:=true
+                roslaunch bitbots_bringup motion.launch $ROBOT:=true
             fi
         fi
     )

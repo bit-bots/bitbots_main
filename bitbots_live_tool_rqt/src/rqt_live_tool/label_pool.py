@@ -22,8 +22,8 @@ class BallPool:
         :param colorStr: color of the ball as string
         :return:
         """
-        #return os.path.join(BallPool.rp.get_path('rqt_live_tool'), 'resource', 'ui_images', "ball-" + colorStr + "_big66x66.png")
-        return os.path.join(BallPool.rp.get_path('rqt_live_tool'), 'resource', 'ui_images', "new_icons", "ball_" + colorStr + ".png")
+        #return os.path.join(BallPool.rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ui_images', "ball-" + colorStr + "_big66x66.png")
+        return os.path.join(BallPool.rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ui_images', "new_icons", "ball_" + colorStr + ".png")
 
     def __init__(self, frame, size=64):
         """
@@ -111,8 +111,8 @@ class RobotPool:
         :param colorStr: color as string
         :return:
         """
-        #return os.path.join(BallPool.rp.get_path('rqt_live_tool'), 'resource', 'ui_images', "Rob_" + colorStr + "-big.png")
-        return os.path.join(BallPool.rp.get_path('rqt_live_tool'), 'resource', 'ui_images', "new_icons", "player_" + colorStr + ".png")
+        #return os.path.join(BallPool.rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ui_images', "Rob_" + colorStr + "-big.png")
+        return os.path.join(BallPool.rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ui_images', "new_icons", "player_" + colorStr + ".png")
 
     def __init__(self, frame, size=46):
         """
@@ -165,7 +165,7 @@ class CrossPool:
         :param colorStr: color as string
         :return:
         """
-        return os.path.join(BallPool.rp.get_path('rqt_live_tool'), 'resource', 'ui_images', "cross-" + colorStr + "-big66x66.png")
+        return os.path.join(BallPool.rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ui_images', "cross-" + colorStr + "-big66x66.png")
 
     def __init__(self, frame, size=32):
         """
@@ -217,8 +217,8 @@ class OpponentPool:
         :param colorStr: color as string
         :return:
         """
-        #return os.path.join(BallPool.rp.get_path('rqt_live_tool'), 'resource', 'ui_images', "opponent_" + colorStr + "-big.png")
-        return os.path.join(BallPool.rp.get_path('rqt_live_tool'), 'resource', 'ui_images', "new_icons", "opponent_" + colorStr + ".png")
+        #return os.path.join(BallPool.rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ui_images', "opponent_" + colorStr + "-big.png")
+        return os.path.join(BallPool.rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ui_images', "new_icons", "opponent_" + colorStr + ".png")
 
     def __init__(self, frame, size=32):
         """
@@ -270,8 +270,8 @@ class TeammatePool:
         :param colorStr: color as string
         :return:
         """
-        #return os.path.join(BallPool.rp.get_path('rqt_live_tool'), 'resource', 'ui_images', "Rob1_" + colorStr + "-big.png")
-        return os.path.join(BallPool.rp.get_path('rqt_live_tool'), 'resource', 'ui_images', "new_icons", "teammate_" + colorStr + ".png")
+        #return os.path.join(BallPool.rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ui_images', "Rob1_" + colorStr + "-big.png")
+        return os.path.join(BallPool.rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ui_images', "new_icons", "teammate_" + colorStr + ".png")
 
     def __init__(self, frame, size=32):
         """
@@ -324,7 +324,7 @@ class CyanMagentaPool:
         :param colorStr: color as string
         :return:
         """
-        return os.path.join(BallPool.rp.get_path('rqt_live_tool'), 'resource', 'ui_images', "Rob1_" + colorStr + "-big.png")
+        return os.path.join(BallPool.rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ui_images', "Rob1_" + colorStr + "-big.png")
 
     def __init__(self, frame, size=32):
         """
@@ -377,8 +377,8 @@ class UndefinedPool:
         :param colorStr: color as string
         :return:
         """
-        #return os.path.join(BallPool.rp.get_path('rqt_live_tool'), 'resource', 'ui_images', "Undef_grey-big33x67.png")
-        return os.path.join(BallPool.rp.get_path('rqt_live_tool'), 'resource', 'ui_images', "new_icons", "undefined_" + colorStr + ".png")
+        #return os.path.join(BallPool.rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ui_images', "Undef_grey-big33x67.png")
+        return os.path.join(BallPool.rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ui_images', "new_icons", "undefined_" + colorStr + ".png")
 
     def __init__(self, frame, size=32):
         """

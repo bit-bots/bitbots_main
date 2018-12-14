@@ -106,7 +106,7 @@ def listener():
 # Reads the necessary ip configurations from ip_config.yaml located in resource dir
 def readIpConfig():
     rp = rospkg.RosPack()
-    ip_filename = os.path.join(rp.get_path('rqt_live_tool'), 'resource', 'ip_config.yaml')
+    ip_filename = os.path.join(rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ip_config.yaml')
 
     with open(ip_filename, "r") as file:
         global udp_ip, udp_port, send_delay

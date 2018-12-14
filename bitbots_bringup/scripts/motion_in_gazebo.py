@@ -6,7 +6,7 @@
 
 import rospy
 from std_msgs.msg import Float64MultiArray
-from bitbots_ros_control.msg import JointCommand
+from bitbots_msgs.msg import JointCommand
 
 
 def map_data(d_msg):

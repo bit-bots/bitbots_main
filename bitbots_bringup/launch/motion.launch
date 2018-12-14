@@ -6,7 +6,6 @@
 
     <include file="$(find humanoid_league_speaker)/launch/speaker.launch"/>
     <include file="$(find bitbots_buttons)/launch/buttons.launch"/>
-    <include file="$(find bitbots_pause)/launch/pause.launch"/>
 
     <include file="$(find bitbots_animation_server)/launch/animation.launch"/>
 

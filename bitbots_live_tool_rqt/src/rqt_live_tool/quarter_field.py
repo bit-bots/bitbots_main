@@ -70,7 +70,7 @@ class QuarterField:
 
         # set yaml config file
         rp = rospkg.RosPack()
-        ip_filename = os.path.join(rp.get_path('rqt_live_tool'), 'resource', 'ip_config.yaml')
+        ip_filename = os.path.join(rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ip_config.yaml')
         with open(ip_filename, "r") as file:
             config = yaml.load(file)
             self.fieldfilename = config.get("FIELD_IMAGE")
@@ -83,7 +83,7 @@ class QuarterField:
 
 # set & scale field ====================================================
         rp = rospkg.RosPack()
-        self.fieldfilename = os.path.join(BallPool.rp.get_path('rqt_live_tool'), 'resource', self.fieldfilename)
+        self.fieldfilename = os.path.join(BallPool.rp.get_path('bitbots_live_tool_rqt'), 'resource', self.fieldfilename)
         self.fieldPixmap = QPixmap(self.fieldfilename)
         self.field.setPixmap(self.fieldPixmap)
 

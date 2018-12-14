@@ -6,9 +6,9 @@ touch devel/lib/python2.7/dist-packages/bitbots_cm730/__init__.py
 
 touch devel/lib/python2.7/dist-packages/bitbots_walking/__init__.py
 
-touch devel/lib/python2.7/dist-packages/bitbots_common/pose/__init__.py
+touch devel/lib/python2.7/dist-packages/bitbots_bringup/pose/__init__.py
 
-touch devel/lib/python2.7/dist-packages/bitbots_common/utilCython/__init__.py
+touch devel/lib/python2.7/dist-packages/bitbots_bringup/utilCython/__init__.py
 
 cp src/bitbots_misc/humanoid_league_speaker/src/humanoid_league_speaker/cfg/speaker_paramsConfig.py* ./devel/lib/python2.7/dist-packages/humanoid_league_speaker/cfg
 
