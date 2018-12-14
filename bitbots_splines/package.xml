@@ -21,7 +21,7 @@
 
   <export>
     <bitbots_documentation>
-      <status>tested_robot</status>
+      <status>unknown</status>
       <language>c++</language>
     </bitbots_documentation>
   </export>
