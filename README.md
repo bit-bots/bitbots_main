@@ -9,9 +9,9 @@ Structure
 The actual code is in submodul gits to make it easier for other to use only parts of our code.
 If you want to pull all submodule run
 
-.. code::bash
-    make pull-all
-
+``` bash
+make pull-all
+```
 The naming prefix indicates the scope of the packages.
 
  * bitbots_ : specific RoboCup code of our team which follows interface specification of humanoid_league_msgs
@@ -25,12 +25,14 @@ Documentation
 -------------
 
 To build the documentation do the following
-.. code:: bash
-    make doc
+``` bash
+make doc
+```
 
 Open it with
 
-.. code:: bash
-    firefox doc/html/index.html
+``` bash
+firefox doc/html/index.html
+```
 
 You can also generate an overview of the software using the script in the architecture folder.
