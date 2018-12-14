@@ -31,5 +31,9 @@
     <export>
         <!-- Other tools can request additional information be placed here -->
         <rosdoc config="rosdoc.yaml"/>
+        <bitbots_documentation>
+            <language>python</language>
+            <status>unknown</status>
+        </bitbots_documentation>
     </export>
 </package>
