@@ -12,5 +12,8 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <export>
+     <bitbots_documentation>
+      <status>unknown</status>
+    </bitbots_documentation>
   </export>
 </package>

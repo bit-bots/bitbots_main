@@ -52,6 +52,9 @@
   <export>
     <!-- Other tools can request additional information be placed here -->
     <rqt_gui plugin="${prefix}/plugin.xml"/>
-
+    <bitbots_documentation>
+      <language>python</language>
+      <status>unknown</status>
+    </bitbots_documentation>
   </export>
 </package>
