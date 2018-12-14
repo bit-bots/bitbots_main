@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(bitbots_transform)
+project(humanoid_league_transform)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp

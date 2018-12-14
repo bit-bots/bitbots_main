@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>bitbots_transform</name>
+  <name>humanoid_league_transform</name>
   <version>1.0.0</version>
-  <description>bitbots_transform provides a node to transform from a pixel in an image to real world coordinates.
+  <description>humanoid_league_transform provides a node to transform from a pixel in an image to real world coordinates.
     CameraInfo and the TF-Tree needs to be available for it to properly work</description>
 
   <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
