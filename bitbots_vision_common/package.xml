@@ -3,7 +3,7 @@
     <name>bitbots_vision_common</name>
     <description>
         This is the Bit-Bots Vision Common package.
-        We use the wolves_image_provider_v4l package as image provider.
+        We use the wolves_image_provider package as image provider.
         It provides essential modules, which are needed by Bit-Bots vision
         modules that actually do stuff. Out of the vision modules provided by
         this package, new vision systems can be built.

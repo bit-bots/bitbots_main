@@ -6,7 +6,7 @@
         compatible with Odroids.
         It heavily relies on modules provided by the bitbots_vision_common
         package.
-        We use the wolves_image_provider_v4l package as image provider.
+        We use the wolves_image_provider package as image provider.
         Settings considering the vision are set in the visionparams.yaml
         (bitbots_vision_cascade/config/visionparams.yaml). To be able to test
         new parameters, the debug_visionparams.yaml are provided. These are used
@@ -41,7 +41,7 @@
     <depend>numpy</depend>
     <depend>cv2</depend>
     <depend>bitbots_vision_common</depend>
-    <depend>wolves_image_provider_v4l</depend>
+    <depend>wolves_image_provider</depend>
 
     <export>
     <bitbots_documentation>

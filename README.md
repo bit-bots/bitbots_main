@@ -2,7 +2,7 @@ README
 ======
 
 This is the vision package of the Hamburg Bit-Bots.
-We use the wolves_image_provider_v4l package as image provider.
+We use the wolves_image_provider package as image provider.
 Settings considering the vision are set in the visionparams.yaml
 (bitbots_vision/config/visionparams.yaml). To be able to test new parameters,
 the debug_visionparams.yaml are provided. These are used when the vision is
