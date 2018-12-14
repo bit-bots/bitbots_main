@@ -9,7 +9,7 @@ Das Repository  Bit-Bots/wolves_colorpicker ist aus dem Gogs geclont worden.
 Aufnehmen eines Colorspaces
 ===========================
 1. Anschließen einer Kamera an den Computer
-2. Hat der Computer eine eingebaute Kamera, setze in bitbots_meta/wolves_image_provider_v4l/config/camera_settings.yaml unter camera_v4l den Configwert device auf /dev/video1
+2. Hat der Computer eine eingebaute Kamera, setze in bitbots_meta/wolves_image_provider/config/camera_settings.yaml unter camera_v4l den Configwert device auf /dev/video1
 3. Starte den Colorpicker: roslaunch colorpicker colorpicker_startup.launch
 4. Wechsle in das Fenster, wo man das Bild der Kamera sieht
 5. Vergrößere die Größe des Markierungsblockes mittels der Leiste unten im Fenster. Es erscheint im Bild ein blauer Kasten, wenn man mit der Maus drauf geht.

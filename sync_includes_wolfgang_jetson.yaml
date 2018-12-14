@@ -4,7 +4,7 @@ include:
         - bitbots_vision_common
         - python2_extensions
     - humanoid_league_msgs
-    - wolves_image_provider_v4l
+    - wolves_image_provider
     - scripts
     - bitbots_misc:
         - bitbots_bringup

@@ -226,7 +226,7 @@ if not args.sync_only:
         data['clean_option'] = 'catkin clean -y' if args.clean_build or args.clean_all else ''
         data['quiet_option'] = '> /dev/null' if args.quiet else ''
         data['py_extensions'] = 'src/scripts/install_py_extensions.bash {} || exit 1;'.format(data['quiet_option']) if host[1].startswith('jetson') or not args.wolfgang else ''
-        data['camera_name'] = 'sed -i "/camera_name/s/ROBOT/{}/" src/wolves_image_provider_v4l/config/camera_settings.yaml {} || exit 1;'.format(robot_name_name, data['quiet_option']) if host[1].startswith('jetson') or not args.wolfgang else ''
+        data['camera_name'] = 'sed -i "/camera_name/s/ROBOT/{}/" src/wolves_image_provider/config/camera_settings.yaml {} || exit 1;'.format(robot_name_name, data['quiet_option']) if host[1].startswith('jetson') or not args.wolfgang else ''
 
         build_result = subprocess.run([
             'ssh',

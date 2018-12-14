@@ -19,7 +19,7 @@ include:
         - bitbots_bringup
         - bitbots_demo_animations
         - bitbots_buttons
-        - bitbots_transform
+        - humanoid_league_transform
     - bitbots_navigation:
         - bitbots_move_base
         - bitbots_pathfinding_simple

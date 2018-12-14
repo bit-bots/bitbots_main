@@ -6,7 +6,7 @@ include:
         - bitbots_stackmachine
     - bitbots_misc:
         - bitbots_pathfinding
-        - bitbots_transform
+        - humanoid_league_transform
     - humanoid_league_misc:
         - game_controller
         - humanoid_league_team_communication

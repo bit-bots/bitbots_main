@@ -19,7 +19,7 @@ include:
     - humanoid_league_misc:
         - humanoid_league_speaker
     - humanoid_league_msgs
-    - wolves_image_provider_v4l
+    - wolves_image_provider
     - scripts
 exclude:
     - "*.bag"
