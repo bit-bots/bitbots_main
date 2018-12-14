@@ -60,20 +60,20 @@ class HardwareUI(Plugin, asyncore.dispatcher):
         self.myclient.sig.connect(self.process_data)
 
         rp = rospkg.RosPack()
-        ui_file = os.path.join(rp.get_path('hardware_info'), 'resource', 'master.ui')
+        ui_file = os.path.join(rp.get_path('bitbots_hardware_rqt'), 'resource', 'master.ui')
         loadUi(ui_file, self._widget, {})
         self._widget.show()
 
         self.write_log = False
 
         self.crosshair = QLabel()
-        self.pixmap = QtGui.QPixmap(os.path.join(rp.get_path('hardware_info'), 'resource', 'cross.png'))
+        self.pixmap = QtGui.QPixmap(os.path.join(rp.get_path('bitbots_hardware_rqt'), 'resource', 'cross.png'))
         self.crosshair.setPixmap(self.pixmap)
         self.crosshair.setParent(self._widget.label_4)
         self.crosshair.move(187, 187)
 
         self.crosshair2 = QLabel()
-        self.pixmap = QtGui.QPixmap(os.path.join(rp.get_path('hardware_info'), 'resource', 'cross.png'))
+        self.pixmap = QtGui.QPixmap(os.path.join(rp.get_path('bitbots_hardware_rqt'), 'resource', 'cross.png'))
         self.crosshair2.setPixmap(self.pixmap)
         self.crosshair2.setParent(self._widget.label_11)
         self.crosshair2.move(87, 87)

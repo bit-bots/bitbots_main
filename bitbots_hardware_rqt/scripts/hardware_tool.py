@@ -11,7 +11,7 @@ from diagnostic_msgs.msg import DiagnosticArray
 from sensor_msgs.msg import JointState, Imu
 from bitbots_buttons.msg import Buttons
 from humanoid_league_msgs.msg import RobotControlState
-from hardware_info.msg import CpuMessage, BatteryMessage
+from bitbots_hardware_rqt.msg import CpuMessage, BatteryMessage
 
 import multiprocessing as mp
 import json
@@ -58,7 +58,7 @@ class Hardwaretool():
     def readIpConfig(self):
         """Reads the ip_config.yaml and sets the parameters according to it"""
         rp = rospkg.RosPack()
-        ip_filename = os.path.join(rp.get_path('hardware_info'), 'resource', 'ip_config.yaml')
+        ip_filename = os.path.join(rp.get_path('bitbots_hardware_rqt'), 'resource', 'ip_config.yaml')
 
         with open(ip_filename, "r") as file:
             global udp_ip, udp_port, send_delay

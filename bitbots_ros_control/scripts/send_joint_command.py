@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
-from bitbots_ros_control.msg import JointCommand
+from bitbots_msgs.msg import JointCommand
 
 
 ids = {"HeadPan": 0,

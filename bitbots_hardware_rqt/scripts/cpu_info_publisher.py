@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 import rospy, rospkg, os
-from hardware_info.msg import CpuMessage
+from bitbots_hardware_rqt.msg import CpuMessage
 import subprocess
 import yaml
 
@@ -35,7 +35,7 @@ def cpu_info_publisher():
 
 def readIpConfig():
     rp = rospkg.RosPack()
-    ip_filename = os.path.join(rp.get_path('hardware_info'), 'resource', 'ip_config.yaml')
+    ip_filename = os.path.join(rp.get_path('bitbots_hardware_rqt'), 'resource', 'ip_config.yaml')
 
 
     with open(ip_filename, "r") as file:

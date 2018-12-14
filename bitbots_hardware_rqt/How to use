@@ -1,5 +1,5 @@
 HOW TO USE:
 
 1. Copy this folder to robot workspace, build and source
-2. roslaunch hardware_info hardware_info.launch send_to_ip:=YOUR_IP
+2. roslaunch bitbots_hardware_rqt bitbots_hardware_rqt.launch send_to_ip:=YOUR_IP
 3. Start roscore and rqt on your machine

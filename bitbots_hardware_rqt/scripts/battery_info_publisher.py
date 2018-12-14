@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import rospy, rospkg, os
-from hardware_info.msg import BatteryMessage #todo use ros sensor_msgs/Battery
+from bitbots_hardware_rqt.msg import BatteryMessage #todo use ros sensor_msgs/Battery
 import subprocess
 
 
@@ -28,7 +28,7 @@ def battery_info_publisher():
 
 def readIpConfig():
     rp = rospkg.RosPack()
-    ip_filename = os.path.join(rp.get_path('hardware_info'), 'resource', 'ip_config.yaml')
+    ip_filename = os.path.join(rp.get_path('bitbots_hardware_rqt'), 'resource', 'ip_config.yaml')
 
 
     with open(ip_filename, "r") as file:
