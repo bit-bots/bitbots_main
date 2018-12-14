@@ -129,11 +129,11 @@ aber ansonsten sollten alle Nodes normal funktionieren.
 
 Für den Simulator selbst
 
-:code:`roslaunch bitbots_common simulator.launch wolfgang:=true`
+:code:`roslaunch bitbots_bringup simulator.launch wolfgang:=true`
 
 Für den Roboter darin
 
-:code:`roslaunch bitbots_common teamplayer_simulated.launch wolfgang:=true`
+:code:`roslaunch bitbots_bringup teamplayer_simulated.launch wolfgang:=true`
 
 
 

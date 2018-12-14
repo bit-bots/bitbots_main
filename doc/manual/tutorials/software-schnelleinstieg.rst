@@ -431,11 +431,11 @@ Starten der Software
 --------------------
 
 Wenn alles richtig eingerichtet ist, solltet ihr mit dem Befehl
-*roslaunch bitbots_common start_simulator.launch* den Simulator mit der
+*roslaunch bitbots_bringup start_simulator.launch* den Simulator mit der
 Software starten können.
 
 Mit dem Tool *./robot_compile.sh* könnt ihr die Software auf einen
-Roboter spielen und dort mit *roslaunch bitbots_common
+Roboter spielen und dort mit *roslaunch bitbots_bringup
 start_robocup_teamplayer.launch* starten.
 
 Rosbag
@@ -515,14 +515,14 @@ Wichtige Launchskripts
 +-----------------------------------+-----------------------------------+
 | **Desc.**                         | **Command**                       |
 +===================================+===================================+
-| Simulator                         | *roslaunch bitbots_common         |
+| Simulator                         | *roslaunch bitbots_bringup         |
 |                                   | start_simulator.launch*           |
 +-----------------------------------+-----------------------------------+
-| High-level                        | *roslaunch bitbots_common         |
+| High-level                        | *roslaunch bitbots_bringup         |
 |                                   | start_robocup_teamplayer.launch   |
 |                                   | hcm:=false duty:=TeamPlayer*      |
 +-----------------------------------+-----------------------------------+
-| kompl. Stack                      | *roslaunch bitbots_common         |
+| kompl. Stack                      | *roslaunch bitbots_bringup         |
 |                                   | start_robocup_teamplayer.launch   |
 |                                   | duty:=TeamPlayer*                 |
 +-----------------------------------+-----------------------------------+

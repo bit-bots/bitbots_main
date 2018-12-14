@@ -7,7 +7,7 @@ include:
     - wolves_image_provider_v4l
     - scripts
     - bitbots_misc:
-        - bitbots_common
+        - bitbots_bringup
 exclude:
     - "*.bag"
     - "*.pyc"

@@ -9,15 +9,14 @@ include:
         - bitbots_animation_server
         - bitbots_dynamixel_debug
         - bitbots_hcm
-        - bitbots_pause
         - bitbots_ros_control
         - center_of_mass
     - bitbots_localization:
         - bitbots_localization
         - pointcloud_to_laserscan
     - bitbots_misc:
-        - bitbots_base_footprint
-        - bitbots_common
+        - humanoid_base_footprint
+        - bitbots_bringup
         - bitbots_demo_animations
         - bitbots_buttons
         - bitbots_transform
