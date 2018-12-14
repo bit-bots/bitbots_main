@@ -6,7 +6,7 @@
     <param name="urdf" value="$(find wolfgang_description)/urdf/wolfgang.urdf" />
     <param name="robot_description_semantic" textfile="$(find wolfgang_moveit_config)/config/wolfgang.srdf" />
     <param name="robot_type_name" value="Wolfgang"/>
-    <!--include file="$(find bitbots_transform)/launch/transformer.launch" /-->
+    <!--include file="$(find humanoid_league_transform)/launch/transformer.launch" /-->
     <node pkg="rosbag" type="play" name="player" output="screen" args="--clock /home/judith/Dokumente/BitBots/rosbags/2018-12-01-19-40-15.bag" respawn="true"/>
     <!--no-walking.bag-->
 
