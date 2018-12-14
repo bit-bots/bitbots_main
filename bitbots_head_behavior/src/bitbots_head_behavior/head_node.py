@@ -11,7 +11,7 @@ from bitbots_blackboard.blackboard import HeadBlackboard
 from dynamic_stack_decider.dsd import DSD
 
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg, BallRelative
-from bitbots_ros_control.msg import JointCommand
+from bitbots_msgs.msg import JointCommand
 
 
 def run(dsd):

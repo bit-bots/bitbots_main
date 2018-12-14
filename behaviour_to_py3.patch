@@ -35,9 +35,7 @@ index 1ac2263..f74f037 100644
 @@ -7,10 +6,11 @@ AlignOnBall
  
  """
- from bitbots_stackmachine.abstract_action_module import AbstractActionModule
-+from bitbots_connector.connector import BodyConnector
- 
+
  
  class AlignOnBall(AbstractActionModule):
 -    def perform(self, connector, reevaluate=False):
@@ -753,7 +751,7 @@ index ed42504..2044bb0 100644
 -# -*- coding:utf-8 -*-
  import time
  
- from bitbots_misc.bitbots_common.src.bitbots_common.connector.capsules.walking_capsule import WalkingCapsule
+ from bitbots_misc.bitbots_bringup.src.bitbots_bringup.connector.capsules.walking_capsule import WalkingCapsule
 diff --git b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/kick_off/kick_off.py a/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/kick_off/kick_off.py
 index e18d866..8037756 100644
 --- b/bitbots_body_behaviour/src/bitbots_body_behaviour/body/decisions/kick_off/kick_off.py
@@ -794,7 +792,7 @@ index 77bb2a2..ee2ff3c 100644
  import rospy
  
 +from bitbots_connector.connector import BodyConnector
- from bitbots_common.util.math_utils import convert_uv2angular
+ from bitbots_bringup.util.math_utils import convert_uv2angular
  from bitbots_body_behaviour.actions.plain_walk_action import PlainWalkAction
  from bitbots_body_behaviour.actions.search import Search
 @@ -19,7 +20,7 @@ from bitbots_stackmachine.abstract_decision_module import AbstractDecisionModule

@@ -1,7 +1,6 @@
 #!/usr/bin/env python2.7
 
 import rospy
-from bitbots_blackboard.abstract_connector import AbstractConnector
 from bitbots_blackboard.capsules.animation_capsule import AnimationCapsule
 from bitbots_blackboard.capsules.blackboard_capsule import BlackboardCapsule
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
@@ -13,9 +12,8 @@ from bitbots_blackboard.capsules.pathfinding_capsule import PathfindingCapsule
 
 
        
-class BodyConnector(AbstractConnector):
+class BodyConnector():
     def __init__(self):
-        super(BodyConnector, self).__init__()
         self.config = rospy.get_param("Behaviour")
         self.blackboard = BlackboardCapsule()
         self.gamestate = GameStatusCapsule()
@@ -26,9 +24,8 @@ class BodyConnector(AbstractConnector):
         self.team_data = TeamDataCapsule()
 
 
-class HeadConnector(AbstractConnector):
+class HeadConnector():
     def __init__(self):
-        super(HeadConnector, self).__init__()
         self.config = rospy.get_param("Behaviour")
         self.head = HeadCapsule()
         self.world_model = WorldModelCapsule(self.config)

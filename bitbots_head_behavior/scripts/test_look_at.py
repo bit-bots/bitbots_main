@@ -4,7 +4,7 @@ import rospy
 import tf2_ros as tf2
 from bio_ik_msgs.msg import IKRequest, LookAtGoal
 from bio_ik_msgs.srv import GetIK
-from bitbots_ros_control.msg import JointCommand
+from bitbots_msgs.msg import JointCommand
 from geometry_msgs.msg import Point
 from time import sleep
 from tf2_geometry_msgs import PointStamped
