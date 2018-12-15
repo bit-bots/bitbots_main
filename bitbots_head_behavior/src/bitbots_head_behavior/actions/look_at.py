@@ -3,7 +3,6 @@ import tf2_ros as tf2
 from bio_ik_msgs.msg import IKRequest, LookAtGoal
 from geometry_msgs.msg import PointStamped, Point
 
-from bitbots_blackboard.blackboard import HeadBlackboard
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
@@ -31,6 +30,7 @@ class AbstractLookAt(AbstractActionElement):
 
     def get_motor_goals_from_point(self, point):
         """Call the look at service to calculate head motor goals"""
+
         target = Point(point.x, point.y, point.z)
         self.request.look_at_goals[0].target = target
         response = self.blackboard.bio_ik(self.request).ik_response
@@ -42,6 +42,7 @@ class AbstractLookAt(AbstractActionElement):
         Look at a point which is relative to the robot.
 
         The points header.frame_id determines the transforms reference frame of this point
+
         :type point: PointStamped
         """
         # transform the points reference frame to be the head
@@ -61,11 +62,15 @@ class AbstractLookAt(AbstractActionElement):
 
 class LookDirection(AbstractLookAt):
     class Directions:
+        """All possible directions"""
         FORWARD = 'FORWARD'
         DOWN = 'DOWN'
         UP = 'UP'
 
     def __init__(self, blackboard, dsd, parameters=None):
+        """
+        :param parameters['direction']: One of the possible directions
+        """
         super().__init__(blackboard, dsd, parameters)
 
         # Assert that a valid direction was supplied
@@ -77,6 +82,11 @@ class LookDirection(AbstractLookAt):
         self.direction = getattr(self.Directions, parameters['direction'])
 
     def perform(self, reevaluate=False):
+        """
+        Look at the direction direction that was supplied to this element
+
+        :param reevaluate: No effect here
+        """
         self.publish_debug_data('direction', self.direction)
 
         # Construct target point from target direction
@@ -93,4 +103,3 @@ class LookDirection(AbstractLookAt):
 
         # Call internal look-at to turn head to this point
         self._look_at(point)
-

@@ -17,13 +17,13 @@ from bitbots_msgs.msg import JointCommand
 def run(dsd):
     """
     Main run-loop
+
     :returns: Never
     """
     rate = rospy.Rate(5)
     while not rospy.is_shutdown():
         dsd.update()
         rate.sleep()
-
 
 
 def init():
@@ -44,7 +44,6 @@ def init():
     dsd.register_actions(os.path.join(dirname, 'actions'))
     dsd.register_decisions(os.path.join(dirname, 'decisions'))
     dsd.load_behavior(os.path.join(dirname, 'head_behavior.dsd'))
-
 
     return dsd
 

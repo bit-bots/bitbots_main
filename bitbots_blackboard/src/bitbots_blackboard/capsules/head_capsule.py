@@ -21,6 +21,10 @@ class HeadCapsule:
         self.position_publisher = None  # type: rospy.Publisher
 
     def head_mode_callback(self, msg):
+        """
+        ROS Subscriber callback for /head_mode message.
+        Saves the messages head mode on the blackboard
+        """
         self.head_mode = msg.headMode
 
     #################
@@ -29,7 +33,6 @@ class HeadCapsule:
 
     def send_motor_goals(self, pan_position, tilt_position, pan_speed=1.5, tilt_speed=1.5):
         """
-
         :param pan_position: pan in radians
         :param tilt_position: tilt in radians
         :param pan_speed:

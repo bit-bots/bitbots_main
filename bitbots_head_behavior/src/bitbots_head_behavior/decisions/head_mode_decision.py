@@ -1,10 +1,13 @@
-import rospy
 from humanoid_league_msgs.msg import HeadMode
 
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
 
 class HeadModeDecision(AbstractDecisionElement):
+    """
+    Decides in which general "mode" the head currently operates.
+    Meaning what should be searched for or^ if any searching should be done at all.
+    """
 
     @staticmethod
     def _register():
@@ -15,6 +18,7 @@ class HeadModeDecision(AbstractDecisionElement):
         """
         Map the saved head_mode from blackboard to corresponding decision results
         """
+
         # Ensure that a head_mode value is set
         if self.blackboard.head_capsule.head_mode is None:
             # configured default value
