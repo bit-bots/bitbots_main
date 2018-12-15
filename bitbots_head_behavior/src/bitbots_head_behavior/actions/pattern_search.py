@@ -27,7 +27,7 @@ class PatternSearch(AbstractActionElement):
         # Convert to radians
         head_pan = head_pan / 180.0 * math.pi
         head_tilt = head_tilt / 180.0 * math.pi
-        rospy.logdebug_throttle_identical(1, f"Searching at {head_pan}, {head_tilt}")
+        rospy.logdebug(f"Searching at {head_pan}, {head_tilt}")
 
         self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, 1.5, 1.5)
 
