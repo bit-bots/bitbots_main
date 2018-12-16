@@ -1,12 +1,15 @@
 <?xml version="1.0"?>
 <launch>
+
+    <arg name="depends_only" default="false" />
     <arg name="wolfgang" default="true" />
     
     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
         <arg name="wolfgang" value="$(arg wolfgang)"/>   
     </include>
 
-    <include file="$(find bitbots_head_behavior)/launch/head_behavior.launch"/>
+    <include file="$(find bitbots_head_behavior)/launch/head_behavior.launch">
+        <arg name="depends_only" value="$(arg depends_only)"/>
+    </include>
 
-    
 </launch>
