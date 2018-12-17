@@ -14,6 +14,7 @@ Einstieg und Tutorials:
    manual/tutorials/software-overview.rst
    manual/tutorials/Doku-How-To
    manual/tutorials/colorpicker
+   manual/tutorials/pycharm-ros
 
 Software:
 
