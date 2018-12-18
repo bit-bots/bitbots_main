@@ -21,7 +21,7 @@
 
   <export>
     <bitbots_documentation>
-      <status>unknown</status>
+      <status>compiles</status>
       <language>c++</language>
     </bitbots_documentation>
   </export>

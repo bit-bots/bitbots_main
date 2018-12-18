@@ -27,7 +27,7 @@
   <export>
     <bitbots_documentation>
       <language>python3</language>
-      <status>unknown</status>
+      <status>compiles</status>
     </bitbots_documentation>
   </export>
 </package>
