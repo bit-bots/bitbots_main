@@ -36,6 +36,15 @@ class ButtonNode(object):
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
         self.shoot_publisher = rospy.Publisher('/shoot_button', Bool, queue_size=1)
 
+        if self.manual_penality_mode:
+            rospy.loginfo("Waiting of manual penalize service.")
+            try:
+                rospy.wait_for_service("manual_penalize", 0.5)
+            except rospy.exceptions.ROSException as exc:
+                rospy.logerr("service 'manual_penalize' not available. Please start HCM")
+            self.manual_penalize_method = rospy.ServiceProxy("manual_penalize", ManualPenalize)
+
+        rospy.loginfo("Button node running")
         rospy.spin()
 
     def button_cb(self, msg):
@@ -83,14 +92,9 @@ class ButtonNode(object):
         speak("2 short", self.speak_publisher, speaking_active=self.speaking_active)
         if self.manual_penality_mode:
             # switch penalty state by calling service on motion
-            try:
-                rospy.wait_for_service("manual_penalize", 0.5)
-            except rospy.exceptions.ROSException as exc:
-                rospy.logerr("service 'manual_penalize' not available")
 
-            manual_penalize_method = rospy.ServiceProxy("manual_penalize", ManualPenalize)
             try:
-                response = manual_penalize_method(2)  # argument 3 for switch
+                response = self.manual_penalize_method(2)  # argument 2 for switch
             except rospy.ServiceException as exc:
                 print("Service did not process request: " + str(exc))
 
