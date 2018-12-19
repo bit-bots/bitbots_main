@@ -18,7 +18,6 @@ from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_CONTROLABLE, STATE_WALKING,
 from bitbots_hcm.cfg import hcm_paramsConfig
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from dynamic_stack_decider.dsd import DSD
-from bitbots_hcm.hcm_dsd.decisions.decisions import StartHcm
 import os
 
 class HardwareControlManager:

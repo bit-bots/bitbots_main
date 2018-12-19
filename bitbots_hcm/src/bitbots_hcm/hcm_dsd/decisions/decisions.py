@@ -4,16 +4,9 @@ import humanoid_league_msgs.msg
 from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_ANIMATION_RUNNING, STATE_CONTROLABLE, STATE_FALLEN, STATE_FALLING, \
     STATE_HARDWARE_PROBLEM, STATE_MOTOR_OFF, STATE_PENALTY, STATE_PICKED_UP, STATE_RECORD, STATE_SHUT_DOWN, \
     STATE_STARTUP, STATE_WALKING, STATE_HCM_OFF
-from bitbots_hcm.hcm_dsd.actions.wait_for import WaitForIMU, WaitForMotors
-from bitbots_hcm.hcm_dsd.actions.stay import StayShutDown, StayAnimationRunning, StayControlable, StayInPenalty, \
-    StayMotorsOff, StayPickedUp, StayRecord, StayWalking
-from bitbots_hcm.hcm_dsd.actions.play_animation import PlayAnimationStandUp, PlayAnimationFalling, PlayAnimationPenalty, \
-    PlayAnimationMotorOff, PlayAnimationSitDown, PlayAnimationWalkready
-from bitbots_hcm.hcm_dsd.actions.change_motor_power import TurnMotorsOff, TurnMotorsOn
-from bitbots_hcm.hcm_dsd.actions.stop_walking import StopWalking
 
 
-class StartHcm(AbstractDecisionElement):
+class StartHCM(AbstractDecisionElement):
     """
     Initializes HCM. 
     """
