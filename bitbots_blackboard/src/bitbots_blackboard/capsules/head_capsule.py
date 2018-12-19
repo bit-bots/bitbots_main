@@ -39,7 +39,7 @@ class HeadCapsule:
         :param tilt_speed:
         :return:
         """
-        rospy.logdebug(f"target pan/tilt: {pan_position}/{tilt_position}")
+        rospy.logdebug("target pan/tilt: {}/{}".format(pan_position, tilt_position))
 
         # 3 is slower than maximum, maybe it is good
         pan_position = min(max(pan_position, -1), 1)
