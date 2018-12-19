@@ -1,34 +1,36 @@
-import rospy 
+import rospy
 import humanoid_league_msgs.msg
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 import bitbots_hcm.hcm_dsd.hcm_blackboard
 from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_HARDWARE_PROBLEM
+
 
 class AbstractChangeMotorPower(AbstractActionElement):
     """
     
     """
 
-    def __init__(self, blackboard, _):
-        super(AbstractChangeMotorPower, self).__init__(blackboard)
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(AbstractChangeMotorPower, self).__init__(blackboard, dsd, parameters=None)
+
         self.called = False
         self.last_service_call = 0
-        self.time_between_calls = 2 #[s]
+        self.time_between_calls = 2  # [s]
 
-    def perform(self, blackboard, reevaluate=False):
+    def perform(self, reevaluate=False):
         raise NotImplementedError
 
     def call_motor_power_service(self, on):
-        #TODO
+        # TODO
         pass
 
-class TurnMotorsOn(AbstractChangeMotorPower):
 
-    def perform(self, blackboard, reevaluate=False):
-        if blackboard.are_motors_on():
+class TurnMotorsOn(AbstractChangeMotorPower):
+    def perform(self, reevaluate=False):
+        if self.blackboard.are_motors_on():
             rospy.logwarn("HCM got motor connection, will resume")
             return self.pop()
-        
+
         if not self.called:
             rospy.logwarn("Turning motors ON!")
             self.called = True
@@ -37,15 +39,15 @@ class TurnMotorsOn(AbstractChangeMotorPower):
 
         # see if we called the service some time ago and the motors are still not giving us states
         if self.called and rospy.Time.now().to_sec() - self.last_service_call.to_sec() > self.time_between_calls:
-            #blackboard.current_state = STATE_HARDWARE_PROBLEM
-            rospy.logwarn_throttle(5, "Motor power turned ON but HCM does not recieve motor values!")        
+            # blackboard.current_state = STATE_HARDWARE_PROBLEM
+            rospy.logwarn_throttle(5, "Motor power turned ON but HCM does not recieve motor values!")
+
 
 class TurnMotorsOff(AbstractChangeMotorPower):
-
-    def perform(self, blackboard, reevaluate=False):
-        if not blackboard.are_motors_on():
+    def perform(self, reevaluate=False):
+        if not self.blackboard.are_motors_on():
             return self.pop()
-        
+
         if not self.called:
             rospy.logwarn("Turning motors OFF!")
             self.called = True
@@ -54,5 +56,5 @@ class TurnMotorsOff(AbstractChangeMotorPower):
 
         # see if we called the service some time ago and the motors are still on
         if self.called and rospy.Time.now().to_sec() - self.last_service_call.to_sec() > self.time_between_calls:
-            #blackboard.current_state = STATE_HARDWARE_PROBLEM
-            rospy.logwarn_throttle(5, "Motor power turned OFF but HCM still recieves motor values!")        
+            # blackboard.current_state = STATE_HARDWARE_PROBLEM
+            rospy.logwarn_throttle(5, "Motor power turned OFF but HCM still recieves motor values!")

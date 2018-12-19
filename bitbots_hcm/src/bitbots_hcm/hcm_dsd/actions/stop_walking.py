@@ -9,9 +9,12 @@ class StopWalking(AbstractActionElement):
     Stop the walking
     """
 
-    def perform(self, blackboard, reevaluate=False):
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(StopWalking, self).__init__(blackboard, dsd, parameters)
+
+    def perform(self, reevaluate=False):
         self.do_not_reevaluate()
-        if blackboard.is_currently_walking():
-            blackboard.stop_walking()
+        if self.blackboard.is_currently_walking():
+            self.blackboard.stop_walking()
         else:
             return self.pop()        

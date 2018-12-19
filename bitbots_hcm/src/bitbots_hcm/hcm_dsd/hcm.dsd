@@ -1,0 +1,31 @@
+-->HCM
+$StartHCM
+    SHUTDOWN --> @PlayAnimationSitDown, @StayShutDown
+    SIMULATION --> #Penalty
+    ROBOT --> $CheckIMU
+        IMU_NOT_STARTED --> @WaitForIMU
+        PROBLEM --> @WaitForIMU
+        CONNECTION --> $Penalty
+            PENALIZED --> @StopWalking, @PlayAnimationPenalty, @StayInPenalty
+            FREE --> $MotorOffTimer
+                SIMULATION --> #Fallen
+                TURN_MOTORS_OFF --> @PlayAnimationSitDown, @TurnMotorsOff, @StayMotorsOff
+                TURN_MOTORS_ON --> @TurnMotorsOn
+                MOTORS_ARE_ON --> $CheckMotors
+                    PROBLEM --> @WaitForMotors
+                    CONNECTION --> $Record
+                        RECORD_ACTIVE --> @StayRecord
+                        FREE --> $PickedUp
+                            PICKED_UP --> @PlayAnimationWalkready, @StayPickedUp
+                            ON_GROUND --> $Fallen
+                                FALLEN --> @PlayAnimationStandUp
+                                NOT_FALLEN --> $Falling
+                                    FALLING --> @PlayAnimationFalling
+                                    NOT_FALLING --> $BahviorAnimation
+                                        ANIMATION_RUNNING --> @StayAnimationRunning
+                                        FREE --> $Walking
+                                            STOP_WALKING --> @StopWalking
+                                            STAY_WALKING --> @StayWalking
+                                            NOT_WALKING --> $Controlable
+                                                NOT_WALKREADY --> @PlayAnimationWalkready
+                                                WALKREADY --> @StayControlable
