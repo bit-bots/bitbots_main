@@ -39,11 +39,13 @@ class HeadCapsule:
         :param tilt_speed:
         :return:
         """
+        rospy.logdebug(f"target pan/tilt: {pan_position}/{tilt_position}")
+
         # 3 is slower than maximum, maybe it is good
-        print('{}/{}'.format(pan_position, tilt_position))
         pan_position = min(max(pan_position, -1), 1)
         tilt_position = min(max(tilt_position, -1.2), 0)
         self.pos_msg.positions = pan_position, tilt_position
         self.pos_msg.velocities = [pan_speed, tilt_speed]
         self.pos_msg.header.stamp = rospy.Time.now()
+
         self.position_publisher.publish(self.pos_msg)

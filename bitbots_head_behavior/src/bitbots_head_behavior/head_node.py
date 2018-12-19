@@ -45,6 +45,7 @@ def init():
     dsd.register_decisions(os.path.join(dirname, 'decisions'))
     dsd.load_behavior(os.path.join(dirname, 'head_behavior.dsd'))
 
+    rospy.logdebug("Head Behavior completely loaded")
     return dsd
 
 

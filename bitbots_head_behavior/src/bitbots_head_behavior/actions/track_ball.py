@@ -1,3 +1,4 @@
+import rospy
 from geometry_msgs.msg import PointStamped
 
 from bitbots_head_behavior.actions.look_at import AbstractLookAt
