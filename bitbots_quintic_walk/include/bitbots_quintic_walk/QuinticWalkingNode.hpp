@@ -30,6 +30,7 @@ https://github.com/Rhoban/model/
 #include <humanoid_league_msgs/RobotControlState.h>
 #include <bitbots_quintic_walk/WalkingDebug.h>
 #include <bitbots_msgs/JointCommand.h>
+#include <bitbots_msgs/FootPressure.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <eigen_conversions/eigen_msg.h>
@@ -63,6 +64,7 @@ private:
     void publishOdometry();
     void cmdVelCb(const geometry_msgs::Twist msg);
     void imuCb(const sensor_msgs::Imu msg);
+    void pressureCb(const bitbots_msgs::FootPressure msg);
     void robStateCb(const humanoid_league_msgs::RobotControlState msg);
     void jointStateCb(const sensor_msgs::JointState msg);
     void kickCb(const std_msgs::BoolConstPtr msg);
@@ -134,6 +136,8 @@ private:
     ros::Subscriber _subJointStates;
     ros::Subscriber _subKick;
     ros::Subscriber _subImu;
+    ros::Subscriber _subPressure;
+
 
     bool _kick;
 

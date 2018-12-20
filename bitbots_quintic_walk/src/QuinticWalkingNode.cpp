@@ -14,8 +14,7 @@ QuinticWalkingNode::QuinticWalkingNode(){
     tf::Quaternion quat = tf::Quaternion();
     quat.setRPY(0,0,0);
     _supportFootOdom.setRotation(quat);   
-    _supportFootOdom.setOrigin(tf::Vector3(0,0,0)); 
-    //_kick = false;
+    _supportFootOdom.setOrigin(tf::Vector3(0,0,0));
 
     _marker_id = 1;
     _odom_broadcaster = tf::TransformBroadcaster();
@@ -39,7 +38,7 @@ QuinticWalkingNode::QuinticWalkingNode(){
     _subJointStates = _nh.subscribe("joint_states", 1, &QuinticWalkingNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
     _subKick = _nh.subscribe("kick", 1, &QuinticWalkingNode::kickCb, this, ros::TransportHints().tcpNoDelay());
     _subImu = _nh.subscribe("imu/data", 1, &QuinticWalkingNode::imuCb, this, ros::TransportHints().tcpNoDelay());
-
+    _subPressure = _nh.subscribe("pressure", 1, &QuinticWalkingNode::pressureCb, this, ros::TransportHints().tcpNoDelay());
 
     /* debug publisher */
     _pubDebug = _nh.advertise<bitbots_quintic_walk::WalkingDebug>("walk_debug", 1);
@@ -302,6 +301,68 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg){
 
        if(abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold){
            _imu_stop = true;
+       }
+    }
+}
+
+void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg){
+
+    // we only want to check stuff if we are in single support
+    if(_walkEngine.isEnabled() && !_walkEngine.isDoubleSupport()){
+
+        // we just want to look at the support foot. choose the 4 values from the message accordingly
+        // s = support, n = not support, i = inside, o = outside, f = front, b = back
+        double sob;
+        double sof;
+        double sif;
+        double sib;
+
+        double nob;
+        double nof;
+        double nif;
+        double nib;
+
+        if(_walkEngine.isLeftSupport()){
+            sob = msg.l_l_b;
+            sof = msg.l_l_f;
+            sif = msg.l_r_f;
+            sib = msg.l_r_b;
+
+            nib = msg.r_l_b;
+            nif = msg.r_l_f;
+            nof = msg.r_r_f;
+            nob = msg.r_r_b;
+        }else{
+            sib = msg.r_l_b;
+            sif = msg.r_l_f;
+            sof = msg.r_r_f;
+            sob = msg.r_r_b;
+
+            nob = msg.l_l_b;
+            nof = msg.l_l_f;
+            nif = msg.l_r_f;
+            nib = msg.l_r_b;
+        }
+
+        // sum to get overall pressure on foot
+        double s_sum = slb + slf + srf + srb;
+        double n_sum = nlb + nlf + nrf + nrb;
+
+        // ratios between pressures to get relative position of CoP
+        double s_io_ratio = (sif + sib) / (sof + sob);
+        double s_fb_ratio = (sif + sof) / (sib + sob);
+
+        // check for phase reset
+        // phase is far enough to have right foot lifted
+        // foot has to have ground contact
+        if(_walkEngine.getPhase() > 0.7 && n_sum > 1){
+            _walkEngine.resetPhase();
+        }
+
+        // check if robot is unstable and should pause
+        // this is true if the robot is falling to the outside or to front or back
+        if(s_io_ratio < 0.5 || s_fb_ratio < 0.5 || s_fb_ratio > 2){
+            //TODO pause
        }
     }
 }
