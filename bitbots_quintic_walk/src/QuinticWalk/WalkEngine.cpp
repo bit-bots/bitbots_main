@@ -255,6 +255,15 @@ void QuinticWalk::update(double dt)
     
 }
 
+void QuinticWalk::resetPhase(){
+    if(_phase < 0.5){
+        _phase = 0.5;
+    }else{
+        _phase = 0.0;
+    }
+
+}
+
 bool QuinticWalk::getIsWalking(){
     return _isWalking;
 }

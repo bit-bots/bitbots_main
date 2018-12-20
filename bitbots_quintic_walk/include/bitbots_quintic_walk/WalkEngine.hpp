@@ -225,6 +225,8 @@ class QuinticWalk
 
         bool getIsWalking();
 
+        void resetPhase();
+
 private:
 
         /**

@@ -75,15 +75,21 @@ private:
     bool _debugActive;
     bool _pub_model_joint_states;
     bool _imuActive;
-    bool _walkActive;
+    bool _currentlyWalking;
     bool _simulation_active;
 
-    bool _stopRequest;
+    bool _CV_zero;
     double _engineFrequency;
 
     double _imu_pitch_threshold;
     double _imu_roll_threshold;
     bool _imu_stop;
+
+    bool _phaseResetActive;
+    double _groundMinPressure;
+    bool _copStopActive;
+    double _ioPressureThreshold;
+    double _fbPressureThreshold;
 
     double _vel;
     double _acc;
@@ -115,7 +121,7 @@ private:
     double _balance_left_right;
     bitbots_quintic_walk::GravityCompensator _gravity_compensator;
 
-    Eigen::Vector3d _orders;
+    Eigen::Vector3d _current_CV;
     Eigen::Vector3d _max_step;
     bitbots_quintic_walk::QuinticWalk _walkEngine;
 
