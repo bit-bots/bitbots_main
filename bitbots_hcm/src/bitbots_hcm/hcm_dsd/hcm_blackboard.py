@@ -33,14 +33,14 @@ class HcmBlackboard():
         self.current_state = STATE_STARTUP 
         self.penalized = False
         self.shut_down_request = False
-        self.simulation_active = rospy.get_param("/simulation_active")
+        self.simulation_active = rospy.get_param("/simulation_active", False)
 
         # this is used to prevent calling rospy.Time a lot, which takes some time
         # we assume that the time does not change during one update cycle
         self.current_time = rospy.Time()
 
         # Imu
-        self.last_imu_update_time = rospy.Time()
+        self.last_imu_update_time = None
         self.imu_timeout_duration = rospy.get_param("hcm/imu_timeout_duration")
         self.accel = numpy.array([0, 0, 0])
         self.gyro = numpy.array([0, 0, 0])
@@ -48,6 +48,12 @@ class HcmBlackboard():
         self.smooth_gyro = numpy.array([0, 0, 0])
         self.not_much_smoothed_gyro = numpy.array([0, 0, 0])
         self.quaternion  = numpy.array([0,0,0,0.21])
+
+        # Pressure sensors
+        self.pressure_sensors_installed = rospy.get_param("hcm/pressure_sensors_installed", False)
+        self.pressure_timeout_duration = rospy.get_param("hcm/pressure_timeout_duration")
+        self.last_pressure_update_time = None
+        self.pressure = []
 
         # Animation
         self.animation_action_client = None
@@ -92,78 +98,5 @@ class HcmBlackboard():
         # falling
         self.fall_checker = FallChecker()
         self.is_stand_up_active = not self.simulation_active and rospy.get_param("hcm/stand_up_active", False) 
-        self.falling_detection_active = not self.simulation_active and rospy.get_param("hcm/falling_active", False)             
+        self.falling_detection_active = not self.simulation_active and rospy.get_param("hcm/falling_active", False)
 
-    def is_imu_timeout(self):
-        """
-        Havent we recieved updates from the imu in the last time
-        """
-        return self.current_time.to_sec() - self.last_imu_update_time.to_sec() > self.imu_timeout_duration
-    
-    def is_motor_timeout(self):
-        """
-        Havent we recieved updates from the motors in the last time
-        """
-        return self.current_time.to_sec() - self.last_motor_update_time.to_sec() > self.motor_timeout_duration
-    
-    def is_motor_off_time(self):
-        """
-        After a duration without any commands, the motors should go off for safty reasons, e.g. user forgot to turn off robot
-        """
-        return self.current_time.to_sec() - self.last_motor_goal_time.to_sec() > self.motor_off_time
-
-    def are_motors_on(self):
-        """
-        """
-        return self.current_time.to_sec() - self.last_motor_update_time.to_sec() < 0.1
-
-    def are_motors_available(self):
-        """
-        """
-        return self.current_time.to_sec() - self.last_motor_update_time.to_sec() < 0.1
-
-    def is_robot_picked_up(self):
-        return False #TODO needs feet sensors
-    
-    def is_currently_walking(self):
-        return self.current_time.to_sec() - self.last_walking_goal_time.to_sec() < 0.1
-
-    def is_walkready(self):
-        """
-        We check if any joint is has an offset from the walkready pose which is higher than a threshold
-        """
-        if self.current_joint_positions is None:
-            return False
-        i = 0
-        for joint_name in self.current_joint_positions.name:
-            if joint_name == "HeadPan" or joint_name == "HeadTilt":
-                #we dont care about the head position
-                i +=1 
-                continue
-            if abs(math.degrees(self.current_joint_positions.position[i]) - self.walkready_pose_dict[joint_name]) > self.walkready_pose_threshold:
-                return False
-            i +=1 
-        return True
-
-    def robot_falling_direction(self):
-        return self.fall_checker.check_falling(self.gyro, self.quaternion)
-
-    def is_falling(self):
-        if self.robot_falling_direction() is None:
-            return False
-        return True
-
-    def get_fallen_side(self):
-        return self.fall_checker.check_fallen(self.smooth_accel, self.gyro)
-
-    def is_fallen(self):
-        if self.get_fallen_side() is None:
-            return False
-        return True
-
-    def stop_walking(self):
-        msg= Twist()
-        msg.linear.x = 0
-        msg.linear.y = 0
-        msg.angular.z = 0
-        self.walk_pub.publish(msg)

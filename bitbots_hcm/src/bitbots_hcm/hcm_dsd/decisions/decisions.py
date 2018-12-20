@@ -1,4 +1,5 @@
 import rospy
+import math
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 import humanoid_league_msgs.msg
 from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_ANIMATION_RUNNING, STATE_CONTROLABLE, STATE_FALLEN, STATE_FALLING, \
@@ -34,15 +35,35 @@ class CheckIMU(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
-        if self.blackboard.last_imu_update_time.to_sec == 0:
+        if not self.blackboard.last_imu_update_time:
             # wait for the IMU to start
             self.blackboard.current_state = STATE_STARTUP
             return "IMU_NOT_STARTED"
-        elif self.blackboard.is_imu_timeout():
+        elif self.blackboard.current_time.to_sec() - self.blackboard.last_imu_update_time.to_sec() > self.blackboard.imu_timeout_duration:
             # tell that we have a hardware problem
             self.blackboard.current_state = STATE_HARDWARE_PROBLEM
-            # wait for IMU
             return "PROBLEM"
+        return "CONNECTION"
+
+    def get_reevaluate(self):
+        return True
+
+
+class CheckPressureSensor(AbstractDecisionElement):
+    """
+    Checks connection to pressure sensors.
+    """
+
+    def perform(self, reevaluate=False):
+        if self.blackboard.pressure_sensors_installed and not self.blackboard.simulation_active:
+            if not self.blackboard.last_pressure_update_time:
+                # wait for the IMU to start
+                self.blackboard.current_state = STATE_STARTUP
+                return "PRESSURE_NOT_STARTED"
+            elif self.blackboard.current_time.to_sec() - self.blackboard.last_pressure_update_time.to_sec() > self.blackboard.pressure_timeout_duration:
+                # tell that we have a hardware problem
+                self.blackboard.current_state = STATE_HARDWARE_PROBLEM
+                return "PROBLEM"
         return "CONNECTION"
 
     def get_reevaluate(self):
@@ -74,13 +95,13 @@ class MotorOffTimer(AbstractDecisionElement):
         if self.blackboard.simulation_active:
             return "SIMULATION"
         # check if the time is reached
-        if self.blackboard.is_motor_off_time():
+        if self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec() > self.blackboard.motor_off_time:
             rospy.logwarn_throttle(5, "Didn't recieve goals for " + str(
                 self.blackboard.motor_off_time) + " seconds. Will shut down the motors and wait for commands.")
             self.blackboard.current_state = STATE_MOTOR_OFF
             # we do an action sequence to turn off the motors and stay in motor off  
             return "TURN_MOTORS_OFF"
-        elif not self.blackboard.are_motors_on():
+        elif not self.blackboard.current_time.to_sec() - self.blackboard.last_motor_update_time.to_sec() < 0.1:
             # we have to turn the motors on
             return "TURN_MOTORS_ON"
         else:
@@ -98,7 +119,7 @@ class CheckMotors(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
-        if not self.blackboard.are_motors_available():
+        if not self.blackboard.current_time.to_sec() - self.blackboard.last_motor_update_time.to_sec() < 0.1:
             # tell that we have a hardware problem                            
             self.blackboard.current_state = STATE_HARDWARE_PROBLEM
             # wait for motors to connect
@@ -134,13 +155,13 @@ class PickedUp(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         # check if the robot is currently beeing picked up
-        if self.blackboard.is_robot_picked_up():
+        if self.blackboard.pressure_sensors_installed and sum(self.blackboard.pressure) < 1:
             self.blackboard.current_state = STATE_PICKED_UP
             # we do an action sequence to tgo to walkready and stay in picked up state            
             return "PICKED_UP"
-        else:
-            # robot is not picked up
-            return "ON_GROUND"
+
+        # robot is not picked up
+        return "ON_GROUND"
 
     def get_reevaluate(self):
         return True
@@ -153,7 +174,7 @@ class Fallen(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         # check if the robot is currently laying on the ground
-        if self.blackboard.is_stand_up_active and self.blackboard.is_fallen():
+        if self.blackboard.is_stand_up_active and self.is_fallen():
             self.blackboard.current_state = STATE_FALLEN
             # we play a stand up animation            
             rospy.loginfo("FALLEN")
@@ -161,6 +182,11 @@ class Fallen(AbstractDecisionElement):
         else:
             # robot is not fallen
             return "NOT_FALLEN"
+
+    def is_fallen(self):
+        if self.fall_checker.check_fallen(self.blackboard.smooth_accel, self.blackboard.gyro) is None:
+            return False
+        return True
 
     def get_reevaluate(self):
         return True
@@ -173,13 +199,18 @@ class Falling(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         # check if the robot is currently falling
-        if self.blackboard.falling_detection_active and self.blackboard.is_falling():
+        if self.blackboard.falling_detection_active and self.is_falling():
             self.blackboard.current_state = STATE_FALLING
             # we play a falling animation            
             return "FALLING"
         else:
             # robot is not fallen
             return "NOT_FALLING"
+
+    def is_falling(self):
+        if self.fall_checker.check_falling(self.blackboard.gyro, self.blackboard.quaternion) is None:
+            return False
+        return True
 
     def get_reevaluate(self):
         return True
@@ -207,7 +238,7 @@ class Walking(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
-        if self.blackboard.is_currently_walking():
+        if self.blackboard.current_time.to_sec() - self.blackboard.last_walking_goal_time.to_sec() < 0.1:
             self.blackboard.current_state = STATE_WALKING
             if self.blackboard.animation_requested:
                 self.blackboard.animation_requested = False
@@ -230,12 +261,30 @@ class Controlable(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         # check if the robot is in a walkready pose
-        if not self.blackboard.is_walkready():
+        if not self.is_walkready():
             self.blackboard.current_state = STATE_ANIMATION_RUNNING
             return "NOT_WALKREADY"
         else:
             self.blackboard.current_state = STATE_CONTROLABLE
             return "WALKREADY"
+
+    def is_walkready(self):
+        """
+        We check if any joint is has an offset from the walkready pose which is higher than a threshold
+        """
+        if self.blackboard.current_joint_positions is None:
+            return False
+        i = 0
+        for joint_name in self.blackboard.current_joint_positions.name:
+            if joint_name == "HeadPan" or joint_name == "HeadTilt":
+                # we dont care about the head position
+                i += 1
+                continue
+            if abs(math.degrees(self.blackboard.current_joint_positions.position[i]) -
+                           self.blackboard.walkready_pose_dict[joint_name]) > self.blackboard.walkready_pose_threshold:
+                return False
+            i += 1
+        return True
 
     def get_reevaluate(self):
         return True
