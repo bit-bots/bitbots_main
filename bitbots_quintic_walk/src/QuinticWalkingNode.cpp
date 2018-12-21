@@ -5,16 +5,10 @@ QuinticWalkingNode::QuinticWalkingNode(){
     // init variables
     _robotState = humanoid_league_msgs::RobotControlState::CONTROLABLE;
     _walkEngine = bitbots_quintic_walk::QuinticWalk();
-    _stopRequest = true;    
-    _imu_stop = false;
-    walkingReset();
     _isLeftSupport = true;
-    _supportFootOdom = tf::Transform();
     // this is important since rviz will crash without explicit initilization of the transform
     tf::Quaternion quat = tf::Quaternion();
     quat.setRPY(0,0,0);
-    _supportFootOdom.setRotation(quat);   
-    _supportFootOdom.setOrigin(tf::Vector3(0,0,0));
 
     _marker_id = 1;
     _odom_broadcaster = tf::TransformBroadcaster();
@@ -62,49 +56,35 @@ QuinticWalkingNode::QuinticWalkingNode(){
     // initilize IK solver
     _bioIK_solver = bitbots_ik::BioIKSolver(*_all_joints_group, *_lleg_joints_group, *_rleg_joints_group);    
 
-    // gravity compensator
-    _gravity_compensator = bitbots_quintic_walk::GravityCompensator(_kinematic_model);
 }
 
 
 void QuinticWalkingNode::run(){
     /* 
     This is the main loop which takes care of stopping and starting of the walking.
-    If the walking is active, computeWalking() is called to compute next motor goals.
+    A small state machine is tracking in which state the walking is and builds the trajectories accordingly.
     */
 
    int odom_counter = 0;
 
     while (ros::ok()){
         ros::Rate loopRate(_engineFrequency);
-        if(_walkActive){
-            // The robot is currently walking
-            if((_robotState != humanoid_league_msgs::RobotControlState::FALLING)){
-                // The robot is in the right state, let's compute next motor goals
-                // First update orders. Tell robot to stop if it gets unstable
-                if(_imuActive && _imu_stop){
-                    _walkEngine.setOrders(_orders, !_stopRequest, true);    
-                }else{
-                    _walkEngine.setOrders(_orders, !_stopRequest, false);
-                }
-                
-                // Calculate joint positions
-                calculateWalking();
-            }else{
-                // The HCM changed from state walking to something else.
-                // this means, we were forced by the HCM to do something else
-                // for example standing up.
-                // We reset the walking engine and stop
-                walkingReset();
-                ROS_WARN("reset");
-            }
+        double dt = getTimeDelta();
+
+        if(_robotState == humanoid_league_msgs::RobotControlState::FALLING){
+            // the robot fell, we have to reset everything and do nothing else
+            _walkEngine.reset();
         }else{
-            // We're not currently running, test if we want to start
-            if(!_stopRequest && (_robotState == humanoid_league_msgs::RobotControlState::CONTROLABLE || _robotState == humanoid_league_msgs::RobotControlState::WALKING
-                                 || _robotState == humanoid_league_msgs::RobotControlState::MOTOR_OFF)){
-                _walkActive = true;
+            bool walkableState = _robotState == humanoid_league_msgs::RobotControlState::CONTROLABLE ||
+                                 _robotState == humanoid_league_msgs::RobotControlState::WALKING
+                                 || _robotState == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
+            bool newGoals = _walkEngine.updateState(dt, _currentOrders, walkableState);
+            if (newGoals) {
+                calculateJointGoals();
             }
         }
+
+        // publish odometry
         odom_counter++;
         if (odom_counter > _odomPubFactor){
             publishOdometry();
@@ -115,79 +95,15 @@ void QuinticWalkingNode::run(){
     }
 }
 
-
-void QuinticWalkingNode::walkingReset(){
-    /* 
-    Resets the walking and stops it *imediatly*. This means that it can also stop during a step, thus in an
-    unstable position. Should be normally used when the robot is already falling.
-    */
-    _orders = {0.0, 0.0, 0.0};
-    _walkEngine.setOrders(_orders, false, true);
-    _walkActive = false;    
-    _just_started = true;
-}
-
-void QuinticWalkingNode::calculateWalking(){
+void QuinticWalkingNode::calculateJointGoals(){
     /*
-    This method computes the next motor goals as well as the odometry if the step was changed.
+    This method computes the next motor goals and publishes them.
     */
-   
-    // save last step odometry if support foot changes
-    _stepOdom = _walkEngine.getFootstep().getNext();     
 
-    double dt = 0.01;
-    if(!_simulation_active){
-        std::chrono::time_point<std::chrono::steady_clock> current_time = std::chrono::steady_clock::now();
-        // only take real time difference if walking was not stopped before
-        // using c++ time since it is more performant than ros time. We only need a local difference, so it doesnt matter as long as we are not simulating
-        if(! _just_started){        
-            auto time_diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - _last_update_time);
-            dt = time_diff_ms.count() / 1000.0;        
-            if(dt == 0){
-                ROS_WARN("dt was 0");
-                dt = 0.001;
-            }
-        }
-        _last_update_time = current_time;
-    }else{
-        ROS_WARN_ONCE("Simulation active, using ROS time");
-        // use ros time for simulation
-        double current_ros_time = ros::Time::now().toSec();
-        if(! _just_started){ 
-            dt = current_ros_time - _last_ros_update_time;
-        }       
-        _last_ros_update_time = current_ros_time;
-    }
-    _just_started = false;
-    // compute new values from splines
-    _walkEngine.update(dt);
     // read the positions and orientations for trunk and fly foot
-    _walkEngine.computeCartesianPosition(_trunkPos, _trunkAxis, _footPos, _footAxis, _isLeftSupport);    
-    
-    // check if support foot has changed
-    if(_isLeftSupport != _wasLeftSupport){
-        _wasLeftSupport = _isLeftSupport;
-        // add odometry change of last step to trunk odom if step was completed    
-        // make transform
-        /*tf::Transform step;
-        step.setOrigin(tf::Vector3{_stepOdom[0], _stepOdom[1], 0.0});
-        tf::Quaternion tf_quat = tf::Quaternion();
-        tf_quat.setRPY(0, 0, _stepOdom[2]);
-        step.setRotation(tf_quat);
+    _walkEngine.computeCartesianPosition(_trunkPos, _trunkAxis, _footPos, _footAxis, _isLeftSupport);
 
-        // transform global odometry
-        _supportFootOdom = _supportFootOdom * step;*/
-
-        //check if the walking came to a complete stop
-        if((_stopRequest || _imu_stop) && !_walkEngine.getIsWalking()){            
-            _walkActive = false;
-            _just_started = true;
-            // we came to a stop, if we stopped due to the imu, we can start again
-            _imu_stop = false;            
-        }
-    }
-
-    // change goals from support foot based coordinate system to trunk based coordinate system 
+    // change goals from support foot based coordinate system to trunk based coordinate system
     tf::Vector3 tf_vec;
     tf::vectorEigenToTF(_trunkPos, tf_vec);
     tf::Quaternion tf_quat = tf::Quaternion();
@@ -202,16 +118,11 @@ void QuinticWalkingNode::calculateWalking(){
     tf::Transform support_to_flying_foot(tf_quat, tf_vec);
     tf::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * support_to_flying_foot;
 
-    // call ik solver    
+    // call ik solver
     bool success = _bioIK_solver.solve(trunk_to_support_foot_goal, trunk_to_flying_foot_goal, _walkEngine.getFootstep().isLeftSupport(), _goal_state);
-
 
     // publish goals if sucessfull
     if(success){
-        if(_compensate_gravity){
-            compensateGravity();
-        }
-
         std::vector<std::string> joint_names = _legs_joints_group->getActiveJointModelNames();
         std::vector<double> joint_goals;
         _goal_state->copyJointGroupPositions(_legs_joints_group, joint_goals);
@@ -226,67 +137,44 @@ void QuinticWalkingNode::calculateWalking(){
     }
 }
 
-void QuinticWalkingNode::compensateGravity(){
-    /**
-     * This method changes the goal positions of the joints according to the computed torque that is introduced by the weight of the robot
-     */
-    // this double represents how the balance of the weight is between the feet
-    // 0 if right foot is up, 1 if left foot is up
-    _balance_left_right = _walkEngine.getWeightBalance();
-    
-    // update to prevent "dirty link transforms"
-    _goal_state->update();
-    // reset all efforts to 0
-    for (size_t i = 0; i < _goal_state->getVariableCount(); i++) {            
-          _goal_state->setVariableEffort(i, 0.0);
+double QuinticWalkingNode::getTimeDelta(){
+    // compute time delta depended if we are currently in simulation or reality
+    double dt = 0.01;
+    if(!_simulation_active){
+        std::chrono::time_point<std::chrono::steady_clock> current_time = std::chrono::steady_clock::now();
+        // only take real time difference if walking was not stopped before
+        // using c++ time since it is more performant than ros time. We only need a local difference, so it doesnt matter as long as we are not simulating
+        auto time_diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - _last_update_time);
+        dt = time_diff_ms.count() / 1000.0;
+        if(dt == 0){
+            ROS_WARN("dt was 0");
+            dt = 0.001;
+        }
+        _last_update_time = current_time;
+    }else{
+        ROS_WARN_ONCE("Simulation active, using ROS time");
+        // use ros time for simulation
+        double current_ros_time = ros::Time::now().toSec();
+        dt = current_ros_time - _last_ros_update_time;
+        _last_ros_update_time = current_ros_time;
     }
-
-    // compute the efforts
-    _gravity_compensator.compensateGravity(
-        *_goal_state,
-        {{
-            std::make_pair("l_foot", 1.0 - _balance_left_right),
-            std::make_pair("r_foot", 0.0 + _balance_left_right),
-        }});
-
-    // set some joint efforts to 0 since we don't want to change them
-    // gravity compensation should be done by the knee joints
-    _goal_state->setVariableEffort("LAnkleRoll", 0);
-    _goal_state->setVariableEffort("RAnkleRoll", 0);
-    _goal_state->setVariableEffort("LAnklePitch", 0);
-    _goal_state->setVariableEffort("RAnklePitch", 0);
-    _goal_state->setVariableEffort("RHipYaw", 0);
-    _goal_state->setVariableEffort("LHipYaw", 0);
-    _goal_state->setVariableEffort("LHipRoll", 0);
-    _goal_state->setVariableEffort("RHipRoll", 0);
-
-    // make sure that we will not divide by 0
-    if(_gravityP == 0){
-        _gravityP = 1.0;
-    }
-    // change the goal position using inverse P controller    
-    for (size_t i = 0; i < _goal_state->getVariableCount(); i++) {
-        double newPosition= _goal_state->getVariablePosition(i) + _goal_state->getVariableEffort(i) / _gravityP;            
-        _goal_state->setVariablePosition(i, newPosition);
-    }
+    return dt;
 }
 
 void QuinticWalkingNode::cmdVelCb(const geometry_msgs::Twist msg){
     // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
     // other axis. 
-    // the engine ecepts orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
+    // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
     double factor =  1.0/ (_params.freq);
-    _orders = {msg.linear.x * factor, msg.linear.y * factor, msg.angular.z * factor};       
+    _currentOrders = {msg.linear.x * factor, msg.linear.y * factor, msg.angular.z * factor};
     // the orders should not extend beyond a maximal step size
     for(int i = 0; i < 3; i++){
-        if (_orders[i] >= 0){
-            _orders[i] = std::min(_orders[i], _max_step[i]);
+        if (_currentOrders[i] >= 0){
+            _currentOrders[i] = std::min(_currentOrders[i], _max_step[i]);
         }else{
-            _orders[i] = std::max(_orders[i], _max_step[i] * -1);
+            _currentOrders[i] = std::max(_currentOrders[i], _max_step[i] * -1);
         }
     }
-    // deactivate walking if goal is 0 movement, else activate it
-    _stopRequest = (msg.linear.x == 0 && msg.linear.y == 0 && msg.angular.z == 0);
 }
 
 void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg){
@@ -300,7 +188,7 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg){
         tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
        if(abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold){
-           _imu_stop = true;
+           _walkEngine.requestPause();
        }
     }
 }
@@ -308,7 +196,7 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg){
 void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg){
 
     // we only want to check stuff if we are in single support
-    if(_walkEngine.isEnabled() && !_walkEngine.isDoubleSupport()){
+    if(_walkEngine.getState() == "walking" && !_walkEngine.isDoubleSupport()){
 
         // we just want to look at the support foot. choose the 4 values from the message accordingly
         // s = support, n = not support, i = inside, o = outside, f = front, b = back
@@ -345,8 +233,8 @@ void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg){
         }
 
         // sum to get overall pressure on foot
-        double s_sum = slb + slf + srf + srb;
-        double n_sum = nlb + nlf + nrf + nrb;
+        double s_sum = sob + sof + sif + sib;
+        double n_sum = nob + nof + nif + nib;
 
         // ratios between pressures to get relative position of CoP
         double s_io_ratio = (sif + sib) / (sof + sob);
@@ -355,14 +243,17 @@ void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg){
         // check for phase reset
         // phase is far enough to have right foot lifted
         // foot has to have ground contact
-        if(_walkEngine.getPhase() > 0.7 && n_sum > 1){
-            _walkEngine.resetPhase();
+        double phase = _walkEngine.getPhase();
+        if(_phaseResetActive && ((phase > 0.3 && phase < 0.5) || (phase > 0.7)) && n_sum > _groundMinPressure){
+            ROS_WARN("Phase resetted!");
+            _walkEngine.endStep();
         }
 
         // check if robot is unstable and should pause
         // this is true if the robot is falling to the outside or to front or back
-        if(s_io_ratio < 0.5 || s_fb_ratio < 0.5 || s_fb_ratio > 2){
-            //TODO pause
+        if(_copStopActive && (s_io_ratio < _ioPressureThreshold || s_fb_ratio < 1/_fbPressureThreshold || s_fb_ratio > _fbPressureThreshold)){
+            _walkEngine.requestPause();
+            ROS_WARN("CoP stop!");
        }
     }
 }
@@ -376,9 +267,6 @@ void QuinticWalkingNode::jointStateCb(const sensor_msgs::JointState msg){
     std::string* names = names_vec.data();    
 
     _current_state->setJointPositions(*names, msg.position.data());
-    //todo
-    //_current_state->setJointVelocities(*names, msg.velocity.data());
-    //_current_state->setJointEfforts(*names, msg.effort.data());
 }
 
 void QuinticWalkingNode::kickCb(const std_msgs::BoolConstPtr msg){
@@ -420,8 +308,6 @@ void QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_w
     _pub_model_joint_states = config.pubModelJointStates;
     _engineFrequency = config.engineFreq;
     _odomPubFactor = config.odomPubFactor;
-    _compensate_gravity = config.compensateGravity;
-    _gravityP = config.gravityP;
     _max_step[0] = config.maxStepX;
     _max_step[1] = config.maxStepY;
     _max_step[2] = config.maxStepZ;
@@ -431,6 +317,13 @@ void QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_w
     _imuActive = config.imuActive;
     _imu_pitch_threshold = config.imuPitchThreshold;
     _imu_roll_threshold = config.imuRollThreshold;
+
+    _phaseResetActive = config.phaseResetActive;
+    _groundMinPressure = config.groundMinPressure;
+    _copStopActive = config.copStopActive;
+    _ioPressureThreshold = config.ioPressureThreshold;
+    _fbPressureThreshold = config.fbPressureThreshold;
+    _params.pauseDuration = config.pauseDuration;
 }
 
 
@@ -505,7 +398,7 @@ void QuinticWalkingNode::publishOdometry(){
     _odom_trans.transform.rotation = quat_msg;
 
     //send the transform
-    //todo this kills rviz
+    //todo this kills rviz?
     _odom_broadcaster.sendTransform(_odom_trans);
 
     // send the odometry also as message
@@ -518,9 +411,9 @@ void QuinticWalkingNode::publishOdometry(){
 
     _odom_msg.pose.pose.orientation = quat_msg;
     geometry_msgs::Twist twist;
-    twist.linear.x = _orders[0] * _params.freq;
-    twist.linear.y = _orders[1] * _params.freq;
-    twist.angular.z = _orders[2] * _params.freq;
+    twist.linear.x = _currentOrders[0] * _params.freq;
+    twist.linear.y = _currentOrders[1] * _params.freq;
+    twist.angular.z = _currentOrders[2] * _params.freq;
     _odom_msg.twist.twist = twist;
     _pubOdometry.publish(_odom_msg);
 }
@@ -539,7 +432,7 @@ void QuinticWalkingNode::publishDebug(tf::Transform& trunk_to_support_foot_goal,
     msg.phase_time = _walkEngine.getPhase();    
     msg.traj_time = _walkEngine.getTrajsTime();    
 
-    msg.balance_left_right = _balance_left_right;
+    msg.engine_state.data = _walkEngine.getState();
 
     // engine output
     geometry_msgs::Pose pose_msg;
@@ -753,7 +646,7 @@ void QuinticWalkingNode::publishMarkers(){
     _pubDebugMarker.publish(marker_msg);
 
     _marker_id++;
-    if(_marker_id > 1000){
+    if(_marker_id > 10000){
         _marker_id = 1;
     }
 

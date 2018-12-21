@@ -11,8 +11,7 @@ float64 traj_time
 # int instead of bool for easy plotting
 uint8 is_left_support
 uint8 is_double_support
-
-float64 balance_left_right
+std_msgs/String engine_state
 
 # output of the walk engine, in frame of the support foot
 geometry_msgs/Pose engine_trunk_goal

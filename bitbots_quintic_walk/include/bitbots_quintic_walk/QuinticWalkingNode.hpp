@@ -1,5 +1,5 @@
 /*
-This code is largely based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
+This code is based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
@@ -44,8 +44,7 @@ https://github.com/Rhoban/model/
 #include "bitbots_ik/AnalyticIKSolver.hpp"
 #include "bitbots_ik/BioIKSolver.hpp"
 #include "bitbots_quintic_walk/WalkEngine.hpp"
-#include "bitbots_quintic_walk/gravity_compensator.h"
-#include <std_msgs/Bool.h>  
+#include <std_msgs/Bool.h>
 
 
 
@@ -68,9 +67,8 @@ private:
     void robStateCb(const humanoid_league_msgs::RobotControlState msg);
     void jointStateCb(const sensor_msgs::JointState msg);
     void kickCb(const std_msgs::BoolConstPtr msg);
-    void walkingReset();
-    void calculateWalking();
-    void compensateGravity();
+    void calculateJointGoals();
+    double getTimeDelta();
 
     bool _debugActive;
     bool _pub_model_joint_states;
@@ -78,16 +76,14 @@ private:
     bool _currentlyWalking;
     bool _simulation_active;
 
-    bool _CV_zero;
     double _engineFrequency;
 
     double _imu_pitch_threshold;
     double _imu_roll_threshold;
-    bool _imu_stop;
 
     bool _phaseResetActive;
     double _groundMinPressure;
-    bool _copStopActive;
+    double _copStopActive;
     double _ioPressureThreshold;
     double _fbPressureThreshold;
 
@@ -103,8 +99,6 @@ private:
     int _marker_id;
 
     bitbots_quintic_walk::WalkingParameter _params;
-    Eigen::Vector3d _stepOdom;
-    tf::Transform _supportFootOdom;
 
     std::string _ik_type;
     std::string _robot_type;
@@ -116,12 +110,7 @@ private:
     bool _isLeftSupport;
     bool _wasLeftSupport;
     
-    bool _compensate_gravity;
-    double _gravityP;
-    double _balance_left_right;
-    bitbots_quintic_walk::GravityCompensator _gravity_compensator;
-
-    Eigen::Vector3d _current_CV;
+    Eigen::Vector3d _currentOrders;
     Eigen::Vector3d _max_step;
     bitbots_quintic_walk::QuinticWalk _walkEngine;
 
@@ -162,8 +151,6 @@ private:
     
     // IK solver
     bitbots_ik::BioIKSolver _bioIK_solver;
-
-    bool _ik_x_offset;
 
 };
 
