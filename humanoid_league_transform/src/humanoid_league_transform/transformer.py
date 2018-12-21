@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 import rospy
+from bitbots_quintic_walk.msg import WalkingDebug
 from humanoid_league_msgs.msg import BallRelative, BallsInImage, \
 LineInformationInImage, LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative, \
 ObstaclesInImage, ObstaclesRelative, ObstacleRelative, \
@@ -16,7 +17,7 @@ import numpy as np
 
 class TransformBall(object):
     def __init__(self):
-        rospy.init_node("humanoid_league_transformer")
+        rospy.init_node("bitbots_transformer")
 
         rospy.Subscriber(rospy.get_param("transformer/ball/ball_topic", "ball_in_image"),
                          BallsInImage,
@@ -51,31 +52,29 @@ class TransformBall(object):
         self.obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=1)
 
         self.camera_info = None
-        self.focal_length = None
 
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(10.0))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
         self.ball_height = rospy.get_param("transformer/ball/ball_radius", 0.075)
+        self.publish_frame = "camera_optical_frame"
 
         rospy.spin()
 
     def _callback_camera_info(self, camera_info):
         self.camera_info = camera_info
-        self.focal_length = camera_info.K[0] / (camera_info.width / 2.0)
 
     def _callback_ball(self, msg):
         if self.camera_info is None:
             rospy.logerr_throttle(rospy.Rate(1.0), "did not receive camerainfo")
 
-        field = self.get_plane(msg.header.stamp, self.ball_height)
+        field = self.get_plane(msg.header.stamp, self.ball_height, "base_footprint")
         if field is None:
-            rospy.logerr("fuck")
             return
 
         br = BallRelative()
         br.header.stamp = msg.header.stamp
-        br.header.frame_id = "camera"
+        br.header.frame_id = self.publish_frame
 
         for ball in msg.candidates:
             br.ball_relative = self.transform(ball.center, field)
@@ -91,13 +90,13 @@ class TransformBall(object):
         if self.camera_info is None:
             rospy.logerr( "did not receive camerainfo")
 
-        field = self.get_plane(msg.header.stamp, 0.0)
+        field = self.get_plane(msg.header.stamp, 0.0, "base_footprint")
         if field is None:
             return
 
         line = LineInformationRelative()
         line.header.stamp = msg.header.stamp
-        line.header.frame_id = "camera"
+        line.header.frame_id = self.publish_frame
 
         for seg in msg.segments:
             rel_seg = LineSegmentRelative()
@@ -153,7 +152,7 @@ class TransformBall(object):
             rospy.logerr("did not receive camerainfo")
             return
         points = []
-        field = self.get_plane(msg.header.stamp, 0)
+        field = self.get_plane(msg.header.stamp, 0, "base_footprint")
         if field is None:
             return
         for seg in msg.segments:
@@ -161,7 +160,7 @@ class TransformBall(object):
             if transformed is not None:
                 points.append([transformed.x, transformed.y, transformed.z])
         pc_header = msg.header
-        pc_header.frame_id = "camera"
+        pc_header.frame_id = self.publish_frame
         self.line_relative_pc_pub.publish(pc2.create_cloud_xyz32(pc_header, points))
 
     def _callback_goal(self, msg):
@@ -169,13 +168,13 @@ class TransformBall(object):
             rospy.logerr("did not receive camerainfo")
             return
 
-        field = self.get_plane(msg.header.stamp, 0.0)
+        field = self.get_plane(msg.header.stamp, 0.0, "base_footprint")
         if field is None:
             return
 
         goal = GoalRelative()
         goal.header.stamp = msg.header.stamp
-        goal.header.frame_id = "camera"
+        goal.header.frame_id = self.publish_frame
 
         transformed_left = self.transform(msg.left_post.foot_point, field)
         goal.left_post = transformed_left
@@ -193,13 +192,13 @@ class TransformBall(object):
             rospy.logerr("did not receive camerainfo")
             return
 
-        field = self.get_plane(msg.header.stamp, 0.0)
+        field = self.get_plane(msg.header.stamp, 0.0, "base_footprint")
         if field is None:
             return
 
         obstacles = ObstaclesRelative()
         obstacles.header = msg.header
-        obstacles.header.frame_id = "camera"
+        obstacles.header.frame_id = self.publish_frame
 
         for o in msg.obstacles:
             obstacle = ObstacleRelative()
@@ -214,11 +213,8 @@ class TransformBall(object):
 
         self.obstacle_relative_pub.publish(obstacles)
 
-    def get_plane(self, stamp, object_height):
+    def get_plane(self, stamp, object_height, base_frame):
         """ returns a plane which an object is believed to be on as a tuple of a point on this plane and a normal"""
-
-        base_frame = "base_footprint"
-
         field_normal = PointStamped()
         field_normal.header.frame_id = base_frame
         field_normal.header.stamp = stamp
@@ -226,9 +222,9 @@ class TransformBall(object):
         field_normal.point.y = 0.0
         field_normal.point.z = 1.0
         try:
-            field_normal = self.tf_buffer.transform(field_normal, "camera", timeout=rospy.Duration(0.2))
+            field_normal = self.tf_buffer.transform(field_normal, self.camera_info.header.frame_id, timeout=rospy.Duration(0.2))
         except tf2_ros.LookupException:
-            rospy.logwarn("Could not transform from " + base_frame + " to camera")
+            rospy.logwarn("Could not transform from " + base_frame + " to " + self.camera_info.header.frame_id)
             return None
         except tf2_ros.ExtrapolationException:
             rospy.logwarn("Waiting for transforms to become available...")
@@ -241,9 +237,9 @@ class TransformBall(object):
         field_point.point.y = 0.0
         field_point.point.z = object_height
         try:
-            field_point = self.tf_buffer.transform(field_point, "camera")
+            field_point = self.tf_buffer.transform(field_point, self.camera_info.header.frame_id)
         except tf2_ros.LookupException:
-            rospy.logwarn("Could not transform from " + base_frame + " to camera")
+            rospy.logwarn("Could not transform from " + base_frame + " to " + self.camera_info.header.frame_id)
             return None
 
         field_normal = np.array([field_normal.point.x, field_normal.point.y, field_normal.point.z])
@@ -254,27 +250,19 @@ class TransformBall(object):
         return field_normal, field_point
 
     def transform(self, point, field):
+        K = self.camera_info.K
+        
+        x = (point.x - K[2]) / K[0]
+        y = (point.y - K[5]) / K[4]
+        z = 1.0
 
-        # normalized camera coordinates coordinate system
-        #  -1,1 ------------- 1,1
-        #       |           |
-        #       |    0,0    |
-        #       |           |
-        # -1,-1 ------------- 1,-1
-        normalized_x = 2 * (float(point.x) - (float(self.camera_info.width) / 2)) / float(self.camera_info.width)
-        normalized_y = (-2 * (float(point.y) - (float(self.camera_info.height) / 2)) / float(self.camera_info.height)) * \
-                       (float(self.camera_info.height) / float(self.camera_info.width))
-
-        point_on_image = np.array([1.36, -normalized_x, normalized_y])
+        point_on_image = np.array([x, y, z])
 
         return line_plane_intersection(field[0], field[1], point_on_image)
 
 
-def line_plane_intersection(plane_normal, plane_point, ray_direction, epsilon=1e-3):
+def line_plane_intersection(plane_normal, plane_point, ray_direction):
     ndotu = plane_normal.dot(ray_direction)
-    # checking if intersection can be found at reasonable distance or at all
-    if abs(ndotu) < epsilon:
-        return None
 
     si = -plane_normal.dot(- plane_point) / ndotu
 
