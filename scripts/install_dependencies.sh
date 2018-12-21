@@ -13,6 +13,7 @@ sudo apt install -y \
     python \
     python-catkin-tools \
     python-pip \
+    python-pyqtgraph \
     python3 \
     python3-pip \
     ros-kinetic-control-msgs \
