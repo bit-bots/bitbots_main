@@ -6,30 +6,24 @@ QuinticWalkingNode::QuinticWalkingNode(){
     _robotState = humanoid_league_msgs::RobotControlState::CONTROLABLE;
     _walkEngine = bitbots_quintic_walk::QuinticWalk();
     _isLeftSupport = true;
-    // this is important since rviz will crash without explicit initilization of the transform
-    tf::Quaternion quat = tf::Quaternion();
-    quat.setRPY(0,0,0);
 
     _marker_id = 1;
     _odom_broadcaster = tf::TransformBroadcaster();
     
     // read config
     _nh.param<double>("engineFrequency", _engineFrequency, 100.0);
-    _nh.param<std::string>("walking/ik_type", _ik_type, "bio_ik");
-    _nh.param<std::string>("/robot_type_name", _robot_type, "notDefined");
     _nh.param<bool>("/simulation_active", _simulation_active, false);
 
     /* init publisher and subscriber */
-    _joint_state_msg = sensor_msgs::JointState();
-    _pubModelJointState = _nh.advertise<sensor_msgs::JointState>("joint_states", 1);
     _command_msg = bitbots_msgs::JointCommand();
     _pubControllerCommand = _nh.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
-
     _odom_msg = nav_msgs::Odometry();
     _pubOdometry = _nh.advertise<nav_msgs::Odometry>("walk_odometry", 1);
+
     _subCmdVel = _nh.subscribe("cmd_vel", 1, &QuinticWalkingNode::cmdVelCb, this, ros::TransportHints().tcpNoDelay());
     _subRobState = _nh.subscribe("robot_state", 1, &QuinticWalkingNode::robStateCb, this, ros::TransportHints().tcpNoDelay());
-    _subJointStates = _nh.subscribe("joint_states", 1, &QuinticWalkingNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
+    //todo not really needed
+    //_subJointStates = _nh.subscribe("joint_states", 1, &QuinticWalkingNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
     _subKick = _nh.subscribe("kick", 1, &QuinticWalkingNode::kickCb, this, ros::TransportHints().tcpNoDelay());
     _subImu = _nh.subscribe("imu/data", 1, &QuinticWalkingNode::imuCb, this, ros::TransportHints().tcpNoDelay());
     _subPressure = _nh.subscribe("pressure", 1, &QuinticWalkingNode::pressureCb, this, ros::TransportHints().tcpNoDelay());
@@ -75,9 +69,11 @@ void QuinticWalkingNode::run(){
             // the robot fell, we have to reset everything and do nothing else
             _walkEngine.reset();
         }else{
+            // we don't want to walk, even if we have orders, if we are not in the right state
             bool walkableState = _robotState == humanoid_league_msgs::RobotControlState::CONTROLABLE ||
                                  _robotState == humanoid_league_msgs::RobotControlState::WALKING
                                  || _robotState == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
+            // see if the walk engine has new goals for us
             bool newGoals = _walkEngine.updateState(dt, _currentOrders, walkableState);
             if (newGoals) {
                 calculateJointGoals();
@@ -100,7 +96,7 @@ void QuinticWalkingNode::calculateJointGoals(){
     This method computes the next motor goals and publishes them.
     */
 
-    // read the positions and orientations for trunk and fly foot
+    // read the cartesian positions and orientations for trunk and fly foot
     _walkEngine.computeCartesianPosition(_trunkPos, _trunkAxis, _footPos, _footAxis, _isLeftSupport);
 
     // change goals from support foot based coordinate system to trunk based coordinate system
@@ -127,10 +123,9 @@ void QuinticWalkingNode::calculateJointGoals(){
         std::vector<double> joint_goals;
         _goal_state->copyJointGroupPositions(_legs_joints_group, joint_goals);
         publishControllerCommands(joint_names, joint_goals);
-        if(_pub_model_joint_states){
-            publishModelJointStates(joint_names, joint_goals);
-        }
     }
+
+    // publish debug
     if(_debugActive){
         publishDebug(trunk_to_support_foot_goal, trunk_to_flying_foot_goal);
         publishMarkers();
@@ -195,7 +190,7 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg){
 
 void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg){
 
-    // we only want to check stuff if we are in single support
+    // we only want to check stuff if we are walking and in single support
     if(_walkEngine.getState() == "walking" && !_walkEngine.isDoubleSupport()){
 
         // we just want to look at the support foot. choose the 4 values from the message accordingly
@@ -240,8 +235,8 @@ void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg){
         double s_io_ratio = (sif + sib) / (sof + sob);
         double s_fb_ratio = (sif + sof) / (sib + sob);
 
-        // check for phase reset
-        // phase is far enough to have right foot lifted
+        // check for early step end
+        // phase has to be far enough to have right foot lifted
         // foot has to have ground contact
         double phase = _walkEngine.getPhase();
         if(_phaseResetActive && ((phase > 0.3 && phase < 0.5) || (phase > 0.7)) && n_sum > _groundMinPressure){
@@ -270,7 +265,7 @@ void QuinticWalkingNode::jointStateCb(const sensor_msgs::JointState msg){
 }
 
 void QuinticWalkingNode::kickCb(const std_msgs::BoolConstPtr msg){
-    _kick = true;
+    _walkEngine.requestKick(true); //todo decide foot
 }
 
 void QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level) {
@@ -295,25 +290,24 @@ void QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_w
     _params.trunkXOffsetPCoefTurn =  config.trunkXOffsetPCoefTurn;
     _params.trunkPitchPCoefForward =  config.trunkPitchPCoefForward;
     _params.trunkPitchPCoefTurn =  config.trunkPitchPCoefTurn;
-    _params.trunkYOnlyInDoubleSupport =  config.trunkYOnlyInDoubleSupport;
+
     _params.kickLength = config.kickLength;
     _params.kickPhase = config.kickPhase;
     _params.footPutDownRollOffset = config.footPutDownRollOffset;
     _params.kickVel = config.kickVel;
+
     _walkEngine.setParameters(_params);    
     _bioIK_solver.set_bioIK_timeout(config.bioIKTime);
     _bioIK_solver.set_use_approximate(config.bioIKApprox);
     
     _debugActive = config.debugActive;
-    _pub_model_joint_states = config.pubModelJointStates;
     _engineFrequency = config.engineFreq;
     _odomPubFactor = config.odomPubFactor;
+
     _max_step[0] = config.maxStepX;
     _max_step[1] = config.maxStepY;
     _max_step[2] = config.maxStepZ;
-    _vel = config.vel;
-    _acc = config.acc;
-    _pwm = config.pwm;
+
     _imuActive = config.imuActive;
     _imu_pitch_threshold = config.imuPitchThreshold;
     _imu_roll_threshold = config.imuRollThreshold;
@@ -327,21 +321,14 @@ void QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_w
 }
 
 
-void QuinticWalkingNode::publishModelJointStates(std::vector <std::string> joint_names, std::vector<double> positions){
-    _joint_state_msg.position = positions;
-    _joint_state_msg.name = joint_names;
-    _joint_state_msg.header.stamp = ros::Time::now();
-    _pubModelJointState.publish(_joint_state_msg);
-}
-
 void QuinticWalkingNode::publishControllerCommands(std::vector <std::string> joint_names, std::vector<double> positions){
     // publishes the commands to the GroupedPositionController
     _command_msg.joint_names = joint_names;
     _command_msg.positions = positions;
     std::vector<double> ones(joint_names.size(),-1.0);
-    std::vector<double> vels(joint_names.size(), _vel);
-    std::vector<double> accs(joint_names.size(), _acc);
-    std::vector<double> pwms(joint_names.size(), _pwm);
+    std::vector<double> vels(joint_names.size(), -1.0);
+    std::vector<double> accs(joint_names.size(), -1.0);
+    std::vector<double> pwms(joint_names.size(), -1.0);
     _command_msg.velocities = vels;
     _command_msg.accelerations = accs;
     _command_msg.max_currents = pwms;
