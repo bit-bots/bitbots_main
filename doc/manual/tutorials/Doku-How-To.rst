@@ -6,7 +6,7 @@ Unter `doku.bit-bots.de`_ wird eine automatisch generierte Doku zur Verfügung g
 
 Automatisch generiert bedeutet, dass catkin Pakete eigenständig erkannt und `.rst` Dokumente aus dem Source-Code
 generiert werden.
-Leider können momentan nur `python2` catkin Pakete automatisch dokumentiert werden lassen und auserdem muss die
+Leider können momentan nur `python2` catkin Pakete automatisch dokumentiert werden lassen und außerdem muss die
 Dokumentation vom Paket-Maintainer erst aktiviert werden.
 
 Dokumentation für catkin Paket aktivieren
