@@ -26,14 +26,19 @@ QuinticWalk::QuinticWalk() :
     //Reset the trunk saved state
     resetTrunkLastState();
     reset();
+    _trajs = bitbots_splines::TrajectoriesInit();
+
 }
 
 
 bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool walkableState){
-    bool ordersZero = orders[0] == 0 && orders[1] == 0 && orders[2] == 0;
+    bool ordersZero = orders[0] == 0.0 && orders[1] == 0.0 && orders[2] == 0.0;
 
     double lastPhase = _phase;
-    bool halfStepFinished = (lastPhase < 0.5 && _phase >= 0.5) || (lastPhase > 0.5 && _phase <= 0.5);
+    bool halfStepFinished = (lastPhase < 0.5 && _phase >= 0.5) || _phase >= 1;
+    if(halfStepFinished){
+        ROS_WARN("halfstep_finished");
+    }
 
     // small state machine
     if (_engineState == "idle") {
@@ -43,7 +48,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         } else {
             // we should start walking if the robot is in the right state
             if (walkableState) {
-                _phase = 0;
+                _phase = 0.0;
                 buildStartTrajectories(orders);
                 _engineState = "startMovement";
                 updatePhase(dt);
@@ -56,7 +61,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         // in this state we do a single "step" where we only move the trunk
         if (halfStepFinished) {
             //start step is finished, go to next state
-            _phase = 0;
+            _phase = 0.0;
             buildNormalTrajectories(orders);
             _engineState == "walking";
         }
@@ -77,7 +82,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
             if (ordersZero) {
                 // we have zero command vel -> we should stop
                 _engineState == "stopStep";
-                _phase = 0;
+                _phase = 0.0;
                 buildStopStepTrajectories(orders);
                 updatePhase(dt);
             } else {

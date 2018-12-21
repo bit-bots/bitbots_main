@@ -1,7 +1,7 @@
 walking:
   # Full walk cycle frequency
   # (in Hz, > 0)
-  freq: 0.588
+  freq: 0.2
   # Length of double support phase in half cycle
   # (ratio, [0:1])
   doubleSupportRatio: 0.2

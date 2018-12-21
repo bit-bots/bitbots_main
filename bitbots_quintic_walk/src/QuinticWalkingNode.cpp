@@ -6,6 +6,9 @@ QuinticWalkingNode::QuinticWalkingNode(){
     _robotState = humanoid_league_msgs::RobotControlState::CONTROLABLE;
     _walkEngine = bitbots_quintic_walk::QuinticWalk();
     _isLeftSupport = true;
+    _currentOrders[0] = 0.0;
+    _currentOrders[1] = 0.0;
+    _currentOrders[2] = 0.0;
 
     _marker_id = 1;
     _odom_broadcaster = tf::TransformBroadcaster();
@@ -75,7 +78,7 @@ void QuinticWalkingNode::run(){
                                  || _robotState == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
             // see if the walk engine has new goals for us
             bool newGoals = _walkEngine.updateState(dt, _currentOrders, walkableState);
-            if (newGoals) {
+            if (true) {
                 calculateJointGoals();
             }
         }
