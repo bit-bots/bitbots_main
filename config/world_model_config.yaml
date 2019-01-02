@@ -30,6 +30,8 @@ global_model_topic: '/global_world_model'
 
 local_particles_topic: '/local_particles'
 
+global_particles_topic: '/global_particles'
+
 reset_filters_service_name: 'WorldModel/reset_filters'
 
 publishing_frequency: 10
@@ -49,7 +51,7 @@ obstacle_marker_color: 3 # blue
 # Particle Filters #
 ####################
 
-# Local Filters
+# Global Filters
 # -------------
 
 local_ball_particle_number: 2000
@@ -85,4 +87,40 @@ local_obstacle_diffusion_multiplicator: 0.1
 local_obstacle_min_weight: 0.001
 local_obstacle_explorer_rate: .05
 local_obstacle_max_distance: 18
+
+
+# Global Filters
+# -------------
+
+global_ball_particle_number: 2000
+global_ball_diffusion_x_std_dev: 1
+global_ball_diffusion_y_std_dev: 1
+global_ball_diffusion_multiplicator: 0.1
+global_ball_min_weight: 0.001
+global_ball_explorer_rate: .2
+global_ball_max_distance: 18
+
+global_mate_particle_number: 2000
+global_mate_diffusion_x_std_dev: 1
+global_mate_diffusion_y_std_dev: 1
+global_mate_diffusion_multiplicator: 0.1
+global_mate_min_weight: 0.001
+global_mate_explorer_rate: .2
+global_mate_max_distance: 18
+
+global_opponent_particle_number: 100
+global_opponent_diffusion_x_std_dev: 1
+global_opponent_diffusion_y_std_dev: 1
+global_opponent_diffusion_multiplicator: 0.1
+global_opponent_min_weight: 0.001
+global_opponent_explorer_rate: .05
+global_opponent_max_distance: 18
+
+global_obstacle_particle_number: 2000
+global_obstacle_diffusion_x_std_dev: 1
+global_obstacle_diffusion_y_std_dev: 1
+global_obstacle_diffusion_multiplicator: 0.1
+global_obstacle_min_weight: 0.001
+global_obstacle_explorer_rate: .05
+global_obstacle_max_distance: 18
 
