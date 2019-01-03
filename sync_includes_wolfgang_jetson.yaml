@@ -1,4 +1,6 @@
 include:
+    - bitbots_misc:
+        - bitbots_bringup
     - bitbots_vision:
         - bitbots_vision
         - bitbots_vision_common
@@ -6,8 +8,6 @@ include:
     - humanoid_league_msgs
     - wolves_image_provider
     - scripts
-    - bitbots_misc:
-        - bitbots_bringup
 exclude:
     - "*.bag"
     - "*.pyc"

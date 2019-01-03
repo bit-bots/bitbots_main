@@ -1,17 +1,17 @@
 include:
-    - bitbots_behaviour:
-        - bitbots_body_behaviour
-        - bitbots_connector
-        - bitbots_head_behaviour
-        - bitbots_stackmachine
+    - bitbots_behavior:
+        - bitbots_body_behavior
+        - bitbots_blackboard
+        - bitbots_head_behavior
     - bitbots_misc:
         - bitbots_pathfinding
         - humanoid_league_transform
-    - humanoid_league_misc:
-        - game_controller
-        - humanoid_league_team_communication
-    - bitbots_localization:
+    - bitbots_navigation:
         - bitbots_localization
+    - dynamic_stack_decider
+    - humanoid_league_misc:
+        - humanoid_league_game_controller
+        - humanoid_league_team_communication
     - humanoid_league_msgs
     - scripts
 exclude:

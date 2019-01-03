@@ -1,52 +1,46 @@
 include:
-    - bitbots_behaviour:
+    - bitbots_behavior:
+        - bitbots_blackboard
         - bitbots_body_behavior
-        - bitbots_connector
         - bitbots_head_behavior
-        - bitbots_stackmachine
-        - bitbots_dsd
     - bitbots_lowlevel:
-        - bitbots_animation_server
-        - bitbots_dynamixel_debug
-        - bitbots_hcm
-        - bitbots_ros_control
-        - center_of_mass
-    - bitbots_localization:
-        - bitbots_localization
-        - pointcloud_to_laserscan
-    - bitbots_misc:
-        - humanoid_base_footprint
-        - bitbots_bringup
-        - bitbots_demo_animations
         - bitbots_buttons
-        - humanoid_league_transform
-    - bitbots_navigation:
-        - bitbots_move_base
-        - bitbots_pathfinding_simple
-    - humanoid_league_misc:
-        - game_controller
-        - humanoid_league_team_communication
-    - bitbots_localization:
-        - bitbots_localization
-    - bitbots_wolfgang:
-        - wolfgang_animations
-        - wolfgang_description
-        - wolfgang_moveit_config
-    - humanoid_league_msgs
-    - humanoid_league_misc:
-        - humanoid_league_speaker
-    - lib:
-        - bio_ik
-        - bio_ik_service
-        - swri_profiler
-        - DynamixelSDK
-        - dynamixel-workbench
-        - dynamixel-workbench-msgs
-    - quintic_walk:
+        - bitbots_dynamixel_debug
+        - bitbots_ros_control
+    - bitbots_misc:
+        - bitbots_bringup
+    - bitbots_motion:
+        - bitbots_animation_server
+        - bitbots_hcm
         - bitbots_ik
         - bitbots_quintic_walk
         - bitbots_splines
+    - bitbots_msgs
+    - bitbots_navigation:
+        - bitbots_localization
+        - bitbots_move_base
+        - bitbots_pathfinding_simple
+    - center_of_mass
+    - dynamic_stack_decider
+    - humanoid_base_footprint
+    - humanoid_league_misc:
+        - humanoid_league_game_controller
+        - humanoid_league_team_communication
+        - humanoid_league_speaker
+        - humanoid_league_transform
+    - humanoid_league_msgs
+    - lib:
+        - bio_ik
+        - bio_ik_service
+        - DynamixelSDK
+        - dynamixel-workbench
+        - dynamixel-workbench-msgs
+        - pointcloud_to_laserscan
     - scripts
+    - wolfgang_robot:
+        - wolfgang_animations
+        - wolfgang_description
+        - wolfgang_moveit_config
 exclude:
     - "*.bag"
     - "*.pyc"

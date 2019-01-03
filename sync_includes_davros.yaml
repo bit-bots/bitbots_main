@@ -1,21 +1,21 @@
 include:
-    - bitbots_behaviour:
-        - bitbots_connector
-        - bitbots_head_behaviour
-        - bitbots_stackmachine
-    - bitbots_davros:
-        - davros_description
-        - davros_moveit_config
+    - bitbots_behavior:
+        - bitbots_blackboard
+        - bitbots_head_behavior
     - bitbots_lowlevel:
-        - bitbots_cm730
-    - bitbots_misc:
         - bitbots_buttons
+        - bitbots_cm730 #?
+    - bitbots_misc:
         - bitbots_bringup
     - bitbots_vision:
         - bitbots_imageloader
         - bitbots_vision
         - bitbots_vision_common
         - python2_extensions
+    - davros_robot:
+        - davros_description
+        - davros_moveit_config
+    - dynamic_stack_decider
     - humanoid_league_misc:
         - humanoid_league_speaker
     - humanoid_league_msgs

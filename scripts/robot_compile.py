@@ -51,7 +51,7 @@ def get_includes_from_file(file):
 
 def add_game_controller_config(bot_id, workspace, host):
     team_id = 8
-    config_path = workspace + '/src/humanoid_league_misc/game_controller/config/game_controller.yaml'
+    config_path = workspace + '/src/humanoid_league_misc/humanoid_league_game_controller/config/game_controller.yaml'
     r = subprocess.run([
         'ssh',
         'bitbots@{}'.format(host[0]),
