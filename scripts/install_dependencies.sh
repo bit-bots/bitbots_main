@@ -10,6 +10,7 @@ sudo apt update
 sudo apt install -y \
     ros-kinetic-desktop-full \
     \
+    dia \
     python \
     python-catkin-tools \
     python-pip \
