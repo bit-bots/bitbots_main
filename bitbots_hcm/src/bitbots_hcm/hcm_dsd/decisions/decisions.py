@@ -169,24 +169,25 @@ class PickedUp(AbstractDecisionElement):
 
 class Fallen(AbstractDecisionElement):
     """
-    Decides if the robot is currently fallen and lying on the ground
+    Decides if the robot is fallen and lying on the ground
     """
 
     def perform(self, reevaluate=False):
         # check if the robot is currently laying on the ground
-        if self.blackboard.is_stand_up_active and self.is_fallen():
+        fallen_side = self.fall_checker.check_fallen(self.blackboard.smooth_accel, self.blackboard.gyro)
+
+        if self.blackboard.is_stand_up_active and fallen_side is not None:
             self.blackboard.current_state = STATE_FALLEN
             # we play a stand up animation            
-            rospy.loginfo("FALLEN")
-            return "FALLEN"
+            if fallen_side == self.blackboard.fall_checker.FRONT:
+                return "FALLEN_FRONT"
+            if fallen_side == self.blackboard.fall_checker.BACK:
+                return "FALLEN_BACK"
+            if fallen_side == self.blackboard.fall_checker.SIDE:
+                return "FALLEN_SIDE"
         else:
             # robot is not fallen
             return "NOT_FALLEN"
-
-    def is_fallen(self):
-        if self.fall_checker.check_fallen(self.blackboard.smooth_accel, self.blackboard.gyro) is None:
-            return False
-        return True
 
     def get_reevaluate(self):
         return True
@@ -199,18 +200,21 @@ class Falling(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         # check if the robot is currently falling
-        if self.blackboard.falling_detection_active and self.is_falling():
+        falling_direction = self.fall_checker.check_falling(self.blackboard.gyro, self.blackboard.quaternion)
+        if self.blackboard.falling_detection_active and falling_direction is not None:
             self.blackboard.current_state = STATE_FALLING
-            # we play a falling animation            
-            return "FALLING"
+
+            if falling_direction == self.blackboard.fall_checker.FRONT:
+                return "FALLING_FRONT"
+            if falling_direction == self.blackboard.fall_checker.BACK:
+                return "FALLING_BACK"
+            if falling_direction == self.blackboard.fall_checker.LEFT:
+                return "FALLING_LEFT"
+            if falling_direction == self.blackboard.fall_checker.RIGHT:
+                return "FALLING_RIGHT"        
         else:
             # robot is not fallen
             return "NOT_FALLING"
-
-    def is_falling(self):
-        if self.fall_checker.check_falling(self.blackboard.gyro, self.blackboard.quaternion) is None:
-            return False
-        return True
 
     def get_reevaluate(self):
         return True

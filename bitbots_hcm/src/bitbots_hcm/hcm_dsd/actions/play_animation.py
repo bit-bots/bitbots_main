@@ -74,38 +74,45 @@ class AbstractPlayAnimation(AbstractActionElement):
         return state == 3
 
 
-class PlayAnimationStandUp(AbstractPlayAnimation):
+class PlayAnimationStandUpFront(AbstractPlayAnimation):
     def chose_animation(self):
-        # publish that we are getting up
-        # blackboard.publish_state(STATE_GETTING_UP)
-        side = self.blackboard.get_fallen_side()
-        if side == self.blackboard.fall_checker.FRONT:
-            rospy.loginfo("PLAYING STAND UP FRONT ANIMATION")
-            return self.blackboard.stand_up_front_animation
-        if side == self.blackboard.fall_checker.BACK:
-            rospy.loginfo("PLAYING STAND UP BACK ANIMATION")
-            return self.blackboard.stand_up_back_animation
-        if side == self.blackboard.fall_checker.SIDE:
-            rospy.loginfo("PLAYING STAND UP SIDE ANIMATION")
-            return self.blackboard.stand_up_side_animation
+        rospy.loginfo("PLAYING STAND UP FRONT ANIMATION")
+        return self.blackboard.stand_up_front_animation
 
 
-class PlayAnimationFalling(AbstractPlayAnimation):
+class PlayAnimationStandUpBack(AbstractPlayAnimation):
     def chose_animation(self):
-        # blackboard.publish_state(Fallen)
-        side = self.blackboard.robot_falling_direction()
-        if side == self.blackboard.fall_checker.FRONT:
-            rospy.loginfo("PLAYING FALLING FRONT ANIMATION")
-            return self.blackboard.falling_animation_front
-        if side == self.blackboard.fall_checker.BACK:
-            rospy.loginfo("PLAYING FALLING BACK ANIMATION")
-            return self.blackboard.falling_animation_back
-        if side == self.blackboard.fall_checker.LEFT:
-            rospy.loginfo("PLAYING FALLING LEFT ANIMATION")
-            return self.blackboard.falling_animation_left
-        if side == self.blackboard.fall_checker.RIGHT:
-            rospy.loginfo("PLAYING FALLING RIGHT ANIMATION")
-            return self.blackboard.falling_animation_right
+        rospy.loginfo("PLAYING STAND UP BACK ANIMATION")
+        return self.blackboard.stand_up_back_animation
+
+class PlayAnimationStandUpSide(AbstractPlayAnimation):
+    def chose_animation(self):
+        rospy.loginfo("PLAYING STAND UP SIDE ANIMATION")
+        return self.blackboard.stand_up_side_animation
+
+
+class PlayAnimationFallingLeft(AbstractPlayAnimation):
+    def chose_animation(self):
+        rospy.loginfo("PLAYING FALLING LEFT ANIMATION")
+        return self.blackboard.falling_animation_left
+
+
+class PlayAnimationFallingRight(AbstractPlayAnimation):
+    def chose_animation(self):
+        rospy.loginfo("PLAYING FALLING RIGHT ANIMATION")
+        return self.blackboard.falling_animation_right
+
+
+class PlayAnimationFallingFront(AbstractPlayAnimation):
+    def chose_animation(self):
+        rospy.loginfo("PLAYING FALLING FRONT ANIMATION")
+        return self.blackboard.falling_animation_front
+
+
+class PlayAnimationFallingBack(AbstractPlayAnimation):
+    def chose_animation(self):
+        rospy.loginfo("PLAYING FALLING BACK ANIMATION")
+        return self.blackboard.falling_animation_back
 
 
 class PlayAnimationPenalty(AbstractPlayAnimation):

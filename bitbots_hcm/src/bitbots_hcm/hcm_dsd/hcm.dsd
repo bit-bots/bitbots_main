@@ -1,8 +1,13 @@
 #Fallen
 $Fallen
-    FALLEN --> @PlayAnimationStandUp
+    FALLEN_FRONT --> @PlayAnimationStandUpFront
+    FALLEN_BACK --> @PlayAnimationStandUpBack
+    FALLEN_SIDE --> @PlayAnimationStandUpSide
     NOT_FALLEN --> $Falling
-        FALLING --> @PlayAnimationFalling
+        FALLING_LEFT --> @PlayAnimationFallingLeft
+        FALLING_RIGHT --> @PlayAnimationFallingRight
+        FALLING_FRONT --> @PlayAnimationFallingFront
+        FALLING_BACK --> @PlayAnimationFallingBack
         NOT_FALLING --> $BehaviorAnimation
             ANIMATION_RUNNING --> @StayAnimationRunning
             FREE --> $Walking
