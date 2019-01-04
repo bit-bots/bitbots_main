@@ -38,8 +38,8 @@ if __name__ == "__main__":
     publish_motor_goals = rospy.Publisher('/head_motor_goals', JointCommand, queue_size=10)
 
     while not rospy.is_shutdown():
-        x = float(input('x: '))
-        y = float(input('y: '))
+        x = float(input('x: ')) * 1.4  # Magic, see _fix_pan_tilt_values in actions/look_at.py
+        y = float(input('y: ')) * 1.4
         point = PointStamped()
         point.header.stamp = rospy.Time.now()
         point.header.frame_id = 'base_footprint'
@@ -56,8 +56,6 @@ if __name__ == "__main__":
         head_pan = states.position[states.name.index('HeadPan')]
         head_tilt = states.position[states.name.index('HeadTilt')]
 
-        pan_position = min(max(head_pan, -1), 1)
-        tilt_position = min(max(head_tilt, -1.2), 0)
         print("Motor positions {}, {}".format(pan_position, tilt_position))
         pos_msg.positions = [pan_position, tilt_position]
         pos_msg.header.stamp = rospy.Time.now()

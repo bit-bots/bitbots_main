@@ -57,7 +57,17 @@ class AbstractLookAt(AbstractActionElement):
             return
 
         head_pan, head_tilt = self.get_motor_goals_from_point(point.point)
+        head_pan, head_tilt = self._fix_pan_tilt_values(head_pan, head_tilt)
         self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt)
+
+    def _fix_pan_tilt_values(self, pan, tilt):
+        """
+        Unfortunately, the bio_ik_service makes the robot look at a wrong point. As research via the
+        test_look_at.py script suggests, this deviation is approximately a factor of 1.4 for both pan and
+        tilt values. This is not good, but I do not know the reason. Therefore, this has to be kept to look
+        at the correct position.
+        """
+        return pan * 1.4, tilt * 1.4
 
 
 class LookDirection(AbstractLookAt):
