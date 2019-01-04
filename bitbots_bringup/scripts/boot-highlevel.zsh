@@ -12,7 +12,7 @@ while true ; do
             elif [[ $HOST == nuc* || $HOST == odroid* ]]; then
                 roslaunch bitbots_bringup teamplayer.launch $ROBOT:=true motion:=false vision:=false
             elif [[ $HOST == jetson* ]]; then
-                roslaunch bitbots_vision_common vision_startup.launch $ROBOT:=true
+                roslaunch bitbots_vision vision_startup.launch
             fi
         fi
     )

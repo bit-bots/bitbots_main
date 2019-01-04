@@ -14,7 +14,7 @@
     </include>
 
     <group if="$(arg vision)">
-        <include file="$(find bitbots_vision_common)/launch/vision_startup.launch">
+        <include file="$(find bitbots_vision)/launch/vision_startup.launch">
             <arg name="sim" value="$(arg sim)" />
         </include>
     </group>
