@@ -285,13 +285,6 @@ class Vision:
             'horizon_offset': config['line_detector_horizon_offset'],
             'linepoints_range': config['line_detector_linepoints_range'],
             'blur_kernel_size': config['line_detector_blur_kernel_size'],
-            'line_detector2_line_len': config['line_detector2_line_len'],
-            'line_detector2_red': config['line_detector2_red'],
-            'line_detector2_green': config['line_detector2_green'],
-            'line_detector2_blue': config['line_detector2_blue'],
-            'line_detector2_subtract': config['line_detector2_subtract'],
-            'line_detector2_magic_value': config['line_detector2_magic_value'],
-            'line_detector2_horizon_offset': config['line_detector2_horizon_offset'],
         }
 
         self.line_detector = lines.LineDetector(self.white_color_detector,

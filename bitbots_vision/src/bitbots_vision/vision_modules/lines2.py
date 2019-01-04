@@ -7,6 +7,10 @@ import math
 
 
 class LineDetector2:
+    """
+        This was a test. The module does not work correctly
+    """
+
     def __init__(self, image, candidates, white_detector, horizon_detector, config):
         # type: (np.matrix, list, ColorDetector, HorizonDetector, dict) -> None
         self.image = image
