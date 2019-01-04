@@ -6,18 +6,20 @@
 
     <!-- start vision for wolfgang (fcnn)-->
     <group unless="$(arg dummyball)">
-        <include file="$(find bitbots_vision)/launch/bitbots_vision.launch">
-            <arg name="debug" value="$(arg debug)" />
-            <arg name="classifier" value="fcnn" />
-        </include>
+        <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
+            <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
+            <param name="vision_debug_image_msg" value="$(arg debug)"/>
+            <param name="vision_ball_classifier" value="fcnn" />
+        </node>
     </group>
 
     <!-- start vision without balldetection-->
     <group if="$(arg dummyball)">
-        <include file="$(find bitbots_vision)/launch/bitbots_vision.launch">
-            <arg name="debug" value="$(arg debug)" />
-            <arg name="classifier" value="dummy" />
-        </include>
+        <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
+            <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
+            <param name="vision_debug_image_msg" value="$(arg debug)"/>
+            <param name="vision_ball_classifier" value="dummy" />
+        </node>
     </group>
 
     <!-- start the camera only when necessary -->
