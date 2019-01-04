@@ -70,28 +70,6 @@ class DebugImage:
 
 
 class DebugPrinter:
-    def print_candidates_info(self, candidates, name='candidate', debug_class='NONE'):
-        if debug_class not in self._debug_classes:
-            return
-        if candidates:
-            rospy.loginfo('{0} candidates:'.format(len(candidates)))
-        else:
-            rospy.loginfo('0 candidates.')
-        for candidate in candidates:
-            if candidate:
-                DebugPrinter.print_candidate_info(candidate, name=name, prefix='- ')
-
-    def print_candidate_info(self, candidate, name='candidate', prefix=''):
-        rospy.loginfo(
-            '{0}{1}: x1,y1: {2},{3} | width,height: {4},{5} | rating: {6}'
-            .format(
-                prefix,
-                name,
-                candidate.get_upper_left_x(),
-                candidate.get_upper_left_y(),
-                candidate.get_width(),
-                candidate.get_height(),
-                candidate.rating))
     def __init__(self, debug_classes=None):
         self._debug_classes = [debug_class.lower() for debug_class in debug_classes]
         self._all = 'all' in debug_classes

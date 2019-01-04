@@ -143,6 +143,14 @@ class Candidate:
                 <= point[1]
                 <= self.get_upper_left_y() + self.get_height())
 
+    def __str__(self):
+        return 'x1,y1: {0},{1} | width,height: {2},{3} | rating: {4}'.format(
+            self.get_upper_left_x(),
+            self.get_upper_left_y(),
+            self.get_width(),
+            self.get_height(),
+            self.rating)
+
 
 class CandidateFinder(object):
 
