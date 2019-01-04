@@ -1,7 +1,7 @@
 #! /usr/bin/env python2
 
 
-from bitbots_vision_common.vision_modules import lines, horizon, color, debug, live_classifier, classifier, ball, \
+from bitbots_vision.vision_modules import lines, horizon, color, debug, live_classifier, classifier, ball, \
     lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, ObstacleInImage
 from sensor_msgs.msg import Image

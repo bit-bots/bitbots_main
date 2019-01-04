@@ -1,5 +1,5 @@
 
-from .candidate import Candidate, CandidateFinder
+from .candidate import Candidate
 import numpy as np
 import cv2
 
