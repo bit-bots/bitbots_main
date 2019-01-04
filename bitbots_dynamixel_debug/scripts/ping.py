@@ -18,7 +18,7 @@ if args.p1:
 else:
     protocol = 2
 baudrate = 2000000
-device ="/dev/ttyUSB0".encode('utf-8')
+device ="/dev/ttyACM0".encode('utf-8')
 
 c = Connector(protocol, device, baudrate)
 

@@ -4,7 +4,7 @@ ros_control:
   read_velocity: false
   read_effort: false
   read_volt_temp: true # this also corresponds for the error byte
-  read_pressure: true
+  read_pressure: false
   VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
   warn_temp: 60
   warn_volt: 12
