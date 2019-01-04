@@ -139,8 +139,8 @@ class ObstacleDetector(CandidateFinder):
             """
             # Todo: value of minWidth and step has to be tested
             threshold = self._horizon_diff_threshold
-            min_width = 30 #self._candidate_min_witdh
-            step = 5 #self._finder_step_length
+            min_width = self._candidate_min_width  # minimal width of an acceptable candidate in pixels
+            step = self._finder_step_length  # step size in the interpolated horizon
             pic_width = len(horizon_distance)  # Width of picture
             for i in range(0, pic_width, step):  # traverses horizon_distance
                 if not obstacle_begin:
