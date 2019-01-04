@@ -1,7 +1,7 @@
 <launch>
   <arg name="folder" default="img"/>
   <param name="img_folder" value="$(arg folder)" />
-  <include file="$(find wolves_image_provider)/launch/image_provider_v4l.launch" />
+  <include file="$(find wolves_image_provider)/launch/image_provider.launch" />
   <node name="extract" pkg="image_view" type="extract_images" respawn="false" output="screen" cwd="ROS_HOME">
     <remap from="image" to="/image_raw"/>
     <param name="filename_format" value="frame%05d.png"/>
