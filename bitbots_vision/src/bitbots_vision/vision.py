@@ -175,6 +175,7 @@ class Vision:
 
     def _dynamic_reconfigure_callback(self, config, level):
 
+
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
         self._ball_candidate_y_offset = config['vision_ball_candidate_horizon_y_offset']
 
@@ -182,18 +183,10 @@ class Vision:
         self.debug_image_msg = config['vision_debug_image_msg']
         self.debug = self.debug_image or self.debug_image_msg
         if self.debug:
-            rospy.logwarn('Debug windows are enabled')
+            rospy.logwarn('Debug images are enabled')
         else:
-            rospy.loginfo('Debug windows are disabled')
+            rospy.loginfo('Debug images are disabled')
 
-
-        # set up ball config for cascade
-        self.ball_config = {
-            'classify_threshold': config['ball_finder_classify_threshold'],
-            'scale_factor': config['ball_finder_scale_factor'],
-            'min_neighbors': config['ball_finder_min_neighbors'],
-            'min_size': config['ball_finder_min_size'],
-        }
 
         # load cascade
         if (config['vision_ball_classifier'] == 'cascade'):
@@ -214,10 +207,12 @@ class Vision:
                 rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
             self.ball_detector = classifier.ClassifierHandler(self.ball_classifier)
 
-            self.ball_finder = ball.BallFinder(self.cascade, self.ball_config)
+            self.ball_finder = ball.BallFinder(self.cascade, config)
 
 
         # set up ball config for fcnn
+        # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
+        # this enables 2 fcnns with different configs.
         self.ball_fcnn_config = {
             'debug': config['ball_fcnn_debug'] and self.debug_image,
             'threshold': config['ball_fcnn_threshold'],
@@ -269,44 +264,22 @@ class Vision:
             self.package_path +
             config['field_color_detector_path'])
 
-        # set up horizon config
-        self.horizon_config = {
-            'x_steps': config['horizon_finder_horizontal_steps'],
-            'y_steps': config['horizon_finder_vertical_steps'],
-            'precise_pixel': config['horizon_finder_precision_pix'],
-            'min_precise_pixel': config['horizon_finder_min_precision_pix'],
-        }
         self.horizon_detector = horizon.HorizonDetector(
             self.field_color_detector,
-            self.horizon_config)
-
-        # set up lines config
-        self.lines_config = {
-            'horizon_offset': config['line_detector_horizon_offset'],
-            'linepoints_range': config['line_detector_linepoints_range'],
-            'blur_kernel_size': config['line_detector_blur_kernel_size'],
-        }
+            config)
 
         self.line_detector = lines.LineDetector(self.white_color_detector,
                                                 self.field_color_detector,
                                                 self.horizon_detector,
-                                                self.lines_config)
+                                                config)
 
-        self.obstacles_config = {
-            'color_threshold': config['obstacle_color_threshold'],
-            'white_threshold': config['obstacle_white_threshold'],
-            'horizon_diff_threshold': config['obstacle_horizon_diff_threshold'],
-            'candidate_horizon_offset': config['obstacle_candidate_horizon_offset'],
-            'candidate_min_width': config['obstacle_candidate_min_width'],
-            'finder_step_length': config['obstacle_finder_step_length'],
-        }
         self.obstacle_detector = obstacle.ObstacleDetector(
             self.red_color_detector,
             self.blue_color_detector,
             self.white_color_detector,
             self.horizon_detector,
             self.runtime_evaluator,
-            self.obstacles_config
+            config
         )
 
         # subscribers
@@ -355,7 +328,9 @@ class Vision:
             Image,
             queue_size=1,
         )
+
         self.config = config
+
         return config
 
 if __name__ == '__main__':

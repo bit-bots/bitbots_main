@@ -15,12 +15,12 @@ class ObstacleDetector(CandidateFinder):
         self._white_color_detector = white_color_detector
         self._horizon_detector = horizon_detector
         self._runtime_evaluator = runtime_evaluator
-        self._color_threshold = config['color_threshold']
-        self._white_threshold = config['white_threshold']
-        self._horizon_diff_threshold = config['horizon_diff_threshold']
-        self._candidate_horizon_offset = config['candidate_horizon_offset']
-        self._candidate_min_width = config['candidate_min_width']
-        self._finder_step_length = config['finder_step_length']
+        self._color_threshold = config['obstacle_color_threshold']
+        self._white_threshold = config['obstacle_white_threshold']
+        self._horizon_diff_threshold = config['obstacle_horizon_diff_threshold']
+        self._candidate_horizon_offset = config['obstacle_candidate_horizon_offset']
+        self._candidate_min_width = config['obstacle_candidate_min_width']
+        self._finder_step_length = config['obstacle_finder_step_length']
 
         self._image = None
         self._blue_mask = None

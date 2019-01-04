@@ -15,10 +15,10 @@ class BallFinder():
         self._debug = False
 
         # init config
-        self._classify_threshold = config['classify_threshold']
-        self._scale_factor = config['scale_factor']
-        self._min_neighbors = config['min_neighbors']
-        self._min_size = config['min_size']
+        self._classify_threshold = config['ball_finder_classify_threshold']
+        self._scale_factor = config['ball_finder_scale_factor']
+        self._min_neighbors = config['ball_finder_min_neighbors']
+        self._min_size = config['ball_finder_min_size']
 
     def set_image(self, image):
         self._image = image

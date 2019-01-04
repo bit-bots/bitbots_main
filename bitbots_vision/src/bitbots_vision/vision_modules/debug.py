@@ -70,11 +70,12 @@ class DebugImage:
 
 
 class DebugPrinter:
-    def __init__(self):
-        pass
+    def __init__(self, debug_classes):
+        self._debug_classes = debug_classes
 
-    @staticmethod
-    def print_candidates_info(candidates, name='candidate'):
+    def print_candidates_info(self, candidates, name='candidate', debug_class='NONE'):
+        if debug_class not in self._debug_classes:
+            return
         if candidates:
             rospy.loginfo('{0} candidates:'.format(len(candidates)))
         else:
@@ -83,8 +84,7 @@ class DebugPrinter:
             if candidate:
                 DebugPrinter.print_candidate_info(candidate, name=name, prefix='- ')
 
-    @staticmethod
-    def print_candidate_info(candidate, name='candidate', prefix=''):
+    def print_candidate_info(self, candidate, name='candidate', prefix=''):
         rospy.loginfo(
             '{0}{1}: x1,y1: {2},{3} | width,height: {4},{5} | rating: {6}'
             .format(
@@ -95,5 +95,15 @@ class DebugPrinter:
                 candidate.get_width(),
                 candidate.get_height(),
                 candidate.rating))
+
+    def info(self, message, debug_class='NONE'):
+        if debug_class in self._debug_classes:
+            rospy.loginfo(message)
+
+    def warn(self, message, debug_class='NONE'):
+        if debug_class in self._debug_classes:
+            rospy.logwarn(message)
+
+
 
 

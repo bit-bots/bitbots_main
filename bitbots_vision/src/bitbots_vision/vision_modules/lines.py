@@ -20,9 +20,9 @@ class LineDetector:
         self._field_color_detector = field_color_detector
         self._horizon_detector = horizon_detector
         # init config
-        self._horizon_offset = config['horizon_offset']
-        self._linepoints_range = config['linepoints_range']
-        self._blur_kernel_size = config['blur_kernel_size']
+        self._horizon_offset = config['line_detector_horizon_offset']
+        self._linepoints_range = config['line_detector_linepoints_range']
+        self._blur_kernel_size = config['line_detector_blur_kernel_size']
 
     def set_image(self, image):
         self._image = image

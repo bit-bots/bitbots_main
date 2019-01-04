@@ -16,10 +16,10 @@ class HorizonDetector:
         self._convex_horizon_full = None
         self._horizon_hull = None
         # init config
-        self._x_steps = config['x_steps']
-        self._y_steps = config['y_steps']
-        self._precise_pixel = config['precise_pixel']
-        self._min_precise_pixel = config['min_precise_pixel']
+        self._x_steps = config['horizon_finder_horizontal_steps']
+        self._y_steps = config['horizon_finder_vertical_steps']
+        self._precise_pixel = config['horizon_finder_precision_pix']
+        self._min_precise_pixel = config['horizon_finder_min_precision_pix']
 
     def set_image(self, image):
         self._image = image
