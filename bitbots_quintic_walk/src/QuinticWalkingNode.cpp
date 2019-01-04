@@ -22,7 +22,7 @@ QuinticWalkingNode::QuinticWalkingNode(){
     _pubControllerCommand = _nh.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
     _odom_msg = nav_msgs::Odometry();
     _pubOdometry = _nh.advertise<nav_msgs::Odometry>("walk_odometry", 1);
-
+    _pubSupport = _nh.advertise<std_msgs::Char>("walk_support_state", 1);
     _subCmdVel = _nh.subscribe("cmd_vel", 1, &QuinticWalkingNode::cmdVelCb, this, ros::TransportHints().tcpNoDelay());
     _subRobState = _nh.subscribe("robot_state", 1, &QuinticWalkingNode::robStateCb, this, ros::TransportHints().tcpNoDelay());
     //todo not really needed
@@ -128,11 +128,23 @@ void QuinticWalkingNode::calculateJointGoals(){
         publishControllerCommands(joint_names, joint_goals);
     }
 
-    // publish debug
+    // publish current support state
+    std_msgs::Char support_state;
+    if(_walkEngine.isDoubleSupport()){
+        support_state.data = 'd';
+    }else if(_walkEngine.isLeftSupport()){
+        support_state.data = 'l';
+    }else{
+        support_state.data = 'r';
+    }
+    _pubSupport.publish(support_state);
+
+    // publish debug information
     if(_debugActive){
         publishDebug(trunk_to_support_foot_goal, trunk_to_flying_foot_goal);
         publishMarkers();
     }
+
 }
 
 double QuinticWalkingNode::getTimeDelta(){

@@ -18,6 +18,7 @@ https://github.com/Rhoban/model/
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/Char.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
@@ -108,6 +109,7 @@ private:
 
     ros::Publisher _pubControllerCommand;
     ros::Publisher _pubOdometry;
+    ros::Publisher _pubSupport;
     tf::TransformBroadcaster _odom_broadcaster;
     ros::Publisher _pubDebug;
     ros::Publisher _pubDebugMarker;
