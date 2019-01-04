@@ -160,7 +160,6 @@ private:
   bool _read_velocity;
   bool _read_effort;
   bool _read_volt_temp;
-  bool _read_pressure;
   bool _update_pid;
   std::vector<double> _current_position;
   std::vector<double> _current_velocity;
@@ -178,7 +177,9 @@ private:
 
 
   bool _read_imu;
-  bool _onlyIMU;
+  bool _read_pressure;
+  bool _readButtons;
+  bool _onlySensors;  
   uint32_t _last_seq_number;
   double* _orientation; //quaternion (x,y,z,w)
   double* _orientation_covariance;

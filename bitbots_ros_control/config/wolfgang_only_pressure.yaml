@@ -8,8 +8,8 @@ ros_control:
 
   # which sensors should be read
   read_buttons: false
-  read_imu: true
-  read_pressure: false  
+  read_imu: false
+  read_pressure: true  
   onlySensors: true
 
   control_loop_hz: 200

@@ -73,14 +73,19 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   nh.getParam("IMU/name", imu_name);
   nh.getParam("IMU/frame", imu_frame);
   nh.getParam("read_imu", _read_imu);
-  hardware_interface::ImuSensorHandle imu_handle(imu_name, imu_frame, _orientation, _orientation_covariance, _angular_velocity, _angular_velocity_covariance, _linear_acceleration, _linear_acceleration_covariance);
-  _imu_interface.registerHandle(imu_handle);
-  registerInterface(&_imu_interface);
+  if(_read_imu){
+    hardware_interface::ImuSensorHandle imu_handle(imu_name, imu_frame, _orientation, _orientation_covariance, _angular_velocity, _angular_velocity_covariance, _linear_acceleration, _linear_acceleration_covariance);
+    _imu_interface.registerHandle(imu_handle);
+    registerInterface(&_imu_interface);
+  }
 
-  // ignore rest of the code if we are running in special "only IMU" mode
-  _onlyIMU = nh.param("onlyIMU", false);
-  if(_onlyIMU){
-    ROS_WARN("Ignoring servo errors since only IMU is set to true!");
+  _readButtons = nh.param("readButtons", false);
+  _current_pressure.resize(8, 0);
+
+  // ignore rest of the code if we are running in special "onlySensors" mode
+  _onlySensors = nh.param("onlySensors", false);
+  if(_onlySensors){
+    ROS_WARN("Ignoring servo errors since onlySensors is set to true!");
     return true;
   }
 
@@ -117,7 +122,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _current_input_voltage.resize(_joint_count, 0);
   _current_temperature.resize(_joint_count, 0);
   _current_error.resize(_joint_count, 0);
-  _current_pressure.resize(8, 0);
+
   _goal_position.resize(_joint_count, 0);
   _goal_velocity.resize(_joint_count, 0);
   _goal_acceleration.resize(_joint_count, 0);
@@ -427,7 +432,7 @@ bool DynamixelHardwareInterface::read()
       }
   }
 
-  if(!readButtons()){
+  if(_readButtons && !readButtons()){
     ROS_ERROR_THROTTLE(1.0, "Couldn't read Buttons");
   }
 
@@ -436,9 +441,7 @@ bool DynamixelHardwareInterface::read()
       ROS_ERROR_THROTTLE(1.0, "Couldn't read foot sensor values");
     }
   }
-  if(_onlyIMU){
-    return true;
-  }
+
   bool read_successful = true;
 
   // either read all values or a single one, depending on config
@@ -516,7 +519,7 @@ bool DynamixelHardwareInterface::read()
 
 void DynamixelHardwareInterface::write()
 {
-  if(_onlyIMU){
+  if(_onlySensors){
     return;
   }
 
@@ -626,7 +629,7 @@ bool DynamixelHardwareInterface::stringToControlMode(std::string _control_modest
 
 bool DynamixelHardwareInterface::switchDynamixelControlMode()
 {
-  if(_onlyIMU){
+  if(_onlySensors){
     return true;
   }
   // Torque on dynamixels has to be disabled to change operating mode
@@ -809,35 +812,38 @@ bool DynamixelHardwareInterface::readButtons(){
 }
 
 bool DynamixelHardwareInterface::readFootSensors(){
-  uint8_t *data = (uint8_t *) malloc(sizeof(uint8_t));
+  uint8_t *data = (uint8_t *) malloc(16 * sizeof(uint8_t));
   // read first foot
   if(_driver->readMultipleRegisters(101, 36, 16, data)){
     for (int i = 0; i < 4; i++) {
-      _current_pressure[i] = DXL_MAKEDWORD(DXL_MAKEWORD(data[i], data[i+1]),
-                                         DXL_MAKEWORD(data[i+2], data[i+3]));
+      uint32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i*4], data[i*4+1]), DXL_MAKEWORD(data[i*4+2], data[i*4+3]));      
+      float pres_d = (float) pres;      
+      // go from bytes to actual newton force
+      _current_pressure[i] = (double) pres_d; //- (pow(2, 32)/2);
     }
   }else{
     return false;
-  }                                
+  }             
   // read second foot
-  if(_driver->readMultipleRegisters(102, 36, 16, data)){
+  /*if(_driver->readMultipleRegisters(102, 36, 16, data)){
     for (int i = 0; i < 4; i++) {
       _current_pressure[i+4] = DXL_MAKEDWORD(DXL_MAKEWORD(data[i], data[i+1]),
                                          DXL_MAKEWORD(data[i+2], data[i+3]));
     }
   }else{
     return false;
-  }
+  }*/
 
   bitbots_msgs::FootPressure msg;
-  msg.l_l_b = _current_pressure[0];
-  msg.l_l_f = _current_pressure[1];
-  msg.l_r_f = _current_pressure[2];
-  msg.l_r_b = _current_pressure[3];
-  msg.r_l_b = _current_pressure[4];
-  msg.r_l_f = _current_pressure[5];
-  msg.r_r_f = _current_pressure[6];
-  msg.r_r_b = _current_pressure[7];
+  msg.header.stamp = ros::Time::now();
+  msg.l_l_f = _current_pressure[0];
+  msg.l_r_f = _current_pressure[1];
+  msg.l_l_b = _current_pressure[2];
+  msg.l_l_f = _current_pressure[3];
+  msg.r_l_f = _current_pressure[4];
+  msg.r_r_f = _current_pressure[5];
+  msg.r_l_b = _current_pressure[6];
+  msg.r_l_f = _current_pressure[7];
   _pressure_pub.publish(msg);
   return true;
 }

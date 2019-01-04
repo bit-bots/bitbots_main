@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="sim" default="false"/>
+
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch"/>
+
+    <rosparam file="$(find bitbots_ros_control)/config/wolfgang_only_pressure.yaml" command="load" />
+
+    <node pkg="bitbots_ros_control" type="dynamixel_controller_manager_node" name="ros_control" output="screen"/> 
+
+    <rosparam file="$(find bitbots_ros_control)/config/controller.yaml" command="load" />            
+    
+</launch>
