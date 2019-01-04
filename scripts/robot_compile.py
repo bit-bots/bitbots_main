@@ -173,27 +173,6 @@ if not args.compile_only:
         if args.clean_all or args.clean_src:
             clean_src_dir(host, workspace)
 
-        print_info('Copying boot configuration to {}...'.format(host[1]))
-        copy_result = subprocess.run([
-            'ssh',
-            'bitbots@{}'.format(host[0]),
-            '''echo 'AUTOSTART={autostart}
-            ROBOT="{robot}"
-            WORKSPACE="{workspace}"
-            START_MOTION={start_motion}
-            START_BEHAVIOUR={start_behaviour}
-            export ROS_MASTER_URI="http://ros-master:11311"' > ~/boot-configuration.sh'''.format(
-                autostart=autostart,
-                robot=robot_name,
-                workspace=workspace,
-                start_motion=str(start_motion).lower(),
-                start_behaviour=str(start_behaviour).lower(),
-                host=host[1][:-1])
-        ])
-        if copy_result.returncode != 0:
-            print_err('Copying the boot configuration failed!')
-            exit(copy_result.returncode)
-
         print_info('Synchronizing files on {}...'.format(host[1]))
         if args.robot == 'wolfgang':
             # Filename is hostname without number (like sync_includes_wolfgang_odroid.yaml)
@@ -204,6 +183,32 @@ if not args.compile_only:
         if host[1].startswith('odroid') or host[1].startswith('nuc'):
             add_game_controller_config(host[1][-1:], workspace, host)
 
+        print_info('Copying boot configuration to {}...'.format(host[1]))
+        data = dict()
+        data['autostart'] = autostart
+        data['robot'] = robot_name
+        data['workspace'] = workspace
+        data['start_motion'] = str(start_motion).lower()
+        data['start_behaviour'] = str(start_behaviour).lower()
+        data['host'] = host[1][:-1]
+        data['quiet_option'] = '> /dev/null' if args.quiet else ''
+        data['py_extensions'] = 'src/scripts/install_py_extensions.bash {} || exit 1;'.format(data['quiet_option']) if host[1].startswith('jetson') or args.robot != 'wolfgang' else ''
+        copy_result = subprocess.run([
+            'ssh',
+            'bitbots@{}'.format(host[0]),
+            '''echo 'AUTOSTART={autostart}
+            ROBOT="{robot}"
+            WORKSPACE="{workspace}"
+            START_MOTION={start_motion}
+            START_BEHAVIOUR={start_behaviour}
+            export ROS_MASTER_URI="http://ros-master:11311"' > ~/boot-configuration.sh
+            cd {workspace}
+            {py_extensions}'''.format(**data)
+        ])
+        if copy_result.returncode != 0:
+            print_err('Copying the boot configuration failed!')
+            exit(copy_result.returncode)
+
 
 if not args.sync_only:
     for host in hosts:
@@ -213,7 +218,6 @@ if not args.sync_only:
         data['jobs'] = args.jobs
         data['clean_option'] = 'catkin clean -y' if args.clean_build or args.clean_all else ''
         data['quiet_option'] = '> /dev/null' if args.quiet else ''
-        data['py_extensions'] = 'src/scripts/install_py_extensions.bash {} || exit 1;'.format(data['quiet_option']) if host[1].startswith('jetson') or args.robot != 'wolfgang' else ''
         data['camera_name'] = 'sed -i "/camera_name/s/ROBOT/{}/" src/wolves_image_provider/config/camera_settings.yaml {} || exit 1;'.format(robot_name_name, data['quiet_option']) if host[1].startswith('jetson') or args.robot != 'wolfgang' else ''
 
         build_result = subprocess.run([
@@ -232,7 +236,6 @@ if not args.sync_only:
             catkin build --force-color -j {jobs} {quiet_option} || exit 1;
             fi;
             src/scripts/repair.sh {quiet_option};
-            {py_extensions}
             {camera_name}
             sync;'''.format(**data)
         ])
