@@ -784,7 +784,7 @@
         <parent link="neck" />
         <child link="head" />
         <axis xyz="0 -1 0" />
-        <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-1.2" upper="0" />
+        <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-1.2" upper="0.2" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
 	
