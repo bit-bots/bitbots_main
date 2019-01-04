@@ -184,7 +184,7 @@ class Fallen(AbstractDecisionElement):
             return "NOT_FALLEN"
 
     def is_fallen(self):
-        if self.fall_checker.check_fallen(self.blackboard.smooth_accel, self.blackboard.gyro) is None:
+        if self.blackboard.fall_checker.check_fallen(self.blackboard.smooth_accel, self.blackboard.gyro) is None:
             return False
         return True
 
@@ -208,7 +208,7 @@ class Falling(AbstractDecisionElement):
             return "NOT_FALLING"
 
     def is_falling(self):
-        if self.fall_checker.check_falling(self.blackboard.gyro, self.blackboard.quaternion) is None:
+        if self.blackboard.fall_checker.check_falling(self.blackboard.gyro, self.blackboard.quaternion) is None:
             return False
         return True
 
