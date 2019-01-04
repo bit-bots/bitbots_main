@@ -10,7 +10,6 @@ import yaml
 cwd = str(Path(os.path.abspath(__file__)).parents[1])
 
 workspaces = {
-    'minibot': '/home/bitbots/minibot_ws',
     'wolfgang': '/home/bitbots/wolfgang_ws',
     'davros': '/home/bitbots/davros_ws'
 }
@@ -94,10 +93,9 @@ def synchronize(sync_includes_file, host, workspace):
 
 parser = argparse.ArgumentParser(description='Copy the workspace to the robot and compile it.')
 parser.add_argument('hostname', metavar='hostname', type=str, nargs=1, help='The hostname of the robot (or its name)')
-robot = parser.add_mutually_exclusive_group(required=True)
-robot.add_argument('-m', '--minibot', action='store_true', help='Compile for minibot')
-robot.add_argument('-w', '--wolfgang', action='store_true', help='Compile for wolfgang')
-robot.add_argument('-d', '--davros', action='store_true', help='Compile for davros')
+robot = parser.add_mutually_exclusive_group()
+robot.add_argument('-w', '--wolfgang', action='store_const', help='Compile for wolfgang', const='wolfgang', dest='robot')
+robot.add_argument('-d', '--davros', action='store_const', help='Compile for davros', const='davros', dest='robot')
 mode = parser.add_mutually_exclusive_group(required=False)
 mode.add_argument('-s', '--sync-only', action='store_true', help='Sync files only, don\'t build')
 mode.add_argument('-c', '--compile-only', action='store_true', help='Build only, don\'t copy any files')
@@ -108,6 +106,7 @@ parser.add_argument('--clean-build', action='store_true', help='Clean workspace 
 parser.add_argument('--clean-src', action='store_true', help='Clean source directory before building')
 parser.add_argument('--clean-all', action='store_true', help='Clean workspace and source directory before building')
 parser.add_argument('-q', '--quiet', action='store_true', help='Less output')
+parser.set_defaults(robot='wolfgang')
 args = parser.parse_args()
 
 
@@ -115,12 +114,10 @@ hostname = args.hostname[0]
 # Convert names to numbers
 names = {'amy': 1,
          'rory': 2,
-         'clara': 3,
-         'danny': 4,
          'davros': 5}
 if hostname in names.keys():
     number = names[hostname]
-    if args.minibot or args.davros:
+    if args.robot == 'davros':
         hosts = ['odroid{}'.format(number)]
     else:
         hosts = ['{}{}'.format(host, number) for host in ['nuc', 'jetson', 'odroid']]
@@ -147,11 +144,9 @@ if len(hosts) == 0:
     exit(1)
 
 
-if args.minibot:
-    workspace = workspaces['minibot']
-elif args.wolfgang:
+if args.robot == 'wolfgang':
     workspace = workspaces['wolfgang']
-elif args.davros:
+elif args.robot == 'davros':
     workspace = workspaces['davros']
 
 if len(hosts) == 1:
@@ -172,12 +167,7 @@ if not args.compile_only:
         start_motion = False
         start_behaviour = False
 
-    if args.minibot:
-        robot_name = 'minibot'
-    elif args.wolfgang:
-        robot_name = 'wolfgang'
-    elif args.davros:
-        robot_name = 'davros'
+    robot_name = args.robot
 
     for host in hosts:
         if args.clean_all or args.clean_src:
@@ -205,12 +195,10 @@ if not args.compile_only:
             exit(copy_result.returncode)
 
         print_info('Synchronizing files on {}...'.format(host[1]))
-        if args.wolfgang:
+        if args.robot == 'wolfgang':
             # Filename is hostname without number (like sync_includes_wolfgang_odroid.yaml)
             sync_includes_file = 'sync_includes_wolfgang_{}.yaml'.format(host[1][:-1])
-        elif args.minibot:
-            sync_includes_file = 'sync_includes_minibot.yaml'
-        elif args.davros:
+        elif args.robot == 'davros':
             sync_includes_file = 'sync_includes_davros.yaml'
         synchronize(sync_includes_file, host, workspace)
         if host[1].startswith('odroid') or host[1].startswith('nuc'):
@@ -225,8 +213,8 @@ if not args.sync_only:
         data['jobs'] = args.jobs
         data['clean_option'] = 'catkin clean -y' if args.clean_build or args.clean_all else ''
         data['quiet_option'] = '> /dev/null' if args.quiet else ''
-        data['py_extensions'] = 'src/scripts/install_py_extensions.bash {} || exit 1;'.format(data['quiet_option']) if host[1].startswith('jetson') or not args.wolfgang else ''
-        data['camera_name'] = 'sed -i "/camera_name/s/ROBOT/{}/" src/wolves_image_provider/config/camera_settings.yaml {} || exit 1;'.format(robot_name_name, data['quiet_option']) if host[1].startswith('jetson') or not args.wolfgang else ''
+        data['py_extensions'] = 'src/scripts/install_py_extensions.bash {} || exit 1;'.format(data['quiet_option']) if host[1].startswith('jetson') or args.robot != 'wolfgang' else ''
+        data['camera_name'] = 'sed -i "/camera_name/s/ROBOT/{}/" src/wolves_image_provider/config/camera_settings.yaml {} || exit 1;'.format(robot_name_name, data['quiet_option']) if host[1].startswith('jetson') or args.robot != 'wolfgang' else ''
 
         build_result = subprocess.run([
             'ssh',
