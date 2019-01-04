@@ -43,6 +43,9 @@ class CheckIMU(AbstractDecisionElement):
             # tell that we have a hardware problem
             self.blackboard.current_state = STATE_HARDWARE_PROBLEM
             return "PROBLEM"
+        elif not reevaluate and self.blackboard.current_state == STATE_HARDWARE_PROBLEM:
+            # had IMU problem before, just tell that this is solved now
+            ROS_INFO("IMU is now connected. Will resume.")
         return "CONNECTION"
 
     def get_reevaluate(self):
