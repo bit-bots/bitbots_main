@@ -1,5 +1,6 @@
 import numpy as np
 import VisionExtensions
+from .debug import DebugPrinter
 import yaml
 import pickle
 import abc
@@ -8,7 +9,8 @@ import cv2
 
 class ColorDetector:
 
-    def __init__(self):
+    def __init__(self, debug_printer):
+        self._debug_printer = debug_printer
         pass
 
     @abc.abstractmethod
@@ -72,8 +74,8 @@ class ColorDetector:
 
 
 class PixelListColorDetector(ColorDetector):
-    def __init__(self, color_path):
-        ColorDetector.__init__(self)
+    def __init__(self, color_path, debug_printer):
+        ColorDetector.__init__(self, debug_printer)
         self.color_space = np.zeros((256, 256, 256), dtype=np.uint8)
         self.init_color_space(color_path)
 
@@ -136,8 +138,8 @@ class PixelListColorDetector(ColorDetector):
 
 class HsvSpaceColorDetector(ColorDetector):
 
-    def __init__(self, min_vals, max_vals):
-        # type: (tuple, tuple) -> None
+    def __init__(self, min_vals, max_vals, debug_printer):
+        # type: (tuple, tuple, DebugPrinter) -> None
         """
         the hsv-space color detector
 
@@ -145,7 +147,7 @@ class HsvSpaceColorDetector(ColorDetector):
         :param max_vals: a tuple of the maximal accepted hsv-values
         :return: None
         """
-        ColorDetector.__init__(self)
+        ColorDetector.__init__(self, debug_printer)
         self.min_vals = np.array(min_vals)
         self.max_vals = np.array(max_vals)
 

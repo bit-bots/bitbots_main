@@ -70,9 +70,6 @@ class DebugImage:
 
 
 class DebugPrinter:
-    def __init__(self, debug_classes):
-        self._debug_classes = debug_classes
-
     def print_candidates_info(self, candidates, name='candidate', debug_class='NONE'):
         if debug_class not in self._debug_classes:
             return
@@ -95,14 +92,29 @@ class DebugPrinter:
                 candidate.get_width(),
                 candidate.get_height(),
                 candidate.rating))
+    def __init__(self, debug_classes=None):
+        self._debug_classes = [debug_class.lower() for debug_class in debug_classes]
+        self._all = 'all' in debug_classes
 
-    def info(self, message, debug_class='NONE'):
-        if debug_class in self._debug_classes:
-            rospy.loginfo(message)
+    def set_debug_classes(self, debug_classes):
+        self._debug_classes = [debug_class.lower() for debug_class in debug_classes]
+        self._all = 'all' in debug_classes
+        self.info('reset debug_classes to: ' + str(debug_classes) + '.', 'debug')
 
-    def warn(self, message, debug_class='NONE'):
-        if debug_class in self._debug_classes:
-            rospy.logwarn(message)
+    def info(self, message, debug_class=''):
+        if self._all or debug_class in self._debug_classes:
+            rospy.loginfo(debug_class + ': ' + str(message))
+
+    def warn(self, message, debug_class=''):
+        if self._all or debug_class in self._debug_classes:
+            rospy.logwarn(debug_class + ': ' + str(message))
+
+    def error(self, message, debug_class=''):
+        rospy.logerr(debug_class + ': ' + str(message))
+
+    @staticmethod
+    def generate_debug_class_list_from_string(string):
+        return string.replace(' ', '').split(',')
 
 
 

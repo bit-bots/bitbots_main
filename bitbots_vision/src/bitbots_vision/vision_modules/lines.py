@@ -4,14 +4,15 @@ from random import randint
 from .horizon import HorizonDetector
 from .candidate import Candidate
 from .color import ColorDetector
+from .debug import DebugPrinter
 import math
 import numpy as np
 import cv2
 
 
 class LineDetector:
-    def __init__(self, white_detector, field_color_detector, horizon_detector, config):
-        # type: (np.matrix, list, ColorDetector, ColorDetector, HorizonDetector, dict) -> None
+    def __init__(self, white_detector, field_color_detector, horizon_detector, config, debug_printer):
+        # type: (ColorDetector, ColorDetector, HorizonDetector, dict, DebugPrinter) -> None
         self._image = None
         self._preprocessed_image = None
         self._linepoints = None
@@ -19,6 +20,7 @@ class LineDetector:
         self._white_detector = white_detector
         self._field_color_detector = field_color_detector
         self._horizon_detector = horizon_detector
+        self._debug_printer = debug_printer
         # init config
         self._horizon_offset = config['line_detector_horizon_offset']
         self._linepoints_range = config['line_detector_linepoints_range']

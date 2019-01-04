@@ -1,11 +1,12 @@
 import cv2
 import numpy as np
 from collections import deque
+from .debug import DebugPrinter
 
 
 class RuntimeEvaluator:
-    def __init__(self, name="Runtime", queue_size=15):
-        # type: (str, int) -> None
+    def __init__(self, debug_printer, name="Runtime", queue_size=15):
+        # type: (DebugPrinter, str, int) -> None
         """
         calculates the average time a method (e.g. get_candidates) takes to work on an image
         allows improved evaluation and comparison of different methods
@@ -13,6 +14,7 @@ class RuntimeEvaluator:
         :param queue_size: amount of measurements used to calculate the average
         """
         # Todo: measure time for different methods at the same time and compare their run times directly
+        self._debug_printer = debug_printer
         self.name = name
         self.timer_running = False
         self.start_time = None
@@ -85,5 +87,5 @@ class RuntimeEvaluator:
         # the results are only printed out after we collected enough measurements:
         if self.count == self.queue_size - 1:
             avg = np.array(self.queue).mean()  # calculates the average of our measurements
-            print("{} timer: {}".format(self.name, avg))
-        print("{} Progress:".format(self.name)+str(self.count+1)+"/"+str(self.queue_size))
+            self._debug_printer.info("{} timer: {}".format(self.name, avg), 'eval')
+        self._debug_printer.info("{} Progress:".format(self.name)+str(self.count+1)+"/"+str(self.queue_size), 'eval')

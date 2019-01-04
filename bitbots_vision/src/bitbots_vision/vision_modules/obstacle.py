@@ -2,14 +2,16 @@ from .candidate import CandidateFinder, Candidate
 from .color import ColorDetector
 from .horizon import HorizonDetector
 from .evaluator import RuntimeEvaluator
+from .debug import DebugPrinter
 import cv2
 import numpy as np
 
 
 class ObstacleDetector(CandidateFinder):
     def __init__(self, red_color_detector, blue_color_detector, white_color_detector, horizon_detector,
-                 runtime_evaluator, config):
-        # type: (ColorDetector, ColorDetector, ColorDetector, HorizonDetector, RuntimeEvaluator, dict) -> None
+                 runtime_evaluator, config, debug_printer):
+        # type: (ColorDetector, ColorDetector, ColorDetector, HorizonDetector, RuntimeEvaluator, dict, DebugPrinter) -> None
+        self._debug_printer = debug_printer
         self._red_color_detector = red_color_detector
         self._blue_color_detector = blue_color_detector
         self._white_color_detector = white_color_detector

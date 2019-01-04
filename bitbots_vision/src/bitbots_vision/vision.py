@@ -28,7 +28,7 @@ class Vision:
         self.config = {}
         self.debug_image_dings = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_dings:
-            self.runtime_evaluator = evaluator.RuntimeEvaluator()
+            self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
         # register config callback and set config
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
 
@@ -75,7 +75,7 @@ class Vision:
             ball_msg.confidence = 1
 
             balls_msg.candidates.append(ball_msg)
-            rospy.loginfo('found a ball! \o/')
+            self.debug_printer.info('found a ball! \o/', 'ball')
             self.pub_balls.publish(balls_msg)
 
         # create obstacle msg
@@ -175,6 +175,11 @@ class Vision:
 
     def _dynamic_reconfigure_callback(self, config, level):
 
+        self.debug_printer = debug.DebugPrinter(
+            debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
+                config['vision_debug_printer_classes']))
+        self.runtime_evaluator = evaluator.RuntimeEvaluator(self.debug_printer)
+
 
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
         self._ball_candidate_y_offset = config['vision_ball_candidate_horizon_y_offset']
@@ -205,9 +210,9 @@ class Vision:
                 self.ball_classifier = live_classifier.LiveClassifier(
                     self.package_path + config['classifier_model_path'])
                 rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
-            self.ball_detector = classifier.ClassifierHandler(self.ball_classifier)
+            self.ball_detector = classifier.ClassifierHandler(self.ball_classifier, self.debug_printer)
 
-            self.ball_finder = ball.BallFinder(self.cascade, config)
+            self.ball_finder = ball.BallFinder(self.cascade, config, self.debug_printer)
 
 
         # set up ball config for fcnn
@@ -233,45 +238,49 @@ class Vision:
                 ball_fcnn_path = self.package_path + config['ball_fcnn_model_path']
                 if not os.path.exists(ball_fcnn_path):
                     rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
-                self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
+                self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path, self.debug_printer)
                 rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
             self.ball_detector = fcnn_handler.FcnnHandler(self.ball_fcnn,
-                                                          self.ball_fcnn_config)
+                                                          self.ball_fcnn_config,
+                                                          self.debug_printer)
 
 
         if (config['vision_ball_classifier'] == 'dummy'):
-            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None)
+            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, None)
         # color config
         self.white_color_detector = color.HsvSpaceColorDetector(
             [config['white_color_detector_lower_values_h'], config['white_color_detector_lower_values_s'],
              config['white_color_detector_lower_values_v']],
             [config['white_color_detector_upper_values_h'], config['white_color_detector_upper_values_s'],
-             config['white_color_detector_upper_values_v']])
+             config['white_color_detector_upper_values_v']], self.debug_printer)
 
         self.red_color_detector = color.HsvSpaceColorDetector(
             [config['red_color_detector_lower_values_h'], config['red_color_detector_lower_values_s'],
              config['red_color_detector_lower_values_v']],
             [config['red_color_detector_upper_values_h'], config['red_color_detector_upper_values_s'],
-             config['red_color_detector_upper_values_v']])
+             config['red_color_detector_upper_values_v']], self.debug_printer)
 
         self.blue_color_detector = color.HsvSpaceColorDetector(
             [config['blue_color_detector_lower_values_h'], config['blue_color_detector_lower_values_s'],
              config['blue_color_detector_lower_values_v']],
             [config['blue_color_detector_upper_values_h'], config['blue_color_detector_upper_values_s'],
-             config['blue_color_detector_upper_values_v']])
+             config['blue_color_detector_upper_values_v']], self.debug_printer)
 
         self.field_color_detector = color.PixelListColorDetector(
             self.package_path +
-            config['field_color_detector_path'])
+            config['field_color_detector_path'],
+            self.debug_printer)
 
         self.horizon_detector = horizon.HorizonDetector(
             self.field_color_detector,
-            config)
+            config,
+            self.debug_printer)
 
         self.line_detector = lines.LineDetector(self.white_color_detector,
                                                 self.field_color_detector,
                                                 self.horizon_detector,
-                                                config)
+                                                config,
+                                                self.debug_printer)
 
         self.obstacle_detector = obstacle.ObstacleDetector(
             self.red_color_detector,
@@ -279,7 +288,8 @@ class Vision:
             self.white_color_detector,
             self.horizon_detector,
             self.runtime_evaluator,
-            config
+            config,
+            self.debug_printer
         )
 
         # subscribers

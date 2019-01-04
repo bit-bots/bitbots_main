@@ -1,11 +1,13 @@
 import os
 import tensorflow as tf
+from .debug import DebugPrinter
 
 
 class FCNN03:
 
-    def __init__(self, load_path):
+    def __init__(self, load_path, debug_printer):
         print("setting up ball detection: FCNN03")
+        self._debug_printer = debug_printer
 
         self._load_path = os.path.join(load_path, "model_final")
 

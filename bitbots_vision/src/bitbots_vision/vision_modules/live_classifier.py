@@ -1,11 +1,12 @@
 import tensorflow as tf
 import numpy as np
 import sys, os
+from .debug import DebugPrinter
 
 
 class LiveClassifier(object):
 
-    def __init__(self, load_path):
+    def __init__(self, load_path, debug_printer):
         """
         Constructor
         
@@ -15,6 +16,7 @@ class LiveClassifier(object):
             load_path += "/"
         self.model_load_path = load_path + "model"
         self.load_path = load_path
+        self._debug_printer = debug_printer
 
         self.input_shape = (40, 40, 3)
 

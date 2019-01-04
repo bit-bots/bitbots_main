@@ -3,18 +3,20 @@ import cv2
 import rospy
 from .color import ColorDetector
 from operator import itemgetter
+from .debug import DebugPrinter
 
 
 class HorizonDetector:
 
-    def __init__(self, color_detector, config):
-        # type: (np.matrix, ColorDetector, dict) -> None
+    def __init__(self, color_detector, config, debug_printer):
+        # type: (np.matrix, ColorDetector, dict, DebugPrinter) -> None
         self._image = None
         self._color_detector = color_detector
         self._horizon_points = None
         self._horizon_full = None
         self._convex_horizon_full = None
         self._horizon_hull = None
+        self._debug_printer = debug_printer
         # init config
         self._x_steps = config['horizon_finder_horizontal_steps']
         self._y_steps = config['horizon_finder_vertical_steps']
