@@ -24,7 +24,7 @@
 
     <!-- start the camera only when necessary -->
     <group unless="$(arg sim)">
-        <include file="$(find wolves_image_provider)/launch/image_provider_v4l.launch" />
+        <include file="$(find wolves_image_provider)/launch/image_provider.launch" />
     </group>
     <!-- remap stuff to fit the robot -->
     <group if="$(arg sim)">
