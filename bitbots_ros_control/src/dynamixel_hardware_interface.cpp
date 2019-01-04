@@ -513,6 +513,8 @@ bool DynamixelHardwareInterface::read()
     first_cycle_ = false;
   }
 
+  // remember 
+  _lost_servo_connection = !read_successful;
   return read_successful;
 
 }
