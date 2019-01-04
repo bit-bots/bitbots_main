@@ -29,7 +29,8 @@ class PatternSearch(AbstractActionElement):
         head_tilt = head_tilt / 180.0 * math.pi
         rospy.logdebug("Searching at {}, {}".format(head_pan, head_tilt))
 
-        self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, 1.5, 1.5)
+        self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt)
 
         # Increment index
+        # TODO: increment when on position
         self.index = (self.index + 0.2) % len(self.pattern)

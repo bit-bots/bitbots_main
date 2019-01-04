@@ -1,3 +1,4 @@
+import rospy
 from humanoid_league_msgs.msg import HeadMode
 
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
@@ -46,9 +47,8 @@ class HeadModeDecision(AbstractDecisionElement):
             return 'LOOK_FORWARD'
         elif head_mode == HeadMode.DONT_MOVE:
             return 'DONT_MOVE'
-
         else:
-            raise Exception('the set head_mode ({}) is not known'.format(head_mode))
+            rospy.logerr('the set head_mode ({}) is not known'.format(head_mode))
 
     def get_reevaluate(self):
         """

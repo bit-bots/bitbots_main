@@ -1,3 +1,5 @@
+import math
+
 import rospy
 import tf2_ros as tf2
 from bio_ik_msgs.msg import IKRequest, LookAtGoal
@@ -47,13 +49,16 @@ class AbstractLookAt(AbstractActionElement):
         """
         # transform the points reference frame to be the head
         try:
-            point = self.tf_buffer.transform(point, self.head_tf_frame)
+            point = self.tf_buffer.transform(point, self.head_tf_frame, timeout=rospy.Duration(0.9))
         except tf2.LookupException as e:
             rospy.logerr('Could not find transform {}. Either it does not exist or '
                          'transform is not yet online.\n{}'.format(self.head_tf_frame, e))
             return
         except tf2.ConnectivityException as e:
             rospy.logerr('No connection to transform\n{}'.format(e))
+            return
+        except tf2.ExtrapolationException as e:
+            rospy.logerr('No transform yet\n{}'.format(e))
             return
 
         head_pan, head_tilt = self.get_motor_goals_from_point(point.point)
@@ -67,7 +72,7 @@ class AbstractLookAt(AbstractActionElement):
         tilt values. This is not good, but I do not know the reason. Therefore, this has to be kept to look
         at the correct position.
         """
-        return pan * 1.4, tilt * 1.4
+        return pan / 1.4, tilt / 1.4
 
 
 class LookDirection(AbstractLookAt):
@@ -81,7 +86,7 @@ class LookDirection(AbstractLookAt):
         """
         :param parameters['direction']: One of the possible directions
         """
-        super().__init__(blackboard, dsd, parameters)
+        AbstractLookAt.__init__(self, blackboard, dsd, parameters)
 
         # Assert that a valid direction was supplied
         assert parameters is not None, 'No direction specified in parameters (key="direction")'
@@ -90,6 +95,9 @@ class LookDirection(AbstractLookAt):
 
         # Save supplied direction
         self.direction = getattr(self.Directions, parameters['direction'])
+        self.position_down = self.blackboard.config['look_down_position']
+        self.position_up = self.blackboard.config['look_up_position']
+        self.position_forward = self.blackboard.config['look_forward_position']
 
     def perform(self, reevaluate=False):
         """
@@ -99,17 +107,14 @@ class LookDirection(AbstractLookAt):
         """
         self.publish_debug_data('direction', self.direction)
 
-        # Construct target point from target direction
-        point = PointStamped()
-        point.header.frame_id = self.head_tf_frame
-        point.point.x = 0
-        point.point.y = 0
         if self.direction == self.Directions.DOWN:
-            point.point.z = -10
+            head_pan, head_tilt = self.position_down
         elif self.direction == self.Directions.UP:
-            point.point.z = 10
-        else:   # FORWARD
-            point.point.z = 0
+            head_pan, head_tilt = self.position_up
+        else:
+            head_pan, head_tilt = self.position_forward
 
-        # Call internal look-at to turn head to this point
-        self._look_at(point)
+        head_pan = head_pan / 180.0 * math.pi
+        head_tilt = head_tilt / 180.0 * math.pi
+
+        self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt)

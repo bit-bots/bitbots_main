@@ -15,7 +15,7 @@ class HeadCapsule:
         self.pos_msg.joint_names = ["HeadPan", "HeadTilt"]
         self.pos_msg.positions = [0, 0]
         self.pos_msg.velocities = [0, 0]
-        self.pos_msg.accelerations = [-1, -1]
+        self.pos_msg.accelerations = [17, 17]
         self.pos_msg.max_currents = [-1, -1]
 
         self.position_publisher = None  # type: rospy.Publisher

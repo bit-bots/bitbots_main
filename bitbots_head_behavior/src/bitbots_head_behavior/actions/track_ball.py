@@ -20,13 +20,8 @@ class TrackBall(AbstractLookAt):
         :param reevaluate: No effect here
         """
 
-        # Construct target point from target direction
-        point = PointStamped()
-        point.header.frame_id = 'base_footprint'
-        u, v = self.blackboard.world_model.get_ball_position_uv()
-        point.point.x = u
-        point.point.y = v
-        point.point.z = 0
+        # Get last ball position
+        point = self.blackboard.world_model.get_ball_stamped()
 
         # Call internal look-at to turn head to this point
         self._look_at(point)

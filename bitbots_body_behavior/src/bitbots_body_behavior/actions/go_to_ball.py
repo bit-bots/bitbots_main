@@ -14,7 +14,10 @@ class GoToBall(AbstractActionElement):
         tf_listener = tf2.TransformListener(self.tf_buffer)
 
     def perform(self, reevaluate=False):
-        ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
+        ball_position = self.blackbard.world_model.get_ball_position_uv()
+        if not ball_position:
+            return
+        ball_u, ball_v = ball_position
         point = (ball_u, ball_v, self.blackboard.world_model.get_opp_goal_angle_from_ball())
 
         if not self.blackboard.config['use_move_base']:

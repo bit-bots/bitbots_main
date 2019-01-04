@@ -10,13 +10,20 @@ behavior:
     defaults:
       head_mode: 0    # Ball mode
 
-    # Search patterns in degrees
+    # Search patterns in degrees, [pan, tilt]
     search_pattern:
-      - [23, -40]
-      - [-23, -40]
-      - [30, -30]
-      - [-30, -23]
-      - [0, -11]
+      - [0, -15]
+      - [0, -65]
+      - [63, -57]
+      - [-63, -57]
+      - [-57, -30]
+      - [57, -30]
+      - [30, -7]
+      - [-30, -7]
+
+    look_down_position: [0, -65]
+    look_forward_position: [0, -7]
+    look_up_position: [0, 12]
 
     # After `ball_lost_time` seconds, the ball is considered lost and will be searched
     ball_lost_time: 1
