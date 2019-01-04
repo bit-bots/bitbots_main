@@ -1,0 +1,12 @@
+<launch>
+
+    <node name="vision_viz" pkg="humanoid_league_vision_viz" type="vision_viz.py" output="screen">
+
+    </node>
+    <node name="image_view" pkg="image_view" type="image_view" output="screen">
+        <remap from="image" to="/vision_viz_image"/>
+    </node>
+
+
+
+</launch>
