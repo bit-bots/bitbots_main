@@ -210,6 +210,7 @@ if not args.compile_only:
         if copy_result.returncode != 0:
             print_err('Copying the boot configuration failed!')
             exit(copy_result.returncode)
+    print_success('Sync succeeded!')
 
 
 if not args.sync_only:
