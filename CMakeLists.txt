@@ -7,18 +7,14 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   std_msgs
   sensor_msgs
-  geometry_msgs
 )
 
 add_message_files(
   FILES
+  CpuMessage.msg
+  FootPressure.msg
   JointCommand.msg
   JointTorque.msg
-  FootPressure.msg
-  CpuMessage.msg
-  ImageWithCorners.msg
-  PixelRelative.msg
-  PixelsRelative.msg
 )
 
 add_service_files(
@@ -31,9 +27,8 @@ generate_messages(
   DEPENDENCIES
   std_msgs
   sensor_msgs
-  geometry_msgs
 )
 
 catkin_package(
-  CATKIN_DEPENDS roscpp std_msgs sensor_msgs geometry_msgs
+  CATKIN_DEPENDS roscpp std_msgs sensor_msgs
 )
