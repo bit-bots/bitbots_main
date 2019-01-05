@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 import rospy
 import actionlib
+import copy
 
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
@@ -35,6 +36,7 @@ class JoyNode(object):
         self.walk_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
 
         self.walk_msg = Twist()
+        self.last_walk_msg = Twist()
 
         self.walk_msg.linear.x = 0.0
         self.walk_msg.linear.y = 0.0
@@ -43,12 +45,12 @@ class JoyNode(object):
         self.walk_msg.angular.x = 0.0
         self.walk_msg.angular.y = 0.0
         self.walk_msg.angular.z = 0.0
-
+        
         self.head_pub = rospy.Publisher("/head_motor_goals", JointCommand, queue_size=1)
         self.head_msg = JointCommand()
         self.head_msg.max_currents = [-1] * 2
-        self.head_msg.velocities = [-1] * 2
-        self.head_msg.accelerations = [-1] * 2
+        self.head_msg.velocities = [5] * 2
+        self.head_msg.accelerations = [40] * 2
 
         # --- init animation action ---
         self.anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
@@ -62,7 +64,7 @@ class JoyNode(object):
                 "Animation Action Server not running! Teleop can not work without animation action server. "
                 "Will now wait until server is accessible!")
         self.anim_client.wait_for_server()
-        rospy.logwarn("Animation server now running, will go on.")
+        rospy.logwarn("Animation server running, will go on.")
 
 
         rospy.spin()
@@ -98,7 +100,11 @@ class JoyNode(object):
         else:
             self.walk_msg.linear.x = 0
 
-        self.walk_msg.linear.y = 0.03 * msg.axes[0]
+        if msg.axes[0] == 0:
+            # to prevent sending a -0
+            self.walk_msg.linear.y = 0
+        else:
+            self.walk_msg.linear.y = 0.03 * msg.axes[0]
 
         # angular walking with shoulder buttons
         if msg.buttons[6]:
@@ -108,21 +114,22 @@ class JoyNode(object):
         else:
             self.walk_msg.angular.z = 0.0
 
-        if self.walk_msg.linear.x or self.walk_msg.linear.y or self.walk_msg.angular.z:
+        # only publish changes
+        if self.walk_msg != self.last_walk_msg:
             self.walk_publisher.publish(self.walk_msg)
-
+        self.last_walk_msg = copy.deepcopy(self.walk_msg)
         
         # head movement with right joystick
         pan_goal = None
         tilt_goal = None
         if msg.axes[2] > 0:
-            pan_goal = self.head_pan_pos + msg.axes[2] * 0.01
+            pan_goal = self.head_pan_pos + msg.axes[2] * 0.2
         elif msg.axes[2] < 0:
-            pan_goal = self.head_pan_pos - msg.axes[2] * 0.01
+            pan_goal = self.head_pan_pos + msg.axes[2] * 0.2
         if msg.axes[3] > 0:
-            tilt_goal = self.head_tilt_pos - msg.axes[3] * 0.01
+            tilt_goal = self.head_tilt_pos + msg.axes[3] * 0.2
         elif msg.axes[3] < 0:
-            tilt_goal = self.head_tilt_pos + msg.axes[3] * 0.01
+            tilt_goal = self.head_tilt_pos + msg.axes[3] * 0.2
 
         joint_names = []
         positions = []
@@ -130,7 +137,7 @@ class JoyNode(object):
             joint_names.append("HeadPan")
             positions.append(pan_goal)
         if tilt_goal:
-            joint_names.append("HeadPan")
+            joint_names.append("HeadTilt")
             positions.append(tilt_goal)
 
         self.head_msg.joint_names = joint_names
