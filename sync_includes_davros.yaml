@@ -11,7 +11,7 @@ include:
         - bitbots_imageloader
         - bitbots_vision
         - bitbots_vision_common
-        - python2_extensions
+        - python_extensions
     - davros_robot:
         - davros_description
         - davros_moveit_config
