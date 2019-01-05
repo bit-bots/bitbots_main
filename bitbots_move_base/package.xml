@@ -23,7 +23,7 @@
   <export>
     <bitbots_documentation>
       <language>python2</language>
-      <status>unknown</status>
+      <status>broken</status>
     </bitbots_documentation>
   </export>
 </package>
