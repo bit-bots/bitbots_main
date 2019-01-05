@@ -16,13 +16,15 @@
   <depend>roscpp</depend>
   <depend>rospy</depend>
   <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
 
   <build_depend>message_generation</build_depend>
   <exec_depend>message_runtime</exec_depend>
 
   <export>
     <bitbots_documentation>
-      <status>unknown</status>
+      <status>starts</status>
     </bitbots_documentation>
 </export>
 </package>
