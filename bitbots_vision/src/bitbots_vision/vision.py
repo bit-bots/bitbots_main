@@ -10,6 +10,7 @@ import rospy
 import rospkg
 import cv2
 import os
+import threading
 from dynamic_reconfigure.server import Server
 from bitbots_vision.cfg import VisionConfig
 
@@ -58,6 +59,20 @@ class Vision:
 
         elif (self.config['vision_ball_classifier'] == 'fcnn'):
             self.ball_detector.set_image(image)
+
+        if self.config['vision_parallelize']:
+            self.horizon_detector.compute_all()  # computes stuff which is needed later in the processing
+            fcnn_thread = threading.Thread(target=self.ball_detector.compute_top_candidate)
+            conventional_thread = threading.Thread(target=self._conventional_precalculation())
+
+            conventional_thread.start()
+            fcnn_thread.start()
+
+            conventional_thread.join()
+            fcnn_thread.join()
+        else:
+            self.ball_detector.compute_top_candidate()
+            self._conventional_precalculation()
 
         top_ball_candidate = self.ball_detector.get_top_candidate()
 
@@ -176,6 +191,9 @@ class Vision:
             if self.debug_image_msg:
                 self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(self.debug_image_dings.get_image(), 'bgr8'))
 
+    def _conventional_precalculation(self):
+        self.obstacle_detector.compute_all_obstacles()
+        self.line_detector.compute_linepoints()
 
     def _dynamic_reconfigure_callback(self, config, level):
 

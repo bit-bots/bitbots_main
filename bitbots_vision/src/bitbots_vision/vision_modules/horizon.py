@@ -30,6 +30,10 @@ class HorizonDetector:
         self._convex_horizon_full = None
         self._horizon_hull = None
 
+    def compute_horizon_points(self):
+        if self._horizon_points is None:
+            self._horizon_points = self._sub_horizon()
+
     def get_horizon_points(self):
         # type: () -> list
         """
@@ -37,8 +41,7 @@ class HorizonDetector:
         containing coordinates on the picture where the horizon is.
         :return list of x,y tuples of the horizon:
         """
-        if self._horizon_points is None:
-            self._horizon_points = self._sub_horizon()
+        self.compute_horizon_points()
         return self._horizon_points
 
     def _sub_horizon(self):
@@ -64,7 +67,7 @@ class HorizonDetector:
             horizon_points.append((x, firstgreen))
         return horizon_points
 
-    def get_convex_horizon_points(self):
+    def compute_convex_horizon_points(self):
         '''
         returns a set of horizon points that form a convex hull of the
         field
@@ -72,9 +75,9 @@ class HorizonDetector:
         if self._horizon_hull is None:
             horizon_points = self.get_horizon_points()
 
-            # 
+            #
             # uncomment this block and the one below to view the
-            # old and new horizon 
+            # old and new horizon
             # (used for the images in the paper)
             #
             # # draw the old horizon line
@@ -116,6 +119,12 @@ class HorizonDetector:
 
             self._horizon_hull = horizon_points
 
+    def get_convex_horizon_points(self):
+        '''
+        returns a set of horizon points that form a convex hull of the
+        field
+        '''
+        self.compute_convex_horizon_points()
         return self._horizon_hull
 
     def _graham(self, points):
@@ -292,6 +301,11 @@ class HorizonDetector:
             horizon_points.append((x, firstgreen))
         return horizon_points
 
+    def compute_full_horizon(self):
+        if self._horizon_full is None:
+            xp, fp = zip(*self.get_horizon_points())
+            x = list(range(self._image.shape[1]))
+            self._horizon_full = np.interp(x, list(xp), list(fp))
 
     def get_full_horizon(self):
         # type: () -> list
@@ -300,13 +314,10 @@ class HorizonDetector:
         the index of the y value is the x coordinate on the picture
         :return list of y coordinates where the horizon is. Index of y value is the x coordinate:
         """
-        if self._horizon_full is None:
-            xp, fp = zip(*self.get_horizon_points())
-            x = list(range(self._image.shape[1]))
-            self._horizon_full = np.interp(x, list(xp), list(fp))
+        self.compute_full_horizon()
         return self._horizon_full
 
-    def get_full_convex_horizon(self):
+    def compute_full_convex_horizon(self):
         # type: () -> list
         """
         calculates an interpolated list of y coordinates where the convex horizon is for the picture
@@ -317,6 +328,15 @@ class HorizonDetector:
             xp, fp = zip(*self.get_convex_horizon_points())
             x = list(range(self._image.shape[1]))
             self._convex_horizon_full = np.interp(x, list(xp), list(fp))
+
+    def get_full_convex_horizon(self):
+        # type: () -> list
+        """
+        calculates an interpolated list of y coordinates where the convex horizon is for the picture
+        the index of the y value is the x coordinate on the picture
+        :return list of y coordinates where the convex horizon is. Index of y value is the x coordinate:
+        """
+        self.compute_full_convex_horizon()
         return self._convex_horizon_full
 
 
@@ -331,6 +351,9 @@ class HorizonDetector:
         footpoint = (candidate[0] + candidate[2] // 2, candidate[1] + candidate[3] + y_offset)
         return self.point_under_horizon(footpoint)
 
+    def compute_all(self):
+        self.compute_full_convex_horizon()
+        self.compute_full_horizon()
 
     def candidates_under_horizon(self, candidates, y_offset=0):
         # type: (list, int) -> list

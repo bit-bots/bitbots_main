@@ -195,6 +195,9 @@ class ObstacleDetector(CandidateFinder):
             self._colorsort_obstacles()
         return self._other_obstacles
 
+    def compute_all_obstacles(self):
+        self._colorsort_obstacles()
+
     def _colorsort_obstacles(self):
         if not self._blue_mask:
             self._blue_mask = self._blue_color_detector.mask_image(self._image)

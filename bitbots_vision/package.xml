@@ -40,7 +40,6 @@
     <depend>dynamic_reconfigure</depend>
     <depend>numpy</depend>
     <depend>cv2</depend>
-    <depend>bitbots_vision_common</depend>
     <depend>wolves_image_provider</depend>
 
     <export>

@@ -94,13 +94,7 @@ class FcnnHandler(CandidateFinder):
                <= candidate.get_diameter() \
                <= self._max_candidate_diameter
 
-    def get_top_candidate(self):
-        """
-        Use this to return the best candidate.
-        ONLY, when never use get top candidate*s*
-        When you use it once, use it all the time.
-        :return: the candidate with the highest rating (candidate)
-        """
+    def compute_top_candidate(self):
         if self._top_candidate is None:
             if self._sorted_rated_candidates is None:
                 if self.get_top_candidates():
@@ -112,6 +106,19 @@ class FcnnHandler(CandidateFinder):
                     self._top_candidate = list()  # empty list -> initialized, but no candidate available
             else:
                 self._top_candidate = list([self._sorted_rated_candidates[0]])
+
+    def get_top_candidate(self):
+        """
+        Use this to return the best candidate.
+        ONLY, when never use get top candidate*s*
+        When you use it once, use it all the time.
+        :return: the candidate with the highest rating (candidate)
+        """
+        self._debug_printer.info('get top candidate compute', 'fcnn')
+        start = cv2.getTickCount()
+        self.compute_top_candidate()
+        end = cv2.getTickCount()
+        self._debug_printer.info('->' + str((end - start) / cv2.getTickFrequency()), 'fcnn')
         if self._top_candidate:
             return self._top_candidate[0]
         return None

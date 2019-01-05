@@ -92,7 +92,7 @@ class PixelListColorDetector(ColorDetector):
                 try:
                     color_values = yaml.load(stream)
                 except yaml.YAMLError as exc:
-                    print(exc)
+                    self._debug_printer.error(exc, 'PixelListColorDetector')
                     # Todo: what now??? Handle the error?
         # our pickle is stored as .txt
         elif color_path.endswith('.txt'):
@@ -100,7 +100,7 @@ class PixelListColorDetector(ColorDetector):
                 with open(color_path, 'rb') as f:
                     color_values = pickle.load(f)
             except pickle.PickleError as exc:
-                print(exc)
+                self._debug_printer.error(exc, 'PixelListColorDetector')
             
         # compatibility with colorpicker
         if 'color_values' in color_values.keys():

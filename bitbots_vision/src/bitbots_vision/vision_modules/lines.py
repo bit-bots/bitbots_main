@@ -36,8 +36,9 @@ class LineDetector:
         # type: (list) -> None
         self._candidates = candidates
 
-    def get_linepoints(self):
+    def compute_linepoints(self):
         if self._linepoints is None:
+
             self._linepoints = list()
             imgshape = self._get_preprocessed_image().shape
             white_masked_image = self._white_detector.mask_image(
@@ -50,6 +51,9 @@ class LineDetector:
             for p in zip(x_list, y_list):
                 if white_masked_image[p[1]][p[0]]:
                     self._linepoints.append(p)
+
+    def get_linepoints(self):
+        self.compute_linepoints()
         return self._linepoints
 
     def get_linesegments(self):

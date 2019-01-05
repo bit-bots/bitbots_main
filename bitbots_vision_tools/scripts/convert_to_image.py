@@ -28,10 +28,7 @@ class Converter(object):
 
         rospy.spin()
 
-
     def _callback_fcnn(self, msg):
-
-
         input_image = self.bridge.imgmsg_to_cv2(msg.image, 'bgr8')  # TODO: evaluate this!!!
         print(input_image.shape)
         print((int(msg.regionOfInterest.width) + 1, int(msg.regionOfInterest.height) + 1))
