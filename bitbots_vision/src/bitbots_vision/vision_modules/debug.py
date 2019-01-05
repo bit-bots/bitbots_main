@@ -1,6 +1,6 @@
 import cv2
 import rospy
-from candidate import Candidate
+from .candidate import Candidate
 # NOTE: cv2 drawing functions use (x, y) points!
 
 
