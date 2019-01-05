@@ -21,9 +21,14 @@ behavior:
       - [30, -7]
       - [-30, -7]
 
+    # Positions for static head modes
     look_down_position: [0, -65]
     look_forward_position: [0, -7]
     look_up_position: [0, 12]
+
+    # Threshold (in degrees) when a head position is reached and
+    # the next position will be triggered
+    position_reached_threshold: 5
 
     # After `ball_lost_time` seconds, the ball is considered lost and will be searched
     ball_lost_time: 1

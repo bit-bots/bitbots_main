@@ -20,6 +20,8 @@ class HeadCapsule:
 
         self.position_publisher = None  # type: rospy.Publisher
 
+        self.current_head_position = [0, 0]
+
     def head_mode_callback(self, msg):
         """
         ROS Subscriber callback for /head_mode message.
@@ -42,10 +44,22 @@ class HeadCapsule:
         rospy.logdebug("target pan/tilt: {}/{}".format(pan_position, tilt_position))
 
         # 3 is slower than maximum, maybe it is good
-        pan_position = min(max(pan_position, -1), 1)
-        tilt_position = min(max(tilt_position, -1.2), 0)
+        pan_position = min(max(pan_position, -1.2), 1.2)
+        tilt_position = min(max(tilt_position, -1.2), 0.2)
         self.pos_msg.positions = pan_position, tilt_position
         self.pos_msg.velocities = [pan_speed, tilt_speed]
         self.pos_msg.header.stamp = rospy.Time.now()
 
         self.position_publisher.publish(self.pos_msg)
+
+    ##################
+    # Head positions #
+    ##################
+
+    def joint_state_callback(self, msg):
+        head_pan = msg.position[msg.name.index('HeadPan')]
+        head_tilt = msg.position[msg.name.index('HeadTilt')]
+        self.current_head_position = [head_pan, head_tilt]
+
+    def get_head_position(self):
+        return self.current_head_position

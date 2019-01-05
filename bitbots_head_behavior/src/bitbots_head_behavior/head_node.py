@@ -12,6 +12,7 @@ from dynamic_stack_decider.dsd import DSD
 
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg, BallRelative
 from bitbots_msgs.msg import JointCommand
+from sensor_msgs.msg import JointState
 
 
 def run(dsd):
@@ -36,6 +37,7 @@ def init():
 
     rospy.Subscriber('/head_mode', HeadModeMsg, blackboard.head_capsule.head_mode_callback, queue_size=1)
     rospy.Subscriber("/ball_relative", BallRelative, blackboard.world_model.ball_callback)
+    rospy.Subscriber('/joint_states', JointState, blackboard.head_capsule.joint_state_callback)
     blackboard.head_capsule.position_publisher = rospy.Publisher("/DynamixelController/command", JointCommand, queue_size=10)
 
     dirname = os.path.dirname(os.path.realpath(__file__))
