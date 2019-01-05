@@ -18,7 +18,7 @@
         <param name="update_min_d" value="0.2"/>
         <!--param name="update_min_a" value="0.01"/-->
 
-        <param name="resample_interval" value="2f"/>
+        <param name="resample_interval" value="2"/>
 
        <param name="initial_pose_x" value="2.0"/>
         <param name="initial_pose_y" value="3.0"/>
@@ -38,7 +38,12 @@
         <param name="laser_max_beams" value="100"/>
         <param name="laser_model_type" value="likelihood_field_prob"/>
 
-        <param name="odom_model_type" value="diff-corrected" />
+        <param name="odom_model_type" value="omni-corrected" />
+        <param name="odom_alpha1" value="0.005"/>
+         <param name="odom_alpha2" value="0.005"/>
+        <param name="odom_alpha3" value="0.010"/>
+        <param name="odom_alpha4" value="0.005"/>
+        <param name="odom_alpha5" value="0.003"/>
 
 
         <param name="tf_broadcast" value="true"/>
