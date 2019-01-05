@@ -193,6 +193,7 @@ if not args.compile_only:
         data['host'] = host[1][:-1]
         data['quiet_option'] = '> /dev/null' if args.quiet else ''
         data['py_extensions'] = 'src/scripts/install_py_extensions.bash {} || exit 1;'.format(data['quiet_option']) if host[1].startswith('jetson') or args.robot != 'wolfgang' else ''
+        data['camera_name'] = 'sed -i "/camera_name/s/ROBOT/{}/" src/wolves_image_provider/config/camera_settings.yaml {} || exit 1;'.format(robot_name_name, data['quiet_option']) if host[1].startswith('jetson') or args.robot != 'wolfgang' else ''
         copy_result = subprocess.run([
             'ssh',
             'bitbots@{}'.format(host[0]),
@@ -203,7 +204,8 @@ if not args.compile_only:
             START_BEHAVIOUR={start_behaviour}
             export ROS_MASTER_URI="http://ros-master:11311"' > ~/boot-configuration.sh
             cd {workspace}
-            {py_extensions}'''.format(**data)
+            {py_extensions}
+            {camera_name}'''.format(**data)
         ])
         if copy_result.returncode != 0:
             print_err('Copying the boot configuration failed!')
@@ -218,7 +220,6 @@ if not args.sync_only:
         data['jobs'] = args.jobs
         data['clean_option'] = 'catkin clean -y' if args.clean_build or args.clean_all else ''
         data['quiet_option'] = '> /dev/null' if args.quiet else ''
-        data['camera_name'] = 'sed -i "/camera_name/s/ROBOT/{}/" src/wolves_image_provider/config/camera_settings.yaml {} || exit 1;'.format(robot_name_name, data['quiet_option']) if host[1].startswith('jetson') or args.robot != 'wolfgang' else ''
 
         build_result = subprocess.run([
             'ssh',
@@ -236,7 +237,6 @@ if not args.sync_only:
             catkin build --force-color -j {jobs} {quiet_option} || exit 1;
             fi;
             src/scripts/repair.sh {quiet_option};
-            {camera_name}
             sync;'''.format(**data)
         ])
 
