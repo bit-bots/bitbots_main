@@ -7,10 +7,10 @@
 	url = https://github.com/TAMS-Group/bio_ik.git
 [submodule "lib/DynamixelSDK"]
 	path = lib/DynamixelSDK
-	url = https://github.com/bit-bots/DynamixelSDK.git
+	url = git@github.com:bit-bots/DynamixelSDK.git
 [submodule "lib/dynamixel-workbench"]
 	path = lib/dynamixel-workbench
-	url = https://github.com/bit-bots/dynamixel-workbench.git
+	url = git@github.com:bit-bots/dynamixel-workbench.git
 [submodule "lib/dynamixel-workbench-msgs"]
 	path = lib/dynamixel-workbench-msgs
 	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git
