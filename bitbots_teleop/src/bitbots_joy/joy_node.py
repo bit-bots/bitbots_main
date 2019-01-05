@@ -13,8 +13,7 @@ from bitbots_msgs.msg import JointCommand
 
 
 class JoyNode(object):
-    """ This node handles pressing of buttons on the robot. It should be used to call services on other nodes,
-    as an sort of event driven architecture for the buttons.
+    """ This node controls the roboter via Gamepad. 
     """
 
     #TODO read max values from config
@@ -108,9 +107,9 @@ class JoyNode(object):
 
         # angular walking with shoulder buttons
         if msg.buttons[6]:
-            self.walk_msg.angular.z = -0.05
-        elif msg.buttons[7]:
             self.walk_msg.angular.z = 0.05
+        elif msg.buttons[7]:
+            self.walk_msg.angular.z = -0.05
         else:
             self.walk_msg.angular.z = 0.0
 
