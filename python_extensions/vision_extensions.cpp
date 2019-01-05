@@ -84,10 +84,17 @@ static PyObject* expandPoints(PyObject *self, PyObject *args)
     Py_INCREF(pyCandidate);
     if (!pyCandidate) throw logic_error("Unable to allocate memory for candidate");
 
+#if PY_MAJOR_VERSION >= 3
     PyObject *py_rx = PyLong_FromLong(rx);
     PyObject *py_lx = PyLong_FromLong(lx);
     PyObject *py_uy = PyLong_FromLong(uy);
     PyObject *py_ly = PyLong_FromLong(ly);
+#else
+    PyObject *py_rx = PyInt_FromLong(rx);
+    PyObject *py_lx = PyInt_FromLong(lx);
+    PyObject *py_uy = PyInt_FromLong(uy);
+    PyObject *py_ly = PyInt_FromLong(ly);
+#endif
     if (! (py_rx && py_lx && py_uy && py_ly))
     {
         Py_DECREF(pyCandidate);
@@ -208,10 +215,17 @@ static PyObject* findSpots(PyObject *self, PyObject *args)
         Py_INCREF(pyCandidate);
 	    if (!pyCandidate) throw logic_error("Unable to allocate memory for candidate");
 
+#if PY_MAJOR_VERSION >= 3
         PyObject *py_rx = PyLong_FromLong(candidates[i].rx);
         PyObject *py_lx = PyLong_FromLong(candidates[i].lx);
         PyObject *py_uy = PyLong_FromLong(candidates[i].uy);
         PyObject *py_ly = PyLong_FromLong(candidates[i].ly);
+#else
+        PyObject *py_rx = PyInt_FromLong(candidates[i].rx);
+        PyObject *py_lx = PyInt_FromLong(candidates[i].lx);
+        PyObject *py_uy = PyInt_FromLong(candidates[i].uy);
+        PyObject *py_ly = PyInt_FromLong(candidates[i].ly);
+#endif
         if (! (py_rx && py_lx && py_uy && py_ly))
         {
             Py_DECREF(pyCandidate);
@@ -270,6 +284,7 @@ static PyMethodDef VisionMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
+#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef visionmodule = {
     PyModuleDef_HEAD_INIT,
     "VisionExtensions",   /* name of module */
@@ -280,11 +295,18 @@ static struct PyModuleDef visionmodule = {
 };
 
 PyMODINIT_FUNC
-PyInit_vision_extensions(void) {
+PyInit_VisionExtensions(void) {
     return PyModule_Create(&visionmodule);
 }
+#else
+PyMODINIT_FUNC initVisionExtensions(void) {
+    import_array();
+    (void) Py_InitModule("VisionExtensions", VisionMethods);
+}
+#endif
 
 int main(int argc, char *argv[]) {
+#if PY_MAJOR_VERSION >= 3
     wchar_t *program = Py_DecodeLocale(argv[0], NULL);
     if (program == NULL) {
         fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
@@ -292,7 +314,10 @@ int main(int argc, char *argv[]) {
     }
 
     /* Add a built-in module, before Py_Initialize */
-    PyImport_AppendInittab("VisionExtensions", PyInit_vision_extensions);
+    PyImport_AppendInittab("VisionExtensions", PyInit_VisionExtensions);
+#else
+    char *program = argv[0];
+#endif
 
     /* Pass argv[0] to the Python interpreter */
     Py_SetProgramName(program);
@@ -300,6 +325,7 @@ int main(int argc, char *argv[]) {
     /* Initialize the Python interpreter.  Required. */
     Py_Initialize();
 
+#if PY_MAJOR_VERSION >= 3
     import_array();
     /* Optionally import the module; alternatively,
        import can be deferred until the embedded script
@@ -308,9 +334,13 @@ int main(int argc, char *argv[]) {
 
 
     PyMem_RawFree(program);
+#else
+    initVisionExtensions();
+#endif
     return 0;
 }
 
+//#if PY_MAJOR_VERSION >= 3
 //PyMODINIT_FUNC initVisionExtensions(void) {
     //import_array();
     //(void) Py_InitModule("VisionExtensions", VisionMethods);
@@ -328,3 +358,4 @@ int main(int argc, char *argv[]) {
 
     //return 0;
 //}
+//#endif

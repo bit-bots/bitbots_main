@@ -3,7 +3,7 @@ from cv_bridge import CvBridge
 from humanoid_league_msgs.msg import ImageWithRegionOfInterest
 import VisionExtensions
 import numpy as np
-from candidate import CandidateFinder, Candidate
+from .candidate import CandidateFinder, Candidate
 import itertools
 import random
 import rospy
