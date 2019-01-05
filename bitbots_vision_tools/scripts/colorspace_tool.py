@@ -5,9 +5,6 @@ import argparse
 import yaml
 import pickle
 import numpy as np
-import plotly.offline as py
-import plotly.graph_objs as go
-import progressbar
 import time
 import math
 from multiprocessing import Process, Manager
@@ -57,7 +54,6 @@ class ColorspaceTool():
         self.main_cluster = set()
         self.to_dark = 0
         self.to_bright = 255
-        self.pbar = progressbar.ProgressBar()
 
     def load_colorspace_from_yaml(self, color_path):
         with open(color_path, 'r') as stream:
@@ -105,18 +101,16 @@ class ColorspaceTool():
         clusters = self.clusters
 
         # Generates a set with neighbours for each point
-        for row in self.pbar(self.distances):
-            clusters.append(set(np.where(row < self.distance_threshold)[0].tolist()))
-            
+        for row in self.distances:
+                clusters.append(set(np.where(row < self.distance_threshold)[0].tolist()))
+
         print("Merging sets")
-        with progressbar.ProgressBar(max_value=self.point_count) as bar:
-            for cluster1 in range(self.point_count):
-                for cluster2 in range(self.point_count):
-                    if clusters[cluster2] is not None and clusters[cluster1] is not None:
-                        if not clusters[cluster1].isdisjoint(clusters[cluster2]) and cluster1 != cluster2:
-                            clusters[cluster1].update(clusters[cluster2])
-                            clusters[cluster2] = None
-                bar.update(cluster1)
+        for cluster1 in range(self.point_count):
+            for cluster2 in range(self.point_count):
+                if clusters[cluster2] is not None and clusters[cluster1] is not None:
+                    if not clusters[cluster1].isdisjoint(clusters[cluster2]) and cluster1 != cluster2:
+                        clusters[cluster1].update(clusters[cluster2])
+                        clusters[cluster2] = None
         # Deletes empty clusters
         clusters = [points for points in clusters if points is not None]
         # Sorts clusters by their size
@@ -159,7 +153,8 @@ class ColorspaceTool():
         for proc in jobs:
             proc.join()
 
-        for index in result_map:
+        for index in result_map.keys():
+            print(index)
             interpolated_points.update(result_map[index])
 
         main_points = [self.get_value_tuple(index) for index in self.main_cluster]
@@ -308,8 +303,8 @@ if __name__ == "__main__":
     parser.add_argument("-y", "--yaml", help="Input YAML file.")
     parser.add_argument("-o", "--output", help="Saves the output in a YAML file.", action='store_true')
     parser.add_argument("-v", "--visual-output", help="Show graph.", action='store_true')
-    parser.add_argument("-c", "--cluster", help="Enables clustering.", action='store_true')
-    parser.add_argument("-i", "--interpolation", help="Interpolate cluster points.", action='store_true')
+    parser.add_argument("-nc", "--no-cluster", help="Disables clustering.", action='store_true')
+    parser.add_argument("-ni", "--no-interpolation", help="Disables interpolation.", action='store_true')
     parser.add_argument("-dt", "--distance-threshold", help="Point to point distance threshold. Default={}".format(tool.distance_threshold), type=float)
     parser.add_argument("-cc", "--cluster-count", help="Number of used clusters. Default={}".format(tool.cluster_count_threshold), type=int)
     parser.add_argument("-it", "--interpolation-threshold", help="Interpolates a new point to points near other points in this threshold. Default={}".format(tool.interpolation_threshold), type=float)
@@ -331,13 +326,15 @@ if __name__ == "__main__":
             tool.distance_threshold = args.distance_threshold
         if args.cluster_count:
             tool.cluster_count_threshold = args.cluster_count
-        if args.cluster:
+        if not args.no_cluster:
             tool.cluster()
         if args.interpolation_threshold:
             tool.interpolation_threshold = args.interpolation_threshold
-        if args.interpolation:
+        if not args.no_interpolation:
             tool.interpolate()
         if args.visual_output:
+            import plotly.offline as py
+            import plotly.graph_objs as go
             html_filename = "plotly_{}.html".format(name)
             tool.plot_values(html_filename)
             print("Open '{}' to see the graph".format(html_filename))

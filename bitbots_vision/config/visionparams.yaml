@@ -7,7 +7,7 @@ ball_fcnn_shuffle_candidate_list: false  # shuffles the list of possible candida
 ball_fcnn_min_ball_diameter: 5
 ball_fcnn_max_ball_diameter: 200
 
-field_color_detector_path: '/config/color_spaces/RoHow2018_daylight_interpolated.txt'
+field_color_detector_path: '/config/color_spaces/d125_Teppich_interpolated.txt'
 field_color_detector_use_hsv_green: false
 field_color_detector_hsv_lower_values_h: 46
 field_color_detector_hsv_lower_values_s: 101
