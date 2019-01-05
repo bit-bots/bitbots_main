@@ -1,9 +1,12 @@
 import cv2
+from cv_bridge import CvBridge
+from humanoid_league_msgs.msg import ImageWithRegionOfInterest
 import VisionExtensions
 import numpy as np
 from candidate import CandidateFinder, Candidate
 import itertools
 import random
+import rospy
 from .live_fcnn_03 import FCNN03
 from .debug import DebugPrinter
 
@@ -27,14 +30,16 @@ class FcnnHandler(CandidateFinder):
         candidate_refinement_iteration_count: 1
     """
 
-    def __init__(self, fcnn, config, debug_printer):
+    def __init__(self, fcnn, horizon_detector, config, debug_printer):
         self._image = None
         self._fcnn = fcnn
+        self._horizon_detector = horizon_detector
         self._rated_candidates = None
         self._sorted_rated_candidates = None
         self._top_candidate = None
         self._fcnn_output = None
         self._debug_printer = debug_printer
+        self.bridge = CvBridge()
         # init config
         self.set_config(config)
 
@@ -59,6 +64,7 @@ class FcnnHandler(CandidateFinder):
         self._max_candidate_diameter = config['max_candidate_diameter']
         self._candidate_refinement_iteration_count = \
             config['candidate_refinement_iteration_count']
+        self._horizon_offset = config['publish_horizon_offset']
 
 
     def get_candidates(self):
@@ -250,3 +256,17 @@ class FcnnHandler(CandidateFinder):
             return
         cv2.imshow('FCNN Output', self.get_fcnn_output())
         cv2.waitKey(1)
+
+    def get_cropped_msg(self):
+        msg = ImageWithRegionOfInterest()
+        msg.header.frame_id = 'camera'
+        msg.header.stamp = rospy.get_rostime()
+        horizon_top = self._horizon_detector.get_upper_bound(y_offset=self._horizon_offset)
+        image_cropped = self.get_fcnn_output()[horizon_top:]  # cut off at horizon
+        msg.image = self.bridge.cv2_to_imgmsg(image_cropped, "mono8")
+        msg.regionOfInterest.x_offset = 0
+        msg.regionOfInterest.y_offset = horizon_top
+        msg.regionOfInterest.height = self.get_fcnn_output().shape[0] - 1 - horizon_top
+        msg.regionOfInterest.width = self.get_fcnn_output().shape[1] - 1
+        return msg
+

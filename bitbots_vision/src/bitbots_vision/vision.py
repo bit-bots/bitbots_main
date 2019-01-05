@@ -3,7 +3,7 @@
 
 from bitbots_vision.vision_modules import lines, horizon, color, debug, live_classifier, classifier, ball, \
     lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
-from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, ObstacleInImage
+from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import rospy
@@ -31,7 +31,6 @@ class Vision:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
         # register config callback and set config
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
-
 
         rospy.spin()
 
@@ -125,6 +124,11 @@ class Vision:
             line_msg.segments.append(ls)
         self.pub_lines.publish(line_msg)
 
+        if self.ball_fcnn_publish_output and self.config['vision_ball_classifier'] == 'fcnn':
+            fcnn_image_msg = self.ball_detector.get_cropped_msg()
+            fcnn_image_msg.header.stamp = image_msg.header.stamp
+            self.pub_ball_fcnn.publish(self.ball_detector.get_cropped_msg())
+
         # do debug stuff
         if self.debug:
             self.debug_image_dings.set_image(image)
@@ -180,7 +184,6 @@ class Vision:
                 config['vision_debug_printer_classes']))
         self.runtime_evaluator = evaluator.RuntimeEvaluator(self.debug_printer)
 
-
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
         self._ball_candidate_y_offset = config['vision_ball_candidate_horizon_y_offset']
 
@@ -191,61 +194,13 @@ class Vision:
             rospy.logwarn('Debug images are enabled')
         else:
             rospy.loginfo('Debug images are disabled')
+        self.ball_fcnn_publish_output = config['ball_fcnn_publish_output']
+        if self.ball_fcnn_publish_output:
+            rospy.logwarn('ball FCNN output publishing is enabled')
+        else:
+            rospy.logwarn('ball FCNN output publishing is disabled')
 
-
-        # load cascade
-        if (config['vision_ball_classifier'] == 'cascade'):
-            self.cascade_path = self.package_path + config['cascade_classifier_path']
-            if 'cascade_classifier_path' not in self.config or \
-                    self.config['cascade_classifier_path'] != config['cascade_classifier_path'] or \
-                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                if os.path.exists(self.cascade_path):
-                    self.cascade = cv2.CascadeClassifier(self.cascade_path)
-                else:
-                    rospy.logerr(
-                        'AAAAHHHH! The specified cascade config file doesn\'t exist!')
-            if 'classifier_model_path' not in self.config or \
-                    self.config['classifier_model_path'] != config['classifier_model_path'] or \
-                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                self.ball_classifier = live_classifier.LiveClassifier(
-                    self.package_path + config['classifier_model_path'])
-                rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
-            self.ball_detector = classifier.ClassifierHandler(self.ball_classifier, self.debug_printer)
-
-            self.ball_finder = ball.BallFinder(self.cascade, config, self.debug_printer)
-
-
-        # set up ball config for fcnn
-        # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
-        # this enables 2 fcnns with different configs.
-        self.ball_fcnn_config = {
-            'debug': config['ball_fcnn_debug'] and self.debug_image,
-            'threshold': config['ball_fcnn_threshold'],
-            'expand_stepsize': config['ball_fcnn_expand_stepsize'],
-            'pointcloud_stepsize': config['ball_fcnn_pointcloud_stepsize'],
-            'shuffle_candidate_list': config['ball_fcnn_shuffle_candidate_list'],
-            'min_candidate_diameter': config['ball_fcnn_min_ball_diameter'],
-            'max_candidate_diameter': config['ball_fcnn_max_ball_diameter'],
-            'candidate_refinement_iteration_count': config['ball_fcnn_candidate_refinement_iteration_count'],
-        }
-
-
-        # load fcnn
-        if (config['vision_ball_classifier'] == 'fcnn'):
-            if 'ball_fcnn_model_path' not in self.config or \
-                    self.config['ball_fcnn_model_path'] != config['ball_fcnn_model_path'] or \
-                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                ball_fcnn_path = self.package_path + config['ball_fcnn_model_path']
-                if not os.path.exists(ball_fcnn_path):
-                    rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
-                self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path, self.debug_printer)
-                rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
-            self.ball_detector = fcnn_handler.FcnnHandler(self.ball_fcnn,
-                                                          self.ball_fcnn_config,
-                                                          self.debug_printer)
-
-
-        if (config['vision_ball_classifier'] == 'dummy'):
+        if config['vision_ball_classifier'] == 'dummy':
             self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, None)
         # color config
         self.white_color_detector = color.HsvSpaceColorDetector(
@@ -292,6 +247,58 @@ class Vision:
             self.debug_printer
         )
 
+        # load cascade
+        if config['vision_ball_classifier'] == 'cascade':
+            self.cascade_path = self.package_path + config['cascade_classifier_path']
+            if 'cascade_classifier_path' not in self.config or \
+                    self.config['cascade_classifier_path'] != config['cascade_classifier_path'] or \
+                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
+                if os.path.exists(self.cascade_path):
+                    self.cascade = cv2.CascadeClassifier(self.cascade_path)
+                else:
+                    rospy.logerr(
+                        'AAAAHHHH! The specified cascade config file doesn\'t exist!')
+            if 'classifier_model_path' not in self.config or \
+                    self.config['classifier_model_path'] != config['classifier_model_path'] or \
+                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
+                self.ball_classifier = live_classifier.LiveClassifier(
+                    self.package_path + config['classifier_model_path'])
+                rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
+            self.ball_detector = classifier.ClassifierHandler(self.ball_classifier, self.debug_printer)
+
+            self.ball_finder = ball.BallFinder(self.cascade, config, self.debug_printer)
+
+
+        # set up ball config for fcnn
+        # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
+        # this enables 2 fcnns with different configs.
+        self.ball_fcnn_config = {
+            'debug': config['ball_fcnn_debug'] and self.debug_image,
+            'threshold': config['ball_fcnn_threshold'],
+            'expand_stepsize': config['ball_fcnn_expand_stepsize'],
+            'pointcloud_stepsize': config['ball_fcnn_pointcloud_stepsize'],
+            'shuffle_candidate_list': config['ball_fcnn_shuffle_candidate_list'],
+            'min_candidate_diameter': config['ball_fcnn_min_ball_diameter'],
+            'max_candidate_diameter': config['ball_fcnn_max_ball_diameter'],
+            'candidate_refinement_iteration_count': config['ball_fcnn_candidate_refinement_iteration_count'],
+            'publish_horizon_offset': config['ball_fcnn_publish_horizon_offset'],
+        }
+
+        # load fcnn
+        if config['vision_ball_classifier'] == 'fcnn':
+            if 'ball_fcnn_model_path' not in self.config or \
+                    self.config['ball_fcnn_model_path'] != config['ball_fcnn_model_path'] or \
+                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
+                ball_fcnn_path = self.package_path + config['ball_fcnn_model_path']
+                if not os.path.exists(ball_fcnn_path):
+                    rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
+                self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path, self.debug_printer)
+                rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
+            self.ball_detector = fcnn_handler.FcnnHandler(self.ball_fcnn,
+                                                          self.horizon_detector,
+                                                          self.ball_fcnn_config,
+                                                          self.debug_printer)
+
         # subscribers
         if 'ROS_img_msg_topic' not in self.config or \
                 self.config['ROS_img_msg_topic'] != config['ROS_img_msg_topic']:
@@ -332,6 +339,15 @@ class Vision:
                 config['ROS_obstacle_msg_topic'],
                 ObstaclesInImage,
                 queue_size=3)
+
+        if 'ROS_fcnn_img_msg_topic' not in self.config or \
+                self.config['ROS_fcnn_img_msg_topic'] != config['ROS_fcnn_img_msg_topic']:
+            if hasattr(self, 'pub_ball_fcnn'):
+                self.pub_ball_fcnn.unregister()
+            self.pub_ball_fcnn = rospy.Publisher(
+                config['ROS_fcnn_img_msg_topic'],
+                ImageWithRegionOfInterest,
+                queue_size=1)
 
         self.pub_debug_image = rospy.Publisher(
             'debug_image',

@@ -46,7 +46,7 @@
     <export>
     <bitbots_documentation>
       <language>python2</language>
-      <status>unknown</status>
+      <status>tested_simulator</status>
     </bitbots_documentation>
   </export>
 </package>
