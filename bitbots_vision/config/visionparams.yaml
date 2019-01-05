@@ -6,6 +6,8 @@ ball_fcnn_pointcloud_stepsize: 10
 ball_fcnn_shuffle_candidate_list: false  # shuffles the list of possible candidate points
 ball_fcnn_min_ball_diameter: 5
 ball_fcnn_max_ball_diameter: 200
+ball_fcnn_publish_output: false
+ball_fcnn_publish_horizon_offset: 5
 
 field_color_detector_path: '/config/color_spaces/d125_Teppich_interpolated.txt'
 field_color_detector_use_hsv_green: false
@@ -66,6 +68,7 @@ goalpost_white_threshold: 100
 ROS_img_msg_topic: 'image_raw'
 ROS_img_queue_size: 1
 ROS_ball_msg_topic: 'ball_in_image'
+ROS_fcnn_img_msg_topic: 'fcnn_image'
 ROS_line_msg_topic: 'line_in_image'
 ROS_obstacle_msg_topic: 'obstacle_in_image'
 
