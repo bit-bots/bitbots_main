@@ -28,7 +28,7 @@
     </group>
     <!-- remap stuff to fit the robot -->
     <group if="$(arg sim)">
-        <remap to ="/minibot/camera/image_raw" from="/image_raw"/>
+        <remap to ="/camera/image_raw" from="/image_raw"/>
     </group>
 </launch>
 
