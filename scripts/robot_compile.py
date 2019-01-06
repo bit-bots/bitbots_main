@@ -125,7 +125,7 @@ if hostname in names.keys():
 else:
     hosts = [hostname]
     robot_name_name = 'ROBOT'
-    for name,number in names.items():
+    for name, number in names.items():
         if number == int(hostname[-1]):
             robot_name_name = name
             break
@@ -142,6 +142,13 @@ for h in hosts_tmp:
 if len(hosts) == 0:
     print_err('No hosts available!')
     exit(1)
+if robot_name_name == 'ROBOT':
+    # The robot name could not be determined yet
+    print(hosts)
+    for name, number in names.items():
+        if number == int(hosts[0][-1][-1]):
+            robot_name_name = name
+            break
 
 
 if args.robot == 'wolfgang':
