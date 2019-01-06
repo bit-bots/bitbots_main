@@ -39,11 +39,11 @@
         <param name="laser_model_type" value="likelihood_field_prob"/>
 
         <param name="odom_model_type" value="omni-corrected" />
-        <param name="odom_alpha1" value="0.005"/>
-         <param name="odom_alpha2" value="0.005"/>
-        <param name="odom_alpha3" value="0.010"/>
-        <param name="odom_alpha4" value="0.005"/>
-        <param name="odom_alpha5" value="0.003"/>
+        <param name="odom_alpha1" value="0.9"/>
+         <param name="odom_alpha2" value="0.9"/>
+        <param name="odom_alpha3" value="0.9"/>
+        <param name="odom_alpha4" value="0.9"/>
+        <param name="odom_alpha5" value="0.9"/>
 
 
         <param name="tf_broadcast" value="true"/>

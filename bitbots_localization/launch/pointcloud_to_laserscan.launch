@@ -2,7 +2,7 @@
 
 <launch>
     <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
-        <!--<remap from="cloud_in" to="line_relative_pc"/>-->
+        <remap from="scan" to="pre_scan"/>
 
         <rosparam>
             target_frame: base_footprint # Leave disabled to output scan in pointcloud frame
