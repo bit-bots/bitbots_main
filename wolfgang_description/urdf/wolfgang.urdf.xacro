@@ -701,7 +701,7 @@
     <joint name="torso_to_camera_fixed" type="fixed">
         <parent link="torso" />
         <child link="camera_fixed" />
-        <origin rpy="0.0 0 0" xyz="0.05815 0 0.2791" />
+        <origin rpy="0.0 0 0" xyz="0.05 0 0.279" />
     </joint>
 
     <joint name="RShoulderPitch" type="revolute">
@@ -775,7 +775,7 @@
         <parent link="torso" />
         <child link="neck" />
         <axis xyz="0 0 1" />
-        <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-1" upper="1" />
+        <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-1.2" upper="1.2" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
 
@@ -789,7 +789,7 @@
     </joint>
 	
     <joint name="head_to_camera" type="fixed">
-        <origin xyz="0.028 0 0.1115" rpy="0 0 0" />
+        <origin xyz="0.02 0 0.1115" rpy="0 0 0" />
         <parent link="head" />
         <child link="camera" />
         <axis xyz="0 0 0" />
