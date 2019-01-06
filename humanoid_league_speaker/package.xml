@@ -18,7 +18,7 @@
 
   <export>
     <bitbots_documentation>
-      <status>starts</status>
+      <status>tested_viz</status>
       <language>python3</language>
     </bitbots_documentation>
   </export>
