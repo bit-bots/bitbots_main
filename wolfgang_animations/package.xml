@@ -15,7 +15,7 @@
 
   <export>
     <bitbots_documentation>
-      <status>unknown</status>
+      <status>starts</status>
     </bitbots_documentation>
   </export>
 </package>

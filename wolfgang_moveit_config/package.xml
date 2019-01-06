@@ -31,7 +31,7 @@
 
   <export>
       <bitbots_documentation>
-        <status>unknown</status>
+        <status>tested_robot</status>
       </bitbots_documentation>
   </export>
 </package>
