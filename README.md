@@ -50,3 +50,10 @@ Neural Network Models
 Currently, the models of our neural networks are not available publicly.
 Due to their size, they are not included in the repository.
 Bit-Bots find them in the Mafiasi NextCloud `robocup-ai/log/`
+
+
+Vision Tools
+------------
+
+In the bitbots_vision_tools directory, special tools for debugging/introspection purposes are provided.
+convert_to_image.py and colorspace_tool.py are tested in the current configuration.
