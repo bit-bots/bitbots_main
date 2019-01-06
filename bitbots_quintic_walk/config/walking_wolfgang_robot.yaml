@@ -7,7 +7,7 @@ walking:
   doubleSupportRatio: 0.2
   # Lateral distance between the feet center
   # (in m, >= 0)
-  footDistance: 0.14
+  footDistance: 0.18
   # Maximum flying foot height
   # (in m, >= 0)
   footRise: 0.07
