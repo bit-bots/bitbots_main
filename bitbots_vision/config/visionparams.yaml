@@ -53,7 +53,7 @@ vision_ball_candidate_horizon_y_offset: 0
 vision_ball_candidate_rating_threshold: 0.5
 
 line_detector_horizon_offset: 50
-line_detector_linepoints_range: 5000
+line_detector_linepoints_range: 10000
 line_detector_blur_kernel_size: 9
 
 obstacle_color_threshold: 50
