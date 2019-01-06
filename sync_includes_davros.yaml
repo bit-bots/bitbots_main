@@ -10,7 +10,6 @@ include:
     - bitbots_vision:
         - bitbots_imageloader
         - bitbots_vision
-        - bitbots_vision_common
         - python_extensions
     - davros_robot:
         - davros_description

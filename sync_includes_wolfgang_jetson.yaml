@@ -3,7 +3,6 @@ include:
         - bitbots_bringup
     - bitbots_vision:
         - bitbots_vision
-        - bitbots_vision_common
         - python_extensions
     - humanoid_league_msgs
     - wolves_image_provider
