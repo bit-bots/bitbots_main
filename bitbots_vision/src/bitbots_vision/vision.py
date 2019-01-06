@@ -101,8 +101,8 @@ class Vision:
             obstacle_msg.color = ObstacleInImage.ROBOT_MAGENTA
             obstacle_msg.top_left.x = red_obs.get_upper_left_x()
             obstacle_msg.top_left.y = red_obs.get_upper_left_y()
-            obstacle_msg.height = red_obs.get_height()
-            obstacle_msg.width = red_obs.get_width()
+            obstacle_msg.height = int(red_obs.get_height())
+            obstacle_msg.width = int(red_obs.get_width())
             obstacle_msg.confidence = 1.0
             obstacle_msg.playerNumber = 42
             obstacles_msg.obstacles.append(obstacle_msg)
@@ -111,8 +111,8 @@ class Vision:
             obstacle_msg.color = ObstacleInImage.ROBOT_CYAN
             obstacle_msg.top_left.x = blue_obs.get_upper_left_x()
             obstacle_msg.top_left.y = blue_obs.get_upper_left_y()
-            obstacle_msg.height = blue_obs.get_height()
-            obstacle_msg.width = blue_obs.get_width()
+            obstacle_msg.height = int(blue_obs.get_height())
+            obstacle_msg.width = int(blue_obs.get_width())
             obstacle_msg.confidence = 1.0
             obstacle_msg.playerNumber = 42
             obstacles_msg.obstacles.append(obstacle_msg)
@@ -121,8 +121,8 @@ class Vision:
             obstacle_msg.color = ObstacleInImage.UNDEFINED
             obstacle_msg.top_left.x = other_obs.get_upper_left_x()
             obstacle_msg.top_left.y = other_obs.get_upper_left_y()
-            obstacle_msg.height = other_obs.get_height()
-            obstacle_msg.width = other_obs.get_width()
+            obstacle_msg.height = int(other_obs.get_height())
+            obstacle_msg.width = int(other_obs.get_width())
             obstacle_msg.confidence = 1.0
             obstacles_msg.obstacles.append(obstacle_msg)
         self.pub_obstacle.publish(obstacles_msg)

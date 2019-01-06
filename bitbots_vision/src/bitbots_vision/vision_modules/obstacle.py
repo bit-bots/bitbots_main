@@ -155,7 +155,9 @@ class ObstacleDetector(CandidateFinder):
                         w = i-x
                         if w > min_width:
                             y = max(0, obstacle_begin[1] - self._candidate_horizon_offset)
-                            h = np.round(full_horizon[i - w / 2] - y)
+                            h = np.round(np.max(full_horizon[x:i]) - y)
+                            if h < 0:
+                                self._debug_printer.error('negative obstacle height', 'ObstacleDetection')
                             self._obstacles.append(Candidate(x, y, w, h))
                         obstacle_begin = None
             if obstacle_begin:
@@ -163,10 +165,12 @@ class ObstacleDetector(CandidateFinder):
                 # candidate(x upper left point, y upper left point, width, height)
                 i = pic_width  # we have to reinitialise i because it was only usable in the for-loop
                 x = obstacle_begin[0]
-                w = i - x
-                if w > min_width:
-                    y = max(0, obstacle_begin[1] - self._candidate_horizon_offset)
-                    h = full_horizon[i - w / 2] - y
+                w = i - x  # calculating width of the object
+                if w > min_width:  # when the width is larger than the threshold
+                    y = max(0, obstacle_begin[1] - self._candidate_horizon_offset)  # top
+                    h = np.round(np.max(full_horizon[x:i]) - y)
+                    if h < 0:
+                        self._debug_printer.error('negative obstacle height', 'ObstacleDetection')
                     self._obstacles.append(Candidate(x, y, w, h))
             self._runtime_evaluator.stop_timer()  # for runtime testing
             self._runtime_evaluator.print_timer()  # for runtime testing
