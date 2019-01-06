@@ -56,4 +56,4 @@ Vision Tools
 ------------
 
 In the bitbots_vision_tools directory, special tools for debugging/introspection purposes are provided.
-convert_to_image.py and colorspace_tool.py are tested in the current configuration.
+The Imageloader, convert_to_image.py and colorspace_tool.py are tested in the current configuration.
