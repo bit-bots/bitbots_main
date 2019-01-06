@@ -71,7 +71,7 @@ ROS_img_queue_size: 1
 ROS_ball_msg_topic: 'ball_in_image'
 ROS_fcnn_img_msg_topic: 'fcnn_image'
 ROS_line_msg_topic: 'line_in_image'
-ROS_obstacle_msg_topic: 'obstacle_in_image'
+ROS_obstacle_msg_topic: 'obstacles_in_image'
 
 ball_finder_classify_threshold: 0.5
 ball_finder_scale_factor: 1.1
