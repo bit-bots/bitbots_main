@@ -1,12 +1,11 @@
 #!/usr/bin/env python2.7
 import rospy
 import tf2_ros
-import tf
 from std_srvs.srv import Empty
-from geometry_msgs.msg import TransformStamped
-from geometry_msgs.msg import Transform
+from sensor_msgs import LaserScan
 
-#TODO: include global_localization handling
+
+
 
 class AmclNomotionUpdate(object):
 
@@ -14,35 +13,35 @@ class AmclNomotionUpdate(object):
         rospy.init_node('amcl_nomotion_update')
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(10))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
-
+        rospy.Subscriber('/scan', LaserScan, self.nomotion_update())
+        self.pub = rospy.Publisher('/scan', LaserScan)
+        self.pubMotion = rospy.Publisher('/scan_motion', LaserScan)
         self.nomotion = False
         self.new_head_position = False
 
         #transform tolerance
         self.tolerance = 0.002 #todo find magic value
 
-
         self.rate = rospy.Rate(10)
         rospy.sleep(3) #wait to have old data to compare with
-        self.nomotion_update() #main loop
 
 
-    def nomotion_update(self):
-        while not rospy.is_shutdown():
-            #rospy.logwarn("started loop")
+    def nomotion_update(self, data):
+        now = rospy.Time.now()
+        past = now - rospy.Duration(1) #TODO:good value?
 
-            now = rospy.Time.now()
-            past = now - rospy.Duration(3) #TODO:good value?
-
-            if self.check_nomotion(now, past): #check if feet did not move
-                if self.check_head_motion(now, past): #check if head moved
-                    rospy.wait_for_service('request_nomotion_update')
-                    try: #call service
-                        rospy.logwarn("Requesting nomotion_update")
-                        nomotion_update = rospy.ServiceProxy('request_nomotion_update', Empty)
-                        nomotion_update()
-                    except rospy.ServiceException as e:
-                        rospy.logwarn("Service call failed: ", e)
+        if self.check_nomotion(now, past): #check if feet did not move
+            if self.check_head_motion(now, past): #check if head moved
+                self.pub.publish(data)
+                rospy.wait_for_service('request_nomotion_update')
+                try: #call service
+                    rospy.logwarn("Requesting nomotion_update")
+                    nomotion_update = rospy.ServiceProxy('request_nomotion_update', Empty)
+                    nomotion_update()
+                except rospy.ServiceException as e:
+                    rospy.logwarn("Service call failed: ", e)
+        else:
+            self.pubMotion.pub(data)
         self.rate.sleep()
 
 
