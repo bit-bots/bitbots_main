@@ -181,12 +181,12 @@
             </geometry>
             <material name="metal" />
         </visual>
-        <!--<collision>
+        <collision>
             <origin xyz="0 0 -0.012" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_foot_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/right_foot.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
     
     <link name="r_sole">
@@ -337,12 +337,12 @@
             </geometry>
             <material name="metal" />
         </visual>
-        <!--<collision>
+        <collision>
             <origin xyz="0 0 -0.012" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_foot_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/left_foot.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="l_sole">
@@ -1141,18 +1141,18 @@
   </gazebo>
 
    <!-- fake controller that allows us to move the robot and to get its oposition -->
-   <!-- rostopic pub /minibot/cmd_vel geometry_msgs/Twist "{ linear: [ 0.1, 0, 0], angular: [0.2, 0, 0.1] }" -->
-   <!--<gazebo>
+   <!-- rostopic pub /cmd_vel geometry_msgs/Twist "{ linear: [ 0.1, 0, 0], angular: [0.2, 0, 0.1] }" -->
+   <gazebo>
     <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
-      <robotNamespace>wolves</robotNamespace>
+      <robotNamespace>/</robotNamespace>
 
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>
       <odometryRate>100.0</odometryRate>
-      <robotBaseFrame>base_link</robotBaseFrame>
+      <robotBaseFrame>base_footprint</robotBaseFrame>
     </plugin>
-  </gazebo> -->
+  </gazebo>
 
 </robot>
 
