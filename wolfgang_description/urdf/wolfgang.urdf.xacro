@@ -3,10 +3,11 @@
 
     <xacro:arg name="sim_ns" default="/" />
     <xacro:arg name="cleats" default="-0.013" />
+    <xacro:arg name="use_fake_walk" default="False"/>
+    <xacro:property name="fake_walk" value="$(arg use_fake_walk)" />
 
-    <xacro:property name="tofa" value="1" /> <!--Torque factor-->
-    <xacro:property name="infa" value="1" /> <!--inertia factor-->
-    <xacro:property name="insu" value="0" /> <!--inertia summand-->
+    <xacro:property name="tofa" value="1" />  <!--Torque factor-->
+    <!--<xacro:property name="infa" value="1" /> --> <!--inertia factor--> 
     <xacro:property name="d" value="1" /> <!-- damping -->
     <xacro:property name="f" value="1" /> <!-- friction -->
     <material name="black">
@@ -181,12 +182,15 @@
             </geometry>
             <material name="metal" />
         </visual>
-        <collision>
-            <origin xyz="0 0 -0.012" rpy="0 0 0" />
-            <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_foot.stl" />
-            </geometry>
-        </collision>
+        <xacro:if value="${fake_walk== False}">
+            <!-- only active when fake_walk is off, to prevent collisions with ground -->
+            <collision>
+                <origin xyz="0 0 -0.012" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="package://wolfgang_description/mesh/right_foot.stl" />
+                </geometry>
+            </collision>
+        </xacro:if>
     </link>
     
     <link name="r_sole">
@@ -337,12 +341,15 @@
             </geometry>
             <material name="metal" />
         </visual>
-        <collision>
-            <origin xyz="0 0 -0.012" rpy="0 0 0" />
-            <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_foot.stl" />
-            </geometry>
-        </collision>
+        <xacro:if value="${fake_walk== False}">
+        <!-- only active when fake_walk is off, to prevent collisions with ground -->
+            <collision>
+                <origin xyz="0 0 -0.012" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="package://wolfgang_description/mesh/left_foot.stl" />
+                </geometry>
+            </collision>
+        </xacro:if>
     </link>
 
     <link name="l_sole">
@@ -368,7 +375,7 @@
             <inertia ixx="6.7511E-06" ixy="1.5595E-20" ixz="-5.4198E-21" iyy="1.2425E-05" iyz="-2.4006E-20" izz="1.4317E-05" />
         </inertial>
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="0 0 ${pi}" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/shoulder.stl" />
             </geometry>
@@ -494,7 +501,12 @@
     <link name="neck">
         <inertial>
             <origin xyz="2.1595E-05 0.00064781 0.033208" rpy="0 0 0" />
-            <mass value="0.15587" />
+            <xacro:if value="${fake_walk== True}">
+                <mass value="0.00015587" />
+            </xacro:if>            
+            <xacro:if value="${fake_walk== False}">
+                <mass value="0.15587" />
+            </xacro:if>            
             <inertia ixx="7.5209E-05" ixy="-1.8422E-06" ixz="-4.9817E-07" iyy="6.2999E-05" iyz="-9.9088E-08" izz="3.826E-05" />
         </inertial>
         <visual>
@@ -529,7 +541,12 @@
     <link name="head">
         <inertial>
             <origin xyz="0.014358 0.0005519 0.069919" rpy="0 0 0" />
-            <mass value="0.40746" />
+            <xacro:if value="${fake_walk== True}">
+                <mass value="0.00040746" />
+            </xacro:if>            
+            <xacro:if value="${fake_walk== False}">   
+                <mass value="0.40746" />
+            </xacro:if>             
             <inertia ixx="0.0014813" ixy="3.1631E-07" ixz="-4.1003E-05" iyy="0.0016361" iyz="6.7483E-07" izz="0.0017353" />
         </inertial>
         <!--<visual>
@@ -1142,17 +1159,19 @@
 
    <!-- fake controller that allows us to move the robot and to get its oposition -->
    <!-- rostopic pub /cmd_vel geometry_msgs/Twist "{ linear: [ 0.1, 0, 0], angular: [0.2, 0, 0.1] }" -->
-   <gazebo>
-    <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
-      <robotNamespace>/</robotNamespace>
+   <xacro:if value="${fake_walk == True}">
+   <!-- only active when fake_walk param is set to True -->
+    <gazebo>
+        <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
+        <robotNamespace>/</robotNamespace>
 
-      <commandTopic>cmd_vel</commandTopic>
-      <odometryTopic>odom</odometryTopic>
-      <odometryFrame>odom</odometryFrame>
-      <odometryRate>100.0</odometryRate>
-      <robotBaseFrame>base_footprint</robotBaseFrame>
-    </plugin>
-  </gazebo>
-
+        <commandTopic>cmd_vel</commandTopic>
+        <odometryTopic>odom</odometryTopic>
+        <odometryFrame>odom</odometryFrame>
+        <odometryRate>100.0</odometryRate>
+        <robotBaseFrame>base_footprint</robotBaseFrame>
+        </plugin>
+    </gazebo>
+    </xacro:if>
 </robot>
 
