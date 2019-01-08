@@ -2,27 +2,39 @@
     <!-- set parameter -->
     <arg name="sim_ns" default="/" />
     <arg name="hcm" default="false"/>
+    <arg name="use_fake_walk" default="False"/>
     <param name="/use_sim_time" value="true" />
     <param name="/simulation_active" value="true"/>   
-
+    
     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
         <arg name="sim" value="true"/>   
         <arg name="sim_ns" default="$(arg sim_ns)" />
+        <arg name="use_fake_walk" default="$(arg use_fake_walk)"/>        
     </include>
 
     <!-- launch gazebo with soccer field -->
-	<include file="$(find gazebo_ros)/launch/empty_world.launch">
-		<arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer.world"/>
-		<arg name="paused" value="false"/>		
-	</include>
+
+    <group if="$(arg use_fake_walk)">
+        <include file="$(find gazebo_ros)/launch/empty_world.launch">
+            <!-- use simpler physics when faking walk -->
+            <arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer_simple_physics.world"/>
+            <arg name="paused" value="false"/>		
+        </include>
+        <rosparam file="$(find wolfgang_description)/config/wolfgang_control_simple_physics.yaml" command="load" ns="$(arg sim_ns)"/>
+    </group>
+    <group unless="$(arg use_fake_walk)">
+        <include file="$(find gazebo_ros)/launch/empty_world.launch">
+            <arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer.world"/>
+            <arg name="paused" value="false"/>		
+        </include>
+        <rosparam file="$(find wolfgang_description)/config/wolfgang_control.yaml" command="load" ns="$(arg sim_ns)"/>
+    </group>
     
     <!-- spawn URDF and load the controllers -->
-    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg sim_ns)" type="spawn_model" args="-param /robot_description -urdf -model $(arg sim_ns) -x -1.5 -y 0.0 -z 0.445" output="screen" />
-    <rosparam file="$(find wolfgang_description)/config/wolfgang_control.yaml" command="load" ns="$(arg sim_ns)"/>
+    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg sim_ns)" type="spawn_model" args="-param /robot_description -urdf -model $(arg sim_ns) -x -1.5 -y 3.3 -z 0.445 -Y -1.57" output="screen" />
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg sim_ns)" args="joint_state_controller JointGroupController" />
 
     <!-- map motion goals for simulator -->
     <node name="pub_goals_sim" pkg="bitbots_bringup" type="motion_in_gazebo.py" output="screen" respawn="true"/>
-
                   
 </launch>

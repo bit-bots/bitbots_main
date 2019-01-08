@@ -6,6 +6,8 @@
     <arg name="sim" default="false"/>
     <arg name="sim_ns" default="sim_robot" />
     <arg name="davros_length" default="0" />
+    <!-- fake walk controller for gazebo -->
+    <arg name="use_fake_walk" default="False" />
 
 
 
@@ -18,7 +20,7 @@
 
 
     <group if="$(arg wolfgang)">
-        <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/wolfgang.urdf.xacro sim_ns:=$(arg sim_ns) --inorder" />                
+        <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/wolfgang.urdf.xacro use_fake_walk:=$(arg use_fake_walk) sim_ns:=$(arg sim_ns) --inorder" />                
         <param name="urdf" value="$(find wolfgang_description)/urdf/wolfgang.urdf.xacro" />
         <param name="robot_description_semantic" textfile="$(find wolfgang_moveit_config)/config/wolfgang.srdf" />
         <param name="robot_type_name" value="Wolfgang"/>
