@@ -24,6 +24,7 @@ sudo apt install -y \
     ros-kinetic-gazebo-msgs \
     ros-kinetic-gazebo-ros \
     ros-kinetic-gazebo-ros-control \
+    ros-kinetic-gazebo-plugins \
     ros-kinetic-imu-complementary-filter \
     ros-kinetic-imu-sensor-controller \
     ros-kinetic-joint-state-controller \
