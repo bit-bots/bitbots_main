@@ -80,7 +80,7 @@ double LocalFcnnObservationModel::measure(const PositionState& state) const {
         return 1.0;
     }
     std::vector<WeightedMeasurement> weighted_measurements;
-    for (bitbots_image_transformer::PixelRelative measurement : last_measurement_) {
+    for (humanoid_league_msgs::PixelRelative measurement : last_measurement_) {
         weighted_measurements.push_back(WeightedMeasurement{state.calcDistance(measurement), measurement.value});
     }
     int k = std::min(k_, static_cast<int>(weighted_measurements.size())); // put k in a appropriate bounds
@@ -93,7 +93,7 @@ double LocalFcnnObservationModel::measure(const PositionState& state) const {
     return std::max(min_weight_, weighted_weight);
 }
 
-void LocalFcnnObservationModel::set_measurement(bitbots_image_transformer::PixelsRelative measurement) {
+void LocalFcnnObservationModel::set_measurement(humanoid_league_msgs::PixelsRelative measurement) {
     last_measurement_ = measurement.pixels;
 }
 

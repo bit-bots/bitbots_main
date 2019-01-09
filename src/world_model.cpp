@@ -111,7 +111,7 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     local_obstacle_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)));
 }
 
-void WorldModel::ball_callback(const bitbots_image_transformer::PixelsRelative &msg) {
+void WorldModel::ball_callback(const hlm::PixelsRelative &msg) {
     ball_measurements_ = msg;
     local_ball_observation_model_->set_measurement(ball_measurements_);
 }

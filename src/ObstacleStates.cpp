@@ -95,7 +95,7 @@ double PositionState::calcDistance(const PositionState& state) const {
     return diff;
 }
 
-double PositionState::calcDistance(const bitbots_image_transformer::PixelRelative &pixel) const {
+double PositionState::calcDistance(const humanoid_league_msgs::PixelRelative &pixel) const {
     // TODO
     double diff =  std::sqrt(std::pow(getXPos() - pixel.position.x, 2) + std::pow(getYPos() - pixel.position.y, 2));
     if (diff == 0.0) {

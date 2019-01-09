@@ -7,7 +7,7 @@
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/ColorRGBA.h>
 #include <geometry_msgs/Point.h>
-#include <bitbots_image_transformer/PixelRelative.h>
+#include <humanoid_league_msgs/PixelRelative.h>
 
 class PositionState
 {
@@ -36,7 +36,7 @@ public:
 
     double calcDistance(const PositionState& state) const;
 
-    double calcDistance(const bitbots_image_transformer::PixelRelative &pixel) const;
+    double calcDistance(const humanoid_league_msgs::PixelRelative &pixel) const;
 
     // float getTheta() const;
 

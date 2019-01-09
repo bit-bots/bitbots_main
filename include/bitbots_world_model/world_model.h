@@ -12,6 +12,8 @@
 #include <humanoid_league_msgs/ObstaclesRelative.h>
 #include <humanoid_league_msgs/BallRelative.h>
 #include <humanoid_league_msgs/Model.h>
+#include <humanoid_league_msgs/PixelsRelative.h>
+#include <humanoid_league_msgs/PixelRelative.h>
 #include <dynamic_reconfigure/server.h>
 #include <bitbots_world_model/WorldModelConfig.h>
 #include <bitbots_world_model/ObstacleStates.h>
@@ -19,8 +21,6 @@
 #include <bitbots_world_model/ObservationModels.h>
 #include <bitbots_world_model/StateDistributions.h>
 #include <bitbots_world_model/Resampling.h>
-#include <bitbots_image_transformer/PixelsRelative.h>
-#include <bitbots_image_transformer/PixelRelative.h>
 
 #include <libPF/ParticleFilter.h>
 #include <libPF/CRandomNumberGenerator.h>
@@ -42,7 +42,7 @@ class WorldModel {
         bool reset_filters_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
 
         void dynamic_reconfigure_callback(wm::WorldModelConfig &config, uint32_t level);
-        void ball_callback(const bitbots_image_transformer::PixelsRelative &msg);
+        void ball_callback(const hlm::PixelsRelative &msg);
         void obstacles_callback(const hlm::ObstaclesRelative &msg);
 
         void init();
@@ -74,7 +74,7 @@ class WorldModel {
         int opponent_color_;
 
         // measurements
-        bitbots_image_transformer::PixelsRelative ball_measurements_;
+        hlm::PixelsRelative ball_measurements_;
         std::vector<PositionState> mate_measurements_;
         std::vector<PositionState> opponent_measurements_;
         std::vector<PositionStateW> obstacle_measurements_;
