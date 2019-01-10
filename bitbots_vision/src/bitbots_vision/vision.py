@@ -222,27 +222,30 @@ class Vision:
             self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, None)
         # color config
         self.white_color_detector = color.HsvSpaceColorDetector(
+            self.debug_printer,
             [config['white_color_detector_lower_values_h'], config['white_color_detector_lower_values_s'],
              config['white_color_detector_lower_values_v']],
             [config['white_color_detector_upper_values_h'], config['white_color_detector_upper_values_s'],
-             config['white_color_detector_upper_values_v']], self.debug_printer)
+             config['white_color_detector_upper_values_v']])
 
         self.red_color_detector = color.HsvSpaceColorDetector(
+            self.debug_printer,
             [config['red_color_detector_lower_values_h'], config['red_color_detector_lower_values_s'],
              config['red_color_detector_lower_values_v']],
             [config['red_color_detector_upper_values_h'], config['red_color_detector_upper_values_s'],
-             config['red_color_detector_upper_values_v']], self.debug_printer)
+             config['red_color_detector_upper_values_v']])
 
         self.blue_color_detector = color.HsvSpaceColorDetector(
+            self.debug_printer,
             [config['blue_color_detector_lower_values_h'], config['blue_color_detector_lower_values_s'],
              config['blue_color_detector_lower_values_v']],
             [config['blue_color_detector_upper_values_h'], config['blue_color_detector_upper_values_s'],
-             config['blue_color_detector_upper_values_v']], self.debug_printer)
+             config['blue_color_detector_upper_values_v']])
 
-        self.field_color_detector = color.PixelListColorDetector(
+        self.field_color_detector = color.StaticPixelListColorDetector(
+            self.debug_printer,
             self.package_path +
-            config['field_color_detector_path'],
-            self.debug_printer)
+            config['field_color_detector_path'])
 
         self.horizon_detector = horizon.HorizonDetector(
             self.field_color_detector,
