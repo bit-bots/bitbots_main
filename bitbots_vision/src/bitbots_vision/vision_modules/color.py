@@ -192,7 +192,7 @@ class StaticPixelListColorDetector(PixelListColorDetector):
         ColorDetector.__init__(self, debug_printer)
         self.color_space = self.init_color_space(color_path)
         # TODO remove
-        self.dc = DynamicPixelListColorDetector(color_path, 3, 0.6, 10)
+        self.dc = DynamicPixelListColorDetector(debug_printer, color_path, 10, 0.6, 3)
         self.bridge = CvBridge()
         self.imagepublisher = rospy.Publisher("/mask_image_dyn", Image, queue_size=1)
         self.imagepublisher1 = rospy.Publisher("/mask_image", Image, queue_size=1)
@@ -236,15 +236,15 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
 
     # TODO dynamic reconfigure kernel size
     # TODO docu
-    def __init__(self, debug_printer, kernel_size, threshold, queue_max_size, color_path):
+    def __init__(self, debug_printer, color_path, queue_max_size, threshold, kernel_size=3):
         """
         Colordetector is able to dynamically adapt colorspace to changing light- and field-conditions
 
         :param color_path: path of base colorspace
-        :param kernel_size: kernel-size specifies the size of neighborhood in a square of pixels (ODD VALUE)
+        :param queue_max_size: specifies size of the queue that hold lists of added colorvalues from the latest iterations
         :param threshold: amount of detected colorpixels in neighborhood of each pixel needed to be added to colorspace
             (in percentage between 0..1)
-        :param queue_max_size: specifies size of the queue that hold lists of added colorvalues from the latest iterations
+        :param kernel_size: kernel-size specifies the size of neighborhood in a square of pixels (ODD VALUE), DEFAULT=3
         """
 
         ColorDetector.__init__(self, debug_printer)
@@ -253,9 +253,10 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
 
         self._dyn_color_space = np.copy(self._base_color_space)
         self._new_color_value_queue = deque(maxlen=queue_max_size)
+        self._threshold = threshold
         self._kernel_size = kernel_size
-        self._pointfinder = Pointfinder(threshold, self._kernel_size)
-        self._heuristic = Heuristic()
+        self._pointfinder = Pointfinder(debug_printer, self._threshold, self._kernel_size)
+        self._heuristic = Heuristic(debug_printer)
 
 
     def match_pixel(self, pixel):
