@@ -7,8 +7,9 @@
     <param name="robot_description_semantic" textfile="$(find wolfgang_moveit_config)/config/wolfgang.srdf" />
     <param name="robot_type_name" value="Wolfgang"/>
     <!--include file="$(find humanoid_league_transform)/launch/transformer.launch" /-->
-    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock /home/judith/Dokumente/BitBots/rosbags/2018-12-01-19-40-15.bag" respawn="true"/>
+    <node pkg="rosbag" type="play" name="player" output="screen" args="--topic /tf_static /cmd_vel /joint_states /image_raw /line_relative --clock /home/judith/Dokumente/BitBots/rosbags/2019-01-06-16-55-47.bag" respawn="true"/>
     <!--no-walking.bag-->
+
 
     <!--node name="rosbaglive" pkg="rosbaglive" type="play.py" args="/home/judith/Dokumente/BitBots/rosbags/init.bag" respawn="true"/-->
     <!--<node name="rosbaglive" pkg="rosbaglive" type="play.py" args="/home/judith/Dokumente/BitBots/rosbags/mitTF/2018-05-09-11-59-29.bag" respawn="true"/>-->
@@ -26,17 +27,17 @@
 
     <!-- particle filter -->
     <node name="amcl_particlefilter"  pkg="amcl" type="amcl" output="screen">
-        <param name="min_particles" value="1000"/>
+       <param name="min_particles" value="1000"/>
         <param name="max_particles" value="5000"/>
-        <param name="kld_err" value="0.01"/>
+        <param name="kld_err" value="0.0001"/>
         <param name="kld_z" value="0.99"/>
 
         <param name="update_min_d" value="0.2"/>
         <!--param name="update_min_a" value="0.01"/-->
 
-        <param name="resample_interval" value="2f"/>
+        <param name="resample_interval" value="2"/>
 
-        <param name="initial_pose_x" value="2.0"/>
+       <param name="initial_pose_x" value="2.0"/>
         <param name="initial_pose_y" value="3.0"/>
         <param name="initial_pose_a" value="4.7"/>
         <param name="initial_cov_xx" value="4.0"/>
@@ -54,7 +55,12 @@
         <param name="laser_max_beams" value="100"/>
         <param name="laser_model_type" value="likelihood_field_prob"/>
 
-        <param name="odom_model_type" value="diff-corrected" />
+        <param name="odom_model_type" value="omni-corrected" />
+        <param name="odom_alpha1" value="0.9"/>
+         <param name="odom_alpha2" value="0.9"/>
+        <param name="odom_alpha3" value="0.9"/>
+        <param name="odom_alpha4" value="0.9"/>
+        <param name="odom_alpha5" value="0.9"/>
 
 
         <param name="tf_broadcast" value="true"/>

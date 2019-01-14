@@ -6,14 +6,14 @@
     <include file="$(find bitbots_localization)/launch/pointcloud_to_laserscan.launch" />
 
     <!-- load map -->
-    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/d125.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/field2018.yaml"/>
 
     <!-- particle filter -->
     <node name="amcl_particlefilter"  pkg="amcl" type="amcl" output="screen">
         <param name="min_particles" value="1000"/>
         <param name="max_particles" value="5000"/>
-        <param name="kld_err" value="0.01"/>
-        <param name="kld_z" value="0.99"/>
+        <param name="kld_err" value="0.0"/>
+        <param name="kld_z" value="1"/>
 
         <param name="update_min_d" value="0.2"/>
         <!--param name="update_min_a" value="0.01"/-->
