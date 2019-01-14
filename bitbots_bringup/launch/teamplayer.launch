@@ -3,6 +3,7 @@
     <arg name="motion" default="true"/>
     <arg name="behave" default="true"/>
     <arg name="vision" default="false"/>
+
     <arg name="use_game_settings" default="false"/>
     
     <arg name="sim_ns" default="/" />
@@ -30,7 +31,7 @@
     
 
     <group if="$(arg behave)">
-        <include file="$(find bitbots_body_behaviour)/launch/behaviour.launch">
+        <include file="$(find bitbots_body_behavior)/launch/behavior.launch">
             <arg name="duty" value="$(arg duty)" />
         </include>
     </group>
@@ -42,7 +43,7 @@
     </group>
 
     <group if="$(arg use_game_settings)">
-        <include file="$(find game_controller)/launch/game_controller.launch"/>
+        <include file="$(find humanoid_league_game_controller)/launch/game_controller.launch"/>
          <node name="$(game_settings)" pkg="bitbots_bringup" type="game_settings.py" />
 
     </group>
