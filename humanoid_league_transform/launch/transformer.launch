@@ -1,4 +1,7 @@
 <launch>
-    <rosparam file="$(find humanoid_league_transform)/config/transformer.yaml" command="load"/>
-    <node name="humanoid_league_transformer" pkg="humanoid_league_transform" type="transformer.py"/>
+    <arg name="sim" default="false"/>
+    <node name="humanoid_league_transformer" pkg="humanoid_league_transform" type="transformer.py">
+        <rosparam file="$(find humanoid_league_transform)/config/transformer.yaml" command="load"/>
+        <remap if="$(arg sim)" to ="/camera/camera_info" from="/camera_info"/>
+    </node>
 </launch>

@@ -18,4 +18,4 @@ transformer:
     obstacles_topic: 'obstacles_in_image'
 
   camera_info:
-    camera_info_topic: 'camera_info'
+    camera_info_topic: '/camera/camera_info'
