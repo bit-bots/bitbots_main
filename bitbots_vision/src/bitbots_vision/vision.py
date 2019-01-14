@@ -239,10 +239,16 @@ class Vision:
             [config['blue_color_detector_upper_values_h'], config['blue_color_detector_upper_values_s'],
              config['blue_color_detector_upper_values_v']], self.debug_printer)
 
-        self.field_color_detector = color.PixelListColorDetector(
-            self.package_path +
-            config['field_color_detector_path'],
-            self.debug_printer)
+        if config['vision_use_sim_color']:
+            self.field_color_detector = color.PixelListColorDetector(
+                self.package_path +
+                config['field_color_detector_path_sim'],
+                self.debug_printer)
+        else:
+            self.field_color_detector = color.PixelListColorDetector(
+                self.package_path +
+                config['field_color_detector_path'],
+                self.debug_printer)
 
         self.horizon_detector = horizon.HorizonDetector(
             self.field_color_detector,
