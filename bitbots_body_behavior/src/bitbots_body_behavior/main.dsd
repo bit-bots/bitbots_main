@@ -38,30 +38,29 @@ $BallSeen
 -->BodyBehavior
 $RoleDecider
     goalie --> $GameStateDecider
-        Initial --> @Stand
-        Ready --> @GoToRolePosition
-        // In set, look for field features to localize
+        Initial --> @Stand, @LookAtFieldFeatures
+        Ready --> @GoToRolePosition, @LookAtFieldFeatures
         Set --> @Stand
         Playing --> #GoalieBehavior
         Finished --> @Stand
         NOT_ALLOWED_TO_MOVE --> @Stand
     offense --> $GameStateDecider
-        Initial --> @Stand
-        Ready --> @GoToRolePosition
+        Initial --> @Stand, @LookAtFieldFeatures
+        Ready --> @GoToRolePosition, @LookAtFieldFeatures
         Set --> @Stand
         Playing --> #OffenseBehavior
         Finished --> @Stand
         NOT_ALLOWED_TO_MOVE --> @Stand
     defense --> $GameStateDecider
-        Initial --> @Stand
-        Ready --> @GoToRolePosition
+        Initial --> @Stand, @LookAtFieldFeatures
+        Ready --> @GoToRolePosition, @LookAtFieldFeatures
         Set --> @Stand
         Playing --> #DefenseBehavior
         Finished --> @Stand
         NOT_ALLOWED_TO_MOVE --> @Stand
     penalty --> $GameStateDecider
-        Initial --> @Stand
-        Ready --> @Stand
+        Initial --> @Stand, @LookAtFieldFeatures
+        Ready --> @Stand, @LookAtFieldFeatures
         Set --> @Stand
         Playing --> #PenaltyBehavior
         Finished --> @Stand
