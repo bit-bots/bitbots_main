@@ -623,14 +623,14 @@
     </joint>
 
     <joint name="r_foot_to_sole" type="fixed">
-        <origin xyz="0.078 -0.015 -0.039" rpy="0 0 0" /> 
+        <origin xyz="0.083 -0.015 -0.039" rpy="0 0 0" /> 
         <parent link="r_foot" />
         <child link="r_sole" />
         <axis xyz="0 0 0" />
     </joint>
 
     <joint name="r_foot_to_toe" type="fixed">
-        <origin xyz="0.095 0 0" rpy="0 0 0" />
+        <origin xyz="0.1 0 0" rpy="0 0 0" />
         <parent link="r_sole" />
         <child link="r_toe" />
         <axis xyz="0 0 0" />
@@ -691,14 +691,14 @@
     </joint>
 
     <joint name="left_foot_to_sole" type="fixed">
-        <origin xyz="0.078 0.015 -0.039" rpy="0 0 0" /> <!-- todo mit stollen!-->
+        <origin xyz="0.083 0.015 -0.039" rpy="0 0 0" />
         <parent link="l_foot" />
         <child link="l_sole" />
         <axis xyz="0 0 0" />
     </joint>
 
     <joint name="left_foot_to_toe" type="fixed">
-        <origin xyz="0.095 0 0" rpy="0 0 0" />
+        <origin xyz="0.1 0 0" rpy="0 0 0" />
         <parent link="l_sole" />
         <child link="l_toe" />
         <axis xyz="0 0 0" />
@@ -707,7 +707,7 @@
     <joint name="base_link_to_torso" type="fixed">
         <parent link="base_link" />
         <child link="torso" />
-        <origin rpy="0.0 0 0" xyz="-0.0095 0 0.0905" />
+        <origin rpy="0.0 0 0" xyz="0 0 0.0881" />
     </joint>
 
     <joint name="torso_to_imu" type="fixed">
@@ -722,7 +722,7 @@
     </joint>
 
     <joint name="RShoulderPitch" type="revolute">
-        <origin xyz="0.0 -0.075 0.11" rpy="0 0 0" />
+        <origin xyz="-0.0015 -0.076501 0.1155" rpy="0 0 0" />
         <parent link="torso" />
         <child link="r_shoulder" />
         <axis xyz="0 -1 0" />
@@ -755,7 +755,7 @@
     </joint>
 
     <joint name="LShoulderPitch" type="revolute">
-        <origin xyz="0.0 0.075 0.11" rpy="0 0 0" />
+        <origin xyz="-0.0015 0.076501 0.1155" rpy="0 0 0" />
         <parent link="torso" />
         <child link="l_shoulder" />
         <axis xyz="0 1 0" />
@@ -788,7 +788,7 @@
     </joint>
 
     <joint name="HeadPan" type="revolute">
-        <origin xyz="0.00155 0 0.1471" rpy="0 0 0" />
+        <origin xyz="0.008 0 0.146501" rpy="0 0 0" />
         <parent link="torso" />
         <child link="neck" />
         <axis xyz="0 0 1" />
