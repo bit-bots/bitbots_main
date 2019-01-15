@@ -2,28 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from bitbots_dynamixel_debug.connector import Connector
+from bitbots_dynamixel_debug.parser import parse
 import sys
 
+args = parse(id_req = True, register_req = False)
 
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument("--p1", help="use old protocol version", action="store_true")
-parser.add_argument("maxId")
-args = parser.parse_args()
+c = Connector(args['protocol'], args['device'], args['baudrate'])
 
-
-maxId = int(args.maxId)
-if args.p1:
-    protocol = 1
-else:
-    protocol = 2
-protocol = 2
-baudrate = 2000000
-device ="/dev/ttyUSB0".encode('utf-8')
-
-c = Connector(protocol, device, baudrate)
-
-c.broadcast_ping(maxId, doPrint=True)
+c.broadcast_ping(args['id'], doPrint=True)
 
 c.closePort()
 
