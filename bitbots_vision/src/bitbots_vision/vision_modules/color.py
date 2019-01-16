@@ -10,6 +10,7 @@ import multiprocessing
 from collections import deque
 # TODO Debug
 import rospy
+import random
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from profilehooks import profile
@@ -257,7 +258,8 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         self._kernel_size = kernel_size
         self._pointfinder = Pointfinder(debug_printer, self._threshold, self._kernel_size)
         self._heuristic = Heuristic(debug_printer)
-
+        self.mask = None
+        self.image = None
 
     def match_pixel(self, pixel):
         # type: (tuple) -> bool
@@ -281,8 +283,13 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         :param np.array image: image to mask
         :return: np.array masked image
         """
-        self.calc_dynamic_colorspace(image)
-        return self.mask_image_unwarpped(image)
+        if np.array_equal(image, self.image):
+            #TODO timeing mit horizon anpassen
+            self.calc_dynamic_colorspace(image)
+        else:
+            self.image = image
+            self.mask = self.mask_image_unwarpped(image)
+        return self.mask
 
     def mask_image_unwarpped(self, image):
         mask = VisionExtensions.maskImg(image, self._dyn_color_space)
@@ -398,7 +405,7 @@ class Heuristic:
 
 
 class HeuristicProcess(multiprocessing.Process):
-    def __init__(self, debug_printer, cond, is_waiting, shared_list, image, mask, maxvalue=500):
+    def __init__(self, debug_printer, cond, is_waiting, shared_list, image, mask, maxvalue=9999999):
         multiprocessing.Process.__init__(self)
         self.is_waiting = is_waiting
         self.cond = cond
@@ -421,9 +428,13 @@ class HeuristicProcess(multiprocessing.Process):
             # Limiting the output
             colors_over_horizon, colors_under_horizon = self.calc_freq()
             allowed_colors = set(colors_under_horizon) - set(colors_over_horizon)
+            number_elements = len(allowed_colors)
+            if self.maxvalue < number_elements:
+                number_elements = self.maxvalue
+            reduced_colors = random.sample(allowed_colors, number_elements)
             # Transmitting the output
             del self.shared_list[:]
-            self.shared_list.append(allowed_colors)
+            self.shared_list.append(reduced_colors)
         else:
             print("No image or mask given!!!")
         # Process waiting for it's death
