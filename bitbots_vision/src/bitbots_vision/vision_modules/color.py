@@ -272,8 +272,6 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         # This is maybe not the colorspace from the current frame, because no image for an recalculation is given.
         return self._dyn_color_space[pixel[0], pixel[1], pixel[2]]
 
-    # TODO remove 
-    @profile
     def mask_image(self, image):
         # type: (np.array) -> np.array
         """
@@ -295,22 +293,23 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         mask = VisionExtensions.maskImg(image, self._dyn_color_space)
         return mask
 
+    # TODO remove 
+    @profile
     def calc_dynamic_colorspace(self, image):
         mask_image = self.mask_image_unwarpped(image)
         colorpixel_candidates_list = self._pointfinder.find_colorpixel_candidates(mask_image)
         colors = self.get_pixel_values(image, colorpixel_candidates_list)
-        len1 = len(colors)
-        colors = self._heuristic.run(colors, image)
-        #print((len(colors), len1))
+        colors = np.array(self._heuristic.run(colors, image), dtype=np.int32)
         self._new_color_value_queue.append(colors)
         self.queue_to_colorspace()
         
     def queue_to_colorspace(self):
         self._dyn_color_space = np.copy(self._base_color_space)
         for new_color_value_list in self._new_color_value_queue:
-            shape = np.shape(new_color_value_list)
-            for x in range(shape[0]):
-                self._dyn_color_space[ int(new_color_value_list[x, 0]), int(new_color_value_list[x, 1]), int(new_color_value_list[x, 2])] = 1
+            red = new_color_value_list[:, 0]
+            green = new_color_value_list[:, 1]
+            blue = new_color_value_list[:, 2]
+            self._dyn_color_space[red, green, blue] = 1
 
     def get_pixel_values(self, img, pixellist):
         colors = img[pixellist[0], pixellist[1]]
