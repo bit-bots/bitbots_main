@@ -1169,7 +1169,7 @@
         <odometryTopic>odom</odometryTopic>
         <odometryFrame>odom</odometryFrame>
         <odometryRate>100.0</odometryRate>
-        <robotBaseFrame>base_footprint</robotBaseFrame>
+        <robotBaseFrame>base_link</robotBaseFrame>
         </plugin>
     </gazebo>
     </xacro:if>
