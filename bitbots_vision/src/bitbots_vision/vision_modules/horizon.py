@@ -16,6 +16,7 @@ class HorizonDetector:
         self._horizon_full = None
         self._convex_horizon_full = None
         self._horizon_hull = None
+        self._mask = None
         self._debug_printer = debug_printer
         # init config
         self._x_steps = config['horizon_finder_horizontal_steps']
@@ -29,6 +30,23 @@ class HorizonDetector:
         self._horizon_full = None
         self._convex_horizon_full = None
         self._horizon_hull = None
+        self._mask = None
+
+    def get_mask(self):
+        # type: () -> mask
+        if self._mask is None and self._horizon_points is not None:
+            self._mask = self.make_mask()
+        return self._mask
+
+    def make_mask(self):
+        shape = np.shape(self._image)
+        img_size = (shape[0], shape[1])
+        # Generates a white canvas
+        canvas = np.ones(img_size, dtype=np.uint8) * 255
+        hpoints = np.array([[(0, 0)] + self.get_horizon_points() + [(shape[1] - 1, 0)]])
+        # Blacks out the part over the horrizon
+        return cv2.fillPoly(canvas, hpoints, 000)
+
 
     def compute_horizon_points(self):
         if self._horizon_points is None:
