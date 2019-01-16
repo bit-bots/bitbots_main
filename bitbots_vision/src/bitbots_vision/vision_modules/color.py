@@ -354,7 +354,7 @@ class Heuristic:
         self.shared_list = self.manager.list()
         # Setup Toolbox
         self.tools = HeuristicTools()
-
+        self.debug_printer = debug_printer
         self.horrizon_detector = horrizon_detector
 
     def set_horrizon_detector(self, horrizon_detector):
@@ -394,7 +394,7 @@ class Heuristic:
                 # Allows the process to finish.
                 self.cond.notify()
             # Restarts process with current image.
-            HeuristicProcess(self.cond, self.process_is_waiting, self.shared_list, image, mask).start()
+            HeuristicProcess(self.debug_printer, self.cond, self.process_is_waiting, self.shared_list, image, mask).start()
 
 
 class HeuristicProcess(multiprocessing.Process):
