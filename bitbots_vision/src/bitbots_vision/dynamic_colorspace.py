@@ -1,5 +1,8 @@
 #! /usr/bin/env python2
 
+################################################
+####### TODO: dynamic reconfigure, docu ########
+################################################
 
 import rospy
 import rospkg
