@@ -345,21 +345,9 @@ class Pointfinder():
         sum_array = cv2.filter2D(normalized_image, -1, self._kernel, borderType=0)
         return np.array(np.where(sum_array > self._threshold * (self._kernel.size - 1)))
 
-
 class Heuristic:
 
     def __init__(self, debug_printer, horrizon_detector=None):
-        self._distribution_over_horizon = {}
-        self._distribution_under_horizon = {}
-
-        # Subprocess stuff
-        self.cond = multiprocessing.Condition()
-        self.manager = multiprocessing.Manager()
-        # Shared memory variables
-        self.process_is_waiting = multiprocessing.Value('b', True)
-        self.shared_list = self.manager.list()
-        # Setup Toolbox
-        self.tools = HeuristicTools()
         self.debug_printer = debug_printer
         self.horrizon_detector = horrizon_detector
 
@@ -368,106 +356,37 @@ class Heuristic:
 
     def run(self, color_list, image, custom_mask=None):
         if self.horrizon_detector is None:
-            print("Heuristic not used.")
-            return color_list
+            print("Heuristic not used. Continue with static colorspace.")
+            return np.array([])
         else:
             mask = self.horrizon_detector.get_mask()
             if mask is None:
                 print("No Mask...")
                 return np.array([])
-        self.recalc(image, mask)
-        return self.filter_colors(color_list)
+        return self.filter_colors(color_list, image, mask)
 
-    def filter_colors(self, color_list):
-        color_list = self.tools.serialize(color_list)
-        color_list_set = set(color_list)
-        color_set_under = set(self._distribution_under_horizon)
-        color_set_under = color_list_set.intersection(color_set_under)
-        return self.tools.deserialize(np.array(list(color_set_under)))
+    def filter_colors(self, color_list, image, mask):
+        color_list = self.serialize(color_list)
+        color_set = set(color_list)
+        colors_set_under_horizon = set(self.recalc(image, mask))
+        color_set = color_set.intersection(colors_set_under_horizon)
+        return self.deserialize(np.array(list(color_set)))
 
     def recalc(self, image, mask):
-        # Process-safe parameter exchange mask + image -> safe_color_freq
-        if self.process_is_waiting.value:
-            # Pulls the results from the other process.
-            if len(self.shared_list) > 0:
-                safe_allowedcolors = self.shared_list[0]
-                self._distribution_under_horizon = safe_allowedcolors
-                # ---- Process controll ----
-            with self.process_is_waiting.get_lock():
-                # Resets the waiting indicator.
-                self.process_is_waiting.value = False
-            with self.cond:
-                # Allows the process to finish.
-                self.cond.notify()
-            # Restarts process with current image.
-            HeuristicProcess(self.debug_printer, self.cond, self.process_is_waiting, self.shared_list, image, mask).start()
+        colors_over_horizon, colors_under_horizon = self.calc_freq(image, mask)
+        return set(colors_under_horizon) - set(colors_over_horizon)
 
-
-class HeuristicProcess(multiprocessing.Process):
-    def __init__(self, debug_printer, cond, is_waiting, shared_list, image, mask, maxvalue=9999999):
-        multiprocessing.Process.__init__(self)
-        self.is_waiting = is_waiting
-        self.cond = cond
-        self.image = image
-        self.mask = mask
-        self.shared_list = shared_list
-        # maximum number of output colors
-        self.maxvalue = maxvalue
-        # Setup Toolbox
-        self.tools = HeuristicTools()
-
-    def sort_by_values(self, array):
-        return array[:, np.argsort(array[1])]
-
-    def run(self):
-        print("Working...")
-        now = time.time()
-        # Checks if Process has the Data
-        if self.image is not None and self.mask is not None:
-            # Limiting the output
-            colors_over_horizon, colors_under_horizon = self.calc_freq()
-            allowed_colors = set(colors_under_horizon) - set(colors_over_horizon)
-            number_elements = len(allowed_colors)
-            if self.maxvalue < number_elements:
-                number_elements = self.maxvalue
-            reduced_colors = random.sample(allowed_colors, number_elements)
-            # Transmitting the output
-            del self.shared_list[:]
-            self.shared_list.append(reduced_colors)
-        else:
-            print("No image or mask given!!!")
-        # Process waiting for it's death
-        with self.cond:
-            print("Waiting")
-            with self.is_waiting.get_lock():
-                self.is_waiting.value = True
-            print(time.time() - now)
-            self.cond.wait(5)
-        print("I got killed")
-
-    def calc_freq(self):
-        img = self.image
-        mask = self.mask
+    def calc_freq(self, image, mask):
         # Calls a funktion to calculate the number of occurencies of all colors in the image
         # returns array(over_horrizon(unique, count), under_horrizon(unique, count))
-        return (self.get_freq_colors(cv2.bitwise_and(img, img, mask=255 - mask)),
-                self.get_freq_colors(cv2.bitwise_and(img, img, mask=mask)))
+        return (self.get_freq_colors(cv2.bitwise_and(image, image, mask=255 - mask)),
+                self.get_freq_colors(cv2.bitwise_and(image, image, mask=mask)))
 
-    def get_freq_colors(self, img):
+    def get_freq_colors(self, image):
         # Serializes image
-        serialized_img = self.tools.serialize(np.reshape(img, (1, int(img.size / 3), 3))[0])
+        serialized_img = self.serialize(np.reshape(image, (1, int(image.size / 3), 3))[0])
         # Calculates the number of occurencies of all colors in the image
-        unique = np.unique(serialized_img, axis=0)
-        return unique
-
-
-class HeuristicTools():
-    '''
-    Small Toolbox for functions used in both the Heuristic and the HeuristicProcess class.
-    '''
-
-    def __init__(self):
-        pass
+        return np.unique(serialized_img, axis=0)
 
     def serialize(self, input_matrix):
         return np.array(np.multiply(input_matrix[:, 0], 256 ** 2) \
