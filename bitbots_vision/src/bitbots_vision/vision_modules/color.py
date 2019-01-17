@@ -15,6 +15,8 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from profilehooks import profile
 from sets import Set
+from bitbots_msgs.msg import Colorspace
+from std_msgs.msg import UInt8
 
 
 class ColorDetector:
@@ -149,12 +151,25 @@ class HsvSpaceColorDetector(ColorDetector):
 
 class PixelListColorDetector(ColorDetector):
 
-        def __init__(self, debug_printer, color_path):
+    def __init__(self, debug_printer, color_path):
         ColorDetector.__init__(self, debug_printer)
         self.color_space = self.init_color_space(color_path)
+        self.base_color_space = np.copy(self.color_space)
         self.bridge = CvBridge()
+        self.colorspace_sub = rospy.Subscriber('colorspace',
+                                                Colorspace,
+                                                self._colorspace_callback,
+                                                queue_size=1)
         # TODO remove
         self.imagepublisher = rospy.Publisher("/mask_image", Image, queue_size=1)
+
+    def _colorspace_callback(self, msg):
+        time1 = time.time()
+        self.color_space = np.copy(self.base_color_space)
+        self.color_space[np.array([int(i.data) for i in msg.blue]),
+                         np.array([int(i.data) for i in msg.green]),
+                         np.array([int(i.data) for i in msg.red])] = 1
+        print(time.time()- time1)
     
     def init_color_space(self, color_path):
         # type: (str) -> None
@@ -220,6 +235,6 @@ class PixelListColorDetector(ColorDetector):
 
         # TODO remove
         mask = VisionExtensions.maskImg(image, self.color_space)
-        self.imagepublisher1.publish(self.bridge.cv2_to_imgmsg(mask1, '8UC1'))
+        self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask, '8UC1'))
 
         return mask

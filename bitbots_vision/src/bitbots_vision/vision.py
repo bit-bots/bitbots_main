@@ -242,7 +242,7 @@ class Vision:
             [config['blue_color_detector_upper_values_h'], config['blue_color_detector_upper_values_s'],
              config['blue_color_detector_upper_values_v']])
 
-        self.field_color_detector = color.StaticPixelListColorDetector(
+        self.field_color_detector = color.PixelListColorDetector(
             self.debug_printer,
             self.package_path +
             config['field_color_detector_path'])
@@ -251,8 +251,6 @@ class Vision:
             self.field_color_detector,
             config,
             self.debug_printer)
-
-        self.field_color_detector.set_hor(self.horizon_detector)
 
         self.line_detector = lines.LineDetector(self.white_color_detector,
                                                 self.field_color_detector,
