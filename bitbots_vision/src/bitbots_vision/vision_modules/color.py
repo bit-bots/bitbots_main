@@ -1,3 +1,4 @@
+# TODO: Debug, clean
 import numpy as np
 import VisionExtensions
 from .debug import DebugPrinter
@@ -8,7 +9,6 @@ import abc
 import cv2
 import multiprocessing
 from collections import deque
-# TODO Debug
 import rospy
 import random
 from sensor_msgs.msg import Image
@@ -18,8 +18,16 @@ from sets import Set
 
 
 class ColorDetector:
-
     def __init__(self, debug_printer):
+        # type: (DebugPrinter) -> None
+        """
+        ColorDetector is abstract super-class of specialised sub-classes.
+        ColorDetectors are used e.g. to check if a pixel matches the defined colorspace
+        or to create masked binary-images.
+
+        :param DebugPrinter debug_printer: debug-printer
+        :return: None
+        """
         self._debug_printer = debug_printer
         pass
 
@@ -29,8 +37,8 @@ class ColorDetector:
         """
         Returns if bgr pixel is in color space
 
-        :param bgr pixel:
-        :return: whether pixel is in color space or not
+        :param np.array pixel: bgr-pixel
+        :return bool: whether pixel is in color space or not
         """
 
     @abc.abstractmethod
@@ -40,8 +48,8 @@ class ColorDetector:
         Creates a color mask
         (0 for not in color range and 255 for in color range)
 
-        :param image: image to mask
-        :return: masked image
+        :param np.array image: image to mask
+        :return np.array: masked image
         """
 
     def match_adjacent(self, image, point, offset=1, threshold=200):
@@ -78,20 +86,27 @@ class ColorDetector:
     @staticmethod
     def pixel_bgr2hsv(pixel):
         # type: (np.array) -> np.array
+        """
+        Converts bgr-pixel to hsv-pixel
+
+        :param np.array pixel: brg-pixel
+        :return np.array: hsv-pixel
+        """
         pic = np.zeros((1, 1, 3), np.uint8)
         pic[0][0] = pixel
         return cv2.cvtColor(pic, cv2.COLOR_BGR2HSV)[0][0]
 
 
 class HsvSpaceColorDetector(ColorDetector):
-
     def __init__(self, debug_printer, min_vals, max_vals):
-        # type: (tuple, tuple, DebugPrinter) -> None
+        # type: (DebugPrinter, tuple[int, int, int], tuple[int, int, int]) -> None
         """
-        the hsv-space color detector
+        HsvSpaceColorDetector is a ColorDetector, that is based on the HSV-colorspace.
+        The HSV-colorspace is adjustable by setting min- and max-values for hue, saturation and value.
 
-        :param min_vals: a tuple of the minimal accepted hsv-values
-        :param max_vals: a tuple of the maximal accepted hsv-values
+        :param DebugPrinter debug_printer: debug-printer
+        :param tuple min_vals: a tuple of the minimal accepted hsv-values
+        :param tuple max_vals: a tuple of the maximal accepted hsv-values
         :return: None
         """
         ColorDetector.__init__(self, debug_printer)
@@ -99,9 +114,10 @@ class HsvSpaceColorDetector(ColorDetector):
         self.max_vals = np.array(max_vals)
 
     def set_config(self, min_vals, max_vals):
-        # type: (tuple[int, int], tuple[int, int]) -> None
+        # type: (tuple[int, int, int], tuple[int, int, int]) -> None
         """
-        updates the hsv-space configuration
+        Updates the hsv-space configuration
+
         :param min_vals: a tuple of the minimal accepted hsv-values
         :param max_vals: a tuple of the maximal accepted hsv-values
         :return: None
@@ -111,6 +127,12 @@ class HsvSpaceColorDetector(ColorDetector):
 
     def match_pixel(self, pixel):
         # type: (np.array) -> bool
+        """
+        Returns if bgr pixel is in color space
+
+        :param np.array pixel: bgr-pixel
+        :return bool: whether pixel is in color space or not
+        """
         pixel = self.pixel_bgr2hsv(pixel)
         # TODO: optimize comparisons
         return (self.max_vals[0] >= pixel[0] >= self.min_vals[0]) and \
@@ -119,6 +141,13 @@ class HsvSpaceColorDetector(ColorDetector):
 
     def mask_image(self, image):
         # type: (np.array) -> np.array
+        """
+        Creates a color mask
+        (0 for not in color range and 255 for in color range)
+
+        :param np.array image: image to mask
+        :return np.array: masked image
+        """
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         return cv2.inRange(image, self.min_vals, self.max_vals)
 
@@ -148,12 +177,21 @@ class HsvSpaceColorDetector(ColorDetector):
 
 
 class PixelListColorDetector(ColorDetector):
+    def __init__(self, debug_printer, color_path):
+        # type:(DebugPrinter, str) -> None
+        """
+        PixelListColorDetector is a ColorDetector, that is based on a colorspace.
+        The colorspace is initially loaded from color_path and optionally adjustable to changing color-conditions.
+        The colorspace is represented by boolean-values for RGB-color-values.
 
-        def __init__(self, debug_printer, color_path):
+        :param DebugPrinter debug_printer: debug-printer
+        :param str color_path: path to file containing the accepted colors
+        :return: None
+        """
         ColorDetector.__init__(self, debug_printer)
         self.color_space = self.init_color_space(color_path)
         self.bridge = CvBridge()
-        # TODO remove
+        # TODO: remove
         self.imagepublisher = rospy.Publisher("/mask_image", Image, queue_size=1)
     
     def init_color_space(self, color_path):
@@ -161,8 +199,8 @@ class PixelListColorDetector(ColorDetector):
         """
         Initializes color space from yaml or pickle.txt file
 
-        :param color_path: path to file containing the accepted colors
-
+        :param str color_path: path to file containing the accepted colors
+        :return: None
         """
         color_space = np.zeros((256, 256, 256), dtype=np.uint8)
         if color_path.endswith('.yaml'):
@@ -171,8 +209,8 @@ class PixelListColorDetector(ColorDetector):
                     color_values = yaml.load(stream)
                 except yaml.YAMLError as exc:
                     self._debug_printer.error(exc, 'PixelListColorDetector')
-                    # Todo: what now??? Handle the error?
-        # our pickle is stored as .txt
+                    # TODO: what now??? Handle the error?
+        # pickle-file is stored as '.txt'
         elif color_path.endswith('.txt'):
             try:
                 with open(color_path, 'rb') as f:
@@ -193,32 +231,32 @@ class PixelListColorDetector(ColorDetector):
                                 color_values['red'][x]] = 1
         return color_space
 
-    """
+    
     ##############################################################
-    ################ TODO update colorspace ######################
+    ################ TODO: update colorspace #####################
     ##############################################################
-    """
+    
 
     def match_pixel(self, pixel):
-        # type: (tuple) -> bool
+        # type: (np.array) -> bool
         """
         Returns if bgr pixel is in color space
 
-        :param tuple pixel:
+        :param np.array pixel: bgr-pixel
         :return bool: whether pixel is in color space or not
         """
         return self.color_space[pixel[0], pixel[1], pixel[2]]
 
     def mask_image(self, image):
-        """
         # type: (np.array) -> np.array
+        """
         Creates a color mask
         (0 for not in color range and 255 for in color range)
-        :param np.array image: image to mask
-        :return: np.array masked image
-        """
 
-        # TODO remove
+        :param np.array image: image to mask
+        :return np.array: masked image
+        """
+        # TODO: remove
         mask = VisionExtensions.maskImg(image, self.color_space)
         self.imagepublisher1.publish(self.bridge.cv2_to_imgmsg(mask1, '8UC1'))
 
