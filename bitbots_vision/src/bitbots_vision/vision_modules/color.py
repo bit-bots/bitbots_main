@@ -149,6 +149,13 @@ class HsvSpaceColorDetector(ColorDetector):
 
 class PixelListColorDetector(ColorDetector):
 
+        def __init__(self, debug_printer, color_path):
+        ColorDetector.__init__(self, debug_printer)
+        self.color_space = self.init_color_space(color_path)
+        self.bridge = CvBridge()
+        # TODO remove
+        self.imagepublisher = rospy.Publisher("/mask_image", Image, queue_size=1)
+    
     def init_color_space(self, color_path):
         # type: (str) -> None
         """
@@ -186,17 +193,11 @@ class PixelListColorDetector(ColorDetector):
                                 color_values['red'][x]] = 1
         return color_space
 
-
-class StaticPixelListColorDetector(PixelListColorDetector):
-
-    def __init__(self, debug_printer, color_path):
-        ColorDetector.__init__(self, debug_printer)
-        self.color_space = self.init_color_space(color_path)
-        # TODO remove
-        self.dc = DynamicPixelListColorDetector(debug_printer, color_path, 10, 0.6, 3)
-        self.bridge = CvBridge()
-        self.imagepublisher = rospy.Publisher("/mask_image_dyn", Image, queue_size=1)
-        self.imagepublisher1 = rospy.Publisher("/mask_image", Image, queue_size=1)
+    """
+    ##############################################################
+    ################ TODO update colorspace ######################
+    ##############################################################
+    """
 
     def match_pixel(self, pixel):
         # type: (tuple) -> bool
@@ -209,9 +210,6 @@ class StaticPixelListColorDetector(PixelListColorDetector):
         return self.color_space[pixel[0], pixel[1], pixel[2]]
 
     def mask_image(self, image):
-        mask = self.dc.mask_image(image)
-        # TODO remove
-        self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask, '8UC1'))
         """
         # type: (np.array) -> np.array
         Creates a color mask
@@ -219,22 +217,15 @@ class StaticPixelListColorDetector(PixelListColorDetector):
         :param np.array image: image to mask
         :return: np.array masked image
         """
-        mask1 = VisionExtensions.maskImg(image, self.color_space)
+
+        # TODO remove
+        mask = VisionExtensions.maskImg(image, self.color_space)
         self.imagepublisher1.publish(self.bridge.cv2_to_imgmsg(mask1, '8UC1'))
 
         return mask
 
-    def get_colorspace(self):
-        # TODO docu
-        return self.color_space
-
-    #TODO remove
-    def set_hor(self, hor):
-        self.dc.set_horrizon_detector(hor)
-
-
 class DynamicPixelListColorDetector(PixelListColorDetector):
-
+    # Default: DynamicPixelListColorDetector(debug_printer, color_path, 10, 0.6, 3)
     # TODO dynamic reconfigure kernel size
     # TODO docu
     def __init__(self, debug_printer, color_path, queue_max_size, threshold, kernel_size=3):
@@ -260,6 +251,9 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         self._heuristic = Heuristic(debug_printer)
         self.mask = None
         self.image = None
+
+        # TODO remove
+        self.imagepublisher = rospy.Publisher("/mask_image_dyn", Image, queue_size=1)
 
     def match_pixel(self, pixel):
         # type: (tuple) -> bool
@@ -287,6 +281,9 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         else:
             self.image = image
             self.mask = self.mask_image_unwarpped(image)
+
+        # TODO remove
+        self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask, '8UC1'))
         return self.mask
 
     def mask_image_unwarpped(self, image):
