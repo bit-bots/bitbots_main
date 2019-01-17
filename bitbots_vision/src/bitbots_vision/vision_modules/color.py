@@ -258,6 +258,6 @@ class PixelListColorDetector(ColorDetector):
         """
         # TODO: remove
         mask = VisionExtensions.maskImg(image, self.color_space)
-        self.imagepublisher1.publish(self.bridge.cv2_to_imgmsg(mask1, '8UC1'))
+        self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask, '8UC1'))
 
         return mask
