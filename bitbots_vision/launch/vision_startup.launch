@@ -34,8 +34,8 @@
     </group>
 
     <!-- start vision with dynamic colorspace -->
-    <group unless="$(arg dynColor)">
-        <node pkg="bitbots_dynamic_colorspace" type="dynamic_colorspace.py" name="bitbots_dynamic_colorspace" output="screen">
+    <group if="$(arg dynColor)">
+        <node pkg="bitbots_vision" type="dynamic_colorspace.py" name="bitbots_dynamic_colorspace" output="screen">
             <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
         </node>
     </group>        
