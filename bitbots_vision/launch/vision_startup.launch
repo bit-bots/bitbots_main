@@ -10,7 +10,7 @@
         <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
             <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
             <param name="vision_debug_image_msg" value="$(arg debug)"/>
-            <param name="vision_ball_classifier" value="fcnn" />
+            <param name="vision_ball_classifier" value="fcnn"/>
         </node>
     </group>
 
@@ -19,7 +19,7 @@
         <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
             <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
             <param name="vision_debug_image_msg" value="$(arg debug)"/>
-            <param name="vision_ball_classifier" value="dummy" />
+            <param name="vision_ball_classifier" value="dummy"/>
         </node>
     </group>
 
@@ -37,6 +37,7 @@
     <group unless="$(arg dynColor)">
         <node pkg="bitbots_dynamic_colorspace" type="dynamic_colorspace.py" name="bitbots_dynamic_colorspace" output="screen">
             <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
+            <param name="dynamic_colorspace" value="$(arg dynColor)"/>
         </node>
     </group>        
 </launch>
