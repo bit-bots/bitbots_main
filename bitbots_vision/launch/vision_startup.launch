@@ -3,6 +3,7 @@
     <arg name="sim" default="false"/>
     <arg name="dummyball" default="false"/>
     <arg name="debug" default="false"/>
+    <arg name="dynColor" default="true"/>
 
     <!-- start vision for wolfgang (fcnn)-->
     <group unless="$(arg dummyball)">
@@ -26,9 +27,17 @@
     <group unless="$(arg sim)">
         <include file="$(find wolves_image_provider)/launch/image_provider.launch" />
     </group>
+
     <!-- remap stuff to fit the robot -->
     <group if="$(arg sim)">
         <remap to ="/camera/image_raw" from="/image_raw"/>
     </group>
+
+    <!-- start vision with dynamic colorspace -->
+    <group unless="$(arg dynColor)">
+        <node pkg="bitbots_dynamic_colorspace" type="dynamic_colorspace.py" name="bitbots_dynamic_colorspace" output="screen">
+            <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
+        </node>
+    </group>        
 </launch>
 
