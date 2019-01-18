@@ -788,7 +788,7 @@
     </joint>
 
     <joint name="HeadPan" type="revolute">
-        <origin xyz="0.008 0 0.146501" rpy="0 0 0" />
+        <origin xyz="-0.0095 0 0.146501" rpy="0 0 0" />
         <parent link="torso" />
         <child link="neck" />
         <axis xyz="0 0 1" />
