@@ -11,6 +11,7 @@ import multiprocessing
 from collections import deque
 import rospy
 import random
+import thread
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from profilehooks import profile
@@ -197,16 +198,21 @@ class PixelListColorDetector(ColorDetector):
         self.colorspace_sub = rospy.Subscriber('colorspace',
                                                 Colorspace,
                                                 self._colorspace_callback,
-                                                queue_size=1)
+                                                queue_size=1,
+                                                buff_size=2**20)
         # TODO remove
         self.imagepublisher = rospy.Publisher("/mask_image", Image, queue_size=1)
 
     def _colorspace_callback(self, msg):
+        thread.start_new_thread(self.decode_colorspace, (msg, ))
+
+    def decode_colorspace(self, msg):
         time1 = time.time()
-        self.color_space = np.copy(self.base_color_space)
-        self.color_space[np.array([int(i.data) for i in msg.blue]),
-                         np.array([int(i.data) for i in msg.green]),
-                         np.array([int(i.data) for i in msg.red])] = 1
+        color_space_temp = np.copy(self.base_color_space)
+        color_space_temp[np.array(map((lambda i: i.data), msg.blue)),
+                         np.array(map((lambda i: i.data), msg.green)),
+                         np.array(map((lambda i: i.data), msg.red))] = 1
+        self.color_space = color_space_temp
         print(time.time()- time1)
     
     def init_color_space(self, color_path):

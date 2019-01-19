@@ -39,7 +39,7 @@ class DynamicColorspace:
         self.debug_printer = None
 
         # TODO dyn reconf
-        queue_max_size = 10
+        queue_max_size = 5
         self._threshold = 0.6
         self._kernel_size = 3
 
@@ -63,7 +63,7 @@ class DynamicColorspace:
                                           self._image_callback,
                                           queue_size=1,
                                           tcp_nodelay=True,
-                                          buff_size=2**30)
+                                          buff_size=2**20)
 
         self.colorspace_publisher = rospy.Publisher('colorspace',
                                                     Colorspace,
@@ -72,7 +72,13 @@ class DynamicColorspace:
         print("Ready")
         rospy.spin()
 
-    def calc_dynamic_colorspace(self, image, mask, mask_image):
+    # TODO remove 
+    @profile
+    def calc_dynamic_colorspace(self, image):
+        mask_image = self.color_detector.mask_image(image)
+        self.horizon_detector.set_image(image)
+        self.horizon_detector.compute_horizon_points()
+        mask = self.horizon_detector.get_mask()
         colorpixel_candidates_list = self._pointfinder.find_colorpixel_candidates(mask_image)
         colors = self.get_pixel_values(image, colorpixel_candidates_list)
         colors = np.array(self._heuristic.run(colors, image, mask), dtype=np.int32)
@@ -92,33 +98,29 @@ class DynamicColorspace:
             unique_colors = colors
         return unique_colors
 
+    # TODO remove 
+    @profile
     def publish(self, image_msg):
         colorspace = np.array(self.queue_to_colorspace(), dtype=np.uint8)
         colorspace_msg = Colorspace()  # Todo: add lines
         colorspace_msg.header.frame_id = image_msg.header.frame_id
         colorspace_msg.header.stamp = image_msg.header.stamp
-        colorspace_msg.blue  = [UInt8(i) for i in colorspace[:,0].tolist()]
-        colorspace_msg.green  = [UInt8(i) for i in colorspace[:,1].tolist()]
-        colorspace_msg.red  = [UInt8(i) for i in colorspace[:,2].tolist()]
-        print("stop")
+        colorspace_msg.blue  = map(UInt8, colorspace[:,0])
+        colorspace_msg.green = map(UInt8, colorspace[:,1])
+        colorspace_msg.red   = map(UInt8, colorspace[:,2])
         self.colorspace_publisher.publish(colorspace_msg)
 
-    # TODO remove 
-    @profile
     def _image_callback(self, img):
-        print("start")
+        delta = rospy.get_rostime() - img.header.stamp 
+        if delta.to_sec() > 0.1:
+            return
         # converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(img, 'bgr8')
-        color_mask = self.color_detector.mask_image(image)
-        self.horizon_detector.set_image(image)
-        self.horizon_detector.compute_horizon_points()
-        mask = self.horizon_detector.get_mask()
-        self.calc_dynamic_colorspace(image, mask, color_mask)
+        self.calc_dynamic_colorspace(image)
         self.publish(img)
 
     def _dynamic_reconfigure_callback(self, config, level):
         # TODO Stuff
-        print("Called dynreconf") 
         self.config = config
         return config
         
