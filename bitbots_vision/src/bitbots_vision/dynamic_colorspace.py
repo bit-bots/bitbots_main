@@ -17,7 +17,7 @@ from std_msgs.msg import UInt8
 from rospy.numpy_msg import numpy_msg
 
 # TODO remove
-from profilehooks import profile 
+#from profilehooks import profile 
 
 
 class DynamicColorspace:
@@ -32,8 +32,6 @@ class DynamicColorspace:
 
         Server(VisionConfig, self._dynamic_reconfigure_callback)
         
-        print("Loaded")
-
         self.bridge = CvBridge()
 
         self.debug_printer = None
@@ -68,12 +66,8 @@ class DynamicColorspace:
         self.colorspace_publisher = rospy.Publisher('colorspace',
                                                     Colorspace,
                                                     queue_size=1)
-
-        print("Ready")
         rospy.spin()
 
-    # TODO remove 
-    @profile
     def calc_dynamic_colorspace(self, image):
         mask_image = self.color_detector.mask_image(image)
         self.horizon_detector.set_image(image)
@@ -98,8 +92,6 @@ class DynamicColorspace:
             unique_colors = colors
         return unique_colors
 
-    # TODO remove 
-    @profile
     def publish(self, image_msg):
         colorspace = np.array(self.queue_to_colorspace(), dtype=np.uint8)
         colorspace_msg = Colorspace()  # Todo: add lines
