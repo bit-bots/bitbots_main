@@ -39,7 +39,7 @@ class DynamicColorspace:
         self.debug_printer = None
 
         # TODO dyn reconf
-        queue_max_size = 5
+        queue_max_size = 10
         self._threshold = 0.6
         self._kernel_size = 3
 
@@ -105,9 +105,9 @@ class DynamicColorspace:
         colorspace_msg = Colorspace()  # Todo: add lines
         colorspace_msg.header.frame_id = image_msg.header.frame_id
         colorspace_msg.header.stamp = image_msg.header.stamp
-        colorspace_msg.blue  = map(UInt8, colorspace[:,0])
-        colorspace_msg.green = map(UInt8, colorspace[:,1])
-        colorspace_msg.red   = map(UInt8, colorspace[:,2])
+        colorspace_msg.blue  = colorspace[:,0].tolist()
+        colorspace_msg.green = colorspace[:,1].tolist()
+        colorspace_msg.red   = colorspace[:,2].tolist()
         self.colorspace_publisher.publish(colorspace_msg)
 
     def _image_callback(self, img):

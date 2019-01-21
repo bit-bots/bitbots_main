@@ -209,9 +209,9 @@ class PixelListColorDetector(ColorDetector):
     def decode_colorspace(self, msg):
         time1 = time.time()
         color_space_temp = np.copy(self.base_color_space)
-        color_space_temp[np.array(map((lambda i: i.data), msg.blue)),
-                         np.array(map((lambda i: i.data), msg.green)),
-                         np.array(map((lambda i: i.data), msg.red))] = 1
+        color_space_temp[msg.blue,
+                         msg.green,
+                         msg.red] = 1
         self.color_space = color_space_temp
         print(time.time()- time1)
     
