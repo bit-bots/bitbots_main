@@ -36,6 +36,9 @@ class Vision:
         rospy.spin()
 
     def _image_callback(self, img):
+        delta = rospy.get_rostime() - img.header.stamp 
+        if delta.to_sec() > 0.1:
+            return
         self.handle_image(img)
 
     def handle_image(self, image_msg):
