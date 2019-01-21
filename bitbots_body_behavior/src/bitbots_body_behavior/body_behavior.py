@@ -11,8 +11,8 @@ Starts the body behavior
 import actionlib
 import os
 import rospy
-from geometry_msgs.msg import PoseWithCovarianceStamped, Pose2D
-from humanoid_league_msgs.msg import BallRelative, GameState, Speak, HeadMode, Strategy, TeamData, PlayAnimationAction
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from humanoid_league_msgs.msg import BallRelative, GameState, Speak, HeadMode, Strategy, TeamData, PlayAnimationAction, Position2D
 
 from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider import dsd
@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     D.blackboard.team_data.strategy_sender = rospy.Publisher("strategy", Strategy, queue_size=2)
     D.blackboard.blackboard.head_pub = rospy.Publisher("head_duty", HeadMode, queue_size=10)
-    D.blackboard.pathfinding.pathfinding_simple_pub = rospy.Publisher('bitbots_pathfinding/relative_goal', Pose2D,
+    D.blackboard.pathfinding.pathfinding_simple_pub = rospy.Publisher('bitbots_pathfinding/relative_goal', Position2D,
                                                                       queue_size=10)
 
     dirname = os.path.dirname(os.path.realpath(__file__))

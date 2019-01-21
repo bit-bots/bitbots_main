@@ -2,7 +2,7 @@ import rospy
 import actionlib
 import math
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
-from geometry_msgs.msg import Pose2D
+from humanoid_league_msgs.msg import Position2D
 from tf.transformations import euler_from_quaternion
 
 
@@ -20,8 +20,16 @@ class PathfindingCapsule:
         self.pathfinding_simple_pub = None
 
     def pub_simple_pathfinding(self, x, y, t=0):
-        rospy.loginfo('Using simple pathfinding to go to relative position {} {} {}'.format(x, y, t))
-        self.pathfinding_simple_pub.publish(Pose2D(x, y, t))
+        # x, y, t give position in map frame
+        msg = Position2D()
+        msg.header.stamp = rospy.get_time()
+        msg.header.frame = 'map'
+        msg.pose.x = x
+        msg.pose.y = y
+        msg.pose.t = t
+        msg.confidence = 1
+        rospy.loginfo('Using simple pathfinding to go to position {} {} {}'.format(msg.pose.x, msg.pose.y, msg.pose.t))
+        self.pathfinding_simple_pub.publish(msg)
 
     def _is_new_goal_far_from_old_goal(self, new_goal_action_msg):
         old_goal = self.goal.target_pose
