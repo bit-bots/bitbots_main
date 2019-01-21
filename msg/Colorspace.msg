@@ -2,6 +2,6 @@
 
 std_msgs/Header header
 
-std_msgs/UInt8[] blue
-std_msgs/UInt8[] green
-std_msgs/UInt8[] red
+int32[] blue
+int32[] green
+int32[] red
