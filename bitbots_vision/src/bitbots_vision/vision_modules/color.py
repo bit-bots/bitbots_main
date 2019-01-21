@@ -200,7 +200,8 @@ class PixelListColorDetector(ColorDetector):
                                                 self._colorspace_callback,
                                                 queue_size=1,
                                                 buff_size=2**20)
-        # TODO remove
+        # TODO remove or switch to debug pinter
+        self.imagepublisher_dyn = rospy.Publisher("/mask_image_dyn", Image, queue_size=1)
         self.imagepublisher = rospy.Publisher("/mask_image", Image, queue_size=1)
 
     def _colorspace_callback(self, msg):
@@ -277,8 +278,10 @@ class PixelListColorDetector(ColorDetector):
         :param np.array image: image to mask
         :return np.array: masked image
         """
-        # TODO: remove
+        # TODO: remove or Debug
         mask = VisionExtensions.maskImg(image, self.color_space)
-        self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask, '8UC1'))
+        mask_static = VisionExtensions.maskImg(image, self.base_color_space)
+        self.imagepublisher_dyn.publish(self.bridge.cv2_to_imgmsg(mask, '8UC1'))
+        self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask_static, '8UC1'))
 
         return mask
