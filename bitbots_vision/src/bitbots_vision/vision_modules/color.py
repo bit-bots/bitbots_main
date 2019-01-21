@@ -14,7 +14,7 @@ import random
 import thread
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
-from profilehooks import profile
+#from profilehooks import profile
 from sets import Set
 from bitbots_msgs.msg import Colorspace
 from std_msgs.msg import UInt8
@@ -205,16 +205,16 @@ class PixelListColorDetector(ColorDetector):
         self.imagepublisher = rospy.Publisher("/mask_image", Image, queue_size=1)
 
     def _colorspace_callback(self, msg):
-        thread.start_new_thread(self.decode_colorspace, (msg, ))
+        self.decode_colorspace(msg)
 
+    # TODO Remove
+    #@profile
     def decode_colorspace(self, msg):
-        time1 = time.time()
         color_space_temp = np.copy(self.base_color_space)
         color_space_temp[msg.blue,
                          msg.green,
                          msg.red] = 1
         self.color_space = color_space_temp
-        print(time.time()- time1)
     
     def init_color_space(self, color_path):
         # type: (str) -> None
