@@ -4,6 +4,7 @@
 # original code can be found at: https://github.com/ROBOTIS-GIT/DynamixelSDK/tree/master/python
 
 import os, ctypes
+import time
 
 if os.name == 'nt':
     import msvcrt
@@ -139,6 +140,18 @@ class Connector(object):
         print("[ID:%03d] reboot Succeeded" % (id))
         return True
 
+    def write_1(self, id, reg, data, doPrint=False):
+        dynamixel.write1ByteTxRx(self.port_num, self.protocol, id, reg, data)
+        dxl_comm_result = dynamixel.getLastTxRxResult(self.port_num, self.protocol)
+        dxl_error = dynamixel.getLastRxPacketError(self.port_num, self.protocol)
+        if dxl_comm_result != COMM_SUCCESS:
+            print(dynamixel.getTxRxResult(self.protocol, dxl_comm_result))
+            return False
+        elif dxl_error != 0:
+            print(dynamixel.getRxPacketError(self.protocol, dxl_error))        
+            return False
+        return True
+
     def writeTorque(self, id, enable, doPrint=False):
         dynamixel.write1ByteTxRx(self.port_num, self.protocol, id, 64, enable)
         dxl_comm_result = dynamixel.getLastTxRxResult(self.port_num, self.protocol)
@@ -175,6 +188,19 @@ class Connector(object):
         if doPrint:
             print("[ID:%03d] PresPos:%03d" % (id, dxl_present_position))
         return dxl_present_position
+
+    def read_1(self, id, reg, doPrint=False):
+        read_res = dynamixel.read1ByteTxRx(self.port_num, self.protocol, id, reg)
+        dxl_comm_result = dynamixel.getLastTxRxResult(self.port_num, self.protocol)
+        dxl_error = dynamixel.getLastRxPacketError(self.port_num, self.protocol)
+        if dxl_comm_result != COMM_SUCCESS:
+            print(dynamixel.getTxRxResult(self.protocol, dxl_comm_result))            
+        elif dxl_error != 0:
+            print(dynamixel.getRxPacketError(self.protocol, dxl_error))
+
+        if doPrint:
+            print("[ID:%03d] Regist %03d: %03d" % (id, reg, read_res))
+        return read_res
 
     def read_4(self, id, reg, doPrint=False):
         read_res = dynamixel.read4ByteTxRx(self.port_num, self.protocol, id, reg)
@@ -321,6 +347,8 @@ class MultiConnector(object):
             return
         self.write_1(port, id, 8, baud, doPrint)
 
+    def remove_return_delay_time(self, port, id, doPrint=False):
+        self.write_1(port, id, 9, 0)
 
     def sync_read(self, port, ids, reg, length, doPrint=False):
         groupread_num = dynamixel.groupSyncRead(self.port_num[port], self.protocol, reg, length)
@@ -329,7 +357,7 @@ class MultiConnector(object):
             dxl_addparam_result = ctypes.c_ubyte(dynamixel.groupSyncReadAddParam(groupread_num, dxl_id)).value
             if dxl_addparam_result != 1:
                 print("[ID:%03d] groupSyncRead addparam failed" % (dxl_id))
-                quit()
+                return False
 
         # Syncread present position
         dynamixel.groupSyncReadTxRxPacket(groupread_num)
@@ -342,11 +370,46 @@ class MultiConnector(object):
             dxl_getdata_result = ctypes.c_ubyte(dynamixel.groupSyncReadIsAvailable(groupread_num, dxl_id, reg, length)).value
             if dxl_getdata_result != 1:
                 print("[ID:%03d] groupSyncRead getdata failed" % (dxl_id))
-                quit()
+                return False
 
         for dxl_id in ids:
             dxl_result = dynamixel.groupSyncReadGetData(groupread_num, dxl_id, reg, length)
             print("[ID:%03d] result is %d" % (dxl_id, dxl_result))
+
+        return True
+    
+    def sync_read_loop(self, port, ids, reg, length, doPrint=False):
+        successful_reads = 0
+        error_reads = 0
+        number_reads = 100
+        for i in range(0,number_reads):
+            if self.sync_read(port, ids, reg, length, doPrint):
+                successful_reads +=1
+            else:
+                error_reads += 1
+        time.sleep(1)
+        print("Bus " + str(port) + " got sync read " + str(number_reads) + "\n Successful reads: " + str(successful_reads) + "\n Error reads: " + str(error_reads))
+
+    def broadcast_ping(self, port, maxId, doPrint=False):
+        # Try to broadcast ping the Dynamixel
+        dynamixel.broadcastPing(self.port_num[port], self.protocol)
+        dxl_comm_result = dynamixel.getLastTxRxResult(self.port_num[port], self.protocol)
+        if dxl_comm_result != COMM_SUCCESS:
+            if doPrint:
+                print(dynamixel.getTxRxResult(self.protocol, dxl_comm_result))
+            return False
+
+        if doPrint:
+            print("Detected Dynamixel : ")
+        nb_detected = 0
+        for id in range(1, int(maxId)+1):
+            if ctypes.c_ubyte(dynamixel.getBroadcastPingResult(self.port_num[port], self.protocol, id)).value:
+                nb_detected += 1
+                if doPrint:
+                    print("[ID:%03d]" % (id))
+        if nb_detected == maxId:
+            return True
+        
 
     def closePort(self):
         for port in self.port_num:

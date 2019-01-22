@@ -1,6 +1,6 @@
 import argparse
 
-def parse(id_req=False, register_req=False):
+def parse(id_req=False, register_req=False, data_req=False):
     ret = {}
 
     parser = argparse.ArgumentParser()
@@ -12,6 +12,9 @@ def parse(id_req=False, register_req=False):
         parser.add_argument("id")
     if register_req:
         parser.add_argument("register")
+    if data_req:
+        parser.add_argument("data")
+
 
     args = parser.parse_args()
 
@@ -19,6 +22,8 @@ def parse(id_req=False, register_req=False):
         ret['id'] = int(args.id)
     if register_req:
         ret['reg'] = int(args.register)
+    if data_req:
+        ret['data'] = int(args.data)
 
     if args.p1:
         protocol = 1
