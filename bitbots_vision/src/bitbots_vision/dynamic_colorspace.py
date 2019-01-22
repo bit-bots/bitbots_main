@@ -13,78 +13,85 @@ from sensor_msgs.msg import Image
 from bitbots_vision.cfg import VisionConfig
 from dynamic_reconfigure.server import Server
 from bitbots_msgs.msg import Colorspace
-from std_msgs.msg import UInt8
-from rospy.numpy_msg import numpy_msg
-
-# TODO remove
-#from profilehooks import profile 
 
 
 class DynamicColorspace:
     def __init__(self):
         rospack = rospkg.RosPack()
-        self.package_path = rospack.get_path('bitbots_vision')
+        self._package_path = rospack.get_path('bitbots_vision')
 
         rospy.init_node('bitbots_dynamic_colorspace')
         rospy.loginfo('Initializing dynmaic colorspace...')
 
-        self.config = {}
+        self._config = {}
 
         Server(VisionConfig, self._dynamic_reconfigure_callback)
         
-        self.bridge = CvBridge()
+        self._bridge = CvBridge()
 
-        self.debug_printer = None
+        self._debug_printer = None
 
         # TODO dyn reconf
-        queue_max_size = 10
+        self._queue_max_size = 10
         self._threshold = 0.6
         self._kernel_size = 3
 
-        self.color_detector = color.PixelListColorDetector(
-            self.debug_printer,
-            self.package_path +
-            self.config['field_color_detector_path'])
+        self._color_detector = color.PixelListColorDetector(
+            self._debug_printer,
+            self._package_path +
+            self._config['field_color_detector_path'])
 
-        self.horizon_detector = horizon.HorizonDetector(
-            self.color_detector,
-            self.config,
-            self.debug_printer)
+        self._horizon_detector = horizon.HorizonDetector(
+            self._color_detector,
+            self._config,
+            self._debug_printer)
 
-        self._new_color_value_queue = deque(maxlen=queue_max_size)
+        self._color_value_queue = deque(maxlen=self._queue_max_size)
 
-        self._pointfinder = Pointfinder(self.debug_printer, self._threshold, self._kernel_size)
-        self._heuristic = Heuristic(self.debug_printer)
+        self._pointfinder = Pointfinder(self._debug_printer, self._threshold, self._kernel_size)
+        self._heuristic = Heuristic(self._debug_printer)
 
-        self.image_sub = rospy.Subscriber('image_raw',
+        self._image_sub = rospy.Subscriber('image_raw',
                                           Image,
                                           self._image_callback,
                                           queue_size=1,
                                           tcp_nodelay=True,
                                           buff_size=2**20)
 
-        self.colorspace_publisher = rospy.Publisher('colorspace',
+        self._colorspace_publisher = rospy.Publisher('colorspace',
                                                     Colorspace,
                                                     queue_size=1)
         rospy.spin()
 
     def calc_dynamic_colorspace(self, image):
-        mask_image = self.color_detector.mask_image(image)
-        self.horizon_detector.set_image(image)
-        self.horizon_detector.compute_horizon_points()
-        mask = self.horizon_detector.get_mask()
+        # Masks new image with current colorspace
+        mask_image = self._color_detector.mask_image(image)
+        # Calls the horizon detector
+        self._horizon_detector.set_image(image)
+        self._horizon_detector.compute_horizon_points()
+        mask = self._horizon_detector.get_mask()
+        # Searches for new candidate pixels in the color mask
         colorpixel_candidates_list = self._pointfinder.find_colorpixel_candidates(mask_image)
+        # Gets unique color vales from the candidate pixels.
         colors = self.get_pixel_values(image, colorpixel_candidates_list)
+        # Filters the colors using the heuristic. 
         colors = np.array(self._heuristic.run(colors, image, mask), dtype=np.int32)
-        self._new_color_value_queue.append(colors)
+        # Adds new (sub-)colorspace to the queue
+        self._color_value_queue.append(colors)
         
     def queue_to_colorspace(self):
+        # Inizializes an empty colorspace
         colorspace = np.array([]).reshape(0,3)
-        for new_color_value_list in self._new_color_value_queue:
+        # Stacks every colorspace in the queue
+        for new_color_value_list in self._color_value_queue:
             colorspace = np.append(colorspace, new_color_value_list[:,:], axis=0)
+        # Returns an colorspace, which contains all colors from the queue
         return colorspace
 
     def get_pixel_values(self, img, pixellist):
+        '''
+        Returns unique colors for an given image and a list of pixels.
+        '''
         colors = img[pixellist[0], pixellist[1]]
         if colors.size > 0:
             unique_colors = np.unique(colors, axis=0)
@@ -93,27 +100,35 @@ class DynamicColorspace:
         return unique_colors
 
     def publish(self, image_msg):
-        colorspace = np.array(self.queue_to_colorspace(), dtype=np.uint8)
+        '''
+        Publishes the current colorspace via ros msg.
+        '''
+        colorspace = self.queue_to_colorspace()
         colorspace_msg = Colorspace()  # Todo: add lines
         colorspace_msg.header.frame_id = image_msg.header.frame_id
         colorspace_msg.header.stamp = image_msg.header.stamp
         colorspace_msg.blue  = colorspace[:,0].tolist()
         colorspace_msg.green = colorspace[:,1].tolist()
         colorspace_msg.red   = colorspace[:,2].tolist()
-        self.colorspace_publisher.publish(colorspace_msg)
+        self._colorspace_publisher.publish(colorspace_msg)
 
     def _image_callback(self, img):
+        # Sometimes the queue gets to large, even when the size is limeted to 1. 
+        # Thats why we drop old images manualy.
+        # Drops old images
         delta = rospy.get_rostime() - img.header.stamp 
         if delta.to_sec() > 0.1:
             return
-        # converting the ROS image message to CV2-image
-        image = self.bridge.imgmsg_to_cv2(img, 'bgr8')
+        # Converting the ROS image message to CV2-image
+        image = self._bridge.imgmsg_to_cv2(img, 'bgr8')
+        # Calculates the new colorspace
         self.calc_dynamic_colorspace(image)
+        # Publishes the colorspace
         self.publish(img)
 
     def _dynamic_reconfigure_callback(self, config, level):
         # TODO Stuff
-        self.config = config
+        self._config = config
         return config
         
 
@@ -126,6 +141,7 @@ class Pointfinder():
         :param int kernel_size: defines size of convolution kernel, use odd number (default 3)
         """
         self._threshold = threshold
+        # Defines kernel
         self._kernel = np.ones((kernel_size, kernel_size))
         self._kernel[int(np.size(self._kernel, 0) / 2), int(np.size(self._kernel, 1) / 2)] = -self._kernel.size
 
@@ -137,27 +153,32 @@ class Pointfinder():
 
         :return: np.array: list of indices
         """
+        # Normalizes the image to values between 1 und 0
         normalized_image = np.divide(masked_image, 255, dtype=np.int16)
+        # Calculates the number of neighbours or each pixel
         sum_array = cv2.filter2D(normalized_image, -1, self._kernel, borderType=0)
+        # Returns all pixels with an higher neighbour / non neighbours ratio than the threshold
         return np.array(np.where(sum_array > self._threshold * (self._kernel.size - 1)))
 
 class Heuristic:
 
     def __init__(self, debug_printer, horrizon_detector=None):
-        self.debug_printer = debug_printer
-        self.horrizon_detector = horrizon_detector
-
-    def set_horrizon_detector(self, horrizon_detector):
-        self.horrizon_detector = horrizon_detector
+        self._debug_printer = debug_printer
+        self._horrizon_detector = horrizon_detector
 
     def run(self, color_list, image, mask):
+        # Simplyfies the handling by merging the 3 color channels
         color_list = self.serialize(color_list)
         color_set = set(color_list)
-        colors_set_under_horizon = set(self.recalc(image, mask))
-        color_set = color_set.intersection(colors_set_under_horizon)
+        # Generates whitelist
+        whitelist = self.recalc(image, mask)
+        # Takes only whitelisted values 
+        color_set = color_set.intersection(whitelist)
+        # Restrucktures the color channels
         return self.deserialize(np.array(list(color_set)))
 
     def recalc(self, image, mask):
+        # Genereates whitelist
         colors_over_horizon, colors_under_horizon = self.calc_freq(image, mask)
         return set(colors_under_horizon) - set(colors_over_horizon)
 
@@ -168,9 +189,9 @@ class Heuristic:
                 self.get_freq_colors(cv2.bitwise_and(image, image, mask=mask)))
 
     def get_freq_colors(self, image):
-        # Serializes image
+        # Simplyfies the handling by merging the 3 color channels
         serialized_img = self.serialize(np.reshape(image, (1, int(image.size / 3), 3))[0])
-        # Calculates the number of occurencies of all colors in the image
+        # Returns unique colors in the image
         return np.unique(serialized_img, axis=0)
 
     def serialize(self, input_matrix):

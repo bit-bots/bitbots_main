@@ -7,17 +7,11 @@ import pickle
 import time
 import abc
 import cv2
-import multiprocessing
 from collections import deque
 import rospy
-import random
-import thread
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
-#from profilehooks import profile
-from sets import Set
 from bitbots_msgs.msg import Colorspace
-from std_msgs.msg import UInt8
 
 
 class ColorDetector:
