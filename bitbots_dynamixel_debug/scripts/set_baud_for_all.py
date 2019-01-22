@@ -5,12 +5,13 @@ from bitbots_dynamixel_debug.connector import SingleConnector
 from bitbots_dynamixel_debug.parser import parse
 import sys
 
-args = parse(id_req = False, register_req = False)
+args = parse(id_req = True, data_req = True)
 
 c = SingleConnector(args['protocol'], args['device'], args['baudrate'])
 
-for i in range(1, 21):
-	c.ping(i, doPrint=True)
+max_id = args['id']
+for i in range(max_id):
+    c.write_baud(i, args['data'], True)
 
 c.closePort()
 
