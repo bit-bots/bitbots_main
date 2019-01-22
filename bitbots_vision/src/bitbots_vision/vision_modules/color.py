@@ -201,13 +201,15 @@ class PixelListColorDetector(ColorDetector):
     def _colorspace_callback(self, msg):
         self.decode_colorspace(msg)
 
-    # TODO Remove
-    #@profile
     def decode_colorspace(self, msg):
+        # Imports new colorspace from a ros msg. This is used to communicate with the Dynamic Colorspace Node.
+        # Use the base colorspace as basis
         color_space_temp = np.copy(self.base_color_space)
+        # Adds new colors to that colorspace
         color_space_temp[msg.blue,
                          msg.green,
                          msg.red] = 1
+        # Switches the reference to the new colorspace
         self.color_space = color_space_temp
     
     def init_color_space(self, color_path):
