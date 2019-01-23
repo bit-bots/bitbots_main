@@ -22,7 +22,8 @@ class PathfindingCapsule:
     def pub_simple_pathfinding(self, x, y, t=0):
         # x, y, t give position in map frame
         msg = Position2D()
-        msg.header.stamp = rospy.get_time()
+        msg.header.stamp = rospy.get_rostime()
+        #msg.header.stamp.secs = rospy.get_time()
         msg.header.frame_id = 'map'
         msg.pose.x = x
         msg.pose.y = y
