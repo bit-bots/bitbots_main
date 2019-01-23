@@ -247,13 +247,7 @@ class PixelListColorDetector(ColorDetector):
                 color_space[color_values['blue'][x],
                                 color_values['green'][x],
                                 color_values['red'][x]] = 1
-        return color_space
-
-    
-    ##############################################################
-    ################ TODO: update colorspace #####################
-    ##############################################################
-    
+        return color_space  
 
     def match_pixel(self, pixel):
         # type: (np.array) -> bool
