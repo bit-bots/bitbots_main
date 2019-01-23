@@ -19,6 +19,7 @@ from dynamic_stack_decider import dsd
 
 
 if __name__ == "__main__":
+    rospy.init_node("Bodybehavior")
     D = dsd.DSD(BodyBlackboard(), '/debug/dsd/body_behavior')
 
     D.blackboard.team_data.strategy_sender = rospy.Publisher("strategy", Strategy, queue_size=2)
@@ -33,7 +34,6 @@ if __name__ == "__main__":
 
     D.load_behavior(os.path.join(dirname, "main.dsd"))
 
-    rospy.init_node("Bodybehavior")
 
     rospy.Subscriber("ball_relative", BallRelative, D.blackboard.world_model.ball_callback)
     rospy.Subscriber("gamestate", GameState, D.blackboard.gamestate.gamestate_callback)
