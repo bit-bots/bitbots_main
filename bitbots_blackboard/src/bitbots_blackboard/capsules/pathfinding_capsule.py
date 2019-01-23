@@ -23,12 +23,12 @@ class PathfindingCapsule:
         # x, y, t give position in map frame
         msg = Position2D()
         msg.header.stamp = rospy.get_time()
-        msg.header.frame = 'map'
+        msg.header.frame_id = 'map'
         msg.pose.x = x
         msg.pose.y = y
-        msg.pose.t = t
+        msg.pose.theta = t
         msg.confidence = 1
-        rospy.loginfo('Using simple pathfinding to go to position {} {} {}'.format(msg.pose.x, msg.pose.y, msg.pose.t))
+        rospy.loginfo('Using simple pathfinding to go to position {} {} {}'.format(msg.pose.x, msg.pose.y, msg.pose.theta))
         self.pathfinding_simple_pub.publish(msg)
 
     def _is_new_goal_far_from_old_goal(self, new_goal_action_msg):
