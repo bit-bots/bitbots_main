@@ -17,24 +17,26 @@
     <group if="$(arg vision)">
         <include file="$(find bitbots_vision)/launch/vision_startup.launch">
             <arg name="sim" value="$(arg sim)" />
+            <arg name="debug" value="true" />
         </include>
     </group>
 
     <include file="$(find humanoid_league_transform)/launch/transformer.launch">
         <arg name="sim" value="$(arg sim)" />
     </include>
+
     <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch">
             <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
+
     <include file="$(find bitbots_localization)/launch/localization_amcl.launch"/>
-    <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch"/>
-    
+
+    <!--include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch"/-->
 
     <group if="$(arg behave)">
-        <include file="$(find bitbots_body_behavior)/launch/behavior.launch">
-            <arg name="duty" value="$(arg duty)" />
-        </include>
+        <include file="$(find bitbots_body_behavior)/launch/behavior.launch"/>
     </group>
+
 
     <group if="$(arg motion)">
         <include file="$(find bitbots_bringup)/launch/motion.launch">
