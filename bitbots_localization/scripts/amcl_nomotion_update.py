@@ -29,8 +29,8 @@ class AmclNomotionUpdate(object):
         past = now - rospy.Duration(1) #TODO:good value?
 
         if self.check_nomotion(now, past): #check if feet did not move
-            self.pubMotion.publish(data)
             if self.check_head_motion(now, past): #check if head moved
+                self.pubMotion.publish(data)
                 rospy.wait_for_service('request_nomotion_update')
                 try: #call service
                     rospy.logwarn("Requesting nomotion_update")
