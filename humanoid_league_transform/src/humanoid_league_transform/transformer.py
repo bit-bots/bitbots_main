@@ -109,10 +109,8 @@ class TransformBall(object):
             # only proceed if all transformations were successful
             if rel_seg.start is not None and rel_seg.end is not None:
                 line.segments.append(rel_seg)
-                rospy.logwarn_throttle(1.0, self.camera_info)
 
             else:
-                rospy.logerr_throttle(1.0, self.camera_info)
                 rospy.logwarn_throttle(1.0, "got a segment i could not transform")
 
         for circle in msg.circles:
