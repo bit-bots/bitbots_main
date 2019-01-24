@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import rospy
 import tf2_ros as tf2
-from geometry_msgs.msg import Twist, PointStamped, Quaternion
+from geometry_msgs.msg import Twist, Quaternion
+from tf2_geometry_msgs import PointStamped
 from humanoid_league_msgs.msg import Position2D
 from tf.transformations import quaternion_from_euler
 
