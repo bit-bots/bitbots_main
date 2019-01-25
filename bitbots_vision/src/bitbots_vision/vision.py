@@ -250,6 +250,8 @@ class Vision:
             self.package_path +
             config['field_color_detector_path'])
 
+        # TODO start/stop dynamic_colorspace
+        # TODO update path in dynamic colorspace
         self.horizon_detector = horizon.HorizonDetector(
             self.field_color_detector,
             config,

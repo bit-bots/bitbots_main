@@ -1,0 +1,6 @@
+# TODO: Do we realy need this file?
+# TODO: bessere Bezeichnungen aus dynamic_colorspace.cfg
+queue_max_size: 10
+
+threshold: 0.6
+kernel_size: 3

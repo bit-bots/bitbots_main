@@ -10,8 +10,8 @@ from cv_bridge import CvBridge
 from bitbots_vision.vision_modules import horizon, color
 from collections import deque
 from sensor_msgs.msg import Image
-from bitbots_vision.cfg import VisionConfig
 from dynamic_reconfigure.server import Server
+from dynamic_colorspace.cfg import dynamic_colorspaceConfig
 from bitbots_msgs.msg import Colorspace
 
 
@@ -25,7 +25,7 @@ class DynamicColorspace:
 
         self._config = {}
 
-        Server(VisionConfig, self._dynamic_reconfigure_callback)
+        Server(dynamic_colorspaceConfig, self._dynamic_reconfigure_callback)
         
         self._bridge = CvBridge()
 
@@ -127,8 +127,18 @@ class DynamicColorspace:
         self.publish(img)
 
     def _dynamic_reconfigure_callback(self, config, level):
-        # TODO Stuff
         self._config = config
+
+        # TODO: debug-image on/off
+
+        if (self._queue_max_size != self._config['queue_max_size']):
+            self._queue_max_size = self._config['queue_max_size']
+            self._color_value_queue = deque(maxlen=self._queue_max_size)
+
+        # Pointfinder
+        self._threshold = self._config['threshold']
+        self._kernel_size = self._config['kernel_size']
+        self._pointfinder.set_params(self._threshold, self._kernel_size)
         return config
         
 
@@ -144,6 +154,15 @@ class Pointfinder():
         # Defines kernel
         self._kernel = np.ones((kernel_size, kernel_size))
         self._kernel[int(np.size(self._kernel, 0) / 2), int(np.size(self._kernel, 1) / 2)] = -self._kernel.size
+
+    def set_params(self, threshold, kernel_size=3):
+        """
+        TODO doku
+        dynamic reconfigure -> update params 
+        """
+        self._threshold = threshold
+        self._kernel = np.ones((kernel_size, kernel_size))
+        self._kernel[int(np.size(self._kernel, 0) / 2), int(np.size(self._kernel, 1) / 2)] = -kernel.size
 
     def find_colorpixel_candidates(self, masked_image):
         # type () -> np.array
