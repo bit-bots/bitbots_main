@@ -13,8 +13,6 @@
             <param name="vision_debug_image_msg" value="$(arg debug)"/>
             <param name="vision_ball_classifier" value="fcnn" />
             <param name="vision_use_sim_color" value="$(arg sim)"/>
-             <!-- remap stuff to fit the robot -->
-            <remap if="$(arg sim)" to ="/camera/image_raw" from="/image_raw"/>
         </node>
     </group>
 
@@ -25,14 +23,16 @@
             <param name="vision_debug_image_msg" value="$(arg debug)"/>
             <param name="vision_ball_classifier" value="dummy" />
             <param name="vision_use_sim_color" value="$(arg sim)"/>
-              <!-- remap stuff to fit the robot -->
-            <remap if="$(arg sim)" to ="/camera/image_raw" from="/image_raw"/>
         </node>
     </group>
 
     <!-- start the camera only when necessary -->
     <group unless="$(arg sim)">
         <include file="$(find wolves_image_provider)/launch/image_provider.launch" />
+    </group>
+    <!-- remap stuff to fit the robot -->
+    <group if="$(arg sim)">
+        <remap to ="/camera/image_raw" from="/image_raw"/>
     </group>
 
 </launch>
