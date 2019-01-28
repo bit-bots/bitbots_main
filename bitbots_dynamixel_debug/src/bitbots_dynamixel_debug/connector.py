@@ -294,13 +294,13 @@ class SingleConnector(MultiConnector):
     def reboot(self, id):
         super(SingleConnector, self).reboot(0, id)
 
-    def read_1_s(self, id, reg, doPrint=False):
+    def read_1(self, id, reg, doPrint=False):
         super(SingleConnector, self).read_1(0, id, reg, doPrint)
 
-    def read_4_s(self, id, reg, doPrint=False):
+    def read_4(self, id, reg, doPrint=False):
         super(SingleConnector, self).read_4(0, id, reg, doPrint)
 
-    def write_1_s(self, id, reg, data, doPrint=False):
+    def write_1(self, id, reg, data, doPrint=False):
         super(SingleConnector, self).write_1(0, id, reg, data, doPrint)
 
     def write_id(self, id, new_id, doPrint=False):

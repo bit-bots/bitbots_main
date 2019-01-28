@@ -10,7 +10,7 @@ args = parse(id_req = True, data_req = True)
 c = SingleConnector(args['protocol'], args['device'], args['baudrate'])
 
 max_id = args['id']
-for i in range(max_id):
+for i in range(max_id +1):
     c.write_baud(i, args['data'], True)
 
 c.closePort()

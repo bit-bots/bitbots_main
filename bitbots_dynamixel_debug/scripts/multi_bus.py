@@ -6,7 +6,7 @@ import multiprocessing
 from bitbots_dynamixel_debug.connector import MultiConnector
 
 
-c = MultiConnector(2, ["/dev/ttyUSB4".encode('utf-8'), "/dev/ttyUSB5".encode('utf-8'), "/dev/ttyUSB6".encode('utf-8'), "/dev/ttyUSB7".encode('utf-8')], 2000000)#4615384)
+c = MultiConnector(2, ["/dev/ttyUSB0".encode('utf-8'), "/dev/ttyUSB1".encode('utf-8'), "/dev/ttyUSB2".encode('utf-8'), "/dev/ttyUSB3".encode('utf-8')], 2000000)#4615384)
 jobs = []
 
 
