@@ -14,5 +14,3 @@ for i in range(max_id):
     c.write_baud(i, args['data'], True)
 
 c.closePort()
-
-

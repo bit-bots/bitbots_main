@@ -9,18 +9,20 @@ from bitbots_dynamixel_debug.connector import MultiConnector
 c = MultiConnector(2, ["/dev/ttyUSB4".encode('utf-8'), "/dev/ttyUSB5".encode('utf-8'), "/dev/ttyUSB6".encode('utf-8'), "/dev/ttyUSB7".encode('utf-8')], 2000000)#4615384)
 jobs = []
 
-"""for i in range(0,4):    
-    p = multiprocessing.Process(target=c.remove_return_delay_time, args=(i, 56, True))
-    jobs.append(p)
-"""
+
 ids =[]
 ids.append([1, 2, 3, 4, 5])
 ids.append([6, 7, 8, 9, 10])
 ids.append([11, 12, 13, 14, 15])
 ids.append([16, 18, 19, 20])
 
+def write_1_to_all(port, reg, val):
+    for i in ids[port]:
+        c.write_1(port, i, reg, val, True)
+
 for i in range(0,4):
-    p = multiprocessing.Process(target=c.sync_read_loop, args=(i, ids[i], 9, 1, True))
+    #p = multiprocessing.Process(target=c.sync_read_loop, args=(i, ids[i], 9, 1, True))
+    p = multiprocessing.Process(target=write_1_to_all, args=(i, 68, 1))
     jobs.append(p)
 
 for i in range(0,4):
