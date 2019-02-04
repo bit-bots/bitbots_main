@@ -1,6 +1,5 @@
-<library path="src">
-
-  <class name="LiveTool" type="bitbots_live_tool_rqt.live_tool.LiveTool" base_class_type="rqt_gui_py::Plugin">
+<library path="scripts">
+  <class name="LiveTool" type="live_tool.LiveTool" base_class_type="rqt_gui_py::Plugin">
     <description>
       The super awesome Live Tool
     </description>
@@ -15,5 +14,4 @@
       <statustip>TODO</statustip>
     </qtgui>
   </class>
-
 </library>
