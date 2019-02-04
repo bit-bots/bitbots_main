@@ -316,7 +316,7 @@ class Client(asyncore.dispatcher, QtCore.QThread):
         asyncore.dispatcher.__init__(self)
         QtCore.QThread.__init__(self, parent)
         self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.bind(("192.168.2.228", 5005)) #1Put your IP address here. Start the launchscript with parameter send_to_ip:=YOUR_IP.
+        self.bind(("127.0.0.1", 5005)) #1Put your IP address here. Start the launchscript with parameter send_to_ip:=YOUR_IP.
 
 
     def run(self):
