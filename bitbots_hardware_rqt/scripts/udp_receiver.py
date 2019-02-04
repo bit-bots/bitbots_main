@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncore, socket
-from python_qt_binding.QtWidgets import QMainWindow, QLabel, QTableWidgetItem, QTableWidget,QComboBox
+from python_qt_binding.QtWidgets import QMainWindow, QLabel, QTableWidgetItem, QTableWidget,QComboBox, QInputDialog, QLineEdit
 import pyqtgraph as pg
 from python_qt_binding import loadUi, QtCore, QtGui
 from rqt_gui_py.plugin import Plugin
@@ -52,11 +52,22 @@ class HardwareUI(Plugin, asyncore.dispatcher):
         self.torquelist = []
         self.voltagelist = []
 
+        self._widget = QMainWindow()
+
+        self._robot_ip, button_pressed = QInputDialog.getText(self._widget, "Robot IP Required", \
+                    "Please enter the IP adress of the robot. Leave blank for localhost", QLineEdit.Normal, "")
+        if button_pressed:
+            if self._robot_ip == "" or self._robot_ip == "loclahost":
+                self._robot_ip = "127.0.0.1"
+            self._robot_port, button_pressed = QInputDialog.getText(self._widget, "Change Port?", \
+                    "Please select the port you want to listen on. Leave blank for port 5005.", QLineEdit.Normal, "")
+            if button_pressed and self._robot_port == "":
+                self._robot_port = "5005"
         self.current_tab = 0
 
-        self.myclient = Client()
+        self.myclient = Client(self._robot_ip, self._robot_port)
         self.myclient.start()
-        self._widget = QMainWindow()
+
         self.myclient.sig.connect(self.process_data)
 
         rp = rospkg.RosPack()
@@ -311,12 +322,12 @@ class Client(asyncore.dispatcher, QtCore.QThread):
     """Client class that receives the UDP messages and provides the data to our process_data method of class HardwareUI"""
     sig = QtCore.pyqtSignal(str) #signal to transfer the data between the two classes
 
-    def __init__(self, parent=None):
+    def __init__(self, ip, port, parent=None,):
         """Initializes a new thread that listens for UDP messages"""
         asyncore.dispatcher.__init__(self)
         QtCore.QThread.__init__(self, parent)
         self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.bind(("127.0.0.1", 5005)) #1Put your IP address here. Start the launchscript with parameter send_to_ip:=YOUR_IP.
+        self.bind((ip, int(port))) #1Put your IP address here. Start the launchscript with parameter send_to_ip:=YOUR_IP.
 
 
     def run(self):

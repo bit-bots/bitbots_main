@@ -5,8 +5,6 @@ from bitbots_hardware_rqt.msg import CpuMessage
 import subprocess
 import yaml
 
-DELAY_TOKEN = "SEND_DELAY"
-
 send_delay = 2
 
 def cpu_info_publisher():
@@ -33,19 +31,8 @@ def cpu_info_publisher():
         cpu_pub.publish(msg)
         rate.sleep()
 
-def readIpConfig():
-    rp = rospkg.RosPack()
-    ip_filename = os.path.join(rp.get_path('bitbots_hardware_rqt'), 'resource', 'ip_config.yaml')
-
-
-    with open(ip_filename, "r") as file:
-        ip_config = yaml.load(file)
-        send_delay = float(ip_config.get(DELAY_TOKEN)) / 1000.0
-        file.close()
-
 if __name__ == '__main__':
      try:
-        readIpConfig()
         cpu_info_publisher()
      except rospy.ROSInterruptException:
          pass

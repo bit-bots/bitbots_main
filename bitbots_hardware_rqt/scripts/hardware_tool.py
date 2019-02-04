@@ -18,13 +18,6 @@ import json
 import yaml
 import socket
 
-SEND_TOKEN = "IP_SEND_TO"
-PORT_TOKEN = "UDP_PORT"
-DELAY_TOKEN = "SEND_DELAY"
-
-udp_ip = ""
-udp_port = 5005
-send_delay = 500
 
 class Hardwaretool():
     """Class that collects information from other nodes and stores them in an Robot class object.
@@ -33,7 +26,6 @@ class Hardwaretool():
     """
     def __init__(self):
         """Initializes the object: Creates a node, subscribers and a robot class Object"""
-        global udp_ip
         self.robot = Robot()
         rospy.init_node("hardwaretool")
         self.diagnostics = rospy.Subscriber("/diagnostics", DiagnosticArray, self.diagnostics_to_object)
@@ -44,41 +36,28 @@ class Hardwaretool():
         self.cpu_info = rospy.Subscriber("/cpu_info", CpuMessage, self.cpu_info_to_object) 
         self.bat_info = rospy.Subscriber("/battery_info", BatteryMessage, self.battery_info_to_object)
         
-        self.readIpConfig()
+        self.udp_ip = rospy.get_param("/hardware_tool/ip")
+        self.udp_port = rospy.get_param("/hardware_tool/port")
+        self.send_delay = 0.5
 
-        udp_ip = rospy.get_param("/hardware_tool/send_to_ip")
+        print("Ip: "+self.udp_ip+", Port: "+str(self.udp_port)+", Delay: "+str(self.send_delay))
 
-        p = mp.Process(target=self.worker_thread())
+        p = mp.Process(target=self.worker_thread(self.udp_ip, self.udp_port))
         p.daemon = True
         p.start()
 
 
         rospy.spin()
 
-    def readIpConfig(self):
-        """Reads the ip_config.yaml and sets the parameters according to it"""
-        rp = rospkg.RosPack()
-        ip_filename = os.path.join(rp.get_path('bitbots_hardware_rqt'), 'resource', 'ip_config.yaml')
 
-        with open(ip_filename, "r") as file:
-            global udp_ip, udp_port, send_delay
-            ip_config = yaml.load(file)
-
-            udp_port = int(ip_config.get(PORT_TOKEN))
-            send_delay = float(ip_config.get(DELAY_TOKEN)) / 1000.0
-
-            print(udp_ip, udp_port, send_delay)
-
-        file.close()
-
-    def worker_thread(self):
+    def worker_thread(self, udp_ip,udp_port):
         """Second thread to send messages continuously without blocking everything."""
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         while not rospy.is_shutdown():
             self.robot.timestamp = str(rospy.get_rostime().secs) + '.' + str(rospy.get_rostime().nsecs)
             sock.sendto(json.dumps(self.robot.__dict__), (udp_ip, udp_port))
 
-            time.sleep(send_delay)
+            time.sleep(self.send_delay)
 
     def diagnostics_to_object(self, diagnostics):
         """Collects basic information about the motors and stores them in self.robot

@@ -1,5 +1,6 @@
 <launch>
-	<arg name="send_to_ip" default="127.0.0.1"/>
+	<arg name="ip" default="127.0.0.1"/>
+	<arg name="port" default="5005"/>
 	<node pkg="bitbots_hardware_rqt" type="cpu_info_publisher.py" name="cpu_info" output="screen">
 		<param name="cpu_name" value="cpu_name"/>
 	</node>
@@ -8,6 +9,7 @@
 	</node>
 	<!-- <node pkg="bitbots_hardware_rqt" type="battery_info_publisher.py" name="battery_info" output="screen"/> -->
 	<node pkg="bitbots_hardware_rqt" type="hardware_tool.py" name="hardware_tool" output="screen">
-		<param name="send_to_ip" value="$(arg send_to_ip)"/>
+		<param name="ip" value="$(arg ip)"/>
+		<param name="port" value="$(arg port)"/>
 	</node>
 </launch>
