@@ -1,6 +1,6 @@
 <launch>
 	<arg name="ip" default="127.0.0.1"/>
-	<arg name="port" default="5005"/>
+	<arg name="port" default="5006"/>
 	<node pkg="bitbots_live_tool_rqt" type="live_tool_udp.py" name="live_tool" output="screen">
 		<param name="ip" value="$(arg ip)"/>
 		<param name="port" value="$(arg port)"/>

@@ -1,0 +1,42 @@
+positions:
+- {index: 0, x: 3.09, y: 1.17, ang: 1.57, action: normal}
+- {index: 0, x: 3.09, y: 1.26, ang: 1.57, action: normal}
+- {index: 0, x: 3.09, y: 1.35, ang: 1.64, action: normal}
+- {index: 0, x: 3.08, y: 1.5, ang: 1.93, action: normal}
+- {index: 0, x: 2.99, y: 1.73, ang: 2.82, action: normal}
+- {index: 0, x: 2.87, y: 1.77, ang: 2.77, action: normal}
+- {index: 0, x: 2.6, y: 1.88, ang: 3.14, action: normal}
+- {index: 0, x: 2.33, y: 1.88, ang: -3.08, action: normal}
+- {index: 0, x: 1.82, y: 1.85, ang: -2.9, action: normal}
+- {index: 0, x: 1.46, y: 1.76, ang: -2.49, action: normal}
+- {index: 0, x: 1.13, y: 1.5, ang: -1.92, action: normal}
+- {index: 0, x: 0.99, y: 1.13, ang: -1.57, action: normal}
+- {index: 0, x: 0.99, y: 0.86, ang: -1.57, action: normal}
+- {index: 0, x: 0.99, y: 0.58, ang: -1.57, action: normal}
+- {index: 0, x: 0.99, y: -0, ang: -1.57, action: normal}
+- {index: 0, x: 0.99, y: -0.25, ang: -1.57, action: normal}
+- {index: 0, x: 0.99, y: -0.41, ang: -1.57, action: normal}
+- {index: 0, x: 0.99, y: -0.54, ang: -1.57, action: normal}
+- {index: 0, x: 0.99, y: -0.66, ang: -1.53, action: normal}
+- {index: 0, x: 1, y: -0.9, ang: -1.57, action: normal}
+- {index: 0, x: 1, y: -1.32, ang: -1.23, action: normal}
+- {index: 0, x: 1.09, y: -1.56, ang: -1.26, action: normal}
+- {index: 0, x: 1.18, y: -1.84, ang: -0.46, action: normal}
+- {index: 0, x: 1.39, y: -1.95, ang: -0.56, action: normal}
+- {index: 0, x: 1.69, y: -2.13, ang: 0, action: normal}
+- {index: 0, x: 2.11, y: -2.13, ang: 0, action: normal}
+- {index: 0, x: 2.42, y: -2.13, ang: 0.2, action: normal}
+- {index: 0, x: 2.71, y: -2.07, ang: 0.7, action: normal}
+- {index: 0, x: 2.89, y: -1.92, ang: 1.42, action: normal}
+- {index: 0, x: 2.96, y: -1.48, ang: 1.05, action: normal}
+- {index: 0, x: 3.07, y: -1.29, ang: 1.55, action: normal}
+- {index: 0, x: 3.08, y: -0.84, ang: 1.45, action: normal}
+- {index: 0, x: 3.15, y: -0.28, ang: 1.57, action: normal}
+- {index: 0, x: 3.15, y: -0.02, ang: 1.57, action: normal}
+- {index: 0, x: 3.15, y: 0.33, ang: 1.57, action: normal}
+- {index: 0, x: 3.15, y: 0.5, ang: 1.57, action: normal}
+- {index: 0, x: 3.15, y: 0.84, ang: 1.57, action: normal}
+- {index: 0, x: 3.15, y: 0.98, ang: 1.69, action: normal}
+- {index: 0, x: 3.13, y: 1.14, ang: 1.69, action: normal}
+
+

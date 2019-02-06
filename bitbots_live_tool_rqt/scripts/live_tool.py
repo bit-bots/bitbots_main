@@ -59,12 +59,8 @@ class UdpWorker(QThread):
 
 
 class LiveTool(Plugin):
-    RECEIVE_TOKEN = "IP_RECEIVE_FROM"
-    PORT_TOKEN = "UDP_PORT"
     TIMEOUT_TOKEN = "RECEIVE_TIMEOUT"
 
-    UDP_IP = "" # binds socket to this IP
-    UDP_PORT = 5005
     UDP_TIMEOUT = 1.0
 
     UI_FILE = "livetool.ui"
@@ -76,11 +72,10 @@ class LiveTool(Plugin):
 
     UDP_ID_SPLIT = "::" # Messages arrive in this format: ROBOT_ID::MESSAGE_ID::DATA
 
+
+
     def __init__(self, context):
         super(LiveTool, self).__init__(context)
-
-        # Set configuration from "ip_config.yaml"
-        self.receiveIPconfig()
 
         # Load UI and initialize all Widgets
         self.loadUI()
@@ -88,6 +83,18 @@ class LiveTool(Plugin):
         self._widget.show()
         context.add_widget(self._widget)
 
+        self.udp_ip, button_pressed = QInputDialog.getText(self._widget, "Robot IP Required", \
+            "Please enter the IP adress of the robot. Leave blank for localhost", QLineEdit.Normal, "")
+        if button_pressed:
+            if self.udp_ip == "" or self.udp_ip == "loclahost":
+                self.udp_ip = "127.0.0.1"
+            self.udp_port, button_pressed = QInputDialog.getText(self._widget, "Change Port?", \
+                    "Please select the port you want to listen on. Leave blank for port 5006.", QLineEdit.Normal, "")
+            if button_pressed and self.udp_port == "":
+                self.udp_port = "5006"
+
+        # Set configuration from "ip_config.yaml"
+        self.receiveIPconfig()
 
         # for testing only!!!: This parameter should be set for every Robot individually
         rospy.set_param(Name.param_robot_id, "Robot_2")
@@ -106,7 +113,7 @@ class LiveTool(Plugin):
         self.sock = socket.socket(socket.AF_INET,  # Internet
                                   socket.SOCK_DGRAM)  # UDP
         self.sock.settimeout( LiveTool.UDP_TIMEOUT )
-        self.sock.bind((LiveTool.UDP_IP, LiveTool.UDP_PORT))
+        self.sock.bind((self.udp_ip, int(self.udp_port)))
 
         # Initialize the UDP-Thread
         self.udp_worker = UdpWorker(self.sock)
@@ -124,11 +131,9 @@ class LiveTool(Plugin):
 
         with open(ip_filename, "r") as file:
             ip_config = yaml.load(file)
-            LiveTool.UDP_IP = ip_config.get(LiveTool.RECEIVE_TOKEN)
-            LiveTool.UDP_PORT = int(ip_config.get(LiveTool.PORT_TOKEN))
             LiveTool.TIME_OUT = float(ip_config.get(LiveTool.TIMEOUT_TOKEN))
         file.close()
-        print ("Receive from: " + str(LiveTool.UDP_IP))
+        print ("Receive from: " + str(self.udp_ip))
         print ("Receive Timeout: " + str(LiveTool.UDP_TIMEOUT))
 
 

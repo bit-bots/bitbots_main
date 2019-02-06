@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>Form</class>
  <widget class="QWidget" name="Form">
@@ -307,7 +307,7 @@ border-radius: 10px;
        </rect>
       </property>
       <property name="text">
-       <string>Kick Ball.</string>
+       <string>No data.</string>
       </property>
      </widget>
      <widget class="QFrame" name="frame_3">
@@ -353,7 +353,7 @@ border-radius: 10px;
         </font>
        </property>
        <property name="text">
-        <string>Defender</string>
+        <string>No data.</string>
        </property>
        <property name="wordWrap">
         <bool>false</bool>
@@ -389,7 +389,7 @@ border-radius: 10px;
         </font>
        </property>
        <property name="text">
-        <string>Fit and healthy.</string>
+        <string>No data.</string>
        </property>
        <property name="wordWrap">
         <bool>false</bool>
@@ -468,7 +468,7 @@ border-radius: 10px;
         <enum>QFrame::NoFrame</enum>
        </property>
        <property name="text">
-        <string>10</string>
+        <string>00:00</string>
        </property>
        <property name="wordWrap">
         <bool>false</bool>
@@ -734,7 +734,7 @@ border-radius: 10px;
        </rect>
       </property>
       <property name="text">
-       <string>Kick Ball.</string>
+       <string>No data.</string>
       </property>
      </widget>
      <widget class="QFrame" name="frame_4">
@@ -780,7 +780,7 @@ border-radius: 10px;
         </font>
        </property>
        <property name="text">
-        <string>Defender</string>
+        <string>No data.</string>
        </property>
        <property name="wordWrap">
         <bool>false</bool>
@@ -816,7 +816,7 @@ border-radius: 10px;
         </font>
        </property>
        <property name="text">
-        <string>Fit and healthy.</string>
+        <string>No data.</string>
        </property>
        <property name="wordWrap">
         <bool>false</bool>
@@ -895,7 +895,7 @@ border-radius: 10px;
         <enum>QFrame::NoFrame</enum>
        </property>
        <property name="text">
-        <string>10</string>
+        <string>00:00</string>
        </property>
        <property name="wordWrap">
         <bool>false</bool>
@@ -1135,7 +1135,7 @@ border-radius: 10px;
        </rect>
       </property>
       <property name="text">
-       <string>Kick Ball.</string>
+       <string>No data.</string>
       </property>
      </widget>
      <widget class="QFrame" name="frame_2">
@@ -1181,7 +1181,7 @@ border-radius: 10px;
         </font>
        </property>
        <property name="text">
-        <string>Defender</string>
+        <string>No data.</string>
        </property>
        <property name="wordWrap">
         <bool>false</bool>
@@ -1217,7 +1217,7 @@ border-radius: 10px;
         </font>
        </property>
        <property name="text">
-        <string>Fit and healthy.</string>
+        <string>No data.</string>
        </property>
        <property name="wordWrap">
         <bool>false</bool>
@@ -1296,7 +1296,7 @@ border-radius: 10px;
         <enum>QFrame::NoFrame</enum>
        </property>
        <property name="text">
-        <string>10</string>
+        <string>00:00</string>
        </property>
        <property name="wordWrap">
         <bool>false</bool>
@@ -1536,7 +1536,7 @@ border-radius: 10px;
        </rect>
       </property>
       <property name="text">
-       <string>Kick Ball.</string>
+       <string>No data.</string>
       </property>
      </widget>
      <widget class="QFrame" name="frame_5">
@@ -1582,7 +1582,7 @@ border-radius: 10px;
         </font>
        </property>
        <property name="text">
-        <string>Defender</string>
+        <string>No data.</string>
        </property>
        <property name="wordWrap">
         <bool>false</bool>
@@ -1618,7 +1618,7 @@ border-radius: 10px;
         </font>
        </property>
        <property name="text">
-        <string>Fit and healthy.</string>
+        <string>No data.</string>
        </property>
        <property name="wordWrap">
         <bool>false</bool>
@@ -1697,7 +1697,7 @@ border-radius: 10px;
         <enum>QFrame::NoFrame</enum>
        </property>
        <property name="text">
-        <string>10</string>
+        <string>00:00</string>
        </property>
        <property name="wordWrap">
         <bool>false</bool>
@@ -1994,7 +1994,7 @@ background: lightblue;
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tab1">
       <attribute name="title">
@@ -2037,7 +2037,7 @@ background: lightblue;
         </font>
        </property>
        <property name="text">
-        <string>10:33</string>
+        <string>00:00</string>
        </property>
       </widget>
       <widget class="QLabel" name="hardwarestatus1">
@@ -2057,7 +2057,7 @@ background: lightblue;
         </font>
        </property>
        <property name="text">
-        <string>Fit and healthy.</string>
+        <string>No data.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -2083,7 +2083,7 @@ background: lightblue;
         </font>
        </property>
        <property name="text">
-        <string>Nothing</string>
+        <string>No data.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -2307,7 +2307,7 @@ background: lightblue;
         </font>
        </property>
        <property name="text">
-        <string>10:33</string>
+        <string>00:00</string>
        </property>
       </widget>
       <widget class="QLabel" name="hardwarestatus2">
@@ -2326,7 +2326,7 @@ background: lightblue;
         </font>
        </property>
        <property name="text">
-        <string>Fit and healthy.</string>
+        <string>No data.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -2351,7 +2351,7 @@ background: lightblue;
         </font>
        </property>
        <property name="text">
-        <string>Nothing.</string>
+        <string>No data.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -2584,7 +2584,7 @@ background: lightblue;
         </font>
        </property>
        <property name="text">
-        <string>10:33</string>
+        <string>00:00</string>
        </property>
       </widget>
       <widget class="QLabel" name="hardwarestatus3">
@@ -2603,7 +2603,7 @@ background: lightblue;
         </font>
        </property>
        <property name="text">
-        <string>Fit and healthy.</string>
+        <string>No data.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -2629,7 +2629,7 @@ background: lightblue;
         </font>
        </property>
        <property name="text">
-        <string>Nothing.</string>
+        <string>No data.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -2853,7 +2853,7 @@ background: lightblue;
         </font>
        </property>
        <property name="text">
-        <string>10:33</string>
+        <string>00:00</string>
        </property>
       </widget>
       <widget class="QLabel" name="hardwarestatus4">
@@ -2872,7 +2872,7 @@ background: lightblue;
         </font>
        </property>
        <property name="text">
-        <string>Fit and healthy.</string>
+        <string>No data.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -2897,7 +2897,7 @@ background: lightblue;
         </font>
        </property>
        <property name="text">
-        <string>Nothing.</string>
+        <string>No data.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
