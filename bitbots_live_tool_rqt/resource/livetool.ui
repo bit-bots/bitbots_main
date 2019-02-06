@@ -3323,6 +3323,19 @@ background: lightblue;
      <string>Change Side</string>
     </property>
    </widget>
+   <widget class="QLabel" name="label_13">
+    <property name="geometry">
+     <rect>
+      <x>970</x>
+      <y>10</y>
+      <width>191</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>IP: none</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

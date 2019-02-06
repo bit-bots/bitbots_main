@@ -35,6 +35,10 @@ class LiveToolSender():
 
         self.udp_ip = rospy.get_param("/live_tool/ip")
         self.udp_port = rospy.get_param("/live_tool/port")
+
+        print("My Ip is: " + [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0] + "\n")
+
+
         self.listener()
 
     # Callbacks
@@ -118,8 +122,8 @@ class LiveToolSender():
             ip_config = yaml.load(file)
 
             self.send_delay = float(ip_config.get(DELAY_TOKEN)) / 1000.0
-
-            print(self.udp_ip, self.udp_port, self.send_delay)
+            
+            print("I am sending to: \nIp: "+self.udp_ip+", Port: "+str(self.udp_port)+", Delay: "+str(self.send_delay))
 
         file.close()
 
