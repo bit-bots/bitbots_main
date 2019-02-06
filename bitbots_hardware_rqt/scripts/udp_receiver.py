@@ -94,6 +94,8 @@ class HardwareUI(Plugin, asyncore.dispatcher):
         self._widget.checkBox_5.stateChanged.connect(self.write_log_trigger)
         self.make_Graphs()
 
+        self._widget.label_14.setText("IP: "+ [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0])
+
 
 
         context.add_widget(self._widget)

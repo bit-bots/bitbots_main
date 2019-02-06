@@ -51,7 +51,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>bitbots_logo.png</pixmap>
+        <pixmap>../../../RobocupPraktikum/hardware_info/resource/bitbots_logo.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>false</bool>
@@ -62,11 +62,22 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_13">
-       <property name="text">
-        <string>Timestamp Error</string>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QLabel" name="label_13">
+         <property name="text">
+          <string>Timestamp Error</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_14">
+         <property name="text">
+          <string>IP: none</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <layout class="QGridLayout" name="gridLayout_2">
@@ -175,7 +186,7 @@
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Motor&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Motor">
      <attribute name="title">
@@ -1402,7 +1413,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap>Arrows1.png</pixmap>
+          <pixmap>../../../RobocupPraktikum/hardware_info/resource/Arrows1.png</pixmap>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -1471,7 +1482,7 @@
               <string/>
              </property>
              <property name="pixmap">
-              <pixmap>Circle.png</pixmap>
+              <pixmap>../../../RobocupPraktikum/hardware_info/resource/Circle.png</pixmap>
              </property>
              <property name="scaledContents">
               <bool>false</bool>
