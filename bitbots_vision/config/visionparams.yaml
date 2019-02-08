@@ -9,7 +9,6 @@ ball_fcnn_max_ball_diameter: 200
 ball_fcnn_publish_output: false
 ball_fcnn_publish_horizon_offset: 5
 
-dynamic_colorspace: true
 field_color_detector_path: '/config/color_spaces/f031.yaml'
 field_color_detector_use_hsv_green: false
 field_color_detector_hsv_lower_values_h: 46
@@ -82,3 +81,5 @@ ball_finder_min_size: 10
 classifier_model_path: '/models/classifier_01'
 
 cascade_classifier_path: '/classifier/cascadeNew.xml'
+
+vision_dynamic_colorspace: true

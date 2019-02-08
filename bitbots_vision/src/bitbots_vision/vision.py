@@ -5,6 +5,7 @@ from bitbots_vision.vision_modules import lines, horizon, color, debug, live_cla
     lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest
 from sensor_msgs.msg import Image
+from std_srvs.srv import Trigger
 from cv_bridge import CvBridge
 import rospy
 import rospkg
@@ -30,6 +31,10 @@ class Vision:
         self.debug_image_dings = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_dings:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
+
+        # force dynamic-colorspace node to update vision-config
+        rospy.ServiceProxy('dynamic_colorspace_update_vision_params', Trigger)
+
         # register config callback and set config
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
 
@@ -380,6 +385,8 @@ class Vision:
             Image,
             queue_size=1,
         )
+
+        rospy.ServiceProxy('dynamic_colorspace_update_vision_params', Trigger)
 
         self.config = config
 

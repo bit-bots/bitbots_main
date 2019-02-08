@@ -11,8 +11,9 @@ from bitbots_vision.vision_modules import horizon, color
 from collections import deque
 from sensor_msgs.msg import Image
 from dynamic_reconfigure.server import Server
-from dynamic_colorspace.cfg import dynamic_colorspaceConfig
+from bitbots_vision.cfg import dynamic_colorspaceConfig
 from bitbots_msgs.msg import Colorspace
+from std_srvs.srv import Trigger
 
 
 class DynamicColorspace:
@@ -23,32 +24,39 @@ class DynamicColorspace:
         rospy.init_node('bitbots_dynamic_colorspace')
         rospy.loginfo('Initializing dynmaic colorspace...')
 
-        self._config = {}
-
-        Server(dynamic_colorspaceConfig, self._dynamic_reconfigure_callback)
-        
         self._bridge = CvBridge()
 
         self._debug_printer = None
 
-        # TODO dyn reconf
-        self._queue_max_size = 10
-        self._threshold = 0.6
-        self._kernel_size = 3
+        # Load config
+        self._config = {}
+        self._config = rospy.get_param('/bitbots_dynamic_colorspace')
+        
+        # TODO Debug-image on/off
+
+        self._queue_max_size = self._config['queue_max_size']
+
+        self.pointfinder_threshold = self._config['threshold']
+        self.pointfinder_kernel_size = self._config['kernel_size']
+
+        # Load vision-config
+        self._vision_config = {}
+        self._vision_config = rospy.get_param('/bitbots_vision')
+        #print(self._vision_config)
 
         self._color_detector = color.PixelListColorDetector(
             self._debug_printer,
             self._package_path +
-            self._config['field_color_detector_path'])
+            self._vision_config['field_color_detector_path'])
 
         self._horizon_detector = horizon.HorizonDetector(
             self._color_detector,
-            self._config,
+            self._vision_config,
             self._debug_printer)
 
         self._color_value_queue = deque(maxlen=self._queue_max_size)
 
-        self._pointfinder = Pointfinder(self._debug_printer, self._threshold, self._kernel_size)
+        self._pointfinder = Pointfinder(self._debug_printer, self.pointfinder_threshold, self.pointfinder_kernel_size)
         self._heuristic = Heuristic(self._debug_printer)
 
         self._image_sub = rospy.Subscriber('image_raw',
@@ -61,6 +69,12 @@ class DynamicColorspace:
         self._colorspace_publisher = rospy.Publisher('colorspace',
                                                     Colorspace,
                                                     queue_size=1)
+
+        self._service = rospy.Service('dynamic_colorspace_update_vision_params', Trigger, self._update_vision_config)
+
+        # register config callback and set config
+        Server(dynamic_colorspaceConfig, self._dynamic_reconfigure_callback)
+
         rospy.spin()
 
     def calc_dynamic_colorspace(self, image):
@@ -126,6 +140,21 @@ class DynamicColorspace:
         # Publishes the colorspace
         self.publish(img)
 
+    def _update_vision_config(self, dump):
+        # Trigger service
+        # TODO Doku
+        self._vision_config = rospy.get_param('/bitbots_vision')
+
+        self._color_detector = color.PixelListColorDetector(
+            self._debug_printer,
+            self._package_path +
+            self._vision_config['field_color_detector_path'])
+
+        self._horizon_detector = horizon.HorizonDetector(
+            self._color_detector,
+            self._vision_config,
+            self._debug_printer)
+
     def _dynamic_reconfigure_callback(self, config, level):
         self._config = config
 
@@ -162,7 +191,7 @@ class Pointfinder():
         """
         self._threshold = threshold
         self._kernel = np.ones((kernel_size, kernel_size))
-        self._kernel[int(np.size(self._kernel, 0) / 2), int(np.size(self._kernel, 1) / 2)] = -kernel.size
+        self._kernel[int(np.size(self._kernel, 0) / 2), int(np.size(self._kernel, 1) / 2)] = -self._kernel.size
 
     def find_colorpixel_candidates(self, masked_image):
         # type () -> np.array
