@@ -13,6 +13,7 @@ add_message_files(
    FILES
    BatteryMessage.msg
    CpuMessage.msg
+   HardwareMessage.msg
 )
 
 generate_messages(

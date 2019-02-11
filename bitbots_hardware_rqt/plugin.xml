@@ -1,5 +1,5 @@
 <library path="scripts">
-  <class name="HardwareUI" type="udp_receiver.HardwareUI" base_class_type="rqt_gui_py::Plugin">
+  <class name="HardwareUI" type="hardware_rqt_ui.HardwareUI" base_class_type="rqt_gui_py::Plugin">
     <description>
       TODO
     </description>
