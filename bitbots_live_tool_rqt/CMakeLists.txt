@@ -8,6 +8,16 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+add_message_files(
+  FILES
+  LiveMessage.msg
+)
+
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 catkin_package(CATKIN_DEPENDS message_runtime)
 
