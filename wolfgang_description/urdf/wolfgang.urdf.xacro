@@ -718,7 +718,7 @@
     <joint name="torso_to_camera_fixed" type="fixed">
         <parent link="torso" />
         <child link="camera_fixed" />
-        <origin rpy="0.0 0 0" xyz="0.057 0 0.278" />
+        <origin rpy="0.0 0 0" xyz="0.039 0 0.278" />
     </joint>
 
     <joint name="RShoulderPitch" type="revolute">
