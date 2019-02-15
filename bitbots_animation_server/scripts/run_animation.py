@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 import actionlib
+from actionlib_msgs.msg import GoalStatus
 import rospy
 import sys
 
 import humanoid_league_msgs.msg
-import time
 
 
 def anim_run(anim=None):
@@ -27,8 +27,30 @@ def anim_run(anim=None):
     goal = humanoid_league_msgs.msg.PlayAnimationGoal()
     goal.animation = anim
     goal.hcm = False
-    print(anim_client.send_goal_and_wait(goal))
-    rospy.sleep(0.5)
+    state = anim_client.send_goal_and_wait(goal)
+    if state == GoalStatus.PENDING:
+        print('Pending')
+    elif state == GoalStatus.ACTIVE:
+        print('Active')
+    elif state == GoalStatus.PREEMPTED:
+        print('Preempted')
+    elif state == GoalStatus.SUCCEEDED:
+        print('Succeeded')
+    elif state == GoalStatus.ABORTED:
+        print('Aborted')
+    elif state == GoalStatus.REJECTED:
+        print('Rejected')
+    elif state == GoalStatus.PREEMPTING:
+        print('Preempting')
+    elif state == GoalStatus.RECALLING:
+        print('Recalling')
+    elif state == GoalStatus.RECALLED:
+        print('Recalled')
+    elif state == GoalStatus.LOST:
+        print('Lost')
+    else:
+        print('Unknown state', state)
+
 
 if __name__ == '__main__':
     # run with "rosrun bitbots_animation_server run_animation.py NAME"
