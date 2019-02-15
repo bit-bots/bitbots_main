@@ -550,7 +550,6 @@
     </link>
     <link name="camera" />
     <link name="camera_optical_frame"/>
-    <link name="camera_fixed"/>
 
     <link name="imu_frame" />
 
@@ -739,11 +738,6 @@
         <parent link="torso" />
         <child link="imu_frame" />
         <origin rpy="0.0 0 0" xyz="-0.045 0.025 0.023" />
-    </joint>
-    <joint name="torso_to_camera_fixed" type="fixed">
-        <parent link="torso" />
-        <child link="camera_fixed" />
-        <origin rpy="0.0 0 0" xyz="0.039 0 0.278" />
     </joint>
 
     <joint name="RShoulderPitch" type="revolute">

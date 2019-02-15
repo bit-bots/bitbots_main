@@ -67,10 +67,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        camera_fixed:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         camera_optical_frame:
           Alpha: 1
           Show Axes: false
@@ -225,8 +221,6 @@ Visualization Manager:
           Value: true
         camera:
           Value: true
-        camera_fixed:
-          Value: true
         camera_optical_frame:
           Value: true
         head:
@@ -313,8 +307,6 @@ Visualization Manager:
                         r_toe:
                           {}
           torso:
-            camera_fixed:
-              {}
             imu_frame:
               {}
             l_shoulder:
