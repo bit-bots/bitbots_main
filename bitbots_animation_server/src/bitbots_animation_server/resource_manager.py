@@ -3,24 +3,20 @@
 ResourceManager
 ^^^^^^^^^^^^^^^
 
-Das Modul RecourceManager Stellt Funktionen zum suchen von Dateien im
-Darwin Projekt bereit. Damit ist es möglich ohne kentniss des aktuellen
-ortners wo man selbst ausgeführt wird Recourcen zu finden.
+The ResourceManager module provides functions for file searching in a
+Darwin Project. Thus, it is possible to find resources without knowing
+the currend location in the file system.
 
-dieses Modul Stellt die Globalen Methoden :func:`find_recource`
-, :func:`find_anim` und :func:`find` bereit welche eine globale Instanz
-vom :class:`ResourceManager` benutzen. Das Sorgt dafür das eine einmal
-gefundene Datei nicht wieder gesucht werden muss.
-
+This module provides the global methods :func:`find_resource`,
+:func:`find_anim` and :func:`find` which use a single global instance
+of the :class:`ResourceManager`. Thereby, files that have once been
+discovered do not have to be searched again.
 """
-
-#todo translate old german comments to english
 
 import os.path
 from os.path import abspath, dirname, exists, join, normpath
 from os import walk
 # get an instance of RosPack with the default search paths
-import rosparam
 import rospkg as rospkg
 import rospy
 
@@ -41,32 +37,29 @@ class ResourceManager(object):
         self.names = []  # Plain animation names, without filename-extension
         self.animpath = self._get_animpath()
 
-    def search(self, path, ort, datei=""):
+    def search(self, path, folders, filename=""):
         """
-        :param path: Pfad in dem gesucht wird
+        :param path: path to search in
         :type path: String
-        :param ort: ordner und oder Dateinamen nach dem gesucht wird
-        :type ort: String or List of Strings
-        :param datei: wird an jedes element von ort angehängt um den ort
-            zu verfolständigen, default =""
-        :type datei: String
+        :param folders: folder or file to search for
+        :type folders: String or List of Strings
+        :param filename: will be appended to each element in `folders` to complete it
+        :type filename: String
         :raises: IOError
-        :return: Absoluter Pfad zur Datei
+        :return: absolute path to the file
         :returntype: String
 
-        Diese Methode durchsucht alle ordner von path abwärts nach / ob
-        ort + datai existiert. Wenn ort eine liste ist wird jedes
-        element von ort einzelnd als ort genommen, also alle einmal
-        durchprobiert, dies lässt sich nutzen um in mehreren Ordnern zu
-        suchen.
+        This method searches in all folders in `path` recursively for the file
+        specified in folders + filename. If folders is a list, every item of the list will
+        be treated as a single folder. This can be used to search in multiple folders.
 
-        Wenn die Datei in keinem der Pfade gefunden wird, wird ein
-        IOError geschmissen.
+        An IOError is raised when the file has not been found.
 
-        Ein kleines Beispiel: Wenn::
-            search("/home/bitbots/test/bla/","res/anim/","data.json")
+        Example:
+        When
+            search("/home/bitbots/test/bla/", "res/anim/", "data.json")
 
-        aufgeruffen wird, so werden die folgenden Pfade getestet::
+        is called, the following paths will be searched:
 
             /home/bitbots/test/bla/res/anim/data.json
             /home/bitbots/test/res/anim/data.json
@@ -74,15 +67,14 @@ class ResourceManager(object):
             /home/res/anim/data.json
             /res/anim/data.json
 
-        Beim ersten erfolg wird der gefundene Pfad zurückgegeben
+        At the first success, the path is returned.
         """
-        if not isinstance(ort, list):
-            ort = [ort]
-        for name in ort:
-            name = name + datei
+        if not isinstance(folders, list):
+            folders = [folders]
+        for name in folders:
+            name = name + filename
             while True:
-                # normpath sthet dort damit die dateipfade auch undert windows
-                # Funktionieren (ersetzt im wesentlichen / durch \)
+                # normpath is used to make this work in windows
                 fname = normpath(join(path, name))
                 if exists(fname):
                     return fname
@@ -92,33 +84,32 @@ class ResourceManager(object):
                     break
 
                 path = next_path
-        if not ort:
-            return IOError("Resource '%s' not found. Ort was empty, \
-                only datei provided" % (datei))
-        return IOError("Resource '%s' not found" % (str(ort) + datei))
+        if not folders:
+            return IOError("Resource '%s' not found. folders was empty, \
+                only filename provided" % (filename))
+        return IOError("Resource '%s' not found" % (str(folders) + filename))
 
-    def find(self, name, datei=""):
+    def find(self, name, filename=""):
         """
-        :param name: Name der zu suchenden Datei oder Ordner
+        :param name: Name of the file or folder to be searched
         :type name: String or List
-        :param datei: Anhängsel an name, default = ""
-        :type datei: String
+        :param filename: Appended to name, default=""
+        :type filename: String
         :raises: IOError
-        :return: Absoluten Pfad zur Datei
+        :return: Absolute path to the file
         :returntype: String
 
-        Sucht die Angeforderte Resource mithilfe von :func:`find` mit
-        ort = name und datei=datei, speichert das ergebnis in einem
-        cache so das bei erneuter anfrage, nicht erst gesucht werden
-        muss.
+        Searches the requested resource using :func:`search` with
+        folders = name and filename = filename, and saves the result to
+        reuse it the next time the same resource is requested.
 
-        Als path wird der Pfad zu dieser Datei benutzt.
+        The BASEPATH to the animation folder will be used as search path.
 
-        Bei nicht finden der Datei wird ein IOError geworfen.
+        An IOError is raised when the file has not been found.
         """
-        cache_name = str(name) + datei
+        cache_name = str(name) + filename
         if cache_name not in self.cache:
-            result = self.search(BASEPATH, name, datei)
+            result = self.search(BASEPATH, name, filename)
             self.cache[cache_name] = result
 
         else:
@@ -143,20 +134,20 @@ class ResourceManager(object):
         return lambda name: self.find(join(path, name))
 
     def find_animation(self, name):
-        """ Findet eine Animation unter <roboter_name>_animations/animations/*.
-            Der Dateiname in *name* ist ohne ``.json`` anzugeben.
-            path = find_animation("walkready")
+        """
+        Find an animation in <robot_name>_animations/animations/*. The filename
+        should be given without ``.json``.
+        path = find_animation('walkready')
         """
         return self.find(self.animpath, "%s.json" % name)
 
     def find_resource(self, name):
-        """ Findet eine Resource relativ zu BASEPATH """
+        """ Finds a resource relative to BASEPATH """
         return self.find(name)
 
     def _get_animpath(self):
         """
-        Sucht unterhalb von animations/ nach ordnern um alle ordner in einer
-        Liste zurückzugeben.
+        Get a list of folders in the animations/ folder.
         """
         anim_dir = self.find_resource("animations/")
         dirs = walk(anim_dir)
@@ -200,10 +191,10 @@ class ResourceManager(object):
         return name in self.names
 
 
-# Globale Instanz des Resourcen-Managers
+# global instance of the resource manager
 __RM = ResourceManager()
 
-# Shortcuts zum Suchen von Animationen und Resourcen
+# Shortcuts to search for animations and resources
 find_animation = __RM.find_animation  # pylint: disable=C0103
 find_resource = __RM.find_resource  # pylint: disable=C0103
 find = __RM.find  # pylint: disable=C0103
