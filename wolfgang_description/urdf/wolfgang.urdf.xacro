@@ -42,12 +42,12 @@
             </geometry>
             <material name="black" /> 
         </visual>
-        <!--<collision>
+        <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/trunk_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/torso_link.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="r_hip_1">
@@ -63,12 +63,12 @@
             </geometry>
             <material name="metal" />    
         </visual>
-        <!--<collision>
+        <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_hip_yaw_link_collision.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/hip_connector.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="r_hip_2">
@@ -84,12 +84,12 @@
             </geometry>
             <material name="black" />
         </visual>
-        <!--<collision>
+        <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_hip_roll_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/hip_link_2.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="r_upper_leg">
@@ -119,12 +119,24 @@
             </geometry>
             <material name="black" />
         </visual>
-        <!--<collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+        <collision>
+            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_thigh_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/upper_leg_carbon.stl" />
             </geometry>
-        </collision>-->
+        </collision>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
+            <geometry>
+                <mesh filename="package://wolfgang_description/mesh/collision/upper_leg_metal.stl" />
+            </geometry>
+        </collision>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
+            <geometry>
+                <mesh filename="package://wolfgang_description/mesh/collision/upper_leg_motor.stl" />
+            </geometry>
+        </collision>
     </link>
 
     <link name="r_lower_leg">
@@ -140,12 +152,12 @@
             </geometry>
             <material name="carbon" />
         </visual>
-        <!--<collision>
+        <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_shank_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/lower_leg.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="r_ankle">
@@ -161,12 +173,12 @@
             </geometry>
             <material name="black" />
         </visual>
-        <!--<collision>
+        <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_ankle_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/ankle.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="r_foot">
@@ -187,7 +199,7 @@
             <collision>
                 <origin xyz="0 0 -0.012" rpy="0 0 0" />
                 <geometry>
-                    <mesh filename="package://wolfgang_description/mesh/right_foot.stl" />
+                    <mesh filename="package://wolfgang_description/mesh/collision/right_foot.stl" />
                 </geometry>
             </collision>
         </xacro:if>
@@ -222,12 +234,12 @@
             </geometry>
             <material name="metal" />    
         </visual>
-        <!--<collision>
+        <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_hip_yaw_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/hip_connector.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="l_hip_2">
@@ -243,12 +255,12 @@
             </geometry>
             <material name="black" />
         </visual>
-        <!--<collision>
-            <origin xyz="0.033 0 0" rpy="0 0 0" />
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_hip_roll_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/hip_link_2.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="l_upper_leg">
@@ -278,12 +290,24 @@
             </geometry>
             <material name="metal" />
         </visual>
-        <!--<collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+        <collision>
+            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_thigh_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/upper_leg_carbon.stl" />
             </geometry>
-        </collision>-->
+        </collision>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
+            <geometry>
+                <mesh filename="package://wolfgang_description/mesh/collision/upper_leg_metal.stl" />
+            </geometry>
+        </collision>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
+            <geometry>
+                <mesh filename="package://wolfgang_description/mesh/collision/upper_leg_motor.stl" />
+            </geometry>
+        </collision>
     </link>
 
     <link name="l_lower_leg">
@@ -299,12 +323,12 @@
             </geometry>
             <material name="carbon" />
         </visual>
-        <!--<collision>
+        <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_shank_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/lower_leg.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="l_ankle">
@@ -320,12 +344,13 @@
             </geometry>
             <material name="black" />
         </visual>
-        <!--<collision>
+        <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_ankle_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/ankle.stl" />
             </geometry>
-        </collision>-->
+            <material name="metal" />
+        </collision>
     </link>
 
     <link name="l_foot">
@@ -346,7 +371,7 @@
             <collision>
                 <origin xyz="0 0 -0.012" rpy="0 0 0" />
                 <geometry>
-                    <mesh filename="package://wolfgang_description/mesh/left_foot.stl" />
+                    <mesh filename="package://wolfgang_description/mesh/collision/left_foot.stl" />
                 </geometry>
             </collision>
         </xacro:if>
@@ -381,12 +406,12 @@
             </geometry>
             <material name="metal" />
         </visual>
-        <!--<collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 ${pi}" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_shoulder_pitch_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/shoulder.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="r_upper_arm">
@@ -402,12 +427,12 @@
             </geometry>
             <material name="black" />
         </visual>
-        <!--<collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+        <collision>
+            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_shoulder_arm_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/upper_arm.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="r_lower_arm">
@@ -423,12 +448,12 @@
             </geometry>
             <material name="black" />
         </visual>
-        <!--<collision>
-            <origin xyz="0 0 0" rpy="0 -1.57 0" />
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/right_lower_arm_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/lower_arm.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="r_wrist"> </link>    
@@ -446,12 +471,12 @@
             </geometry>
             <material name="metal" />
         </visual>
-        <!--<collision>
+        <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_shoulder_pitch_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/shoulder.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="l_upper_arm">
@@ -467,12 +492,12 @@
             </geometry>
             <material name="black" />
         </visual>
-        <!--<collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+        <collision>
+            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_upper_arm_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/upper_arm.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="l_lower_arm">
@@ -488,12 +513,12 @@
             </geometry>
             <material name="black" />
         </visual>
-        <!--<collision>
-            <origin xyz="0 0 0" rpy="0 -1.57 0" />
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/left_lower_arm_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/lower_arm.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
     <link name="l_wrist"> </link>
@@ -516,12 +541,12 @@
             </geometry>
             <material name="black" />
         </visual>
-        <!--<collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 ${pi}" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/neck_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/neck.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
     <link name="camera" />
     <link name="camera_optical_frame"/>
@@ -549,19 +574,19 @@
             </xacro:if>             
             <inertia ixx="0.0014813" ixy="3.1631E-07" ixz="-4.1003E-05" iyy="0.0016361" iyz="6.7483E-07" izz="0.0017353" />
         </inertial>
-        <!--<visual>
+        <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/head.stl" />
             </geometry>
             <material name="black" />
-        </visual>-->
-        <!--<collision>
+        </visual>
+        <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://wolfgang_description/mesh/head_link.dae" />
+                <mesh filename="package://wolfgang_description/mesh/collision/head.stl" />
             </geometry>
-        </collision>-->
+        </collision>
     </link>
 
 
