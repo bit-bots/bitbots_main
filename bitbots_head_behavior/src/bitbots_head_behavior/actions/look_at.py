@@ -13,7 +13,7 @@ class AbstractLookAt(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(AbstractLookAt, self).__init__(blackboard, dsd, parameters)
 
-        self.head_tf_frame = self.blackboard.config['head_transform_frame']
+        self.head_tf_frame = 'base_link'  # base_link is required by bio_ik
         self.tf_buffer = tf2.Buffer(rospy.Duration(5))
         # tf_listener is necessary, even though unused!
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
@@ -26,7 +26,7 @@ class AbstractLookAt(AbstractActionElement):
         self.request.attempts = 1
         self.request.approximate = True
         self.request.look_at_goals.append(LookAtGoal())
-        self.request.look_at_goals[0].link_name = "head"
+        self.request.look_at_goals[0].link_name = "camera"
         self.request.look_at_goals[0].weight = 1
         self.request.look_at_goals[0].axis.x = 1
 
@@ -62,17 +62,7 @@ class AbstractLookAt(AbstractActionElement):
             return
 
         head_pan, head_tilt = self.get_motor_goals_from_point(point.point)
-        head_pan, head_tilt = self._fix_pan_tilt_values(head_pan, head_tilt)
         self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt)
-
-    def _fix_pan_tilt_values(self, pan, tilt):
-        """
-        Unfortunately, the bio_ik_service makes the robot look at a wrong point. As research via the
-        test_look_at.py script suggests, this deviation is approximately a factor of 1.4 for both pan and
-        tilt values. This is not good, but I do not know the reason. Therefore, this has to be kept to look
-        at the correct position.
-        """
-        return pan / 1.4, tilt / 1.4
 
 
 class LookDirection(AbstractLookAt):

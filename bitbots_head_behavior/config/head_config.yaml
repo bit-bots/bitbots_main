@@ -3,9 +3,6 @@ behavior:
     # Name of the head_behaviors ros-node
     rosnode: head_behavior
 
-    # Name of the head transform for tf2-point-transformation
-    head_transform_frame: camera_fixed
-
     # Sane default values for some modules
     defaults:
       head_mode: 0    # Ball mode

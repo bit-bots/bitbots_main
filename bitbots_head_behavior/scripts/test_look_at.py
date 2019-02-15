@@ -11,7 +11,7 @@ from tf2_geometry_msgs import PointStamped
 
 if __name__ == "__main__":
     rospy.init_node('test_look_at')
-    head_tf_frame = "camera_fixed"
+    head_tf_frame = "base_link"
     tf_buffer = tf2.Buffer(rospy.Duration(5))
     tf_listener = tf2.TransformListener(tf_buffer)
 
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     request.attempts = 1
     request.approximate = True
     request.look_at_goals.append(LookAtGoal())
-    request.look_at_goals[0].link_name = "head"
+    request.look_at_goals[0].link_name = "camera"
     request.look_at_goals[0].weight = 1
     request.look_at_goals[0].axis.x = 1
 
@@ -38,8 +38,8 @@ if __name__ == "__main__":
     publish_motor_goals = rospy.Publisher('/head_motor_goals', JointCommand, queue_size=10)
 
     while not rospy.is_shutdown():
-        x = float(input('x: ')) * 1.4  # Magic, see _fix_pan_tilt_values in actions/look_at.py
-        y = float(input('y: ')) * 1.4
+        x = float(input('x: '))
+        y = float(input('y: '))
         point = PointStamped()
         point.header.stamp = rospy.Time.now()
         point.header.frame_id = 'base_footprint'
@@ -56,8 +56,8 @@ if __name__ == "__main__":
         head_pan = states.position[states.name.index('HeadPan')]
         head_tilt = states.position[states.name.index('HeadTilt')]
 
-        print("Motor positions {}, {}".format(pan_position, tilt_position))
-        pos_msg.positions = [pan_position, tilt_position]
+        print("Motor positions {}, {}".format(head_pan, head_tilt))
+        pos_msg.positions = [head_pan, head_tilt]
         pos_msg.header.stamp = rospy.Time.now()
         publish_motor_goals.publish(pos_msg)
 
