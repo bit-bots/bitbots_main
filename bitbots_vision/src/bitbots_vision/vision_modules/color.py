@@ -174,44 +174,49 @@ class HsvSpaceColorDetector(ColorDetector):
 
 
 class PixelListColorDetector(ColorDetector):
-    def __init__(self, debug_printer, color_path):
-        # type:(DebugPrinter, str) -> None
+    def __init__(self, debug_printer, package_path, config, name="################# DEBUG ################"):
+        # type:(DebugPrinter, str, bool) -> None
         """
-        PixelListColorDetector is a ColorDetector, that is based on a colorspace.
-        The colorspace is initially loaded from color_path and optionally adjustable to changing color-conditions.
-        The colorspace is represented by boolean-values for RGB-color-values.
+        PixelListColorDetector is a ColorDetector, that is based on a color-space.
+        The color-space is initially loaded from color-space-file at color_path (in config)
+        and optionally adjustable to changing color-conditions (dynamic-color-space).
+        The color-space is represented by boolean-values for RGB-color-values.
 
         :param DebugPrinter debug_printer: debug-printer
-        :param str color_path: path to file containing the accepted colors
+        :param str package_path: path of package
+        :param dict config: vision-config
         :return: None
         """
         ColorDetector.__init__(self, debug_printer)
-        self.color_space = self.init_color_space(color_path)
-        self.base_color_space = np.copy(self.color_space)
+
+        self.vision_config = config
+
+        # concatenate color-path to file containing the accepted colors of base-color-space
+        self.color_path = package_path + self.vision_config['field_color_detector_path']
+        self.base_color_space = self.init_color_space(self.color_path)
+        self.color_space = np.copy(self.base_color_space)
         self.bridge = CvBridge()
+
+        # toggle publishing of mask_img msg
+        self.publish_mask_img_msg = self.vision_config['vision_mask_img_msg']
+        
+        # toggle publishing of mask_img_dyn msg with dynamic color-space
+        self.publish_mask_img_dyn_msg = self.vision_config['vision_dynamic_colorspace_mask_img_dyn_msg']
+
+        # toggle use of dynamic-colorspace
+        self.toggle_dynamic_color_space = self.vision_config['vision_dynamic_colorspace']
+
         self.colorspace_sub = rospy.Subscriber('colorspace',
                                                 Colorspace,
                                                 self._colorspace_callback,
                                                 queue_size=1,
                                                 buff_size=2**20)
-        # TODO remove or switch to debug pinter
-        self.imagepublisher_dyn = rospy.Publisher("/mask_image_dyn", Image, queue_size=1)
-        self.imagepublisher = rospy.Publisher("/mask_image", Image, queue_size=1)
-
-    def _colorspace_callback(self, msg):
-        self.decode_colorspace(msg)
-
-    def decode_colorspace(self, msg):
-        # Imports new colorspace from a ros msg. This is used to communicate with the Dynamic Colorspace Node.
-        # Use the base colorspace as basis
-        color_space_temp = np.copy(self.base_color_space)
-        # Adds new colors to that colorspace
-        color_space_temp[msg.blue,
-                         msg.green,
-                         msg.red] = 1
-        # Switches the reference to the new colorspace
-        self.color_space = color_space_temp
     
+        self.imagepublisher = rospy.Publisher("/mask_image", Image, queue_size=1)
+        self.imagepublisher_dyn = rospy.Publisher("/mask_image_dyn", Image, queue_size=1)
+
+        print(name)
+
     def init_color_space(self, color_path):
         # type: (str) -> None
         """
@@ -268,10 +273,37 @@ class PixelListColorDetector(ColorDetector):
         :param np.array image: image to mask
         :return np.array: masked image
         """
-        # TODO: remove or Debug
-        mask = VisionExtensions.maskImg(image, self.color_space)
-        mask_static = VisionExtensions.maskImg(image, self.base_color_space)
-        self.imagepublisher_dyn.publish(self.bridge.cv2_to_imgmsg(mask, '8UC1'))
-        self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask_static, '8UC1'))
+        if (not self.toggle_dynamic_color_space) or self.publish_mask_img_msg:
+            static_mask = VisionExtensions.maskImg(image, self.base_color_space)
 
-        return mask
+        if self.toggle_dynamic_color_space:
+            dyn_mask = VisionExtensions.maskImg(image, self.color_space)
+
+            # toggle publishing of mask_img_dyn msg
+            if self.publish_mask_img_dyn_msg:
+                self.imagepublisher_dyn.publish(self.bridge.cv2_to_imgmsg(dyn_mask, '8UC1'))
+  
+        # toggle publishing of mask_img msg          
+        if self.publish_mask_img_msg:
+            self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(static_mask, '8UC1'))
+
+        if self.toggle_dynamic_color_space:
+            return dyn_mask
+        else:
+            return static_mask
+
+    def _colorspace_callback(self, msg):
+        # TODO docu
+        self.decode_colorspace(msg)
+
+    def decode_colorspace(self, msg):
+        # TODO docu
+        # Imports new colorspace from a ros msg. This is used to communicate with the Dynamic Colorspace Node.
+        # Use the base colorspace as basis
+        color_space_temp = np.copy(self.base_color_space)
+        # Adds new colors to that colorspace
+        color_space_temp[msg.blue,
+                         msg.green,
+                         msg.red] = 1
+        # Switches the reference to the new colorspace
+        self.color_space = color_space_temp

@@ -1,8 +1,7 @@
 # TODO bessere bezeichnungen
+dynamic_color_space_debug_printer_classes: ''
 
 queue_max_size: 10
-
-# TODO publish debug_image on/off
 
 threshold: 0.6
 kernel_size: 3

@@ -5,13 +5,13 @@ import rospkg
 import cv2
 import time
 import numpy as np
-from bitbots_vision.vision_modules.debug import DebugPrinter
+from bitbots_vision.vision_modules import debug
 from cv_bridge import CvBridge
 from bitbots_vision.vision_modules import horizon, color
 from collections import deque
 from sensor_msgs.msg import Image
 from dynamic_reconfigure.server import Server
-from bitbots_vision.cfg import dynamic_colorspaceConfig
+from bitbots_vision.cfg import dynamic_colorspaceConfig, VisionConfig
 from bitbots_msgs.msg import Colorspace
 from std_srvs.srv import Trigger
 
@@ -26,28 +26,28 @@ class DynamicColorspace:
 
         self._bridge = CvBridge()
 
-        self._debug_printer = None
-
         # Load config
         self._config = {}
         self._config = rospy.get_param('/bitbots_dynamic_colorspace')
-        
-        # TODO Debug-image on/off
+
+        # Load vision-config
+        self._vision_config = {}
+        self._vision_config = rospy.get_param('/bitbots_vision')
+
+        self._debug_printer = debug.DebugPrinter(
+            debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
+                self._config['dynamic_color_space_debug_printer_classes']))
 
         self._queue_max_size = self._config['queue_max_size']
 
         self.pointfinder_threshold = self._config['threshold']
         self.pointfinder_kernel_size = self._config['kernel_size']
 
-        # Load vision-config
-        self._vision_config = {}
-        self._vision_config = rospy.get_param('/bitbots_vision')
-        #print(self._vision_config)
-
         self._color_detector = color.PixelListColorDetector(
             self._debug_printer,
-            self._package_path +
-            self._vision_config['field_color_detector_path'])
+            self._package_path,
+            self._vision_config,
+            "########### DYN #########")
 
         self._horizon_detector = horizon.HorizonDetector(
             self._color_detector,
@@ -70,12 +70,17 @@ class DynamicColorspace:
                                                     Colorspace,
                                                     queue_size=1)
 
-        self._service = rospy.Service('dynamic_colorspace_update_vision_params', Trigger, self._update_vision_config)
+        self._service = rospy.Service('/bitbots_dynamic_colorspace_update_vision_params', Trigger, self._vision_config_callback)
 
         # register config callback and set config
         Server(dynamic_colorspaceConfig, self._dynamic_reconfigure_callback)
+        # Server(VisionConfig, self._vision_dynamic_reconfigure_callback)
 
         rospy.spin()
+
+    def _vision_dynamic_reconfigure_callback(self, config, level):
+        print(config)
+        return config
 
     def calc_dynamic_colorspace(self, image):
         # Masks new image with current colorspace
@@ -127,8 +132,14 @@ class DynamicColorspace:
         self._colorspace_publisher.publish(colorspace_msg)
 
     def _image_callback(self, img):
+        # TODO docu
         # Sometimes the queue gets to large, even when the size is limeted to 1. 
         # Thats why we drop old images manualy.
+
+        # turn off dynamic-color-space
+        if not self._vision_config['vision_dynamic_colorspace']:
+            return
+
         # Drops old images
         delta = rospy.get_rostime() - img.header.stamp 
         if delta.to_sec() > 0.1:
@@ -140,16 +151,27 @@ class DynamicColorspace:
         # Publishes the colorspace
         self.publish(img)
 
-    def _update_vision_config(self, dump):
-        # Trigger service
+    def _vision_config_callback(self, dump):
         # TODO Doku
+        # Trigger service
+        print("############# TRIGGERED ############")
+        self._update_vision_config()
+        return [True, 'Dynamic-color-space: bitbots-vision config successfully updated.']
+
+    def _update_vision_config(self):
+        # TODO Doku
+        print("######## CALLBACK ########")
         self._vision_config = rospy.get_param('/bitbots_vision')
+        self._vision_config = rospy.get_param('/bitbots_vision')
+
+        print(self._vision_config)
 
         self._color_detector = color.PixelListColorDetector(
             self._debug_printer,
-            self._package_path +
-            self._vision_config['field_color_detector_path'])
-
+            self._package_path,
+            self._vision_config,
+            "########### DYN #########")
+            
         self._horizon_detector = horizon.HorizonDetector(
             self._color_detector,
             self._vision_config,
@@ -210,9 +232,8 @@ class Pointfinder():
 
 class Heuristic:
 
-    def __init__(self, debug_printer, horrizon_detector=None):
+    def __init__(self, debug_printer):
         self._debug_printer = debug_printer
-        self._horrizon_detector = horrizon_detector
 
     def run(self, color_list, image, mask):
         # Simplyfies the handling by merging the 3 color channels

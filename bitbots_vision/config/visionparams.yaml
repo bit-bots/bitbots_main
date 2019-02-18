@@ -47,10 +47,13 @@ horizon_finder_min_precision_pix: 3
 vision_ball_classifier: 'fcnn'  # cascade, fcnn or dummy
 vision_debug_image: false
 vision_debug_image_msg: false
+vision_mask_img_msg: false
 vision_debug_printer_classes: ''
 vision_parallelize: true
 vision_ball_candidate_horizon_y_offset: 0
 vision_ball_candidate_rating_threshold: 0.5
+vision_dynamic_colorspace: true
+vision_dynamic_colorspace_mask_img_dyn_msg: true
 
 line_detector_horizon_offset: 50
 line_detector_linepoints_range: 10000
@@ -81,5 +84,3 @@ ball_finder_min_size: 10
 classifier_model_path: '/models/classifier_01'
 
 cascade_classifier_path: '/classifier/cascadeNew.xml'
-
-vision_dynamic_colorspace: true

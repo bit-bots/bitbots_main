@@ -33,7 +33,7 @@ class Vision:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
         # force dynamic-colorspace node to update vision-config
-        rospy.ServiceProxy('dynamic_colorspace_update_vision_params', Trigger)
+        self._notify_config_changes()
 
         # register config callback and set config
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
@@ -41,8 +41,11 @@ class Vision:
         rospy.spin()
 
     def _image_callback(self, img):
-        delta = rospy.get_rostime() - img.header.stamp 
-        if delta.to_sec() > 0.1:
+        # TODO docu
+        image_age = rospy.get_rostime() - img.header.stamp 
+        # drops old images and cleans up queue
+        if image_age.to_sec() > 0.1:
+            # TODO remove
             return
         self.handle_image(img)
 
@@ -204,7 +207,6 @@ class Vision:
         self.line_detector.compute_linepoints()
 
     def _dynamic_reconfigure_callback(self, config, level):
-
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 config['vision_debug_printer_classes']))
@@ -252,8 +254,9 @@ class Vision:
 
         self.field_color_detector = color.PixelListColorDetector(
             self.debug_printer,
-            self.package_path +
-            config['field_color_detector_path'])
+            self.package_path,
+            config,
+            "######### VISION ###############")
 
         # TODO start/stop dynamic_colorspace
         # TODO update path in dynamic colorspace
@@ -386,11 +389,19 @@ class Vision:
             queue_size=1,
         )
 
-        rospy.ServiceProxy('dynamic_colorspace_update_vision_params', Trigger)
-
         self.config = config
-
+        
+        self._notify_config_changes()
         return config
+
+    def _notify_config_changes(self):
+        rospy.wait_for_service('/bitbots_dynamic_colorspace_update_vision_params')
+        try:
+            test = rospy.ServiceProxy('/bitbots_dynamic_colorspace_update_vision_params', Trigger)
+            test()
+            print("############ NOTIFIED ############")
+        except rospy.ServiceException, e:
+            print("Service call failed: %s"%e)
 
 if __name__ == '__main__':
     Vision()
