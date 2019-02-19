@@ -174,7 +174,7 @@ class HsvSpaceColorDetector(ColorDetector):
 
 
 class PixelListColorDetector(ColorDetector):
-    def __init__(self, debug_printer, package_path, config, name="################# DEBUG ################"):
+    def __init__(self, debug_printer, package_path, config):
         # type:(DebugPrinter, str, bool) -> None
         """
         PixelListColorDetector is a ColorDetector, that is based on a color-space.
@@ -214,8 +214,6 @@ class PixelListColorDetector(ColorDetector):
     
         self.imagepublisher = rospy.Publisher("/mask_image", Image, queue_size=1)
         self.imagepublisher_dyn = rospy.Publisher("/mask_image_dyn", Image, queue_size=1)
-
-        print(name)
 
     def init_color_space(self, color_path):
         # type: (str) -> None
