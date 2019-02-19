@@ -177,6 +177,8 @@ class DynamicColorspace:
     def _dynamic_reconfigure_callback(self, config, level):
         self._config = config
 
+        # TODO: debug-image on/off
+        self._color_value_queue.clear()
         if (self._queue_max_size != self._config['queue_max_size']):
             self._queue_max_size = self._config['queue_max_size']
             self._color_value_queue = deque(maxlen=self._queue_max_size)
