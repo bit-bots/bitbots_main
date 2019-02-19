@@ -390,12 +390,12 @@ class Vision:
             Image,
             queue_size=1,
         )
-
-        self.config = config
-        print("Finisched Update Vision")
+        
         msg = Config()
         msg.data = yaml.dump(config)
         self._config_publisher.publish(msg)
+
+        self.config = config
 
         return config
 

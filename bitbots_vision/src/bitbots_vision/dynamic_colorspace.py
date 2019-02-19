@@ -78,8 +78,6 @@ class DynamicColorspace:
                                                     Colorspace,
                                                     queue_size=1)
 
-        self._service = rospy.Service('/bitbots_dynamic_colorspace_update_vision_params', Trigger, self._vision_config_callback)
-
         # register config callback and set config
         Server(dynamic_colorspaceConfig, self._dynamic_reconfigure_callback)
 
@@ -155,21 +153,7 @@ class DynamicColorspace:
         # Publishes the colorspace
         self.publish(img)
 
-    def _vision_config_callback(self, dump):
-        # TODO Doku
-        # Trigger service
-        try:
-            self._update_vision_config()
-            self._debug_printer.info('Dynamic-color-space: bitbots-vision config successfully updated', 'config')
-            return [True, 'Dynamic-color-space: bitbots-vision config successfully updated.']
-        except:
-            self._debug_printer.info('FAIL: Dynamic-color-space: bitbots-vision config update', 'config')
-            return [False, 'FAIL: Dynamic-color-space: bitbots-vision config successfully update.']
-
-    def _update_vision_config(self, msg):
-        # TODO Doku
-        self._vision_config = yaml.load(msg.data)
-
+    def reset_detectors(self):
         self._color_detector = color.PixelListColorDetector(
             self._debug_printer,
             self._package_path,
@@ -180,8 +164,15 @@ class DynamicColorspace:
             self._vision_config,
             self._debug_printer)
 
+    def _update_vision_config(self, msg):
+        # TODO Doku
+        self._vision_config = yaml.load(msg.data)
+        self.reset_detectors()
+
     def _dynamic_reconfigure_callback(self, config, level):
         self._config = config
+
+        self.reset_detectors()
 
         # TODO: debug-image on/off
         self._color_value_queue.clear()
@@ -189,6 +180,7 @@ class DynamicColorspace:
             self._queue_max_size = self._config['queue_max_size']
             self._color_value_queue = deque(maxlen=self._queue_max_size)
 
+        
         # Pointfinder
         self._threshold = self._config['threshold']
         self._kernel_size = self._config['kernel_size']
