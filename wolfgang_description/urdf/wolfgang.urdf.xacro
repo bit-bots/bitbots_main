@@ -146,14 +146,14 @@
             <inertia ixx="0.0011378" ixy="-2.8771E-12" ixz="9.7123E-05" iyy="0.0010393" iyz="-1.4479E-11" izz="0.00019656" />
         </inertial>
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="0 ${-pi/4} 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/lower_leg.stl" />
             </geometry>
             <material name="carbon" />
         </visual>
         <collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="0 ${-pi/4} 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/collision/lower_leg.stl" />
             </geometry>
@@ -317,14 +317,14 @@
             <inertia ixx="0.0011378" ixy="-2.8771E-12" ixz="9.7123E-05" iyy="0.0010393" iyz="-1.4479E-11" izz="0.00019656" />
         </inertial>
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="0 ${-pi/4} 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/lower_leg.stl" />
             </geometry>
             <material name="carbon" />
         </visual>
         <collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="0 ${-pi/4} 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/collision/lower_leg.stl" />
             </geometry>
@@ -620,7 +620,7 @@
     </joint>
 
     <joint name="RKnee" type="revolute">
-        <origin xyz="-0.004 0 -0.1692" rpy="0 0 0" />
+        <origin xyz="-0.004 0 -0.1692" rpy="0 ${pi/6} 0" />
         <parent link="r_upper_leg" />
         <child link="r_lower_leg" />
         <axis xyz="0 1 0" />
@@ -629,7 +629,7 @@
     </joint>
 
     <joint name="RAnklePitch" type="revolute">
-        <origin xyz="0.0 0 -0.17" rpy="0 0 0" />
+        <origin xyz="0.120208 0 -0.120208" rpy="0 ${-pi/4} 0" />
         <parent link="r_lower_leg" />
         <child link="r_ankle" />
         <axis xyz="0 -1 0" />
@@ -688,7 +688,7 @@
     </joint>
 
     <joint name="LKnee" type="revolute">
-        <origin xyz="-0.004 0 -0.1692" rpy="0 0 0" />
+        <origin xyz="-0.004 0 -0.1692" rpy="0 ${pi/6} 0" />
         <parent link="l_upper_leg" />
         <child link="l_lower_leg" />
         <axis xyz="0 -1 0" />
@@ -697,7 +697,7 @@
     </joint>
 
     <joint name="LAnklePitch" type="revolute">
-        <origin xyz="0.0 0 -0.17" rpy="0 0 0" />
+        <origin xyz="0.120208 0 -0.120208" rpy="0 ${-pi/4} 0" />
         <parent link="l_lower_leg" />
         <child link="l_ankle" />
         <axis xyz="0 1 0" />
@@ -823,7 +823,7 @@
         <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-1.2" upper="0.2" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
-	
+    
     <joint name="head_to_camera" type="fixed">
         <origin xyz="0.02 0 0.1115" rpy="0 0 0" />
         <parent link="head" />
@@ -832,7 +832,7 @@
         <dynamics damping="${d}" friction="${f}" />
     </joint>
     
-	<joint name="camera__optical_joint" type="fixed">
+    <joint name="camera__optical_joint" type="fixed">
       <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}" />
       <parent link="camera" />
       <child link="camera_optical_frame" />
