@@ -74,13 +74,8 @@ class DynamicColorspace:
 
         # register config callback and set config
         Server(dynamic_colorspaceConfig, self._dynamic_reconfigure_callback)
-        # Server(VisionConfig, self._vision_dynamic_reconfigure_callback)
 
         rospy.spin()
-
-    def _vision_dynamic_reconfigure_callback(self, config, level):
-        print(config)
-        return config
 
     def calc_dynamic_colorspace(self, image):
         # Masks new image with current colorspace
@@ -181,7 +176,7 @@ class DynamicColorspace:
         self._config = config
 
         # TODO: debug-image on/off
-
+        self._color_value_queue.clear()
         if (self._queue_max_size != self._config['queue_max_size']):
             self._queue_max_size = self._config['queue_max_size']
             self._color_value_queue = deque(maxlen=self._queue_max_size)
