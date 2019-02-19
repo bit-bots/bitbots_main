@@ -391,6 +391,7 @@ class Vision:
             queue_size=1,
         )
         
+        #Niklasse hassen diesen Trick :P
         msg = Config()
         msg.data = yaml.dump(config)
         self._config_publisher.publish(msg)
