@@ -12,7 +12,9 @@ import rospkg
 import cv2
 import os
 import threading
+import yaml
 from dynamic_reconfigure.server import Server
+from bitbots_msgs.msg import Config
 from bitbots_vision.cfg import VisionConfig
 
 
@@ -32,8 +34,9 @@ class Vision:
         if self.debug_image_dings:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
-        # force dynamic-colorspace node to update vision-config
-        self._notify_config_changes()
+        self._config_publisher = rospy.Publisher('vision_config',
+                                                Config,
+                                                queue_size=1)
 
         # register config callback and set config
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
@@ -389,19 +392,12 @@ class Vision:
         )
 
         self.config = config
-        
-        self._notify_config_changes()
-        return config
+        print("Finisched Update Vision")
+        msg = Config()
+        msg.data = yaml.dump(config)
+        self._config_publisher.publish(msg)
 
-    def _notify_config_changes(self):
-        rospy.wait_for_service('/bitbots_dynamic_colorspace_update_vision_params')
-        try:
-            test = rospy.ServiceProxy('/bitbots_dynamic_colorspace_update_vision_params', Trigger)
-            test()
-            #self.debug_printer.info('Notified: bitbots-vision config-changes', 'config')
-        except rospy.ServiceException, e:
-            pass
-            #self.debug_printer.info('Notifying failed: %s'%e, 'config')
+        return config
 
 if __name__ == '__main__':
     Vision()

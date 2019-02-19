@@ -4,6 +4,7 @@ import rospy
 import rospkg
 import cv2
 import time
+import yaml
 import numpy as np
 from bitbots_vision.vision_modules import debug
 from cv_bridge import CvBridge
@@ -13,7 +14,7 @@ from sensor_msgs.msg import Image
 from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.client import Client
 from bitbots_vision.cfg import dynamic_colorspaceConfig
-from bitbots_msgs.msg import Colorspace
+from bitbots_msgs.msg import Colorspace, Config
 from std_srvs.srv import Trigger
 
 
@@ -66,6 +67,13 @@ class DynamicColorspace:
                                           tcp_nodelay=True,
                                           buff_size=2**20)
 
+        self._vision_config_sub = rospy.Subscriber('vision_config',
+                                          Config,
+                                          self._update_vision_config,
+                                          queue_size=1,
+                                          tcp_nodelay=True)
+
+
         self._colorspace_publisher = rospy.Publisher('colorspace',
                                                     Colorspace,
                                                     queue_size=1)
@@ -74,8 +82,6 @@ class DynamicColorspace:
 
         # register config callback and set config
         Server(dynamic_colorspaceConfig, self._dynamic_reconfigure_callback)
-        
-        self._vision_dynamic_reconfigure_client = Client('/bitbots_vision')
 
         rospy.spin()
 
@@ -160,10 +166,9 @@ class DynamicColorspace:
             self._debug_printer.info('FAIL: Dynamic-color-space: bitbots-vision config update', 'config')
             return [False, 'FAIL: Dynamic-color-space: bitbots-vision config successfully update.']
 
-    def _update_vision_config(self):
+    def _update_vision_config(self, msg):
         # TODO Doku
-        self._vision_config = self._vision_dynamic_reconfigure_client.get_configuration()
-        print(self._vision_config)
+        self._vision_config = yaml.load(msg.data)
 
         self._color_detector = color.PixelListColorDetector(
             self._debug_printer,
