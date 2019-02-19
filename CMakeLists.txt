@@ -20,6 +20,7 @@ add_message_files(
   PixelRelative.msg
   PixelsRelative.msg
   Colorspace.msg
+  Config.msg
 )
 
 add_service_files(
