@@ -255,8 +255,7 @@ class Vision:
         self.field_color_detector = color.PixelListColorDetector(
             self.debug_printer,
             self.package_path,
-            config,
-            "######### VISION ###############")
+            config)
 
         # TODO start/stop dynamic_colorspace
         # TODO update path in dynamic colorspace
@@ -399,9 +398,10 @@ class Vision:
         try:
             test = rospy.ServiceProxy('/bitbots_dynamic_colorspace_update_vision_params', Trigger)
             test()
-            print("############ NOTIFIED ############")
+            #self.debug_printer.info('Notified: bitbots-vision config-changes', 'config')
         except rospy.ServiceException, e:
-            print("Service call failed: %s"%e)
+            pass
+            #self.debug_printer.info('Notifying failed: %s'%e, 'config')
 
 if __name__ == '__main__':
     Vision()

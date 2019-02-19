@@ -11,7 +11,8 @@ from bitbots_vision.vision_modules import horizon, color
 from collections import deque
 from sensor_msgs.msg import Image
 from dynamic_reconfigure.server import Server
-from bitbots_vision.cfg import dynamic_colorspaceConfig, VisionConfig
+from dynamic_reconfigure.client import Client
+from bitbots_vision.cfg import dynamic_colorspaceConfig
 from bitbots_msgs.msg import Colorspace
 from std_srvs.srv import Trigger
 
@@ -46,8 +47,7 @@ class DynamicColorspace:
         self._color_detector = color.PixelListColorDetector(
             self._debug_printer,
             self._package_path,
-            self._vision_config,
-            "########### DYN #########")
+            self._vision_config)
 
         self._horizon_detector = horizon.HorizonDetector(
             self._color_detector,
@@ -74,13 +74,10 @@ class DynamicColorspace:
 
         # register config callback and set config
         Server(dynamic_colorspaceConfig, self._dynamic_reconfigure_callback)
-        # Server(VisionConfig, self._vision_dynamic_reconfigure_callback)
+        
+        self._vision_dynamic_reconfigure_client = Client('/bitbots_vision')
 
         rospy.spin()
-
-    def _vision_dynamic_reconfigure_callback(self, config, level):
-        print(config)
-        return config
 
     def calc_dynamic_colorspace(self, image):
         # Masks new image with current colorspace
@@ -154,23 +151,23 @@ class DynamicColorspace:
     def _vision_config_callback(self, dump):
         # TODO Doku
         # Trigger service
-        print("############# TRIGGERED ############")
-        self._update_vision_config()
-        return [True, 'Dynamic-color-space: bitbots-vision config successfully updated.']
+        try:
+            self._update_vision_config()
+            self._debug_printer.info('Dynamic-color-space: bitbots-vision config successfully updated', 'config')
+            return [True, 'Dynamic-color-space: bitbots-vision config successfully updated.']
+        except:
+            self._debug_printer.info('FAIL: Dynamic-color-space: bitbots-vision config update', 'config')
+            return [False, 'FAIL: Dynamic-color-space: bitbots-vision config successfully update.']
 
     def _update_vision_config(self):
         # TODO Doku
-        print("######## CALLBACK ########")
-        self._vision_config = rospy.get_param('/bitbots_vision')
-        self._vision_config = rospy.get_param('/bitbots_vision')
-
+        self._vision_config = self._vision_dynamic_reconfigure_client.get_configuration()
         print(self._vision_config)
 
         self._color_detector = color.PixelListColorDetector(
             self._debug_printer,
             self._package_path,
-            self._vision_config,
-            "########### DYN #########")
+            self._vision_config)
             
         self._horizon_detector = horizon.HorizonDetector(
             self._color_detector,
@@ -179,8 +176,6 @@ class DynamicColorspace:
 
     def _dynamic_reconfigure_callback(self, config, level):
         self._config = config
-
-        # TODO: debug-image on/off
 
         if (self._queue_max_size != self._config['queue_max_size']):
             self._queue_max_size = self._config['queue_max_size']
