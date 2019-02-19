@@ -91,7 +91,7 @@ class Recorder(object):
         """
         if amount > len(self.steps) or self.steps[-1][1] == "Initial step":
             rospy.logwarn("I cannot undo what did not happen!")
-            return False
+            return "I cannot undo what did not happen!"
         if amount == 1:
             state, description = self.steps.pop()
             #if state.anim_steps == self.current_state.anim_steps:
@@ -102,16 +102,17 @@ class Recorder(object):
                 state, description = self.steps[-1]
                 self.current_state = state
                 rospy.loginfo("Last noted action: %s" % description)
+                return "Undoing. Last noted action: %s" % description
             else:
                 rospy.loginfo("There are no previously noted steps")
-            return True
+                return "Undoing. There are no more previous steps."
         else:
             rospy.loginfo("Undoing %i steps" % amount)
             state, description = self.steps[-amount]
             self.current_state = state
             self.redo_steps = self.steps[-amount:].reverse()
             self.steps = self.steps[:-amount]
-            return True
+            return "Undoing %i steps" % amount
 
     def redo(self, amount=1):
         """ Redo <amount> of steps, or the last step if omitted
@@ -119,17 +120,17 @@ class Recorder(object):
         post_state = None
         if not self.redo_steps:
             rospy.logwarn("Cannot redo what was not undone!")
-            return False
+            return "Cannot redo what was not undone!"
         if amount < 0:
             rospy.logwarn("Amount cannot be negative! (What where you even thinking?)")
-            return False
+            return "Amount cannot be negative! (What where you even thinking?)"
         while amount and self.redo_steps:
             pre_state, description, post_state = self.redo_steps.pop()
             self.steps.append((pre_state, description))
             amount -= 1
         self.current_state = post_state
         rospy.loginfo("Last noted step is now: %s " % self.steps[-1][1])
-        return True
+        return "Last noted step is now: %s " % self.steps[-1][1]
 
     def record(self, motor_pos, motor_torque, frame_name, duration, pause, seq_pos=None, override=False):
         """ Record Command, save current keyframe-data
@@ -180,8 +181,7 @@ class Recorder(object):
         """
         if not self.current_state.anim_steps:
             rospy.loginfo("There is nothing to save.")
-            # todo display in rqt
-            return False
+            return "There is nothing to save."
 
         if not file_name:
             file_name = self.current_state.name
@@ -216,7 +216,7 @@ class Recorder(object):
 
         with open(path, "w") as fp:
             json.dump(anim, fp, sort_keys=True, indent=4)
-        return True
+        return ("Saving to '%s'" % path + ". Done.")
 
     def remove(self, framenumber=None):
         """ Record Command, remove the last keyframedata
@@ -264,6 +264,7 @@ class Recorder(object):
             except ValueError as e:
                 rospy.logerr("Animation %s is corrupt:\n %s" %
                              (path, e.message.partition('\n')[0]))
+                return ("Animation %s is corrupt:\n %s" % (path, e.message.partition('\n')[0]))
 
 
         # Ensure Data retrieval was a success
@@ -308,7 +309,7 @@ class Recorder(object):
         try:
             if not self.current_state.anim_steps:
                 rospy.loginfo("Refusing to play, because nothing to play exists!")
-                return False
+                return "Refusing to play, because nothing to play exists!"
             if not until_frame:
                 # play complete animation
                 n = len(self.current_state.anim_steps)
@@ -326,8 +327,10 @@ class Recorder(object):
 
             rospy.loginfo("playing %d frames..." % len(anim_dict['keyframes']))
             self.execute_play(anim_dict, anim_path)
+            return "playing %d frames..." % len(anim_dict['keyframes'])
         except MasterException:
             rospy.logwarn("There is no Robot! Can't play Animation!")
+            return "There is no Robot! Can't play Animation!"
 
     def execute_play(self, anim_dict, anim_path):
         """ We make a temporary copy of the animation and call the animation play action to play it"""

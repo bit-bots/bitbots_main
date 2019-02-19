@@ -199,6 +199,7 @@
    <addaction name="actionRedo"/>
    <addaction name="actionHelp"/>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionNew">
    <property name="text">
     <string>New</string>
