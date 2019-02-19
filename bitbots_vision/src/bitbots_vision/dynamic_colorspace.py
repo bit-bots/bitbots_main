@@ -84,14 +84,15 @@ class DynamicColorspace:
         self._horizon_detector.set_image(image)
         self._horizon_detector.compute_horizon_points()
         mask = self._horizon_detector.get_mask()
-        # Searches for new candidate pixels in the color mask
-        colorpixel_candidates_list = self._pointfinder.find_colorpixel_candidates(mask_image)
-        # Gets unique color vales from the candidate pixels.
-        colors = self.get_pixel_values(image, colorpixel_candidates_list)
-        # Filters the colors using the heuristic. 
-        colors = np.array(self._heuristic.run(colors, image, mask), dtype=np.int32)
-        # Adds new (sub-)colorspace to the queue
-        self._color_value_queue.append(colors)
+        if not mask is None:
+            # Searches for new candidate pixels in the color mask
+            colorpixel_candidates_list = self._pointfinder.find_colorpixel_candidates(mask_image)
+            # Gets unique color vales from the candidate pixels.
+            colors = self.get_pixel_values(image, colorpixel_candidates_list)
+            # Filters the colors using the heuristic. 
+            colors = np.array(self._heuristic.run(colors, image, mask), dtype=np.int32)
+            # Adds new (sub-)colorspace to the queue
+            self._color_value_queue.append(colors)
         
     def queue_to_colorspace(self):
         # Inizializes an empty colorspace
