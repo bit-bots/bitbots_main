@@ -17,6 +17,7 @@ from dynamic_reconfigure.server import Server
 from bitbots_msgs.msg import Config
 from bitbots_vision.cfg import VisionConfig
 
+# TODO set debug_printer as first param?
 
 class Vision:
 
@@ -38,19 +39,27 @@ class Vision:
                                                 Config,
                                                 queue_size=1)
 
-        # register config callback and set config
-        srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
+        # Register VisionConfig-Server and callback
+        Server(VisionConfig, self._dynamic_reconfigure_callback)
 
         rospy.spin()
 
-    def _image_callback(self, img):
-        # TODO docu
-        image_age = rospy.get_rostime() - img.header.stamp 
+    def _image_callback(self, image_msg):
+        # type: (Image) -> None
+        """
+        This method is called by the 'img_raw'-message-subscriber.
+        This handles Image-messages and drops old ones.
+
+        Sometimes the queue gets to large, even when the size is limeted to 1. 
+        That's, why we drop old images manualy.
+        """
         # drops old images and cleans up queue
+        # TODO debug_printer
+        image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
-            # TODO remove
             return
-        self.handle_image(img)
+
+        self.handle_image(image_msg)
 
     def handle_image(self, image_msg):
         # converting the ROS image message to CV2-image
@@ -260,8 +269,6 @@ class Vision:
             self.package_path,
             config)
 
-        # TODO start/stop dynamic_colorspace
-        # TODO update path in dynamic colorspace
         self.horizon_detector = horizon.HorizonDetector(
             self.field_color_detector,
             config,

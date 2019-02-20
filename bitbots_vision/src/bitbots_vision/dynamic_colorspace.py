@@ -6,20 +6,33 @@ import cv2
 import time
 import yaml
 import numpy as np
-from bitbots_vision.vision_modules import debug
 from cv_bridge import CvBridge
-from bitbots_vision.vision_modules import horizon, color
 from collections import deque
-from sensor_msgs.msg import Image
 from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.client import Client
-from bitbots_vision.cfg import dynamic_colorspaceConfig
+from sensor_msgs.msg import Image
 from bitbots_msgs.msg import Colorspace, Config
-from std_srvs.srv import Trigger
+from bitbots_vision.vision_modules import debug
+from bitbots_vision.vision_modules import horizon, color
+from bitbots_vision.cfg import dynamic_colorspaceConfig
 
+# TODO start/stop dynamic_colorspace
+# TODO rename toggle in color.py
+# TODO better parameter-names in config
+# TODOs in color.py
+# TODO remove dyn from launch file
+# TODO vision-docu
+# TODO find_colorpixel_candidates what do we return?
 
 class DynamicColorspace:
     def __init__(self):
+        # type: () -> None
+        """
+        # TODO docu
+
+        :return: None
+        """
+        # Init package
         rospack = rospkg.RosPack()
         self._package_path = rospack.get_path('bitbots_vision')
 
@@ -34,16 +47,20 @@ class DynamicColorspace:
 
         # Load vision-config
         self._vision_config = {}
+        # TODO maybe get config from msg???
         self._vision_config = rospy.get_param('/bitbots_vision')
 
+        # TODO NOT tested... correct implementation?
         self._debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 self._config['dynamic_color_space_debug_printer_classes']))
 
+        # Init params
         self._queue_max_size = self._config['queue_max_size']
+        self._color_value_queue = deque(maxlen=self._queue_max_size)
 
-        self.pointfinder_threshold = self._config['threshold']
-        self.pointfinder_kernel_size = self._config['kernel_size']
+        self._pointfinder_threshold = self._config['threshold']
+        self._pointfinder_kernel_size = self._config['kernel_size']
 
         self._color_detector = color.PixelListColorDetector(
             self._debug_printer,
@@ -55,35 +72,73 @@ class DynamicColorspace:
             self._vision_config,
             self._debug_printer)
 
-        self._color_value_queue = deque(maxlen=self._queue_max_size)
+        self._pointfinder = Pointfinder(
+            self._debug_printer,
+            self._pointfinder_threshold,
+            self._pointfinder_kernel_size)
 
-        self._pointfinder = Pointfinder(self._debug_printer, self.pointfinder_threshold, self.pointfinder_kernel_size)
         self._heuristic = Heuristic(self._debug_printer)
 
-        self._image_sub = rospy.Subscriber('image_raw',
-                                          Image,
-                                          self._image_callback,
-                                          queue_size=1,
-                                          tcp_nodelay=True,
-                                          buff_size=2**20)
+        # Subscribe to 'image-raw'-message
+        self._image_raw_msg_subscriber = rospy.Subscriber(
+            'image_raw',
+            Image,
+            self._image_callback,
+            queue_size = 1,
+            tcp_nodelay = True,
+            buff_size = 2**20)
 
-        self._vision_config_sub = rospy.Subscriber('vision_config',
-                                          Config,
-                                          self._update_vision_config,
-                                          queue_size=1,
-                                          tcp_nodelay=True)
+        # Subscribe to 'vision_config'-message
+        self._vision_config__msg_subscriber = rospy.Subscriber(
+            'vision_config',
+            Config,
+            self._update_vision_config,
+            queue_size = 1,
+            tcp_nodelay = True)
 
+        # Register publisher of 'colorspace'-messages
+        self._colorspace_publisher = rospy.Publisher(
+            'colorspace',
+            Colorspace,
+            queue_size = 1)
 
-        self._colorspace_publisher = rospy.Publisher('colorspace',
-                                                    Colorspace,
-                                                    queue_size=1)
-
-        # register config callback and set config
+        # Register dynamic-reconfigure config-callback
         Server(dynamic_colorspaceConfig, self._dynamic_reconfigure_callback)
 
         rospy.spin()
 
+    def _image_callback(self, image_msg):
+        # type: (Image) -> None
+        """
+        This method is called by the 'img_raw'-message-subscriber.
+        This handles Image-messages and drops old ones.
+
+        Sometimes the queue gets to large, even when the size is limeted to 1. 
+        That's, why we drop old images manualy.
+
+        :param Image image_msg: image-message from 'img_raw'-message-subscriber
+        :return: None
+        """
+
+        # Turn off dynamic-color-space
+        if not self._vision_config['vision_dynamic_colorspace']:
+            return
+
+        # Drops old images
+        # TODO debug_printer
+        image_age = rospy.get_rostime() - image_msg.header.stamp 
+        if image_age.to_sec() > 0.1:
+            return
+
+        # Converting the ROS image message to CV2-image
+        image = self._bridge.imgmsg_to_cv2(image_msg, 'bgr8')
+        # Calculates the new colorspace
+        self.calc_dynamic_colorspace(image)
+        # Publishes the colorspace
+        self.publish(image_msg)
+
     def calc_dynamic_colorspace(self, image):
+        # TODO docu
         # Masks new image with current colorspace
         mask_image = self._color_detector.mask_image(image)
         # Calls the horizon detector
@@ -101,6 +156,7 @@ class DynamicColorspace:
             self._color_value_queue.append(colors)
         
     def queue_to_colorspace(self):
+        # TODO docu
         # Inizializes an empty colorspace
         colorspace = np.array([]).reshape(0,3)
         # Stacks every colorspace in the queue
@@ -110,6 +166,7 @@ class DynamicColorspace:
         return colorspace
 
     def get_pixel_values(self, img, pixellist):
+        # TODO docu
         '''
         Returns unique colors for an given image and a list of pixels.
         '''
@@ -121,11 +178,12 @@ class DynamicColorspace:
         return unique_colors
 
     def publish(self, image_msg):
+        # TODO docu
         '''
         Publishes the current colorspace via ros msg.
         '''
         colorspace = self.queue_to_colorspace()
-        colorspace_msg = Colorspace()  # Todo: add lines
+        colorspace_msg = Colorspace()
         colorspace_msg.header.frame_id = image_msg.header.frame_id
         colorspace_msg.header.stamp = image_msg.header.stamp
         colorspace_msg.blue  = colorspace[:,0].tolist()
@@ -133,27 +191,8 @@ class DynamicColorspace:
         colorspace_msg.red   = colorspace[:,2].tolist()
         self._colorspace_publisher.publish(colorspace_msg)
 
-    def _image_callback(self, img):
-        # TODO docu
-        # Sometimes the queue gets to large, even when the size is limeted to 1. 
-        # Thats why we drop old images manualy.
-
-        # turn off dynamic-color-space
-        if not self._vision_config['vision_dynamic_colorspace']:
-            return
-
-        # Drops old images
-        delta = rospy.get_rostime() - img.header.stamp 
-        if delta.to_sec() > 0.1:
-            return
-        # Converting the ROS image message to CV2-image
-        image = self._bridge.imgmsg_to_cv2(img, 'bgr8')
-        # Calculates the new colorspace
-        self.calc_dynamic_colorspace(image)
-        # Publishes the colorspace
-        self.publish(img)
-
     def reset_detectors(self):
+        # TODO docu
         self._color_detector = color.PixelListColorDetector(
             self._debug_printer,
             self._package_path,
@@ -165,11 +204,12 @@ class DynamicColorspace:
             self._debug_printer)
 
     def _update_vision_config(self, msg):
-        # TODO Doku
+        # TODO docu
         self._vision_config = yaml.load(msg.data)
         self.reset_detectors()
 
     def _dynamic_reconfigure_callback(self, config, level):
+        # TODO docu
         self._config = config
 
         self.reset_detectors()
@@ -179,50 +219,62 @@ class DynamicColorspace:
         if (self._queue_max_size != self._config['queue_max_size']):
             self._queue_max_size = self._config['queue_max_size']
             self._color_value_queue = deque(maxlen=self._queue_max_size)
-
         
         # Pointfinder
         self._threshold = self._config['threshold']
         self._kernel_size = self._config['kernel_size']
-        self._pointfinder.set_params(self._threshold, self._kernel_size)
+        self._pointfinder.set_pointfinder_params(self._threshold, self._kernel_size)
         return config
-        
 
 
 class Pointfinder():
     def __init__(self, debug_printer, threshold, kernel_size=3):
+        # type: (DebugPrinter, float, int) -> None
+        """
+        :param DebugPrinter: debug-printer
+        :param float threshold: necessary amount of true color in percentage (between 0..1)
+        :param int kernel_size: defines edge-size of convolution kernel, use odd number (default 3)
+        :return: None
+        """
+        # Init params
+        self._debug_printer = debug_printer
+        
+        self.set_pointfinder_params(threshold, kernel_size)
+
+    def set_pointfinder_params(self, threshold, kernel_size=3):
         # type: (float, int) -> None
         """
-        :param float threshold: necessary amount of true color in percentage (between 0..1)
-        :param int kernel_size: defines size of convolution kernel, use odd number (default 3)
-        """
-        self._threshold = threshold
-        # Defines kernel
-        self._kernel = np.ones((kernel_size, kernel_size))
-        self._kernel[int(np.size(self._kernel, 0) / 2), int(np.size(self._kernel, 1) / 2)] = -self._kernel.size
+        Set parameter of Pointfinder.
+        Used to update parameter in case of dynamic reconfigure-config-changes.
 
-    def set_params(self, threshold, kernel_size=3):
-        """
-        TODO doku
-        dynamic reconfigure -> update params 
+        :param float threshold: necessary amount of true color in percentage (between 0..1)
+        :param int kernel_size: defines edge-size of convolution kernel, use odd number (default 3)
+        :return: None
         """
         self._threshold = threshold
+
+        # Defines kernel
+        # Init kernel as M x M matrix of ONEs
+        self._kernel = None
         self._kernel = np.ones((kernel_size, kernel_size))
-        self._kernel[int(np.size(self._kernel, 0) / 2), int(np.size(self._kernel, 1) / 2)] = -self._kernel.size
+        # Set value of element in the middle of the matrix to negative of the count of the matrix-elements
+        self._kernel[int(np.size(self._kernel, 0) / 2), int(np.size(self._kernel, 1) / 2)] = - self._kernel.size
 
     def find_colorpixel_candidates(self, masked_image):
-        # type () -> np.array
+        # type (np.array) -> np.array
         """
-        Returns list of indices of pixel-candidates
-        set masked image first
+        Returns list of indices of pixel-candidates.
+        # TODO what?
 
+        :param np.array masked_image: masked image
         :return: np.array: list of indices
         """
-        # Normalizes the image to values between 1 und 0
+        # Normalizes the masked image to values of 1 or 0
         normalized_image = np.divide(masked_image, 255, dtype=np.int16)
-        # Calculates the number of neighbours or each pixel
+
+        # Calculates the number of neighbours for each pixel
         sum_array = cv2.filter2D(normalized_image, -1, self._kernel, borderType=0)
-        # Returns all pixels with an higher neighbour / non neighbours ratio than the threshold
+        # Returns all pixels with an higher neighbour / non neighbours ratio than the threshold # TODO what?
         return np.array(np.where(sum_array > self._threshold * (self._kernel.size - 1)))
 
 class Heuristic:
