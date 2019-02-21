@@ -5,7 +5,6 @@ from bitbots_vision.vision_modules import lines, horizon, color, debug, live_cla
     lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest
 from sensor_msgs.msg import Image
-from std_srvs.srv import Trigger
 from cv_bridge import CvBridge
 import rospy
 import rospkg
@@ -224,6 +223,11 @@ class Vision:
                 config['vision_debug_printer_classes']))
         self.runtime_evaluator = evaluator.RuntimeEvaluator(self.debug_printer)
 
+        # Publish Config-message
+        msg = Config()
+        msg.data = yaml.dump(config)
+        self._config_publisher.publish(msg)
+
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
         self._ball_candidate_y_offset = config['vision_ball_candidate_horizon_y_offset']
 
@@ -397,14 +401,8 @@ class Vision:
             Image,
             queue_size=1,
         )
-        
-        #Niklasse hassen diesen Trick :P
-        msg = Config()
-        msg.data = yaml.dump(config)
-        self._config_publisher.publish(msg)
 
         self.config = config
-
         return config
 
 if __name__ == '__main__':

@@ -23,12 +23,16 @@ from bitbots_vision.cfg import dynamic_colorspaceConfig
 # TODO remove dyn from launch file
 # TODO vision-docu
 # TODO find_colorpixel_candidates what do we return?
+# TODO change order of methods
+# TODO docu heuristic
 
 class DynamicColorspace:
     def __init__(self):
         # type: () -> None
         """
-        # TODO docu
+        DynamicColorspace is a ROS node, that is used by the vision-node to better recognize the field-color.
+        DynamicColorspace is able to calculate dynamically changing colorspaces to accommodate e.g. 
+        changing lighting conditions or to compensate for not optimized base-colorspace-files.
 
         :return: None
         """
@@ -37,7 +41,7 @@ class DynamicColorspace:
         self._package_path = rospack.get_path('bitbots_vision')
 
         rospy.init_node('bitbots_dynamic_colorspace')
-        rospy.loginfo('Initializing dynmaic colorspace...')
+        rospy.loginfo('Initializing dynamic colorspace...')
 
         self._bridge = CvBridge()
 
@@ -62,15 +66,8 @@ class DynamicColorspace:
         self._pointfinder_threshold = self._config['threshold']
         self._pointfinder_kernel_size = self._config['kernel_size']
 
-        self._color_detector = color.PixelListColorDetector(
-            self._debug_printer,
-            self._package_path,
-            self._vision_config)
-
-        self._horizon_detector = horizon.HorizonDetector(
-            self._color_detector,
-            self._vision_config,
-            self._debug_printer)
+        # Set ColorDetector and HorizonDetector
+        self.set_detectors()
 
         self._pointfinder = Pointfinder(
             self._debug_printer,
@@ -191,12 +188,13 @@ class DynamicColorspace:
         colorspace_msg.red   = colorspace[:,2].tolist()
         self._colorspace_publisher.publish(colorspace_msg)
 
-    def reset_detectors(self):
+    def set_detectors(self):
         # TODO docu
         self._color_detector = color.PixelListColorDetector(
             self._debug_printer,
             self._package_path,
-            self._vision_config)
+            self._vision_config,
+            False)
             
         self._horizon_detector = horizon.HorizonDetector(
             self._color_detector,
@@ -206,13 +204,11 @@ class DynamicColorspace:
     def _update_vision_config(self, msg):
         # TODO docu
         self._vision_config = yaml.load(msg.data)
-        self.reset_detectors()
+        self.set_detectors()
 
     def _dynamic_reconfigure_callback(self, config, level):
         # TODO docu
         self._config = config
-
-        self.reset_detectors()
 
         # TODO: debug-image on/off
         self._color_value_queue.clear()

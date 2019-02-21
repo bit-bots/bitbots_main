@@ -174,8 +174,8 @@ class HsvSpaceColorDetector(ColorDetector):
 
 
 class PixelListColorDetector(ColorDetector):
-    def __init__(self, debug_printer, package_path, config):
-        # type:(DebugPrinter, str, bool) -> None
+    def __init__(self, debug_printer, package_path, config, do_publish_mask_img_msg = True):
+        # type:(DebugPrinter, str, dict, bool) -> None
         """
         PixelListColorDetector is a ColorDetector, that is based on a color-space.
         The color-space is initially loaded from color-space-file at color_path (in config)
@@ -185,11 +185,15 @@ class PixelListColorDetector(ColorDetector):
         :param DebugPrinter debug_printer: debug-printer
         :param str package_path: path of package
         :param dict config: vision-config
+        :param bool do_publish_mask_img_msg: if True: this ColorDetector publishes mask_img-messages
         :return: None
         """
         ColorDetector.__init__(self, debug_printer)
 
         self.vision_config = config
+
+        # TODO debug-printer
+        self.do_publish_mask_img_msg = do_publish_mask_img_msg
 
         # concatenate color-path to file containing the accepted colors of base-color-space
         self.color_path = package_path + self.vision_config['field_color_detector_path']
@@ -265,7 +269,7 @@ class PixelListColorDetector(ColorDetector):
     def mask_image(self, image):
         # type: (np.array) -> np.array
         """
-        Creates a color mask
+        Creates a color mask and publishes mask_img-messages.
         (0 for not in color range and 255 for in color range)
 
         :param np.array image: image to mask
@@ -278,11 +282,11 @@ class PixelListColorDetector(ColorDetector):
             dyn_mask = VisionExtensions.maskImg(image, self.color_space)
 
             # toggle publishing of mask_img_dyn msg
-            if self.publish_mask_img_dyn_msg:
+            if (self.do_publish_mask_img_msg and self.publish_mask_img_dyn_msg):
                 self.imagepublisher_dyn.publish(self.bridge.cv2_to_imgmsg(dyn_mask, '8UC1'))
   
         # toggle publishing of mask_img msg          
-        if self.publish_mask_img_msg:
+        if (self.do_publish_mask_img_msg and self.publish_mask_img_msg):
             self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(static_mask, '8UC1'))
 
         if self.toggle_dynamic_color_space:
