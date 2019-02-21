@@ -2,4 +2,4 @@
 Motor Numbers
 ===============
 
-.. image:: motornumbers/motornumbers.svg
+.. image:: motornumbers/motors.svg
