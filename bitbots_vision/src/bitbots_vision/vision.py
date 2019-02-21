@@ -1,44 +1,50 @@
 #! /usr/bin/env python2
 
-
-from bitbots_vision.vision_modules import lines, horizon, color, debug, live_classifier, classifier, ball, \
-    lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
-from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
+import os
+import cv2
+import yaml
 import rospy
 import rospkg
-import cv2
-import os
 import threading
-import yaml
+from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
-from bitbots_msgs.msg import Config
+from sensor_msgs.msg import Image
+from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
+    LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest
+from bitbots_vision.vision_modules import lines, horizon, color, debug, live_classifier, \
+    classifier, ball, lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
 from bitbots_vision.cfg import VisionConfig
-
-# TODO set debug_printer as first param?
+from bitbots_msgs.msg import Config
 
 class Vision:
-
     def __init__(self):
+        # type () -> None
+        """
+        Vision is the main ROS-node for handling all tasks related to image-processing.
+        Initiating Vision-node.
+
+        :return: None
+        """
         rospack = rospkg.RosPack()
         self.package_path = rospack.get_path('bitbots_vision')
 
-        self.bridge = CvBridge()
-
         rospy.init_node('bitbots_vision')
         rospy.loginfo('Initializing vision...')
+
+        self.bridge = CvBridge()
 
         self.config = {}
         self.debug_image_dings = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_dings:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
-        self._config_publisher = rospy.Publisher('vision_config',
-                                                Config,
-                                                queue_size=1)
+        # Register publisher of 'vision_config'-messages
+        self._config_publisher = rospy.Publisher(
+            'vision_config',
+            Config,
+            queue_size=1)
 
-        # Register VisionConfig-Server and callback
+        # Register VisionConfig-Server (dynamic-reconfigure) and callback
         Server(VisionConfig, self._dynamic_reconfigure_callback)
 
         rospy.spin()
@@ -50,10 +56,10 @@ class Vision:
         This handles Image-messages and drops old ones.
 
         Sometimes the queue gets to large, even when the size is limeted to 1. 
-        That's, why we drop old images manualy.
+        That's, why we drop old images manually.
         """
         # drops old images and cleans up queue
-        # TODO debug_printer
+        # TODO: debug_printer usage
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
             return
@@ -73,11 +79,11 @@ class Vision:
 
         if (self.config['vision_ball_classifier'] == 'cascade'):
             self.ball_finder.set_image(image)
-            self.ball_detector.set_image(image,
-                                         self.horizon_detector.
-                                         balls_under_horizon(
-                                             self.ball_finder.get_ball_candidates(),
-                                             self._ball_candidate_y_offset))
+            self.ball_detector.set_image(
+                image,
+                self.horizon_detector.balls_under_horizon(
+                    self.ball_finder.get_ball_candidates(),
+                    self._ball_candidate_y_offset))
 
         elif (self.config['vision_ball_classifier'] == 'fcnn'):
             self.ball_detector.set_image(image)
@@ -351,12 +357,13 @@ class Vision:
                 self.config['ROS_img_msg_topic'] != config['ROS_img_msg_topic']:
             if hasattr(self, 'image_sub'):
                 self.image_sub.unregister()
-            self.image_sub = rospy.Subscriber(config['ROS_img_msg_topic'],
-                                              Image,
-                                              self._image_callback,
-                                              queue_size=config['ROS_img_queue_size'],
-                                              tcp_nodelay=True,
-                                              buff_size=60000000)
+            self.image_sub = rospy.Subscriber(
+                config['ROS_img_msg_topic'],
+                Image,
+                self._image_callback,
+                queue_size=config['ROS_img_queue_size'],
+                tcp_nodelay=True,
+                buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
 
         # publishers

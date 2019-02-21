@@ -1,10 +1,10 @@
 #! /usr/bin/env python2
 
-import rospy
-import rospkg
 import cv2
 import time
 import yaml
+import rospy
+import rospkg
 import numpy as np
 from cv_bridge import CvBridge
 from collections import deque
@@ -17,14 +17,19 @@ from bitbots_vision.vision_modules import horizon, color
 from bitbots_vision.cfg import dynamic_colorspaceConfig
 
 # TODO start/stop dynamic_colorspace
+
 # TODO rename toggle in color.py
+# TODO debug_printer usage in color.py
 # TODO better parameter-names in config
-# TODOs in color.py
 # TODO remove dyn from launch file
 # TODO vision-docu
+# TODO vision: set debug_printer as first param?
 # TODO find_colorpixel_candidates what do we return?
 # TODO change order of methods
 # TODO docu heuristic
+# TODO todos in cfgs and yamls
+
+# TODO register image_raw subscriber for vision in init?
 
 class DynamicColorspace:
     def __init__(self):
@@ -33,6 +38,8 @@ class DynamicColorspace:
         DynamicColorspace is a ROS node, that is used by the vision-node to better recognize the field-color.
         DynamicColorspace is able to calculate dynamically changing colorspaces to accommodate e.g. 
         changing lighting conditions or to compensate for not optimized base-colorspace-files.
+
+        Initiating DynamicColorspace-node.
 
         :return: None
         """
@@ -81,23 +88,23 @@ class DynamicColorspace:
             'image_raw',
             Image,
             self._image_callback,
-            queue_size = 1,
-            tcp_nodelay = True,
-            buff_size = 2**20)
+            queue_size=1,
+            tcp_nodelay=True,
+            buff_size=60000000)
 
         # Subscribe to 'vision_config'-message
         self._vision_config__msg_subscriber = rospy.Subscriber(
             'vision_config',
             Config,
             self._update_vision_config,
-            queue_size = 1,
-            tcp_nodelay = True)
+            queue_size=1,
+            tcp_nodelay=True)
 
         # Register publisher of 'colorspace'-messages
         self._colorspace_publisher = rospy.Publisher(
             'colorspace',
             Colorspace,
-            queue_size = 1)
+            queue_size=1)
 
         # Register dynamic-reconfigure config-callback
         Server(dynamic_colorspaceConfig, self._dynamic_reconfigure_callback)
@@ -122,7 +129,7 @@ class DynamicColorspace:
             return
 
         # Drops old images
-        # TODO debug_printer
+        # TODO: debug_printer usage
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
             return
@@ -194,7 +201,7 @@ class DynamicColorspace:
             self._debug_printer,
             self._package_path,
             self._vision_config,
-            False)
+            do_publish_mask_img_msg=False)
             
         self._horizon_detector = horizon.HorizonDetector(
             self._color_detector,

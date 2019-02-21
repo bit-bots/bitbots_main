@@ -1,25 +1,24 @@
-# TODO: Debug, clean
-import numpy as np
-import VisionExtensions
-from .debug import DebugPrinter
+import abc
+import cv2
 import yaml
 import pickle
 import time
-import abc
-import cv2
-from collections import deque
 import rospy
-from sensor_msgs.msg import Image
+import VisionExtensions
+import numpy as np
+from collections import deque
 from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
 from bitbots_msgs.msg import Colorspace
+from .debug import DebugPrinter
 
 
 class ColorDetector:
     def __init__(self, debug_printer):
         # type: (DebugPrinter) -> None
         """
-        ColorDetector is abstract super-class of specialised sub-classes.
-        ColorDetectors are used e.g. to check if a pixel matches the defined colorspace
+        ColorDetector is abstract super-class of specialized sub-classes.
+        ColorDetectors are used e.g. to check, if a pixel matches the defined colorspace
         or to create masked binary-images.
 
         :param DebugPrinter debug_printer: debug-printer
@@ -32,7 +31,7 @@ class ColorDetector:
     def match_pixel(self, pixel):
         # type: (np.array) -> bool
         """
-        Returns if bgr pixel is in color space
+        Returns, if bgr pixel is in color space
 
         :param np.array pixel: bgr-pixel
         :return bool: whether pixel is in color space or not
@@ -52,12 +51,12 @@ class ColorDetector:
     def match_adjacent(self, image, point, offset=1, threshold=200):
         # type: (np.array, tuple[int, int], int, float) -> bool
         """
-        Returns if an area is in color space
+        Returns, if an area is in color space
 
         :param np.array image: the full image
         :param tuple[int, int] point: a x-, y-tuple defining coordinates in the image
-        :param int offset: the number of pixels to check in the surounding of the
-        point (like a radius but for a square)
+        :param int offset: the number of pixels to check in the surrounding of the
+            point (like a radius but for a square)
         :param float threshold: the mean needed to accept the area to match (0-255)
         :return bool: whether area is in color space or not
         """
@@ -174,7 +173,7 @@ class HsvSpaceColorDetector(ColorDetector):
 
 
 class PixelListColorDetector(ColorDetector):
-    def __init__(self, debug_printer, package_path, config, do_publish_mask_img_msg = True):
+    def __init__(self, debug_printer, package_path, config, do_publish_mask_img_msg=True):
         # type:(DebugPrinter, str, dict, bool) -> None
         """
         PixelListColorDetector is a ColorDetector, that is based on a color-space.
@@ -185,21 +184,21 @@ class PixelListColorDetector(ColorDetector):
         :param DebugPrinter debug_printer: debug-printer
         :param str package_path: path of package
         :param dict config: vision-config
-        :param bool do_publish_mask_img_msg: if True: this ColorDetector publishes mask_img-messages
+        :param bool do_publish_mask_img_msg: if True: this ColorDetector publishes mask_img-messages (Default: True)
         :return: None
         """
         ColorDetector.__init__(self, debug_printer)
+        self.bridge = CvBridge()
 
         self.vision_config = config
 
-        # TODO debug-printer
+        # TODO: debug-printer
         self.do_publish_mask_img_msg = do_publish_mask_img_msg
 
         # concatenate color-path to file containing the accepted colors of base-color-space
         self.color_path = package_path + self.vision_config['field_color_detector_path']
         self.base_color_space = self.init_color_space(self.color_path)
         self.color_space = np.copy(self.base_color_space)
-        self.bridge = CvBridge()
 
         # toggle publishing of mask_img msg
         self.publish_mask_img_msg = self.vision_config['vision_mask_img_msg']
@@ -210,14 +209,25 @@ class PixelListColorDetector(ColorDetector):
         # toggle use of dynamic-colorspace
         self.toggle_dynamic_color_space = self.vision_config['vision_dynamic_colorspace']
 
-        self.colorspace_sub = rospy.Subscriber('colorspace',
-                                                Colorspace,
-                                                self._colorspace_callback,
-                                                queue_size=1,
-                                                buff_size=2**20)
+        # Subscribe to 'colorspace'-messages from DynamicColorspace
+        self.colorspace_sub = rospy.Subscriber(
+            'colorspace',
+            Colorspace,
+            self.colorspace_callback,
+            queue_size=1,
+            buff_size=2**20)
     
-        self.imagepublisher = rospy.Publisher("/mask_image", Image, queue_size=1)
-        self.imagepublisher_dyn = rospy.Publisher("/mask_image_dyn", Image, queue_size=1)
+        # Register publisher for 'mask_image'-messages
+        self.imagepublisher = rospy.Publisher(
+            "/mask_image",
+            Image,
+            queue_size=1)
+
+        # Register publisher for 'mask_image_dyn'-messages
+        self.imagepublisher_dyn = rospy.Publisher(
+            "/mask_image_dyn",
+            Image,
+            queue_size=1)
 
     def init_color_space(self, color_path):
         # type: (str) -> None
@@ -235,6 +245,7 @@ class PixelListColorDetector(ColorDetector):
                 except yaml.YAMLError as exc:
                     self._debug_printer.error(exc, 'PixelListColorDetector')
                     # TODO: what now??? Handle the error?
+
         # pickle-file is stored as '.txt'
         elif color_path.endswith('.txt'):
             try:
@@ -259,7 +270,7 @@ class PixelListColorDetector(ColorDetector):
     def match_pixel(self, pixel):
         # type: (np.array) -> bool
         """
-        Returns if bgr pixel is in color space
+        Returns, if bgr pixel is in color space
 
         :param np.array pixel: bgr-pixel
         :return bool: whether pixel is in color space or not
@@ -269,8 +280,8 @@ class PixelListColorDetector(ColorDetector):
     def mask_image(self, image):
         # type: (np.array) -> np.array
         """
-        Creates a color mask and publishes mask_img-messages.
-        (0 for not in color range and 255 for in color range)
+        Creates a color mask (0 for not in color range and 255 for in color range)
+        and publishes 'mask_img' and 'mask_img_dyn'-messages.
 
         :param np.array image: image to mask
         :return np.array: masked image
@@ -281,11 +292,11 @@ class PixelListColorDetector(ColorDetector):
         if self.toggle_dynamic_color_space:
             dyn_mask = VisionExtensions.maskImg(image, self.color_space)
 
-            # toggle publishing of mask_img_dyn msg
+            # toggle publishing of 'mask_img_dyn'-messages
             if (self.do_publish_mask_img_msg and self.publish_mask_img_dyn_msg):
                 self.imagepublisher_dyn.publish(self.bridge.cv2_to_imgmsg(dyn_mask, '8UC1'))
   
-        # toggle publishing of mask_img msg          
+        # toggle publishing of 'mask_img'-messages          
         if (self.do_publish_mask_img_msg and self.publish_mask_img_msg):
             self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(static_mask, '8UC1'))
 
@@ -294,18 +305,33 @@ class PixelListColorDetector(ColorDetector):
         else:
             return static_mask
 
-    def _colorspace_callback(self, msg):
-        # TODO docu
+    def colorspace_callback(self, msg):
+        # type: (Colorspace) -> None
+        """
+        This callback gets called, after subscriber received 'colorspace'-message from DynamicColorspace-Node.
+
+        :param Colorspace msg: 'colorspace'-message
+        :return: None
+        """
         self.decode_colorspace(msg)
 
     def decode_colorspace(self, msg):
-        # TODO docu
-        # Imports new colorspace from a ros msg. This is used to communicate with the Dynamic Colorspace Node.
+        # type: (Colorspace) -> None
+        """
+        Imports new colorspace from ros msg. This is used to communicate with the DynamicColorspace-Node.
+
+        :param Colorspace msg: 'colorspace'-message
+        :return: None
+        """
+        # Create temporary colorspace
         # Use the base colorspace as basis
         color_space_temp = np.copy(self.base_color_space)
+
         # Adds new colors to that colorspace
-        color_space_temp[msg.blue,
-                         msg.green,
-                         msg.red] = 1
+        color_space_temp[
+            msg.blue,
+            msg.green,
+            msg.red] = 1
+
         # Switches the reference to the new colorspace
         self.color_space = color_space_temp
