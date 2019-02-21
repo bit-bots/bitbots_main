@@ -6,6 +6,9 @@
 Welcome to BitBots's documentation!
 ===================================
 
+Public documentation
+--------------------
+
 Einstieg und Tutorials:
 
 .. toctree::
@@ -38,7 +41,7 @@ Hardware:
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
