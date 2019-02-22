@@ -37,7 +37,7 @@ Hardware:
     manual/hardware/elektronik
     manual/hardware/motorkabel
     manual/hardware/schrauben
-    manual/hardware/motornumbers
+    manual/hardware/motornummern
 
 
 
