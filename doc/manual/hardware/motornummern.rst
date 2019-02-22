@@ -1,5 +1,5 @@
 ===============
-Motor Nummern
+Motornummern
 ===============
 
 .. image:: motornummern/motors.png
