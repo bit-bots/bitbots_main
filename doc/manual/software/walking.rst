@@ -16,7 +16,7 @@ The walking consists of three main parts:
 2. The walking engine (QuinticWalk.cpp) which generates cartesian poses of the flying foot and the trunk in relation to the support foot. These are based on splines.
 3. The inverse kinematic which computes the necessary joint values to reach the computed cartesian poses. We use BioIK for this
 
-.. image:: QuinticWalk_structure.pdf
+.. image:: walking/QuinticWalk_structure.pdf
 
 
 Preliminaries
@@ -49,8 +49,8 @@ When the next step is computed, the last positions, velocities and accelerations
 Since these trajectories are only build when doing a new double step, changes in parameters or walking commands are only shown when the current double step is finished.
 The method which computes the poses at a given time point only takes the prebuild splines and computes the values for each of the splines using the methematical spline interpolation.
 
-.. image:: engine_step.pdf
-.. image:: engine_params.pdf
+.. image:: walking/engine_step.pdf
+.. image:: walking/engine_params.pdf
 
 
 The Walking Node

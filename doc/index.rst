@@ -14,7 +14,8 @@ Einstieg und Tutorials:
 .. toctree::
    :maxdepth: 1
 
-   manual/tutorials/software-overview.rst
+   manual/tutorials/software-overview
+   manual/tutorials/software-schnelleinstieg
    manual/tutorials/Doku-How-To
    manual/tutorials/colorpicker
    manual/tutorials/pycharm-ros
@@ -24,9 +25,9 @@ Software:
 .. toctree::
     :maxdepth: 1
 
-    manual/software/walking/walking.rst
-    manual/software/AI/AI.rst
-    manual/software/Vision/Vision.rst
+    manual/software/walking
+    manual/software/AI
+    manual/software/Vision
 
 Hardware:
 
