@@ -18,6 +18,7 @@ import getpass, datetime, sys, socket
 
 class HardwareUI(Plugin):
     """Backend for the GUI. Receives UDP data and distributes it across all GUI elements."""
+    sig = QtCore.pyqtSignal(str)
     def __init__(self, context):
         """Loads up the master.ui GUI file and adds some additional widgets that cannot be added beforehand. Also sets some necessary variables."""
         super(HardwareUI, self).__init__(context)
@@ -53,19 +54,15 @@ class HardwareUI(Plugin):
 
         self._widget = QMainWindow()
 
-        self._robot_ip, button_pressed = QInputDialog.getText(self._widget, "Robot IP Required", \
-                    "Please enter the IP adress of the robot. Leave blank for localhost", QLineEdit.Normal, "")
-        if button_pressed:
-            if self._robot_ip == "" or self._robot_ip == "loclahost":
-                self._robot_ip = "127.0.0.1"
-            self._robot_port, button_pressed = QInputDialog.getText(self._widget, "Change Port?", \
-                    "Please select the port you want to listen on. Leave blank for port 5005.", QLineEdit.Normal, "")
-            if button_pressed and self._robot_port == "":
-                self._robot_port = "5005"
+        self._robot_ip = [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0]
+        self._robot_port, button_pressed = QInputDialog.getText(self._widget, "Change Port?", \
+                "Please select the port you want to listen on. Leave blank for port 5005.", QLineEdit.Normal, "")
+        if button_pressed and self._robot_port == "":
+            self._robot_port = "5005"
         self.current_tab = 0
 
-        self.msgtosig = messageToSignal(self._robot_ip, self._robot_port)
-        self.msgtosig.start()
+        self.rcvthread = ReceiverThread(self._robot_ip, self._robot_port)
+        self.rcvthread.start()
         rp = rospkg.RosPack()
         ui_file = os.path.join(rp.get_path('bitbots_hardware_rqt'), 'resource', 'master.ui')
         loadUi(ui_file, self._widget, {})
@@ -124,7 +121,6 @@ class HardwareUI(Plugin):
 
     def process_data(self, data):
         """Triggered each time we receive an UDP message. Calls methods to update each GUI element"""
-        print(data.data)
         data_json = json.loads(data.data)
 
         self.set_imu(data_json)
@@ -317,7 +313,7 @@ class HardwareUI(Plugin):
         self.layout_voltage.addWidget(self.combobox2)
         self.voltageplt.win.hide()
 
-class messageToSignal(QtCore.QThread):
+class ReceiverThread(QtCore.QThread):
     def __init__(self, ip, port, parent=None):
         QtCore.QThread.__init__(self, parent)
         self.ip = ip
