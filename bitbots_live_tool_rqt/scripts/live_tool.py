@@ -1,22 +1,13 @@
-import rospkg
-import rospy
-import time
-import socket
+import rospkg, rospy, time, socket, yaml, sys, os, threading
 import multiprocessing as mp
-import yaml
-import sys
-import os
 
 from python_qt_binding import loadUi
 from python_qt_binding.QtCore import *
-
 from python_qt_binding.QtWidgets import QMainWindow, QWidget, QTreeWidget, QTreeWidgetItem, QListWidgetItem, \
     QSlider, QGroupBox, QVBoxLayout, QLabel, QLineEdit, QListWidget, QAbstractItemView, QFileDialog, QDoubleSpinBox, \
     QMessageBox, QInputDialog, QShortcut
 
 from rqt_gui_py.plugin import Plugin
-
-import os
 
 from defaultview import DefaultView
 from information_tab import InformationTab
@@ -30,17 +21,16 @@ from trajectory_msg import TrajectoryMsg
 from detection_msg import DetectionMsg
 from position_msg import PositionMsg
 
-
 from udp_receiver import Client
 from bitbots_live_tool_rqt.msg import LiveMessage
 
 from name import Name
-import threading
 
 
 
 
 class LiveTool(Plugin):
+    """Class that manages the RQT plugin and UI elements"""
     TIMEOUT_TOKEN = "RECEIVE_TIMEOUT"
 
     UDP_TIMEOUT = 1.0
@@ -65,15 +55,12 @@ class LiveTool(Plugin):
         self._widget.show()
         context.add_widget(self._widget)
 
-        self.udp_ip, button_pressed = QInputDialog.getText(self._widget, "Robot IP Required", \
-            "Please enter the IP adress of the robot. Leave blank for localhost", QLineEdit.Normal, "")
-        if button_pressed:
-            if self.udp_ip == "" or self.udp_ip == "localhost":
-                self.udp_ip = "127.0.0.1"
-            self.udp_port, button_pressed = QInputDialog.getText(self._widget, "Change Port?", \
-                    "Please select the port you want to listen on. Leave blank for port 5006.", QLineEdit.Normal, "")
-            if button_pressed and self.udp_port == "":
-                self.udp_port = "5006"
+        self.udp_ip = [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0]
+        
+        self.udp_port, button_pressed = QInputDialog.getText(self._widget, "Change Port?", \
+                "Please select the port you want to listen on. Leave blank for port 5006.", QLineEdit.Normal, "")
+        if button_pressed and self.udp_port == "":
+            self.udp_port = "5006"
 
         self.udpworker = UdpWorker(self.udp_ip, self.udp_port)
         self.udpworker.start()
@@ -84,7 +71,7 @@ class LiveTool(Plugin):
         #TODO: for testing only!!!: This parameter should be set for every Robot individually
         rospy.set_param(Name.param_robot_id, "Robot_2")
 
-        # a simple list containing current RobotIDs. The order indicates, which robo gets which Index for
+        # a simple list containing current RobotIDs. The order indicates, which robot gets which Index for
         # tabs and the 4 fields
         self.id_list = []
 
@@ -93,10 +80,6 @@ class LiveTool(Plugin):
                            LiveTool.UDP_DETECTION_MSG: {Name.secs: 0, Name.nsecs: 0},
                            LiveTool.UDP_STATUS_MSG: {Name.secs: 0, Name.nsecs: 0},
                            LiveTool.UDP_TRAJECTORY_MSG: {Name.secs: 0, Name.nsecs: 0}}
-
-        #with open("pckgs.txt", "w") as file:
-        #    None
-        #file.close()
 
         self._widget.label_13.setText("IP: "+ [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0])
 
@@ -170,15 +153,13 @@ class LiveTool(Plugin):
     """
 
     def _storeData(self, data):
+        """Function needed to make the data available for the main thread without blocking it, as rospy.Subscriber runs in a different thread. """
         self.sig.emit(str(data.data))
 
     def _parseUdpPackage(self, data):
         #self.count_pkgs(str(data))
         robotID, idStr, yamlData = str.split(str(data), LiveTool.UDP_ID_SPLIT)
         dataDict = yaml.load(yamlData)
-
-        #print('data: '+ data.data)
-        #print('yaml: '+ yamlData)
 
         # at least a timestamp has to be in message
         if dataDict != {} and dataDict.has_key(Name.timestamp):
