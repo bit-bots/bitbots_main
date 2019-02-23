@@ -217,6 +217,8 @@ class DynamicColorspace:
         # TODO docu
         self._config = config
 
+        self.set_detectors()
+
         # TODO: debug-image on/off
         self._color_value_queue.clear()
         if (self._queue_max_size != self._config['queue_max_size']):
