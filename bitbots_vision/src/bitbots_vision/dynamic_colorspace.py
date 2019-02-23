@@ -16,8 +16,6 @@ from bitbots_vision.vision_modules import debug
 from bitbots_vision.vision_modules import horizon, color
 from bitbots_vision.cfg import dynamic_colorspaceConfig
 
-# TODO start/stop dynamic_colorspace
-
 # TODO rename toggle in color.py
 # TODO debug_printer usage in color.py
 # TODO better parameter-names in config
@@ -28,8 +26,11 @@ from bitbots_vision.cfg import dynamic_colorspaceConfig
 # TODO change order of methods
 # TODO docu heuristic
 # TODO todos in cfgs and yamls
+# TODO refactor everything to color-space
+# TODO do class -methods, -variables with _underscore?
+# TODO rename Config-Message
 
-# TODO register image_raw subscriber for vision in init?
+# TODO register image_raw subscriber for vision.py in init?
 
 class DynamicColorspace:
     def __init__(self):
@@ -58,7 +59,7 @@ class DynamicColorspace:
 
         # Load vision-config
         self._vision_config = {}
-        # TODO maybe get config from msg???
+        # TODO maybe get config from msg???TODO docu
         self._vision_config = rospy.get_param('/bitbots_vision')
 
         # TODO NOT tested... correct implementation?
@@ -74,7 +75,7 @@ class DynamicColorspace:
         self._pointfinder_kernel_size = self._config['kernel_size']
 
         # Set ColorDetector and HorizonDetector
-        self.set_detectors()
+        self._set_detectors()
 
         self._pointfinder = Pointfinder(
             self._debug_printer,
@@ -96,7 +97,7 @@ class DynamicColorspace:
         self._vision_config__msg_subscriber = rospy.Subscriber(
             'vision_config',
             Config,
-            self._update_vision_config,
+            self._vision_config_callback,
             queue_size=1,
             tcp_nodelay=True)
 
@@ -111,6 +112,68 @@ class DynamicColorspace:
 
         rospy.spin()
 
+    def _set_detectors(self):
+        # type: () -> None
+        """
+        (Re-)Set Color- and HorizonDetector to newest vision-config.
+
+        :return: None
+        """
+        self._color_detector = color.PixelListColorDetector(
+            self._debug_printer,
+            self._package_path,
+            self._vision_config,
+            do_publish_mask_img_msg=False)
+            
+        self._horizon_detector = horizon.HorizonDetector(
+            self._color_detector,
+            self._vision_config,
+            self._debug_printer)
+
+    def _dynamic_reconfigure_callback(self, config, level):
+        # type: (dict, int) -> dict
+        """
+        This gets called, after dynamic-reconfigure-server received config-changes.
+        Handling all config-changes.
+
+        :param dict config: new config
+        :param int level: ???
+        :return dict: new config
+        """
+        # Set new config
+        self._config = config
+
+        self._set_detectors()
+
+        # Reset queue
+        self._color_value_queue.clear()
+
+        # Set queue to new max-size
+        self._queue_max_size = self._config['queue_max_size']
+        self._color_value_queue = deque(maxlen=self._queue_max_size)
+        
+        # Set new config for Pointfinder
+        self._threshold = self._config['threshold']
+        self._kernel_size = self._config['kernel_size']
+        self._pointfinder.set_pointfinder_params(self._threshold, self._kernel_size)
+
+        return config
+
+    def _vision_config_callback(self, msg):
+        # type: (Config) -> None
+        """
+        This method is called by the 'vision_config'-message-subscriber.
+        Load and update vision-config.
+        Handle config-changes.
+
+        :param Config msg: new 'vision_config'-message-subscriber
+        :return: None
+        """
+        # Load dict from yaml-string in msg.data
+        self._vision_config = yaml.load(msg.data)
+
+        self._set_detectors()
+
     def _image_callback(self, image_msg):
         # type: (Image) -> None
         """
@@ -120,10 +183,9 @@ class DynamicColorspace:
         Sometimes the queue gets to large, even when the size is limeted to 1. 
         That's, why we drop old images manualy.
 
-        :param Image image_msg: image-message from 'img_raw'-message-subscriber
+        :param Image image_msg: new image-message from 'img_raw'-message-subscriber
         :return: None
         """
-
         # Turn off dynamic-color-space
         if not self._vision_config['vision_dynamic_colorspace']:
             return
@@ -136,100 +198,91 @@ class DynamicColorspace:
 
         # Converting the ROS image message to CV2-image
         image = self._bridge.imgmsg_to_cv2(image_msg, 'bgr8')
-        # Calculates the new colorspace
-        self.calc_dynamic_colorspace(image)
+        # Get new dynamic-colors from image
+        colors = self.get_new_dynamic_colors(image)
+        # Add new colors to the queue
+        self._color_value_queue.append(colors)
         # Publishes the colorspace
         self.publish(image_msg)
 
-    def calc_dynamic_colorspace(self, image):
-        # TODO docu
-        # Masks new image with current colorspace
-        mask_image = self._color_detector.mask_image(image)
-        # Calls the horizon detector
-        self._horizon_detector.set_image(image)
-        self._horizon_detector.compute_horizon_points()
-        mask = self._horizon_detector.get_mask()
-        if not mask is None:
-            # Searches for new candidate pixels in the color mask
-            colorpixel_candidates_list = self._pointfinder.find_colorpixel_candidates(mask_image)
-            # Gets unique color vales from the candidate pixels.
-            colors = self.get_pixel_values(image, colorpixel_candidates_list)
-            # Filters the colors using the heuristic. 
-            colors = np.array(self._heuristic.run(colors, image, mask), dtype=np.int32)
-            # Adds new (sub-)colorspace to the queue
-            self._color_value_queue.append(colors)
-        
-    def queue_to_colorspace(self):
-        # TODO docu
-        # Inizializes an empty colorspace
-        colorspace = np.array([]).reshape(0,3)
-        # Stacks every colorspace in the queue
-        for new_color_value_list in self._color_value_queue:
-            colorspace = np.append(colorspace, new_color_value_list[:,:], axis=0)
-        # Returns an colorspace, which contains all colors from the queue
-        return colorspace
+    def get_unique_color_values(self, image, coordinate_list):
+        # type: (np.array, np.array) -> np.array
+        """
+        Returns array of unique colors-values from a given image at pixel-coordinates from given list.
 
-    def get_pixel_values(self, img, pixellist):
-        # TODO docu
-        '''
-        Returns unique colors for an given image and a list of pixels.
-        '''
-        colors = img[pixellist[0], pixellist[1]]
+        :param np.array image: image
+        :param np.array coordinate_list: list of pixel-coordinates
+        :return np.array: array of unique color-values from image at pixel-coordinates
+        """
+        # Create list of color-values from image at given coordinates
+        colors = image[coordinate_list[0], coordinate_list[1]]
+        # np.unique requires list with at least one element
         if colors.size > 0:
             unique_colors = np.unique(colors, axis=0)
         else:
             unique_colors = colors
         return unique_colors
 
+    def get_new_dynamic_colors(self, image):
+        # type: (np.array) -> np.array
+        """
+        Returns array of new dynamically calculated color-values.
+        Those values were filtered by the heuristic.
+
+        :param np.array image: image
+        :return np.array: array of new dynamic-color-values
+        """
+        # Masks new image with current colorspace
+        mask_image = self._color_detector.mask_image(image)
+        # Get mask from horizon detector
+        self._horizon_detector.set_image(image)
+        self._horizon_detector.compute_horizon_points()
+        mask = self._horizon_detector.get_mask()
+        if not mask is None:
+            # Get list of pixel-coordinates of color-candidates
+            pixel_coordinate_list = self._pointfinder.find_colorpixel_candidates(mask_image)
+            # Get unique color-values from the candidate pixels
+            color_candidates = self.get_unique_color_values(image, pixel_coordinate_list)
+            # Filters the colors using the heuristic.
+            colors = np.array(self._heuristic.run(color_candidates, image, mask), dtype=np.int32)
+            return colors
+        return np.array([[]])
+
+    def queue_to_colorspace(self, queue):
+        # type: (dequeue) -> np.array
+        """
+        Returns colorspace as array of all queue-elements stacked, which contains all colors from the queue.
+
+        :param dequeue queue: queue of array of color-values
+        :return np.array: colorspace
+        """
+        # Initializes an empty colorspace
+        colorspace = np.array([]).reshape(0,3)
+        # Stack every colorspace in the queue
+        for new_color_value_list in queue:
+            colorspace = np.append(colorspace, new_color_value_list[:,:], axis=0)
+        # Return a colorspace, which contains all colors from the queue
+        return colorspace
+
     def publish(self, image_msg):
-        # TODO docu
-        '''
-        Publishes the current colorspace via ros msg.
-        '''
-        colorspace = self.queue_to_colorspace()
+        # type: (Image) -> None
+        """
+        Publishes the current colorspace via Colorspace-message.
+
+        :param Image image_msg: 'image_raw'-message
+        :return: None
+        """
+        # Get colorspace from queue
+        colorspace = self.queue_to_colorspace(self._color_value_queue)
+        # Create Colorspace-message
         colorspace_msg = Colorspace()
         colorspace_msg.header.frame_id = image_msg.header.frame_id
         colorspace_msg.header.stamp = image_msg.header.stamp
         colorspace_msg.blue  = colorspace[:,0].tolist()
         colorspace_msg.green = colorspace[:,1].tolist()
         colorspace_msg.red   = colorspace[:,2].tolist()
+        # Publish Colorspace-message
         self._colorspace_publisher.publish(colorspace_msg)
-
-    def set_detectors(self):
-        # TODO docu
-        self._color_detector = color.PixelListColorDetector(
-            self._debug_printer,
-            self._package_path,
-            self._vision_config,
-            do_publish_mask_img_msg=False)
-            
-        self._horizon_detector = horizon.HorizonDetector(
-            self._color_detector,
-            self._vision_config,
-            self._debug_printer)
-
-    def _update_vision_config(self, msg):
-        # TODO docu
-        self._vision_config = yaml.load(msg.data)
-        self.set_detectors()
-
-    def _dynamic_reconfigure_callback(self, config, level):
-        # TODO docu
-        self._config = config
-
-        self.set_detectors()
-
-        # TODO: debug-image on/off
-        self._color_value_queue.clear()
-        if (self._queue_max_size != self._config['queue_max_size']):
-            self._queue_max_size = self._config['queue_max_size']
-            self._color_value_queue = deque(maxlen=self._queue_max_size)
-        
-        # Pointfinder
-        self._threshold = self._config['threshold']
-        self._kernel_size = self._config['kernel_size']
-        self._pointfinder.set_pointfinder_params(self._threshold, self._kernel_size)
-        return config
 
 
 class Pointfinder():
