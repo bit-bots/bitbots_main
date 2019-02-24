@@ -16,8 +16,10 @@ from bitbots_vision.vision_modules import debug
 from bitbots_vision.vision_modules import horizon, color
 from bitbots_vision.cfg import dynamic_colorspaceConfig
 
-# TODO rename toggle in color.py
-# TODO debug_printer usage in color.py
+# 
+# :return TODO rename toggle in color.py
+# 
+# :return TODO debug_printer usage in color.py
 # TODO better parameter-names in config
 # TODO remove dyn from launch file
 # TODO vision-docu
@@ -326,7 +328,7 @@ class Pointfinder():
         Color-candidates are false-color pixels with a higher true-color/ false-color ratio as threshold in their surrounding in masked-image.
 
         :param np.array masked_image: masked image
-        :return: np.array: list of indices
+        :return np.array: list of indices
         """
         # Normalizes the masked image to values of 1 or 0
         normalized_image = np.divide(masked_image, 255, dtype=np.int16)
@@ -340,6 +342,7 @@ class Heuristic:
     def __init__(self, debug_printer):
         # type: (DebugPrinter) -> None
         """
+        TODO
 
         :param DebugPrinter debug_printer: Debug-printer
         :return: None
@@ -347,44 +350,90 @@ class Heuristic:
         self._debug_printer = debug_printer
 
     def run(self, color_list, image, mask):
-        # Simplyfies the handling by merging the 3 color channels
+        # type: (np.array, np.array, np.array) -> TODO
+        """
+        TODO
+
+        :param np.array color_list: list of color-values
+        :param np.array image: image
+        :param np.array mask: horizon-mask
+        :return: TODO
+        """
+        # Simplifies the handling by merging the three color-channels
         color_list = self.serialize(color_list)
         color_set = set(color_list)
         # Generates whitelist
         whitelist = self.recalc(image, mask)
         # Takes only whitelisted values 
         color_set = color_set.intersection(whitelist)
-        # Restrucktures the color channels
+        # Restructures the color channels
         return self.deserialize(np.array(list(color_set)))
 
     def recalc(self, image, mask):
-        # Genereates whitelist
+        # type: (np.array, np.array) -> TODO
+        """
+        TODO
+
+        :param np.array image: image
+        :param np.array mask: horizon-mask
+        :return: TODO
+        """
+        # Generates whitelist
         colors_over_horizon, colors_under_horizon = self.calc_freq(image, mask)
         return set(colors_under_horizon) - set(colors_over_horizon)
 
     def calc_freq(self, image, mask):
-        # Calls a funktion to calculate the number of occurencies of all colors in the image
-        # returns array(over_horrizon(unique, count), under_horrizon(unique, count))
+        # type: (np.array, np.array) -> TODO
+        """
+        TODO
+
+        :param np.array image: image
+        :param np.array mask: horizon-mask
+        :return: TODO
+        """
+        # Calls a function to calculate the number of occurrences of all colors in the image
+        # returns array(over_horizon(unique, count), under_horizon(unique, count))
         return (self.get_freq_colors(cv2.bitwise_and(image, image, mask=255 - mask)),
                 self.get_freq_colors(cv2.bitwise_and(image, image, mask=mask)))
 
     def get_freq_colors(self, image):
-        # Simplyfies the handling by merging the 3 color channels
+        # type: (np.array) -> TODO
+        """
+        TODO
+
+        :param np.array image: image
+        :return: TODO
+        """
+        # Simplifies the handling by merging the 3 color channels
         serialized_img = self.serialize(np.reshape(image, (1, int(image.size / 3), 3))[0])
         # Returns unique colors in the image
         return np.unique(serialized_img, axis=0)
 
     def serialize(self, input_matrix):
-        return np.array(np.multiply(input_matrix[:, 0], 256 ** 2) \
-                        + np.multiply(input_matrix[:, 1], 256) \
-                        + input_matrix[:, 2], dtype=np.int32)
+        # type: (TODO) -> TODO
+        """
+        TODO
+
+        :param TODO input_matrix: TODO
+        :return: TODO
+        """
+        return np.array(
+            np.multiply(input_matrix[:, 0], 256 ** 2) \
+            + np.multiply(input_matrix[:, 1], 256) \
+            + input_matrix[:, 2], dtype=np.int32)
 
     def deserialize(self, input_matrix):
+        # type: (TODO) -> TODO
+        """
+        TODO
+
+        :param TODO input_matrix: TODO
+        :return: TODO
+        """
         new_matrix = np.zeros((input_matrix.size, 3))
         new_matrix[:, 0] = np.array(input_matrix // 256 ** 2, dtype=np.uint8)
         new_matrix[:, 1] = np.array((input_matrix - (new_matrix[:, 0] * 256 ** 2)) / 256, dtype=np.uint8)
-        new_matrix[:, 2] = np.array((input_matrix - (new_matrix[:, 0] * 256 ** 2) - (new_matrix[:, 1] * 256)),
-                                    dtype=np.uint8)
+        new_matrix[:, 2] = np.array((input_matrix - (new_matrix[:, 0] * 256 ** 2) - (new_matrix[:, 1] * 256)), dtype=np.uint8)
         return new_matrix
 
 
