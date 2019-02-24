@@ -16,10 +16,8 @@ from bitbots_vision.vision_modules import debug
 from bitbots_vision.vision_modules import horizon, color
 from bitbots_vision.cfg import dynamic_colorspaceConfig
 
-# 
-# :return TODO rename toggle in color.py
-# 
-# :return TODO debug_printer usage in color.py
+# TODO rename toggle in color.py
+# TODO debug_printer usage in color.py
 # TODO better parameter-names in config
 # TODO remove dyn from launch file
 # TODO vision-docu
