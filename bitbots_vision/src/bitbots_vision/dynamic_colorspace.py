@@ -239,10 +239,10 @@ class DynamicColorspace:
         self._horizon_detector.compute_horizon_points()
         mask = self._horizon_detector.get_mask()
         if not mask is None:
-            # Get list of pixel-coordinates of color-candidates
-            pixel_coordinate_list = self._pointfinder.find_colorpixel_candidates(mask_image)
+            # Get array of pixel-coordinates of color-candidates
+            pixel_coordinates = self._pointfinder.get_coordinates_of_color_candidates(mask_image)
             # Get unique color-values from the candidate pixels
-            color_candidates = self.get_unique_color_values(image, pixel_coordinate_list)
+            color_candidates = self.get_unique_color_values(image, pixel_coordinates)
             # Filters the colors using the heuristic.
             colors = np.array(self._heuristic.run(color_candidates, image, mask), dtype=np.int32)
             return colors
@@ -289,14 +289,15 @@ class Pointfinder():
     def __init__(self, debug_printer, threshold, kernel_size=3):
         # type: (DebugPrinter, float, int) -> None
         """
+        Pointfinder is used to find false-color pixels with higher true-color / false-color ratio as threshold in their surrounding in masked-image.
+
         :param DebugPrinter: debug-printer
-        :param float threshold: necessary amount of true color in percentage (between 0..1)
-        :param int kernel_size: defines edge-size of convolution kernel, use odd number (default 3)
+        :param float threshold: necessary amount of true-color in percentage (between 0..1)
+        :param int kernel_size: edge-size of convolution kernel, use odd number (default 3), defines relevant surrounding of pixel
         :return: None
         """
         # Init params
         self._debug_printer = debug_printer
-        
         self.set_pointfinder_params(threshold, kernel_size)
 
     def set_pointfinder_params(self, threshold, kernel_size=3):
@@ -318,11 +319,11 @@ class Pointfinder():
         # Set value of element in the middle of the matrix to negative of the count of the matrix-elements
         self._kernel[int(np.size(self._kernel, 0) / 2), int(np.size(self._kernel, 1) / 2)] = - self._kernel.size
 
-    def find_colorpixel_candidates(self, masked_image):
+    def get_coordinates_of_color_candidates(self, masked_image):
         # type (np.array) -> np.array
         """
-        Returns list of indices of pixel-candidates.
-        # TODO what?
+        Returns array of pixel-coordinates of color-candidates.
+        Color-candidates are false-color pixels with a higher true-color/ false-color ratio as threshold in their surrounding in masked-image.
 
         :param np.array masked_image: masked image
         :return: np.array: list of indices
@@ -330,14 +331,19 @@ class Pointfinder():
         # Normalizes the masked image to values of 1 or 0
         normalized_image = np.divide(masked_image, 255, dtype=np.int16)
 
-        # Calculates the number of neighbours for each pixel
+        # Calculates the count of neighbors for each pixel
         sum_array = cv2.filter2D(normalized_image, -1, self._kernel, borderType=0)
-        # Returns all pixels with an higher neighbour / non neighbours ratio than the threshold # TODO what?
+        # Returns all pixels with a higher true-color / false-color ratio than the threshold
         return np.array(np.where(sum_array > self._threshold * (self._kernel.size - 1)))
 
 class Heuristic:
-
     def __init__(self, debug_printer):
+        # type: (DebugPrinter) -> None
+        """
+
+        :param DebugPrinter debug_printer: Debug-printer
+        :return: None
+        """
         self._debug_printer = debug_printer
 
     def run(self, color_list, image, mask):
