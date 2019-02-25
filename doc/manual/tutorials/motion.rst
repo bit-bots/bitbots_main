@@ -44,8 +44,8 @@ invertiert übertragen werden. Es ist besonders wichtig, beim Krimpen der Kabel 
 an einen Logic Analyzer darauf zu achten, dass die Kabel für Strom und Daten nicht vertauscht
 werden, da die Motoren mehr als 5V auf der Datenleitung nicht vertragen!
 
-Die Kabel haben nur 3 Adern bei der eins für Ground, eins für Daten (auch 5V) ist. Auch hier sollten
-Kabel nicht falsch gekrimpt werden.
+Die Kabel für TTL haben nur drei Adern, bei denen zwei für Ground und Strom und eins für Daten
+(auch 5V) ist. Auch hier sollten Kabel nicht falsch gekrimpt werden.
 
 Die Kommunikation mit den Motoren findet über das Bus-Protokoll von Dynamixel statt. Die Details
 können direkt in der Spezifikation nachgelesen werden. Wir benutzen die `Version 2
@@ -58,8 +58,8 @@ einer Parameterliste und einer Checksumme. Die wichtigsten Instruktionen sind Pi
 Status sowie Sync Read und Sync Write zum Lesen oder Schreiben mehrerer Motoren zugleich.
 
 Jeder Motor hat dazu eine feste ID, über die er eindeutig angesprochen werden kann. Bei einem neuen / 
-neu eingerichteten motor ist die ID 1. Sie kann mit einer write Instruktion in ein bestimmtes register 
-gesetzt werden.
+neu eingerichteten motor ist die ID 1. Sie kann mit einer write-Instruktion in ein bestimmtes
+Register gesetzt werden.
 
 Es ist wichtig, dass nicht zwei Motoren mit der selben ID auf einem Bus angeschlossen sind. Dies führt 
 zu Kommunikationsfehlern.
@@ -84,35 +84,39 @@ Ab hier befinden sich alle Ebenen der Motion auf dem NUC.
 Im Kontext der Motion kümmert sich der Linux Kernel darum, dass das über USB angeschlossene
 DXL-Board von Programmen verwendet werden kann. Es ist darauf zu achten, dass die Latenz im Kernel
 von 16ms auf 0 gesetzt wird, z.B. per:
-sudo sh -c "echo '0' > /sys/bus/usb-serial/devices/ttyUSB0/latency_timer"
-Dies ist jedoch nur für "echte" serielle devices notwendig. Das DXL-Board meldet sich zur Zeit 
+
+.. code:: bash
+
+   sudo sh -c "echo '0' > /sys/bus/usb-serial/devices/ttyUSB0/latency_timer"
+
+Dies ist jedoch nur für "echte" serielle Devices notwendig. Das DXL-Board meldet sich zurzeit 
 als ACM an, dort ist es nicht nötig. Bei dem neuen QUADDXL wird dies jedoch extrem wichtig sein.
 
 Dynamixel SDK
 ~~~~~~~~~~~~
 
 Das Dynamixel SDK implementiert das Dynamixel Protokoll. Es stellt dabei (in verschiedenen Sprachen) 
-methoden zum versenden von instruktionen und lesen von status packeten bereit. 
-Wir benutzen eine geforkte version, da Robotis vergessen hat das Sync Read für mehr als ein register
-zu implementieren.
+Methoden zum Versenden von Instruktionen und zum Lesen von Statuspaketen bereit.  Wir benutzen eine
+geforkte version, da Robotis vergessen hat, das Sync Read für mehr als ein Register zu
+implementieren.
 
 Dynamixel Workbench
 ~~~~~~~~~~~~~~~~~~
 
 Die Dynamixel Workbench bietet höhere (abstraktere) Funktionen als das Dynamixel SDK. Beispielsweise
-wird die Motorposition im SDK und auf den Motoren als Wert von 0 bis 4096 angegeben (2 Byte) und von der
-Dynamixel Workbench zu Radian umgerechnet.
-Die workbench erleichtert so das arbeiten mit den servos auf einer abstrakteren Ebene.
+wird die Motorposition im SDK und auf den Motoren als Wert von 0 bis 4096 angegeben (2 Byte) und von 
+der Dynamixel Workbench zu Radian umgerechnet. Die Workbench erleichtert so das Arbeiten mit den
+Servos auf einer abstrakteren Ebene.
 
 ROS Control Framework
 ~~~~~~~~~~~~~~~~~~~~~
 
 Das ROS Control Framework ist ein Bestandteil von ROS, der für die Kontrolle von Motoren und
 Sensoren verwendet wird. Für ROS Control gibt es Controller, die die Schnittstelle zwischen ROS und
-hardwarenäheren Softwareteilen bilden. Die Controller sind hardware agnostisch, da sie auf hardware interfaces 
-arbeiten. Durch diese wird von der Hardware (hier die Motoren) abstrahiert.
-Für die Motoren gibt es  den Dynamixel Controller, der etwa das Setzen der Kraft für die Motoren ermöglicht.
-Das darunter liegende Hardware Interface ist unser Dynamixel Hardware Interface.
+hardwarenäheren Softwareteilen bilden. Die Controller sind hardwareagnostisch, da sie auf Hardware
+Interfaces arbeiten. Durch diese wird von der Hardware (hier den Motoren) abstrahiert.
+Für die Motoren gibt es den Dynamixel Controller, der etwa das Setzen der Kraft für die Motoren
+ermöglicht. Das darunter liegende Hardware Interface ist unser Dynamixel Hardware Interface.
 
 ROS messages
 ~~~~~~~~~~~~
@@ -121,7 +125,7 @@ Nach all diesen Schritten kommt schließlich die Ebene der ROS-Nachrichten. Dabe
 einen um die Joint States, die die momentanen Positionen der Motoren wiedergeben und zum anderen um die
 Joint Goals, über die die gewünschten Positionen der Motoren angegeben werden können.
 
-Auch die Daten von der IMU werden über das Hardware Interface an einen IMU controller weitergereicht.
+Auch die Daten von der IMU werden über das Hardware Interface an einen IMU Controller weitergereicht.
 Zudem werden auch die Fußsensoren vom Hardware Interface ausgelesen.
 
 Wie verwendet man bitbots_ros_control?
@@ -177,7 +181,7 @@ befindet. Aufgrund eines Softwarefehlers sind in diesem Fall keine Motoren errei
 
 Als nächstes kann ein Logic Analyzer benutzt werden, um Fehler auf dem Bus zu finden. Beim Logic
 Analyzer handelt es sich um einen kleinen schwarzen Kasten, aus dem viele bunte Kabel schauen 
-(siehe hier https://eur.saleae.com/products/saleae-logic-pro-16?variant=10963959873579). Mit
+(siehe `hier <https://eur.saleae.com/products/saleae-logic-pro-16?variant=10963959873579)>`_. Mit
 ihm können die Daten vom Bus (bzw. sogar von maximal 16 Bussen zugleich) ausgelesen werden. Dazu
 muss das Ground Kabel an den Ground des Busses und eines der anderen Kabel an Data+ angeschlossen
 werden. Dabei ist es sehr wichtig, dass diese Kabel nicht vertauscht werden, da sonst ein Schaden an
@@ -190,7 +194,8 @@ beispielsweise ein fehlgeschlagener Ping oder das Starten von bitbots_ros_contro
 der Aufnahme kann man sich mit dem Async Serial Analyzer direkt die Bytes der Nachricht anschauen
 (dazu sollte die oben verlinkte Referenz auf das Protokoll zurate gezogen werden), oder den
 Dynamixel Analyzer nutzen, der die Pakete direkt interpretiert. Der Dynamixel Analyser muss jedoch
-zusätlich als plugin installiert werden (https://github.com/r3n33/SaleaeDynamixelAnalyzer).
+zusätlich als Plugin installiert werden (`https://github.com/r3n33/SaleaeDynamixelAnalyzer
+<https://github.com/r3n33/SaleaeDynamixelAnalyzer>`_).
 
 Sollte auf diese Weise immer noch kein Fehler festgestellt worden sein, könnte der Fehler im
 DXL-Board liegen. Um diesen Fehler festzustellen, gibt es verschiedene Möglichkeiten:
