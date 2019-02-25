@@ -24,7 +24,7 @@ FIND_PACKAGE (OpenCV REQUIRED)
 find_package(catkin REQUIRED dynamic_reconfigure)
 generate_dynamic_reconfigure_options(
   cfg/vision.cfg
-  cfg/dynamic_colorspace.cfg
+  cfg/dynamic_color_space.cfg
   #...
 )
 

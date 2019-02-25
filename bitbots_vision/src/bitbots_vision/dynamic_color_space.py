@@ -11,10 +11,10 @@ from collections import deque
 from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.client import Client
 from sensor_msgs.msg import Image
-from bitbots_msgs.msg import Colorspace, Config
+from bitbots_msgs.msg import ColorSpaceMessage, Config
 from bitbots_vision.vision_modules import debug
 from bitbots_vision.vision_modules import horizon, color
-from bitbots_vision.cfg import dynamic_colorspaceConfig
+from bitbots_vision.cfg import dynamic_color_spaceConfig
 
 # TODO rename toggle in color.py
 # TODO debug_printer usage in color.py
@@ -32,15 +32,15 @@ from bitbots_vision.cfg import dynamic_colorspaceConfig
 
 # TODO register image_raw subscriber for vision.py in init?
 
-class DynamicColorspace:
+class DynamicColorSpace:
     def __init__(self):
         # type: () -> None
         """
-        DynamicColorspace is a ROS node, that is used by the vision-node to better recognize the field-color.
-        DynamicColorspace is able to calculate dynamically changing colorspaces to accommodate e.g. 
-        changing lighting conditions or to compensate for not optimized base-colorspace-files.
+        DynamicColorSpace is a ROS node, that is used by the vision-node to better recognize the field-color.
+        DynamicColorSpace is able to calculate dynamically changing color-spaces to accommodate e.g. 
+        changing lighting conditions or to compensate for not optimized base-color-space-files.
 
-        Initiating DynamicColorspace-node.
+        Initiating DynamicColor-space-node.
 
         :return: None
         """
@@ -48,14 +48,14 @@ class DynamicColorspace:
         rospack = rospkg.RosPack()
         self._package_path = rospack.get_path('bitbots_vision')
 
-        rospy.init_node('bitbots_dynamic_colorspace')
-        rospy.loginfo('Initializing dynamic colorspace...')
+        rospy.init_node('bitbots_dynamic_color_space')
+        rospy.loginfo('Initializing dynamic color-space...')
 
         self._bridge = CvBridge()
 
         # Load config
         self._config = {}
-        self._config = rospy.get_param('/bitbots_dynamic_colorspace')
+        self._config = rospy.get_param('/bitbots_dynamic_color_space')
 
         # Load vision-config
         self._vision_config = {}
@@ -101,14 +101,14 @@ class DynamicColorspace:
             queue_size=1,
             tcp_nodelay=True)
 
-        # Register publisher of 'colorspace'-messages
-        self._colorspace_publisher = rospy.Publisher(
-            'colorspace',
-            Colorspace,
+        # Register publisher of ColorSpaceMessages
+        self._color_space_publisher = rospy.Publisher(
+            'color_space',
+            ColorSpaceMessage,
             queue_size=1)
 
         # Register dynamic-reconfigure config-callback
-        Server(dynamic_colorspaceConfig, self._dynamic_reconfigure_callback)
+        Server(dynamic_color_spaceConfig, self._dynamic_reconfigure_callback)
 
         rospy.spin()
 
@@ -187,7 +187,7 @@ class DynamicColorspace:
         :return: None
         """
         # Turn off dynamic-color-space
-        if not self._vision_config['vision_dynamic_colorspace']:
+        if not self._vision_config['vision_dynamic_color_space']:
             return
 
         # Drops old images
@@ -202,7 +202,7 @@ class DynamicColorspace:
         colors = self.get_new_dynamic_colors(image)
         # Add new colors to the queue
         self._color_value_queue.append(colors)
-        # Publishes the colorspace
+        # Publishes the color-space
         self.publish(image_msg)
 
     def get_unique_color_values(self, image, coordinate_list):
@@ -232,7 +232,7 @@ class DynamicColorspace:
         :param np.array image: image
         :return np.array: array of new dynamic-color-values
         """
-        # Masks new image with current colorspace
+        # Masks new image with current color-space
         mask_image = self._color_detector.mask_image(image)
         # Get mask from horizon detector
         self._horizon_detector.set_image(image)
@@ -248,41 +248,41 @@ class DynamicColorspace:
             return colors
         return np.array([[]])
 
-    def queue_to_colorspace(self, queue):
+    def queue_to_color_space(self, queue):
         # type: (dequeue) -> np.array
         """
-        Returns colorspace as array of all queue-elements stacked, which contains all colors from the queue.
+        Returns color-space as array of all queue-elements stacked, which contains all colors from the queue.
 
         :param dequeue queue: queue of array of color-values
-        :return np.array: colorspace
+        :return np.array: color-space
         """
-        # Initializes an empty colorspace
-        colorspace = np.array([]).reshape(0,3)
-        # Stack every colorspace in the queue
+        # Initializes an empty color-space
+        color_space = np.array([]).reshape(0,3)
+        # Stack every color-space in the queue
         for new_color_value_list in queue:
-            colorspace = np.append(colorspace, new_color_value_list[:,:], axis=0)
-        # Return a colorspace, which contains all colors from the queue
-        return colorspace
+            color_space = np.append(color_space, new_color_value_list[:,:], axis=0)
+        # Return a color-space, which contains all colors from the queue
+        return color_space
 
     def publish(self, image_msg):
         # type: (Image) -> None
         """
-        Publishes the current colorspace via Colorspace-message.
+        Publishes the current color-space via ColorSpaceMessage.
 
         :param Image image_msg: 'image_raw'-message
         :return: None
         """
-        # Get colorspace from queue
-        colorspace = self.queue_to_colorspace(self._color_value_queue)
-        # Create Colorspace-message
-        colorspace_msg = Colorspace()
-        colorspace_msg.header.frame_id = image_msg.header.frame_id
-        colorspace_msg.header.stamp = image_msg.header.stamp
-        colorspace_msg.blue  = colorspace[:,0].tolist()
-        colorspace_msg.green = colorspace[:,1].tolist()
-        colorspace_msg.red   = colorspace[:,2].tolist()
-        # Publish Colorspace-message
-        self._colorspace_publisher.publish(colorspace_msg)
+        # Get color-space from queue
+        color_space = self.queue_to_color_space(self._color_value_queue)
+        # Create ColorSpaceMessage
+        color_space_msg = ColorSpaceMessage()
+        color_space_msg.header.frame_id = image_msg.header.frame_id
+        color_space_msg.header.stamp = image_msg.header.stamp
+        color_space_msg.blue  = color_space[:,0].tolist()
+        color_space_msg.green = color_space[:,1].tolist()
+        color_space_msg.red   = color_space[:,2].tolist()
+        # Publish ColorSpaceMessage
+        self._color_space_publisher.publish(color_space_msg)
 
 
 class Pointfinder():
@@ -436,4 +436,4 @@ class Heuristic:
 
 
 if __name__ == '__main__':
-    DynamicColorspace()
+    DynamicColorSpace()

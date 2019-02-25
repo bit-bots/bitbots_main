@@ -10,7 +10,7 @@
             <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
             <param name="vision_debug_image_msg" value="$(arg debug)"/>
             <param name="vision_ball_classifier" value="fcnn"/>
-            <param name="vision_dynamic_colorspace" value="$(arg dyn)"/>
+            <param name="vision_dynamic_color_space" value="$(arg dyn)"/>
         </node>
     </group>
 
@@ -20,7 +20,7 @@
             <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
             <param name="vision_debug_image_msg" value="$(arg debug)"/>
             <param name="vision_ball_classifier" value="dummy"/>
-            <param name="vision_dynamic_colorspace" value="$(arg dyn)"/>
+            <param name="vision_dynamic_color_space" value="$(arg dyn)"/>
         </node>
     </group>
 
@@ -35,10 +35,10 @@
         <remap to ="/camera/image_raw" from="/image_raw"/>
     </group>
 
-    <!-- start vision with dynamic colorspace -->
+    <!-- start vision with dynamic color-space -->
     <group if="$(arg dyn)">
-        <node pkg="bitbots_vision" type="dynamic_colorspace.py" name="bitbots_dynamic_colorspace" output="screen">
-            <rosparam command="load" file="$(find bitbots_vision)/config/bitbots_dynamic_colorspace_params.yaml"/>
+        <node pkg="bitbots_vision" type="dynamic_color_space.py" name="bitbots_dynamic_color_space" output="screen">
+            <rosparam command="load" file="$(find bitbots_vision)/config/bitbots_dynamic_color_space_params.yaml"/>
         </node>
     </group>        
 </launch>

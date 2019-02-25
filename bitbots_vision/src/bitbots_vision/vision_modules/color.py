@@ -9,7 +9,7 @@ import numpy as np
 from collections import deque
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
-from bitbots_msgs.msg import Colorspace
+from bitbots_msgs.msg import ColorSpaceMessage
 from .debug import DebugPrinter
 
 
@@ -18,7 +18,7 @@ class ColorDetector:
         # type: (DebugPrinter) -> None
         """
         ColorDetector is abstract super-class of specialized sub-classes.
-        ColorDetectors are used e.g. to check, if a pixel matches the defined colorspace
+        ColorDetectors are used e.g. to check, if a pixel matches the defined color-space
         or to create masked binary-images.
 
         :param DebugPrinter debug_printer: debug-printer
@@ -97,8 +97,8 @@ class HsvSpaceColorDetector(ColorDetector):
     def __init__(self, debug_printer, min_vals, max_vals):
         # type: (DebugPrinter, tuple[int, int, int], tuple[int, int, int]) -> None
         """
-        HsvSpaceColorDetector is a ColorDetector, that is based on the HSV-colorspace.
-        The HSV-colorspace is adjustable by setting min- and max-values for hue, saturation and value.
+        HsvSpaceColorDetector is a ColorDetector, that is based on the HSV-color-space.
+        The HSV-color-space is adjustable by setting min- and max-values for hue, saturation and value.
 
         :param DebugPrinter debug_printer: debug-printer
         :param tuple min_vals: a tuple of the minimal accepted hsv-values
@@ -204,16 +204,16 @@ class PixelListColorDetector(ColorDetector):
         self.publish_mask_img_msg = self.vision_config['vision_mask_img_msg']
         
         # toggle publishing of mask_img_dyn msg with dynamic color-space
-        self.publish_mask_img_dyn_msg = self.vision_config['vision_dynamic_colorspace_mask_img_dyn_msg']
+        self.publish_mask_img_dyn_msg = self.vision_config['vision_dynamic_color_space_mask_img_dyn_msg']
 
-        # toggle use of dynamic-colorspace
-        self.toggle_dynamic_color_space = self.vision_config['vision_dynamic_colorspace']
+        # toggle use of dynamic-color-space
+        self.toggle_dynamic_color_space = self.vision_config['vision_dynamic_color_space']
 
-        # Subscribe to 'colorspace'-messages from DynamicColorspace
-        self.colorspace_sub = rospy.Subscriber(
-            'colorspace',
-            Colorspace,
-            self.colorspace_callback,
+        # Subscribe to 'color_space'-messages from DynamicColorSpace
+        self.color_space_subscriber = rospy.Subscriber(
+            'color_space',
+            ColorSpaceMessage,
+            self.color_space_callback,
             queue_size=1,
             buff_size=2**20)
     
@@ -305,33 +305,33 @@ class PixelListColorDetector(ColorDetector):
         else:
             return static_mask
 
-    def colorspace_callback(self, msg):
-        # type: (Colorspace) -> None
+    def color_space_callback(self, msg):
+        # type: (ColorSpace) -> None
         """
-        This callback gets called, after subscriber received 'colorspace'-message from DynamicColorspace-Node.
+        This callback gets called, after subscriber received ColorSpaceMessage from DynamicColorSpace-Node.
 
-        :param Colorspace msg: 'colorspace'-message
+        :param ColorSpaceMessage msg: ColorSpaceMessage
         :return: None
         """
-        self.decode_colorspace(msg)
+        self.decode_color_space(msg)
 
-    def decode_colorspace(self, msg):
-        # type: (Colorspace) -> None
+    def decode_color_space(self, msg):
+        # type: (ColorSpaceMessage) -> None
         """
-        Imports new colorspace from ros msg. This is used to communicate with the DynamicColorspace-Node.
+        Imports new color-space from ros msg. This is used to communicate with the DynamicColorSpace-Node.
 
-        :param Colorspace msg: 'colorspace'-message
+        :param ColorSpaceMessage msg: ColorSpaceMessage
         :return: None
         """
-        # Create temporary colorspace
-        # Use the base colorspace as basis
+        # Create temporary color-space
+        # Use the base-color-space as basis
         color_space_temp = np.copy(self.base_color_space)
 
-        # Adds new colors to that colorspace
+        # Adds new colors to that color-space
         color_space_temp[
             msg.blue,
             msg.green,
             msg.red] = 1
 
-        # Switches the reference to the new colorspace
+        # Switches the reference to the new color-space
         self.color_space = color_space_temp

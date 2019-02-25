@@ -52,8 +52,8 @@ vision_debug_printer_classes: ''
 vision_parallelize: true
 vision_ball_candidate_horizon_y_offset: 0
 vision_ball_candidate_rating_threshold: 0.5
-vision_dynamic_colorspace: true
-vision_dynamic_colorspace_mask_img_dyn_msg: false
+vision_dynamic_color_space: true
+vision_dynamic_color_space_mask_img_dyn_msg: false
 
 line_detector_horizon_offset: 50
 line_detector_linepoints_range: 10000
