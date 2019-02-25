@@ -22,8 +22,8 @@ geschrieben werden können.
 
 Um den Control Loop zu beschleunigen, gibt es im Wesentlichen drei Möglichkeiten:
 
-1. Die Bits schneller über den Bus senden. Dies ist aber durch die Baudrate von höchstens drei
-   Megabaud limitiert.
+1. Die Bits schneller über den Bus senden. Dies ist aber durch die Baudrate von höchstens vier
+   Megabaud limitiert (Robotis behauptet 4.5 MBaud wären möglich, stimmt aber nicht).
 2. Die Daten komprimieren, zum Beispiel statt jeden Motor einzeln zu lesen mit einem Befehl alle
    Motoren zu lesen (s. u. sync read und sync write)
 3. Mehr Busse benutzen. In unserem Fall bietet es sich an, einen Bus pro Extremität zu verwenden.
@@ -76,19 +76,26 @@ Ab hier befinden sich alle Ebenen der Motion auf dem NUC.
 
 Im Kontext der Motion kümmert sich der Linux Kernel darum, dass das über USB angeschlossene
 DXL-Board von Programmen verwendet werden kann. Es ist darauf zu achten, dass die Latenz im Kernel
-von 16ms auf 0 gesetzt wird.
+von 16ms auf 0 gesetzt wird, z.B. per:
+sudo sh -c "echo '0' > /sys/bus/usb-serial/devices/ttyUSB0/latency_timer"
+Dies ist jedoch nur für "echte" serielle devices notwendig. Das DXL-Board meldet sich zur Zeit 
+als ACM an, dort ist es nicht nötig. Bei dem neuen QUADDXL wird dies jedoch extrem wichtig sein.
 
 Dynamixel SDK
 ~~~~~~~~~~~~
 
-Das Dynamixel SDK implementiert das Dynamixel Protokoll.
+Das Dynamixel SDK implementiert das Dynamixel Protokoll. Es stellt dabei (in verschiedenen Sprachen) 
+methoden zum versenden von instruktionen und lesen von status packeten bereit. 
+Wir benutzen eine geforkte version, da Robotis vergessen hat das Sync Read für mehr als ein register
+zu implementieren.
 
 Dynamixel Workbench
 ~~~~~~~~~~~~~~~~~~
 
 Die Dynamixel Workbench bietet höhere (abstraktere) Funktionen als das Dynamixel SDK. Beispielsweise
-wird die Motorposition im SDK und auf den Motoren als Wert von 0 bis 4000 angegeben und von der
-Dynamixel Workbench zu Grad oder Radian umgerechnet.
+wird die Motorposition im SDK und auf den Motoren als Wert von 0 bis 4096 angegeben (2 Byte) und von der
+Dynamixel Workbench zu Radian umgerechnet.
+Die workbench erleichtert so das arbeiten mit den servos auf einer abstrakteren Ebene.
 
 ROS Control Framework
 ~~~~~~~~~~~~~~~~~~~~~
@@ -158,19 +165,21 @@ Falls so alle Motoren erreichbar sind, sollte überprüft werden, ob sich im DXL
 befindet. Aufgrund eines Softwarefehlers sind in diesem Fall keine Motoren erreichbar.
 
 Als nächstes kann ein Logic Analyzer benutzt werden, um Fehler auf dem Bus zu finden. Beim Logic
-Analyzer handelt es sich um einen kleinen schwarzen Kasten, aus dem viele bunte Kabel schauen. Mit
+Analyzer handelt es sich um einen kleinen schwarzen Kasten, aus dem viele bunte Kabel schauen 
+(siehe hier https://eur.saleae.com/products/saleae-logic-pro-16?variant=10963959873579). Mit
 ihm können die Daten vom Bus (bzw. sogar von maximal 16 Bussen zugleich) ausgelesen werden. Dazu
 muss das Ground Kabel an den Ground des Busses und eines der anderen Kabel an Data+ angeschlossen
 werden. Dabei ist es sehr wichtig, dass diese Kabel nicht vertauscht werden, da sonst ein Schaden an
 den Motoren entstehen wird.
 
 Nun kann die Software Saleae Logic benutzt werden, um die Daten auszulesen. Dafür muss auf der
-Schaltfläche neben dem Start-Button zunächst 15MB/s und eine Spannung von 15V eingestellt werden.
+Schaltfläche neben dem Start-Button zunächst 15MB/s und eine Spannung von 5V eingestellt werden.
 Dann kann die Aufnahme gestartet werden und das problematische Programm ausgeführt werden, also
 beispielsweise ein fehlgeschlagener Ping oder das Starten von bitbots_ros_control. Nach dem Beenden
 der Aufnahme kann man sich mit dem Async Serial Analyzer direkt die Bytes der Nachricht anschauen
 (dazu sollte die oben verlinkte Referenz auf das Protokoll zurate gezogen werden), oder den
-Dynamixel Analyzer nutzen, der die Pakete direkt interpretiert.
+Dynamixel Analyzer nutzen, der die Pakete direkt interpretiert. Der Dynamixel Analyser muss jedoch
+zusätlich als plugin installiert werden (https://github.com/r3n33/SaleaeDynamixelAnalyzer).
 
 Sollte auf diese Weise immer noch kein Fehler festgestellt worden sein, könnte der Fehler im
 DXL-Board liegen. Um diesen Fehler festzustellen, gibt es verschiedene Möglichkeiten:
