@@ -36,13 +36,16 @@ Motoren und Busse
 
 Auf der untersten Ebene der Motion befinden sich die Motoren. Bei ihnen handelt es sich um die
 Dynamixel-Motoren MX-106 und MX-64 von Robotis. Über den Motorbus sind die Motoren untereinander
-und mit dem DXL-Board verbunden. Als Bussystem nutzen unsere Motoren RS-485.
+und mit dem DXL-Board verbunden. Als Bussystem nutzen unsere Motoren RS-485 (oder TTL).
 
 Die Kabel für RS-485 bestehen aus vier Adern. Dabei sind zwei der Adern für Ground und für Strom
-(12-16V, je nach momentaner Akkuspannung), eins für die Daten (5V) und eins, auf dem die Daten 
+(14.8-16.8V, je nach momentaner Akkuspannung), eins für die Daten (5V) und eins, auf dem die Daten 
 invertiert übertragen werden. Es ist besonders wichtig, beim Krimpen der Kabel und beim Anschließen
 an einen Logic Analyzer darauf zu achten, dass die Kabel für Strom und Daten nicht vertauscht
 werden, da die Motoren mehr als 5V auf der Datenleitung nicht vertragen!
+
+Die Kabel haben nur 3 Adern bei der eins für Ground, eins für Daten (auch 5V) ist. Auch hier sollten
+Kabel nicht falsch gekrimpt werden.
 
 Die Kommunikation mit den Motoren findet über das Bus-Protokoll von Dynamixel statt. Die Details
 können direkt in der Spezifikation nachgelesen werden. Wir benutzen die `Version 2
@@ -54,8 +57,12 @@ Eine Nachricht nach dem Protokoll besteht im Wesentlichen aus Header, Ziel-Motor
 einer Parameterliste und einer Checksumme. Die wichtigsten Instruktionen sind Ping, Read, Write und
 Status sowie Sync Read und Sync Write zum Lesen oder Schreiben mehrerer Motoren zugleich.
 
-Jeder Motor hat dazu eine feste ID, über die er eindeutig angesprochen werden kann. Diese ID kann
-selbst bei der Ersteinrichtung eines Motors über eine Write-Instruktion festgelegt werden.
+Jeder Motor hat dazu eine feste ID, über die er eindeutig angesprochen werden kann. Bei einem neuen / 
+neu eingerichteten motor ist die ID 1. Sie kann mit einer write Instruktion in ein bestimmtes register 
+gesetzt werden.
+
+Es ist wichtig, dass nicht zwei Motoren mit der selben ID auf einem Bus angeschlossen sind. Dies führt 
+zu Kommunikationsfehlern.
 
 Beim Sync Read antworten die Motoren in der Reihenfolge, in der sie im Sync Read angefragt werden.
 Dabei ist zu beachten, dass wenn ein Motor nicht antwortet, auch alle auf ihn folgenden Motoren
@@ -102,9 +109,10 @@ ROS Control Framework
 
 Das ROS Control Framework ist ein Bestandteil von ROS, der für die Kontrolle von Motoren und
 Sensoren verwendet wird. Für ROS Control gibt es Controller, die die Schnittstelle zwischen ROS und
-hardwarenäheren Softwareteilen bilden. Für die Motoren gibt es dazu den Dynamixel Controller, der
-etwa das Setzen der Kraft für die Motoren ermöglicht. Außerdem existiert ein Hardware Interface,
-über das Einstellungen für die Motoren getroffen werden können.
+hardwarenäheren Softwareteilen bilden. Die Controller sind hardware agnostisch, da sie auf hardware interfaces 
+arbeiten. Durch diese wird von der Hardware (hier die Motoren) abstrahiert.
+Für die Motoren gibt es  den Dynamixel Controller, der etwa das Setzen der Kraft für die Motoren ermöglicht.
+Das darunter liegende Hardware Interface ist unser Dynamixel Hardware Interface.
 
 ROS messages
 ~~~~~~~~~~~~
@@ -112,6 +120,9 @@ ROS messages
 Nach all diesen Schritten kommt schließlich die Ebene der ROS-Nachrichten. Dabei handelt es sich zum
 einen um die Joint States, die die momentanen Positionen der Motoren wiedergeben und zum anderen um die
 Joint Goals, über die die gewünschten Positionen der Motoren angegeben werden können.
+
+Auch die Daten von der IMU werden über das Hardware Interface an einen IMU controller weitergereicht.
+Zudem werden auch die Fußsensoren vom Hardware Interface ausgelesen.
 
 Wie verwendet man bitbots_ros_control?
 --------------------------------------
