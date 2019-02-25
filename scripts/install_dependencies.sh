@@ -50,7 +50,8 @@ sudo apt install -y \
     ros-kinetic-yocs-velocity-smoother \
     vim \
     screen \
-    setserial\
+    setserial \
+    uvcdynctrl \
 
 # Python3 dependencies
 DIR="$(dirname $(dirname $(realpath $0)))"
