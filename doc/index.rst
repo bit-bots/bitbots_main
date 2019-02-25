@@ -19,6 +19,7 @@ Einstieg und Tutorials:
    manual/tutorials/Doku-How-To
    manual/tutorials/colorpicker
    manual/tutorials/pycharm-ros
+   manual/tutorials/motion
 
 Software:
 
