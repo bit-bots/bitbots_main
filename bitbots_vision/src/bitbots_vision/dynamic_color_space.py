@@ -11,7 +11,7 @@ from collections import deque
 from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.client import Client
 from sensor_msgs.msg import Image
-from bitbots_msgs.msg import ColorSpaceMessage, Config
+from bitbots_msgs.msg import ColorSpaceMessage, ConfigMessage
 from bitbots_vision.vision_modules import debug
 from bitbots_vision.vision_modules import horizon, color
 from bitbots_vision.cfg import dynamic_color_spaceConfig
@@ -23,12 +23,9 @@ from bitbots_vision.cfg import dynamic_color_spaceConfig
 # TODO vision-docu
 # TODO vision: set debug_printer as first param?
 # TODO find_colorpixel_candidates what do we return?
-# TODO change order of methods
 # TODO docu heuristic
 # TODO todos in cfgs and yamls
-# TODO refactor everything to color-space
 # TODO do class -methods, -variables with _underscore?
-# TODO rename Config-Message
 
 # TODO register image_raw subscriber for vision.py in init?
 
@@ -94,9 +91,9 @@ class DynamicColorSpace:
             buff_size=60000000)
 
         # Subscribe to 'vision_config'-message
-        self._vision_config__msg_subscriber = rospy.Subscriber(
+        self._vision_config_msg_subscriber = rospy.Subscriber(
             'vision_config',
-            Config,
+            ConfigMessage,
             self._vision_config_callback,
             queue_size=1,
             tcp_nodelay=True)
@@ -160,13 +157,13 @@ class DynamicColorSpace:
         return config
 
     def _vision_config_callback(self, msg):
-        # type: (Config) -> None
+        # type: (ConfigMessage) -> None
         """
         This method is called by the 'vision_config'-message-subscriber.
         Load and update vision-config.
         Handle config-changes.
 
-        :param Config msg: new 'vision_config'-message-subscriber
+        :param ConfigMessage msg: new 'vision_config'-message-subscriber
         :return: None
         """
         # Load dict from yaml-string in msg.data
