@@ -47,7 +47,6 @@ bool BioIKSolver::solve(tf::Transform& trunk_to_support_foot, tf::Transform& tru
         success = success && robot_state_ptr->setFromIK(_lleg_joints_group,           // joints which shall be used
                                                 EigenSTL::vector_Affine3d(), // empty and unused by bio-ik
                                                 std::vector<std::string>(),  // names of ik links, empty
-                                                1,                           // number of attempts
                                                 _bioIK_timeout,                        // timeout
                                                 moveit::core::GroupStateValidityCallbackFn(),
                                                 ik_options);
@@ -57,7 +56,6 @@ bool BioIKSolver::solve(tf::Transform& trunk_to_support_foot, tf::Transform& tru
         success = success && robot_state_ptr->setFromIK(_rleg_joints_group,           // joints which shall be used
                                                 EigenSTL::vector_Affine3d(), // empty and unused by bio-ik
                                                 std::vector<std::string>(),  // names of ik links, empty
-                                                1,                           // number of attempts
                                                 _bioIK_timeout,                        // timeout
                                                 moveit::core::GroupStateValidityCallbackFn(),
                                                 ik_options);
@@ -65,7 +63,6 @@ bool BioIKSolver::solve(tf::Transform& trunk_to_support_foot, tf::Transform& tru
         success = success && robot_state_ptr->setFromIK(_rleg_joints_group,           // joints which shall be used
                                                 EigenSTL::vector_Affine3d(), // empty and unused by bio-ik
                                                 std::vector<std::string>(),  // names of ik links, empty
-                                                1,                           // number of attempts
                                                 _bioIK_timeout,                        // timeout
                                                 moveit::core::GroupStateValidityCallbackFn(),
                                                 ik_options);
@@ -75,7 +72,6 @@ bool BioIKSolver::solve(tf::Transform& trunk_to_support_foot, tf::Transform& tru
         success = success && robot_state_ptr->setFromIK(_lleg_joints_group,           // joints which shall be used
                                                 EigenSTL::vector_Affine3d(), // empty and unused by bio-ik
                                                 std::vector<std::string>(),  // names of ik links, empty
-                                                1,                           // number of attempts
                                                 _bioIK_timeout,                        // timeout
                                                 moveit::core::GroupStateValidityCallbackFn(),
                                                 ik_options);
@@ -99,7 +95,6 @@ bool BioIKSolver::solve(tf::Transform& trunk_to_support_foot, tf::Transform& tru
         success = success && robot_state_ptr->setFromIK(_all_joints_group,           // joints which shall be used
                                                             EigenSTL::vector_Affine3d(), // empty and unused by bio-ik
                                                             std::vector<std::string>(),  // names of ik links, empty
-                                                            1,                           // number of attempts
                                                             _bioIK_timeout,                        // timeout
                                                             moveit::core::GroupStateValidityCallbackFn(),
                                                             ik_options);
