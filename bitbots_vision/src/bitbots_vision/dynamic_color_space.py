@@ -23,7 +23,6 @@ from bitbots_vision.cfg import dynamic_color_spaceConfig
 # TODO vision-docu
 # TODO vision: set debug_printer as first param?
 # TODO find_colorpixel_candidates what do we return?
-# TODO docu heuristic
 # TODO todos in cfgs and yamls
 # TODO do class -methods, -variables with _underscore?
 
