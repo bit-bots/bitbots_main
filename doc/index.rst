@@ -20,6 +20,7 @@ Einstieg und Tutorials:
    manual/tutorials/colorpicker
    manual/tutorials/pycharm-ros
    manual/tutorials/motion
+   manual/tutorials/3d-Druck
 
 Software:
 
