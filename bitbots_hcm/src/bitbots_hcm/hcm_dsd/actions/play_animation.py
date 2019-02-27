@@ -56,12 +56,13 @@ class AbstractPlayAnimation(AbstractActionElement):
             rospy.logwarn("Tried to play an animation with an empty name!")
             return False
         first_try = self.blackboard.animation_action_client.wait_for_server(
-            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 10)))
+            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 1)))     
         if not first_try:
-            rospy.logerr(
+            while not rospy.is_shutdown():            
+                rospy.logerr_throttle(1.0,
                 "Animation Action Server not running! Motion can not work without animation action server. "
                 "Will now wait until server is accessible!")
-            self.blackboard.animation_action_client.wait_for_server()
+                self.blackboard.animation_action_client.wait_for_server(rospy.Duration(0.1))
             rospy.logwarn("Animation server now running, hcm will go on.")
         goal = humanoid_league_msgs.msg.PlayAnimationGoal()
         goal.animation = anim
