@@ -337,7 +337,8 @@ class Heuristic:
     def __init__(self, debug_printer):
         # type: (DebugPrinter) -> None
         """
-        TODO
+        Filters new color-space colors according to their position relative to the horizon.
+        Only colors that occur under the horizon and have no occurrences over the horizon get picked.
 
         :param DebugPrinter debug_printer: Debug-printer
         :return: None
@@ -345,59 +346,60 @@ class Heuristic:
         self._debug_printer = debug_printer
 
     def run(self, color_list, image, mask):
-        # type: (np.array, np.array, np.array) -> TODO
+        # type: (np.array, np.array, np.array) -> np.array
         """
-        TODO
+        This method filters a given list of colors using the original image and a horizon mask. 
 
-        :param np.array color_list: list of color-values
-        :param np.array image: image
-        :param np.array mask: horizon-mask
-        :return: TODO
+        :param np.array color_list: list of color-values, that need to be filtered
+        :param np.array image: raw vision image
+        :param np.array mask: binary horizon-mask
+        :return np.array: filtered list of colors
         """
         # Simplifies the handling by merging the three color-channels
         color_list = self.serialize(color_list)
+        # Making a set and removing duplicated colors
         color_set = set(color_list)
         # Generates whitelist
-        whitelist = self.recalc(image, mask)
+        whitelist = self.recalculate(image, mask)
         # Takes only whitelisted values 
         color_set = color_set.intersection(whitelist)
         # Restructures the color channels
         return self.deserialize(np.array(list(color_set)))
 
-    def recalc(self, image, mask):
-        # type: (np.array, np.array) -> TODO
+    def recalculate(self, image, mask):
+        # type: (np.array, np.array) -> set
         """
-        TODO
+        Generates a whitelist of allowed colors using the original image and the horizon-mask.
 
         :param np.array image: image
         :param np.array mask: horizon-mask
-        :return: TODO
+        :return set: whitelist
         """
         # Generates whitelist
-        colors_over_horizon, colors_under_horizon = self.calc_freq(image, mask)
+        colors_over_horizon, colors_under_horizon = self.unique_colors_for_partitions(image, mask)
         return set(colors_under_horizon) - set(colors_over_horizon)
 
-    def calc_freq(self, image, mask):
-        # type: (np.array, np.array) -> TODO
+    def unique_colors_for_partitions(self, image, mask):
+        # type: (np.array, np.array) -> (np.array, np.array)
         """
-        TODO
+        Masks picture and returns the unique colors that occurs in both mask partitions.
 
         :param np.array image: image
         :param np.array mask: horizon-mask
-        :return: TODO
+        :return np.array: colors over the horizon 
+        :return np.array: colors under the horizon
         """
         # Calls a function to calculate the number of occurrences of all colors in the image
-        # returns array(over_horizon(unique, count), under_horizon(unique, count))
-        return (self.get_freq_colors(cv2.bitwise_and(image, image, mask=255 - mask)),
-                self.get_freq_colors(cv2.bitwise_and(image, image, mask=mask)))
+        return (self.get_unique_colors(cv2.bitwise_and(image, image, mask=255 - mask)),
+                self.get_unique_colors(cv2.bitwise_and(image, image, mask=mask)))
 
-    def get_freq_colors(self, image):
-        # type: (np.array) -> TODO
+    def get_unique_colors(self, image):
+        # type: (np.array) -> np.array
         """
-        TODO
+        Calculates unique color for an input image.
 
         :param np.array image: image
-        :return: TODO
+        :return np.array: unique colors 
         """
         # Simplifies the handling by merging the 3 color channels
         serialized_img = self.serialize(np.reshape(image, (1, int(image.size / 3), 3))[0])
@@ -405,12 +407,12 @@ class Heuristic:
         return np.unique(serialized_img, axis=0)
 
     def serialize(self, input_matrix):
-        # type: (TODO) -> TODO
+        # type: (np.array) -> np.array
         """
-        TODO
+        Serializes the different color channels of a list of colors in an single channel. (Like a HTML color code)
 
-        :param TODO input_matrix: TODO
-        :return: TODO
+        :param np.array input_matrix: list of colors values with 3 channels
+        :return: list of serialized colors
         """
         return np.array(
             np.multiply(input_matrix[:, 0], 256 ** 2) \
@@ -418,12 +420,12 @@ class Heuristic:
             + input_matrix[:, 2], dtype=np.int32)
 
     def deserialize(self, input_matrix):
-        # type: (TODO) -> TODO
+        # type: (np.array) -> np.array
         """
-        TODO
+        Resolves the serialasation of colors into different channels. (Like a HTML color code)
 
-        :param TODO input_matrix: TODO
-        :return: TODO
+        :param np.array input_matrix: serialized colors
+        :return: original colors with 3 channels
         """
         new_matrix = np.zeros((input_matrix.size, 3))
         new_matrix[:, 0] = np.array(input_matrix // 256 ** 2, dtype=np.uint8)
