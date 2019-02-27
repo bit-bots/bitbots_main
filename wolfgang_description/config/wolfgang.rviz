@@ -6,7 +6,9 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /RobotModel1
         - /TF1
+        - /TF1/Frames1
       Splitter Ratio: 0.5
     Tree Height: 709
   - Class: rviz/Selection
@@ -295,6 +297,14 @@ Visualization Manager:
                   l_ankle:
                     l_foot:
                       l_sole:
+                        l_cleat_l_back:
+                          {}
+                        l_cleat_l_front:
+                          {}
+                        l_cleat_r_back:
+                          {}
+                        l_cleat_r_front:
+                          {}
                         l_toe:
                           {}
           r_hip_1:
