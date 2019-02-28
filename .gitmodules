@@ -68,3 +68,4 @@
 [submodule "lib/moveit"]
 	path = lib/moveit
 	url = git@github.com:ros-planning/moveit.git
+    branch = melodic-devel
