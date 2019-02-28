@@ -23,7 +23,6 @@ class AbstractLookAt(AbstractActionElement):
         self.request = IKRequest()
         self.request.group_name = "Head"
         self.request.timeout.secs = 1
-        self.request.attempts = 1
         self.request.approximate = True
         self.request.look_at_goals.append(LookAtGoal())
         self.request.look_at_goals[0].link_name = "camera"

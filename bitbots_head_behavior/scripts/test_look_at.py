@@ -18,7 +18,6 @@ if __name__ == "__main__":
     request = IKRequest()
     request.group_name = "Head"
     request.timeout.secs = 1
-    request.attempts = 1
     request.approximate = True
     request.look_at_goals.append(LookAtGoal())
     request.look_at_goals[0].link_name = "camera"
