@@ -15,9 +15,8 @@ doc-meta :
 	python3 scripts/build-meta-doc.py
 
 
-install: pull-all vision-files
-	scripts/install_dependencies.sh
-	scripts/create_catkin_workspace.sh
+install: pull-all 
+	scripts/install.pl
 
 
 pull-all:
