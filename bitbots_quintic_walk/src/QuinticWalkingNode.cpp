@@ -412,13 +412,13 @@ void QuinticWalkingNode::publishControllerCommands(std::vector <std::string> joi
 
 void QuinticWalkingNode::publishOdometry(){
     // transformation from support leg to trunk
-    Eigen::Affine3d trunk_to_support;
+    Eigen::Isometry3d trunk_to_support;
     if(_walkEngine.getFootstep().isLeftSupport()){
         trunk_to_support = _goal_state->getGlobalLinkTransform("l_sole");
     }else{
         trunk_to_support = _goal_state->getGlobalLinkTransform("r_sole");
     }
-    Eigen::Affine3d support_to_trunk = trunk_to_support.inverse();
+    Eigen::Isometry3d support_to_trunk = trunk_to_support.inverse();
     tf2::Transform tf_support_to_trunk;
     tf2::fromMsg(tf2::eigenToTransform(support_to_trunk).transform, tf_support_to_trunk);
 
@@ -511,10 +511,10 @@ void QuinticWalkingNode::publishDebug(tf2::Transform& trunk_to_support_foot_goal
     msg.engine_trunk_goal = pose_msg;
 
     // goals
-    Eigen::Affine3d eigen_trunk_to_support_foot_goal = tf2::transformToEigen(tf2::toMsg(trunk_to_support_foot_goal));
+    Eigen::Isometry3d eigen_trunk_to_support_foot_goal = tf2::transformToEigen(tf2::toMsg(trunk_to_support_foot_goal));
     geometry_msgs::Pose pose_support_foot_goal = tf2::toMsg(eigen_trunk_to_support_foot_goal);
     msg.support_foot_goal = pose_support_foot_goal;
-    Eigen::Affine3d eigen_trunk_to_flying_foot_goal = tf2::transformToEigen(tf2::toMsg(trunk_to_flying_foot_goal));
+    Eigen::Isometry3d eigen_trunk_to_flying_foot_goal = tf2::transformToEigen(tf2::toMsg(trunk_to_flying_foot_goal));
     geometry_msgs::Pose pose_fly_foot_goal = tf2::toMsg(eigen_trunk_to_flying_foot_goal);
     msg.fly_foot_goal = pose_fly_foot_goal;
     if(is_left_support){

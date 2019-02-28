@@ -33,9 +33,9 @@ inline Eigen::Vector3d mix(const Eigen::Vector3d &a, const Eigen::Vector3d &b,
   return a * (1.0 - f) + b * f;
 }
 
-inline Eigen::Affine3d mix(const Eigen::Affine3d &a, const Eigen::Affine3d &b,
+inline Eigen::Isometry3d mix(const Eigen::Isometry3d &a, const Eigen::Isometry3d &b,
                            double f) {
-  Eigen::Affine3d ret = Eigen::Affine3d::Identity();
+  Eigen::Isometry3d ret = Eigen::Isometry3d::Identity();
   ret.rotate(Eigen::Quaterniond(a.rotation())
                  .slerp(f, Eigen::Quaterniond(b.rotation())));
   ret.translation() = a.translation() * (1.0 - f) + b.translation() * f;

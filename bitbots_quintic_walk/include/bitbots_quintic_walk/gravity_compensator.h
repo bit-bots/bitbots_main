@@ -53,14 +53,14 @@ class GravityCompensator {
   void applyMassToJoint(const moveit::core::RobotState &state,
                         const moveit::core::JointModel *joint,
                         const PointMass &mass) {
-    Eigen::Affine3d joint_transform;
+    Eigen::Isometry3d joint_transform;
     joint->computeTransform(state.getVariablePositions() +
                                 joint->getFirstVariableIndex(),
                             joint_transform);
     joint_transform =
         (joint->getParentLinkModel()
              ? state.getGlobalLinkTransform(joint->getParentLinkModel())
-             : Eigen::Affine3d::Identity()) *
+             : Eigen::Isometry3d::Identity()) *
         joint->getChildLinkModel()->getJointOriginTransform() * joint_transform;
     if (auto *j =
             dynamic_cast<const moveit::core::RevoluteJointModel *>(joint)) {
