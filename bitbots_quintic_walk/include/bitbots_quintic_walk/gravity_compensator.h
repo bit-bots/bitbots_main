@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <Eigen/Geometry>
 #include <moveit/kinematics_base/kinematics_base.h>
 #include <moveit/planning_pipeline/planning_pipeline.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
@@ -11,10 +12,10 @@
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Float64MultiArray.h>
-#include <tf/transform_broadcaster.h>
-#include <tf/transform_datatypes.h>
-#include <tf/transform_listener.h>
-#include <tf_conversions/tf_eigen.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2/LinearMath/Vector3.h>
+#include <tf2/LinearMath/Quaternion.h>
 #include <urdf/model.h>
 #include <urdf_model/model.h>
 
