@@ -5,6 +5,7 @@
   <description>bitbots_pathfinding_simple republishes Pose2D as cmd_vel</description>
 
   <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
 
   <license>BSD</license>
