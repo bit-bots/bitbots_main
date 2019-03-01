@@ -3,11 +3,13 @@
   <version>0.0.1</version>
   <description>TODO
   </description>
+
   <maintainer email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <author email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</author>
 
   <license>BSD</license>
-
-  <author>Jasper Güldenstein</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 

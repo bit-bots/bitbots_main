@@ -5,6 +5,8 @@
   <description>This package provides an analytic IK solver for robots with a Darwin-OP like kinematic chain and a solver which uses BioIK.</description>
 
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
