@@ -5,6 +5,9 @@
   <description>The humanoid_league_game_controller package</description>
 
   <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <author email="7engelke@informatik.uni-hamburg.de">Timon Engelke</author>
 
   <license>TODO</license>
 
