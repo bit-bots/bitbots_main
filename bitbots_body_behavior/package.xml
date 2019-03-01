@@ -9,6 +9,7 @@
         via /head_duty.</description>
 
   <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
   <license>BSD</license>
