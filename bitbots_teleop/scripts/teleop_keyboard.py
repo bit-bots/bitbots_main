@@ -79,9 +79,9 @@ def joint_state_cb(msg):
 	global head_pan_pos
 	global head_tilt_pos
 
-	i = 0	
-	head_pan_pos = msg.position[msg.name.index("HeadPan")]
-	head_tilt_pos = msg.position[msg.name.index("HeadTilt")]
+	if "HeadPan" in msg.name and "HeadTilt" in msg.name:
+		head_pan_pos = msg.position[msg.name.index("HeadPan")]
+		head_tilt_pos = msg.position[msg.name.index("HeadTilt")]
 
 if __name__=="__main__":
 	settings = termios.tcgetattr(sys.stdin)
