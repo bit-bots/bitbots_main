@@ -5,8 +5,11 @@
   <description>
      An automatically generated package with all the configuration and launch files for using the wolfgang with the MoveIt! Motion Planning Framework
   </description>
-  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
 
   <license>BSD</license>
 

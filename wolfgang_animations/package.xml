@@ -5,8 +5,9 @@
   <description>Animation files for the wolfgang robot</description>
 
   <maintainer email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</maintainer>
-  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
-
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  
+  <author email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</author>
 
   <license>BSD</license>
 
