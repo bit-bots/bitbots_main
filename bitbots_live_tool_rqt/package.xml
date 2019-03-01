@@ -4,8 +4,9 @@
   <version>0.0.0</version>
   <description>The bitbots_live_tool_rqt package</description>
 
-  <author>6wieczor</author>
   <maintainer email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <author email="6wieczor@informatik.uni-hamburg.de">6wieczor</author>
 
   <license>BSD</license>
 
