@@ -78,7 +78,7 @@ void QuinticWalkingNode::run(){
                                  || _robotState == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
             // see if the walk engine has new goals for us
             bool newGoals = _walkEngine.updateState(dt, _currentOrders, walkableState);
-            if (true) {
+            if (true) { //todo
                 calculateJointGoals();
             }
         }
@@ -338,6 +338,7 @@ void QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_w
 
 void QuinticWalkingNode::publishControllerCommands(std::vector <std::string> joint_names, std::vector<double> positions){
     // publishes the commands to the GroupedPositionController
+    _command_msg.header.stamp = ros::Time::now();
     _command_msg.joint_names = joint_names;
     _command_msg.positions = positions;
     std::vector<double> ones(joint_names.size(),-1.0);
