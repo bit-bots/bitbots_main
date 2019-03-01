@@ -173,7 +173,7 @@ class HsvSpaceColorDetector(ColorDetector):
 
 
 class PixelListColorDetector(ColorDetector):
-    def __init__(self, debug_printer, package_path, config, do_publish_mask_img_msg=True):
+    def __init__(self, debug_printer, package_path, config, primary_detector=False):
         # type:(DebugPrinter, str, dict, bool) -> None
         """
         PixelListColorDetector is a ColorDetector, that is based on a color-space.
@@ -184,7 +184,8 @@ class PixelListColorDetector(ColorDetector):
         :param DebugPrinter debug_printer: debug-printer
         :param str package_path: path of package
         :param dict config: vision-config
-        :param bool do_publish_mask_img_msg: if True: this ColorDetector publishes mask_img-messages (Default: True)
+        :param bool primary_detector: is primary color-detector if True
+            (only detector held by vision should be True) (Default: False)
         :return: None
         """
         ColorDetector.__init__(self, debug_printer)
@@ -193,7 +194,7 @@ class PixelListColorDetector(ColorDetector):
         self.vision_config = config
 
         # TODO: debug-printer
-        self.do_publish_mask_img_msg = do_publish_mask_img_msg
+        self.primary_detector = primary_detector
 
         # concatenate color-path to file containing the accepted colors of base-color-space
         self.color_path = package_path + self.vision_config['field_color_detector_path']
@@ -207,7 +208,7 @@ class PixelListColorDetector(ColorDetector):
         self.publish_mask_img_dyn_msg = self.vision_config['vision_dynamic_color_space_mask_img_dyn_msg']
 
         # toggle use of dynamic-color-space
-        self.toggle_dynamic_color_space = self.vision_config['vision_dynamic_color_space']
+        self.is_dynamic_color_space = self.vision_config['vision_dynamic_color_space']
 
         # Subscribe to 'color_space'-messages from DynamicColorSpace
         self.color_space_subscriber = rospy.Subscriber(
@@ -286,21 +287,20 @@ class PixelListColorDetector(ColorDetector):
         :param np.array image: image to mask
         :return np.array: masked image
         """
-        if (not self.toggle_dynamic_color_space) or self.publish_mask_img_msg:
+        if (not self.is_dynamic_color_space) or self.publish_mask_img_msg:
             static_mask = VisionExtensions.maskImg(image, self.base_color_space)
 
-        if self.toggle_dynamic_color_space:
+        if self.is_dynamic_color_space:
             dyn_mask = VisionExtensions.maskImg(image, self.color_space)
-
             # toggle publishing of 'mask_img_dyn'-messages
-            if (self.do_publish_mask_img_msg and self.publish_mask_img_dyn_msg):
+            if (self.primary_detector and self.publish_mask_img_dyn_msg):
                 self.imagepublisher_dyn.publish(self.bridge.cv2_to_imgmsg(dyn_mask, '8UC1'))
   
         # toggle publishing of 'mask_img'-messages          
-        if (self.do_publish_mask_img_msg and self.publish_mask_img_msg):
+        if (self.primary_detector and self.publish_mask_img_msg):
             self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(static_mask, '8UC1'))
 
-        if self.toggle_dynamic_color_space:
+        if self.is_dynamic_color_space:
             return dyn_mask
         else:
             return static_mask

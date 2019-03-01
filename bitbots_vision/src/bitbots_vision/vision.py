@@ -277,7 +277,8 @@ class Vision:
         self.field_color_detector = color.PixelListColorDetector(
             self.debug_printer,
             self.package_path,
-            config)
+            config,
+            primary_detector=True)
 
         self.horizon_detector = horizon.HorizonDetector(
             self.field_color_detector,

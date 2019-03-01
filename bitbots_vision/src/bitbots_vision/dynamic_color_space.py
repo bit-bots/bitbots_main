@@ -16,17 +16,18 @@ from bitbots_vision.vision_modules import debug
 from bitbots_vision.vision_modules import horizon, color
 from bitbots_vision.cfg import dynamic_color_spaceConfig
 
-# TODO rename toggle in color.py
 # TODO debug_printer usage in color.py
-# TODO better parameter-names in config
-# TODO remove dyn from launch file
 # TODO vision-docu
 # TODO vision: set debug_printer as first param?
-# TODO find_colorpixel_candidates what do we return?
-# TODO todos in cfgs and yamls
-# TODO do class -methods, -variables with _underscore?
 
-# TODO register image_raw subscriber for vision.py in init?
+# TODO subscriber in callback
+# TODO better parameter-names in config
+# TODO remove dyn from launch file
+# TODO todos in cfgs and yamls
+# TODO docu heuristic
+# TODO docu: subscribed messages, published messages
+# TODO in vision config: image-source change -> rospy.warn
+# TODO kernel-radius
 
 class DynamicColorSpace:
     def __init__(self):
@@ -42,46 +43,46 @@ class DynamicColorSpace:
         """
         # Init package
         rospack = rospkg.RosPack()
-        self._package_path = rospack.get_path('bitbots_vision')
+        self.package_path = rospack.get_path('bitbots_vision')
 
         rospy.init_node('bitbots_dynamic_color_space')
         rospy.loginfo('Initializing dynamic color-space...')
 
-        self._bridge = CvBridge()
+        self.bridge = CvBridge()
 
         # Load config
-        self._config = {}
-        self._config = rospy.get_param('/bitbots_dynamic_color_space')
+        self.config = {}
+        self.config = rospy.get_param('/bitbots_dynamic_color_space')
 
         # Load vision-config
-        self._vision_config = {}
+        self.vision_config = {}
         # TODO maybe get config from msg???TODO docu
-        self._vision_config = rospy.get_param('/bitbots_vision')
+        self.vision_config = rospy.get_param('/bitbots_vision')
 
         # TODO NOT tested... correct implementation?
-        self._debug_printer = debug.DebugPrinter(
+        self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
-                self._config['dynamic_color_space_debug_printer_classes']))
+                self.config['dynamic_color_space_debug_printer_classes']))
 
         # Init params
-        self._queue_max_size = self._config['queue_max_size']
-        self._color_value_queue = deque(maxlen=self._queue_max_size)
+        self.queue_max_size = self.config['queue_max_size']
+        self.color_value_queue = deque(maxlen=self.queue_max_size)
 
-        self._pointfinder_threshold = self._config['threshold']
-        self._pointfinder_kernel_size = self._config['kernel_size']
+        self.pointfinder_threshold = self.config['threshold']
+        self.pointfinder_kernel_size = self.config['kernel_size']
 
         # Set ColorDetector and HorizonDetector
-        self._set_detectors()
+        self.set_detectors()
 
-        self._pointfinder = Pointfinder(
-            self._debug_printer,
-            self._pointfinder_threshold,
-            self._pointfinder_kernel_size)
+        self.pointfinder = Pointfinder(
+            self.debug_printer,
+            self.pointfinder_threshold,
+            self.pointfinder_kernel_size)
 
-        self._heuristic = Heuristic(self._debug_printer)
+        self.heuristic = Heuristic(self.debug_printer)
 
         # Subscribe to 'image-raw'-message
-        self._image_raw_msg_subscriber = rospy.Subscriber(
+        self.image_raw_msg_subscriber = rospy.Subscriber(
             'image_raw',
             Image,
             self._image_callback,
@@ -90,7 +91,7 @@ class DynamicColorSpace:
             buff_size=60000000)
 
         # Subscribe to 'vision_config'-message
-        self._vision_config_msg_subscriber = rospy.Subscriber(
+        self.vision_config_msg_subscriber = rospy.Subscriber(
             'vision_config',
             ConfigMessage,
             self._vision_config_callback,
@@ -98,35 +99,34 @@ class DynamicColorSpace:
             tcp_nodelay=True)
 
         # Register publisher of ColorSpaceMessages
-        self._color_space_publisher = rospy.Publisher(
+        self.color_space_publisher = rospy.Publisher(
             'color_space',
             ColorSpaceMessage,
             queue_size=1)
 
         # Register dynamic-reconfigure config-callback
-        Server(dynamic_color_spaceConfig, self._dynamic_reconfigure_callback)
+        Server(dynamic_color_spaceConfig, self.dynamic_reconfigure_callback)
 
         rospy.spin()
 
-    def _set_detectors(self):
+    def set_detectors(self):
         # type: () -> None
         """
         (Re-)Set Color- and HorizonDetector to newest vision-config.
 
         :return: None
         """
-        self._color_detector = color.PixelListColorDetector(
-            self._debug_printer,
-            self._package_path,
-            self._vision_config,
-            do_publish_mask_img_msg=False)
+        self.color_detector = color.PixelListColorDetector(
+            self.debug_printer,
+            self.package_path,
+            self.vision_config)
             
-        self._horizon_detector = horizon.HorizonDetector(
-            self._color_detector,
-            self._vision_config,
-            self._debug_printer)
+        self.horizon_detector = horizon.HorizonDetector(
+            self.color_detector,
+            self.vision_config,
+            self.debug_printer)
 
-    def _dynamic_reconfigure_callback(self, config, level):
+    def dynamic_reconfigure_callback(self, config, level):
         # type: (dict, int) -> dict
         """
         This gets called, after dynamic-reconfigure-server received config-changes.
@@ -137,21 +137,21 @@ class DynamicColorSpace:
         :return dict: new config
         """
         # Set new config
-        self._config = config
+        self.config = config
 
-        self._set_detectors()
+        self.set_detectors()
 
         # Reset queue
-        self._color_value_queue.clear()
+        self.color_value_queue.clear()
 
         # Set queue to new max-size
-        self._queue_max_size = self._config['queue_max_size']
-        self._color_value_queue = deque(maxlen=self._queue_max_size)
+        self.queue_max_size = self.config['queue_max_size']
+        self.color_value_queue = deque(maxlen=self.queue_max_size)
         
         # Set new config for Pointfinder
-        self._threshold = self._config['threshold']
-        self._kernel_size = self._config['kernel_size']
-        self._pointfinder.set_pointfinder_params(self._threshold, self._kernel_size)
+        self.threshold = self.config['threshold']
+        self.kernel_size = self.config['kernel_size']
+        self.pointfinder.set_pointfinder_params(self.threshold, self.kernel_size)
 
         return config
 
@@ -166,9 +166,9 @@ class DynamicColorSpace:
         :return: None
         """
         # Load dict from yaml-string in msg.data
-        self._vision_config = yaml.load(msg.data)
+        self.vision_config = yaml.load(msg.data)
 
-        self._set_detectors()
+        self.set_detectors()
 
     def _image_callback(self, image_msg):
         # type: (Image) -> None
@@ -183,7 +183,7 @@ class DynamicColorSpace:
         :return: None
         """
         # Turn off dynamic-color-space
-        if not self._vision_config['vision_dynamic_color_space']:
+        if not self.vision_config['vision_dynamic_color_space']:
             return
 
         # Drops old images
@@ -193,11 +193,11 @@ class DynamicColorSpace:
             return
 
         # Converting the ROS image message to CV2-image
-        image = self._bridge.imgmsg_to_cv2(image_msg, 'bgr8')
+        image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
         # Get new dynamic-colors from image
         colors = self.get_new_dynamic_colors(image)
         # Add new colors to the queue
-        self._color_value_queue.append(colors)
+        self.color_value_queue.append(colors)
         # Publishes the color-space
         self.publish(image_msg)
 
@@ -229,18 +229,18 @@ class DynamicColorSpace:
         :return np.array: array of new dynamic-color-values
         """
         # Masks new image with current color-space
-        mask_image = self._color_detector.mask_image(image)
+        mask_image = self.color_detector.mask_image(image)
         # Get mask from horizon detector
-        self._horizon_detector.set_image(image)
-        self._horizon_detector.compute_horizon_points()
-        mask = self._horizon_detector.get_mask()
+        self.horizon_detector.set_image(image)
+        self.horizon_detector.compute_horizon_points()
+        mask = self.horizon_detector.get_mask()
         if not mask is None:
             # Get array of pixel-coordinates of color-candidates
-            pixel_coordinates = self._pointfinder.get_coordinates_of_color_candidates(mask_image)
+            pixel_coordinates = self.pointfinder.get_coordinates_of_color_candidates(mask_image)
             # Get unique color-values from the candidate pixels
             color_candidates = self.get_unique_color_values(image, pixel_coordinates)
             # Filters the colors using the heuristic.
-            colors = np.array(self._heuristic.run(color_candidates, image, mask), dtype=np.int32)
+            colors = np.array(self.heuristic.run(color_candidates, image, mask), dtype=np.int32)
             return colors
         return np.array([[]])
 
@@ -269,7 +269,7 @@ class DynamicColorSpace:
         :return: None
         """
         # Get color-space from queue
-        color_space = self.queue_to_color_space(self._color_value_queue)
+        color_space = self.queue_to_color_space(self.color_value_queue)
         # Create ColorSpaceMessage
         color_space_msg = ColorSpaceMessage()
         color_space_msg.header.frame_id = image_msg.header.frame_id
@@ -278,7 +278,7 @@ class DynamicColorSpace:
         color_space_msg.green = color_space[:,1].tolist()
         color_space_msg.red   = color_space[:,2].tolist()
         # Publish ColorSpaceMessage
-        self._color_space_publisher.publish(color_space_msg)
+        self.color_space_publisher.publish(color_space_msg)
 
 
 class Pointfinder():
@@ -293,7 +293,7 @@ class Pointfinder():
         :return: None
         """
         # Init params
-        self._debug_printer = debug_printer
+        self.debug_printer = debug_printer
         self.set_pointfinder_params(threshold, kernel_size)
 
     def set_pointfinder_params(self, threshold, kernel_size=3):
@@ -306,14 +306,14 @@ class Pointfinder():
         :param int kernel_size: defines edge-size of convolution kernel, use odd number (default 3)
         :return: None
         """
-        self._threshold = threshold
+        self.threshold = threshold
 
         # Defines kernel
         # Init kernel as M x M matrix of ONEs
-        self._kernel = None
-        self._kernel = np.ones((kernel_size, kernel_size))
+        self.kernel = None
+        self.kernel = np.ones((kernel_size, kernel_size))
         # Set value of element in the middle of the matrix to negative of the count of the matrix-elements
-        self._kernel[int(np.size(self._kernel, 0) / 2), int(np.size(self._kernel, 1) / 2)] = - self._kernel.size
+        self.kernel[int(np.size(self.kernel, 0) / 2), int(np.size(self.kernel, 1) / 2)] = - self.kernel.size
 
     def get_coordinates_of_color_candidates(self, masked_image):
         # type (np.array) -> np.array
@@ -328,9 +328,9 @@ class Pointfinder():
         normalized_image = np.divide(masked_image, 255, dtype=np.int16)
 
         # Calculates the count of neighbors for each pixel
-        sum_array = cv2.filter2D(normalized_image, -1, self._kernel, borderType=0)
+        sum_array = cv2.filter2D(normalized_image, -1, self.kernel, borderType=0)
         # Returns all pixels with a higher true-color / false-color ratio than the threshold
-        return np.array(np.where(sum_array > self._threshold * (self._kernel.size - 1)))
+        return np.array(np.where(sum_array > self.threshold * (self.kernel.size - 1)))
 
 class Heuristic:
     def __init__(self, debug_printer):
@@ -342,7 +342,7 @@ class Heuristic:
         :param DebugPrinter debug_printer: Debug-printer
         :return: None
         """
-        self._debug_printer = debug_printer
+        self.debug_printer = debug_printer
 
     def run(self, color_list, image, mask):
         # type: (np.array, np.array, np.array) -> np.array
