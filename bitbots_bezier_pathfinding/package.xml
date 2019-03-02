@@ -19,7 +19,7 @@
 
   <export>
     <bitbots_documentation>
-      <status>unknown</status>
+      <status>tested_viz</status>
       <language>python</language>
     </bitbots_documentation>
   </export>
