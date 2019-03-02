@@ -8,8 +8,6 @@
     
     <arg name="sim_ns" default="/" />
 
-    <arg name="duty" default="TeamPlayer"/>
-
     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
         <arg name="sim" value="$(arg sim)"/>
     </include>
