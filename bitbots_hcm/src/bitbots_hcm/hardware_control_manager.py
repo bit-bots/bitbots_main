@@ -184,7 +184,7 @@ class HardwareControlManager:
         """  """
         rate = rospy.Rate(20)
 
-        while not rospy.is_shutdown():
+        while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
             self.blackboard.current_time = rospy.Time.now()
             self.dsd.update()
             self.hcm_state_publisher.publish(self.blackboard.current_state)

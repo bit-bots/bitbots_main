@@ -14,7 +14,6 @@ class AbstractPlayAnimation(AbstractActionElement):
         super(AbstractPlayAnimation, self).__init__(blackboard, dsd, parameters=None)
 
         self.first_perform = True
-        self.animation_started = False
 
     def perform(self, reevaluate=False):
         # we never want to leave the action when we play an animation
@@ -28,8 +27,13 @@ class AbstractPlayAnimation(AbstractActionElement):
             # defined by implementations of this abstract class
             anim = self.chose_animation()
 
-            # start animation
-            self.start_animation(anim)
+            # try to start animation
+            sucess = self.start_animation(anim)            
+            # if we fail, we need to abort this action
+            if not sucess:
+                rospy.logerr("Could not start animation. Will abort play animation action!")
+                return self.pop()
+
             return
 
         if self.animation_finished():
@@ -48,26 +52,30 @@ class AbstractPlayAnimation(AbstractActionElement):
         :param anim: animation to play
         :return:
         """
-        self.blackboard.hcm_animation_playing = False  # will be set true when the hcm receives keyframe callback
-        self.blackboard.hcm_animation_finished = False
 
         rospy.loginfo("Playing animation " + anim)
         if anim is None or anim == "":
             rospy.logwarn("Tried to play an animation with an empty name!")
             return False
         first_try = self.blackboard.animation_action_client.wait_for_server(
-            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 10)))
+            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 1)))     
         if not first_try:
-            rospy.logerr(
+            server_running = False
+            while not server_running and not self.blackboard.shut_down_request and not rospy.is_shutdown():            
+                rospy.logerr_throttle(5.0,
                 "Animation Action Server not running! Motion can not work without animation action server. "
                 "Will now wait until server is accessible!")
-            self.blackboard.animation_action_client.wait_for_server()
-            rospy.logwarn("Animation server now running, hcm will go on.")
+                server_running = self.blackboard.animation_action_client.wait_for_server(rospy.Duration(1))
+            if server_running:
+                rospy.logwarn("Animation server now running, hcm will go on.")
+            else:               
+                rospy.logwarn("Animation server did not start.")
+                return False
         goal = humanoid_league_msgs.msg.PlayAnimationGoal()
         goal.animation = anim
         goal.hcm = True  # the animation is from the hcm
         self.blackboard.animation_action_client.send_goal(goal)
-        self.animation_started = True
+        return True
 
     def animation_finished(self):
         state = self.blackboard.animation_action_client.get_state()
