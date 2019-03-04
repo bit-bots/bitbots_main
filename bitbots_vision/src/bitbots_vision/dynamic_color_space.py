@@ -20,12 +20,11 @@ from bitbots_vision.cfg import dynamic_color_spaceConfig
 # TODO vision-docu
 # TODO vision: set debug_printer as first param?
 
-# TODO subscriber in callback
 # TODO better parameter-names in config
 # TODO todos in cfgs and yamls
-# TODO docu: subscribed messages, published messages
 # TODO in vision config: image-source change -> rospy.warn
 # TODO kernel-radius
+# TODO move config to vision-config?
 
 class DynamicColorSpace:
     def __init__(self):
@@ -34,6 +33,9 @@ class DynamicColorSpace:
         DynamicColorSpace is a ROS node, that is used by the vision-node to better recognize the field-color.
         DynamicColorSpace is able to calculate dynamically changing color-spaces to accommodate e.g. 
         changing lighting conditions or to compensate for not optimized base-color-space-files.
+
+        This node subscribes to an Image-message (default: image-raw) and to the vision-config-message.
+        This node publishes ColorSpaceMessages.
 
         Initiating DynamicColor-space-node.
 
