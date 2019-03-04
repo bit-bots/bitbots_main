@@ -82,7 +82,7 @@ sub link_bitbots_meta() {
 
     if (read_yes_no_input()) {
         print "Linking bitbots_meta$/";
-        system "ln -s $start_dir $location/src/bitbots_meta";
+        system "ln -sT $start_dir $location/src/bitbots_meta";
     } else {
         die "Please navigate to bitbots_meta then...$/";
     }
