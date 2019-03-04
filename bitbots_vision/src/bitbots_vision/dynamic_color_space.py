@@ -20,11 +20,9 @@ from bitbots_vision.cfg import dynamic_color_spaceConfig
 # TODO vision-docu
 # TODO vision: set debug_printer as first param?
 
-# TODO better parameter-names in config
-# TODO todos in cfgs and yamls
 # TODO in vision config: image-source change -> rospy.warn
+# TODO move config to vision-config? -> init in callback
 # TODO kernel-radius
-# TODO move config to vision-config?
 
 class DynamicColorSpace:
     def __init__(self):
@@ -65,11 +63,11 @@ class DynamicColorSpace:
                 self.config['dynamic_color_space_debug_printer_classes']))
 
         # Init params
-        self.queue_max_size = self.config['queue_max_size']
+        self.queue_max_size = self.config['dynamic_color_space_queue_max_size']
         self.color_value_queue = deque(maxlen=self.queue_max_size)
 
-        self.pointfinder_threshold = self.config['threshold']
-        self.pointfinder_kernel_size = self.config['kernel_size']
+        self.pointfinder_threshold = self.config['pointfinder_threshold']
+        self.pointfinder_kernel_size = self.config['pointfinder_kernel_size']
 
         # Set ColorDetector and HorizonDetector
         self.set_detectors()
@@ -145,12 +143,12 @@ class DynamicColorSpace:
         self.color_value_queue.clear()
 
         # Set queue to new max-size
-        self.queue_max_size = self.config['queue_max_size']
+        self.queue_max_size = self.config['dynamic_color_space_queue_max_size']
         self.color_value_queue = deque(maxlen=self.queue_max_size)
         
         # Set new config for Pointfinder
-        self.threshold = self.config['threshold']
-        self.kernel_size = self.config['kernel_size']
+        self.threshold = self.config['pointfinder_threshold']
+        self.kernel_size = self.config['pointfinder_kernel_size']
         self.pointfinder.set_pointfinder_params(self.threshold, self.kernel_size)
 
         return config
