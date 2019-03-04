@@ -24,7 +24,6 @@ from bitbots_vision.cfg import dynamic_color_spaceConfig
 # TODO better parameter-names in config
 # TODO remove dyn from launch file
 # TODO todos in cfgs and yamls
-# TODO docu heuristic
 # TODO docu: subscribed messages, published messages
 # TODO in vision config: image-source change -> rospy.warn
 # TODO kernel-radius
@@ -421,7 +420,7 @@ class Heuristic:
     def deserialize(self, input_matrix):
         # type: (np.array) -> np.array
         """
-        Resolves the serialasation of colors into different channels. (Like a HTML color code)
+        Resolves the serialization of colors into different channels. (Like a HTML color code)
 
         :param np.array input_matrix: serialized colors
         :return: original colors with 3 channels
