@@ -1,5 +1,0 @@
-dynamic_color_space_debug_printer_classes: ''
-dynamic_color_space_queue_max_size: 10
-
-pointfinder_threshold: 0.6
-pointfinder_kernel_radius: 1

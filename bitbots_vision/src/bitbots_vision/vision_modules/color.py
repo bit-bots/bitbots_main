@@ -205,10 +205,10 @@ class PixelListColorDetector(ColorDetector):
         self.publish_mask_img_msg = self.vision_config['vision_mask_img_msg']
         
         # toggle publishing of mask_img_dyn msg with dynamic color-space
-        self.publish_mask_img_dyn_msg = self.vision_config['vision_dynamic_color_space_mask_img_dyn_msg']
+        self.publish_mask_img_dyn_msg = self.vision_config['dynamic_color_space_mask_img_dyn_msg']
 
         # toggle use of dynamic-color-space
-        self.is_dynamic_color_space = self.vision_config['vision_dynamic_color_space']
+        self.is_dynamic_color_space = self.vision_config['dynamic_color_space']
 
         # Subscribe to 'color_space'-messages from DynamicColorSpace
         self.color_space_subscriber = rospy.Subscriber(

@@ -20,9 +20,6 @@ from bitbots_vision.cfg import dynamic_color_spaceConfig
 # TODO vision-docu
 # TODO vision: set debug_printer as first param?
 
-# TODO in vision config: image-source change -> rospy.warn
-# TODO move config to vision-config? -> init in callback
-
 class DynamicColorSpace:
     def __init__(self):
         # type: () -> None
@@ -47,110 +44,26 @@ class DynamicColorSpace:
 
         self.bridge = CvBridge()
 
-        # Load config
-        self.config = {}
-        self.config = rospy.get_param('/bitbots_dynamic_color_space')
-
-        # Load vision-config
+        # Init vision-config
         self.vision_config = {}
-        # TODO maybe get config from msg???TODO docu
-        self.vision_config = rospy.get_param('/bitbots_vision')
-
-        # TODO NOT tested... correct implementation?
-        self.debug_printer = debug.DebugPrinter(
-            debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
-                self.config['dynamic_color_space_debug_printer_classes']))
-
-        # Init params
-        self.queue_max_size = self.config['dynamic_color_space_queue_max_size']
-        self.color_value_queue = deque(maxlen=self.queue_max_size)
-
-        # Set ColorDetector and HorizonDetector
-        self.set_detectors()
-
-        self.pointfinder = Pointfinder(
-            self.debug_printer,
-            self.config['pointfinder_threshold'],
-            self.config['pointfinder_kernel_radius'])
-
-        self.heuristic = Heuristic(self.debug_printer)
-
-        # Subscribe to 'image-raw'-message
-        self.image_raw_msg_subscriber = rospy.Subscriber(
-            'image_raw',
-            Image,
-            self._image_callback,
-            queue_size=1,
-            tcp_nodelay=True,
-            buff_size=60000000)
-
-        # Subscribe to 'vision_config'-message
-        self.vision_config_msg_subscriber = rospy.Subscriber(
-            'vision_config',
-            ConfigMessage,
-            self._vision_config_callback,
-            queue_size=1,
-            tcp_nodelay=True)
 
         # Register publisher of ColorSpaceMessages
-        self.color_space_publisher = rospy.Publisher(
+        self.pub_color_space = rospy.Publisher(
             'color_space',
             ColorSpaceMessage,
             queue_size=1)
 
-        # Register dynamic-reconfigure config-callback
-        Server(dynamic_color_spaceConfig, self.dynamic_reconfigure_callback)
+        # Subscribe to 'vision_config'-message
+        self.sub_vision_config_msg = rospy.Subscriber(
+            'vision_config',
+            ConfigMessage,
+            self.vision_config_callback,
+            queue_size=1,
+            tcp_nodelay=True)
 
         rospy.spin()
 
-    def set_detectors(self):
-        # type: () -> None
-        """
-        (Re-)Set Color- and HorizonDetector to newest vision-config.
-
-        :return: None
-        """
-        self.color_detector = color.PixelListColorDetector(
-            self.debug_printer,
-            self.package_path,
-            self.vision_config)
-            
-        self.horizon_detector = horizon.HorizonDetector(
-            self.color_detector,
-            self.vision_config,
-            self.debug_printer)
-
-    def dynamic_reconfigure_callback(self, config, level):
-        # type: (dict, int) -> dict
-        """
-        This gets called, after dynamic-reconfigure-server received config-changes.
-        Handling all config-changes.
-
-        :param dict config: new config
-        :param int level: ???
-        :return dict: new config
-        """
-        # Set new config
-        self.config = config
-
-        self.set_detectors()
-
-        # Reset queue
-        self.color_value_queue.clear()
-
-        # Set queue to new max-size
-        self.queue_max_size = self.config['dynamic_color_space_queue_max_size']
-        self.color_value_queue = deque(maxlen=self.queue_max_size)
-        
-        # Set new config for Pointfinder
-        self.pointfinder = Pointfinder(
-            self.debug_printer,
-            self.config['pointfinder_threshold'],
-            self.config['pointfinder_kernel_radius'])
-
-        return config
-
-    def _vision_config_callback(self, msg):
+    def vision_config_callback(self, msg):
         # type: (ConfigMessage) -> None
         """
         This method is called by the 'vision_config'-message-subscriber.
@@ -161,24 +74,72 @@ class DynamicColorSpace:
         :return: None
         """
         # Load dict from yaml-string in msg.data
-        self.vision_config = yaml.load(msg.data)
+        vision_config = {}
+        vision_config = yaml.load(msg.data)
 
-        self.set_detectors()
+        # TODO NOT tested... correct implementation?
+        self.debug_printer = debug.DebugPrinter(
+            debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
+                vision_config['vision_debug_printer_classes']))
 
-    def _image_callback(self, image_msg):
+        # Set Color- and HorizonDetector
+        self.color_detector = color.PixelListColorDetector(
+            self.debug_printer,
+            self.package_path,
+            vision_config)
+            
+        self.horizon_detector = horizon.HorizonDetector(
+            self.color_detector,
+            vision_config,
+            self.debug_printer)
+
+        # Reset queue
+        # TODO still needed?
+        if hasattr(self, 'color_value_queue'):
+            self.color_value_queue.clear()
+
+        # Set params
+        self.queue_max_size = vision_config['dynamic_color_space_queue_max_size']
+        self.color_value_queue = deque(maxlen=self.queue_max_size)
+
+        self.pointfinder = Pointfinder(
+            self.debug_printer,
+            vision_config['dynamic_color_space_threshold'],
+            vision_config['dynamic_color_space_kernel_radius'])
+
+        self.heuristic = Heuristic(self.debug_printer)
+
+        # Subscribe to Image-message
+        if 'ROS_img_msg_topic' not in self.vision_config or \
+                self.vision_config['ROS_img_msg_topic'] != vision_config['ROS_img_msg_topic']:
+            if hasattr(self, 'sub_image_msg'):
+                self.sub_image_msg.unregister()
+            self.sub_image_msg = rospy.Subscriber(
+                vision_config['ROS_img_msg_topic'],
+                Image,
+                self.image_callback,
+                queue_size=vision_config['ROS_img_queue_size'],
+                tcp_nodelay=True,
+                buff_size=60000000)
+            # https://github.com/ros/ros_comm/issues/536
+
+        self.vision_config = vision_config
+
+    def image_callback(self, image_msg):
         # type: (Image) -> None
         """
-        This method is called by the 'img_raw'-message-subscriber.
-        This handles Image-messages and drops old ones.
+        This method is called by the Image-message-subscriber.
+        Old Image-messages were dropped.
 
         Sometimes the queue gets to large, even when the size is limeted to 1. 
         That's, why we drop old images manualy.
 
-        :param Image image_msg: new image-message from 'img_raw'-message-subscriber
+        :param Image image_msg: new image-message from Image-message-subscriber
         :return: None
         """
+        # TODO rospy warn
         # Turn off dynamic-color-space
-        if not self.vision_config['vision_dynamic_color_space']:
+        if not self.vision_config['dynamic_color_space']:
             return
 
         # Drops old images
@@ -186,6 +147,11 @@ class DynamicColorSpace:
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
             return
+
+        self.handle_image(image_msg)
+
+    def handle_image(self, image_msg):
+        # TODO docu
 
         # Converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
@@ -273,7 +239,7 @@ class DynamicColorSpace:
         color_space_msg.green = color_space[:,1].tolist()
         color_space_msg.red   = color_space[:,2].tolist()
         # Publish ColorSpaceMessage
-        self.color_space_publisher.publish(color_space_msg)
+        self.pub_color_space.publish(color_space_msg)
 
 
 class Pointfinder():
