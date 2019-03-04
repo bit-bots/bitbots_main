@@ -8,11 +8,9 @@ https://github.com/Rhoban/model/
 
 #include <algorithm> 
 #include <Eigen/Dense>
+#include <Eigen/Geometry>
 #include "Footstep.hpp"
 #include "bitbots_splines/TrajectoryUtils.h"
-#include <tf/transform_datatypes.h>
-#include <Eigen/Dense>
-#include <tf_conversions/tf_eigen.h>
 #include <eigen_conversions/eigen_msg.h>
 #include "bitbots_splines/SplineContainer.hpp"
 #include "bitbots_splines/AxisAngle.h"
