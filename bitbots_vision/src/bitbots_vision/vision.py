@@ -34,12 +34,13 @@ class Vision:
         self.bridge = CvBridge()
 
         self.config = {}
+
         self.debug_image_dings = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_dings:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
         # Register publisher of 'vision_config'-messages
-        self._config_publisher = rospy.Publisher(
+        self.pub_config = rospy.Publisher(
             'vision_config',
             ConfigMessage,
             queue_size=1)
@@ -52,8 +53,8 @@ class Vision:
     def _image_callback(self, image_msg):
         # type: (Image) -> None
         """
-        This method is called by the 'img_raw'-message-subscriber.
-        This handles Image-messages and drops old ones.
+        This method is called by the Image-message-subscriber.
+        Old Image-messages were dropped.
 
         Sometimes the queue gets to large, even when the size is limeted to 1. 
         That's, why we drop old images manually.
@@ -229,11 +230,6 @@ class Vision:
                 config['vision_debug_printer_classes']))
         self.runtime_evaluator = evaluator.RuntimeEvaluator(self.debug_printer)
 
-        # Publish ConfigMessage
-        msg = ConfigMessage()
-        msg.data = yaml.dump(config)
-        self._config_publisher.publish(msg)
-
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
         self._ball_candidate_y_offset = config['vision_ball_candidate_horizon_y_offset']
 
@@ -285,11 +281,12 @@ class Vision:
             config,
             self.debug_printer)
 
-        self.line_detector = lines.LineDetector(self.white_color_detector,
-                                                self.field_color_detector,
-                                                self.horizon_detector,
-                                                config,
-                                                self.debug_printer)
+        self.line_detector = lines.LineDetector(
+            self.white_color_detector,
+            self.field_color_detector,
+            self.horizon_detector,
+            config,
+            self.debug_printer)
 
         self.obstacle_detector = obstacle.ObstacleDetector(
             self.red_color_detector,
@@ -348,10 +345,11 @@ class Vision:
                     rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
                 self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path, self.debug_printer)
                 rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
-            self.ball_detector = fcnn_handler.FcnnHandler(self.ball_fcnn,
-                                                          self.horizon_detector,
-                                                          self.ball_fcnn_config,
-                                                          self.debug_printer)
+            self.ball_detector = fcnn_handler.FcnnHandler(
+                self.ball_fcnn,
+                self.horizon_detector,
+                self.ball_fcnn_config,
+                self.debug_printer)
 
         # subscribers
         if 'ROS_img_msg_topic' not in self.config or \
@@ -409,6 +407,11 @@ class Vision:
             Image,
             queue_size=1,
         )
+
+        # Publish ConfigMessage
+        msg = ConfigMessage()
+        msg.data = yaml.dump(config)
+        self.pub_config.publish(msg)
 
         self.config = config
         return config
