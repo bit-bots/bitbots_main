@@ -1,4 +1,4 @@
-.PHONY : build doc doc-meta install repo vision-files
+.PHONY : build doc doc-meta install repo vision-files update
 
 
 build :
@@ -18,6 +18,8 @@ doc-meta :
 install: pull-all 
 	scripts/install.pl
 
+update: pull-all
+	rosdep install -irya
 
 pull-all:
 	git pull
