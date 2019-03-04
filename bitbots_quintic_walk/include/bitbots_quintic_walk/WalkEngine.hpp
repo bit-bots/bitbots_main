@@ -210,6 +210,7 @@ private:
          * Movement phase between 0 and 1
          */
         double _phase;
+        double _lastPhase;
 
         double _timePaused;
 

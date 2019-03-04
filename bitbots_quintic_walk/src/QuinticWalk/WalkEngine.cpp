@@ -11,6 +11,10 @@ namespace bitbots_quintic_walk {
 QuinticWalk::QuinticWalk() :
     _footstep(0.14, true),
     _phase(0.0),
+    _lastPhase(0.0),
+    _pauseRequested(false),
+    _leftKickRequested(false),
+    _rightKickRequested(false), 
     _params(),
     _trunkPosAtLast(),
     _trunkVelAtLast(),
@@ -33,9 +37,11 @@ QuinticWalk::QuinticWalk() :
 
 bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool walkableState){
     bool ordersZero = orders[0] == 0.0 && orders[1] == 0.0 && orders[2] == 0.0;
+        
+    // check if we will finish a half step with this update
+    bool halfStepFinished = (_lastPhase < 0.5 && _phase >= 0.5) || _phase >= 1;
+    _lastPhase = _phase;
 
-    double lastPhase = _phase;
-    bool halfStepFinished = (lastPhase < 0.5 && _phase >= 0.5) || _phase >= 1;
     if(halfStepFinished){
         ROS_WARN("halfstep_finished");
     }
@@ -61,14 +67,14 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         // in this state we do a single "step" where we only move the trunk
         if (halfStepFinished) {
             //start step is finished, go to next state
-            _phase = 0.0;
+            //_phase = 0.0;
             buildNormalTrajectories(orders);
-            _engineState == "walking";
+            _engineState = "walking";
         }
         updatePhase(dt);
     } else if (_engineState == "walking") {
         // check if a half step was finished and we are unstable
-        if ( halfStepFinished && _pauseRequested){
+        if (halfStepFinished && _pauseRequested){
             // go into pause
             _engineState = "paused";
         }else if(halfStepFinished &&
@@ -81,7 +87,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
             // current step is finished, lets see if we have to change state
             if (ordersZero) {
                 // we have zero command vel -> we should stop
-                _engineState == "stopStep";
+                _engineState = "stopStep";
                 _phase = 0.0;
                 buildStopStepTrajectories(orders);
                 updatePhase(dt);
@@ -107,7 +113,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         if (halfStepFinished) {
             //kick step is finished, go on walking
             _phase = 0.0;
-            _engineState == "walking";
+            _engineState = "walking";
             buildNormalTrajectories(orders);
         } else {
             updatePhase(dt);
@@ -117,7 +123,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         if (halfStepFinished) {
             //stop step is finished, go to stop movement state
             _phase = 0.0;
-            _engineState == "stopMovement";
+            _engineState = "stopMovement";
             buildStopMovementTrajectories(orders);
         } else {
             updatePhase(dt);
@@ -127,7 +133,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         if (halfStepFinished) {
             //stop movement is finished, go to idle state
             _phase = 0.0;
-            _engineState == "idle";
+            _engineState = "idle";
         }else{
             updatePhase(dt);
         }
@@ -138,7 +144,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
     //Check support foot state
     if ((_phase < 0.5 && !_footstep.isLeftSupport()) ||
         (_phase >= 0.5 && _footstep.isLeftSupport())) {
-        ROS_ERROR("QuinticWalk exception invalid state phase= %f support= %d dt= %f", _phase, _footstep.isLeftSupport(), dt);
+        ROS_ERROR_THROTTLE(1, "QuinticWalk exception invalid state phase= %f support= %d dt= %f", _phase, _footstep.isLeftSupport(), dt);
         return false;
     }
 
@@ -152,13 +158,13 @@ void QuinticWalk::updatePhase(double dt)
         if (dt == 0.0){ //sometimes happens due to rounding
             dt = 0.0001;
         }else{
-            ROS_ERROR("QuinticWalk exception negative dt phase= %f dt= %f", _phase, dt);
+            ROS_ERROR_THROTTLE(1, "QuinticWalk exception negative dt phase= %f dt= %f", _phase, dt);
             return;
         }
     }
     //Check for too long dt
     if (dt > 0.25/_params.freq) {
-        ROS_ERROR("QuinticWalk error too long dt phase= %f dt= %f", _phase, dt);
+        ROS_ERROR_THROTTLE(1, "QuinticWalk error too long dt phase= %f dt= %f", _phase, dt);
         return;
     }
 
