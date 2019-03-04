@@ -12,6 +12,10 @@
             <param name="vision_ball_classifier" value="fcnn"/>
             <param name="vision_dynamic_color_space" value="$(arg dyn)"/>
         </node>
+        <!-- start dynamic-color-space node -->
+        <node pkg="bitbots_vision" type="dynamic_color_space.py" name="bitbots_dynamic_color_space" output="screen">
+            <rosparam command="load" file="$(find bitbots_vision)/config/bitbots_dynamic_color_space_params.yaml"/>
+        </node>
     </group>
 
     <!-- start vision without balldetection-->
@@ -21,6 +25,10 @@
             <param name="vision_debug_image_msg" value="$(arg debug)"/>
             <param name="vision_ball_classifier" value="dummy"/>
             <param name="vision_dynamic_color_space" value="$(arg dyn)"/>
+        </node>
+        <!-- start dynamic-color-space node -->
+        <node pkg="bitbots_vision" type="dynamic_color_space.py" name="bitbots_dynamic_color_space" output="screen">
+            <rosparam command="load" file="$(find bitbots_vision)/config/bitbots_dynamic_color_space_params.yaml"/>
         </node>
     </group>
 
@@ -33,13 +41,5 @@
     <group if="$(arg sim)">
         <param name="use_sim_time" value="true"/>
         <remap to ="/camera/image_raw" from="/image_raw"/>
-    </group>
-
-    <!-- start vision with dynamic color-space -->
-    <group if="$(arg dyn)">
-        <node pkg="bitbots_vision" type="dynamic_color_space.py" name="bitbots_dynamic_color_space" output="screen">
-            <rosparam command="load" file="$(find bitbots_vision)/config/bitbots_dynamic_color_space_params.yaml"/>
-        </node>
-    </group>        
+    </group>      
 </launch>
-

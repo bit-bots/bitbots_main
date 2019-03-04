@@ -22,7 +22,6 @@ from bitbots_vision.cfg import dynamic_color_spaceConfig
 
 # TODO subscriber in callback
 # TODO better parameter-names in config
-# TODO remove dyn from launch file
 # TODO todos in cfgs and yamls
 # TODO docu: subscribed messages, published messages
 # TODO in vision config: image-source change -> rospy.warn
