@@ -39,7 +39,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
     bool ordersZero = orders[0] == 0.0 && orders[1] == 0.0 && orders[2] == 0.0;
         
     // check if we will finish a half step with this update
-    bool halfStepFinished = (_lastPhase < 0.5 && _phase >= 0.5) || _phase >= 1;
+    bool halfStepFinished = (_lastPhase < 0.5 && _phase >= 0.5) || (_lastPhase > 0.5 && _phase < 0.5); 
     _lastPhase = _phase;
 
     if(halfStepFinished){
@@ -88,12 +88,12 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
             if (ordersZero) {
                 // we have zero command vel -> we should stop
                 _engineState = "stopStep";
-                _phase = 0.0;
+                //_phase = 0.0;
                 buildStopStepTrajectories(orders);
                 updatePhase(dt);
             } else {
                 // we can keep on walking
-                _phase = 0;
+                //_phase = 0;
                 buildNormalTrajectories(orders);
                 updatePhase(dt);
             }
@@ -142,9 +142,9 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
     }
 
     //Check support foot state
-    if ((_phase < 0.5 && !_footstep.isLeftSupport()) ||
-        (_phase >= 0.5 && _footstep.isLeftSupport())) {
-        ROS_ERROR_THROTTLE(1, "QuinticWalk exception invalid state phase= %f support= %d dt= %f", _phase, _footstep.isLeftSupport(), dt);
+    if ((_lastPhase < 0.5 && !_footstep.isLeftSupport()) ||
+        (_lastPhase >= 0.5 && _footstep.isLeftSupport())) {
+        ROS_ERROR("QuinticWalk exception invalid state phase= %f support= %d dt= %f", _phase, _footstep.isLeftSupport(), dt);
         return false;
     }
 
@@ -170,6 +170,11 @@ void QuinticWalk::updatePhase(double dt)
 
     //Update the phase
     _phase += dt*_params.freq;
+
+    // reset to 0 if step complete
+    if(_phase > 1.0){
+        _phase = 0.0;
+    }
 }
 
 void QuinticWalk::endStep(){
