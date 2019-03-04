@@ -22,7 +22,6 @@ from bitbots_vision.cfg import dynamic_color_spaceConfig
 
 # TODO in vision config: image-source change -> rospy.warn
 # TODO move config to vision-config? -> init in callback
-# TODO kernel-radius
 
 class DynamicColorSpace:
     def __init__(self):
@@ -66,16 +65,13 @@ class DynamicColorSpace:
         self.queue_max_size = self.config['dynamic_color_space_queue_max_size']
         self.color_value_queue = deque(maxlen=self.queue_max_size)
 
-        self.pointfinder_threshold = self.config['pointfinder_threshold']
-        self.pointfinder_kernel_size = self.config['pointfinder_kernel_size']
-
         # Set ColorDetector and HorizonDetector
         self.set_detectors()
 
         self.pointfinder = Pointfinder(
             self.debug_printer,
-            self.pointfinder_threshold,
-            self.pointfinder_kernel_size)
+            self.config['pointfinder_threshold'],
+            self.config['pointfinder_kernel_radius'])
 
         self.heuristic = Heuristic(self.debug_printer)
 
@@ -147,9 +143,10 @@ class DynamicColorSpace:
         self.color_value_queue = deque(maxlen=self.queue_max_size)
         
         # Set new config for Pointfinder
-        self.threshold = self.config['pointfinder_threshold']
-        self.kernel_size = self.config['pointfinder_kernel_size']
-        self.pointfinder.set_pointfinder_params(self.threshold, self.kernel_size)
+        self.pointfinder = Pointfinder(
+            self.debug_printer,
+            self.config['pointfinder_threshold'],
+            self.config['pointfinder_kernel_radius'])
 
         return config
 
@@ -280,37 +277,29 @@ class DynamicColorSpace:
 
 
 class Pointfinder():
-    def __init__(self, debug_printer, threshold, kernel_size=3):
+    def __init__(self, debug_printer, threshold, kernel_radius):
         # type: (DebugPrinter, float, int) -> None
         """
         Pointfinder is used to find false-color pixels with higher true-color / false-color ratio as threshold in their surrounding in masked-image.
 
         :param DebugPrinter: debug-printer
-        :param float threshold: necessary amount of true-color in percentage (between 0..1)
-        :param int kernel_size: edge-size of convolution kernel, use odd number (default 3), defines relevant surrounding of pixel
+        :param float threshold: necessary amount of true-color in percentage
+        :param int kernel_radius: radius surrounding the center-element of kernel-matrix, defines relevant surrounding of pixel
         :return: None
         """
         # Init params
         self.debug_printer = debug_printer
-        self.set_pointfinder_params(threshold, kernel_size)
 
-    def set_pointfinder_params(self, threshold, kernel_size=3):
-        # type: (float, int) -> None
-        """
-        Set parameter of Pointfinder.
-        Used to update parameter in case of dynamic reconfigure-config-changes.
-
-        :param float threshold: necessary amount of true color in percentage (between 0..1)
-        :param int kernel_size: defines edge-size of convolution kernel, use odd number (default 3)
-        :return: None
-        """
         self.threshold = threshold
+
+        self.kernel_radius = kernel_radius
+        self.kernel_edge_size = 2 * self.kernel_radius + 1
 
         # Defines kernel
         # Init kernel as M x M matrix of ONEs
         self.kernel = None
-        self.kernel = np.ones((kernel_size, kernel_size))
-        # Set value of element in the middle of the matrix to negative of the count of the matrix-elements
+        self.kernel = np.ones((self.kernel_edge_size, self.kernel_edge_size))
+        # Set value of element in the middle of the matrix to the negative of the count of the matrix-elements
         self.kernel[int(np.size(self.kernel, 0) / 2), int(np.size(self.kernel, 1) / 2)] = - self.kernel.size
 
     def get_coordinates_of_color_candidates(self, masked_image):
