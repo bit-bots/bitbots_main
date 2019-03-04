@@ -239,7 +239,7 @@ if not args.sync_only:
             source devel/setup.zsh;
             catkin build --force-color -j {jobs} {quiet_option} || exit 1;
             else;
-            source /opt/ros/kinetic/setup.zsh;
+            source /opt/ros/melodic/setup.zsh;
             catkin build --force-color -j {jobs} {quiet_option} || exit 1;
             source devel/setup.zsh;
             fi;
