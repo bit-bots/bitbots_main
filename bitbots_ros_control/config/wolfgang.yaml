@@ -49,8 +49,6 @@ ros_control:
       RShoulderPitch:
         id: 1
         model_number: 311
-        mounting_offset: 0.0
-        offset: 0.0
       LShoulderPitch:
         id: 2
         model_number: 311
@@ -81,11 +79,9 @@ ros_control:
       RHipPitch:
         id: 11
         model_number: 321
-        offset: -0.15  
       LHipPitch:
         id: 12
         model_number: 321
-        offset: 0.15
       RKnee:
         id: 13
         model_number: 321
@@ -95,11 +91,9 @@ ros_control:
       RAnklePitch:
         id: 15
         model_number: 321
-        offset: 0.13
       LAnklePitch:
         id: 16
         model_number: 321
-        offset: -0.13
       RAnkleRoll:
         id: 17
         model_number: 321
