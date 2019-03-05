@@ -43,7 +43,8 @@ class Vision:
         self.pub_config = rospy.Publisher(
             'vision_config',
             ConfigMessage,
-            queue_size=1)
+            queue_size=1,
+            latch=True)
 
         # Register VisionConfig-Server (dynamic-reconfigure) and callback
         Server(VisionConfig, self._dynamic_reconfigure_callback)
