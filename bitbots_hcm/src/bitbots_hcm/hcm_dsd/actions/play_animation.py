@@ -18,11 +18,10 @@ class AbstractPlayAnimation(AbstractActionElement):
     def perform(self, reevaluate=False):
         # we never want to leave the action when we play an animation
         # deactivate the reevaluate
-        self.do_not_reevaluate()
+        if not self.blackboard.shut_down_request:
+            self.do_not_reevaluate()
 
         if self.first_perform:
-            self.first_perform = False
-
             # get the animation that should be played
             # defined by implementations of this abstract class
             anim = self.chose_animation()
@@ -34,6 +33,7 @@ class AbstractPlayAnimation(AbstractActionElement):
                 rospy.logerr("Could not start animation. Will abort play animation action!")
                 return self.pop()
 
+            self.first_perform = False
             return
 
         if self.animation_finished():
