@@ -36,6 +36,7 @@ include:
         - DynamixelSDK
         - dynamixel-workbench
         - dynamixel-workbench-msgs
+        - moveit
         - pointcloud_to_laserscan
     - scripts
     - wolfgang_robot:
