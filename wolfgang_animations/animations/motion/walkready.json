@@ -1,37 +1,35 @@
 {
-    "author": "Unknown", 
-    "description": "Edit me!", 
-    "hostname": "tams159", 
-    "keyframes": [
-        {
-            "duration": 1.0, 
-            "goals": {
-                "HeadPan": 0, 
-                "HeadTilt": 0, 
-                "LAnklePitch": -29, 
-                "LAnkleRoll": 0, 
-                "LElbow": 47, 
-                "LHipPitch": 51, 
-                "LHipRoll": 0, 
-                "LHipYaw": 0, 
-                "LKnee": -64, 
-                "LShoulderPitch": 1, 
-                "LShoulderRoll": 0, 
-                "RAnklePitch": 28, 
-                "RAnkleRoll": -4, 
-                "RElbow": -45, 
-                "RHipPitch": -50, 
-                "RHipRoll": -1, 
-                "RHipYaw": 1, 
-                "RKnee": 61, 
-                "RShoulderPitch": 0, 
-                "RShoulderRoll": 0
-            }, 
-            "name": "new frame", 
-            "pause": 0.5
-        }
-    ], 
-    "last_edited": "2018-06-16 16:28:02.130158", 
-    "name": "walkready", 
-    "version": 0
-}
+ "author": "walkready_script", 
+ "description": "none",
+ "hostname": "tams159", 
+ "keyframes": [ 
+ { 
+ "duration": 1.0, 
+ "goals": { 
+ "HeadPan": 0, 
+ "HeadTilt": 0, 
+ "LElbow": 45, 
+ "LShoulderPitch": 0, 
+ "LShoulderRoll": 0, 
+ "RElbow": -45, 
+ "RShoulderPitch": 0, 
+ "RShoulderRoll": 0, "LHipYaw" : -1.2546646550750375,
+ "LHipRoll" : 3.3292645299810943,
+ "LHipPitch" : 40.17919141896905,
+ "LKnee" : -60.12105880588307,
+ "LAnklePitch" : -25.604703812397723,
+ "LAnkleRoll" : 3.5576607692992264,
+ "RHipYaw" : 1.2546709101682525,
+ "RHipRoll" : -3.329250545161511,
+ "RHipPitch" : -40.17819750081453,
+ "RKnee" : 60.11904602579639,
+ "RAnklePitch" : 25.60368008241625,
+ "RAnkleRoll" : -3.5576547869015913
+},
+ "name": "generated frame", 
+ "pause": 0.5 
+ }
+ ], 
+ "name": "walkready", 
+"version": 0 
+} 
