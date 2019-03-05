@@ -41,6 +41,7 @@ include:
         - moveit
         - pointcloud_to_laserscan
     - scripts
+    - udp_bridge
     - wolfgang_robot:
         - wolfgang_animations
         - wolfgang_description
