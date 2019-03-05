@@ -69,3 +69,6 @@
 	path = lib/moveit
 	url = git@github.com:ros-planning/moveit.git
     branch = melodic-devel
+[submodule "udp_bridge"]
+	path = udp_bridge
+	url = git@github.com:bit-bots/udp_bridge.git
