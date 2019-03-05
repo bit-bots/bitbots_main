@@ -50,14 +50,13 @@ class AbstractLookAt(AbstractActionElement):
         try:
             point = self.tf_buffer.transform(point, self.head_tf_frame, timeout=rospy.Duration(0.9))
         except tf2.LookupException as e:
-            rospy.logerr('Could not find transform {}. Either it does not exist or '
-                         'transform is not yet online.\n{}'.format(self.head_tf_frame, e))
+            rospy.logwarn('The frame {} is not being published (LookupException)'.format(self.head_tf_frame))
             return
         except tf2.ConnectivityException as e:
-            rospy.logerr('No connection to transform\n{}'.format(e))
+            rospy.logwarn('The transforms {} and {} are not connected in the TF Tree (ConnectivityException)'.format(point.header.frame_id, self.head_tf_frame))
             return
         except tf2.ExtrapolationException as e:
-            rospy.logerr('No transform yet\n{}'.format(e))
+            rospy.logwarn('The transform {} is currently not available (ExtrapolationException)'.format(self.head_tf_frame))
             return
 
         head_pan, head_tilt = self.get_motor_goals_from_point(point.point)
