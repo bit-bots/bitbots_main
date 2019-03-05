@@ -36,7 +36,9 @@ QuinticWalk::QuinticWalk() :
 
 
 bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool walkableState){
-    // First check if we are currently in pause state, since we don't want to update the phase in this case
+    bool ordersZero = orders[0] == 0.0 && orders[1] == 0.0 && orders[2] == 0.0;
+
+    // First check if we are currently in pause state or idle, since we don't want to update the phase in this case
     if (_engineState == "paused") {
         if (_timePaused > _params.pauseDuration) {
             // our pause is finished, whe can continue walking
@@ -47,19 +49,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         }
         // we don't have to update anything more
         return false;
-    }
-
-    // update the current phase
-    updatePhase(dt);
-    
-    bool ordersZero = orders[0] == 0.0 && orders[1] == 0.0 && orders[2] == 0.0;
-        
-    // check if we will finish a half step with this update
-    bool halfStepFinished = (_lastPhase < 0.5 && _phase >= 0.5) || (_lastPhase > 0.5 && _phase <0.5); 
-    _lastPhase = _phase;
-
-    // small state machine
-    if (_engineState == "idle") {
+    } else if (_engineState == "idle") {
         if (ordersZero) {
             // we are in idle and are not supposed to walk. current state is fine, just do nothing
             return false;
@@ -68,12 +58,22 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
             if (walkableState) {
                 buildStartTrajectories(orders);
                 _engineState = "startMovement";
-            }else{
+            } else { 
                 // we can't start walking
                 return false;
             }   
         }
-    } else if (_engineState == "startMovement") {
+    }
+
+    // update the current phase
+    updatePhase(dt);
+        
+    // check if we will finish a half step with this update
+    bool halfStepFinished = (_lastPhase < 0.5 && _phase >= 0.5) || (_lastPhase > 0.5 && _phase <0.5); 
+    _lastPhase = _phase;
+
+    // small state machine
+    if (_engineState == "startMovement") {
         // in this state we do a single "step" where we only move the trunk
         if (halfStepFinished) {
             //start step is finished, go to next state
@@ -123,6 +123,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         if (halfStepFinished) {
             //stop movement is finished, go to idle state
             _engineState = "idle";
+            return false;
         }
     } else {
         ROS_ERROR("Somethings wrong with the walking engine state");
