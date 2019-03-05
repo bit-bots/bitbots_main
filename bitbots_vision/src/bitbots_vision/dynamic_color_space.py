@@ -20,6 +20,9 @@ from bitbots_vision.cfg import dynamic_color_spaceConfig
 # TODO vision-docu
 # TODO vision: set debug_printer as first param?
 
+# TODO more config params?
+# TODO see below...
+
 class DynamicColorSpace:
     def __init__(self):
         # type: () -> None
