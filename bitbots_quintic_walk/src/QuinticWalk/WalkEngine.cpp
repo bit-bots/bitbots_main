@@ -39,12 +39,8 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
     bool ordersZero = orders[0] == 0.0 && orders[1] == 0.0 && orders[2] == 0.0;
         
     // check if we will finish a half step with this update
-    bool halfStepFinished = (_lastPhase < 0.5 && _phase >= 0.5) || (_lastPhase > 0.5 && _phase < 0.5); 
+    bool halfStepFinished = (_phase < 0.5 && _phase + dt >= 0.5) || (_phase < 1.0 && _phase + dt >= 1.0); 
     _lastPhase = _phase;
-
-    if(halfStepFinished){
-        ROS_WARN("halfstep_finished");
-    }
 
     // small state machine
     if (_engineState == "idle") {
@@ -54,14 +50,14 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         } else {
             // we should start walking if the robot is in the right state
             if (walkableState) {
-                _phase = 0.0;
+                //_phase = 0.0;
                 buildStartTrajectories(orders);
                 _engineState = "startMovement";
                 updatePhase(dt);
             }else{
                 // we can't start walking
                 return false;
-            }
+            }   
         }
     } else if (_engineState == "startMovement") {
         // in this state we do a single "step" where we only move the trunk
@@ -122,7 +118,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         // in this state we do a step back to get feet into idle pose
         if (halfStepFinished) {
             //stop step is finished, go to stop movement state
-            _phase = 0.0;
+            //_phase = 0.0;
             _engineState = "stopMovement";
             buildStopMovementTrajectories(orders);
         } else {
@@ -132,7 +128,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         // in this state we do a "step" where we move the trunk back to idle position
         if (halfStepFinished) {
             //stop movement is finished, go to idle state
-            _phase = 0.0;
+            //_phase = 0.0;
             _engineState = "idle";
         }else{
             updatePhase(dt);
@@ -141,9 +137,9 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         ROS_ERROR("Somethings wrong with the walking engine state");
     }
 
-    //Check support foot state
-    if ((_lastPhase < 0.5 && !_footstep.isLeftSupport()) ||
-        (_lastPhase >= 0.5 && _footstep.isLeftSupport())) {
+    //Sanity check support foot state
+    if ((_phase < 0.5 && !_footstep.isLeftSupport()) ||
+        (_phase >= 0.5 && _footstep.isLeftSupport())) {
         ROS_ERROR("QuinticWalk exception invalid state phase= %f support= %d dt= %f", _phase, _footstep.isLeftSupport(), dt);
         return false;
     }
