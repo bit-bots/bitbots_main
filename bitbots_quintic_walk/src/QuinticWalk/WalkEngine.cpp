@@ -36,10 +36,26 @@ QuinticWalk::QuinticWalk() :
 
 
 bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool walkableState){
+    // First check if we are currently in pause state, since we don't want to update the phase in this case
+    if (_engineState == "paused") {
+        if (_timePaused > _params.pauseDuration) {
+            // our pause is finished, whe can continue walking
+            _engineState = "walking";
+            _timePaused = 0.0;
+        } else {
+            _timePaused += dt;
+        }
+        // we don't have to update anything more
+        return false;
+    }
+
+    // update the current phase
+    updatePhase(dt);
+    
     bool ordersZero = orders[0] == 0.0 && orders[1] == 0.0 && orders[2] == 0.0;
         
     // check if we will finish a half step with this update
-    bool halfStepFinished = (_phase < 0.5 && _phase + dt >= 0.5) || (_phase < 1.0 && _phase + dt >= 1.0); 
+    bool halfStepFinished = (_lastPhase < 0.5 && _phase >= 0.5) || (_lastPhase > 0.5 && _phase <0.5); 
     _lastPhase = _phase;
 
     // small state machine
@@ -50,10 +66,8 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         } else {
             // we should start walking if the robot is in the right state
             if (walkableState) {
-                //_phase = 0.0;
                 buildStartTrajectories(orders);
                 _engineState = "startMovement";
-                updatePhase(dt);
             }else{
                 // we can't start walking
                 return false;
@@ -63,11 +77,9 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         // in this state we do a single "step" where we only move the trunk
         if (halfStepFinished) {
             //start step is finished, go to next state
-            //_phase = 0.0;
             buildNormalTrajectories(orders);
             _engineState = "walking";
-        }
-        updatePhase(dt);
+        }        
     } else if (_engineState == "walking") {
         // check if a half step was finished and we are unstable
         if (halfStepFinished && _pauseRequested){
@@ -77,32 +89,19 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
                 (_leftKickRequested && !_footstep.isLeftSupport() || _rightKickRequested && _footstep.isLeftSupport())){
             // lets do a kick
             buildKickTrajectories(orders);
-            _engineState = "kick";
-            updatePhase(dt);
+            _engineState = "kick";            
         }else if (halfStepFinished) {
             // current step is finished, lets see if we have to change state
             if (ordersZero) {
                 // we have zero command vel -> we should stop
                 _engineState = "stopStep";
                 //_phase = 0.0;
-                buildStopStepTrajectories(orders);
-                updatePhase(dt);
+                buildStopStepTrajectories(orders);                
             } else {
                 // we can keep on walking
                 //_phase = 0;
-                buildNormalTrajectories(orders);
-                updatePhase(dt);
+                buildNormalTrajectories(orders);                
             }
-        }else{
-            updatePhase(dt);
-        }
-    } else if (_engineState == "paused") {
-        if (_timePaused > _params.pauseDuration) {
-            // our pause is finished, whe can continue walking
-            _engineState = "walking";
-            _timePaused = 0.0;
-        } else {
-            _timePaused += dt;
         }
     } else if (_engineState == "kick") {
         // in this state we do a kick while doing a step
@@ -111,27 +110,19 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
             _phase = 0.0;
             _engineState = "walking";
             buildNormalTrajectories(orders);
-        } else {
-            updatePhase(dt);
         }
     } else if (_engineState == "stopStep") {
         // in this state we do a step back to get feet into idle pose
         if (halfStepFinished) {
             //stop step is finished, go to stop movement state
-            //_phase = 0.0;
             _engineState = "stopMovement";
             buildStopMovementTrajectories(orders);
-        } else {
-            updatePhase(dt);
         }
     }else if (_engineState == "stopMovement"){
         // in this state we do a "step" where we move the trunk back to idle position
         if (halfStepFinished) {
             //stop movement is finished, go to idle state
-            //_phase = 0.0;
             _engineState = "idle";
-        }else{
-            updatePhase(dt);
         }
     } else {
         ROS_ERROR("Somethings wrong with the walking engine state");

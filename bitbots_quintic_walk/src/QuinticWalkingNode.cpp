@@ -53,6 +53,7 @@ QuinticWalkingNode::QuinticWalkingNode(){
     // initilize IK solver
     _bioIK_solver = bitbots_ik::BioIKSolver(*_all_joints_group, *_lleg_joints_group, *_rleg_joints_group);    
 
+    _first_run = true;
 }
 
 
@@ -167,6 +168,11 @@ double QuinticWalkingNode::getTimeDelta(){
         double current_ros_time = ros::Time::now().toSec();
         dt = current_ros_time - _last_ros_update_time;
         _last_ros_update_time = current_ros_time;
+    }
+    // time is wrong when we run it for the first time
+    if(_first_run){
+        _first_run = false;
+        dt = 0.0001;
     }
     return dt;
 }

@@ -70,6 +70,8 @@ private:
     bool _debugActive;
     bool _simulation_active;
 
+    bool _first_run;
+
     double _engineFrequency;
 
     bool _phaseResetActive;
