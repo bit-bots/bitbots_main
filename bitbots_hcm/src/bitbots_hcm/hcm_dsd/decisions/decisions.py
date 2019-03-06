@@ -35,12 +35,16 @@ class CheckIMU(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
+        self.clear_debug_data()
+
         if not self.blackboard.last_imu_update_time:
             # wait for the IMU to start
             self.blackboard.current_state = STATE_STARTUP
             return "IMU_NOT_STARTED"
         elif self.blackboard.current_time.to_sec() - self.blackboard.last_imu_update_time.to_sec() > self.blackboard.imu_timeout_duration:
             # tell that we have a hardware problem
+            self.publish_debug_data("Time since last IMU update",
+                                    self.blackboard.current_time.to_sec() - self.blackboard.last_imu_update_time.to_sec())
             self.blackboard.current_state = STATE_HARDWARE_PROBLEM
             return "PROBLEM"
         elif not reevaluate and self.blackboard.current_state == STATE_HARDWARE_PROBLEM:
@@ -58,6 +62,8 @@ class CheckPressureSensor(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
+        self.clear_debug_data()
+
         if self.blackboard.pressure_sensors_installed and not self.blackboard.simulation_active:
             if not self.blackboard.last_pressure_update_time:
                 # wait for the IMU to start
@@ -65,6 +71,8 @@ class CheckPressureSensor(AbstractDecisionElement):
                 return "PRESSURE_NOT_STARTED"
             elif self.blackboard.current_time.to_sec() - self.blackboard.last_pressure_update_time.to_sec() > self.blackboard.pressure_timeout_duration:
                 # tell that we have a hardware problem
+                self.publish_debug_data("Time since last pressure-sensor update",
+                                        self.blackboard.current_time.to_sec() - self.blackboard.last_pressure_update_time.to_sec())
                 self.blackboard.current_state = STATE_HARDWARE_PROBLEM
                 return "PROBLEM"
         return "CONNECTION"
@@ -95,12 +103,16 @@ class MotorOffTimer(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
+        self.clear_debug_data()
+
         if self.blackboard.simulation_active:
             return "SIMULATION"
         # check if the time is reached
         if self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec() > self.blackboard.motor_off_time:
             rospy.logwarn_throttle(5, "Didn't recieve goals for " + str(
                 self.blackboard.motor_off_time) + " seconds. Will shut down the motors and wait for commands.")
+            self.publish_debug_data("Time since last motor goals",
+                                    self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec())
             self.blackboard.current_state = STATE_MOTOR_OFF
             # we do an action sequence to turn off the motors and stay in motor off  
             return "TURN_MOTORS_OFF"
@@ -157,7 +169,7 @@ class PickedUp(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
-        # check if the robot is currently beeing picked up
+        # check if the robot is currently being picked up
         if self.blackboard.pressure_sensors_installed and sum(self.blackboard.pressure) < 1:
             self.blackboard.current_state = STATE_PICKED_UP
             # we do an action sequence to tgo to walkready and stay in picked up state            
@@ -214,7 +226,7 @@ class Falling(AbstractDecisionElement):
             if falling_direction == self.blackboard.fall_checker.LEFT:
                 return "FALLING_LEFT"
             if falling_direction == self.blackboard.fall_checker.RIGHT:
-                return "FALLING_RIGHT"        
+                return "FALLING_RIGHT"
         else:
             # robot is not fallen
             return "NOT_FALLING"
@@ -288,7 +300,7 @@ class Controlable(AbstractDecisionElement):
                 i += 1
                 continue
             if abs(math.degrees(self.blackboard.current_joint_positions.position[i]) -
-                           self.blackboard.walkready_pose_dict[joint_name]) > self.blackboard.walkready_pose_threshold:
+                   self.blackboard.walkready_pose_dict[joint_name]) > self.blackboard.walkready_pose_threshold:
                 return False
             i += 1
         return True
