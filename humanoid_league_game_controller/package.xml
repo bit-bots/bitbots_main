@@ -2,7 +2,11 @@
 <package format="2">
   <name>humanoid_league_game_controller</name>
   <version>1.0.0</version>
-  <description>The humanoid_league_game_controller package</description>
+  <description>
+    The humanoid_league_game_controller package.
+    This is a node which receives real humanoid_league signals and republishes
+    them as ros-messages
+  </description>
 
   <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
