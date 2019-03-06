@@ -20,8 +20,6 @@ from bitbots_vision.cfg import dynamic_color_spaceConfig
 # TODO vision-docu
 # TODO vision: set debug_printer as first param?
 
-# TODO more config params?
-# TODO dyn-color launch variable
 # TODO see below...
 
 class DynamicColorSpace:
@@ -141,9 +139,9 @@ class DynamicColorSpace:
         :param Image image_msg: new image-message from Image-message-subscriber
         :return: None
         """
-        # TODO rospy warn
-        # Turn off dynamic-color-space
-        if not self.vision_config['dynamic_color_space']:
+        # Turn off dynamic-color-space if parameter of yaml (dynamic-reconfigure) or launch-file is false
+        if not (self.vision_config['dynamic_color_space'] and self.vision_config['dynamic_color_space_launch_file']):
+            # TODO rospy warn
             return
 
         # Drops old images
@@ -269,7 +267,8 @@ class Pointfinder():
         # Init kernel as M x M matrix of ONEs
         self.kernel = None
         self.kernel = np.ones((self.kernel_edge_size, self.kernel_edge_size))
-        # Set value of element in the middle of the matrix to the negative of the count of the matrix-elements
+        # Set value of the center element of the matrix to the negative of the count of the matrix-elements
+        # In case the value of this pixel is 1, it's value in the sum_array would be 0
         self.kernel[int(np.size(self.kernel, 0) / 2), int(np.size(self.kernel, 1) / 2)] = - self.kernel.size
 
     def get_coordinates_of_color_candidates(self, masked_image):

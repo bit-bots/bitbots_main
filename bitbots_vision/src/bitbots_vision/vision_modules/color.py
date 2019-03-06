@@ -173,7 +173,7 @@ class HsvSpaceColorDetector(ColorDetector):
 
 
 class PixelListColorDetector(ColorDetector):
-    def __init__(self, debug_printer, package_path, config, primary_detector=False):
+    def __init__(self, debug_printer, package_path, vision_config, primary_detector=False):
         # type:(DebugPrinter, str, dict, bool) -> None
         """
         PixelListColorDetector is a ColorDetector, that is based on a color-space.
@@ -183,7 +183,7 @@ class PixelListColorDetector(ColorDetector):
 
         :param DebugPrinter debug_printer: debug-printer
         :param str package_path: path of package
-        :param dict config: vision-config
+        :param dict vision_config: vision-config
         :param bool primary_detector: is primary color-detector if True
             (only detector held by vision should be True) (Default: False)
         :return: None
@@ -191,7 +191,7 @@ class PixelListColorDetector(ColorDetector):
         ColorDetector.__init__(self, debug_printer)
         self.bridge = CvBridge()
 
-        self.vision_config = config
+        self.vision_config = vision_config
 
         # TODO: debug-printer
         self.primary_detector = primary_detector
@@ -208,7 +208,7 @@ class PixelListColorDetector(ColorDetector):
         self.publish_mask_img_dyn_msg = self.vision_config['dynamic_color_space_mask_img_dyn_msg']
 
         # toggle use of dynamic-color-space
-        self.is_dynamic_color_space = self.vision_config['dynamic_color_space']
+        self.is_dynamic_color_space = (self.vision_config['dynamic_color_space'] and self.vision_config['dynamic_color_space_launch_file'])
 
         # Subscribe to 'color_space'-messages from DynamicColorSpace
         self.color_space_subscriber = rospy.Subscriber(
