@@ -1,8 +1,7 @@
 #! /usr/bin/env python2
-
 from dynamic_reconfigure.server import Server
-from vision_tools.cfg import ColorTestConfig
-from bitbots_vision_common.vision_modules import color
+from bitbots_vision_tools.cfg import ColorTestConfig
+from bitbots_vision.vision_modules import color
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import rospy
@@ -15,7 +14,7 @@ class ColorTest:
 
     def __init__(self):
         rospack = rospkg.RosPack()
-        self.package_path = rospack.get_path('vision_tools')
+        self.package_path = rospack.get_path('bitbots_vision_tools')
         self.use_pixel_list = rospy.get_param(
             'color_test_params/color_detector_implementation/use_PixelListColorDetector')
         # default configuration

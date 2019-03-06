@@ -7,5 +7,5 @@
     <param name="filename_format" value="frame%05d.png"/>
     <param name="img_folder" value="$(arg folder)" />
   </node>
-  <node name="tf_extractoor" pkg="vision_tools" type="tf_collector.py"/>
+  <node name="tf_extractoor" pkg="bitbots_vision_tools" type="tf_collector.py"/>
 </launch>
