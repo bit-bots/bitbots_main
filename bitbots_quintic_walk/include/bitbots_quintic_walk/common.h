@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Eigen/Geometry>
 #include <moveit/kinematics_base/kinematics_base.h>
 #include <moveit/planning_pipeline/planning_pipeline.h>
 #include <moveit/robot_interaction/interactive_marker_helpers.h>
@@ -11,10 +10,10 @@
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Float64MultiArray.h>
-#include <tf2_ros/transform_broadcaster.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2/LinearMath/Vector3.h>
-#include <tf2/LinearMath/Quaternion.h>
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_datatypes.h>
+#include <tf/transform_listener.h>
+#include <tf_conversions/tf_eigen.h>
 #include <thread>
 #include <urdf/model.h>
 #include <urdf_model/model.h>
@@ -24,7 +23,7 @@ inline double mix(double a, double b, double f) {
   return a * (1.0 - f) + b * f;
 }
 
-inline tf2::Vector3 mix(const tf2::Vector3 &a, const tf2::Vector3 &b, double f) {
+inline tf::Vector3 mix(const tf::Vector3 &a, const tf::Vector3 &b, double f) {
   return a * (1.0 - f) + b * f;
 }
 
@@ -42,7 +41,7 @@ inline Eigen::Isometry3d mix(const Eigen::Isometry3d &a, const Eigen::Isometry3d
   return ret;
 }
 
-inline tf2::Quaternion mix(const tf2::Quaternion &a, const tf2::Quaternion &b,
+inline tf::Quaternion mix(const tf::Quaternion &a, const tf::Quaternion &b,
                           double f) {
   return a.slerp(b, f);
 }
@@ -50,7 +49,7 @@ inline tf2::Quaternion mix(const tf2::Quaternion &a, const tf2::Quaternion &b,
 
 class RobotStatePublisher {
   std::string prefix;
-  tf2_ros::TransformBroadcaster tf_broadcaster;
+  tf::TransformBroadcaster tf_broadcaster;
   std::vector<geometry_msgs::TransformStamped> msgs;
 
 public:

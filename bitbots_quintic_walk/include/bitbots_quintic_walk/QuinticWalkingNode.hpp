@@ -33,13 +33,9 @@ https://github.com/Rhoban/model/
 #include <bitbots_msgs/JointCommand.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <tf2_eigen/tf2_eigen.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2/LinearMath/Vector3.h>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Transform.h>
-#include <tf2/LinearMath/Matrix3x3.h>
-#include <tf2_ros/transform_broadcaster.h>
+#include <eigen_conversions/eigen_msg.h>
+#include <tf/transform_datatypes.h>
+#include <tf/transform_broadcaster.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/kinematics_base/kinematics_base.h>
 #include <moveit/move_group_interface/move_group_interface.h> 
@@ -62,7 +58,7 @@ public:
 private:
     void publishModelJointStates(std::vector <std::string> joint_names, std::vector<double> positions);
     void publishControllerCommands(std::vector <std::string> joint_names, std::vector<double> positions);
-    void publishDebug(tf2::Transform& trunk_to_support_foot, tf2::Transform& trunk_to_flying_foot);
+    void publishDebug(tf::Transform& trunk_to_support_foot, tf::Transform& trunk_to_flying_foot);
     void publishMarkers();
     void publishTrajectoryDebug();
     void publishOdometry();
@@ -101,7 +97,7 @@ private:
 
     bitbots_quintic_walk::WalkingParameter _params;
     Eigen::Vector3d _stepOdom;
-    tf2::Transform _supportFootOdom;
+    tf::Transform _supportFootOdom;
 
     std::string _ik_type;
     std::string _robot_type;
@@ -134,7 +130,7 @@ private:
     ros::Publisher _pubControllerCommand;
     ros::Publisher _pubOdometry;
     ros::Publisher _pubSupport;
-    tf2_ros::TransformBroadcaster _odom_broadcaster;
+    tf::TransformBroadcaster _odom_broadcaster;
     ros::Subscriber _subCmdVel;
     ros::Subscriber _subRobState;
     ros::Subscriber _subJointStates;
