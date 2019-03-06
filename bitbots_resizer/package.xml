@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>bitbots_resizer</name>
+  <version>1.0.0</version>
+  <description>Resizes given image messages to a new resolution</description>
+
+  <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <author email="7vahl@informatik.uni-hamburg.de">Florian Vahl</author>
+  
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospkg</depend>
+  <depend>rospy</depend>
+  <depend>cv2</depend>
+  <depend>image_transport</depend>
+  <depend>sensor_msgs</depend>
+  <exec_depend>std_msgs</exec_depend>
+
+
+  <export>
+    <bitbots_documentation>
+      <language>python2</language>
+      <status>tested_robot</status>
+    </bitbots_documentation>
+  </export>
+</package>
