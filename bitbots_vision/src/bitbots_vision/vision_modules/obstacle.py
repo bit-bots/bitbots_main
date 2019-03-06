@@ -62,7 +62,7 @@ class ObstacleDetector(CandidateFinder):
         :return: candidate(int: x upper left point, int: y upper left point, int: width, int: height)
         """
         if self._obstacles is None:
-            self._runtime_evaluator.start_timer() # for runtime testing
+            # self._runtime_evaluator.start_timer() # for runtime testing
             self._obstacles = list()
             obstacle_begin = None
             horizon_points = self._horizon_detector.get_horizon_points()
@@ -104,8 +104,8 @@ class ObstacleDetector(CandidateFinder):
                                    obstacle_begin[1] - self._candidate_horizon_offset)
                     )
                 )
-            self._runtime_evaluator.stop_timer()  # for runtime testing
-            self._runtime_evaluator.print_timer()  # for runtime testing
+            # self._runtime_evaluator.stop_timer()  # for runtime testing
+            # self._runtime_evaluator.print_timer()  # for runtime testing
         return self._obstacles
 
     def _get_convex_horizon_candidates(self):
@@ -119,7 +119,7 @@ class ObstacleDetector(CandidateFinder):
         # Todo: increase step length before beginning of obstacle has been found, decrease it afterwards
         # Todo: interpolate individual points instead of the whole list (see get_full_horizon)
         if self._obstacles is None:
-            self._runtime_evaluator.start_timer()  # for runtime testing
+            # self._runtime_evaluator.start_timer()  # for runtime testing
             self._obstacles = list()
             obstacle_begin = None
             """
@@ -172,8 +172,8 @@ class ObstacleDetector(CandidateFinder):
                     if h < 0:
                         self._debug_printer.error('negative obstacle height', 'ObstacleDetection')
                     self._obstacles.append(Candidate(x, y, w, h))
-            self._runtime_evaluator.stop_timer()  # for runtime testing
-            self._runtime_evaluator.print_timer()  # for runtime testing
+            # self._runtime_evaluator.stop_timer()  # for runtime testing
+            # self._runtime_evaluator.print_timer()  # for runtime testing
         return self._obstacles
 
     def get_all_obstacles(self):

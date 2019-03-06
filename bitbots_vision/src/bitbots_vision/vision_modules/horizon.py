@@ -4,19 +4,21 @@ import rospy
 from .color import ColorDetector
 from operator import itemgetter
 from .debug import DebugPrinter
+from .evaluator import RuntimeEvaluator
 
 
 class HorizonDetector:
 
-    def __init__(self, color_detector, config, debug_printer):
+    def __init__(self, field_color_detector, config, debug_printer):
         # type: (np.matrix, ColorDetector, dict, DebugPrinter) -> None
         self._image = None
-        self._color_detector = color_detector
+        self._field_color_detector = field_color_detector
         self._horizon_points = None
         self._horizon_full = None
         self._convex_horizon_full = None
         self._horizon_hull = None
         self._debug_printer = debug_printer
+        #self._runtime_evaluator = runtime_evaluator
         # init config
         self._x_steps = config['horizon_finder_horizontal_steps']
         self._y_steps = config['horizon_finder_vertical_steps']
@@ -45,13 +47,15 @@ class HorizonDetector:
         return self._horizon_points
 
     def _sub_horizon(self):
-        mask = self._color_detector.mask_image(self._image)
-        mask = cv2.morphologyEx(
-            mask,
+        #self._runtime_evaluator.start_timer()
+        field_mask = self._field_color_detector.mask_image(self._image)
+        field_mask = cv2.morphologyEx(
+            field_mask,
             cv2.MORPH_CLOSE,
             np.ones((5, 5), dtype=np.uint8),
             iterations=2)
-        mask = cv2.resize(mask, (self._y_steps, self._y_steps), interpolation=cv2.INTER_LINEAR)
+        # Syntax: cv2.resize(image, (width, height), type of interpolation)
+        field_mask = cv2.resize(field_mask, (self._x_steps, self._y_steps), interpolation=cv2.INTER_LINEAR)
         min_y = self._image.shape[0] - 1
         y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
         x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
@@ -61,11 +65,62 @@ class HorizonDetector:
             x = int(round(x_step * x_stepsize))  # get x value of step (depends on image size)
             for y_step in range(self._y_steps):  # traverse rows
                 y = int(round(y_step * y_stepsize))  # get y value of step (depends on image size)
-                if mask[y_step, x_step] > 100:  # when the pixel is in the color space
+                if field_mask[y_step, x_step] > 100:  # when the pixel is in the color space
                     firstgreen = y
                     break
             horizon_points.append((x, firstgreen))
+        #self._runtime_evaluator.stop_timer()
+        #self._runtime_evaluator.print_timer()
         return horizon_points
+
+
+    def _sub_horizon_binary(self):
+        # experimental
+        """"#self._runtime_evaluator.start_timer()
+        field_mask = self._field_color_detector.mask_image(self._image)
+        field_mask = cv2.morphologyEx(
+            field_mask,
+            cv2.MORPH_CLOSE,
+            np.ones((5, 5), dtype=np.uint8),
+            iterations=2)
+        rospy.loginfo("y-steps "+str(self._y_steps))
+        rospy.loginfo("x-steps " +str(self._x_steps))
+        field_mask = cv2.resize(field_mask, (self._y_steps, self._x_steps), interpolation=cv2.INTER_LINEAR)
+        rospy.logwarn("y-len"+str(len(field_mask)))
+        rospy.logwarn("x-len"+str(len(field_mask[0])))
+
+        # the stepsize is the number of pixels we would traverse in the original image when going one step in the mask
+        x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
+        y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
+        x_image = 0
+        horizon_points = []
+        for x_step in range(self._x_steps):  # traverse columns
+            # binary search for finding the first green pixel:
+            first = 0  # top of the column
+            last = self._y_steps #- 1  # bottom of the column
+            y_step = 0  #self._y_steps / 3  # worst case Todo: why this?
+            while first < last:
+                y_step = (first + last) // 2
+
+                if field_mask[y_step, x_step] > 100:  # is the value green enough?
+                    # the value is green enough
+                    # therefore the horizon is somewhere above this point
+                    # therefore the area left to search can be halved by setting the new "last" above "y_current"
+                    last = y_step - 1
+                else:
+                    # the value isn't green enough
+                    # therefore the horizon is somewhere below this point
+                    # therefore the area left to search can be halved by setting the new "first" below "y_current"
+                    first = y_step + 1
+
+            # after the while-loop "y_current" is just one pixel above or below the horizon
+            # which is an inaccuracy we can neglect todo: but can we???
+            y_image = int(round(y_step * y_stepsize))
+            horizon_points.append((x_image, y_image))
+            x_image += int(round(x_stepsize))
+        #self._runtime_evaluator.stop_timer()
+        #self._runtime_evaluator.print_timer()
+        return horizon_points"""
 
     def compute_convex_horizon_points(self):
         '''

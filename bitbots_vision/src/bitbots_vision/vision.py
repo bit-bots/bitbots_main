@@ -32,13 +32,15 @@ class Vision:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
         # register config callback and set config
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
-
+        #rospy.loginfo("Vision startup")
         rospy.spin()
 
     def _image_callback(self, img):
+        #rospy.loginfo("image_callback")
         self.handle_image(img)
 
     def handle_image(self, image_msg):
+        #rospy.loginfo("handle_image")
         # converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
@@ -196,7 +198,7 @@ class Vision:
         self.line_detector.compute_linepoints()
 
     def _dynamic_reconfigure_callback(self, config, level):
-
+        #rospy.loginfo("dynamic reconfigure callback")
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 config['vision_debug_printer_classes']))
