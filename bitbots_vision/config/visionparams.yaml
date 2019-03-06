@@ -84,7 +84,6 @@ classifier_model_path: '/models/classifier_01'
 cascade_classifier_path: '/classifier/cascadeNew.xml'
 
 dynamic_color_space: true
-dynamic_color_space_launch_file: true    # A seperate value, so dynamic_color_space parameter will not be overwritten by the default of the launch-file
 dynamic_color_space_mask_img_dyn_msg: false
 dynamic_color_space_queue_max_size: 10
 dynamic_color_space_threshold: 0.6

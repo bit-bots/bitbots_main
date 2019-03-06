@@ -16,12 +16,6 @@ from bitbots_vision.vision_modules import debug
 from bitbots_vision.vision_modules import horizon, color
 from bitbots_vision.cfg import dynamic_color_spaceConfig
 
-# TODO debug_printer usage in color.py
-# TODO vision-docu
-# TODO vision: set debug_printer as first param?
-
-# TODO see below...
-
 class DynamicColorSpace:
     def __init__(self):
         # type: () -> None
@@ -46,8 +40,9 @@ class DynamicColorSpace:
 
         self.bridge = CvBridge()
 
-        # Init vision-config
+        # Init params
         self.vision_config = {}
+        self.turned_on = None
 
         # Register publisher of ColorSpaceMessages
         self.pub_color_space = rospy.Publisher(
@@ -79,11 +74,19 @@ class DynamicColorSpace:
         vision_config = {}
         vision_config = yaml.load(msg.data)
 
-        # TODO NOT tested... correct implementation?
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 vision_config['vision_debug_printer_classes']))
 
+        # Turn off dynamic-color-space, if parameter of yaml (dynamic-reconfigure) is false
+        turned_on_tmp = self.turned_on
+        self.turned_on = vision_config['dynamic_color_space']
+        if self.turned_on != turned_on_tmp:
+            if self.turned_on:
+                rospy.loginfo('Dynamic color-space turned on.')
+            else:
+                rospy.loginfo('Dynamic color-space turned off.')
+        
         # Set Color- and HorizonDetector
         self.color_detector = color.PixelListColorDetector(
             self.debug_printer,
@@ -96,7 +99,6 @@ class DynamicColorSpace:
             self.debug_printer)
 
         # Reset queue
-        # TODO still needed?
         if hasattr(self, 'color_value_queue'):
             self.color_value_queue.clear()
 
@@ -139,22 +141,27 @@ class DynamicColorSpace:
         :param Image image_msg: new image-message from Image-message-subscriber
         :return: None
         """
-        # Turn off dynamic-color-space if parameter of yaml (dynamic-reconfigure) or launch-file is false
-        if not (self.vision_config['dynamic_color_space'] and self.vision_config['dynamic_color_space_launch_file']):
-            # TODO rospy warn
+        # Turn off dynamic-color-space, if parameter of yaml is false
+        if not self.turned_on:
             return
 
         # Drops old images
-        # TODO: debug_printer usage
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
+            self.debug_printer.info('Dynamic color-space: Dropped Image-message', 'image')
             return
 
         self.handle_image(image_msg)
 
     def handle_image(self, image_msg):
-        # TODO docu
+        # type: (Image) -> None
+        """
+        This method handles the processing of an Image-message.
+        New colors are calculated, appended to queue and published.
 
+        :param Image image_msg: Image-message
+        :return: None
+        """
         # Converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
         # Get new dynamic-colors from image

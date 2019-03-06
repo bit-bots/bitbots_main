@@ -2,7 +2,6 @@
     <arg name="sim" default="false"/>
     <arg name="dummyball" default="false"/>
     <arg name="debug" default="false"/>
-    <arg name="dynamic_color" default="true"/>
 
     <!-- start vision for wolfgang (fcnn)-->
     <group unless="$(arg dummyball)">
@@ -10,7 +9,6 @@
             <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
             <param name="vision_debug_image_msg" value="$(arg debug)"/>
             <param name="vision_ball_classifier" value="fcnn"/>
-            <param name="dynamic_color_space_launch_file" value="$(arg dynamic_color)"/>
         </node>
         <!-- start dynamic-color-space node -->
         <node pkg="bitbots_vision" type="dynamic_color_space.py" name="bitbots_dynamic_color_space" output="screen"></node>
@@ -22,7 +20,6 @@
             <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
             <param name="vision_debug_image_msg" value="$(arg debug)"/>
             <param name="vision_ball_classifier" value="dummy"/>
-            <param name="dynamic_color_space_launch_file" value="$(arg dynamic_color)"/>
         </node>
         <!-- start dynamic-color-space node -->
         <node pkg="bitbots_vision" type="dynamic_color_space.py" name="bitbots_dynamic_color_space" output="screen"></node>

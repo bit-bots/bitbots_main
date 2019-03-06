@@ -193,7 +193,6 @@ class PixelListColorDetector(ColorDetector):
 
         self.vision_config = vision_config
 
-        # TODO: debug-printer
         self.primary_detector = primary_detector
 
         # concatenate color-path to file containing the accepted colors of base-color-space
@@ -208,7 +207,7 @@ class PixelListColorDetector(ColorDetector):
         self.publish_mask_img_dyn_msg = self.vision_config['dynamic_color_space_mask_img_dyn_msg']
 
         # toggle use of dynamic-color-space
-        self.is_dynamic_color_space = (self.vision_config['dynamic_color_space'] and self.vision_config['dynamic_color_space_launch_file'])
+        self.dynamic_color_space_turned_on = self.vision_config['dynamic_color_space']
 
         # Subscribe to 'color_space'-messages from DynamicColorSpace
         self.color_space_subscriber = rospy.Subscriber(
@@ -287,10 +286,10 @@ class PixelListColorDetector(ColorDetector):
         :param np.array image: image to mask
         :return np.array: masked image
         """
-        if (not self.is_dynamic_color_space) or self.publish_mask_img_msg:
+        if (not self.dynamic_color_space_turned_on) or self.publish_mask_img_msg:
             static_mask = VisionExtensions.maskImg(image, self.base_color_space)
 
-        if self.is_dynamic_color_space:
+        if self.dynamic_color_space_turned_on:
             dyn_mask = VisionExtensions.maskImg(image, self.color_space)
             # toggle publishing of 'mask_img_dyn'-messages
             if (self.primary_detector and self.publish_mask_img_dyn_msg):
@@ -300,7 +299,7 @@ class PixelListColorDetector(ColorDetector):
         if (self.primary_detector and self.publish_mask_img_msg):
             self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(static_mask, '8UC1'))
 
-        if self.is_dynamic_color_space:
+        if self.dynamic_color_space_turned_on:
             return dyn_mask
         else:
             return static_mask

@@ -61,9 +61,9 @@ class Vision:
         That's, why we drop old images manually.
         """
         # drops old images and cleans up queue
-        # TODO: debug_printer usage
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
+            self.debug_printer.info('Vision: Dropped Image-message', 'image')
             return
 
         self.handle_image(image_msg)
