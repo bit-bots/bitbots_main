@@ -28,12 +28,14 @@ class MotorVizHelper:
 
     def joint_command_cb(self, msg:JointCommand):
         self.joint_state_msg.header = msg.header
+        self.joint_state_msg.header.stamp = rospy.Time.now()
         self.joint_state_msg.name = msg.joint_names
         self.joint_state_msg.position = msg.positions
         self.joint_publisher.publish(self.joint_state_msg)
 
     def animation_cb(self, msg:JointCommand):
         self.joint_state_msg.header = msg.header
+        self.joint_state_msg.header.stamp = rospy.Time.now()
         self.joint_state_msg.name = msg.position.joint_names
         self.joint_state_msg.position = msg.position.points[0].positions
         self.joint_publisher.publish(self.joint_state_msg)
