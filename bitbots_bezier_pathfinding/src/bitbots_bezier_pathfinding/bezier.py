@@ -46,6 +46,17 @@ class Bezier:
             current_distance += math.sqrt((old_x - new_x)**2 + (old_y - new_y)**2)
             old_x, old_y = new_x, new_y
         return current_time
+    
+    def get_distance_at_time(self, time, stepsize):
+        current_distance = 0
+        current_time = 0
+        old_x, old_y = self.get_xy(current_time)
+        while current_time < time:
+            current_time += stepsize
+            new_x, new_y = self.get_xy(current_time)
+            current_distance += math.sqrt((old_x - new_x)**2 + (old_y - new_y)**2)
+            old_x, old_y = new_x, new_y
+        return current_distance
 
     def draw(self):
         import pylab

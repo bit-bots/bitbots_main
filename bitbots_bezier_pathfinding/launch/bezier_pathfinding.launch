@@ -1,0 +1,3 @@
+<launch>
+    <node name="bezier_pathfinding" pkg="bitbots_bezier_pathfinding" type="pathfinding.py" />
+</launch>
