@@ -116,7 +116,7 @@ class BezierPathfinding:
     def publish_cmd_vel(self, bezier_curve):
         # Where am I after self.planning_time seconds?
         t = bezier_curve.get_time_at_distance(self.velocity * self.planning_time, self.stepsize)
-        distance = self.get_distance_at_time(1, self.stepsize)
+        distance = bezier_curve.get_distance_at_time(1, self.stepsize)
         if distance < self.stop_distance:
             # Stop the walking
             cmd_vel_msg = Twist()
