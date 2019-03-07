@@ -24,7 +24,6 @@ class MotorVizHelper:
         else:
             rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=1)
 
-        rospy.spin()
         rate = rospy.Rate(100)
         while not rospy.is_shutdown():
             self.joint_state_msg.header.stamp = rospy.Time.now()
