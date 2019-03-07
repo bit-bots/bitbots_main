@@ -110,6 +110,29 @@ class BezierPathfinding:
         x, y = bezier_curve.get_xy(t)
         theta = bezier_curve.get_direction(t, self.stepsize)
         self.publish_command_pose(x, y, theta)
+        if self.frame_id == 'base_footprint':
+            theta_relative = theta
+        else:
+            # cmd vel is relative to the robot, therefore a transform is necessary
+            pose_absolute = TFPoseStamped()
+            pose_absolute.header.frame_id = self.frame_id
+            pose_absolute.header.stamp = rospy.Time.now()
+            pose_absolute.pose.position.x = x
+            pose_absolute.pose.position.y = y
+            # Euler -> Quaternion again
+            pose_absolute.pose.orientation.z = math.sin(0.5 * theta)
+            pose_absolute.pose.orientation.w = math.cos(0.5 * theta)
+            try:
+                pose_relative_stamed = self.tf_buffer.transform(pose_absolute, 'base_footprint', timeout=rospy.Duration(0.3))
+            except tf2_ros.LookupException:
+                rospy.logwarn('Command velocities have been created in frame {} but this frame was never published'.format(self.frame_id))
+                return
+            except tf2_ros.ExtrapolationException:
+                rospy.logwarn('Command velocities have been created in frame {} but this frame is no longer available'.format(self.frame_id))
+                return
+            # Quaternion -> Euler again
+            theta = math.atan2(2 * pose_relative_stamped.pose.orientation.z * pose_relative_stamped.pose.orientation.w,
+                               1 - 2 * pose_relative_stamped.pose.orientation.z * pose_relative_stamped.pose.orientation.z)
         # theta is the angle that I will have turned until then
         # therefore, my angular velocity is theta / planning_time
         angular_z = theta / self.planning_time
