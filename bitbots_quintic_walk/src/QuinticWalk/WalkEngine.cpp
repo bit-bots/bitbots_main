@@ -30,6 +30,7 @@ QuinticWalk::QuinticWalk() :
     //Reset the trunk saved state
     resetTrunkLastState();
     reset();
+    _trunkPosAtLast.z() = _params.trunkHeight;
     _trajs = bitbots_splines::TrajectoriesInit();
 
 }
@@ -270,8 +271,13 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startSte
 {
     // save the current trunk state to use it later
     saveCurrentTrunkState();
-    // update support foot and compute odometry
-    _footstep.stepFromOrders(orders);
+
+    if(startStep){
+        // update support foot and compute odometry
+        _footstep.stepFromOrders(Eigen::Vector3d());
+    }else{
+        _footstep.stepFromOrders(orders);
+    }
 
     //Reset the trajectories
     _trajs = bitbots_splines::TrajectoriesInit();
