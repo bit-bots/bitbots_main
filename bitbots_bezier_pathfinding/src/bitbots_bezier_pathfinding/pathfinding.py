@@ -46,8 +46,8 @@ class BezierPathfinding:
         if goal_msg.header.frame_id == 'base_footprint':
             self.frame_id = 'base_footprint'
             own_pose = Pose2D(0, 0, 0)
-        elif goal_msg.header.frame_id == 'map':
-            self.frame_id = 'map'
+        elif goal_msg.header.frame_id == 'map' or goal_msg.header.frame_id == 'odom':
+            self.frame_id = goal_msg.header.frame_id
             # Get own position from tf to map frame
             own_pose_relative = TFPoseStamped()
             own_pose_relative.header.frame_id = 'base_footprint'
