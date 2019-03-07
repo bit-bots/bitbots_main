@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<launch>
+    <arg name="resize" default="true"/>
+    <node pkg="pylon_camera" type="pylon_camera_node" name="pylon_camera_node" output="screen">
+        <rosparam command="load" file="$(find bitbots_bringup)/config/camera_settings.yaml"/>
+    </node>
+    <group if="$(arg resize)">
+        <node pkg="nodelet" type="nodelet" args="standalone image_proc/debayer" name="debayer">
+            <remap from="image_raw"  to="/pylon_camera_node/image_raw" />
+            <remap from="image_color" to="debayered_image" />
+            <!-- <param name="height" value="20" />
+            <param name="width" value="30" /> -->
+        </node>
+        <node pkg="nodelet" type="nodelet" args="standalone image_proc/resize" name="resizer">
+            <remap from="/image"  to="debayered_image" />
+            <remap from="~image" to="/image_raw" />
+            <param name="use_scale" type="int" value="0" />
+            <param name="width" type="int" value="620" />
+            <param name="height" type="int" value="480" />
+        </node>
+        <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters resizer">
+            <param name="use_scale" type="int" value="0" />
+            <param name="width" type="int" value="620" />
+            <param name="height" type="int" value="480" />
+        </node>
+    </group>
+</launch>
