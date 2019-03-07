@@ -9,7 +9,7 @@ ball_fcnn_max_ball_diameter: 200
 ball_fcnn_publish_output: false
 ball_fcnn_publish_horizon_offset: 5
 
-field_color_detector_path: '/config/color_spaces/d125_Teppich_interpolated.txt'
+field_color_detector_path: '/config/color_spaces/f132.yaml'
 field_color_detector_path_sim: '/config/color_spaces/simColor_interpolated.yaml'
 field_color_detector_use_hsv_green: false
 field_color_detector_hsv_lower_values_h: 46
