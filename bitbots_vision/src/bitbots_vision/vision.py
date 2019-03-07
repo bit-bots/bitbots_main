@@ -38,7 +38,7 @@ class Vision:
         self.debug_image_dings = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_dings:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
-
+            
         # Register publisher of 'vision_config'-messages
         self.pub_config = rospy.Publisher(
             'vision_config',
@@ -46,9 +46,9 @@ class Vision:
             queue_size=1,
             latch=True)
 
-        # Register VisionConfig-Server (dynamic-reconfigure) and callback
-        Server(VisionConfig, self._dynamic_reconfigure_callback)
-
+        # Register VisionConfig-Server (dynamic-reconfigure) and set callback
+        srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
+        #rospy.loginfo("Vision startup")
         rospy.spin()
 
     def _image_callback(self, image_msg):
@@ -60,6 +60,7 @@ class Vision:
         Sometimes the queue gets to large, even when the size is limeted to 1. 
         That's, why we drop old images manually.
         """
+        #rospy.loginfo("image_callback")
         # drops old images and cleans up queue
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
@@ -69,6 +70,7 @@ class Vision:
         self.handle_image(image_msg)
 
     def handle_image(self, image_msg):
+        #rospy.loginfo("handle_image")
         # converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
@@ -226,6 +228,7 @@ class Vision:
         self.line_detector.compute_linepoints()
 
     def _dynamic_reconfigure_callback(self, config, level):
+        #rospy.loginfo("dynamic reconfigure callback")
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 config['vision_debug_printer_classes']))
