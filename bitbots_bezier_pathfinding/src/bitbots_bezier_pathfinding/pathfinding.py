@@ -18,6 +18,7 @@ class BezierPathfinding:
         Server(PathfindingConfig, self.dynamic_reconfigure_callback)
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(5))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
+
         rospy.spin()
 
     def dynamic_reconfigure_callback(self, config, level):
@@ -25,16 +26,20 @@ class BezierPathfinding:
         self.path_publisher = rospy.Publisher(config['path_publisher'], Path, queue_size=1)
         self.command_pose_publisher = rospy.Publisher(config['command_pose_publisher'], PoseStamped, queue_size=1)
         self.command_publisher = rospy.Publisher(config['command_publisher'], Twist, queue_size=1)
+        self.goal_republisher = rospy.Publisher(config['goal_subscriber'], PoseStamped, queue_size=2)
         rospy.Subscriber(config['goal_subscriber'], PoseStamped, self.goal_callback)
 
         self.straightness = config['straightness']
         self.stepsize = config['stepsize']
         self.velocity = config['velocity']
         self.planning_time = config['planning_time']
+        self.refresh_time = config['refresh_time']
 
         return config
 
     def goal_callback(self, goal_msg):
+        if self.timer:
+            self.timer.shutdown()
         # goal_msg must be either in base_footprint or map frame
         goal_pose = Pose2D()
         goal_pose.x = goal_msg.pose.position.x
@@ -74,6 +79,8 @@ class BezierPathfinding:
         curve = Bezier.from_pose(own_pose, goal_pose, self.straightness)
         self.publish_curve_as_path(curve)
         self.publish_cmd_vel(curve)
+        if self.refresh_time > 0:
+            self.timer = rospy.Timer(rospy.Duration(self.refresh_time), lambda event: self.goal_callback(goal_msg), oneshot=True)
 
     def publish_curve_as_path(self, bezier_curve):
         ts = numpy.linspace(0, 1, 50)
@@ -123,7 +130,7 @@ class BezierPathfinding:
             pose_absolute.pose.orientation.z = math.sin(0.5 * theta)
             pose_absolute.pose.orientation.w = math.cos(0.5 * theta)
             try:
-                pose_relative_stamed = self.tf_buffer.transform(pose_absolute, 'base_footprint', timeout=rospy.Duration(0.3))
+                pose_relative_stamped = self.tf_buffer.transform(pose_absolute, 'base_footprint', timeout=rospy.Duration(0.3))
             except tf2_ros.LookupException:
                 rospy.logwarn('Command velocities have been created in frame {} but this frame was never published'.format(self.frame_id))
                 return
