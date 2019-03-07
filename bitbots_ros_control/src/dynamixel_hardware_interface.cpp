@@ -215,22 +215,32 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
   nh.param("read_effort", _read_effort, false);
 
 
-  XmlRpc::XmlRpcValue dxls;
-  nh.getParam("dynamixels/device_info", dxls);
-  ROS_ASSERT(dxls.getType() == XmlRpc::XmlRpcValue::TypeStruct);
   int i = 0;
-  for(XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = dxls.begin(); it != dxls.end(); ++it)
-  {
+  XmlRpc::XmlRpcValue dxls_xml;
+  nh.getParam("dynamixels/device_info", dxls_xml);
+  ROS_ASSERT(dxls_xml.getType() == XmlRpc::XmlRpcValue::TypeStruct);
 
-    std::string dxl_name = (std::string)(it->first);
+  // Convert dxls to native type: a vector of tuples with name and id for sorting purposes
+  std::vector<std::pair<std::string, int>> dxls;
+  for(XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = dxls_xml.begin(); it != dxls_xml.end(); ++it) {
+    std::string name = it->first;
+    XmlRpc::XmlRpcValue data = it->second;
+    int id = data["id"];
+    dxls.emplace_back(name, id);
+  }
+
+  std::sort(dxls.begin(), dxls.end(),
+        [](std::pair<std::string, int>& a, std::pair<std::string, int>& b) { return a.second < b.second; });
+
+  for(std::pair<std::string, int> &joint : dxls) {
+    std::string dxl_name = joint.first;
     _joint_names.push_back(dxl_name);
     ros::NodeHandle dxl_nh(nh, "dynamixels/device_info/" + dxl_name);
 
     _joint_mounting_offsets.push_back(dxl_nh.param("mounting_offset", 0.0));
     _joint_offsets.push_back(dxl_nh.param("offset", 0.0));
 
-    int motor_id;
-    dxl_nh.getParam("id", motor_id);
+    int motor_id = joint.second;
 
     int model_number;
     dxl_nh.getParam("model_number", model_number);
