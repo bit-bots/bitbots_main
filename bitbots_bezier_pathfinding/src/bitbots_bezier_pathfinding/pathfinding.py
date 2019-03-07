@@ -18,6 +18,7 @@ class BezierPathfinding:
         Server(PathfindingConfig, self.dynamic_reconfigure_callback)
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(5))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
+        self.timer = None  # type: rospy.Timer
 
         rospy.spin()
 
