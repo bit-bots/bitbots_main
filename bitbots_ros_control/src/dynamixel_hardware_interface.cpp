@@ -215,7 +215,6 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
   nh.param("read_effort", _read_effort, false);
 
 
-  int i = 0;
   XmlRpc::XmlRpcValue dxls_xml;
   nh.getParam("dynamixels/device_info", dxls_xml);
   ROS_ASSERT(dxls_xml.getType() == XmlRpc::XmlRpcValue::TypeStruct);
@@ -258,7 +257,6 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
     }
     array.push_back(createServoDiagMsg(motor_id, diagnostic_msgs::DiagnosticStatus::OK, "Ping sucessful", map));
     _joint_ids.push_back(uint8_t(motor_id));
-    i++;
   }
 
   _status_board.level = diagnostic_msgs::DiagnosticStatus::OK;
