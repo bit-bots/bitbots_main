@@ -223,7 +223,7 @@ class Falling(AbstractDecisionElement):
         return True
 
 
-class BehaviorAnimation(AbstractDecisionElement):
+class ExternalAnimation(AbstractDecisionElement):
     """
     Decides if the robot is currently wants to play an animation comming from the behavior
     """
