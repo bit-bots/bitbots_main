@@ -251,7 +251,7 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
 
     //ping it to very that it's there and to add it to the driver
     if(!_driver->ping(uint8_t(motor_id), model_number_16p)){
-      ROS_ERROR("Was not able to ping motor with id %d", motor_id);
+      ROS_ERROR("Was not able to ping motor with id %d (%s)", motor_id, dxl_name.c_str());
       success = false;
       array.push_back(createServoDiagMsg(motor_id, diagnostic_msgs::DiagnosticStatus::STALE, "No ping response", map));
     }
