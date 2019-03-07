@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>bitbots_resizer</name>
+  <name>bitbots_basler_camera</name>
   <version>1.0.0</version>
-  <description>Resizes given image messages to a new resolution</description>
+  <description>Provides the image from the basler camera.</description>
 
   <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
@@ -17,6 +17,7 @@
   <depend>cv2</depend>
   <depend>image_transport</depend>
   <depend>sensor_msgs</depend>
+  <depend>pylon_camera</depend>
   <exec_depend>std_msgs</exec_depend>
 
 

@@ -1,0 +1,8 @@
+input_topic: '/pylon_camera_node/image_raw'
+output_topic: '/image_raw'
+
+# output_topic: '/pylon_camera_node/image_raw'
+# input_topic: '/image_raw'
+
+width: 620
+height: 480

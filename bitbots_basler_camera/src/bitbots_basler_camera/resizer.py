@@ -11,7 +11,7 @@ class Resizer:
 
     def __init__(self):
         rospack = rospkg.RosPack()
-        self.package_path = rospack.get_path('bitbots_resizer')
+        self.package_path = rospack.get_path('bitbots_basler_camera')
 
         rospy.init_node('bitbots_resizer')
         rospy.loginfo('Initializing resizer...')

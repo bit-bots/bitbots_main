@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<launch>
+    <arg name="resize" default="true"/>
+    <node pkg="pylon_camera" type="pylon_camera_node" name="pylon_camera_node" output="screen">
+        <rosparam command="load" file="$(find bitbots_basler_camera)/config/camera_settings.yaml"/>
+    </node>
+    <group if="$(arg resize)">
+        <node pkg="bitbots_basler_camera" type="resizer.py" name="bitbots_resizer" output="screen">
+            <rosparam command="load" file="$(find bitbots_basler_camera)/config/resizer.yaml"/>
+            <!-- <param name="height" value="20" />
+            <param name="width" value="30" /> -->
+        </node>
+    </group>
+</launch>
