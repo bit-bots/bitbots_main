@@ -54,12 +54,12 @@ class BezierPathfinding:
             own_pose_relative.header.stamp = rospy.Time.now()
             own_pose_relative.pose.orientation.w = 1
             try:
-                own_pose_3d = self.tf_buffer.transform(own_pose_relative, 'map', timeout=rospy.Duration(0.3))
+                own_pose_3d = self.tf_buffer.transform(own_pose_relative, self.frame_id, timeout=rospy.Duration(0.3))
             except tf2_ros.LookupException:
-                rospy.logwarn('A goal was published in map frame but no map frame exists')
+                rospy.logwarn('A goal was published in {} frame but no map frame exists'.format(self.frame_id))
                 return
             except tf2_ros.ExtrapolationException:
-                rospy.logwarn('A goal was published in map frame but the map frame is no longer published')
+                rospy.logwarn('A goal was published in {} frame but the map frame is no longer published'.format(self.frame_id))
                 return
             own_pose = Pose2D()
             own_pose.x = own_pose_3d.pose.position.x
