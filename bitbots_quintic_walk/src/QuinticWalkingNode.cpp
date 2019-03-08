@@ -376,11 +376,11 @@ void QuinticWalkingNode::publishOdometry(){
     double yaw;
     if(_walkEngine.getFootstep().isLeftSupport()){
         x = _walkEngine.getFootstep().getLeft()[0];
-        y = _walkEngine.getFootstep().getLeft()[1];
+        y = _walkEngine.getFootstep().getLeft()[1] + _params.footDistance/2;
         yaw = _walkEngine.getFootstep().getLeft()[2];
     }else{
         x = _walkEngine.getFootstep().getRight()[0];
-        y = _walkEngine.getFootstep().getRight()[1];
+        y = _walkEngine.getFootstep().getRight()[1] + _params.footDistance/2;
         yaw = _walkEngine.getFootstep().getRight()[2];
     }
 
@@ -661,6 +661,10 @@ void QuinticWalkingNode::publishMarkers(){
 
 }
 
+void QuinticWalkingNode::initilizeEngine(){ 
+    _walkEngine.reset();
+}
+
 int main(int argc, char **argv){
     ros::init(argc, argv, "quintic_walking");
     // init node
@@ -670,6 +674,9 @@ int main(int argc, char **argv){
     dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>::CallbackType f;
     f = boost::bind(&QuinticWalkingNode::reconf_callback,&node, _1, _2);
     server.setCallback(f);
+    usleep(1000);
+    // reset engine
+    node.initilizeEngine();
     // run the node
     node.run();
 }

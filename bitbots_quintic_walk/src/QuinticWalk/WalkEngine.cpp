@@ -24,15 +24,8 @@ QuinticWalk::QuinticWalk() :
     _trunkAxisAccAtLast(),
     _trajs()
 {   
-    //Initialize the footstep
-    _footstep.setFootDistance(_params.footDistance);
-    _footstep.reset(false);
-    //Reset the trunk saved state
-    resetTrunkLastState();
-    reset();
-    _trunkPosAtLast.z() = _params.trunkHeight;
+    // make sure to call the reset method after having the parameters
     _trajs = bitbots_splines::TrajectoriesInit();
-
 }
 
 
@@ -180,6 +173,12 @@ void QuinticWalk::reset(){
     _engineState = "idle";
     _phase = 0.0;
     _timePaused = 0.0;
+
+    //Initialize the footstep
+    _footstep.setFootDistance(_params.footDistance);
+    _footstep.reset(false);
+    //Reset the trunk saved state
+    resetTrunkLastState();
 }
 
 void QuinticWalk::saveCurrentTrunkState(){
@@ -270,7 +269,9 @@ void QuinticWalk::buildStopMovementTrajectories(const Eigen::Vector3d& orders){
 void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startStep, bool kickStep)
 {
     // save the current trunk state to use it later
-    saveCurrentTrunkState();
+    if(!startStep){
+        saveCurrentTrunkState();
+    }
 
     if(startStep){
         // update support foot and compute odometry
@@ -630,12 +631,12 @@ void QuinticWalk::resetTrunkLastState()
     if (_footstep.isLeftSupport()) {
         _trunkPosAtLast << 
             _params.trunkXOffset, 
-            -_params.footDistance/2.0 + _params.trunkYOffset, 
+            _params.footDistance/2.0 + _params.trunkYOffset, 
             _params.trunkHeight;
     } else {
         _trunkPosAtLast << 
             _params.trunkXOffset, 
-            _params.footDistance/2.0 + _params.trunkYOffset, 
+            -_params.footDistance/2.0 + _params.trunkYOffset, 
             _params.trunkHeight;
     }
     _trunkVelAtLast.setZero();
