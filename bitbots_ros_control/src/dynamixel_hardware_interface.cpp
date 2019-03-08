@@ -522,7 +522,9 @@ bool DynamixelHardwareInterface::read()
   }
 
   // remember 
-  _lost_servo_connection = !read_successful;
+  if (!read_successful) {
+    _lost_servo_connection = true;
+  }
   return read_successful;
 
 }
