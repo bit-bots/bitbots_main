@@ -40,7 +40,13 @@ private:
   ros::Subscriber sub_command_;
   std::map<std::string, int> _joint_map;
   void commandCB(const bitbots_msgs::JointCommand& command_msg) {
-    //std::cout << ::getpid();
+    if(!(command_msg.joint_names.size() == command_msg.positions.size() && 
+         command_msg.joint_names.size() == command_msg.velocities.size() &&
+         command_msg.joint_names.size() == command_msg.accelerations.size() &&
+         command_msg.joint_names.size() == command_msg.max_currents.size())){
+      ROS_ERROR("Dynamixel Controller got command with inconsistent array lengths.");
+      return;
+    }
     std::vector<JointCommandData> buf_data;
     for(unsigned int i = 0; i < command_msg.joint_names.size(); i++){
       /*if(_joint_map.find(command_msg.joint_names[i] == _joint_map.end())){
