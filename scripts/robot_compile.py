@@ -19,6 +19,10 @@ def print_err(msg):
     print('\033[91m\033[1m#################   ' + msg + '   #################\033[0m')
 
 
+def print_warn(msg):
+    print('\033[93m\033[1m#################   ' + msg + '   #################\033[0m')
+
+
 def print_success(msg):
     print('\033[92m\033[1m' + msg + '\033[0m')
 
@@ -27,7 +31,7 @@ def print_info(msg):
     print('\033[1m' + msg + '\033[0m')
 
 
-def get_includes_from_file(file):
+def get_includes_from_file(file, package=None):
     includes = list()
     with open(file) as f:
         data = yaml.safe_load(f)
@@ -37,13 +41,19 @@ def get_includes_from_file(file):
         for entry in data['include']:
             if type(entry) == dict:
                 for folder, subfolders in entry.items():
-                    includes.append('--include=+ {}'.format(folder))
-                    for subfolder in subfolders:
-                        includes.append('--include=+ {}/{}'.format(folder, subfolder))
-                        includes.append('--include=+ {}/{}/**'.format(folder, subfolder))
+                    if package is None:
+                        includes.append('--include=+ {}'.format(folder))
+                        for subfolder in subfolders:
+                            includes.append('--include=+ {}/{}'.format(folder, subfolder))
+                            includes.append('--include=+ {}/{}/**'.format(folder, subfolder))
+                    elif package in subfolders:
+                        includes.append('--include=+ {}'.format(folder))
+                        includes.append('--include=+ {}/{}'.format(folder, package))
+                        includes.append('--include=+ {}/{}/**'.format(folder, package))
             elif type(entry) == str:
-                includes.append('--include=+ {}'.format(entry))
-                includes.append('--include=+ {}/**'.format(entry))
+                if package is None or entry == package:
+                    includes.append('--include=+ {}'.format(entry))
+                    includes.append('--include=+ {}/**'.format(entry))
     includes.append('--include=- *')
     return includes
 
@@ -75,13 +85,13 @@ def clean_src_dir(host, workspace):
         sys.exit(clean_result.returncode)
 
 
-def synchronize(sync_includes_file, host, workspace):
+def synchronize(sync_includes_file, host, workspace, package=None):
     call = [
         'rsync',
         '-ca',
         '' if args.quiet else '-v',
         '--delete']
-    call.extend(get_includes_from_file(os.path.join(cwd, sync_includes_file)))
+    call.extend(get_includes_from_file(os.path.join(cwd, sync_includes_file), package))
     call.extend([
         cwd + '/',
         'bitbots@{}:{}/src/'.format(host[0], workspace)])
@@ -99,6 +109,7 @@ robot.add_argument('-d', '--davros', action='store_const', help='Compile for dav
 mode = parser.add_mutually_exclusive_group(required=False)
 mode.add_argument('-s', '--sync-only', action='store_true', help='Sync files only, don\'t build')
 mode.add_argument('-c', '--compile-only', action='store_true', help='Build only, don\'t copy any files')
+parser.add_argument('-p', '--package', help='Sync/Compile only the given ROS package')
 parser.add_argument('-g', '--game-mode', action='store_true', help='Game mode (automatic start at boot)')
 parser.add_argument('-y', '--yes-to-all', action='store_true', help='Answer yes to all questions')
 parser.add_argument('-j', '--jobs', metavar='N', default=6, type=int, nargs=1, help='Compile using N jobs (default 6)')
@@ -186,7 +197,11 @@ if not args.compile_only:
             sync_includes_file = 'sync_includes_wolfgang_{}.yaml'.format(host[1][:-1])
         elif args.robot == 'davros':
             sync_includes_file = 'sync_includes_davros.yaml'
-        synchronize(sync_includes_file, host, workspace)
+        if args.package:
+            synchronize(sync_includes_file, host, workspace, args.package)
+        else:
+            synchronize(sync_includes_file, host, workspace)
+
         if host[1].startswith('odroid') or host[1].startswith('nuc'):
             add_game_controller_config(host[1][-1:], workspace, host)
 
@@ -228,6 +243,7 @@ if not args.sync_only:
         data['jobs'] = args.jobs
         data['clean_option'] = 'catkin clean -y' if args.clean_build or args.clean_all else ''
         data['quiet_option'] = '> /dev/null' if args.quiet else ''
+        data['package'] = args.package if args.package else ''
 
         build_result = subprocess.run([
             'ssh',
@@ -237,10 +253,10 @@ if not args.sync_only:
             {clean_option}
             if [[ -f devel/setup.zsh ]]; then
             source devel/setup.zsh;
-            catkin build --force-color -j {jobs} {quiet_option} || exit 1;
+            catkin build --force-color -j {jobs} {package} {quiet_option} || exit 1;
             else;
-            source /opt/ros/melodic/setup.zsh;
-            catkin build --force-color -j {jobs} {quiet_option} || exit 1;
+            source /opt/ros/kinetic/setup.zsh;
+            catkin build --force-color -j {jobs} {package} {quiet_option} || exit 1;
             source devel/setup.zsh;
             fi;
             src/scripts/repair.sh {quiet_option};
@@ -248,7 +264,10 @@ if not args.sync_only:
         ])
 
         if build_result.returncode != 0:
-            print_err('Build failed!')
-            exit(build_result.returncode)
+            if not args.package:
+                print_err('Build failed!')
+                exit(build_result.returncode)
+            else:
+                print_warn('Build failed (or package {} does not exist on {}). Please check the build output!'.format(args.package, host[1]))
     print_success('Build succeeded!')
 
