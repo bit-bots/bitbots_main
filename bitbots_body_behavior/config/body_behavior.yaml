@@ -6,8 +6,6 @@ behavior:
       - "defense"
       - "penalty"
 
-    use_move_base: True
-
     # Position format as in humanoid_league_msg/Position2D
     #      y
     #      ^       ______________________

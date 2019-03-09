@@ -17,20 +17,11 @@ class PathfindingCapsule:
         # Thresholds to determine whether the transmitted goal is a new one
         self.position_threshold = 0.5
         self.orientation_threshold = 30
-        self.pathfinding_simple_pub = None
+        self.pathfinding_pub = None  # type: rospy.Publisher
 
-    def pub_simple_pathfinding(self, x, y, t=0):
-        # x, y, t give position in map frame
-        msg = Position2D()
-        msg.header.stamp = rospy.get_rostime()
-        #msg.header.stamp.secs = rospy.get_time()
-        msg.header.frame_id = 'map'
-        msg.pose.x = x
-        msg.pose.y = y
-        msg.pose.theta = t
-        msg.confidence = 1
-        rospy.loginfo('Using simple pathfinding to go to position {} {} {}'.format(msg.pose.x, msg.pose.y, msg.pose.theta))
-        self.pathfinding_simple_pub.publish(msg)
+    def publish(self, msg):
+        # TODO use _is_new_goal_far_from_old_goal
+        self.pathfinding_pub.publish(msg)
 
     def _is_new_goal_far_from_old_goal(self, new_goal_action_msg):
         old_goal = self.goal.target_pose
