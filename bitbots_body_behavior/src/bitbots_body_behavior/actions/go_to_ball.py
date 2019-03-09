@@ -15,7 +15,7 @@ class GoToBall(AbstractActionElement):
         tf_listener = tf2.TransformListener(self.tf_buffer)
 
     def perform(self, reevaluate=False):
-        ball_position = self.blackbard.world_model.get_ball_position_uv()
+        ball_position = self.blackboard.world_model.get_ball_position_uv()
         if not ball_position:
             return
         ball_u, ball_v = ball_position
