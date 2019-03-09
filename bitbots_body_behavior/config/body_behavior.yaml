@@ -34,6 +34,20 @@ behavior:
     # it is close enough to be kicked
     max_kick_distance: 0.3
 
+    # An area in which the ball can be kicked with the right foot
+    # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
+    right_kick_min_x: 0
+    right_kick_min_y: 0
+    right_kick_max_x: 0.15
+    right_kick_max_y: 0.2
+
+    # An area in which the ball can be kicked with the left foot
+    # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
+    left_kick_min_x: -0.15
+    left_kick_min_y: 0
+    left_kick_max_x: 0
+    left_kick_max_y: 0.2
+
     # defines the radius around the goal (in form of a box)
     # in this area, the goalie will react to the ball.
     # the radius is the margin around the goal to both y and the positive x directions
