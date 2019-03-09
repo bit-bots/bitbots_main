@@ -30,6 +30,7 @@
     <include file="$(find bitbots_localization)/launch/localization_amcl.launch"/>
 
     <!--include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch"/-->
+    <include file="$(find bitbots_bezier_pathfinding)/launch/bezier_pathfinding.launch"/>
 
     <group if="$(arg behave)">
         <include file="$(find bitbots_body_behavior)/launch/behavior.launch"/>
