@@ -42,5 +42,5 @@ class GoToBall(AbstractActionElement):
             rospy.loginfo('No transform to map frame available, going to relative position instead')
             # TODO add an angle
             pose_msg.pose.orientation.w = 1
-            pose_msg.pose.position -= 0.2
+            pose_msg.pose.position.x -= 0.2
             self.blackboard.pathfinding.publish(pose_msg)
