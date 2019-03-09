@@ -1,14 +1,13 @@
 import rospy
-from geometry_msgs.msg import PoseStamped, Quaternion, Point
+from tf2_geometry_msgs import PoseStamped
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class Stand(AbstractActionElement):
     def perform(self, reevaluate=False):
-        # TODO evaluate whether we use only move base
-        if not self.blackboard.config['use_move_base']:
-            self.blackboard.pathfinding.pub_simple_pathfinding(0, 0)
-
-        else:
-            self.blackboard.pathfinding.cancel_path()
+        stand_pose = PoseStamped()
+        stand_pose.header.stamp = rospy.Time.now()
+        stand_pose.header.frame_id = 'base_footprint'
+        stand_pose.pose.orientation.w = 1
+        self.blackboard.pathfinding.publish(stand_pose)
