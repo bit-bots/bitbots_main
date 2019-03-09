@@ -12,7 +12,7 @@ import math
 import rospy
 import tf2_ros as tf2
 from tf.transformations import quaternion_from_euler
-from geometry_msgs.msg import PoseStamped, Quaternion
+from tf2_geometry_msgs import PoseStamped, Quaternion
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
@@ -28,12 +28,9 @@ class GoToRelativePosition(AbstractActionElement):
         self.point = parameters
 
     def perform(self, reevaluate=False):
-        if not self.blackboard.config['use_move_base']:
-            self.blackboard.pathfinding.pub_simple_pathfinding(self.point[0], self.point[1], self.point[2])
-            return self.pop()
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
-        pose_msg.header.frame_id = 'base_link'
+        pose_msg.header.frame_id = 'base_footprint'
 
         pose_msg.pose.position.x = self.point[0]
         pose_msg.pose.position.y = self.point[1]
@@ -42,16 +39,8 @@ class GoToRelativePosition(AbstractActionElement):
         rotation = quaternion_from_euler(0, 0, math.radians(self.point[2]))
         pose_msg.pose.orientation = Quaternion(*rotation)
 
-        try:
-            absolute_pose = self.tf_buffer.transform(pose_msg, 'map', timeout=rospy.Duration(0.3))
-        except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException):
-            rospy.logdebug("Waiting for transform...")
-            return
-
         # To have the object we are going to in front of us, go to a point behind it
-        self.blackboard.pathfinding.call_action(absolute_pose)
-        if self.blackboard.pathfinding.is_walking_active():
-            return self.pop()
+        self.blackboard.pathfinding.publish(pose_msg)
 
 
 class GoToAbsolutePosition(AbstractActionElement):
@@ -64,8 +53,6 @@ class GoToAbsolutePosition(AbstractActionElement):
         self.point = parameters
 
     def perform(self, reevaluate=False):
-        if not self.blackboard.pathfinding.useMoveBase:
-            return self.pop()
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = 'map'
@@ -77,9 +64,7 @@ class GoToAbsolutePosition(AbstractActionElement):
         rotation = quaternion_from_euler(0, 0, math.radians(self.point[2]))
         pose_msg.pose.orientation = Quaternion(*rotation)
 
-        self.blackboard.pathfinding.call_action(pose_msg)
-        if self.blackboard.pathfinding.is_walking_active():
-            return self.pop()
+        self.blackboard.pathfinding.publish(pose_msg)
 
 
 
