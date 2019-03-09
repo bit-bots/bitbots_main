@@ -11,6 +11,26 @@ class KickBall(AbstractActionElement):
             self.blackboard.animation.play_animation(self.right_kick)
 
 
+class KickBallRight(AbstractActionElement):
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(KickBallRight, self).__init__(blackboard, dsd, parameters)
+        self.right_kick = 'kick_right'  # TODO get actual name of parameter from some config
+
+    def perform(self, reevaluate=False):
+        if not self.blackboard.animation.is_animation_busy():
+            self.blackboard.animation.play_animation(self.right_kick)
+
+
+class KickBallLeft(AbstractActionElement):
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(KickBallLeft, self).__init__(blackboard, dsd, parameters)
+        self.right_kick = 'kick_left'  # TODO get actual name of parameter from some config
+
+    def perform(self, reevaluate=False):
+        if not self.blackboard.animation.is_animation_busy():
+            self.blackboard.animation.play_animation(self.right_kick)
+
+
 class KickBallVeryHard(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
