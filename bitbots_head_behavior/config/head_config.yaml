@@ -18,6 +18,11 @@ behavior:
       - [30, -7]
       - [-30, -7]
 
+    # These values describe the minimal required delta between current joint states and target joint states
+    # to reduce unnecessary movement due to noise in the detection of the BallRelative.
+    ball_tracking_min_pan_delta: 4
+    ball_tracking_min_tilt_delta: 4
+
     # Positions for static head modes
     look_down_position: [0, -65]
     look_forward_position: [0, -7]

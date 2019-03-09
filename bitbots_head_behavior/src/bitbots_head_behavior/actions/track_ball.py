@@ -12,6 +12,8 @@ class TrackBall(AbstractLookAt):
 
     def __init__(self, dsd, blackboard, parameters=None):
         super(TrackBall, self).__init__(dsd, blackboard, parameters)
+        self.ball_tracking_min_pan_delta = self.blackboard.config['ball_tracking_min_pan_delta']
+        self.ball_tracking_min_tilt_delta = self.blackboard.config['ball_tracking_min_tilt_delta']
 
     def perform(self, reevaluate=False):
         """
@@ -23,5 +25,5 @@ class TrackBall(AbstractLookAt):
         # Get last ball position
         point = self.blackboard.world_model.get_ball_stamped()
 
-        # Call internal look-at to turn head to this point
-        self._look_at(point)
+        # Call internal look-at to turn head to this point (when necessary)
+        self._look_at(point, self.ball_tracking_min_pan_delta, self.ball_tracking_min_tilt_delta)
