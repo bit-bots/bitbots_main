@@ -38,13 +38,16 @@ class AbstractLookAt(AbstractActionElement):
         states = response.solution.joint_state
         return states.position[states.name.index('HeadPan')], states.position[states.name.index('HeadTilt')]
 
-    def _look_at(self, point):
+    def _look_at(self, point, min_pan_delta=0, min_tilt_delta=0):
         """
         Look at a point which is relative to the robot.
 
-        The points header.frame_id determines the transforms reference frame of this point
+        The points header.frame_id determines the transforms reference frame of this point.
+        The min_pan_delta and min_tilt_delta define minimal required movements to reduce unnecessary head movements.
 
         :type point: PointStamped
+        :type min_pan_delta: float
+        :type min_tilt_delta: float
         """
         # transform the points reference frame to be the head
         try:
@@ -60,7 +63,9 @@ class AbstractLookAt(AbstractActionElement):
             return
 
         head_pan, head_tilt = self.get_motor_goals_from_point(point.point)
-        self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt)
+        current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
+        if abs(current_head_pan - head_pan) >= min_pan_delta or abs(current_head_tilt - head_tilt) >= min_tilt_delta:
+            self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt)
 
 
 class LookDirection(AbstractLookAt):
