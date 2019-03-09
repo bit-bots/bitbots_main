@@ -4,7 +4,7 @@ The original files can be found at:
 https://github.com/Rhoban/model/
 */
 #ifndef SMOOTHSPLINE_HPP
-#define LEPH_SMOOTHSPLINE_HPP
+#define SMOOTHSPLINE_HPP
 
 #include "Spline.hpp"
 
