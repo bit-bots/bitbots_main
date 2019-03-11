@@ -437,6 +437,34 @@ void QuinticWalkingNode::publishDebug(tf::Transform& trunk_to_support_foot_goal,
     msg.is_double_support = _walkEngine.isDoubleSupport();
     msg.header.stamp = ros::Time::now();
 
+    // define current support frame
+    std::string current_support_frame = "";
+    if(is_left_support){
+        current_support_frame = "l_sole";
+    }else{
+        current_support_frame = "r_sole";
+    }
+
+    // define colors based on current support state
+    float r,g,b,a;
+    if(_walkEngine.isDoubleSupport()){
+        r = 0;
+        g = 0;
+        b = 1;
+        a = 1;
+    }else if(_walkEngine.isLeftSupport()){
+        r = 1;
+        g = 0;
+        b = 0;
+        a = 1;
+    }else{
+        r = 1;
+        g = 1;
+        b = 0;
+        a = 1;
+    }
+
+
     // times
     msg.phase_time = _walkEngine.getPhase();    
     msg.traj_time = _walkEngine.getTrajsTime();    
@@ -448,9 +476,21 @@ void QuinticWalkingNode::publishDebug(tf::Transform& trunk_to_support_foot_goal,
     tf::pointEigenToMsg(_footPos, pose_msg.position);
     pose_msg.orientation = tf::createQuaternionMsgFromRollPitchYaw(_footAxis[0], _footAxis[1], _footAxis[2]);
     msg.engine_fly_goal = pose_msg;
+    publishMarker("engine_fly_goal", current_support_frame, pose_msg, 0, 0, 1, a);
+
     tf::pointEigenToMsg(_trunkPos, pose_msg.position);
     pose_msg.orientation = tf::createQuaternionMsgFromRollPitchYaw(_trunkAxis[0], _trunkAxis[1], _trunkAxis[2]);
     msg.engine_trunk_goal = pose_msg;
+    publishMarker("engine_trunk_goal", current_support_frame, pose_msg, r, g, b, a);
+
+    // resulting trunk pose
+    geometry_msgs::Pose pose;
+    geometry_msgs::Point point;
+    point.x = 0;
+    point.y = 0;
+    point.z = 0;
+    pose.position = point;
+    publishMarker("trunk_result", "base_link", pose_msg, r, g, b, a);
 
     // goals
     geometry_msgs::Pose pose_support_foot_goal;
@@ -468,6 +508,8 @@ void QuinticWalkingNode::publishDebug(tf::Transform& trunk_to_support_foot_goal,
         msg.left_foot_goal = pose_fly_foot_goal;
         msg.right_foot_goal = pose_support_foot_goal;        
     }
+    publishMarker("engine_left_goal", "base_link", msg.left_foot_goal, 0, 1, 0, 1);
+    publishMarker("engine_right_goal", "base_link", msg.right_foot_goal, 1, 0, 0, 1);
 
     // IK results     
     geometry_msgs::Pose pose_left_result;
@@ -483,6 +525,8 @@ void QuinticWalkingNode::publishDebug(tf::Transform& trunk_to_support_foot_goal,
         msg.support_foot_ik_result = pose_right_result;
         msg.fly_foot_ik_result = pose_left_result;
     }    
+    publishMarker("ik_left", "base_link", pose_left_result, 0, 1, 0, 1);
+    publishMarker("ik_right", "base_link", pose_right_result, 1, 0, 0, 1);
 
     // IK offsets
     tf::Vector3 support_off;
@@ -553,6 +597,39 @@ void QuinticWalkingNode::publishDebug(tf::Transform& trunk_to_support_foot_goal,
     _pubDebug.publish(msg);
 }
 
+void QuinticWalkingNode::publishMarker(std::string name_space, std::string frame, geometry_msgs::Pose pose, float r, float g, float b, float a){
+    visualization_msgs::Marker marker_msg;
+    marker_msg.header.stamp = ros::Time::now();
+    marker_msg.header.frame_id = frame;
+
+    marker_msg.type = marker_msg.SPHERE;
+    marker_msg.ns = name_space;
+    marker_msg.action = 0;
+    marker_msg.pose = pose;
+
+
+    std_msgs::ColorRGBA color;
+    color.r = r;
+    color.g = g;
+    color.b = b;
+    color.a = a;
+    marker_msg.color = color;
+
+    geometry_msgs::Vector3 scale;
+    scale.x = 0.01;
+    scale.y = 0.01;
+    scale.z = 0.01;
+    marker_msg.scale = scale;
+
+    marker_msg.id = _marker_id;     
+    _marker_id++;
+    /*if(_marker_id > 100000){
+        _marker_id = 1;
+    }*/
+    
+    _pubDebugMarker.publish(marker_msg);
+}
+
 void QuinticWalkingNode::publishMarkers(){
     //publish markers
     visualization_msgs::Marker marker_msg;
@@ -616,41 +693,6 @@ void QuinticWalkingNode::publishMarkers(){
     point.y = step_pos[1];
     pose.position = point;
     pose.orientation = tf::createQuaternionMsgFromYaw(step_pos[2]);
-    marker_msg.pose = pose;
-    _pubDebugMarker.publish(marker_msg);
-
-
-
-    //trunk
-    marker_msg.type = marker_msg.SPHERE;
-    marker_msg.ns = "trunk";
-    scale.x = 0.01;
-    scale.y = 0.01;
-    scale.z = 0.01;
-    if(_walkEngine.isDoubleSupport()){
-        color.r = 0;
-        color.g = 0;
-        color.b = 1;
-        color.a = 1;
-    }else if(_walkEngine.isLeftSupport()){
-        color.r = 1;
-        color.g = 0;
-        color.b = 0;
-        color.a = 1;
-    }else{
-        color.r = 1;
-        color.g = 1;
-        color.b = 0;
-        color.a = 1;
-    }
-    marker_msg.color = color;
-    marker_msg.scale = scale;
-    marker_msg.id = _marker_id; 
-    marker_msg.header.frame_id = "base_link";
-    point.x = 0;
-    point.y = 0;
-    point.z = 0;
-    pose.position = point;
     marker_msg.pose = pose;
     _pubDebugMarker.publish(marker_msg);
 

@@ -54,6 +54,7 @@ public:
 private:
     void publishControllerCommands(std::vector <std::string> joint_names, std::vector<double> positions);
     void publishDebug(tf::Transform& trunk_to_support_foot, tf::Transform& trunk_to_flying_foot);
+    void publishMarker(std::string name_space, std::string frame, geometry_msgs::Pose pose, float r, float g, float b, float a);
     void publishMarkers();
     void publishTrajectoryDebug();
     void publishOdometry();
