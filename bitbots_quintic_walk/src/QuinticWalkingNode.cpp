@@ -490,7 +490,7 @@ void QuinticWalkingNode::publishDebug(tf::Transform& trunk_to_support_foot_goal,
     point.y = 0;
     point.z = 0;
     pose.position = point;
-    publishMarker("trunk_result", "base_link", pose_msg, r, g, b, a);
+    publishMarker("trunk_result", "base_link", pose, r, g, b, a);
 
     // goals
     geometry_msgs::Pose pose_support_foot_goal;
@@ -602,9 +602,9 @@ void QuinticWalkingNode::publishMarker(std::string name_space, std::string frame
     marker_msg.header.stamp = ros::Time::now();
     marker_msg.header.frame_id = frame;
 
-    marker_msg.type = marker_msg.SPHERE;
+    marker_msg.type = marker_msg.ARROW;
     marker_msg.ns = name_space;
-    marker_msg.action = 0;
+    marker_msg.action = marker_msg.ADD;
     marker_msg.pose = pose;
 
 
@@ -617,8 +617,8 @@ void QuinticWalkingNode::publishMarker(std::string name_space, std::string frame
 
     geometry_msgs::Vector3 scale;
     scale.x = 0.01;
-    scale.y = 0.01;
-    scale.z = 0.01;
+    scale.y = 0.003;
+    scale.z = 0.003;
     marker_msg.scale = scale;
 
     marker_msg.id = _marker_id;     
@@ -716,7 +716,6 @@ int main(int argc, char **argv){
     dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>::CallbackType f;
     f = boost::bind(&QuinticWalkingNode::reconf_callback,&node, _1, _2);
     server.setCallback(f);
-    usleep(1000);
     // reset engine
     node.initilizeEngine();
     // run the node

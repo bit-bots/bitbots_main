@@ -271,6 +271,9 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startSte
     // save the current trunk state to use it later
     if(!startStep){
         saveCurrentTrunkState();
+    }else{
+        _trunkPosAtLast.y() -= _footstep.getNext().y();
+        //trunkPos = Eigen::Rotation2Dd(-_footstep.getNext().z()).toRotationMatrix() * trunkPos;
     }
 
     if(startStep){
@@ -631,12 +634,12 @@ void QuinticWalk::resetTrunkLastState()
     if (_footstep.isLeftSupport()) {
         _trunkPosAtLast << 
             _params.trunkXOffset, 
-            _params.footDistance/2.0 + _params.trunkYOffset, 
+            -_params.footDistance/2.0 + _params.trunkYOffset, 
             _params.trunkHeight;
     } else {
         _trunkPosAtLast << 
             _params.trunkXOffset, 
-            -_params.footDistance/2.0 + _params.trunkYOffset, 
+            _params.footDistance/2.0 + _params.trunkYOffset, 
             _params.trunkHeight;
     }
     _trunkVelAtLast.setZero();
