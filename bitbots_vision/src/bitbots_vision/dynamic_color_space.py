@@ -71,7 +71,6 @@ class DynamicColorSpace:
         :return: None
         """
         # Load dict from yaml-string in msg.data
-        vision_config = {}
         vision_config = yaml.load(msg.data)
 
         self.debug_printer = debug.DebugPrinter(
