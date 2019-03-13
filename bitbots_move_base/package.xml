@@ -9,7 +9,7 @@
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
 
-  <license>BSD</license>
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 

@@ -10,7 +10,7 @@
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
-  <license>BSD</license>
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>rospy</exec_depend>
