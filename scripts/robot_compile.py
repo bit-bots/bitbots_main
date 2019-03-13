@@ -102,7 +102,7 @@ def synchronize(sync_includes_file, host, workspace, package=None):
 
 
 parser = argparse.ArgumentParser(description='Copy the workspace to the robot and compile it.')
-parser.add_argument('hostname', metavar='hostname', type=str, nargs=1, help='The hostname of the robot (or its name)')
+parser.add_argument('hostname', metavar='hostname', type=str, help='The hostname of the robot (or its name)')
 robot = parser.add_mutually_exclusive_group()
 robot.add_argument('-w', '--wolfgang', action='store_const', help='Compile for wolfgang', const='wolfgang', dest='robot')
 robot.add_argument('-d', '--davros', action='store_const', help='Compile for davros', const='davros', dest='robot')
@@ -112,7 +112,7 @@ mode.add_argument('-c', '--compile-only', action='store_true', help='Build only,
 parser.add_argument('-p', '--package', help='Sync/Compile only the given ROS package')
 parser.add_argument('-g', '--game-mode', action='store_true', help='Game mode (automatic start at boot)')
 parser.add_argument('-y', '--yes-to-all', action='store_true', help='Answer yes to all questions')
-parser.add_argument('-j', '--jobs', metavar='N', default=6, type=int, nargs=1, help='Compile using N jobs (default 6)')
+parser.add_argument('-j', '--jobs', metavar='N', default=6, type=int, help='Compile using N jobs (default 6)')
 parser.add_argument('--clean-build', action='store_true', help='Clean workspace before building')
 parser.add_argument('--clean-src', action='store_true', help='Clean source directory before building')
 parser.add_argument('--clean-all', action='store_true', help='Clean workspace and source directory before building')
@@ -121,7 +121,7 @@ parser.set_defaults(robot='wolfgang')
 args = parser.parse_args()
 
 
-hostname = args.hostname[0]
+hostname = args.hostname
 # Convert names to numbers
 names = {'amy': 1,
          'rory': 2,
@@ -255,7 +255,7 @@ if not args.sync_only:
             source devel/setup.zsh;
             catkin build --force-color -j {jobs} {package} {quiet_option} || exit 1;
             else;
-            source /opt/ros/kinetic/setup.zsh;
+            source /opt/ros/*/setup.zsh;
             catkin build --force-color -j {jobs} {package} {quiet_option} || exit 1;
             source devel/setup.zsh;
             fi;
