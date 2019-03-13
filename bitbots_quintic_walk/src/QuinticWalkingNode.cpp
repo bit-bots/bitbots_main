@@ -632,9 +632,6 @@ void QuinticWalkingNode::publishMarker(std::string name_space, std::string frame
 
     marker_msg.id = _marker_id;     
     _marker_id++;
-    /*if(_marker_id > 100000){
-        _marker_id = 1;
-    }*/
     
     _pubDebugMarker.publish(marker_msg);
 }
@@ -706,10 +703,6 @@ void QuinticWalkingNode::publishMarkers(){
     _pubDebugMarker.publish(marker_msg);
 
     _marker_id++;
-    if(_marker_id > 10000){
-        _marker_id = 1;
-    }
-
 }
 
 void QuinticWalkingNode::initilizeEngine(){ 
