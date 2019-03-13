@@ -203,7 +203,7 @@ class DynamicColorSpace:
         self.horizon_detector.set_image(image)
         self.horizon_detector.compute_horizon_points()
         mask = self.horizon_detector.get_mask()
-        if not mask is None:
+        if mask is not None:
             # Get array of pixel-coordinates of color-candidates
             pixel_coordinates = self.pointfinder.get_coordinates_of_color_candidates(mask_image)
             # Get unique color-values from the candidate pixels
@@ -214,7 +214,7 @@ class DynamicColorSpace:
         return np.array([[]])
 
     def queue_to_color_space(self, queue):
-        # type: (dequeue) -> np.array
+        # type: (deque) -> np.array
         """
         Returns color-space as array of all queue-elements stacked, which contains all colors from the queue.
 
