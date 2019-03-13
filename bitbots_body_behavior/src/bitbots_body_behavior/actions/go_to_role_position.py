@@ -12,7 +12,7 @@ class GoToRolePosition(AbstractActionElement):
         try:
             position_relative = role_positions[self.blackboard.blackboard.duty]
         except KeyError:
-            raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard))
+            raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
 
         # Adapt position to field size
         # TODO know where map frame is located
