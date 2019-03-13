@@ -47,6 +47,15 @@ QuinticWalkingNode::QuinticWalkingNode(){
     _rleg_joints_group = _kinematic_model->getJointModelGroup("RightLeg");
     _goal_state.reset( new robot_state::RobotState( _kinematic_model ));
     _goal_state->setToDefaultValues();
+    // we have to set some good initial position in the goal state, since we are using a gradient 
+    // based method. Otherwise, the first step will be not correct
+    std::vector<std::string> names_vec = {"LHipPitch", "LKnee", "LAnklePitch", "RHipPitch", "RKnee", "RAnklePitch"};
+    std::vector<double> pos_vec = {0.7, -1.0, -0.4, -0.7, 1.0, 0.4};       
+    for(int i = 0; i < names_vec.size(); i++) {
+        // besides its name, this method only changes a single joint position...
+        _goal_state->setJointPositions(names_vec[i], &pos_vec[i]);
+    }
+
     _current_state.reset(new robot_state::RobotState( _kinematic_model ));
     _current_state->setToDefaultValues();
 
