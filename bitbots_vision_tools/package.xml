@@ -9,7 +9,7 @@
 
   <author email="git@nfiedler.de">Niklas Fiedler</author>
 
-  <license>TODO</license>
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>cv2</build_depend>
