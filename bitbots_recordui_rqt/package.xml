@@ -9,7 +9,7 @@
 
   <author email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</author>
 
-  <license>BSD</license>
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 
