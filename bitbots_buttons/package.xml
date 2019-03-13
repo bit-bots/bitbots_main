@@ -8,7 +8,7 @@
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
-  <license>BSD</license>
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 

@@ -7,7 +7,7 @@
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
   <author email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</author>
 
-  <license>BSD</license>
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 
