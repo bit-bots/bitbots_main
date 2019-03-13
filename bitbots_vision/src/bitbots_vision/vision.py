@@ -20,8 +20,8 @@ class Vision:
     def __init__(self):
         # type () -> None
         """
-        Vision is the main ROS-node for handling all tasks related to image-processing.
-        Initiating Vision-node.
+        Vision is the main ROS-node for handling all tasks related to image processing.
+        Initiating 'bitbots_vision' node.
 
         :return: None
         """
@@ -46,7 +46,7 @@ class Vision:
             queue_size=1,
             latch=True)
 
-        # Register VisionConfig-Server (dynamic-reconfigure) and set callback
+        # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
         #rospy.loginfo("Vision startup")
         rospy.spin()
@@ -54,7 +54,7 @@ class Vision:
     def _image_callback(self, image_msg):
         # type: (Image) -> None
         """
-        This method is called by the Image-message-subscriber.
+        This method is called by the Image-message subscriber.
         Old Image-messages were dropped.
 
         Sometimes the queue gets to large, even when the size is limeted to 1. 

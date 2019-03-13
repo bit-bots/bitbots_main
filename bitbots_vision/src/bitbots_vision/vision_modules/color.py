@@ -18,8 +18,8 @@ class ColorDetector:
         # type: (DebugPrinter) -> None
         """
         ColorDetector is abstract super-class of specialized sub-classes.
-        ColorDetectors are used e.g. to check, if a pixel matches the defined color-space
-        or to create masked binary-images.
+        ColorDetectors are used e.g. to check, if a pixel matches the defined color space
+        or to create masked binary images.
 
         :param DebugPrinter debug_printer: debug-printer
         :return: None
@@ -97,8 +97,8 @@ class HsvSpaceColorDetector(ColorDetector):
     def __init__(self, debug_printer, min_vals, max_vals):
         # type: (DebugPrinter, tuple[int, int, int], tuple[int, int, int]) -> None
         """
-        HsvSpaceColorDetector is a ColorDetector, that is based on the HSV-color-space.
-        The HSV-color-space is adjustable by setting min- and max-values for hue, saturation and value.
+        HsvSpaceColorDetector is a ColorDetector, that is based on the HSV-color space.
+        The HSV-color space is adjustable by setting min- and max-values for hue, saturation and value.
 
         :param DebugPrinter debug_printer: debug-printer
         :param tuple min_vals: a tuple of the minimal accepted hsv-values
@@ -176,15 +176,15 @@ class PixelListColorDetector(ColorDetector):
     def __init__(self, debug_printer, package_path, vision_config, primary_detector=False):
         # type:(DebugPrinter, str, dict, bool) -> None
         """
-        PixelListColorDetector is a ColorDetector, that is based on a color-space.
-        The color-space is initially loaded from color-space-file at color_path (in config)
-        and optionally adjustable to changing color-conditions (dynamic-color-space).
-        The color-space is represented by boolean-values for RGB-color-values.
+        PixelListColorDetector is a ColorDetector, that is based on a color space.
+        The color space is initially loaded from color-space-file at color_path (in config)
+        and optionally adjustable to changing color conditions (dynamic color space).
+        The color space is represented by boolean-values for RGB-color-values.
 
         :param DebugPrinter debug_printer: debug-printer
         :param str package_path: path of package
-        :param dict vision_config: vision-config
-        :param bool primary_detector: is primary color-detector if True
+        :param dict vision_config: vision config
+        :param bool primary_detector: true if is primary color detector
             (only detector held by vision should be True) (Default: False)
         :return: None
         """
@@ -195,7 +195,7 @@ class PixelListColorDetector(ColorDetector):
 
         self.primary_detector = primary_detector
 
-        # concatenate color-path to file containing the accepted colors of base-color-space
+        # concatenate color-path to file containing the accepted colors of base color space
         self.color_path = package_path + self.vision_config['field_color_detector_path']
         self.base_color_space = self.init_color_space(self.color_path)
         self.color_space = np.copy(self.base_color_space)
@@ -203,10 +203,10 @@ class PixelListColorDetector(ColorDetector):
         # toggle publishing of mask_img msg
         self.publish_mask_img_msg = self.vision_config['vision_mask_img_msg']
         
-        # toggle publishing of mask_img_dyn msg with dynamic color-space
+        # toggle publishing of mask_img_dyn msg with dynamic color space
         self.publish_mask_img_dyn_msg = self.vision_config['dynamic_color_space_mask_img_dyn_msg']
 
-        # toggle use of dynamic-color-space
+        # toggle use of dynamic color space
         self.dynamic_color_space_turned_on = self.vision_config['dynamic_color_space']
 
         # Subscribe to 'color_space'-messages from DynamicColorSpace
@@ -317,20 +317,20 @@ class PixelListColorDetector(ColorDetector):
     def decode_color_space(self, msg):
         # type: (ColorSpaceMessage) -> None
         """
-        Imports new color-space from ros msg. This is used to communicate with the DynamicColorSpace-Node.
+        Imports new color space from ros msg. This is used to communicate with the DynamicColorSpace-Node.
 
         :param ColorSpaceMessage msg: ColorSpaceMessage
         :return: None
         """
-        # Create temporary color-space
-        # Use the base-color-space as basis
+        # Create temporary color space
+        # Use the base color space as basis
         color_space_temp = np.copy(self.base_color_space)
 
-        # Adds new colors to that color-space
+        # Adds new colors to that color space
         color_space_temp[
             msg.blue,
             msg.green,
             msg.red] = 1
 
-        # Switches the reference to the new color-space
+        # Switches the reference to the new color space
         self.color_space = color_space_temp

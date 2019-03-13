@@ -20,14 +20,14 @@ class DynamicColorSpace:
     def __init__(self):
         # type: () -> None
         """
-        DynamicColorSpace is a ROS node, that is used by the vision-node to better recognize the field-color.
-        DynamicColorSpace is able to calculate dynamically changing color-spaces to accommodate e.g. 
-        changing lighting conditions or to compensate for not optimized base-color-space-files.
+        DynamicColorSpace is a ROS node, that is used by the vision node to better recognize the field color.
+        DynamicColorSpace is able to calculate dynamically changing color spaces to accommodate e.g. 
+        changing lighting conditions or to compensate for not optimized base color space files.
 
-        This node subscribes to an Image-message (default: image-raw) and to the vision-config-message.
+        This node subscribes to an Image-message (default: image_raw) and to the 'vision_config'-message.
         This node publishes ColorSpaceMessages.
 
-        Initiating DynamicColor-space-node.
+        Initiating 'bitbots_dynamic_color_space' node.
 
         :return: None
         """
@@ -63,28 +63,28 @@ class DynamicColorSpace:
     def vision_config_callback(self, msg):
         # type: (ConfigMessage) -> None
         """
-        This method is called by the 'vision_config'-message-subscriber.
-        Load and update vision-config.
-        Handle config-changes.
+        This method is called by the 'vision_config'-message subscriber.
+        Load and update vision config.
+        Handle config changes.
 
-        :param ConfigMessage msg: new 'vision_config'-message-subscriber
+        :param ConfigMessage msg: new 'vision_config'-message subscriber
         :return: None
         """
-        # Load dict from yaml-string in msg.data
+        # Load dict from string in yaml-format in msg.data
         vision_config = yaml.load(msg.data)
 
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 vision_config['vision_debug_printer_classes']))
 
-        # Turn off dynamic-color-space, if parameter of yaml (dynamic-reconfigure) is false
+        # Turn off dynamic color space, if parameter of yaml (dynamic reconfigure) is false
         turned_on_tmp = self.turned_on
         self.turned_on = vision_config['dynamic_color_space']
         if self.turned_on != turned_on_tmp:
             if self.turned_on:
-                rospy.loginfo('Dynamic color-space turned on.')
+                rospy.loginfo('Dynamic color space turned on.')
             else:
-                rospy.loginfo('Dynamic color-space turned off.')
+                rospy.loginfo('Dynamic color space turned off.')
         
         # Set Color- and HorizonDetector
         self.color_detector = color.PixelListColorDetector(
@@ -131,23 +131,23 @@ class DynamicColorSpace:
     def image_callback(self, image_msg):
         # type: (Image) -> None
         """
-        This method is called by the Image-message-subscriber.
+        This method is called by the Image-message subscriber.
         Old Image-messages were dropped.
 
         Sometimes the queue gets to large, even when the size is limeted to 1. 
-        That's, why we drop old images manualy.
+        That's, why we drop old images manually.
 
-        :param Image image_msg: new image-message from Image-message-subscriber
+        :param Image image_msg: new image-message from Image-message subscriber
         :return: None
         """
-        # Turn off dynamic-color-space, if parameter of yaml is false
+        # Turn off dynamic color space, if parameter of yaml is false
         if not self.turned_on:
             return
 
         # Drops old images
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
-            self.debug_printer.info('Dynamic color-space: Dropped Image-message', 'image')
+            self.debug_printer.info('Dynamic color space: Dropped Image-message', 'image')
             return
 
         self.handle_image(image_msg)
@@ -163,23 +163,23 @@ class DynamicColorSpace:
         """
         # Converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
-        # Get new dynamic-colors from image
+        # Get new dynamic colors from image
         colors = self.get_new_dynamic_colors(image)
         # Add new colors to the queue
         self.color_value_queue.append(colors)
-        # Publishes the color-space
+        # Publishes the 'color_space'-message
         self.publish(image_msg)
 
     def get_unique_color_values(self, image, coordinate_list):
         # type: (np.array, np.array) -> np.array
         """
-        Returns array of unique colors-values from a given image at pixel-coordinates from given list.
+        Returns array of unique colors values from a given image at pixel coordinates from given list.
 
         :param np.array image: image
-        :param np.array coordinate_list: list of pixel-coordinates
-        :return np.array: array of unique color-values from image at pixel-coordinates
+        :param np.array coordinate_list: list of pixel coordinates
+        :return np.array: array of unique color values from image at pixel coordinates
         """
-        # Create list of color-values from image at given coordinates
+        # Create list of color values from image at given coordinates
         colors = image[coordinate_list[0], coordinate_list[1]]
         # np.unique requires list with at least one element
         if colors.size > 0:
@@ -191,22 +191,22 @@ class DynamicColorSpace:
     def get_new_dynamic_colors(self, image):
         # type: (np.array) -> np.array
         """
-        Returns array of new dynamically calculated color-values.
+        Returns array of new dynamically calculated color values.
         Those values were filtered by the heuristic.
 
         :param np.array image: image
-        :return np.array: array of new dynamic-color-values
+        :return np.array: array of new dynamic color values
         """
-        # Masks new image with current color-space
+        # Masks new image with current color space
         mask_image = self.color_detector.mask_image(image)
         # Get mask from horizon detector
         self.horizon_detector.set_image(image)
         self.horizon_detector.compute_horizon_points()
         mask = self.horizon_detector.get_mask()
         if mask is not None:
-            # Get array of pixel-coordinates of color-candidates
+            # Get array of pixel coordinates of color candidates
             pixel_coordinates = self.pointfinder.get_coordinates_of_color_candidates(mask_image)
-            # Get unique color-values from the candidate pixels
+            # Get unique color values from the candidate pixels
             color_candidates = self.get_unique_color_values(image, pixel_coordinates)
             # Filters the colors using the heuristic.
             colors = np.array(self.heuristic.run(color_candidates, image, mask), dtype=np.int32)
@@ -216,28 +216,28 @@ class DynamicColorSpace:
     def queue_to_color_space(self, queue):
         # type: (deque) -> np.array
         """
-        Returns color-space as array of all queue-elements stacked, which contains all colors from the queue.
+        Returns color space as array of all queue elements stacked, which contains all colors from the queue.
 
-        :param dequeue queue: queue of array of color-values
-        :return np.array: color-space
+        :param dequeue queue: queue of array of color values
+        :return np.array: color space
         """
-        # Initializes an empty color-space
+        # Initializes an empty color space
         color_space = np.array([]).reshape(0,3)
-        # Stack every color-space in the queue
+        # Stack every color space in the queue
         for new_color_value_list in queue:
             color_space = np.append(color_space, new_color_value_list[:,:], axis=0)
-        # Return a color-space, which contains all colors from the queue
+        # Return a color space, which contains all colors from the queue
         return color_space
 
     def publish(self, image_msg):
         # type: (Image) -> None
         """
-        Publishes the current color-space via ColorSpaceMessage.
+        Publishes the current color space via ColorSpaceMessage.
 
         :param Image image_msg: 'image_raw'-message
         :return: None
         """
-        # Get color-space from queue
+        # Get color space from queue
         color_space = self.queue_to_color_space(self.color_value_queue)
         # Create ColorSpaceMessage
         color_space_msg = ColorSpaceMessage()
@@ -254,11 +254,11 @@ class Pointfinder():
     def __init__(self, debug_printer, threshold, kernel_radius):
         # type: (DebugPrinter, float, int) -> None
         """
-        Pointfinder is used to find false-color pixels with higher true-color / false-color ratio as threshold in their surrounding in masked-image.
+        Pointfinder is used to find false-color pixels with higher true-color / false-color ratio as threshold in their surrounding in masked image.
 
         :param DebugPrinter: debug-printer
-        :param float threshold: necessary amount of true-color in percentage
-        :param int kernel_radius: radius surrounding the center-element of kernel-matrix, defines relevant surrounding of pixel
+        :param float threshold: necessary amount of previously detected color in percentage
+        :param int kernel_radius: radius surrounding the center element of kernel matrix, defines relevant surrounding of pixel
         :return: None
         """
         # Init params
@@ -273,15 +273,15 @@ class Pointfinder():
         # Init kernel as M x M matrix of ONEs
         self.kernel = None
         self.kernel = np.ones((self.kernel_edge_size, self.kernel_edge_size))
-        # Set value of the center element of the matrix to the negative of the count of the matrix-elements
+        # Set value of the center element of the matrix to the negative of the count of the matrix elements
         # In case the value of this pixel is 1, it's value in the sum_array would be 0
         self.kernel[int(np.size(self.kernel, 0) / 2), int(np.size(self.kernel, 1) / 2)] = - self.kernel.size
 
     def get_coordinates_of_color_candidates(self, masked_image):
         # type (np.array) -> np.array
         """
-        Returns array of pixel-coordinates of color-candidates.
-        Color-candidates are false-color pixels with a higher true-color/ false-color ratio as threshold in their surrounding in masked-image.
+        Returns array of pixel coordinates of color candidates.
+        Color candidates are false-color pixels with a higher true-color/ false-color ratio as threshold in their surrounding in masked image.
 
         :param np.array masked_image: masked image
         :return np.array: list of indices
@@ -298,7 +298,7 @@ class Heuristic:
     def __init__(self, debug_printer):
         # type: (DebugPrinter) -> None
         """
-        Filters new color-space colors according to their position relative to the horizon.
+        Filters new color space colors according to their position relative to the horizon.
         Only colors that occur under the horizon and have no occurrences over the horizon get picked.
 
         :param DebugPrinter debug_printer: Debug-printer
@@ -309,14 +309,14 @@ class Heuristic:
     def run(self, color_list, image, mask):
         # type: (np.array, np.array, np.array) -> np.array
         """
-        This method filters a given list of colors using the original image and a horizon mask. 
+        This method filters a given list of colors using the original image and a horizon-mask. 
 
-        :param np.array color_list: list of color-values, that need to be filtered
+        :param np.array color_list: list of color values, that need to be filtered
         :param np.array image: raw vision image
         :param np.array mask: binary horizon-mask
         :return np.array: filtered list of colors
         """
-        # Simplifies the handling by merging the three color-channels
+        # Simplifies the handling by merging the three color channels
         color_list = self.serialize(color_list)
         # Making a set and removing duplicated colors
         color_set = set(color_list)
@@ -347,7 +347,7 @@ class Heuristic:
 
         :param np.array image: image
         :param np.array mask: horizon-mask
-        :return np.array: colors over the horizon 
+        :return np.array: colors over the horizon
         :return np.array: colors under the horizon
         """
         # Calls a function to calculate the number of occurrences of all colors in the image
@@ -397,3 +397,4 @@ class Heuristic:
 
 if __name__ == '__main__':
     DynamicColorSpace()
+    
