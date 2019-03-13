@@ -25,6 +25,7 @@ behavior:
     #                         0
     # To be useful for different field sizes, use values in [-1, 1] for x and y
 
+    # TODO: For four robots we need four initial positions
     role_positions:
       goalie: [-0.95, 0]
       defense: [-0.5, 0.5]
