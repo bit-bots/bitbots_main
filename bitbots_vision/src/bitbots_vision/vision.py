@@ -255,7 +255,8 @@ class Vision:
         self.horizon_detector = horizon.HorizonDetector(
             self.field_color_detector,
             config,
-            self.debug_printer)
+            self.debug_printer,
+            self.runtime_evaluator)
 
         self.line_detector = lines.LineDetector(self.white_color_detector,
                                                 self.field_color_detector,

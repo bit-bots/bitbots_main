@@ -5,7 +5,7 @@ from .debug import DebugPrinter
 
 
 class RuntimeEvaluator:
-    def __init__(self, debug_printer, name="Runtime", queue_size=15):
+    def __init__(self, debug_printer, name="Runtime", queue_size=100):
         # type: (DebugPrinter, str, int) -> None
         """
         calculates the average time a method (e.g. get_candidates) takes to work on an image
@@ -85,7 +85,7 @@ class RuntimeEvaluator:
          and prints the result
         """
         # the results are only printed out after we collected enough measurements:
+        self._debug_printer.info("{} Progress:".format(self.name)+str(self.count+1)+"/"+str(self.queue_size), 'eval')
         if self.count == self.queue_size - 1:
             avg = np.array(self.queue).mean()  # calculates the average of our measurements
             self._debug_printer.info("{} timer: {}".format(self.name, avg), 'eval')
-        self._debug_printer.info("{} Progress:".format(self.name)+str(self.count+1)+"/"+str(self.queue_size), 'eval')

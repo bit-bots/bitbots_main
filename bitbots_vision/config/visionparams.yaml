@@ -42,6 +42,8 @@ blue_color_detector_upper_values_v: 255
 
 horizon_finder_vertical_steps: 30
 horizon_finder_horizontal_steps: 30
+horizon_finder_roi_height: 11
+horizon_finder_roi_width: 5
 horizon_finder_precision_pix: 5
 horizon_finder_min_precision_pix: 3
 

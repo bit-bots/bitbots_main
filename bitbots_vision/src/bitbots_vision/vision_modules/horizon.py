@@ -9,8 +9,8 @@ from .evaluator import RuntimeEvaluator
 
 class HorizonDetector:
 
-    def __init__(self, field_color_detector, config, debug_printer):
-        # type: (np.matrix, ColorDetector, dict, DebugPrinter) -> None
+    def __init__(self, field_color_detector, config, debug_printer, runtime_evaluator):
+        # type: (np.matrix, ColorDetector, dict, DebugPrinter, RuntimeEvaluator) -> None
         self._image = None
         self._field_color_detector = field_color_detector
         self._horizon_points = None
@@ -18,10 +18,12 @@ class HorizonDetector:
         self._convex_horizon_full = None
         self._horizon_hull = None
         self._debug_printer = debug_printer
-        #self._runtime_evaluator = runtime_evaluator
+        self._runtime_evaluator = runtime_evaluator
         # init config
         self._x_steps = config['horizon_finder_horizontal_steps']
         self._y_steps = config['horizon_finder_vertical_steps']
+        self._roi_height = config['horizon_finder_roi_height']
+        self._roi_width = config['horizon_finder_roi_width']
         self._precise_pixel = config['horizon_finder_precision_pix']
         self._min_precise_pixel = config['horizon_finder_min_precision_pix']
 
@@ -47,6 +49,10 @@ class HorizonDetector:
         return self._horizon_points
 
     def _sub_horizon(self):
+        #horizon_points = []
+        #horizon_points = self._sub_horizon_binary()
+        #return horizon_points
+
         #self._runtime_evaluator.start_timer()
         field_mask = self._field_color_detector.mask_image(self._image)
         field_mask = cv2.morphologyEx(
@@ -56,6 +62,7 @@ class HorizonDetector:
             iterations=2)
         # Syntax: cv2.resize(image, (width, height), type of interpolation)
         field_mask = cv2.resize(field_mask, (self._x_steps, self._y_steps), interpolation=cv2.INTER_LINEAR)
+
         min_y = self._image.shape[0] - 1
         y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
         x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
@@ -73,54 +80,84 @@ class HorizonDetector:
         #self._runtime_evaluator.print_timer()
         return horizon_points
 
+    def _sub_field_edge_binary(self):
+        # type: () -> list
+        """
+        finds the points of the field edge visible in the image. Uses a faster binary search method, that occasionally
+        finds these points below field lines Todo: fix that by adjusting the parameters
+        :return: list of x,y tuples of the field edge:
+        """
+        self._runtime_evaluator.start_timer()  # uncomment for runtime comparison
 
-    def _sub_horizon_binary(self):
-        # experimental
-        """"#self._runtime_evaluator.start_timer()
+        # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the original image
+        # index counting up from top to bottom and left to right
         field_mask = self._field_color_detector.mask_image(self._image)
         field_mask = cv2.morphologyEx(
             field_mask,
             cv2.MORPH_CLOSE,
             np.ones((5, 5), dtype=np.uint8),
-            iterations=2)
-        rospy.loginfo("y-steps "+str(self._y_steps))
-        rospy.loginfo("x-steps " +str(self._x_steps))
-        field_mask = cv2.resize(field_mask, (self._y_steps, self._x_steps), interpolation=cv2.INTER_LINEAR)
-        rospy.logwarn("y-len"+str(len(field_mask)))
-        rospy.logwarn("x-len"+str(len(field_mask[0])))
+            iterations=2)  # Todo: What does this do and do we need it?
+        # Todo: improve mask with only 1 and 0?
 
-        # the stepsize is the number of pixels we would traverse in the original image when going one step in the mask
-        x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
+        # the stepsize is the number of pixels traversed in the image by going one step
         y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
-        x_image = 0
+        x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
+
+        # the region of interest (roi) for a specific point is a rectangle with the point in the middle of its top row
+        # the point is slightly left of center when the width is even
+        roi_height = self._roi_height
+        roi_width = self._roi_width
+        x_pad = (roi_width - 1) // 2 + 1
+        # extents the outermost pixels of the image as the roi might go beyond the image
+        # Syntax: cv2.copyMakeBorder(image, top, bottom, left, right, type of extension)
+        field_mask = cv2.copyMakeBorder(field_mask, 0, roi_height, x_pad, x_pad, cv2.BORDER_REPLICATE)
+
+        # uncomment this to use a kernel for the roi
+        # kernel = np.zeros((roi_height, roi_width))  # creates a kernel with 0 everywhere
+        # kernel[int(kernel_height/2):, :] = 1  # use this to fill in other values at specific places in the kernel
+
         horizon_points = []
-        for x_step in range(self._x_steps):  # traverse columns
+        green_threshold = 0  # self._green_threshold
+        roi_sum = -1  # default that should never occur
+        y_step = -1  # default that should never occur
+        for x_step in range(0, self._x_steps):  # traverse columns (x_steps)
             # binary search for finding the first green pixel:
             first = 0  # top of the column
-            last = self._y_steps #- 1  # bottom of the column
-            y_step = 0  #self._y_steps / 3  # worst case Todo: why this?
+            last = self._y_steps - 1  # bottom of the column
+            x_image = int(round(x_step * x_stepsize)) + x_pad  # calculate the x coordinate in the image of a column
             while first < last:
                 y_step = (first + last) // 2
-
-                if field_mask[y_step, x_step] > 100:  # is the value green enough?
-                    # the value is green enough
-                    # therefore the horizon is somewhere above this point
-                    # therefore the area left to search can be halved by setting the new "last" above "y_current"
+                y_image = int(round(y_step * y_stepsize))  # calculate the y coordinate in the image of a y_step
+                # creates the roi for a point (y_image, x_image)
+                roi = field_mask[y_image:y_image + roi_height, x_image - (x_pad - 1):x_image + x_pad]
+                roi_sum = roi.sum()
+                # roi_sum = (roi * kernel).sum()  # uncomment when using a kernel
+                if roi_sum > green_threshold:  # is the roi green enough?
+                    """
+                    the value is green enough, therefore the horizon is somewhere above this point
+                    the area left to search can be halved by setting the new "last" above "y_current"
+                    """
                     last = y_step - 1
                 else:
-                    # the value isn't green enough
-                    # therefore the horizon is somewhere below this point
-                    # therefore the area left to search can be halved by setting the new "first" below "y_current"
+                    """
+                    the value isn't green enough, therefore the horizon is somewhere below this point
+                    the area left to search can be halved by setting the new "first" below "y_current"
+                    """
                     first = y_step + 1
-
-            # after the while-loop "y_current" is just one pixel above or below the horizon
-            # which is an inaccuracy we can neglect todo: but can we???
-            y_image = int(round(y_step * y_stepsize))
-            horizon_points.append((x_image, y_image))
-            x_image += int(round(x_stepsize))
-        #self._runtime_evaluator.stop_timer()
-        #self._runtime_evaluator.print_timer()
-        return horizon_points"""
+            """
+            during binary search the horizon is either approached from the bottom or from the top
+            when approaching the horizon from the top, y_step stops one step above the horizon on a non green point
+            therefore the y_step has to be increased when it stops on a non green point
+            """
+            if roi_sum <= green_threshold:
+                y_step += 1
+            # calculate the y coordinate in the image of the y_step the field edge was found on with an offset of
+            # roi_height, as the region of interest extends this far below the point
+            y_image = int(round(y_step * y_stepsize)) + roi_height
+            horizon_points.append((x_image, y_image))  # add the found field_edge point to the list
+        self._runtime_evaluator.stop_timer()  # uncomment for runtime comparison
+        self._runtime_evaluator.print_timer()  # uncomment for runtime comparison
+        return horizon_points
 
     def compute_convex_horizon_points(self):
         '''
