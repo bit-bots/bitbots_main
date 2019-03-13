@@ -49,10 +49,11 @@ vision_ball_classifier: 'fcnn'  # cascade, fcnn or dummy
 vision_debug_image: false
 vision_debug_image_msg: false
 vision_mask_img_msg: false
-vision_debug_printer_classes: ''
 vision_parallelize: true
+vision_use_sim_color: false
 vision_ball_candidate_horizon_y_offset: 0
 vision_ball_candidate_rating_threshold: 0.5
+vision_debug_printer_classes: ''
 
 line_detector_horizon_offset: 50
 line_detector_linepoints_range: 10000

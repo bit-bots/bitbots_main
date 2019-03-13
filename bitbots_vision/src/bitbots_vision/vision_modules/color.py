@@ -196,7 +196,10 @@ class PixelListColorDetector(ColorDetector):
         self.primary_detector = primary_detector
 
         # concatenate color-path to file containing the accepted colors of base color space
-        self.color_path = package_path + self.vision_config['field_color_detector_path']
+        if self.vision_config['vision_use_sim_color']:
+            self.color_path = package_path + self.vision_config['field_color_detector_path_sim']
+        else:
+            self.color_path = package_path + self.vision_config['field_color_detector_path']
         self.base_color_space = self.init_color_space(self.color_path)
         self.color_space = np.copy(self.base_color_space)
 
