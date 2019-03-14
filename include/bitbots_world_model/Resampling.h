@@ -2,8 +2,8 @@
 #define IMPORTANCERESAMPLINGWE_H
 
 #include <assert.h>
-#include "libPF/ImportanceResampling.h"
-#include "libPF/CRandomNumberGenerator.h"
+#include "particle_filter/ImportanceResampling.h"
+#include "particle_filter/CRandomNumberGenerator.h"
 
 // ImportanceResampling with explorers
 
