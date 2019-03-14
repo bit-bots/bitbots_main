@@ -42,7 +42,6 @@ $Localization
         NO --> @SearchBall
     NO --> #NoLocalizationGoalieBehavior
 
-
 #OffenseBehavior
 $Localization
     YES --> $BallSeen
@@ -53,12 +52,13 @@ $Localization
 #DefenseBehavior
 $Localization
     YES --> $BallSeen
-        YES --> $BallClose
-            YES --> #GoAndKickBallMapGoal
-            NO --> @GoToDefensePosition
+        YES --> $BallInDefensiveArea
+            YES --> #KickBall
+            NO -->  $BallClose
+                YES --> #KickBall
+                NO --> @GoToDefensePosition
         NO --> @SearchBall
     NO --> #NoLocalizationPlayerBehavior
-
 
 #PenaltyBehavior
 $BallSeen
