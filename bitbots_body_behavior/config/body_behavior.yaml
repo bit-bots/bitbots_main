@@ -68,5 +68,15 @@ behavior:
     # the radius is the margin around the goal to both y and the positive x directions
     ball_dangerous_goal_radius: 2
 
+    # The defensive area is an area in which the players behave more defensive then usual
+    # (defensive players are actively going to the ball and goalies move in the goal to be able to block the ball).
+    # This affects the BallInDefensiveArea decision.
+    # The area is described as portion of the field [0, 1] always measured from the own goal.
+    # A value of .25 means, that the quarter in front of the own goal is the defensive area.
+    defensive_area: .25
+
+    # When the ball is closer than `max_kick_distance` meters
+    # it is close enough to be kicked
+    max_kick_distance: 0.3
 
 role: "offense"
