@@ -75,6 +75,10 @@ behavior:
     # A value of .25 means, that the quarter in front of the own goal is the defensive area.
     defensive_area: .25
 
+    # This is the offset the goalie keeps to avoid crashes with poles when blocking balls.
+    # The value describes the offset in meters from the goal line.
+    block_position_goal_offset: .15
+
     # When the ball is closer than `max_kick_distance` meters
     # it is close enough to be kicked
     max_kick_distance: 0.3
