@@ -25,11 +25,11 @@ class GoToBlockPosition(AbstractActionElement):
         #      +------------------+--------------> x
         #                         0
 
-        goal_position = (0, -self.blackboard.field_length / 2)  # position of the own goal
+        goal_position = (-self.blackboard.field_length / 2, 0)  # position of the own goal
         ball_position = self.blackboard.world_model.get_ball_position_xy()
 
-        y_delta =
-        x_delta =
+        x_delta = ball_position[0] - goal_position[0]
+        y_delta = ball_position[1] - goal_position[1]
         gradient = y_delta / x_delta
         goalie_y = self.block_position_goal_offset * gradient
 
