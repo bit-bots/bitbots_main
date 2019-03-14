@@ -158,6 +158,7 @@ class RecordUI(Plugin):
         self.initialize()
 
         context.add_widget(self._widget)
+        self._widget.statusBar.showMessage("Initialization complete.")
 
     def initialize(self):
         for i in range(0, len(self._initial_joints.name)):
@@ -317,7 +318,8 @@ class RecordUI(Plugin):
         self.set_metadata()
         if not self._saveDir:
             self._saveDir = QFileDialog.getExistingDirectory()
-        self._recorder.save_animation(self._saveDir, self._widget.lineAnimationName.text(), self._checkBoxesSave)
+        status = self._recorder.save_animation(self._saveDir, self._widget.lineAnimationName.text(), self._checkBoxesSave)
+        self._widget.statusBar.showMessage(status)
 
     def save_as(self):
         '''
@@ -328,11 +330,11 @@ class RecordUI(Plugin):
         self._recorder.save_animation(self._saveDir, self._widget.lineAnimationName.text(), self._checkBoxesSave)
 
     def set_metadata(self):
-        self._recorder.set_meta_data(self._widget.lineAnimationName.text(),
+        status = self._recorder.set_meta_data(self._widget.lineAnimationName.text(),
                                      self._widget.lineVersion.text(),
                                      self._widget.lineAuthor.text(),
                                      self._widget.fieldDescription.toPlainText())
-
+        self._widget.statusBar.showMessage(status)
     def open(self):
         '''
         Deletes all current frames and instead loads an animation from a json file
@@ -344,7 +346,10 @@ class RecordUI(Plugin):
                 return
         my_file = QFileDialog.getOpenFileName()[0]
         if my_file:
-            self._recorder.load_animation(my_file)
+            status = self._recorder.load_animation(my_file)
+            if status == "":
+                status = "Load successful."
+            self._widget.statusBar.showMessage(status)
 
         animstate = self._recorder.get_animation_state()
         for i in animstate:
@@ -365,7 +370,8 @@ class RecordUI(Plugin):
         '''
         Plays the animation
         '''
-        self._recorder.play(self._robot_anim_path)
+        status = self._recorder.play(self._robot_anim_path)
+        self._widget.statusBar.showMessage(status)
 
     def play_until(self):
         '''
@@ -523,11 +529,13 @@ class RecordUI(Plugin):
         self.update_frames(keep)
 
     def undo(self):
-        self._recorder.undo()
+        status = self._recorder.undo()
+        self._widget.statusBar.showMessage(status)
         self.update_frames()
 
     def redo(self):
-        self._recorder.redo()
+        status = self._recorder.redo()
+        self._widget.statusBar.showMessage(status)
         self.update_frames()
 
     def mirrorFrame(self, direction):
@@ -805,9 +813,11 @@ class RecordUI(Plugin):
 
             except KeyError:
                 rospy.logwarn("Found a key-value pair for motor (%s), which doesn't seem to exist (yet). Ignoring it." % k)
+                self._widget.statusBar.showMessage("Found a key-value pair for motor (%s), which doesn't seem to exist (yet). Ignoring it.")
                 continue
             except RuntimeError:
                 rospy.logwarn("Tried to access a PyQt element that no longer exists. This happens when you close the framework.")
+                self._widget.statusBar.showMessage("Tried to access a PyQt element that no longer exists. This happens when you close the framework.")
                 break
         if manual:
             self._widget.lineFrameName.setText(self._workingName)

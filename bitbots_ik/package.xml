@@ -28,7 +28,7 @@
 
   <export>
     <bitbots_documentation>
-      <status>tested_viz</status>
+      <status>tested_robot</status>
       <language>c++</language>
     </bitbots_documentation>
   </export>

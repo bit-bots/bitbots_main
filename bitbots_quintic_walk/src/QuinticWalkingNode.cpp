@@ -189,9 +189,12 @@ double QuinticWalkingNode::getTimeDelta(){
 void QuinticWalkingNode::cmdVelCb(const geometry_msgs::Twist msg){
     // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
     // other axis. 
+
     // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
-    double factor =  1.0/ (_params.freq);
+    // factor 2 since the order distance is only for a single step, not double step
+    double factor =  1.0/ (_params.freq) / 2;
     _currentOrders = {msg.linear.x * factor, msg.linear.y * factor, msg.angular.z * factor};
+
     // the orders should not extend beyond a maximal step size
     for(int i = 0; i < 3; i++){
         if (_currentOrders[i] >= 0){
@@ -429,9 +432,11 @@ void QuinticWalkingNode::publishOdometry(){
 
     _odom_msg.pose.pose.orientation = quat_msg;
     geometry_msgs::Twist twist;
-    twist.linear.x = _currentOrders[0] * _params.freq;
-    twist.linear.y = _currentOrders[1] * _params.freq;
-    twist.angular.z = _currentOrders[2] * _params.freq;
+
+    twist.linear.x = _currentOrders[0] * _params.freq * 2;
+    twist.linear.y = _currentOrders[1] * _params.freq * 2;
+    twist.angular.z = _currentOrders[2] * _params.freq * 2;
+    
     _odom_msg.twist.twist = twist;
     _pubOdometry.publish(_odom_msg);
 }

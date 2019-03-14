@@ -62,6 +62,8 @@ class HcmBlackboard():
         self.animation_requested = False
         self.hcm_animation_finished = False
         self.walkready_animation = rospy.get_param("hcm/animations/walkready")
+        if rospy.get_param("/simulation_active"):
+            self.walkready_animation= rospy.get_param("hcm/animations/walkready_sim")
         self.falling_animation_front = rospy.get_param("hcm/animations/falling_front")
         self.falling_animation_back = rospy.get_param("hcm/animations/falling_back")
         self.falling_animation_left = rospy.get_param("hcm/animations/falling_left")

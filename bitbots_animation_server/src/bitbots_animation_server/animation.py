@@ -27,10 +27,11 @@ class Animation:
         self.name = name
         self.keyframes = keyframes
 
+
 def parse(info):
-    ''' Diese Methode parst eine Animation aus
-        einer :class:`dict` Instanz *info*, wie sie mit
-        :func:`as_dict` erzeugt wurde.
+    '''
+    This method is parsing an animation from a :class:`dict`
+    instance *info*, as created by :func:`as_dict`.
     '''
     anim = Animation(info["name"], ())
 
@@ -42,8 +43,9 @@ def parse(info):
 
 
 def as_dict(anim):
-    ''' Wandelt die Animation in Standard Python Typen um, damit sie in einem
-        Datenformat wie ``.json`` serialisierbar ist.
+    '''
+    Convert an animation to builtin python types to
+    make it serializable to formats like ``json``.
     '''
     return {
         "name": anim.name,
