@@ -104,6 +104,17 @@ double PositionState::calcDistance(const humanoid_league_msgs::PixelRelative &pi
     return diff;
 }
 
+void PositionState::convertParticleListToEigen(
+        const std::vector<particle_filter::Particle<PositionState>*>& particle_list,
+        Eigen::MatrixXd& matrix) {
+    matrix.resize(particle_list.size(), 2);
+    for(int i = 0; i < particle_list.size(); i++) {
+        matrix(i, 0) = particle_list[i]->getState().getXPos();
+        matrix(i, 1) = particle_list[i]->getState().getYPos();
+    }
+}
+
+
 
 PositionStateW::PositionStateW() :
     PositionState(),
@@ -174,6 +185,17 @@ double PositionStateW::calcDistance(const PositionStateW& state) const {
     return diff;
 }
 
+void PositionStateW::convertParticleListToEigen(
+        const std::vector<particle_filter::Particle<PositionStateW>*>& particle_list,
+        Eigen::MatrixXd& matrix) {
+    matrix.resize(particle_list.size(), 3);
+    for(int i = 0; i < particle_list.size(); i++) {
+        matrix(i, 0) = particle_list[i]->getState().getXPos();
+        matrix(i, 1) = particle_list[i]->getState().getYPos();
+        matrix(i, 2) = particle_list[i]->getState().getWidth();
+    }
+}
+
 PoseState::PoseState() :
     PositionState(),
     orientation_(0.0) {}
@@ -219,5 +241,16 @@ double PoseState::calcDistance(const PoseState& state) const {
         diff = 0.0001;
     }
     return diff;
+}
+
+void PoseState::convertParticleListToEigen(
+        const std::vector<particle_filter::Particle<PoseState>*>& particle_list,
+        Eigen::MatrixXd& matrix) {
+    matrix.resize(particle_list.size(), 3);
+    for(int i = 0; i < particle_list.size(); i++) {
+        matrix(i, 0) = particle_list[i]->getState().getXPos();
+        matrix(i, 1) = particle_list[i]->getState().getYPos();
+        matrix(i, 2) = particle_list[i]->getState().getOrientation();  // TODO
+    }
 }
 

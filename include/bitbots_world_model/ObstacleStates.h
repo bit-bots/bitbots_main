@@ -1,9 +1,12 @@
 #ifndef OBSTACLE_STATES
 #define OBSTACLE_STATES
 #include <cmath>
+#include <vector>
 
 #include <ros/ros.h>
+#include <Eigen/Core>
 #include <particle_filter/ParticleFilter.h>
+#include <particle_filter/gaussian_mixture_model.h>
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/ColorRGBA.h>
 #include <geometry_msgs/Point.h>
@@ -37,6 +40,8 @@ public:
     double calcDistance(const PositionState& state) const;
 
     double calcDistance(const humanoid_league_msgs::PixelRelative &pixel) const;
+
+    static void convertParticleListToEigen(const std::vector<particle_filter::Particle<PositionState>*>& particle_list, Eigen::MatrixXd& matrix);
 
     // float getTheta() const;
 
@@ -85,6 +90,8 @@ public:
 
     double calcDistance(const PositionStateW& state) const;
 
+    static void convertParticleListToEigen(const std::vector<particle_filter::Particle<PositionStateW>*>& particle_list, Eigen::MatrixXd& matrix);
+
 private:
 
     float width_;
@@ -116,6 +123,8 @@ public:
     static visualization_msgs::Marker renderMarker(particle_filter::ParticleFilter<PositionState>::ParticleList& particle_list, std_msgs::ColorRGBA color, std::string n_space) = delete;
 
     double calcDistance(const PoseState& state) const;
+
+    static void convertParticleListToEigen(const std::vector<particle_filter::Particle<PoseState>*>& particle_list, Eigen::MatrixXd& matrix);
 
 private:
 
