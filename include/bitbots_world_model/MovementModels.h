@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include <libPF/MovementModel.h>
+#include <particle_filter/MovementModel.h>
 #include <bitbots_world_model/ObstacleStates.h>
 #include <geometry_msgs/Vector3.h>
 // #include <libPF/CRandomNumberGenerator.h>
@@ -17,13 +17,13 @@
  * nothing in drift().
  * @author Stephan Wirth
  */
-class LocalObstacleMovementModel : public libPF::MovementModel<PositionStateW> {
+class LocalObstacleMovementModel : public particle_filter::MovementModel<PositionStateW> {
 
   public:
     /**
      * empty
      */
-    LocalObstacleMovementModel(libPF::CRandomNumberGenerator& random_number_generator, double xStdDev, double yStdDev, double multiplicator);
+    LocalObstacleMovementModel(particle_filter::CRandomNumberGenerator& random_number_generator, double xStdDev, double yStdDev, double multiplicator);
 
     /**
      * empty
@@ -48,20 +48,20 @@ class LocalObstacleMovementModel : public libPF::MovementModel<PositionStateW> {
   private:
 
     // The random number generator
-    libPF::CRandomNumberGenerator random_number_generator_;
+    particle_filter::CRandomNumberGenerator random_number_generator_;
 
     // standard deviations and multiplicator for the diffuse step
     double xStdDev_, yStdDev_, multiplicator_;
 
 };
 
-class LocalRobotMovementModel : public libPF::MovementModel<PositionState> {
+class LocalRobotMovementModel : public particle_filter::MovementModel<PositionState> {
 
   public:
     /**
      * empty
      */
-    LocalRobotMovementModel(libPF::CRandomNumberGenerator& random_number_generator, double xStdDev, double yStdDev, double multiplicator);
+    LocalRobotMovementModel(particle_filter::CRandomNumberGenerator& random_number_generator, double xStdDev, double yStdDev, double multiplicator);
 
     /**
      * empty
@@ -86,7 +86,7 @@ class LocalRobotMovementModel : public libPF::MovementModel<PositionState> {
   private:
 
     // The random number generator
-    libPF::CRandomNumberGenerator random_number_generator_;
+    particle_filter::CRandomNumberGenerator random_number_generator_;
 
     // standard deviations and multiplicator for the diffuse step
     double xStdDev_, yStdDev_, multiplicator_;

@@ -1,6 +1,6 @@
 #include "bitbots_world_model/ObservationModels.h"
 
-LocalObstacleObservationModel::LocalObstacleObservationModel () : libPF::ObservationModel<PositionStateW>() {
+LocalObstacleObservationModel::LocalObstacleObservationModel () : particle_filter::ObservationModel<PositionStateW>() {
 }
 
 LocalObstacleObservationModel::~LocalObstacleObservationModel () {
@@ -34,7 +34,7 @@ bool LocalObstacleObservationModel::measurements_available() {
     return (!last_measurement_.empty());
 }
 
-LocalRobotObservationModel::LocalRobotObservationModel () : libPF::ObservationModel<PositionState>() {
+LocalRobotObservationModel::LocalRobotObservationModel () : particle_filter::ObservationModel<PositionState>() {
 }
 
 LocalRobotObservationModel::~LocalRobotObservationModel () {
@@ -68,7 +68,7 @@ bool LocalRobotObservationModel::measurements_available() {
     return (!last_measurement_.empty());
 }
 
-LocalFcnnObservationModel::LocalFcnnObservationModel () : libPF::ObservationModel<PositionState>() {
+LocalFcnnObservationModel::LocalFcnnObservationModel () : particle_filter::ObservationModel<PositionState>() {
 }
 
 LocalFcnnObservationModel::~LocalFcnnObservationModel () {

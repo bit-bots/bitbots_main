@@ -1,6 +1,6 @@
 #include <bitbots_world_model/MovementModels.h>
 
-LocalObstacleMovementModel::LocalObstacleMovementModel(libPF::CRandomNumberGenerator& random_number_generator, double xStdDev, double yStdDev, double multiplicator) : libPF::MovementModel<PositionStateW>(),
+LocalObstacleMovementModel::LocalObstacleMovementModel(particle_filter::CRandomNumberGenerator& random_number_generator, double xStdDev, double yStdDev, double multiplicator) : particle_filter::MovementModel<PositionStateW>(),
                                                                                                                                                                   random_number_generator_(random_number_generator),
                                                                                                                                                                   xStdDev_(xStdDev),
                                                                                                                                                                   yStdDev_(yStdDev),
@@ -32,7 +32,7 @@ void LocalObstacleMovementModel::diffuse(PositionStateW& state, double /*dt*/) c
     state.setYPos(state.getYPos() + random_number_generator_.getGaussian(yStdDev_) * multiplicator_);
 }
 
-LocalRobotMovementModel::LocalRobotMovementModel(libPF::CRandomNumberGenerator& random_number_generator, double xStdDev, double yStdDev, double multiplicator) : libPF::MovementModel<PositionState>(),
+LocalRobotMovementModel::LocalRobotMovementModel(particle_filter::CRandomNumberGenerator& random_number_generator, double xStdDev, double yStdDev, double multiplicator) : particle_filter::MovementModel<PositionState>(),
                                                                                                                                                                   random_number_generator_(random_number_generator),
                                                                                                                                                                   xStdDev_(xStdDev),
                                                                                                                                                                   yStdDev_(yStdDev),

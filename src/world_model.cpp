@@ -147,10 +147,10 @@ bool WorldModel::reset_filters_callback(std_srvs::Trigger::Request &req, std_srv
 void WorldModel::reset_all_filters() {
     ROS_INFO("Resetting all particle filters...");
 
-    local_ball_pf_.reset(new libPF::ParticleFilter<PositionState>(config_.local_ball_particle_number, local_ball_observation_model_, local_ball_movement_model_));
-    local_mate_pf_.reset(new libPF::ParticleFilter<PositionState>(config_.local_mate_particle_number, local_mate_observation_model_, local_mate_movement_model_));
-    local_opponent_pf_.reset(new libPF::ParticleFilter<PositionState>(config_.local_opponent_particle_number, local_opponent_observation_model_, local_opponent_movement_model_));
-    local_obstacle_pf_.reset(new libPF::ParticleFilter<PositionStateW>(config_.local_obstacle_particle_number, local_obstacle_observation_model_, local_obstacle_movement_model_));
+    local_ball_pf_.reset(new particle_filter::ParticleFilter<PositionState>(config_.local_ball_particle_number, local_ball_observation_model_, local_ball_movement_model_));
+    local_mate_pf_.reset(new particle_filter::ParticleFilter<PositionState>(config_.local_mate_particle_number, local_mate_observation_model_, local_mate_movement_model_));
+    local_opponent_pf_.reset(new particle_filter::ParticleFilter<PositionState>(config_.local_opponent_particle_number, local_opponent_observation_model_, local_opponent_movement_model_));
+    local_obstacle_pf_.reset(new particle_filter::ParticleFilter<PositionStateW>(config_.local_obstacle_particle_number, local_obstacle_observation_model_, local_obstacle_movement_model_));
 
     //setting the resampling strategies
     local_ball_pf_->setResamplingStrategy(local_ball_resampling_);

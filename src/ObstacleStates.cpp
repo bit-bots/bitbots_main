@@ -44,7 +44,7 @@ float PositionState::getYPos() const {
     return yPos_;
 }
 
-visualization_msgs::Marker PositionState::renderMarker(libPF::ParticleFilter<PositionState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
+visualization_msgs::Marker PositionState::renderMarker(particle_filter::ParticleFilter<PositionState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
     visualization_msgs::Marker msg;
     msg.header.stamp = ros::Time::now();
     msg.header.frame_id = "/base_link";
@@ -57,7 +57,7 @@ visualization_msgs::Marker PositionState::renderMarker(libPF::ParticleFilter<Pos
     msg.color = color;
     msg.lifetime = lifetime;
     msg.ns = n_space;
-    for (libPF::Particle<PositionState> *particle : particle_list) {
+    for (particle_filter::Particle<PositionState> *particle : particle_list) {
         geometry_msgs::Point point_msg;
         point_msg.x = particle->getState().getXPos();
         point_msg.y = particle->getState().getYPos();
@@ -143,7 +143,7 @@ float PositionStateW::getWidth() const {
     return width_;
 }
 
-visualization_msgs::Marker PositionStateW::renderMarker(libPF::ParticleFilter<PositionStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
+visualization_msgs::Marker PositionStateW::renderMarker(particle_filter::ParticleFilter<PositionStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
     visualization_msgs::Marker msg;
     msg.header.stamp = ros::Time::now();
     msg.header.frame_id = "/base_link";
@@ -156,7 +156,7 @@ visualization_msgs::Marker PositionStateW::renderMarker(libPF::ParticleFilter<Po
     msg.color = color;
     msg.lifetime = lifetime;
     msg.ns = n_space;
-    for (libPF::Particle<PositionStateW> *particle : particle_list) {
+    for (particle_filter::Particle<PositionStateW> *particle : particle_list) {
         geometry_msgs::Point point_msg;
         point_msg.x = particle->getState().getXPos();
         point_msg.y = particle->getState().getYPos();

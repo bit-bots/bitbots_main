@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <algorithm>
-#include <libPF/ObservationModel.h>
+#include <particle_filter/ObservationModel.h>
 
 #include <bitbots_world_model/ObstacleStates.h>
 #include <humanoid_league_msgs/PixelsRelative.h>
@@ -28,7 +28,7 @@
  * @brief Test class for ParticleFilter.
  *
  */
-class LocalObstacleObservationModel : public libPF::ObservationModel<PositionStateW> {
+class LocalObstacleObservationModel : public particle_filter::ObservationModel<PositionStateW> {
 
   public:
 
@@ -69,7 +69,7 @@ class LocalObstacleObservationModel : public libPF::ObservationModel<PositionSta
 
 };
 
-class LocalRobotObservationModel : public libPF::ObservationModel<PositionState> {
+class LocalRobotObservationModel : public particle_filter::ObservationModel<PositionState> {
 
   public:
 
@@ -110,7 +110,7 @@ class LocalRobotObservationModel : public libPF::ObservationModel<PositionState>
 
 };
 
-class LocalFcnnObservationModel : public libPF::ObservationModel<PositionState> {
+class LocalFcnnObservationModel : public particle_filter::ObservationModel<PositionState> {
 
   public:
 

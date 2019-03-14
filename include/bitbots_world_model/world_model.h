@@ -22,8 +22,8 @@
 #include <bitbots_world_model/StateDistributions.h>
 #include <bitbots_world_model/Resampling.h>
 
-#include <libPF/ParticleFilter.h>
-#include <libPF/CRandomNumberGenerator.h>
+#include <particle_filter/ParticleFilter.h>
+#include <particle_filter/CRandomNumberGenerator.h>
 
 
 namespace hlm = humanoid_league_msgs;
@@ -64,7 +64,7 @@ class WorldModel {
 
         ros::Timer publishing_timer_;
 
-        libPF::CRandomNumberGenerator random_number_generator_;
+        particle_filter::CRandomNumberGenerator random_number_generator_;
 
         // config - stuff
         bitbots_world_model::WorldModelConfig config_;
@@ -104,10 +104,10 @@ class WorldModel {
         std::shared_ptr<LocalPositionStateWDistribution> local_obstacle_state_distribution_;
 
         // particle filters
-        std::shared_ptr<libPF::ParticleFilter<PositionState>> local_ball_pf_;
-        std::shared_ptr<libPF::ParticleFilter<PositionState>> local_mate_pf_;
-        std::shared_ptr<libPF::ParticleFilter<PositionState>> local_opponent_pf_;
-        std::shared_ptr<libPF::ParticleFilter<PositionStateW>> local_obstacle_pf_;
+        std::shared_ptr<particle_filter::ParticleFilter<PositionState>> local_ball_pf_;
+        std::shared_ptr<particle_filter::ParticleFilter<PositionState>> local_mate_pf_;
+        std::shared_ptr<particle_filter::ParticleFilter<PositionState>> local_opponent_pf_;
+        std::shared_ptr<particle_filter::ParticleFilter<PositionStateW>> local_obstacle_pf_;
 
 
         bool valid_configuration_;

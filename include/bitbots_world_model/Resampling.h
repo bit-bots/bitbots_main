@@ -8,18 +8,18 @@
 // ImportanceResampling with explorers
 
 template <class StateType>
-class ImportanceResamplingWE : public libPF::ImportanceResampling <StateType> {
+class ImportanceResamplingWE : public particle_filter::ImportanceResampling <StateType> {
 
     /**
      * A ParticleList is an array of pointers to Particles.
      */
-    typedef std::vector< libPF::Particle<StateType>* > ParticleList;
+    typedef std::vector< particle_filter::Particle<StateType>* > ParticleList;
 
   public:
     /**
      * The constructor of this base class inits some members.
      */
-    ImportanceResamplingWE<StateType>(int explorer_count, std::shared_ptr<libPF::StateDistribution<StateType>> distribution);
+    ImportanceResamplingWE<StateType>(int explorer_count, std::shared_ptr<particle_filter::StateDistribution<StateType>> distribution);
 
     /**
      * The destructor is empty.
@@ -45,18 +45,18 @@ class ImportanceResamplingWE : public libPF::ImportanceResampling <StateType> {
   private:
 
     int explorer_count_;
-    std::shared_ptr<libPF::StateDistribution<StateType>> distribution_;
+    std::shared_ptr<particle_filter::StateDistribution<StateType>> distribution_;
 
-    libPF::CRandomNumberGenerator m_RNG;
+    particle_filter::CRandomNumberGenerator m_RNG;
 
 };
 
 
 template <class StateType>
-ImportanceResamplingWE<StateType>::ImportanceResamplingWE(int explorer_count, std::shared_ptr<libPF::StateDistribution<StateType>> distribution) :
+ImportanceResamplingWE<StateType>::ImportanceResamplingWE(int explorer_count, std::shared_ptr<particle_filter::StateDistribution<StateType>> distribution) :
     explorer_count_(explorer_count),
     distribution_(distribution) {
-    libPF::ImportanceResampling<StateType>();
+    particle_filter::ImportanceResampling<StateType>();
 }
 
 template <class StateType>
