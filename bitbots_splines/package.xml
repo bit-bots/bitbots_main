@@ -5,11 +5,13 @@
   <description>This package provides a library for splines which is based on the code by team Rhoban FC</description>
 
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
   <author>Rhoban FC</author>
 
-  <license>BSD</license>
+  <license>MIT</license>
 
 
   <buildtool_depend>catkin</buildtool_depend>

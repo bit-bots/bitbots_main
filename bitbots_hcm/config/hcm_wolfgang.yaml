@@ -12,7 +12,7 @@ hcm:
   motor_timeout_duration: 0.1 # time without messages from the servos till error is produced [s]
 
   #Animations
-  anim_server_wait_time: 10 # time the hcm waits for animation server
+  anim_server_wait_time: 1 # time the hcm waits for animation server
   animations:
     walkready: "walkready"
     walkready_sim: "init"

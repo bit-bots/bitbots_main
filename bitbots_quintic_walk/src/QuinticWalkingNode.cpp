@@ -372,13 +372,13 @@ void QuinticWalkingNode::publishControllerCommands(std::vector <std::string> joi
 
 void QuinticWalkingNode::publishOdometry(){
     // transformation from support leg to trunk
-    Eigen::Affine3d trunk_to_support;
+    Eigen::Isometry3d trunk_to_support;
     if(_walkEngine.getFootstep().isLeftSupport()){
         trunk_to_support = _goal_state->getGlobalLinkTransform("l_sole");
     }else{
         trunk_to_support = _goal_state->getGlobalLinkTransform("r_sole");
     }
-    Eigen::Affine3d support_to_trunk = trunk_to_support.inverse();
+    Eigen::Isometry3d support_to_trunk = trunk_to_support.inverse();
     tf::Transform tf_support_to_trunk;
     tf::transformEigenToTF(support_to_trunk, tf_support_to_trunk);
 
