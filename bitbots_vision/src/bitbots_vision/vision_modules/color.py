@@ -1,15 +1,29 @@
-import numpy as np
-import VisionExtensions
-from .debug import DebugPrinter
-import yaml
-import pickle
 import abc
 import cv2
+import yaml
+import pickle
+import time
+import rospy
+import VisionExtensions
+import numpy as np
+from collections import deque
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
+from bitbots_msgs.msg import ColorSpaceMessage
+from .debug import DebugPrinter
 
 
 class ColorDetector:
-
     def __init__(self, debug_printer):
+        # type: (DebugPrinter) -> None
+        """
+        ColorDetector is abstract super-class of specialized sub-classes.
+        ColorDetectors are used e.g. to check, if a pixel matches the defined color space
+        or to create masked binary images.
+
+        :param DebugPrinter debug_printer: debug-printer
+        :return: None
+        """
         self._debug_printer = debug_printer
         pass
 
@@ -17,10 +31,10 @@ class ColorDetector:
     def match_pixel(self, pixel):
         # type: (np.array) -> bool
         """
-        Returns if bgr pixel is in color space
+        Returns, if bgr pixel is in color space
 
-        :param bgr pixel:
-        :return: whether pixel is in color space or not
+        :param np.array pixel: bgr-pixel
+        :return bool: whether pixel is in color space or not
         """
 
     @abc.abstractmethod
@@ -30,19 +44,19 @@ class ColorDetector:
         Creates a color mask
         (0 for not in color range and 255 for in color range)
 
-        :param image: image to mask
-        :return: masked image
+        :param np.array image: image to mask
+        :return np.array: masked image
         """
 
     def match_adjacent(self, image, point, offset=1, threshold=200):
         # type: (np.array, tuple[int, int], int, float) -> bool
         """
-        Returns if an area is in color space
+        Returns, if an area is in color space
 
         :param np.array image: the full image
         :param tuple[int, int] point: a x-, y-tuple defining coordinates in the image
-        :param int offset: the number of pixels to check in the surounding of the
-        point (like a radius but for a square)
+        :param int offset: the number of pixels to check in the surrounding of the
+            point (like a radius but for a square)
         :param float threshold: the mean needed to accept the area to match (0-255)
         :return bool: whether area is in color space or not
         """
@@ -68,83 +82,27 @@ class ColorDetector:
     @staticmethod
     def pixel_bgr2hsv(pixel):
         # type: (np.array) -> np.array
+        """
+        Converts bgr-pixel to hsv-pixel
+
+        :param np.array pixel: brg-pixel
+        :return np.array: hsv-pixel
+        """
         pic = np.zeros((1, 1, 3), np.uint8)
         pic[0][0] = pixel
         return cv2.cvtColor(pic, cv2.COLOR_BGR2HSV)[0][0]
 
 
-class PixelListColorDetector(ColorDetector):
-    def __init__(self, color_path, debug_printer):
-        ColorDetector.__init__(self, debug_printer)
-        self.color_space = np.zeros((256, 256, 256), dtype=np.uint8)
-        self.init_color_space(color_path)
-
-    def init_color_space(self, color_path):
-        # type: (str) -> None
-        """
-        Initializes color space from yaml file
-
-        :param color_path: path to yaml file containing the accepted colors
-
-        """
-        if color_path.endswith('.yaml'):
-            with open(color_path, 'r') as stream:
-                try:
-                    color_values = yaml.load(stream)
-                except yaml.YAMLError as exc:
-                    self._debug_printer.error(exc, 'PixelListColorDetector')
-                    # Todo: what now??? Handle the error?
-        # our pickle is stored as .txt
-        elif color_path.endswith('.txt'):
-            try:
-                with open(color_path, 'rb') as f:
-                    color_values = pickle.load(f)
-            except pickle.PickleError as exc:
-                self._debug_printer.error(exc, 'PixelListColorDetector')
-            
-        # compatibility with colorpicker
-        if 'color_values' in color_values.keys():
-            color_values = color_values['color_values']['greenField']
-        length = len(color_values['red'])
-        if length == len(color_values['green']) and \
-                        length == len(color_values['blue']):
-            # setting colors from yaml file to True in color space
-            for x in range(length):
-                self.color_space[color_values['blue'][x],
-                                 color_values['green'][x],
-                                 color_values['red'][x]] = 1
-
-    def match_pixel(self, pixel):
-        # type: (tuple) -> bool
-        """
-        Returns if bgr pixel is in color space
-
-        :param tuple pixel:
-        :return bool: whether pixel is in color space or not
-        """
-        return self.color_space[pixel[0], pixel[1], pixel[2]]
-
-    def mask_image(self, image):
-        # type: (np.array) -> np.array
-        """
-        Creates a color mask
-        (0 for not in color range and 255 for in color range)
-        :param np.array image: image to mask
-        :return: np.array masked image
-        """
-        mask = VisionExtensions.maskImg(image, self.color_space)
-        return mask
-
-
 class HsvSpaceColorDetector(ColorDetector):
-
-    def __init__(self, min_vals, max_vals, debug_printer):
-        # type: (tuple, tuple, DebugPrinter) -> None
+    def __init__(self, debug_printer, min_vals, max_vals):
+        # type: (DebugPrinter, tuple[int, int, int], tuple[int, int, int]) -> None
         """
-        the hsv-space color detector
+        HsvSpaceColorDetector is a ColorDetector, that is based on the HSV-color space.
+        The HSV-color space is adjustable by setting min- and max-values for hue, saturation and value.
 
-        :param min_vals: a tuple of the minimal accepted hsv-values
-        :param max_vals: a tuple of the maximal accepted hsv-values
+        :param DebugPrinter debug_printer: debug-printer
+        :param tuple min_vals: a tuple of the minimal accepted hsv-values
+        :param tuple max_vals: a tuple of the maximal accepted hsv-values
         :return: None
         """
         ColorDetector.__init__(self, debug_printer)
@@ -152,9 +110,10 @@ class HsvSpaceColorDetector(ColorDetector):
         self.max_vals = np.array(max_vals)
 
     def set_config(self, min_vals, max_vals):
-        # type: (tuple[int, int], tuple[int, int]) -> None
+        # type: (tuple[int, int, int], tuple[int, int, int]) -> None
         """
-        updates the hsv-space configuration
+        Updates the hsv-space configuration
+
         :param min_vals: a tuple of the minimal accepted hsv-values
         :param max_vals: a tuple of the maximal accepted hsv-values
         :return: None
@@ -164,6 +123,12 @@ class HsvSpaceColorDetector(ColorDetector):
 
     def match_pixel(self, pixel):
         # type: (np.array) -> bool
+        """
+        Returns if bgr pixel is in color space
+
+        :param np.array pixel: bgr-pixel
+        :return bool: whether pixel is in color space or not
+        """
         pixel = self.pixel_bgr2hsv(pixel)
         # TODO: optimize comparisons
         return (self.max_vals[0] >= pixel[0] >= self.min_vals[0]) and \
@@ -172,6 +137,13 @@ class HsvSpaceColorDetector(ColorDetector):
 
     def mask_image(self, image):
         # type: (np.array) -> np.array
+        """
+        Creates a color mask
+        (0 for not in color range and 255 for in color range)
+
+        :param np.array image: image to mask
+        :return np.array: masked image
+        """
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         return cv2.inRange(image, self.min_vals, self.max_vals)
 
@@ -199,3 +171,169 @@ class HsvSpaceColorDetector(ColorDetector):
     #         h = 30 * (normalized_bgr_pixel[1] - normalized_bgr_pixel[0]) / buf
     #     return tuple((int(h), int(s * 255), int(v * 255)))
 
+
+class PixelListColorDetector(ColorDetector):
+    def __init__(self, debug_printer, package_path, vision_config, primary_detector=False):
+        # type:(DebugPrinter, str, dict, bool) -> None
+        """
+        PixelListColorDetector is a ColorDetector, that is based on a color space.
+        The color space is initially loaded from color-space-file at color_path (in config)
+        and optionally adjustable to changing color conditions (dynamic color space).
+        The color space is represented by boolean-values for RGB-color-values.
+
+        :param DebugPrinter debug_printer: debug-printer
+        :param str package_path: path of package
+        :param dict vision_config: vision config
+        :param bool primary_detector: true if is primary color detector
+            (only detector held by vision should be True) (Default: False)
+        :return: None
+        """
+        ColorDetector.__init__(self, debug_printer)
+        self.bridge = CvBridge()
+
+        self.vision_config = vision_config
+
+        self.primary_detector = primary_detector
+
+        # concatenate color-path to file containing the accepted colors of base color space
+        if self.vision_config['vision_use_sim_color']:
+            self.color_path = package_path + self.vision_config['field_color_detector_path_sim']
+        else:
+            self.color_path = package_path + self.vision_config['field_color_detector_path']
+        self.base_color_space = self.init_color_space(self.color_path)
+        self.color_space = np.copy(self.base_color_space)
+
+        # toggle publishing of mask_img msg
+        self.publish_mask_img_msg = self.vision_config['vision_mask_img_msg']
+        
+        # toggle publishing of mask_img_dyn msg with dynamic color space
+        self.publish_mask_img_dyn_msg = self.vision_config['dynamic_color_space_mask_img_dyn_msg']
+
+        # toggle use of dynamic color space
+        self.dynamic_color_space_turned_on = self.vision_config['dynamic_color_space']
+
+        # Subscribe to 'color_space'-messages from DynamicColorSpace
+        self.color_space_subscriber = rospy.Subscriber(
+            'color_space',
+            ColorSpaceMessage,
+            self.color_space_callback,
+            queue_size=1,
+            buff_size=2**20)
+    
+        # Register publisher for 'mask_image'-messages
+        self.imagepublisher = rospy.Publisher(
+            "/mask_image",
+            Image,
+            queue_size=1)
+
+        # Register publisher for 'mask_image_dyn'-messages
+        self.imagepublisher_dyn = rospy.Publisher(
+            "/mask_image_dyn",
+            Image,
+            queue_size=1)
+
+    def init_color_space(self, color_path):
+        # type: (str) -> None
+        """
+        Initializes color space from yaml or pickle.txt file
+
+        :param str color_path: path to file containing the accepted colors
+        :return: None
+        """
+        color_space = np.zeros((256, 256, 256), dtype=np.uint8)
+        if color_path.endswith('.yaml'):
+            with open(color_path, 'r') as stream:
+                try:
+                    color_values = yaml.load(stream)
+                except yaml.YAMLError as exc:
+                    self._debug_printer.error(exc, 'PixelListColorDetector')
+                    # TODO: what now??? Handle the error?
+
+        # pickle-file is stored as '.txt'
+        elif color_path.endswith('.txt'):
+            try:
+                with open(color_path, 'rb') as f:
+                    color_values = pickle.load(f)
+            except pickle.PickleError as exc:
+                self._debug_printer.error(exc, 'PixelListColorDetector')
+            
+        # compatibility with colorpicker
+        if 'color_values' in color_values.keys():
+            color_values = color_values['color_values']['greenField']
+        length = len(color_values['red'])
+        if length == len(color_values['green']) and \
+                        length == len(color_values['blue']):
+            # setting colors from yaml file to True in color space
+            for x in range(length):
+                color_space[color_values['blue'][x],
+                                color_values['green'][x],
+                                color_values['red'][x]] = 1
+        return color_space  
+
+    def match_pixel(self, pixel):
+        # type: (np.array) -> bool
+        """
+        Returns, if bgr pixel is in color space
+
+        :param np.array pixel: bgr-pixel
+        :return bool: whether pixel is in color space or not
+        """
+        return self.color_space[pixel[0], pixel[1], pixel[2]]
+
+    def mask_image(self, image):
+        # type: (np.array) -> np.array
+        """
+        Creates a color mask (0 for not in color range and 255 for in color range)
+        and publishes 'mask_img' and 'mask_img_dyn'-messages.
+
+        :param np.array image: image to mask
+        :return np.array: masked image
+        """
+        if (not self.dynamic_color_space_turned_on) or self.publish_mask_img_msg:
+            static_mask = VisionExtensions.maskImg(image, self.base_color_space)
+
+        if self.dynamic_color_space_turned_on:
+            dyn_mask = VisionExtensions.maskImg(image, self.color_space)
+            # toggle publishing of 'mask_img_dyn'-messages
+            if (self.primary_detector and self.publish_mask_img_dyn_msg):
+                self.imagepublisher_dyn.publish(self.bridge.cv2_to_imgmsg(dyn_mask, '8UC1'))
+  
+        # toggle publishing of 'mask_img'-messages          
+        if (self.primary_detector and self.publish_mask_img_msg):
+            self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(static_mask, '8UC1'))
+
+        if self.dynamic_color_space_turned_on:
+            return dyn_mask
+        else:
+            return static_mask
+
+    def color_space_callback(self, msg):
+        # type: (ColorSpace) -> None
+        """
+        This callback gets called, after subscriber received ColorSpaceMessage from DynamicColorSpace-Node.
+
+        :param ColorSpaceMessage msg: ColorSpaceMessage
+        :return: None
+        """
+        self.decode_color_space(msg)
+
+    def decode_color_space(self, msg):
+        # type: (ColorSpaceMessage) -> None
+        """
+        Imports new color space from ros msg. This is used to communicate with the DynamicColorSpace-Node.
+
+        :param ColorSpaceMessage msg: ColorSpaceMessage
+        :return: None
+        """
+        # Create temporary color space
+        # Use the base color space as basis
+        color_space_temp = np.copy(self.base_color_space)
+
+        # Adds new colors to that color space
+        color_space_temp[
+            msg.blue,
+            msg.green,
+            msg.red] = 1
+
+        # Switches the reference to the new color space
+        self.color_space = color_space_temp
