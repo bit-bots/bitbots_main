@@ -41,7 +41,7 @@ class LocalObstacleMovementModel : public particle_filter::MovementModel<Positio
      * state's variable.
      * @param state Pointer to the state that has to be manipulated.
      */
-    void diffuse(PositionStateW& state, double dt) const;
+    void diffuse(PositionStateW& state) const;
 
   protected:
 
@@ -79,7 +79,7 @@ class LocalRobotMovementModel : public particle_filter::MovementModel<PositionSt
      * state's variable.
      * @param state Pointer to the state that has to be manipulated.
      */
-    void diffuse(PositionState& state, double dt) const;
+    void diffuse(PositionState& state) const;
 
   protected:
 

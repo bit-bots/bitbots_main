@@ -254,10 +254,10 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
 
     // diffuse the particles (add normal distributed uncertainty)
     // the .1 parameter is only there for legacy reasons and has no effect at all.
-    local_ball_pf_->diffuse(.1);
-    local_mate_pf_->diffuse(.1);
-    local_opponent_pf_->diffuse(.1);
-    local_obstacle_pf_->diffuse(.1);
+    local_ball_pf_->diffuse();
+    local_mate_pf_->diffuse();
+    local_opponent_pf_->diffuse();
+    local_obstacle_pf_->diffuse();
 
     // publish the output
     publish_results();

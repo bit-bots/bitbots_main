@@ -27,7 +27,7 @@ void LocalObstacleMovementModel::drift(PositionStateW& state, geometry_msgs::Vec
     // TODO: apply noise to the measurements!
 }
 
-void LocalObstacleMovementModel::diffuse(PositionStateW& state, double /*dt*/) const {
+void LocalObstacleMovementModel::diffuse(PositionStateW& state) const {
     state.setXPos(state.getXPos() + random_number_generator_.getGaussian(xStdDev_) * multiplicator_);
     state.setYPos(state.getYPos() + random_number_generator_.getGaussian(yStdDev_) * multiplicator_);
 }
@@ -59,7 +59,7 @@ void LocalRobotMovementModel::drift(PositionState& state, geometry_msgs::Vector3
     // TODO: apply noise to the measurements!
 }
 
-void LocalRobotMovementModel::diffuse(PositionState& state, double /*dt*/) const {
+void LocalRobotMovementModel::diffuse(PositionState& state) const {
     state.setXPos(state.getXPos() + random_number_generator_.getGaussian(xStdDev_) * multiplicator_);
     state.setYPos(state.getYPos() + random_number_generator_.getGaussian(yStdDev_) * multiplicator_);
 }
