@@ -36,6 +36,10 @@ global_particles_topic: '/global_particles'
 
 reset_filters_service_name: 'WorldModel/reset_filters'
 
+local_publishing_frame: '/base_footprint'
+
+global_publishing_frame: '/map'
+
 publishing_frequency: 10
 
 #################
