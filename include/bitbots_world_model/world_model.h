@@ -122,6 +122,9 @@ class WorldModel {
 
         bool valid_configuration_;
 
+        std::vector<hlm::ObstacleRelative> relative_gmm_to_obstacle_relative(gmms::GaussianMixtureModel gmm, unsigned char color);
+        std::vector<hlm::BallRelative> relative_gmm_to_ball_relative(gmms::GaussianMixtureModel gmm);
+
         void publishing_timer_callback(const ros::TimerEvent&);
         void publish_particle_visualization();
         void publish_gmm_visualization(gmms::GaussianMixtureModel gmm,  std::string n_space, ros::Duration lifetime);

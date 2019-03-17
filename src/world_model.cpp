@@ -330,6 +330,33 @@ std_msgs::ColorRGBA WorldModel::get_color_msg(int color_id) {
     return color;
 }
 
+std::vector<hlm::ObstacleRelative> WorldModel::relative_gmm_to_obstacle_relative(gmms::GaussianMixtureModel gmm, unsigned char color) {
+    std::vector<hlm::ObstacleRelative> vector;
+    for (int i = 0; i < gmm.numComponents(); i++) {
+        gmms::Gaussian gaussian = gmm.component(i);
+        hlm::ObstacleRelative obstacle;
+        obstacle.color = color;
+        obstacle.position.x = gaussian.mean()[0];
+        obstacle.position.y = gaussian.mean()[1];
+        obstacle.confidence = std::min(1.0, 1 / (gaussian.covariance().coeff(0,0) + gaussian.covariance().coeff(1,1))); // TODO: this in better
+        vector.push_back(obstacle);
+    }
+    return vector;
+}
+
+std::vector<hlm::BallRelative> WorldModel::relative_gmm_to_ball_relative(gmms::GaussianMixtureModel gmm) {
+    std::vector<hlm::BallRelative> vector;
+    for (int i = 0; i < gmm.numComponents(); i++) {
+        gmms::Gaussian gaussian = gmm.component(i);
+        hlm::BallRelative ball;
+        ball.ball_relative.x = gaussian.mean()[0];
+        ball.ball_relative.y = gaussian.mean()[1];
+        ball.confidence = std::min(1.0, 1 / (gaussian.covariance().coeff(0,0) + gaussian.covariance().coeff(1,1))); // TODO: this in better
+        vector.push_back(ball);
+    }
+    return vector;
+}
+
 int main(int argc, char **argv) {
     ros::init(argc, argv, "world_model");
     WorldModel world_model;
