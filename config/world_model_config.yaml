@@ -24,6 +24,8 @@ ball_topic: '/pixels_relative'
 
 obstacles_topic: '/obstacles_relative'
 
+team_data_topic: '/team_data'
+
 local_model_topic: '/local_world_model'
 
 global_model_topic: '/global_world_model'

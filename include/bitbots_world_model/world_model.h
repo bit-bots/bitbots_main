@@ -14,6 +14,7 @@
 #include <humanoid_league_msgs/Model.h>
 #include <humanoid_league_msgs/PixelsRelative.h>
 #include <humanoid_league_msgs/PixelRelative.h>
+#include <humanoid_league_msgs/TeamData.h>
 #include <dynamic_reconfigure/server.h>
 #include <bitbots_world_model/WorldModelConfig.h>
 #include <bitbots_world_model/ObstacleStates.h>
@@ -45,6 +46,7 @@ class WorldModel {
         void dynamic_reconfigure_callback(wm::WorldModelConfig &config, uint32_t level);
         void ball_callback(const hlm::PixelsRelative &msg);
         void obstacles_callback(const hlm::ObstaclesRelative &msg);
+        void team_data_callback(const hlm::TeamData &msg);
 
         void init();
         void reset_all_filters();
@@ -55,6 +57,7 @@ class WorldModel {
 
         ros::Subscriber obstacle_subscriber_;
         ros::Subscriber ball_subscriber_;
+        ros::Subscriber team_data_subscriber_;
 
         ros::Publisher local_model_publisher_;
         ros::Publisher global_model_publisher_;
@@ -79,6 +82,8 @@ class WorldModel {
         std::vector<PositionState> mate_measurements_;
         std::vector<PositionState> opponent_measurements_;
         std::vector<PositionStateW> obstacle_measurements_;
+        // last team_data message
+        hlm::TeamData last_received_team_data_;
 
         // resampling strategies
         std::shared_ptr<ImportanceResamplingWE<PositionState>> local_ball_resampling_;

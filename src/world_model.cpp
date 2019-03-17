@@ -17,6 +17,9 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     if (config.ball_topic != config_.ball_topic) {
         ball_subscriber_ = nh_.subscribe(config.ball_topic.c_str(), 1, &WorldModel::ball_callback, this);
     }
+    if (config.team_data_topic != config_.team_data_topic) {
+        team_data_subscriber_ = nh_.subscribe(config.team_data_topic.c_str(), 1, &WorldModel::team_data_callback, this);
+    }
     if (config.local_model_topic != config_.local_model_topic) {
         local_model_publisher_ = nh_.advertise<hlm::Model>(config.local_model_topic.c_str(), 1);
     }
@@ -139,6 +142,14 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
     local_obstacle_observation_model_->set_measurement(obstacle_measurements_);
 }
 
+void WorldModel::team_data_callback(const hlm::TeamData &msg) {
+    last_received_team_data_ = msg;
+
+    global_ball_measurements_.clear();
+    global_mate_measurements_.clear();
+    global_opponent_measurements_.clear();
+
+}
 bool WorldModel::reset_filters_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
     // pretty self-explaining... it resets all the filters
     reset_all_filters();
