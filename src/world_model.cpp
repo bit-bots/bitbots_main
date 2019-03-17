@@ -111,18 +111,19 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
     local_obstacle_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)));
 }
 
-void WorldModel::ball_callback(const bitbots_image_transformer::PixelsRelative &msg) {
+void WorldModel::ball_callback(const hlm::PixelsRelative &msg) {
     ball_measurements_ = msg;
     local_ball_observation_model_->set_measurement(ball_measurements_);
 }
 
 void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
-    // clear the measurement vectors of the 4 filtered classes
 
+    // clear the measurement vectors of the 4 filtered classes
     ball_measurements_.pixels.clear();
     obstacle_measurements_.clear();
     mate_measurements_.clear();
     opponent_measurements_.clear();
+    // add the new measurements to the vectors
     for (hlm::ObstacleRelative obstacle : msg.obstacles) {
         if (obstacle.color == team_color_) {
             mate_measurements_.push_back(PositionState(obstacle.position.x, obstacle.position.y));
@@ -132,12 +133,14 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
             obstacle_measurements_.push_back(PositionStateW(obstacle.position.x, obstacle.position.y, obstacle.width));
         }
     }
+    // set the new measurements in the filter
     local_mate_observation_model_->set_measurement(mate_measurements_);
     local_opponent_observation_model_->set_measurement(opponent_measurements_);
     local_obstacle_observation_model_->set_measurement(obstacle_measurements_);
 }
 
 bool WorldModel::reset_filters_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
+    // pretty self-explaining... it resets all the filters
     reset_all_filters();
     res.success = true;
     res.message = "resetted all particle filters";
@@ -147,10 +150,10 @@ bool WorldModel::reset_filters_callback(std_srvs::Trigger::Request &req, std_srv
 void WorldModel::reset_all_filters() {
     ROS_INFO("Resetting all particle filters...");
 
-    local_ball_pf_.reset(new libPF::ParticleFilter<PositionState>(config_.local_ball_particle_number, local_ball_observation_model_, local_ball_movement_model_));
-    local_mate_pf_.reset(new libPF::ParticleFilter<PositionState>(config_.local_mate_particle_number, local_mate_observation_model_, local_mate_movement_model_));
-    local_opponent_pf_.reset(new libPF::ParticleFilter<PositionState>(config_.local_opponent_particle_number, local_opponent_observation_model_, local_opponent_movement_model_));
-    local_obstacle_pf_.reset(new libPF::ParticleFilter<PositionStateW>(config_.local_obstacle_particle_number, local_obstacle_observation_model_, local_obstacle_movement_model_));
+    local_ball_pf_.reset(new particle_filter::ParticleFilter<PositionState>(config_.local_ball_particle_number, local_ball_observation_model_, local_ball_movement_model_));
+    local_mate_pf_.reset(new particle_filter::ParticleFilter<PositionState>(config_.local_mate_particle_number, local_mate_observation_model_, local_mate_movement_model_));
+    local_opponent_pf_.reset(new particle_filter::ParticleFilter<PositionState>(config_.local_opponent_particle_number, local_opponent_observation_model_, local_opponent_movement_model_));
+    local_obstacle_pf_.reset(new particle_filter::ParticleFilter<PositionStateW>(config_.local_obstacle_particle_number, local_obstacle_observation_model_, local_obstacle_movement_model_));
 
     //setting the resampling strategies
     local_ball_pf_->setResamplingStrategy(local_ball_resampling_);
@@ -194,7 +197,7 @@ void WorldModel::init() {
     reset_all_filters();
 }
 
-void WorldModel::publish_visualization() {
+void WorldModel::publish_particle_visualization() {
     if (!config_.debug_visualization) {
         return;
     }
@@ -206,11 +209,16 @@ void WorldModel::publish_visualization() {
     local_particles_publisher_.publish(local_opponent_pf_->renderMarker());
 }
 
+void WorldModel::publish_gmm_visualization(gmms::GaussianMixtureModel gmm,  std::string n_space, ros::Duration lifetime) {
+    local_particles_publisher_.publish(gmm.generateMarker(-(config_.field_width / 2), -(config_.field_height / 2), (config_.field_width / 2), (config_.field_height / 2), 100, n_space,  lifetime));  // TODO: check whether x and y are in the right order
+
+}
+
 void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     // the content of this function is what happens in a single timestep
 
     // publishing marker messages if debug_visualization is activated
-    publish_visualization();
+    publish_particle_visualization();
 
     // setting the weights of the particles according to the measurements taken
     // TODO: do this only when stuff is measured
@@ -276,7 +284,7 @@ void WorldModel::publish_results() {
 }
 
 std_msgs::ColorRGBA WorldModel::get_color_msg(int color_id) {
-    double r, g, b, a = 0.8;
+    float r, g, b, a = 0.8;
     switch (color_id) {
         case 0:  // White
             r = 1, g = 1, b = 1;
@@ -304,6 +312,7 @@ std_msgs::ColorRGBA WorldModel::get_color_msg(int color_id) {
             break;
         default:
             ROS_WARN_STREAM("Got an unknown color id!");
+            r = 1, g = 0, b = 0;
     }
     std_msgs::ColorRGBA color;
     color.r = r, color.g = g, color.b = b, color.a = a;

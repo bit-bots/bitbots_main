@@ -12,6 +12,8 @@
 #include <humanoid_league_msgs/ObstaclesRelative.h>
 #include <humanoid_league_msgs/BallRelative.h>
 #include <humanoid_league_msgs/Model.h>
+#include <humanoid_league_msgs/PixelsRelative.h>
+#include <humanoid_league_msgs/PixelRelative.h>
 #include <dynamic_reconfigure/server.h>
 #include <bitbots_world_model/WorldModelConfig.h>
 #include <bitbots_world_model/ObstacleStates.h>
@@ -19,11 +21,10 @@
 #include <bitbots_world_model/ObservationModels.h>
 #include <bitbots_world_model/StateDistributions.h>
 #include <bitbots_world_model/Resampling.h>
-#include <bitbots_image_transformer/PixelsRelative.h>
-#include <bitbots_image_transformer/PixelRelative.h>
 
-#include <libPF/ParticleFilter.h>
-#include <libPF/CRandomNumberGenerator.h>
+#include <particle_filter/ParticleFilter.h>
+#include <particle_filter/gaussian_mixture_model.h>
+#include <particle_filter/CRandomNumberGenerator.h>
 
 
 namespace hlm = humanoid_league_msgs;
@@ -42,7 +43,7 @@ class WorldModel {
         bool reset_filters_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
 
         void dynamic_reconfigure_callback(wm::WorldModelConfig &config, uint32_t level);
-        void ball_callback(const bitbots_image_transformer::PixelsRelative &msg);
+        void ball_callback(const hlm::PixelsRelative &msg);
         void obstacles_callback(const hlm::ObstaclesRelative &msg);
 
         void init();
@@ -64,7 +65,7 @@ class WorldModel {
 
         ros::Timer publishing_timer_;
 
-        libPF::CRandomNumberGenerator random_number_generator_;
+        particle_filter::CRandomNumberGenerator random_number_generator_;
 
         // config - stuff
         bitbots_world_model::WorldModelConfig config_;
@@ -74,7 +75,7 @@ class WorldModel {
         int opponent_color_;
 
         // measurements
-        bitbots_image_transformer::PixelsRelative ball_measurements_;
+        hlm::PixelsRelative ball_measurements_;
         std::vector<PositionState> mate_measurements_;
         std::vector<PositionState> opponent_measurements_;
         std::vector<PositionStateW> obstacle_measurements_;
@@ -104,16 +105,17 @@ class WorldModel {
         std::shared_ptr<LocalPositionStateWDistribution> local_obstacle_state_distribution_;
 
         // particle filters
-        std::shared_ptr<libPF::ParticleFilter<PositionState>> local_ball_pf_;
-        std::shared_ptr<libPF::ParticleFilter<PositionState>> local_mate_pf_;
-        std::shared_ptr<libPF::ParticleFilter<PositionState>> local_opponent_pf_;
-        std::shared_ptr<libPF::ParticleFilter<PositionStateW>> local_obstacle_pf_;
+        std::shared_ptr<particle_filter::ParticleFilter<PositionState>> local_ball_pf_;
+        std::shared_ptr<particle_filter::ParticleFilter<PositionState>> local_mate_pf_;
+        std::shared_ptr<particle_filter::ParticleFilter<PositionState>> local_opponent_pf_;
+        std::shared_ptr<particle_filter::ParticleFilter<PositionStateW>> local_obstacle_pf_;
 
 
         bool valid_configuration_;
 
         void publishing_timer_callback(const ros::TimerEvent&);
-        void publish_visualization();
+        void publish_particle_visualization();
+        void publish_gmm_visualization(gmms::GaussianMixtureModel gmm,  std::string n_space, ros::Duration lifetime);
 
         std_msgs::ColorRGBA get_color_msg(int color_id);
         void publish_results();

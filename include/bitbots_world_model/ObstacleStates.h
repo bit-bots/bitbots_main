@@ -1,13 +1,16 @@
 #ifndef OBSTACLE_STATES
 #define OBSTACLE_STATES
 #include <cmath>
+#include <vector>
 
 #include <ros/ros.h>
-#include <libPF/ParticleFilter.h>
+#include <Eigen/Core>
+#include <particle_filter/ParticleFilter.h>
+#include <particle_filter/gaussian_mixture_model.h>
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/ColorRGBA.h>
 #include <geometry_msgs/Point.h>
-#include <bitbots_image_transformer/PixelRelative.h>
+#include <humanoid_league_msgs/PixelRelative.h>
 
 class PositionState
 {
@@ -30,13 +33,15 @@ public:
 
     void setYPos(float y);
 
-    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<PositionState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
+    static visualization_msgs::Marker renderMarker(particle_filter::ParticleFilter<PositionState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
 
     static visualization_msgs::Marker renderMarker(PositionState particle_state, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
 
     double calcDistance(const PositionState& state) const;
 
-    double calcDistance(const bitbots_image_transformer::PixelRelative &pixel) const;
+    double calcDistance(const humanoid_league_msgs::PixelRelative &pixel) const;
+
+    static void convertParticleListToEigen(const std::vector<particle_filter::Particle<PositionState>*>& particle_list, Eigen::MatrixXd& matrix, const bool ignore_explorers);
 
     // float getTheta() const;
 
@@ -81,9 +86,11 @@ public:
 
     void setWidth(float t);
 
-    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<PositionStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
+    static visualization_msgs::Marker renderMarker(particle_filter::ParticleFilter<PositionStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
 
     double calcDistance(const PositionStateW& state) const;
+
+    static void convertParticleListToEigen(const std::vector<particle_filter::Particle<PositionStateW>*>& particle_list, Eigen::MatrixXd& matrix, const bool ignore_explorers);
 
 private:
 
@@ -113,9 +120,11 @@ public:
     void setOrientation(float t);
 
     // a marker is not useful for visualization here.
-    static visualization_msgs::Marker renderMarker(libPF::ParticleFilter<PositionState>::ParticleList& particle_list, std_msgs::ColorRGBA color, std::string n_space) = delete;
+    static visualization_msgs::Marker renderMarker(particle_filter::ParticleFilter<PositionState>::ParticleList& particle_list, std_msgs::ColorRGBA color, std::string n_space) = delete;
 
     double calcDistance(const PoseState& state) const;
+
+    static void convertParticleListToEigen(const std::vector<particle_filter::Particle<PoseState>*>& particle_list, Eigen::MatrixXd& matrix, const bool ignore_explorers);
 
 private:
 

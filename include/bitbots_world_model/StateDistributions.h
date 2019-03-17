@@ -1,19 +1,19 @@
 #include <utility>
 
-#include <libPF/CRandomNumberGenerator.h>
-#include <libPF/StateDistribution.h>
+#include <particle_filter/CRandomNumberGenerator.h>
+#include <particle_filter/StateDistribution.h>
 #include <bitbots_world_model/ObstacleStates.h>
 
-class LocalPositionStateDistribution : public libPF::StateDistribution<PositionState> {
+class LocalPositionStateDistribution : public particle_filter::StateDistribution<PositionState> {
   public:
-      LocalPositionStateDistribution(libPF::CRandomNumberGenerator &random_number_generator, std::pair<double, double> initial_robot_pose, std::pair<double, double> field_size);
-      // LocalPositionStateDistribution(libPF::CRandomNumberGenerator &random_number_generator, std::pair<double, double> initial_robot_pose, std::pair<double, double> field_size, double obstacle_min_width, double obstacle_max_width);
+      LocalPositionStateDistribution(particle_filter::CRandomNumberGenerator &random_number_generator, std::pair<double, double> initial_robot_pose, std::pair<double, double> field_size);
+      // LocalPositionStateDistribution(particle_filter::CRandomNumberGenerator &random_number_generator, std::pair<double, double> initial_robot_pose, std::pair<double, double> field_size, double obstacle_min_width, double obstacle_max_width);
       ~LocalPositionStateDistribution(){};
 
       const PositionState draw() const;
 
  private:
-      libPF::CRandomNumberGenerator random_number_generator_;
+      particle_filter::CRandomNumberGenerator random_number_generator_;
       double min_x_;
       double max_x_;
       double min_y_;
@@ -21,15 +21,15 @@ class LocalPositionStateDistribution : public libPF::StateDistribution<PositionS
 };
 
 
-class LocalPositionStateWDistribution : public libPF::StateDistribution<PositionStateW> {
+class LocalPositionStateWDistribution : public particle_filter::StateDistribution<PositionStateW> {
   public:
-      LocalPositionStateWDistribution(libPF::CRandomNumberGenerator &random_number_generator, std::pair<double, double> initial_robot_pose, std::pair<double, double> field_size, double obstacle_min_width, double obstacle_max_width);
+      LocalPositionStateWDistribution(particle_filter::CRandomNumberGenerator &random_number_generator, std::pair<double, double> initial_robot_pose, std::pair<double, double> field_size, double obstacle_min_width, double obstacle_max_width);
       ~LocalPositionStateWDistribution(){};
 
       const PositionStateW draw() const;
 
  private:
-      libPF::CRandomNumberGenerator random_number_generator_;
+      particle_filter::CRandomNumberGenerator random_number_generator_;
       double min_x_;
       double max_x_;
       double min_y_;

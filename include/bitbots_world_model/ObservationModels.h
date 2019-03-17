@@ -3,11 +3,11 @@
 
 #include <vector>
 #include <algorithm>
-#include <libPF/ObservationModel.h>
+#include <particle_filter/ObservationModel.h>
 
 #include <bitbots_world_model/ObstacleStates.h>
-#include <bitbots_image_transformer/PixelsRelative.h>
-#include <bitbots_image_transformer/PixelRelative.h>
+#include <humanoid_league_msgs/PixelsRelative.h>
+#include <humanoid_league_msgs/PixelRelative.h>
 
 
 /**
@@ -28,7 +28,7 @@
  * @brief Test class for ParticleFilter.
  *
  */
-class LocalObstacleObservationModel : public libPF::ObservationModel<PositionStateW> {
+class LocalObstacleObservationModel : public particle_filter::ObservationModel<PositionStateW> {
 
   public:
 
@@ -69,7 +69,7 @@ class LocalObstacleObservationModel : public libPF::ObservationModel<PositionSta
 
 };
 
-class LocalRobotObservationModel : public libPF::ObservationModel<PositionState> {
+class LocalRobotObservationModel : public particle_filter::ObservationModel<PositionState> {
 
   public:
 
@@ -110,7 +110,7 @@ class LocalRobotObservationModel : public libPF::ObservationModel<PositionState>
 
 };
 
-class LocalFcnnObservationModel : public libPF::ObservationModel<PositionState> {
+class LocalFcnnObservationModel : public particle_filter::ObservationModel<PositionState> {
 
   public:
 
@@ -136,7 +136,7 @@ class LocalFcnnObservationModel : public libPF::ObservationModel<PositionState> 
      */
     double measure(const PositionState& state) const;
 
-    void set_measurement(bitbots_image_transformer::PixelsRelative measurement);
+    void set_measurement(humanoid_league_msgs::PixelsRelative measurement);
 
     void set_min_weight(double min_weight);
 
@@ -152,7 +152,7 @@ class LocalFcnnObservationModel : public libPF::ObservationModel<PositionState> 
 
   private:
 
-    std::vector<bitbots_image_transformer::PixelRelative> last_measurement_;
+    std::vector<humanoid_league_msgs::PixelRelative> last_measurement_;
 
     double min_weight_;
     int k_; // count of elements considered as "near"
