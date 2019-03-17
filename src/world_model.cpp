@@ -266,31 +266,49 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
 void WorldModel::publish_results() {
     // result acquisition and publishing
 
-    // THIS IS JUST FOR EVALUATION AND BY NO MEANS USABLE IN PRAXIS
+    gmms::GaussianMixtureModel local_ball_gmm = local_ball_pf_->getGMM(
+            config_.local_ball_gmm_components, 
+            config_.local_ball_gmm_delta, 
+            config_.local_ball_gmm_iterations);
+    gmms::GaussianMixtureModel local_mates_gmm = local_mate_pf_->getGMM(
+            config_.local_mates_gmm_components, 
+            config_.local_mates_gmm_delta, 
+            config_.local_mates_gmm_iterations);
+    gmms::GaussianMixtureModel local_opponents_gmm = local_opponent_pf_->getGMM(
+            config_.local_opponents_gmm_components, 
+            config_.local_opponents_gmm_delta, 
+            config_.local_opponents_gmm_iterations); 
+    gmms::GaussianMixtureModel local_obstacles_gmm = local_obstacle_pf_->getGMM(
+            config_.local_obstacles_gmm_components, 
+            config_.local_obstacles_gmm_delta, 
+            config_.local_obstacles_gmm_iterations);
+
     hlm::Model model_msg;
 
-    hlm::BallRelative ball_msg;
-    ball_msg.header.stamp = ros::Time::now(); // or by input?
-    ball_msg.header.frame_id = "base_link"; // this has to be defined based on incoming messages
+    model_msg.ball = relative_gmm_to_ball_relative(local_ball_gmm)[0];
+    model_msg.ball.header.stamp = ros::Time::now(); // or by input?
+    model_msg.ball.header.frame_id = config_.local_publishing_frame; // or by input
 
-    PositionState ball_position_state = local_ball_pf_->getBestXPercentEstimate(50);
-    ball_msg.ball_relative.x = ball_position_state.getXPos();
-    ball_msg.ball_relative.y = ball_position_state.getYPos();
-    ball_msg.confidence = 1.0;
+    model_msg.obstacles.header = model_msg.ball.header; //or this by input and the other now?
+    // construct obstacles vector
+    std::vector<hlm::ObstacleRelative> mates = relative_gmm_to_obstacle_relative(local_mates_gmm, team_color_);
+    std::vector<hlm::ObstacleRelative> opponents = relative_gmm_to_obstacle_relative(
+            local_opponents_gmm,
+            opponent_color_);
+    std::vector<hlm::ObstacleRelative> obstacles = relative_gmm_to_obstacle_relative(
+            local_obstacles_gmm,
+            hlm::ObstacleRelative::UNDEFINED);
 
-    model_msg.ball = ball_msg;
+    model_msg.obstacles.obstacles = mates;
+    model_msg.obstacles.obstacles.insert(
+            std::end(model_msg.obstacles.obstacles),
+            std::begin(opponents),
+            std::end(opponents));
+    model_msg.obstacles.obstacles.insert(
+            std::end(model_msg.obstacles.obstacles),
+            std::begin(obstacles),
+            std::end(obstacles));
 
-    hlm::ObstaclesRelative obstacles_msg;
-    obstacles_msg.header = ball_msg.header; //or this by input and the other now?
-    hlm::ObstacleRelative obstacle_msg;
-    PositionState obstacle_position_state = local_mate_pf_->getBestXPercentEstimate(50);
-    obstacle_msg.position.x = obstacle_position_state.getXPos();
-    obstacle_msg.position.y = obstacle_position_state.getYPos();
-    obstacle_msg.confidence = 1.0;
-    obstacles_msg.obstacles.push_back(obstacle_msg);
-
-
-    model_msg.obstacles=obstacles_msg;
     local_model_publisher_.publish(model_msg);
 }
 

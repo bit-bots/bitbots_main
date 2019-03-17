@@ -74,8 +74,8 @@ class WorldModel {
         bitbots_world_model::WorldModelConfig config_;
         std_msgs::ColorRGBA ball_marker_color, mate_marker_color, opponent_marker_color, obstacle_marker_color;
 
-        int team_color_;
-        int opponent_color_;
+        unsigned char team_color_;
+        unsigned char opponent_color_;
 
         // local measurements
         hlm::PixelsRelative local_ball_pixel_measurements_;
