@@ -106,11 +106,32 @@ double PositionState::calcDistance(const humanoid_league_msgs::PixelRelative &pi
 
 void PositionState::convertParticleListToEigen(
         const std::vector<particle_filter::Particle<PositionState>*>& particle_list,
-        Eigen::MatrixXd& matrix) {
-    matrix.resize(particle_list.size(), 2);
-    for(int i = 0; i < particle_list.size(); i++) {
-        matrix(i, 0) = particle_list[i]->getState().getXPos();
-        matrix(i, 1) = particle_list[i]->getState().getYPos();
+        Eigen::MatrixXd& matrix,
+        const bool ignore_explorers) {
+    if (ignore_explorers) {
+        int non_explorer_count = 0;
+        for (particle_filter::Particle<PositionState> *particle : particle_list) {
+            if (!particle->is_explorer_) {
+                non_explorer_count++;
+            }
+        }
+
+        matrix.resize(non_explorer_count, 2);
+        int counter = 0;
+
+        for (particle_filter::Particle<PositionState> *particle : particle_list) {
+            if (!particle->is_explorer_) {
+                matrix(counter, 0) = particle->getState().getXPos();
+                matrix(counter, 1) = particle->getState().getYPos();
+                counter++;
+            }
+        }
+    } else {
+        matrix.resize(particle_list.size(), 3);
+        for(int i = 0; i < particle_list.size(); i++) {
+            matrix(i, 0) = particle_list[i]->getState().getXPos();
+            matrix(i, 1) = particle_list[i]->getState().getYPos();
+        }
     }
 }
 
@@ -187,12 +208,34 @@ double PositionStateW::calcDistance(const PositionStateW& state) const {
 
 void PositionStateW::convertParticleListToEigen(
         const std::vector<particle_filter::Particle<PositionStateW>*>& particle_list,
-        Eigen::MatrixXd& matrix) {
-    matrix.resize(particle_list.size(), 3);
-    for(int i = 0; i < particle_list.size(); i++) {
-        matrix(i, 0) = particle_list[i]->getState().getXPos();
-        matrix(i, 1) = particle_list[i]->getState().getYPos();
-        matrix(i, 2) = particle_list[i]->getState().getWidth();
+        Eigen::MatrixXd& matrix,
+        const bool ignore_explorers) {
+    if (ignore_explorers) {
+        int non_explorer_count = 0;
+        for (particle_filter::Particle<PositionStateW> *particle : particle_list) {
+            if (!particle->is_explorer_) {
+                non_explorer_count++;
+            }
+        }
+
+        matrix.resize(non_explorer_count, 2);
+        int counter = 0;
+
+        for (particle_filter::Particle<PositionStateW> *particle : particle_list) {
+            if (!particle->is_explorer_) {
+                matrix(counter, 0) = particle->getState().getXPos();
+                matrix(counter, 1) = particle->getState().getYPos();
+                matrix(counter, 2) = particle->getState().getWidth();
+                counter++;
+            }
+        }
+    } else {
+        matrix.resize(particle_list.size(), 3);
+        for(int i = 0; i < particle_list.size(); i++) {
+            matrix(i, 0) = particle_list[i]->getState().getXPos();
+            matrix(i, 1) = particle_list[i]->getState().getYPos();
+            matrix(i, 2) = particle_list[i]->getState().getWidth();
+        }
     }
 }
 
@@ -245,12 +288,34 @@ double PoseState::calcDistance(const PoseState& state) const {
 
 void PoseState::convertParticleListToEigen(
         const std::vector<particle_filter::Particle<PoseState>*>& particle_list,
-        Eigen::MatrixXd& matrix) {
-    matrix.resize(particle_list.size(), 3);
-    for(int i = 0; i < particle_list.size(); i++) {
-        matrix(i, 0) = particle_list[i]->getState().getXPos();
-        matrix(i, 1) = particle_list[i]->getState().getYPos();
-        matrix(i, 2) = particle_list[i]->getState().getOrientation();  // TODO
+        Eigen::MatrixXd& matrix,
+        const bool ignore_explorers) {
+    if (ignore_explorers) {
+        int non_explorer_count = 0;
+        for (particle_filter::Particle<PoseState> *particle : particle_list) {
+            if (!particle->is_explorer_) {
+                non_explorer_count++;
+            }
+        }
+
+        matrix.resize(non_explorer_count, 2);
+        int counter = 0;
+
+        for (particle_filter::Particle<PoseState> *particle : particle_list) {
+            if (!particle->is_explorer_) {
+                matrix(counter, 0) = particle->getState().getXPos();
+                matrix(counter, 1) = particle->getState().getYPos();
+                matrix(counter, 2) = particle->getState().getOrientation();  // TODO
+                counter++;
+            }
+        }
+    } else {
+        matrix.resize(particle_list.size(), 3);
+        for (int i = 0; i < particle_list.size(); i++) {
+            matrix(i, 0) = particle_list[i]->getState().getXPos();
+            matrix(i, 1) = particle_list[i]->getState().getYPos();
+            matrix(i, 2) = particle_list[i]->getState().getOrientation();  // TODO
+        }
     }
 }
 

@@ -41,7 +41,7 @@ public:
 
     double calcDistance(const humanoid_league_msgs::PixelRelative &pixel) const;
 
-    static void convertParticleListToEigen(const std::vector<particle_filter::Particle<PositionState>*>& particle_list, Eigen::MatrixXd& matrix);
+    static void convertParticleListToEigen(const std::vector<particle_filter::Particle<PositionState>*>& particle_list, Eigen::MatrixXd& matrix, const bool ignore_explorers);
 
     // float getTheta() const;
 
@@ -90,7 +90,7 @@ public:
 
     double calcDistance(const PositionStateW& state) const;
 
-    static void convertParticleListToEigen(const std::vector<particle_filter::Particle<PositionStateW>*>& particle_list, Eigen::MatrixXd& matrix);
+    static void convertParticleListToEigen(const std::vector<particle_filter::Particle<PositionStateW>*>& particle_list, Eigen::MatrixXd& matrix, const bool ignore_explorers);
 
 private:
 
@@ -124,7 +124,7 @@ public:
 
     double calcDistance(const PoseState& state) const;
 
-    static void convertParticleListToEigen(const std::vector<particle_filter::Particle<PoseState>*>& particle_list, Eigen::MatrixXd& matrix);
+    static void convertParticleListToEigen(const std::vector<particle_filter::Particle<PoseState>*>& particle_list, Eigen::MatrixXd& matrix, const bool ignore_explorers);
 
 private:
 
