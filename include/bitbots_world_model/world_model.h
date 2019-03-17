@@ -114,7 +114,7 @@ class WorldModel {
         bool valid_configuration_;
 
         void publishing_timer_callback(const ros::TimerEvent&);
-        void publish_visualization();
+        void publish_particle_visualization();
         void publish_gmm_visualization(gmms::GaussianMixtureModel gmm,  std::string n_space, ros::Duration lifetime);
 
         std_msgs::ColorRGBA get_color_msg(int color_id);

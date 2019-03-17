@@ -95,7 +95,6 @@ void ImportanceResamplingWE<StateType>::resample(const ParticleList& sourceList,
     destinationList[destIndex]->is_explorer_ = true;
   }
 
-
 }
 
 //template <class StateType>
