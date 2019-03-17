@@ -26,7 +26,7 @@ generate_dynamic_reconfigure_options(
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}_lib
+  LIBRARIES ${PROJECT_NAME}_lib particle_filter
   CATKIN_DEPENDS geometry_msgs particle_filter roscpp std_msgs visualization_msgs humanoid_league_msgs dynamic_reconfigure eigen_conversions
 
 )

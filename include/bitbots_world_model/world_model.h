@@ -23,6 +23,7 @@
 #include <bitbots_world_model/Resampling.h>
 
 #include <particle_filter/ParticleFilter.h>
+#include <particle_filter/gaussian_mixture_model.h>
 #include <particle_filter/CRandomNumberGenerator.h>
 
 
@@ -114,6 +115,7 @@ class WorldModel {
 
         void publishing_timer_callback(const ros::TimerEvent&);
         void publish_visualization();
+        void publish_gmm_visualization(gmms::GaussianMixtureModel gmm,  std::string n_space, ros::Duration lifetime);
 
         std_msgs::ColorRGBA get_color_msg(int color_id);
         void publish_results();

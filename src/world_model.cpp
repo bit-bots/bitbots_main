@@ -206,6 +206,11 @@ void WorldModel::publish_visualization() {
     local_particles_publisher_.publish(local_opponent_pf_->renderMarker());
 }
 
+void WorldModel::publish_gmm_visualization(gmms::GaussianMixtureModel gmm,  std::string n_space, ros::Duration lifetime) {
+    local_particles_publisher_.publish(gmm.generateMarker(-(config_.field_width / 2), -(config_.field_height / 2), (config_.field_width / 2), (config_.field_height / 2), 100, n_space,  lifetime));  // TODO: check whether x and y are in the right order
+
+}
+
 void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     // the content of this function is what happens in a single timestep
 
