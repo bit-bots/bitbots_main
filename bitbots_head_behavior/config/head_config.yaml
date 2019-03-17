@@ -18,7 +18,7 @@ behavior:
       - [30, -7]
       - [-30, -7]
 
-    # These values describe the minimal required delta between current joint states and target joint states
+    # These values describe the minimal required delta between current joint states and target joint states in degrees
     # to reduce unnecessary movement due to noise in the detection of the BallRelative.
     ball_tracking_min_pan_delta: 4
     ball_tracking_min_tilt_delta: 4

@@ -43,7 +43,7 @@ class AbstractLookAt(AbstractActionElement):
         Look at a point which is relative to the robot.
 
         The points header.frame_id determines the transforms reference frame of this point.
-        The min_pan_delta and min_tilt_delta define minimal required movements to reduce unnecessary head movements.
+        The min_pan_delta and min_tilt_delta define minimal required movements in degrees to reduce unnecessary head movements.
 
         :type point: PointStamped
         :type min_pan_delta: float
@@ -64,7 +64,8 @@ class AbstractLookAt(AbstractActionElement):
 
         head_pan, head_tilt = self.get_motor_goals_from_point(point.point)
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
-        if abs(current_head_pan - head_pan) >= min_pan_delta or abs(current_head_tilt - head_tilt) >= min_tilt_delta:
+        if abs(current_head_pan - head_pan) >= math.radians(min_pan_delta) or \
+                abs(current_head_tilt - head_tilt) >= math.radians(min_tilt_delta):
             self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt)
 
 
