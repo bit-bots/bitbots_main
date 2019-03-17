@@ -115,31 +115,31 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
 }
 
 void WorldModel::ball_callback(const hlm::PixelsRelative &msg) {
-    ball_measurements_ = msg;
-    local_ball_observation_model_->set_measurement(ball_measurements_);
+    local_ball_pixel_measurements_ = msg;
+    local_ball_observation_model_->set_measurement(local_ball_pixel_measurements_);
 }
 
 void WorldModel::obstacles_callback(const hlm::ObstaclesRelative &msg) {
 
     // clear the measurement vectors of the 4 filtered classes
-    ball_measurements_.pixels.clear();
-    obstacle_measurements_.clear();
-    mate_measurements_.clear();
-    opponent_measurements_.clear();
+    local_ball_pixel_measurements_.pixels.clear();
+    local_obstacle_measurements_.clear();
+    local_mate_measurements_.clear();
+    local_opponent_measurements_.clear();
     // add the new measurements to the vectors
     for (hlm::ObstacleRelative obstacle : msg.obstacles) {
         if (obstacle.color == team_color_) {
-            mate_measurements_.push_back(PositionState(obstacle.position.x, obstacle.position.y));
+            local_mate_measurements_.push_back(PositionState(obstacle.position.x, obstacle.position.y));
         } else if (obstacle.color == opponent_color_) {
-            opponent_measurements_.push_back(PositionState(obstacle.position.x, obstacle.position.y));
+            local_opponent_measurements_.push_back(PositionState(obstacle.position.x, obstacle.position.y));
         } else if (obstacle.color < 2) { // robot unknown or unknown
-            obstacle_measurements_.push_back(PositionStateW(obstacle.position.x, obstacle.position.y, obstacle.width));
+            local_obstacle_measurements_.push_back(PositionStateW(obstacle.position.x, obstacle.position.y, obstacle.width));
         }
     }
     // set the new measurements in the filter
-    local_mate_observation_model_->set_measurement(mate_measurements_);
-    local_opponent_observation_model_->set_measurement(opponent_measurements_);
-    local_obstacle_observation_model_->set_measurement(obstacle_measurements_);
+    local_mate_observation_model_->set_measurement(local_mate_measurements_);
+    local_opponent_observation_model_->set_measurement(local_opponent_measurements_);
+    local_obstacle_observation_model_->set_measurement(local_obstacle_measurements_);
 }
 
 void WorldModel::team_data_callback(const hlm::TeamData &msg) {

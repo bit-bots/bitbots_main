@@ -77,11 +77,15 @@ class WorldModel {
         int team_color_;
         int opponent_color_;
 
-        // measurements
-        hlm::PixelsRelative ball_measurements_;
-        std::vector<PositionState> mate_measurements_;
-        std::vector<PositionState> opponent_measurements_;
-        std::vector<PositionStateW> obstacle_measurements_;
+        // local measurements
+        hlm::PixelsRelative local_ball_pixel_measurements_;
+        std::vector<PositionState> local_mate_measurements_;
+        std::vector<PositionState> local_opponent_measurements_;
+        std::vector<PositionStateW> local_obstacle_measurements_;  // TODO: handle these?
+
+        // last local results
+        // TODO
+
         // last team_data message
         hlm::TeamData last_received_team_data_;
 
