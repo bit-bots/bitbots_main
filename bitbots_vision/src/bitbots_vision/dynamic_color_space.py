@@ -11,10 +11,9 @@ from collections import deque
 from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.client import Client
 from sensor_msgs.msg import Image
-from bitbots_msgs.msg import ColorSpaceMessage, ConfigMessage
-from bitbots_vision.vision_modules import debug
-from bitbots_vision.vision_modules import horizon, color
+from bitbots_msgs.msg import ColorSpace, Config
 from bitbots_vision.cfg import dynamic_color_spaceConfig
+from bitbots_vision.vision_modules import horizon, color, debug, evaluator
 
 class DynamicColorSpace:
     def __init__(self):
@@ -25,7 +24,7 @@ class DynamicColorSpace:
         changing lighting conditions or to compensate for not optimized base color space files.
 
         This node subscribes to an Image-message (default: image_raw) and to the 'vision_config'-message.
-        This node publishes ColorSpaceMessages.
+        This node publishes ColorSpace-messages.
 
         Initiating 'bitbots_dynamic_color_space' node.
 
@@ -44,16 +43,16 @@ class DynamicColorSpace:
         self.vision_config = {}
         self.turned_on = None
 
-        # Register publisher of ColorSpaceMessages
+        # Register publisher of ColorSpace-messages
         self.pub_color_space = rospy.Publisher(
             'color_space',
-            ColorSpaceMessage,
+            ColorSpace,
             queue_size=1)
 
         # Subscribe to 'vision_config'-message
         self.sub_vision_config_msg = rospy.Subscriber(
             'vision_config',
-            ConfigMessage,
+            Config,
             self.vision_config_callback,
             queue_size=1,
             tcp_nodelay=True)
@@ -61,13 +60,13 @@ class DynamicColorSpace:
         rospy.spin()
 
     def vision_config_callback(self, msg):
-        # type: (ConfigMessage) -> None
+        # type: (Config) -> None
         """
         This method is called by the 'vision_config'-message subscriber.
         Load and update vision config.
         Handle config changes.
 
-        :param ConfigMessage msg: new 'vision_config'-message subscriber
+        :param Config msg: new 'vision_config'-message subscriber
         :return: None
         """
         # Load dict from string in yaml-format in msg.data
@@ -76,6 +75,8 @@ class DynamicColorSpace:
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 vision_config['vision_debug_printer_classes']))
+
+        self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
         # Turn off dynamic color space, if parameter of yaml (dynamic reconfigure) is false
         turned_on_tmp = self.turned_on
@@ -95,7 +96,8 @@ class DynamicColorSpace:
         self.horizon_detector = horizon.HorizonDetector(
             self.color_detector,
             vision_config,
-            self.debug_printer)
+            self.debug_printer,
+            self.runtime_evaluator) # TODO: handle runtime evaluator
 
         # Reset queue
         if hasattr(self, 'color_value_queue'):
@@ -137,7 +139,7 @@ class DynamicColorSpace:
         Sometimes the queue gets to large, even when the size is limeted to 1. 
         That's, why we drop old images manually.
 
-        :param Image image_msg: new image-message from Image-message subscriber
+        :param Image image_msg: new Image-message from Image-message subscriber
         :return: None
         """
         # Turn off dynamic color space, if parameter of yaml is false
@@ -232,21 +234,21 @@ class DynamicColorSpace:
     def publish(self, image_msg):
         # type: (Image) -> None
         """
-        Publishes the current color space via ColorSpaceMessage.
+        Publishes the current color space via ColorSpace-message.
 
         :param Image image_msg: 'image_raw'-message
         :return: None
         """
         # Get color space from queue
         color_space = self.queue_to_color_space(self.color_value_queue)
-        # Create ColorSpaceMessage
-        color_space_msg = ColorSpaceMessage()
+        # Create ColorSpace-message
+        color_space_msg = ColorSpace()
         color_space_msg.header.frame_id = image_msg.header.frame_id
         color_space_msg.header.stamp = image_msg.header.stamp
         color_space_msg.blue  = color_space[:,0].tolist()
         color_space_msg.green = color_space[:,1].tolist()
         color_space_msg.red   = color_space[:,2].tolist()
-        # Publish ColorSpaceMessage
+        # Publish ColorSpace-message
         self.pub_color_space.publish(color_space_msg)
 
 

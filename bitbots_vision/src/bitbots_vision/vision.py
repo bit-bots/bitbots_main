@@ -14,7 +14,7 @@ from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationI
 from bitbots_vision.vision_modules import lines, horizon, color, debug, live_classifier, \
     classifier, ball, lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
 from bitbots_vision.cfg import VisionConfig
-from bitbots_msgs.msg import ConfigMessage
+from bitbots_msgs.msg import Config
 
 class Vision:
     def __init__(self):
@@ -42,7 +42,7 @@ class Vision:
         # Register publisher of 'vision_config'-messages
         self.pub_config = rospy.Publisher(
             'vision_config',
-            ConfigMessage,
+            Config,
             queue_size=1,
             latch=True)
 
@@ -413,8 +413,8 @@ class Vision:
             queue_size=1,
         )
 
-        # Publish ConfigMessage
-        msg = ConfigMessage()
+        # Publish Config-message
+        msg = Config()
         msg.data = yaml.dump(config)
         self.pub_config.publish(msg)
 
