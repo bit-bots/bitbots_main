@@ -227,9 +227,6 @@ void WorldModel::publish_gmm_visualization(gmms::GaussianMixtureModel gmm,  std:
 void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     // the content of this function is what happens in a single timestep
 
-    // publishing marker messages if debug_visualization is activated
-    publish_particle_visualization();
-
     // setting the weights of the particles according to the measurements taken
     // TODO: do this only when stuff is measured
     local_ball_pf_->measure();
@@ -259,10 +256,10 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     local_obstacle_pf_->diffuse();
 
     // publish the output
-    publish_results();
+    publish_local_results();
 }
 
-void WorldModel::publish_results() {
+void WorldModel::publish_local_results() {
     // result acquisition and publishing
 
     gmms::GaussianMixtureModel local_ball_gmm = local_ball_pf_->getGMM(
@@ -275,7 +272,7 @@ void WorldModel::publish_results() {
             config_.local_mates_gmm_iterations);
     gmms::GaussianMixtureModel local_opponents_gmm = local_opponent_pf_->getGMM(
             config_.local_opponents_gmm_components, 
-            config_.local_opponents_gmm_delta, 
+            config_.local_opponents_gmm_delta,
             config_.local_opponents_gmm_iterations); 
     gmms::GaussianMixtureModel local_obstacles_gmm = local_obstacle_pf_->getGMM(
             config_.local_obstacles_gmm_components, 
@@ -286,11 +283,13 @@ void WorldModel::publish_results() {
 
     model_msg.ball = relative_gmm_to_ball_relative(local_ball_gmm)[0];
     model_msg.ball.header.stamp = ros::Time::now(); // or by input?
-    model_msg.ball.header.frame_id = config_.local_publishing_frame; // or by input
+    model_msg.ball.header.frame_id = config_.local_publishing_frame; // or by input?
 
     model_msg.obstacles.header = model_msg.ball.header; //or this by input and the other now?
     // construct obstacles vector
-    std::vector<hlm::ObstacleRelative> mates = relative_gmm_to_obstacle_relative(local_mates_gmm, team_color_);
+    std::vector<hlm::ObstacleRelative> mates = relative_gmm_to_obstacle_relative(
+            local_mates_gmm,
+            team_color_);
     std::vector<hlm::ObstacleRelative> opponents = relative_gmm_to_obstacle_relative(
             local_opponents_gmm,
             opponent_color_);
@@ -309,6 +308,32 @@ void WorldModel::publish_results() {
             std::end(obstacles));
 
     local_model_publisher_.publish(model_msg);
+    publish_particle_visualization();
+
+    if (config_.local_ball_gmm_visualization) {
+        publish_gmm_visualization(
+                local_ball_gmm,
+                "local_ball_gmm",
+                ros::Duration(1.0 / config_.publishing_frequency));
+    }
+    if (config_.local_mate_gmm_visualization) {
+        publish_gmm_visualization(
+                local_mates_gmm,
+                "local_mates_gmm",
+                ros::Duration(1.0 / config_.publishing_frequency));
+    }
+    if (config_.local_opponent_gmm_visualization) {
+        publish_gmm_visualization(
+                local_obstacles_gmm,
+                "local_opponents_gmm",
+                ros::Duration(1.0 / config_.publishing_frequency));
+    }
+    if (config_.local_obstacle_gmm_visualization) {
+        publish_gmm_visualization(
+                local_obstacles_gmm,
+                "local_obstacles_gmm", 
+                ros::Duration(1.0 / config_.publishing_frequency));
+    }
 }
 
 std_msgs::ColorRGBA WorldModel::get_color_msg(int color_id) {

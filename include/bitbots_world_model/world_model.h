@@ -130,7 +130,7 @@ class WorldModel {
         void publish_gmm_visualization(gmms::GaussianMixtureModel gmm,  std::string n_space, ros::Duration lifetime);
 
         std_msgs::ColorRGBA get_color_msg(int color_id);
-        void publish_results();
+        void publish_local_results();
 
 };
 
