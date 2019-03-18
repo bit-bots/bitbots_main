@@ -19,8 +19,8 @@ add_message_files(
   ImageWithCorners.msg
   PixelRelative.msg
   PixelsRelative.msg
-  ColorSpaceMessage.msg
-  ConfigMessage.msg
+  ColorSpace.msg
+  Config.msg
 )
 
 add_service_files(
