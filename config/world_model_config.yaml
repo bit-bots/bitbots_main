@@ -47,6 +47,10 @@ publishing_frequency: 10
 #################
 
 debug_visualization: true
+local_ball_gmm_visualization: false
+local_mate_gmm_visualization: false
+local_opponent_gmm_visualization: false
+local_obstacle_gmm_visualization: false
 
 ball_marker_color: 2  # yellow
 mate_marker_color: 5  # green
