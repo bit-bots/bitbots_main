@@ -218,7 +218,7 @@ void PositionStateW::convertParticleListToEigen(
             }
         }
 
-        matrix.resize(non_explorer_count, 2);
+        matrix.resize(non_explorer_count, 3);
         int counter = 0;
 
         for (particle_filter::Particle<PositionStateW> *particle : particle_list) {
