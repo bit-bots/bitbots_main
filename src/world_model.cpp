@@ -213,11 +213,9 @@ void WorldModel::publish_particle_visualization() {
         return;
     }
     local_particles_publisher_.publish(local_ball_pf_->renderMarker());
-    local_particles_publisher_.publish(PositionState::renderMarker(local_ball_pf_->getBestXPercentEstimate(80.0), get_color_msg(3), ros::Duration(.1), "ball_mean"));
-    local_particles_publisher_.publish(local_obstacle_pf_->renderMarker());
     local_particles_publisher_.publish(local_mate_pf_->renderMarker());
-    local_particles_publisher_.publish(PositionState::renderMarker(local_mate_pf_->getBestXPercentEstimate(80.0), get_color_msg(2), ros::Duration(.1), "mates_mean"));
     local_particles_publisher_.publish(local_opponent_pf_->renderMarker());
+    local_particles_publisher_.publish(local_obstacle_pf_->renderMarker());
 }
 
 void WorldModel::publish_gmm_visualization(gmms::GaussianMixtureModel gmm,  std::string n_space, ros::Duration lifetime) {
@@ -263,8 +261,8 @@ void WorldModel::publish_local_results() {
     // result acquisition and publishing
 
     gmms::GaussianMixtureModel local_ball_gmm = local_ball_pf_->getGMM(
-            config_.local_ball_gmm_components, 
-            config_.local_ball_gmm_delta, 
+            config_.local_ball_gmm_components,
+            config_.local_ball_gmm_delta,
             config_.local_ball_gmm_iterations);
     gmms::GaussianMixtureModel local_mates_gmm = local_mate_pf_->getGMM(
             config_.local_mates_gmm_components, 
@@ -308,8 +306,16 @@ void WorldModel::publish_local_results() {
             std::end(obstacles));
 
     local_model_publisher_.publish(model_msg);
+
+    // the rest is visualization
+    if (!config_.debug_visualization) {
+        return;
+    }
+
+    // publish particles
     publish_particle_visualization();
 
+    // publish plotted GMMs
     if (config_.local_ball_gmm_visualization) {
         publish_gmm_visualization(
                 local_ball_gmm,
@@ -331,7 +337,7 @@ void WorldModel::publish_local_results() {
     if (config_.local_obstacle_gmm_visualization) {
         publish_gmm_visualization(
                 local_obstacles_gmm,
-                "local_obstacles_gmm", 
+                "local_obstacles_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
 }
