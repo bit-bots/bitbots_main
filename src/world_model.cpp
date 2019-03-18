@@ -221,8 +221,7 @@ void WorldModel::publish_particle_visualization() {
 }
 
 void WorldModel::publish_gmm_visualization(gmms::GaussianMixtureModel gmm,  std::string n_space, ros::Duration lifetime) {
-    local_particles_publisher_.publish(gmm.generateMarker(-(config_.field_width / 2), -(config_.field_height / 2), (config_.field_width / 2), (config_.field_height / 2), 100, n_space,  lifetime));  // TODO: check whether x and y are in the right order
-
+    local_particles_publisher_.publish(gmm.renderMarker(-(config_.field_width / 2), -(config_.field_height / 2), (config_.field_width / 2), (config_.field_height / 2), 100, n_space, config_.local_publishing_frame, lifetime));  // TODO: check whether x and y are in the right order
 }
 
 void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
