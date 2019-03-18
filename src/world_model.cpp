@@ -264,18 +264,24 @@ void WorldModel::publish_local_results() {
             config_.local_ball_gmm_components,
             config_.local_ball_gmm_delta,
             config_.local_ball_gmm_iterations);
-    gmms::GaussianMixtureModel local_mates_gmm = local_mate_pf_->getGMM(
-            config_.local_mates_gmm_components, 
-            config_.local_mates_gmm_delta, 
-            config_.local_mates_gmm_iterations);
-    gmms::GaussianMixtureModel local_opponents_gmm = local_opponent_pf_->getGMM(
-            config_.local_opponents_gmm_components, 
-            config_.local_opponents_gmm_delta,
-            config_.local_opponents_gmm_iterations); 
-    gmms::GaussianMixtureModel local_obstacles_gmm = local_obstacle_pf_->getGMM(
-            config_.local_obstacles_gmm_components, 
-            config_.local_obstacles_gmm_delta, 
-            config_.local_obstacles_gmm_iterations);
+    gmms::GaussianMixtureModel local_mates_gmm = local_mate_pf_->getDynGMM(
+            config_.local_mate_gmm_min_components,
+            config_.local_mate_gmm_max_components,
+            config_.local_mate_gmm_component_delta,
+            config_.local_mate_gmm_iteration_delta,
+            config_.local_mate_gmm_iterations);
+    gmms::GaussianMixtureModel local_opponents_gmm = local_opponent_pf_->getDynGMM(
+            config_.local_opponent_gmm_min_components,
+            config_.local_opponent_gmm_max_components,
+            config_.local_opponent_gmm_component_delta,
+            config_.local_opponent_gmm_iteration_delta,
+            config_.local_opponent_gmm_iterations);
+    gmms::GaussianMixtureModel local_obstacles_gmm = local_obstacle_pf_->getDynGMM(
+            config_.local_obstacle_gmm_min_components,
+            config_.local_obstacle_gmm_max_components,
+            config_.local_obstacle_gmm_component_delta,
+            config_.local_obstacle_gmm_iteration_delta,
+            config_.local_obstacle_gmm_iterations);
 
     hlm::Model model_msg;
 
