@@ -87,15 +87,15 @@ void TeamCommunication::recv_thread() {
 }
 
 void TeamCommunication::send_thread(const ros::TimerEvent& _t) {
-    //state
-    _mitecom.set_state(state);
-    _mitecom.set_action(action);
-    _mitecom.set_role(role);
-
-    _mitecom.set_max_kicking_distance(max_kicking_distance);
-    _mitecom.set_get_avg_walking_speed(avg_walking_speed);
-
     if (state != STATE_PENALIZED) {
+        //state
+        _mitecom.set_state(state);
+        _mitecom.set_action(action);
+        _mitecom.set_role(role);
+
+        _mitecom.set_max_kicking_distance(max_kicking_distance);
+        _mitecom.set_get_avg_walking_speed(avg_walking_speed);
+
         //position
         if (position_belief > belief_threshold && ros::Time::now().sec - position_exists < lifetime) {
             _mitecom.set_pos(position_x, position_y, position_orientation, position_belief);
@@ -143,8 +143,8 @@ void TeamCommunication::send_thread(const ros::TimerEvent& _t) {
         if(offensive_side_set) {
             _mitecom.set_offensive_side(offensive_side);
         }
-    }
     _mitecom.send_data();
+    }
 }
 
 void TeamCommunication::publish_data(MiTeCom::TeamRobotData team_data){
@@ -301,7 +301,9 @@ void TeamCommunication::strategy_callback(const humanoid_league_msgs::Strategy m
 
 void TeamCommunication::motion_state_callback(const humanoid_league_msgs::RobotControlState msg) {
     state = msg.state;
-    if (state == humanoid_league_msgs::RobotControlState::PENALTY){
+    if (state == humanoid_league_msgs::RobotControlState::PENALTY ||
+        state == humanoid_league_msgs::RobotControlState::PENALTY_ANIMANTION ||
+        state == humanoid_league_msgs::RobotControlState::PICKED_UP){
         state = STATE_PENALIZED;
     }
     else if (state == humanoid_league_msgs::RobotControlState::STARTUP ||
