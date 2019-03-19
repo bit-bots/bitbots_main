@@ -20,7 +20,7 @@ include:
     - bitbots_navigation:
         - bitbots_localization
         - bitbots_move_base
-        - bitbots_pathfinding_simple
+        - bitbots_bezier_pathfinding
     - center_of_mass
     - dynamic_stack_decider
     - humanoid_base_footprint
@@ -30,14 +30,18 @@ include:
         - humanoid_league_speaker
         - humanoid_league_transform
     - humanoid_league_msgs
+    - humanoid_league_visualization:
+        - humanoid_league_rviz_marker
     - lib:
         - bio_ik
         - bio_ik_service
         - DynamixelSDK
         - dynamixel-workbench
         - dynamixel-workbench-msgs
+        - moveit
         - pointcloud_to_laserscan
     - scripts
+    - udp_bridge
     - wolfgang_robot:
         - wolfgang_animations
         - wolfgang_description

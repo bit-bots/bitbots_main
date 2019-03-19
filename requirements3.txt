@@ -1,0 +1,13 @@
+pip
+setuptools
+tensorflow
+rospkg
+rosdep
+rosinstall_generator
+rosinstall
+numpy
+wstool
+h5py
+pydot
+PyQt5
+opencv-python

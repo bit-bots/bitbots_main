@@ -49,8 +49,9 @@ sudo apt install -y \
     ros-kinetic-velocity-controllers \
     ros-kinetic-yocs-velocity-smoother \
     vim \
-    screen\
-    uvcdynctrl\
+    screen \
+    setserial \
+    uvcdynctrl \
 
 # Python3 dependencies
 DIR="$(dirname $(dirname $(realpath $0)))"

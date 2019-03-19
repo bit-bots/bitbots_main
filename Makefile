@@ -1,4 +1,4 @@
-.PHONY : build doc doc-meta install repo vision-files
+.PHONY : build doc doc-meta install repo vision-files update
 
 
 build :
@@ -15,10 +15,11 @@ doc-meta :
 	python3 scripts/build-meta-doc.py
 
 
-install: pull-all vision-files
-	scripts/install_dependencies.sh
-	scripts/create_catkin_workspace.sh
+install: pull-all 
+	scripts/install.pl
 
+update: pull-all
+	rosdep install -irya
 
 pull-all:
 	git pull
