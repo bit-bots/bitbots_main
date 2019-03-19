@@ -119,6 +119,10 @@ class WorldModel {
         std::shared_ptr<particle_filter::ParticleFilter<PositionState>> local_opponent_pf_;
         std::shared_ptr<particle_filter::ParticleFilter<PositionStateW>> local_obstacle_pf_;
 
+        gmms::GaussianMixtureModel local_ball_gmm_;
+        gmms::GaussianMixtureModel local_mates_gmm_;
+        gmms::GaussianMixtureModel local_opponents_gmm_;
+        gmms::GaussianMixtureModel local_obstacles_gmm_;
 
         bool valid_configuration_;
 

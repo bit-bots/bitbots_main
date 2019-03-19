@@ -260,45 +260,58 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
 void WorldModel::publish_local_results() {
     // result acquisition and publishing
 
-    gmms::GaussianMixtureModel local_ball_gmm = local_ball_pf_->getGMM(
+    local_ball_gmm_ = local_ball_pf_->getGMM(
             config_.local_ball_gmm_components,
             config_.local_ball_gmm_delta,
             config_.local_ball_gmm_iterations);
-    gmms::GaussianMixtureModel local_mates_gmm = local_mate_pf_->getDynGMM(
-            config_.local_mate_gmm_min_components,
-            config_.local_mate_gmm_max_components,
+
+    local_mates_gmm_ = local_mate_pf_->getDynGMM(
+            std::max(
+                    config_.local_mate_gmm_min_components, 
+                    local_mates_gmm_.numComponents() - config_.local_mate_gmm_component_count_max_delta), 
+            std::min(
+                    config_.local_mate_gmm_max_components, 
+                    local_mates_gmm_.numComponents() + config_.local_mate_gmm_component_count_max_delta),
             config_.local_mate_gmm_component_delta,
             config_.local_mate_gmm_iteration_delta,
             config_.local_mate_gmm_iterations);
-    gmms::GaussianMixtureModel local_opponents_gmm = local_opponent_pf_->getDynGMM(
-            config_.local_opponent_gmm_min_components,
-            config_.local_opponent_gmm_max_components,
+    local_opponents_gmm_ = local_opponent_pf_->getDynGMM(
+            std::max(
+                    config_.local_opponent_gmm_min_components, 
+                    local_opponents_gmm_.numComponents() - config_.local_opponent_gmm_component_count_max_delta), 
+            std::min(
+                    config_.local_opponent_gmm_max_components, 
+                    local_opponents_gmm_.numComponents() + config_.local_opponent_gmm_component_count_max_delta),
             config_.local_opponent_gmm_component_delta,
             config_.local_opponent_gmm_iteration_delta,
             config_.local_opponent_gmm_iterations);
-    gmms::GaussianMixtureModel local_obstacles_gmm = local_obstacle_pf_->getDynGMM(
-            config_.local_obstacle_gmm_min_components,
-            config_.local_obstacle_gmm_max_components,
+    local_obstacles_gmm_ = local_obstacle_pf_->getDynGMM(
+            std::max(
+                    config_.local_obstacle_gmm_min_components, 
+                    local_obstacles_gmm_.numComponents() - config_.local_obstacle_gmm_component_count_max_delta), 
+            std::min(
+                    config_.local_obstacle_gmm_max_components, 
+                    local_obstacles_gmm_.numComponents() + config_.local_obstacle_gmm_component_count_max_delta),
             config_.local_obstacle_gmm_component_delta,
             config_.local_obstacle_gmm_iteration_delta,
             config_.local_obstacle_gmm_iterations);
 
     hlm::Model model_msg;
 
-    model_msg.ball = relative_gmm_to_ball_relative(local_ball_gmm)[0];
+    model_msg.ball = relative_gmm_to_ball_relative(local_ball_gmm_)[0];  // TODO: sort by confidence? currently there is only one.
     model_msg.ball.header.stamp = ros::Time::now(); // or by input?
     model_msg.ball.header.frame_id = config_.local_publishing_frame; // or by input?
 
     model_msg.obstacles.header = model_msg.ball.header; //or this by input and the other now?
     // construct obstacles vector
     std::vector<hlm::ObstacleRelative> mates = relative_gmm_to_obstacle_relative(
-            local_mates_gmm,
+            local_mates_gmm_,
             team_color_);
     std::vector<hlm::ObstacleRelative> opponents = relative_gmm_to_obstacle_relative(
-            local_opponents_gmm,
+            local_opponents_gmm_,
             opponent_color_);
     std::vector<hlm::ObstacleRelative> obstacles = relative_gmm_to_obstacle_relative(
-            local_obstacles_gmm,
+            local_obstacles_gmm_,
             hlm::ObstacleRelative::UNDEFINED);
 
     model_msg.obstacles.obstacles = mates;
@@ -324,25 +337,25 @@ void WorldModel::publish_local_results() {
     // publish plotted GMMs
     if (config_.local_ball_gmm_visualization) {
         publish_gmm_visualization(
-                local_ball_gmm,
+                local_ball_gmm_,
                 "local_ball_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
     if (config_.local_mate_gmm_visualization) {
         publish_gmm_visualization(
-                local_mates_gmm,
+                local_mates_gmm_,
                 "local_mates_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
     if (config_.local_opponent_gmm_visualization) {
         publish_gmm_visualization(
-                local_obstacles_gmm,
+                local_obstacles_gmm_,
                 "local_opponents_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
     if (config_.local_obstacle_gmm_visualization) {
         publish_gmm_visualization(
-                local_obstacles_gmm,
+                local_obstacles_gmm_,
                 "local_obstacles_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
