@@ -85,6 +85,7 @@ local_mate_max_distance: 18
 local_mate_gmm_min_components: 1
 local_mate_gmm_max_components: 5
 local_mate_gmm_component_delta: 0.5
+local_mate_gmm_component_count_max_delta: 1
 local_mate_gmm_iteration_delta: 0.01
 local_mate_gmm_iterations: 100
 
@@ -98,6 +99,7 @@ local_opponent_max_distance: 18
 local_opponent_gmm_min_components: 1
 local_opponent_gmm_max_components: 5
 local_opponent_gmm_component_delta: 0.5
+local_opponent_gmm_component_count_max_delta: 1
 local_opponent_gmm_iteration_delta: 0.01
 local_opponent_gmm_delta: 0.01
 local_opponent_gmm_iterations: 100
@@ -114,6 +116,7 @@ local_obstacle_max_distance: 18
 local_obstacle_gmm_min_components: 1
 local_obstacle_gmm_max_components: 5
 local_obstacle_gmm_component_delta: 0.5
+local_obstacle_gmm_component_count_max_delta: 1
 local_obstacle_gmm_iteration_delta: 0.01
 local_obstacle_gmm_delta: 0.01
 local_obstacle_gmm_iterations: 100
