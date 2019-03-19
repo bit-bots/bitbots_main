@@ -11,6 +11,9 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   sensor_msgs
   tf2
+  tf2_ros
+  tf2_geometry_msgs
+  geometry_msgs
   roscpp
 )
 
@@ -122,9 +125,9 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/bitbots_odometry.cpp
-# )
+#add_library(${PROJECT_NAME}
+#  ${PROJECT_NAME}/bitbots_fuser.cpp
+#)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
