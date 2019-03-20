@@ -41,10 +41,12 @@
     <depend>message_runtime</depend>
     <depend>nav_msgs</depend>
     <depend>humanoid_league_msgs</depend>
+    <depend>bitbots_msgs</depend>
     <depend>dynamic_reconfigure</depend>
     <depend>numpy</depend>
     <depend>cv2</depend>
     <depend>wolves_image_provider</depend>
+  
 
     <export>
     <bitbots_documentation>

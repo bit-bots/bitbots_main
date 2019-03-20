@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   geometry_msgs
   humanoid_league_msgs
+  bitbots_msgs
   trajectory_msgs
   message_generation
   dynamic_reconfigure
