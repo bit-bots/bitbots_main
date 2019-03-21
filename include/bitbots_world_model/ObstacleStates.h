@@ -33,7 +33,7 @@ public:
 
     void setYPos(float y);
 
-    static visualization_msgs::Marker renderMarker(particle_filter::ParticleFilter<PositionState>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
+    static visualization_msgs::Marker renderPointsMarker(particle_filter::ParticleFilter<PositionState>::ParticleList& particle_list, std::string n_space, std::string frame, ros::Duration lifetime, std_msgs::ColorRGBA color);
 
     static visualization_msgs::Marker renderMarker(PositionState particle_state, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
 
@@ -86,7 +86,7 @@ public:
 
     void setWidth(float t);
 
-    static visualization_msgs::Marker renderMarker(particle_filter::ParticleFilter<PositionStateW>::ParticleList& particle_list, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space);
+    static visualization_msgs::Marker renderPointsMarker(particle_filter::ParticleFilter<PositionStateW>::ParticleList& particle_list, std::string n_space, std::string frame, ros::Duration lifetime, std_msgs::ColorRGBA color);
 
     double calcDistance(const PositionStateW& state) const;
 
@@ -119,8 +119,8 @@ public:
 
     void setOrientation(float t);
 
-    // a marker is not useful for visualization here.
-    static visualization_msgs::Marker renderMarker(particle_filter::ParticleFilter<PositionState>::ParticleList& particle_list, std_msgs::ColorRGBA color, std::string n_space) = delete;
+    // a points marker is not useful for visualization here.
+    static visualization_msgs::Marker renderPointsMarker(particle_filter::ParticleFilter<PoseState>::ParticleList& particle_list, std::string n_space, std::string frame, ros::Duration lifetime, std_msgs::ColorRGBA color);
 
     double calcDistance(const PoseState& state) const;
 

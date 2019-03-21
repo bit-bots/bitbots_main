@@ -103,15 +103,6 @@ void WorldModel::dynamic_reconfigure_callback(bitbots_world_model::WorldModelCon
         ROS_INFO("Trying to initialize world_model...");
         init();
     }
-
-    local_ball_pf_->setMarkerColor(get_color_msg(config.ball_marker_color));
-    local_ball_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)));
-    local_mate_pf_->setMarkerColor(get_color_msg(config.mate_marker_color));
-    local_mate_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)));
-    local_opponent_pf_->setMarkerColor(get_color_msg(config.opponent_marker_color));
-    local_opponent_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)));
-    local_obstacle_pf_->setMarkerColor(get_color_msg(config.obstacle_marker_color));
-    local_obstacle_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config.publishing_frequency)));
 }
 
 void WorldModel::ball_callback(const hlm::PixelsRelative &msg) {
@@ -183,21 +174,6 @@ void WorldModel::reset_all_filters() {
     *local_mate_state_distribution_ = LocalPositionStateDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_mate_max_distance * 2, config_.local_mate_max_distance * 2));
     *local_opponent_state_distribution_ = LocalPositionStateDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_opponent_max_distance * 2, config_.local_opponent_max_distance * 2));
     *local_obstacle_state_distribution_ = LocalPositionStateWDistribution(random_number_generator_, std::make_pair(0.0, 0.0), std::make_pair(config_.local_obstacle_max_distance * 2, config_.local_obstacle_max_distance * 2), config_.local_obstacle_min_width, config_.local_obstacle_max_width);
-
-    // setting marker settings
-    local_ball_pf_->setMarkerColor(get_color_msg(config_.ball_marker_color));
-    local_ball_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)));
-    local_ball_pf_->setMarkerNamespace("local_ball");
-    local_mate_pf_->setMarkerColor(get_color_msg(config_.mate_marker_color));
-    local_mate_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)));
-    local_mate_pf_->setMarkerNamespace("local_mate");
-    local_opponent_pf_->setMarkerColor(get_color_msg(config_.opponent_marker_color));
-    local_opponent_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)));
-    local_opponent_pf_->setMarkerNamespace("local_opponent");
-    local_obstacle_pf_->setMarkerColor(get_color_msg(config_.obstacle_marker_color));
-    local_obstacle_pf_->setMarkerLifetime(ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)));
-    local_obstacle_pf_->setMarkerNamespace("local_obstacle");
-
 }
 
 void WorldModel::init() {
@@ -212,14 +188,38 @@ void WorldModel::publish_particle_visualization() {
     if (!config_.debug_visualization) {
         return;
     }
-    local_particles_publisher_.publish(local_ball_pf_->renderMarker());
-    local_particles_publisher_.publish(local_mate_pf_->renderMarker());
-    local_particles_publisher_.publish(local_opponent_pf_->renderMarker());
-    local_particles_publisher_.publish(local_obstacle_pf_->renderMarker());
+    local_particles_publisher_.publish(local_ball_pf_->renderPointsMarker(
+            "local_ball",
+            config_.local_publishing_frame,
+            ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)),
+            get_color_msg(config_.ball_marker_color)));
+    local_particles_publisher_.publish(local_mate_pf_->renderPointsMarker(
+            "local_mate",
+            config_.local_publishing_frame,
+            ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)),
+            get_color_msg(config_.mate_marker_color)));
+    local_particles_publisher_.publish(local_opponent_pf_->renderPointsMarker(
+            "local_opponent",
+            config_.local_publishing_frame,
+            ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)),
+            get_color_msg(config_.opponent_marker_color)));
+    local_particles_publisher_.publish(local_obstacle_pf_->renderPointsMarker(
+            "local_obstacle",
+            config_.local_publishing_frame,
+            ros::Duration(1.0/static_cast<double>(config_.publishing_frequency)),
+            get_color_msg(config_.obstacle_marker_color)));
 }
 
 void WorldModel::publish_gmm_visualization(gmms::GaussianMixtureModel gmm,  std::string n_space, ros::Duration lifetime) {
-    local_particles_publisher_.publish(gmm.renderMarker(-(config_.field_width / 2), -(config_.field_height / 2), (config_.field_width / 2), (config_.field_height / 2), 100, n_space, config_.local_publishing_frame, lifetime));  // TODO: check whether x and y are in the right order
+    local_particles_publisher_.publish(gmm.renderMarker(
+            -(config_.field_width / 2),
+            -(config_.field_height / 2),
+            (config_.field_width / 2),
+            (config_.field_height / 2),
+            100,
+            n_space,
+            config_.local_publishing_frame,
+            lifetime));  // TODO: check whether x and y are in the right order
 }
 
 void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
