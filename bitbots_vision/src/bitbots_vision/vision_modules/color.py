@@ -9,7 +9,7 @@ import numpy as np
 from collections import deque
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
-from bitbots_msgs.msg import ColorSpaceMessage
+from bitbots_msgs.msg import ColorSpace
 from .debug import DebugPrinter
 
 
@@ -215,7 +215,7 @@ class PixelListColorDetector(ColorDetector):
         # Subscribe to 'color_space'-messages from DynamicColorSpace
         self.color_space_subscriber = rospy.Subscriber(
             'color_space',
-            ColorSpaceMessage,
+            ColorSpace,
             self.color_space_callback,
             queue_size=1,
             buff_size=2**20)

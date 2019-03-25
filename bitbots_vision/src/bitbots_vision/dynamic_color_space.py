@@ -12,7 +12,6 @@ from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.client import Client
 from sensor_msgs.msg import Image
 from bitbots_msgs.msg import ColorSpace, Config
-from bitbots_vision.cfg import dynamic_color_spaceConfig
 from bitbots_vision.vision_modules import horizon, color, debug, evaluator
 
 class DynamicColorSpace:
