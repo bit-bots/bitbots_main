@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
   FILES
+  ColorSpace.msg
+  Config.msg
   CpuMessage.msg
   FootPressure.msg
   JointCommand.msg
