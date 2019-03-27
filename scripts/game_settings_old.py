@@ -7,6 +7,7 @@ import os
 # every parameter has its own SETTING_PATH
 SETTING_PATH = os.path.expanduser("gamesettings_test.yaml")
 
+
 def provide_config():
     if os.path.exists(SETTING_PATH):
         try:
@@ -20,7 +21,7 @@ def provide_config():
     return config
 
 
-def ask_for_config_option(name: str, definition, current_value: str = None):
+def ask_for_config_option(name: object, definition: object, current_value: object = None) -> object:
     """
     :param name: name of the config-option-value e.g. robot number
     :param definition: possible options for the value, type of input
@@ -86,6 +87,9 @@ def check_new_value(new_value: str, definition) -> bool:
         if new_value in definition:
             return True
         else:
+            print(new_value, definition)
+            print(' {} no valid option'.format(type(new_value)))
+            print(type(definition[0]))
             return False
 
     elif definition is bool:
@@ -121,17 +125,17 @@ if __name__ == '__main__':
 
     # every option for a config-value is listed here
     options = {
-        'a': bool,
-        'number': int,
-        'colour': ['b', 'r'],
-        'name': str
+        'playernumber': {'package': 'bla', 'file': 'doc', 'parameter': 'playernumber', 'options': ['1', '2', '3', '4']},
+        'camera': {'package': 'bla', 'file': 'doc', 'parameter': 'camera', 'options': ['amys_cam', 'rorys_cam']}
     }
 
     for key, value in options.items():
         if key in config.keys():
-            config[key] = ask_for_config_option(key, value, config[key])
+            config[key]['value'] = ask_for_config_option(key, options[key]['options'], config[key]['value'])
         else:
-            config[key] = ask_for_config_option(key, value)
+            config[key] = options[key].copy()
+            del config[key]['options']
+            config[key]['value'] = ask_for_config_option(key, options[key]['options'])
 
     with open(SETTING_PATH, 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
