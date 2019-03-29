@@ -1,5 +1,8 @@
 #ifndef OBSTACLE_STATES
 #define OBSTACLE_STATES
+
+#include <omp.h>
+
 #include <cmath>
 #include <vector>
 

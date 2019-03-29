@@ -119,6 +119,7 @@ void PositionState::convertParticleListToEigen(
         matrix.resize(non_explorer_count, 2);
         int counter = 0;
 
+#pragma parallel for
         for (particle_filter::Particle<PositionState> *particle : particle_list) {
             if (!particle->is_explorer_) {
                 matrix(counter, 0) = particle->getState().getXPos();
@@ -128,6 +129,7 @@ void PositionState::convertParticleListToEigen(
         }
     } else {
         matrix.resize(particle_list.size(), 3);
+#pragma parallel for
         for(int i = 0; i < particle_list.size(); i++) {
             matrix(i, 0) = particle_list[i]->getState().getXPos();
             matrix(i, 1) = particle_list[i]->getState().getYPos();
