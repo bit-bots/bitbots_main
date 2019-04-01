@@ -28,19 +28,18 @@
  * @brief Test class for ParticleFilter.
  *
  */
-class LocalObstacleObservationModel : public particle_filter::ObservationModel<PositionStateW> {
-
-  public:
+class LocalObstacleObservationModel
+        : public particle_filter::ObservationModel<PositionStateW> {
+public:
+    /**
+     * empty
+     */
+    LocalObstacleObservationModel();
 
     /**
      * empty
      */
-    LocalObstacleObservationModel ();
-
-    /**
-     * empty
-     */
-    ~LocalObstacleObservationModel ();
+    ~LocalObstacleObservationModel();
 
     /**
      *
@@ -59,29 +58,25 @@ class LocalObstacleObservationModel : public particle_filter::ObservationModel<P
 
     bool measurements_available();
 
-  protected:
-
-  private:
-
+protected:
+private:
     std::vector<PositionStateW> last_measurement_;
 
     double min_weight_;
-
 };
 
-class LocalRobotObservationModel : public particle_filter::ObservationModel<PositionState> {
-
-  public:
+class LocalRobotObservationModel
+        : public particle_filter::ObservationModel<PositionState> {
+public:
+    /**
+     * empty
+     */
+    LocalRobotObservationModel();
 
     /**
      * empty
      */
-    LocalRobotObservationModel ();
-
-    /**
-     * empty
-     */
-    ~LocalRobotObservationModel ();
+    ~LocalRobotObservationModel();
 
     /**
      *
@@ -100,29 +95,25 @@ class LocalRobotObservationModel : public particle_filter::ObservationModel<Posi
 
     bool measurements_available();
 
-  protected:
-
-  private:
-
+protected:
+private:
     std::vector<PositionState> last_measurement_;
 
     double min_weight_;
-
 };
 
-class LocalFcnnObservationModel : public particle_filter::ObservationModel<PositionState> {
-
-  public:
+class LocalFcnnObservationModel
+        : public particle_filter::ObservationModel<PositionState> {
+public:
+    /**
+     * empty
+     */
+    LocalFcnnObservationModel();
 
     /**
      * empty
      */
-    LocalFcnnObservationModel ();
-
-    /**
-     * empty
-     */
-    ~LocalFcnnObservationModel ();
+    ~LocalFcnnObservationModel();
 
     typedef struct {
         double distance;
@@ -148,16 +139,12 @@ class LocalFcnnObservationModel : public particle_filter::ObservationModel<Posit
 
     bool measurements_available();
 
-  protected:
-
-  private:
-
+protected:
+private:
     std::vector<humanoid_league_msgs::PixelRelative> last_measurement_;
 
     double min_weight_;
-    int k_; // count of elements considered as "near"
-
+    int k_;  // count of elements considered as "near"
 };
 
 #endif
-

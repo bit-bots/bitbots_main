@@ -1,20 +1,29 @@
 #include "bitbots_world_model/ObservationModels.h"
 
-LocalObstacleObservationModel::LocalObstacleObservationModel () : particle_filter::ObservationModel<PositionStateW>() {
-}
+LocalObstacleObservationModel::LocalObstacleObservationModel() :
+        particle_filter::ObservationModel<PositionStateW>() {}
 
-LocalObstacleObservationModel::~LocalObstacleObservationModel () {
-}
+LocalObstacleObservationModel::~LocalObstacleObservationModel() {}
 
-double LocalObstacleObservationModel::measure(const PositionStateW& state) const {
+double
+LocalObstacleObservationModel::measure(const PositionStateW& state) const {
     if (last_measurement_.empty()) {
-        // ROS_ERROR_STREAM("measure function called with empty measurement list. Prevent this by not calling the function of the particle filter on empty measurements.");
+        // ROS_ERROR_STREAM("measure function called with empty measurement
+        // list. Prevent this by not calling the function of the particle filter
+        // on empty measurements.");
         return 1.0;
     }
-    return std::max(min_weight_, 1/state.calcDistance(*std::min_element(last_measurement_.begin(), last_measurement_.end(), [&state](PositionStateW a, PositionStateW b) {return state.calcDistance(a) < state.calcDistance(b); })));
+    return std::max(min_weight_,
+            1 / state.calcDistance(*std::min_element(last_measurement_.begin(),
+                        last_measurement_.end(),
+                        [&state](PositionStateW a, PositionStateW b) {
+                            return state.calcDistance(a) <
+                                   state.calcDistance(b);
+                        })));
 }
 
-void LocalObstacleObservationModel::set_measurement(std::vector<PositionStateW> measurement) {
+void LocalObstacleObservationModel::set_measurement(
+        std::vector<PositionStateW> measurement) {
     last_measurement_ = measurement;
 }
 
@@ -34,21 +43,29 @@ bool LocalObstacleObservationModel::measurements_available() {
     return (!last_measurement_.empty());
 }
 
-LocalRobotObservationModel::LocalRobotObservationModel () : particle_filter::ObservationModel<PositionState>() {
-}
+LocalRobotObservationModel::LocalRobotObservationModel() :
+        particle_filter::ObservationModel<PositionState>() {}
 
-LocalRobotObservationModel::~LocalRobotObservationModel () {
-}
+LocalRobotObservationModel::~LocalRobotObservationModel() {}
 
 double LocalRobotObservationModel::measure(const PositionState& state) const {
     if (last_measurement_.empty()) {
-        // ROS_ERROR_STREAM("measure function called with empty measurement list. Prevent this by not calling the function of the particle filter on empty measurements.");
+        // ROS_ERROR_STREAM("measure function called with empty measurement
+        // list. Prevent this by not calling the function of the particle filter
+        // on empty measurements.");
         return 1.0;
     }
-    return std::max(min_weight_, 1/state.calcDistance(*std::min_element(last_measurement_.begin(), last_measurement_.end(), [&state](PositionState a, PositionState b) {return state.calcDistance(a) < state.calcDistance(b); })));
+    return std::max(min_weight_,
+            1 / state.calcDistance(*std::min_element(last_measurement_.begin(),
+                        last_measurement_.end(),
+                        [&state](PositionState a, PositionState b) {
+                            return state.calcDistance(a) <
+                                   state.calcDistance(b);
+                        })));
 }
 
-void LocalRobotObservationModel::set_measurement(std::vector<PositionState> measurement) {
+void LocalRobotObservationModel::set_measurement(
+        std::vector<PositionState> measurement) {
     last_measurement_ = measurement;
 }
 
@@ -68,32 +85,45 @@ bool LocalRobotObservationModel::measurements_available() {
     return (!last_measurement_.empty());
 }
 
-LocalFcnnObservationModel::LocalFcnnObservationModel () : particle_filter::ObservationModel<PositionState>() {
-}
+LocalFcnnObservationModel::LocalFcnnObservationModel() :
+        particle_filter::ObservationModel<PositionState>() {}
 
-LocalFcnnObservationModel::~LocalFcnnObservationModel () {
-}
+LocalFcnnObservationModel::~LocalFcnnObservationModel() {}
 
 double LocalFcnnObservationModel::measure(const PositionState& state) const {
     if (last_measurement_.empty()) {
-        // ROS_ERROR_STREAM("measure function called with empty measurement list. Prevent this by not calling the function of the particle filter on empty measurements.");
+        // ROS_ERROR_STREAM("measure function called with empty measurement
+        // list. Prevent this by not calling the function of the particle filter
+        // on empty measurements.");
         return 1.0;
     }
     std::vector<WeightedMeasurement> weighted_measurements;
     for (humanoid_league_msgs::PixelRelative measurement : last_measurement_) {
-        weighted_measurements.push_back(WeightedMeasurement{state.calcDistance(measurement), measurement.value});
+        weighted_measurements.push_back(WeightedMeasurement{
+                state.calcDistance(measurement), measurement.value});
     }
-    int k = std::min(k_, static_cast<int>(weighted_measurements.size())); // put k in a appropriate bounds
-    std::nth_element(weighted_measurements.begin(), weighted_measurements.begin() + (k - 1), weighted_measurements.end(), [](WeightedMeasurement &a, WeightedMeasurement &b){return (a.distance < b.distance);});
+    int k = std::min(
+            k_, static_cast<int>(
+                        weighted_measurements
+                                .size()));  // put k in a appropriate bounds
+    std::nth_element(weighted_measurements.begin(),
+            weighted_measurements.begin() + (k - 1),
+            weighted_measurements.end(),
+            [](WeightedMeasurement& a, WeightedMeasurement& b) {
+                return (a.distance < b.distance);
+            });
     double weighted_weight = 0;
-    for (std::vector<WeightedMeasurement>::iterator it = weighted_measurements.begin(); it != weighted_measurements.begin() + k; ++it) {
+    for (std::vector<WeightedMeasurement>::iterator it =
+                    weighted_measurements.begin();
+            it != weighted_measurements.begin() + k; ++it) {
         weighted_weight += it->weight / it->distance;
     }
 
     return std::max(min_weight_, weighted_weight);
 }
 
-void LocalFcnnObservationModel::set_measurement(humanoid_league_msgs::PixelsRelative measurement) {
+void LocalFcnnObservationModel::set_measurement(
+        humanoid_league_msgs::PixelsRelative measurement) {
     last_measurement_ = measurement.pixels;
 }
 
@@ -116,5 +146,3 @@ void LocalFcnnObservationModel::clear_measurement() {
 bool LocalFcnnObservationModel::measurements_available() {
     return (!last_measurement_.empty());
 }
-
-

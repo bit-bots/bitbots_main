@@ -1,15 +1,11 @@
 #include <bitbots_world_model/ObstacleStates.h>
 
-PositionState::PositionState() :
-    xPos_(0.0),
-    yPos_(0.0) {}
+PositionState::PositionState() : xPos_(0.0), yPos_(0.0) {}
 
-PositionState::PositionState(float x, float y) :
-    xPos_(x),
-    yPos_(y) {}
+PositionState::PositionState(float x, float y) : xPos_(x), yPos_(y) {}
 
 PositionState PositionState::operator*(float factor) const {
-    return(PositionState(getXPos() * factor, getYPos() * factor));
+    return (PositionState(getXPos() * factor, getYPos() * factor));
 }
 
 PositionState& PositionState::operator+=(const PositionState& other) {
@@ -19,11 +15,11 @@ PositionState& PositionState::operator+=(const PositionState& other) {
 }
 
 PositionState& PositionState::operator=(const PositionState& other) {
-  if (this != &other) {
-    setXPos(other.getXPos());
-    setYPos(other.getYPos());
-  }
-  return *this;
+    if (this != &other) {
+        setXPos(other.getXPos());
+        setYPos(other.getYPos());
+    }
+    return *this;
 }
 
 PositionState::~PositionState() {}
@@ -44,7 +40,13 @@ float PositionState::getYPos() const {
     return yPos_;
 }
 
-visualization_msgs::Marker PositionState::renderPointsMarker(particle_filter::ParticleFilter<PositionState>::ParticleList& particle_list, std::string n_space, std::string frame, ros::Duration lifetime, std_msgs::ColorRGBA color) {
+visualization_msgs::Marker PositionState::renderPointsMarker(
+        particle_filter::ParticleFilter<PositionState>::ParticleList&
+                particle_list,
+        std::string n_space,
+        std::string frame,
+        ros::Duration lifetime,
+        std_msgs::ColorRGBA color) {
     visualization_msgs::Marker msg;
     msg.header.stamp = ros::Time::now();
     msg.header.frame_id = frame;
@@ -57,7 +59,7 @@ visualization_msgs::Marker PositionState::renderPointsMarker(particle_filter::Pa
     msg.color = color;
     msg.lifetime = lifetime;
     msg.ns = n_space;
-    for (particle_filter::Particle<PositionState> *particle : particle_list) {
+    for (particle_filter::Particle<PositionState>* particle : particle_list) {
         geometry_msgs::Point point_msg;
         point_msg.x = particle->getState().getXPos();
         point_msg.y = particle->getState().getYPos();
@@ -66,7 +68,11 @@ visualization_msgs::Marker PositionState::renderPointsMarker(particle_filter::Pa
     return msg;
 }
 
-visualization_msgs::Marker PositionState::renderMarker(PositionState particle_state, std_msgs::ColorRGBA color, ros::Duration lifetime, std::string n_space) {
+visualization_msgs::Marker
+PositionState::renderMarker(PositionState particle_state,
+        std_msgs::ColorRGBA color,
+        ros::Duration lifetime,
+        std::string n_space) {
     visualization_msgs::Marker msg;
     msg.header.stamp = ros::Time::now();
     msg.header.frame_id = "/base_link";
@@ -88,16 +94,19 @@ visualization_msgs::Marker PositionState::renderMarker(PositionState particle_st
 
 double PositionState::calcDistance(const PositionState& state) const {
     // TODO
-    double diff =  std::sqrt(std::pow(getXPos() - state.getXPos(), 2) + std::pow(getYPos() - state.getYPos(), 2));
+    double diff = std::sqrt(std::pow(getXPos() - state.getXPos(), 2) +
+                            std::pow(getYPos() - state.getYPos(), 2));
     if (diff == 0.0) {
         diff = 0.0001;
     }
     return diff;
 }
 
-double PositionState::calcDistance(const humanoid_league_msgs::PixelRelative &pixel) const {
+double PositionState::calcDistance(
+        const humanoid_league_msgs::PixelRelative& pixel) const {
     // TODO
-    double diff =  std::sqrt(std::pow(getXPos() - pixel.position.x, 2) + std::pow(getYPos() - pixel.position.y, 2));
+    double diff = std::sqrt(std::pow(getXPos() - pixel.position.x, 2) +
+                            std::pow(getYPos() - pixel.position.y, 2));
     if (diff == 0.0) {
         diff = 0.0001;
     }
@@ -105,12 +114,14 @@ double PositionState::calcDistance(const humanoid_league_msgs::PixelRelative &pi
 }
 
 void PositionState::convertParticleListToEigen(
-        const std::vector<particle_filter::Particle<PositionState>*>& particle_list,
+        const std::vector<particle_filter::Particle<PositionState>*>&
+                particle_list,
         Eigen::MatrixXd& matrix,
         const bool ignore_explorers) {
     if (ignore_explorers) {
         int non_explorer_count = 0;
-        for (particle_filter::Particle<PositionState> *particle : particle_list) {
+        for (particle_filter::Particle<PositionState>* particle :
+                particle_list) {
             if (!particle->is_explorer_) {
                 non_explorer_count++;
             }
@@ -118,9 +129,9 @@ void PositionState::convertParticleListToEigen(
 
         matrix.resize(non_explorer_count, 2);
         int counter = 0;
-
 #pragma parallel for
-        for (particle_filter::Particle<PositionState> *particle : particle_list) {
+        for (particle_filter::Particle<PositionState>* particle :
+                particle_list) {
             if (!particle->is_explorer_) {
                 matrix(counter, 0) = particle->getState().getXPos();
                 matrix(counter, 1) = particle->getState().getYPos();
@@ -130,7 +141,7 @@ void PositionState::convertParticleListToEigen(
     } else {
         matrix.resize(particle_list.size(), 3);
 #pragma parallel for
-        for(int i = 0; i < particle_list.size(); i++) {
+        for (int i = 0; i < particle_list.size(); i++) {
             matrix(i, 0) = particle_list[i]->getState().getXPos();
             matrix(i, 1) = particle_list[i]->getState().getYPos();
         }
@@ -138,17 +149,15 @@ void PositionState::convertParticleListToEigen(
 }
 
 
-
-PositionStateW::PositionStateW() :
-    PositionState(),
-    width_(0.0) {}
+PositionStateW::PositionStateW() : PositionState(), width_(0.0) {}
 
 PositionStateW::PositionStateW(float x, float y, float w) :
-    PositionState(x, y),
-    width_(w) {}
+        PositionState(x, y),
+        width_(w) {}
 
 PositionStateW PositionStateW::operator*(float factor) const {
-    return(PositionStateW(getXPos() * factor, getYPos() * factor, getWidth() * factor));
+    return (PositionStateW(
+            getXPos() * factor, getYPos() * factor, getWidth() * factor));
 }
 
 PositionStateW& PositionStateW::operator+=(const PositionStateW& other) {
@@ -159,12 +168,12 @@ PositionStateW& PositionStateW::operator+=(const PositionStateW& other) {
 }
 
 PositionStateW& PositionStateW::operator=(const PositionStateW& other) {
-  if (this != &other) {
-    setXPos(other.getXPos());
-    setYPos(other.getYPos());
-    setWidth(other.getWidth());
-  }
-  return *this;
+    if (this != &other) {
+        setXPos(other.getXPos());
+        setYPos(other.getYPos());
+        setWidth(other.getWidth());
+    }
+    return *this;
 }
 
 PositionStateW::~PositionStateW() {}
@@ -177,7 +186,13 @@ float PositionStateW::getWidth() const {
     return width_;
 }
 
-visualization_msgs::Marker PositionStateW::renderPointsMarker(particle_filter::ParticleFilter<PositionStateW>::ParticleList& particle_list, std::string n_space, std::string frame, ros::Duration lifetime, std_msgs::ColorRGBA color) {
+visualization_msgs::Marker PositionStateW::renderPointsMarker(
+        particle_filter::ParticleFilter<PositionStateW>::ParticleList&
+                particle_list,
+        std::string n_space,
+        std::string frame,
+        ros::Duration lifetime,
+        std_msgs::ColorRGBA color) {
     visualization_msgs::Marker msg;
     msg.header.stamp = ros::Time::now();
     msg.header.frame_id = frame;
@@ -190,7 +205,7 @@ visualization_msgs::Marker PositionStateW::renderPointsMarker(particle_filter::P
     msg.color = color;
     msg.lifetime = lifetime;
     msg.ns = n_space;
-    for (particle_filter::Particle<PositionStateW> *particle : particle_list) {
+    for (particle_filter::Particle<PositionStateW>* particle : particle_list) {
         geometry_msgs::Point point_msg;
         point_msg.x = particle->getState().getXPos();
         point_msg.y = particle->getState().getYPos();
@@ -201,7 +216,8 @@ visualization_msgs::Marker PositionStateW::renderPointsMarker(particle_filter::P
 
 double PositionStateW::calcDistance(const PositionStateW& state) const {
     // TODO
-    double diff =  std::sqrt(std::pow(getXPos() - state.getXPos(), 2) + std::pow(getYPos() - state.getYPos(), 2));
+    double diff = std::sqrt(std::pow(getXPos() - state.getXPos(), 2) +
+                            std::pow(getYPos() - state.getYPos(), 2));
     if (diff == 0.0) {
         diff = 0.0001;
     }
@@ -209,12 +225,14 @@ double PositionStateW::calcDistance(const PositionStateW& state) const {
 }
 
 void PositionStateW::convertParticleListToEigen(
-        const std::vector<particle_filter::Particle<PositionStateW>*>& particle_list,
+        const std::vector<particle_filter::Particle<PositionStateW>*>&
+                particle_list,
         Eigen::MatrixXd& matrix,
         const bool ignore_explorers) {
     if (ignore_explorers) {
         int non_explorer_count = 0;
-        for (particle_filter::Particle<PositionStateW> *particle : particle_list) {
+        for (particle_filter::Particle<PositionStateW>* particle :
+                particle_list) {
             if (!particle->is_explorer_) {
                 non_explorer_count++;
             }
@@ -223,7 +241,8 @@ void PositionStateW::convertParticleListToEigen(
         matrix.resize(non_explorer_count, 3);
         int counter = 0;
 
-        for (particle_filter::Particle<PositionStateW> *particle : particle_list) {
+        for (particle_filter::Particle<PositionStateW>* particle :
+                particle_list) {
             if (!particle->is_explorer_) {
                 matrix(counter, 0) = particle->getState().getXPos();
                 matrix(counter, 1) = particle->getState().getYPos();
@@ -233,7 +252,7 @@ void PositionStateW::convertParticleListToEigen(
         }
     } else {
         matrix.resize(particle_list.size(), 3);
-        for(int i = 0; i < particle_list.size(); i++) {
+        for (int i = 0; i < particle_list.size(); i++) {
             matrix(i, 0) = particle_list[i]->getState().getXPos();
             matrix(i, 1) = particle_list[i]->getState().getYPos();
             matrix(i, 2) = particle_list[i]->getState().getWidth();
@@ -241,16 +260,15 @@ void PositionStateW::convertParticleListToEigen(
     }
 }
 
-PoseState::PoseState() :
-    PositionState(),
-    orientation_(0.0) {}
+PoseState::PoseState() : PositionState(), orientation_(0.0) {}
 
 PoseState::PoseState(float x, float y, float o) :
-    PositionState(x, y),
-    orientation_(o) {}
+        PositionState(x, y),
+        orientation_(o) {}
 
 PoseState PoseState::operator*(float factor) const {
-    return(PoseState(getXPos() * factor, getYPos() * factor, getOrientation() * factor));
+    return (PoseState(
+            getXPos() * factor, getYPos() * factor, getOrientation() * factor));
 }
 
 PoseState& PoseState::operator+=(const PoseState& other) {
@@ -261,12 +279,12 @@ PoseState& PoseState::operator+=(const PoseState& other) {
 }
 
 PoseState& PoseState::operator=(const PoseState& other) {
-  if (this != &other) {
-    setXPos(other.getXPos());
-    setYPos(other.getYPos());
-    setOrientation(other.getOrientation());
-  }
-  return *this;
+    if (this != &other) {
+        setXPos(other.getXPos());
+        setYPos(other.getYPos());
+        setOrientation(other.getOrientation());
+    }
+    return *this;
 }
 
 PoseState::~PoseState() {}
@@ -281,7 +299,8 @@ float PoseState::getOrientation() const {
 
 double PoseState::calcDistance(const PoseState& state) const {
     // TODO
-    double diff =  std::sqrt(std::pow(getXPos() - state.getXPos(), 2) + std::pow(getYPos() - state.getYPos(), 2));
+    double diff = std::sqrt(std::pow(getXPos() - state.getXPos(), 2) +
+                            std::pow(getYPos() - state.getYPos(), 2));
     if (diff == 0.0) {
         diff = 0.0001;
     }
@@ -294,7 +313,7 @@ void PoseState::convertParticleListToEigen(
         const bool ignore_explorers) {
     if (ignore_explorers) {
         int non_explorer_count = 0;
-        for (particle_filter::Particle<PoseState> *particle : particle_list) {
+        for (particle_filter::Particle<PoseState>* particle : particle_list) {
             if (!particle->is_explorer_) {
                 non_explorer_count++;
             }
@@ -303,21 +322,23 @@ void PoseState::convertParticleListToEigen(
         matrix.resize(non_explorer_count, 2);
         int counter = 0;
 
-        for (particle_filter::Particle<PoseState> *particle : particle_list) {
+        for (particle_filter::Particle<PoseState>* particle : particle_list) {
             if (!particle->is_explorer_) {
                 matrix(counter, 0) = particle->getState().getXPos();
                 matrix(counter, 1) = particle->getState().getYPos();
-                matrix(counter, 2) = particle->getState().getOrientation();  // TODO
+                matrix(counter, 2) =
+                        particle->getState().getOrientation();  // TODO
                 counter++;
             }
         }
     } else {
         matrix.resize(particle_list.size(), 3);
+
         for (int i = 0; i < particle_list.size(); i++) {
             matrix(i, 0) = particle_list[i]->getState().getXPos();
             matrix(i, 1) = particle_list[i]->getState().getYPos();
-            matrix(i, 2) = particle_list[i]->getState().getOrientation();  // TODO
+            matrix(i, 2) =
+                    particle_list[i]->getState().getOrientation();  // TODO
         }
     }
 }
-
