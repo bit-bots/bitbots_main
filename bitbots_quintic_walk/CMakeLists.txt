@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   moveit_ros_robot_interaction
   bitbots_msgs
+  moveit_ros_move_group
 )
 
 find_package(Eigen3 REQUIRED)
