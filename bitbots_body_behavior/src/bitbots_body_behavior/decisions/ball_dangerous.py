@@ -4,7 +4,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 class BallDangerous(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallDangerous, self).__init__(blackboard, dsd, parameters)
-        self.ball_dangerous_goal_radius = self.blackboard.config['ball_dangerous_goal_radius']
+        self.goal_radius = self.blackboard.config['ball_dangerous_goal_radius']
 
     def perform(self, reevaluate=False):
         if self._in_dangerous_area(self.blackboard.world_model.get_ball_position_xy()):
@@ -17,16 +17,13 @@ class BallDangerous(AbstractDecisionElement):
         """
 
         # close enough on the x axis
-        if position[0] > -(self.blackboard.field_length / 2) + self.ball_dangerous_goal_radius:
+        if position[0] > -(self.blackboard.field_length / 2) + self.goal_radius:
             return False
 
-        if (-self.blackboard.goal_width / 2) - self.ball_dangerous_goal_radius <= \
-                position[1] <= \
-                (self.blackboard.goal_width / 2) + self.ball_dangerous_goal_radius:
+        # in the y-area in front of the goal (respecting the radius
+        if abs(position[1]) <= (self.blackboard.goal_width / 2 + self.goal_radius):
             return True
         return False
-
-
 
     def get_reevaluate(self):
         return True
