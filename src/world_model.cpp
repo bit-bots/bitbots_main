@@ -1,7 +1,7 @@
 #include "bitbots_world_model/world_model.h"
 
 
-WorldModel::WorldModel() : nh_(), valid_configuration_(false) {
+WorldModel::WorldModel() : nh_(), valid_configuration_(false), transform_listener_(transform_buffer_) {
     ROS_INFO("Created Bit-Bots world model");
 }
 
@@ -515,6 +515,31 @@ WorldModel::relative_gmm_to_ball_relative(gmms::GaussianMixtureModel gmm) {
         vector.push_back(ball);
     }
     return vector;
+}
+
+void WorldModel::send_mate_transforms() {
+    geometry_msgs::TransformStamped transform;
+    tf2::Quaternion q;
+    transform.header.stamp = ros::Time::now();
+    transform.header.frame_id = "map";
+    for (char i = 1; i <=4; i++) {
+        // if the element is in the dictionary
+        if (mate_self_detections_.find(i) == mate_self_detections_.end()) {
+            continue;
+        }
+        transform.child_frame_id = std::string("mate_") + std::to_string(i);
+        std::pair<gmms::Gaussian, double> gaussian_distance = global_mates_gmm_.getClosestGaussian(Eigen::Vector2d(mate_self_detections_[i].x, mate_self_detections_[i].y));
+        // TODO check distance in in threshold
+        transform.transform.translation.x = gaussian_distance.first.mean()[0];
+        transform.transform.translation.y = gaussian_distance.first.mean()[1];
+        transform.transform.translation.z = 0;
+        q.setRPY(0, 0, mate_self_detections_[i].theta);
+        transform.transform.rotation.x = q.x();
+        transform.transform.rotation.y = q.y();
+        transform.transform.rotation.z = q.z();
+        transform.transform.rotation.w = q.w();
+        transform_broadcaster_.sendTransform(transform);
+    }
 }
 
 int main(int argc, char** argv) {

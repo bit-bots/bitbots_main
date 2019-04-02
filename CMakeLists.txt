@@ -5,15 +5,17 @@ project(bitbots_world_model)
 add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
+  dynamic_reconfigure
+  eigen_conversions
+  geometry_msgs
+  humanoid_league_msgs
+  particle_filter
   roscpp
   rospy
   std_msgs
-  geometry_msgs
+  tf2
+  tf2_ros
   visualization_msgs
-  humanoid_league_msgs
-  dynamic_reconfigure
-  eigen_conversions
-  particle_filter
 )
 
 

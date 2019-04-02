@@ -3,6 +3,7 @@
 #define WORLD_MODEL
 
 #include <vector>
+#include <map>
 #include <memory>
 
 #include <ros/ros.h>
@@ -27,6 +28,8 @@
 #include <particle_filter/gaussian_mixture_model.h>
 #include <particle_filter/CRandomNumberGenerator.h>
 
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
 
 namespace hlm = humanoid_league_msgs;
 namespace wm = bitbots_world_model;
@@ -68,6 +71,10 @@ private:
     ros::ServiceServer reset_filters_service_;
 
     ros::Timer publishing_timer_;
+
+    tf2_ros::TransformBroadcaster transform_broadcaster_;
+    tf2_ros::Buffer transform_buffer_;
+    tf2_ros::TransformListener transform_listener_;
 
     particle_filter::CRandomNumberGenerator random_number_generator_;
 
@@ -147,6 +154,15 @@ private:
     gmms::GaussianMixtureModel local_opponents_gmm_;
     gmms::GaussianMixtureModel local_obstacles_gmm_;
 
+    gmms::GaussianMixtureModel global_ball_gmm_;
+    gmms::GaussianMixtureModel global_mates_gmm_;
+    gmms::GaussianMixtureModel global_opponents_gmm_;
+    gmms::GaussianMixtureModel global_obstacles_gmm_;
+
+    // the self detections. they are overwritten by detections in the global
+    // filter. Thus, the values are as current as possible.
+    std::map<char, geometry_msgs::Pose2D> mate_self_detections_;
+
     bool valid_configuration_;
 
     std::vector<hlm::ObstacleRelative>
@@ -158,8 +174,8 @@ private:
     void publishing_timer_callback(const ros::TimerEvent&);
     void publish_particle_visualization();
     void publish_gmm_visualization(gmms::GaussianMixtureModel gmm,
-            std::string n_space,
-            ros::Duration lifetime);
+            std::string n_space, ros::Duration lifetime);
+    void send_mate_transforms();
 
     std_msgs::ColorRGBA get_color_msg(int color_id);
     void publish_local_results();
