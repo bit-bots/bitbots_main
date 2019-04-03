@@ -109,7 +109,6 @@ sub first_catkin_build() {
     print "[Y/n]: ";
     if (read_yes_no_input()) {
         system "bash -c \"source $location/devel/setup.bash && catkin build\"";
-        system "bash -c \"source $location/devel/setup.bash && catkin build\""
             or die "Build was not successful"
     }
 }
