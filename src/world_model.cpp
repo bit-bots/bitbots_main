@@ -546,6 +546,20 @@ void WorldModel::send_mate_transforms() {
     }
 }
 
+geometry_msgs::Pose
+WorldModel::pose2d_to_pose(const geometry_msgs::Pose2D pose2D) {
+    geometry_msgs::Pose pose;
+    pose.position.x = pose2D.x;
+    pose.position.y = pose2D.y;
+    tf2::Quaternion q;
+    q.setRPY(0, 0, pose2D.theta);
+    pose.orientation.x = q.x();
+    pose.orientation.y = q.y();
+    pose.orientation.z = q.z();
+    pose.orientation.w = q.w();
+    return pose;
+}
+
 int main(int argc, char** argv) {
     ros::init(argc, argv, "world_model");
     WorldModel world_model;

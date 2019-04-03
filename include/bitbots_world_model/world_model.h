@@ -176,6 +176,7 @@ private:
     void publish_gmm_visualization(gmms::GaussianMixtureModel gmm,
             std::string n_space, ros::Duration lifetime);
     void send_mate_transforms();
+    geometry_msgs::Pose pose2d_to_pose(const geometry_msgs::Pose2D pose2D);
 
     std_msgs::ColorRGBA get_color_msg(int color_id);
     void publish_local_results();
