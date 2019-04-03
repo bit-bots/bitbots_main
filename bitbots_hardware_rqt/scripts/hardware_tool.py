@@ -36,9 +36,20 @@ class Hardwaretool():
         self.cpu_info = rospy.Subscriber("/cpu_info", CpuMessage, self.cpu_info_to_object) 
         self.bat_info = rospy.Subscriber("/battery_info", BatteryMessage, self.battery_info_to_object)
         
-        self.udp_ip = rospy.get_param("/hardware_tool/ip")
-        self.udp_port = rospy.get_param("/hardware_tool/port")
-        self.send_delay = 0.5
+        rospack = rospkg.RosPack()
+        path = rospack.get_path("bitbots_hardware_rqt")
+        path = os.path.join(path, "config/hardware_rqt_settings" + '.yaml')
+        with open(path, "r") as file:
+            config = yaml.load(file)
+            if rospy.has_param("/hardware_tool/ip"):
+                self.udp_ip = rospy.get_param("/hardware_tool/ip")
+            else:
+                self.udp_ip = config["rqt_ip"]
+            if rospy.has_param("/hardware_tool/port"):
+                self.udp_port = rospy.get_param("/hardware_tool/port")
+            else:
+                self.udp_port = config["hardware_rqt_port"]
+            self.send_delay = config["send_delay"]
 
         print("I am sending to: \nIp: "+self.udp_ip+", Port: "+str(self.udp_port)+", Delay: "+str(self.send_delay))
 

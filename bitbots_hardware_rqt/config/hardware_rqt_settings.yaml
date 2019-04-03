@@ -1,0 +1,3 @@
+rqt_ip: "127.0.0.1"
+hardware_rqt_port: 5005
+send_delay: 0.5
