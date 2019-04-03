@@ -26,15 +26,27 @@ class LiveToolSender():
 
     def __init__(self):
 
-        self.send_delay = 500
-
         self.positionMsg = PositionMsg()
         self.statusMsg = StatusMsg()
         self.detectionMsg = DetectionMsg()
         self.trajectoryMsg = TrajectoryMsg()
 
-        self.udp_ip = rospy.get_param("/live_tool/ip")
-        self.udp_port = rospy.get_param("/live_tool/port")
+        rospack = rospkg.RosPack()
+        path = rospack.get_path("bitbots_live_tool_rqt")
+        path = os.path.join(path, "config/live_rqt_settings" + '.yaml')
+        with open(path, "r") as file:
+            config = yaml.load(file)
+            if rospy.has_param("/live_tool/ip"):
+                self.udp_ip = rospy.get_param("/live_tool/ip")
+            else:
+                self.udp_ip = config["rqt_ip"]
+            if rospy.has_param("/live_tool/port"):
+                self.udp_port = rospy.get_param("/live_tool/port")
+            else:
+                self.udp_port = config["live_rqt_port"]
+            self.send_delay = config["send_delay"]
+
+        print("I am sending to: \nIp: "+self.udp_ip+", Port: "+str(self.udp_port)+", Delay: "+str(self.send_delay))
 
         self.listener()
 
@@ -97,8 +109,7 @@ class LiveToolSender():
 
         rospy.Subscriber("/cmd_vel", Twist, self.callBack_cmd_vel)
         rospy.Subscriber("/move_base_simple/goal", Pose2D, self.callBack_move_base_simple)
-        # read ip configurations
-        self.readIpConfig()
+
 
         # Starts process for Sending UDP-packaged
         p = mp.Process(target=self.worker_thread())
@@ -107,22 +118,6 @@ class LiveToolSender():
 
         # spin() simply keeps python from exiting until this node is stopped
         rospy.spin()
-
-
-    # Reads the necessary ip configurations from ip_config.yaml located in resource dir
-    def readIpConfig(self):
-        rp = rospkg.RosPack()
-        ip_filename = os.path.join(rp.get_path('bitbots_live_tool_rqt'), 'resource', 'ip_config.yaml')
-
-        with open(ip_filename, "r") as file:
-            global udp_ip, udp_port, send_delay
-            ip_config = yaml.load(file)
-
-            self.send_delay = float(ip_config.get(DELAY_TOKEN)) / 1000.0
-            
-            print("I am sending to: \nIp: "+self.udp_ip+", Port: "+str(self.udp_port)+", Delay: "+str(self.send_delay))
-
-        file.close()
 
 
     # send the data every <code>send_delay</code> seconds
