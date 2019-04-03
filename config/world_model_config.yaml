@@ -147,11 +147,3 @@ global_opponent_min_weight: 0.001
 global_opponent_explorer_rate: .05
 global_opponent_max_distance: 18
 
-global_obstacle_particle_number: 2000
-global_obstacle_diffusion_x_std_dev: 1
-global_obstacle_diffusion_y_std_dev: 1
-global_obstacle_diffusion_multiplicator: 0.1
-global_obstacle_min_weight: 0.001
-global_obstacle_explorer_rate: .05
-global_obstacle_max_distance: 18
-
