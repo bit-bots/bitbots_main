@@ -85,6 +85,91 @@ bool LocalRobotObservationModel::measurements_available() {
     return (!last_measurement_.empty());
 }
 
+
+GlobalBallObservationModel::GlobalBallObservationModel() :
+        particle_filter::ObservationModel<PositionState>() {}
+
+GlobalBallObservationModel::~GlobalBallObservationModel() {}
+
+double GlobalBallObservationModel::measure(const PositionState& state) const {
+    if (last_measurement_.empty()) {
+        // ROS_ERROR_STREAM("measure function called with empty measurement
+        // list. Prevent this by not calling the function of the particle filter
+        // on empty measurements.");
+        return 1.0;
+    }
+    return std::max(min_weight_,
+            1 / state.calcDistance(*std::min_element(last_measurement_.begin(),
+                        last_measurement_.end(),
+                        [&state](PositionState a, PositionState b) {
+                            return state.calcDistance(a) <
+                                   state.calcDistance(b);
+                        })));
+}
+
+void GlobalBallObservationModel::set_measurement(
+        std::vector<PositionState> measurement) {
+    last_measurement_ = measurement;
+}
+
+void GlobalBallObservationModel::set_min_weight(double min_weight) {
+    min_weight_ = min_weight;
+}
+
+double GlobalBallObservationModel::get_min_weight() const {
+    return min_weight_;
+}
+
+void GlobalBallObservationModel::clear_measurement() {
+    last_measurement_.clear();
+}
+
+bool GlobalBallObservationModel::measurements_available() {
+    return (!last_measurement_.empty());
+}
+
+GlobalRobotObservationModel::GlobalRobotObservationModel() :
+        particle_filter::ObservationModel<PositionState>() {}
+
+GlobalRobotObservationModel::~GlobalRobotObservationModel() {}
+
+double GlobalRobotObservationModel::measure(const PositionState& state) const {
+    if (last_measurement_.empty()) {
+        // ROS_ERROR_STREAM("measure function called with empty measurement
+        // list. Prevent this by not calling the function of the particle filter
+        // on empty measurements.");
+        return 1.0;
+    }
+    return std::max(min_weight_,
+            1 / state.calcDistance(*std::min_element(last_measurement_.begin(),
+                        last_measurement_.end(),
+                        [&state](PositionState a, PositionState b) {
+                            return state.calcDistance(a) <
+                                   state.calcDistance(b);
+                        })));
+}
+
+void GlobalRobotObservationModel::set_measurement(
+        std::vector<PositionState> measurement) {
+    last_measurement_ = measurement;
+}
+
+void GlobalRobotObservationModel::set_min_weight(double min_weight) {
+    min_weight_ = min_weight;
+}
+
+double GlobalRobotObservationModel::get_min_weight() const {
+    return min_weight_;
+}
+
+void GlobalRobotObservationModel::clear_measurement() {
+    last_measurement_.clear();
+}
+
+bool GlobalRobotObservationModel::measurements_available() {
+    return (!last_measurement_.empty());
+}
+
 LocalFcnnObservationModel::LocalFcnnObservationModel() :
         particle_filter::ObservationModel<PositionState>() {}
 

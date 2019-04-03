@@ -102,6 +102,80 @@ private:
     double min_weight_;
 };
 
+class GlobalRobotObservationModel
+        : public particle_filter::ObservationModel<PositionState> {
+public:
+    /**
+     * empty
+     */
+    GlobalRobotObservationModel();
+
+    /**
+     * empty
+     */
+    ~GlobalRobotObservationModel();
+
+    /**
+     *
+     * @param state Reference to the state that has to be weightened.
+     * @return weight for the given state.
+     */
+    double measure(const PositionState& state) const;
+
+    void set_measurement(std::vector<PositionState> measurement);
+
+    void set_min_weight(double min_weight);
+
+    double get_min_weight() const;
+
+    void clear_measurement();
+
+    bool measurements_available();
+
+protected:
+private:
+    std::vector<PositionState> last_measurement_;
+
+    double min_weight_;
+};
+
+class GlobalBallObservationModel
+        : public particle_filter::ObservationModel<PositionState> {
+public:
+    /**
+     * empty
+     */
+    GlobalBallObservationModel();
+
+    /**
+     * empty
+     */
+    ~GlobalBallObservationModel();
+
+    /**
+     *
+     * @param state Reference to the state that has to be weightened.
+     * @return weight for the given state.
+     */
+    double measure(const PositionState& state) const;
+
+    void set_measurement(std::vector<PositionState> measurement);
+
+    void set_min_weight(double min_weight);
+
+    double get_min_weight() const;
+
+    void clear_measurement();
+
+    bool measurements_available();
+
+protected:
+private:
+    std::vector<PositionState> last_measurement_;
+
+    double min_weight_;
+};
+
 class LocalFcnnObservationModel
         : public particle_filter::ObservationModel<PositionState> {
 public:
