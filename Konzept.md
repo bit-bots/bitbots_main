@@ -26,3 +26,4 @@ Organisatorisches
 
 * Im Git nutzen wir Feature Branches
 * Code soll gut kommentiert werden
+* Issues benutzen, sowohl für Feature Requests, als auch für Bugs
