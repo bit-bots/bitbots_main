@@ -25,9 +25,7 @@ public:
      */
     LocalObstacleMovementModel(
             particle_filter::CRandomNumberGenerator& random_number_generator,
-            double xStdDev,
-            double yStdDev,
-            double multiplicator);
+            double xStdDev, double yStdDev, double multiplicator);
 
     /**
      * empty
@@ -38,8 +36,7 @@ public:
      * The drift method is empty in this example.
      * @param state Pointer to the state that has to be manipulated.
      */
-    void drift(PositionStateW& state,
-            geometry_msgs::Vector3 linear,
+    void drift(PositionStateW& state, geometry_msgs::Vector3 linear,
             geometry_msgs::Vector3 angular) const;
 
     /**
@@ -66,9 +63,7 @@ public:
      */
     LocalRobotMovementModel(
             particle_filter::CRandomNumberGenerator& random_number_generator,
-            double xStdDev,
-            double yStdDev,
-            double multiplicator);
+            double xStdDev, double yStdDev, double multiplicator);
 
     /**
      * empty
@@ -79,8 +74,83 @@ public:
      * The drift method is empty in this example.
      * @param state Pointer to the state that has to be manipulated.
      */
-    void drift(PositionState& state,
-            geometry_msgs::Vector3 linear,
+    void drift(PositionState& state, geometry_msgs::Vector3 linear,
+            geometry_msgs::Vector3 angular) const;
+
+    /**
+     * The diffusion consists of a very small gaussian jitter on the
+     * state's variable.
+     * @param state Pointer to the state that has to be manipulated.
+     */
+    void diffuse(PositionState& state) const;
+
+protected:
+private:
+    // The random number generator
+    particle_filter::CRandomNumberGenerator random_number_generator_;
+
+    // standard deviations and multiplicator for the diffuse step
+    double xStdDev_, yStdDev_, multiplicator_;
+};
+
+class GlobalBallMovementModel
+        : public particle_filter::MovementModel<PositionState> {
+public:
+    /**
+     * empty
+     */
+    GlobalBallMovementModel(
+            particle_filter::CRandomNumberGenerator& random_number_generator,
+            double xStdDev, double yStdDev, double multiplicator);
+
+    /**
+     * empty
+     */
+    ~GlobalBallMovementModel();
+
+    /**
+     * The drift method is empty in this example.
+     * @param state Pointer to the state that has to be manipulated.
+     */
+    void drift(PositionState& state, geometry_msgs::Vector3 linear,
+            geometry_msgs::Vector3 angular) const;
+
+    /**
+     * The diffusion consists of a very small gaussian jitter on the
+     * state's variable.
+     * @param state Pointer to the state that has to be manipulated.
+     */
+    void diffuse(PositionState& state) const;
+
+protected:
+private:
+    // The random number generator
+    particle_filter::CRandomNumberGenerator random_number_generator_;
+
+    // standard deviations and multiplicator for the diffuse step
+    double xStdDev_, yStdDev_, multiplicator_;
+};
+
+class GlobalRobotMovementModel
+        : public particle_filter::MovementModel<PositionState> {
+public:
+    /**
+     * empty
+     */
+    GlobalRobotMovementModel(
+            particle_filter::CRandomNumberGenerator& random_number_generator,
+            double xStdDev, double yStdDev, double multiplicator);
+
+    /**
+     * empty
+     */
+    ~GlobalRobotMovementModel();
+
+    /**
+     * The drift method is empty in this example.
+     * @param state Pointer to the state that has to be manipulated.
+     */
+    void drift(PositionState& state, geometry_msgs::Vector3 linear,
             geometry_msgs::Vector3 angular) const;
 
     /**
