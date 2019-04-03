@@ -274,7 +274,7 @@ class Vision:
             [config['blue_color_detector_upper_values_h'], config['blue_color_detector_upper_values_s'],
              config['blue_color_detector_upper_values_v']])
 
-        self.field_color_detector = color.PixelListColorDetector(
+        self.field_color_detector = color.DynamicPixelListColorDetector(
             self.debug_printer,
             self.package_path,
             config,

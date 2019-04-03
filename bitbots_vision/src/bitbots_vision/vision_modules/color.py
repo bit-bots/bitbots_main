@@ -173,7 +173,13 @@ class HsvSpaceColorDetector(ColorDetector):
 
 
 class PixelListColorDetector(ColorDetector):
-    def __init__(self, debug_printer, package_path, vision_config, primary_detector=False):
+    """
+    PixelListColorDetector is a ColorDetector, that is based on a lookup table of color values.
+    The color space is loaded from color-space-file at color_path (in config).
+    The color space is represented by boolean-values for RGB-color-values.
+    """
+
+    def __init__(self, debug_printer, package_path, config, dump=None):
         # type:(DebugPrinter, str, dict, bool) -> None
         """
         PixelListColorDetector is a ColorDetector, that is based on a color space.
@@ -181,56 +187,38 @@ class PixelListColorDetector(ColorDetector):
         and optionally adjustable to changing color conditions (dynamic color space).
         The color space is represented by boolean-values for RGB-color-values.
 
+        The following parameters of the config dict are needed:
+            'vision_use_sim_color',
+            'field_color_detector_path_sim',
+            'field_color_detector_path'
+
         :param DebugPrinter debug_printer: debug-printer
         :param str package_path: path of package
-        :param dict vision_config: vision config
-        :param bool primary_detector: true if is primary color detector
-            (only detector held by vision should be True) (Default: False)
+        :param dict config: vision config
+        :param bool dump: optional parameter just to unify 
+            signature with DynamicPixelListColorDetector
         :return: None
         """
+        print("AAAAAAAA")
+        print(type(config))
         ColorDetector.__init__(self, debug_printer)
         self.bridge = CvBridge()
 
-        self.vision_config = vision_config
+        self.config = config
+        print("BBBBBBBBBBBBB")
+        print(self.config)
 
-        self.primary_detector = primary_detector
+        print("CCCCCCCCCCCCC")
+        print(self.config['vision_use_sim_color'])
+        print(type(self.config['vision_use_sim_color']))
 
         # concatenate color-path to file containing the accepted colors of base color space
         if self.vision_config['vision_use_sim_color']:
             self.color_path = package_path + self.vision_config['field_color_detector_path_sim']
         else:
-            self.color_path = package_path + self.vision_config['field_color_detector_path']
-        self.base_color_space = self.init_color_space(self.color_path)
-        self.color_space = np.copy(self.base_color_space)
-
-        # toggle publishing of mask_img msg
-        self.publish_mask_img_msg = self.vision_config['vision_mask_img_msg']
+            self.color_path = package_path + self.config['field_color_detector_path']
         
-        # toggle publishing of mask_img_dyn msg with dynamic color space
-        self.publish_mask_img_dyn_msg = self.vision_config['dynamic_color_space_mask_img_dyn_msg']
-
-        # toggle use of dynamic color space
-        self.dynamic_color_space_turned_on = self.vision_config['dynamic_color_space']
-
-        # Subscribe to 'color_space'-messages from DynamicColorSpace
-        self.color_space_subscriber = rospy.Subscriber(
-            'color_space',
-            ColorSpace,
-            self.color_space_callback,
-            queue_size=1,
-            buff_size=2**20)
-    
-        # Register publisher for 'mask_image'-messages
-        self.imagepublisher = rospy.Publisher(
-            "/mask_image",
-            Image,
-            queue_size=1)
-
-        # Register publisher for 'mask_image_dyn'-messages
-        self.imagepublisher_dyn = rospy.Publisher(
-            "/mask_image_dyn",
-            Image,
-            queue_size=1)
+        self.color_space = self.init_color_space(self.color_path)
 
     def init_color_space(self, color_path):
         # type: (str) -> None
@@ -279,6 +267,75 @@ class PixelListColorDetector(ColorDetector):
         :return bool: whether pixel is in color space or not
         """
         return self.color_space[pixel[0], pixel[1], pixel[2]]
+
+    def mask_image(self, image):
+        # type: (np.array) -> np.array
+        """
+        Creates a color mask (0 for not in color range and 255 for in color range).
+
+        :param np.array image: image to mask
+        :return np.array: masked image
+        """
+        return VisionExtensions.maskImg(image, self.color_space)
+
+
+class DynamicPixelListColorDetector(PixelListColorDetector):
+    """
+    DynamicPixelListColorDetector is a ColorDetector, that is based on a lookup table of color values.
+    The color space is initially loaded from color-space-file at color_path (in config)
+    and optionally adjustable to changing color conditions (dynamic color space).
+    The color space is represented by boolean-values for RGB-color-values.
+
+    Subscribes to: 'color_space'-message
+    Publishes: 'field_mask' and 'dynamic_field_mask'-messages
+    """
+
+    def __init__(self, debug_printer, package_path, config, primary_detector=False):
+        # type:(DebugPrinter, str, dict, bool) -> None
+        """
+        Initiating of DynamicPixelListColorDetector.
+
+        :param DebugPrinter debug_printer: debug-printer
+        :param str package_path: path of package
+        :param dict config: vision config
+        :param bool primary_detector: true if is primary color detector
+            (only detector held by vision should be True) (Default: False)
+        :return: None
+        """
+        PixelListColorDetector.__init__(self, debug_printer, package_path, config)
+
+        self.primary_detector = primary_detector
+
+        self.base_color_space = np.copy(self.color_space)
+
+        # toggle publishing of mask_img msg
+        self.publish_mask_img_msg = self.config['vision_mask_img_msg']
+        
+        # toggle publishing of mask_img_dyn msg with dynamic color space
+        self.publish_mask_img_dyn_msg = self.config['dynamic_color_space_mask_img_dyn_msg']
+
+        # toggle use of dynamic color space
+        self.dynamic_color_space_turned_on = self.config['dynamic_color_space']
+
+        # Subscribe to 'color_space'-messages from DynamicColorSpace
+        self.color_space_subscriber = rospy.Subscriber(
+            'color_space',
+            ColorSpace,
+            self.color_space_callback,
+            queue_size=1,
+            buff_size=2**20)
+    
+        # Register publisher for 'mask_image'-messages
+        self.imagepublisher = rospy.Publisher(
+            "/field_mask",
+            Image,
+            queue_size=1)
+
+        # Register publisher for 'mask_image_dyn'-messages
+        self.imagepublisher_dyn = rospy.Publisher(
+            "/dynamic_field_mask",
+            Image,
+            queue_size=1)
 
     def mask_image(self, image):
         # type: (np.array) -> np.array
