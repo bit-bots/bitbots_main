@@ -179,6 +179,7 @@ private:
 
     std_msgs::ColorRGBA get_color_msg(int color_id);
     void publish_local_results();
+    void exec_local_filter_step();
 };
 
 #endif

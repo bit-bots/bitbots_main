@@ -311,10 +311,7 @@ void WorldModel::publish_gmm_visualization(gmms::GaussianMixtureModel gmm,
             lifetime));  // TODO: check whether x and y are in the right order
 }
 
-
-void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
-    // the content of this function is what happens in a single timestep
-
+void WorldModel::exec_local_filter_step() {
     // setting the weights of the particles according to the measurements taken
     // TODO: do this only when stuff is measured
     local_ball_pf_->measure();
@@ -345,6 +342,13 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     local_mate_pf_->diffuse();
     local_opponent_pf_->diffuse();
     local_obstacle_pf_->diffuse();
+}
+
+void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
+    // the content of this function is what happens in a single timestep
+
+    // executing a local filter step
+    exec_local_filter_step();
 
     // publish the output
     publish_local_results();
