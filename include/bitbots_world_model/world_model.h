@@ -106,6 +106,7 @@ private:
     std::vector<PositionStateW> global_obstacle_measurements_;
 
     // resampling strategies
+    // local
     std::shared_ptr<ImportanceResamplingWE<PositionState>>
             local_ball_resampling_;
     std::shared_ptr<ImportanceResamplingWE<PositionState>>
@@ -114,22 +115,41 @@ private:
             local_opponent_resampling_;
     std::shared_ptr<ImportanceResamplingWE<PositionStateW>>
             local_obstacle_resampling_;
+    // global
+    std::shared_ptr<ImportanceResamplingWE<PositionState>>
+            global_ball_resampling_;
+    std::shared_ptr<ImportanceResamplingWE<PositionState>>
+            global_mate_resampling_;
+    std::shared_ptr<ImportanceResamplingWE<PositionState>>
+            global_opponent_resampling_;
 
     // observation models
+    // local
     std::shared_ptr<LocalFcnnObservationModel> local_ball_observation_model_;
     std::shared_ptr<LocalRobotObservationModel> local_mate_observation_model_;
     std::shared_ptr<LocalRobotObservationModel>
             local_opponent_observation_model_;
     std::shared_ptr<LocalObstacleObservationModel>
             local_obstacle_observation_model_;
+    // global
+    std::shared_ptr<GlobalBallObservationModel> global_ball_observation_model_;
+    std::shared_ptr<GlobalRobotObservationModel> global_mate_observation_model_;
+    std::shared_ptr<GlobalRobotObservationModel>
+            global_opponent_observation_model_;
 
     // movement models
+    // local
     std::shared_ptr<LocalRobotMovementModel> local_ball_movement_model_;
     std::shared_ptr<LocalRobotMovementModel> local_mate_movement_model_;
     std::shared_ptr<LocalRobotMovementModel> local_opponent_movement_model_;
     std::shared_ptr<LocalObstacleMovementModel> local_obstacle_movement_model_;
+    // global
+    std::shared_ptr<GlobalBallMovementModel> global_ball_movement_model_;
+    std::shared_ptr<GlobalRobotMovementModel> global_mate_movement_model_;
+    std::shared_ptr<GlobalRobotMovementModel> global_opponent_movement_model_;
 
     // state distributions
+    // local
     std::shared_ptr<LocalPositionStateDistribution>
             local_ball_state_distribution_;
     std::shared_ptr<LocalPositionStateDistribution>
@@ -138,8 +158,16 @@ private:
             local_opponent_state_distribution_;
     std::shared_ptr<LocalPositionStateWDistribution>
             local_obstacle_state_distribution_;
+    // global
+    std::shared_ptr<GlobalPositionStateDistribution>
+            global_ball_state_distribution_;
+    std::shared_ptr<GlobalPositionStateDistribution>
+            global_mate_state_distribution_;
+    std::shared_ptr<GlobalPositionStateDistribution>
+            global_opponent_state_distribution_;
 
     // particle filters
+    // local
     std::shared_ptr<particle_filter::ParticleFilter<PositionState>>
             local_ball_pf_;
     std::shared_ptr<particle_filter::ParticleFilter<PositionState>>
@@ -148,16 +176,24 @@ private:
             local_opponent_pf_;
     std::shared_ptr<particle_filter::ParticleFilter<PositionStateW>>
             local_obstacle_pf_;
+    // global
+    std::shared_ptr<particle_filter::ParticleFilter<PositionState>>
+            global_ball_pf_;
+    std::shared_ptr<particle_filter::ParticleFilter<PositionState>>
+            global_mate_pf_;
+    std::shared_ptr<particle_filter::ParticleFilter<PositionState>>
+            global_opponent_pf_;
 
+    // saving the gmms after each filter step
+    // local
     gmms::GaussianMixtureModel local_ball_gmm_;
     gmms::GaussianMixtureModel local_mates_gmm_;
     gmms::GaussianMixtureModel local_opponents_gmm_;
     gmms::GaussianMixtureModel local_obstacles_gmm_;
-
+    // global
     gmms::GaussianMixtureModel global_ball_gmm_;
     gmms::GaussianMixtureModel global_mates_gmm_;
     gmms::GaussianMixtureModel global_opponents_gmm_;
-    gmms::GaussianMixtureModel global_obstacles_gmm_;
 
     // the self detections. they are overwritten by detections in the global
     // filter. Thus, the values are as current as possible.
@@ -165,9 +201,8 @@ private:
 
     bool valid_configuration_;
 
-    std::vector<hlm::ObstacleRelative>
-    relative_gmm_to_obstacle_relative(gmms::GaussianMixtureModel gmm,
-            unsigned char color);
+    std::vector<hlm::ObstacleRelative> relative_gmm_to_obstacle_relative(
+            gmms::GaussianMixtureModel gmm, unsigned char color);
     std::vector<hlm::BallRelative>
     relative_gmm_to_ball_relative(gmms::GaussianMixtureModel gmm);
 
