@@ -72,7 +72,7 @@ class Bezier:
         control_distance = math.sqrt((target_pose.x - my_pose.x)**2 + (target_pose.y - my_pose.y)**2) * straightness
         control_1 = Pose2D()
         control_1.x = my_pose.x + control_distance * math.cos(my_pose.theta)
-        control_1.y = my_pose.y - control_distance * math.sin(my_pose.theta)
+        control_1.y = my_pose.y + control_distance * math.sin(my_pose.theta)
         control_2 = Pose2D()
         control_2.x = target_pose.x - control_distance * math.cos(target_pose.theta)
         control_2.y = target_pose.y - control_distance * math.sin(target_pose.theta)

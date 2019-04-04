@@ -72,8 +72,8 @@ class BezierPathfinding:
             own_pose.x = own_pose_3d.pose.position.x
             own_pose.y = own_pose_3d.pose.position.y
             # Quaternion -> Euler again
-            yaw = - math.atan2(2 * own_pose_3d.pose.orientation.z * own_pose_3d.pose.orientation.w,
-                               1 - 2 * own_pose_3d.pose.orientation.z * own_pose_3d.pose.orientation.z)
+            yaw = math.atan2(2 * own_pose_3d.pose.orientation.z * own_pose_3d.pose.orientation.w,
+                             1 - 2 * own_pose_3d.pose.orientation.z * own_pose_3d.pose.orientation.z)
             own_pose.theta = yaw
         else:
             raise AssertionError('goal_msg must be in base_footprint of map frame')
