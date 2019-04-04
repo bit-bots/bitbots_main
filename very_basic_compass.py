@@ -2,6 +2,7 @@
 import numpy as np
 import cv2
 import silx
+import sys
 import time
 from silx.image import sift
 
@@ -59,7 +60,23 @@ class DemoSift():
 
                 if self.state != visible_side:
                     self.state = visible_side
-                    print("SEITE {}".format(self.state))
+                    # Debug
+                    sys.stdout.write("  SEITE: %d   \r" % (self.state) )
+                    sys.stdout.flush()
+                
+                # Noch mehr Debug
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                bottomLeftCornerOfText = (10,35)
+                fontScale              = 1
+                fontColor              = (255,255,255)
+                lineType               = 2
+
+                cv2.putText(self.debug_image,"SEITE {}".format(self.state), 
+                    bottomLeftCornerOfText, 
+                    font, 
+                    fontScale,
+                    fontColor,
+                    lineType)
                 
             cv2.imshow("Video", self.debug_image)
 
