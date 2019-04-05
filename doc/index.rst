@@ -21,6 +21,7 @@ Einstieg und Tutorials:
    manual/tutorials/pycharm-ros
    manual/tutorials/motion
    manual/tutorials/hcm
+   manual/tutorials/animation
    manual/tutorials/3d-Druck
 
 Software:
