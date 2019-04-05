@@ -27,6 +27,6 @@ Linie historisch gewachsen und einfacher ist.
 Manuell kann man Animationen mit `rosrun bitbots_animation_server run_animation <name>` starten.
 Alle Animationen befinden sich im Paket `wolfgang_animations`.
 
-Wenn keine Animation abgespielt wird, sollte geprüft werden, ob die HCM einen anderen Robot State
-als Controlable oder Walking angibt, da nur in diesen beiden Status andere Animationen abgespielt
-werden können.
+Wenn das Abspielen einer Animation einmal nicht klappt, sollte geprüft werden, ob die HCM einen
+anderen Robot State als Controlable oder Walking angibt, da nur in diesen beiden Status andere
+Animationen abgespielt werden können.
