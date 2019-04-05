@@ -8,7 +8,8 @@ from silx.image import sift
 
 class DemoSift():
     def __init__(self):
-        self.cap = cv2.VideoCapture(0) 
+        # self.cap = cv2.VideoCapture(2)
+        self.cap = cv2.VideoCapture("/home/florian/Projekt/bitbots/Visueller_Kompass/test_data/imageset_373/frame%06d.png") 
         self.side_key_points = [None,None]
 
         initframe = self.cap.read()[1]
@@ -21,6 +22,9 @@ class DemoSift():
 
     def compare(self, image):
         kp = self.sift_ocl(image)
+
+        if not kp.shape[0]:
+            return 0, 0
 
         matches = (self.mp(kp, self.side_key_points[0]), 
                    self.mp(kp, self.side_key_points[1]))
@@ -37,6 +41,7 @@ class DemoSift():
     def workloop(self):
         side = 0
         while True:
+            time1 = time.time()
             ret, frame = self.cap.read()
 
             k = cv2.waitKey(1)
@@ -61,17 +66,23 @@ class DemoSift():
                 if self.state != visible_side:
                     self.state = visible_side
                     # Debug
-                    sys.stdout.write("  SEITE: %d   \r" % (self.state) )
-                    sys.stdout.flush()
+                print(common_keys)
+                    # sys.stdout.write("  SEITE: %d   \r" % (self.state) )
+                    # sys.stdout.flush()
+                if abs(common_keys[0] - common_keys[1])/(float(sum(common_keys) + 1)) < 0.2:
+                    self.state = "too common"
                 
+                if sum(common_keys) < 10:
+                    self.state = "undefined"
+
                 # Noch mehr Debug
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 bottomLeftCornerOfText = (10,35)
-                fontScale              = 1
-                fontColor              = (255,255,255)
-                lineType               = 2
+                fontScale = 1
+                fontColor = (255,255,255)
+                lineType = 2
 
-                cv2.putText(self.debug_image,"SEITE {}".format(self.state), 
+                cv2.putText(self.debug_image,"SIDE {}".format(self.state), 
                     bottomLeftCornerOfText, 
                     font, 
                     fontScale,
@@ -79,6 +90,10 @@ class DemoSift():
                     lineType)
                 
             cv2.imshow("Video", self.debug_image)
+            
+            diff = float(1)/30 - (time.time() - time1)
+            if diff > 0:
+                time.sleep(diff)
 
             # Abbrechen mit ESC
             if k%256 == 27 or 0xFF == ord('q'):
@@ -87,7 +102,7 @@ class DemoSift():
         cv2.destroyAllWindows()
 
     def initside(self, side, frame):
-        print("Taken!!")
+        print("Taken side {}!".format(side))
         self.side_key_points[side] = self.sift_ocl(frame)
 
     def convert_match(self, kps):
@@ -96,7 +111,7 @@ class DemoSift():
     
     def plot(self, image, kp, color, size):
         for i in range(kp.shape[0]):
-            cv2.circle(image, (kp[i].x, kp[i].y), size, color, thickness=-1)
+            cv2.circle(image, (kp[i].x, kp[i].y), size+int(kp[i].scale), color, thickness=2)
         return image
 
 if __name__ == "__main__":
