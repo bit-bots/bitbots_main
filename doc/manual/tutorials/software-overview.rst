@@ -12,10 +12,10 @@ Einen etwas umfangreicheren Überblick bietet Martins :doc:`software-schnelleins
 
 Installation
 ==============
-Wir benutzen `ROS Kinetic`_. Diese ROS-Version läuft leider nur unter Ubuntu 16.04 (LTS) und Debain.
-Um ROS also auf einem eigenen Gerät zu nutzen ist eine VM oder ein Dualboot Setup nötig.
+Wir benutzen `ROS Melodic`_. Diese ROS-Version läuft unter Ubuntu 18.04 (LTS) und Debian, kann in anderen Betriebssystemen aber aus den `Quellen kompiliert`_ oder über Docker genutzt werden (rosdocked_).
+Alternativ kann auch eine VM oder ein Dualboot-Setup genutzt werden. Hier wird die Installation in einem Ubuntu-System beschrieben.
 
-1. Linux (`Ubuntu 16.04`_) installieren (notfalls VM)
+1. Linux (`Ubuntu 18.04`_) installieren (notfalls VM)
 2. einen SSH-Key erstellen (falls nötig) und bei Gogs_ und Github_ eintragen
 3. `bitbots_meta`_ klonen
 4. `make install` in bitbots_meta ausführen
@@ -71,6 +71,10 @@ In jedem *Submodule* kann es ein oder mehrere *catkin Pakete* geben, welche eine
 
 **Sei vorsichtig, Submodules und Pakete nicht zu vertauschen**
 
+Launchdateien (s. u.) gibt es häufig in doppelter Ausführung, wobei eine das Suffix `_standalone` trägt. Das 
+bedeutet, dass zusätzlich zum eigentlichen Node, der gestartet wird, auch der *Robot State Publisher* gestartet
+und das *URDF* geladen wird.
+
 
 ROS und Nodes starten
 =======================
@@ -80,16 +84,13 @@ Kontext gebraucht werden.
 
 Auserdem müssen nicht alle launch files auf dem gleichen Gerät gestartet werden solange der Roscore erreichbar ist.
 
-Bei uns benötigen viele launch files noch als Argument entweder `wolfgang:=true` oder `minibot:=true` je nachdem,
-auf welchem Roboter sie gerade ausgeführt werden.
-
 Die Syntax zum starten von launch files lautet:
 
-:code:`roslaunch <paket> <launch file> <argumente...>`
+:code:`roslaunch <paket> <launch file>`
 
 Alternativ kann auch eine einzelne Node gestartet werden
 
-:code:`rosrun <paket> <python Datei>`
+:code:`rosrun <paket> <ausführbare Datei>`
 
 **Beide Befehle unterstützen Tab-Vervollständigung**
 
@@ -102,7 +103,7 @@ Beispiel
 
     Nun kann die gewünschte launch file einfach gestartet werden:
 
-    :code:`roslaunch bitbots_head_behaviour head_behaviour_standalone.launch wolfgang:=true`
+    :code:`roslaunch bitbots_head_behaviour head_behaviour_standalone.launch`
 
 - Verschiedene Nodes auf verschiedenen Geräten:
     Es empfiehlt sich einen *roscore* seperat zu starten. Das Gerät mit dem roscore wird weiterhin als *Host*
@@ -117,7 +118,7 @@ Beispiel
     Auf anderen Geräten muss vor dem starten die Adresse des Roscore eingestellt werden. Dies geschieht durch die
     Environment Variables `ROS_MASTER_URI`
 
-    :code:`export ROS_MASTER_URI=http://<Ip-Addresse>:11311`
+    :code:`export ROS_MASTER_URI=http://<Ip-Adresse>:11311`
 
     :code:`roslaunch <...>`
 
@@ -129,17 +130,19 @@ aber ansonsten sollten alle Nodes normal funktionieren.
 
 Für den Simulator selbst
 
-:code:`roslaunch bitbots_bringup simulator.launch wolfgang:=true`
+:code:`roslaunch bitbots_bringup simulator.launch`
 
 Für den Roboter darin
 
-:code:`roslaunch bitbots_bringup teamplayer_simulated.launch wolfgang:=true`
+:code:`roslaunch bitbots_bringup teamplayer_simulated.launch`
 
 
 
-.. _ROS Kinetic: https://wiki.ros.org/kinetic
-.. _Ubuntu 16.04: http://releases.ubuntu.com/16.04/
+.. _ROS Melodic: https://wiki.ros.org/melodic
+.. _Ubuntu 18.04: http://releases.ubuntu.com/18.04/
 .. _Github: https://github.com/
 .. _Gogs: https://gogs.mafiasi.de
-.. _bitbots_meta: https://gogs.mafiasi.de/Bit-Bots/bitbots_meta
+.. _bitbots_meta: https://github.com/Bit-Bots/bitbots_meta
 .. _Marcs Masterarbeit: https://tams.informatik.uni-hamburg.de/publications/2017/MSc_Marc_Bestmann.pdf
+.. _rosdocked: https://github.com/timonegk/rosdocked
+.. _Quellen kompiliert: https://wiki.ros.org/melodic/Installation/Source
