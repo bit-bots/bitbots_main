@@ -1,7 +1,7 @@
 Die HCM
 =======
 
-Die HCM ist der Teil unseres Software-Stacks, der über der Motion (Dokulink) steht und von dieser
+Die HCM ist der Teil unseres Software-Stacks, der über der :doc:`motion` steht und von dieser
 gleichzeitig abstrahiert und einen Mutex darauf bildet.
 
 Motivation
