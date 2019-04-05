@@ -88,6 +88,22 @@ sub link_bitbots_meta() {
     }
 }
 
+sub prepare_rosdep() {
+    print "Rosdep will be installed to resolve ROS dependecies$/";
+    if (-e "/etc/apt/sources.list.d/ros-latest.list") {
+        system "sudo rm /etc/apt/sources.list.d/ros-latest.list"
+            and die "Unable to remove old ros source list";
+    }
+    if (! -e "/etc/apt/sources.list.d/ros-final.list") {
+        system "echo \"deb http://packages.ros.org/ros/ubuntu \$(lsb_release -sc) main\" | sudo tee /etc/apt/sources.list.d/ros-final.list"
+            or system "sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116"
+            and die "Unable to add ROS key to apt";
+    }
+    system "sudo apt update"
+        or system "sudo apt install -y python-catkin-tools python-rosdep"
+        and die "Unable to install rosdep";
+}
+
 sub install_rosdeps() {
     my $location = get_location();
 
@@ -95,8 +111,8 @@ sub install_rosdeps() {
     print "[Y/n]: ";
     if (read_yes_no_input()) {
         system "sudo rosdep init"
-        && system "rosdep update"
-        && system "bash -c \"source $location/devel/setup.bash && rosdep install -i -r -y -a\""
+            or system "rosdep update"
+            or system "bash -c \"source $location/devel/setup.bash && rosdep install -i -r -y -a\""
             or die "Rosdep initialization failed";
     }
 }
@@ -116,6 +132,7 @@ sub first_catkin_build() {
 prepare_workspace_location();
 create_catkin_workspace();
 link_bitbots_meta();
+prepare_rosdep();
 install_rosdeps();
 first_catkin_build();
 chdir $start_dir;
