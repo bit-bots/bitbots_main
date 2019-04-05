@@ -4,20 +4,6 @@ Die HCM
 Die HCM ist der Teil unseres Software-Stacks, der über der Motion (Dokulink) steht und von dieser
 gleichzeitig abstrahiert und einen Mutex darauf bildet.
 
-
-
-Ebene über der Motion von letztem Mal
-
-ros_control
-DynWorkbench
-DynSDK
-Bus 
-
-Davon wird abstrahiert
-ros_control gibt uns als Messages joint_states (momentane Positionen, Kräfte, Geschwindigkeiten, debug Informationen)
-sowie zur Kontrolle Joint Command (Positionskontrolle, Effort Control, Maximum Effort Position Goal) Message ist abhängig vom Controller im ros_control eingestellt (der beste ist der DynamixelController von Marc, stattdessen auch Standard ROS Control Dinge möglich)
-Wir nutzen Position Control (man kann allen oder manchen Motoren Ziele geben)
-
 Motivation
 ----------
 
