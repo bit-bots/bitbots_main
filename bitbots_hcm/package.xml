@@ -19,12 +19,17 @@
 
   <depend>rospy</depend>
 
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>humanoid_league_msgs</exec_depend>
-  <exec_depend>bitbots_bringup</exec_depend>
-  <exec_depend>dynamic_reconfigure</exec_depend>
-  <exec_depend>bitbots_msgs</exec_depend>
-
+  <depend>std_msgs</depend>
+  <depend>humanoid_league_msgs</depend>
+  <depend>bitbots_bringup</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>wolfgang_description</depend>
+  <depend>wolfgang_animations</depend>
+  <depend>wolfgang_moveit_config</depend>
+  <depend>dynamic_stack_decider</depend>
+  <depend>humanoid_league_speaker</depend>
+  <depend>humanoid_base_footprint</depend>
 
   <export>
     <bitbots_documentation>
