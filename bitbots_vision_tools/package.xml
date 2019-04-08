@@ -12,33 +12,15 @@
   <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>cv2</build_depend>
-  <build_depend>dynamic_reconfigure</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>humanoid_league_msgs</build_depend>
-  <build_depend>numpy</build_depend>
-  <build_depend>rospkg</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_export_depend>cv2</build_export_depend>
-  <build_export_depend>dynamic_reconfigure</build_export_depend>
-  <build_export_depend>geometry_msgs</build_export_depend>
-  <build_export_depend>humanoid_league_msgs</build_export_depend>
-  <build_export_depend>numpy</build_export_depend>
-  <build_export_depend>rospkg</build_export_depend>
-  <build_export_depend>rospy</build_export_depend>
-  <build_export_depend>sensor_msgs</build_export_depend>
-  <build_export_depend>std_msgs</build_export_depend>
-  <exec_depend>cv2</exec_depend>
-  <exec_depend>dynamic_reconfigure</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>humanoid_league_msgs</exec_depend>
-  <exec_depend>numpy</exec_depend>
-  <exec_depend>rospkg</exec_depend>
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>geometry_msgs</depend>
+  <depend>humanoid_league_msgs</depend>
+  <depend>python-numpy</depend>
+  <depend>python-opencv</depend>
+  <depend>python-rospkg</depend>
+  <depend>rospy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
 
   <export>
     <bitbots_documentation>
