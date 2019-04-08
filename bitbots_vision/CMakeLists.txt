@@ -29,7 +29,7 @@ generate_dynamic_reconfigure_options(
 )
 
 catkin_package(
-  CATKIN_DEPENDS geometry_msgs humanoid_league_msgs image_transport message_runtime rospy rospkg sensor_msgs std_msgs
+  CATKIN_DEPENDS geometry_msgs humanoid_league_msgs image_transport message_runtime rospy python-rospkg sensor_msgs std_msgs
 )
 
 include_directories(
