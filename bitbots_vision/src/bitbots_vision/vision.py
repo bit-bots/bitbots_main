@@ -11,8 +11,8 @@ from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest
-from bitbots_vision.vision_modules import lines, horizon, color, debug, live_classifier, \
-    classifier, ball, lines2, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
+from bitbots_vision.vision_modules import lines, field_boundary, color, debug, live_classifier, \
+    classifier, ball, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config
 
@@ -75,7 +75,7 @@ class Vision:
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
         # setup detectors
-        self.horizon_detector.set_image(image)
+        self.field_boundary_detector.set_image(image)
         self.obstacle_detector.set_image(image)
         self.line_detector.set_image(image)
 
@@ -85,7 +85,7 @@ class Vision:
             self.ball_finder.set_image(image)
             self.ball_detector.set_image(
                 image,
-                self.horizon_detector.balls_under_horizon(
+                self.field_boundary_detector.balls_under_field_boundary(
                     self.ball_finder.get_ball_candidates(),
                     self._ball_candidate_y_offset))
 
@@ -93,7 +93,7 @@ class Vision:
             self.ball_detector.set_image(image)
 
         if self.config['vision_parallelize']:
-            self.horizon_detector.compute_all()  # computes stuff which is needed later in the processing
+            self.field_boundary_detector.compute_all()  # computes stuff which is needed later in the processing
             fcnn_thread = threading.Thread(target=self.ball_detector.compute_top_candidate)
             conventional_thread = threading.Thread(target=self._conventional_precalculation())
 
@@ -199,14 +199,17 @@ class Vision:
                 (255, 255, 255),
                 thickness=3
             )
-            self.debug_image_dings.draw_horizon(
-                self.horizon_detector.get_horizon_points(),
+            self.debug_image_dings.draw_field_boundary(
+                self.field_boundary_detector.get_field_boundary_points(),
                 (0, 0, 255))
+            self.debug_image_dings.draw_field_boundary(
+                self.field_boundary_detector.get_convex_field_boundary_points(),
+                (0, 255, 255))
             self.debug_image_dings.draw_ball_candidates(
                 self.ball_detector.get_candidates(),
                 (0, 0, 255))
             self.debug_image_dings.draw_ball_candidates(
-                self.horizon_detector.balls_under_horizon(
+                self.field_boundary_detector.balls_under_field_boundary(
                     self.ball_detector.get_candidates(),
                     self._ball_candidate_y_offset),
                 (0, 255, 255))
@@ -235,7 +238,7 @@ class Vision:
         self.runtime_evaluator = evaluator.RuntimeEvaluator(self.debug_printer)
 
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
-        self._ball_candidate_y_offset = config['vision_ball_candidate_horizon_y_offset']
+        self._ball_candidate_y_offset = config['vision_ball_candidate_field_boundary_y_offset']
 
         self.debug_image = config['vision_debug_image']
         self.debug_image_msg = config['vision_debug_image_msg']
@@ -280,7 +283,7 @@ class Vision:
             config,
             primary_detector=True)
 
-        self.horizon_detector = horizon.HorizonDetector(
+        self.field_boundary_detector = field_boundary.FieldBoundaryDetector(
             self.field_color_detector,
             config,
             self.debug_printer,
@@ -289,7 +292,7 @@ class Vision:
         self.line_detector = lines.LineDetector(
             self.white_color_detector,
             self.field_color_detector,
-            self.horizon_detector,
+            self.field_boundary_detector,
             config,
             self.debug_printer)
 
@@ -297,7 +300,7 @@ class Vision:
             self.red_color_detector,
             self.blue_color_detector,
             self.white_color_detector,
-            self.horizon_detector,
+            self.field_boundary_detector,
             self.runtime_evaluator,
             config,
             self.debug_printer
@@ -337,7 +340,7 @@ class Vision:
             'min_candidate_diameter': config['ball_fcnn_min_ball_diameter'],
             'max_candidate_diameter': config['ball_fcnn_max_ball_diameter'],
             'candidate_refinement_iteration_count': config['ball_fcnn_candidate_refinement_iteration_count'],
-            'publish_horizon_offset': config['ball_fcnn_publish_horizon_offset'],
+            'publish_field_boundary_offset': config['ball_fcnn_publish_field_boundary_offset'],
         }
 
         # load fcnn
@@ -352,7 +355,7 @@ class Vision:
                 rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
             self.ball_detector = fcnn_handler.FcnnHandler(
                 self.ball_fcnn,
-                self.horizon_detector,
+                self.field_boundary_detector,
                 self.ball_fcnn_config,
                 self.debug_printer)
 

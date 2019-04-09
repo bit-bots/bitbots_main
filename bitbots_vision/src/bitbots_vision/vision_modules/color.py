@@ -9,7 +9,7 @@ import numpy as np
 from collections import deque
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
-from bitbots_msgs.msg import ColorSpaceMessage
+from bitbots_msgs.msg import ColorSpace as ColorSpaceMessage
 from .debug import DebugPrinter
 
 

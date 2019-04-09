@@ -7,10 +7,10 @@ ball_fcnn_shuffle_candidate_list: false  # shuffles the list of possible candida
 ball_fcnn_min_ball_diameter: 5
 ball_fcnn_max_ball_diameter: 200
 ball_fcnn_publish_output: false
-ball_fcnn_publish_horizon_offset: 5
+ball_fcnn_publish_field_boundary_offset: 5
 
 field_color_detector_path: '/config/color_spaces/f132.yaml'
-field_color_detector_path_sim: '/config/color_spaces/simColor_interpolated.yaml'
+field_color_detector_path_sim: '/config/color_spaces/fieldColor_mag_interpolated.yaml'
 field_color_detector_use_hsv_green: false
 field_color_detector_hsv_lower_values_h: 46
 field_color_detector_hsv_lower_values_s: 101
@@ -40,12 +40,14 @@ blue_color_detector_upper_values_h: 145
 blue_color_detector_upper_values_s: 255
 blue_color_detector_upper_values_v: 255
 
-horizon_finder_vertical_steps: 30
-horizon_finder_horizontal_steps: 30
-horizon_finder_roi_height: 11
-horizon_finder_roi_width: 5
-horizon_finder_precision_pix: 5
-horizon_finder_min_precision_pix: 3
+field_boundary_finder_search_method: 'binary'  # iteration, reversed or binary
+field_boundary_finder_vertical_steps: 320
+field_boundary_finder_horizontal_steps: 30
+field_boundary_finder_roi_height: 11
+field_boundary_finder_roi_width: 9
+field_boundary_finder_green_threshold: 0
+field_boundary_finder_precision_pix: 5
+field_boundary_finder_min_precision_pix: 3
 
 vision_ball_classifier: 'fcnn'  # cascade, fcnn or dummy
 vision_debug_image: false
@@ -53,18 +55,18 @@ vision_debug_image_msg: false
 vision_mask_img_msg: false
 vision_parallelize: true
 vision_use_sim_color: false
-vision_ball_candidate_horizon_y_offset: 0
+vision_ball_candidate_field_boundary_y_offset: 0
 vision_ball_candidate_rating_threshold: 0.5
 vision_debug_printer_classes: ''
 
-line_detector_horizon_offset: 50
+line_detector_field_boundary_offset: 50
 line_detector_linepoints_range: 10000
 line_detector_blur_kernel_size: 9
 
 obstacle_color_threshold: 50
 obstacle_white_threshold: 50
-obstacle_horizon_diff_threshold: 20
-obstacle_candidate_horizon_offset: 30
+obstacle_field_boundary_diff_threshold: 20
+obstacle_candidate_field_boundary_offset: 30
 obstacle_candidate_min_width: 30
 obstacle_finder_step_length: 5
 
