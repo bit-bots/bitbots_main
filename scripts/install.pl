@@ -88,16 +88,34 @@ sub link_bitbots_meta() {
     }
 }
 
+sub prepare_ros() {
+    print "Rosdep will be installed to resolve ROS dependecies$/";
+    if (-e "/etc/apt/sources.list.d/ros-latest.list") {
+        system "sudo rm /etc/apt/sources.list.d/ros-latest.list"
+            and die "Unable to remove old ros source list";
+    }
+    if (! -e "/etc/apt/sources.list.d/ros-final.list") {
+        system "echo \"deb http://packages.ros.org/ros/ubuntu \$(lsb_release -sc) main\" | sudo tee /etc/apt/sources.list.d/ros-final.list"
+            and die "Unable to add ROS sources";
+    }
+    system "sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116"
+        or system "sudo apt update"
+        or system "sudo apt install -y python-catkin-tools python-rosdep"
+        and die "Unable to install rosdep";
+    system "sudo apt install -y ros-melodic-desktop-full"
+        and die "Unable to install ROS";
+}
+
 sub install_rosdeps() {
     my $location = get_location();
 
     print "Do you want to use rosdep to resolve dependencies now?$/";
     print "[Y/n]: ";
     if (read_yes_no_input()) {
-        system "sudo rosdep init"
-        && system "rosdep update"
-        && system "bash -c \"source $location/devel/setup.bash && rosdep install -i -r -y -a\""
-            or die "Rosdep initialization failed";
+        system "sudo rosdep init";
+        system "rosdep update"
+            or system "bash -c \"source $location/devel/setup.bash && rosdep install -i -r -y --from-paths $location/src\""
+            and die "Rosdep initialization failed";
     }
 }
 
@@ -105,7 +123,7 @@ sub first_catkin_build() {
     my $location = get_location();
     chdir $location;
 
-    print "Do you want to execute 'catkin build' two times now?$/";
+    print "Do you want to execute 'catkin build' now?$/";
     print "[Y/n]: ";
     if (read_yes_no_input()) {
         system "bash -c \"source $location/devel/setup.bash && catkin build\"";
@@ -113,6 +131,7 @@ sub first_catkin_build() {
 }
 
 
+prepare_ros();
 prepare_workspace_location();
 create_catkin_workspace();
 link_bitbots_meta();
