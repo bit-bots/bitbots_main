@@ -16,7 +16,6 @@ public:
     KickNode();
     void reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t level);
     void execute(const bitbots_msgs::KickGoalConstPtr& goal);
-    void run();
 private:
     ros::NodeHandle m_node_handle;
     ActionServer m_server;

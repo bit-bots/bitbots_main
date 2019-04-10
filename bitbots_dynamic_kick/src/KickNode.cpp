@@ -5,7 +5,14 @@ KickNode::KickNode() :
     m_server.start();
 }
 
-void KickNode::run() {
+void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig& config, uint32_t level) {
+    m_engine_rate = config.engine_rate;
+}
+
+void KickNode::execute(const bitbots_msgs::KickGoalConstPtr& goal) {
+    m_engine.reset();
+    m_engine.set_goal(goal);
+
     while (ros::ok()) {
         ros::Rate loop_rate(m_engine_rate);
 
@@ -23,15 +30,6 @@ void KickNode::run() {
     }
 }
 
-void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig& config, uint32_t level) {
-    m_engine_rate = config.engine_rate;
-}
-
-void KickNode::execute(const bitbots_msgs::KickGoalConstPtr& goal) {
-    m_engine.reset();
-    m_engine.set_goal(goal);
-}
-
 int main(int argc, char* argv[]) {
     ros::init(argc, argv, "dynamic_kick");
     KickNode node;
@@ -39,5 +37,5 @@ int main(int argc, char* argv[]) {
     dynamic_reconfigure::Server<bitbots_dynamic_kick::DynamicKickConfig>::CallbackType f;
     f = boost::bind(&KickNode::reconfigure_callback, &node, _1, _2);
     dyn_reconf_server.setCallback(f);
-    node.run();
+    ros::spin();
 }
