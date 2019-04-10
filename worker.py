@@ -96,7 +96,7 @@ class BinaryCompass(VisualCompass):
         if not keypoints.shape[0]:
             return 0, 0
 
-        matches = map(partial(self.matchPlan, keypoints).func, self.groundTruth)
+        matches = map(lambda x: self.matchPlan(keypoints, x), self.groundTruth)
         return matches
 
     def _get_keypoints(self, image):

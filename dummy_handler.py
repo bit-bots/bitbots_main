@@ -5,9 +5,8 @@ import yaml
 import os
 import time
 
-from imutils.video import FileVideoStream
-from imutils.video import FPS
-from worker import VisualCompass
+from threading import Thread
+from worker import BinaryCompass
 
 class VisualCompassDummyHandler():
     """
@@ -26,45 +25,73 @@ class VisualCompassDummyHandler():
             root_folder = os.curdir
             source = root_folder + source
         
-        self.fvs = FileVideoStream(source).start()
+        self.video_getter = VideoGet(source).start()
 
-        self.vc = VisualCompass(config)
+        self.vc = BinaryCompass(config)
 
         self.loop()
     
-    def debugImageCallback(self, debug_image):
+    def debug_image_callback(self, debug_image):
         cv2.imshow("Video", debug_image)
 
-    def dataCallback(self, angle, confidence):
+    def data_callback(self, angle, confidence):
         print("Angle: {} | Confidence: {}".format(angle, confidence))
     
     def loop(self):
         side = 0
-        while self.fvs.more():
-            image = self.fvs.read()
+        while True:
+            image = self.video_getter.frame
 
             k = cv2.waitKey(1)
 
             #TODO remove
-            self.debugImageCallback(image)
+            #self.debug_image_callback(image)
 
             if side < 2:
+                self.debug_image_callback(image)
                 # Wurde SPACE gedrueckt
                 if k%256 == 32:
                     angle = side * math.pi
-                    self.vc.setTruth(angle, image)
+                    self.vc.set_truth(angle, image)
                     side += 1
             else:
-                self.vc.processImage(image, resultCB=self.dataCallback, debugCB=self.debugImageCallback)
-                            
-            # TODO echte time sync
-            time.sleep(1/float(30))
+                self.vc.process_image(image, resultCB=self.data_callback, debugCB=self.debug_image_callback)
 
             # Abbrechen mit ESC
-            if k%256 == 27 or 0xFF == ord('q'):
+            if k%256 == 27 or 0xFF == ord('q') or self.video_getter.stopped:
                 break
-                
+        self.video_getter.stop()
         cv2.destroyAllWindows()
+
+
+class VideoGet:
+    """
+    Class that continuously gets frames from a VideoCapture object
+    with a dedicated thread. # TODO Umschreiben
+    """
+
+    def __init__(self, src=0):
+        self.FPS = float(30)
+        self.stream = cv2.VideoCapture(src)
+        (self.grabbed, self.frame) = self.stream.read()
+        self.stopped = False
+    
+    def start(self):    
+        Thread(target=self.get, args=()).start()
+        return self
+
+    def get(self):
+        while not self.stopped:
+            
+            time.sleep(1/self.FPS)
+
+            if not self.grabbed:
+                self.stop()
+            else:
+                (self.grabbed, self.frame) = self.stream.read()
+
+    def stop(self):
+        self.stopped = True
 
 if __name__ == "__main__":
     VisualCompassDummyHandler()
