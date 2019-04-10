@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>visual_compass</name>
+  <version>0.0.0</version>
+  <description>The visual_compass package</description>
+
+  <maintainer email="7baumann@informatik.uni-hamburg.de">Patrick Baumann</maintainer>
+  <maintainer email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</maintainer>
+  <maintainer email="7ostendo@informatik.uni-hamburg.de">Benedikt Ostendorf<maintainer>
+  <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
+
+  <author email="7baumann@informatik.uni-hamburg.de">Patrick Baumann</author>
+  <author email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</author>
+  <author email="7ostendo@informatik.uni-hamburg.de">Benedikt Ostendorf</author>
+  <author email="7vahl@informatik.uni-hamburg.de">Florian Vahl</author>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+
+  <export>
+  <bitbots_documentation>
+    <language>python2</language>
+    <status>unknown</status>
+  </bitbots_documentation>
+  </export>
+</package>
