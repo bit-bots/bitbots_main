@@ -1,9 +1,9 @@
 #! /usr/bin/env python2
 
-import yaml
 import rospy
 import rospkg
 from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
 from dynamic_reconfigure.server import Server
 from bitbots_msgs.msg import VisualCompassMsg
 from bitbots_vision.vision_modules import debug
@@ -12,9 +12,10 @@ from worker import VisualCompass
 
 # TODO adapt import paths
 # TODO define message and trigger
-# TODO use set truth
+# TODO use compass.set_truth
 
 class VisualCompassROSHandler():
+# type: () -> None
 """
 TODO docs
 Subscribes to 'vision_config'-message
@@ -28,11 +29,15 @@ Publish: 'visual_compass'-messages
     Returns side
 """
     def __init__(self):
-        # Initiate VisualCompassHandler
+        # type: () -> None
         """
+        Initiate VisualCompassHandler
+
+        return: None
         """
+        # Init ROS package
         rospack = rospkg.RosPack()
-        self.package_path = rospack.get_path('bitbots_visual_compass')
+        # self.package_path = rospack.get_path('bitbots_visual_compass')
 
         rospy.init_node('bitbots_visual_compass')
         rospy.loginfo('Initializing visual compass')
@@ -40,7 +45,6 @@ Publish: 'visual_compass'-messages
         self.bridge = CvBridge()
 
         self.config = {}
-
         self.compass = None
 
         # Register publisher of 'visual_compass'-messages
@@ -54,9 +58,11 @@ Publish: 'visual_compass'-messages
 
         rospy.spin
 
-    def _dynamic_reconfigure_callback(self, msg):
-        config = yaml.load(msg.data)
-
+    def _dynamic_reconfigure_callback(self, config, level):
+        # type: (dict, TODO) -> None
+        """
+        TODO docs
+        """
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 config['visual_compass_debug_printer_classes']))
@@ -85,6 +91,10 @@ Publish: 'visual_compass'-messages
         self.config = config
 
     def image_callback(self, image_msg):
+        # type: (Image) -> None
+        """
+        TODO docs
+        """
         # Drops old images
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
@@ -94,6 +104,10 @@ Publish: 'visual_compass'-messages
         self.handle_image(image_msg)
 
     def handle_image(self, image_msg):
+        # type: (Image) -> None
+        """
+        TODO docs
+        """
         # Converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
@@ -106,7 +120,11 @@ Publish: 'visual_compass'-messages
         # Publishes the 'visual_compass'-message
         self.publish(image_msg, result[0], result[1])
     
-    def publish(image_msg, angle, certainty):
+    def publish(self, image_msg, angle, certainty):
+        # type: (Image, float, float) -> None
+        """
+        TODO docs
+        """
         msg = VisualCompassMsg()
 
         # Create VisualCompassMsg-message
