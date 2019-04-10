@@ -8,12 +8,15 @@ from dynamic_reconfigure.server import Server
 from bitbots_msgs.msg import VisualCompassMsg
 from bitbots_vision.vision_modules import debug
 from visual_compass import VisualCompassConfig
+from worker import VisualCompass
 
 # TODO adapt import paths
 # TODO define message and trigger
+# TODO use set truth
 
 class VisualCompassROSHandler():
 """
+TODO docs
 Subscribes to 'vision_config'-message
 Subscribes to raw image
 
@@ -38,6 +41,8 @@ Publish: 'visual_compass'-messages
 
         self.config = {}
 
+        self.compass = None
+
         # Register publisher of 'visual_compass'-messages
         self.pub_compass = rospy.Publisher(
             'visual_compass',
@@ -55,6 +60,13 @@ Publish: 'visual_compass'-messages
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 config['visual_compass_debug_printer_classes']))
+
+        if self.compass == None:
+            # Create compass
+            self.compass = VisualCompass(config)
+        else:
+            # Set config
+            self.compass.config_callback(config)
 
         # Subscribe to Image-message
         if 'ROS_img_msg_topic' not in self.config or \
@@ -85,10 +97,14 @@ Publish: 'visual_compass'-messages
         # Converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
-        # TODO handle image
+        # Set image
+        self.compass.image_callback(image)
+
+        # Get angle and certainty from compass
+        result = self.compass.get_side()
 
         # Publishes the 'visual_compass'-message
-        self.publish(image_msg,,) # TODO add angle, certainty
+        self.publish(image_msg, result[0], result[1])
     
     def publish(image_msg, angle, certainty):
         msg = VisualCompassMsg()
