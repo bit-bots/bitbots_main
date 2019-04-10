@@ -12,6 +12,7 @@ Schießen oder dem Hinfallen entgegenwirken. Wenn alle diese Bewegungen gleichze
 gesendet werden, führt das zu widersprüchlichen Signalen und einem Zittern der Motoren.
 
 Zur Lösung gibt es zwei verschiedene Ansätze:
+
 1. Der gesamte Code ist in einer großen, monolithischen Blase organisiert, die einen einzigen
    Publisher für Motorpositionen hat und eventuelle Konflikte intern zum Beispiel durch eine State
    Machine verhindert. Dieser Ansatz ist zwar verbreitet, aber sehr schlecht wartbar.
