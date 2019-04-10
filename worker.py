@@ -15,38 +15,41 @@ class VisualCompass:
         # type: (np.array, func, func) -> None
         """
         Processes an image and updates the internal state
+        Calls Callbacks with updated state if callback is supplied
 
-        :param image:
-        :param resultCB:
-        :param debugCB:
-        :return:
+        :param image: 2D numpy Array with RGB channels
+        :param resultCB: Callback called with updated state (angle: float [0:2*pi], confidence: float [0,1])
+        :param debugCB: Callback called with debug image (image: numpy Array)
+        :return: void
         """
         pass
 
     def set_config(self, config):
         # type: (dict) -> None
         """
+        Updates the configuration
+        config content TBD
 
-        :param config:
-        :return:
+        :param config: Dictionary with new config
+        :return: void
         """
         pass
 
     def set_truth(self, angle, image):
         # type: (float, np.array) -> None
         """
+        set a truth-image for specific angle.
 
-        :param angle:
-        :param image:
-        :return:
+        :param angle: float [0:2*pi]
+        :param image: 2D numpy Array
+        :return: void
         """
         pass
 
     def get_side(self):
         # type: () -> (float, float)
         """
-
-        :return:
+        :return: current internal state (angle: [0:2*pi], confidence: [0,1])
         """
         pass
 
