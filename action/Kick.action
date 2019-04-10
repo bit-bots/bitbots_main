@@ -1,0 +1,17 @@
+# goal definition
+geometry_msgs/PoseStamped foot_target
+float64 foot_speed
+
+---
+# result definition
+uint8 SUCCESS=0
+uint8 UNREACHABLE=1
+uint8 ABORTED=2
+uint8 result
+
+---
+# feedback definition
+uint8 LEFT=0
+uint8 RIGHT=1
+uint8 chosen_foot
+uint8 percent_done
