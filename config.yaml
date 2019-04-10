@@ -1,0 +1,3 @@
+dummy_handler:
+  #input: "/test_data/imageset_373/frame%06d.png"
+  input: 0
