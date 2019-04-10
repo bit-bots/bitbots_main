@@ -7,6 +7,53 @@ from functools import partial
 
 
 class VisualCompass:
+    """
+    Interface for an Visual compass, that gets new images and calculates an horizontal angle with a corresponding
+    confidence.
+    """
+    def process_image(self, image, resultCB=None, debugCB=None):
+        # type: (np.array, func, func) -> None
+        """
+        Processes an image and updates the internal state
+
+        :param image:
+        :param resultCB:
+        :param debugCB:
+        :return:
+        """
+        pass
+
+    def set_config(self, config):
+        # type: (dict) -> None
+        """
+
+        :param config:
+        :return:
+        """
+        pass
+
+    def set_truth(self, angle, image):
+        # type: (float, np.array) -> None
+        """
+
+        :param angle:
+        :param image:
+        :return:
+        """
+        pass
+
+    def get_side(self):
+        # type: () -> (float, float)
+        """
+
+        :return:
+        """
+        pass
+
+class BinaryCompass(VisualCompass):
+    """
+    This compass only compares two sides, hence two base images.
+    """
 
     def __init__(self, config):
         self.set_config(config)
@@ -20,9 +67,6 @@ class VisualCompass:
         self.matchPlan = sift.MatchPlan()
 
     def process_image(self, image, resultCB=None, debugCB=None):
-        if self.siftPlan is None:
-            self._init_sift(image.shape, image.dtype)
-
         if None in self.groundTruth:
             return
 
@@ -56,6 +100,9 @@ class VisualCompass:
         return matches
 
     def _get_keypoints(self, image):
+        if self.siftPlan is None:
+            self._init_sift(image.shape, image.dtype)
+
         return self.siftPlan.keypoints(image)
 
     def _compute_state(self, matches):
