@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 import numpy as np
+import os
 import cv2
 import silx
 import sys
@@ -8,12 +9,13 @@ from silx.image import sift
 
 class DemoSift():
     def __init__(self):
-        # self.cap = cv2.VideoCapture(2)
-        self.cap = cv2.VideoCapture("/home/florian/Projekt/bitbots/Visueller_Kompass/test_data/imageset_373/frame%06d.png") 
+        # self.cap = cv2.VideoCapture(0)
+        folder = os.curdir
+        self.cap = cv2.VideoCapture(folder + "/test_data/imageset_373/frame%06d.png")
         self.side_key_points = [None,None]
-
+        
         initframe = self.cap.read()[1]
-
+        print (initframe)
         self.sift_ocl = sift.SiftPlan(template=initframe, devicetype="CPU")
         self.mp = sift.MatchPlan()
         # print("Device used for calculation: ", self.sift_ocl.ctx.devices[0].name)

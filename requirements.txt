@@ -1,0 +1,4 @@
+pyopencl
+numpy
+silx
+opencv-python
