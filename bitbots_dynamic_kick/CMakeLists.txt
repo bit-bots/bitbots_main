@@ -5,6 +5,7 @@ project(bitbots_dynamic_kick)
 find_package(catkin REQUIRED COMPONENTS
     roscpp
     bitbots_msgs
+    bitbots_splines
     dynamic_reconfigure
     actionlib
 )
