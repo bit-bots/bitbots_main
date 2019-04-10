@@ -2,7 +2,15 @@ cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_dynamic_kick)
 
 ## Find catkin macros and libraries
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED dynamic_reconfigure REQUIRED COMPONENTS
+    roscpp
+    bitbots_msgs
+    dynamic_reconfigure
+)
+
+generate_dynamic_reconfigure_options(
+    cfg/bitbots_dynamic_kick_params.cfg
+)
 
 catkin_package(
     INCLUDE_DIRS include
@@ -10,6 +18,7 @@ catkin_package(
 
 include_directories(
     include
+    ${catkin_INCLUDE_DIRS}
 )
 
 set(SOURCES
@@ -19,5 +28,7 @@ set(SOURCES
 )
 
 add_executable(KickNode ${SOURCES})
+
+add_dependencies(KickNode ${PROJECT_NAME}_gencfg)
 
 target_link_libraries(KickNode ${catkin_LIBRARIES})
