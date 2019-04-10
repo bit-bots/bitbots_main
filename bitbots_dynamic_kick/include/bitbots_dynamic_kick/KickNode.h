@@ -21,6 +21,13 @@ private:
     ActionServer m_server;
     KickEngine m_engine;
     int m_engine_rate;
+
+    /**
+     * Do main loop in which engine.tick() get called repeatedly.
+     *
+     * The ActionServer is taken into account meaning that a cancelled goal should no longer get processed.
+     */
+    void loop_engine();
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_KICK_NODE_H

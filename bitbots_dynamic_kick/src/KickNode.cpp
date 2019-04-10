@@ -10,19 +10,29 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig& con
 }
 
 void KickNode::execute(const bitbots_msgs::KickGoalConstPtr& goal) {
+    std::cout << "Received new goal" << std::endl;
+
     m_engine.reset();
     m_engine.set_goal(goal);
 
-    while (ros::ok()) {
+    loop_engine();
+
+    if (m_server.isPreemptRequested()) {
+        m_server.setPreempted();
+    } else {
+        m_server.setSucceeded();
+    }
+}
+
+void KickNode::loop_engine() {
+    while (m_server.isActive() && !m_server.isPreemptRequested()) {
         ros::Rate loop_rate(m_engine_rate);
 
-        if (m_server.isActive()) {
-            bitbots_msgs::KickFeedback feedback = m_engine.tick();
-            m_server.publishFeedback(feedback);
+        bitbots_msgs::KickFeedback feedback = m_engine.tick();
+        m_server.publishFeedback(feedback);
 
-            if (feedback.percent_done == 100) {
-                m_server.setSucceeded();
-            }
+        if (feedback.percent_done == 100) {
+            break;
         }
 
         ros::spinOnce();
