@@ -40,11 +40,12 @@ blue_color_detector_upper_values_h: 145
 blue_color_detector_upper_values_s: 255
 blue_color_detector_upper_values_v: 255
 
-field_boundary_finder_search_method: 'binary'  # iteration, reversed or binary
+field_boundary_finder_search_method: 'reversed'  # iteration, reversed or binary
 field_boundary_finder_vertical_steps: 320
 field_boundary_finder_horizontal_steps: 30
-field_boundary_finder_roi_height: 11
-field_boundary_finder_roi_width: 9
+field_boundary_finder_roi_height: 1
+field_boundary_finder_roi_width: 1
+field_boundary_finder_roi_increase: 50  # increase of kernel radius per 1000 pixel
 field_boundary_finder_green_threshold: 0
 field_boundary_finder_precision_pix: 5
 field_boundary_finder_min_precision_pix: 3
@@ -57,7 +58,7 @@ vision_parallelize: true
 vision_use_sim_color: false
 vision_ball_candidate_field_boundary_y_offset: 0
 vision_ball_candidate_rating_threshold: 0.5
-vision_debug_printer_classes: ''
+vision_debug_printer_classes: 'eval'
 
 line_detector_field_boundary_offset: 50
 line_detector_linepoints_range: 10000
