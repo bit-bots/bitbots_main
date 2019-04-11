@@ -73,7 +73,7 @@ class FieldBoundaryDetector:
         """
         if self._field_boundary_points is None:
             if self._search_method == 'binary':
-                self._field_boundary_points = self._sub_field_boundary_binary_adaptive_kernel()
+                self._field_boundary_points = self._sub_field_boundary_binary()
             elif self._search_method == 'reversed':
                 self._field_boundary_points = self._sub_field_boundary_reversed()
             else:
