@@ -16,13 +16,13 @@ class MotorVizHelper:
 
         rospy.init_node("motor_viz_helper", anonymous=False)
         self.joint_state_msg = JointState()
-        self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=1)
+        self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=1, tcp_nodelay=True)
         if args.walking:
-            rospy.Subscriber("walking_motor_goals", JointCommand, self.joint_command_cb, queue_size=1)
+            rospy.Subscriber("walking_motor_goals", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
         elif args.animation:
-            rospy.Subscriber("animation_motor_goals", JointCommand, self.animation_cb, queue_size=1)
+            rospy.Subscriber("animation_motor_goals", JointCommand, self.animation_cb, queue_size=1, tcp_nodelay=True)
         else:
-            rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=1)
+            rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
 
         rate = rospy.Rate(100)
         while not rospy.is_shutdown():
@@ -35,7 +35,7 @@ class MotorVizHelper:
         self.joint_state_msg.name = msg.joint_names
         self.joint_state_msg.position = msg.positions
 
-    def animation_cb(self, msg:JointCommand):
+    def animation_cb(self, msg:Animation):
         self.joint_state_msg.header = msg.header
         self.joint_state_msg.name = msg.position.joint_names
         self.joint_state_msg.position = msg.position.points[0].positions

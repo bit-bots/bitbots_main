@@ -32,8 +32,8 @@ if __name__ == "__main__":
         msg.data = positions
         goal_publisher.publish(msg)
 
-    goal_subscriber = rospy.Subscriber("DynamixelController/command", JointCommand, map_data)
-    goal_publisher = rospy.Publisher('JointGroupController/command', Float64MultiArray,queue_size=10)
+    goal_subscriber = rospy.Subscriber("DynamixelController/command", JointCommand, map_data, tcp_nodelay=True)
+    goal_publisher = rospy.Publisher('JointGroupController/command', Float64MultiArray,queue_size=10, tcp_nodelay=True)
     rate = rospy.Rate(20)
     rospy.sleep(1)
     while not rospy.is_shutdown():

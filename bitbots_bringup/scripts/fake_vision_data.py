@@ -12,25 +12,25 @@ class FakeDataGenerator():
         rospy.init_node("fake_data_generator")
 
         # image space
-        self.ball_image_pub = rospy.Publisher("/ball_in_image", BallInImage, queue_size=1)
-        self.ball_can_image_pub = rospy.Publisher("/ball_candidates", BallsInImage, queue_size=1)
-        self.goal_part_image_pub = rospy.Publisher("/goal_part_candidates", GoalPartsInImage, queue_size=1)
-        self.goal_image_pub = rospy.Publisher("/goal_in_image", GoalInImage, queue_size=1)
-        self.line_image_pub = rospy.Publisher("/lines_in_image", LineInformationInImage, queue_size=1)
-        self.obstacle_image_pub = rospy.Publisher("/obstacles_in_image", ObstaclesInImage, queue_size=1)
+        self.ball_image_pub = rospy.Publisher("/ball_in_image", BallInImage, queue_size=1, tcp_nodelay=True)
+        self.ball_can_image_pub = rospy.Publisher("/ball_candidates", BallsInImage, queue_size=1, tcp_nodelay=True)
+        self.goal_part_image_pub = rospy.Publisher("/goal_part_candidates", GoalPartsInImage, queue_size=1, tcp_nodelay=True)
+        self.goal_image_pub = rospy.Publisher("/goal_in_image", GoalInImage, queue_size=1, tcp_nodelay=True)
+        self.line_image_pub = rospy.Publisher("/lines_in_image", LineInformationInImage, queue_size=1, tcp_nodelay=True)
+        self.obstacle_image_pub = rospy.Publisher("/obstacles_in_image", ObstaclesInImage, queue_size=1, tcp_nodelay=True)
 
         # relative
-        self.ball_rel_pub = rospy.Publisher("/ball_relative", BallRelative, queue_size=1)
-        self.goal_rel_pub = rospy.Publisher("/goal_relative", GoalRelative, queue_size=1)
-        self.obstacle_rel_pub = rospy.Publisher("/obstacles_relative", ObstaclesRelative, queue_size=1)
-        self.line_rel_pub = rospy.Publisher("/lines_relative", LineInformationRelative, queue_size=1)
+        self.ball_rel_pub = rospy.Publisher("/ball_relative", BallRelative, queue_size=1, tcp_nodelay=True)
+        self.goal_rel_pub = rospy.Publisher("/goal_relative", GoalRelative, queue_size=1, tcp_nodelay=True)
+        self.obstacle_rel_pub = rospy.Publisher("/obstacles_relative", ObstaclesRelative, queue_size=1, tcp_nodelay=True)
+        self.line_rel_pub = rospy.Publisher("/lines_relative", LineInformationRelative, queue_size=1, tcp_nodelay=True)
 
         # position
-        self.position_pub = rospy.Publisher("/local_position", Position2D, queue_size=1)
+        self.position_pub = rospy.Publisher("/local_position", Position2D, queue_size=1, tcp_nodelay=True)
 
         # model
-        self.personal_model_pub = rospy.Publisher("/local_model", Model, queue_size=1)
-        self.team_model_pub = rospy.Publisher("/local_model", Model, queue_size=1)
+        self.personal_model_pub = rospy.Publisher("/local_model", Model, queue_size=1, tcp_nodelay=True)
+        self.team_model_pub = rospy.Publisher("/local_model", Model, queue_size=1, tcp_nodelay=True)
 
         # data
         self.ball_img_data = [

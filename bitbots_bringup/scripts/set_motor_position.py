@@ -9,7 +9,7 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 if __name__ == "__main__":
     rospy.init_node('motor_position_sender')
     ns = rospy.get_param("ns")
-    joint_goal_publisher = rospy.Publisher(ns +'/controller/command', JointTrajectory, queue_size=10)
+    joint_goal_publisher = rospy.Publisher(ns +'/controller/command', JointTrajectory, queue_size=10, tcp_nodelay=True)
 
     i = -1.5
     while not rospy.is_shutdown():
