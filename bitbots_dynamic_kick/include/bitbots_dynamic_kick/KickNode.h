@@ -3,6 +3,7 @@
 
 #include <string>
 #include <ros/ros.h>
+#include <ros/console.h>
 #include <dynamic_reconfigure/server.h>
 #include <actionlib/server/simple_action_server.h>
 #include <bitbots_msgs/KickAction.h>

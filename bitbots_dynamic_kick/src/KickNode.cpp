@@ -11,6 +11,7 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
 
 void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     /* Setup engine for new goal and start calculating */
+    ROS_INFO("Accepted new goal");
     m_engine.reset();
     m_engine.set_goal(goal);
     loop_engine();
@@ -18,9 +19,11 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     /* Figure out the reason why loop_engine() returned and act accordingly */
     if (m_server.isPreemptRequested()) {
         /* Confirm that we canceled processing of the current goal */
+        ROS_INFO("Cancelled old goal");
         m_server.setPreempted();
     } else {
         /* Publish results */
+        ROS_INFO("Done kicking ball");
         m_server.setSucceeded();
     }
 }
@@ -53,5 +56,6 @@ int main(int argc, char *argv[]) {
     f = boost::bind(&KickNode::reconfigure_callback, &node, _1, _2);
     dyn_reconf_server.setCallback(f);
 
+    ROS_INFO("Initialized dynamic kick and waiting for actions");
     ros::spin();
 }
