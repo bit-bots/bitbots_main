@@ -39,11 +39,12 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
             // our pause is finished, whe can continue walking
             _engineState = "walking";
             _timePaused = 0.0;
+            buildNormalTrajectories(orders);
         } else {
             _timePaused += dt;
+            return false;
         }
         // we don't have to update anything more
-        return false;
     } else if (_engineState == "idle") {
         if (ordersZero) {
             // we are in idle and are not supposed to walk. current state is fine, just do nothing
@@ -80,6 +81,8 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         if (halfStepFinished && _pauseRequested){
             // go into pause
             _engineState = "paused";
+            _pauseRequested = false;
+            return false;
         }else if(halfStepFinished &&
                 ((_leftKickRequested && !_footstep.isLeftSupport()) || (_rightKickRequested && _footstep.isLeftSupport()))){
             // lets do a kick
@@ -127,7 +130,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
     //Sanity check support foot state
     if ((_phase < 0.5 && !_footstep.isLeftSupport()) ||
         (_phase >= 0.5 && _footstep.isLeftSupport())) {
-        ROS_ERROR("QuinticWalk exception invalid state phase= %f support= %d dt= %f", _phase, _footstep.isLeftSupport(), dt);
+        ROS_ERROR_THROTTLE(1, "QuinticWalk exception invalid state phase= %f support= %d dt= %f", _phase, _footstep.isLeftSupport(), dt);
         return false;
     }
 
