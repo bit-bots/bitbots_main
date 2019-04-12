@@ -1,4 +1,6 @@
 <launch>
+    <arg name="use_game_settings" default="false"/>
+
     <!-- fake pointcloud -->
     <node name="fake_pointcloud" pkg="bitbots_localization" type="fake_pointcloud.py" />
 
@@ -7,6 +9,11 @@
 
     <!-- load map -->
     <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/field2018.yaml"/>
+
+    <!-- load game settings -->
+    <group if="$(arg use_game_settings)">
+      <rosparam file="$(find bitbots_bringup)/config/game_settings.yaml"  command="load"/>
+    </group>
 
     <!-- particle filter -->
     <node name="amcl_particlefilter"  pkg="amcl" type="amcl" output="screen">

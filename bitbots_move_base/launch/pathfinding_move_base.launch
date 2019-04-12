@@ -6,6 +6,8 @@
   <arg name="global_frame_id" default="map"/>
   <arg name="odom_topic" default="walk_odometry" />
   <arg name="laser_topic" default="scan" />
+  <arg name="use_game_settings" default="false"/>
+
 
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <!--<rosparam file="$(find bitbots_move_base)/config/costmap_common_config.yaml" command="load" ns="global_costmap" />-->
@@ -15,7 +17,7 @@
     <rosparam file="$(find bitbots_move_base)/config/move_base_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/dwa_local_planner_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/global_planner_config.yaml" command="load" />
-    
+
     
     <!-- reset frame_id parameters using user input data -->
     <param name="global_costmap/global_frame" value="$(arg global_frame_id)"/>
@@ -27,6 +29,10 @@
     <remap from="scan" to="$(arg laser_topic)"/>
     <remap from="cmd_vel" to="raw_cmd_vel"/>
   </node>
+
+  <group if="$(arg use_game_settings)">
+    <rosparam file="$(find bitbots_bringup)/config/game_settings.yaml"  command="load"/>
+  </group>
 
   <include file="$(find bitbots_move_base)/launch/obstacle_publisher.launch" />
 </launch>
