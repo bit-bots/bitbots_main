@@ -8,11 +8,9 @@
     
     <arg name="sim_ns" default="/" />
 
-    <!-- <group if="$(arg use_game_settings)">
-        <node name="game_settings" pkg="bitbots_bringup" type="game_settings.py" output="screen"/>
-    </group> -->
-
-    <include file="$(find humanoid_league_game_controller)/launch/game_controller.launch"/>
+    <include file="$(find humanoid_league_game_controller)/launch/game_controller.launch">
+            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+    </include>
 
     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
         <arg name="sim" value="$(arg sim)"/>
@@ -22,30 +20,39 @@
         <include file="$(find bitbots_vision)/launch/vision_startup.launch">
             <arg name="sim" value="$(arg sim)" />
             <arg name="debug" value="true" />
+            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
         </include>
     </group>
 
     <include file="$(find humanoid_league_transform)/launch/transformer.launch">
         <arg name="sim" value="$(arg sim)" />
+        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
 
     <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch">
-            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
 
-    <include file="$(find bitbots_localization)/launch/localization_amcl.launch"/>
+    <include file="$(find bitbots_localization)/launch/localization_amcl.launch">
+        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+    </include>
 
     <!--include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch"/-->
-    <include file="$(find bitbots_bezier_pathfinding)/launch/bezier_pathfinding.launch"/>
+    <include file="$(find bitbots_bezier_pathfinding)/launch/bezier_pathfinding.launch">
+        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+    </include>
 
     <group if="$(arg behave)">
-        <include file="$(find bitbots_body_behavior)/launch/behavior.launch"/>
+        <include file="$(find bitbots_body_behavior)/launch/behavior.launch">
+            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+        </include>
     </group>
 
 
     <group if="$(arg motion)">
         <include file="$(find bitbots_bringup)/launch/motion.launch">
-            <arg name="sim" value="$(arg sim)"/>           
+            <arg name="sim" value="$(arg sim)"/>
+            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
         </include>
     </group>
 

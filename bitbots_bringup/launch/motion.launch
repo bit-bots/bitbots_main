@@ -1,25 +1,34 @@
 <launch>
     <arg name="sim" default="false"/>
+    <arg name="use_game_settings" default="false"/>
 
     <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
     <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
 
+    <group if="$(arg use_game_settings)">
+        <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
+    </group>
+
     <include file="$(find humanoid_league_speaker)/launch/speaker.launch"/>
     <include file="$(find bitbots_buttons)/launch/buttons.launch"/>
 
-    <include file="$(find bitbots_animation_server)/launch/animation.launch"/>
+    <include file="$(find bitbots_animation_server)/launch/animation.launch">
+        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+    </include>
 
     <group unless="$(arg sim)">
-        <include file="$(find bitbots_ros_control)/launch/ros_control.launch"/>
+        <include file="$(find bitbots_ros_control)/launch/ros_control.launch">
+            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+        </include>
         <include file="$(find bitbots_quintic_walk)/launch/quintic_walk.launch">
             <arg name="sim" value="$(arg sim)"/>
+            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
         </include>
     </group>
-    
-
 
     <include file="$(find bitbots_hcm)/launch/hcm.launch">
-        <arg name="sim" value="$(arg sim)"/> 
+        <arg name="sim" value="$(arg sim)"/>
+        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
 
 </launch>
