@@ -1,7 +1,12 @@
 <launch>
     <arg name="sim" default="false"/>
+    <arg name="use_game_settings" default="false"/>
+
     <node name="humanoid_league_transformer" pkg="humanoid_league_transform" type="transformer.py">
         <rosparam file="$(find humanoid_league_transform)/config/transformer.yaml" command="load"/>
         <remap if="$(arg sim)" to ="/camera/camera_info" from="/camera_info"/>
     </node>
+    <group if="$(arg use_game_settings)">
+        <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
+    </group>
 </launch>
