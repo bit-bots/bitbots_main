@@ -67,6 +67,7 @@ void WorldModel::dynamic_reconfigure_callback(
     }
 
     // initializing observation models
+    // local
     local_ball_observation_model_.reset(new LocalFcnnObservationModel());
     local_ball_observation_model_->set_min_weight(config.local_ball_min_weight);
     local_ball_observation_model_->set_k(1);
@@ -79,6 +80,16 @@ void WorldModel::dynamic_reconfigure_callback(
             new LocalObstacleObservationModel());
     local_obstacle_observation_model_->set_min_weight(
             config.local_obstacle_min_weight);
+    // global
+    global_ball_observation_model_.reset(new GlobalBallObservationModel());
+    global_ball_observation_model_->set_min_weight(
+            config.global_ball_min_weight);
+    global_mate_observation_model_.reset(new GlobalRobotObservationModel());
+    global_mate_observation_model_->set_min_weight(
+            config.global_mate_min_weight);
+    global_opponent_observation_model_.reset(new GlobalRobotObservationModel());
+    global_opponent_observation_model_->set_min_weight(
+            config.global_opponent_min_weight);
 
     // initializing movement models
     local_ball_movement_model_.reset(new LocalRobotMovementModel(
