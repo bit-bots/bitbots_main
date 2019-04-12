@@ -177,6 +177,12 @@ void WorldModel::dynamic_reconfigure_callback(
                 << config.local_mate_particle_number
                 << "\nlocal_opponent_particle_number: "
                 << config.local_opponent_particle_number
+                << "\nglobal_ball_particle_number: "
+                << config.global_ball_particle_number
+                << "\nglobal_mate_particle_number: "
+                << config.global_mate_particle_number
+                << "\nglobal_opponent_particle_number: "
+                << config.global_opponent_particle_number
                 << "\nTo use the updated particle numbers, you need to reset the filters.");
     }
 
