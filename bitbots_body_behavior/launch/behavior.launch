@@ -1,9 +1,18 @@
 <launch>
     <arg name="wolfgang" default="false" />
-
+    <arg name="use_game_settings" default="false"/>
     <!-- TODO: this will not stay here -->
     <param name="game_settings/role" value="offense" />
 
-    <include file="$(find bitbots_body_behavior)/launch/body_behavior.launch"/>
-    <include file="$(find bitbots_head_behavior)/launch/head_behavior.launch"/>
+    <group if="$(arg use_game_settings)">
+        <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
+    </group>
+
+    <include file="$(find bitbots_body_behavior)/launch/body_behavior.launch">
+        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+    </include>
+    <include file="$(find bitbots_head_behavior)/launch/head_behavior.launch">
+        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+    </include>
+
 </launch>

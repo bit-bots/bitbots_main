@@ -1,7 +1,12 @@
 <launch>
     <arg name="duty" default="TeamPlayer"/>
+    <arg name="use_game_settings" default="false"/>
+
     <rosparam command="load" file="$(find bitbots_body_behavior)/config/body_behavior.yaml"/>
     <rosparam command="load" file="$(find bitbots_body_behavior)/config/animations.yaml"/>
+    <group if="$(arg use_game_settings)">
+        <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
+    </group>
     <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
     <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
     <node name="body_behavior" pkg="bitbots_body_behavior" type="body_behavior.py" respawn="true"  output="screen" />
