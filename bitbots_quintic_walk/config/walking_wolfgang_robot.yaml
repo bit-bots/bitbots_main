@@ -72,7 +72,6 @@ walking:
   bioIKApprox: True
 
   debugActive: True
-  pubModelJointStates: False
 
   trunkYOnlyInDoubleSupport: False
 

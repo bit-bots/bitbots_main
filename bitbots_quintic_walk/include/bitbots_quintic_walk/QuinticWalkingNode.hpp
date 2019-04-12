@@ -49,7 +49,7 @@ public:
     QuinticWalkingNode();
     void run();
     void reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level);
-    void initilizeEngine();
+    void initializeEngine();
 
 private:
     void publishControllerCommands(std::vector <std::string> joint_names, std::vector<double> positions);

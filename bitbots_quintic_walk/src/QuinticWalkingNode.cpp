@@ -63,6 +63,7 @@ QuinticWalkingNode::QuinticWalkingNode() {
 
     // initilize IK solver
     _bioIK_solver = bitbots_ik::BioIKSolver(*_all_joints_group, *_lleg_joints_group, *_rleg_joints_group);
+    _bioIK_solver.set_use_approximate(true);
 
     _first_run = true;
 }
@@ -336,7 +337,6 @@ QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_p
 
     _walkEngine.setParameters(_params);
     _bioIK_solver.set_bioIK_timeout(config.bioIKTime);
-    _bioIK_solver.set_use_approximate(config.bioIKApprox);
 
     _debugActive = config.debugActive;
     _engineFrequency = config.engineFreq;
@@ -719,7 +719,7 @@ void QuinticWalkingNode::publishMarkers() {
     _marker_id++;
 }
 
-void QuinticWalkingNode::initilizeEngine() {
+void QuinticWalkingNode::initializeEngine() {
     _walkEngine.reset();
 }
 
