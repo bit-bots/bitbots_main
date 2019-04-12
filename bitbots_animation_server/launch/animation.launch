@@ -1,4 +1,8 @@
 <launch>
+    <arg name="use_game_settings" default="false"/>
     <!--<rosparam file="$(find bitbots_animation_server)/config/animation.yaml" command="load"/>-->
+    <group if="$(arg use_game_settings)">
+            <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
+    </group>
     <node name="animation" pkg="bitbots_animation_server" type="animation_node.py" respawn="true" output="screen"/>
 </launch>
