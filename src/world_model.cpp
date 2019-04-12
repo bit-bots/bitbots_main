@@ -82,16 +82,15 @@ void WorldModel::dynamic_reconfigure_callback(
             config.local_obstacle_min_weight);
     // global
     global_ball_observation_model_.reset(new GlobalBallObservationModel());
-    global_ball_observation_model_->set_min_weight(
-            config.global_ball_min_weight);
+    global_ball_observation_model_->set_min_weight(config.global_ball_min_weight);
     global_mate_observation_model_.reset(new GlobalRobotObservationModel());
-    global_mate_observation_model_->set_min_weight(
-            config.global_mate_min_weight);
+    global_mate_observation_model_->set_min_weight(config.global_mate_min_weight);
     global_opponent_observation_model_.reset(new GlobalRobotObservationModel());
     global_opponent_observation_model_->set_min_weight(
             config.global_opponent_min_weight);
 
     // initializing movement models
+    // local 
     local_ball_movement_model_.reset(new LocalRobotMovementModel(
             random_number_generator_, config.local_ball_diffusion_x_std_dev,
             config.local_ball_diffusion_y_std_dev,
@@ -108,6 +107,19 @@ void WorldModel::dynamic_reconfigure_callback(
             random_number_generator_, config.local_obstacle_diffusion_x_std_dev,
             config.local_obstacle_diffusion_y_std_dev,
             config.local_obstacle_diffusion_multiplicator));
+    // global 
+    global_ball_movement_model_.reset(new GlobalBallMovementModel(
+            random_number_generator_, config.global_ball_diffusion_x_std_dev,
+            config.global_ball_diffusion_y_std_dev,
+            config.global_ball_diffusion_multiplicator));
+    global_mate_movement_model_.reset(new GlobalRobotMovementModel(
+            random_number_generator_, config.global_mate_diffusion_x_std_dev,
+            config.global_mate_diffusion_y_std_dev,
+            config.global_mate_diffusion_multiplicator));
+    global_opponent_movement_model_.reset(new GlobalRobotMovementModel(
+            random_number_generator_, config.global_opponent_diffusion_x_std_dev,
+            config.global_opponent_diffusion_y_std_dev,
+            config.global_opponent_diffusion_multiplicator));
 
     // initializing state distributions
     local_ball_state_distribution_.reset(new LocalPositionStateDistribution(
