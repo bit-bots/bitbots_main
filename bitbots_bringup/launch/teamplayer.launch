@@ -4,7 +4,7 @@
     <arg name="behave" default="true"/>
     <arg name="vision" default="false"/>
 
-    <arg name="use_game_settings" default="false"/>
+    <arg name="use_game_settings" default="true"/>
     
     <arg name="sim_ns" default="/" />
 
