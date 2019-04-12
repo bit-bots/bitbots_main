@@ -1,4 +1,8 @@
+# If you want to specify a range instead of a list, you will have to do it in the following way:
 # !!python/object/apply:builtins.range [10, 50, 5]
+
+# for settings which are not coverable by ranges or lists you can type "custom"
+# This will accept any input and write it to the game_settings.yaml
 bot_id:
   file: /config/game_controller.yaml
   package: humanoid_league_game_controller

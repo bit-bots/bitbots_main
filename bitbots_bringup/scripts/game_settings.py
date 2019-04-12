@@ -72,6 +72,9 @@ def check_new_value(new_value: str, definition) -> bool:
     if type(definition) is range:
         definition = list(definition)
 
+    if definition == "custom":
+        return True
+
     definitiontype = type(definition[0])
 
     try:
