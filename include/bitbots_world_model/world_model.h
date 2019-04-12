@@ -97,9 +97,6 @@ private:
     std::vector<PositionStateW>
             local_obstacle_measurements_;  // TODO: handle these?
 
-    // last local results
-    // TODO
-
     // last team_data message
     hlm::TeamData last_received_team_data_;
 
@@ -219,6 +216,7 @@ private:
     std_msgs::ColorRGBA get_color_msg(int color_id);
     void set_global_measurements(hlm::TeamData msg);
     void publish_local_results();
+    void publish_global_results();
     void exec_local_filter_step();
     void exec_global_filter_step();
 };

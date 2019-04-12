@@ -621,11 +621,93 @@ void WorldModel::publish_local_results() {
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
     if (config_.local_opponent_gmm_visualization) {
-        publish_gmm_visualization(local_obstacles_gmm_, "local_opponents_gmm",
+        publish_gmm_visualization(local_opponents_gmm_, "local_opponents_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
     if (config_.local_obstacle_gmm_visualization) {
         publish_gmm_visualization(local_obstacles_gmm_, "local_obstacles_gmm",
+                ros::Duration(1.0 / config_.publishing_frequency));
+    }
+}
+
+
+void WorldModel::publish_global_results() {
+    ROS_INFO("start publishing global results...");
+
+    // result acquisition and publishing
+
+    global_ball_gmm_ = global_ball_pf_->getGMM(
+            config_.global_ball_gmm_components, config_.global_ball_gmm_delta,
+            config_.global_ball_gmm_iterations);
+    ROS_INFO("ball");
+
+    global_mates_gmm_ = global_mate_pf_->getDynGMM(
+            std::max(config_.global_mate_gmm_min_components,
+                    global_mates_gmm_.numComponents() -
+                            config_.global_mate_gmm_component_count_max_delta),
+            std::min(config_.global_mate_gmm_max_components,
+                    global_mates_gmm_.numComponents() +
+                            config_.global_mate_gmm_component_count_max_delta),
+            config_.global_mate_gmm_component_delta,
+            config_.global_mate_gmm_iteration_delta,
+            config_.global_mate_gmm_iterations);
+    ROS_INFO("mate");
+    global_opponents_gmm_ = global_opponent_pf_->getDynGMM(
+            std::max(config_.global_opponent_gmm_min_components,
+                    global_opponents_gmm_.numComponents() -
+                            config_.global_opponent_gmm_component_count_max_delta),
+            std::min(config_.global_opponent_gmm_max_components,
+                    global_opponents_gmm_.numComponents() +
+                            config_.global_opponent_gmm_component_count_max_delta),
+            config_.global_opponent_gmm_component_delta,
+            config_.global_opponent_gmm_iteration_delta,
+            config_.global_opponent_gmm_iterations);
+    ROS_INFO("opponent");
+
+    hlm::Model model_msg;
+
+    model_msg.ball = relative_gmm_to_ball_relative(
+            global_ball_gmm_)[0];  // TODO: sort by confidence? currently there
+                                   // is only one.
+    model_msg.ball.header.stamp = ros::Time::now();  // or by input?
+    model_msg.ball.header.frame_id =
+            config_.global_publishing_frame;  // or by input?
+
+    model_msg.obstacles.header =
+            model_msg.ball.header;  // or this by input and the other now?
+    // construct obstacles vector
+    std::vector<hlm::ObstacleRelative> mates =
+            relative_gmm_to_obstacle_relative(global_mates_gmm_, team_color_);
+    std::vector<hlm::ObstacleRelative> opponents =
+            relative_gmm_to_obstacle_relative(
+                    global_opponents_gmm_, opponent_color_);
+
+    model_msg.obstacles.obstacles = mates;
+    model_msg.obstacles.obstacles.insert(
+            std::end(model_msg.obstacles.obstacles), std::begin(opponents),
+            std::end(opponents));
+    global_model_publisher_.publish(model_msg);
+    ROS_INFO("end publishing...");
+
+    // the rest is visualization
+    if (!config_.debug_visualization) {
+        return;
+    }
+
+    // publish particles
+    publish_particle_visualization();
+
+    // publish plotted GMMs
+    if (config_.global_ball_gmm_visualization) {
+        publish_gmm_visualization(global_ball_gmm_, "global_ball_gmm",
+                ros::Duration(1.0 / config_.publishing_frequency));
+    }
+    if (config_.global_mate_gmm_visualization) {
+        publish_gmm_visualization(global_mates_gmm_, "global_mates_gmm",
+                ros::Duration(1.0 / config_.publishing_frequency));
+    }
+    if (config_.global_opponent_gmm_visualization) {
+        publish_gmm_visualization(global_opponents_gmm_, "global_opponents_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
 }
@@ -667,8 +749,8 @@ std_msgs::ColorRGBA WorldModel::get_color_msg(int color_id) {
 }
 
 std::vector<hlm::ObstacleRelative>
-WorldModel::relative_gmm_to_obstacle_relative(gmms::GaussianMixtureModel gmm,
-        unsigned char color) {
+WorldModel::relative_gmm_to_obstacle_relative(
+        gmms::GaussianMixtureModel gmm, unsigned char color) {
     std::vector<hlm::ObstacleRelative> vector;
     for (int i = 0; i < gmm.numComponents(); i++) {
         gmms::Gaussian gaussian = gmm.component(i);
@@ -707,13 +789,16 @@ void WorldModel::send_mate_transforms() {
     tf2::Quaternion q;
     transform.header.stamp = ros::Time::now();
     transform.header.frame_id = "map";
-    for (char i = 1; i <=4; i++) {
+    for (char i = 1; i <= 4; i++) {
         // if the element is in the dictionary
         if (mate_self_detections_.find(i) == mate_self_detections_.end()) {
             continue;
         }
         transform.child_frame_id = std::string("mate_") + std::to_string(i);
-        std::pair<gmms::Gaussian, double> gaussian_distance = global_mates_gmm_.getClosestGaussian(Eigen::Vector2d(mate_self_detections_[i].x, mate_self_detections_[i].y));
+        std::pair<gmms::Gaussian, double> gaussian_distance =
+                global_mates_gmm_.getClosestGaussian(
+                        Eigen::Vector2d(mate_self_detections_[i].x,
+                                mate_self_detections_[i].y));
         // TODO check distance in in threshold
         transform.transform.translation.x = gaussian_distance.first.mean()[0];
         transform.transform.translation.y = gaussian_distance.first.mean()[1];
