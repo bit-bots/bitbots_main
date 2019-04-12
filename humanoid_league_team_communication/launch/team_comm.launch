@@ -2,11 +2,11 @@
     <arg name="use_game_settings" default="false"/>
 
     <rosparam file="$(find humanoid_league_team_communication)/config/team_communication_config.yaml" command="load"/>
-    <rosparam file="$(find humanoid_league_game_controller)/config/game_controller.yaml.example" command="load"/>
+    <rosparam file="$(find humanoid_league_game_controller)/config/game_controller.yaml" command="load"/>
 
     <node name="team_communication" pkg="humanoid_league_team_communication" type="team_communication" respawn="true" output="screen" />
 
     <group if="$(arg use_game_settings)">
-            <rosparam command="load" file="~/.ros/game_settings.yaml" />
+            <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
     </group>
 </launch>
