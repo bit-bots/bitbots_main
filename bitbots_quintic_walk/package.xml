@@ -9,7 +9,7 @@
 
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
-  <author>Rhoban FC</author>
+  <author>Rhoban FC (original version of engine)</author>
 
   <license>MIT</license>
 
@@ -33,6 +33,8 @@
   <depend>message_runtime</depend>
   <depend>bitbots_msgs</depend>
   <depend>moveit_ros_robot_interaction</depend>
+
+  <test_depend>plotjuggler</test_depend>
 
   <export>
     <bitbots_documentation>
