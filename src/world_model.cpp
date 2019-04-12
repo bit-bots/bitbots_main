@@ -1,13 +1,15 @@
 #include "bitbots_world_model/world_model.h"
 
 
-WorldModel::WorldModel() : nh_(), valid_configuration_(false), transform_listener_(transform_buffer_) {
+WorldModel::WorldModel() :
+        nh_(),
+        valid_configuration_(false),
+        transform_listener_(transform_buffer_) {
     ROS_INFO("Created Bit-Bots world model");
 }
 
 void WorldModel::dynamic_reconfigure_callback(
-        bitbots_world_model::WorldModelConfig& config,
-        uint32_t level) {
+        bitbots_world_model::WorldModelConfig& config, uint32_t level) {
     ROS_INFO("Dynamic reconfigure callback was called...");
 
     // updating topic names when neccessary
@@ -62,7 +64,9 @@ void WorldModel::dynamic_reconfigure_callback(
             ROS_INFO_STREAM(
                     "Could not set the input \""
                     << config.team_color
-                    << "\" as team color. the value has to correspond with either ROBOT_MAGENTA or ROBOT_CYAN set in the ObstacleRelative message");
+                    << "\" as team color. the value has to correspond with "
+                    << "either ROBOT_MAGENTA or ROBOT_CYAN set in the "
+                    << "ObstacleRelative message");
         }
     }
 
@@ -223,10 +227,6 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative& msg) {
 
 void WorldModel::team_data_callback(const hlm::TeamData& msg) {
     last_received_team_data_ = msg;
-
-    global_ball_measurements_.clear();
-    global_mate_measurements_.clear();
-    global_opponent_measurements_.clear();
 }
 bool WorldModel::reset_filters_callback(std_srvs::Trigger::Request& req,
         std_srvs::Trigger::Response& res) {
@@ -375,6 +375,126 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
 
     // publish the output
     publish_local_results();
+}
+
+void WorldModel::set_global_measurements(hlm::TeamData msg) {
+
+    // cleaning up the measurement lists
+    global_ball_measurements_.clear();
+    global_mate_measurements_.clear();
+    global_opponent_measurements_.clear();
+
+    // iterate through all the senders stuff
+    geometry_msgs::TransformStamped transformStamped;
+    geometry_msgs::Pose buffer_pose;
+    for (char sender_number = 0; sender_number < msg.robot_ids.size();
+            sender_number++) {
+        // the self localizatin of a robot
+        mate_self_detections_[msg.robot_ids[sender_number]] =
+                msg.robot_positions[sender_number];
+        try {
+            transformStamped = transform_buffer_.lookupTransform("map",
+                    std::string("mate_") +
+                            std::to_string(msg.robot_ids[sender_number]),
+                    ros::Time(0));
+        } catch (tf2::TransformException& ex) {
+            ROS_WARN(
+                    "Transform error when recieving message from robot id %d: %s",
+                    msg.robot_ids[sender_number], ex.what());
+            // ros::Duration(1.0).sleep();
+            continue;
+        }
+
+        // first the own team
+
+        // add the detecting robots own pose as mate measurement
+        // TODO: does this work? or is that only one pose which is referenced?
+        PositionState position_state(msg.robot_positions[sender_number].x,
+                msg.robot_positions[sender_number].y);
+        global_mate_measurements_.push_back(position_state);
+
+        tf2::doTransform(pose2d_to_pose(msg.team_robot_a[sender_number].pose),
+                buffer_pose, transformStamped);
+        position_state =
+                PositionState(buffer_pose.position.x, buffer_pose.position.y);
+        global_mate_measurements_.push_back(position_state);
+        tf2::doTransform(pose2d_to_pose(msg.team_robot_b[sender_number].pose),
+                buffer_pose, transformStamped);
+        position_state =
+                PositionState(buffer_pose.position.x, buffer_pose.position.y);
+        global_mate_measurements_.push_back(position_state);
+        tf2::doTransform(pose2d_to_pose(msg.team_robot_c[sender_number].pose),
+                buffer_pose, transformStamped);
+        position_state =
+                PositionState(buffer_pose.position.x, buffer_pose.position.y);
+        global_mate_measurements_.push_back(position_state);
+        // second, the opponents
+        tf2::doTransform(
+                pose2d_to_pose(msg.opponent_robot_a[sender_number].pose),
+                buffer_pose, transformStamped);
+        position_state =
+                PositionState(buffer_pose.position.x, buffer_pose.position.y);
+        global_opponent_measurements_.push_back(position_state);
+        tf2::doTransform(
+                pose2d_to_pose(msg.opponent_robot_b[sender_number].pose),
+                buffer_pose, transformStamped);
+        position_state =
+                PositionState(buffer_pose.position.x, buffer_pose.position.y);
+        global_opponent_measurements_.push_back(position_state);
+        tf2::doTransform(
+                pose2d_to_pose(msg.opponent_robot_c[sender_number].pose),
+                buffer_pose, transformStamped);
+        position_state =
+                PositionState(buffer_pose.position.x, buffer_pose.position.y);
+        global_opponent_measurements_.push_back(position_state);
+        tf2::doTransform(
+                pose2d_to_pose(msg.opponent_robot_d[sender_number].pose),
+                buffer_pose, transformStamped);
+        position_state =
+                PositionState(buffer_pose.position.x, buffer_pose.position.y);
+        global_opponent_measurements_.push_back(position_state);
+
+        // now, the ball
+        tf2::doTransform(pose2d_to_pose(msg.ball_relative[sender_number].pose),
+                buffer_pose, transformStamped);
+        position_state =
+                PositionState(buffer_pose.position.x, buffer_pose.position.y);
+        global_ball_measurements_.push_back(position_state);
+    }
+
+    // adding our own detections to the list
+
+
+    try {
+        transformStamped = transform_buffer_.lookupTransform("map",
+                config_.local_publishing_frame,
+                ros::Time(0));
+    } catch (tf2::TransformException& ex) {
+        ROS_WARN(
+                "Transform error when transforming to map: %s", ex.what());
+        // ros::Duration(1.0).sleep();
+        return;
+    }
+
+    // adding the ball
+    for (const Eigen::VectorXd mean : local_ball_gmm_.gaussianMeans()) {
+        // TODO: check for certainty, use the best?
+        PositionState buffer_position_state(mean.coeff(0), mean.coeff(1));
+        global_ball_measurements_.push_back(buffer_position_state);
+    }
+
+    // adding mates
+    for (const Eigen::VectorXd mean : local_mates_gmm_.gaussianMeans()) {
+        // TODO: check for certainty
+        PositionState buffer_position_state(mean.coeff(0), mean.coeff(1));
+        global_mate_measurements_.push_back(buffer_position_state);
+    }
+    // adding opponents
+    for (const Eigen::VectorXd mean : local_opponents_gmm_.gaussianMeans()) {
+        // TODO: check for certainty
+        PositionState buffer_position_state(mean.coeff(0), mean.coeff(1));
+        global_opponent_measurements_.push_back(buffer_position_state);
+    }
 }
 
 void WorldModel::publish_local_results() {
