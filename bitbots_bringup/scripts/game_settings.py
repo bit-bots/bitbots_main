@@ -141,7 +141,9 @@ if __name__ == '__main__':
     with open(SETTING_PATH, 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
 
-    uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-    roslaunch.configure_logging(uuid)
-    launch = roslaunch.parent.ROSLaunchParent(uuid, [rospack.get_path("bitbots_bringup") + "/launch/teamplayer.launch"])
-    launch.start()
+    start_teamplayer = input("Do you want to launch 'teamplayer.launch'? (Y/n)")
+    if not start_teamplayer == "n":
+        uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+        roslaunch.configure_logging(uuid)
+        launch = roslaunch.parent.ROSLaunchParent(uuid, [rospack.get_path("bitbots_bringup") + "/launch/teamplayer.launch"])
+        launch.start()
