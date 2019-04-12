@@ -1,7 +1,8 @@
+# !!python/object/apply:builtins.range [10, 50, 5]
 bot_id:
   file: /config/game_controller.yaml
   package: humanoid_league_game_controller
-  options: [1, 2, 3, 4]
+  options: !!python/object/apply:builtins.range [1, 5, 1]
   explanation: ""
 team_id:
   file: /config/game_controller.yaml

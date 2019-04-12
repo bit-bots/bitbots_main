@@ -69,6 +69,9 @@ def check_new_value(new_value: str, definition) -> bool:
     :return: true if valid, false if not
     """
 
+    if type(definition) is range:
+        definition = list(definition)
+
     definitiontype = type(definition[0])
 
     try:
