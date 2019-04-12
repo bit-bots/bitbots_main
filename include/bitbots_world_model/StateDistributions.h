@@ -27,6 +27,28 @@ private:
     double max_y_;
 };
 
+class GlobalPositionStateDistribution
+        : public particle_filter::StateDistribution<PositionState> {
+public:
+    GlobalPositionStateDistribution(
+            particle_filter::CRandomNumberGenerator& random_number_generator,
+            std::pair<double, double> initial_robot_pose,
+            std::pair<double, double> field_size);
+    // GlobalPositionStateDistribution(particle_filter::CRandomNumberGenerator
+    // &random_number_generator, std::pair<double, double> initial_robot_pose,
+    // std::pair<double, double> field_size, double obstacle_min_width, double
+    // obstacle_max_width);
+    ~GlobalPositionStateDistribution(){};
+
+    const PositionState draw() const;
+
+private:
+    particle_filter::CRandomNumberGenerator random_number_generator_;
+    double min_x_;
+    double max_x_;
+    double min_y_;
+    double max_y_;
+};
 
 class LocalPositionStateWDistribution
         : public particle_filter::StateDistribution<PositionStateW> {
@@ -34,8 +56,7 @@ public:
     LocalPositionStateWDistribution(
             particle_filter::CRandomNumberGenerator& random_number_generator,
             std::pair<double, double> initial_robot_pose,
-            std::pair<double, double> field_size,
-            double obstacle_min_width,
+            std::pair<double, double> field_size, double obstacle_min_width,
             double obstacle_max_width);
     ~LocalPositionStateWDistribution(){};
 
