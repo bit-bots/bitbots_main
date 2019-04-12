@@ -2,6 +2,7 @@
     <arg name="sim" default="false"/>
     <arg name="dummyball" default="false"/>
     <arg name="debug" default="false"/>
+    <arg name="use_game_settings" default="false"/>
 
 
 
@@ -23,6 +24,10 @@
             <param name="vision_ball_classifier" value="dummy" />
             <param name="vision_use_sim_color" value="$(arg sim)"/>
         </node>
+    </group>
+
+    <group if="$(arg use_game_settings)">
+        <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
     </group>
 
     <!-- start dynamic-color-space node -->
