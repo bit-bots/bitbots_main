@@ -126,6 +126,7 @@ void WorldModel::dynamic_reconfigure_callback(
             config.global_opponent_diffusion_multiplicator));
 
     // initializing state distributions
+    // local
     local_ball_state_distribution_.reset(new LocalPositionStateDistribution(
             random_number_generator_,
             std::make_pair(config.initial_robot_x, config.initial_robot_y),
@@ -145,6 +146,19 @@ void WorldModel::dynamic_reconfigure_callback(
                     std::make_pair(config.field_height, config.field_width),
                     config.local_obstacle_min_width,
                     config.local_obstacle_max_width));
+    // global
+    global_ball_state_distribution_.reset(new GlobalPositionStateDistribution(
+            random_number_generator_,
+            std::make_pair(config.initial_robot_x, config.initial_robot_y),
+            std::make_pair(config.field_height, config.field_width)));
+    global_mate_state_distribution_.reset(new GlobalPositionStateDistribution(
+            random_number_generator_,
+            std::make_pair(config.initial_robot_x, config.initial_robot_y),
+            std::make_pair(config.field_height, config.field_width)));
+    global_opponent_state_distribution_.reset(new GlobalPositionStateDistribution(
+            random_number_generator_,
+            std::make_pair(config.initial_robot_x, config.initial_robot_y),
+            std::make_pair(config.field_height, config.field_width)));
 
     // setting particle counts
     if (config.local_obstacle_particle_number !=
