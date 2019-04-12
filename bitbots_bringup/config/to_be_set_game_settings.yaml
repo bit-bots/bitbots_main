@@ -1,0 +1,15 @@
+bot_id:
+  file: /config/game_controller.yaml
+  package: humanoid_league_game_controller
+  options: [1, 2, 3, 4]
+  explanation: ""
+team_id:
+  file: /config/game_controller.yaml
+  package: humanoid_league_game_controller
+  options: [1, 2, 3, 4, 5, 6, 7, 8]
+  explanation: ""
+team_color:
+  package: humanoid_league_team_communication
+  file: /config/team_communication_config.yaml
+  options: [2, 3]
+  explanation: "2 is red, 3 is blue"

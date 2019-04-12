@@ -6,39 +6,47 @@ import rospkg
 import os
 import roslaunch
 
+rospack = rospkg.RosPack()
 
 # every parameter has its own SETTING_PATH
-SETTING_PATH = os.path.expanduser("game_settings.yaml")
+SETTING_PATH = rospack.get_path("bitbots_bringup") + "/config/game_settings.yaml"
+TO_BE_SET_PATH = rospack.get_path("bitbots_bringup") + "/config/to_be_set_game_settings.yaml"
 
-def provide_config():
-    if os.path.exists(SETTING_PATH):
+def provide_config(path):
+    """
+    reads out the yaml you are asking for with the path parameter
+    :param path: filepath for your yaml
+    :return: config as dict
+    """
+    if os.path.exists(path):
         try:
-            with open(SETTING_PATH, 'r') as f:
+            with open(path, 'r') as f:
                 config = yaml.load(f)
         except yaml.YAMLError as exc:
             print("Error in configuration file:", exc)
     else:
         config = {}
-        print("The config yaml does not exist.")
+        print("The config yaml with path {}, does not exist.".format(path))
 
     return config
 
 
-def ask_for_config_option(name: object, definition: object, current_value: object = None) -> object:
+def ask_for_config_option(name: object, definition: object, current_value: object = None, explanation: object = None) -> object:
     """
     :param name: name of the config-option-value e.g. robot number
     :param definition: possible options for the value, type of input
     :param current_value: the already set value
+    :param explanation: describes options
     :return: new chosen value for this config option, can be the old one
     """
     print('=============== {} ==============='.format(name))
 
     print("Options: {}".format(definition))
+    print("Explanations: {}".format(explanation))
     if current_value is not None:
         input_prompt = 'Value ({}): '.format(current_value)
     else:
         input_prompt = 'Value: '
-
 
     value_is_valid = False
     while not value_is_valid:
@@ -51,32 +59,7 @@ def ask_for_config_option(name: object, definition: object, current_value: objec
             value_is_valid = check_new_value(new_value, definition)
 
     print()
-    return parse_to_type(new_value, definition)
-
-
-def parse_to_type(value, definition):
-    """
-    parses any value according to the specified definition
-    :param value: the value you want to parse
-    :param definition: the specified type you want the value parsed to
-    :return: the type of the value
-    """
-
-    if definition is bool:
-        return bool(value)
-
-    elif definition is int:
-        return int(value)
-
-    elif definition is float:
-        return float(value)
-
-    elif definition is str:
-        return value
-
-    else:
-        return value
-
+    return new_value
 
 def check_new_value(new_value: str, definition) -> bool:
     """
@@ -86,12 +69,19 @@ def check_new_value(new_value: str, definition) -> bool:
     :return: true if valid, false if not
     """
 
+    definitiontype = type(definition[0])
+
+    try:
+        new_value = definitiontype(new_value)
+    except:
+        print("{} could not be converted to a {}. Are you sure it is in the right format?".format(new_value,definitiontype))
+
     if type(definition) is list:
         if new_value in definition:
             return True
         else:
             # print(new_value, definition)
-            print(' {} no valid option'.format(type(new_value)))
+            print(' {} no valid option'.format(new_value))
             # print(type(definition[0]))
             return False
 
@@ -125,28 +115,32 @@ def check_new_value(new_value: str, definition) -> bool:
 
 if __name__ == '__main__':
     rospy.init_node("game_settings")
-    config = provide_config()
+    config = provide_config(SETTING_PATH)
 
     # every option for a config-value is listed here
-    
+    '''
     options = {
         #'playernumber': {'package': 'bla', 'file': 'doc', 'parameter': 'playernumber', 'options': ['1', '2', '3', '4']},
         'bot_id': {'package': 'humanoid_league_game_controller', 'file': '/config/game_controller.yaml', 'options': ['1', '2', '3', '4', '5']},
         'team_id': {'package': 'humanoid_league_game_controller', 'file': '/config/game_controller.yaml', 'options': ['1', '2', '3', '4', '5']}
     }
+    '''
+    to_be_set = provide_config(TO_BE_SET_PATH)
 
-    for key, value in options.items():
+    for key, value in to_be_set.items():
         if key in config.keys():
-            config[key]['value'] = ask_for_config_option(key, options[key]['options'], config[key]['value'])
+            config[key] = ask_for_config_option(key, to_be_set[key]['options'], config[key], to_be_set[key]['explanation'])
         else:
-            config[key] = options[key].copy()
+            config[key] = to_be_set[key].copy()
             del config[key]['options']
-            config[key]['value'] = ask_for_config_option(key, options[key]['options'])
+            del config[key]['explanation']
+            del config[key]['file']
+            del config[key]['package']
+            config[key] = ask_for_config_option(key, to_be_set[key]['options'], to_be_set[key]['explanation'])
 
     with open(SETTING_PATH, 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
 
-    rospack = rospkg.RosPack()
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
     launch = roslaunch.parent.ROSLaunchParent(uuid, [rospack.get_path("bitbots_bringup") + "/launch/teamplayer.launch"])
