@@ -63,7 +63,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
 
     // update the current phase
     updatePhase(dt);
-        
+
     // check if we will finish a half step with this update
     bool halfStepFinished = (_lastPhase < 0.5 && _phase >= 0.5) || (_lastPhase > 0.5 && _phase <0.5); 
     _lastPhase = _phase;
@@ -168,7 +168,7 @@ void QuinticWalk::endStep(){
     if(_phase < 0.5){
         _phase = 0.5;
     }else{
-        _phase = 1.0;
+        _phase = 0.0;
     }
 }
 
@@ -189,6 +189,7 @@ void QuinticWalk::saveCurrentTrunkState(){
     //Evaluate current trunk state
     //(position, velocity, acceleration)
     //in next support foot frame
+    //TODO this should not use halfPeriod as a saving point but the current phase time instead, otherwise phase reset will not work
     double halfPeriod = 1.0/(2.0*_params.freq);
     Eigen::Vector2d trunkPos(
         _trajs.get("trunk_pos_x").pos(halfPeriod),
@@ -345,7 +346,7 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startSte
         _footstep.getNext().y());
     point("foot_pos_y", halfPeriod,          _footstep.getNext().y());
 
-    point("foot_pos_z", 0.0,  0.0);
+    point("foot_pos_z", 0.0, _footstep.getLast().z());
     point("foot_pos_z", doubleSupportLength, 0.0);
     point("foot_pos_z", doubleSupportLength + singleSupportLength * _params.footApexPhase - 0.5 * _params.footZPause * singleSupportLength, 
         _params.footRise);

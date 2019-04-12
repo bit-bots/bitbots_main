@@ -275,7 +275,7 @@ void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg) {
         // phase has to be far enough to have right foot lifted
         // foot has to have ground contact
         double phase = _walkEngine.getPhase();
-        if (_phaseResetActive && ((phase > 0.3 && phase < 0.5) || (phase > 0.7)) && n_sum > _groundMinPressure) {
+        if (_phaseResetActive && ((phase > 0.45 && phase < 0.5) || (phase > 0.95)) && n_sum > _groundMinPressure) {
             ROS_WARN("Phase resetted!");
             _walkEngine.endStep();
         }
