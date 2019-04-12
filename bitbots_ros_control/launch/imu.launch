@@ -1,4 +1,9 @@
 <launch>
+    <arg name="use_game_settings" default="false"/>
+
+    <group if="$(arg use_game_settings)">
+            <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
+    </group>
 <node pkg="imu_complementary_filter" type="complementary_filter_node"
       name="complementary_filter_gain_node" output="screen">
     <param name="fixed_frame" value="imu"/>
