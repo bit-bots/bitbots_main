@@ -56,15 +56,14 @@ private:
     void publishDebug(tf::Transform& trunk_to_support_foot, tf::Transform& trunk_to_flying_foot);
     void publishMarker(std::string name_space, std::string frame, geometry_msgs::Pose pose, float r, float g, float b, float a);
     void publishMarkers();
-    void publishTrajectoryDebug();
     void publishOdometry();
 
-    void cmdVelCb(const geometry_msgs::Twist msg);
-    void imuCb(const sensor_msgs::Imu msg);
-    void pressureCb(const bitbots_msgs::FootPressure msg);
-    void robStateCb(const humanoid_league_msgs::RobotControlState msg);
-    void jointStateCb(const sensor_msgs::JointState msg);
-    void kickCb(const std_msgs::BoolConstPtr msg);
+    void cmdVelCb(geometry_msgs::Twist msg);
+    void imuCb(sensor_msgs::Imu msg);
+    void pressureCb(bitbots_msgs::FootPressure msg);
+    void robStateCb(humanoid_league_msgs::RobotControlState msg);
+    void jointStateCb(sensor_msgs::JointState msg);
+    void kickCb(std_msgs::BoolConstPtr msg);
 
     void calculateJointGoals();
     double getTimeDelta();
@@ -78,7 +77,7 @@ private:
 
     bool _phaseResetActive;
     double _groundMinPressure;
-    double _copStopActive;
+    bool _copStopActive;
     double _ioPressureThreshold;
     double _fbPressureThreshold;
 

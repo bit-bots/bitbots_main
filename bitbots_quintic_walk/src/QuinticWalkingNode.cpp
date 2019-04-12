@@ -459,7 +459,7 @@ QuinticWalkingNode::publishDebug(tf::Transform &trunk_to_support_foot_goal, tf::
     msg.header.stamp = ros::Time::now();
 
     // define current support frame
-    std::string current_support_frame = "";
+    std::string current_support_frame;
     if (is_left_support) {
         current_support_frame = "l_sole";
     } else {

@@ -22,7 +22,8 @@ QuinticWalk::QuinticWalk() :
     _trunkAxisPosAtLast(),
     _trunkAxisVelAtLast(),
     _trunkAxisAccAtLast(),
-    _trajs()
+    _trajs(),
+    _timePaused(0.0)
 {   
     // make sure to call the reset method after having the parameters
     _trajs = bitbots_splines::TrajectoriesInit();
@@ -80,7 +81,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
             // go into pause
             _engineState = "paused";
         }else if(halfStepFinished &&
-                (_leftKickRequested && !_footstep.isLeftSupport() || _rightKickRequested && _footstep.isLeftSupport())){
+                ((_leftKickRequested && !_footstep.isLeftSupport()) || (_rightKickRequested && _footstep.isLeftSupport()))){
             // lets do a kick
             buildKickTrajectories(orders);
             _engineState = "kick";            
@@ -512,7 +513,6 @@ void QuinticWalk::buildWalkDisableTrajectories(const Eigen::Vector3d& orders, bo
     //Set up the trajectories 
     //for the half cycle
     double halfPeriod = 1.0 / (2.0 * _params.freq);
-    double period = 2.0 * halfPeriod;
 
     //Time length of double and single 
     //support phase during the half cycle
@@ -626,7 +626,6 @@ void QuinticWalk::buildWalkDisableTrajectories(const Eigen::Vector3d& orders, bo
         _trunkAxisAccAtLast.z());
     point("trunk_axis_z", halfPeriod, 
         0.0);
-    return;    
 }
 
 void QuinticWalk::resetTrunkLastState()
@@ -674,10 +673,6 @@ void QuinticWalk::point(std::string spline, double t, double pos, double vel, do
     _trajs.get(spline).addPoint(t, pos, vel, acc);
 }
 
-void QuinticWalk::saveSplineCsv(const std::string& filename){
-    _trajs.exportData(filename);
-}
-
 double QuinticWalk::getPhase() const
 {
     return _phase;
@@ -695,18 +690,8 @@ double QuinticWalk::getTrajsTime() const
     return t;
 }
 
-const WalkingParameter& QuinticWalk::getParameters() const
-{
-    return _params;
-}
-
 Footstep QuinticWalk::getFootstep(){
     return _footstep;
-}
-
-const bitbots_splines::Trajectories& QuinticWalk::getTrajectories() const
-{
-    return _trajs;
 }
 
 bool QuinticWalk::isLeftSupport(){
@@ -716,7 +701,7 @@ bool QuinticWalk::isLeftSupport(){
 bool QuinticWalk::isDoubleSupport(){
     // returns true if the value of the "is_double_support" spline is currently higher than 0.5
     // the spline should only have values of 0 or 1
-    return _trajs.get("is_double_support").pos(getTrajsTime()) >= 0.5 ? true : false;
+    return _trajs.get("is_double_support").pos(getTrajsTime()) >= 0.5;
 }
 
 void QuinticWalk::setParameters(const WalkingParameter& params)

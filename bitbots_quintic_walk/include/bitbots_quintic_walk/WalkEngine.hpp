@@ -129,12 +129,6 @@ class QuinticWalk
         double getTrajsTime() const;
 
         /**
-         * Get current used 
-         * parameters
-         */
-        const WalkingParameter& getParameters() const;
-
-        /**
          * Get the footstep object.
          */
         Footstep getFootstep();
@@ -153,12 +147,6 @@ class QuinticWalk
          * Assign given parameters vector
          */
         void setParameters(const WalkingParameter& params);
-
-        /**
-         * Return the trajectories for
-         * current half cycle
-         */
-        const bitbots_splines::Trajectories& getTrajectories() const;
 
         /**
          * Update the internal walk state
@@ -181,8 +169,6 @@ class QuinticWalk
 
         void computeCartesianPositionAtTime(Eigen::Vector3d& trunkPos, Eigen::Vector3d& trunkAxis, Eigen::Vector3d& footPos,
                                         Eigen::Vector3d& footAxis, bool& isLeftsupportFoot, double time);
-
-        void saveSplineCsv(const std::string& filename);
 
         void requestKick(bool left);
         void requestPause();
