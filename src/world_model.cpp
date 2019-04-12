@@ -187,6 +187,7 @@ void WorldModel::dynamic_reconfigure_callback(
     }
 
     // initializing resampling methods
+    // local
     local_ball_resampling_.reset(new ImportanceResamplingWE<PositionState>(
             static_cast<int>(config.local_ball_particle_number *
                              config.local_ball_explorer_rate),
@@ -203,6 +204,20 @@ void WorldModel::dynamic_reconfigure_callback(
             static_cast<int>(config.local_obstacle_particle_number *
                              config.local_obstacle_explorer_rate),
             local_obstacle_state_distribution_));
+    // global
+    global_ball_resampling_.reset(new ImportanceResamplingWE<PositionState>(
+            static_cast<int>(config.global_ball_particle_number *
+                             config.global_ball_explorer_rate),
+            global_ball_state_distribution_));
+    global_mate_resampling_.reset(new ImportanceResamplingWE<PositionState>(
+            static_cast<int>(config.global_mate_particle_number *
+                             config.global_mate_explorer_rate),
+            global_mate_state_distribution_));
+    global_opponent_resampling_.reset(new ImportanceResamplingWE<PositionState>(
+            static_cast<int>(config.global_opponent_particle_number *
+                             config.global_opponent_explorer_rate),
+            global_opponent_state_distribution_));
+    
 
     config_ = config;
     if (!valid_configuration_) {
