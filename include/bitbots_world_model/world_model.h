@@ -48,8 +48,8 @@ public:
     // - start/stop filtering
     // - start/stop sending?
 
-    bool reset_filters_callback(std_srvs::Trigger::Request& req,
-            std_srvs::Trigger::Response& res);
+    bool reset_filters_callback(
+            std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res);
 
     void
     dynamic_reconfigure_callback(wm::WorldModelConfig& config, uint32_t level);
@@ -107,7 +107,6 @@ private:
     std::vector<PositionState> global_ball_measurements_;
     std::vector<PositionState> global_mate_measurements_;
     std::vector<PositionState> global_opponent_measurements_;
-    std::vector<PositionStateW> global_obstacle_measurements_;
 
     // resampling strategies
     // local
@@ -218,8 +217,10 @@ private:
     geometry_msgs::Pose pose2d_to_pose(const geometry_msgs::Pose2D pose2D);
 
     std_msgs::ColorRGBA get_color_msg(int color_id);
+    void set_global_measurements(hlm::TeamData msg);
     void publish_local_results();
     void exec_local_filter_step();
+    void exec_global_filter_step();
 };
 
 #endif

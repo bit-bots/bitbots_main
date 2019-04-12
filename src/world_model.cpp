@@ -263,8 +263,8 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative& msg) {
 void WorldModel::team_data_callback(const hlm::TeamData& msg) {
     last_received_team_data_ = msg;
 }
-bool WorldModel::reset_filters_callback(std_srvs::Trigger::Request& req,
-        std_srvs::Trigger::Response& res) {
+bool WorldModel::reset_filters_callback(
+        std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) {
     // pretty self-explaining... it resets all the filters
     reset_all_filters();
     res.success = true;
@@ -360,8 +360,7 @@ void WorldModel::publish_particle_visualization() {
 }
 
 void WorldModel::publish_gmm_visualization(gmms::GaussianMixtureModel gmm,
-        std::string n_space,
-        ros::Duration lifetime) {
+        std::string n_space, ros::Duration lifetime) {
     local_particles_publisher_.publish(gmm.renderMarker(
             -(config_.field_width / 2), -(config_.field_height / 2),
             (config_.field_width / 2), (config_.field_height / 2), 100, n_space,
@@ -400,6 +399,10 @@ void WorldModel::exec_local_filter_step() {
     local_mate_pf_->diffuse();
     local_opponent_pf_->diffuse();
     local_obstacle_pf_->diffuse();
+}
+
+void WorldModel::exec_global_filter_step() {
+    global_ball_pf_->measure();
 }
 
 void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
