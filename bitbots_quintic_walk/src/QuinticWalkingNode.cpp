@@ -733,7 +733,7 @@ int main(int argc, char **argv) {
     f = boost::bind(&QuinticWalkingNode::reconf_callback, &node, _1, _2);
     server.setCallback(f);
     // reset engine
-    node.initilizeEngine();
+    node.initializeEngine();
     // run the node
     node.run();
 }

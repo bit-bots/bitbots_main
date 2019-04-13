@@ -66,7 +66,6 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
 
     // check if we will finish a half step with this update
     bool halfStepFinished = (_lastPhase < 0.5 && _phase >= 0.5) || (_lastPhase > 0.5 && _phase <0.5); 
-    _lastPhase = _phase;
 
     // small state machine
     if (_engineState == "startMovement") {
@@ -133,6 +132,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         ROS_ERROR_THROTTLE(1, "QuinticWalk exception invalid state phase= %f support= %d dt= %f", _phase, _footstep.isLeftSupport(), dt);
         return false;
     }
+    _lastPhase = _phase;
 
     return true;
 }
@@ -189,17 +189,27 @@ void QuinticWalk::saveCurrentTrunkState(){
     //Evaluate current trunk state
     //(position, velocity, acceleration)
     //in next support foot frame
-    //TODO this should not use halfPeriod as a saving point but the current phase time instead, otherwise phase reset will not work
+
+    // compute current point in time to save state
+    // by multiplying the halfPeriod time with the advancement of period time
     double halfPeriod = 1.0/(2.0*_params.freq);
+    double factor;
+    if (_lastPhase < 0.5){
+        factor = _lastPhase / 0.5;
+    }else{
+        factor = _lastPhase;
+    }
+    double period_time = halfPeriod * factor;
+
     Eigen::Vector2d trunkPos(
-        _trajs.get("trunk_pos_x").pos(halfPeriod),
-        _trajs.get("trunk_pos_y").pos(halfPeriod));
+        _trajs.get("trunk_pos_x").pos(period_time),
+        _trajs.get("trunk_pos_y").pos(period_time));
     Eigen::Vector2d trunkVel(
-        _trajs.get("trunk_pos_x").vel(halfPeriod),
-        _trajs.get("trunk_pos_y").vel(halfPeriod));
+        _trajs.get("trunk_pos_x").vel(period_time),
+        _trajs.get("trunk_pos_y").vel(period_time));
     Eigen::Vector2d trunkAcc(
-        _trajs.get("trunk_pos_x").acc(halfPeriod),
-        _trajs.get("trunk_pos_y").acc(halfPeriod));
+        _trajs.get("trunk_pos_x").acc(period_time),
+        _trajs.get("trunk_pos_y").acc(period_time));
     //Convert in next support foot frame
     trunkPos.x() -= _footstep.getNext().x();
     trunkPos.y() -= _footstep.getNext().y();
@@ -220,15 +230,15 @@ void QuinticWalk::saveCurrentTrunkState(){
     _trunkAccAtLast.x() = trunkAcc.x();
     _trunkAccAtLast.y() = trunkAcc.y();
     //No transformation for height
-    _trunkPosAtLast.z() = _trajs.get("trunk_pos_z").pos(halfPeriod);
-    _trunkVelAtLast.z() = _trajs.get("trunk_pos_z").vel(halfPeriod);
-    _trunkAccAtLast.z() = _trajs.get("trunk_pos_z").acc(halfPeriod);
+    _trunkPosAtLast.z() = _trajs.get("trunk_pos_z").pos(period_time);
+    _trunkVelAtLast.z() = _trajs.get("trunk_pos_z").vel(period_time);
+    _trunkAccAtLast.z() = _trajs.get("trunk_pos_z").acc(period_time);
     //Evaluate and save trunk orientation
     //in next support foot frame
     Eigen::Vector3d trunkAxis(
-        _trajs.get("trunk_axis_x").pos(halfPeriod),
-        _trajs.get("trunk_axis_y").pos(halfPeriod),
-        _trajs.get("trunk_axis_z").pos(halfPeriod));
+        _trajs.get("trunk_axis_x").pos(period_time),
+        _trajs.get("trunk_axis_y").pos(period_time),
+        _trajs.get("trunk_axis_z").pos(period_time));
     //Convert in intrinsic euler angle
     Eigen::Matrix3d trunkMat = bitbots_splines::AxisToMatrix(trunkAxis);
     Eigen::Vector3d trunkEuler = bitbots_splines::MatrixToEulerIntrinsic(trunkMat);
@@ -241,12 +251,12 @@ void QuinticWalk::saveCurrentTrunkState(){
     //Evaluate trunk orientation velocity
     //and acceleration without frame 
     //transformation
-    _trunkAxisVelAtLast.x() = _trajs.get("trunk_axis_x").vel(halfPeriod);
-    _trunkAxisVelAtLast.y() = _trajs.get("trunk_axis_y").vel(halfPeriod);
-    _trunkAxisVelAtLast.z() = _trajs.get("trunk_axis_z").vel(halfPeriod);
-    _trunkAxisAccAtLast.x() = _trajs.get("trunk_axis_x").acc(halfPeriod);
-    _trunkAxisAccAtLast.y() = _trajs.get("trunk_axis_y").acc(halfPeriod);
-    _trunkAxisAccAtLast.z() = _trajs.get("trunk_axis_z").acc(halfPeriod);
+    _trunkAxisVelAtLast.x() = _trajs.get("trunk_axis_x").vel(period_time);
+    _trunkAxisVelAtLast.y() = _trajs.get("trunk_axis_y").vel(period_time);
+    _trunkAxisVelAtLast.z() = _trajs.get("trunk_axis_z").vel(period_time);
+    _trunkAxisAccAtLast.x() = _trajs.get("trunk_axis_x").acc(period_time);
+    _trunkAxisAccAtLast.y() = _trajs.get("trunk_axis_y").acc(period_time);
+    _trunkAxisAccAtLast.z() = _trajs.get("trunk_axis_z").acc(period_time);
 }
 
 
