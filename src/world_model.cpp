@@ -467,6 +467,14 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
 
     // publish the output
     publish_local_results();
+
+    if (config_.global_filter_active) {
+        // executing a global filter step
+        exec_global_filter_step();
+
+        // publish the output
+        publish_global_results();
+    }
 }
 
 void WorldModel::set_global_measurements(hlm::TeamData msg) {

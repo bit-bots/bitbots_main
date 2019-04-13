@@ -126,6 +126,8 @@ local_obstacle_gmm_iterations: 10
 # Global Filters
 # -------------
 
+global_filter_active: true
+
 global_ball_particle_number: 2000
 global_ball_diffusion_x_std_dev: 1
 global_ball_diffusion_y_std_dev: 1
