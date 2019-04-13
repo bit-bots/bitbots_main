@@ -271,6 +271,7 @@ void WorldModel::obstacles_callback(const hlm::ObstaclesRelative& msg) {
 void WorldModel::team_data_callback(const hlm::TeamData& msg) {
     last_received_team_data_ = msg;
 }
+
 bool WorldModel::reset_filters_callback(
         std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) {
     // pretty self-explaining... it resets all the filters
@@ -411,6 +412,8 @@ void WorldModel::exec_local_filter_step() {
     local_mate_observation_model_->clear_measurement();
     local_opponent_observation_model_->clear_measurement();
     local_obstacle_observation_model_->clear_measurement();
+
+    // TODO: add drift
 
     // we need to resample after every step because the world is changing
     // constantly - even if we don't move. the filters have got a resampling
@@ -559,6 +562,12 @@ void WorldModel::set_global_measurements(hlm::TeamData msg) {
         PositionState buffer_position_state(mean.coeff(0), mean.coeff(1));
         global_opponent_measurements_.push_back(buffer_position_state);
     }
+
+    // setting measurements in the observation models
+    global_ball_observation_model_->set_measurement(global_ball_measurements_);
+    global_mate_observation_model_->set_measurement(global_mate_measurements_);
+    global_opponent_observation_model_->set_measurement(
+            global_opponent_measurements_);
 }
 
 void WorldModel::publish_local_results() {
