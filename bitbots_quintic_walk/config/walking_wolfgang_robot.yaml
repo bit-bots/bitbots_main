@@ -69,9 +69,13 @@ walking:
   
   # parameters for bioIK
   bioIKTime: 0.01
-  bioIKApprox: True
 
   debugActive: True
+
+  kickLength: 0.08
+  kickVel: 0.0
+  kickPhase: 0.75
+
 
   trunkYOnlyInDoubleSupport: False
 

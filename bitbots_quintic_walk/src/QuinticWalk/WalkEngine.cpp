@@ -86,7 +86,9 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
                 ((_leftKickRequested && !_footstep.isLeftSupport()) || (_rightKickRequested && _footstep.isLeftSupport()))){
             // lets do a kick
             buildKickTrajectories(orders);
-            _engineState = "kick";            
+            _engineState = "kick";
+            _leftKickRequested = false;
+            _rightKickRequested = false;
         }else if (halfStepFinished) {
             // current step is finished, lets see if we have to change state
             if (ordersZero) {
@@ -104,7 +106,6 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         // in this state we do a kick while doing a step
         if (halfStepFinished) {
             //kick step is finished, go on walking
-            _phase = 0.0;
             _engineState = "walking";
             buildNormalTrajectories(orders);
         }
@@ -340,11 +341,15 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startSte
     point("foot_pos_x",  doubleSupportLength,   _footstep.getLast().x());
     if(kickStep){
         point("foot_pos_x", doubleSupportLength + singleSupportLength * _params.kickPhase,
-        _footstep.getNext().x() + _params.kickLength);
+        _footstep.getNext().x() + _params.kickLength,
+        _params.kickVel);
+    }else {
+        point("foot_pos_x",
+              doubleSupportLength + singleSupportLength * _params.footPutDownPhase * _params.footOvershootPhase,
+              _footstep.getNext().x() +
+              (_footstep.getNext().x() - _footstep.getLast().x()) * _params.footOvershootRatio);
     }
-    point("foot_pos_x", doubleSupportLength + singleSupportLength * _params.footPutDownPhase * _params.footOvershootPhase, 
-        _footstep.getNext().x() + (_footstep.getNext().x()-_footstep.getLast().x()) *_params.footOvershootRatio);
-    point("foot_pos_x", doubleSupportLength + singleSupportLength * _params.footPutDownPhase, 
+    point("foot_pos_x", doubleSupportLength + singleSupportLength * _params.footPutDownPhase,
         _footstep.getNext().x());
     point("foot_pos_x", halfPeriod, _footstep.getNext().x());
 
