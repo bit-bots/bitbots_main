@@ -14,7 +14,7 @@
 #define KICKOFF_KEEPOUT                 10000 // ms
 #define GAMECONTROLER_LOST_TIMEOUT      20000 // ms
 
-GameControllerServer::GameControllerServer(Game *game) {
+GameControllerServer::GameControllerServer(Game *game, std::string net_interface) {
     mPreviousSecondaryState = 255;
     mPreviousGameState = 255;
     for (int i = 0; i < MAX_NUM_PLAYERS; i++) {
@@ -27,7 +27,10 @@ GameControllerServer::GameControllerServer(Game *game) {
     mKickOffUnparalyzeTime = 0;
     mLastMsgReceived = 0;
     ROS_DEBUG("Team: %d, Port: %d", mGame->getTeamID(), GAMECONTROLLER_DATA_PORT);
-    mNetwork = new Network(0, GAMECONTROLLER_RETURN_PORT, INADDR_ANY, GAMECONTROLLER_DATA_PORT);
+
+    uint32_t netAddress = Network::getNetAddressFromInterface(net_interface);
+
+    mNetwork = new Network(netAddress, GAMECONTROLLER_RETURN_PORT, netAddress, GAMECONTROLLER_DATA_PORT);
     this->start(this);
 }
 
@@ -74,9 +77,10 @@ void GameControllerServer::execute(void *arg) {
             SendKeepAlive();
             //We check each KeepAlive step if the wifi is connected
             if (mNetwork->isWifiConnected()) {
-                //ROS_ERROR("NO CONNECTION");
+                //ROS_ERROR("YES CONNECTION");
                 isWifiConnected = true;
             } else {
+                //ROS_ERROR("NO CONNECTION");
                 isWifiConnected = false;
             }
             lastSendTime = currentTime;

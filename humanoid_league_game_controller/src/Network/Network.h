@@ -138,6 +138,10 @@ public:
 
     uint8_t isWifiConnected() const;
 
+    static uint32_t getOwnAddressFromInterface(std::string interface_name);
+
+    static uint32_t getNetAddressFromInterface(std::string interface_name);
+
 private:
     /**
      * Open a Port with the parameter given. Initial the (WIN)Sockets.

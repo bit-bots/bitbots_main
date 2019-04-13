@@ -24,15 +24,17 @@ int main(int argc, char **argv) {
     // set IDs coresponding to the config
     int bot_id;
     int team_id;
+    std::string net_interface;
     n.getParam("bot_id", bot_id);
     n.getParam("team_id", team_id);
+    n.getParam("interface", net_interface);
 
     mGame->setTeamId(team_id);
     mGame->setBotId(bot_id);
     mGame->setBotAllowedToMove(true);
     mGame->setGameState(Game::PLAYING);
 
-    mGameController = new GameControllerServer(mGame);
+    mGameController = new GameControllerServer(mGame, net_interface);
 
     ros::Publisher networkStatePub = n.advertise<std_msgs::Bool>("wifi_connected", 1);
     ros::Publisher gameStatePub = n.advertise<humanoid_league_msgs::GameState>("gamestate", 1);

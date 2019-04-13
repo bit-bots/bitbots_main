@@ -59,12 +59,12 @@ void Network::construct(uint32_t address, uint16_t port, uint32_t sourceAddress,
     // Set destination address for datagram
     mDestination.sin_family = PF_INET;
     mDestination.sin_port = htons(port);
-    if (address != 0) {
+    if (address != 0 && false) {
         mDestination.sin_addr.s_addr = htonl(address);
     } else {
         if (!TCPMode) {
             ROS_INFO("<4> [Network] construct: Enabling broadcast");
-            mDestination.sin_addr.s_addr = INADDR_BROADCAST;
+            mDestination.sin_addr.s_addr = htonl(address);
             int so_broadcast = 1;
             if (setsockopt(mSocket, SOL_SOCKET, SO_BROADCAST,
                            (const char *) &so_broadcast,
@@ -100,7 +100,6 @@ void Network::construct(uint32_t address, uint16_t port, uint32_t sourceAddress,
             mInterfaceWifiName = ifa->ifa_name;
 
         }
-
     }
 }
 
@@ -290,4 +289,44 @@ uint8_t Network::isWifiConnected() const {
     }
 
     return false;
+}
+
+uint32_t Network::getOwnAddressFromInterface(std::string interface_name) {
+    int fd;
+    struct ifreq ifr;
+
+    fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    /* I want to get an IPv4 IP address */
+    ifr.ifr_addr.sa_family = AF_INET;
+
+    /* I want IP address attached to interface_name */
+    strncpy(ifr.ifr_name, interface_name.c_str(), IFNAMSIZ-1);
+
+    ioctl(fd, SIOCGIFADDR, &ifr);
+
+    close(fd);
+
+    uint32_t addr = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr;
+    return ((addr & 0xFF) << 24) | ((addr & 0xFF00) << 8) | ((addr & 0xFF0000) >> 8) | ((addr & 0xFF000000) >> 24);
+
+}
+
+uint32_t Network::getNetAddressFromInterface(std::string interface_name) {
+    struct ifaddrs *ifap, *ifa;
+    struct sockaddr_in *sa;
+    uint32_t netmask = 0, netmask_reversed;
+
+    getifaddrs (&ifap);
+    for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr->sa_family==AF_INET && strcmp(ifa->ifa_name, interface_name.c_str()) == 0) {
+            sa = (struct sockaddr_in *) ifa->ifa_netmask;
+            netmask = sa->sin_addr.s_addr;
+        }
+    }
+
+    freeifaddrs(ifap);
+
+    netmask_reversed = ((netmask & 0xFF) << 24) | ((netmask & 0xFF00) << 8) | ((netmask & 0xFF0000) >> 8) | ((netmask & 0xFF000000) >> 24);
+    return (~netmask_reversed | Network::getOwnAddressFromInterface(interface_name));
 }

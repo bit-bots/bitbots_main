@@ -24,8 +24,9 @@ public:
     /**
      * Constructor
      * @param game		the data of the game
+     * @param net_interface name of the network interface to use
      */
-    GameControllerServer(Game *game);
+    GameControllerServer(Game *game, std::string net_interface);
 
     virtual ~GameControllerServer();
 
