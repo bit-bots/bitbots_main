@@ -425,8 +425,6 @@ void WorldModel::exec_local_filter_step() {
     local_obstacle_pf_->resample();
 
     // diffuse the particles (add normal distributed uncertainty)
-    // the .1 parameter is only there for legacy reasons and has no effect at
-    // all.
     local_ball_pf_->diffuse();
     local_mate_pf_->diffuse();
     local_opponent_pf_->diffuse();
@@ -434,7 +432,31 @@ void WorldModel::exec_local_filter_step() {
 }
 
 void WorldModel::exec_global_filter_step() {
+
+    // setting the measurements manually.
+    // this is used to save resources because of the necessary transformations
+    // and a possibly high frequence of TeamData messages
+    set_global_measurements(last_received_team_data_);
+
+
     global_ball_pf_->measure();
+    global_mate_pf_->measure();
+    global_opponent_pf_->measure();
+
+    // manually clearing the list of measurements
+    // TODO: just age the measurements instead of removing them
+    global_ball_observation_model_->clear_measurement();
+    global_mate_observation_model_->clear_measurement();
+    global_opponent_observation_model_->clear_measurement();
+
+    global_ball_pf_->resample();
+    global_mate_pf_->resample();
+    global_opponent_pf_->resample();
+
+    // diffuse the particles (add normal distributed uncertainty)
+    global_ball_pf_->diffuse();
+    global_mate_pf_->diffuse();
+    global_opponent_pf_->diffuse();
 }
 
 void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
