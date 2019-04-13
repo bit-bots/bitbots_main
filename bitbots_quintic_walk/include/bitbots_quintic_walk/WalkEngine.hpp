@@ -1,5 +1,5 @@
 /*
-This code is largely based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
+This code is based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
@@ -94,6 +94,7 @@ struct WalkingParameter{
     double kickPhase;
     double footPutDownRollOffset;
     double kickVel;
+    double pauseDuration;
 };
 
 /**
@@ -128,34 +129,9 @@ class QuinticWalk
         double getTrajsTime() const;
 
         /**
-         * Get current used 
-         * parameters
-         */
-        const WalkingParameter& getParameters() const;
-
-        /**
-         * Get current walk footstep orders
-         */
-        const Eigen::Vector3d& getOrders() const;
-
-        /**
          * Get the footstep object.
          */
         Footstep getFootstep();
-
-        /**
-         * Get the weight balance between left and right leg.
-         * 1.0 means all weight on left leg
-         * 0.0 means all weight on right leg
-         * during double support phase, the value is between those two values
-         */
-        double getWeightBalance();
-
-        /**
-         * Return true is the walk 
-         * oscillations are enabled
-         */
-        bool isEnabled() const;
 
         /**
          * Return if true if left is current support foot
@@ -173,36 +149,11 @@ class QuinticWalk
         void setParameters(const WalkingParameter& params);
 
         /**
-         * Rebuilt the trajectories and
-         * reset saved state as disable.
-         * Used to directly apply 
-         * newly parameters.
-         */
-        void forceRebuildTrajectories();
-
-        /**
-         * Set used walk footstep orders,
-         * enable or disable the walk oscillations
-         * and optionnaly set the starting 
-         * supporting foot.
-         */
-        void setOrders(
-            const Eigen::Vector3d& orders, 
-            bool isEnabled,
-            bool instantStop);
-
-        /**
-         * Return the trajectories for
-         * current half cycle
-         */
-        const bitbots_splines::Trajectories& getTrajectories() const;
-
-        /**
          * Update the internal walk state
          * (pĥase, trajectories) from given 
          * elapsed time since last update() call
          */
-        void update(double dt);
+        bool updateState(double dt, const Eigen::Vector3d& orders, bool walkableState);
 
         /**
          * Compute current cartesian
@@ -219,13 +170,21 @@ class QuinticWalk
         void computeCartesianPositionAtTime(Eigen::Vector3d& trunkPos, Eigen::Vector3d& trunkAxis, Eigen::Vector3d& footPos,
                                         Eigen::Vector3d& footAxis, bool& isLeftsupportFoot, double time);
 
-        void saveSplineCsv(const std::string& filename);
+        void requestKick(bool left);
+        void requestPause();
 
-        void setKick(bool left);
+        /**
+         * Ends the current step earlier. Useful if foot hits ground to early.
+         */
+        void endStep();
 
-        bool getIsWalking();
+        void reset();
+
+        std::string getState();
 
 private:
+
+        std::string _engineState;
 
         /**
          * Current footstep support
@@ -237,30 +196,19 @@ private:
          * Movement phase between 0 and 1
          */
         double _phase;
+        double _lastPhase;
+
+        double _timePaused;
 
         /**
          * Currently used parameters
          */
         WalkingParameter _params;
 
-        /**
-         * Currently used footstep
-         * orders flush at next suppot 
-         * foot swap
-         */
-        Eigen::Vector3d _orders;
+        bool _leftKickRequested;
+        bool _rightKickRequested;
+        bool _pauseRequested;
 
-        /**
-         * Enable or disable
-         * the oscillations and
-         * value at last half cycle.
-         */
-        bool _isEnabled;
-        bool _wasEnabled;
-
-        bool _isLeftKick;
-        bool _isRightKick;
-        
         /**
          * Trunk pose and orientation 
          * position, velocity and acceleration 
@@ -279,22 +227,19 @@ private:
          */
         bitbots_splines::Trajectories _trajs;
 
-        /**
-         * Reset and rebuild the
-         * spline trajectories for
-         * current half cycle
-         */
-        void buildTrajectories();
+        void updatePhase(double dt);
 
-        bool _isWalking;
-        bool _instantStop;
-        bool _doCaptureStep;
-        bool _didDisableStep;
+        void buildNormalTrajectories(const Eigen::Vector3d& orders);
+        void buildKickTrajectories(const Eigen::Vector3d& orders);
+        void buildStartTrajectories(const Eigen::Vector3d& orders);
+        void buildStopStepTrajectories(const Eigen::Vector3d& orders);
+        void buildStopMovementTrajectories(const Eigen::Vector3d& orders);
+
+        void buildTrajectories(const Eigen::Vector3d& orders, bool startStep, bool kickStep);
+        void buildWalkDisableTrajectories(const Eigen::Vector3d& orders, bool footInIdlePosition);
+
         void saveCurrentTrunkState();
         void useCurrentTrunkState();
-        void buildInstantStopTrajectories();
-        void buildCaptureStepTrajectories();
-        void buildWalkDisableTrajectories();
 
         void point(std::string spline, double t, double pos, double vel = 0, double acc = 0);
         

@@ -1,5 +1,5 @@
 /*
-This code is largely based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
+This code is based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
@@ -11,268 +11,206 @@ namespace bitbots_quintic_walk {
 QuinticWalk::QuinticWalk() :
     _footstep(0.14, true),
     _phase(0.0),
+    _lastPhase(0.0),
+    _pauseRequested(false),
+    _leftKickRequested(false),
+    _rightKickRequested(false), 
     _params(),
-    _orders(0.0, 0.0, 0.0),
-    _isEnabled(false),
-    _wasEnabled(false),
     _trunkPosAtLast(),
     _trunkVelAtLast(),
     _trunkAccAtLast(),
     _trunkAxisPosAtLast(),
     _trunkAxisVelAtLast(),
     _trunkAxisAccAtLast(),
-    _trajs()
+    _trajs(),
+    _timePaused(0.0)
 {   
-    //Initialize the footstep
-    _footstep.setFootDistance(_params.footDistance);
-    _footstep.reset(false);
-    //Reset the trunk saved state
-    resetTrunkLastState();
-    //Trajectories initialization
-    buildTrajectories();
-    _isWalking = false;
-    _instantStop = false;
-    _doCaptureStep = false;
+    // make sure to call the reset method after having the parameters
+    _trajs = bitbots_splines::TrajectoriesInit();
 }
-        
-double QuinticWalk::getPhase() const
-{
-    return _phase;
-}
-        
-double QuinticWalk::getTrajsTime() const
-{
-    double t;
-    if (_phase < 0.5) {
-        t = _phase/_params.freq;
+
+
+bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool walkableState){
+    bool ordersZero = orders[0] == 0.0 && orders[1] == 0.0 && orders[2] == 0.0;
+
+    // First check if we are currently in pause state or idle, since we don't want to update the phase in this case
+    if (_engineState == "paused") {
+        if (_timePaused > _params.pauseDuration) {
+            // our pause is finished, whe can continue walking
+            _engineState = "walking";
+            _timePaused = 0.0;
+            buildNormalTrajectories(orders);
+        } else {
+            _timePaused += dt;
+            return false;
+        }
+        // we don't have to update anything more
+    } else if (_engineState == "idle") {
+        if (ordersZero) {
+            // we are in idle and are not supposed to walk. current state is fine, just do nothing
+            return false;
+        } else {
+            // we should start walking if the robot is in the right state
+            if (walkableState) {
+                buildStartTrajectories(orders);
+                _engineState = "startMovement";
+            } else { 
+                // we can't start walking
+                return false;
+            }   
+        }
+    }
+
+    // update the current phase
+    updatePhase(dt);
+
+    // check if we will finish a half step with this update
+    bool halfStepFinished = (_lastPhase < 0.5 && _phase >= 0.5) || (_lastPhase > 0.5 && _phase <0.5); 
+
+    // small state machine
+    if (_engineState == "startMovement") {
+        // in this state we do a single "step" where we only move the trunk
+        if (halfStepFinished) {
+            //start step is finished, go to next state
+            buildNormalTrajectories(orders);
+            _engineState = "walking";
+        }        
+    } else if (_engineState == "walking") {
+        // check if a half step was finished and we are unstable
+        if (halfStepFinished && _pauseRequested){
+            // go into pause
+            _engineState = "paused";
+            _pauseRequested = false;
+            return false;
+        }else if(halfStepFinished &&
+                ((_leftKickRequested && !_footstep.isLeftSupport()) || (_rightKickRequested && _footstep.isLeftSupport()))){
+            // lets do a kick
+            buildKickTrajectories(orders);
+            _engineState = "kick";
+            _leftKickRequested = false;
+            _rightKickRequested = false;
+        }else if (halfStepFinished) {
+            // current step is finished, lets see if we have to change state
+            if (ordersZero) {
+                // we have zero command vel -> we should stop
+                _engineState = "stopStep";
+                //_phase = 0.0;
+                buildStopStepTrajectories(orders);                
+            } else {
+                // we can keep on walking
+                //_phase = 0;
+                buildNormalTrajectories(orders);                
+            }
+        }
+    } else if (_engineState == "kick") {
+        // in this state we do a kick while doing a step
+        if (halfStepFinished) {
+            //kick step is finished, go on walking
+            _engineState = "walking";
+            buildNormalTrajectories(orders);
+        }
+    } else if (_engineState == "stopStep") {
+        // in this state we do a step back to get feet into idle pose
+        if (halfStepFinished) {
+            //stop step is finished, go to stop movement state
+            _engineState = "stopMovement";
+            buildStopMovementTrajectories(orders);
+        }
+    }else if (_engineState == "stopMovement"){
+        // in this state we do a "step" where we move the trunk back to idle position
+        if (halfStepFinished) {
+            //stop movement is finished, go to idle state
+            _engineState = "idle";
+            return false;
+        }
     } else {
-        t = (_phase - 0.5)/_params.freq;
+        ROS_ERROR("Somethings wrong with the walking engine state");
     }
 
-    return t;
-}
-        
-const WalkingParameter& QuinticWalk::getParameters() const
-{
-    return _params;
-}
-        
-const Eigen::Vector3d& QuinticWalk::getOrders() const
-{
-    return _orders;
-}
-
-Footstep QuinticWalk::getFootstep(){
-    return _footstep;
-}
-
-const bitbots_splines::Trajectories& QuinticWalk::getTrajectories() const
-{
-    return _trajs;
-}
-
-double QuinticWalk::getWeightBalance(){
-    double balance_left_right;
-    if(isDoubleSupport()){
-        Eigen::Vector3d trunkPosStart;
-        Eigen::Vector3d trunkPos;
-        Eigen::Vector3d trunkAxis;
-        Eigen::Vector3d footPos;
-        Eigen::Vector3d footAxis;
-        // get distance to trunk at beginning of double support
-        double halfPeriod = 1.0/(2.0*_params.freq);
-        double doubleSupportLength = _params.doubleSupportRatio * halfPeriod;
-        double singleSupportLength = halfPeriod -doubleSupportLength;
-        TrajectoriesTrunkFootPos(singleSupportLength, _trajs, trunkPosStart, trunkAxis, footPos, footAxis);
-
-        // get current values
-        TrajectoriesTrunkFootPos(getTrajsTime(), _trajs, trunkPos, trunkAxis, footPos, footAxis);
-        // simply consider the position of the trunk in relation to the feet
-        // this is not completly correct since trunk!=COM
-        // we consider the trunk to be always between the feet, therefore we can directly use the vector lengths
-        // we clamp at 0 and 1, for robustnes
-        double trunkDistance = std::sqrt(std::pow(trunkPos.x() - trunkPosStart.x(), 2) + std::pow(trunkPos.y() - trunkPosStart.y(), 2));        
-        double footDistance =  std::sqrt(std::pow(footPos.x(), 2) + std::pow(footPos.y(), 2));
-        double balance = trunkDistance / footDistance;
-        balance = std::min(1.0, std::max(0.0,balance));        
-        if(isLeftSupport()){
-            balance_left_right = 1- balance;
-        }else{
-            balance_left_right = balance;
-        }
-    }else{
-        if(isLeftSupport()){
-            balance_left_right = 1.0;
-        }else{
-            balance_left_right = 0.0;
-        }
+    //Sanity check support foot state
+    if ((_phase < 0.5 && !_footstep.isLeftSupport()) ||
+        (_phase >= 0.5 && _footstep.isLeftSupport())) {
+        ROS_ERROR_THROTTLE(1, "QuinticWalk exception invalid state phase= %f support= %d dt= %f", _phase, _footstep.isLeftSupport(), dt);
+        return false;
     }
-    return balance_left_right;
+    _lastPhase = _phase;
+
+    return true;
 }
 
-
-bool QuinticWalk::isLeftSupport(){
-    return _footstep.isLeftSupport();
-}
-
-bool QuinticWalk::isDoubleSupport(){
-    // returns true if the value of the "is_double_support" spline is currently higher than 0.5
-    // the spline should only have values of 0 or 1
-    return _trajs.get("is_double_support").pos(getTrajsTime()) >= 0.5 ? true : false;
-}
-
-void QuinticWalk::setParameters(const WalkingParameter& params)
-{
-    _params = params;
-    _footstep.setFootDistance(_params.footDistance);
-}
-
-void QuinticWalk::setKick(bool left){
-    if(left){
-        _isLeftKick = true;
-    }else{
-        _isRightKick = true;
-    }
-}
-        
-void QuinticWalk::forceRebuildTrajectories()
-{
-    //Reset the trunk saved state
-    resetTrunkLastState();
-    //Rebuild the trajectories
-    buildTrajectories();
-}
-
-void QuinticWalk::setOrders(
-    const Eigen::Vector3d& orders, 
-    bool isEnabled,
-    bool instantStop)
-{
-    //Set the walk orders
-    _orders = orders;
-    //Set the walk enable
-    bool lastEnabled = _isEnabled;
-    _isEnabled = isEnabled;
-    //Reset the support footstep and phase
-    //to specific support foot on enable if we are not currently walking
-    if (!_isWalking && isEnabled) {
-        //Reset the phase
-        //if(!_footstep.isLeftSupport()){
-        //    _phase = 0.0 + 1e-6;
-        //    _footstep.reset(true);
-        //    ROS_WARN("1");
-        /*}else{*/
-            // reset phase to center of half phase
-            _phase =  0.5 + 1e-6;
-            _footstep.reset(false);
-        //}*/
-        //Reset the trunk saved state 
-        //as the support foot as been updated
-        resetTrunkLastState();
-        //Rebuild the trajectories
-        buildTrajectories();
-        //Save last enabled value
-        _wasEnabled = lastEnabled;
-        _isWalking = true;
-        _didDisableStep = false;
-    }        
-}        
-        
-void QuinticWalk::update(double dt)
+void QuinticWalk::updatePhase(double dt)
 {
     //Check for negative time step
     if (dt <= 0.0) {
         if (dt == 0.0){ //sometimes happens due to rounding
             dt = 0.0001;
         }else{
-            ROS_ERROR("QuinticWalk exception negative dt phase= %f dt= %f", _phase, dt);
+            ROS_ERROR_THROTTLE(1, "QuinticWalk exception negative dt phase= %f dt= %f", _phase, dt);
             return;
         }
     }
     //Check for too long dt
     if (dt > 0.25/_params.freq) {
-        ROS_ERROR("QuinticWalk error too long dt phase= %f dt= %f", _phase, dt);
+        ROS_ERROR_THROTTLE(1, "QuinticWalk error too long dt phase= %f dt= %f", _phase, dt);
         return;
     }
 
     //Update the phase
-    double lastPhase = _phase;
     _phase += dt*_params.freq;
-    if (_phase >= 1.0) {
-        _phase -= 1.0;
-        //Bound to zero in case 
-        //of floating point error
-        if (_phase < 0.0) {
-            _phase = 0.0;
-        }
-    }
 
-    // check if we want to come to a stop fast, since we want are unstable
-    if(_instantStop){
-        saveCurrentTrunkState();
-        buildInstantStopTrajectories();
+    // reset to 0 if step complete
+    if(_phase > 1.0){
+        _phase = 0.0;
     }
-    if(_doCaptureStep){
-        saveCurrentTrunkState();
-        buildCaptureStepTrajectories();
-    }
-
-    //Detect the phase of support foot swap
-    //and computed the next half cycle
-    if (
-        (lastPhase < 0.5 && _phase >= 0.5) ||
-        (lastPhase > 0.5 && _phase <= 0.5)
-    ) {
-
-
-        saveCurrentTrunkState();
-        _footstep.stepFromOrders(_orders);
-        
-        if(_didDisableStep){
-            _isWalking = false;
-        }
-        //Build trajectories
-        if(!_isEnabled){
-            //we want to stop
-            buildWalkDisableTrajectories();
-            _didDisableStep = true;
-            _wasEnabled = _isEnabled;
-        }else{
-            _wasEnabled = _isEnabled;
-            //normal walking
-            buildTrajectories();
-        }
-    }
-
-    //Check support foot state
-    if (
-        (_phase < 0.5 && !_footstep.isLeftSupport()) ||
-        (_phase >= 0.5 && _footstep.isLeftSupport())
-    ) {
-        ROS_ERROR("QuinticWalk exception invalid state phase= %f support= %d dt= %f", _phase, _footstep.isLeftSupport(), dt);
-        return;        
-    }
-    
 }
 
-bool QuinticWalk::getIsWalking(){
-    return _isWalking;
+void QuinticWalk::endStep(){
+    // ends the step earlier, e.g. when foot has already contact to ground
+    if(_phase < 0.5){
+        _phase = 0.5;
+    }else{
+        _phase = 0.0;
+    }
+}
+
+void QuinticWalk::reset(){
+    // completly reset the engine, e.g. when robot fell down
+    _engineState = "idle";
+    _phase = 0.0;
+    _timePaused = 0.0;
+
+    //Initialize the footstep
+    _footstep.setFootDistance(_params.footDistance);
+    _footstep.reset(false);
+    //Reset the trunk saved state
+    resetTrunkLastState();
 }
 
 void QuinticWalk::saveCurrentTrunkState(){
     //Evaluate current trunk state
     //(position, velocity, acceleration)
     //in next support foot frame
+
+    // compute current point in time to save state
+    // by multiplying the halfPeriod time with the advancement of period time
     double halfPeriod = 1.0/(2.0*_params.freq);
+    double factor;
+    if (_lastPhase < 0.5){
+        factor = _lastPhase / 0.5;
+    }else{
+        factor = _lastPhase;
+    }
+    double period_time = halfPeriod * factor;
+
     Eigen::Vector2d trunkPos(
-        _trajs.get("trunk_pos_x").pos(halfPeriod),
-        _trajs.get("trunk_pos_y").pos(halfPeriod));
+        _trajs.get("trunk_pos_x").pos(period_time),
+        _trajs.get("trunk_pos_y").pos(period_time));
     Eigen::Vector2d trunkVel(
-        _trajs.get("trunk_pos_x").vel(halfPeriod),
-        _trajs.get("trunk_pos_y").vel(halfPeriod));
+        _trajs.get("trunk_pos_x").vel(period_time),
+        _trajs.get("trunk_pos_y").vel(period_time));
     Eigen::Vector2d trunkAcc(
-        _trajs.get("trunk_pos_x").acc(halfPeriod),
-        _trajs.get("trunk_pos_y").acc(halfPeriod));
+        _trajs.get("trunk_pos_x").acc(period_time),
+        _trajs.get("trunk_pos_y").acc(period_time));
     //Convert in next support foot frame
     trunkPos.x() -= _footstep.getNext().x();
     trunkPos.y() -= _footstep.getNext().y();
@@ -293,15 +231,15 @@ void QuinticWalk::saveCurrentTrunkState(){
     _trunkAccAtLast.x() = trunkAcc.x();
     _trunkAccAtLast.y() = trunkAcc.y();
     //No transformation for height
-    _trunkPosAtLast.z() = _trajs.get("trunk_pos_z").pos(halfPeriod);
-    _trunkVelAtLast.z() = _trajs.get("trunk_pos_z").vel(halfPeriod);
-    _trunkAccAtLast.z() = _trajs.get("trunk_pos_z").acc(halfPeriod);
+    _trunkPosAtLast.z() = _trajs.get("trunk_pos_z").pos(period_time);
+    _trunkVelAtLast.z() = _trajs.get("trunk_pos_z").vel(period_time);
+    _trunkAccAtLast.z() = _trajs.get("trunk_pos_z").acc(period_time);
     //Evaluate and save trunk orientation
     //in next support foot frame
     Eigen::Vector3d trunkAxis(
-        _trajs.get("trunk_axis_x").pos(halfPeriod),
-        _trajs.get("trunk_axis_y").pos(halfPeriod),
-        _trajs.get("trunk_axis_z").pos(halfPeriod));
+        _trajs.get("trunk_axis_x").pos(period_time),
+        _trajs.get("trunk_axis_y").pos(period_time),
+        _trajs.get("trunk_axis_z").pos(period_time));
     //Convert in intrinsic euler angle
     Eigen::Matrix3d trunkMat = bitbots_splines::AxisToMatrix(trunkAxis);
     Eigen::Vector3d trunkEuler = bitbots_splines::MatrixToEulerIntrinsic(trunkMat);
@@ -314,30 +252,65 @@ void QuinticWalk::saveCurrentTrunkState(){
     //Evaluate trunk orientation velocity
     //and acceleration without frame 
     //transformation
-    _trunkAxisVelAtLast.x() = _trajs.get("trunk_axis_x").vel(halfPeriod);
-    _trunkAxisVelAtLast.y() = _trajs.get("trunk_axis_y").vel(halfPeriod);
-    _trunkAxisVelAtLast.z() = _trajs.get("trunk_axis_z").vel(halfPeriod);
-    _trunkAxisAccAtLast.x() = _trajs.get("trunk_axis_x").acc(halfPeriod);
-    _trunkAxisAccAtLast.y() = _trajs.get("trunk_axis_y").acc(halfPeriod);
-    _trunkAxisAccAtLast.z() = _trajs.get("trunk_axis_z").acc(halfPeriod);
+    _trunkAxisVelAtLast.x() = _trajs.get("trunk_axis_x").vel(period_time);
+    _trunkAxisVelAtLast.y() = _trajs.get("trunk_axis_y").vel(period_time);
+    _trunkAxisVelAtLast.z() = _trajs.get("trunk_axis_z").vel(period_time);
+    _trunkAxisAccAtLast.x() = _trajs.get("trunk_axis_x").acc(period_time);
+    _trunkAxisAccAtLast.y() = _trajs.get("trunk_axis_y").acc(period_time);
+    _trunkAxisAccAtLast.z() = _trajs.get("trunk_axis_z").acc(period_time);
 }
 
-void QuinticWalk::buildTrajectories()
+
+void QuinticWalk::buildNormalTrajectories(const Eigen::Vector3d& orders){
+    buildTrajectories(orders, false, false);
+}
+
+void QuinticWalk::buildKickTrajectories(const Eigen::Vector3d& orders){
+    buildTrajectories(orders, false, true);
+}
+
+void QuinticWalk::buildStartTrajectories(const Eigen::Vector3d& orders){
+    buildTrajectories(orders, true, false);
+}
+
+void QuinticWalk::buildStopStepTrajectories(const Eigen::Vector3d& orders){
+    buildWalkDisableTrajectories(orders, false);
+}
+
+void QuinticWalk::buildStopMovementTrajectories(const Eigen::Vector3d& orders){
+    buildWalkDisableTrajectories(orders, true);
+}
+
+
+void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startStep, bool kickStep)
 {
+    // save the current trunk state to use it later
+    if(!startStep){
+        saveCurrentTrunkState();
+    }else{
+        _trunkPosAtLast.y() -= _footstep.getNext().y();
+        //trunkPos = Eigen::Rotation2Dd(-_footstep.getNext().z()).toRotationMatrix() * trunkPos;
+    }
+
+    if(startStep){
+        // update support foot and compute odometry
+        _footstep.stepFromOrders(Eigen::Vector3d());
+    }else{
+        _footstep.stepFromOrders(orders);
+    }
+
     //Reset the trajectories
     _trajs = bitbots_splines::TrajectoriesInit();
-    //Set up the trajectories 
-    //for the half cycle
+    //Set up the trajectories for the half cycle (single step)
     double halfPeriod = 1.0 / (2.0 * _params.freq);
+    // full period (double step) is needed for trunk splines
     double period = 2.0 * halfPeriod;
 
-    //Time length of double and single 
-    //support phase during the half cycle
+    //Time length of double and single support phase during the half cycle
     double doubleSupportLength = _params.doubleSupportRatio * halfPeriod;
     double singleSupportLength = halfPeriod-doubleSupportLength;
 
-    //Sign of support foot with 
-    //respect to lateral
+    //Sign of support foot with respect to lateral
     double supportSign = (_footstep.isLeftSupport() ? 1.0 : -1.0);
 
     //The trunk trajectory is defined for a
@@ -348,12 +321,11 @@ void QuinticWalk::buildTrajectories()
     double timeShift = -0.5 * halfPeriod + 0.5 * doubleSupportLength + _params.trunkPhase * halfPeriod; 
 
 
-    //Only move the trunk on the first 
-    //half cycle after a walk enable
-    if (_isEnabled && !_wasEnabled) {
+    //Only move the trunk on the first half cycle after a walk enable
+    if (startStep) {
         doubleSupportLength = halfPeriod;
         singleSupportLength = 0.0;
-    }   
+    }
     //Set double support phase
     point("is_double_support",    0.0,                   1.0);
     point("is_double_support",    doubleSupportLength,   1.0);
@@ -367,15 +339,17 @@ void QuinticWalk::buildTrajectories()
     //Flying foot position
     point("foot_pos_x",  0.0,                   _footstep.getLast().x());
     point("foot_pos_x",  doubleSupportLength,   _footstep.getLast().x());
-    if((_isLeftKick && _footstep.isLeftSupport()) || (_isRightKick && !_footstep.isLeftSupport())){
+    if(kickStep){
         point("foot_pos_x", doubleSupportLength + singleSupportLength * _params.kickPhase,
-        _footstep.getNext().x() + _params.kickLength);
-        _isLeftKick = false;
-        _isRightKick = false;
+        _footstep.getNext().x() + _params.kickLength,
+        _params.kickVel);
+    }else {
+        point("foot_pos_x",
+              doubleSupportLength + singleSupportLength * _params.footPutDownPhase * _params.footOvershootPhase,
+              _footstep.getNext().x() +
+              (_footstep.getNext().x() - _footstep.getLast().x()) * _params.footOvershootRatio);
     }
-    point("foot_pos_x", doubleSupportLength + singleSupportLength * _params.footPutDownPhase * _params.footOvershootPhase, 
-        _footstep.getNext().x() + (_footstep.getNext().x()-_footstep.getLast().x()) *_params.footOvershootRatio);
-    point("foot_pos_x", doubleSupportLength + singleSupportLength * _params.footPutDownPhase, 
+    point("foot_pos_x", doubleSupportLength + singleSupportLength * _params.footPutDownPhase,
         _footstep.getNext().x());
     point("foot_pos_x", halfPeriod, _footstep.getNext().x());
 
@@ -387,7 +361,7 @@ void QuinticWalk::buildTrajectories()
         _footstep.getNext().y());
     point("foot_pos_y", halfPeriod,          _footstep.getNext().y());
 
-    point("foot_pos_z", 0.0,  0.0);
+    point("foot_pos_z", 0.0, _footstep.getLast().z());
     point("foot_pos_z", doubleSupportLength, 0.0);
     point("foot_pos_z", doubleSupportLength + singleSupportLength * _params.footApexPhase - 0.5 * _params.footZPause * singleSupportLength, 
         _params.footRise);
@@ -546,14 +520,18 @@ void QuinticWalk::buildTrajectories()
         axisVel.z());
 }
         
-void QuinticWalk::buildWalkDisableTrajectories(){
+void QuinticWalk::buildWalkDisableTrajectories(const Eigen::Vector3d& orders, bool footInIdlePosition){
+    // save the current trunk state to use it later
+    saveCurrentTrunkState();
+    // update support foot and compute odometry
+    _footstep.stepFromOrders(orders);
+
     //Reset the trajectories
     _trajs = bitbots_splines::TrajectoriesInit();
 
     //Set up the trajectories 
     //for the half cycle
     double halfPeriod = 1.0 / (2.0 * _params.freq);
-    double period = 2.0 * halfPeriod;
 
     //Time length of double and single 
     //support phase during the half cycle
@@ -565,7 +543,7 @@ void QuinticWalk::buildWalkDisableTrajectories(){
     double supportSign = (_footstep.isLeftSupport() ? 1.0 : -1.0);
 
     //Set double support phase
-    double isDoubleSupport = (_wasEnabled ? 0.0 : 1.0);
+    double isDoubleSupport = (footInIdlePosition ? 1.0 : 0.0);
     point("is_double_support", 0.0,         isDoubleSupport);
     point("is_double_support", halfPeriod,  isDoubleSupport);
 
@@ -598,7 +576,7 @@ void QuinticWalk::buildWalkDisableTrajectories(){
 
     //If the walk has just been disabled,
     //make one single step to neutral pose
-    if (_wasEnabled) {
+    if (!footInIdlePosition) {
         point("foot_pos_z", 0.0, 0.0);
         point("foot_pos_z", doubleSupportLength, 0.0);
         point("foot_pos_z", doubleSupportLength + singleSupportLength * _params.footApexPhase - 0.5 * _params.footZPause * singleSupportLength, 
@@ -667,15 +645,6 @@ void QuinticWalk::buildWalkDisableTrajectories(){
         _trunkAxisAccAtLast.z());
     point("trunk_axis_z", halfPeriod, 
         0.0);
-    return;    
-}
-
-void QuinticWalk::buildInstantStopTrajectories(){
-
-}
-
-void QuinticWalk::buildCaptureStepTrajectories(){
-
 }
 
 void QuinticWalk::resetTrunkLastState()
@@ -723,8 +692,58 @@ void QuinticWalk::point(std::string spline, double t, double pos, double vel, do
     _trajs.get(spline).addPoint(t, pos, vel, acc);
 }
 
-void QuinticWalk::saveSplineCsv(const std::string& filename){
-    _trajs.exportData(filename);
+double QuinticWalk::getPhase() const
+{
+    return _phase;
+}
+
+double QuinticWalk::getTrajsTime() const
+{
+    double t;
+    if (_phase < 0.5) {
+        t = _phase/_params.freq;
+    } else {
+        t = (_phase - 0.5)/_params.freq;
+    }
+
+    return t;
+}
+
+Footstep QuinticWalk::getFootstep(){
+    return _footstep;
+}
+
+bool QuinticWalk::isLeftSupport(){
+    return _footstep.isLeftSupport();
+}
+
+bool QuinticWalk::isDoubleSupport(){
+    // returns true if the value of the "is_double_support" spline is currently higher than 0.5
+    // the spline should only have values of 0 or 1
+    return _trajs.get("is_double_support").pos(getTrajsTime()) >= 0.5;
+}
+
+void QuinticWalk::setParameters(const WalkingParameter& params)
+{
+    _params = params;
+    _footstep.setFootDistance(_params.footDistance);
+}
+
+void QuinticWalk::requestKick(bool left){
+    if(left){
+        _leftKickRequested = true;
+    }else{
+        _rightKickRequested = true;
+    }
+}
+
+void QuinticWalk::requestPause(){
+    _pauseRequested = true;
+}
+
+
+std::string QuinticWalk::getState(){
+    return _engineState;
 }
 
 }

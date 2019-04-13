@@ -1,7 +1,7 @@
 walking:
   # Full walk cycle frequency
   # (in Hz, > 0)
-  freq: 0.588
+  freq: 0.2
   # Length of double support phase in half cycle
   # (ratio, [0:1])
   doubleSupportRatio: 0.2
@@ -69,14 +69,14 @@ walking:
   
   # parameters for bioIK
   bioIKTime: 0.01
-  bioIKApprox: True
 
   debugActive: True
-  pubModelJointStates: False
 
-  # type of IK to use, either bio_ik or analytic
-  useAnalyticSolver: False
-  
+  kickLength: 0.08
+  kickVel: 0.0
+  kickPhase: 0.75
+
+
   trunkYOnlyInDoubleSupport: False
 
   maxStepX: 0.05

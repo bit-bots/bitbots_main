@@ -74,9 +74,6 @@ walking:
   debugActive: False
   pubModelJointStates: False
 
-  # type of IK to use, either bio_ik or analytic
-  useAnalyticSolver: False
-  
   trunkYOnlyInDoubleSupport: False
 
   maxStepX: 1.0
