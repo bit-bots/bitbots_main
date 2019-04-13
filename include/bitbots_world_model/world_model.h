@@ -71,6 +71,7 @@ private:
     ros::Publisher global_model_publisher_;
 
     ros::Publisher local_particles_publisher_;
+    ros::Publisher global_particles_publisher_;
 
     ros::ServiceServer reset_filters_service_;
 
@@ -207,7 +208,8 @@ private:
     relative_gmm_to_ball_relative(gmms::GaussianMixtureModel gmm);
 
     void publishing_timer_callback(const ros::TimerEvent&);
-    void publish_particle_visualization();
+    void publish_local_particle_visualization();
+    void publish_global_particle_visualization();
     void publish_gmm_visualization(gmms::GaussianMixtureModel gmm,
             std::string n_space, ros::Duration lifetime);
     void send_mate_transforms();

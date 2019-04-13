@@ -37,6 +37,10 @@ void WorldModel::dynamic_reconfigure_callback(
         local_particles_publisher_ = nh_.advertise<visualization_msgs::Marker>(
                 config.local_particles_topic.c_str(), 1);
     }
+    if (config.global_particles_topic != config_.global_particles_topic) {
+        global_particles_publisher_ = nh_.advertise<visualization_msgs::Marker>(
+                config.global_particles_topic.c_str(), 1);
+    }
     if (config.reset_filters_service_name !=
             config_.reset_filters_service_name) {
         reset_filters_service_ =
@@ -86,15 +90,17 @@ void WorldModel::dynamic_reconfigure_callback(
             config.local_obstacle_min_weight);
     // global
     global_ball_observation_model_.reset(new GlobalBallObservationModel());
-    global_ball_observation_model_->set_min_weight(config.global_ball_min_weight);
+    global_ball_observation_model_->set_min_weight(
+            config.global_ball_min_weight);
     global_mate_observation_model_.reset(new GlobalRobotObservationModel());
-    global_mate_observation_model_->set_min_weight(config.global_mate_min_weight);
+    global_mate_observation_model_->set_min_weight(
+            config.global_mate_min_weight);
     global_opponent_observation_model_.reset(new GlobalRobotObservationModel());
     global_opponent_observation_model_->set_min_weight(
             config.global_opponent_min_weight);
 
     // initializing movement models
-    // local 
+    // local
     local_ball_movement_model_.reset(new LocalRobotMovementModel(
             random_number_generator_, config.local_ball_diffusion_x_std_dev,
             config.local_ball_diffusion_y_std_dev,
@@ -111,7 +117,7 @@ void WorldModel::dynamic_reconfigure_callback(
             random_number_generator_, config.local_obstacle_diffusion_x_std_dev,
             config.local_obstacle_diffusion_y_std_dev,
             config.local_obstacle_diffusion_multiplicator));
-    // global 
+    // global
     global_ball_movement_model_.reset(new GlobalBallMovementModel(
             random_number_generator_, config.global_ball_diffusion_x_std_dev,
             config.global_ball_diffusion_y_std_dev,
@@ -120,10 +126,11 @@ void WorldModel::dynamic_reconfigure_callback(
             random_number_generator_, config.global_mate_diffusion_x_std_dev,
             config.global_mate_diffusion_y_std_dev,
             config.global_mate_diffusion_multiplicator));
-    global_opponent_movement_model_.reset(new GlobalRobotMovementModel(
-            random_number_generator_, config.global_opponent_diffusion_x_std_dev,
-            config.global_opponent_diffusion_y_std_dev,
-            config.global_opponent_diffusion_multiplicator));
+    global_opponent_movement_model_.reset(
+            new GlobalRobotMovementModel(random_number_generator_,
+                    config.global_opponent_diffusion_x_std_dev,
+                    config.global_opponent_diffusion_y_std_dev,
+                    config.global_opponent_diffusion_multiplicator));
 
     // initializing state distributions
     // local
@@ -155,10 +162,11 @@ void WorldModel::dynamic_reconfigure_callback(
             random_number_generator_,
             std::make_pair(config.initial_robot_x, config.initial_robot_y),
             std::make_pair(config.field_height, config.field_width)));
-    global_opponent_state_distribution_.reset(new GlobalPositionStateDistribution(
-            random_number_generator_,
-            std::make_pair(config.initial_robot_x, config.initial_robot_y),
-            std::make_pair(config.field_height, config.field_width)));
+    global_opponent_state_distribution_.reset(
+            new GlobalPositionStateDistribution(random_number_generator_,
+                    std::make_pair(
+                            config.initial_robot_x, config.initial_robot_y),
+                    std::make_pair(config.field_height, config.field_width)));
 
     // setting particle counts
     if (config.local_obstacle_particle_number !=
@@ -217,7 +225,7 @@ void WorldModel::dynamic_reconfigure_callback(
             static_cast<int>(config.global_opponent_particle_number *
                              config.global_opponent_explorer_rate),
             global_opponent_state_distribution_));
-    
+
 
     config_ = config;
     if (!valid_configuration_) {
@@ -333,7 +341,7 @@ void WorldModel::init() {
     reset_all_filters();
 }
 
-void WorldModel::publish_particle_visualization() {
+void WorldModel::publish_local_particle_visualization() {
     if (!config_.debug_visualization) {
         return;
     }
@@ -357,6 +365,27 @@ void WorldModel::publish_particle_visualization() {
             ros::Duration(
                     1.0 / static_cast<double>(config_.publishing_frequency)),
             get_color_msg(config_.obstacle_marker_color)));
+}
+
+void WorldModel::publish_global_particle_visualization() {
+    if (!config_.debug_visualization) {
+        return;
+    }
+    global_particles_publisher_.publish(global_ball_pf_->renderPointsMarker(
+            "global_ball", config_.global_publishing_frame,
+            ros::Duration(
+                    1.0 / static_cast<double>(config_.publishing_frequency)),
+            get_color_msg(config_.ball_marker_color)));
+    global_particles_publisher_.publish(global_mate_pf_->renderPointsMarker(
+            "global_mate", config_.global_publishing_frame,
+            ros::Duration(
+                    1.0 / static_cast<double>(config_.publishing_frequency)),
+            get_color_msg(config_.mate_marker_color)));
+    global_particles_publisher_.publish(global_opponent_pf_->renderPointsMarker(
+            "global_opponent", config_.global_publishing_frame,
+            ros::Duration(
+                    1.0 / static_cast<double>(config_.publishing_frequency)),
+            get_color_msg(config_.opponent_marker_color)));
 }
 
 void WorldModel::publish_gmm_visualization(gmms::GaussianMixtureModel gmm,
@@ -416,7 +445,6 @@ void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
 }
 
 void WorldModel::set_global_measurements(hlm::TeamData msg) {
-
     // cleaning up the measurement lists
     global_ball_measurements_.clear();
     global_mate_measurements_.clear();
@@ -504,12 +532,10 @@ void WorldModel::set_global_measurements(hlm::TeamData msg) {
 
 
     try {
-        transformStamped = transform_buffer_.lookupTransform("map",
-                config_.local_publishing_frame,
-                ros::Time(0));
+        transformStamped = transform_buffer_.lookupTransform(
+                "map", config_.local_publishing_frame, ros::Time(0));
     } catch (tf2::TransformException& ex) {
-        ROS_WARN(
-                "Transform error when transforming to map: %s", ex.what());
+        ROS_WARN("Transform error when transforming to map: %s", ex.what());
         // ros::Duration(1.0).sleep();
         return;
     }
@@ -609,7 +635,7 @@ void WorldModel::publish_local_results() {
     }
 
     // publish particles
-    publish_particle_visualization();
+    publish_local_particle_visualization();
 
     // publish plotted GMMs
     if (config_.local_ball_gmm_visualization) {
@@ -695,7 +721,7 @@ void WorldModel::publish_global_results() {
     }
 
     // publish particles
-    publish_particle_visualization();
+    publish_global_particle_visualization();
 
     // publish plotted GMMs
     if (config_.global_ball_gmm_visualization) {
