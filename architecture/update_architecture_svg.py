@@ -260,7 +260,7 @@ def do_documentation_for(robotname):
     package_names = set([])
     rospack = rospkg.RosPack()
     for group in svg_root.findall(
-            "./{http://www.w3.org/2000/svg}g[{http://www.w3.org/2000/svg}ellipse]"):
+            "./{http://www.w3.org/2000/svg}g/{http://www.w3.org/2000/svg}g[{http://www.w3.org/2000/svg}ellipse]"):
         ellipses = group.findall("./{http://www.w3.org/2000/svg}ellipse")
         name = group.findall("./{http://www.w3.org/2000/svg}text/{http://www.w3.org/2000/svg}tspan")[0].text
         path = rospack.get_path(name) + "/package.xml"
@@ -279,7 +279,7 @@ def do_documentation_for(robotname):
     service_names = set([])
     action_names = set([])
     for group in svg_root.findall(
-            "./{http://www.w3.org/2000/svg}g[{http://www.w3.org/2000/svg}rect]"):
+            "./{http://www.w3.org/2000/svg}g/{http://www.w3.org/2000/svg}g[{http://www.w3.org/2000/svg}rect]"):
         # there are two texts, we want the second for the type
         tspans = group.findall("./{http://www.w3.org/2000/svg}text/{http://www.w3.org/2000/svg}tspan")
         # we have to look which rects are services, action or topics, first find the right rectangle
