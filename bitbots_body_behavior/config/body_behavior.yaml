@@ -34,6 +34,11 @@ behavior:
     # it is considered lost and will be searched
     ball_lost_time: 0.5
 
+    # When the goal has not been seen for `goal_lost_time` seconds,
+    # it is considered lost and will be searched
+    goal_lost_time: 0.5
+
+
     # When the ball is closer than `max_kick_distance` meters
     # it is close enough to be kicked
     max_kick_distance: 0.3
