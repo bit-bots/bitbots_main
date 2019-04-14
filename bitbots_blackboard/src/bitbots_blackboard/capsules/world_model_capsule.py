@@ -82,14 +82,14 @@ class WorldModelCapsule:
         return self.position.header.stamp.to_time()
 
     def get_map_based_opp_goal_center_uv(self):
-        x, y = self.get_opp_goal_center_xy()
+        x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
     def get_map_based_opp_goal_center_xy(self):
         return self.field_length / 2, 0
 
     def get_map_based_own_goal_center_uv(self):
-        x, y = self.get_own_goal_center_xy()
+        x, y = self.get_map_based_own_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
     def get_map_based_own_goal_center_xy(self):
@@ -97,19 +97,19 @@ class WorldModelCapsule:
 
     def get_map_based_opp_goal_angle_from_ball(self):
         ball_x, ball_y = self.get_ball_position_xy()
-        goal_x, goal_y = self.get_opp_goal_center_xy()
+        goal_x, goal_y = self.get_map_based_opp_goal_center_xy()
         return math.atan2(goal_y - ball_y, goal_x - ball_x)
 
     def get_map_based_opp_goal_distance(self):
-        x, y = self.get_opp_goal_center_xy()
+        x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_distance_to_xy(x, y)
 
     def get_map_based_opp_goal_left_post_uv(self):
-        x, y = self.get_opp_goal_center_xy()
+        x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y - self.goal_width / 2)
 
     def get_map_based_opp_goal_right_post_uv(self):
-        x, y = self.get_opp_goal_center_xy()
+        x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y + self.goal_width / 2)
 
     def get_detection_based_goal_position_uv(self):

@@ -75,8 +75,8 @@ class GoToOwnGoal(GoToAbsolutePosition):
         :param dsd:
 
         """
-        point = (blackboard.world_model.get_own_goal_center_xy()[0],
-                 blackboard.world_model.get_own_goal_center_xy()[1],
+        point = (blackboard.world_model.get_map_based_own_goal_center_xy()[0],
+                 blackboard.world_model.get_map_based_own_goal_center_xy()[1],
                  parameters)
         super(GoToOwnGoal, self).__init__(blackboard, dsd, point)
 
@@ -87,8 +87,8 @@ class GoToEnemyGoal(GoToAbsolutePosition):
         :param dsd:
 
         """
-        point = (blackboard.world_model.get_opp_goal_center_xy()[0],
-                 blackboard.world_model.get_opp_goal_center_xy()[1],
+        point = (blackboard.world_model.get_map_based_opp_goal_center_xy()[0],
+                 blackboard.world_model.get_map_based_opp_goal_center_xy()[1],
                  parameters)
         super(GoToEnemyGoal, self).__init__(blackboard, dsd, point)
 

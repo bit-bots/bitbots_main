@@ -19,7 +19,7 @@ class GoToBall(AbstractActionElement):
         if not ball_position:
             return
         ball_u, ball_v = ball_position
-        point = (ball_u, ball_v, self.blackboard.world_model.get_opp_goal_angle_from_ball())
+        point = (ball_u, ball_v, self.blackboard.world_model.get_map_based_opp_goal_angle_from_ball())
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
