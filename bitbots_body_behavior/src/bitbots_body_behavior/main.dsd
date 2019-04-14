@@ -1,28 +1,25 @@
-#KickBall
-$AlignedToGoal
-    YES --> @KickBall
-    NO --> @AlignToGoal
+#GoAndKickBall
+$BallKickArea
+    LEFT --> @KickBall + foot:left
+    RIGHT --> @KickBall + foot:right
+    FAR --> @GoToBall
 
 #GoalieBehavior
 $BallSeen
     YES --> $BallDangerous
-        YES --> $BallClose
-            YES --> #KickBall
-            NO --> @GoToBall
+        YES --> #GoAndKickBall
         NO --> @LookAtBall
     NO --> @SearchBall
 
 #OffenseBehavior
 $BallSeen
-    YES --> $BallClose
-        YES --> #KickBall
-        NO --> @GoToBall
+    YES --> #GoAndKickBall
     NO --> @SearchBall
 
 #DefenseBehavior
 $BallSeen
     YES --> $BallClose
-        YES --> #KickBall
+        YES --> #GoAndKickBall
         NO --> @GoToDefensePosition
     NO --> @SearchBall
 
