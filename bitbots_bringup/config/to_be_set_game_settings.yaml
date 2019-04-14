@@ -19,10 +19,4 @@ team_color:
   file: /config/team_communication_config.yaml
   options: [2, 3]
   explanation: "2 is red, 3 is blue"
-use_localization:
-  package: bitbots_body_behavior
-  file: /config/body_behavior.yaml
-  options: [False, True]
-  explanation: "Should the behavior utilize localization?\nIf not, it will use a very simple fallback
-    mode which operates on detected image features only."
 
