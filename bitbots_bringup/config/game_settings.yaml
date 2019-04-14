@@ -1,3 +1,4 @@
-bot_id: '1'
-team_color: '3'
-team_id: '1'
+bot_id: 1
+team_color: 3
+team_id: 1
+use_localization: true
