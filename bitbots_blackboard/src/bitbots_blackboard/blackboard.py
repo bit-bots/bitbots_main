@@ -15,6 +15,7 @@ class BodyBlackboard:
         # it is just that I don't know where this will be placed later
         self.field_width = 6
         self.field_length = 9
+        self.goal_width = 2.6
 
         self.config = rospy.get_param("behavior/body")
         self.blackboard = BlackboardCapsule()

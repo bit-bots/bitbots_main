@@ -33,3 +33,8 @@ behavior:
     # When the ball is closer than `max_kick_distance` meters
     # it is close enough to be kicked
     max_kick_distance: 0.3
+
+    # defines the radius around the goal (in form of a box)
+    # in this area, the goalie will react to the ball.
+    # the radius is the margin around the goal to both y and the positive x directions
+    ball_dangerous_goal_radius: 1
