@@ -57,7 +57,7 @@ vision_ball_candidate_horizon_y_offset: 0
 vision_ball_candidate_rating_threshold: 0.5
 vision_debug_printer_classes: ''
 
-line_detector_horizon_offset: 50
+line_detector_horizon_offset: 15
 line_detector_linepoints_range: 10000
 line_detector_blur_kernel_size: 9
 
