@@ -6,11 +6,18 @@ from geometry_msgs.msg import Pose2D
 # and provides class methods to generate them.
 
 class Bezier:
-    def __init__(self, start_position, control_1, control_2, target_position):
+    LEFT = 1
+    RIGHT = -1
+    FORWARD = 0
+    BACKWARDS = 1
+    SIDEWAYS = 2
+
+    def __init__(self, start_position, control_1, control_2, target_position, direction):
         self.start_position = start_position
         self.control_1 = control_1
         self.control_2 = control_2
         self.target_position = target_position
+        self.direction = direction
 
     def get_xy(self, t):
         # t is between 0 and 1
@@ -66,15 +73,34 @@ class Bezier:
         pylab.show()
 
     @classmethod
-    def from_pose(cls, my_pose, target_pose, straightness):
-        my_position = my_pose
+    def from_pose(cls, target_pose, straightness):
+        my_position = Pose2D(0, 0, 0)
         target_position = target_pose
-        control_distance = math.sqrt((target_pose.x - my_pose.x)**2 + (target_pose.y - my_pose.y)**2) * straightness
+        control_distance = math.sqrt(target_pose.x ** 2 + target_pose.y ** 2) * straightness
         control_1 = Pose2D()
-        control_1.x = my_pose.x + control_distance * math.cos(my_pose.theta)
-        control_1.y = my_pose.y + control_distance * math.sin(my_pose.theta)
+        control_1.x = control_distance
+        control_1.y = 0
         control_2 = Pose2D()
         control_2.x = target_pose.x - control_distance * math.cos(target_pose.theta)
         control_2.y = target_pose.y - control_distance * math.sin(target_pose.theta)
-        return Bezier(my_position, control_1, control_2, target_position)
+        return Bezier(my_position, control_1, control_2, target_position, Bezier.FORWARD)
 
+    @classmethod
+    def backwards(cls, direction):
+        control = Pose2D()
+        control.x = -0.1
+        control.y = 0
+        target_pose = Pose2D()
+        target_pose.x = -1
+        target_pose.y = math.sin(direction * math.pi / 2)
+        return Bezier(Pose2D(0, 0, 0), control, control, target_pose, Bezier.BACKWARDS)
+
+    @classmethod
+    def sideways(cls, target_pose):
+        control_1 = Pose2D()
+        control_1.x = 0
+        control_1.y = target_pose.y / 2
+        control_2 = Pose2D()
+        control_2.x = target_pose.x
+        control_2.y = target_pose.y / 2
+        return Bezier(Pose2D(0, 0, 0), control_1, control_2, target_pose, Bezier.SIDEWAYS)

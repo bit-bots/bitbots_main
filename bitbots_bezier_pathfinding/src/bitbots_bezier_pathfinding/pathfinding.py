@@ -37,6 +37,10 @@ class BezierPathfinding:
         self.planning_time = config['planning_time']
         self.refresh_time = config['refresh_time']
         self.stop_distance = config['stop_distance']
+        self.side_walk_lat_angle = config['side_walk_lat_angle'] / 180 * math.pi
+        self.side_walk_lon_angle = config['side_walk_lon_angle'] / 180 * math.pi
+        self.side_walk_distance = config['side_walk_distance']
+        self.back_walk_angle = config['back_walk_angle'] / 180 * math.pi
 
         return config
 
@@ -102,14 +106,48 @@ class BezierPathfinding:
             goal_pose_2d = self.pose_to_pose2d(goal_pose)
 
             # own position (relative) is always 0 0 0
-            own_pose_2d = Pose2D(0, 0, 0)
-
-            curve = Bezier.from_pose(own_pose_2d, goal_pose_2d, self.straightness)
+            curve = self.calculate_curve(goal_pose_2d)
             self.publish_curve_as_path(curve)
             self.publish_cmd_vel(curve)
-
         if self.refresh_time > 0:
             self.timer = rospy.Timer(rospy.Duration(self.refresh_time), lambda event: self.goal_callback(goal_msg), oneshot=True)
+
+    def calculate_curve(self, goal_pose):
+        """
+        Calculate a bezier curve to goal_pose
+
+        :param goal_pose: the pose to go to relative to the own position
+        :type goal_pose: Pose2D
+        :returns A bezier curve
+        :rtype: Bezier
+        """
+        angle = math.atan2(goal_pose.y, goal_pose.x)
+        if angle < - math.pi:
+            angle += 2 * math.pi
+        elif angle > math.pi:
+            angle -= 2 * math.pi
+        if goal_pose.theta < - math.pi:
+            angle += 2 * math.pi
+        elif goal_pose.theta > math.pi:
+            angle -= 2 * math.pi
+        distance = math.sqrt(goal_pose.x ** 2 + goal_pose.y ** 2)
+
+        if (abs(goal_pose.theta) < self.side_walk_lon_angle and
+            self.side_walk_lat_angle < abs(angle) < math.pi - self.side_walk_lat_angle and
+            distance < self.side_walk_distance):
+            # Sideways
+            return Bezier.sideways(goal_pose)
+        elif abs(angle) > self.back_walk_angle:
+            # Backwards
+            if angle < 0:
+                # We want to go to the right, go backwards to the left
+                return Bezier.backwards(Bezier.LEFT)
+            else:
+                # We want to go to the left, go backwards to the right
+                return Bezier.backwards(Bezier.RIGHT)
+        else:
+            # Normal curve
+            return Bezier.from_pose(goal_pose, self.straightness)
 
     def publish_curve_as_path(self, bezier_curve):
         ts = numpy.linspace(0, 1, 50)
@@ -158,8 +196,16 @@ class BezierPathfinding:
             # therefore, my angular velocity is theta / planning_time
             angular_z = theta / self.planning_time
             cmd_vel_msg = Twist()
-            cmd_vel_msg.linear.x = self.velocity
-            cmd_vel_msg.angular.z = angular_z
+
+            if bezier_curve.direction == Bezier.BACKWARDS:
+                cmd_vel_msg.linear.x = - self.velocity
+                cmd_vel_msg.angular.z = - angular_z
+            elif bezier_curve.direction == Bezier.SIDEWAYS:
+                cmd_vel_msg.linear.y = math.copysign(self.velocity, theta)
+            else:
+                cmd_vel_msg.linear.x = self.velocity
+                cmd_vel_msg.angular.z = angular_z
+
         self.command_publisher.publish(cmd_vel_msg)
 
 
