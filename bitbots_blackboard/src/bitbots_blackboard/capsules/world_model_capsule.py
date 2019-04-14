@@ -81,40 +81,52 @@ class WorldModelCapsule:
         # from the stamp of the last position update
         return self.position.header.stamp.to_time()
 
-    def get_opp_goal_center_uv(self):
+    def get_map_based_opp_goal_center_uv(self):
         x, y = self.get_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
-    def get_opp_goal_center_xy(self):
+    def get_map_based_opp_goal_center_xy(self):
         return self.field_length / 2, 0
 
-    def get_own_goal_center_uv(self):
+    def get_map_based_own_goal_center_uv(self):
         x, y = self.get_own_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
-    def get_own_goal_center_xy(self):
+    def get_map_based_own_goal_center_xy(self):
         return -self.field_length / 2, 0
 
-    def get_opp_goal_angle_from_ball(self):
+    def get_map_based_opp_goal_angle_from_ball(self):
         ball_x, ball_y = self.get_ball_position_xy()
         goal_x, goal_y = self.get_opp_goal_center_xy()
         return math.atan2(goal_y - ball_y, goal_x - ball_x)
 
-    def get_opp_goal_distance(self):
+    def get_map_based_opp_goal_distance(self):
         x, y = self.get_opp_goal_center_xy()
         return self.get_distance_to_xy(x, y)
 
-    def get_opp_goal_left_post_uv(self):
+    def get_map_based_opp_goal_left_post_uv(self):
         x, y = self.get_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y - self.goal_width / 2)
 
-    def get_opp_goal_right_post_uv(self):
+    def get_map_based_opp_goal_right_post_uv(self):
         x, y = self.get_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y + self.goal_width / 2)
 
-    def goal_callback(self):
-        # Currently not used
-        pass
+    def get_detection_based_goal_position_uv(self):
+        """
+        returns the position of the goal relative to the robot.
+        if only a single post is detected, the position of the post is returned.
+        else, it is the point between the posts
+        :return:
+        """
+        return (self.goal.left_post.x + self.goal.right_post.x / 2.0), \
+               (self.goal.left_post.y + self.goal.right_post.y / 2.0)
+
+
+
+    def goal_callback(self, msg):
+        # type: (GoalRelative) -> None
+        self.goal = msg
 
     #############
     # ## Common #
