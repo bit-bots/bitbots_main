@@ -1,7 +1,7 @@
-#KickBall
+#GoAndKickBall
 $BallKickArea
-    LEFT --> @KickBallLeft
-    RIGHT --> @KickBallRight
+    LEFT --> @KickBall + foot:left
+    RIGHT --> @KickBall + foot:right
     FAR --> @GoToBall
 
 #GoalieBehavior
