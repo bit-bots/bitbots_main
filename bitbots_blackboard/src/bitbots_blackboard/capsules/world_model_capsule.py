@@ -72,10 +72,7 @@ class WorldModelCapsule:
     # ## Goal #
     ###########
 
-    def any_goal_seen(self):
-        return rospy.get_time() - self.any_goal_last_seen() < 0.5
-
-    def any_goal_last_seen(self):
+    def goal_last_seen(self):
         # We are currently not seeing any goal, we know where they are based
         # on the localisation. Therefore, any_goal_last_seen returns the time
         # from the stamp of the last position update
