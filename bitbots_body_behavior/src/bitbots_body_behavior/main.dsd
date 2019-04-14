@@ -7,19 +7,19 @@ $BallKickArea
 #GoalieBehavior
 $BallSeen
     YES --> $BallDangerous
-        YES --> #KickBall
+        YES --> #GoAndKickBall
         NO --> @LookAtBall
     NO --> @SearchBall
 
 #OffenseBehavior
 $BallSeen
-    YES --> #KickBall
+    YES --> #GoAndKickBall
     NO --> @SearchBall
 
 #DefenseBehavior
 $BallSeen
     YES --> $BallClose
-        YES --> #KickBall
+        YES --> #GoAndKickBall
         NO --> @GoToDefensePosition
     NO --> @SearchBall
 

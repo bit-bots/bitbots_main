@@ -6,7 +6,7 @@ class KickBall(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(KickBall, self).__init__(blackboard, dsd, parameters)
         if 'foot' not in parameters.keys():
-            # usually, we kick with thr right foot
+            # usually, we kick with the right foot
             self.kick = 'kick_right'  # TODO get actual name of parameter from some config
         elif 'right' == parameters['foot']:
             self.kick = 'kick_right'  # TODO get actual name of parameter from some config
