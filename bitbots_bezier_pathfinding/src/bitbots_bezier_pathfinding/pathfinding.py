@@ -5,12 +5,13 @@ import rospy
 import tf2_ros
 
 from dynamic_reconfigure.server import Server
-from geometry_msgs.msg import Pose2D, Pose, PoseStamped, Twist
+from geometry_msgs.msg import Pose2D, Twist
+from tf2_geometry_msgs import PoseStamped, do_transform_pose
 from nav_msgs.msg import Path
-from tf2_geometry_msgs import PoseStamped as TFPoseStamped
 
 from bitbots_bezier_pathfinding.cfg import PathfindingConfig
 from bitbots_bezier_pathfinding.bezier import Bezier
+
 
 class BezierPathfinding:
     def __init__(self):
@@ -39,48 +40,74 @@ class BezierPathfinding:
 
         return config
 
-    def goal_callback(self, goal_msg):
-        if self.timer:
-            self.timer.shutdown()
-        # goal_msg must be either in base_footprint or map frame
-        goal_pose = Pose2D()
-        goal_pose.x = goal_msg.pose.position.x
-        goal_pose.y = goal_msg.pose.position.y
-        # Quaternion -> Euler (a lot simpler because x and y are guaranteed to be 0)
-        yaw = math.atan2(2 * goal_msg.pose.orientation.z * goal_msg.pose.orientation.w,
-                         1 - 2 * goal_msg.pose.orientation.z * goal_msg.pose.orientation.z)
-        goal_pose.theta = yaw
-        if goal_msg.header.frame_id == 'base_footprint':
-            self.frame_id = 'base_footprint'
-            own_pose = Pose2D(0, 0, 0)
-        elif goal_msg.header.frame_id == 'map' or goal_msg.header.frame_id == 'odom':
-            self.frame_id = goal_msg.header.frame_id
-            # Get own position from tf to map frame
-            own_pose_relative = TFPoseStamped()
-            own_pose_relative.header.frame_id = 'base_footprint'
-            own_pose_relative.header.stamp = rospy.Time.now()
-            own_pose_relative.pose.orientation.w = 1
+    def absolute_to_relative(self, pose):
+        """Convert a PoseStamped to a PoseStamped in base_footprint"""
+        self.frame_id = pose.header.frame_id
+        if pose.header.frame_id == 'base_footprint':
+            return pose
+        elif pose.header.frame_id == 'map' or pose.header.frame_id == 'odom':
             try:
-                own_pose_3d = self.tf_buffer.transform(own_pose_relative, self.frame_id, timeout=rospy.Duration(0.3))
-            except tf2_ros.LookupException:
+                return self.tf_buffer.transform(pose, 'base_footprint', timeout=rospy.Duration(0.3))
+            except tf2_ros.LookupException as e:
                 rospy.logwarn('A goal was published in {} frame but this frame does not exist'.format(self.frame_id))
                 return
-            except tf2_ros.ExtrapolationException:
+            except tf2_ros.ExtrapolationException as e:
                 rospy.logwarn('A goal was published in {} frame but this frame is no longer published'.format(self.frame_id))
                 return
-            own_pose = Pose2D()
-            own_pose.x = own_pose_3d.pose.position.x
-            own_pose.y = own_pose_3d.pose.position.y
-            # Quaternion -> Euler again
-            yaw = math.atan2(2 * own_pose_3d.pose.orientation.z * own_pose_3d.pose.orientation.w,
-                             1 - 2 * own_pose_3d.pose.orientation.z * own_pose_3d.pose.orientation.z)
-            own_pose.theta = yaw
         else:
             raise AssertionError('goal_msg must be in base_footprint of map frame')
 
-        curve = Bezier.from_pose(own_pose, goal_pose, self.straightness)
-        self.publish_curve_as_path(curve)
-        self.publish_cmd_vel(curve)
+    def relative_to_absolute(self, pose):
+        """Convert a PoseStamped to a PoseStamped in self.frame_id"""
+        if pose.header.frame_id == self.frame_id:
+            return pose
+        else:
+            try:
+                return self.tf_buffer.transform(pose, self.frame_id, timeout=rospy.Duration(0.3))
+            except tf2_ros.LookupException:
+                rospy.logwarn('Command velocities have been created in frame {} but this frame was never published'.format(self.frame_id))
+                return
+            except tf2_ros.ExtrapolationException:
+                rospy.logwarn('Command velocities have been created in frame {} but this frame is no longer available'.format(self.frame_id))
+                return
+
+    def pose_to_pose2d(self, pose):
+        """Convert a PoseStamped message to a Pose2D message"""
+        assert pose.header.frame_id == 'base_footprint'
+        pose2d = Pose2D()
+        pose2d.x = pose.pose.position.x
+        pose2d.y = pose.pose.position.y
+        pose2d.theta = math.atan2(2 * pose.pose.orientation.z * pose.pose.orientation.w,
+                                  1 - 2 * pose.pose.orientation.z * pose.pose.orientation.z)
+        return pose2d
+
+    def pose2d_to_pose(self, pose2d):
+        pose = PoseStamped()
+        pose.header.stamp = rospy.Time.now()
+        pose.header.frame_id = 'base_footprint'
+        pose.pose.position.x = pose2d.x
+        pose.pose.position.y = pose2d.y
+        # Euler -> Quaternion (a lot simpler without roll and pitch)
+        pose.pose.orientation.z = math.sin(0.5 * pose2d.theta)
+        pose.pose.orientation.w = math.cos(0.5 * pose2d.theta)
+        return pose
+
+    def goal_callback(self, goal_msg):
+        if self.timer:
+            self.timer.shutdown()
+        # convert goal_msg to a relative Pose2D
+        goal_msg.header.stamp = rospy.Time.now()
+        goal_pose = self.absolute_to_relative(goal_msg)
+        if goal_pose:
+            goal_pose_2d = self.pose_to_pose2d(goal_pose)
+
+            # own position (relative) is always 0 0 0
+            own_pose_2d = Pose2D(0, 0, 0)
+
+            curve = Bezier.from_pose(own_pose_2d, goal_pose_2d, self.straightness)
+            self.publish_curve_as_path(curve)
+            self.publish_cmd_vel(curve)
+
         if self.refresh_time > 0:
             self.timer = rospy.Timer(rospy.Duration(self.refresh_time), lambda event: self.goal_callback(goal_msg), oneshot=True)
 
@@ -90,28 +117,27 @@ class BezierPathfinding:
         path_msg.header.stamp = rospy.Time.now()
         path_msg.header.frame_id = self.frame_id
         path_poses = []
+        # Transform to absolute position
+        try:
+            transform = self.tf_buffer.lookup_transform(self.frame_id, 'base_footprint', rospy.Time.now(), rospy.Duration(0.3))
+        except Exception as e:
+            rospy.logwarn(e)
+            return
+
         for t in ts:
-            pose = PoseStamped()
-            pose.header.stamp = rospy.Time.now()
-            pose.header.frame_id = self.frame_id
-            pose.pose.position.x, pose.pose.position.y = bezier_curve.get_xy(t)
-            pose.pose.orientation.w = 1
+            x, y = bezier_curve.get_xy(t)
+            pose = self.pose2d_to_pose(Pose2D(x, y, 0))
+            pose = do_transform_pose(pose, transform)
             path_poses.append(pose)
+
         path_msg.poses = path_poses
         self.path_publisher.publish(path_msg)
 
-    def publish_command_pose(self, x, y, theta):
+    def publish_command_pose(self, pose_2d):
         # Publish the pose where the next cmd_vel is going
-        pose = PoseStamped()
-        pose.header.stamp = rospy.Time.now()
-        pose.header.frame_id = self.frame_id
-        pose.pose.position.x = x
-        pose.pose.position.y = y
-        # Euler -> Quaternion (a lot simpler without roll and pitch)
-        pose.pose.orientation.z = math.sin(0.5 * theta)
-        pose.pose.orientation.w = math.cos(0.5 * theta)
+        pose = self.pose2d_to_pose(pose_2d)
+        pose = self.relative_to_absolute(pose)
         self.command_pose_publisher.publish(pose)
-
 
     def publish_cmd_vel(self, bezier_curve):
         # Where am I after self.planning_time seconds?
@@ -123,33 +149,14 @@ class BezierPathfinding:
         else:
             x, y = bezier_curve.get_xy(t)
             theta = bezier_curve.get_direction(t, self.stepsize)
-            self.publish_command_pose(x, y, theta)
-            if self.frame_id == 'base_footprint':
-                theta_relative = theta
-            else:
-                # cmd vel is relative to the robot, therefore a transform is necessary
-                pose_absolute = TFPoseStamped()
-                pose_absolute.header.frame_id = self.frame_id
-                pose_absolute.header.stamp = rospy.Time.now()
-                pose_absolute.pose.position.x = x
-                pose_absolute.pose.position.y = y
-                # Euler -> Quaternion again
-                pose_absolute.pose.orientation.z = math.sin(0.5 * theta)
-                pose_absolute.pose.orientation.w = math.cos(0.5 * theta)
-                try:
-                    pose_relative_stamped = self.tf_buffer.transform(pose_absolute, 'base_footprint', timeout=rospy.Duration(0.3))
-                except tf2_ros.LookupException:
-                    rospy.logwarn('Command velocities have been created in frame {} but this frame was never published'.format(self.frame_id))
-                    return
-                except tf2_ros.ExtrapolationException:
-                    rospy.logwarn('Command velocities have been created in frame {} but this frame is no longer available'.format(self.frame_id))
-                    return
-                # Quaternion -> Euler again
-                theta_relative = math.atan2(2 * pose_relative_stamped.pose.orientation.z * pose_relative_stamped.pose.orientation.w,
-                                   1 - 2 * pose_relative_stamped.pose.orientation.z * pose_relative_stamped.pose.orientation.z)
+
+            # Debug output
+            pose_2d = Pose2D(x, y, theta)
+            self.publish_command_pose(pose_2d)
+
             # theta is the angle that I will have turned until then
             # therefore, my angular velocity is theta / planning_time
-            angular_z = theta_relative / self.planning_time
+            angular_z = theta / self.planning_time
             cmd_vel_msg = Twist()
             cmd_vel_msg.linear.x = self.velocity
             cmd_vel_msg.angular.z = angular_z
