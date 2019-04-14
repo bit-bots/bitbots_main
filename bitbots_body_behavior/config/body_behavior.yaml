@@ -36,16 +36,18 @@ behavior:
 
     # An area in which the ball can be kicked with the right foot
     # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
+    # http://www.ros.org/reps/rep-0103.html#axis-orientation
     right_kick_min_x: 0
-    right_kick_min_y: 0
+    right_kick_min_y: -0.2
     right_kick_max_x: 0.15
-    right_kick_max_y: 0.2
+    right_kick_max_y: 0
 
     # An area in which the ball can be kicked with the left foot
     # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
-    left_kick_min_x: -0.15
+    # http://www.ros.org/reps/rep-0103.html#axis-orientation
+    left_kick_min_x: 0
     left_kick_min_y: 0
-    left_kick_max_x: 0
+    left_kick_max_x: 0.15
     left_kick_max_y: 0.2
 
     # defines the radius around the goal (in form of a box)
