@@ -56,14 +56,18 @@ class HorizonDetector:
         if self._horizon_points is None:
             self._horizon_points = self._sub_horizon()
 
-    def get_horizon_points(self):
-        # type: () -> list
+    def get_horizon_points(self, offset=0):
+        # type: (int) -> list
         """
         calculates the horizon if not calculated yet and returns a list
         containing coordinates on the picture where the horizon is.
+        the offset works UPWARDS!
         :return list of x,y tuples of the horizon:
         """
         self.compute_horizon_points()
+        # applying the offset
+        if offset != 0:
+            return [(point[0], point[1] - offset) for point in self._horizon_points]
         return self._horizon_points
 
     def _sub_horizon(self):

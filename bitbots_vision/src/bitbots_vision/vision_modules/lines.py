@@ -97,7 +97,7 @@ class LineDetector:
             self._preprocessed_image = self._image.copy()
             # fill everything above horizon black
             hpoints = np.array([[(0, 0)] +
-                                self._horizon_detector.get_horizon_points() +
+                                self._horizon_detector.get_horizon_points(self._horizon_offset) +
                                 [(self._preprocessed_image.shape[1] - 1, 0)]])
             cv2.fillPoly(self._preprocessed_image, hpoints, 000000)
 
