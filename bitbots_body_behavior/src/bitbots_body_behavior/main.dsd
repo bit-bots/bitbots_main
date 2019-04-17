@@ -5,23 +5,31 @@ $BallKickArea
     FAR --> @GoToBall
 
 #GoalieBehavior
-$BallSeen
-    YES --> $BallDangerous
-        YES --> #GoAndKickBall
-        NO --> @LookAtBall
-    NO --> @SearchBall
+$Localization
+    YES --> $BallSeen
+        YES --> $BallDangerous
+            YES --> #GoAndKickBall
+            NO --> @LookAtBall
+        NO --> @SearchBall
+    NO --> #NoLocalizationGoalieBehavior
+
 
 #OffenseBehavior
-$BallSeen
-    YES --> #GoAndKickBall
-    NO --> @SearchBall
+$Localization
+    YES --> $BallSeen
+        YES --> #GoAndKickBall
+        NO --> @SearchBall
+    NO --> #NoLocalizationPlayerBehavior
 
 #DefenseBehavior
-$BallSeen
-    YES --> $BallClose
-        YES --> #GoAndKickBall
-        NO --> @GoToDefensePosition
-    NO --> @SearchBall
+$Localization
+    YES --> $BallSeen
+        YES --> $BallClose
+            YES --> #GoAndKickBall
+            NO --> @GoToDefensePosition
+        NO --> @SearchBall
+    NO --> #NoLocalizationPlayerBehavior
+
 
 #PenaltyBehavior
 $BallSeen
@@ -31,6 +39,14 @@ $BallSeen
             NO --> @AlignToGoal
         NO --> @GoToBall
     NO --> @SearchBall
+
+#NoLocalizationPlayerBehavior
+$BallSeen
+    YES --> $BallClose
+        YES -->
+
+
+#NoLocalizationGoalieBehavior
 
 -->BodyBehavior
 $RoleDecider
