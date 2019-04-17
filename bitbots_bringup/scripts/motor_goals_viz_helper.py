@@ -20,7 +20,7 @@ class MotorVizHelper:
         if args.walking:
             rospy.Subscriber("walking_motor_goals", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
         elif args.animation:
-            rospy.Subscriber("animation_motor_goals", JointCommand, self.animation_cb, queue_size=1, tcp_nodelay=True)
+            rospy.Subscriber("animation", Animation, self.animation_cb, queue_size=1, tcp_nodelay=True)
         else:
             rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
 
