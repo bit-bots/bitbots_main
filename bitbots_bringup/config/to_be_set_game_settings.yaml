@@ -1,3 +1,4 @@
+---
 # If you want to specify a range instead of a list, you will have to do it in the following way:
 # !!python/object/apply:builtins.range [10, 50, 5]
 
@@ -18,3 +19,4 @@ team_color:
   file: /config/team_communication_config.yaml
   options: [2, 3]
   explanation: "2 is red, 3 is blue"
+
