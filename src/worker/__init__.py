@@ -3,4 +3,5 @@
 from interface import VisualCompass
 from binary_orb import BinaryCompassOrb
 from binary_sift import BinaryCompassSift
+from multiple import MultipleCompass
 
