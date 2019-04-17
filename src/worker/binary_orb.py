@@ -1,12 +1,9 @@
 #!/usr/bin/env python2
 import numpy as np
 import cv2
-import operator
-import functools
-from silx.image import sift
 import math
-from functools import partial
 from interface import VisualCompass
+
 
 class BinaryCompassOrb(VisualCompass):
     """
