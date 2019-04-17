@@ -4,3 +4,4 @@ dummy_handler:
 compass:
   orb:
     max_feature_count: 1000
+    match_distance_scalar: 0.8

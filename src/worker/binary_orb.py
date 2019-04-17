@@ -16,6 +16,9 @@ class BinaryCompassOrb(VisualCompass):
         self.state = (None,None)
         self.groundTruth = [None, None]
         self.debug = Debug()
+        # config params
+        self.matchDistanceScalar = 0.8
+        self.maxFeatureCount = 1000
 
     def _init_sift(self, shape, dtype):
         pass
@@ -40,6 +43,8 @@ class BinaryCompassOrb(VisualCompass):
 
     def set_config(self, config):
         self.config = config
+        self.matchDistanceScalar = config['compass']['orb']['match_distance_scalar']
+        self.maxFeatureCount = config['compass']['orb']['max_feature_count']
 
     def set_truth(self, angle, image):
         if angle == 0:
@@ -63,14 +68,13 @@ class BinaryCompassOrb(VisualCompass):
         # Apply ratio test
         good = []
         for m, n in matches:
-            match = m
-            if match.distance < 0.8*n.distance:
-                good.append(match)
+            if m.distance < self.matchDistanceScalar * n.distance:
+                good.append(m)
         return len(good)
 
     def _get_keypoints(self, image):
         # Initiate STAR detector
-        orb = cv2.ORB_create(nfeatures=self.config['compass']['orb']['max_feature_count'])#, scoreType=cv2.ORB_FAST_SCORE)
+        orb = cv2.ORB_create(nfeatures=self.maxFeatureCount)#, scoreType=cv2.ORB_FAST_SCORE)
 
         kp, des = orb.detectAndCompute(image,None)
 
