@@ -5,9 +5,9 @@ import rospy
 import rospkg
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
-from bitbots_msgs.msg import VisualCompassMsg
 from bitbots_vision.vision_modules import debug
-from visual_compass.cfg import VisualCompassConfig
+from humanoid_league_msgs.msg import VisualCompassRotation
+from bitbots_visual_compass.cfg import VisualCompassConfig
 from worker import VisualCompass
 
 # TODO adapt import paths
@@ -15,18 +15,18 @@ from worker import VisualCompass
 # TODO use set truth
 
 class VisualCompassROSHandler():
-"""
-TODO docs
-Subscribes to 'vision_config'-message
-Subscribes to raw image
+    """
+    TODO docs
+    Subscribes to 'vision_config'-message
+    Subscribes to raw image
 
-Trigger: 'trigger_visual_compass'-trigger
-    Gets triggered e.i. while looking at a goal side
-    Returns side
+    Trigger: 'trigger_visual_compass'-trigger
+        Gets triggered e.i. while looking at a goal side
+        Returns side
 
-Publish: 'visual_compass'-messages
-    Returns side
-"""
+    Publish: 'visual_compass'-messages
+        Returns side
+    """
     def __init__(self):
         # Initiate VisualCompassHandler
         """
@@ -46,7 +46,7 @@ Publish: 'visual_compass'-messages
         # Register publisher of 'visual_compass'-messages
         self.pub_compass = rospy.Publisher(
             'visual_compass',
-            VisualCompassMsg,
+            VisualCompassRotation,
             queue_size=1)
 
         # Register VisionConfig server (dynamic reconfigure) and set callback
