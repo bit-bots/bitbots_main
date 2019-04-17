@@ -1,14 +1,14 @@
-#GoAndKickBall
+#GoAndKickBall - target
 $BallKickArea
     LEFT --> @KickBall + foot:left
     RIGHT --> @KickBall + foot:right
-    FAR --> @GoToBall
+    FAR --> @GoToBall + target:-target
 
 #GoalieBehavior
 $Localization
     YES --> $BallSeen
         YES --> $BallDangerous
-            YES --> #GoAndKickBall
+            YES --> #GoAndKickBall + target:map_goal
             NO --> @LookAtBall
         NO --> @SearchBall
     NO --> #NoLocalizationGoalieBehavior
@@ -17,7 +17,7 @@ $Localization
 #OffenseBehavior
 $Localization
     YES --> $BallSeen
-        YES --> #GoAndKickBall
+        YES --> #GoAndKickBall + target:map_goal
         NO --> @SearchBall
     NO --> #NoLocalizationPlayerBehavior
 
@@ -25,7 +25,7 @@ $Localization
 $Localization
     YES --> $BallSeen
         YES --> $BallClose
-            YES --> #GoAndKickBall
+            YES --> #GoAndKickBall + target:map_goal
             NO --> @GoToDefensePosition
         NO --> @SearchBall
     NO --> #NoLocalizationPlayerBehavior
@@ -43,7 +43,7 @@ $BallSeen
 #NoLocalizationPlayerBehavior
 $BallSeen
     YES --> $BallClose
-        YES -->
+        YES --> #GoAndKickBall + target:detection_goal
 
 
 #NoLocalizationGoalieBehavior
