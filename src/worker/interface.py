@@ -1,7 +1,5 @@
 #!/usr/bin/env python2
 
-
-
 class VisualCompass:
     """
     Interface for an Visual compass, that gets new images and calculates an horizontal angle with a corresponding
