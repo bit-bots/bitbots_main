@@ -2,6 +2,7 @@ import cv2
 import bisect
 import math
 from matcher import OrbMatcher
+from matcher import SiftMatcher
 from interface import VisualCompass
 
 
@@ -35,7 +36,7 @@ class MultipleCompass(VisualCompass):
 
     def initMatcher(self):
         if self.matcher is None:
-            self.matcher = OrbMatcher(self.config['compass']['orb'])
+            self.matcher = SiftMatcher(self.config['compass']['sift'])
 
     # returns list of angle matchcount pairs
     def _compare(self, matchdata):
