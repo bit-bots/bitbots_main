@@ -43,6 +43,12 @@ if __name__ == "__main__":
     print()
 
     goal = KickGoal()
+    goal.foot_target.header.stamp = rospy.Time.now()
+    goal.foot_target.header.frame_id = 'base_footprint'
+    goal.foot_target.pose.position.x = 0.1
+    goal.foot_target.pose.position.y = -0.2
+    goal.foot_target.pose.position.z = 0.15
+    goal.foot_target.pose.orientation.w = 1
     goal.foot_speed = random.randrange(1000, 5000) / 1000  # random between 1.0 and 5.0
     client.send_goal(goal)
     client.done_cb = done_cb

@@ -6,6 +6,10 @@
 #include <ros/console.h>
 #include <dynamic_reconfigure/server.h>
 #include <actionlib/server/simple_action_server.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <bitbots_msgs/KickAction.h>
 #include <bitbots_dynamic_kick/DynamicKickConfig.h>
 #include "bitbots_dynamic_kick/KickEngine.h"
@@ -35,12 +39,16 @@ private:
     ActionServer m_server;
     KickEngine m_engine;
     int m_engine_rate;
+    tf2_ros::Buffer m_tf_buffer;
+    tf2_ros::TransformListener m_listener;
 
     /**
      * Do main loop in which KickEngine::tick() gets called repeatedly.
      * The ActionServer's state is taken into account meaning that a cancelled goal no longer gets processed.
      */
     void loop_engine();
+    bool transform_goal(const geometry_msgs::PoseStamped& pose, geometry_msgs::Pose& transformed_pose);
+    bool get_foot_poses(geometry_msgs::Pose &l_foot_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time);
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_KICK_NODE_H

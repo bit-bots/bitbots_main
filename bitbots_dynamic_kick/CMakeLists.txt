@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
     bitbots_splines
     dynamic_reconfigure
     actionlib
+    tf2
+    tf2_ros
 )
 
 generate_dynamic_reconfigure_options(
