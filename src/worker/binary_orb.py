@@ -22,7 +22,7 @@ class BinaryCompassOrb(VisualCompass):
 
     def process_image(self, image, resultCB=None, debugCB=None):
         """
-        if None in self.groundTruth:
+        if truth_empty(self.groundTruth):
             return"""
 
         keypoints = self._get_keypoints(image)
@@ -47,7 +47,7 @@ class BinaryCompassOrb(VisualCompass):
         elif angle == math.pi:
             self.groundTruth[1] = self._get_keypoints(image)[1]
 
-        if not any(elem is None for elem in self.groundTruth):
+        if truth_empty(self.groundTruth):
             self._clean_up_ground_truth()
 
     def get_side(self):
@@ -100,6 +100,11 @@ class BinaryCompassOrb(VisualCompass):
             self.groundTruth[index] = np.delete(self.groundTruth[index], bad[index], axis=0) 
         print(str(map(len, bad)))
         print(self.groundTruth[0].shape, self.groundTruth[1].shape)
+
+
+def truth_empty(groundTruth):
+    return not any(elem is None for elem in groundTruth)
+
 
 class Debug:
 
