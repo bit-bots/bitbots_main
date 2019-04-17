@@ -3,4 +3,4 @@ dummy_handler:
   input: 0
 compass:
   orb:
-    nfeatures: 1000
+    max_feature_count: 1000

@@ -7,7 +7,7 @@ from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from bitbots_msgs.msg import VisualCompassMsg
 from bitbots_vision.vision_modules import debug
-from visual_compass import VisualCompassConfig
+from visual_compass.cfg import VisualCompassConfig
 from worker import VisualCompass
 
 # TODO adapt import paths
