@@ -26,7 +26,7 @@ public:
     void reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t level);
 
     /**
-     * Callback that gets executed whenever m_server receives a new goal.
+     * Callback that gets executed whenever #m_server receives a new goal.
      * @param goal New goal to process
      */
     void execute_cb(const bitbots_msgs::KickGoalConstPtr& goal);
@@ -37,8 +37,8 @@ private:
     int m_engine_rate;
 
     /**
-     * Do main loop in which engine.tick() get called repeatedly.
-     * The ActionServers state is taken into account meaning that a cancelled goal no longer get processed.
+     * Do main loop in which KickEngine::tick() gets called repeatedly.
+     * The ActionServer's state is taken into account meaning that a cancelled goal no longer gets processed.
      */
     void loop_engine();
 };
