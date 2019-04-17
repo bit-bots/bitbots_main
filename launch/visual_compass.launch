@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="bitbots_visual_compass" type="ros_handler.py" name="bitbots_visual_compass" output="screen">
+        <rosparam command="load" file="$(find bitbots_visual_compass)/config/config.yaml"/>
+    </node>
+</launch>
