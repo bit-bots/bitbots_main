@@ -43,7 +43,13 @@ $BallSeen
 #NoLocalizationPlayerBehavior
 $BallSeen
     YES --> $BallClose
-        YES --> #GoAndKickBall + target:detection_goal
+        YES --> $GoalSeen
+            YES --> $AlignedToGoal
+                YES --> #GoAndKickBall + target:detection_goal
+                NO --> @AlignToGoal
+            NO --> @CircleBall, @SearchGoal
+        NO --> @GoToBall
+    NO --> @SearchBall
 
 
 #NoLocalizationGoalieBehavior
