@@ -13,8 +13,9 @@ class VisualCompassDummyHandler():
     Docu
     """
     def __init__(self):
-
-        config_path = "config.yaml"
+        dirname = os.path.dirname(__file__)
+        relative_path = "../config/config.yaml"
+        config_path = os.path.join(dirname, relative_path)
 
         with open(config_path, 'r') as stream:
             config = yaml.load(stream)

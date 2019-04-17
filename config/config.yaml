@@ -1,0 +1,6 @@
+dummy_handler:
+  # input: "/test_data/imageset_373/frame%06d.png"
+  input: 0
+compass:
+  orb:
+    nfeatures: 1000
