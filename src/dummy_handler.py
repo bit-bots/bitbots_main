@@ -6,7 +6,7 @@ import os
 import time
 
 from threading import Thread
-from worker import BinaryCompassSift
+from worker import BinaryCompassOrb
 
 class VisualCompassDummyHandler():
     """
@@ -28,7 +28,7 @@ class VisualCompassDummyHandler():
         
         self.video_getter = VideoGet(source).start()
 
-        self.vc = BinaryCompassSift(config)
+        self.vc = BinaryCompassOrb(config)
 
         self.loop()
     

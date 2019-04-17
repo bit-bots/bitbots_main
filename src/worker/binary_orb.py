@@ -72,7 +72,7 @@ class BinaryCompassOrb(VisualCompass):
 
     def _get_keypoints(self, image):
         # Initiate STAR detector
-        orb = cv2.ORB_create(nfeatures=self.config['compass']['orb']['nfeatures'])#, scoreType=cv2.ORB_FAST_SCORE)
+        orb = cv2.ORB_create(nfeatures=self.config['compass']['orb']['max_feature_count'])#, scoreType=cv2.ORB_FAST_SCORE)
 
         kp, des = orb.detectAndCompute(image,None)
 
