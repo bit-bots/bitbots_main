@@ -1,18 +1,16 @@
 #! /usr/bin/env python2
 
-import yaml
 import rospy
 import rospkg
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
-from bitbots_vision.vision_modules import debug
 from humanoid_league_msgs.msg import VisualCompassRotation
 from bitbots_visual_compass.cfg import VisualCompassConfig
-from worker import VisualCompass
+from worker import *
 
-# TODO adapt import paths
-# TODO define message and trigger
+# TODO define message for behavior
 # TODO use set truth
+# TODO decide what compass to use
 
 class VisualCompassROSHandler():
     """
@@ -27,6 +25,7 @@ class VisualCompassROSHandler():
     Publish: 'visual_compass'-messages
         Returns side
     """
+
     def __init__(self):
         # Initiate VisualCompassHandler
         """
@@ -49,18 +48,12 @@ class VisualCompassROSHandler():
             VisualCompassRotation,
             queue_size=1)
 
-        # Register VisionConfig server (dynamic reconfigure) and set callback
+        # Register VisualCompassConfig server for dynamic reconfigure and set callback
         srv = Server(VisualCompassConfig, self._dynamic_reconfigure_callback)
 
         rospy.spin
 
-    def _dynamic_reconfigure_callback(self, msg):
-        config = yaml.load(msg.data)
-
-        self.debug_printer = debug.DebugPrinter(
-            debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
-                config['visual_compass_debug_printer_classes']))
-
+    def _dynamic_reconfigure_callback(self, config, level):
         if self.compass == None:
             # Create compass
             self.compass = VisualCompass(config)
@@ -88,7 +81,7 @@ class VisualCompassROSHandler():
         # Drops old images
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
-            self.debug_printer.info('Visual Compass: Dropped Image-message', 'image')
+            print("Visual Compass: Dropped Image-message")  # TODO debug printer
             return
 
         self.handle_image(image_msg)
@@ -106,15 +99,15 @@ class VisualCompassROSHandler():
         # Publishes the 'visual_compass'-message
         self.publish(image_msg, result[0], result[1])
     
-    def publish(image_msg, angle, certainty):
-        msg = VisualCompassMsg()
+    def publish(self, image_msg, orientation, confidence):
+        msg = VisualCompassRotation()
 
-        # Create VisualCompassMsg-message
+        # Create VisualCompassRotation-message
         msg.header.frame_id = image_msg.header.frame_id
         msg.header.stamp = image_msg.header.stamp
 
-        msg.angle = angle
-        msg.certainty = certainty
+        msg.orientation = orientation
+        msg.confidence = confidence
 
         # Publish VisualCompassMsg-message
         self.pub_compass.publish(msg)
