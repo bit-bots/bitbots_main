@@ -1,6 +1,8 @@
 #!/usr/bin/env python2
 import numpy as np
 import cv2
+import operator
+import functools
 from silx.image import sift
 import math
 from functools import partial
@@ -59,71 +61,102 @@ class BinaryCompass(VisualCompass):
     """
 
     def __init__(self, config):
+        self.config = None
         self.set_config(config)
         self.groundTruth = [None, None]
-        self.siftPlan = None
-        self.state = (None, None)
-        self.debugger = Debug()
+        self.debug = Debug()
 
     def _init_sift(self, shape, dtype):
-        self.siftPlan = sift.SiftPlan(shape, dtype, devicetype="CPU")
-        self.matchPlan = sift.MatchPlan()
+        pass
 
     def process_image(self, image, resultCB=None, debugCB=None):
+        """
         if None in self.groundTruth:
-            return
+            return"""
 
         keypoints = self._get_keypoints(image)
-        matches = self._compare(keypoints)
-        self.state = self._compute_state(matches)
+        
+        match_len = self._compare(keypoints[1])
+        print(match_len)
+
+        self.state = self._compute_state(match_len)
+
         if resultCB is not None:
             resultCB(*self.state)
 
         if debugCB is not None:
-            self.debugger.print_debug_info(image, matches, keypoints, self.state, debugCB)
+            self.debug.print_debug_info(image, keypoints, self.state, debugCB)
 
     def set_config(self, config):
-        pass
+        self.config = config
 
     def set_truth(self, angle, image):
         if angle == 0:
-            self.groundTruth[0] = self._get_keypoints(image)
+            self.groundTruth[0] = self._get_keypoints(image)[1]
         elif angle == math.pi:
-            self.groundTruth[1] = self._get_keypoints(image)
+            self.groundTruth[1] = self._get_keypoints(image)[1]
+
+        if not any(elem is None for elem in self.groundTruth):
+            self._clean_up_ground_truth()
 
     def get_side(self):
         return self.state
 
-    def _compare(self, keypoints):
-        # only process if keypoints are found in image
-        if not keypoints.shape[0]:
-            return 0, 0
-
-        matches = map(lambda gt: self.matchPlan(keypoints, gt), self.groundTruth)
+    def _compare(self, descriptors):
+        matches = map(lambda gt: self._match(descriptors, gt), self.groundTruth)
         return matches
 
-    def _get_keypoints(self, image):
-        if self.siftPlan is None:
-            self._init_sift(image.shape, image.dtype)
+    def _match(self, descriptors, groundTruth):
+        bf = cv2.BFMatcher()
+        matches = bf.knnMatch(descriptors,groundTruth,k=2)
+        # Apply ratio test
+        good = []
+        for m, n in matches:
+            match = m
+            if match.distance < 0.8*n.distance:
+                good.append(match)
+        return len(good)
 
-        return self.siftPlan.keypoints(image)
+    def _get_keypoints(self, image):
+        # Initiate STAR detector
+        orb = cv2.ORB_create(nfeatures=self.config['compass']['orb']['nfeatures'])#, scoreType=cv2.ORB_FAST_SCORE)
+
+        kp, des = orb.detectAndCompute(image,None)
+
+        return (kp, des)
 
     def _compute_state(self, matches):
-        match_counts = [x.shape[0] for x in matches]
-        angle = 0 if match_counts[0] > match_counts[1] else math.pi
+        angle = 0 if matches[0] > matches[1] else math.pi
 
-        confidence = abs(match_counts[0] - match_counts[1])/(float(sum(match_counts) + 1))
+        confidence = abs(matches[0] - matches[1])/(float(sum(matches) + 1))
         return angle, confidence
 
+    def _clean_up_ground_truth(self):
+        bad = []
+        print(self.groundTruth[0].shape, self.groundTruth[1].shape)
+        for description in self.groundTruth:
+            bad_ones = []
+            for other_description in self.groundTruth:
+                if not np.array_equal(other_description,description):
+                    bf = cv2.BFMatcher()
+                    matches = bf.knnMatch(description,other_description,k=1)
+                    for m in matches:
+                        match = m[0]
+                        if match.distance < 200:
+                            bad_ones.append(match.queryIdx)
+            bad.append(bad_ones)
+        for index in range(len(bad)):
+            self.groundTruth[index] = np.delete(self.groundTruth[index], bad[index], axis=0) 
+        print(str(map(len, bad)))
+        print(self.groundTruth[0].shape, self.groundTruth[1].shape)
 
 class Debug:
 
     def __init__(self):
         pass
 
-    def print_debug_info(self, image, matches, keypoints, state, callback):
-        image_with_matches = self.plot(image, self.convert_match(matches[0][:, 0]), (255, 0, 0), 6)
-        image_with_matches = self.plot(image_with_matches, self.convert_match(matches[1][:, 0]), (0, 255, 0), 4)
+    def print_debug_info(self, image, keypoints, state, callback):
+        debug_image = image.copy()
 
         font = cv2.FONT_HERSHEY_SIMPLEX
         bottom_left_corner_of_text = (10, 35)
@@ -131,20 +164,11 @@ class Debug:
         font_color = (255, 255, 255)
         line_type = 2
 
-        cv2.putText(image_with_matches, "SIDE {}".format(state),
+        cv2.putText(debug_image, "SIDE {} | Confidence {}".format(*state),
                     bottom_left_corner_of_text,
                     font,
                     font_scale,
                     font_color,
                     line_type)
 
-        callback(self.plot(image_with_matches, keypoints, (0, 0, 255), 2))
-
-    def convert_match(self, kps):
-        d = np.dtype((np.record, [('x', '<f4'), ('y', '<f4'), ('scale', '<f4'), ('angle', '<f4'), ('desc', 'u1', (128,))]))
-        return kps.astype(d)
-
-    def plot(self, image, kp, color, size):
-        for i in range(kp.shape[0]):
-            cv2.circle(image, (kp[i].x, kp[i].y), size + int(kp[i].scale), color, thickness=2)
-        return image
+        callback(cv2.drawKeypoints(debug_image,keypoints[0],None,color=(0,255,0), flags=0))
