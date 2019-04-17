@@ -7,6 +7,7 @@ float64 foot_speed
 uint8 SUCCESS=0
 uint8 UNREACHABLE=1
 uint8 ABORTED=2
+uint8 REJECTED=3
 uint8 result
 
 ---
