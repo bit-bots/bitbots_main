@@ -13,6 +13,7 @@ class BinaryCompassOrb(VisualCompass):
     def __init__(self, config):
         self.config = None
         self.set_config(config)
+        self.state = (None,None)
         self.groundTruth = [None, None]
         self.debug = Debug()
 

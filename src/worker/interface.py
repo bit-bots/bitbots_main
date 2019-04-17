@@ -51,7 +51,7 @@ class VisualCompass:
     def get_side(self):
         # type: () -> (float, float)
         """
-        :return: current internal state (angle: [0:2*pi], confidence: [0,1])
+        :return: current internal state (angle: [0:2*pi], confidence: [0,1]) May return (None,None).
         """
         pass
 
