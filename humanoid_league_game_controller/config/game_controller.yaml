@@ -1,0 +1,9 @@
+---
+team_id: 22
+bot_id: 4
+
+# Game controller network settings
+game_controller:
+    listen_host: '0.0.0.0'
+    listen_port: 3838
+    answer_port: 3939
