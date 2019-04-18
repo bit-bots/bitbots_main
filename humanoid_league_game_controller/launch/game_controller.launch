@@ -3,7 +3,7 @@
 
     <rosparam command="load" file="$(find humanoid_league_game_controller)/config/game_controller.yaml" />
 
-    <node pkg="humanoid_league_game_controller" type="game_controller_node" name="game_controller_node" output="screen" respawn="true"/>
+    <node pkg="humanoid_league_game_controller" type="receiver.py" name="game_controller" output="screen" respawn="true"/>
 
      <group if="$(arg use_game_settings)">
         <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
