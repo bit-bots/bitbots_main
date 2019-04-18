@@ -1,61 +1,11 @@
 #!/usr/bin/env python2
 import numpy as np
 import cv2
-import operator
-import functools
-from silx.image import sift
 import math
-from functools import partial
+from interface import VisualCompass
 
 
-class VisualCompass:
-    """
-    Interface for an Visual compass, that gets new images and calculates an horizontal angle with a corresponding
-    confidence.
-    """
-    def process_image(self, image, resultCB=None, debugCB=None):
-        # type: (np.array, func, func) -> None
-        """
-        Processes an image and updates the internal state
-        Calls Callbacks with updated state if callback is supplied
-
-        :param image: 2D numpy Array with RGB channels
-        :param resultCB: Callback called with updated state (angle: float [0:2*pi], confidence: float [0,1])
-        :param debugCB: Callback called with debug image (image: numpy Array)
-        :return: void
-        """
-        pass
-
-    def set_config(self, config):
-        # type: (dict) -> None
-        """
-        Updates the configuration
-        config content TBD
-
-        :param config: Dictionary with new config
-        :return: void
-        """
-        pass
-
-    def set_truth(self, angle, image):
-        # type: (float, np.array) -> None
-        """
-        set a truth-image for specific angle.
-
-        :param angle: float [0:2*pi]
-        :param image: 2D numpy Array
-        :return: void
-        """
-        pass
-
-    def get_side(self):
-        # type: () -> (float, float)
-        """
-        :return: current internal state (angle: [0:2*pi], confidence: [0,1])
-        """
-        pass
-
-class BinaryCompass(VisualCompass):
+class BinaryCompassOrb(VisualCompass):
     """
     This compass only compares two sides, hence two base images.
     """
@@ -63,15 +13,19 @@ class BinaryCompass(VisualCompass):
     def __init__(self, config):
         self.config = None
         self.set_config(config)
+        self.state = (None,None)
         self.groundTruth = [None, None]
         self.debug = Debug()
+        # config params
+        self.matchDistanceScalar = 0.8
+        self.maxFeatureCount = 1000
 
     def _init_sift(self, shape, dtype):
         pass
 
     def process_image(self, image, resultCB=None, debugCB=None):
         """
-        if None in self.groundTruth:
+        if truth_empty(self.groundTruth):
             return"""
 
         keypoints = self._get_keypoints(image)
@@ -89,6 +43,8 @@ class BinaryCompass(VisualCompass):
 
     def set_config(self, config):
         self.config = config
+        self.matchDistanceScalar = config['compass']['orb']['match_distance_scalar']
+        self.maxFeatureCount = config['compass']['orb']['max_feature_count']
 
     def set_truth(self, angle, image):
         if angle == 0:
@@ -96,7 +52,7 @@ class BinaryCompass(VisualCompass):
         elif angle == math.pi:
             self.groundTruth[1] = self._get_keypoints(image)[1]
 
-        if not any(elem is None for elem in self.groundTruth):
+        if truth_empty(self.groundTruth):
             self._clean_up_ground_truth()
 
     def get_side(self):
@@ -112,14 +68,13 @@ class BinaryCompass(VisualCompass):
         # Apply ratio test
         good = []
         for m, n in matches:
-            match = m
-            if match.distance < 0.8*n.distance:
-                good.append(match)
+            if m.distance < self.matchDistanceScalar * n.distance:
+                good.append(m)
         return len(good)
 
     def _get_keypoints(self, image):
         # Initiate STAR detector
-        orb = cv2.ORB_create(nfeatures=self.config['compass']['orb']['nfeatures'])#, scoreType=cv2.ORB_FAST_SCORE)
+        orb = cv2.ORB_create(nfeatures=self.maxFeatureCount)#, scoreType=cv2.ORB_FAST_SCORE)
 
         kp, des = orb.detectAndCompute(image,None)
 
@@ -149,6 +104,11 @@ class BinaryCompass(VisualCompass):
             self.groundTruth[index] = np.delete(self.groundTruth[index], bad[index], axis=0) 
         print(str(map(len, bad)))
         print(self.groundTruth[0].shape, self.groundTruth[1].shape)
+
+
+def truth_empty(groundTruth):
+    return not any(elem is None for elem in groundTruth)
+
 
 class Debug:
 
