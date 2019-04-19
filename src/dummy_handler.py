@@ -10,7 +10,7 @@ from worker import MultipleCompass, BinaryCompassOrb
 
 class VisualCompassDummyHandler():
     """
-    Docu
+    Implements a Ros independent handler for a Visual Compass worker.
     """
     def __init__(self):
         dirname = os.path.dirname(__file__)
