@@ -1,0 +1,6 @@
+recorder:
+  input: 0
+  rows: 5
+  checkpoints: 5
+  yaw_steps: 8
+  output_path: "../evaluation_data/"
