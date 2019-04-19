@@ -11,14 +11,14 @@ class BinaryCompassOrb(VisualCompass):
     """
 
     def __init__(self, config):
+        # config params
+        self.matchDistanceScalar = None
+        self.maxFeatureCount = None
         self.config = None
         self.set_config(config)
         self.state = (None,None)
         self.groundTruth = [None, None]
         self.debug = Debug()
-        # config params
-        self.matchDistanceScalar = 0.8
-        self.maxFeatureCount = 1000
 
     def _init_sift(self, shape, dtype):
         pass
