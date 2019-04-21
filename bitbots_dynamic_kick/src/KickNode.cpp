@@ -28,10 +28,14 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
             if (m_server.isPreemptRequested()) {
                 /* Confirm that we canceled processing of the current goal */
                 ROS_INFO("Cancelled old goal");
-                m_server.setPreempted();  // TODO: return aborted result
+                bitbots_msgs::KickResult result;
+                result.result = bitbots_msgs::KickResult::ABORTED;
+                m_server.setPreempted(result);
             } else {
                 /* Publish results */
                 ROS_INFO("Done kicking ball");
+                bitbots_msgs::KickResult result;
+                result.result = bitbots_msgs::KickResult::SUCCESS;
                 m_server.setSucceeded();
             }
         }
