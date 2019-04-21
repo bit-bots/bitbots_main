@@ -2,6 +2,7 @@
 #define BITBOTS_DYNAMIC_KICK_KICK_NODE_H
 
 #include <string>
+#include <optional>
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <dynamic_reconfigure/server.h>
@@ -53,13 +54,12 @@ private:
     /**
      * Transform a newly received goal into base_link frame
      * @param pose Input pose
-     * @param transformed_pose Output pose. Allways in base_link frame
-     * @return Whether transformation was successful or not
+     * @return Transfomred goal pose if transformation was successful
      */
-    bool transform_goal(const geometry_msgs::PoseStamped& pose, geometry_msgs::Pose& transformed_pose);
+    std::optional<geometry_msgs::Pose> transform_goal(const geometry_msgs::PoseStamped& pose);
 
     /**
-     * Retrieve current feet_psotions in base_link frame
+     * Retrieve current feet_positions in base_link frame
      * @param l_foot_pose Output left-foot pose. In base_link frame
      * @param r_foot_pose Output right-foot pose. In base_link frame
      * @return Whether retrieval was successful or not
