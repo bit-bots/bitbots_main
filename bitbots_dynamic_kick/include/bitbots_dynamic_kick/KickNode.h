@@ -17,10 +17,12 @@
 typedef actionlib::SimpleActionServer<bitbots_msgs::KickAction> ActionServer;
 
 /**
- * KickNode is that part of bitbots_dynamic_kick which takes care of interacting with ROS and utilizes KickEngine
+ * KickNode is that part of bitbots_dynamic_kick which takes care of interacting with ROS and utilizes a KickEngine
  * to calculate actual kick behavior.
  *
- * It provides an ActionServer for the bitbots_msgs::KickAction
+ * It provides an ActionServer for the bitbots_msgs::KickAction.
+ * This actionServer accepts new goals in any frame, and automatically provides the new goal to KickEngine in the
+ * correctly transformed frame.
  */
 class KickNode {
 public:
@@ -47,7 +49,21 @@ private:
      * The ActionServer's state is taken into account meaning that a cancelled goal no longer gets processed.
      */
     void loop_engine();
+
+    /**
+     * Transform a newly received goal into base_link frame
+     * @param pose Input pose
+     * @param transformed_pose Output pose. Allways in base_link frame
+     * @return Whether transformation was successful or not
+     */
     bool transform_goal(const geometry_msgs::PoseStamped& pose, geometry_msgs::Pose& transformed_pose);
+
+    /**
+     * Retrieve current feet_psotions in base_link frame
+     * @param l_foot_pose Output left-foot pose. In base_link frame
+     * @param r_foot_pose Output right-foot pose. In base_link frame
+     * @return Whether retrieval was successful or not
+     */
     bool get_foot_poses(geometry_msgs::Pose &l_foot_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time);
 };
 

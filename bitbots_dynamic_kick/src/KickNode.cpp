@@ -47,6 +47,7 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
 }
 
 bool KickNode::transform_goal(const geometry_msgs::PoseStamped& pose, geometry_msgs::Pose& transformed_pose) {
+    // Lookup transform from pose's frame to base_link
     geometry_msgs::TransformStamped goal_transform;
     try {
         goal_transform = m_tf_buffer.lookupTransform("base_link", pose.header.frame_id, ros::Time(0), ros::Duration(1.0));
@@ -54,13 +55,18 @@ bool KickNode::transform_goal(const geometry_msgs::PoseStamped& pose, geometry_m
         ROS_ERROR("%s", ex.what());
         return false;
     }
+
+    // Do transform pose into base_link with previously retrieved transform
     geometry_msgs::PoseStamped transformed_pose_stamped;
     tf2::doTransform(pose, transformed_pose_stamped, goal_transform);
+
+    // Set result
     transformed_pose = transformed_pose_stamped.pose;
     return true;
 }
 
 bool KickNode::get_foot_poses(geometry_msgs::Pose &l_foot_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time) {
+    // Construct zero-positions for both feet in their respective local frames
     geometry_msgs::PoseStamped l_foot_pose_stamped, r_foot_pose_stamped, l_foot_origin, r_foot_origin;
     l_foot_origin.header.frame_id = "l_foot";
     l_foot_origin.header.stamp = time;
@@ -69,8 +75,8 @@ bool KickNode::get_foot_poses(geometry_msgs::Pose &l_foot_pose, geometry_msgs::P
     r_foot_origin.pose.orientation.w = 1;
     r_foot_origin.header.stamp = time;
 
+    // Lookup transform for both feet into base_link
     geometry_msgs::TransformStamped l_foot_transform, r_foot_transform;
-
     try {
         l_foot_transform = m_tf_buffer.lookupTransform("base_link", "l_foot", ros::Time(0), ros::Duration(1.0));
         r_foot_transform = m_tf_buffer.lookupTransform("base_link", "r_foot", ros::Time(0), ros::Duration(1.0));
@@ -78,8 +84,12 @@ bool KickNode::get_foot_poses(geometry_msgs::Pose &l_foot_pose, geometry_msgs::P
         ROS_ERROR("%s", ex.what());
         return false;
     }
+
+    // Do transform both feet into base_link with previously retrieved transform
     tf2::doTransform(l_foot_origin, l_foot_pose_stamped, l_foot_transform);
     tf2::doTransform(r_foot_origin, r_foot_pose_stamped, r_foot_transform);
+
+    // Set result
     l_foot_pose = l_foot_pose_stamped.pose;
     r_foot_pose = r_foot_pose_stamped.pose;
     return true;
