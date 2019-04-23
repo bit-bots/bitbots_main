@@ -251,8 +251,16 @@ class Vision:
             rospy.logwarn('ball FCNN output publishing is disabled')
 
         if config['vision_ball_classifier'] == 'dummy':
-            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, None)
+            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, self.debug_printer)
+
         # color config
+        if 'vision_use_sim_color' not in self.config or \
+            config['vision_use_sim_color'] != self.config['vision_use_sim_color']:
+            if config['vision_use_sim_color']:
+                rospy.logwarn('Loaded color space for SIMULATOR.')
+            else:
+                rospy.loginfo('Loaded color space for REAL WORLD.')
+
         self.white_color_detector = color.HsvSpaceColorDetector(
             self.debug_printer,
             [config['white_color_detector_lower_values_h'], config['white_color_detector_lower_values_s'],
@@ -274,11 +282,17 @@ class Vision:
             [config['blue_color_detector_upper_values_h'], config['blue_color_detector_upper_values_s'],
              config['blue_color_detector_upper_values_v']])
 
-        self.field_color_detector = color.DynamicPixelListColorDetector(
-            self.debug_printer,
-            self.package_path,
-            config,
-            primary_detector=True)
+        if config['dynamic_color_space']:
+            self.field_color_detector = color.DynamicPixelListColorDetector(
+                self.debug_printer,
+                self.package_path,
+                config,
+                primary_detector=True)
+        else:
+            self.field_color_detector = color.PixelListColorDetector(
+                self.debug_printer,
+                self.package_path,
+                config)
 
         self.horizon_detector = horizon.HorizonDetector(
             self.field_color_detector,

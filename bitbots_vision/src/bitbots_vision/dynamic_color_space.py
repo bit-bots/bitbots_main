@@ -40,7 +40,6 @@ class DynamicColorSpace:
 
         # Init params
         self.vision_config = {}
-        self.turned_on = None
 
         # Register publisher of ColorSpace-messages
         self.pub_color_space = rospy.Publisher(
@@ -69,7 +68,7 @@ class DynamicColorSpace:
         :return: None
         """
         # Load dict from string in yaml-format in msg.data
-        vision_config = yaml.load(msg.data)
+        vision_config = yaml.full_load(msg.data)
 
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
@@ -77,17 +76,16 @@ class DynamicColorSpace:
 
         self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
-        # Turn off dynamic color space, if parameter of yaml (dynamic reconfigure) is false
-        turned_on_tmp = self.turned_on
-        self.turned_on = vision_config['dynamic_color_space']
-        if self.turned_on != turned_on_tmp:
-            if self.turned_on:
-                rospy.loginfo('Dynamic color space turned on.')
+        # Set parameter to turn off dynamic color space
+        if 'dynamic_color_space' not in self.vision_config or \
+            vision_config['dynamic_color_space'] != self.vision_config['dynamic_color_space']:
+            if vision_config['dynamic_color_space']:
+                rospy.loginfo('Dynamic color space turned ON.')
             else:
-                rospy.loginfo('Dynamic color space turned off.')
-        
+                rospy.logwarn('Dynamic color space turned OFF.')
+
         # Set Color- and HorizonDetector
-        self.color_detector = color.PixelListColorDetector(
+        self.color_detector = color.DynamicPixelListColorDetector(
             self.debug_printer,
             self.package_path,
             vision_config)
@@ -141,8 +139,9 @@ class DynamicColorSpace:
         :param Image image_msg: new Image-message from Image-message subscriber
         :return: None
         """
-        # Turn off dynamic color space, if parameter of yaml is false
-        if not self.turned_on:
+        # Turn off dynamic color space, if parameter of config is false
+        if 'dynamic_color_space' not in self.vision_config or \
+            not self.vision_config['dynamic_color_space']:
             return
 
         # Drops old images
