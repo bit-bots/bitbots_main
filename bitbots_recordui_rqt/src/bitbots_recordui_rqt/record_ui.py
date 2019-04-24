@@ -176,9 +176,9 @@ class RecordUI(Plugin):
         if button_pressed:
             print("Robot selected: "+item)
             if item == "Amy":
-                self._robot_anim_path = "bitbots@nuc1:~/wolfgang_ws/src/bitbots_wolfgang/wolfgang_animations/animations/motion/"
+                self._robot_anim_path = "bitbots@nuc1:~/wolfgang_ws/src/wolfgang_robot/wolfgang_animations/animations/motion/"
             if item == "Rory":
-                self._robot_anim_path = "bitbots@nuc2:~/wolfgang_ws/src/bitbots_wolfgang/wolfgang_animations/animations/motion/"
+                self._robot_anim_path = "bitbots@nuc2:~/wolfgang_ws/src/wolfgang_robot/wolfgang_animations/animations/motion/"
             if item == "Clara":
                 self._robot_anim_path = "bitbots@odroid3:~/minibot_ws/src/bitbots_minibot/minibot_animations/animations/motion/"
             if item == "Danny":
@@ -191,6 +191,11 @@ class RecordUI(Plugin):
                 
         print("Set animation path to: "+str(self._robot_anim_path+"record.json"))
 
+        initTorque = {}
+        for k, v in self._workingValues.items():
+            initTorque[k] = 2
+
+        self._checkBoxesPower['#CURRENT_FRAME'] = initTorque
 
         self.motor_controller()
         self.motor_switcher()
@@ -428,9 +433,8 @@ class RecordUI(Plugin):
         if self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
             for k, v in self._workingValues.iteritems():
                 self._workingValues[k] = 0.0
-        else:
-            for k, v in self._currentGoals.iteritems():
-                self._currentGoals[k] = 0.0
+        for k, v in self._currentGoals.iteritems():
+            self._currentGoals[k] = 0.0
         self.set_sliders_and_text_fields(manual=False)
 
         pos_msg = JointCommand()
@@ -513,6 +517,7 @@ class RecordUI(Plugin):
                                       self._widget.lineFrameName.text(),
                                       self._widget.spinBoxDuration.value(),
                                       self._widget.spinBoxPause.value())
+                self._currentGoals = deepcopy(self._workingValues)
             else:
                 current_row = self._widget.frameList.currentRow()
 
