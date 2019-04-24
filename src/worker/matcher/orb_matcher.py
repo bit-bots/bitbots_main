@@ -6,9 +6,9 @@ from interface import Matcher
 class OrbMatcher(Matcher):
 
     def __init__(self, config):
-        self.set_config(config)
-        self.orb = cv2.ORB_create(nfeatures=self.maxFeatureCount)
+        self.orb = None
         self.bf = cv2.BFMatcher()
+        self.set_config(config)
 
     def get_keypoints(self, image):
         kp, des = self.orb.detectAndCompute(image,None)
@@ -23,8 +23,10 @@ class OrbMatcher(Matcher):
         return len(good)
 
     def set_config(self, config):
-        self.maxFeatureCount = config['compass_orb_max_feature_count'] # TODO Bug
         self.matchDistanceScalar = config['compass_orb_match_distance_scalar']
+        self.maxFeatureCount = config['compass_orb_max_feature_count']
+        # Sets a new instance to allow changes after initialisation
+        self.orb = cv2.ORB_create(nfeatures=self.maxFeatureCount)
 
     def debug_keypoints(self,  image):
         kp, _ = self.orb.detectAndCompute(image,None)
