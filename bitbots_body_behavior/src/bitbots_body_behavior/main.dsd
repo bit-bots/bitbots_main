@@ -26,9 +26,7 @@ $BallSeen
 #PenaltyBehavior
 $BallSeen
     YES --> $BallClose
-        YES --> $AlignedToGoal
-            YES --> @KickBallVeryHard
-            NO --> @AlignToGoal
+        YES --> @KickBallVeryHard
         NO --> @GoToBall
     NO --> @SearchBall
 
