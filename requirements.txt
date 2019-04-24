@@ -2,3 +2,4 @@ pyopencl
 numpy
 silx
 opencv-python
+pyyaml

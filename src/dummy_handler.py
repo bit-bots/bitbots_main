@@ -6,20 +6,21 @@ import os
 import time
 
 from threading import Thread
-from worker import BinaryCompass
+from worker import VisualCompass
 
 class VisualCompassDummyHandler():
     """
-    Docu
+    Implements a Ros independent handler for a Visual Compass worker.
     """
     def __init__(self):
-
-        config_path = "config.yaml"
+        dirname = os.path.dirname(__file__)
+        relative_path = "../config/config.yaml"
+        config_path = os.path.join(dirname, relative_path)
 
         with open(config_path, 'r') as stream:
             config = yaml.load(stream)
 
-        source = config['dummy_handler']['input']
+        source = config['dummy_handler_input']
 
         if isinstance(source, basestring):
             root_folder = os.curdir
@@ -27,7 +28,8 @@ class VisualCompassDummyHandler():
         
         self.video_getter = VideoGet(source).start()
 
-        self.vc = BinaryCompass(config)
+        self.vc = VisualCompass(config)
+
 
         self.loop()
     

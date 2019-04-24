@@ -1,8 +1,0 @@
-Interface:
-	Klasse:
-		imageCallback(Bild: numpyArray): void
-		configCallback(Neue Werte: dict): void
-		setTruth(angle: float, Bild: numpyArray): void
-		__init__()
-		getSide(): (angle:[0,2pi], certainty:[0,1])
-

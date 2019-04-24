@@ -1,0 +1,17 @@
+# dummy_handler
+  # input: "/test_data/imageset_373/frame%06d.png"
+dummy_handler_input: 0
+
+# ros_handler
+ROS_handler_img_msg_topic: 'image_raw'
+ROS_handler_img_queue_size: 1
+
+# compass
+compass_type: 'multiple'
+compass_matcher: 'orb'
+
+# orb
+compass_orb_max_feature_count: 1000
+compass_orb_match_distance_scalar: 0.8
+# sift
+compass_sift_devicetype: 'cpu'

@@ -5,14 +5,13 @@ import rospkg
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from dynamic_reconfigure.server import Server
-from bitbots_msgs.msg import VisualCompassMsg
-from bitbots_vision.vision_modules import debug
-from visual_compass import VisualCompassConfig
+from humanoid_league_msgs.msg import VisualCompassRotation
+from bitbots_visual_compass.cfg import VisualCompassConfig
 from worker import VisualCompass
 
-# TODO adapt import paths
-# TODO define message and trigger
-# TODO use compass.set_truth
+# TODO define message for behavior
+# TODO use set truth
+# TODO type ENUM
 
 class VisualCompassROSHandler():
 # type: () -> None
@@ -50,11 +49,11 @@ Publish: 'visual_compass'-messages
         # Register publisher of 'visual_compass'-messages
         self.pub_compass = rospy.Publisher(
             'visual_compass',
-            VisualCompassMsg,
+            VisualCompassRotation,
             queue_size=1)
 
-        # Register VisionConfig server (dynamic reconfigure) and set callback
-        srv = Server(VisualCompassConfig, self._dynamic_reconfigure_callback)
+        # Register VisualCompassConfig server for dynamic reconfigure and set callback
+        Server(VisualCompassConfig, self._dynamic_reconfigure_callback)
 
         rospy.spin
 
@@ -63,32 +62,24 @@ Publish: 'visual_compass'-messages
         """
         TODO docs
         """
-        self.debug_printer = debug.DebugPrinter(
-            debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
-                config['visual_compass_debug_printer_classes']))
-
-        if self.compass == None:
-            # Create compass
-            self.compass = VisualCompass(config)
-        else:
-            # Set config
-            self.compass.config_callback(config)
+        self.compass = VisualCompass(config)
 
         # Subscribe to Image-message
-        if 'ROS_img_msg_topic' not in self.config or \
-                self.config['ROS_img_msg_topic'] != config['ROS_img_msg_topic']:
+        if 'ROS_handler_img_msg_topic' not in self.config or \
+                self.config['ROS_handler_img_msg_topic'] != config['ROS_handler_img_msg_topic']:
             if hasattr(self, 'sub_image_msg'):
                 self.sub_image_msg.unregister()
             self.sub_image_msg = rospy.Subscriber(
-                config['ROS_img_msg_topic'],
+                config['ROS_handler_img_msg_topic'],
                 Image,
                 self.image_callback,
-                queue_size=config['ROS_img_queue_size'],
+                queue_size=config['ROS_handler_img_queue_size'],
                 tcp_nodelay=True,
                 buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
 
         self.config = config
+        return self.config
 
     def image_callback(self, image_msg):
         # type: (Image) -> None
@@ -98,7 +89,7 @@ Publish: 'visual_compass'-messages
         # Drops old images
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
-            self.debug_printer.info('Visual Compass: Dropped Image-message', 'image')
+            print("Visual Compass: Dropped Image-message")  # TODO debug printer
             return
 
         self.handle_image(image_msg)
@@ -120,19 +111,19 @@ Publish: 'visual_compass'-messages
         # Publishes the 'visual_compass'-message
         self.publish(image_msg, result[0], result[1])
     
-    def publish(self, image_msg, angle, certainty):
+    def publish(self, image_msg, orientation, confidence):
         # type: (Image, float, float) -> None
         """
         TODO docs
         """
-        msg = VisualCompassMsg()
+        msg = VisualCompassRotation()
 
-        # Create VisualCompassMsg-message
+        # Create VisualCompassRotation-message
         msg.header.frame_id = image_msg.header.frame_id
         msg.header.stamp = image_msg.header.stamp
 
-        msg.angle = angle
-        msg.certainty = certainty
+        msg.orientation = orientation
+        msg.confidence = confidence
 
         # Publish VisualCompassMsg-message
         self.pub_compass.publish(msg)
