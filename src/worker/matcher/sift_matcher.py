@@ -16,7 +16,11 @@ class SiftMatcher(Matcher):
     def match(self, kp1, kp2):
         if self.matchPlan is None:
             self.initSift()
-        return len(self.matchPlan(kp1, kp2))
+        try:
+            res = len(self.matchPlan(kp1, kp2))
+        except(Exception):
+            return 0
+        return res
 
     def initSift(self):
         self.siftPlan = sift.SiftPlan(self.shape, self.dtype, devicetype=self.devicetype)
