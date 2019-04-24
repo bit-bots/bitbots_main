@@ -1,6 +1,7 @@
 #ifndef BITBOTS_DYNAMIC_KICK_KICK_ENGINE_H
 #define BITBOTS_DYNAMIC_KICK_KICK_ENGINE_H
 
+#include <optional>
 #include <bitbots_splines/SmoothSpline.hpp>
 #include <bitbots_splines/SplineContainer.hpp>
 #include <bitbots_msgs/KickGoal.h>
@@ -32,24 +33,23 @@ public:
 
     /**
      * Do one iteration of spline-progress-updating. This means that whenever tick() is called,
-     *      new motor goals are retrieved from previously calculated splines, stabilized and set to goals
+     *      new position goals are retrieved from previously calculated splines, stabilized and transformed into
+     *      JointGoals
      * @param dt Passed delta-time between last call to tick() and now. Measured in seconds
-     * @param goals Output motor positions which need to be reached to advance the overall kick movement
-     * @return Whether calculating new motor positions was successful or not.
-     *      This could fail because no goal is set, more time has passed then the spline was long or bio_ik was not
-     *      able to calculate motor_positions from splines.
+     * @return New motor goals only if a goal is currently set, position extractions from splines was possible and
+     *      bio_ik was able to compute vaild motor positions
      */
-    bool tick(double dt, JointGoals& goals);
+    std::optional<JointGoals> tick(double dt);
 
     /**
      * Is the currently performed kick with the left foor or not
      */
     bool is_left_kick();
 private:
+    double m_time;
     geometry_msgs::Pose m_goal_pose;
     double m_speed;
-    double m_time;
-    Trajectories m_trajectories;
+    std::optional<Trajectories> m_trajectories;
     Stabilizer m_stabilizer;
 
     /**

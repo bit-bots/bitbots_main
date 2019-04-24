@@ -15,13 +15,12 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     ROS_INFO("Accepted new goal");
     m_engine.reset();
 
-    /* Only do actual actual kicking once required information is retrieved */
-    geometry_msgs::Pose transformed_goal;
-    if (transform_goal(goal->foot_target, transformed_goal)) {
+    /* Only continue if necessary information is sucessfully retrieved */
+    if (std::optional<geometry_msgs::Pose> transformed_goal = transform_goal(goal->foot_target)) {
         geometry_msgs::Pose l_foot_pose, r_foot_pose;
         if (get_foot_poses(l_foot_pose, r_foot_pose, goal->foot_target.header.stamp)) {
 
-            m_engine.set_goal(transformed_goal, goal->foot_speed, l_foot_pose, r_foot_pose);
+            m_engine.set_goal(transformed_goal.value(), goal->foot_speed, l_foot_pose, r_foot_pose);
             loop_engine();
 
             /* Figure out the reason why loop_engine() returned and act accordingly */
@@ -40,36 +39,34 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
             }
         }
         else {
-            /* get_foot_poses() was not successful */
+            /* Feet positions were not successfuly retrieved */
             bitbots_msgs::KickResult result;
             result.result = bitbots_msgs::KickResult::REJECTED;
             m_server.setAborted(result, "Transformation of feet into base_link not possible");
         }
     } else {
-        /* transform_goal() was not successful */
+        /* Goal was not successfuly transformed */
         bitbots_msgs::KickResult result;
         result.result = bitbots_msgs::KickResult::REJECTED;
         m_server.setAborted(result, "Transformation of goal into base_link not possible");
     }
 }
 
-bool KickNode::transform_goal(const geometry_msgs::PoseStamped& pose, geometry_msgs::Pose& transformed_pose) {
+std::optional<geometry_msgs::Pose> KickNode::transform_goal(const geometry_msgs::PoseStamped& pose) {
     /* Lookup transform from pose's frame to base_link */
     geometry_msgs::TransformStamped goal_transform;
     try {
         goal_transform = m_tf_buffer.lookupTransform("base_link", pose.header.frame_id, ros::Time(0), ros::Duration(1.0));
     } catch (tf2::TransformException& ex) {
         ROS_ERROR("%s", ex.what());
-        return false;
+        return std::nullopt;
     }
 
     /* Do transform pose into base_link with previously retrieved transform */
     geometry_msgs::PoseStamped transformed_pose_stamped;
     tf2::doTransform(pose, transformed_pose_stamped, goal_transform);
 
-    /* Set result */
-    transformed_pose = transformed_pose_stamped.pose;
-    return true;
+    return transformed_pose_stamped.pose;
 }
 
 bool KickNode::get_foot_poses(geometry_msgs::Pose &l_foot_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time) {
@@ -105,8 +102,7 @@ bool KickNode::get_foot_poses(geometry_msgs::Pose &l_foot_pose, geometry_msgs::P
 void KickNode::loop_engine() {
     /* Do the loop as long as nothing cancels it */
     while (m_server.isActive() && !m_server.isPreemptRequested()) {
-        JointGoals goals;
-        if (m_engine.tick(1.0 / m_engine_rate, goals)) {
+        if (std::optional<JointGoals> goals = m_engine.tick(1.0 / m_engine_rate)) {
             // TODO: add counter for failed ticks
             bitbots_msgs::KickFeedback feedback;
             feedback.percent_done = 0;
@@ -119,7 +115,7 @@ void KickNode::loop_engine() {
             }
         }
 
-        /* Let ROS do some important work of its own sleep afterwards */
+        /* Let ROS do some important work of its own and sleep afterwards */
         ros::spinOnce();
         ros::Rate loop_rate(m_engine_rate);
         loop_rate.sleep();
