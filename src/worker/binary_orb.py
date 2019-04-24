@@ -43,8 +43,8 @@ class BinaryCompassOrb(VisualCompass):
 
     def set_config(self, config):
         self.config = config
-        self.matchDistanceScalar = config['compass']['orb']['match_distance_scalar']
-        self.maxFeatureCount = config['compass']['orb']['max_feature_count']
+        self.matchDistanceScalar = config['compass_orb_match_distance_scalar']
+        self.maxFeatureCount = config['compass_orb_max_feature_count']
 
     def set_truth(self, angle, image):
         if angle == 0:
