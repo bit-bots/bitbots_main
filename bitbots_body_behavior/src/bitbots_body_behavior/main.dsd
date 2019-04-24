@@ -53,6 +53,12 @@ $BallSeen
 
 
 #NoLocalizationGoalieBehavior
+$BallSeen
+    YES --> $BallDangerous
+        YES --> #GoAndKickBall + target:detection_goal
+        NO --> @LookAtBall
+    NO --> @SearchBall
+
 
 -->BodyBehavior
 $RoleDecider
