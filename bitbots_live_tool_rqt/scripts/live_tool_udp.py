@@ -31,20 +31,10 @@ class LiveToolSender():
         self.detectionMsg = DetectionMsg()
         self.trajectoryMsg = TrajectoryMsg()
 
-        rospack = rospkg.RosPack()
-        path = rospack.get_path("bitbots_live_tool_rqt")
-        path = os.path.join(path, "config/live_rqt_settings" + '.yaml')
-        with open(path, "r") as file:
-            config = yaml.load(file)
-            if rospy.has_param("/live_tool/ip"):
-                self.udp_ip = rospy.get_param("/live_tool/ip")
-            else:
-                self.udp_ip = config["rqt_ip"]
-            if rospy.has_param("/live_tool/port"):
-                self.udp_port = rospy.get_param("/live_tool/port")
-            else:
-                self.udp_port = config["live_rqt_port"]
-            self.send_delay = config["send_delay"]
+
+        self.udp_ip = rospy.get_param("/live_tool/rqt_ip")
+        self.udp_port = rospy.get_param("/live_tool/live_rqt_port")
+        self.send_delay = rospy.get_param("/live_tool/send_delay")
 
         print("I am sending to: \nIp: "+self.udp_ip+", Port: "+str(self.udp_port)+", Delay: "+str(self.send_delay))
 
