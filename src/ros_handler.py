@@ -11,7 +11,7 @@ from worker import VisualCompass
 
 # TODO define message for behavior
 # TODO use set truth
-# TODO type ENUM
+# TODO compass type|matcher ENUM in .cfg
 
 class VisualCompassROSHandler():
     # type: () -> None
@@ -45,6 +45,8 @@ class VisualCompassROSHandler():
 
         self.config = {}
         self.compass = None
+        self.sample_count = 0
+        self.ready_for_loop = False # TODO change name
 
         # Register publisher of 'visual_compass'-messages
         self.pub_compass = rospy.Publisher(
@@ -55,7 +57,7 @@ class VisualCompassROSHandler():
         # Register VisualCompassConfig server for dynamic reconfigure and set callback
         Server(VisualCompassConfig, self._dynamic_reconfigure_callback)
 
-        rospy.spin
+        rospy.spin()
 
     def _dynamic_reconfigure_callback(self, config, level):
         # type: (dict, TODO) -> None
@@ -63,6 +65,14 @@ class VisualCompassROSHandler():
         TODO docs
         """
         self.compass = VisualCompass(config)
+
+        tmp = self.ready_for_loop
+        self.ready_for_loop = self.sample_count >= config['compass_multiple_sample_count']
+        if tmp != self.ready_for_loop:
+            if self.ready_for_loop:
+                rospy.loginfo('Visual compass: Initiating finished. Now Ready for processing loop.')
+            else:
+                rospy.logwarn('Visual compass: VAR of VAR sample images set. More sample images are needed to start processing loop.') # TODO template string
 
         # Subscribe to Image-message
         if 'ROS_handler_img_msg_topic' not in self.config or \
@@ -92,7 +102,8 @@ class VisualCompassROSHandler():
             print("Visual Compass: Dropped Image-message")  # TODO debug printer
             return
 
-        self.handle_image(image_msg)
+        if ready_for_loop:
+            self.handle_image(image_msg)
 
     def handle_image(self, image_msg):
         # type: (Image) -> None
@@ -103,7 +114,7 @@ class VisualCompassROSHandler():
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
         # Set image
-        self.compass.image_callback(image)
+        self.compass.process_image(image)
 
         # Get angle and certainty from compass
         result = self.compass.get_side()
