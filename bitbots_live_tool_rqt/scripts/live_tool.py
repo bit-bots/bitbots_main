@@ -22,7 +22,7 @@ from detection_msg import DetectionMsg
 from position_msg import PositionMsg
 
 from udp_receiver import Client
-from bitbots_live_tool_rqt.msg import LiveMessage
+from std_msgs.msg import String
 
 from name import Name
 
@@ -83,7 +83,7 @@ class LiveTool(Plugin):
 
         self._widget.label_13.setText("IP: "+ [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0])
 
-        self.sub = rospy.Subscriber("/live_info", LiveMessage, self._storeData)
+        self.sub = rospy.Subscriber("/live_info", String, self._storeData)
         self.sig.connect(self._parseUdpPackage)
 
     def receiveIPconfig(self):

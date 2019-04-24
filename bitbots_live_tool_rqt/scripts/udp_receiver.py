@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncore, socket, rospy
-from bitbots_live_tool_rqt.msg import LiveMessage
+from std_msgs.msg import String
 
 class Client(asyncore.dispatcher):
     """Client class that receives the UDP messages and provides the data to our process_data method of class HardwareUI"""
@@ -14,7 +14,7 @@ class Client(asyncore.dispatcher):
         self.bind((ip, int(port)))
 
 
-        self.pub = rospy.Publisher('live_info', LiveMessage, queue_size=1)
+        self.pub = rospy.Publisher('live_info', String, queue_size=1)
 
         self.run()
 
@@ -28,7 +28,7 @@ class Client(asyncore.dispatcher):
     def handle_read(self):
         """Receives the messages and emits a signal containing the data"""
         data = self.recv(8192)
-        msg = LiveMessage()
+        msg = String()
         msg.data = data
         self.pub.publish(msg)
 
