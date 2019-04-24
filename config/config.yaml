@@ -10,6 +10,11 @@ ROS_handler_img_queue_size: 1
 compass_type: 'multiple'
 compass_matcher: 'orb'
 
+# binary
+
+# multiple
+compass_multiple_sample_count: 4
+
 # orb
 compass_orb_max_feature_count: 1000
 compass_orb_match_distance_scalar: 0.8

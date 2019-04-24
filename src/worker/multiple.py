@@ -30,10 +30,8 @@ class MultipleCompass(VisualCompass):
         self.matcher = None
         self.debug = Debug()
 
-        #TODO: move to yaml file
         # config values
-        self.sampleCount = 2
-        self.maxFeatureCount = 1000
+        self.sampleCount = None
 
         self.init_matcher()
         self.set_config(config)
@@ -57,16 +55,14 @@ class MultipleCompass(VisualCompass):
     def _compute_state(self, matches):
         mymax = max(matches, key=lambda x: x[1])
         angle = mymax[0]
-        confidence = float(mymax[1]) / self.maxFeatureCount
+        confidence = float(mymax[1]) / 1000
         return (angle, confidence)
 
     def process_image(self, image, resultCB=None, debugCB=None):
         if not self.groundTruth:
             return
         matchdata = self.matcher.get_keypoints(image)
-        #print(descriptors)
         matches = self._compare(matchdata)
-        #print(matches)
 
         self.state = self._compute_state(matches)
 
@@ -79,6 +75,7 @@ class MultipleCompass(VisualCompass):
 
     def set_config(self, config):
         self.config = config
+        self.sampleCount = config['compass_multiple_sample_count']
         self.matcher.set_config(config)
 
     def get_side(self):
