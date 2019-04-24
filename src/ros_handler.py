@@ -3,14 +3,17 @@
 import rospy
 import rospkg
 from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
 from dynamic_reconfigure.server import Server
 from humanoid_league_msgs.msg import VisualCompassRotation
 from bitbots_visual_compass.cfg import VisualCompassConfig
-from worker import *
+
+from worker import MultipleCompass, BinaryCompassOrb
 
 # TODO define message for behavior
 # TODO use set truth
 # TODO decide what compass to use
+# TODO type ENUM
 
 class VisualCompassROSHandler():
     """
@@ -49,33 +52,39 @@ class VisualCompassROSHandler():
             queue_size=1)
 
         # Register VisualCompassConfig server for dynamic reconfigure and set callback
-        srv = Server(VisualCompassConfig, self._dynamic_reconfigure_callback)
+        Server(VisualCompassConfig, self._dynamic_reconfigure_callback)
 
         rospy.spin
 
     def _dynamic_reconfigure_callback(self, config, level):
-        if self.compass == None:
-            # Create compass
-            self.compass = VisualCompass(config)
+        compass_type = config['compass_type']
+        if 'compass_type' not in self.config or \
+            compass_type != self.config['compass_type']:
+            # Create new compass, because type has changed
+            if compass_type == "BinaryCompassOrb":
+                self.compass = BinaryCompassOrb(config)
+            elif compass_type == "MultipleCompass":
+                self.compass = MultipleCompass(config)
         else:
-            # Set config
-            self.compass.config_callback(config)
+            # Update config of existing compass
+            self.compass.set_config(config)
 
         # Subscribe to Image-message
-        if 'ROS_img_msg_topic' not in self.config or \
-                self.config['ROS_img_msg_topic'] != config['ROS_img_msg_topic']:
+        if 'ROS_handler_img_msg_topic' not in self.config or \
+                self.config['ROS_handler_img_msg_topic'] != config['ROS_handler_img_msg_topic']:
             if hasattr(self, 'sub_image_msg'):
                 self.sub_image_msg.unregister()
             self.sub_image_msg = rospy.Subscriber(
-                config['ROS_img_msg_topic'],
+                config['ROS_handler_img_msg_topic'],
                 Image,
                 self.image_callback,
-                queue_size=config['ROS_img_queue_size'],
+                queue_size=config['ROS_handler_img_queue_size'],
                 tcp_nodelay=True,
                 buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
 
         self.config = config
+        return self.config
 
     def image_callback(self, image_msg):
         # Drops old images
