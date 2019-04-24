@@ -73,18 +73,18 @@ std::optional<geometry_msgs::Pose> KickNode::transform_goal(const geometry_msgs:
 bool KickNode::get_foot_poses(geometry_msgs::Pose &l_foot_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time) {
     /* Construct zero-positions for both feet in their respective local frames */
     geometry_msgs::PoseStamped l_foot_pose_stamped, r_foot_pose_stamped, l_foot_origin, r_foot_origin;
-    l_foot_origin.header.frame_id = "l_foot";
+    l_foot_origin.header.frame_id = "l_sole";
     l_foot_origin.header.stamp = time;
     l_foot_origin.pose.orientation.w = 1;
-    r_foot_origin.header.frame_id = "r_foot";
+    r_foot_origin.header.frame_id = "r_sole";
     r_foot_origin.pose.orientation.w = 1;
     r_foot_origin.header.stamp = time;
 
     /* Lookup transform for both feet into base_link */
     geometry_msgs::TransformStamped l_foot_transform, r_foot_transform;
     try {
-        l_foot_transform = m_tf_buffer.lookupTransform("base_link", "l_foot", ros::Time(0), ros::Duration(1.0));
-        r_foot_transform = m_tf_buffer.lookupTransform("base_link", "r_foot", ros::Time(0), ros::Duration(1.0));
+        l_foot_transform = m_tf_buffer.lookupTransform("base_link", "l_sole", ros::Time(0), ros::Duration(1.0));
+        r_foot_transform = m_tf_buffer.lookupTransform("base_link", "r_sole", ros::Time(0), ros::Duration(1.0));
     } catch (tf2::TransformException& ex) {
         ROS_ERROR("%s", ex.what());
         return false;
