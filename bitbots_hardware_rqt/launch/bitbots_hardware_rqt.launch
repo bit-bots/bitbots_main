@@ -9,7 +9,8 @@
 	</node>
 	<!-- <node pkg="bitbots_hardware_rqt" type="battery_info_publisher.py" name="battery_info" output="screen"/> -->
 	<node pkg="bitbots_hardware_rqt" type="hardware_tool.py" name="hardware_tool" output="screen">
-		<param name="ip" value="$(arg ip)"/>
-		<param name="port" value="$(arg port)"/>
+		<rosparam command="load" file="$(find bitbots_hardware_rqt)/config/hardware_rqt_settings.yaml"/>
+		<param name="rqt_ip" value="$(arg ip)"/>
+		<param name="hardware_rqt_port" value="$(arg port)"/>
 	</node>
 </launch>
