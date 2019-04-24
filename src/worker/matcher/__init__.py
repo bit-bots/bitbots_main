@@ -16,14 +16,14 @@ class Matcher (MatcherInterface):
 
 
     #returns number of matches
-    def match(self, kp1, kp2):
-        return self.matcher.match(kp1, kp2)
+    def match(self, keypoints, descriptor1, descriptor2):
+        return self.matcher.match(keypoints, descriptor1, descriptor2)
 
     def get_keypoints(self, image):
         return self.matcher.get_keypoints(image)
 
-    def debug_keypoints(self, image):
-        return self.matcher.debug_keypoints(image)
+    def debug_keypoints(self, image, debug_keypoints, color):
+        return self.matcher.debug_keypoints(image, debug_keypoints, color)
 
     def set_config(self, config):
         matcher_type = config['compass_matcher']

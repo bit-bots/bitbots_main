@@ -1,4 +1,5 @@
 import math
+import colorsys # TODO dependecy 
 from matcher import Matcher
 from interface import VisualCompass as VisualCompassInterface
 from debug import Debug
@@ -19,8 +20,10 @@ class BinaryCompass(VisualCompassInterface):
             self.matcher = Matcher(self.config)
 
     def process_image(self, image, resultCB=None, debugCB=None):
-        keypoints = self.matcher.get_keypoints(image)
-        match_len = map(lambda gt: self.matcher.match(keypoints, gt), self.groundTruth)
+        keypoints, descriptor = self.matcher.get_keypoints(image)
+        matches = map(lambda gt: self.matcher.match(keypoints, descriptor, gt), self.groundTruth)
+
+        match_len = map(lambda match: len(match), matches)
 
         self.state = self._compute_state(match_len)
 
@@ -28,14 +31,18 @@ class BinaryCompass(VisualCompassInterface):
             resultCB(*self.state)
 
         if debugCB is not None:
-            image = self.matcher.debug_keypoints(image)
+            image = self.matcher.debug_keypoints(image, keypoints, (0,0,0))
+            for value, _ in enumerate(self.groundTruth):
+                hue = value/float(len(self.groundTruth))
+                color = colorsys.hsv_to_rgb(hue,1,255)
+                image = self.matcher.debug_keypoints(image, matches[value], color)
             self.debug.print_debug_info(image, self.state, debugCB)
 
     def set_truth(self, angle, image):
         if angle == 0:
-            self.groundTruth[0] = self.matcher.get_keypoints(image)
+            self.groundTruth[0] = self.matcher.get_keypoints(image)[1]
         elif angle == math.pi:
-            self.groundTruth[1] = self.matcher.get_keypoints(image)
+            self.groundTruth[1] = self.matcher.get_keypoints(image)[1]
 
     def set_config(self, config):
         self.config = config

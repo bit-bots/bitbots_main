@@ -1,5 +1,6 @@
 from debug import Debug
 import bisect
+import colorsys
 import math
 from matcher import Matcher
 from interface import VisualCompass as VisualCompassInterface
@@ -41,15 +42,18 @@ class MultipleCompass(VisualCompassInterface):
             self.matcher = Matcher(self.config)
 
     # returns list of angle matchcount pairs
-    def _compare(self, matchdata):
-        return map(lambda x: (x[0], self.matcher.match(matchdata, x[1])), self.groundTruth)
+    def _compare(self, keypoints, descriptors):
+        return map(lambda x: self._build_match_tuple(x[0], keypoints, descriptors, x[1]), self.groundTruth)
 
+    def _build_match_tuple(self, angle, keypoints, descriptors1, descriptors2):
+        matches = self.matcher.match(keypoints, descriptors1, descriptors2)
+        return (angle, len(matches), matches)
 
     def set_truth(self, angle, image):
         self.init_matcher()
         if 0 <= angle <= 2*math.pi:
-            matchdata = self.matcher.get_keypoints(image)
-            bisect.insort(self.groundTruth,(angle, matchdata))
+            _, descriptors = self.matcher.get_keypoints(image)
+            bisect.insort(self.groundTruth,(angle, descriptors))
 
     #TODO
     def _compute_state(self, matches):
@@ -63,8 +67,8 @@ class MultipleCompass(VisualCompassInterface):
     def process_image(self, image, resultCB=None, debugCB=None):
         if not self.groundTruth:
             return
-        matchdata = self.matcher.get_keypoints(image)
-        matches = self._compare(matchdata)
+        keypoints, descriptors = self.matcher.get_keypoints(image)
+        matches = self._compare(keypoints, descriptors)
 
         self.state = self._compute_state(matches)
 
@@ -72,7 +76,11 @@ class MultipleCompass(VisualCompassInterface):
             resultCB(*self.state)
 
         if debugCB is not None:
-            image = self.matcher.debug_keypoints(image)
+            image = self.matcher.debug_keypoints(image, keypoints, (0,0,0))
+            for value, _ in enumerate(self.groundTruth):
+                hue = value/float(len(self.groundTruth))
+                color = colorsys.hsv_to_rgb(hue,1,255)
+                image = self.matcher.debug_keypoints(image, matches[value][2], color)
             self.debug.print_debug_info(image, self.state, debugCB)
 
     def set_config(self, config):

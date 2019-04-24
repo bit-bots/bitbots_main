@@ -1,6 +1,7 @@
 from interface import Matcher
 
 import cv2
+import numpy as np
 from silx.image import sift
 
 
@@ -13,13 +14,13 @@ class SiftMatcher(Matcher):
         self.matchPlan = None
         self.set_config(config)
 
-    def match(self, kp1, kp2):
+    def match(self, _, kp1, kp2):
         if self.matchPlan is None:
             self.initSift()
         try:
-            res = len(self.matchPlan(kp1, kp2))
+            res = self.matchPlan(kp1, kp2)
         except(Exception):
-            return 0
+            return []
         return res
 
     def initSift(self):
@@ -31,21 +32,35 @@ class SiftMatcher(Matcher):
         self.dtype = image.dtype
         self.initSift()
 
-
     def get_keypoints(self, image):
         if self.siftPlan is None:
             self.initSiftImg(image)
-        return self.siftPlan.keypoints(image)
+        
+        keypoints = self.siftPlan.keypoints(image)
+        return keypoints, keypoints
 
     # TODO copy debugger from deprecated_binary_sift.py
-    def debug_keypoints(self, image):
-        image_copy = image.copy()
-        return self._plot(image_copy, self.get_keypoints(image_copy), (0, 0, 255), 2)
+    def debug_keypoints(self, image, debug_keypoints, color):
+        try:
+            output_image = self._plot(image, debug_keypoints, color, 2)
+        except(Exception):
+            try:
+                debug_keypoints_formated = self._convert_keypoint(debug_keypoints[:, 0])
+                output_image = self._plot(image, debug_keypoints_formated, color, 2)
+            except(Exception):
+                print("Debug failed")
+                output_image = image
+        return output_image
+        
 
     def _plot(self, image, kp, color, size):
         for i in range(kp.shape[0]):
             cv2.circle(image, (kp[i].x, kp[i].y), size + int(kp[i].scale), color, thickness=2)
         return image
+
+    def _convert_keypoint(self, kps):
+        d = np.dtype((np.record, [('x', '<f4'), ('y', '<f4'), ('scale', '<f4'), ('angle', '<f4'), ('desc', 'u1', (128,))]))
+        return kps.astype(d)
 
     def set_config(self, config):
         self.devicetype = config['compass_sift_devicetype']
