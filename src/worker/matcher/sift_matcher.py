@@ -33,10 +33,15 @@ class SiftMatcher(Matcher):
             self.initSiftImg(image)
         return self.siftPlan.keypoints(image)
 
-    # TODO copy debugger from binary_sift.py
+    # TODO copy debugger from deprecated_binary_sift.py
     def debug_keypoints(self, image):
-        #return cv2.drawKeypoints(image, self.get_keypoints(image), None, color=(0, 255, 0), flags=0)
+        image_copy = image.copy()
+        return self._plot(image_copy, self.get_keypoints(image_copy), (0, 0, 255), 2)
+
+    def _plot(self, image, kp, color, size):
+        for i in range(kp.shape[0]):
+            cv2.circle(image, (kp[i].x, kp[i].y), size + int(kp[i].scale), color, thickness=2)
         return image
 
     def set_config(self, config):
-        self.devicetype = config['compass']['sift']['devicetype']
+        self.devicetype = config['compass_sift_devicetype']
