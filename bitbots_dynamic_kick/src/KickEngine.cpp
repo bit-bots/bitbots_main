@@ -25,6 +25,7 @@ std::optional<JointGoals> KickEngine::tick(double dt) {
                              m_trajectories->get("foot_pos_y").pos(m_time),
                              m_trajectories->get("foot_pos_z").pos(m_time)});
         tf::Quaternion q;
+        /* Apparently, the axis order is different than expected */
         q.setEuler(m_trajectories->get("foot_pitch").pos(m_time),
                    m_trajectories->get("foot_roll").pos(m_time),
                    m_trajectories->get("foot_yaw").pos(m_time));
