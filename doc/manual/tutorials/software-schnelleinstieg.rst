@@ -1,8 +1,8 @@
 .. _Software-Schnelleinstieg:
 
-==========
+===========================
 Software Schnelleinstieg
-==========
+===========================
 
 Die original LaTex Version gibt es auf Overleaf_.
 
@@ -48,13 +48,12 @@ lernen ist, hat C++ einen klaren Geschwindigkeitsvorteil. Für den
 Einstieg wählen wir aber Python, die Syntax ist klar und strukturiert,
 die Lernkurve sehr vorteilhaft.
 
-Wir arbeiten auf ROS Kinetic, der 2016/17 aktuellsten LTS ROS-Version.
-Die Installation und Einrichtung ist unter Ubuntu vergleichsweise
-einfach (http://wiki.ros.org/ROS/Installation/). Wird eine andere
-Linuxdistribution (Fedora, Arch,..) verwendet, können (vermutlich)
-keinen Packages aus den Repositories verwendet werden, sondern der
-Quellcode muss selbst kompiliert werden, das wird auch im Roswiki unter
-*Sourceinstall* erklärt. Bei Problemen wende dich einfach persönlich an
+Wir arbeiten auf `ROS Melodic`_, der aktuellsten LTS ROS-Version.
+Die `Installation und Einrichtung`_ ist unter Ubuntu vergleichsweise
+einfach. Wird eine andere Linuxdistribution (Fedora, Arch,..) verwendet,
+können (vermutlich) keinen Packages aus den Repositories verwendet werden,
+sondern der Quellcode muss `selbst kompiliert`_ werden oder über Docker
+genutzt werden (rosdocked_). Bei Problemen wende dich einfach persönlich an
 einen der alt-AGler. Die Installation auf Ubuntu macht einem das Leben
 aber deutlich einfacher. Folge hier am besten der Anleitung, zu
 empfehlen sind die Varianten desktop oder desktop-full (mit Simulator
@@ -75,31 +74,49 @@ da entsprechendes upstream schon behoben ist.
 Alternativ kannst du die Rechner in unserem Labor benutzten, auf denen
 dies schon eingerichtet ist.
 
-| Ihr müsst jetzt noch einen Workspace anlegen, in dem ihr den Code
-  baut. **mkdir -p ~/ws/src** Der Ordner ,,ws” wäre in dem Fall euer
+Workspace erstellen
+--------------------
+In bitbots_meta gibt es ein Skript, das für dich einen Catkin Workspace unter ~/catkin_ws erstellt,
+das Repository (mit den Submodules) aktualisiert, ROS und dependencies installiert
+und zum Ersten Mal alle Pakete baut. Du kannst das alles natürlich auch manuell machen,
+aber so ist es sehr viel praktischer. Es kann allerdings ein bisschen dauern bis alles
+installiert ist und das erste Bauen der Pakete dauert auch seine Zeit.
+
+Ausführen kannst du dieses Skript, in dem du in das bitbots_meta Verzeichnis wechselst und
+dort **make install** ausführst.
+
+
+| Wenn ihr manuell einen Workspace anlegen wollt, um Code zu bauen, macht ihr
+  das folgendermaßen: **mkdir -p ~/ws/src** Der Ordner ,,ws” wäre in dem Fall euer
   Workspace. Die meiste Arbeit erfolgt wie unter Linux oft üblich in der
   Konsole. ROS bietet die Bindings für bash und zsh. (Bash ist meist der
-  Standard. Wenn du das alles nicht kennst, benutzt du bash). Siehe dazu
-  im Zweifel hier:
-  http://wiki.ros.org/catkin/Tutorials/create_a_workspace.
-| Ein paar generelle Worte zu dem Aufbau von ROS, bevor wir zu einem
-  kleinen Beispiel kommen: Jede Aufgabe wird von einem Programm
-  erledigt, einem sogenannten Node. Hierbei handelt es sich um einen
-  eigenständigen Prozess. Dieser wird einmal gestartet und soll solange
-  laufen bleiben, wie er benötigt wird, also meist dauerhaft. Daten
-  werden mit Messages zwischen den einzelnen Nodes verteilt. Dazu
-  ,,published” ein Node eine ,,message” zu einem ,,topic”, einem
-  Identifier, was das für eine Nachricht ist, und ein (anderer) Node
-  ,,subscribed” die Nachricht. Wird nun eine Nachricht losgeschickt,
-  wird der subscribende Prozess eingefroren und die definierte
-  Callback-Methode aufgerufen und zum Beispiel in der Klassenvariablen
-  geändert.
+  Standard. Wenn du das alles nicht kennst, benutzt du bash). Ein Tutorial
+  dazu findest du im ROS Wiki unter `create_a_workspace`_.
+
+Allgemeines zu ROS
+----------------------
+
+Ein paar generelle Worte zu dem Aufbau von ROS, bevor wir zu einem
+kleinen Beispiel kommen: Jede Aufgabe wird von einem Programm
+erledigt, einem sogenannten Node. Hierbei handelt es sich um einen
+eigenständigen Prozess. Dieser wird einmal gestartet und soll solange
+laufen bleiben, wie er benötigt wird, also meist dauerhaft. Daten
+werden mit Messages zwischen den einzelnen Nodes verteilt. Dazu
+,,published” ein Node eine ,,message” zu einem ,,topic”, einem
+Identifier, was das für eine Nachricht ist, und ein (anderer) Node kann
+die Nachricht ,,subscriben”. Wenn eine Message auf dem Topic gesendet wird,
+das man ,,subscribed" hat, so wird die Methode aufgerufen, die als Callback-
+Methode definiert ist.
+.. Wird nun eine Nachricht losgeschickt,
+wird der subscribende Prozess eingefroren und die definierte
+Callback-Methode aufgerufen und zum Beispiel in der Klassenvariablen
+geändert.
 
 Entweder wird gleich hier nun die Aufgabe gemacht und eine neue Message
 herausgegebenen, oder nur etwas gespeichert und zum Beispiel erst beim
 nächsten Durchlauf einer Schleife wird mit den neuen Daten gearbeitet.
 
-Das Prinzip ist recht einfach und da die Messages klar definiert sind
+Das Prinzip ist recht einfach und da die Messages klar definiert sind,
 lassen sich schnell Nodes austauschen und so verschiedene
 Implementationen evaluieren.
 
@@ -118,11 +135,11 @@ http://wiki.ros.org/IDEs#PyCharm_.28community_edition.29 oder die Ordner
 Die Codeverwaltung machen wir mit Git, einem praktischem Werkzeug,
 welches es ermöglicht mit vielen Leuten zusammen an einer Codebase zu
 arbeiten. Um den Code auszuchecken, geht auf
-https://gogs.mafiasi.de/Bit-Bots und holt euch (am besten mit **git
+`Gogs`_ und holt euch (am besten mit **git
 clone** über ssh) entweder alle benötigten Subrepositories, oder
 **bitbots_meta**, das Tools sowie alle anderen Repositories enthält.
-Dort gibt es auch das Skript **./pull_all.sh** welches rekursiv alle
-Repositories updatet, dies solltet ihr initial ausführen. Jedes Modul
+Wenn du das gemacht hast, dann kannst du mit **make pull-all** im bitbots_meta
+alle Repositories rekursiv updaten, dies solltet ihr initial ausführen. Jedes Modul
 kann aber auch einzeln geupdatet werden, was auch bei möglichen
 Mergekonflikten zu empfehlen ist, zum Beispiel über PyCharm, die Konsole
 einzelnen oder mit **git submodule foreach git pull**. Wenn ihr auf dem
@@ -131,12 +148,11 @@ wir unseren Code auch nach GitHub weiterleiten.
 
 Wir benutzten zum Programmieren Python in der Version 3.5, einzelene
 Module wie "cv2" können Probleme machen, hier gibt es aber im Zweifel
-Workarounds. Um alle benötigten Module zu installieren, gibt in der
+Workarounds. Um alle benötigten Module zu installieren, gibt es in der
 Pythonwelt verschiedenen Möglichkeiten. Wenn nicht alle Abhängigkeiten
 global installiert werden sollen, kann mit **./create_venv.bash** das
-Virtualenv erzeugt werden, das sind getrennte Python-,,Container” in
-denen die Abhängigkeiten lokal installiert werden
-(http://docs.python-guide.org/en/latest/dev/virtualenvs/#lower-level-virtualenv).
+`Virtualenv`_ erzeugt werden, das sind getrennte Python-,,Container”, in
+denen die Abhängigkeiten lokal installiert werden.
 Dies dauert ggf. ein paar Augenblicke. Ihr könnt in der Konsole ein
 Virtualenv aktivieren mit **source path/to/git/env3/bin/activate**. In
 viele Fällen spricht aber nichts dagegen die Abhängigkeiten systemweit
@@ -181,13 +197,12 @@ zum Beispiel für Launchfiles oder Konfigurationen geben.
 Schreiben eines Nodes
 =====================
 
-Laden wir uns erst einmal ein leeres Package runter:
-http://data.bit-bots.de/bitbots_beispielpackage.zip Dort müssen zunächst
-CMakeLists.txt, package.xml, setup.py sowie die Pfade angepasst werden.
-Für unser Beispiel reicht es die Paketnahmen von "bitbots_beispiel" zu
-ändern, zum Beispiel in "bitbots_ballerkennung". Leere Pakete können
-alternativ auch mit *catkin_create_pkg PAKETNAME ABHÄNGIGKEIT1 AH2 AH3*
-erzeugt werden.
+Laden wir uns erst einmal ein leeres `Beispiel-Package`_ runter.
+Dort müssen zunächst CMakeLists.txt, package.xml, setup.py sowie die
+Pfade angepasst werden. Für unser Beispiel reicht es die Paketnamen
+von "bitbots_beispiel" zu ändern, zum Beispiel in "bitbots_ballerkennung".
+Leere Pakete können alternativ auch mit *catkin_create_pkg PAKETNAME ABHÄNGIGKEIT1
+AH2 AH3* erzeugt werden.
 
 Das eigentliche Programm schreiben wir in einer neue Pythondatei
 *ballerkennung.py*, die wir im Folgenden Schritt für Schritt durchgehen
@@ -216,7 +231,7 @@ Linuxsystemen angibt mit welchem Programm das Skript ausgeführt wird.
    from sensor_msgs.msg import Image
    from cv_bridge import CvBridge, CvBridgeError
 
-Der Block macht die nötigem imports bzw. includes von libraries.
+Der Block macht die nötigen imports bzw. includes von libraries.
 Üblicherweise findet PyCharm auch automatisch die richtigen Pakete, wenn
 man eine undefinierte Klasse oder Methode benutzt.
 
@@ -239,16 +254,16 @@ werden über das Objekt zugegriffen.
        rospy.Subscriber("/usb_cam/image_raw", Image, self._image_callback, queue_size=1)        
 
 Definieren wir zunächst die Subscriber und Publisher, welche die Ein-
-und Ausgaben des Nodes definieren. Die nötigen Klassen liefert das Rospy
-Package. Den Publisher speichern wir in einer Klassenvariablen ab, um
+und Ausgaben des Nodes definieren. Die dazu benötigten Klassen liefert das rospy
+Package. Den Publisher speichern wir in der Klassenvariablen **pub_balls** ab, um
 später darauf zugreifen zu können. Das erste Argument ist das Topic
 unter dem die Messages von anderen Nodes gefunden werden können. Die
-,,richtigen” Namen sind in http://data.bit-bots.de/architektur.png zu
+,,richtigen” Namen sind in der `Architektur`_ zu
 finden. Das zweite Argument ist die Referenz auf das Messageobject,
 welches gesendet werden wird.
 
 Der Subscriber ist ähnlich aufgebaut, aber hier kommt die Referenz auf
-die Callbackmethonde hinzu. Diese Methode definieren wir später, sie
+die Callbackmethode hinzu. Diese Methode definieren wir später, sie
 wird aufgerufen, sobald eine Message reinkommt.
 
 ::
@@ -277,7 +292,7 @@ einen Callback warten.
      def work(self, img):
        ra = self.bridge.imgmsg_to_cv2(img, "bgr8")
 
-Hier definieren wir eine neue Funktion, in der die eigentlich Arbeit
+Hier definieren wir eine neue Funktion, in der die eigentliche Arbeit
 passiert. Diese bekommt eine Imagenachricht übergeben. Diese
 konvertieren wir in ein OpenCV Objekt.
 
@@ -301,10 +316,10 @@ einer OpenCV Methode versucht alle Kreise zu finden.
              circles = np.uint16(np.around(circles))
              for i in circles[0, :]:
 
-Nun fangen wir an die Message zu bauen und iterieren über alle gefundene
+Nun fangen wir an die Message zu bauen und iterieren über alle gefundenen
 Kreise. Wir setzten hier noch schnell in den Header ein, zu welchem Bild
 die verarbeiten Daten gehören, damit das später wieder zugeordnet werden
-kann. Mit Numpy konvertieren wir dies nun, um besser drauf zugreifen zu
+kann. Mit Numpy konvertieren wir dies nun, um besser darauf zugreifen zu
 können, sofern Kreise gefunden worden.
 
 ::
@@ -355,7 +370,7 @@ einem Import passiert.
 **Zackferdich!: Rosnode in 50 Zeilen**
 
 Nun noch als ausführbar markieren mit *chmod +x ballerkennung.py* und im
-catkin Workspace mit catkin_make neu bauen und *source devel/setup.bash*
+catkin Workspace mit make build neu bauen und *source devel/setup.bash*
 ausführen für Tab-Completion. (Und daran denken, den Ordner, wenn nicht
 schon getan, zu verlinken.)
 
@@ -370,23 +385,44 @@ aktivieren).
 Noch passiert da nicht viel (wenn kein Fehler kommt ist schonmal gut).
 Noch gehen ja keine Daten hinein, die verarbeitet werden können.
 
-Lasst uns drei weitere Nodes starten. Zunächst *rosrun
-bitbots_imageviwer bitbots_imageviewer.py* (venv2). Dieser zeigt eure
-Ausgabe an.
+Damit du jetzt sehen kannst, ob ein Ball erkannt wird, brauchst du Daten.
+ROS bietet dafür rosbags an. Sie dienen dazu, dass rostopics aufgenommen und
+abgespielt werden können. Das ist zum debuggen und testen super praktisch.
+Erstmal muss ein passender bag heruntergeladen werden. Wir brauchen einen
+bag, der Daten für die Vision enthält, also auf topics published, die mit
+den images zu tun haben.
+Um heraus zu finden, welche auf welchen topics gepublisht wird, öffnest du ein
+neues Terminal und rufst
 
-Desweitern wird ein Classifier benötigt, der die Kandidaten bewertet,
-zum Beispiel *rusrun bitbots_ballclassifier
-keras_cnn_classifier.py*\ (venv2).
+::
 
-Jetzt brauchen wir noch eine Bildquelle. Entweder ihr startet den
-Kamera-Node und hohlt euch Bilder von der Webcam, oder ihr ladet
-Testbilder herunter http://data.bit-bots.de/simples_dataset.zip und
-startet mit dem entsprechendem Pfad den Imageloader *rosrun
-bitbots_imageloader bitbots_imageloader.py PATH/TO/IMAGES*. (Jeweils im
-pyenv2)
+    rosbag info PATH/TO/BAG
 
-Wenn alles geklappt hat solltet ihr nun ein Bild sehen mit eurer
-Ballerkennung.
+auf. Außerdem werden noch eine Menge weiterer Daten zu dem bag geliefert, die im
+weiteren Verlauf der Nutzung von rosbags hilfreich sein können.
+
+::
+
+    path:        /home/neues_mitglied/bitbots/bags/magfull.bag
+    version:     2.0
+    duration:    37.5s
+    start:       Feb 11 2016 18:09:51.55 (1455210591.55)
+    end:         Feb 11 2016 18:10:29.07 (1455210629.07)
+    size:        1.2 GB
+    messages:    2862
+    compression: none [1095/1095 chunks]
+    types:       humanoid_league_msgs/BallsInImage [35ec7ec20262c79114f07e8f1e8ce673]
+                 rosgraph_msgs/Log                 [acffd30cd6b6de30f120938c17c593fb]
+                 sensor_msgs/Image                 [060021388200f6f0f447d0fcd9c64743]
+    topics:      /ball_candidates    220 msgs    : humanoid_league_msgs/BallsInImage
+                 /image_raw         1096 msgs    : sensor_msgs/Image
+                 /rawimageYUV       1094 msgs    : sensor_msgs/Image
+                 /rosout             230 msgs    : rosgraph_msgs/Log                 (3 connections)
+                 /rosout_agg         222 msgs    : rosgraph_msgs/Log
+
+Das sind die Informationen, die du bekommst, wenn dich zum Beispiel das einstieg.bag
+interessiert. Hoffentlich hast du jetzt gesehen, dass dieses bag uns einige Daten
+leifert, die unsere Ballerkennung braucht.
 
 Glückwunsch, du hast deinen ersten Rosnode zum Laufen bekommen, du
 kannst nun den Code beliebig ändern und den einen Node neustarten, oder
@@ -569,3 +605,19 @@ Roboter
 -  Verbinden zum Roboter
 
 -  *robot_compile.sh* zum ,,Flashen” der Software auf den Roboter
+
+
+.. _ROS Melodic: https://wiki.ros.org/melodic
+.. _Installation und Einrichtung:: http://wiki.ros.org/ROS/Installation/
+.. _Ubuntu 18.04: http://releases.ubuntu.com/18.04/
+.. _Github: https://github.com/
+.. _Gogs: https://gogs.mafiasi.de/Bit-Bots
+.. _bitbots_meta: https://github.com/Bit-Bots/bitbots_meta
+.. _Marcs Masterarbeit: https://tams.informatik.uni-hamburg.de/publications/2017/MSc_Marc_Bestmann.pdf
+.. _rosdocked: https://github.com/timonegk/rosdocked
+.. _selbst kompiliert: https://wiki.ros.org/melodic/Installation/Source
+.. _create_a_workspace: http://wiki.ros.org/catkin/Tutorials/create_a_workspace
+.. _Virtualenv: http://docs.python-guide.org/en/latest/dev/virtualenvs/#lower-level-virtualenv
+.. _Beispiel-Package: http://data.bit-bots.de/bitbots_beispielpackage.zip
+.. _Architektur: http://data.bit-bots.de/architektur.png
+.. _bitbot-bags: http://data.bit-bots.de/ROSbags/

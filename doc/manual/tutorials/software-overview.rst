@@ -40,7 +40,7 @@ Bauen
 Code schreiben
 ===================
 Am bestern vergewissern, dass ihr auf den Richtigen Branches seid.
-Das sind im zwifel die, die im bitbots_meta für die submodules angegebn werden.
+Das sind im Zweifel die, die im bitbots_meta für die submodules angegeben werden.
 
 :Aktueller stand: alle Module stehen auf master
 
