@@ -31,7 +31,7 @@ class VisualCompassDummyHandler():
         self.vc = VisualCompass(config)
 
 
-        self.loop()
+        self.loop(config)
     
     def debug_image_callback(self, debug_image):
         cv2.imshow("Video", debug_image)
@@ -39,7 +39,7 @@ class VisualCompassDummyHandler():
     def data_callback(self, angle, confidence):
         print("Angle: {} | Confidence: {}".format(angle, confidence))
     
-    def loop(self):
+    def loop(self, config):
         side = 0
         while True:
             image = self.video_getter.frame
@@ -49,11 +49,12 @@ class VisualCompassDummyHandler():
             #TODO remove
             #self.debug_image_callback(image)
 
-            if side < 2:
+            sides = config['compass_multiple_sample_count'] if config['compass_type'] == 'multiple' else 2
+            if side < sides:
                 self.debug_image_callback(image)
                 # Wurde SPACE gedrueckt
                 if k%256 == 32:
-                    angle = side * math.pi
+                    angle = float(side) / sides * math.pi * 2
                     self.vc.set_truth(angle, image)
                     side += 1
             else:
