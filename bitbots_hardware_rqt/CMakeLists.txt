@@ -6,19 +6,19 @@ find_package(catkin REQUIRED COMPONENTS
 	rospy
 	std_msgs
 	message_generation
+  bitbots_msgs
 )
 
 
 add_message_files(
    FILES
    BatteryMessage.msg
-   CpuMessage.msg
-   HardwareMessage.msg
 )
 
 generate_messages(
   DEPENDENCIES
   std_msgs
+  bitbots_msgs
 )
 
 catkin_package(CATKIN_DEPENDS message_runtime)

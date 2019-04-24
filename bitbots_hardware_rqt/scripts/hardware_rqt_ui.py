@@ -7,7 +7,7 @@ from python_qt_binding import loadUi, QtCore, QtGui
 from rqt_gui_py.plugin import Plugin
 
 from udp_receiver import Client
-from bitbots_hardware_rqt.msg import HardwareMessage
+from std_msgs.msg import String
 
 import rospy, rospkg
 import numpy as np
@@ -91,7 +91,7 @@ class HardwareUI(Plugin):
         context.add_widget(self._widget)
         self._widget.show()
 
-        self.sub = rospy.Subscriber("/hardware_info", HardwareMessage, self.process_data)
+        self.sub = rospy.Subscriber("/hardware_info", String, self.process_data)
 
     def calcPosInCicle(self, radOrienation):
         """return a position on the circle in the GUI"""

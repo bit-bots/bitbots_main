@@ -26,6 +26,7 @@
   <exec_depend>rqt_gui</exec_depend>
   <exec_depend>rqt_gui_py</exec_depend>
   <exec_depend>message_runtime</exec_depend>
+  <exec_depend>bitbots_msgs</exec_depend>
 
   <export>
     <architecture_independent/>

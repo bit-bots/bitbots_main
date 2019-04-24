@@ -11,7 +11,8 @@ from diagnostic_msgs.msg import DiagnosticArray
 from sensor_msgs.msg import JointState, Imu
 from bitbots_buttons.msg import Buttons
 from humanoid_league_msgs.msg import RobotControlState
-from bitbots_hardware_rqt.msg import CpuMessage, BatteryMessage
+from bitbots_hardware_rqt.msg import BatteryMessage #TODO: fix message and then move to bitbots_msgs
+from bitbots_msgs.msg import Cpu
 
 import multiprocessing as mp
 import json
@@ -33,7 +34,7 @@ class Hardwaretool():
         self.buttons = rospy.Subscriber("/buttons", Buttons, self.buttons_to_object)
         self.imu = rospy.Subscriber("/imu/data", Imu, self.imu_to_object)
         self.state = rospy.Subscriber("/robot_state", RobotControlState, self.robot_state_to_object)
-        self.cpu_info = rospy.Subscriber("/cpu_info", CpuMessage, self.cpu_info_to_object) 
+        self.cpu_info = rospy.Subscriber("/cpu_info", Cpu, self.cpu_info_to_object) 
         self.bat_info = rospy.Subscriber("/battery_info", BatteryMessage, self.battery_info_to_object)
         
 
