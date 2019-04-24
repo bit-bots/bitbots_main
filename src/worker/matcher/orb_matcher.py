@@ -23,8 +23,8 @@ class OrbMatcher(Matcher):
         return len(good)
 
     def set_config(self, config):
-        self.maxFeatureCount = config['compass']['orb']['max_feature_count']
-        self.matchDistanceScalar = config['compass']['orb']['match_distance_scalar']
+        self.maxFeatureCount = config['compass_orb_max_feature_count']
+        self.matchDistanceScalar = config['compass_orb_match_distance_scalar']
 
     def debug_keypoints(self,  image):
         kp, _ = self.orb.detectAndCompute(image,None)

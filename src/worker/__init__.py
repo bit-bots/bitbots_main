@@ -22,7 +22,7 @@ class VisualCompass(VisualCompassInterface):
         return self.compass.process_image(self, image, resultCB=resultCB, debugCB=debugCB)
 
     def set_config(self, config):
-        compass_type = config['compass']['type']
+        compass_type = config['compass_type']
         if compass_type == self.compassType:
             self.compass.set_config(config)
         else:

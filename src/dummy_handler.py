@@ -20,7 +20,7 @@ class VisualCompassDummyHandler():
         with open(config_path, 'r') as stream:
             config = yaml.load(stream)
 
-        source = config['dummy_handler']['input']
+        source = config['dummy_handler_input']
 
         if isinstance(source, basestring):
             root_folder = os.curdir

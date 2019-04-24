@@ -26,7 +26,7 @@ class Matcher (MatcherInterface):
         return self.matcher.debug_keypoints(image)
 
     def set_config(self, config):
-        matcher_type = config['compass']['matcher']
+        matcher_type = config['compass_matcher']
         if matcher_type == self.matcherType:
             self.matcher.set_config(config)
         else:

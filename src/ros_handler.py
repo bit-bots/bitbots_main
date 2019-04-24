@@ -7,12 +7,10 @@ from sensor_msgs.msg import Image
 from dynamic_reconfigure.server import Server
 from humanoid_league_msgs.msg import VisualCompassRotation
 from bitbots_visual_compass.cfg import VisualCompassConfig
-
-from worker import MultipleCompass, BinaryCompassOrb
+from worker import VisualCompass
 
 # TODO define message for behavior
 # TODO use set truth
-# TODO decide what compass to use
 # TODO type ENUM
 
 class VisualCompassROSHandler():
@@ -57,17 +55,7 @@ class VisualCompassROSHandler():
         rospy.spin
 
     def _dynamic_reconfigure_callback(self, config, level):
-        compass_type = config['compass_type']
-        if 'compass_type' not in self.config or \
-            compass_type != self.config['compass_type']:
-            # Create new compass, because type has changed
-            if compass_type == "BinaryCompassOrb":
-                self.compass = BinaryCompassOrb(config)
-            elif compass_type == "MultipleCompass":
-                self.compass = MultipleCompass(config)
-        else:
-            # Update config of existing compass
-            self.compass.set_config(config)
+        self.compass = VisualCompass(config)
 
         # Subscribe to Image-message
         if 'ROS_handler_img_msg_topic' not in self.config or \
