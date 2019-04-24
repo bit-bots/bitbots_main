@@ -24,19 +24,15 @@ Stabilizer::Stabilizer() {
     }
 }
 
-std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs::Pose foot_goal) {
+std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, tf::Transform foot_goal) {
     bio_ik::BioIKKinematicsQueryOptions ik_options;
     ik_options.replace = true;
     ik_options.return_approximate_solution = true;
     double bio_ik_timeout = 0.01;
 
     bio_ik::PoseGoal* bio_ik_foot_goal = new bio_ik::PoseGoal();
-    tf::Vector3 position = {foot_goal.position.x, foot_goal.position.y, foot_goal.position.z};
-
-    bio_ik_foot_goal->setPosition(position);
-    tf::Quaternion orientation = {foot_goal.orientation.x, foot_goal.orientation.y,
-                                  foot_goal.orientation.z, foot_goal.orientation.w};
-    bio_ik_foot_goal->setOrientation(orientation);
+    bio_ik_foot_goal->setPosition(foot_goal.getOrigin());
+    bio_ik_foot_goal->setOrientation(foot_goal.getRotation());
     if (is_left_kick) {
         bio_ik_foot_goal->setLinkName("l_sole");
     } else {

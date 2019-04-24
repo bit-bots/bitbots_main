@@ -11,7 +11,7 @@ typedef std::pair<std::vector<std::string>, std::vector<double>> JointGoals;
 class Stabilizer {
 public:
     Stabilizer();
-    std::optional<JointGoals> stabilize(bool is_left_kick, geometry_msgs::Pose foot_goal);
+    std::optional<JointGoals> stabilize(bool is_left_kick, tf::Transform foot_goal);
 
 private:
     robot_state::RobotStatePtr m_goal_state;
