@@ -1,4 +1,4 @@
-import cv2
+from debug import Debug
 import bisect
 import math
 from matcher import Matcher
@@ -30,11 +30,15 @@ class MultipleCompass(VisualCompass):
         self.matcher = None
         self.debug = Debug()
 
+        #TODO: move to yaml file
         # config values
         self.sampleCount = 2
         self.maxFeatureCount = 1000
 
-    def initMatcher(self):
+        self.init_matcher()
+        self.set_config(config)
+
+    def init_matcher(self):
         if self.matcher is None:
             self.matcher = Matcher(self.config)
 
@@ -44,7 +48,7 @@ class MultipleCompass(VisualCompass):
 
 
     def set_truth(self, angle, image):
-        self.initMatcher()
+        self.init_matcher()
         if 0 <= angle <= 2*math.pi:
             matchdata = self.matcher.get_keypoints(image)
             bisect.insort(self.groundTruth,(angle, matchdata))
@@ -56,7 +60,6 @@ class MultipleCompass(VisualCompass):
         confidence = float(mymax[1]) / self.maxFeatureCount
         return (angle, confidence)
 
-    #TODO
     def process_image(self, image, resultCB=None, debugCB=None):
         if not self.groundTruth:
             return
@@ -74,36 +77,9 @@ class MultipleCompass(VisualCompass):
             image = self.matcher.debug_keypoints(image)
             self.debug.print_debug_info(image, self.state, debugCB)
 
-
     def set_config(self, config):
         self.config = config
-        #add self.matchDistanceScalar config
-        #add self.sampleCount config
-        #add self.maxFeatureCount config
+        self.matcher.set_config(config)
 
     def get_side(self):
         return self.state
-
-
-class Debug:
-
-    def __init__(self):
-        pass
-
-    def print_debug_info(self, image, state, callback):
-        debug_image = image.copy()
-
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        bottom_left_corner_of_text = (10, 35)
-        font_scale = 1
-        font_color = (255, 255, 255)
-        line_type = 2
-
-        cv2.putText(debug_image, "SIDE {} | Confidence {}".format(*state),
-                    bottom_left_corner_of_text,
-                    font,
-                    font_scale,
-                    font_color,
-                    line_type)
-
-        callback(image)

@@ -6,7 +6,7 @@ import os
 import time
 
 from threading import Thread
-from worker import MultipleCompass, BinaryCompassOrb
+from worker import VisualCompass
 
 class VisualCompassDummyHandler():
     """
@@ -28,11 +28,8 @@ class VisualCompassDummyHandler():
         
         self.video_getter = VideoGet(source).start()
 
-        mode = config['dummy_handler']['compass_type']
-        if mode == "BinaryCompassOrb":
-            self.vc = BinaryCompassOrb(config)
-        elif mode == "MultipleCompass":
-            self.vc = MultipleCompass(config)
+        self.vc = VisualCompass(config)
+
 
         self.loop()
     

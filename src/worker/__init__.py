@@ -1,8 +1,7 @@
 #!/usr/bin/env python2
 
 from interface import VisualCompass as VisualCompassInterface
-from binary_orb import BinaryCompassOrb
-from binary_sift import BinaryCompassSift
+from binary import BinaryCompass
 from multiple import MultipleCompass
 
 
@@ -11,15 +10,14 @@ class VisualCompass(VisualCompassInterface):
         self.compass = None
         self.compassType = None
         self.compassClasses = {
-            "binary": BinaryCompassOrb,
-            "binary_sift": BinaryCompassSift,
+            "binary": BinaryCompass,
             "multiple": MultipleCompass
         }
 
         self.set_config(config)
 
     def process_image(self, image, resultCB=None, debugCB=None):
-        return self.compass.process_image(self, image, resultCB=resultCB, debugCB=debugCB)
+        return self.compass.process_image(image, resultCB, debugCB)
 
     def set_config(self, config):
         compass_type = config['compass_type']
@@ -37,6 +35,9 @@ class VisualCompass(VisualCompassInterface):
 
     def get_side(self):
         return self.compass.get_side()
+
+
+
 
 
 
