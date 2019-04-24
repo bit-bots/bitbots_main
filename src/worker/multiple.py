@@ -54,9 +54,11 @@ class MultipleCompass(VisualCompassInterface):
     #TODO
     def _compute_state(self, matches):
         mymax = max(matches, key=lambda x: x[1])
+        mysum = sum(map(lambda x: x[1], matches))
+        mymean = (mysum - mymax[1]) / float(max(len(matches) - 1, 1))
         angle = mymax[0]
-        confidence = float(mymax[1]) / 1000
-        return (angle, confidence)
+        confidence = (mymax[1] - mymean) / (mysum + 1)
+        return angle, confidence
 
     def process_image(self, image, resultCB=None, debugCB=None):
         if not self.groundTruth:
