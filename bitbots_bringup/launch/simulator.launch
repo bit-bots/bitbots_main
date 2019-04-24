@@ -31,7 +31,8 @@
     </group>
     
     <!-- spawn URDF and load the controllers -->
-    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg sim_ns)" type="spawn_model" args="-param /robot_description -urdf -model $(arg sim_ns) -x -1.5 -y 3.3 -z 0.445 -Y -1.57" output="screen" />
+
+    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg sim_ns)" type="spawn_model" args="-param /robot_description -urdf -model $(arg sim_ns) -x -1.5 -y 3.3 -z 0.43 -Y -1.5 -P 0.26" output="screen" />
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg sim_ns)" args="joint_state_controller JointGroupController" />
 
     <!-- map motion goals for simulator -->
