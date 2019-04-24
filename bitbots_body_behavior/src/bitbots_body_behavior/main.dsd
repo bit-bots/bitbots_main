@@ -34,9 +34,7 @@ $Localization
 #PenaltyBehavior
 $BallSeen
     YES --> $BallClose
-        YES --> $AlignedToGoal
-            YES --> @KickBallVeryHard
-            NO --> @AlignToGoal
+        YES --> @KickBallVeryHard
         NO --> @GoToBall
     NO --> @SearchBall
 
@@ -44,9 +42,7 @@ $BallSeen
 $BallSeen
     YES --> $BallClose
         YES --> $GoalSeen
-            YES --> $AlignedToGoal
-                YES --> #GoAndKickBall + target:detection_goal
-                NO --> @AlignToGoal
+            YES --> #GoAndKickBall + target:detection_goal
             NO --> @CircleBall, @SearchGoal
         NO --> @GoToBall
     NO --> @SearchBall
