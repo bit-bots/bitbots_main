@@ -27,3 +27,13 @@ Organisatorisches
 * Im Git nutzen wir Feature Branches
 * Code soll gut kommentiert werden
 * Issues benutzen, sowohl für Feature Requests, als auch für Bugs
+
+Aktuelle Planung
+================
+
+Aktuell bekommen wir von außen eine Pose übergeben, die angibt, wohin sich der Fuß bewegen soll.
+Später soll dies durch einen Punkt (Ballposition), einen Schusswinkel und ggf. eine Schussweite ersetzt werden.
+Der Bewegungsablauf erhält dann einen zusätzlichen Zwischenpunkt (Fuß um eine dynamisch rekonfigurierbare Höhe
+anheben und in die richtige Richtung drehen), den wir berechnen müssen, gefolgt vom eigentlichen Schuss mit
+der der gewünschten Schussweite angepassten Geschwindigkeit. Danach erfolgt dann die Bewegung in die
+Ursprungsposition.
