@@ -45,8 +45,6 @@ class VisualCompassROSHandler():
 
         self.config = {}
         self.compass = None
-        self.sample_count = 0
-        self.ready_for_loop = False # TODO change name
 
         # Register publisher of 'visual_compass'-messages
         self.pub_compass = rospy.Publisher(
@@ -66,13 +64,10 @@ class VisualCompassROSHandler():
         """
         self.compass = VisualCompass(config)
 
-        tmp = self.ready_for_loop
-        self.ready_for_loop = self.sample_count >= config['compass_multiple_sample_count']
-        if tmp != self.ready_for_loop:
-            if self.ready_for_loop:
-                rospy.loginfo('Visual compass: Initiating finished. Now Ready for processing loop.')
-            else:
-                rospy.logwarn('Visual compass: VAR of VAR sample images set. More sample images are needed to start processing loop.') # TODO template string
+        if 'compass_multiple_sample_count' not in self.config or \
+            config['compass_multiple_sample_count'] != self.vision_config['compass_multiple_sample_count']:
+            self.sample_count = 0
+            self.ready_for_loop = False # TODO change name
 
         # Subscribe to Image-message
         if 'ROS_handler_img_msg_topic' not in self.config or \
@@ -89,6 +84,9 @@ class VisualCompassROSHandler():
             # https://github.com/ros/ros_comm/issues/536
 
         self.config = config
+
+        self.update_sample_count()
+
         return self.config
 
     def image_callback(self, image_msg):
@@ -102,7 +100,7 @@ class VisualCompassROSHandler():
             print("Visual Compass: Dropped Image-message")  # TODO debug printer
             return
 
-        if ready_for_loop:
+        if self.ready_for_loop:
             self.handle_image(image_msg)
 
     def handle_image(self, image_msg):
@@ -138,6 +136,22 @@ class VisualCompassROSHandler():
 
         # Publish VisualCompassMsg-message
         self.pub_compass.publish(msg)
+
+    def update_sample_count(self):
+        # type: () -> None
+        """
+        TODO docs
+        """
+        config_sample_count = self.config['compass_multiple_sample_count']
+        if self.sample_count != config_sample_count:
+            rospy.logwarn('Visual compass: %(var)d of %(config)d sample images set. More sample images are needed to start processing loop.' %
+                            {'var': self.sample_count, 'config': config_sample_count})
+            self.ready_for_loop = False
+        else:
+            if not(self.ready_for_loop):
+                rospy.loginfo('Visual compass: Initiating finished. Now Ready for processing loop.')
+            self.ready_for_loop = True
+            
 
 
 if __name__ == '__main__':
