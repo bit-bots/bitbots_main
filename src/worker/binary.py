@@ -1,5 +1,5 @@
 import math
-import colorsys # TODO dependecy 
+import colorsys 
 from matcher import Matcher
 from interface import VisualCompass as VisualCompassInterface
 from debug import Debug
