@@ -1,8 +1,7 @@
 import cv2
 import bisect
 import math
-from matcher import OrbMatcher
-from matcher import SiftMatcher
+from matcher import Matcher
 from interface import VisualCompass
 
 
@@ -30,13 +29,14 @@ class MultipleCompass(VisualCompass):
         self.config = config
         self.matcher = None
         self.debug = Debug()
-        #config values
+
+        # config values
         self.sampleCount = 2
         self.maxFeatureCount = 1000
 
     def initMatcher(self):
         if self.matcher is None:
-            self.matcher = SiftMatcher(self.config['compass']['sift'])
+            self.matcher = Matcher(self.config)
 
     # returns list of angle matchcount pairs
     def _compare(self, matchdata):

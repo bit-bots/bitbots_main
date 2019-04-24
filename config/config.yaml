@@ -1,11 +1,13 @@
 dummy_handler:
   # input: "/test_data/imageset_373/frame%06d.png"
   input: 0
-  compass_type: "BinaryCompassOrb"
+  compass_type: "MultipleCompass"
 ros_handler:
   ROS_img_msg_topic: 'image_raw'
   ROS_img_queue_size: 1
 compass:
+  type: 'multiple'
+  matcher: 'orb'
   orb:
     max_feature_count: 1000
     match_distance_scalar: 0.8

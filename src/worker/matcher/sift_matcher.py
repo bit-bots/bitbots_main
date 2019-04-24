@@ -39,5 +39,4 @@ class SiftMatcher(Matcher):
         return image
 
     def set_config(self, config):
-        self.devicetype = config['devicetype']
-        self.devicetype = "cpu"
+        self.devicetype = config['compass']['sift']['devicetype']
