@@ -1,10 +1,10 @@
 import math
 from matcher import Matcher
-from interface import VisualCompass
+from interface import VisualCompass as VisualCompassInterface
 from debug import Debug
 
 
-class BinaryCompass(VisualCompass):
+class BinaryCompass(VisualCompassInterface):
     def __init__(self, config):
         self.config = config
         self.matcher = None

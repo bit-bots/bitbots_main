@@ -2,7 +2,7 @@ from debug import Debug
 import bisect
 import math
 from matcher import Matcher
-from interface import VisualCompass
+from interface import VisualCompass as VisualCompassInterface
 
 
 """class ConfidenceModell:
@@ -21,7 +21,7 @@ from interface import VisualCompass
    """
 
 
-class MultipleCompass(VisualCompass):
+class MultipleCompass(VisualCompassInterface):
     def __init__(self, config):
         # [(angle, data)]
         self.groundTruth = []
