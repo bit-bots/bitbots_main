@@ -12,6 +12,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <bitbots_msgs/KickAction.h>
+#include <bitbots_msgs/JointCommand.h>
 #include <bitbots_dynamic_kick/DynamicKickConfig.h>
 #include "bitbots_dynamic_kick/KickEngine.h"
 
@@ -39,6 +40,7 @@ public:
     void execute_cb(const bitbots_msgs::KickGoalConstPtr& goal);
 private:
     ros::NodeHandle m_node_handle;
+    ros::Publisher m_joint_goal_publisher;
     ActionServer m_server;
     KickEngine m_engine;
     int m_engine_rate;
@@ -65,6 +67,8 @@ private:
      * @return Whether retrieval was successful or not
      */
     bool get_foot_poses(geometry_msgs::Pose &l_foot_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time);
+
+    void publish_goals(const JointGoals& goals);
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_KICK_NODE_H

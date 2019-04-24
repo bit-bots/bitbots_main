@@ -3,6 +3,7 @@
 KickNode::KickNode() :
         m_server(m_node_handle, "dynamic_kick", boost::bind(&KickNode::execute_cb, this, _1), false),
         m_listener(m_tf_buffer) {
+    m_joint_goal_publisher = m_node_handle.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
     m_server.start();
 }
 
@@ -109,6 +110,8 @@ void KickNode::loop_engine() {
             feedback.chosen_foot = m_engine.is_left_kick() ?
                                    bitbots_msgs::KickFeedback::LEFT : bitbots_msgs::KickFeedback::RIGHT;
             m_server.publishFeedback(feedback);
+            publish_goals(goals.value());
+
 
             if (feedback.percent_done == 100) {
                 break;
@@ -120,6 +123,20 @@ void KickNode::loop_engine() {
         ros::Rate loop_rate(m_engine_rate);
         loop_rate.sleep();
     }
+}
+
+void KickNode::publish_goals(const JointGoals& goals) {
+    bitbots_msgs::JointCommand command;
+    command.header.stamp = ros::Time::now();
+    command.joint_names = goals.first;
+    command.positions = goals.second;
+    std::vector<double> vels(goals.first.size(), -1.0);
+    std::vector<double> accs(goals.first.size(), -1.0);
+    std::vector<double> pwms(goals.first.size(), -1.0);
+    command.velocities = vels;
+    command.accelerations = accs;
+    command.max_currents = pwms;
+    m_joint_goal_publisher.publish(command);
 }
 
 int main(int argc, char *argv[]) {
