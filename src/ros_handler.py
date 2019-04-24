@@ -14,19 +14,19 @@ from worker import VisualCompass
 # TODO type ENUM
 
 class VisualCompassROSHandler():
-# type: () -> None
-"""
-TODO docs
-Subscribes to 'vision_config'-message
-Subscribes to raw image
+    # type: () -> None
+    """
+    TODO docs
+    Subscribes to 'vision_config'-message
+    Subscribes to raw image
 
-Trigger: 'trigger_visual_compass'-trigger
-    Gets triggered e.i. while looking at a goal side
-    Returns side
+    Trigger: 'trigger_visual_compass'-trigger
+        Gets triggered e.i. while looking at a goal side
+        Returns side
 
-Publish: 'visual_compass'-messages
-    Returns side
-"""
+    Publish: 'visual_compass'-messages
+        Returns side
+    """
     def __init__(self):
         # type: () -> None
         """
