@@ -1,63 +1,44 @@
 ===============
-Motorkabel
+Kabel
 ===============
 
-Wolfgang
-===============
+Die Kabel des Wolfgang-Roboters sind nach Länge farblich markiert. An einigen Punkten (Ellenbogen, Hüfte, Knie, Knöchel) werden die Kabel auf den Motorhörnern mit *Kabeldingern* befestigt. Diese sind 3D-gedruckt und die Dateien befinden sich auf dem Autodesk-Rechner.
 
-Nach Motoren
-------------
-+---------------+----------------+-------+---------+
-| Start         | Ende           | Länge | Anzahl/ |
-|               |                | in cm | Roboter |
-+---------------+----------------+-------+---------+
-| Power         | LShoulderPitch | 16    | 1       |
-+---------------+----------------+-------+---------+
-| Power         | RShoulderPitch | 25    | 1       |
-+---------------+----------------+-------+---------+
-| ShoulderPitch | ShoulderRoll   | 25    | 2       |
-+---------------+----------------+-------+---------+
-| ShoulderRoll  | Elbow          | 25    | 2       |
-+---------------+----------------+-------+---------+
-| Power         | HeadPan        | 20    | 1       |
-+---------------+----------------+-------+---------+
-| HeadPan       | HeadTilt       | 20    | 2       |
-+---------------+----------------+-------+---------+
-| Power         | LHipYaw        | 20    | 1       |
-+---------------+----------------+-------+---------+
-| Power         | RHipYaw        | 30    | 1       |
-+---------------+----------------+-------+---------+
-| HipYaw        | HipRoll        | 20    | 2       |
-+---------------+----------------+-------+---------+
-| HipRoll       | HipPitch       | 6     | 2       |
-+---------------+----------------+-------+---------+
-| HipPitch      | KneePitch      | 25    | 2       |
-+---------------+----------------+-------+---------+
-| KneePitch     | AnklePitch     | 25    | 2       |
-+---------------+----------------+-------+---------+
-| AnklePitch    | AnkleRoll      | 6     | 2       |
-+---------------+----------------+-------+---------+
-| Power         | DXL            | 10    | 3       |
-+---------------+----------------+-------+---------+
+Farben
+------
 
-Nach Länge
-----------
-+-------+--------+
-| Länge | Anzahl |
-| in cm |        |
-+-------+--------+
-| 6     | 4      |
-+-------+--------+
-| 10    | 3      |
-+-------+--------+
-| 16    | 1      |
-+-------+--------+
-| 20    | 5      |
-+-------+--------+
-| 25    | 9      |
-+-------+--------+
-| 30    | 1      |
-+-------+--------+
+* **Blau**: 45cm
+* **Grün**: 32cm
+* **Grau**: 24cm
+* **Gelb**: 20cm
+* **Weiß**: 10cm
 
-Minibot
-===============
+Anzahl für einen Roboter
+------------------------
+
+* **Blau**: 4 Stk.
+* **Grün**: 5 Stk.
+* **Grau**: 4 Stk.
+* **Gelb**: 4 Stk.
+* **Weiß**: 6 Stk.
+
+Positionen der Kabel
+--------------------
+
+* Kopf Yaw -> Kopf Pitch: Gelb
+* Power -> Kopf Yawi: Gelb
+* Power -> L. Arm: Gelb
+* Power -> R. Arm: Grau
+* Schultern: Grün
+* Oberarm: Grün
+* DXL -> Verteiler: Weiß
+* Power -> Verteiler: Gelb
+* Verteiler -> L. Bein: Grün
+* Verteiler -> R. Bein: Grau
+* Hüfte: Grau
+* Oberschenkel: Blau
+* Unterschenkel: Blau
+* Motorkombi (Verbindung der zwei Motoren an Hüfte und Knöchel): Weiß
+* Knöchel -> Fuß: Weiß/Gelb
+
+
