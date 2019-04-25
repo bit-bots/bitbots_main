@@ -7,4 +7,5 @@ class SearchGoal(AbstractActionElement):
         super(SearchGoal, self).__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
+        self.blackboard.blackboard.set_head_duty(HeadMode.POST_MODE)
         # TODO search goal in head behaviour
