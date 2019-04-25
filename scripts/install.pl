@@ -119,6 +119,14 @@ sub install_rosdeps() {
     }
 }
 
+sub install_pip() {
+    # Formatting: ("package1", "package2")
+    my @python2 = ();
+    my @python3 = ();
+    system "pip2 install --user " . join(" ", @python2) and die "pip2 package installation failed";
+    system "pip3 install --user " . join(" ", @python3) and die "pip3 package installation failed";
+}
+
 sub first_catkin_build() {
     my $location = get_location();
     chdir $location;
@@ -136,5 +144,6 @@ prepare_workspace_location();
 create_catkin_workspace();
 link_bitbots_meta();
 install_rosdeps();
+install_pip();
 first_catkin_build();
 chdir $start_dir;
