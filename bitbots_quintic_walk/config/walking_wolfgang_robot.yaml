@@ -88,5 +88,6 @@ walking:
   pwm: -1
 
   imuActive: False
-  imuPitchThreshold: 1
-  imuRollThreshold: 1
+  imuPitchThreshold: 1.0
+  imuRollThreshold: 1.0
+  pauseDuration: 1.0

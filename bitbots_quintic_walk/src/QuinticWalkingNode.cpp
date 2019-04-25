@@ -431,7 +431,6 @@ void QuinticWalkingNode::publishOdometry() {
     _odom_trans.transform.rotation = quat_msg;
 
     //send the transform
-    //todo this kills rviz?
     _odom_broadcaster.sendTransform(_odom_trans);
 
     // send the odometry also as message
