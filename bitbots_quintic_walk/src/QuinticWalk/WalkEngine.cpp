@@ -46,18 +46,9 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         }
         // we don't have to update anything more
     } else if (_engineState == "idle") {
-        if (ordersZero) {
+        if (ordersZero || !walkableState) {
             // we are in idle and are not supposed to walk. current state is fine, just do nothing
             return false;
-        } else {
-            // we should start walking if the robot is in the right state
-            if (walkableState) {
-                buildStartTrajectories(orders);
-                _engineState = "startMovement";
-            } else { 
-                // we can't start walking
-                return false;
-            }   
         }
     }
 
@@ -68,7 +59,11 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
     bool halfStepFinished = (_lastPhase < 0.5 && _phase >= 0.5) || (_lastPhase > 0.5 && _phase <0.5); 
 
     // small state machine
-    if (_engineState == "startMovement") {
+    if (_engineState == "idle") {
+        // state is idle and orders are not zero, we can start walking
+        buildStartTrajectories(orders);
+        _engineState = "startMovement";
+    } else if (_engineState == "startMovement") {
         // in this state we do a single "step" where we only move the trunk
         if (halfStepFinished) {
             //start step is finished, go to next state
