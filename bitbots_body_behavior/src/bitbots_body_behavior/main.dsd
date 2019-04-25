@@ -35,7 +35,7 @@ $Localization
 $BallSeen
     YES --> $BallClose
         YES --> @KickBallVeryHard
-        NO --> @GoToBall
+        NO --> @GoToBall + target:detection_goal
     NO --> @SearchBall
 
 #NoLocalizationPlayerBehavior
@@ -44,7 +44,7 @@ $BallSeen
         YES --> $GoalSeen
             YES --> #GoAndKickBall + target:detection_goal
             NO --> @CircleBall, @SearchGoal
-        NO --> @GoToBall
+        NO --> @GoToBall + target:detection_goal
     NO --> @SearchBall
 
 
