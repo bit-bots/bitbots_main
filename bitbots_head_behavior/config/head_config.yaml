@@ -34,3 +34,4 @@ behavior:
 
     # After `ball_lost_time` seconds, the ball is considered lost and will be searched
     ball_lost_time: 1
+    post_lost_time: 1
