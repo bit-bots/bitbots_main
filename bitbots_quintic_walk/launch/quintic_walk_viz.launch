@@ -1,7 +1,0 @@
-<launch>
-    <include file="$(find bitbots_quintic_walk)/launch/quintic_walk_standalone.launch"/>
-
-    <node name="hcm_shortcut" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" respawn="false" output="screen" />
-
-
-</launch>
