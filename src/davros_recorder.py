@@ -5,7 +5,7 @@ import yaml
 import os
 import time
 
-from threading import Thread
+from videocv import Videocv
 
 class DavrosRecorder():
     """
@@ -32,7 +32,8 @@ class DavrosRecorder():
             root_folder = os.curdir
             source = root_folder + source
         
-        self.video_getter = VideoGet(source).start()
+        self.video_getter = Videocv(source)
+        self.video_getter.run()
 
         self.file_index = []
 
@@ -87,7 +88,7 @@ class DavrosRecorder():
             k = cv2.waitKey(1)
             self.save(row, checkpoint, value, angle, path, image)
             # Abbrechen mit ESC
-            if k%256 == 27 or 0xFF == ord('q') or self.video_getter.stopped:
+            if k%256 == 27 or 0xFF == ord('q') or self.video_getter.ended:
                 self.video_getter.stop()
 
     def record(self):
@@ -115,37 +116,6 @@ class DavrosRecorder():
                     symbol = "|-"
                 str_row = str_row + symbol
             print(str_row + "|")
-
-
-
-class VideoGet:
-    """
-    Class that continuously gets frames from a VideoCapture object
-    with a dedicated thread. # TODO Umschreiben
-    """
-
-    def __init__(self, src=0):
-        self.FPS = float(30)
-        self.stream = cv2.VideoCapture(src)
-        (self.grabbed, self.frame) = self.stream.read()
-        self.stopped = False
-    
-    def start(self):    
-        Thread(target=self.get, args=()).start()
-        return self
-
-    def get(self):
-        while not self.stopped:
-            
-            time.sleep(1/self.FPS)
-
-            if not self.grabbed:
-                self.stop()
-            else:
-                (self.grabbed, self.frame) = self.stream.read()
-
-    def stop(self):
-        self.stopped = True
 
 if __name__ == "__main__":
     DavrosRecorder()
