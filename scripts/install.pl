@@ -122,7 +122,7 @@ sub install_rosdeps() {
 sub install_pip() {
     # Formatting: ("package1", "package2")
     my @python2 = ();
-    my @python3 = ();
+    my @python3 = ("defusedxml");
     system "pip2 install --user " . join(" ", @python2) and die "pip2 package installation failed";
     system "pip3 install --user " . join(" ", @python3) and die "pip3 package installation failed";
 }
