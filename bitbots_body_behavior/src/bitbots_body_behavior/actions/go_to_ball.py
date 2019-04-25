@@ -11,6 +11,11 @@ class GoToBall(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(GoToBall, self).__init__(blackboard, dsd, parameters)
 
+        if 'target' not in parameters.keys():
+            rospy.logerr('The parameter \'{}\' could not be used to decide whether map information is accesible'.format(parameters['target']))
+        else:
+            self.target = parameters['target']
+
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5.0))
         tf_listener = tf2.TransformListener(self.tf_buffer)
 
@@ -19,12 +24,10 @@ class GoToBall(AbstractActionElement):
         if not ball_position:
             return
         ball_u, ball_v = ball_position
-        if 'target' not in parameters.keys():
-            rospy.logerr(
-                'The parameter \'{}\' could not be used to decide whether map information is accesible'.format(parameters['target']))
-        elif 'map_goal' == parameters['target']:
+
+        if 'map_goal' == self.target:
             point = (ball_u, ball_v, self.blackboard.world_model.get_map_based_opp_goal_angle_from_ball())
-        elif 'detection_goal' == parameters['target']:
+        elif 'detection_goal' == self.target:
             point = (ball_u, ball_v, self.blackboard.world_model.get_detection_based_goal_position_uv())
 
 
