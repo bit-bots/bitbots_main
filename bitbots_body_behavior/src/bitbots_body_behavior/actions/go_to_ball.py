@@ -19,7 +19,7 @@ class GoToBall(AbstractActionElement):
         if not ball_position:
             return
         ball_u, ball_v = ball_position
-        if 'foot' not in parameters.keys():
+        if 'target' not in parameters.keys():
             rospy.logerr(
                 'The parameter \'{}\' could not be used to decide whether map information is accesible'.format(parameters['target']))
         elif 'map_goal' == parameters['target']:
