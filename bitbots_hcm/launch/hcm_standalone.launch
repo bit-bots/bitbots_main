@@ -1,5 +1,5 @@
 <launch>
-    <arg name="sim" default="false"/>
+    <arg name="sim" default="false" doc="Disables checks for hardware, since we are in simulation."/>
 
     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
         <arg name="sim" value="$(arg sim)"/>          
