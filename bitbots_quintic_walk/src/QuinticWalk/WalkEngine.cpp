@@ -356,7 +356,7 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startSte
         _footstep.getNext().y());
     point("foot_pos_y", halfPeriod,          _footstep.getNext().y());
 
-    point("foot_pos_z", 0.0, _footstep.getLast().z());
+    point("foot_pos_z", 0.0, 0.0);
     point("foot_pos_z", doubleSupportLength, 0.0);
     point("foot_pos_z", doubleSupportLength + singleSupportLength * _params.footApexPhase - 0.5 * _params.footZPause * singleSupportLength, 
         _params.footRise);
