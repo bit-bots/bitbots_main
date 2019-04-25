@@ -36,10 +36,20 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
     // First check if we are currently in pause state or idle, since we don't want to update the phase in this case
     if (_engineState == "paused") {
         if (_timePaused > _params.pauseDuration) {
-            // our pause is finished, whe can continue walking
-            _engineState = "walking";
-            _timePaused = 0.0;
-            buildNormalTrajectories(orders);
+            // our pause is finished, see if we can continue walking
+            if (_pauseRequested){
+                // not yet, wait another pause duration
+                _pauseRequested = false;
+                _timePaused = 0.0;
+                return false;
+            }else{
+                // we can continue
+                _engineState = "walking";
+                _timePaused = 0.0;
+                /*buildNormalTrajectories(orders);
+                updatePhase(dt);
+                return true;*/
+            }
         } else {
             _timePaused += dt;
             return false;
@@ -93,8 +103,7 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
                 buildStopStepTrajectories(orders);                
             } else {
                 // we can keep on walking
-                //_phase = 0;
-                buildNormalTrajectories(orders);                
+                buildNormalTrajectories(orders);
             }
         }
     } else if (_engineState == "kick") {
