@@ -219,6 +219,12 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
         double roll, pitch, yaw;
         tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
+        // compute the pitch offset to the currently wanted pitch of the engine
+        double wanted_pitch = _params.trunkPitch + _params.trunkPitchPCoefForward*_walkEngine.getFootstep().getNext().x()
+        + _params.trunkPitchPCoefTurn*fabs(_walkEngine.getFootstep().getNext().z());
+
+        pitch = pitch - wanted_pitch;
+
         if (abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold) {
             _walkEngine.requestPause();
         }
