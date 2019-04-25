@@ -196,16 +196,12 @@ void QuinticWalkingNode::cmdVelCb(const geometry_msgs::Twist msg) {
 
     // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
     // factor 2 since the order distance is only for a single step, not double step
-    double factor = 1.0 / (_params.freq) / 2;
+    double factor = (1.0 / (_params.freq)) / 2.0;
     _currentOrders = {msg.linear.x * factor, msg.linear.y * factor, msg.angular.z * factor};
 
     // the orders should not extend beyond a maximal step size
     for (int i = 0; i < 3; i++) {
-        if (_currentOrders[i] >= 0) {
-            _currentOrders[i] = std::min(_currentOrders[i], _max_step[i]);
-        } else {
-            _currentOrders[i] = std::max(_currentOrders[i], _max_step[i] * -1);
-        }
+        _currentOrders[i] = std::max(std::min(_currentOrders[i], _max_step[i]), _max_step[i] * -1);
     }
 }
 

@@ -79,9 +79,9 @@ walking:
 
   trunkYOnlyInDoubleSupport: False
 
-  maxStepX: 0.05
-  maxStepY: 0.02
-  maxStepZ: 0.05
+  maxStepX: 0.1
+  maxStepY: 0.08
+  maxStepZ: 0.4
 
   vel: -1
   acc: -1
