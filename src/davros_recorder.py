@@ -5,6 +5,7 @@ import yaml
 import os
 import time
 
+from connector import Connector
 from videocv import Videocv
 
 class DavrosRecorder():
@@ -12,6 +13,11 @@ class DavrosRecorder():
     Records test data using the Davros vison robot.
     """
     def __init__(self):
+        self.conn = Connector(2, "/dev/ttyACM0", 2000000)
+
+        self.conn.writeTorque(1, True)
+        self.conn.writeTorque(2, True)
+
         self.dirname = os.path.dirname(__file__)
         relative_path = "../config/recorder.yaml"
         config_path = os.path.join(self.dirname, relative_path)
@@ -52,10 +58,10 @@ class DavrosRecorder():
 
     def deg_to_val(self, angle):
         resolution = 4095
-        return int((angle/(2*math.pi))*resolution)
+        return resolution - int((angle/(2*math.pi))*resolution)
 
     def drive(self, motor, value):
-        # TODO Drive Motor
+        self.conn.writeGoalPosition(1, value)
         print("Drive Motor {} | Value {}".format(motor, value))
 
     def save(self, row, checkpoint, value, angle, path, image):
@@ -82,7 +88,9 @@ class DavrosRecorder():
             value = self.deg_to_val(angle)
             self.drive(1,value)
             # Sleep until camera is positioned
-            # time.sleep(0.5)
+            if step == 0:
+                time.sleep(1)
+            time.sleep(0.5)
             image = self.video_getter.frame
             self.show_img(image)
             k = cv2.waitKey(1)
@@ -133,7 +141,7 @@ class DavrosRecorder():
             if picture_data['row'] == row and picture_data['checkpoint'] == checkpoint:
                 path = picture_data['path']
                 # TODO remove file
-                
+
         
 
 if __name__ == "__main__":
