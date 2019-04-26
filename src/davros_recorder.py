@@ -12,9 +12,9 @@ class DavrosRecorder():
     Records test data using the Davros vison robot.
     """
     def __init__(self):
-        dirname = os.path.dirname(__file__)
+        self.dirname = os.path.dirname(__file__)
         relative_path = "../config/recorder.yaml"
-        config_path = os.path.join(dirname, relative_path)
+        config_path = os.path.join(self.dirname, relative_path)
 
         with open(config_path, 'r') as stream:
             self.config = yaml.load(stream)
@@ -24,9 +24,9 @@ class DavrosRecorder():
 
         source = self.config['recorder']['input']
 
-        data_location = os.path.join(dirname, self.config['recorder']['output_path'])
+        self.data_location = os.path.join(self.dirname, self.config['recorder']['output_path'])
 
-        self.output_path = os.path.join(data_location, "record_{}/".format(str(int(time.time()))))
+        self.output_path = os.path.join(self.data_location, "record_{}/".format(str(int(time.time()))))
 
         if isinstance(source, basestring):
             root_folder = os.curdir
@@ -40,7 +40,7 @@ class DavrosRecorder():
         self.record()
 
     def show_img(self, image):
-        cv2.imshow("Video", image)
+        cv2.imshow("Record", image)
 
     def make_path(self, path):
         try:  
@@ -95,7 +95,7 @@ class DavrosRecorder():
         for row in range(self.rows):
             print("------------- NEW ROW -------------")
             for checkpoint in range(self.checkpoints):
-                if self.video_getter.stopped:
+                if self.video_getter.ended:
                     break
                 checkpoints_path = os.path.join(self.output_path, "{}/{}/".format(row, checkpoint))
                 self.make_path(checkpoints_path)
@@ -108,14 +108,33 @@ class DavrosRecorder():
 
     def display_map(self, draw_row, draw_checkpoint):
         for row in range(self.rows):
-            str_row = ""
+            if row == int(self.rows/2):
+                str_row = "GOAL1 "
+            else:
+                str_row = "      "
             for checkpoint in range(self.checkpoints):
                 if row == draw_row and checkpoint == draw_checkpoint:
                     symbol = "|X"
                 else:
                     symbol = "|-"
                 str_row = str_row + symbol
-            print(str_row + "|")
+            if row == int(self.rows/2):
+                str_row = str_row + "| GOAL2"
+            else:
+                str_row = str_row + "|"
+            print(str_row)
+    
+    def rerecord_checkpoint(data_set, row, checkpoint):
+        index_path = os.path.join(self.data_location, "index.yaml")
+        with open(index_path, 'r') as stream:
+            index = yaml.load(stream)
+
+        for picture_data in index:
+            if picture_data['row'] == row and picture_data['checkpoint'] == checkpoint:
+                path = picture_data['path']
+                # TODO remove file
+                
+        
 
 if __name__ == "__main__":
     DavrosRecorder()
