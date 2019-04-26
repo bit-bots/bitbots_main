@@ -1,13 +1,13 @@
 DWAPlannerROS:
   # velocities
-  max_trans_vel: 0.08               # The absolute value of the maximum translational velocity for the robot in m/s
+  max_trans_vel: 1.0               # The absolute value of the maximum translational velocity for the robot in m/s
   min_trans_vel: 0.00               # The absolute value of the minimum translational velocity for the robot in m/s
 
   max_vel_x: 0.05                   # The maximum x velocity for the robot in m/s
-  min_vel_x: -0.03                   # The minimum x velocity for the robot in m/s
+  min_vel_x: -0.05                   # The minimum x velocity for the robot in m/s
 
-  max_vel_y: 0.02                   # The maximum y velocity for the robot in m/s"
-  min_vel_y: -0.02                   # The minimum y velocity for the robot in m/s"
+  max_vel_y: 0.05                   # The maximum y velocity for the robot in m/s"
+  min_vel_y: -0.05                   # The minimum y velocity for the robot in m/s"
 
   max_rot_vel: 0.05                 # The absolute value of the maximum rotational velocity for the robot in rad/s
   min_rot_vel: -0.05                 # The absolute value of the minimum rotational velocity for the robot in rad/s
@@ -35,7 +35,7 @@ DWAPlannerROS:
   path_distance_bias: 10.0          # The weight for the path distance part of the cost function
   goal_distance_bias: 24.0          # The weight for the goal distance part of the cost function
   occdist_scale: 0.01               # The weight for the obstacle distance part of the cost function
-  twirling_scale: 0.0               # The weight for penalizing any changes in robot heading
+  twirling_scale: 100.0               # The weight for penalizing any changes in robot heading
 
   stop_time_buffer: 0.2             # The amount of time that the robot must stop before a collision in order for a trajectory to be considered valid in seconds
   oscillation_reset_dist: 0.05      # The distance the robot must travel before oscillation flags are reset, in meters
@@ -51,3 +51,5 @@ DWAPlannerROS:
   vth_samples: 20                   # The number of samples to use when exploring the theta velocity space
 
   use_dwa: true                     # Use dynamic window approach to constrain sampling velocities to small window.
+
+  holonomic_robot: true
