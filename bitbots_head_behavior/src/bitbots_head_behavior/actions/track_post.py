@@ -23,10 +23,8 @@ class TrackPost(AbstractLookAt):
         :param reevaluate: No effect here
         """
 
-        # Get last post position
-        point = self.blackboard.world_model.get_ball_stamped()
-        # TODO change into post left or right or goal when both
+        # Get last post position left or right, center if both are seen
+        post_point = self.blackboard.world_model.get_detection_based_goal_position_uv()
 
         # Call internal look-at to turn head to this point (when necessary)
-        self._look_at(point, self.ball_tracking_min_pan_delta, self.ball_tracking_min_tilt_delta)
-
+        self._look_at(post_point, self.ball_tracking_min_pan_delta, self.ball_tracking_min_tilt_delta)
