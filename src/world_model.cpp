@@ -432,7 +432,6 @@ void WorldModel::exec_local_filter_step() {
 }
 
 void WorldModel::exec_global_filter_step() {
-
     // setting the measurements manually.
     // this is used to save resources because of the necessary transformations
     // and a possibly high frequence of TeamData messages
@@ -563,34 +562,36 @@ void WorldModel::set_global_measurements(hlm::TeamData msg) {
 
     // adding our own detections to the list
 
+    if (config_.use_local_filter_results) {
+        try {
+            transformStamped = transform_buffer_.lookupTransform(
+                    "map", config_.local_publishing_frame, ros::Time(0));
+        } catch (tf2::TransformException& ex) {
+            ROS_WARN("Transform error when transforming to map: %s", ex.what());
+            // ros::Duration(1.0).sleep();
+            return;
+        }
 
-    try {
-        transformStamped = transform_buffer_.lookupTransform(
-                "map", config_.local_publishing_frame, ros::Time(0));
-    } catch (tf2::TransformException& ex) {
-        ROS_WARN("Transform error when transforming to map: %s", ex.what());
-        // ros::Duration(1.0).sleep();
-        return;
-    }
+        // adding the ball
+        for (const Eigen::VectorXd mean : local_ball_gmm_.gaussianMeans()) {
+            // TODO: check for certainty, use the best?
+            PositionState buffer_position_state(mean.coeff(0), mean.coeff(1));
+            global_ball_measurements_.push_back(buffer_position_state);
+        }
 
-    // adding the ball
-    for (const Eigen::VectorXd mean : local_ball_gmm_.gaussianMeans()) {
-        // TODO: check for certainty, use the best?
-        PositionState buffer_position_state(mean.coeff(0), mean.coeff(1));
-        global_ball_measurements_.push_back(buffer_position_state);
-    }
-
-    // adding mates
-    for (const Eigen::VectorXd mean : local_mates_gmm_.gaussianMeans()) {
-        // TODO: check for certainty
-        PositionState buffer_position_state(mean.coeff(0), mean.coeff(1));
-        global_mate_measurements_.push_back(buffer_position_state);
-    }
-    // adding opponents
-    for (const Eigen::VectorXd mean : local_opponents_gmm_.gaussianMeans()) {
-        // TODO: check for certainty
-        PositionState buffer_position_state(mean.coeff(0), mean.coeff(1));
-        global_opponent_measurements_.push_back(buffer_position_state);
+        // adding mates
+        for (const Eigen::VectorXd mean : local_mates_gmm_.gaussianMeans()) {
+            // TODO: check for certainty
+            PositionState buffer_position_state(mean.coeff(0), mean.coeff(1));
+            global_mate_measurements_.push_back(buffer_position_state);
+        }
+        // adding opponents
+        for (const Eigen::VectorXd mean :
+                local_opponents_gmm_.gaussianMeans()) {
+            // TODO: check for certainty
+            PositionState buffer_position_state(mean.coeff(0), mean.coeff(1));
+            global_opponent_measurements_.push_back(buffer_position_state);
+        }
     }
 
     // setting measurements in the observation models
