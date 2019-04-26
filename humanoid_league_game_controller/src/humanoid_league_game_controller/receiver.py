@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 
 from __future__ import unicode_literals, print_function
 
@@ -39,7 +39,11 @@ class GameStateReceiver(object):
         # Information that is used when sending the answer to the game controller
         self.team = rospy.get_param('/team_id')
         self.player = rospy.get_param('/bot_id')
+        rospy.loginfo('We are playing as player {} in team {}'.format(self.player, self.team))
+        self.state_publisher = rospy.Publisher('gamestate', GameStateMsg, queue_size=1)
+
         self.man_penalize = False
+        self.game_controller_lost_time = 10
 
         # The address listening on and the port for sending back the robots meta data
         self.addr = (rospy.get_param('/game_controller/listen_host'), rospy.get_param('/game_controller/listen_port'))
@@ -81,7 +85,6 @@ class GameStateReceiver(object):
         try:
             data, peer = self.socket.recvfrom(GameState.sizeof())
 
-            print(len(data))
             # Throws a ConstError if it doesn't work
             parsed_state = GameState.parse(data)
 
@@ -98,12 +101,9 @@ class GameStateReceiver(object):
         except AssertionError as ae:
             rospy.logerr(ae.message)
         except socket.timeout:
-            rospy.logwarn("Socket timeout")
+            rospy.logwarn("No GameController message received (socket timeout)")
         except ConstError as e: 
             rospy.logwarn("Parse Error: Probably using an old protocol!")
-        except Exception as e:
-            rospy.logerr(e)
-            pass
 
     def answer_to_gamecontroller(self, peer):
         """ Sends a life sign to the game controller """
@@ -117,7 +117,7 @@ class GameStateReceiver(object):
             message=return_message)
         try:
             destination = peer[0], self.answer_port
-            print('Sending to', destination)
+            rospy.logdebug('Sending answer to {} port {}'.format(destination[0], destination[1]))
             self.socket.sendto(ReturnData.build(data), destination)
         except Exception as e:
             rospy.logerr("Network Error: %s" % str(e))
@@ -127,27 +127,69 @@ class GameStateReceiver(object):
             Needs to be implemented or set
             :param state: Game State
         """
+        if state.teams[0].team_number == self.team:
+            own_team = state.teams[0]
+            rival_team = state.teams[1]
+        elif state.teams[1].team_number == self.team:
+            own_team = state.teams[1]
+            rival_team = state.teams[0]
+        else:
+            rospy.logerr('Team {} not playing, only {} and {}'.format(self.team,
+                                                                      state.teams[0].team_number,
+                                                                      state.teams[1].team_number))
+            return
+
+        try:
+            me = own_team.players[self.player - 1]
+        except IndexError:
+            rospy.logerr('Robot {} not playing'.format(self.player))
+            return
+
         msg = GameStateMsg()
         msg.header.stamp = rospy.Time.now()
         msg.gameState = state.game_state.intvalue
         msg.secondaryState = state.secondary_state.intvalue
-        msg.secondaryStateTeam # TODO
-        msg.firstHalf = bool(state.first_half)
-        msg.ownScore # TODO
-        msg.rivalScore # TODO
+        msg.secondaryStateTeam  # TODO
+        msg.firstHalf = state.first_half
+        msg.ownScore = own_team.score
+        msg.rivalScore = rival_team.score
         msg.secondsRemaining = state.seconds_remaining
         msg.secondary_seconds_remaining = state.secondary_seconds_remaining
-        msg.hasKickOff # TODO
-        msg.penalized # TODO
-        msg.secondsTillUnpenalized # TODO
-        msg.allowedToMove # TODO
-        msg.teamColor # TODO
-        msg.dropInTeam = bool(state.drop_in_team)
+        msg.hasKickOff = state.kick_of_team == self.team
+        msg.penalized = me.penalty != 0
+        msg.secondsTillUnpenalized = me.secs_till_unpenalized
+
+        if self.get_time_since_last_package() > self.game_controller_lost_time:
+            rospy.logwarn('No game controller messages received for {} seconds,'
+                          'allowing robot to move'.format(self.get_time_since_last_package()))
+            msg.allowedToMove = True
+        elif me.penalty != 0:
+            msg.allowedToMove = False
+        elif state.game_state in (0, 2):
+            msg.allowedToMove = False
+        elif state.game_state == 1:
+            msg.allowedToMove = True
+        elif state.game_state == 3:
+            if state.kick_of_team == self.team:
+                msg.allowedToMove = True
+            elif state.kick_of_team >= 128:
+                # Drop ball
+                msg.allowedToMove = True
+            else:
+                # Other team has kickoff
+                if msg.secondary_seconds_remaining != 0:
+                    msg.allowedToMove = False
+                else:
+                    # We have waited the kickoff time
+                    msg.allowedToMove = True
+
+        msg.teamColor = own_team.team_color
+        msg.dropInTeam = state.drop_in_team
         msg.dropInTime = state.drop_in_time
-        msg.penaltyShot # TODO
-        msg.singleShots # TODO
-        msg.coach_message # TODO
-        print(msg)
+        msg.penaltyShot = own_team.penalty_shot
+        msg.singleShots = own_team.single_shots
+        msg.coach_message = own_team.coach_message
+        self.state_publisher.publish(msg)
 
     def get_last_state(self):
         return self.state, self.time
@@ -160,6 +202,7 @@ class GameStateReceiver(object):
 
     def set_manual_penalty(self, flag):
         self.man_penalize = flag
+
 
 if __name__ == '__main__':
     rec = GameStateReceiver()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from construct import Byte, Struct, Enum, Bytes, Const, Array, Int16ul
+from construct import Byte, Struct, Enum, Bytes, Const, Array, Int16ul, Int32ul, PaddedString, Flag
 
 Short = Int16ul
 
@@ -16,7 +16,7 @@ RobotInfo = "robot_info" / Struct(
     # define PENALTY_HL_KID_REQUEST_FOR_PICKUP_2_SERVICE 7
     # define MANUAL                      15
     "penalty" / Byte,
-    "secs_till_unpenalised" / Byte,
+    "secs_till_unpenalized" / Byte,
     "number_of_yellow_cards" / Byte,
     "number_of_red_cards" / Byte
 )
@@ -39,7 +39,7 @@ TeamInfo = "team" / Struct(
     "penalty_shot" / Byte,  # penalty shot counter
     "single_shots" / Short,  # bits represent penalty shot success
     "coach_sequence" / Byte,
-    "coach_message" / Bytes(253),
+    "coach_message" / PaddedString(10, 'utf8'),
     "coach" / RobotInfo,
     "players" / Array(11, RobotInfo)
 )
@@ -61,7 +61,7 @@ GameState = "gamedata" / Struct(
                         # spiel zu ende
                         STATE_FINISHED=4
                         ),
-    "first_half" / Byte,
+    "first_half" / Flag,
     "kick_of_team" / Byte,
     "secondary_state" / Enum(Byte,
                              STATE_NORMAL=0,
@@ -75,11 +75,11 @@ GameState = "gamedata" / Struct(
                              UNKNOWN=255
                              ),
     "secondary_state_info" / Bytes(4),
-    "drop_in_team" / Byte,
+    "drop_in_team" / Flag,
     "drop_in_time" / Short,
     "seconds_remaining" / Short,
     "secondary_seconds_remaining" / Short,
-    Array(2, "teams" / TeamInfo)
+    "teams" / Array(2, "team" / TeamInfo)
 )
 
 GAME_CONTROLLER_RESPONSE_VERSION = 2
