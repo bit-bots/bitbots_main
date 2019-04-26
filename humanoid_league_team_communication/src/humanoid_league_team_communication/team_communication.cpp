@@ -104,6 +104,10 @@ void TeamCommunication::send_thread(const ros::TimerEvent& _t) {
         if (ball_belief > belief_threshold && ros::Time::now().sec - ball_exists < lifetime) {
             _mitecom.set_relative_ball(ball_relative_x, ball_relative_y, ball_belief);
         }
+        else{
+            // workaround to be able to identify in TeamData Msg which robot has sent the useful data
+            _mitecom.set_relative_ball(1000.0, 1000.0, 0.0);
+        }
         /*//opponent goal
         if (oppgoal_belief > 0) {
             _mitecom.set_opp_goal_relative(oppgoal_relative_x, oppgoal_relative_y, oppgoal_belief);
@@ -113,26 +117,59 @@ void TeamCommunication::send_thread(const ros::TimerEvent& _t) {
             if (opponent_robots.size() > 0) {
                 _mitecom.set_opponent_robot_a(opponent_robots[0][0], opponent_robots[0][1], opponent_robots[0][2]);
             }
+            else{
+                // workaround to be able to identify in TeamData Msg which robot has sent the useful data
+                _mitecom.set_opponent_robot_a(1000.0, 1000.0, 0.0);
+            }
             if (opponent_robots.size() > 1) {
                 _mitecom.set_opponent_robot_b(opponent_robots[1][0], opponent_robots[1][1], opponent_robots[1][2]);
+            }
+            else{
+                _mitecom.set_opponent_robot_b(1000.0, 1000.0, 0.0);
             }
             if (opponent_robots.size() > 2) {
                 _mitecom.set_opponent_robot_c(opponent_robots[2][0], opponent_robots[2][1], opponent_robots[2][2]);
             }
+            else{
+                _mitecom.set_opponent_robot_c(1000.0, 1000.0, 0.0);
+            }
             if (opponent_robots.size() > 3) {
                 _mitecom.set_opponent_robot_d(opponent_robots[3][0], opponent_robots[3][1], opponent_robots[3][2]);
+            }
+            else{
+                _mitecom.set_opponent_robot_d(1000.0, 1000.0, 0.0);
             }
 
             //team robots
             if (team_robots.size() > 0) {
                 _mitecom.set_team_robot_a(team_robots[0][0], team_robots[0][1], team_robots[0][2]);
             }
+            else{
+                _mitecom.set_team_robot_a(1000.0, 1000.0, 0.0);
+            }
             if (team_robots.size() > 1) {
                 _mitecom.set_team_robot_b(team_robots[1][0], team_robots[1][1], team_robots[1][2]);
+            }
+            else{
+                _mitecom.set_team_robot_b(1000.0, 1000.0, 0.0);
             }
             if (team_robots.size() > 2) {
                 _mitecom.set_team_robot_c(team_robots[2][0], team_robots[2][1], team_robots[2][2]);
             }
+            else{
+                _mitecom.set_team_robot_c(1000.0, 1000.0, 0.0);
+            }
+        }
+        else{
+            // workaround to be able to identify in TeamData Msg which robot has sent the useful data
+            _mitecom.set_opponent_robot_a(1000.0, 1000.0, 0.0);
+            _mitecom.set_opponent_robot_b(1000.0, 1000.0, 0.0);
+            _mitecom.set_opponent_robot_c(1000.0, 1000.0, 0.0);
+            _mitecom.set_opponent_robot_d(1000.0, 1000.0, 0.0);
+            _mitecom.set_team_robot_a(1000.0, 1000.0, 0.0);
+            _mitecom.set_team_robot_b(1000.0, 1000.0, 0.0);
+            _mitecom.set_team_robot_c(1000.0, 1000.0, 0.0);
+
         }
 
         //time to ball
