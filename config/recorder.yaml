@@ -2,5 +2,5 @@ recorder:
   input: 0
   rows: 5
   checkpoints: 5
-  yaw_steps: 8
+  yaw_steps: 16
   output_path: "../evaluation_data/"
