@@ -67,6 +67,8 @@ obstacle_marker_color: 3 # blue
 # Local Filters
 # -------------
 
+local_filter_active: true
+
 local_ball_particle_number: 2000
 local_ball_diffusion_x_std_dev: 1
 local_ball_diffusion_y_std_dev: 1

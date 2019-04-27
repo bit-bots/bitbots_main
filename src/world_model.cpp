@@ -461,11 +461,13 @@ void WorldModel::exec_global_filter_step() {
 void WorldModel::publishing_timer_callback(const ros::TimerEvent&) {
     // the content of this function is what happens in a single timestep
 
-    // executing a local filter step
-    exec_local_filter_step();
+    if (config_.local_filter_active) {
+        // executing a local filter step
+        exec_local_filter_step();
 
-    // publish the output
-    publish_local_results();
+        // publish the output
+        publish_local_results();
+    }
 
     if (config_.global_filter_active) {
         // executing a global filter step
