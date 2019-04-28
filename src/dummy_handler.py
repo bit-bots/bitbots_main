@@ -16,7 +16,7 @@ class VisualCompassDummyHandler():
         config_path = os.path.join(dirname, relative_path)
 
         with open(config_path, 'r') as stream:
-            config = yaml.load(stream)
+            config = yaml.full_load(stream)
 
         source = config['dummy_handler_input']
 
