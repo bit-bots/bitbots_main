@@ -9,10 +9,13 @@ from humanoid_league_msgs.msg import Animation
 
 class MotorVizHelper:
     def __init__(self):
+        # get rid of addional ROS args when used in launch file
+        args0 = rospy.myargv()
+
         parser = argparse.ArgumentParser()
         parser.add_argument("--walking", "-w", help="Directly get walking motor goals", action="store_true")
         parser.add_argument("--animation", "-a", help="Directly get animation motor goals", action="store_true")
-        args = parser.parse_args()
+        args = parser.parse_args(args0[1:])
 
         rospy.init_node("motor_viz_helper", anonymous=False)
         self.joint_state_msg = JointState()
