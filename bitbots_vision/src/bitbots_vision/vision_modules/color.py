@@ -23,7 +23,7 @@ class ColorDetector(object):
     def __init__(self, debug_printer):
         # type: (DebugPrinter) -> None
         """
-        Initiating of ColorDetector.
+        Initialization of ColorDetector.
 
         :param DebugPrinter debug_printer: debug-printer
         :return: None
@@ -105,7 +105,7 @@ class HsvSpaceColorDetector(ColorDetector):
     def __init__(self, debug_printer, min_vals, max_vals):
         # type: (DebugPrinter, tuple[int, int, int], tuple[int, int, int]) -> None
         """
-        Initiating of HsvSpaceColorDetector.
+        Initialization of HsvSpaceColorDetector.
 
         :param DebugPrinter debug_printer: debug-printer
         :param tuple min_vals: a tuple of the minimal accepted hsv-values
@@ -197,7 +197,7 @@ class PixelListColorDetector(ColorDetector):
     def __init__(self, debug_printer, package_path, config):
         # type:(DebugPrinter, str, dict, bool) -> None
         """
-        Initiating of PixelListColorDetector.
+        Initialization of PixelListColorDetector.
 
         :param DebugPrinter debug_printer: debug-printer
         :param str package_path: path of package
@@ -226,7 +226,7 @@ class PixelListColorDetector(ColorDetector):
     def init_color_space(self, color_path):
         # type: (str) -> None
         """
-        Initializes color space from yaml or pickle.txt file
+        Initialization of color space from yaml or pickle.txt file
 
         :param str color_path: path to file containing the accepted colors
         :return: None
@@ -303,7 +303,7 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
     def __init__(self, debug_printer, package_path, config, primary_detector=False):
         # type:(DebugPrinter, str, dict, bool) -> None
         """
-        Initiating of DynamicPixelListColorDetector.
+        Initialization of DynamicPixelListColorDetector.
 
         :param DebugPrinter debug_printer: debug-printer
         :param str package_path: path of package
