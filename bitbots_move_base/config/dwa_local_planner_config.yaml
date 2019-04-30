@@ -1,30 +1,30 @@
 DWAPlannerROS:
   # velocities
-  max_trans_vel: 1.0               # The absolute value of the maximum translational velocity for the robot in m/s
-  min_trans_vel: 0.00               # The absolute value of the minimum translational velocity for the robot in m/s
+  max_vel_trans: 0.05               # The absolute value of the maximum translational velocity for the robot in m/s
+  min_vel_trans: 0.00               # The absolute value of the minimum translational velocity for the robot in m/s
 
-  max_vel_x: 0.05                   # The maximum x velocity for the robot in m/s
-  min_vel_x: -0.05                   # The minimum x velocity for the robot in m/s
+  max_vel_x: 0.04                   # The maximum x velocity for the robot in m/s
+  min_vel_x: -0.04                   # The minimum x velocity for the robot in m/s
 
-  max_vel_y: 0.05                   # The maximum y velocity for the robot in m/s"
-  min_vel_y: -0.05                   # The minimum y velocity for the robot in m/s"
+  max_vel_y: 0.03                   # The maximum y velocity for the robot in m/s"
+  min_vel_y: -0.03                   # The minimum y velocity for the robot in m/s"
 
-  max_rot_vel: 0.05                 # The absolute value of the maximum rotational velocity for the robot in rad/s
-  min_rot_vel: -0.05                 # The absolute value of the minimum rotational velocity for the robot in rad/s
+  max_vel_theta: 0.05                 # The absolute value of the maximum rotational velocity for the robot in rad/s
+  min_vel_theta: 0.0                 # The absolute value of the minimum rotational velocity for the robot in rad/s
   # acceleration
   acc_lim_x: 20                   # The acceleration limit of the robot in the x direction
   acc_lim_y: 20                   # The acceleration limit of the robot in the y direction
   acc_lim_theta: 20                # The acceleration limit of the robot in the theta direction
-  acc_limit_trans: 20             # The absolute value of the maximum translational acceleration for the robot in m/s^2
+  acc_trans_limit: 20             # The absolute value of the maximum translational acceleration for the robot in m/s^2
 
 
   prune_plan: true                 # Start following closest point of global plan, not first point (if different).
 
-  xy_goal_tolerance: 0.15           # Within what maximum distance we consider the robot to be in goal
-  yaw_goal_tolerance: 0.15           # Within what maximum angle difference we consider the robot to face goal direction
+  xy_goal_tolerance: 0.10           # Within what maximum distance we consider the robot to be in goal
+  yaw_goal_tolerance: 0.05           # Within what maximum angle difference we consider the robot to face goal direction
 
   trans_stopped_vel: 0.01           # Below what maximum velocity we consider the robot to be stopped in translation
-  rot_stopped_vel: 0.01             # Below what maximum rotation velocity we consider the robot to be stopped in rotation
+  theta_stopped_vel: 0.01             # Below what maximum rotation velocity we consider the robot to be stopped in rotation
   
   
   # dwa specific
@@ -32,7 +32,7 @@ DWAPlannerROS:
   sim_granularity: 0.025            # The granularity with which to check for collisions along each trajectory in meters
   angular_sim_granularity: 0.1      # The granularity with which to check for collisions for rotations in radians
 
-  path_distance_bias: 10.0          # The weight for the path distance part of the cost function
+  path_distance_bias: 1.0          # The weight for the path distance part of the cost function
   goal_distance_bias: 24.0          # The weight for the goal distance part of the cost function
   occdist_scale: 0.01               # The weight for the obstacle distance part of the cost function
   twirling_scale: 100.0               # The weight for penalizing any changes in robot heading
@@ -52,4 +52,4 @@ DWAPlannerROS:
 
   use_dwa: true                     # Use dynamic window approach to constrain sampling velocities to small window.
 
-  holonomic_robot: true
+  holonomic_robot: true             # to tell the planner that we can walk sideways
