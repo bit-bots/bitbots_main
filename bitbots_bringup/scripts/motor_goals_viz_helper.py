@@ -7,6 +7,8 @@ from sensor_msgs.msg import JointState
 from bitbots_msgs.msg import JointCommand
 from humanoid_league_msgs.msg import Animation
 
+JOINT_NAMES = ['LHipYaw', 'LHipRoll', 'LHipPitch', 'LKnee', 'LAnklePitch', 'LAnkleRoll', 'RHipYaw', 'RHipRoll', 'RHipPitch', 'RKnee', 'RAnklePitch', 'RAnkleRoll', 'LShoulderRoll', 'LShoulderPitch', 'LElbow', 'RShoulderRoll', 'RShoulderPitch', 'RElbow', 'HeadPan', 'HeadTilt']
+
 class MotorVizHelper:
     def __init__(self):
         # get rid of addional ROS args when used in launch file
@@ -18,14 +20,18 @@ class MotorVizHelper:
         args = parser.parse_args(args0[1:])
 
         rospy.init_node("motor_viz_helper", anonymous=False)
-        self.joint_state_msg = JointState()
         self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=1, tcp_nodelay=True)
         if args.walking:
             rospy.Subscriber("walking_motor_goals", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
-        elif args.animation:
-            rospy.Subscriber("animation", Animation, self.animation_cb, queue_size=1, tcp_nodelay=True)
-        else:
-            rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
+        if args.animation:
+            rospy.Subscriber("animation_motor_goals", JointCommand, self.animation_cb, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
+
+        self.joint_state_msg = JointState()
+        self.joint_state_msg.header.stamp = rospy.Time.now()
+        self.joint_state_msg.name = JOINT_NAMES
+        self.joint_state_msg.position = [0] * 20
+        self.joint_publisher.publish(self.joint_state_msg)
 
         rate = rospy.Rate(100)
         while not rospy.is_shutdown():
@@ -33,12 +39,14 @@ class MotorVizHelper:
             self.joint_publisher.publish(self.joint_state_msg)
             rate.sleep()
 
-    def joint_command_cb(self, msg:JointCommand):
+    def joint_command_cb(self, msg: JointCommand):
         self.joint_state_msg.header = msg.header
-        self.joint_state_msg.name = msg.joint_names
-        self.joint_state_msg.position = msg.positions
+        self.joint_state_msg.name = JOINT_NAMES
+        for i in range(len(msg.joint_names)):
+            name = msg.joint_names[i]
+            self.joint_state_msg.position[JOINT_NAMES.index(name)] = msg.positions[i]
 
-    def animation_cb(self, msg:Animation):
+    def animation_cb(self, msg: Animation):
         self.joint_state_msg.header = msg.header
         self.joint_state_msg.name = msg.position.joint_names
         self.joint_state_msg.position = msg.position.points[0].positions
