@@ -1,7 +1,4 @@
 ---
-team_id: 22
-bot_id: 4
-
 # Game controller network settings
 game_controller:
     listen_host: '0.0.0.0'
