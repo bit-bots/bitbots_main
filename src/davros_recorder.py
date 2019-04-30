@@ -136,18 +136,7 @@ class DavrosRecorder():
                 str_row = str_row + symbol
             print(str_row + "|")
         print(" " * max(0,(int(self.checkpoints/2) * 2 - 2)) + "GOAL 2")
-    
-    def rerecord_checkpoint(data_set, row, checkpoint):
-        index_path = os.path.join(self.data_location, "index.yaml")
-        with open(index_path, 'r') as stream:
-            index = yaml.load(stream)
-
-        for picture_data in index:
-            if picture_data['row'] == row and picture_data['checkpoint'] == checkpoint:
-                path = picture_data['path']
-                # TODO remove file
-
-        
+                
 
 if __name__ == "__main__":
     DavrosRecorder()
