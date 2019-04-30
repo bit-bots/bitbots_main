@@ -23,8 +23,9 @@ typedef actionlib::SimpleActionServer<bitbots_msgs::KickAction> ActionServer;
  * to calculate actual kick behavior.
  *
  * It provides an ActionServer for the bitbots_msgs::KickAction.
- * This actionServer accepts new goals in any frame, and automatically provides the new goal to KickEngine in the
- * correctly transformed frame.
+ * This actionServer accepts new goals in any tf frame, and sets up the KickEngines to work towards this new goal
+ *
+ * Additionally it publishes the KickEngines motor-goals back into ROS
  */
 class KickNode {
 public:
@@ -56,7 +57,7 @@ private:
     /**
      * Transform a newly received goal into base_link frame
      * @param pose Input pose
-     * @return Transfomred goal pose if transformation was successful
+     * @return Transformed goal pose if transformation was successful
      */
     std::optional<geometry_msgs::Pose> transform_goal(const geometry_msgs::PoseStamped& pose);
 
@@ -68,6 +69,9 @@ private:
      */
     bool get_foot_poses(geometry_msgs::Pose &l_foot_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time);
 
+    /**
+     * Publish goals to ROS
+     */
     void publish_goals(const JointGoals& goals);
 };
 

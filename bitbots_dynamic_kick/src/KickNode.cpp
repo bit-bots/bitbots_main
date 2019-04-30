@@ -9,6 +9,7 @@ KickNode::KickNode() :
 
 void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t level) {
     m_engine_rate = config.engine_rate;
+    // TODO Add more dynamic_reconfigure settings
 }
 
 void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
@@ -16,17 +17,18 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     ROS_INFO("Accepted new goal");
     m_engine.reset();
 
-    /* Only continue if necessary information is sucessfully retrieved */
+    /* Only continue if necessary information is successfully retrieved */
     if (std::optional<geometry_msgs::Pose> transformed_goal = transform_goal(goal->foot_target)) {
         geometry_msgs::Pose l_foot_pose, r_foot_pose;
         if (get_foot_poses(l_foot_pose, r_foot_pose, goal->foot_target.header.stamp)) {
 
+            /* Set engines goal and start calculating */
             m_engine.set_goal(transformed_goal.value(), goal->foot_speed, l_foot_pose, r_foot_pose);
             loop_engine();
 
             /* Figure out the reason why loop_engine() returned and act accordingly */
             if (m_server.isPreemptRequested()) {
-                /* Confirm that we canceled processing of the current goal */
+                /* Confirm that we canceled the previous goal */
                 ROS_INFO("Cancelled old goal");
                 bitbots_msgs::KickResult result;
                 result.result = bitbots_msgs::KickResult::ABORTED;
@@ -40,13 +42,13 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
             }
         }
         else {
-            /* Feet positions were not successfuly retrieved */
+            /* Feet positions were not successfully retrieved */
             bitbots_msgs::KickResult result;
             result.result = bitbots_msgs::KickResult::REJECTED;
             m_server.setAborted(result, "Transformation of feet into base_link not possible");
         }
     } else {
-        /* Goal was not successfuly transformed */
+        /* Goal was not successfully transformed */
         bitbots_msgs::KickResult result;
         result.result = bitbots_msgs::KickResult::REJECTED;
         m_server.setAborted(result, "Transformation of goal into base_link not possible");
@@ -63,7 +65,7 @@ std::optional<geometry_msgs::Pose> KickNode::transform_goal(const geometry_msgs:
         return std::nullopt;
     }
 
-    /* Do transform pose into base_link with previously retrieved transform */
+    /* Do transformation of pose into base_link with previously retrieved transform */
     geometry_msgs::PoseStamped transformed_pose_stamped;
     tf2::doTransform(pose, transformed_pose_stamped, goal_transform);
 
@@ -90,7 +92,7 @@ bool KickNode::get_foot_poses(geometry_msgs::Pose &l_foot_pose, geometry_msgs::P
         return false;
     }
 
-    /* Do transform both feet into base_link with previously retrieved transform */
+    /* Do transformation of both feet into base_link with previously retrieved transform */
     tf2::doTransform(l_foot_origin, l_foot_pose_stamped, l_foot_transform);
     tf2::doTransform(r_foot_origin, r_foot_pose_stamped, r_foot_transform);
 
@@ -111,7 +113,7 @@ void KickNode::loop_engine() {
                                    bitbots_msgs::KickFeedback::LEFT : bitbots_msgs::KickFeedback::RIGHT;
             m_server.publishFeedback(feedback);
             publish_goals(goals.value());
-
+            // TODO Publish support-foot
 
             if (feedback.percent_done == 100) {
                 break;
@@ -126,16 +128,27 @@ void KickNode::loop_engine() {
 }
 
 void KickNode::publish_goals(const JointGoals& goals) {
+    /* Construct JointCommand message */
     bitbots_msgs::JointCommand command;
     command.header.stamp = ros::Time::now();
+
+    /*
+     * Since our JointGoals type is a vector of strings
+     *  combined with a vector of numbers (motor name -> target position)
+     *  and bitbots_msgs::JointCommand needs both vectors as well,
+     *  we can just assign them
+     */
     command.joint_names = goals.first;
     command.positions = goals.second;
+
+    /* And because we are setting position goals and not movement goals, these vectors are set to -1.0*/
     std::vector<double> vels(goals.first.size(), -1.0);
     std::vector<double> accs(goals.first.size(), -1.0);
     std::vector<double> pwms(goals.first.size(), -1.0);
     command.velocities = vels;
     command.accelerations = accs;
     command.max_currents = pwms;
+    
     m_joint_goal_publisher.publish(command);
 }
 
