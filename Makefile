@@ -6,16 +6,13 @@ build :
 	scripts/install_py_extensions.bash
 	scripts/repair.sh
 
-
 doc :
 	python3 scripts/build-complete-doc.py
-
 
 doc-meta :
 	python3 scripts/build-meta-doc.py
 
-
-install: pull-all 
+install: pull-init
 	scripts/install.pl
 
 update: pull-all
@@ -26,8 +23,10 @@ pull-all:
 	scripts/pull_all.sh
 	scripts/pull_files.bash
 
+pull-init:
+	git pull
+	scripts/pull_init.sh
+	scripts/pull_files.bash
 
 vision-files:
 	scripts/pull_files.bash
-
-
