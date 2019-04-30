@@ -5,7 +5,6 @@ import yaml
 import os
 import time
 
-from connector import Connector
 from videocv import Videocv
 
 class DavrosRecorder():
@@ -13,10 +12,6 @@ class DavrosRecorder():
     Records test data using the Davros vison robot.
     """
     def __init__(self):
-        self.conn = Connector(2, "/dev/ttyACM0", 2000000)
-
-        self.conn.writeTorque(1, True)
-        self.conn.writeTorque(2, True)
 
         self.dirname = os.path.dirname(__file__)
         relative_path = "../config/recorder.yaml"
@@ -24,6 +19,14 @@ class DavrosRecorder():
 
         with open(config_path, 'r') as stream:
             self.config = yaml.load(stream)
+
+        if self.config['recorder']['motor_control']:
+            from connector import Connector
+
+            self.conn = Connector(2, "/dev/ttyACM0", 2000000)
+
+            self.conn.writeTorque(1, True)
+            self.conn.writeTorque(2, True)
 
         self.rows = self.config['recorder']['rows']
         self.checkpoints = self.config['recorder']['checkpoints']
@@ -61,7 +64,10 @@ class DavrosRecorder():
         return resolution - int((angle/(2*math.pi))*resolution)
 
     def drive(self, motor, value):
-        self.conn.writeGoalPosition(1, value)
+        if self.config['recorder']['motor_control']:
+            self.conn.writeGoalPosition(1, value)
+        else:
+            print("Sim mode!!! Enable 'motor_control' in config to turn off.")
         print("Drive Motor {} | Value {}".format(motor, value))
 
     def save(self, row, checkpoint, value, angle, path, image):
@@ -95,42 +101,41 @@ class DavrosRecorder():
             self.show_img(image)
             k = cv2.waitKey(1)
             self.save(row, checkpoint, value, angle, path, image)
-            # Abbrechen mit ESC
-            if k%256 == 27 or 0xFF == ord('q') or self.video_getter.ended:
-                self.video_getter.stop()
 
     def record(self):
+        skipall = False
         for row in range(self.rows):
             print("------------- NEW ROW -------------")
             for checkpoint in range(self.checkpoints):
-                if self.video_getter.ended:
+                if self.video_getter.ended or skipall:
                     break
                 checkpoints_path = os.path.join(self.output_path, "{}/{}/".format(row, checkpoint))
-                self.make_path(checkpoints_path)
-                raw_input("Press enter for next checkpoint!")
-                self.record_pano(row, checkpoint, checkpoints_path)
+                input_str = raw_input("Press enter for next checkpoint!")
+                if input_str == "":
+                    self.make_path(checkpoints_path)
+                    self.record_pano(row, checkpoint, checkpoints_path)
+                elif input_str == "s":
+                    print("skiped ({}|{})".format(row, checkpoint))
+                elif input_str == "e":
+                    print("Exit")
+                    skipall = True
                 self.display_map(row, checkpoint)
         self.save_index()
         self.video_getter.stop()
         cv2.destroyAllWindows()
 
     def display_map(self, draw_row, draw_checkpoint):
+        print(" " * max(0,(int(self.checkpoints/2) * 2 - 2)) + "GOAL 1")
         for row in range(self.rows):
-            if row == int(self.rows/2):
-                str_row = "GOAL1 "
-            else:
-                str_row = "      "
+            str_row = ""
             for checkpoint in range(self.checkpoints):
                 if row == draw_row and checkpoint == draw_checkpoint:
                     symbol = "|X"
                 else:
                     symbol = "|-"
                 str_row = str_row + symbol
-            if row == int(self.rows/2):
-                str_row = str_row + "| GOAL2"
-            else:
-                str_row = str_row + "|"
-            print(str_row)
+            print(str_row + "|")
+        print(" " * max(0,(int(self.checkpoints/2) * 2 - 2)) + "GOAL 2")
     
     def rerecord_checkpoint(data_set, row, checkpoint):
         index_path = os.path.join(self.data_location, "index.yaml")

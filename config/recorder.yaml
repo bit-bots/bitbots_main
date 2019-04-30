@@ -1,6 +1,7 @@
 recorder:
+  motor_control: False
   input: 0
-  rows: 5
-  checkpoints: 5
-  yaw_steps: 16
+  rows: 10
+  checkpoints: 7
+  yaw_steps: 4
   output_path: "../evaluation_data/"
