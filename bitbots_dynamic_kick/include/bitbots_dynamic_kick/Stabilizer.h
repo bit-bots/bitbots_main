@@ -8,9 +8,20 @@
 
 typedef std::pair<std::vector<std::string>, std::vector<double>> JointGoals;
 
+/**
+ * The stabilizer is basically a wrapper around bio_ik and moveit
+ */
 class Stabilizer {
 public:
     Stabilizer();
+
+    /**
+     * Calculate required motor positions to reach foot_goal with a foot while keeping the robot as stable as possible.
+     * The stabilization itself is achieved by using moveit with bio_ik
+     * @param is_left_kick Is the given foot_goal a goal which the left foot should reach
+     * @param foot_goal Position which should be reached by the foot
+     * @return JointGoals which describe required motor positions
+     */
     std::optional<JointGoals> stabilize(bool is_left_kick, tf::Transform foot_goal);
 
 private:
