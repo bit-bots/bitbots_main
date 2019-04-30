@@ -203,6 +203,18 @@ void QuinticWalkingNode::cmdVelCb(const geometry_msgs::Twist msg) {
     for (int i = 0; i < 3; i++) {
         _currentOrders[i] = std::max(std::min(_currentOrders[i], _max_step[i]), _max_step[i] * -1);
     }
+    // translational orders (x+y) should not exed combined limit. scale if necessary
+    if(_max_step_xy != 0){
+        double scaling_factor = (_currentOrders[0] + _currentOrders[1])/_max_step_xy;
+        for (int i = 0; i < 2; i++) {
+            _currentOrders[i] = _currentOrders[i] / std::max(scaling_factor, 1.0);
+        }
+    }
+
+    // warn user that speed was limited
+    if(msg.linear.x * factor != _currentOrders[0] || msg.linear.y * factor != _currentOrders[1] || msg.angular.z * factor != _currentOrders[2]){
+        ROS_WARN("Speed command was x: %.2f y: %.2f z: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f xy: %.2f", msg.linear.x, msg.linear.y, msg.angular.z, msg.linear.x + msg.linear.y, _max_step[0]/factor, _max_step[1]/factor, _max_step[2]/factor, _max_step_xy/factor);
+    }
 }
 
 void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
@@ -347,6 +359,7 @@ QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_p
     _max_step[0] = config.maxStepX;
     _max_step[1] = config.maxStepY;
     _max_step[2] = config.maxStepZ;
+    _max_step_xy = config.maxStepXY;
 
     _imuActive = config.imuActive;
     _imu_pitch_threshold = config.imuPitchThreshold;

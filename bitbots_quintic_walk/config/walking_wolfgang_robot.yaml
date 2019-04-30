@@ -81,6 +81,7 @@ walking:
 
   maxStepX: 0.1
   maxStepY: 0.08
+  maxStepXY: 0.1
   maxStepZ: 0.4
 
   vel: -1

@@ -102,6 +102,7 @@ private:
 
     Eigen::Vector3d _currentOrders;
     Eigen::Vector3d _max_step;
+    double _max_step_xy;
     bitbots_quintic_walk::QuinticWalk _walkEngine;
 
     bitbots_msgs::JointCommand _command_msg;
