@@ -77,9 +77,9 @@ class DynamicColorSpace:
         self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
         # Set parameter to turn off dynamic color space
-        if 'dynamic_color_space' not in self.vision_config or \
-            vision_config['dynamic_color_space'] != self.vision_config['dynamic_color_space']:
-            if vision_config['dynamic_color_space']:
+        if 'dynamic_color_space_active' not in self.vision_config or \
+            vision_config['dynamic_color_space_active'] != self.vision_config['dynamic_color_space_active']:
+            if vision_config['dynamic_color_space_active']:
                 rospy.loginfo('Dynamic color space turned ON.')
             else:
                 rospy.logwarn('Dynamic color space turned OFF.')
@@ -140,8 +140,8 @@ class DynamicColorSpace:
         :return: None
         """
         # Turn off dynamic color space, if parameter of config is false
-        if 'dynamic_color_space' not in self.vision_config or \
-            not self.vision_config['dynamic_color_space']:
+        if 'dynamic_color_space_active' not in self.vision_config or \
+            not self.vision_config['dynamic_color_space_active']:
             return
 
         # Drops old images

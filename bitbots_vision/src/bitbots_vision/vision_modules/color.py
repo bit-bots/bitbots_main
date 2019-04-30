@@ -283,7 +283,7 @@ class PixelListColorDetector(ColorDetector):
         mask = VisionExtensions.maskImg(image, self.color_space)
 
         # toggle publishing of 'field_mask'-messages   
-        if self.config['vision_field_mask_image']:
+        if self.config['vision_publish_field_mask_image']:
             self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask, '8UC1'))
 
         return mask
@@ -319,13 +319,13 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         self.base_color_space = np.copy(self.color_space)
 
         # toggle publishing of mask_img msg
-        self.publish_field_mask_img_msg = self.config['vision_field_mask_image']
+        self.publish_field_mask_img_msg = self.config['vision_publish_field_mask_image']
         
         # toggle publishing of mask_img_dyn msg with dynamic color space
-        self.publish_dyn_field_mask_msg = self.config['dynamic_color_space_field_mask_image']
+        self.publish_dyn_field_mask_msg = self.config['dynamic_color_space_publish_field_mask_image']
 
         # toggle use of dynamic color space
-        self.dynamic_color_space_turned_on = self.config['dynamic_color_space']
+        self.dynamic_color_space_turned_on = self.config['dynamic_color_space_active']
 
         # Subscribe to 'color_space'-messages from DynamicColorSpace
         self.color_space_subscriber = rospy.Subscriber(

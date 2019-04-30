@@ -282,7 +282,7 @@ class Vision:
             [config['blue_color_detector_upper_values_h'], config['blue_color_detector_upper_values_s'],
              config['blue_color_detector_upper_values_v']])
 
-        if config['dynamic_color_space']:
+        if config['dynamic_color_space_active']:
             self.field_color_detector = color.DynamicPixelListColorDetector(
                 self.debug_printer,
                 self.package_path,
