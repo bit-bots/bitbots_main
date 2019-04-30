@@ -124,14 +124,14 @@ class DavrosRecorder():
                 checkpoints_path = os.path.join(self.output_path, "{}/{}/".format(row, checkpoint))
                 input_str = raw_input("Press enter for next checkpoint!")
                 print("Current Position:\nRow: {}\nCheckpoint:{}".format(row, checkpoint))
-                if input_str == "":
-                    self.make_path(checkpoints_path)
-                    self.record_pano(row, checkpoint, checkpoints_path)
-                elif input_str == "s":
+                if input_str == "s":
                     print("Skiped ({}|{})".format(row, checkpoint))
                 elif input_str == "e":
                     print("Exit")
                     skipall = True
+                else:
+                    self.make_path(checkpoints_path)
+                    self.record_pano(row, checkpoint, checkpoints_path)
                 self.display_map(row, checkpoint)
             start_checkpoint = 0
         self.save_index()
@@ -139,17 +139,22 @@ class DavrosRecorder():
         cv2.destroyAllWindows()
 
     def display_map(self, draw_row, draw_checkpoint):
-        print(" " * max(0,(int(self.checkpoints/2) * 2 - 2)) + "GOAL 1")
+        offset = max(0,(self.checkpoints - 4 + 1))
+        print(" " * offset + " ------- ")
+        print(" " * offset + "| GOAL1 |")
+        print("-" * (self.checkpoints * 2 + 3))
         for row in range(self.rows):
-            str_row = ""
+            str_row = "|"
             for checkpoint in range(self.checkpoints):
                 if row == draw_row and checkpoint == draw_checkpoint:
                     symbol = "|X"
                 else:
                     symbol = "|-"
                 str_row = str_row + symbol
-            print(str_row + "|")
-        print(" " * max(0,(int(self.checkpoints/2) * 2 - 2)) + "GOAL 2")
+            print(str_row + "||")
+        print("-" * (self.checkpoints * 2 + 3))
+        print(" " * offset + "| GOAL2 |")
+        print(" " * offset + " ------- ")
                 
 
 if __name__ == "__main__":
