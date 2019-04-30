@@ -106,24 +106,34 @@ class DavrosRecorder():
             self.save(row, checkpoint, value, angle, path, image)
 
     def record(self):
+        input_str = raw_input("Select start (row, checkpoint) and/or press enter.")
+        if input_str == "":
+            start_row = 0
+            start_checkpoint = 0
+        else:
+            split_input = input_str.split(',')
+            start_row = int(split_input[0])
+            start_checkpoint = int(split_input[1])
         skipall = False
-        for row in range(self.rows):
+        for row in range(start_row, self.rows):
             if not skipall:
                 print("------------- NEW ROW -------------")
-            for checkpoint in range(self.checkpoints):
+            for checkpoint in range(start_checkpoint, self.checkpoints):
                 if self.video_getter.ended or skipall:
                     break
                 checkpoints_path = os.path.join(self.output_path, "{}/{}/".format(row, checkpoint))
                 input_str = raw_input("Press enter for next checkpoint!")
+                print("Current Position:\nRow: {}\nCheckpoint:{}".format(row, checkpoint))
                 if input_str == "":
                     self.make_path(checkpoints_path)
                     self.record_pano(row, checkpoint, checkpoints_path)
                 elif input_str == "s":
-                    print("skiped ({}|{})".format(row, checkpoint))
+                    print("Skiped ({}|{})".format(row, checkpoint))
                 elif input_str == "e":
                     print("Exit")
                     skipall = True
                 self.display_map(row, checkpoint)
+            start_checkpoint = 0
         self.save_index()
         self.video_getter.stop()
         cv2.destroyAllWindows()
