@@ -8,16 +8,19 @@ void KickEngine::reset() {
 }
 
 void KickEngine::set_goal(const geometry_msgs::Pose& target_pose, double speed,
-        const geometry_msgs::Pose& l_foot_pose, const geometry_msgs::Pose& r_foot_pose) {
+                          const geometry_msgs::Pose& l_foot_pose, const geometry_msgs::Pose& r_foot_pose) {
+    /* Save given goals because we reuse them later */
     m_goal_pose = target_pose;
     m_speed = speed;
     m_time = 0;
 
+    /* Plan new splines according to new goal */
     init_trajectories();
     calc_splines(l_foot_pose, r_foot_pose);
 }
 
 std::optional<JointGoals> KickEngine::tick(double dt) {
+    /* Only do an actual tick when splines are present */
     if (m_trajectories) {
         /* Get should-be pose from planned splines (every axis) at current time */
         tf::Transform foot_pose;
@@ -41,7 +44,10 @@ std::optional<JointGoals> KickEngine::tick(double dt) {
 }
 
 void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geometry_msgs::Pose &r_foot_pose) {
-    /* Add neccessary points to all splines so that they become smooth */
+    /*
+     * Add current position, target position and current position to splines so that they describe a smooth
+     * curve to the and back
+     */
     m_trajectories->get("foot_pos_x").addPoint(0, r_foot_pose.position.x);
     m_trajectories->get("foot_pos_x").addPoint(1, m_goal_pose.position.x);
     m_trajectories->get("foot_pos_x").addPoint(2, r_foot_pose.position.x);
@@ -54,16 +60,19 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
     m_trajectories->get("foot_pos_z").addPoint(1, m_goal_pose.position.z);
     m_trajectories->get("foot_pos_z").addPoint(2, r_foot_pose.position.z);
 
+    /* Construct a start_rotation as quaternion from Pose msg */
     tf::Quaternion start_rotation(r_foot_pose.orientation.x, r_foot_pose.orientation.y,
                                   r_foot_pose.orientation.z, r_foot_pose.orientation.w);
     double start_r, start_p, start_y;
     tf::Matrix3x3(start_rotation).getRPY(start_r, start_p, start_y);
 
+    /* Also construct one for the target */
     tf::Quaternion target_rotation(r_foot_pose.orientation.x, r_foot_pose.orientation.y,
                                    r_foot_pose.orientation.z, r_foot_pose.orientation.w);
     double target_r, target_p, target_y;
     tf::Matrix3x3(target_rotation).getRPY(target_r, target_p, target_y);
 
+    /* Add these quaternions in the same fashion as before to our splines (current, target, current) */
     m_trajectories->get("foot_roll").addPoint(0, start_r);
     m_trajectories->get("foot_roll").addPoint(0, target_r);
     m_trajectories->get("foot_roll").addPoint(2, start_r);

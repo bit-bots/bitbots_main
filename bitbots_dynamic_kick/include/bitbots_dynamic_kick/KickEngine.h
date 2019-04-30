@@ -11,12 +11,22 @@
 
 typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajectories;
 
+/**
+ * The KickEngine takes care of choosing an optimal foot to reach a given goal,
+ * planning that foots required movement (rotation and positioning)
+ * and updating short-term MotorGoals to move (the foot) along that planned path.
+ *
+ * It is vital to call the engines tick() method repeatedly because that is where these short-term MotorGoals are
+ * returned.
+ *
+ * The KickEngine utilizes a Stabilizer to balance the robot during foot movments.
+ */
 class KickEngine {
 public:
     KickEngine();
 
     /**
-     * Set new goal which the engine tries to kick at. This will remove the old goal completely and reset all splines.
+     * Set new goal which the engine tries to kick at. This will remove the old goal completely and plan new splines.
      * @param target_pose Pose in base_link frame which should be reached.
      *      Ideally this is also where the ball lies and a kick occurs.
      * @param speed Speed with which to reach the target // TODO document scale of speed (m/s, km/h, 0-1,...)
@@ -37,12 +47,12 @@ public:
      *      JointGoals
      * @param dt Passed delta-time between last call to tick() and now. Measured in seconds
      * @return New motor goals only if a goal is currently set, position extractions from splines was possible and
-     *      bio_ik was able to compute vaild motor positions
+     *      bio_ik was able to compute valid motor positions
      */
     std::optional<JointGoals> tick(double dt);
 
     /**
-     * Is the currently performed kick with the left foor or not
+     * Is the currently performed kick with the left foot or not
      */
     bool is_left_kick();
 private:
@@ -57,7 +67,9 @@ private:
      */
     void init_trajectories();
 
-    // TODO Add docstring to calc_splines once we resolve issue #2
+    /**
+     *  // TODO Add docstring to calc_splines once we resolve issue #2
+     */
     void calc_splines(const geometry_msgs::Pose& target_pose, const geometry_msgs::Pose& r_foot_pose);
 };
 

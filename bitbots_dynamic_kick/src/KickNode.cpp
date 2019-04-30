@@ -148,7 +148,7 @@ void KickNode::publish_goals(const JointGoals& goals) {
     command.velocities = vels;
     command.accelerations = accs;
     command.max_currents = pwms;
-    
+
     m_joint_goal_publisher.publish(command);
 }
 
