@@ -83,8 +83,11 @@ class DavrosRecorder():
 
     def save_index(self):
         path = os.path.join(self.output_path, "index.yaml")
-        with open(path, 'w') as outfile:
-            yaml.dump(self.file_index, outfile, default_flow_style=False)
+        try:
+            with open(path, 'w') as outfile:
+                yaml.dump(self.file_index, outfile, default_flow_style=False)
+        except:
+            print("File error")
 
     def record_pano(self, row, checkpoint, path):
         steps = self.config['recorder']['yaw_steps']
@@ -95,8 +98,8 @@ class DavrosRecorder():
             self.drive(1,value)
             # Sleep until camera is positioned
             if step == 0:
-                time.sleep(1)
-            time.sleep(0.5)
+                time.sleep(self.config['recorder']['reset_time'])
+            time.sleep(self.config['recorder']['step_time'])
             image = self.video_getter.frame
             self.show_img(image)
             k = cv2.waitKey(1)
@@ -105,7 +108,8 @@ class DavrosRecorder():
     def record(self):
         skipall = False
         for row in range(self.rows):
-            print("------------- NEW ROW -------------")
+            if not skipall:
+                print("------------- NEW ROW -------------")
             for checkpoint in range(self.checkpoints):
                 if self.video_getter.ended or skipall:
                     break
