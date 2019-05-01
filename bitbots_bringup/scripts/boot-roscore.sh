@@ -5,7 +5,7 @@
 #
 
 if hash roscore 2>/dev/null; then
-    screen -S roscore roscore
+    roscore
 else
     echo "Please source the workspace"
     exit 1

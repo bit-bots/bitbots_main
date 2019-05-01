@@ -5,7 +5,7 @@
 #
 
 if hash roslaunch 2>/dev/null; then
-    screen -S behavior roslaunch bitbots_bringup teamplayer.launch motion:=false vision:=false
+    roslaunch bitbots_bringup teamplayer.launch motion:=false vision:=false
 else
     echo "Please source the workspace"
     exit 1

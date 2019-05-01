@@ -5,7 +5,7 @@
 #
 
 if hash roslaunch 2>/dev/null; then
-    screen -S vision roslaunch bitbots_vision vision_startup.launch
+    roslaunch bitbots_vision vision_startup.launch
 else
     echo "Please source the workspace"
     exit 1
