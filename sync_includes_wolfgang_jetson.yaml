@@ -1,6 +1,7 @@
 include:
     - bitbots_misc:
         - bitbots_bringup
+    - bitbots_msgs
     - bitbots_vision:
         - bitbots_vision
         - python_extensions
