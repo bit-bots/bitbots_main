@@ -19,24 +19,24 @@ field_color_detector_hsv_upper_values_h: 98
 field_color_detector_hsv_upper_values_s: 255
 field_color_detector_hsv_upper_values_v: 255
 
-white_color_detector_lower_values_h: 0
-white_color_detector_lower_values_s: 0
-white_color_detector_lower_values_v: 190
-white_color_detector_upper_values_h: 180
-white_color_detector_upper_values_s: 103
+white_color_detector_lower_values_h: 70
+white_color_detector_lower_values_s: 90
+white_color_detector_lower_values_v: 120
+white_color_detector_upper_values_h: 100
+white_color_detector_upper_values_s: 140
 white_color_detector_upper_values_v: 255
 
-red_color_detector_lower_values_h: 154
-red_color_detector_lower_values_s: 83
-red_color_detector_lower_values_v: 34
+red_color_detector_lower_values_h: 139
+red_color_detector_lower_values_s: 50
+red_color_detector_lower_values_v: 0
 red_color_detector_upper_values_h: 255
 red_color_detector_upper_values_s: 255
 red_color_detector_upper_values_v: 255
 
-blue_color_detector_lower_values_h: 109
-blue_color_detector_lower_values_s: 140
-blue_color_detector_lower_values_v: 93
-blue_color_detector_upper_values_h: 145
+blue_color_detector_lower_values_h: 90
+blue_color_detector_lower_values_s: 197
+blue_color_detector_lower_values_v: 134
+blue_color_detector_upper_values_h: 116
 blue_color_detector_upper_values_s: 255
 blue_color_detector_upper_values_v: 255
 
