@@ -100,42 +100,46 @@ def synchronize(sync_includes_file, host, workspace, package=None):
         print_err('Synchronizing the workspace failed!')
         sys.exit(sync_result.returncode)
 
-def configure(host, args):
-    if host[1].startswith('odroid') or host[1].startswith('nuc'):
-        add_game_controller_config(host[1][-1:], workspace, host)
 
+# noinspection PyUnboundLocalVariable
+def configure(args):
     if args.boot_config:
         start_motion = args.yes_to_all or input('Start motion on boot? (Y/n) ').lower() != 'n'
         start_behaviour = args.yes_to_all or input('Start behaviour on boot? (Y/n) ').lower() != 'n'
         start_vision = args.yes_to_all or input('Start vision on boot? (Y/n) ').lower() != 'n'
         start_roscore = args.yes_to_all or input('Start roscore on boot? (Y/n) ').lower() != 'n'
 
-        data = dict()
-        data['motion'] = 'systemctl start --user start_motion.service; systemctl enable --user start_motion.service' \
-            if start_motion else \
-            'systemctl disable --user start_motion.service'
+    for host in hosts:
+        if host[1].startswith('odroid') or host[1].startswith('nuc'):
+            add_game_controller_config(host[1][-1:], workspace, host)
 
-        data['behavior'] = 'systemctl start --user start_behavior.service; systemctl enable --user start_behavior.service' \
-            if start_behaviour else \
-            'systemctl disable --user start_behavior.service'
+        if args.boot_config:
+            data = dict()
+            data['motion'] = 'systemctl start --user start_motion.service; systemctl enable --user start_motion.service' \
+                if start_motion and host.startswith('nuc') else \
+                'systemctl disable --user start_motion.service'
 
-        data['vision'] = 'systemctl start --user start_vision.service; systemctl start --user start_vision.service' \
-            if start_vision else \
-            'systemctl disable --user start_vision.service'
+            data['behavior'] = 'systemctl start --user start_behavior.service; systemctl enable --user start_behavior.service' \
+                if start_behaviour and host.startswith('nuc') else \
+                'systemctl disable --user start_behavior.service'
 
-        data['roscore'] = 'systemctl start --user start_roscore.service; systemctl enable --user start_roscore.service' \
-            if start_roscore else \
-            'systemctl disable --user start_roscore.service'
+            data['vision'] = 'systemctl start --user start_vision.service; systemctl start --user start_vision.service' \
+                if start_vision and host.startswith('jetson') else \
+                'systemctl disable --user start_vision.service'
 
-        print_info('Configuring boot for {}...'.format(host[1]))
-        r = subprocess.run([
-            'ssh',
-            'bitbots@{}'.format(host[0]),
-            '\'{roscore}; {motion}; {behavior}\''.format(**data)
-        ])
-        if r.returncode != 0:
-            print_err('Configuring {} failed!'.format(host[1]))
-            exit(r.returncode)
+            data['roscore'] = 'systemctl start --user start_roscore.service; systemctl enable --user start_roscore.service' \
+                if start_roscore and host.startswith('nuc') else \
+                'systemctl disable --user start_roscore.service'
+
+            print_info('Configuring boot for {}...'.format(host[1]))
+            r = subprocess.run([
+                'ssh',
+                'bitbots@{}'.format(host[0]),
+                '\'{roscore}; {motion}; {behavior}\''.format(**data)
+            ])
+            if r.returncode != 0:
+                print_err('Configuring {} failed!'.format(host[1]))
+                exit(r.returncode)
 
 
 def parse_arguments():
@@ -271,5 +275,4 @@ if __name__ == '__main__':
         print_success('Build succeeded!')
 
     if not args.compile_only and not args.sync_only:
-        for host in hosts:
-            configure(host, args)
+        configure(args)
