@@ -1,13 +1,13 @@
 #GoAndKickBallMapGoal
 $BallKickArea
-    LEFT --> @KickBall + foot:left
-    RIGHT --> @KickBall + foot:right
+    LEFT --> @Stop, @KickBall + foot:left
+    RIGHT --> @Stop, @KickBall + foot:right
     FAR --> @GoToBall + target:map_goal
 
 #GoAndKickBallDetectionGoal
 $BallKickArea
-    LEFT --> @KickBall + foot:left
-    RIGHT --> @KickBall + foot:right
+    LEFT --> @Stop, @KickBall + foot:left
+    RIGHT --> @Stop, @KickBall + foot:right
     FAR --> @GoToBall + target:detection_goal
 
 #NoLocalizationPlayerBehavior
@@ -15,8 +15,8 @@ $BallSeen
     YES --> $BallClose
         YES --> $GoalSeen
             YES --> #GoAndKickBallDetectionGoal
-            NO --> @CircleBall, @SearchGoal
-        NO --> @GoToBall + target:detection_goal
+            NO --> @SendStop, @SearchGoal
+        NO --> @GoToBall + target:none
     NO --> @SearchBall
 
 
@@ -65,29 +65,29 @@ $BallSeen
 -->BodyBehavior
 $RoleDecider
     goalie --> $GameStateDecider
-        Initial --> @Stand, @LookAtFieldFeatures
+        Initial --> @SendStop, @LookAtFieldFeatures
         Ready --> @GoToRolePosition, @LookAtFieldFeatures
         Set --> @Stand
         Playing --> #GoalieBehavior
         Finished --> @Stand
         NOT_ALLOWED_TO_MOVE --> @Stand
     offense --> $GameStateDecider
-        Initial --> @Stand, @LookAtFieldFeatures
+        Initial --> @SendStop, @LookAtFieldFeatures
         Ready --> @GoToRolePosition, @LookAtFieldFeatures
         Set --> @Stand
         Playing --> #OffenseBehavior
         Finished --> @Stand
         NOT_ALLOWED_TO_MOVE --> @Stand
     defense --> $GameStateDecider
-        Initial --> @Stand, @LookAtFieldFeatures
+        Initial --> @SendStop, @LookAtFieldFeatures
         Ready --> @GoToRolePosition, @LookAtFieldFeatures
         Set --> @Stand
         Playing --> #DefenseBehavior
         Finished --> @Stand
         NOT_ALLOWED_TO_MOVE --> @Stand
     penalty --> $GameStateDecider
-        Initial --> @Stand, @LookAtFieldFeatures
-        Ready --> @Stand, @LookAtFieldFeatures
+        Initial --> @SendStop, @LookAtFieldFeatures
+        Ready --> @SendStop, @LookAtFieldFeatures
         Set --> @Stand
         Playing --> #PenaltyBehavior
         Finished --> @Stand
