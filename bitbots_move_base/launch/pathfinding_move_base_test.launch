@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch" />
+
+  <node name="tf_odom_to_map" pkg="bitbots_move_base" type="tf_map_odom.py" respawn="false" output="screen"/>
+
+</launch>

@@ -15,13 +15,14 @@ oscillation_timeout: 0.0 # no oscillation timeout
 oscillation_distance: 0.2
 
 # local planner - default is trajectory rollout
-base_local_planner: "dwa_local_planner/DWAPlannerROS"
+base_local_planner: "dwa_local_planner/DWAPlannerROS" #"teb_local_planner/TebLocalPlannerROS" #
 
 base_global_planner: "navfn/NavfnROS" #"global_planner/GlobalPlanner" #alternatives:"navfn/NavfnROS" , carrot_planner/CarrotPlanner
 
 
 
 recovery_behavior_enabled: false
+holonomic_robot: true
 
 #recovery_behaviors:
   #- name: 'super_conservative_reset1'

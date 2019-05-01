@@ -9,7 +9,7 @@ global_costmap:
   rolling_window: true
   width: 8.0
   height: 8.0
-  robot_radius: 0.15
+  robot_radius: 0.2
 
   obstacle_layer:
     enable: true

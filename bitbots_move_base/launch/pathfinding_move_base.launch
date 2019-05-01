@@ -1,5 +1,5 @@
 <launch>
-  <include file="$(find bitbots_move_base)/launch/velocity_smoother.launch"/>
+  <!-- <include file="$(find bitbots_move_base)/launch/velocity_smoother.launch"/> -->
 
   <arg name="odom_frame_id"   default="odom"/>
   <arg name="base_frame_id"   default="base_footprint"/>
@@ -16,6 +16,7 @@
     <rosparam file="$(find bitbots_move_base)/config/global_costmap_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/move_base_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/dwa_local_planner_config.yaml" command="load" />
+    <!-- <rosparam file="$(find bitbots_move_base)/config/teb_local_planner_params.yaml" command="load" />-->
     <rosparam file="$(find bitbots_move_base)/config/global_planner_config.yaml" command="load" />
 
     
@@ -27,7 +28,7 @@
     <param name="DWAPlannerROS/global_frame_id" value="$(arg odom_frame_id)"/>
     <remap from="odom" to="$(arg odom_topic)"/>
     <remap from="scan" to="$(arg laser_topic)"/>
-    <remap from="cmd_vel" to="raw_cmd_vel"/>
+    <!--<remap from="cmd_vel" to="raw_cmd_vel"/>-->
   </node>
 
   <group if="$(arg use_game_settings)">

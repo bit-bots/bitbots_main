@@ -23,8 +23,8 @@
 
   <export>
     <bitbots_documentation>
-      <language>python2</language>
-      <status>broken</status>
+      <language>-</language>
+      <status>tested_viz</status>
     </bitbots_documentation>
   </export>
 </package>
