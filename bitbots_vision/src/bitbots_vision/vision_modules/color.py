@@ -185,8 +185,7 @@ class PixelListColorDetector(ColorDetector):
     The color space is loaded from color-space-file at color_path (in config).
     The color space is represented by boolean-values for RGB-color-values.
 
-    Publishes: 'field_mask' and 'dynamic_field_mask'-messages
-
+    Publishes: 'ROS_field_mask_image_msg_topic'-messages
 
     The following parameters of the config dict are needed:
         'vision_use_sim_color',
@@ -215,9 +214,9 @@ class PixelListColorDetector(ColorDetector):
         else:
             self.color_path = package_path + self.config['field_color_detector_path']
 
-        # Register publisher for 'mask_image'-messages
+        # Set publisher to 'ROS_field_mask_image_msg_topic'
         self.imagepublisher = rospy.Publisher(
-            "/field_mask",
+            self.config['ROS_field_mask_image_msg_topic'],
             Image,
             queue_size=1)
         
@@ -275,7 +274,7 @@ class PixelListColorDetector(ColorDetector):
         # type: (np.array) -> np.array
         """
         Creates a color mask (0 for not in color range and 255 for in color range)
-        and publishes 'field_mask' Image-messages.
+        and publishes the field mask to 'ROS_field_mask_image_msg_topic'.
 
         :param np.array image: image to mask
         :return np.array: masked image
@@ -296,8 +295,9 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
     and optionally adjustable to changing color conditions (dynamic color space).
     The color space is represented by boolean-values for RGB-color-values.
 
-    Subscribes to: 'color_space'-message
-    Publishes: 'field_mask' and 'dynamic_field_mask'-messages
+    Subscribes to: 'ROS_dynamic_color_space_msg_topic'
+    Publishes: 'ROS_field_mask_image_msg_topic' and 
+        'ROS_dynamic_color_space_field_mask_image_msg_topic'-messages
     """
 
     def __init__(self, debug_printer, package_path, config, primary_detector=False):
@@ -327,17 +327,17 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         # toggle use of dynamic color space
         self.dynamic_color_space_turned_on = self.config['dynamic_color_space_active']
 
-        # Subscribe to 'color_space'-messages from DynamicColorSpace
+        # Subscribe to 'ROS_dynamic_color_space_msg_topic' from DynamicColorSpace
         self.color_space_subscriber = rospy.Subscriber(
-            'color_space',
+            config['ROS_dynamic_color_space_msg_topic'],
             ColorSpace,
             self.color_space_callback,
             queue_size=1,
             buff_size=2**20)
 
-        # Register publisher for 'mask_image_dyn'-messages
+        # Set publisher to 'ROS_dynamic_color_space_field_mask_image_msg_topic'
         self.imagepublisher_dyn = rospy.Publisher(
-            "/dynamic_field_mask",
+            self.config['ROS_dynamic_color_space_field_mask_image_msg_topic'],
             Image,
             queue_size=1)
 
@@ -345,7 +345,7 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         # type: (np.array) -> np.array
         """
         Creates a color mask (0 for not in color range and 255 for in color range)
-        and publishes 'field_mask' and 'dynamic_field_mask' Image-messages.
+        and publishes static/dynamic field masks to 'ROS_field_mask_image_msg_topic' and 'ROS_dynamic_color_space_field_mask_image_msg_topic'.
 
         :param np.array image: image to mask
         :return np.array: masked image
@@ -355,11 +355,11 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
 
         if self.dynamic_color_space_turned_on:
             dyn_mask = VisionExtensions.maskImg(image, self.color_space)
-            # toggle publishing of 'dynamic_field_mask'-messages
+            # toggle publishing of dynamic field masks
             if (self.primary_detector and self.publish_dyn_field_mask_msg):
                 self.imagepublisher_dyn.publish(self.bridge.cv2_to_imgmsg(dyn_mask, '8UC1'))
   
-        # toggle publishing of 'field_mask'-messages          
+        # toggle publishing of field masks       
         if (self.primary_detector and self.publish_field_mask_img_msg):
             self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(static_mask, '8UC1'))
 

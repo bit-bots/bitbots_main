@@ -41,13 +41,8 @@ class DynamicColorSpace:
         # Init params
         self.vision_config = {}
 
-        # Register publisher of ColorSpace-messages
-        self.pub_color_space = rospy.Publisher(
-            'color_space',
-            ColorSpace,
-            queue_size=1)
-
         # Subscribe to 'vision_config'-message
+        # The message topic name MUST be the same as in the config publisher in vision.py
         self.sub_vision_config_msg = rospy.Subscriber(
             'vision_config',
             Config,
@@ -83,6 +78,12 @@ class DynamicColorSpace:
                 rospy.loginfo('Dynamic color space turned ON.')
             else:
                 rospy.logwarn('Dynamic color space turned OFF.')
+
+        # Set publisher of ColorSpace-messages
+        self.pub_color_space = rospy.Publisher(
+            vision_config['ROS_dynamic_color_space_msg_topic'],
+            ColorSpace,
+            queue_size=1)
 
         # Set Color- and HorizonDetector
         self.color_detector = color.DynamicPixelListColorDetector(
@@ -167,7 +168,7 @@ class DynamicColorSpace:
         colors = self.get_new_dynamic_colors(image)
         # Add new colors to the queue
         self.color_value_queue.append(colors)
-        # Publishes the 'color_space'-message
+        # Publishes to 'ROS_dynamic_color_space_msg_topic'
         self.publish(image_msg)
 
     def get_unique_color_values(self, image, coordinate_list):

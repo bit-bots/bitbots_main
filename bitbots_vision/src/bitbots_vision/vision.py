@@ -38,8 +38,9 @@ class Vision:
         self.debug_image_dings = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_dings:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
-            
+
         # Register publisher of 'vision_config'-messages
+        # For changes of topic name: also change topic name in dynamic_color_space.py
         self.pub_config = rospy.Publisher(
             'vision_config',
             Config,
@@ -238,7 +239,7 @@ class Vision:
         self._ball_candidate_y_offset = config['vision_ball_candidate_horizon_y_offset']
 
         self.debug_image = config['vision_debug_image']
-        self.debug_image_msg = config['vision_debug_image_msg']
+        self.debug_image_msg = config['vision_publish_debug_image']
         self.debug = self.debug_image or self.debug_image_msg
         if self.debug:
             rospy.logwarn('Debug images are enabled')
@@ -421,8 +422,9 @@ class Vision:
                 ImageWithRegionOfInterest,
                 queue_size=1)
 
+        # Register publisher of debug image messages
         self.pub_debug_image = rospy.Publisher(
-            'debug_image',
+            config['ROS_debug_image_msg_topic'],
             Image,
             queue_size=1,
         )
