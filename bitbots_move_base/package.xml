@@ -18,7 +18,6 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>move_base</exec_depend>
-  <exec_depend>yocs_velocity_smoother</exec_depend>
   <exec_depend>gazebo_msgs</exec_depend>
 
   <export>
