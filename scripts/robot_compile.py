@@ -59,7 +59,7 @@ def get_includes_from_file(file, package=None):
 
 
 def add_game_controller_config(bot_id, workspace, host):
-    team_id = 8
+    team_id = 18
     config_path = workspace + '/src/humanoid_league_misc/humanoid_league_game_controller/config/game_controller.yaml'
     r = subprocess.run([
         'ssh',
