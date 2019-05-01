@@ -11,110 +11,132 @@ class FieldBoundaryDetector:
 
     def __init__(self, field_color_detector, config, debug_printer, runtime_evaluator=None):
         # type: (np.matrix, ColorDetector, dict, DebugPrinter, RuntimeEvaluator) -> None
+        """
+        This module can compute different versions of the field boundary.
+        :param field_color_detector: Todo: beschreiben
+        :param config: the configuration contained in visionparams.yaml
+        :param debug_printer: outputs debug messages, necessary only for debug Todo: WIP
+        :param runtime_evaluator: can be used to compute runtime of methods
+        """
+        # set variables:
         self._image = None
-        self._field_color_detector = field_color_detector
         self._field_boundary_points = None
         self._field_boundary_full = None
+        self._convex_field_boundary_points = None
         self._convex_field_boundary_full = None
-        self._field_boundary_hull = None
         self._mask = None
+        self._field_color_detector = field_color_detector
         self._debug_printer = debug_printer
         self._runtime_evaluator = runtime_evaluator
-        # init config
+        # init config:
         self._x_steps = config['field_boundary_finder_horizontal_steps']
         self._y_steps = config['field_boundary_finder_vertical_steps']
         self._roi_height = config['field_boundary_finder_roi_height']
         self._roi_width = config['field_boundary_finder_roi_width']
         self._roi_increase = config['field_boundary_finder_roi_increase']
-        self._precise_pixel = config['field_boundary_finder_precision_pix']
-        self._min_precise_pixel = config['field_boundary_finder_min_precision_pix']
         self._green_threshold = config['field_boundary_finder_green_threshold']
         self._search_method = config['field_boundary_finder_search_method']
-        print(self._search_method)
+        self._precise_pixel = config['field_boundary_finder_precision_pix']
+        self._min_precise_pixel = config['field_boundary_finder_min_precision_pix']
+        rospy.loginfo("field_boundary_search_method: " + str(self._search_method))  # Todo: sollen wir das printen?
 
     def set_image(self, image):
+        # type: () -> None  # Todo: what goes here?
+        """
+        refreshes the variables after receiving an image
+        :param image: the current frame of the video feed
+        """
         self._image = image
         self._field_boundary_points = None
         self._field_boundary_full = None
         self._convex_field_boundary_full = None
-        self._field_boundary_hull = None
+        self._convex_field_boundary_points = None
         self._mask = None
 
     def get_mask(self):
         # type: () -> mask
-        if self._mask is None and self._field_boundary_points is not None:
-            self._mask = self.make_mask()
+        """
+        :return: #todo: was ist das
+        """
+        if self._mask is None:
+            self._mask = self._compute_mask()
         return self._mask
 
-    def make_mask(self):
+    def _compute_mask(self):
+        # type: () ->
+        """
+        #todo: was macht das, was ist das ergebnis?
+        :return:
+        """
         shape = np.shape(self._image)
         img_size = (shape[0], shape[1])
         # Generates a white canvas
         canvas = np.ones(img_size, dtype=np.uint8) * 255
         hpoints = np.array([[(0, 0)] + self.get_field_boundary_points() + [(shape[1] - 1, 0)]])
-        # Blacks out the part over the horrizon
+        # Blacks out the part over the field_boundary
         return cv2.fillPoly(canvas, hpoints, 000)
 
     def get_field_boundary_points(self):
         # type: () -> list
         """
-        calculates the field_boundary if not calculated yet and returns a list
-        containing coordinates on the picture where the field_boundary is.
-        :return list of x,y tuples of the field_boundary:
-        """
-        self.compute_field_boundary_points()
-        return self._field_boundary_points
-
-    def compute_field_boundary_points(self):
-        # type:
-        """
-        calls the method specified in the config (visionparams) to compute the field boundary points
-        :return:
+        :return points of the field_boundary as a list of x,y tuples
         """
         if self._field_boundary_points is None:
-            if self._search_method == 'binary':
-                self._field_boundary_points = self._sub_field_boundary_binary()
-            elif self._search_method == 'reversed':
-                self._field_boundary_points = self._sub_field_boundary_reversed()
-            else:
-                self._field_boundary_points = self._sub_field_boundary_iteration()
+            self._compute_field_boundary_points()
+        return self._field_boundary_points
 
-    def _sub_field_boundary_binary(self):
+    def _compute_field_boundary_points(self):
+        # type:
+        """
+        calls the method specified in the config (visionparams.yaml) to compute the field boundary points
+        :return: points of the field_boundary as a list of x,y tuples
+        """
+        #self._runtime_evaluator.start_timer()
+        self._field_boundary_points = []
+        if self._search_method == 'binary':
+            self._field_boundary_points = self._sub_field_boundary_points_binary()
+        elif self._search_method == 'reversed':
+            self._field_boundary_points = self._sub_field_boundary_points_reversed()
+        else:
+            self._field_boundary_points = self._sub_field_boundary_points_iteration()
+        #self._runtime_evaluator.stop_timer()
+        #self._runtime_evaluator.print_timer()
+
+    def _sub_field_boundary_points_binary(self):
         # type: () -> list
         """
-        finds the points of the field edge visible in the image. Uses a faster binary search method, that occasionally
-        finds these points below field lines Todo: fix that by adjusting the parameters
-        :return: list of x,y tuples of the field edge:
+        Finds the points of the field edge visible in the image. Uses a faster binary search method, that unfortunately
+        finds these points below field lines sometimes
+        :return: points of the field_boundary as a list of x,y tuples
         """
-        # self._runtime_evaluator.start_timer()
 
-        # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the original image
+        # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
         # index counting up from top to bottom and left to right
         field_mask = self._field_color_detector.mask_image(self._image)
+        # noise reduction on the field_mask:
         field_mask = cv2.morphologyEx(
             field_mask,
             cv2.MORPH_CLOSE,
             np.ones((5, 5), dtype=np.uint8),
-            iterations=2)  # Todo: What does this do and do we need it?
-        # Todo: improve mask with only 1 and 0?
+            iterations=2)
 
         # the stepsize is the number of pixels traversed in the image by going one step
         y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
         x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
 
-        # the region of interest (roi) for a specific point is a rectangle with the point in the middle of its top row
-        # the point is slightly left of center when the width is even
+        # the region of interest (roi) for a specific point is a rectangle
+        # with the point in the middle of its top row; the point is slightly left of center when the width is even
         roi_start_height_y = self._roi_height
         roi_start_width_x = self._roi_width
-        roi_start_radius_x = (roi_start_width_x - 1) // 2 + 1
+        roi_start_radius_x = roi_start_width_x // 2
         # increase of roi radius per pixel, e.g. 0.1 increases the radius by 1 for every 10 pixels
-        # this accommodates for size difference of objects in the image depending on their distance and therefore height
-        # in image:
-        roi_increase = float(self._roi_increase) / 1000  # good value: 25
+        # this accommodates for size difference of objects in the image depending on their distance
+        # and therefore height in image:
+        roi_increase = self._roi_increase
         # height/width/radius-in-x-direction of the roi after maximum increase at the bottom of the image
         roi_max_height_y = roi_start_height_y + int(self._image.shape[0] * roi_increase * 2)
         roi_max_width_x = roi_start_width_x + int(self._image.shape[0] * roi_increase * 2)
-        roi_max_radius_x = (roi_max_width_x - 1) // 2 + 1
+        roi_max_radius_x = roi_max_width_x // 2
         # extents the outermost pixels of the image as the roi will go beyond the image at the edges
         # Syntax: cv2.copyMakeBorder(image, top, bottom, left, right, type of extension)
         field_mask = cv2.copyMakeBorder(field_mask, 0, roi_max_height_y, roi_max_radius_x, roi_max_radius_x,
@@ -124,18 +146,16 @@ class FieldBoundaryDetector:
         # kernel = np.zeros((roi_height, roi_width))  # creates a kernel with 0 everywhere
         # kernel[int(kernel_height/2):, :] = 1  # use this to fill in other values at specific places in the kernel
 
-        field_boundary_points = []
         green_threshold = self._green_threshold
-        roi_sum = -1  # default that should never occur
-        y_step = -1  # default that should never occur
-        roi_current_height_y = -1  # default that should never occur
         for x_step in range(0, self._x_steps):  # traverse columns (x_steps)
+            roi_mean = 0
+            y_step = 0
+            roi_current_height_y = 0
             # binary search for finding the first green pixel:
             first = 0  # top of the column
             last = self._y_steps - 1  # bottom of the column
             # calculate the x coordinate in the image of a column:
             x_image = int(round(x_step * x_stepsize)) + roi_max_radius_x
-            #rospy.logwarn("new collum")
             while first < last:
                 y_step = (first + last) // 2
                 y_image = int(round(y_step * y_stepsize))  # calculate the y coordinate in the image of a y_step
@@ -145,12 +165,11 @@ class FieldBoundaryDetector:
                 roi_current_height_y = roi_start_height_y + int(y_image * roi_increase * 2)
                 roi = field_mask[y_image:y_image + roi_current_height_y,
                                  x_image - (roi_current_radius_x - 1):x_image + roi_current_radius_x]
-                #rospy.loginfo("roi y:" + str(roi_current_height_y) + " x:" + str(roi_current_radius_x))
 
-                #roi = field_mask[y_image:y_image + roi_start_height, x_image - (x_pad - 1):x_image + x_pad]
-                roi_sum = roi.sum()
-                # roi_sum = (roi * kernel).sum()  # uncomment when using a kernel
-                if roi_sum > green_threshold:  # is the roi green enough?
+                roi_mean = roi.mean()
+                #print(roi_mean)
+                # roi_mean = (roi * kernel).sum()  # uncomment when using a kernel
+                if roi_mean > green_threshold:  # is the roi green enough?
                     # the value is green enough, therefore the field_boundary is somewhere above this point
                     # the area left to search can be halved by setting the new "last" above "y_current"
                     last = y_step - 1
@@ -162,28 +181,27 @@ class FieldBoundaryDetector:
             # When approaching the field_boundary from the top,
             # y_step stops one step above the field_boundary on a non green point.
             # Therefore the y_step has to be increased when it stops on a non green point.
-            if roi_sum <= green_threshold:
+            if roi_mean <= green_threshold:
                 y_step += 1
             # calculate the y coordinate in the image of the y_step the topmost green pixel was found on with an offset
             # of roi_height, as the region of interest extends this far below the point
             y_image = int(round(y_step * y_stepsize)) + roi_current_height_y
-            field_boundary_points.append((x_image - roi_max_radius_x, y_image))  # add the found field_edge point to the list
-        #self._runtime_evaluator.stop_timer()
-        #self._runtime_evaluator.print_timer()
-        return field_boundary_points
+            #print(y_image)
+            self._field_boundary_points.append((x_image - roi_max_radius_x, y_image))
+        return self._field_boundary_points
 
-    def _sub_field_boundary_reversed(self):
+    def _sub_field_boundary_points_reversed(self):
         # type: () -> list
         """
         Finds the points of the field boundary visible in the image. Uses the reversed method iterating from bottom to
-        top until it finds enough non green points.
-        :return: list of x,y tuples of the field edge:
+        top until it finds enough non green points. Useful for when two fields are adjacent to each other.
+        :return: points of the field_boundary as a list of x,y tuples
         """
-        # self._runtime_evaluator.start_timer()
 
-        # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the original image
+        # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
         # index counting up from top to bottom and left to right
         field_mask = self._field_color_detector.mask_image(self._image)
+        # noise reduction on the field_mask:
         field_mask = cv2.morphologyEx(
             field_mask,
             cv2.MORPH_CLOSE,
@@ -198,37 +216,33 @@ class FieldBoundaryDetector:
         # the point is slightly left of center when the width is even
         roi_start_height_y = self._roi_height
         roi_start_width_x = self._roi_width
-        roi_start_radius_x = (roi_start_width_x - 1) // 2 + 1
+        roi_start_radius_x = roi_start_width_x // 2
         # increase of roi radius per pixel, e.g. 0.1 increases the radius by 1 for every 10 pixels
-        # this accommodates for size difference of objects in the image depending on their distance and therefore height
-        # in image:
-        roi_increase = float(self._roi_increase) / 1000 # good value: 50
-
-
+        # this accommodates for size difference of objects in the image depending on their distance
+        # and therefore height in image:
+        roi_increase = self._roi_increase
         # height/width/radius-in-x-direction of the roi after maximum increase at the bottom of the image
         roi_max_height_y = roi_start_height_y + int(self._image.shape[0] * roi_increase * 2)
         roi_max_width_x = roi_start_width_x + int(self._image.shape[0] * roi_increase * 2)
-        roi_max_radius_x = (roi_max_width_x - 1) // 2 + 1
+        roi_max_radius_x = roi_max_width_x // 2
         # extents the outermost pixels of the image as the roi will go beyond the image at the edges
         # Syntax: cv2.copyMakeBorder(image, top, bottom, left, right, type of extension)
-        field_mask = cv2.copyMakeBorder(field_mask, 0, roi_max_height_y, roi_max_radius_x, roi_max_radius_x,
+        field_mask = cv2.copyMakeBorder(field_mask, roi_start_height_y, 0, roi_max_radius_x, roi_max_radius_x,
                                         cv2.BORDER_REPLICATE)
 
         # uncomment this to use a kernel for the roi
-        # kernel = np.zeros((roi_height, roi_width))  # creates a kernel with 0 everywhere
-        # kernel[int(kernel_height/2):, :] = 1  # use this to fill in other values at specific places in the kernel
+        kernel = np.ones((roi_max_height_y, roi_max_width_x))  # creates a kernel with 0 everywhere
+        # use this to fill in other values at specific places in the kernel
+        kernel[0: int(roi_max_height_y // 5), int(roi_max_width_x // 2.2): int(roi_max_width_x - roi_max_width_x // 2.2)] = 10
 
-        field_boundary_points = []
         green_threshold = self._green_threshold
-        roi_sum = -1  # default that should never occur
-        y_step = -1  # default that should never occur
-        worst_case = self._image.shape[0]
         for x_step in range(self._x_steps):  # traverse columns (x_steps)
-            top_green = worst_case  # set field_boundary point to worst case
-            x_image = int(round(x_step * x_stepsize)) + roi_max_radius_x # calculate the x coordinate in the image of a column
+            top_green = roi_start_height_y  # set field_boundary point to worst case
+            # calculate the x coordinate in the image of a column:
+            x_image = int(round(x_step * x_stepsize)) + roi_max_radius_x
             for y_step in range(self._y_steps):
                 # calculate the y coordinate in the image of a y_step:
-                y_image = int(self._image.shape[0] - (round(y_step * y_stepsize)))
+                y_image = int(self._image.shape[0] - (round(y_step * y_stepsize))) + roi_start_height_y
 
                 # creates the roi for a point (y_image, x_image)
                 roi_current_radius_x = roi_start_radius_x + int(y_image * roi_increase)
@@ -236,41 +250,43 @@ class FieldBoundaryDetector:
                 roi = field_mask[y_image - roi_current_height_y:y_image,
                                  x_image - (roi_current_radius_x - 1):x_image + roi_current_radius_x]
 
-                # roi = field_mask[y_image - roi_height:y_image, x_image - (x_pad - 1):x_image + x_pad]
-                roi_sum = roi.sum()
-                # roi_sum = (roi * kernel).sum()  # uncomment when using a kernel
-                if roi_sum > green_threshold:
-                    pass
-                else:
-                    top_green = y_image
-                    worst_case = y_image
-                    break
-            field_boundary_points.append((x_image - roi_max_radius_x, top_green))  # add the found field_boundary point to the list
-        # self._runtime_evaluator.stop_timer()
-        # self._runtime_evaluator.print_timer()
-        return field_boundary_points
+                # roi_mean = roi.mean()
 
-    def _sub_field_boundary_iteration(self):
+                roi_mean = (roi * kernel[roi_current_height_y - 1, roi_current_radius_x * 2 - 1]).mean()  # uncomment when using a kernel
+                #print(roi_mean)
+                if roi_mean <= green_threshold:
+                    top_green = y_image
+                    break
+            #print(roi_current_height_y)
+            self._field_boundary_points.append((x_image - roi_max_radius_x, top_green))
+        return self._field_boundary_points
+
+    def _sub_field_boundary_points_iteration(self):
         # type: () -> list
         """
         Finds the points of the field boundary visible in the image. Uses the standard method iterating from top to
         bottom until it finds enough green points.
-        :return: list of x,y tuples of the field edge:
+        :return: points of the field_boundary as a list of x,y tuples
         """
-        # self._runtime_evaluator.start_timer()
+
+        # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
+        # index counting up from top to bottom and left to right
         field_mask = self._field_color_detector.mask_image(self._image)
+        # noise reduction on the field_mask:
         field_mask = cv2.morphologyEx(
             field_mask,
             cv2.MORPH_CLOSE,
             np.ones((5, 5), dtype=np.uint8),
             iterations=2)
+
         # Syntax: cv2.resize(image, (width, height), type of interpolation)
         field_mask = cv2.resize(field_mask, (self._x_steps, self._y_steps), interpolation=cv2.INTER_LINEAR)
 
-        min_y = self._image.shape[0] - 1
+        # the stepsize is the number of pixels traversed in the image by going one step
         y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
         x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
-        field_boundary_points = []
+
+        min_y = self._image.shape[0] - 1
         for x_step in range(self._x_steps):  # traverse columns
             firstgreen = min_y  # set field_boundary point to worst case
             x = int(round(x_step * x_stepsize))  # get x value of step (depends on image size)
@@ -279,70 +295,68 @@ class FieldBoundaryDetector:
                 if field_mask[y_step, x_step] > 100:  # when the pixel is in the color space
                     firstgreen = y
                     break
-            field_boundary_points.append((x, firstgreen))
-        # self._runtime_evaluator.stop_timer()
-        # self._runtime_evaluator.print_timer()
-        return field_boundary_points
-
-    def compute_convex_field_boundary_points(self):
-        '''
-        returns a set of field_boundary points that form a convex hull of the
-        field
-        '''
-        if self._field_boundary_hull is None:
-            field_boundary_points = self.get_field_boundary_points()
-
-            #
-            # uncomment this block and the one below to view the
-            # old and new field_boundary
-            # (used for the images in the paper)
-            #
-            # # draw the old field_boundary line
-            # my_img = np.copy(self._image)
-            # for i in range(len(field_boundary_points) - 1):
-            #     cv2.line(my_img, field_boundary_points[i], field_boundary_points[i+1], (255,0,0))
-            # # fill the area below the old field_boundary black
-            # preprocessed_image = np.zeros(self._image.shape)
-            # hpoints = np.array([[(0, 0)] +
-            #                     field_boundary_points +
-            #                     [(preprocessed_image.shape[1] - 1, 0)]])
-            # cv2.fillPoly(preprocessed_image, np.int32(hpoints), 1)
-
-            # calculate the "convex hull" of the field_boundary points
-            field_boundary_points = self._graham(field_boundary_points)
-
-            # # fill the area below the new field_boundary black
-            # preprocessed_image2 = np.zeros(self._image.shape)
-            # hpoints = np.array([[(0, 0)] +
-            #                     field_boundary_points +
-            #                     [(preprocessed_image2.shape[1] - 1, 0)]])
-            # cv2.fillPoly(preprocessed_image2, np.int32(hpoints), 1)
-            # # show the results
-            # cv2.imshow('old field_boundary', preprocessed_image)
-            # cv2.waitKey(1)
-            # cv2.imshow('"grahamed" field_boundary', preprocessed_image2)
-            # cv2.waitKey(1)
-            # res_image = preprocessed_image2 - preprocessed_image
-            # cv2.imshow('areas above the "grahamed" field_boundary', res_image)
-            # cv2.waitKey(1)
-            # res_image = preprocessed_image - preprocessed_image2
-            # cv2.imshow('potential obstacles', res_image)
-            # cv2.waitKey(1)
-            # # draw the new field_boundary line
-            # for i in range(len(field_boundary_points) - 1):
-            #     cv2.line(my_img, field_boundary_points[i], field_boundary_points[i+1], (0,255,255))
-            # cv2.imshow('graham: input blue, output yellow', my_img)
-            # cv2.waitKey(1)
-
-            self._field_boundary_hull = field_boundary_points
+            self._field_boundary_points.append((x, firstgreen))
+        return self._field_boundary_points
 
     def get_convex_field_boundary_points(self):
         '''
         returns a set of field_boundary points that form a convex hull of the
         field
         '''
-        self.compute_convex_field_boundary_points()
-        return self._field_boundary_hull
+        if self._convex_field_boundary_points is None:
+            self._compute_convex_field_boundary_points()
+        return self._convex_field_boundary_points
+
+    def _compute_convex_field_boundary_points(self):
+        """
+        returns a set of field_boundary points that form a convex hull of the
+        field
+        """
+        field_boundary_points = self.get_field_boundary_points()
+
+        #
+        # uncomment this block and the one below to view the
+        # old and new field_boundary
+        # (used for the images in the paper)
+        #
+        # # draw the old field_boundary line
+        # my_img = np.copy(self._image)
+        # for i in range(len(field_boundary_points) - 1):
+        #     cv2.line(my_img, field_boundary_points[i], field_boundary_points[i+1], (255,0,0))
+        # # fill the area below the old field_boundary black
+        # preprocessed_image = np.zeros(self._image.shape)
+        # hpoints = np.array([[(0, 0)] +
+        #                     field_boundary_points +
+        #                     [(preprocessed_image.shape[1] - 1, 0)]])
+        # cv2.fillPoly(preprocessed_image, np.int32(hpoints), 1)
+
+        # calculate the "convex hull" of the field_boundary points
+        field_boundary_points = self._graham(field_boundary_points)
+
+        # # fill the area below the new field_boundary black
+        # preprocessed_image2 = np.zeros(self._image.shape)
+        # hpoints = np.array([[(0, 0)] +
+        #                     field_boundary_points +
+        #                     [(preprocessed_image2.shape[1] - 1, 0)]])
+        # cv2.fillPoly(preprocessed_image2, np.int32(hpoints), 1)
+        # # show the results
+        # cv2.imshow('old field_boundary', preprocessed_image)
+        # cv2.waitKey(1)
+        # cv2.imshow('"grahamed" field_boundary', preprocessed_image2)
+        # cv2.waitKey(1)
+        # res_image = preprocessed_image2 - preprocessed_image
+        # cv2.imshow('areas above the "grahamed" field_boundary', res_image)
+        # cv2.waitKey(1)
+        # res_image = preprocessed_image - preprocessed_image2
+        # cv2.imshow('potential obstacles', res_image)
+        # cv2.waitKey(1)
+        # # draw the new field_boundary line
+        # for i in range(len(field_boundary_points) - 1):
+        #     cv2.line(my_img, field_boundary_points[i], field_boundary_points[i+1], (0,255,255))
+        # cv2.imshow('graham: input blue, output yellow', my_img)
+        # cv2.waitKey(1)
+
+        self._convex_field_boundary_points = field_boundary_points
 
     def _graham(self, points):
         '''
@@ -435,7 +449,7 @@ class FieldBoundaryDetector:
 
         return stack
 
-    def _graham_point_sort(self, p, p0):
+    def _graham_point_sort(self, p, p0): # todo: warum das hier als extra methode?
         '''
         used to sort the points given to Graham's convex hull algorithm
         returns the cosine of the angle between the vector p0->p and the
@@ -443,7 +457,7 @@ class FieldBoundaryDetector:
         '''
         return -(p0[1] - p[1]) / (np.sqrt((p[0] - p0[0]) ** 2 + (p[1] - p0[1]) ** 2))
 
-    def _ccw(self, p1, p2, p3):
+    def _ccw(self, p1, p2, p3): # todo: why this as extra method
         '''
         returns whether the given points p1, p2 and p3 are 
         counter-clockwise (returns a value > 0)
@@ -452,7 +466,7 @@ class FieldBoundaryDetector:
         '''
         return (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0])
 
-    def _mask_field_boundary(self):
+    def _mask_field_boundary(self): #todo: ist das hier eine alte version der fieldboundary detection?
         mask = self._color_detector.mask_image(self._image)
         mask = cv2.morphologyEx(
             mask,
@@ -475,8 +489,7 @@ class FieldBoundaryDetector:
             field_boundary_points.append((x, firstgreen))
         return field_boundary_points
 
-
-    def _precise_field_boundary(self):
+    def _precise_field_boundary(self): #todo: ist das hier eine alte version der fieldboundary detection?
         # type: () -> list
         """
         Calculates the field_boundary coordinates in a precise way, but less fast and efficient.
@@ -556,7 +569,6 @@ class FieldBoundaryDetector:
         self.compute_full_convex_field_boundary()
         return self._convex_field_boundary_full
 
-
     def candidate_under_field_boundary(self, candidate, y_offset=0):
         # type: (tuple, int) -> bool
         """
@@ -576,7 +588,6 @@ class FieldBoundaryDetector:
         # type: (list, int) -> list
         return [candidate for candidate in candidates if self.candidate_under_field_boundary(candidate, y_offset)]
 
-
     def balls_under_field_boundary(self, balls, y_offset=0):
         # type: (list, int) -> list
         return [candidate for candidate in balls if self.candidate_under_field_boundary(
@@ -585,7 +596,6 @@ class FieldBoundaryDetector:
              candidate.get_width(),
              candidate.get_height()),
             y_offset)]
-
 
     def point_under_field_boundary(self, point, offset=0):
         # type: (tuple, int) -> bool
@@ -599,7 +609,6 @@ class FieldBoundaryDetector:
             rospy.logwarn('point_under_field_boundary got called with an out of bounds field_boundary point')
             return False
         return point[1] + offset > self.get_full_field_boundary()[point[0]]
-
 
     def get_upper_bound(self, y_offset=0):
         # type: () -> int
