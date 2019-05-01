@@ -1,14 +1,37 @@
-#GoAndKickBall - target
+#GoAndKickBallMapGoal
 $BallKickArea
     LEFT --> @KickBall + foot:left
     RIGHT --> @KickBall + foot:right
-    FAR --> @GoToBall + target:-target
+    FAR --> @GoToBall + target:map_goal
+
+#GoAndKickBallDetectionGoal
+$BallKickArea
+    LEFT --> @KickBall + foot:left
+    RIGHT --> @KickBall + foot:right
+    FAR --> @GoToBall + target:detection_goal
+
+#NoLocalizationPlayerBehavior
+$BallSeen
+    YES --> $BallClose
+        YES --> $GoalSeen
+            YES --> #GoAndKickBallDetectionGoal
+            NO --> @CircleBall, @SearchGoal
+        NO --> @GoToBall + target:detection_goal
+    NO --> @SearchBall
+
+
+#NoLocalizationGoalieBehavior
+$BallSeen
+    YES --> $BallDangerous
+        YES --> #GoAndKickBallDetectionGoal
+        NO --> @LookAtBall
+    NO --> @SearchBall
 
 #GoalieBehavior
 $Localization
     YES --> $BallSeen
         YES --> $BallDangerous
-            YES --> #GoAndKickBall + target:map_goal
+            YES --> #GoAndKickBallMapGoal
             NO --> @LookAtBall
         NO --> @SearchBall
     NO --> #NoLocalizationGoalieBehavior
@@ -17,7 +40,7 @@ $Localization
 #OffenseBehavior
 $Localization
     YES --> $BallSeen
-        YES --> #GoAndKickBall + target:map_goal
+        YES --> #GoAndKickBallMapGoal
         NO --> @SearchBall
     NO --> #NoLocalizationPlayerBehavior
 
@@ -25,7 +48,7 @@ $Localization
 $Localization
     YES --> $BallSeen
         YES --> $BallClose
-            YES --> #GoAndKickBall + target:map_goal
+            YES --> #GoAndKickBallMapGoal
             NO --> @GoToDefensePosition
         NO --> @SearchBall
     NO --> #NoLocalizationPlayerBehavior
@@ -36,23 +59,6 @@ $BallSeen
     YES --> $BallClose
         YES --> @KickBallVeryHard
         NO --> @GoToBall + target:detection_goal
-    NO --> @SearchBall
-
-#NoLocalizationPlayerBehavior
-$BallSeen
-    YES --> $BallClose
-        YES --> $GoalSeen
-            YES --> #GoAndKickBall + target:detection_goal
-            NO --> @CircleBall, @SearchGoal
-        NO --> @GoToBall + target:detection_goal
-    NO --> @SearchBall
-
-
-#NoLocalizationGoalieBehavior
-$BallSeen
-    YES --> $BallDangerous
-        YES --> #GoAndKickBall + target:detection_goal
-        NO --> @LookAtBall
     NO --> @SearchBall
 
 
