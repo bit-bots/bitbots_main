@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from construct import Byte, Struct, Enum, Bytes, Const, Array, Int16ul, Int32ul, PaddedString, Flag
+from construct import Byte, Struct, Enum, Bytes, Const, Array, Int16ul, Int32ul, PaddedString, Flag, Int16sl
 
 Short = Int16ul
 
@@ -39,7 +39,7 @@ TeamInfo = "team" / Struct(
     "penalty_shot" / Byte,  # penalty shot counter
     "single_shots" / Short,  # bits represent penalty shot success
     "coach_sequence" / Byte,
-    "coach_message" / PaddedString(10, 'utf8'),
+    "coach_message" / PaddedString(253, 'utf8'),
     "coach" / RobotInfo,
     "players" / Array(11, RobotInfo)
 )
@@ -77,7 +77,7 @@ GameState = "gamedata" / Struct(
     "secondary_state_info" / Bytes(4),
     "drop_in_team" / Flag,
     "drop_in_time" / Short,
-    "seconds_remaining" / Short,
+    "seconds_remaining" / Int16sl,
     "secondary_seconds_remaining" / Short,
     "teams" / Array(2, "team" / TeamInfo)
 )

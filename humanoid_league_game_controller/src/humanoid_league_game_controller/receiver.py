@@ -64,7 +64,7 @@ class GameStateReceiver(object):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind(self.addr)
-        self.socket.settimeout(0.5)
+        self.socket.settimeout(1)
         self.socket2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.socket2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
@@ -165,11 +165,12 @@ class GameStateReceiver(object):
             msg.allowedToMove = True
         elif me.penalty != 0:
             msg.allowedToMove = False
-        elif state.game_state in (0, 2):
+        elif state.game_state in ('STATE_INITIAL', 'STATE_SET'):
             msg.allowedToMove = False
-        elif state.game_state == 1:
+        elif state.game_state == 'STATE_READY':
+            print(1)
             msg.allowedToMove = True
-        elif state.game_state == 3:
+        elif state.game_state == 'STATE_PLAYING':
             if state.kick_of_team == self.team:
                 msg.allowedToMove = True
             elif state.kick_of_team >= 128:
