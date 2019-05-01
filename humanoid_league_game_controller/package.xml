@@ -3,9 +3,9 @@
   <name>humanoid_league_game_controller</name>
   <version>1.0.0</version>
   <description>
-    The humanoid_league_game_controller package.
-    This is a node which receives real humanoid_league signals and republishes
-    them as ros-messages
+      The humanoid_league_game_controller packages receives packets from the GameController and
+      republishes them as humanoid_league_msgs/GameState ROS messages. It sends response packets
+      back to the GameController.
   </description>
 
   <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
@@ -17,13 +17,15 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>roscpp</depend>
+  <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>humanoid_league_msgs</depend>
+  <depend>python-construct</depend>
 
   <export>
     <bitbots_documentation>
-      <status>unknown</status>
-      <language>c++</language>
+      <status>starts</status>
+      <language>python</language>
   </bitbots_documentation>
   </export>
 </package>

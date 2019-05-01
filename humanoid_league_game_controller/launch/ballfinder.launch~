@@ -1,6 +1,0 @@
-<launch>
-    <rosparam command="load" file="$(find ballfinder)/config/fieldColor.yaml" />
-    <rosparam command="load" file="$(find ballfinder)/config/ballColor.yaml" />
-    <node pkg="ballfinder" type="ballfinder_node" name="ballfinder_node" output="screen">
-    </node>
-</launch>

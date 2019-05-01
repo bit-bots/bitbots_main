@@ -1,4 +1,4 @@
----
-team_id: 8
+# Example file for the game controller node,
+# this config file will be replaced by the robot_compile script
+team_id: 22
 bot_id: 4
-interface: wlp1s0
