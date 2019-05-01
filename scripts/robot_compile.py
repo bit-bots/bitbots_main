@@ -166,7 +166,6 @@ if __name__ == '__main__':
                 robot_name_name = name
                 break
 
-
     if args.robot == 'wolfgang':
         workspace = workspaces['wolfgang']
     elif args.robot == 'davros':
@@ -279,3 +278,5 @@ if __name__ == '__main__':
                     print_warn('Build failed (or package {} does not exist on {}). Please check the build output!'.format(args.package, host[1]))
         print_success('Build succeeded!')
 
+    if not args.game_mode:
+        print_warn('You did not compile with game_mode. Nothing will start automatically')
