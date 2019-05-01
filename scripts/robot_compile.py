@@ -185,10 +185,12 @@ if __name__ == '__main__':
             autostart = 'true'
             start_motion = args.yes_to_all or input('Start motion on boot? (Y/n) ').lower() != 'n'
             start_behaviour = args.yes_to_all or input('Start behaviour on boot? (Y/n) ').lower() != 'n'
+            start_vision = args.yes_to_all or input('Start vision on boot? (Y/n) ').lower() != 'n'
         else:
             autostart = 'false'
             start_motion = False
             start_behaviour = False
+            start_vision = False
 
         robot_name = args.robot
 
@@ -217,6 +219,7 @@ if __name__ == '__main__':
             data['workspace'] = workspace
             data['start_motion'] = str(start_motion).lower()
             data['start_behaviour'] = str(start_behaviour).lower()
+            data['start_vision'] = str(start_vision).lower()
             data['host'] = host[1][:-1]
             data['quiet_option'] = '> /dev/null' if args.quiet else ''
             data['py_extensions'] = 'src/scripts/install_py_extensions.bash {} || exit 1;'.format(data['quiet_option']) if host[1].startswith('jetson') or args.robot != 'wolfgang' else ''
@@ -229,6 +232,7 @@ if __name__ == '__main__':
                 WORKSPACE="{workspace}"
                 START_MOTION={start_motion}
                 START_BEHAVIOUR={start_behaviour}
+                START_VISION={start_vision}
                 export ROS_MASTER_URI="http://ros-master:11311"' > ~/boot-configuration.sh
                 cd {workspace}
                 {py_extensions}
@@ -238,7 +242,6 @@ if __name__ == '__main__':
                 print_err('Copying the boot configuration failed!')
                 exit(copy_result.returncode)
         print_success('Sync succeeded!')
-
 
     if not args.sync_only:
         for host in hosts:
