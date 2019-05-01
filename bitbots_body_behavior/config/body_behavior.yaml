@@ -8,7 +8,7 @@ behavior:
 
     # When False, the behavior will use a simple fallback mode in which only detected image features are
     # used for decision making
-    use_localization: False
+    use_localization: false
 
     # Position format as in humanoid_league_msg/Position2D
     #      y
