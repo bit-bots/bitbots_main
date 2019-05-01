@@ -1,6 +1,6 @@
 <launch>
     <arg name="depends_only" default="false" />
-    <arg name="use_game-settings" default="false"/>
+    <arg name="use_game_settings" default="false"/>
 
     <rosparam command="load" file="$(find bitbots_head_behavior)/config/head_config.yaml"/>
 
