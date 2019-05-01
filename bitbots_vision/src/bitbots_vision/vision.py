@@ -81,7 +81,7 @@ class Vision:
 
         self.runtime_evaluator.set_image()
 
-        if (self.config['vision_ball_classifier'] == 'cascade'):
+        if self.config['vision_ball_classifier'] == 'cascade':
             self.ball_finder.set_image(image)
             self.ball_detector.set_image(
                 image,
