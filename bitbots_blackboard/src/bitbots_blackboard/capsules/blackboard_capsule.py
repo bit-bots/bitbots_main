@@ -14,7 +14,7 @@ class BlackboardCapsule:
     def __init__(self):
         self.my_data = {}
         self.head_pub = None  # type: rospy.Publisher
-        self.duty = rospy.get_param('game_settings/role')  # TODO: adapt to Leo's script
+        self.duty = rospy.get_param('role')  # TODO: adapt to Leo's script
 
     #####################
     # ## Tracking Part ##
