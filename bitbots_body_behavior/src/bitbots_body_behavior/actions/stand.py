@@ -17,7 +17,20 @@ class SendStop(AbstractActionElement):
 
 
 class Stop(AbstractActionElement):
-    """ This stopps the robots walking and pops itself after stop has completed """
+    """ This stops the robots walking and pops itself after stop has completed """
+
+    def perform(self, reevaluate=False):
+        stand_pose = PoseStamped()
+        stand_pose.header.stamp = rospy.Time.now()
+        stand_pose.header.frame_id = 'base_footprint'
+        stand_pose.pose.orientation.w = 1
+        self.blackboard.pathfinding.publish(stand_pose)
+        #TODO we should wait until the robot really stopped, by looking at the odometry
+        self.pop()
+
+
+class Stand(AbstractActionElement):
+    """ This stops the robots walking and pops itself after stop has completed """
 
     def perform(self, reevaluate=False):
         stand_pose = PoseStamped()
