@@ -46,6 +46,13 @@ class ColorTest:
                          tcp_nodelay=True,
                          buff_size=60000000)
 
+        # Register publisher for 'color_tester_mask_image'-messages
+        # TODO: add topic parameter
+        self.imagepublisher = rospy.Publisher(
+            'color_tester_mask_image',
+            Image,
+            queue_size=1)
+
         rospy.spin()
 
     def _image_callback(self, img):
@@ -59,8 +66,10 @@ class ColorTest:
         mask_img = self.color_detector.mask_image(image)
 
         # output masked image
-        cv2.imshow('Debug Image', mask_img)
-        cv2.waitKey(1)
+        #cv2.imshow('Debug Image', mask_img)
+        #cv2.waitKey(1)
+
+        self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask_img, '8UC1'))
 
     def _dynamic_reconfigure_callback(self, config, level):
         self.debug_mode = config['debug_on']
