@@ -66,6 +66,8 @@ class DynamicColorSpace:
         Load and update vision config.
         Handle config changes.
 
+        This callback is delayed (about 30 seconds) after changes through dynamic reconfigure
+
         :param Config msg: new 'vision_config'-message subscriber
         :return: None
         """
@@ -92,7 +94,7 @@ class DynamicColorSpace:
             self.debug_printer,
             self.package_path,
             vision_config)
-            
+
         self.field_boundary_detector = field_boundary.FieldBoundaryDetector(
             self.color_detector,
             vision_config,
@@ -203,7 +205,8 @@ class DynamicColorSpace:
         mask_image = self.color_detector.mask_image(image)
         # Get mask from field_boundary detector
         self.field_boundary_detector.set_image(image)
-        self.field_boundary_detector.compute_field_boundary_points()
+
+        self.field_boundary_detector._compute_field_boundary_points()
         mask = self.field_boundary_detector.get_mask()
         if mask is not None:
             # Get array of pixel coordinates of color candidates
