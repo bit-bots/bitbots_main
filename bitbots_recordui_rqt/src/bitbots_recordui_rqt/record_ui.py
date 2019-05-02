@@ -167,27 +167,8 @@ class RecordUI(Plugin):
             self._motorSwitched[self._initial_joints.name[i]] = True
 
 
-        #sets up a query on which robot is used, selects animation path according to this    
-        items = ["Amy", "Rory", "Clara", "Danny", "other"]
-        item, button_pressed= QInputDialog.getItem(self._widget, "Animation Path required", \
-            "Please select the robot you are using or 'other' to enter the path where animations are stored manually.", items, 0, False)
-        if button_pressed == False:
-            self._robot_anim_path = ""
-        if button_pressed:
-            print("Robot selected: "+item)
-            if item == "Amy":
-                self._robot_anim_path = "bitbots@nuc1:~/wolfgang_ws/src/wolfgang_robot/wolfgang_animations/animations/motion/"
-            if item == "Rory":
-                self._robot_anim_path = "bitbots@nuc2:~/wolfgang_ws/src/wolfgang_robot/wolfgang_animations/animations/motion/"
-            if item == "Clara":
-                self._robot_anim_path = "bitbots@odroid3:~/minibot_ws/src/bitbots_minibot/minibot_animations/animations/motion/"
-            if item == "Danny":
-                self._robot_anim_path = "bitbots@odroid4:~/minibot_ws/src/bitbots_minibot/minibot_animations/animations/motion/"
-            if item == "other":
-                self._robot_anim_path, button_pressed = QInputDialog.getText(self._widget, "Animation Path required", \
-                    "Please enter a different path.", QLineEdit.Normal, "")
-                if button_pressed == False or self._robot_anim_path == "":
-                    self._robot_anim_path = ""
+        host = os.environ['ROS_MASTER_URI'].split('/')[2].split(':')[0]
+        self._robot_anim_path = "bitbots@{}:~/wolfgang_ws/src/wolfgang_robot/wolfgang_animations/animations/motion/".format(host)
                 
         print("Set animation path to: "+str(self._robot_anim_path+"record.json"))
 
