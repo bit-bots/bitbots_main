@@ -17,7 +17,8 @@ class MotorVizHelper:
         parser = argparse.ArgumentParser()
         parser.add_argument("--walking", "-w", help="Directly get walking motor goals", action="store_true")
         parser.add_argument("--animation", "-a", help="Directly get animation motor goals", action="store_true")
-        parser.add_argument("--head", "-k", help="Directly get head motor goals", action="store_true")
+        parser.add_argument("--head", help="Directly get head motor goals", action="store_true")
+        parser.add_argument("--kick", help="Directly get kick motor goals", action="store_true")
         parser.add_argument("--all", help="Directly get all motor goals", action="store_true")
         args = parser.parse_args(args0[1:])
 
@@ -29,6 +30,8 @@ class MotorVizHelper:
             rospy.Subscriber("animation", Animation, self.animation_cb, queue_size=1, tcp_nodelay=True)
         if args.head or args.all:
             rospy.Subscriber("head_motor_goals", JointCommand, self.animation_cb, queue_size=1, tcp_nodelay=True)
+        if args.kick or args.all:
+            rospy.Subscriber("kick_motor_goals", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
 
         self.joint_state_msg = JointState()
