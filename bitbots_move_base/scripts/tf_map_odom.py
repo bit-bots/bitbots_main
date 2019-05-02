@@ -10,13 +10,12 @@ import tf
 class TFWorld(object):
     def __init__(self):
         rospy.init_node("map")
-        #rospy.Subscriber("/gazebo/model_states", ModelStates, self._callback, queue_size=1)
         br = tf.TransformBroadcaster()
         r = rospy.Rate(30)
         while not rospy.is_shutdown():
             transform = TransformStamped()
             transform.header.frame_id = "map"
-            transform.header.stamp = rospy.Time.now()
+            transform.header.stamp = rospy.Time.now() + rospy.Duration(0.1)
             transform.child_frame_id = "odom"
 
             transform.transform.translation.x = 0
