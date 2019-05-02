@@ -20,6 +20,7 @@ class GoToBall(AbstractActionElement):
 
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5.0))
         tf_listener = tf2.TransformListener(self.tf_buffer)
+        self.approach_distance = blackboard.config['ball_approach_distance']
 
     def perform(self, reevaluate=False):
         ball_position = self.blackboard.world_model.get_ball_position_uv()
@@ -28,19 +29,20 @@ class GoToBall(AbstractActionElement):
         ball_u, ball_v = ball_position
 
         if 'map_goal' == self.target:
-            point = (ball_u, ball_v, self.blackboard.world_model.get_map_based_opp_goal_angle_from_ball())
+            ball_point = (ball_u, ball_v, self.blackboard.world_model.get_map_based_opp_goal_angle_from_ball())
         elif 'detection_goal' == self.target:
             x_dist = self.blackboard.world_model.get_detection_based_goal_position_uv[0] - \
                      self.blackboard.world_model.get_ball_position_uv[0]
             y_dist = self.blackboard.world_model.get_detection_based_goal_position_uv[1] - \
                      self.blackboard.world_model.get_ball_position_uv[1]
             angle = math.atan2(y_dist, x_dist)
-            point = (ball_u, ball_v, angle)
+            ball_point = (ball_u, ball_v, angle)
         elif 'none' == self.target:
-            point = (ball_u, ball_v, 0)
+            ball_point = (ball_u, ball_v, 0)
         else:
             rospy.logerr("Target %s for go_to_ball action not specified.", self.target)
-
+            return 
+        point = align(Point(ball_point), self.approach_distance)
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
@@ -55,3 +57,12 @@ class GoToBall(AbstractActionElement):
         pose_msg.pose.orientation.w = quaternion[3]
 
         self.blackboard.pathfinding.publish(pose_msg)
+
+
+def align(pose_point, distance):
+    # type: (Point, float) -> Point
+    point = Point()
+    point.x = pose_point.x - distance * math.cos(pose_point.z)
+    point.y = pose_point.y - distance * math.sin(pose_point.z)
+    point.z = pose_point.z
+    return point

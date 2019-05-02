@@ -34,6 +34,9 @@ behavior:
     # it is considered lost and will be searched
     ball_lost_time: 0.5
 
+    # The distance we try to keep from the ball when preparing a kick
+    ball_approach_distance: 0.05
+
     # When the goal has not been seen for `goal_lost_time` seconds,
     # it is considered lost and will be searched
     goal_lost_time: 0.5

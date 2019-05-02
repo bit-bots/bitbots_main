@@ -2,6 +2,7 @@ import rospy
 import actionlib
 import math
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
+from geometry_msgs.msg import PoseStamped
 from humanoid_league_msgs.msg import Position2D
 from tf.transformations import euler_from_quaternion
 
@@ -20,6 +21,7 @@ class PathfindingCapsule:
         self.pathfinding_pub = None  # type: rospy.Publisher
 
     def publish(self, msg):
+        # type: (PoseStamped) -> None
         # TODO use _is_new_goal_far_from_old_goal
         self.pathfinding_pub.publish(msg)
 
