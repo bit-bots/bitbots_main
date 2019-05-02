@@ -26,13 +26,13 @@ if __name__ == "__main__":
         try:
             x = int(x_str)
         except ValueError:
-            print("try again, without fucking this time up please")
+            print("try again")
             continue
         y_str = raw_input("y:")
         try:
             y = int(y_str)
         except ValueError:
-            print("try again, without fucking this time up please")
+            print("try again")
             continue
 
         bi = BallsInImage()

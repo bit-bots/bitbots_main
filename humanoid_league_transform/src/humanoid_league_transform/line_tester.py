@@ -24,28 +24,28 @@ if __name__ == "__main__":
     try:
         x_start = int(x_start_str)
     except ValueError:
-        print("try again, without fucking this time up please")
+        print("try again")
         #continue
 
     y_start_str = raw_input("y_start:")
     try:
         y_start = int(y_start_str)
     except ValueError:
-        print("try again, without fucking this time up please")
+        print("try again")
        # continue
 
     x_end_str = raw_input("x_end:")
     try:
         x_end = int(x_end_str)
     except ValueError:
-        print("try again, without fucking this time up please")
+        print("try again")
        # continue
 
     y_end_str = raw_input("y_end:")
     try:
         y_end = int(y_end_str)
     except ValueError:
-        print("try again, without fucking this time up please")
+        print("try again")
        # continue
 
     while True:

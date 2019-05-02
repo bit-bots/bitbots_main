@@ -57,7 +57,7 @@ class TransformBall(object):
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
         self.ball_height = rospy.get_param("transformer/ball/ball_radius", 0.075)
-        self.publish_frame = "camera_optical_frame"
+        self.publish_frame = "base_footprint"
 
 
         rospy.spin()
@@ -78,7 +78,7 @@ class TransformBall(object):
         br.header.frame_id = self.publish_frame
 
         for ball in msg.candidates:
-            br.ball_relative = self.transform(ball.center, field)
+            br.ball_relative = self.transform(ball.center, field, msg.header.stamp)
             br.confidence = ball.confidence
 
             if br.ball_relative is not None:
@@ -101,8 +101,8 @@ class TransformBall(object):
 
         for seg in msg.segments:
             rel_seg = LineSegmentRelative()
-            rel_seg.start = self.transform(seg.start, field)
-            rel_seg.end = self.transform(seg.end, field)
+            rel_seg.start = self.transform(seg.start, field, msg.header.stamp)
+            rel_seg.end = self.transform(seg.end, field, msg.header.stamp)
 
             rel_seg.confidence = seg.confidence
 
@@ -115,9 +115,9 @@ class TransformBall(object):
 
         for circle in msg.circles:
             rel_circle = LineCircleRelative()
-            rel_circle.left = self.transform(circle.left, field)
-            rel_circle.middle = self.transform(circle.middle, field)
-            rel_circle.right = self.transform(circle.right, field)
+            rel_circle.left = self.transform(circle.left, field, msg.header.stamp)
+            rel_circle.middle = self.transform(circle.middle, field, msg.header.stamp)
+            rel_circle.right = self.transform(circle.right, field, msg.header.stamp)
 
             rel_circle.confidence = circle.confidence
 
@@ -130,8 +130,8 @@ class TransformBall(object):
             broken = False
             for segment in intersection.segments:
                 rel_seg = LineSegmentRelative()
-                rel_seg.start = self.transform(segment.start, field)
-                rel_seg.end = self.transform(segment.end, field)
+                rel_seg.start = self.transform(segment.start, field, msg.header.stamp)
+                rel_seg.end = self.transform(segment.end, field, msg.header.stamp)
 
                 rel_seg.confidence = segment.confidence
 
@@ -158,7 +158,7 @@ class TransformBall(object):
         if field is None:
             return
         for seg in msg.segments:
-            transformed = self.transform(seg.start,field)
+            transformed = self.transform(seg.start,field, msg.header.stamp)
             if transformed is not None:
                 points.append([transformed.x, transformed.y, transformed.z])
         pc_header = msg.header
@@ -178,11 +178,11 @@ class TransformBall(object):
         goal.header.stamp = msg.header.stamp
         goal.header.frame_id = self.publish_frame
 
-        transformed_left = self.transform(msg.left_post.foot_point, field)
+        transformed_left = self.transform(msg.left_post.foot_point, field, msg.header.stamp)
         goal.left_post = transformed_left
 
         if msg.right_post.foot_point.x != 0:
-            transformed_right = self.transform(msg.right_post.foot_point, field)
+            transformed_right = self.transform(msg.right_post.foot_point, field, msg.header.stamp)
             goal.right_post = transformed_right
 
         goal.confidence = msg.confidence
@@ -210,7 +210,7 @@ class TransformBall(object):
             point = Point()
             point.x = o.top_left.x + o.height
             point.y = o.top_left.y + o.width/2
-            obstacle.position = self.transform(point, field)
+            obstacle.position = self.transform(point, field, msg.header.stamp)
             obstacles.obstacles.append(obstacle)
 
         self.obstacle_relative_pub.publish(obstacles)
@@ -251,7 +251,7 @@ class TransformBall(object):
         field_normal = field_point - field_normal
         return field_normal, field_point
 
-    def transform(self, point, field):
+    def transform(self, point, field, stamp):
         K = self.camera_info.K
         
         x = (point.x - K[2]) / K[0]
@@ -260,8 +260,21 @@ class TransformBall(object):
 
         point_on_image = np.array([x, y, z])
 
-        return line_plane_intersection(field[0], field[1], point_on_image)
+        intersection = line_plane_intersection(field[0], field[1], point_on_image)
+        intersection_stamped = PointStamped()
+        intersection_stamped.point = intersection
+        intersection_stamped.header.stamp = stamp
+        intersection_stamped.header.frame_id = self.camera_info.header.frame_id
+        try:
+            intersection_transformed = self.tf_buffer.transform(intersection_stamped, self.publish_frame)
+        except tf2_ros.LookupException as ex:
+            rospy.logwarn(ex)
+            return None
+        except tf2_ros.ExtrapolationException:
+            rospy.logwarn("Waiting for transforms to become available...")
+            return None
 
+        return intersection_transformed.point
 
 def line_plane_intersection(plane_normal, plane_point, ray_direction):
     ndotu = plane_normal.dot(ray_direction)
