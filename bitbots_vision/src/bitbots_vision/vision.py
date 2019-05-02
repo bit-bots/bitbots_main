@@ -254,7 +254,7 @@ class Vision:
         if config['vision_ball_classifier'] == 'dummy':
             self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, self.debug_printer)
 
-        # color config
+        # Print status of color config
         if 'vision_use_sim_color' not in self.config or \
             config['vision_use_sim_color'] != self.config['vision_use_sim_color']:
             if config['vision_use_sim_color']:
