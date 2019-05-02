@@ -11,7 +11,7 @@ import rospy
 import tf2_ros as tf2
 from tf2_geometry_msgs import PointStamped
 from tf.transformations import euler_from_quaternion
-from humanoid_league_msgs.msg import Position2D, ObstaclesRelative, GoalRelative
+from humanoid_league_msgs.msg import Position2D, ObstaclesRelative, GoalRelative, BallRelative
 
 
 class WorldModelCapsule:
@@ -58,16 +58,19 @@ class WorldModelCapsule:
         raise NotImplementedError
 
     def ball_callback(self, ball):
+        # type: (BallRelative) -> None
         if ball.confidence == 0:
             return
 
-        self.ball = PointStamped(ball.header, ball.ball_relative)
-        try:
-            self.ball = self.tf_buffer.transform(self.ball, 'base_footprint', timeout=rospy.Duration(0.3))
-            self.ball_seen_time = rospy.get_time()
+        ball_buffer = PointStamped(ball.header, ball.ball_relative)
+        if ball.header.frame_id != 'base_footprint':
+            try:
+                self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
+                self.ball_seen_time = rospy.get_time()
 
-        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            rospy.logwarn(e)
+            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                rospy.logwarn(e)
+
 
     ###########
     # ## Goal #
