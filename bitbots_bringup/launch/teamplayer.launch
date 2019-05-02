@@ -3,6 +3,8 @@
     <arg name="motion" default="true"/>
     <arg name="behave" default="true"/>
     <arg name="vision" default="false"/>
+    <arg name="teamcom" default="false"/>
+    <arg name="localization" default="false"/>
 
     <arg name="use_game_settings" default="true"/>
     
@@ -29,18 +31,24 @@
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
 
-    <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch">
-        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
-    </include>
+    <group if="$(arg teamcom)">
+        <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch">
+            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+        </include>
+    </group>
 
-    <include file="$(find bitbots_localization)/launch/localization_amcl.launch">
-        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
-    </include>
+    <group if="$(arg localization)">
+        <include file="$(find bitbots_localization)/launch/localization_amcl.launch">
+            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+        </include>
+    </group>
 
-    <!--include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch"/-->
-    <include file="$(find bitbots_bezier_pathfinding)/launch/bezier_pathfinding.launch">
-        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+    <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch">
+        <arg name="localization" value="$(arg localization)"/>
     </include>
+    <!-- include file="$(find bitbots_bezier_pathfinding)/launch/bezier_pathfinding.launch">
+        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+    </include -->
 
     <group if="$(arg behave)">
         <include file="$(find bitbots_body_behavior)/launch/behavior.launch">
