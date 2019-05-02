@@ -71,9 +71,17 @@ GameState = "gamedata" / Struct(
                              STATE_DIRECT_FREEKICK=4,
                              STATE_INDIRECT_FREEKICK=5,
                              STATE_PENALTYKICK=6,
+                             STATE_CORNER_KICK=7,
+                             STATE_GOAL_KICK=8,
+                             STATE_THROW_IN=9,
                              DROPBALL=128,
                              UNKNOWN=255
                              ),
+    # For free kick etc: [teamsPerforming, subMode, 0 ,0]
+    # SubMode:
+    #  0 = Robots should stay still, referee places the ball on the ground
+    #  1 = Robots can place themselves toward the ball
+    #  2 = Robots should stay still and referees ask to remove illegally positioned robots
     "secondary_state_info" / Bytes(4),
     "drop_in_team" / Flag,
     "drop_in_time" / Short,

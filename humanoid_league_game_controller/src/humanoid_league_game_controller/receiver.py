@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
 from __future__ import unicode_literals, print_function
@@ -149,7 +149,6 @@ class GameStateReceiver(object):
         msg.header.stamp = rospy.Time.now()
         msg.gameState = state.game_state.intvalue
         msg.secondaryState = state.secondary_state.intvalue
-        msg.secondaryStateTeam  # TODO
         msg.firstHalf = state.first_half
         msg.ownScore = own_team.score
         msg.rivalScore = rival_team.score
@@ -168,13 +167,24 @@ class GameStateReceiver(object):
         elif state.game_state in ('STATE_INITIAL', 'STATE_SET'):
             msg.allowedToMove = False
         elif state.game_state == 'STATE_READY':
-            print(1)
             msg.allowedToMove = True
         elif state.game_state == 'STATE_PLAYING':
-            if state.kick_of_team == self.team:
-                msg.allowedToMove = True
-            elif state.kick_of_team >= 128:
+            if state.kick_of_team >= 128:
                 # Drop ball
+                msg.allowedToMove = True
+            elif state.secondary_state in (
+                    'STATE_DIRECT_FREEKICK',
+                    'STATE_INDIRECT_FREEKICK',
+                    'STATE_PENALTYKICK',
+                    'STATE_CORNER_KICK',
+                    'STATE_GOAL_KICK',
+                    'STATE_THROW_IN'):
+                if state.secondary_state_info[1] in (0, 2):
+                    msg.allowedToMove = False
+                else:
+                    msg.allowedToMove = True
+                msg.secondaryStateTeam = state.secondary_state_info[0]
+            elif state.kick_of_team == self.team:
                 msg.allowedToMove = True
             else:
                 # Other team has kickoff
@@ -184,7 +194,7 @@ class GameStateReceiver(object):
                     # We have waited the kickoff time
                     msg.allowedToMove = True
 
-        msg.teamColor = own_team.team_color
+        msg.teamColor = own_team.team_color.intvalue
         msg.dropInTeam = state.drop_in_team
         msg.dropInTime = state.drop_in_time
         msg.penaltyShot = own_team.penalty_shot
