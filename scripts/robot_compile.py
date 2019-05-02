@@ -115,27 +115,27 @@ def configure(args):
 
         if args.boot_config:
             data = dict()
-            data['motion'] = 'systemctl start --user start_motion.service; systemctl enable --user start_motion.service' \
-                if start_motion and host.startswith('nuc') else \
-                'systemctl disable --user start_motion.service'
+            data['motion'] = 'sudo systemctl start start_motion.service; sudo systemctl enable start_motion.service' \
+                if start_motion and host[1].startswith('nuc') else \
+                'sudo systemctl disable start_motion.service'
 
-            data['behavior'] = 'systemctl start --user start_behavior.service; systemctl enable --user start_behavior.service' \
-                if start_behaviour and host.startswith('nuc') else \
-                'systemctl disable --user start_behavior.service'
+            data['behavior'] = 'sudo systemctl start start_behavior.service; sudo systemctl enable start_behavior.service' \
+                if start_behaviour and host[1].startswith('nuc') else \
+                'sudo systemctl disable start_behavior.service'
 
-            data['vision'] = 'systemctl start --user start_vision.service; systemctl start --user start_vision.service' \
-                if start_vision and host.startswith('jetson') else \
-                'systemctl disable --user start_vision.service'
+            data['vision'] = 'sudo systemctl start start_vision.service; sudo systemctl start start_vision.service' \
+                if start_vision and host[1].startswith('jetson') else \
+                'sudo systemctl disable start_vision.service'
 
-            data['roscore'] = 'systemctl start --user start_roscore.service; systemctl enable --user start_roscore.service' \
-                if start_roscore and host.startswith('nuc') else \
-                'systemctl disable --user start_roscore.service'
+            data['roscore'] = 'sudo systemctl start start_roscore.service; sudo systemctl enable start_roscore.service' \
+                if start_roscore and host[1].startswith('nuc') else \
+                'sudo systemctl disable start_roscore.service'
 
             print_info('Configuring boot for {}...'.format(host[1]))
             r = subprocess.run([
                 'ssh',
                 'bitbots@{}'.format(host[0]),
-                '\'{roscore}; {motion}; {behavior}\''.format(**data)
+                'bash -c \'{roscore}; {motion}; {behavior}\''.format(**data)
             ])
             if r.returncode != 0:
                 print_err('Configuring {} failed!'.format(host[1]))
