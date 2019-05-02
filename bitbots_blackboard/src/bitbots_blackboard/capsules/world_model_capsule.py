@@ -48,12 +48,7 @@ class WorldModelCapsule:
         return self.ball
 
     def get_ball_position_uv(self):
-        try:
-            ball = self.tf_buffer.transform(self.ball, 'base_footprint', timeout=rospy.Duration(0.3))
-        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            rospy.logwarn(e)
-            return None
-        return ball.point.x, ball.point.y
+        return self.ball.point.x, self.ball.point.y
 
     def get_ball_distance(self):
         u, v = self.get_ball_position_uv()
@@ -67,7 +62,12 @@ class WorldModelCapsule:
             return
 
         self.ball = PointStamped(ball.header, ball.ball_relative)
-        self.ball_seen_time = rospy.get_time()
+        try:
+            self.ball = self.tf_buffer.transform(self.ball, 'base_footprint', timeout=rospy.Duration(0.3))
+            self.ball_seen_time = rospy.get_time()
+
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
 
     ###########
     # ## Goal #
