@@ -324,9 +324,6 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         # toggle publishing of mask_img_dyn msg with dynamic color space
         self.publish_dyn_field_mask_msg = self.config['dynamic_color_space_publish_field_mask_image']
 
-        # toggle use of dynamic color space
-        self.dynamic_color_space_turned_on = self.config['dynamic_color_space_active']
-
         # Subscribe to 'ROS_dynamic_color_space_msg_topic'
         self.color_space_subscriber = rospy.Subscriber(
             config['ROS_dynamic_color_space_msg_topic'],
@@ -350,23 +347,20 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         :param np.array image: image to mask
         :return np.array: masked image
         """
-        if (not self.dynamic_color_space_turned_on) or self.publish_field_mask_img_msg:
+        dyn_mask = VisionExtensions.maskImg(image, self.color_space)
+
+        if self.publish_field_mask_img_msg:
             static_mask = VisionExtensions.maskImg(image, self.base_color_space)
 
-        if self.dynamic_color_space_turned_on:
-            dyn_mask = VisionExtensions.maskImg(image, self.color_space)
-            # toggle publishing of dynamic field masks
-            if (self.primary_detector and self.publish_dyn_field_mask_msg):
-                self.imagepublisher_dyn.publish(self.bridge.cv2_to_imgmsg(dyn_mask, '8UC1'))
+        # toggle publishing of dynamic field masks
+        if (self.primary_detector and self.publish_dyn_field_mask_msg):
+            self.imagepublisher_dyn.publish(self.bridge.cv2_to_imgmsg(dyn_mask, '8UC1'))
   
         # toggle publishing of field masks       
         if (self.primary_detector and self.publish_field_mask_img_msg):
             self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(static_mask, '8UC1'))
 
-        if self.dynamic_color_space_turned_on:
-            return dyn_mask
-        else:
-            return static_mask
+        return dyn_mask
 
     def color_space_callback(self, msg):
         # type: (ColorSpace) -> None
