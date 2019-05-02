@@ -31,26 +31,26 @@ class GoToBall(AbstractActionElement):
         if 'map_goal' == self.target:
             ball_point = (ball_u, ball_v, self.blackboard.world_model.get_map_based_opp_goal_angle_from_ball())
         elif 'detection_goal' == self.target:
-            x_dist = self.blackboard.world_model.get_detection_based_goal_position_uv[0] - \
-                     self.blackboard.world_model.get_ball_position_uv[0]
-            y_dist = self.blackboard.world_model.get_detection_based_goal_position_uv[1] - \
-                     self.blackboard.world_model.get_ball_position_uv[1]
+            x_dist = self.blackboard.world_model.get_detection_based_goal_position_uv()[0] - \
+                     self.blackboard.world_model.get_ball_position_uv()[0]
+            y_dist = self.blackboard.world_model.get_detection_based_goal_position_uv()[1] - \
+                     self.blackboard.world_model.get_ball_position_uv()[1]
             angle = math.atan2(y_dist, x_dist)
             ball_point = (ball_u, ball_v, angle)
         elif 'none' == self.target:
             ball_point = (ball_u, ball_v, 0)
         else:
             rospy.logerr("Target %s for go_to_ball action not specified.", self.target)
-            return 
-        point = align(Point(ball_point), self.approach_distance)
+            return
+        point = align(Point(*ball_point), self.approach_distance)
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = 'base_footprint'
 
-        pose_msg.pose.position = Point(point[0], point[1], 0)
+        pose_msg.pose.position = Point(point.x, point.y, 0)
 
-        quaternion = quaternion_from_euler(0, 0, point[2])
+        quaternion = quaternion_from_euler(0, 0, point.z)
         pose_msg.pose.orientation.x = quaternion[0]
         pose_msg.pose.orientation.y = quaternion[1]
         pose_msg.pose.orientation.z = quaternion[2]

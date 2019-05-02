@@ -70,6 +70,9 @@ class WorldModelCapsule:
 
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 rospy.logwarn(e)
+        else:
+            self.ball = ball_buffer
+            self.ball_seen_time = rospy.get_time()
 
 
     ###########
