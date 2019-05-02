@@ -15,7 +15,7 @@ $BallSeen
     YES --> $BallClose
         YES --> $GoalSeen
             YES --> #GoAndKickBallDetectionGoal
-            NO --> @SendStop, @SearchGoal
+            NO --> @GoToBall + target:none, @SearchGoal
         NO --> @GoToBall + target:none
     NO --> @SearchBall
 
