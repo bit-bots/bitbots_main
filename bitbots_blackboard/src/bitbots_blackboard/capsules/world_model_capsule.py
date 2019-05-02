@@ -25,6 +25,7 @@ class WorldModelCapsule:
         self.my_data = dict()
         self.counter = 0
         self.ball_seen_time = 0
+        self.goal_seen_time = 0
         self.field_length = field_length
         self.field_width = field_width
 
@@ -76,7 +77,7 @@ class WorldModelCapsule:
         # We are currently not seeing any goal, we know where they are based
         # on the localisation. Therefore, any_goal_last_seen returns the time
         # from the stamp of the last position update
-        return self.position.header.stamp.to_time()
+        return self.goal_seen_time
 
     def get_map_based_opp_goal_center_uv(self):
         x, y = self.get_map_based_opp_goal_center_xy()
@@ -124,6 +125,7 @@ class WorldModelCapsule:
     def goal_callback(self, msg):
         # type: (GoalRelative) -> None
         self.goal = msg
+        self.goal_seen_time = rospy.get_time()
 
     #############
     # ## Common #
