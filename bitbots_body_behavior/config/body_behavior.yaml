@@ -32,14 +32,14 @@ behavior:
 
     # When the ball has not been seen for `ball_lost_time` seconds,
     # it is considered lost and will be searched
-    ball_lost_time: 0.5
+    ball_lost_time: 5
 
     # The distance we try to keep from the ball when preparing a kick
     ball_approach_distance: 0.05
 
     # When the goal has not been seen for `goal_lost_time` seconds,
     # it is considered lost and will be searched
-    goal_lost_time: 0.5
+    goal_lost_time: 5
 
 
     # When the ball is closer than `ball_close_distance` meters
@@ -50,8 +50,8 @@ behavior:
     # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
     # http://www.ros.org/reps/rep-0103.html#axis-orientation
     right_kick_min_x: 0
-    right_kick_min_y: -0.2
-    right_kick_max_x: 0.15
+    right_kick_min_y: -0.3
+    right_kick_max_x: 0.2
     right_kick_max_y: 0
 
     # An area in which the ball can be kicked with the left foot
@@ -59,8 +59,8 @@ behavior:
     # http://www.ros.org/reps/rep-0103.html#axis-orientation
     left_kick_min_x: 0
     left_kick_min_y: 0
-    left_kick_max_x: 0.15
-    left_kick_max_y: 0.2
+    left_kick_max_x: 0.2
+    left_kick_max_y: 0.3
 
     # defines the radius around the goal (in form of a box)
     # in this area, the goalie will react to the ball.
