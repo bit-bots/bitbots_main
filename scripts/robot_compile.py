@@ -203,7 +203,7 @@ if not args.compile_only:
             synchronize(sync_includes_file, host, workspace)
 
         if host[1].startswith('odroid') or host[1].startswith('nuc'):
-            add_game_controller_config(host[1][-1:], workspace, host)
+            add_game_controller_config(int(host[1][-1:]) + 4, workspace, host)
 
         print_info('Copying boot configuration to {}...'.format(host[1]))
         data = dict()
