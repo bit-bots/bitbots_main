@@ -38,7 +38,7 @@ hcm:
   threshold_gyro_y_front: 7 # > gyroY
   threshold_gyro_x_side: 7 # > gyroX
   falling_threshold_orientation_left_right: 60 # > Point of no return in degrees
-  falling_threshold_orientation_front_back: 60 # < Point of no return in degrees
+  falling_threshold_orientation_front_back: 45 # < Point of no return in degrees
   falling_new_front: 32
   falling_new_back: -6
   falling_new_left: -18
