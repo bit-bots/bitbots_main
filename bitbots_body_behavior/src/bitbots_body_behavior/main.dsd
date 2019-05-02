@@ -64,7 +64,9 @@ $Localization
 $BallSeen
     YES --> $BallClose
         YES --> @KickBallVeryHard
-        NO --> @GoToBall + target:detection_goal
+        NO --> $GoalSeen
+            YES --> @GoToBall + target:detection_goal
+            NO --> @GoToBall + target:none
     NO --> @SearchBall
 
 
