@@ -4,7 +4,7 @@
 	branch = lunar-devel
 [submodule "lib/bio_ik"]
 	path = lib/bio_ik
-	url = https://github.com/Bit-Bots/bio_ik.git
+	url = git@github.com/bit-bots/bio_ik.git
 [submodule "lib/DynamixelSDK"]
 	path = lib/DynamixelSDK
 	url = git@github.com:bit-bots/DynamixelSDK.git
@@ -16,7 +16,7 @@
 	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git
 [submodule "lib/bio_ik_service"]
 	path = lib/bio_ik_service
-	url = https://github.com/Bit-Bots/bio_ik_service.git
+	url = git@github.com/bit-bots/bio_ik_service.git
 [submodule "dynamic_stack_decider"]
 	path = dynamic_stack_decider
 	url = git@github.com:bit-bots/dynamic_stack_decider.git
