@@ -103,43 +103,43 @@ def synchronize(sync_includes_file, host, workspace, package=None):
 
 # noinspection PyUnboundLocalVariable
 def configure(args):
-    if args.boot_config:
-        start_motion = args.yes_to_all or input('Start motion on boot? (Y/n) ').lower() != 'n'
-        start_behaviour = args.yes_to_all or input('Start behaviour on boot? (Y/n) ').lower() != 'n'
-        start_vision = args.yes_to_all or input('Start vision on boot? (Y/n) ').lower() != 'n'
-        start_roscore = args.yes_to_all or input('Start roscore on boot? (Y/n) ').lower() != 'n'
+    start_motion = args.yes_to_all or input('Start motion on boot? (Y/n) ').lower() != 'n'
+    start_behaviour = args.yes_to_all or input('Start behaviour on boot? (Y/n) ').lower() != 'n'
+    start_vision = args.yes_to_all or input('Start vision on boot? (Y/n) ').lower() != 'n'
+    start_roscore = args.yes_to_all or input('Start roscore on boot? (Y/n) ').lower() != 'n'
 
     for host in hosts:
         if host[1].startswith('odroid') or host[1].startswith('nuc'):
             add_game_controller_config(host[1][-1:], workspace, host)
 
-        if args.boot_config:
-            data = dict()
-            data['motion'] = 'sudo systemctl start start_motion.service; sudo systemctl enable start_motion.service' \
-                if start_motion and host[1].startswith('nuc') else \
-                'sudo systemctl disable start_motion.service'
+        data = dict()
+        data['motion'] = 'sudo /bin/systemctl start bitbots_motion.service; sudo /bin/systemctl enable bitbots_motion.service' \
+            if start_motion and host[1].startswith('nuc') else \
+            'sudo /bin/systemctl disable bitbots_motion.service'
 
-            data['behavior'] = 'sudo systemctl start start_behavior.service; sudo systemctl enable start_behavior.service' \
-                if start_behaviour and host[1].startswith('nuc') else \
-                'sudo systemctl disable start_behavior.service'
+        data['behavior'] = 'sudo /bin/systemctl start bitbots_behavior.service; sudo /bin/systemctl enable bitbots_behavior.service' \
+            if start_behaviour and host[1].startswith('nuc') else \
+            'sudo /bin/systemctl disable bitbots_behavior.service'
 
-            data['vision'] = 'sudo systemctl start start_vision.service; sudo systemctl start start_vision.service' \
-                if start_vision and host[1].startswith('jetson') else \
-                'sudo systemctl disable start_vision.service'
+        data['vision'] = 'sudo /bin/systemctl start bitbots_vision.service; sudo /bin/systemctl start bitbots_vision.service' \
+            if start_vision and host[1].startswith('jetson') else \
+            'sudo /bin/systemctl disable bitbots_vision.service'
 
-            data['roscore'] = 'sudo systemctl start start_roscore.service; sudo systemctl enable start_roscore.service' \
-                if start_roscore and host[1].startswith('nuc') else \
-                'sudo systemctl disable start_roscore.service'
+        data['roscore'] = 'sudo /bin/systemctl start roscore.service; sudo /bin/systemctl enable roscore.service' \
+            if start_roscore and host[1].startswith('nuc') else \
+            'sudo /bin/systemctl disable roscore.service'
 
-            print_info('Configuring boot for {}...'.format(host[1]))
-            r = subprocess.run([
-                'ssh',
-                'bitbots@{}'.format(host[0]),
-                'bash -c \'{roscore}; {motion}; {behavior}\''.format(**data)
-            ])
-            if r.returncode != 0:
-                print_err('Configuring {} failed!'.format(host[1]))
-                exit(r.returncode)
+        print_info('Configuring boot for {}...'.format(host[1]))
+        r = subprocess.run([
+            'ssh',
+            'bitbots@{}'.format(host[0]),
+            'bash -c \'{roscore}; {motion}; {behavior}\''.format(**data)
+        ])
+        if r.returncode != 0:
+            print_err('Configuring {} failed!'.format(host[1]))
+            exit(r.returncode)
+
+    print_success('Successfully set all boot configurations')
 
 
 def parse_arguments():
@@ -154,7 +154,6 @@ def parse_arguments():
     mode.add_argument('-c', '--compile-only', action='store_true', help='Build only, don\'t copy any files')
     mode.add_argument('-k', '--configure-only', action='store_true', help='Only configure, don\'t deploy anything new')
     parser.add_argument('-p', '--package', help='Sync/Compile only the given ROS package')
-    parser.add_argument('-b', '--boot-config', action='store_true', help='Configure boot autostart')
     parser.add_argument('-y', '--yes-to-all', action='store_true', help='Answer yes to all questions')
     parser.add_argument('-j', '--jobs', metavar='N', default=6, type=int, help='Compile using N jobs (default 6)')
     parser.add_argument('--clean-build', action='store_true', help='Clean workspace before building')
