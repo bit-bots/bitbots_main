@@ -82,16 +82,7 @@ class Vision:
 
         self.runtime_evaluator.set_image()
 
-        if (self.config['vision_ball_classifier'] == 'cascade'):
-            self.ball_finder.set_image(image)
-            self.ball_detector.set_image(
-                image,
-                self.horizon_detector.balls_under_horizon(
-                    self.ball_finder.get_ball_candidates(),
-                    self._ball_candidate_y_offset))
-
-        elif (self.config['vision_ball_classifier'] == 'fcnn'):
-            self.ball_detector.set_image(image)
+        self.ball_detector.set_image(image)
 
         if self.config['vision_parallelize']:
             self.horizon_detector.compute_all()  # computes stuff which is needed later in the processing
