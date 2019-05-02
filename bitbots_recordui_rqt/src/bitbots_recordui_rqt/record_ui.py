@@ -358,7 +358,12 @@ class RecordUI(Plugin):
 
         animstate = self._recorder.get_animation_state()
         for i in animstate:
-            self._checkBoxesPower[i['name']] = i['torque']
+            try:
+                self._checkBoxesPower[i['name']] = i['torque']
+            except KeyError:
+                self._checkBoxesPower[i['name']] = {}
+                for key in self.ids:
+                    self._checkBoxesPower[i['name']][key] = 2
 
 
 
