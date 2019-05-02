@@ -261,6 +261,8 @@ class TransformBall(object):
         point_on_image = np.array([x, y, z])
 
         intersection = line_plane_intersection(field[0], field[1], point_on_image)
+        if intersection is None:
+            return None
         intersection_stamped = PointStamped()
         intersection_stamped.point = intersection
         intersection_stamped.header.stamp = stamp
