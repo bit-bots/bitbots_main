@@ -179,7 +179,7 @@ def parse_arguments():
     mode = parser.add_mutually_exclusive_group(required=False)
     mode.add_argument('-s', '--sync-only', action='store_true', help='Sync files only, don\'t build')
     mode.add_argument('-c', '--compile-only', action='store_true', help='Build only, don\'t copy any files')
-    mode.add_argument('-k', '--configure-only', action='store_true', help='Only configure, don\'t deploy anything new')
+    mode.add_argument('-k', '--configure', action='store_true', help='Configure only, don\'t deploy anything new')
     parser.add_argument('-p', '--package', help='Sync/Compile only the given ROS package')
     parser.add_argument('-y', '--yes-to-all', action='store_true', help='Answer yes to all questions')
     parser.add_argument('-j', '--jobs', metavar='N', default=6, type=int, help='Compile using N jobs (default 6)')
@@ -247,7 +247,7 @@ if __name__ == '__main__':
     print_info('Workspace: ' + workspace)
     print()
 
-    if not args.compile_only and not args.configure_only:
+    if not args.compile_only:
         for host in hosts:
             if args.clean_all or args.clean_src:
                 clean_src_dir(host, workspace)
@@ -264,7 +264,7 @@ if __name__ == '__main__':
                 synchronize(sync_includes_file, host, workspace)
         print_success('Sync succeeded!')
 
-    if not args.sync_only and not args.configure_only:
+    if not args.sync_only:
         for host in hosts:
             print_info('Compiling on {}...'.format(host[1]))
             data = dict()
@@ -300,5 +300,7 @@ if __name__ == '__main__':
                     print_warn('Build failed (or package {} does not exist on {}). Please check the build output!'.format(args.package, host[1]))
         print_success('Build succeeded!')
 
-    if not args.compile_only and not args.sync_only:
+    if not args.compile_only and not args.sync_only and args.configure:
         configure(args)
+    else:
+        print_warn('Not configuring robot. Call with -k to change boot-config and game-settings')
