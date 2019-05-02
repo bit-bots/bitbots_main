@@ -22,7 +22,7 @@ public:
      * @param foot_goal Position which should be reached by the foot
      * @return JointGoals which describe required motor positions
      */
-    std::optional<JointGoals> stabilize(bool is_left_kick, tf::Transform foot_goal);
+    std::optional<JointGoals> stabilize(bool is_left_kick, tf::Transform support_foot_goal, tf::Transform flying_foot_goal);
 
 private:
     robot_state::RobotStatePtr m_goal_state;

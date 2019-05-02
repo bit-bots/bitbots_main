@@ -60,7 +60,7 @@ private:
     double m_time;
     geometry_msgs::Pose m_goal_pose;
     double m_speed;
-    std::optional<Trajectories> m_trajectories;
+    std::optional<Trajectories> m_support_trajectories, m_flying_trajectories;
     Stabilizer m_stabilizer;
 
     /**
@@ -71,7 +71,9 @@ private:
     /**
      *  // TODO Add docstring to calc_splines once we resolve issue #2
      */
-    void calc_splines(const geometry_msgs::Pose& target_pose, const geometry_msgs::Pose& r_foot_pose);
+    void calc_splines(const geometry_msgs::Pose& target_pose, const geometry_msgs::Pose& r_foot_pose,
+                      const geometry_msgs::Pose& l_foot_pose);
+    tf::Transform get_current_pose(Trajectories spline_container);
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_KICK_ENGINE_H

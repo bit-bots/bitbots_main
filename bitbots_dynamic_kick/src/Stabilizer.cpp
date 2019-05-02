@@ -28,7 +28,7 @@ Stabilizer::Stabilizer() {
     }
 }
 
-std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, tf::Transform foot_goal) {
+std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, tf::Transform support_foot_goal, tf::Transform flying_foot_goal) {
     /* ik options is basicaly the command which we send to bio_ik and which describes what we want to do */
     bio_ik::BioIKKinematicsQueryOptions ik_options;
     ik_options.replace = true;
@@ -36,33 +36,33 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, tf::Transform
     double bio_ik_timeout = 0.01;
 
     /* construct the bio_ik Pose object which tells bio_ik what we want to achieve */
-    bio_ik::PoseGoal* bio_ik_foot_goal = new bio_ik::PoseGoal();
-    bio_ik_foot_goal->setPosition(foot_goal.getOrigin());
-    bio_ik_foot_goal->setOrientation(foot_goal.getRotation());
+    bio_ik::PoseGoal* bio_ik_support_foot_goal = new bio_ik::PoseGoal();
+    bio_ik_support_foot_goal->setPosition(support_foot_goal.getOrigin());
+    bio_ik_support_foot_goal->setOrientation(support_foot_goal.getRotation());
     if (is_left_kick) {
-        bio_ik_foot_goal->setLinkName("l_sole");
+        bio_ik_support_foot_goal->setLinkName("r_sole");
     } else {
-        bio_ik_foot_goal->setLinkName("r_sole");
+        bio_ik_support_foot_goal->setLinkName("l_sole");
     }
-    ik_options.goals.emplace_back(bio_ik_foot_goal);
+    ik_options.goals.emplace_back(bio_ik_support_foot_goal);
+
+    bio_ik::PoseGoal* bio_ik_flying_foot_goal = new bio_ik::PoseGoal();
+    bio_ik_flying_foot_goal->setPosition(flying_foot_goal.getOrigin());
+    bio_ik_flying_foot_goal->setOrientation(flying_foot_goal.getRotation());
+    if (is_left_kick) {
+        bio_ik_flying_foot_goal->setLinkName("l_sole");
+    } else {
+        bio_ik_flying_foot_goal->setLinkName("r_sole");
+    }
+    ik_options.goals.emplace_back(bio_ik_flying_foot_goal);
 
     /* call bio_ik on the correct foot to calculate goal_state */
-    bool success;
-    if (is_left_kick) {
-        success = m_goal_state->setFromIK(m_lleg_joints_group,
-                                          EigenSTL::vector_Isometry3d(),
-                                          std::vector<std::string>(),
-                                          bio_ik_timeout,
-                                          moveit::core::GroupStateValidityCallbackFn(),
-                                          ik_options);
-    } else {
-        success = m_goal_state->setFromIK(m_rleg_joints_group,
-                                          EigenSTL::vector_Isometry3d(),
-                                          std::vector<std::string>(),
-                                          bio_ik_timeout,
-                                          moveit::core::GroupStateValidityCallbackFn(),
-                                          ik_options);
-    }
+    bool success = m_goal_state->setFromIK(m_legs_joints_group,
+                                           EigenSTL::vector_Isometry3d(),
+                                           std::vector<std::string>(),
+                                           bio_ik_timeout,
+                                           moveit::core::GroupStateValidityCallbackFn(),
+                                           ik_options);
 
     if (success) {
         /* retrieve joint names and associated positions from  */
