@@ -10,6 +10,12 @@ $BallKickArea
     RIGHT --> @Stop, @KickBall + foot:right
     FAR --> @GoToBall + target:detection_goal
 
+#GoAndKickBallAway
+$BallKickArea
+    LEFT --> @Stop, @KickBall + foot:left
+    RIGHT --> @Stop, @KickBall + foot:right
+    FAR --> @GoToBall + target:none
+
 #NoLocalizationPlayerBehavior
 $BallSeen
     YES --> $BallClose
@@ -22,8 +28,8 @@ $BallSeen
 
 #NoLocalizationGoalieBehavior
 $BallSeen
-    YES --> $BallDangerous
-        YES --> #GoAndKickBallDetectionGoal
+    YES --> $BallClose
+        YES --> #GoAndKickBallAway
         NO --> @LookAtBall
     NO --> @SearchBall
 
