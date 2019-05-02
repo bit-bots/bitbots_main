@@ -49,6 +49,9 @@ class GoToBall(AbstractActionElement):
         pose_msg.pose.position = Point(point[0], point[1], 0)
 
         quaternion = quaternion_from_euler(0, 0, point[2])
-        pose_msg.pose.orientation = quaternion
+        pose_msg.pose.orientation.x = quaternion[0]
+        pose_msg.pose.orientation.y = quaternion[1]
+        pose_msg.pose.orientation.z = quaternion[2]
+        pose_msg.pose.orientation.w = quaternion[3]
 
         self.blackboard.pathfinding.publish(pose_msg)
