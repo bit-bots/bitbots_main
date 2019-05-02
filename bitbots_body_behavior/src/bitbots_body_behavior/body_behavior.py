@@ -24,7 +24,7 @@ if __name__ == "__main__":
     D = dsd.DSD(BodyBlackboard(), '/debug/dsd/body_behavior')
 
     D.blackboard.team_data.strategy_sender = rospy.Publisher("strategy", Strategy, queue_size=2)
-    D.blackboard.blackboard.head_pub = rospy.Publisher("head_duty", HeadMode, queue_size=10)
+    D.blackboard.blackboard.head_pub = rospy.Publisher("head_mode", HeadMode, queue_size=10)
     D.blackboard.pathfinding.pathfinding_pub = rospy.Publisher('move_base_simple/goal', PoseStamped, queue_size=1)
 
     dirname = os.path.dirname(os.path.realpath(__file__))
