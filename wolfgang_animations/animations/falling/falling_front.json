@@ -4,7 +4,7 @@
     "hostname": "nuc1", 
     "keyframes": [
         {
-            "duration": 0.0, 
+            "duration": 0.001,
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 45, 
