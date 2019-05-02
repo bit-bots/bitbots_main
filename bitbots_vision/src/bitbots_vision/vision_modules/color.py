@@ -327,7 +327,7 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         # toggle use of dynamic color space
         self.dynamic_color_space_turned_on = self.config['dynamic_color_space_active']
 
-        # Subscribe to 'ROS_dynamic_color_space_msg_topic' from DynamicColorSpace
+        # Subscribe to 'ROS_dynamic_color_space_msg_topic'
         self.color_space_subscriber = rospy.Subscriber(
             config['ROS_dynamic_color_space_msg_topic'],
             ColorSpace,
