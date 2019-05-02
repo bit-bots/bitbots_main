@@ -22,7 +22,7 @@ class KickBall(AbstractActionElement):
 
 class KickBallVeryHard(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters)
+        super(KickBallVeryHard, self).__init__(blackboard, dsd, parameters)
         self.right_hard_kick = 'kick_right_string'  # TODO get actual name of parameter from some config
 
     def perform(self, reevaluate=False):
