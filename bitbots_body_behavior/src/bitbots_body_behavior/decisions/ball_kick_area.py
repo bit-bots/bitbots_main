@@ -4,7 +4,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 class BallKickArea(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallKickArea, self).__init__(blackboard, dsd, parameters)
-        self.max_kick_distance = self.blackboard.config['max_kick_distance']
+        self.ball_close_distance = self.blackboard.config['ball_close_distance']
         self.right_kick_min_x = self.blackboard.config['right_kick_min_x']
         self.right_kick_min_y = self.blackboard.config['right_kick_min_y']
         self.right_kick_max_x = self.blackboard.config['right_kick_max_x']

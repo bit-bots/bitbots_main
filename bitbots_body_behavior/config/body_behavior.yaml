@@ -42,9 +42,9 @@ behavior:
     goal_lost_time: 0.5
 
 
-    # When the ball is closer than `max_kick_distance` meters
-    # it is close enough to be kicked
-    max_kick_distance: 0.3
+    # When the ball is closer than `ball_close_distance` meters
+    # it is in a reachable area of the robot
+    ball_close_distance: 0.5
 
     # An area in which the ball can be kicked with the right foot
     # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
