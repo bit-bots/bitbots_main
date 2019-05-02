@@ -76,25 +76,25 @@ $RoleDecider
         Set --> @Stand
         Playing --> #GoalieBehavior
         Finished --> @Stand
-        NOT_ALLOWED_TO_MOVE --> @Stand
+        NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtFieldFeatures
     offense --> $GameStateDecider
         Initial --> @SendStop, @LookAtFieldFeatures
         Ready --> @GoToRolePosition, @LookAtFieldFeatures
         Set --> @Stand
         Playing --> #OffenseBehavior
         Finished --> @Stand
-        NOT_ALLOWED_TO_MOVE --> @Stand
+        NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtFieldFeatures
     defense --> $GameStateDecider
         Initial --> @SendStop, @LookAtFieldFeatures
         Ready --> @GoToRolePosition, @LookAtFieldFeatures
         Set --> @Stand
         Playing --> #DefenseBehavior
         Finished --> @Stand
-        NOT_ALLOWED_TO_MOVE --> @Stand
+        NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtFieldFeatures
     penalty --> $GameStateDecider
         Initial --> @SendStop, @LookAtFieldFeatures
         Ready --> @SendStop, @LookAtFieldFeatures
         Set --> @Stand
         Playing --> #PenaltyBehavior
         Finished --> @Stand
-        NOT_ALLOWED_TO_MOVE --> @Stand
+        NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtFieldFeatures
