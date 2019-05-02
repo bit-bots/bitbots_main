@@ -2,5 +2,6 @@
   <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch" />
 
   <node name="tf_odom_to_map" pkg="bitbots_move_base" type="tf_map_odom.py" respawn="false" output="screen"/>
+  <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/germanopen2019.yaml"/>
 
 </launch>
