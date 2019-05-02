@@ -68,10 +68,9 @@ class DynamicColorSpace:
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 vision_config['vision_debug_printer_classes']))
-
         self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
-        # Set parameter to turn off dynamic color space
+        # Print status of dynamic color space after toggeling 'dynamic_color_space_active' parameter
         if 'dynamic_color_space_active' not in self.vision_config or \
             vision_config['dynamic_color_space_active'] != self.vision_config['dynamic_color_space_active']:
             if vision_config['dynamic_color_space_active']:
@@ -80,10 +79,14 @@ class DynamicColorSpace:
                 rospy.logwarn('Dynamic color space turned OFF.')
 
         # Set publisher of ColorSpace-messages
-        self.pub_color_space = rospy.Publisher(
-            vision_config['ROS_dynamic_color_space_msg_topic'],
-            ColorSpace,
-            queue_size=1)
+        if 'ROS_dynamic_color_space_msg_topic' not in self.vision_config or \
+                self.vision_config['ROS_dynamic_color_space_msg_topic'] != vision_config['ROS_dynamic_color_space_msg_topic']:
+            if hasattr(self, 'pub_color_space'):
+                self.pub_color_space.unregister()
+            self.pub_color_space = rospy.Publisher(
+                vision_config['ROS_dynamic_color_space_msg_topic'],
+                ColorSpace,
+                queue_size=1)
 
         # Set Color- and HorizonDetector
         self.color_detector = color.DynamicPixelListColorDetector(

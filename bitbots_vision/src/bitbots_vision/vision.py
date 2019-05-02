@@ -422,12 +422,14 @@ class Vision:
                 ImageWithRegionOfInterest,
                 queue_size=1)
 
-        # Register publisher of debug image messages
-        self.pub_debug_image = rospy.Publisher(
-            config['ROS_debug_image_msg_topic'],
-            Image,
-            queue_size=1,
-        )
+        if 'ROS_debug_image_msg_topic' not in self.config or \
+                self.config['ROS_debug_image_msg_topic'] != config['ROS_debug_image_msg_topic']:
+            if hasattr(self, 'pub_debug_image'):
+                self.pub_debug_image.unregister()
+            self.pub_debug_image = rospy.Publisher(
+                config['ROS_debug_image_msg_topic'],
+                Image,
+                queue_size=1)
 
         # Publish Config-message
         msg = Config()
