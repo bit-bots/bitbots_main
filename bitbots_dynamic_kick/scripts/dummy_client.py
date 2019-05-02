@@ -8,6 +8,7 @@ import random
 import rospy
 import actionlib
 
+from actionlib_msgs.msg import GoalStatus
 from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
 
 showing_feedback = False
@@ -19,7 +20,29 @@ if __name__ == "__main__":
 
 
     def done_cb(state, result):
-        print("Action completed with code " + str(state))
+        print('Action completed: ', end='')
+        if state == GoalStatus.PENDING:
+            print('Pending')
+        elif state == GoalStatus.ACTIVE:
+            print('Active')
+        elif state == GoalStatus.PREEMPTED:
+            print('Preempted')
+        elif state == GoalStatus.SUCCEEDED:
+            print('Succeeded')
+        elif state == GoalStatus.ABORTED:
+            print('Aborted')
+        elif state == GoalStatus.REJECTED:
+            print('Rejected')
+        elif state == GoalStatus.PREEMPTING:
+            print('Preempting')
+        elif state == GoalStatus.RECALLING:
+            print('Recalling')
+        elif state == GoalStatus.RECALLED:
+            print('Recalled')
+        elif state == GoalStatus.LOST:
+            print('Lost')
+        else:
+            print('Unknown state', state)
         print(str(result))
 
 

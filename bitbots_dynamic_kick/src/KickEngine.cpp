@@ -74,15 +74,15 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
 
     /* Add these quaternions in the same fashion as before to our splines (current, target, current) */
     m_trajectories->get("foot_roll").addPoint(0, start_r);
-    m_trajectories->get("foot_roll").addPoint(0, target_r);
+    m_trajectories->get("foot_roll").addPoint(1, target_r);
     m_trajectories->get("foot_roll").addPoint(2, start_r);
 
     m_trajectories->get("foot_pitch").addPoint(0, start_p);
-    m_trajectories->get("foot_pitch").addPoint(0, target_p);
+    m_trajectories->get("foot_pitch").addPoint(1, target_p);
     m_trajectories->get("foot_pitch").addPoint(2, start_p);
 
     m_trajectories->get("foot_yaw").addPoint(0, start_y);
-    m_trajectories->get("foot_yaw").addPoint(0, target_y);
+    m_trajectories->get("foot_yaw").addPoint(1, target_y);
     m_trajectories->get("foot_yaw").addPoint(2, start_y);
 }
 
@@ -100,4 +100,8 @@ void KickEngine::init_trajectories() {
 
 bool KickEngine::is_left_kick() {
     return false;
+}
+
+int KickEngine::get_percent_done() const {
+    return int(m_time / 2.0 * 100);
 }

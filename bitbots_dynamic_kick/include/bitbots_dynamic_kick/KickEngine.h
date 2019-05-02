@@ -55,6 +55,7 @@ public:
      * Is the currently performed kick with the left foot or not
      */
     bool is_left_kick();
+    int get_percent_done() const;
 private:
     double m_time;
     geometry_msgs::Pose m_goal_pose;

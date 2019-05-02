@@ -108,7 +108,7 @@ void KickNode::loop_engine() {
         if (std::optional<JointGoals> goals = m_engine.tick(1.0 / m_engine_rate)) {
             // TODO: add counter for failed ticks
             bitbots_msgs::KickFeedback feedback;
-            feedback.percent_done = 0;
+            feedback.percent_done = m_engine.get_percent_done();
             feedback.chosen_foot = m_engine.is_left_kick() ?
                                    bitbots_msgs::KickFeedback::LEFT : bitbots_msgs::KickFeedback::RIGHT;
             m_server.publishFeedback(feedback);
