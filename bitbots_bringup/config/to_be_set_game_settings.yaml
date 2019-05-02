@@ -19,4 +19,8 @@ team_color:
   file: /config/team_communication_config.yaml
   options: [0, 1]
   explanation: "0 is blue, 1 is red"
-
+role:
+  package: bitbots_body_behavior
+  file: /config/body_behavior.yaml
+  options: ['goalie', 'offense', 'defense', 'penalty']
+  explanation: ""

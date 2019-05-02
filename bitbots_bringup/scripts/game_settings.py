@@ -80,7 +80,6 @@ def check_new_value(new_value: str, definition) -> bool:
 
     try:
         new_value = definitiontype(new_value) # casts value to the type of
-        print(definitiontype)
     except:
         print("{} could not be converted to a {}. Are you sure it is in the right format?".format(new_value,definitiontype))
 
