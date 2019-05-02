@@ -1,14 +1,14 @@
-#Fallen
-$Fallen
-    FALLEN_FRONT --> @PlayAnimationStandUpFront
-    FALLEN_BACK --> @PlayAnimationStandUpBack
-    FALLEN_SIDE --> @PlayAnimationStandUpSide
-    NOT_FALLEN --> $Falling
-        FALLING_LEFT --> @PlayAnimationFallingLeft
-        FALLING_RIGHT --> @PlayAnimationFallingRight
-        FALLING_FRONT --> @PlayAnimationFallingFront
-        FALLING_BACK --> @PlayAnimationFallingBack
-        NOT_FALLING --> $ExternalAnimation
+#Falling
+$Falling
+    FALLING_LEFT --> @PlayAnimationFallingLeft
+    FALLING_RIGHT --> @PlayAnimationFallingRight
+    FALLING_FRONT --> @PlayAnimationFallingFront
+    FALLING_BACK --> @PlayAnimationFallingBack
+    NOT_FALLING --> $Fallen
+        FALLEN_FRONT --> @PlayAnimationStandUpFront
+        FALLEN_BACK --> @PlayAnimationStandUpBack
+        FALLEN_SIDE --> @PlayAnimationStandUpSide
+        NOT_FALLEN --> $ExternalAnimation
             ANIMATION_RUNNING --> @StayAnimationRunning
             FREE --> $Walking
                 STOP_WALKING --> @StopWalking
@@ -21,7 +21,7 @@ $Fallen
 $Penalty
     PENALIZED --> @StopWalking, @PlayAnimationPenalty, @StayInPenalty
     FREE --> $MotorOffTimer
-        SIMULATION --> #Fallen
+        SIMULATION --> #Falling
         TURN_MOTORS_OFF --> @PlayAnimationSitDown, @TurnMotorsOff, @StayMotorsOff
         TURN_MOTORS_ON --> @TurnMotorsOn
         MOTORS_ARE_ON --> $CheckMotors
@@ -30,7 +30,7 @@ $Penalty
                 RECORD_ACTIVE --> @StayRecord
                 FREE --> $PickedUp
                     PICKED_UP --> @PlayAnimationWalkready, @StayPickedUp
-                    ON_GROUND --> #Fallen
+                    ON_GROUND --> #Falling
 
 
 -->HCM
