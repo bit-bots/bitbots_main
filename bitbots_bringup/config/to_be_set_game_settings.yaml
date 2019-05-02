@@ -7,16 +7,16 @@
 bot_id:
   file: /config/game_controller.yaml
   package: humanoid_league_game_controller
-  options: !!python/object/apply:builtins.range [1, 5, 1]
+  options: !!python/object/apply:builtins.range [1, 7, 1]
   explanation: ""
 team_id:
   file: /config/game_controller.yaml
   package: humanoid_league_game_controller
-  options: [1, 2, 3, 4, 5, 6, 7, 8]
+  options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
   explanation: ""
 team_color:
   package: humanoid_league_team_communication
   file: /config/team_communication_config.yaml
-  options: [2, 3]
-  explanation: "2 is red, 3 is blue"
+  options: [0, 1]
+  explanation: "0 is blue, 1 is red"
 
