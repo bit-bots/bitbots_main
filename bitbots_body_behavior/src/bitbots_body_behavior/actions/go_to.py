@@ -101,6 +101,3 @@ class GoToCenterpoint(GoToAbsolutePosition):
         point = 0, 0, 0
         super(GoToCenterpoint, self).__init__(blackboard, dsd, point)
 
-
-class GoToDutyPosition(GoToAbsolutePosition):
-    pass
