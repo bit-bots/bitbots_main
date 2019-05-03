@@ -71,26 +71,26 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
      */
 
     /* Flying foot position */
-    m_flying_trajectories->get("pos_x").addPoint(0, r_foot_pose.position.x);
-    m_flying_trajectories->get("pos_x").addPoint(1, r_foot_pose.position.x);
-    m_flying_trajectories->get("pos_x").addPoint(2, r_foot_pose.position.x);
-    m_flying_trajectories->get("pos_x").addPoint(3, r_foot_pose.position.x + m_params.kick_distance);
-    m_flying_trajectories->get("pos_x").addPoint(4, r_foot_pose.position.x);
-    m_flying_trajectories->get("pos_x").addPoint(5, r_foot_pose.position.x);
+    m_flying_trajectories->get("pos_x").addPoint(0, 0);
+    m_flying_trajectories->get("pos_x").addPoint(1, 0);
+    m_flying_trajectories->get("pos_x").addPoint(2, 0);
+    m_flying_trajectories->get("pos_x").addPoint(3, m_params.kick_distance);
+    m_flying_trajectories->get("pos_x").addPoint(4, 0);
+    m_flying_trajectories->get("pos_x").addPoint(5, 0);
 
-    m_flying_trajectories->get("pos_y").addPoint(0, r_foot_pose.position.y);
-    m_flying_trajectories->get("pos_y").addPoint(1, r_foot_pose.position.y);
-    m_flying_trajectories->get("pos_y").addPoint(2, r_foot_pose.position.y);
-    m_flying_trajectories->get("pos_y").addPoint(3, r_foot_pose.position.y);
-    m_flying_trajectories->get("pos_y").addPoint(4, r_foot_pose.position.y);
-    m_flying_trajectories->get("pos_y").addPoint(5, r_foot_pose.position.y);
+    m_flying_trajectories->get("pos_y").addPoint(0, -m_params.foot_distance);
+    m_flying_trajectories->get("pos_y").addPoint(1, -m_params.foot_distance);
+    m_flying_trajectories->get("pos_y").addPoint(2, -m_params.foot_distance);
+    m_flying_trajectories->get("pos_y").addPoint(3, -m_params.foot_distance);
+    m_flying_trajectories->get("pos_y").addPoint(4, -m_params.foot_distance);
+    m_flying_trajectories->get("pos_y").addPoint(5, -m_params.foot_distance);
 
-    m_flying_trajectories->get("pos_z").addPoint(0, r_foot_pose.position.z);
-    m_flying_trajectories->get("pos_z").addPoint(1, r_foot_pose.position.z);
-    m_flying_trajectories->get("pos_z").addPoint(2, r_foot_pose.position.z + m_params.foot_rise);
-    m_flying_trajectories->get("pos_z").addPoint(3, r_foot_pose.position.z + m_params.foot_rise * 1.3);
-    m_flying_trajectories->get("pos_z").addPoint(4, r_foot_pose.position.z + m_params.foot_rise);
-    m_flying_trajectories->get("pos_z").addPoint(5, r_foot_pose.position.z);
+    m_flying_trajectories->get("pos_z").addPoint(0, 0);
+    m_flying_trajectories->get("pos_z").addPoint(1, 0);
+    m_flying_trajectories->get("pos_z").addPoint(2, m_params.foot_rise);
+    m_flying_trajectories->get("pos_z").addPoint(3, m_params.foot_rise);
+    m_flying_trajectories->get("pos_z").addPoint(4, m_params.foot_rise);
+    m_flying_trajectories->get("pos_z").addPoint(5, 0);
 
     /* Flying foot orientation */
     /* Construct a start_rotation as quaternion from Pose msg */
@@ -114,26 +114,26 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
     m_flying_trajectories->get("yaw").addPoint(5, start_y);
 
     /* Support foot position */
-    m_trunk_trajectories->get("pos_x").addPoint(0, trunk_pose.position.x);
-    m_trunk_trajectories->get("pos_x").addPoint(1, trunk_pose.position.x);
-    m_trunk_trajectories->get("pos_x").addPoint(2, trunk_pose.position.x);
-    m_trunk_trajectories->get("pos_x").addPoint(3, trunk_pose.position.x);
-    m_trunk_trajectories->get("pos_x").addPoint(4, trunk_pose.position.x);
-    m_trunk_trajectories->get("pos_x").addPoint(5, trunk_pose.position.x);
+    m_trunk_trajectories->get("pos_x").addPoint(0, 0);
+    m_trunk_trajectories->get("pos_x").addPoint(1, 0);
+    m_trunk_trajectories->get("pos_x").addPoint(2, 0);
+    m_trunk_trajectories->get("pos_x").addPoint(3, 0);
+    m_trunk_trajectories->get("pos_x").addPoint(4, 0);
+    m_trunk_trajectories->get("pos_x").addPoint(5, 0);
 
-    m_trunk_trajectories->get("pos_y").addPoint(0, trunk_pose.position.y);
-    m_trunk_trajectories->get("pos_y").addPoint(1, trunk_pose.position.y + m_params.trunk_movement);
-    m_trunk_trajectories->get("pos_y").addPoint(2, trunk_pose.position.y + m_params.trunk_movement);
-    m_trunk_trajectories->get("pos_y").addPoint(3, trunk_pose.position.y + m_params.trunk_movement);
-    m_trunk_trajectories->get("pos_y").addPoint(4, trunk_pose.position.y + m_params.trunk_movement);
-    m_trunk_trajectories->get("pos_y").addPoint(5, trunk_pose.position.y);
+    m_trunk_trajectories->get("pos_y").addPoint(0, -m_params.foot_distance / 2.0);
+    m_trunk_trajectories->get("pos_y").addPoint(1, -m_params.foot_distance / 2.0 + m_params.trunk_movement);
+    m_trunk_trajectories->get("pos_y").addPoint(2, -m_params.foot_distance / 2.0 + m_params.trunk_movement);
+    m_trunk_trajectories->get("pos_y").addPoint(3, -m_params.foot_distance / 2.0 + m_params.trunk_movement);
+    m_trunk_trajectories->get("pos_y").addPoint(4, -m_params.foot_distance / 2.0 + m_params.trunk_movement);
+    m_trunk_trajectories->get("pos_y").addPoint(5, -m_params.foot_distance / 2.0);
 
-    m_trunk_trajectories->get("pos_z").addPoint(0, trunk_pose.position.z);
-    m_trunk_trajectories->get("pos_z").addPoint(1, trunk_pose.position.z);
-    m_trunk_trajectories->get("pos_z").addPoint(2, trunk_pose.position.z);
-    m_trunk_trajectories->get("pos_z").addPoint(3, trunk_pose.position.z);
-    m_trunk_trajectories->get("pos_z").addPoint(4, trunk_pose.position.z);
-    m_trunk_trajectories->get("pos_z").addPoint(5, trunk_pose.position.z);
+    m_trunk_trajectories->get("pos_z").addPoint(0, m_params.trunk_height);
+    m_trunk_trajectories->get("pos_z").addPoint(1, m_params.trunk_height);
+    m_trunk_trajectories->get("pos_z").addPoint(2, m_params.trunk_height);
+    m_trunk_trajectories->get("pos_z").addPoint(3, m_params.trunk_height);
+    m_trunk_trajectories->get("pos_z").addPoint(4, m_params.trunk_height);
+    m_trunk_trajectories->get("pos_z").addPoint(5, m_params.trunk_height);
 
     /* Support trunk orientation */
     /* Construct a start_rotation as quaternion from Pose msg */

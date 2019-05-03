@@ -17,6 +17,8 @@ public:
     double foot_rise = 0.08;        // how much the foot is raised before kicking
     double kick_distance = 0.12;    // kick distance to the front
     double trunk_kick_pitch = -0.2;
+    double trunk_height = 0.4;
+    double foot_distance = 0.12;
 };
 
 /**

@@ -14,6 +14,8 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
     params.foot_rise = config.foot_rise;
     params.kick_distance = config.kick_distance;
     params.trunk_kick_pitch = config.trunk_kick_pitch;
+    params.trunk_height = config.trunk_height;
+    params.foot_distance = config.foot_distance;
     m_engine.set_params(params);
 }
 
