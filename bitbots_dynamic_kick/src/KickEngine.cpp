@@ -27,7 +27,6 @@ std::optional<JointGoals> KickEngine::tick(double dt) {
         tf::Transform support_foot_pose = get_current_pose(m_support_trajectories.value());
         tf::Transform flying_foot_pose = get_current_pose(m_flying_trajectories.value());
 
-        std::cout << m_time << std::endl;
         m_time += dt;
 
         /* Stabilize and return result */
@@ -57,9 +56,6 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
      * Add current position, target position and current position to splines so that they describe a smooth
      * curve to the and back
      */
-    double trunk_movement = 0.06;  // meters to move trunk to the left (i.e. support foot to the right)
-    double foot_rise = 0.08;        // how much the foot is raised before kicking
-    double kick_distance = 0.12;    // kick distance to the front
     /* Splines:
      * - stand
      * - move trunk
@@ -73,22 +69,22 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
     m_flying_trajectories->get("foot_pos_x").addPoint(0, r_foot_pose.position.x);
     m_flying_trajectories->get("foot_pos_x").addPoint(1, r_foot_pose.position.x);
     m_flying_trajectories->get("foot_pos_x").addPoint(2, r_foot_pose.position.x);
-    m_flying_trajectories->get("foot_pos_x").addPoint(3, r_foot_pose.position.x + kick_distance);
+    m_flying_trajectories->get("foot_pos_x").addPoint(3, r_foot_pose.position.x + m_params.kick_distance);
     m_flying_trajectories->get("foot_pos_x").addPoint(4, r_foot_pose.position.x);
     m_flying_trajectories->get("foot_pos_x").addPoint(5, r_foot_pose.position.x);
 
     m_flying_trajectories->get("foot_pos_y").addPoint(0, r_foot_pose.position.y);
-    m_flying_trajectories->get("foot_pos_y").addPoint(1, r_foot_pose.position.y - trunk_movement);
-    m_flying_trajectories->get("foot_pos_y").addPoint(2, r_foot_pose.position.y - trunk_movement);
-    m_flying_trajectories->get("foot_pos_y").addPoint(3, r_foot_pose.position.y - trunk_movement);
-    m_flying_trajectories->get("foot_pos_y").addPoint(4, r_foot_pose.position.y - trunk_movement);
+    m_flying_trajectories->get("foot_pos_y").addPoint(1, r_foot_pose.position.y - m_params.trunk_movement);
+    m_flying_trajectories->get("foot_pos_y").addPoint(2, r_foot_pose.position.y - m_params.trunk_movement);
+    m_flying_trajectories->get("foot_pos_y").addPoint(3, r_foot_pose.position.y - m_params.trunk_movement);
+    m_flying_trajectories->get("foot_pos_y").addPoint(4, r_foot_pose.position.y - m_params.trunk_movement);
     m_flying_trajectories->get("foot_pos_y").addPoint(5, r_foot_pose.position.y);
 
     m_flying_trajectories->get("foot_pos_z").addPoint(0, r_foot_pose.position.z);
     m_flying_trajectories->get("foot_pos_z").addPoint(1, r_foot_pose.position.z);
-    m_flying_trajectories->get("foot_pos_z").addPoint(2, r_foot_pose.position.z + foot_rise);
-    m_flying_trajectories->get("foot_pos_z").addPoint(3, r_foot_pose.position.z + foot_rise);
-    m_flying_trajectories->get("foot_pos_z").addPoint(4, r_foot_pose.position.z + foot_rise);
+    m_flying_trajectories->get("foot_pos_z").addPoint(2, r_foot_pose.position.z + m_params.foot_rise);
+    m_flying_trajectories->get("foot_pos_z").addPoint(3, r_foot_pose.position.z + m_params.foot_rise * 1.3);
+    m_flying_trajectories->get("foot_pos_z").addPoint(4, r_foot_pose.position.z + m_params.foot_rise);
     m_flying_trajectories->get("foot_pos_z").addPoint(5, r_foot_pose.position.z);
 
     /* Flying foot orientation */
@@ -106,8 +102,11 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
 
     /* Add these quaternions in the same fashion as before to our splines (current, target, current) */
     m_flying_trajectories->get("foot_roll").addPoint(0, start_r);
+    m_flying_trajectories->get("foot_roll").addPoint(5, start_r);
     m_flying_trajectories->get("foot_pitch").addPoint(0, start_p);
+    m_flying_trajectories->get("foot_pitch").addPoint(5, start_p);
     m_flying_trajectories->get("foot_yaw").addPoint(0, start_y);
+    m_flying_trajectories->get("foot_yaw").addPoint(5, start_y);
 
     /* Support foot position */
     m_support_trajectories->get("foot_pos_x").addPoint(0, l_foot_pose.position.x);
@@ -118,10 +117,10 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
     m_support_trajectories->get("foot_pos_x").addPoint(5, l_foot_pose.position.x);
 
     m_support_trajectories->get("foot_pos_y").addPoint(0, l_foot_pose.position.y);
-    m_support_trajectories->get("foot_pos_y").addPoint(1, l_foot_pose.position.y - trunk_movement);
-    m_support_trajectories->get("foot_pos_y").addPoint(2, l_foot_pose.position.y - trunk_movement);
-    m_support_trajectories->get("foot_pos_y").addPoint(3, l_foot_pose.position.y - trunk_movement);
-    m_support_trajectories->get("foot_pos_y").addPoint(4, l_foot_pose.position.y - trunk_movement);
+    m_support_trajectories->get("foot_pos_y").addPoint(1, l_foot_pose.position.y - m_params.trunk_movement);
+    m_support_trajectories->get("foot_pos_y").addPoint(2, l_foot_pose.position.y - m_params.trunk_movement);
+    m_support_trajectories->get("foot_pos_y").addPoint(3, l_foot_pose.position.y - m_params.trunk_movement);
+    m_support_trajectories->get("foot_pos_y").addPoint(4, l_foot_pose.position.y - m_params.trunk_movement);
     m_support_trajectories->get("foot_pos_y").addPoint(5, l_foot_pose.position.y);
 
     m_support_trajectories->get("foot_pos_z").addPoint(0, l_foot_pose.position.z);
@@ -143,9 +142,17 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
     tf::Matrix3x3(target_rotation).getRPY(target_r, target_p, target_y);
 
     /* Add these quaternions in the same fashion as before to our splines (current, target, current) */
+    ROS_INFO("%.2f, %.2f, %.2f", start_r, start_p, start_y);
     m_support_trajectories->get("foot_roll").addPoint(0, start_r);
+    m_support_trajectories->get("foot_roll").addPoint(5, start_r);
     m_support_trajectories->get("foot_pitch").addPoint(0, start_p);
+    m_support_trajectories->get("foot_pitch").addPoint(1, start_p);
+    m_support_trajectories->get("foot_pitch").addPoint(2, start_p);
+    m_support_trajectories->get("foot_pitch").addPoint(3, start_p - m_params.trunk_kick_pitch);
+    m_support_trajectories->get("foot_pitch").addPoint(4, start_p);
+    m_support_trajectories->get("foot_pitch").addPoint(5, start_p);
     m_support_trajectories->get("foot_yaw").addPoint(0, start_y);
+    m_support_trajectories->get("foot_yaw").addPoint(5, start_y);
 }
 
 void KickEngine::init_trajectories() {
@@ -176,4 +183,8 @@ bool KickEngine::is_left_kick() {
 
 int KickEngine::get_percent_done() const {
     return int(m_time / 6.0 * 100);
+}
+
+void KickEngine::set_params(KickParams params) {
+    m_params = params;
 }

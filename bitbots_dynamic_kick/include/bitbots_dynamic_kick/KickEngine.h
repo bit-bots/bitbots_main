@@ -11,6 +11,14 @@
 
 typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajectories;
 
+class KickParams {
+public:
+    double trunk_movement = 0.06;  // meters to move trunk to the left (i.e. support foot to the right)
+    double foot_rise = 0.08;        // how much the foot is raised before kicking
+    double kick_distance = 0.12;    // kick distance to the front
+    double trunk_kick_pitch = -0.2;
+};
+
 /**
  * The KickEngine takes care of choosing an optimal foot to reach a given goal,
  * planning that foots required movement (rotation and positioning)
@@ -56,12 +64,14 @@ public:
      */
     bool is_left_kick();
     int get_percent_done() const;
+    void set_params(KickParams params);
 private:
     double m_time;
     geometry_msgs::Pose m_goal_pose;
     double m_speed;
     std::optional<Trajectories> m_support_trajectories, m_flying_trajectories;
     Stabilizer m_stabilizer;
+    KickParams m_params;
 
     /**
      * Construct m_trajectories and add all required splines with their respective keys

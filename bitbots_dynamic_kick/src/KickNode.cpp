@@ -9,7 +9,12 @@ KickNode::KickNode() :
 
 void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t level) {
     m_engine_rate = config.engine_rate;
-    // TODO Add more dynamic_reconfigure settings
+    KickParams params = KickParams();
+    params.trunk_movement = config.trunk_movement;
+    params.foot_rise = config.foot_rise;
+    params.kick_distance = config.kick_distance;
+    params.trunk_kick_pitch = config.trunk_kick_pitch;
+    m_engine.set_params(params);
 }
 
 void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
