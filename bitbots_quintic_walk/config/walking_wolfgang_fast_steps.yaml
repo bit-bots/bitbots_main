@@ -7,7 +7,7 @@ walking:
   doubleSupportRatio: 0.05
   # Lateral distance between the feet center
   # (in m, >= 0)
-  footDistance: 0.18
+  footDistance: 0.2
   # Maximum flying foot height
   # (in m, >= 0)
   footRise: 0.06
@@ -72,8 +72,8 @@ walking:
 
   debugActive: True
 
-  kickLength: 0.08
-  kickVel: 0.0
+  kickLength: 0.09
+  kickVel: 0.2
   kickPhase: 0.75
 
 
