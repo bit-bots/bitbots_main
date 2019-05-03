@@ -107,9 +107,9 @@ def synchronize(sync_includes_file, host, workspace, package=None):
                 'bitbots@{}'.format(host[0]),
                 'sed -i "/camera_name/s/ROBOT/{}/" ~/wolfgang_ws/src/wolves_image_provider/config/camera_settings.yaml'.format(robot_name_name)]
         camera_result = subprocess.run(call)
-    if camera_result.returncode != 0:
-        print_err('Configuring the camera calibration failed!')
-        sys.exit(camera_result.returncode)
+        if camera_result.returncode != 0:
+            print_err('Configuring the camera calibration failed!')
+            sys.exit(camera_result.returncode)
 
 
 # noinspection PyUnboundLocalVariable
