@@ -3,6 +3,7 @@
 import rospy
 import tf2_ros
 from tf2_geometry_msgs import PoseStamped
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 class GoalConverter:
     def __init__(self):
@@ -21,10 +22,14 @@ class GoalConverter:
             try:
                 msg.header.stamp = rospy.Time(0)
                 map_goal = self.tf_buffer.transform(msg, 'map', timeout=rospy.Duration(0.5))
-                map_goal.pose.orientation.x = 0
-                map_goal.pose.orientation.y = 0
-                map_goal.pose.orientation.z = 0
-                map_goal.pose.orientation.w = 1
+                e = euler_from_quaternion((map_goal.pose.orientation.x, map_goal.pose.orientation.y,
+                                           map_goal.pose.orientation.z, map_goal.pose.orientation.w))
+                q = quaternion_from_euler(0, 0, e[2])
+                map_goal.pose.orientation.x = q[0]
+                map_goal.pose.orientation.y = q[1]
+                map_goal.pose.orientation.z = q[2]
+                map_goal.pose.orientation.w = q[3]
+                map_goal.pose.position.z = 0
                 self.goal_publisher.publish(map_goal)
             except Exception as e:
                 rospy.logwarn(e)
