@@ -11,7 +11,7 @@
         </group>
   </group>
   <group unless="$(arg sim)">
-    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_fast_steps.yaml" command="load"/>
+    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
         <group if="$(arg use_game_settings)">
             <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
         </group>
