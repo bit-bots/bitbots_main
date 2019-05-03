@@ -20,7 +20,7 @@
 
   <export>
     <bitbots_documentation>
-      <status>tested_viz</status>
+      <status>broken</status>
       <language>python3</language>
     </bitbots_documentation>
   </export>
