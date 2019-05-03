@@ -121,7 +121,7 @@ def configure(args):
             'vision': ''
         }
         
-        if host.startswith('nuc'):
+        if host[0].startswith('nuc'):
             data['motion'] = 'sudo /bin/systemctl start bitbots_motion.service; sudo /bin/systemctl enable bitbots_motion.service' \
                 if start_motion else \
                 'sudo /bin/systemctl disable bitbots_motion.service'
@@ -134,7 +134,7 @@ def configure(args):
                 if start_roscore else \
                 'sudo /bin/systemctl disable roscore.service'
 
-        elif host.startswith('jetson'):
+        elif host[0].startswith('jetson'):
             data['vision'] = 'sudo /bin/systemctl start bitbots_vision.service; sudo /bin/systemctl start bitbots_vision.service' \
                 if start_vision else \
                 'sudo /bin/systemctl disable bitbots_vision.service'
