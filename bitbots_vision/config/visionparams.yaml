@@ -92,7 +92,7 @@ classifier_model_path: '/models/classifier_01'
 
 cascade_classifier_path: '/classifier/cascadeNew.xml'
 
-dynamic_color_space_active: true
+dynamic_color_space_active: false
 dynamic_color_space_publish_field_mask_image: false
 dynamic_color_space_queue_max_size: 10
 dynamic_color_space_threshold: 0.6
