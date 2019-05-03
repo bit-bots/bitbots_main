@@ -5,6 +5,7 @@
     <arg name="vision" default="false"/>
     <arg name="teamcom" default="false"/>
     <arg name="localization" default="false"/>
+    <arg name="simple" default="false"/> <!-- whether to use the simple behavior -->
 
     <arg name="use_game_settings" default="true"/>
     
@@ -49,6 +50,7 @@
     <group if="$(arg behave)">
         <include file="$(find bitbots_body_behavior)/launch/behavior.launch">
             <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+            <arg name="simple" value="$(arg simple)"/>
         </include>
     </group>
 </launch>

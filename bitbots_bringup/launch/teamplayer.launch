@@ -5,6 +5,7 @@
     <arg name="vision" default="false"/>
     <arg name="teamcom" default="false"/>
     <arg name="localization" default="false"/>
+    <arg name="simple" default="false"/>  <!-- whether to use the simple behavior -->
 
     <arg name="use_game_settings" default="true"/>
     
@@ -22,6 +23,7 @@
         <arg name="vision" value="$(arg vision)" />
         <arg name="teamcom" value="$(arg teamcom)" />
         <arg name="localization" value="$(arg localization)" />
+        <arg name="simple" value="$(arg simple)" />
     </include>
 
     <group if="$(arg motion)">
