@@ -13,9 +13,9 @@ class Behavior(object):
     def __init__(self):
         self.init_walking_time = 10
         self.rotation_threshold = math.radians(10)
-        self.walking_rotation_scalar = 0.50
+        self.walking_rotation_scalar = 0.4
         self.moonwalk_rotation = -0.1
-        self.walking_speed_forward = 0.08
+        self.walking_speed_forward = 0.07
         self.walking_speed_sideward = 0.6
         self.reach_ball_time = 5.0
         self.ball_position = (100,100)
