@@ -177,24 +177,29 @@ class ObstacleDetector(CandidateFinder):
         return self._obstacles
 
     def get_all_obstacles(self):
-        self.get_candidates()
+        # type: () -> list[Candidate]
+        return self.get_candidates()
 
     def get_red_obstacles(self):
+        # type: () -> list[Candidate]
         if self._red_obstacles is None:
             self._colorsort_obstacles()
         return self._red_obstacles
 
     def get_blue_obstacles(self):
+        # type: () -> list[Candidate]
         if self._blue_obstacles is None:
             self._colorsort_obstacles()
         return self._blue_obstacles
 
     def get_white_obstacles(self):
+        # type: () -> list[Candidate]
         if self._white_obstacles is None:
             self._colorsort_obstacles()
         return self._white_obstacles
 
     def get_other_obstacles(self):
+        # type: () -> list[Candidate]
         if self._other_obstacles is None:
             self._colorsort_obstacles()
         return self._other_obstacles

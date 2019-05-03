@@ -61,8 +61,8 @@ line_detector_horizon_offset: 15
 line_detector_linepoints_range: 10000
 line_detector_blur_kernel_size: 9
 
-obstacle_color_threshold: 50
-obstacle_white_threshold: 50
+obstacle_color_threshold: 10
+obstacle_white_threshold: 12
 obstacle_horizon_diff_threshold: 20
 obstacle_candidate_horizon_offset: 30
 obstacle_candidate_min_width: 30
@@ -76,6 +76,7 @@ ROS_img_queue_size: 1
 ROS_ball_msg_topic: 'ball_in_image'
 ROS_fcnn_img_msg_topic: 'fcnn_image'
 ROS_obstacle_msg_topic: 'obstacles_in_image'
+ROS_goal_msg_topic: 'goal_in_image'
 ROS_line_msg_topic: 'line_in_image'
 ROS_dynamic_color_space_msg_topic: 'dynamic_color_space'
 ROS_debug_image_msg_topic: 'debug_image'

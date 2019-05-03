@@ -10,7 +10,8 @@ from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
-    LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest
+    LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, PostInImage, \
+    GoalInImage
 from bitbots_vision.vision_modules import lines, horizon, color, debug, live_classifier, \
     classifier, ball, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
 from bitbots_vision.cfg import VisionConfig
@@ -116,6 +117,11 @@ class Vision:
             self.debug_printer.info('found a ball! \o/', 'ball')
             self.pub_balls.publish(balls_msg)
 
+        # create goalpost msg
+        goal_parts_msg = GoalPartsInImage()
+        goal_parts_msg.header.frame_id = image_msg.header.frame_id
+        goal_parts_msg.header.stamp = image_msg.header.stamp
+
         # create obstacle msg
         obstacles_msg = ObstaclesInImage()
         obstacles_msg.header.frame_id = image_msg.header.frame_id
@@ -140,6 +146,14 @@ class Vision:
             obstacle_msg.confidence = 1.0
             obstacle_msg.playerNumber = 42
             obstacles_msg.obstacles.append(obstacle_msg)
+        for white_obs in self.obstacle_detector.get_white_obstacles():
+            post_msg = PostInImage()
+            post_msg.width = white_obs.get_width()
+            post_msg.confidence = 1.0
+            post_msg.foot_point.x = white_obs.get_center_x()
+            post_msg.foot_point.y = white_obs.get_lower_right_y()
+            post_msg.top_point = post_msg.foot_point
+            goal_parts_msg.posts.append(post_msg)
         for other_obs in self.obstacle_detector.get_other_obstacles():
             obstacle_msg = ObstacleInImage()
             obstacle_msg.color = ObstacleInImage.UNDEFINED
@@ -150,6 +164,25 @@ class Vision:
             obstacle_msg.confidence = 1.0
             obstacles_msg.obstacles.append(obstacle_msg)
         self.pub_obstacle.publish(obstacles_msg)
+
+        goal_msg = GoalInImage()
+        goal_msg.header = goal_parts_msg.header
+        left_post = PostInImage()
+        left_post.foot_point.x = 9999999999
+        left_post.confidence = 1.0
+        right_post = PostInImage()
+        right_post.foot_point.x = -9999999999
+        right_post.confidence = 1.0
+        for post in goal_parts_msg.posts:
+            if post.foot_point.x < left_post.foot_point.x:
+                left_post = post
+            if post.foot_point.x > right_post.foot_point.x:
+                right_post = post
+        goal_msg.left_post = left_post
+        goal_msg.right_post = right_post
+        goal_msg.confidence = 1.0
+        if goal_parts_msg.posts:
+            self.pub_goal.publish(goal_msg)
 
         # create line msg
         line_msg = LineInformationInImage()  # Todo: add lines
@@ -402,6 +435,15 @@ class Vision:
             self.pub_obstacle = rospy.Publisher(
                 config['ROS_obstacle_msg_topic'],
                 ObstaclesInImage,
+                queue_size=3)
+
+        if 'ROS_goal_msg_topic' not in self.config or \
+                self.config['ROS_goal_msg_topic'] != config['ROS_goal_msg_topic']:
+            if hasattr(self, 'pub_goal'):
+                self.pub_goal.unregister()
+            self.pub_goal = rospy.Publisher(
+                config['ROS_goal_msg_topic'],
+                GoalInImage,
                 queue_size=3)
 
         if 'ROS_fcnn_img_msg_topic' not in self.config or \
