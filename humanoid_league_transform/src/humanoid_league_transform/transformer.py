@@ -177,13 +177,20 @@ class TransformBall(object):
         goal = GoalRelative()
         goal.header.stamp = msg.header.stamp
         goal.header.frame_id = self.publish_frame
+        if msg.left_post is None:
+            return
 
         transformed_left = self.transform(msg.left_post.foot_point, field, msg.header.stamp)
         goal.left_post = transformed_left
 
-        if msg.right_post.foot_point.x != 0:
+        if msg.right_post.foot_point is not None and msg.right_post.foot_point.x != 0:
             transformed_right = self.transform(msg.right_post.foot_point, field, msg.header.stamp)
             goal.right_post = transformed_right
+        else:
+            goal.right_post = goal.left_post
+
+        goal.center_direction.x = goal.left_post.x + (goal.right_post.x - goal.left_post.x) / 2.0
+        goal.center_direction.y = goal.left_post.y + (goal.right_post.y - goal.left_post.y) / 2.0
 
         goal.confidence = msg.confidence
 
