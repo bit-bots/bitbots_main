@@ -62,7 +62,7 @@ line_detector_linepoints_range: 10000
 line_detector_blur_kernel_size: 9
 
 obstacle_color_threshold: 10
-obstacle_white_threshold: 10
+obstacle_white_threshold: 12
 obstacle_horizon_diff_threshold: 20
 obstacle_candidate_horizon_offset: 30
 obstacle_candidate_min_width: 30
