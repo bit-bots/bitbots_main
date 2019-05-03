@@ -126,9 +126,9 @@ def configure(args):
                 if start_motion else \
                 'sudo /bin/systemctl disable bitbots_motion.service; '
 
-            data['behavior'] = 'sudo /bin/systemctl start bitbots_behavior.service; sudo /bin/systemctl enable bitbots_behavior.service; ' \
+            data['behavior'] = 'sudo /bin/systemctl start bitbots_highlevel.service; sudo /bin/systemctl enable bitbots_highlevel.service; ' \
                 if start_behaviour else \
-                'sudo /bin/systemctl disable bitbots_behavior.service; '
+                'sudo /bin/systemctl disable bitbots_highlevel.service; '
 
             data['roscore'] = 'sudo /bin/systemctl start roscore.service; sudo /bin/systemctl enable roscore.service; ' \
                 if start_roscore else \
