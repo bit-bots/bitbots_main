@@ -1,18 +1,18 @@
 {
-    "author": "", 
-    "description": "", 
-    "hostname": "compi-u", 
+    "author": "Unknown", 
+    "description": "Edit me!", 
+    "hostname": "nuc1", 
     "keyframes": [
         {
-            "duration": 0.0001, 
+            "duration": 0.001,
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": 0, 
+                "HeadTilt": 45, 
                 "LAnklePitch": -36, 
                 "LAnkleRoll": 4, 
                 "LElbow": 45, 
                 "LHipPitch": -11, 
-                "LHipRoll": -1, 
+                "LHipRoll": 4, 
                 "LHipYaw": 6, 
                 "LKnee": -13, 
                 "LShoulderPitch": 78, 
@@ -21,17 +21,39 @@
                 "RAnkleRoll": -4, 
                 "RElbow": -45, 
                 "RHipPitch": 11, 
-                "RHipRoll": 1, 
+                "RHipRoll": -4, 
                 "RHipYaw": 6, 
                 "RKnee": 13, 
                 "RShoulderPitch": -78, 
                 "RShoulderRoll": 0
             }, 
             "name": "frame0", 
-            "pause": 0.0
+            "pause": 0.0, 
+            "torque": {
+                "HeadPan": 2, 
+                "HeadTilt": 2, 
+                "LAnklePitch": 2, 
+                "LAnkleRoll": 2, 
+                "LElbow": 2, 
+                "LHipPitch": 2, 
+                "LHipRoll": 2, 
+                "LHipYaw": 2, 
+                "LKnee": 2, 
+                "LShoulderPitch": 2, 
+                "LShoulderRoll": 2, 
+                "RAnklePitch": 2, 
+                "RAnkleRoll": 2, 
+                "RElbow": 2, 
+                "RHipPitch": 2, 
+                "RHipRoll": 2, 
+                "RHipYaw": 2, 
+                "RKnee": 2, 
+                "RShoulderPitch": 2, 
+                "RShoulderRoll": 2
+            }
         }
     ], 
-    "last_edited": "2018-06-08 14:33:41.824340", 
+    "last_edited": "2019-05-02 10:20:24.230135", 
     "name": "falling_front", 
-    "version": "1.0"
+    "version": "0"
 }
