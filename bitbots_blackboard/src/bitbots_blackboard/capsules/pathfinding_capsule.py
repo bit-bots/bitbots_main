@@ -67,7 +67,8 @@ class PathfindingCapsule:
     def fix_rotation(self, msg):
         # type: (PoseStamped) -> PoseStamped
         # this adds translatory movement to a rotation to fix a pathfinding issue
-        if msg.pose.position.x == 0 and msg.pose.position.y == 0:
+        if (msg.pose.position.x == 0 and msg.pose.position.y == 0 and
+                not (msg.pose.orientation.x == 0 and msg.pose.orientation.y == 0 and msg.pose.orientation.z == 0)):
             msg.pose.position.x = 0.01
             msg.pose.position.y = 0.01
         return msg
