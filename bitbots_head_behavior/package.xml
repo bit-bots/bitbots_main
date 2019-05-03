@@ -24,7 +24,7 @@
   <export>
     <rosdoc config="rosdoc.yaml"/>
     <bitbots_documentation>
-      <status>tested_robot</status>
+      <status>tested_integration</status>
       <language>python2</language>
     </bitbots_documentation>
   </export>
