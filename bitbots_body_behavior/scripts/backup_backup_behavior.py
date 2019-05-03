@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 import rospy
 import math
 import time
@@ -197,10 +198,10 @@ class Behavior(object):
     def runThroughBall(self):
         print("Run through ball")
         self.walkingWalkSteeredForward(self.walking_speed_forward,0)
-        time.sleep(self.reach_ball_time + 1)
+        time.sleep(self.reach_ball_time)
         self.walkingWalkSteeredForward(0,0)
         self.walkingWalkSteeredForward(- 0.8 * self.walking_speed_forward,0)
-        time.sleep(self.reach_ball_time + 1)
+        time.sleep(self.reach_ball_time)
         self.walkingWalkSteeredForward(0,0)
 
 
