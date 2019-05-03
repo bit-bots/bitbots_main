@@ -7,7 +7,8 @@ $Falling
     NOT_FALLING --> $Fallen
         FALLEN_FRONT --> @PlayAnimationStandUpFront
         FALLEN_BACK --> @PlayAnimationStandUpBack
-        FALLEN_SIDE --> @PlayAnimationStandUpSide
+        FALLEN_RIGHT --> @PlayAnimationStandUpRight
+        FALLEN_LEFT --> @PlayAnimationStandUpLeft
         NOT_FALLEN --> $ExternalAnimation
             ANIMATION_RUNNING --> @StayAnimationRunning
             FREE --> $Walking

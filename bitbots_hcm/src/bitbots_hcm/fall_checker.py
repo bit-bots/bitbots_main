@@ -115,9 +115,13 @@ class FallChecker(object):
             rospy.loginfo("FALLEN TO THE BACK")
             return self.BACK
 
-        if abs(smooth_accel[1]) > 7:
-            rospy.loginfo("FALLEN TO THE SIDE")
-            return self.SIDE
+        if smooth_accel[1] < -7:
+            rospy.loginfo("FALLEN TO THE RIGHT")
+            return self.RIGHT
+
+        if smooth_accel[1] > 7:
+            rospy.loginfo("FALLEN TO THE LEFT")
+            return self.LEFT
 
         # If no side is facing downwards, the robot is not fallen yet.
         return None

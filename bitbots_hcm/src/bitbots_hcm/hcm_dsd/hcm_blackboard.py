@@ -73,7 +73,8 @@ class HcmBlackboard():
         self.motor_off_animation = rospy.get_param("hcm/animations/motor_off")
         self.stand_up_front_animation = rospy.get_param("hcm/animations/stand_up_front")
         self.stand_up_back_animation = rospy.get_param("hcm/animations/stand_up_back")
-        self.stand_up_side_animation = rospy.get_param("hcm/animations/stand_up_side")
+        self.stand_up_left_animation = rospy.get_param("hcm/animations/stand_up_left")
+        self.stand_up_right_animation = rospy.get_param("hcm/animations/stand_up_right")
 
         # motors
         self.last_motor_goal_time = rospy.Time.now() # initilize with current time, or motors will be turned off on start
