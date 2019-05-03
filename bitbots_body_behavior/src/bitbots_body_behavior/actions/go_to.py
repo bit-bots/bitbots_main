@@ -26,22 +26,25 @@ class GoToRelativePosition(AbstractActionElement):
         super(GoToRelativePosition, self).__init__(blackboard, dsd)
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5.0))
         tf_listener = tf2.TransformListener(self.tf_buffer)
-        self.point = parameters
+        self.point = float(parameters.get('x', 0)), float(parameters.get('y', 0)), float(parameters.get('t', 0))
+        self.first = True
 
     def perform(self, reevaluate=False):
-        pose_msg = PoseStamped()
-        pose_msg.header.stamp = rospy.Time.now()
-        pose_msg.header.frame_id = 'base_footprint'
+        if self.first:
+            self.first = False
+            pose_msg = PoseStamped()
+            pose_msg.header.stamp = rospy.Time.now()
+            pose_msg.header.frame_id = 'base_footprint'
 
-        pose_msg.pose.position.x = self.point[0]
-        pose_msg.pose.position.y = self.point[1]
-        pose_msg.pose.position.z = 0
+            pose_msg.pose.position.x = self.point[0]
+            pose_msg.pose.position.y = self.point[1]
+            pose_msg.pose.position.z = 0
 
-        rotation = quaternion_from_euler(0, 0, math.radians(self.point[2]))
-        pose_msg.pose.orientation = Quaternion(*rotation)
+            rotation = quaternion_from_euler(0, 0, math.radians(self.point[2]))
+            pose_msg.pose.orientation = Quaternion(*rotation)
 
-        # To have the object we are going to in front of us, go to a point behind it
-        self.blackboard.pathfinding.publish(pose_msg)
+            # To have the object we are going to in front of us, go to a point behind it
+            self.blackboard.pathfinding.publish(pose_msg)
 
 
 class GoToAbsolutePosition(AbstractActionElement):
@@ -66,7 +69,6 @@ class GoToAbsolutePosition(AbstractActionElement):
         pose_msg.pose.orientation = Quaternion(*rotation)
 
         self.blackboard.pathfinding.publish(pose_msg)
-
 
 
 class GoToOwnGoal(GoToAbsolutePosition):

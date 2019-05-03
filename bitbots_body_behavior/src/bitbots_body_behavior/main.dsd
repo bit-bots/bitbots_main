@@ -69,33 +69,38 @@ $BallSeen
             NO --> @GoToBall + target:none
     NO --> @SearchBall
 
+#Positioning
+$Localization
+    YES --> @GoToRolePosition, @LookAtFieldFeatures
+    NO --> @GoToRelativePosition + x:2 + y:0 + t:0
+
 
 -->BodyBehavior
 $RoleDecider
     goalie --> $GameStateDecider
         Initial --> @SendStop, @LookAtFieldFeatures
-        Ready --> @GoToRolePosition, @LookAtFieldFeatures
+        Ready --> #Positioning
         Set --> @Stand
         Playing --> #GoalieBehavior
         Finished --> @Stand
         NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtFieldFeatures
     offense --> $GameStateDecider
         Initial --> @SendStop, @LookAtFieldFeatures
-        Ready --> @GoToRolePosition, @LookAtFieldFeatures
+        Ready --> #Positioning
         Set --> @Stand
         Playing --> #OffenseBehavior
         Finished --> @Stand
         NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtFieldFeatures
     defense --> $GameStateDecider
         Initial --> @SendStop, @LookAtFieldFeatures
-        Ready --> @GoToRolePosition, @LookAtFieldFeatures
+        Ready --> #Positioning
         Set --> @Stand
         Playing --> #DefenseBehavior
         Finished --> @Stand
         NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtFieldFeatures
     penalty --> $GameStateDecider
         Initial --> @SendStop, @LookAtFieldFeatures
-        Ready --> @SendStop, @LookAtFieldFeatures
+        Ready --> #Positioning
         Set --> @Stand
         Playing --> #PenaltyBehavior
         Finished --> @Stand
