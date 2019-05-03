@@ -17,7 +17,7 @@ class Behavior(object):
         self.moonwalk_rotation = -0.1
         self.walking_speed_forward = 0.07
         self.walking_speed_sideward = 0.6
-        self.reach_ball_time = 5.0
+        self.reach_ball_time = 3.0
         self.ball_position = (100,100)
         self.ball_distance = 100
         self.ball_angle = 0.0
