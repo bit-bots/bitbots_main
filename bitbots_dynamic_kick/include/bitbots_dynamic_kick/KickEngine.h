@@ -38,11 +38,11 @@ public:
      * @param target_pose Pose in base_link frame which should be reached.
      *      Ideally this is also where the ball lies and a kick occurs.
      * @param speed Speed with which to reach the target // TODO document scale of speed (m/s, km/h, 0-1,...)
-     * @param l_foot_pose Current pose of left foot in base_link frame
+     * @param trunk_pose Current pose of left foot in base_link frame
      * @param r_foot_pose Current pos of right foot in base_link frame
      */
     void set_goal(const geometry_msgs::Pose& target_pose, double speed,
-            const geometry_msgs::Pose& l_foot_pose, const geometry_msgs::Pose& r_foot_pose);
+            const geometry_msgs::Pose& trunk_pose, const geometry_msgs::Pose& r_foot_pose);
 
     /**
      * Reset this KickEngine completely, removing the goal, all splines and thereby stopping all output
@@ -69,7 +69,7 @@ private:
     double m_time;
     geometry_msgs::Pose m_goal_pose;
     double m_speed;
-    std::optional<Trajectories> m_support_trajectories, m_flying_trajectories;
+    std::optional<Trajectories> m_trunk_trajectories, m_flying_trajectories;
     Stabilizer m_stabilizer;
     KickParams m_params;
 
@@ -82,8 +82,8 @@ private:
      *  // TODO Add docstring to calc_splines once we resolve issue #2
      */
     void calc_splines(const geometry_msgs::Pose& target_pose, const geometry_msgs::Pose& r_foot_pose,
-                      const geometry_msgs::Pose& l_foot_pose);
-    tf::Transform get_current_pose(Trajectories spline_container);
+                      const geometry_msgs::Pose& trunk_pose);
+    geometry_msgs::PoseStamped get_current_pose(Trajectories spline_container);
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_KICK_ENGINE_H

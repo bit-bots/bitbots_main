@@ -63,11 +63,11 @@ private:
 
     /**
      * Retrieve current feet_positions in base_link frame
-     * @param l_foot_pose Output left-foot pose. In base_link frame
+     * @param trunk_pose Output left-foot pose. In base_link frame
      * @param r_foot_pose Output right-foot pose. In base_link frame
      * @return Whether retrieval was successful or not
      */
-    bool get_foot_poses(geometry_msgs::Pose &l_foot_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time);
+    bool get_foot_poses(geometry_msgs::Pose &trunk_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time);
 
     /**
      * Publish goals to ROS
