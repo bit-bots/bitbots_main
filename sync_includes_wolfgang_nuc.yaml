@@ -48,3 +48,6 @@ include:
 exclude:
     - "*.bag"
     - "*.pyc"
+    - "cmake-build-debug"
+    - ".idea"
+    - ".vscode"
