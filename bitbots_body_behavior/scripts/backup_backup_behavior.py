@@ -12,7 +12,7 @@ from geometry_msgs.msg import Twist
 class Behavior(object):
     def __init__(self):
         self.rotation_threshold = math.radians(10)
-        self.walking_rotation_scalar = 0.08
+        self.walking_rotation_scalar = 0.30
         self.moonwalk_rotation = -0.1
         self.walking_speed_forward = 0.11
         self.walking_speed_sideward = 0.6
