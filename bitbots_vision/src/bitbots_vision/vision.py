@@ -166,18 +166,22 @@ class Vision:
 
         goal_msg = GoalInImage()
         goal_msg.header = goal_parts_msg.header
-        left_post = None
-        right_post = None
+        left_post = PostInImage()
+        left_post.foot_point.x = 9999999999
+        left_post.confidence = 1.0
+        right_post = PostInImage()
+        right_post.foot_point.x = -9999999999
+        right_post.confidence = 1.0
         for post in goal_parts_msg.posts:
-            if left_post is None or post.x < left_post.x:
+            if post.foot_point.x < left_post.foot_point.x:
                 left_post = post
-            if right_post is None or post.x > right_post.x:
+            if post.foot_point.x > right_post.foot_point.x:
                 right_post = post
         goal_msg.left_post = left_post
         goal_msg.right_post = right_post
         goal_msg.confidence = 1.0
-
-        self.pub_goal.publish(goal_msg)
+        if goal_parts_msg.posts:
+            self.pub_goal.publish(goal_msg)
 
         # create line msg
         line_msg = LineInformationInImage()  # Todo: add lines
