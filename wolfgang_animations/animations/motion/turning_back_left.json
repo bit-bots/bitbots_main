@@ -1,0 +1,59 @@
+{
+    "author": "Unknown", 
+    "description": "Edit me!", 
+    "hostname": "compi-t", 
+    "keyframes": [
+        {
+            "duration": 1.0, 
+            "goals": {
+                "HeadPan": 0, 
+                "HeadTilt": 0, 
+                "LAnklePitch": -26, 
+                "LAnkleRoll": 4, 
+                "LElbow": 45, 
+                "LHipPitch": 27, 
+                "LHipRoll": 4, 
+                "LHipYaw": -43, 
+                "LKnee": -58, 
+                "LShoulderPitch": 0, 
+                "LShoulderRoll": 0, 
+                "RAnklePitch": 26, 
+                "RAnkleRoll": -4, 
+                "RElbow": -45, 
+                "RHipPitch": -27, 
+                "RHipRoll": -4, 
+                "RHipYaw": 1, 
+                "RKnee": 58, 
+                "RShoulderPitch": 0, 
+                "RShoulderRoll": 0
+            }, 
+            "name": "generated frame", 
+            "pause": 0.5, 
+            "torque": {
+                "HeadPan": 2, 
+                "HeadTilt": 2, 
+                "LAnklePitch": 2, 
+                "LAnkleRoll": 2, 
+                "LElbow": 2, 
+                "LHipPitch": 2, 
+                "LHipRoll": 2, 
+                "LHipYaw": 2, 
+                "LKnee": 2, 
+                "LShoulderPitch": 2, 
+                "LShoulderRoll": 2, 
+                "RAnklePitch": 2, 
+                "RAnkleRoll": 2, 
+                "RElbow": 2, 
+                "RHipPitch": 2, 
+                "RHipRoll": 2, 
+                "RHipYaw": 2, 
+                "RKnee": 2, 
+                "RShoulderPitch": 2, 
+                "RShoulderRoll": 2
+            }
+        }
+    ], 
+    "last_edited": "2019-05-03 12:20:47.048701", 
+    "name": "turning_back_left", 
+    "version": "0"
+}
