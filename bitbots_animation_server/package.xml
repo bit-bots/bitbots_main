@@ -24,7 +24,7 @@
 
   <export>
     <bitbots_documentation>
-      <status>tested_robot</status>
+      <status>tested_integration</status>
       <language>python3</language>
     </bitbots_documentation>
   </export>
