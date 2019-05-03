@@ -88,8 +88,8 @@ classifier_model_path: '/models/classifier_01'
 
 cascade_classifier_path: '/classifier/cascadeNew.xml'
 
-dynamic_color_space: false
+dynamic_color_space: true
 dynamic_color_space_mask_img_dyn_msg: false
 dynamic_color_space_queue_max_size: 10
-dynamic_color_space_threshold: 0.6
+dynamic_color_space_threshold: 0.9
 dynamic_color_space_kernel_radius: 1
