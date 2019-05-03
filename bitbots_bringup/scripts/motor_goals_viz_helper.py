@@ -8,6 +8,7 @@ from bitbots_msgs.msg import JointCommand
 from humanoid_league_msgs.msg import Animation
 
 JOINT_NAMES = ['LHipYaw', 'LHipRoll', 'LHipPitch', 'LKnee', 'LAnklePitch', 'LAnkleRoll', 'RHipYaw', 'RHipRoll', 'RHipPitch', 'RKnee', 'RAnklePitch', 'RAnkleRoll', 'LShoulderRoll', 'LShoulderPitch', 'LElbow', 'RShoulderRoll', 'RShoulderPitch', 'RElbow', 'HeadPan', 'HeadTilt']
+JOINT_GOALS = [0, 0, 0.7, -1, -0.4, 0, 0, 0, -0.7, 1, 0.4, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 class MotorVizHelper:
     def __init__(self):
@@ -37,7 +38,7 @@ class MotorVizHelper:
         self.joint_state_msg = JointState()
         self.joint_state_msg.header.stamp = rospy.Time.now()
         self.joint_state_msg.name = JOINT_NAMES
-        self.joint_state_msg.position = [0] * 20
+        self.joint_state_msg.position = JOINT_GOALS
         self.joint_publisher.publish(self.joint_state_msg)
 
         rate = rospy.Rate(100)
