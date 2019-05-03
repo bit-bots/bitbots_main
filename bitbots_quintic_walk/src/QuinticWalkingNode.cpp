@@ -317,7 +317,7 @@ void QuinticWalkingNode::jointStateCb(const sensor_msgs::JointState msg) {
 }
 
 void QuinticWalkingNode::kickCb(const std_msgs::BoolConstPtr msg) {
-    _walkEngine.requestKick(true); //todo decide foot
+    _walkEngine.requestKick(msg->data);
 }
 
 void
