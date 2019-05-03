@@ -139,6 +139,23 @@ sub first_catkin_build() {
 }
 
 
+sub clone_internal_repos() {
+    # Clone internal bitbots_repos into bitbots_meta
+    my $location = get_location();
+    chdir $location;
+
+    print "Do you want to clone bitbots gogs repos ('ansible_robots', 'doku') now?$/";
+    print "[Y/n]: ";
+    if (read_yes_no_input()) {
+        system 'git clone gogs@gogs.mafiasi.de:Bit-Bots/ansible_robots.git'
+            and print "Could not clone ansible_robots$/$/";
+
+        system 'git clone gogs@gogs.mafiasi.de:Bit-Bots/doku.git'
+            and print "Could not clone doku$/$/"
+    }
+}
+
+
 prepare_ros();
 prepare_workspace_location();
 create_catkin_workspace();
@@ -146,4 +163,5 @@ link_bitbots_meta();
 install_rosdeps();
 install_pip();
 first_catkin_build();
+clone_internal_repos();
 chdir $start_dir;
