@@ -20,6 +20,7 @@ class FieldBoundaryDetector:
         """
         # set variables:
         self._image = None
+        self._head_joint_position = None
         self._field_boundary_points = None
         self._field_boundary_full = None
         self._convex_field_boundary_points = None
@@ -38,6 +39,7 @@ class FieldBoundaryDetector:
         self._search_method = config['field_boundary_finder_search_method']
         self._precise_pixel = config['field_boundary_finder_precision_pix']
         self._min_precise_pixel = config['field_boundary_finder_min_precision_pix']
+        self._head_joint_threshold = config['field_boundary_finder_head_joint_threshold']
         rospy.loginfo("field_boundary_search_method: " + str(self._search_method))  # Todo: sollen wir das printen?
 
     def set_image(self, image):
@@ -52,6 +54,10 @@ class FieldBoundaryDetector:
         self._convex_field_boundary_full = None
         self._convex_field_boundary_points = None
         self._mask = None
+
+    def set_head_joint_state(self, head_joint_states):
+        index = head_joint_states.name.index('HeadTilt')
+        self._head_joint_position = head_joint_states.position[index]
 
     def get_mask(self):
         # type: () -> mask
@@ -93,12 +99,21 @@ class FieldBoundaryDetector:
         """
         #self._runtime_evaluator.start_timer()
         self._field_boundary_points = []
-        if self._search_method == 'binary':
+        if self._search_method == 'dynamic':
+            print("head: " +str(self._head_joint_position))
+            if self._head_joint_position < self._head_joint_threshold:
+                self._field_boundary_points = self._sub_field_boundary_points_iteration()
+                print("it")
+            else:
+                self._field_boundary_points = self._sub_field_boundary_points_reversed()
+                print("re")
+        elif self._search_method == 'binary':
             self._field_boundary_points = self._sub_field_boundary_points_binary()
         elif self._search_method == 'reversed':
             self._field_boundary_points = self._sub_field_boundary_points_reversed()
         else:
             self._field_boundary_points = self._sub_field_boundary_points_iteration()
+
         #self._runtime_evaluator.stop_timer()
         #self._runtime_evaluator.print_timer()
 

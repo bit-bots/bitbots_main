@@ -8,7 +8,7 @@ import rospkg
 import threading
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, JointState
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, live_classifier, \
@@ -34,6 +34,8 @@ class Vision:
         self.bridge = CvBridge()
 
         self.config = {}
+
+        self.head_joint_state = None
 
         self.debug_image_dings = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_dings:
@@ -69,7 +71,11 @@ class Vision:
 
         self.handle_image(image_msg)
 
+    def _head_joint_state_callback(self, headjoint_msg):
+        self.field_boundary_detector.set_head_joint_state(headjoint_msg)
+
     def handle_image(self, image_msg):
+        #print("you spin my head right round")
         #rospy.loginfo("handle_image")
         # converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
@@ -81,15 +87,7 @@ class Vision:
 
         self.runtime_evaluator.set_image()
 
-        if (self.config['vision_ball_classifier'] == 'cascade'):
-            self.ball_finder.set_image(image)
-            self.ball_detector.set_image(
-                image,
-                self.field_boundary_detector.balls_under_field_boundary(
-                    self.ball_finder.get_ball_candidates(),
-                    self._ball_candidate_y_offset))
-
-        elif (self.config['vision_ball_classifier'] == 'fcnn'):
+        if (self.config['vision_ball_classifier'] == 'fcnn'):
             self.ball_detector.set_image(image)
 
         if self.config['vision_parallelize']:
@@ -372,6 +370,17 @@ class Vision:
                 tcp_nodelay=True,
                 buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
+
+        if 'ROS_head_joint_msg_topic' not in self.config or \
+                self.config['ROS_head_joint_msg_topic'] != config['ROS_head_joint_msg_topic']:  # Todo: wozu das alles?
+            if hasattr(self, 'head_sub'):
+                self.head_sub.unregister()
+            self.head_sub = rospy.Subscriber(
+                config['ROS_head_joint_msg_topic'],
+                JointState,
+                self._head_joint_state_callback,
+                queue_size=config['ROS_head_joint_state_queue_size'],
+                tcp_nodelay=True)
 
         # publishers
         if 'ROS_ball_msg_topic' not in self.config or \
