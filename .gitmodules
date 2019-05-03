@@ -68,3 +68,6 @@
 [submodule "udp_bridge"]
 	path = udp_bridge
 	url = git@github.com:bit-bots/udp_bridge.git
+[submodule "lib/dwa_local_planner"]
+	path = lib/dwa_local_planner
+	url = git@github.com:Bit-Bots/dwa_local_planner.git
