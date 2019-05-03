@@ -143,7 +143,7 @@ def configure(args):
         r = subprocess.run([
             'ssh',
             'bitbots@{}'.format(host[0]),
-            'bash -c \'{roscore}; {motion}; {behavior}\''.format(**data)
+            'bash -c \'{roscore}; {motion}; {behavior}; {vision}\''.format(**data)
         ])
         if r.returncode != 0:
             print_err('Configuring {} failed!'.format(host[1]))
