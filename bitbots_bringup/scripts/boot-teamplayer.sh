@@ -5,7 +5,7 @@
 #
 
 if hash roslaunch 2>/dev/null; then
-    roslaunch bitbots_bringup highlevel.launch
+    roslaunch bitbots_bringup teamplayer.launch
 else
     echo "Please source the workspace"
     exit 1
