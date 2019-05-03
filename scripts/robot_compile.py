@@ -122,28 +122,28 @@ def configure(args):
         }
         
         if host[0].startswith('nuc'):
-            data['motion'] = 'sudo /bin/systemctl start bitbots_motion.service; sudo /bin/systemctl enable bitbots_motion.service' \
+            data['motion'] = 'sudo /bin/systemctl start bitbots_motion.service; sudo /bin/systemctl enable bitbots_motion.service; ' \
                 if start_motion else \
-                'sudo /bin/systemctl disable bitbots_motion.service'
+                'sudo /bin/systemctl disable bitbots_motion.service; '
 
-            data['behavior'] = 'sudo /bin/systemctl start bitbots_behavior.service; sudo /bin/systemctl enable bitbots_behavior.service' \
+            data['behavior'] = 'sudo /bin/systemctl start bitbots_behavior.service; sudo /bin/systemctl enable bitbots_behavior.service; ' \
                 if start_behaviour else \
-                'sudo /bin/systemctl disable bitbots_behavior.service'
+                'sudo /bin/systemctl disable bitbots_behavior.service; '
 
-            data['roscore'] = 'sudo /bin/systemctl start roscore.service; sudo /bin/systemctl enable roscore.service' \
+            data['roscore'] = 'sudo /bin/systemctl start roscore.service; sudo /bin/systemctl enable roscore.service; ' \
                 if start_roscore else \
-                'sudo /bin/systemctl disable roscore.service'
+                'sudo /bin/systemctl disable roscore.service; '
 
         elif host[0].startswith('jetson'):
-            data['vision'] = 'sudo /bin/systemctl start bitbots_vision.service; sudo /bin/systemctl start bitbots_vision.service' \
+            data['vision'] = 'sudo /bin/systemctl start bitbots_vision.service; sudo /bin/systemctl start bitbots_vision.service; ' \
                 if start_vision else \
-                'sudo /bin/systemctl disable bitbots_vision.service'
+                'sudo /bin/systemctl disable bitbots_vision.service; '
 
         print_info('Configuring boot for {}...'.format(host[1]))
         r = subprocess.run([
             'ssh',
             'bitbots@{}'.format(host[0]),
-            'bash -c \'{roscore}; {motion}; {behavior}; {vision}\''.format(**data)
+            'bash -c \'{roscore}{motion}{behavior}{vision}\''.format(**data)
         ])
         if r.returncode != 0:
             print_err('Configuring {} failed!'.format(host[1]))
