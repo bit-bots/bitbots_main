@@ -102,6 +102,15 @@ def synchronize(sync_includes_file, host, workspace, package=None):
         print_err('Synchronizing the workspace failed!')
         sys.exit(sync_result.returncode)
 
+    if host[1].startswith('jetson'):
+        call = ['ssh',
+                'bitbots@{}'.format(host[0]),
+                'sed -i "/camera_name/s/ROBOT/{}/" ~/wolfgang_ws/src/wolves_image_provider/config/camera_settings.yaml'.format(robot_name_name)]
+        camera_result = subprocess.run(call)
+    if camera_result.returncode != 0:
+        print_err('Configuring the camera calibration failed!')
+        sys.exit(camera_result.returncode)
+
 
 # noinspection PyUnboundLocalVariable
 def configure(args):
@@ -270,6 +279,7 @@ if __name__ == '__main__':
                 synchronize(sync_includes_file, host, workspace, args.package)
             else:
                 synchronize(sync_includes_file, host, workspace)
+
         print_success('Sync succeeded!')
 
     if not args.sync_only:
