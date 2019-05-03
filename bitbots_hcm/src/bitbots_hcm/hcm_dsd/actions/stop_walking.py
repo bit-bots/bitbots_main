@@ -14,12 +14,8 @@ class StopWalking(AbstractActionElement):
         super(StopWalking, self).__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        self.do_not_reevaluate()
-        if self.blackboard.is_currently_walking():
-            msg = Twist()
-            msg.linear.x = 0
-            msg.linear.y = 0
-            msg.angular.z = 0
-            self.blackboard.walk_pub.publish(msg)
-        else:
-            return self.pop()        
+        msg = Twist()
+        msg.linear.x = 0
+        msg.linear.y = 0
+        msg.angular.z = 0
+        self.blackboard.walk_pub.publish(msg)
