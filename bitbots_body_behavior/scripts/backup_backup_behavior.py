@@ -11,6 +11,7 @@ from geometry_msgs.msg import Twist
 
 class Behavior(object):
     def __init__(self):
+        self.init_walking_time = 20
         self.rotation_threshold = math.radians(10)
         self.walking_rotation_scalar = 0.30
         self.moonwalk_rotation = -0.1
@@ -24,7 +25,7 @@ class Behavior(object):
         self.goal_angle = 1.0
         self.goal_kick_threshold = math.radians(10)
         self.goal_in_front = False
-        self.allow_to_move = True
+        self.allow_to_move = False
         self.kick_behavior = False
         self.goal_behavior = False
         rospy.init_node('backup_backup_behavior')
@@ -96,6 +97,12 @@ class Behavior(object):
         self.behave()
 
     def behave(self):
+        self.stopAtBegin()
+        while self.allow_to_move == False and not rospy.is_shutdown():
+            time.sleep(0.1)
+            print("Waiting for game to start")
+        self.walkIn()
+        # Start normal behavior
         while not rospy.is_shutdown():
             self.searchBall()
             self.turnToBall()
@@ -107,6 +114,18 @@ class Behavior(object):
             else:
                 self.runThroughBall()
             time.sleep(1)
+
+    def stopAtBegin(self):
+        time.sleep(1)
+        self.walkingWalkSteeredForward(0.0, 0.0)
+
+
+    def walkIn(self):
+        print("Walking into the field")
+        self.walkingWalkSteeredForward(self.walking_speed_forward, 0)
+        time.sleep(self.init_walking_time)
+        self.walkingWalkSteeredForward(0, 0)
+        time.sleep(1)
     
     def goToBall(self):
         while self.ball_distance > 0.5 and not rospy.is_shutdown():
@@ -128,8 +147,8 @@ class Behavior(object):
         delta = abs(ball_angle)
         while delta > self.rotation_threshold and not rospy.is_shutdown():
             print("Rotating to Ball....")
-            direction = ball_angle/delta
-            rotation = direction * self.walking_rotation_scalar * math.pi
+            direction = ball_angle
+            rotation = direction * self.walking_rotation_scalar
             self.walkingTurn(rotation)
             time.sleep(0.5)
             ball_angle = self.ball_angle
@@ -143,7 +162,7 @@ class Behavior(object):
         print("Goal Found")
 
     def ball_seen(self):
-        return (time.time() - self.ball_age) < 3
+        return (time.time() - self.ball_age) < 4
 
     def stopWalking(self):
         walking_message = Twist()
@@ -178,7 +197,7 @@ class Behavior(object):
     def kick(self):
         self.walkingWalkSteeredForward(self.walking_speed_forward,0)
         time.sleep(self.reach_ball_time)
-        self.walkingWalkSteeredForward(0,0)
+        self.walkingWalkSteeredForward(0.0, 0.0)
         print("Kick")
         if self.ball_position[1] > 0:
             print("Left")
@@ -199,10 +218,10 @@ class Behavior(object):
         print("Run through ball")
         self.walkingWalkSteeredForward(self.walking_speed_forward,0)
         time.sleep(self.reach_ball_time)
-        self.walkingWalkSteeredForward(0,0)
+        self.walkingWalkSteeredForward(0.0, 0.0)
         self.walkingWalkSteeredForward(- 0.8 * self.walking_speed_forward,0)
         time.sleep(self.reach_ball_time)
-        self.walkingWalkSteeredForward(0,0)
+        self.walkingWalkSteeredForward(0.0, 0.0)
 
 
     
