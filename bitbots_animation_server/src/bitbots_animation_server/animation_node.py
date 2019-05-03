@@ -125,11 +125,13 @@ class PlayAnimationAction(object):
                 exit()
 
     def check_for_new_goal(self):
+        return False
         if self._as.is_new_goal_available():
                 next_goal = self._as.next_goal
+                rospy.logwarn("%s", str(next_goal))
                 rospy.logwarn("New goal: " + next_goal.get_goal().animation)
                 if next_goal.get_goal().hcm:
-                    rospy.logdebug("Accepted hcm animation %s", next_goal.get_goal().animation)
+                    rospy.logwarn("Accepted hcm animation %s", next_goal.get_goal().animation)
                     # cancel old stuff and restart
                     self._as.current_goal.set_aborted()
                     self._as.accept_new_goal()
@@ -139,7 +141,7 @@ class PlayAnimationAction(object):
                     self._as.next_goal.set_rejected()
                     # delete the next goal to make sure, that we can accept something else
                     self._as.next_goal = None
-                    rospy.logdebug("Couldn't start non hcm animation, bc another one is already running.")
+                    rospy.logwarn("Couldn't start non hcm animation, bc another one is already running.")
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
