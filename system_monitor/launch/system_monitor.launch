@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="system_monitor" type="system_monitor.py" name="system_monitor" output="screen" />
+</launch>
