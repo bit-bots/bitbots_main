@@ -99,7 +99,7 @@ class DynamicColorSpace:
             self.color_detector,
             vision_config,
             self.debug_printer,
-            self.runtime_evaluator) # TODO: handle runtime evaluator
+            dyn_color_detector=True)
 
         # Reset queue
         if hasattr(self, 'color_value_queue'):

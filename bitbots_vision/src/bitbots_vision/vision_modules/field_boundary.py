@@ -9,14 +9,15 @@ from .evaluator import RuntimeEvaluator
 
 class FieldBoundaryDetector:
 
-    def __init__(self, field_color_detector, config, debug_printer, runtime_evaluator=None):
-        # type: (np.matrix, ColorDetector, dict, DebugPrinter, RuntimeEvaluator) -> None
+    def __init__(self, field_color_detector, config, debug_printer, runtime_evaluator=None, dyn_color_detector=False):
+        # type: (np.matrix, ColorDetector, dict, DebugPrinter, RuntimeEvaluator, bool) -> None
         """
         This module can compute different versions of the field boundary.
         :param field_color_detector: Todo: beschreiben
         :param config: the configuration contained in visionparams.yaml
         :param debug_printer: outputs debug messages, necessary only for debug Todo: WIP
         :param runtime_evaluator: can be used to compute runtime of methods
+        :param dyn_color_detector: True when FieldBoundaryDetector used by DynamicColorSpace
         """
         # set variables:
         self._image = None
@@ -29,6 +30,7 @@ class FieldBoundaryDetector:
         self._field_color_detector = field_color_detector
         self._debug_printer = debug_printer
         self._runtime_evaluator = runtime_evaluator
+        self._dyn_color_detector = dyn_color_detector
         # init config:
         self._x_steps = config['field_boundary_finder_horizontal_steps']
         self._y_steps = config['field_boundary_finder_vertical_steps']
@@ -36,11 +38,14 @@ class FieldBoundaryDetector:
         self._roi_width = config['field_boundary_finder_roi_width']
         self._roi_increase = config['field_boundary_finder_roi_increase']
         self._green_threshold = config['field_boundary_finder_green_threshold']
-        self._search_method = config['field_boundary_finder_search_method']
         self._precise_pixel = config['field_boundary_finder_precision_pix']
         self._min_precise_pixel = config['field_boundary_finder_min_precision_pix']
         self._head_joint_threshold = config['field_boundary_finder_head_joint_threshold']
-        rospy.loginfo("field_boundary_search_method: " + str(self._search_method))  # Todo: sollen wir das printen?
+        # changes the search method when the FieldBoundaryDetector is used by the dynamic colorspace
+        if dyn_color_detector:
+            self._search_method = config['dynamic_color_space_field_boundary_finder_search_method']
+        else:
+            self._search_method = config['field_boundary_finder_search_method']
 
     def set_image(self, image):
         # type: () -> None  # Todo: what goes here?
@@ -100,13 +105,10 @@ class FieldBoundaryDetector:
         #self._runtime_evaluator.start_timer()
         self._field_boundary_points = []
         if self._search_method == 'dynamic':
-            print("head: " +str(self._head_joint_position))
             if self._head_joint_position < self._head_joint_threshold:
                 self._field_boundary_points = self._sub_field_boundary_points_iteration()
-                print("it")
             else:
                 self._field_boundary_points = self._sub_field_boundary_points_reversed()
-                print("re")
         elif self._search_method == 'binary':
             self._field_boundary_points = self._sub_field_boundary_points_binary()
         elif self._search_method == 'reversed':
