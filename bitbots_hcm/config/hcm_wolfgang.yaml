@@ -16,8 +16,8 @@ hcm:
   animations:
     walkready: "walkready"
     walkready_sim: "init"
-    falling_front: "walkready" # TODO Animation Falling
-    falling_back: "walkready"
+    falling_front: "falling_front" # TODO Animation Falling
+    falling_back: "falling_back"
     falling_left: "walkready"
     falling_right: "walkready"
     stand_up_front: "stand_up_front"
@@ -35,10 +35,10 @@ hcm:
   falling_active: true # enables the check for falling and coresponding counter meassurements
   #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
   #Grenzwerte sanfter --> zu spaete Raktion
-  threshold_gyro_y_front: 4 # > gyroY
-  threshold_gyro_x_side: 4 # > gyroX
-  falling_threshold_orientation_left_right: 30 # > Point of no return in degrees
-  falling_threshold_orientation_front_back: 60 # < Point of no return in degrees
+  threshold_gyro_y_front: 7 # > gyroY
+  threshold_gyro_x_side: 7 # > gyroX
+  falling_threshold_orientation_left_right: 60 # > Point of no return in degrees
+  falling_threshold_orientation_front_back: 45 # < Point of no return in degrees
   falling_new_front: 32
   falling_new_back: -6
   falling_new_left: -18
