@@ -1,4 +1,4 @@
-.PHONY : build doc doc-meta install repo vision-files update
+.PHONY : build doc doc-meta install repo vision-files update status
 
 
 build :
@@ -30,3 +30,6 @@ pull-init:
 
 vision-files:
 	scripts/pull_files.bash
+
+status:
+	scripts/git_status.bash
