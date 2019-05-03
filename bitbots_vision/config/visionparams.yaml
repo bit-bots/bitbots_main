@@ -49,8 +49,8 @@ horizon_finder_min_precision_pix: 3
 
 vision_ball_classifier: 'fcnn'  # cascade, fcnn or dummy
 vision_debug_image: false
-vision_debug_image_msg: false
-vision_mask_img_msg: false
+vision_publish_debug_image: false
+vision_publish_field_mask_image: false
 vision_parallelize: true
 vision_use_sim_color: false
 vision_ball_candidate_horizon_y_offset: 0
@@ -75,9 +75,13 @@ ROS_img_msg_topic: 'image_raw'
 ROS_img_queue_size: 1
 ROS_ball_msg_topic: 'ball_in_image'
 ROS_fcnn_img_msg_topic: 'fcnn_image'
-ROS_line_msg_topic: 'line_in_image'
 ROS_obstacle_msg_topic: 'obstacles_in_image'
 ROS_goal_msg_topic: 'goal_in_image'
+ROS_line_msg_topic: 'line_in_image'
+ROS_dynamic_color_space_msg_topic: 'dynamic_color_space'
+ROS_debug_image_msg_topic: 'debug_image'
+ROS_field_mask_image_msg_topic: 'field_mask'
+ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'
 
 ball_finder_classify_threshold: 0.5
 ball_finder_scale_factor: 1.1
@@ -88,8 +92,8 @@ classifier_model_path: '/models/classifier_01'
 
 cascade_classifier_path: '/classifier/cascadeNew.xml'
 
-dynamic_color_space: true
-dynamic_color_space_mask_img_dyn_msg: false
+dynamic_color_space_active: true
+dynamic_color_space_publish_field_mask_image: false
 dynamic_color_space_queue_max_size: 10
 dynamic_color_space_threshold: 0.9
 dynamic_color_space_kernel_radius: 1

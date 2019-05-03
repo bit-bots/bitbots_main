@@ -40,15 +40,9 @@ class DynamicColorSpace:
 
         # Init params
         self.vision_config = {}
-        self.turned_on = None
-
-        # Register publisher of ColorSpace-messages
-        self.pub_color_space = rospy.Publisher(
-            'color_space',
-            ColorSpace,
-            queue_size=1)
 
         # Subscribe to 'vision_config'-message
+        # The message topic name MUST be the same as in the config publisher in vision.py
         self.sub_vision_config_msg = rospy.Subscriber(
             'vision_config',
             Config,
@@ -74,20 +68,28 @@ class DynamicColorSpace:
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 vision_config['vision_debug_printer_classes']))
-
         self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
-        # Turn off dynamic color space, if parameter of yaml (dynamic reconfigure) is false
-        turned_on_tmp = self.turned_on
-        self.turned_on = vision_config['dynamic_color_space']
-        if self.turned_on != turned_on_tmp:
-            if self.turned_on:
-                rospy.loginfo('Dynamic color space turned on.')
+        # Print status of dynamic color space after toggeling 'dynamic_color_space_active' parameter
+        if 'dynamic_color_space_active' not in self.vision_config or \
+            vision_config['dynamic_color_space_active'] != self.vision_config['dynamic_color_space_active']:
+            if vision_config['dynamic_color_space_active']:
+                rospy.loginfo('Dynamic color space turned ON.')
             else:
-                rospy.loginfo('Dynamic color space turned off.')
-        
+                rospy.logwarn('Dynamic color space turned OFF.')
+
+        # Set publisher of ColorSpace-messages
+        if 'ROS_dynamic_color_space_msg_topic' not in self.vision_config or \
+                self.vision_config['ROS_dynamic_color_space_msg_topic'] != vision_config['ROS_dynamic_color_space_msg_topic']:
+            if hasattr(self, 'pub_color_space'):
+                self.pub_color_space.unregister()
+            self.pub_color_space = rospy.Publisher(
+                vision_config['ROS_dynamic_color_space_msg_topic'],
+                ColorSpace,
+                queue_size=1)
+
         # Set Color- and HorizonDetector
-        self.color_detector = color.PixelListColorDetector(
+        self.color_detector = color.DynamicPixelListColorDetector(
             self.debug_printer,
             self.package_path,
             vision_config)
@@ -141,8 +143,9 @@ class DynamicColorSpace:
         :param Image image_msg: new Image-message from Image-message subscriber
         :return: None
         """
-        # Turn off dynamic color space, if parameter of yaml is false
-        if not self.turned_on:
+        # Turn off dynamic color space, if parameter of config is false
+        if 'dynamic_color_space_active' not in self.vision_config or \
+            not self.vision_config['dynamic_color_space_active']:
             return
 
         # Drops old images
@@ -168,7 +171,7 @@ class DynamicColorSpace:
         colors = self.get_new_dynamic_colors(image)
         # Add new colors to the queue
         self.color_value_queue.append(colors)
-        # Publishes the 'color_space'-message
+        # Publishes to 'ROS_dynamic_color_space_msg_topic'
         self.publish(image_msg)
 
     def get_unique_color_values(self, image, coordinate_list):

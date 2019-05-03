@@ -39,8 +39,9 @@ class Vision:
         self.debug_image_dings = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_dings:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
-            
+
         # Register publisher of 'vision_config'-messages
+        # For changes of topic name: also change topic name in dynamic_color_space.py
         self.pub_config = rospy.Publisher(
             'vision_config',
             Config,
@@ -262,7 +263,7 @@ class Vision:
         self._ball_candidate_y_offset = config['vision_ball_candidate_horizon_y_offset']
 
         self.debug_image = config['vision_debug_image']
-        self.debug_image_msg = config['vision_debug_image_msg']
+        self.debug_image_msg = config['vision_publish_debug_image']
         self.debug = self.debug_image or self.debug_image_msg
         if self.debug:
             rospy.logwarn('Debug images are enabled')
@@ -275,8 +276,16 @@ class Vision:
             rospy.logwarn('ball FCNN output publishing is disabled')
 
         if config['vision_ball_classifier'] == 'dummy':
-            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, None)
-        # color config
+            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, self.debug_printer)
+
+        # Print status of color config
+        if 'vision_use_sim_color' not in self.config or \
+            config['vision_use_sim_color'] != self.config['vision_use_sim_color']:
+            if config['vision_use_sim_color']:
+                rospy.logwarn('Loaded color space for SIMULATOR.')
+            else:
+                rospy.loginfo('Loaded color space for REAL WORLD.')
+
         self.white_color_detector = color.HsvSpaceColorDetector(
             self.debug_printer,
             [config['white_color_detector_lower_values_h'], config['white_color_detector_lower_values_s'],
@@ -298,11 +307,17 @@ class Vision:
             [config['blue_color_detector_upper_values_h'], config['blue_color_detector_upper_values_s'],
              config['blue_color_detector_upper_values_v']])
 
-        self.field_color_detector = color.PixelListColorDetector(
-            self.debug_printer,
-            self.package_path,
-            config,
-            primary_detector=True)
+        if config['dynamic_color_space_active']:
+            self.field_color_detector = color.DynamicPixelListColorDetector(
+                self.debug_printer,
+                self.package_path,
+                config,
+                primary_detector=True)
+        else:
+            self.field_color_detector = color.PixelListColorDetector(
+                self.debug_printer,
+                self.package_path,
+                config)
 
         self.horizon_detector = horizon.HorizonDetector(
             self.field_color_detector,
@@ -440,11 +455,14 @@ class Vision:
                 ImageWithRegionOfInterest,
                 queue_size=1)
 
-        self.pub_debug_image = rospy.Publisher(
-            'debug_image',
-            Image,
-            queue_size=1,
-        )
+        if 'ROS_debug_image_msg_topic' not in self.config or \
+                self.config['ROS_debug_image_msg_topic'] != config['ROS_debug_image_msg_topic']:
+            if hasattr(self, 'pub_debug_image'):
+                self.pub_debug_image.unregister()
+            self.pub_debug_image = rospy.Publisher(
+                config['ROS_debug_image_msg_topic'],
+                Image,
+                queue_size=1)
 
         # Publish Config-message
         msg = Config()
