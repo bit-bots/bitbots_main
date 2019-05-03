@@ -280,6 +280,9 @@ if __name__ == '__main__':
             else:
                 synchronize(sync_includes_file, host, workspace)
 
+            if host[1].startswith('odroid') or host[1].startswith('nuc'):
+                add_game_controller_config(host[1][-1:], workspace, host)
+
         print_success('Sync succeeded!')
 
     if not args.sync_only:
