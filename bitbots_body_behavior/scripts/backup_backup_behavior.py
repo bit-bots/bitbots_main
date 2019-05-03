@@ -3,6 +3,9 @@ import rospy
 import math
 import time
 import actionlib
+from actionlib_msgs.msg import GoalStatus
+
+import humanoid_league_msgs.msg
 import tf2_ros as tf2
 from tf2_geometry_msgs import PointStamped
 from humanoid_league_msgs.msg import BallRelative, GoalRelative, GameState, PlayAnimationGoal, PlayAnimationAction
@@ -13,11 +16,11 @@ class Behavior(object):
     def __init__(self):
         self.init_walking_time = 10
         self.rotation_threshold = math.radians(10)
-        self.walking_rotation_scalar = 0.4
+        self.walking_rotation_scalar = 0.08
         self.moonwalk_rotation = -0.1
-        self.walking_speed_forward = 0.07
-        self.walking_speed_sideward = 0.6
-        self.reach_ball_time = 3.0
+        self.walking_speed_forward = 0.06
+        self.walking_speed_sideward = 0.06
+        self.reach_ball_time = 5.0
         self.ball_position = (100,100)
         self.ball_distance = 100
         self.ball_angle = 0.0
@@ -26,15 +29,14 @@ class Behavior(object):
         self.goal_kick_threshold = math.radians(10)
         self.goal_in_front = False
         self.allow_to_move = False
-        self.kick_behavior = False
+        self.kick_behavior = True
         self.goal_behavior = False
         rospy.init_node('backup_backup_behavior')
 
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
 
-        self.animation_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
-        self.busy_animation = False 
+        self.anim = Anim()
 
         # Subscribe to 'ball_relative'-message
         self.ball_relative_msg = rospy.Subscriber(
@@ -43,14 +45,14 @@ class Behavior(object):
             self.ball_relative_cb,
             queue_size=1,
             tcp_nodelay=True)
-
+        '''
         self.goal_relative_msg = rospy.Subscriber(
             'goal_relative',
             GoalRelative,
             self.goal_relative_cb,
             queue_size=1,
             tcp_nodelay=True)
-
+        '''
         self.game_control_msg = rospy.Subscriber(
             'gamestate',
             GameState,
@@ -147,8 +149,9 @@ class Behavior(object):
         delta = abs(ball_angle)
         while delta > self.rotation_threshold and not rospy.is_shutdown():
             print("Rotating to Ball....")
-            direction = ball_angle
-            rotation = direction * self.walking_rotation_scalar
+            direction = ball_angle/(delta+0.0000001)
+
+            rotation = direction * self.walking_rotation_scalar * math.pi
             self.walkingTurn(rotation)
             time.sleep(0.5)
             ball_angle = self.ball_angle
@@ -162,7 +165,7 @@ class Behavior(object):
         print("Goal Found")
 
     def ball_seen(self):
-        return (time.time() - self.ball_age) < 4
+        return (time.time() - self.ball_age) < 1
 
     def stopWalking(self):
         walking_message = Twist()
@@ -198,6 +201,7 @@ class Behavior(object):
         self.walkingWalkSteeredForward(self.walking_speed_forward,0)
         time.sleep(self.reach_ball_time)
         self.walkingWalkSteeredForward(0.0, 0.0)
+        time.sleep(1)
         print("Kick")
         if self.ball_position[1] > 0:
             print("Left")
@@ -205,13 +209,11 @@ class Behavior(object):
         else:
             print("Right")
             animation = "kick_right"
-        goal = PlayAnimationGoal()
-        goal.animation = animation
-        goal.hcm = False  # the animation is from the hcm
-        self.animation_client.send_goal(goal, done_cb=self.cb_unset_is_busy)
-        self.busy_animation = True
-        while self.busy_animation and not rospy.is_shutdown():
-            time.sleep(0.1)
+        try:
+            self.anim.anim_run(anim=animation)
+            self.anim = Anim()
+        except:
+            print("Animation error")
         print("Finished kick")
 
     def runThroughBall(self):
@@ -219,16 +221,61 @@ class Behavior(object):
         self.walkingWalkSteeredForward(self.walking_speed_forward,0)
         time.sleep(self.reach_ball_time)
         self.walkingWalkSteeredForward(0.0, 0.0)
+        time.sleep(2)
         self.walkingWalkSteeredForward(- 0.8 * self.walking_speed_forward,0)
         time.sleep(self.reach_ball_time)
         self.walkingWalkSteeredForward(0.0, 0.0)
+        time.sleep(1)
 
-
-    
-    
     def cb_unset_is_busy(self, _p1, _p2):
         self.busy_animation = False
     
+class Anim(object):
+    def __init__(self):
+        pass
+
+    def anim_run(self, anim=None):
+        anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
+        if anim is None:
+            anim = rospy.get_param("~anim")
+        if anim is None or anim == "":
+            rospy.logwarn("Tried to play an animation with an empty name!")
+            return False
+        first_try = anim_client.wait_for_server(
+            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 10)))
+        if not first_try:
+            rospy.logerr(
+                "Animation Action Server not running! Motion can not work without animation action server. "
+                "Will now wait until server is accessible!")
+            anim_client.wait_for_server()
+            rospy.logwarn("Animation server now running, hcm will go on.")
+        goal = humanoid_league_msgs.msg.PlayAnimationGoal()
+        goal.animation = anim
+        goal.hcm = False
+        state = anim_client.send_goal_and_wait(goal)
+        if state == GoalStatus.PENDING:
+            print('Pending')
+        elif state == GoalStatus.ACTIVE:
+            print('Active')
+        elif state == GoalStatus.PREEMPTED:
+            print('Preempted')
+        elif state == GoalStatus.SUCCEEDED:
+            print('Succeeded')
+        elif state == GoalStatus.ABORTED:
+            print('Aborted')
+        elif state == GoalStatus.REJECTED:
+            print('Rejected')
+        elif state == GoalStatus.PREEMPTING:
+            print('Preempting')
+        elif state == GoalStatus.RECALLING:
+            print('Recalling')
+        elif state == GoalStatus.RECALLED:
+            print('Recalled')
+        elif state == GoalStatus.LOST:
+            print('Lost')
+        else:
+            print('Unknown state', state)
+
 if __name__ == "__main__":
     behave = Behavior()
     behave.start()
