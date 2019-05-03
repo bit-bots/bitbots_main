@@ -23,7 +23,7 @@ class PathfindingCapsule:
     def publish(self, msg):
         # type: (PoseStamped) -> None
         # TODO use _is_new_goal_far_from_old_goal
-        self.pathfinding_pub.publish(msg)
+        self.pathfinding_pub.publish(self.fix_rotation(msg))
 
     def _is_new_goal_far_from_old_goal(self, new_goal_action_msg):
         old_goal = self.goal.target_pose
@@ -63,6 +63,14 @@ class PathfindingCapsule:
     def cancel(self):
         rospy.loginfo("Canceling old goal!")
         self.active = False
+
+    def fix_rotation(self, msg):
+        # type: (PoseStamped) -> PoseStamped
+        # this adds translatory movement to a rotation to fix a pathfinding issue
+        if msg.pose.position.x == 0 and msg.pose.position.y == 0:
+            msg.pose.position.x = 0.01
+            msg.pose.position.y = 0.01
+        return msg
 
     def is_walking_active(self):
         return self.active
