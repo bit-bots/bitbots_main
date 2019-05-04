@@ -65,7 +65,7 @@ behavior:
     # defines the radius around the goal (in form of a box)
     # in this area, the goalie will react to the ball.
     # the radius is the margin around the goal to both y and the positive x directions
-    ball_dangerous_goal_radius: 1
+    ball_dangerous_goal_radius: 2
 
 
 role: "offense"
