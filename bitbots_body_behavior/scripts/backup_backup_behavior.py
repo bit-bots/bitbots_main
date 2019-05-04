@@ -128,10 +128,12 @@ class Behavior(object):
         time.sleep(1)
         self.walkingWalkSteeredForward(0.0, 0.0)
 
-
     def walkIn(self, time):
         print("Walking into the field")
+        self.walkingWalkSteeredForward(self.walking_speed_forward * 0.5, 0)
+        time.sleep(2)
         self.walkingWalkSteeredForward(self.walking_speed_forward, 0)
+        print("Max speed")
         time.sleep(time)
         self.walkingWalkSteeredForward(0, 0)
         time.sleep(1)
