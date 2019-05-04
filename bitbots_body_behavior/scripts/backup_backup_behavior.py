@@ -71,6 +71,7 @@ class Behavior(object):
         self.allow_to_move = msg.allowedToMove 
         # Penalized walk in
         if not msg.penalized and self.penalized:
+            print("End: penalized")
             time.sleep(1)
             self.walkIn(self.penalized_walk_time)
         self.penalized = msg.penalized
