@@ -14,9 +14,9 @@ from geometry_msgs.msg import Twist
 
 class Behavior(object):
     def __init__(self):
-        self.init_walking_time = 10
+        self.init_walking_time = 15
         self.rotation_threshold = math.radians(10)
-        self.walking_rotation_scalar = 0.08
+        self.walking_rotation_scalar = 0.09
         self.moonwalk_rotation = -0.1
         self.walking_speed_forward = 0.06
         self.walking_speed_sideward = 0.06
@@ -29,7 +29,7 @@ class Behavior(object):
         self.goal_kick_threshold = math.radians(10)
         self.goal_in_front = False
         self.allow_to_move = False
-        self.kick_behavior = True
+        self.kick_behavior = False
         self.goal_behavior = False
         rospy.init_node('backup_backup_behavior')
 
