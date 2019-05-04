@@ -20,7 +20,7 @@ class Behavior(object):
         self.moonwalk_rotation = -0.1
         self.walking_speed_forward = 0.06
         self.walking_speed_sideward = 0.06
-        self.reach_ball_time = 5.0
+        self.reach_ball_time = 9.0
         self.ball_position = (100,100)
         self.ball_distance = 100
         self.ball_angle = 0.0
@@ -129,12 +129,12 @@ class Behavior(object):
 
     def walkIn(self, walk_time):
         print("Walking into the field")
-        self.walkingWalkSteeredForward(self.walking_speed_forward * 0.5, 0)
+        self.walkingWalkSteeredForward(self.walking_speed_forward * 0.5, 0, recurr=False)
         time.sleep(2)
-        self.walkingWalkSteeredForward(self.walking_speed_forward, 0)
+        self.walkingWalkSteeredForward(self.walking_speed_forward, 0, recurr=False)
         print("Max speed")
         time.sleep(walk_time)
-        self.walkingWalkSteeredForward(0, 0)
+        self.walkingWalkSteeredForward(0, 0, recurr=False)
         time.sleep(1)
     
     def goToBall(self):
@@ -179,22 +179,22 @@ class Behavior(object):
         walking_message = Twist()
         self.pub_walking.publish(walking_message)
 
-    def walkingTurn(self, rate):
+    def walkingTurn(self, rate, recurr=True):
         if not self.allow_to_move:
             self.stopWalking()
             return
-        if self.end_not_allowed_to_move:
+        if self.end_not_allowed_to_move and recurr:
             self.walkIn(self.init_walking_time)
             self.end_not_allowed_to_move = False
         walking_message = Twist()
         walking_message.angular.z = rate
         self.pub_walking.publish(walking_message)
 
-    def walkingWalkSteeredForward(self, speed, rotation):
+    def walkingWalkSteeredForward(self, speed, rotation, recurr=True):
         if not self.allow_to_move:
             self.stopWalking()
             return
-        if self.end_not_allowed_to_move:
+        if self.end_not_allowed_to_move and recurr:
             self.walkIn(self.init_walking_time)
             self.end_not_allowed_to_move = False
         walking_message = Twist()
@@ -202,11 +202,11 @@ class Behavior(object):
         walking_message.linear.x = speed
         self.pub_walking.publish(walking_message)
 
-    def walkingWalkSteeredSidewards(self, speed, rotation):
+    def walkingWalkSteeredSidewards(self, speed, rotation, recurr=True):
         if not self.allow_to_move:
             self.stopWalking()
             return
-        if self.end_not_allowed_to_move:
+        if self.end_not_allowed_to_move and recurr:
             self.walkIn(self.init_walking_time)
             self.end_not_allowed_to_move = False
         walking_message = Twist()
