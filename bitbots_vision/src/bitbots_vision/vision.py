@@ -50,7 +50,6 @@ class Vision:
 
         # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
-        #rospy.loginfo("Vision startup")
         rospy.spin()
 
     def _image_callback(self, image_msg):
@@ -62,7 +61,6 @@ class Vision:
         Sometimes the queue gets to large, even when the size is limeted to 1. 
         That's, why we drop old images manually.
         """
-        #rospy.loginfo("image_callback")
         # drops old images and cleans up queue
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
@@ -75,8 +73,6 @@ class Vision:
         self.field_boundary_detector.set_head_joint_state(headjoint_msg)
 
     def handle_image(self, image_msg):
-        #print("you spin my head right round")
-        #rospy.loginfo("handle_image")
         # converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
@@ -229,7 +225,6 @@ class Vision:
         self.line_detector.compute_linepoints()
 
     def _dynamic_reconfigure_callback(self, config, level):
-        #rospy.loginfo("dynamic reconfigure callback")
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 config['vision_debug_printer_classes']))
@@ -372,7 +367,7 @@ class Vision:
             # https://github.com/ros/ros_comm/issues/536
 
         if 'ROS_head_joint_msg_topic' not in self.config or \
-                self.config['ROS_head_joint_msg_topic'] != config['ROS_head_joint_msg_topic']:  # Todo: wozu das alles?
+                self.config['ROS_head_joint_msg_topic'] != config['ROS_head_joint_msg_topic']:
             if hasattr(self, 'head_sub'):
                 self.head_sub.unregister()
             self.head_sub = rospy.Subscriber(

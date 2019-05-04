@@ -206,8 +206,6 @@ class ObstacleDetector(CandidateFinder):
             get_full_convex_field_boundary()).astype(int)
         full_field_boundary = np.array(self._field_boundary_detector.get_full_field_boundary()).astype(int)
 
-        #field_boundary_distance = full_field_boundary - full_convex_field_boundary
-
         # Todo: value of minWidth and step has to be tested
         start_threshold = self._field_boundary_diff_threshold
         start_min_width = self._candidate_min_width  # minimal width of an acceptable candidate in pixels

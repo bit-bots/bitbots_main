@@ -48,7 +48,7 @@ class FieldBoundaryDetector:
             self._search_method = config['field_boundary_finder_search_method']
 
     def set_image(self, image):
-        # type: () -> None  # Todo: what goes here?
+        # type: () -> None
         """
         refreshes the variables after receiving an image
         :param image: the current frame of the video feed
@@ -102,7 +102,6 @@ class FieldBoundaryDetector:
         calls the method specified in the config (visionparams.yaml) to compute the field boundary points
         :return: points of the field_boundary as a list of x,y tuples
         """
-        #self._runtime_evaluator.start_timer()
         self._field_boundary_points = []
         if self._search_method == 'dynamic':
             if self._head_joint_position < self._head_joint_threshold:
@@ -115,9 +114,6 @@ class FieldBoundaryDetector:
             self._field_boundary_points = self._sub_field_boundary_points_reversed()
         else:
             self._field_boundary_points = self._sub_field_boundary_points_iteration()
-
-        #self._runtime_evaluator.stop_timer()
-        #self._runtime_evaluator.print_timer()
 
     def _sub_field_boundary_points_binary(self):
         # type: () -> list
@@ -184,7 +180,6 @@ class FieldBoundaryDetector:
                                  x_image - (roi_current_radius_x - 1):x_image + roi_current_radius_x]
 
                 roi_mean = roi.mean()
-                #print(roi_mean)
                 # roi_mean = (roi * kernel).sum()  # uncomment when using a kernel
                 if roi_mean > green_threshold:  # is the roi green enough?
                     # the value is green enough, therefore the field_boundary is somewhere above this point
@@ -203,7 +198,6 @@ class FieldBoundaryDetector:
             # calculate the y coordinate in the image of the y_step the topmost green pixel was found on with an offset
             # of roi_height, as the region of interest extends this far below the point
             y_image = int(round(y_step * y_stepsize)) + roi_current_height_y
-            #print(y_image)
             self._field_boundary_points.append((x_image - roi_max_radius_x, y_image))
         return self._field_boundary_points
 
@@ -270,11 +264,9 @@ class FieldBoundaryDetector:
                 # roi_mean = roi.mean()
 
                 roi_mean = (roi * kernel[roi_current_height_y - 1, roi_current_radius_x * 2 - 1]).mean()  # uncomment when using a kernel
-                #print(roi_mean)
                 if roi_mean <= green_threshold:
                     top_green = y_image
                     break
-            #print(roi_current_height_y)
             self._field_boundary_points.append((x_image - roi_max_radius_x, top_green))
         return self._field_boundary_points
 
