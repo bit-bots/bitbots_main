@@ -42,5 +42,5 @@
     <rosparam file="$(find bitbots_bringup)/config/game_settings.yaml"  command="load"/>
   </group>
 
-  <include file="$(find bitbots_move_base)/launch/obstacle_publisher.launch" />
+  <!--<include file="$(find bitbots_move_base)/launch/obstacle_publisher.launch" />-->
 </launch>
