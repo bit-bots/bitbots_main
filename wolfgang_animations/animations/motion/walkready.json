@@ -27,7 +27,7 @@
  "RAnkleRoll" : -3.5800332870267404
 },
  "name": "generated frame", 
- "pause": 0.5 
+ "pause": 1 
  }
  ], 
  "name": "walkready", 
