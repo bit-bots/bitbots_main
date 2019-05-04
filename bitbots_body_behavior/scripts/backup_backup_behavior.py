@@ -14,7 +14,8 @@ from geometry_msgs.msg import Twist
 
 class Behavior(object):
     def __init__(self):
-        self.init_walking_time = 10
+        self.init_walking_time = 15
+        self.penalized_walk_time = 15
         self.rotation_threshold = math.radians(10)
         self.walking_rotation_scalar = 0.08
         self.moonwalk_rotation = -0.1
@@ -27,6 +28,7 @@ class Behavior(object):
         self.ball_age = 100
         self.goal_angle = 1.0
         self.goal_kick_threshold = math.radians(10)
+        self.penalized = False
         self.goal_in_front = False
         self.allow_to_move = False
         self.kick_behavior = True
@@ -67,6 +69,11 @@ class Behavior(object):
 
     def gamestate_cb(self, msg):
         self.allow_to_move = msg.allowedToMove 
+        # Penalized walk in
+        if not msg.penalized and self.penalized:
+            time.sleep(1)
+            self.walkIn(self.penalized_walk_time)
+        self.penalized = msg.penalized
     
     def goal_relative_cb(self, msg):
         goal_obj = PointStamped(msg.header, msg.center_direction)
@@ -103,7 +110,7 @@ class Behavior(object):
         while self.allow_to_move == False and not rospy.is_shutdown():
             time.sleep(0.1)
             print("Waiting for game to start")
-        self.walkIn()
+        self.walkIn(self.init_walking_time)
         # Start normal behavior
         while not rospy.is_shutdown():
             self.searchBall()
@@ -122,10 +129,10 @@ class Behavior(object):
         self.walkingWalkSteeredForward(0.0, 0.0)
 
 
-    def walkIn(self):
+    def walkIn(self, time):
         print("Walking into the field")
         self.walkingWalkSteeredForward(self.walking_speed_forward, 0)
-        time.sleep(self.init_walking_time)
+        time.sleep(time)
         self.walkingWalkSteeredForward(0, 0)
         time.sleep(1)
     
