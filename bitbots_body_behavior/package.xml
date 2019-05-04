@@ -27,7 +27,7 @@
   <export>
     <rosdoc config="rosdoc.yaml"/>
     <bitbots_documentation>
-      <status>unknown</status>
+      <status>starts</status>
       <language>python2</language>
     </bitbots_documentation>
   </export>
