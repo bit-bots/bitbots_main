@@ -29,6 +29,7 @@ class Behavior(object):
         self.goal_angle = 1.0
         self.goal_kick_threshold = math.radians(10)
         self.penalized = False
+        self.end_penalized = False
         self.goal_in_front = False
         self.allow_to_move = False
         self.kick_behavior = False
@@ -73,7 +74,7 @@ class Behavior(object):
         if not msg.penalized and self.penalized:
             print("End: penalized")
             time.sleep(1)
-            self.walkIn(self.penalized_walk_time)
+            self.end_penalized = True
         self.penalized = msg.penalized
     
     def goal_relative_cb(self, msg):
@@ -129,13 +130,13 @@ class Behavior(object):
         time.sleep(1)
         self.walkingWalkSteeredForward(0.0, 0.0)
 
-    def walkIn(self, time):
+    def walkIn(self, walk_time):
         print("Walking into the field")
         self.walkingWalkSteeredForward(self.walking_speed_forward * 0.5, 0)
         time.sleep(2)
         self.walkingWalkSteeredForward(self.walking_speed_forward, 0)
         print("Max speed")
-        time.sleep(time)
+        time.sleep(walk_time)
         self.walkingWalkSteeredForward(0, 0)
         time.sleep(1)
     
@@ -185,6 +186,9 @@ class Behavior(object):
         if not self.allow_to_move:
             self.stopWalking()
             return
+        if self.end_penalized:
+            self.walkIn(self.penalized_walk_time)
+            self.end_penalized = False
         walking_message = Twist()
         walking_message.angular.z = rate
         self.pub_walking.publish(walking_message)
@@ -193,6 +197,9 @@ class Behavior(object):
         if not self.allow_to_move:
             self.stopWalking()
             return
+        if self.end_penalized:
+            self.walkIn(self.penalized_walk_time)
+            self.end_penalized = False
         walking_message = Twist()
         walking_message.angular.z = rotation
         walking_message.linear.x = speed
@@ -202,6 +209,9 @@ class Behavior(object):
         if not self.allow_to_move:
             self.stopWalking()
             return
+        if self.end_penalized:
+            self.walkIn(self.penalized_walk_time)
+            self.end_penalized = False
         walking_message = Twist()
         walking_message.angular.z = rotation
         walking_message.linear.y = speed
