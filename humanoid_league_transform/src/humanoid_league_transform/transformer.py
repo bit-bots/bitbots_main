@@ -77,11 +77,13 @@ class TransformBall(object):
         br.header.stamp = msg.header.stamp
         br.header.frame_id = self.publish_frame
 
+        # TODO: warning if multiple balls in msg
         for ball in msg.candidates:
             br.ball_relative = self.transform(ball.center, field, msg.header.stamp)
             br.confidence = ball.confidence
 
-            if br.ball_relative is not None:
+            # TODO: This publishes every ball in balls_in_img after each other
+            if br.ball_relative is not None: # TODO: what about "if br.ball_relative:" ?
                 self.ball_relative_pub.publish(br)
             else:
                 rospy.logwarn("got a ball i could not transform, would be too far away" +
