@@ -102,9 +102,22 @@ class Vision:
         # TODO: handle all ball candidates
         top_ball_candidate = self.ball_detector.get_top_candidate()
 
-        # create ball msg
-        # TODO: publish empty msg if no top candidate as described in msg description
+
+        # check whether ball candidates are under the horizon
+        # TODO: handle multiple ball candidates
+        if top_ball_candidate:
+            balls = []
+            balls.append(top_ball_candidate)
+            balls_under_horizon = self.horizon_detector.balls_under_horizon(balls)
+            if balls_under_horizon:
+                top_ball_candidate = balls_under_horizon[0]
+            else:
+                top_ball_candidate = None
+
+        # check whether ball candidates are over rating threshold
         if top_ball_candidate and top_ball_candidate.rating > self._ball_candidate_threshold:
+            # create ball msg
+            # TODO: publish empty msg if no top candidate as described in msg description
             balls_msg = BallsInImage()
             balls_msg.header.frame_id = image_msg.header.frame_id
             balls_msg.header.stamp = image_msg.header.stamp
