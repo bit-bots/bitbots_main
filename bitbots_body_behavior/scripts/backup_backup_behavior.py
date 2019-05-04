@@ -15,7 +15,6 @@ from geometry_msgs.msg import Twist
 class Behavior(object):
     def __init__(self):
         self.init_walking_time = 15
-        self.penalized_walk_time = 15
         self.rotation_threshold = math.radians(10)
         self.walking_rotation_scalar = 0.09
         self.moonwalk_rotation = -0.1
@@ -28,8 +27,7 @@ class Behavior(object):
         self.ball_age = 100
         self.goal_angle = 1.0
         self.goal_kick_threshold = math.radians(10)
-        self.penalized = False
-        self.end_penalized = False
+        self.end_not_allowed_to_move = False
         self.goal_in_front = False
         self.allow_to_move = False
         self.kick_behavior = False
@@ -69,13 +67,12 @@ class Behavior(object):
             queue_size=1)
 
     def gamestate_cb(self, msg):
-        self.allow_to_move = msg.allowedToMove 
-        # Penalized walk in
-        if not msg.penalized and self.penalized:
-            print("End: penalized")
+        # Walk in
+        if msg.allowedToMove and not self.allow_to_move:
+            print("End: Freeze")
             time.sleep(1)
-            self.end_penalized = True
-        self.penalized = msg.penalized
+            self.end_not_allowed_to_move = True
+        self.allow_to_move = msg.allowedToMove 
     
     def goal_relative_cb(self, msg):
         goal_obj = PointStamped(msg.header, msg.center_direction)
@@ -112,7 +109,7 @@ class Behavior(object):
         while self.allow_to_move == False and not rospy.is_shutdown():
             time.sleep(0.1)
             print("Waiting for game to start")
-        self.walkIn(self.init_walking_time)
+        # self.walkIn(self.init_walking_time)
         # Start normal behavior
         while not rospy.is_shutdown():
             self.searchBall()
@@ -186,9 +183,9 @@ class Behavior(object):
         if not self.allow_to_move:
             self.stopWalking()
             return
-        if self.end_penalized:
-            self.walkIn(self.penalized_walk_time)
-            self.end_penalized = False
+        if self.end_not_allowed_to_move:
+            self.walkIn(self.init_walking_time)
+            self.end_not_allowed_to_move = False
         walking_message = Twist()
         walking_message.angular.z = rate
         self.pub_walking.publish(walking_message)
@@ -197,9 +194,9 @@ class Behavior(object):
         if not self.allow_to_move:
             self.stopWalking()
             return
-        if self.end_penalized:
-            self.walkIn(self.penalized_walk_time)
-            self.end_penalized = False
+        if self.end_not_allowed_to_move:
+            self.walkIn(self.init_walking_time)
+            self.end_not_allowed_to_move = False
         walking_message = Twist()
         walking_message.angular.z = rotation
         walking_message.linear.x = speed
@@ -209,9 +206,9 @@ class Behavior(object):
         if not self.allow_to_move:
             self.stopWalking()
             return
-        if self.end_penalized:
-            self.walkIn(self.penalized_walk_time)
-            self.end_penalized = False
+        if self.end_not_allowed_to_move:
+            self.walkIn(self.init_walking_time)
+            self.end_not_allowed_to_move = False
         walking_message = Twist()
         walking_message.angular.z = rotation
         walking_message.linear.y = speed
