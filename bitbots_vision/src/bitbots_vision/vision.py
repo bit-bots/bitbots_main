@@ -99,9 +99,11 @@ class Vision:
             self.ball_detector.compute_top_candidate()
             self._conventional_precalculation()
 
+        # TODO: handle all ball candidates
         top_ball_candidate = self.ball_detector.get_top_candidate()
 
         # create ball msg
+        # TODO: publish empty msg if no top candidate as described in msg description
         if top_ball_candidate and top_ball_candidate.rating > self._ball_candidate_threshold:
             balls_msg = BallsInImage()
             balls_msg.header.frame_id = image_msg.header.frame_id
@@ -395,21 +397,9 @@ class Vision:
                 self.ball_fcnn_config,
                 self.debug_printer)
 
-        # subscribers
-        if 'ROS_img_msg_topic' not in self.config or \
-                self.config['ROS_img_msg_topic'] != config['ROS_img_msg_topic']:
-            if hasattr(self, 'image_sub'):
-                self.image_sub.unregister()
-            self.image_sub = rospy.Subscriber(
-                config['ROS_img_msg_topic'],
-                Image,
-                self._image_callback,
-                queue_size=config['ROS_img_queue_size'],
-                tcp_nodelay=True,
-                buff_size=60000000)
-            # https://github.com/ros/ros_comm/issues/536
-
         # publishers
+
+        # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!
         if 'ROS_ball_msg_topic' not in self.config or \
                 self.config['ROS_ball_msg_topic'] != config['ROS_ball_msg_topic']:
             if hasattr(self, 'pub_balls'):
@@ -463,6 +453,20 @@ class Vision:
                 config['ROS_debug_image_msg_topic'],
                 Image,
                 queue_size=1)
+
+        # subscribers
+        if 'ROS_img_msg_topic' not in self.config or \
+                self.config['ROS_img_msg_topic'] != config['ROS_img_msg_topic']:
+            if hasattr(self, 'image_sub'):
+                self.image_sub.unregister()
+            self.image_sub = rospy.Subscriber(
+                config['ROS_img_msg_topic'],
+                Image,
+                self._image_callback,
+                queue_size=config['ROS_img_queue_size'],
+                tcp_nodelay=True,
+                buff_size=60000000)
+            # https://github.com/ros/ros_comm/issues/536
 
         # Publish Config-message
         msg = Config()
