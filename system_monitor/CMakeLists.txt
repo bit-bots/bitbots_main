@@ -10,7 +10,9 @@ catkin_python_setup()
 
 add_message_files(
   FILES
-  CpuLoad.msg
+  Cpu.msg
+  Filesystem.msg
+  NetworkInterface.msg
   Workload.msg
 )
 

@@ -1,3 +1,0 @@
-string cpu_name
-string temperature
-float32 cpu_usage
