@@ -20,7 +20,7 @@ hcm:
     falling_back: "falling_back"
     falling_left: "walkready"
     falling_right: "walkready"
-    stand_up_front: "stand_up_front"
+    stand_up_front: "stand_up_front_fast"
     stand_up_back: "stand_up_back_fast"
     stand_up_left: "turning_back_left"
     stand_up_right: "turning_back_right"
