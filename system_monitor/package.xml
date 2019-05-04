@@ -21,6 +21,7 @@
   <exec_depend>roslib</exec_depend>
   <exec_depend>message_runtime</exec_depend>
   <depend>std_msgs</depend>
+  <depend>python3-psutil</depend>
 
   <export></export>
 </package>
