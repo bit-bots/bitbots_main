@@ -44,7 +44,7 @@ behavior:
 
     # When the ball is closer than `ball_close_distance` meters
     # it is in a reachable area of the robot
-    ball_close_distance: 1.0
+    ball_close_distance: 0.4
 
     # An area in which the ball can be kicked with the right foot
     # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
