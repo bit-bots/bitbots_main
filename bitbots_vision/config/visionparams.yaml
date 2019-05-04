@@ -1,11 +1,11 @@
 ball_fcnn_debug: false  # only active when true and vision/debug is true, too!
 ball_fcnn_model_path: '/models/fcnn031'
-ball_fcnn_threshold: .5  # minimal value for a candidate to be considered
+ball_fcnn_threshold: .8  # minimal value for a candidate to be considered
 ball_fcnn_expand_stepsize: 4
 ball_fcnn_pointcloud_stepsize: 10
 ball_fcnn_shuffle_candidate_list: false  # shuffles the list of possible candidate points
 ball_fcnn_min_ball_diameter: 5
-ball_fcnn_max_ball_diameter: 200
+ball_fcnn_max_ball_diameter: 175
 ball_fcnn_publish_output: false
 ball_fcnn_publish_horizon_offset: 5
 
@@ -95,5 +95,5 @@ cascade_classifier_path: '/classifier/cascadeNew.xml'
 dynamic_color_space_active: true
 dynamic_color_space_publish_field_mask_image: false
 dynamic_color_space_queue_max_size: 10
-dynamic_color_space_threshold: 0.9
+dynamic_color_space_threshold: 0.8
 dynamic_color_space_kernel_radius: 1
