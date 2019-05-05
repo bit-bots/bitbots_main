@@ -15,8 +15,6 @@
         <arg name="sim" value="$(arg sim)" />
     </include>
 
-    <include file="$(find udp_bridge)/launch/send.launch" />
-    
     <include file="$(find bitbots_bringup)/launch/highlevel.launch">
         <arg name="sim" value="$(arg sim)" />
         <arg name="behave" value="$(arg behave)" />

@@ -53,4 +53,6 @@
             <arg name="simple" value="$(arg simple)"/>
         </include>
     </group>
+
+    <include file="$(find udp_bridge)/launch/send.launch" />
 </launch>
