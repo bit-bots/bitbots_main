@@ -100,19 +100,32 @@ class Vision:
             self._conventional_precalculation()
 
         # TODO: handle all ball candidates
-        top_ball_candidate = self.ball_detector.get_top_candidate()
 
+        #"""
+        ball_candidates = self.ball_detector.get_candidates()
 
-        # check whether ball candidates are under the horizon
-        # TODO: handle multiple ball candidates
-        if top_ball_candidate:
-            balls = []
-            balls.append(top_ball_candidate)
-            balls_under_horizon = self.horizon_detector.balls_under_horizon(balls)
+        if ball_candidates:
+            balls_under_horizon = self.horizon_detector.balls_under_horizon(ball_candidates)
             if balls_under_horizon:
-                top_ball_candidate = balls_under_horizon[0]
+                sorted_rated_candidates = sorted(balls_under_horizon, key=lambda x: x.rating)
+                top_ball_candidate = list([max(sorted_rated_candidates[0:1], key=lambda x: x.rating)])[0]
             else:
                 top_ball_candidate = None
+        else:
+            top_ball_candidate = None
+        """
+        # check whether ball candidates are under the horizon
+        # TODO: handle multiple ball candidates
+        top_ball_candidate = self.ball_detector.get_top_candidate()
+        if top_ball_candidate:
+            ball = []
+            ball.append(top_ball_candidate)
+            ball_under_horizon = self.horizon_detector.balls_under_horizon(ball)
+            if ball_under_horizon:
+                top_ball_candidate = ball_under_horizon[0]
+            else:
+                top_ball_candidate = None
+        #"""
 
         # check whether ball candidates are over rating threshold
         if top_ball_candidate and top_ball_candidate.rating > self._ball_candidate_threshold:
