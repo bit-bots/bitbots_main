@@ -31,7 +31,7 @@ $BallSeen
     YES --> $BallClose
         YES --> #GoAndKickBallAway
         NO --> @LookAtBall
-    NO --> @SearchBall
+    NO --> @LookAtBall
 
 #GoalieBehavior
 $Localization
