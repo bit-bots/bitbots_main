@@ -1,5 +1,7 @@
 <launch>
-    <node pkg="system_monitor" type="monitor.py" name="system_monitor" output="screen">
+    <arg name="required" default="false"/>
+
+    <node pkg="system_monitor" type="monitor.py" name="system_monitor" output="screen" required="$(arg required)">
         <rosparam command="load" file="$(find system_monitor)/config/config.yaml"/>
     </node>
 </launch>
