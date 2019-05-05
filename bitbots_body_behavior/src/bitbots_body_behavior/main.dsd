@@ -67,7 +67,7 @@ $BallSeen
         NO --> $GoalSeen
             YES --> @GoToBall + target:detection_goal
             NO --> @GoToBall + target:none
-    NO --> @SearchBall
+    NO --> @SearchBallPenalty
 
 #Positioning
 $Localization

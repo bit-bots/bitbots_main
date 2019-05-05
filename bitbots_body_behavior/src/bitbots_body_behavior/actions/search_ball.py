@@ -31,3 +31,32 @@ class SearchBall(AbstractActionElement):
             pose_msg.pose.orientation.w = quaternion[3]
 
             self.blackboard.pathfinding.publish(pose_msg)
+
+
+class SearchBallPenalty(AbstractActionElement):
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(SearchBallPenalty, self).__init__(blackboard, dsd, parameters)
+        self.time_last_movement = rospy.Time.now()
+
+    def perform(self, reevaluate=False):
+        self.blackboard.blackboard.set_head_duty(HeadMode.BALL_MODE)
+        # TODO make parameter value
+        if rospy.Time.now() - self.time_last_movement > rospy.Duration(3):
+            # remember that we turned around
+            self.time_last_movement = rospy.Time.now()
+
+            # goal to go straight
+            pose_msg = PoseStamped()
+            pose_msg.header.stamp = rospy.Time.now()
+            pose_msg.header.frame_id = 'base_footprint'
+
+            pose_msg.pose.position.x = 0.75
+
+            quaternion = quaternion_from_euler(0, 0, 0)
+
+            pose_msg.pose.orientation.x = quaternion[0]
+            pose_msg.pose.orientation.y = quaternion[1]
+            pose_msg.pose.orientation.z = quaternion[2]
+            pose_msg.pose.orientation.w = quaternion[3]
+
+            self.blackboard.pathfinding.publish(pose_msg)
