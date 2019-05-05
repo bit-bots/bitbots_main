@@ -23,7 +23,7 @@ class SearchBall(AbstractActionElement):
             pose_msg.header.stamp = rospy.Time.now()
             pose_msg.header.frame_id = 'base_footprint'
 
-            quaternion = quaternion_from_euler(0, 0, math.pi / 2.0)
+            quaternion = quaternion_from_euler(0, 0, - math.pi / 2.0)
 
             pose_msg.pose.orientation.x = quaternion[0]
             pose_msg.pose.orientation.y = quaternion[1]
