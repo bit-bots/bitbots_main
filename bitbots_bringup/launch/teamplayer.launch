@@ -15,6 +15,9 @@
     </include>
 
     <include file="$(find udp_bridge)/launch/send.launch" />
+    <include file="$(find system_monitor)/launch/system_monitor.launch">
+        <arg name="required" value="false" />
+    </include>
     
     <include file="$(find bitbots_bringup)/launch/highlevel.launch">
         <arg name="sim" value="$(arg sim)" />
