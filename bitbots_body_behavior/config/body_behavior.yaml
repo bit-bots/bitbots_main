@@ -44,14 +44,14 @@ behavior:
 
     # When the ball is closer than `ball_close_distance` meters
     # it is in a reachable area of the robot
-    ball_close_distance: 0.4
+    ball_close_distance: 1.5
 
     # An area in which the ball can be kicked with the right foot
     # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
     # http://www.ros.org/reps/rep-0103.html#axis-orientation
     right_kick_min_x: 0
     right_kick_min_y: -0.3
-    right_kick_max_x: 0.2
+    right_kick_max_x: 0.3
     right_kick_max_y: 0
 
     # An area in which the ball can be kicked with the left foot
@@ -59,7 +59,7 @@ behavior:
     # http://www.ros.org/reps/rep-0103.html#axis-orientation
     left_kick_min_x: 0
     left_kick_min_y: 0
-    left_kick_max_x: 0.2
+    left_kick_max_x: 0.4
     left_kick_max_y: 0.3
 
     # defines the radius around the goal (in form of a box)
