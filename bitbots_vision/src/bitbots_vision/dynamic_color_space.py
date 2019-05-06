@@ -12,7 +12,7 @@ from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.client import Client
 from sensor_msgs.msg import Image
 from bitbots_msgs.msg import ColorSpace, Config
-from bitbots_vision.vision_modules import horizon, color, debug, evaluator
+from bitbots_vision.vision_modules import field_boundary, color, debug, evaluator
 
 class DynamicColorSpace:
     def __init__(self):
@@ -88,13 +88,13 @@ class DynamicColorSpace:
                 ColorSpace,
                 queue_size=1)
 
-        # Set Color- and HorizonDetector
+        # Set Color- and FieldBoundaryDetector
         self.color_detector = color.DynamicPixelListColorDetector(
             self.debug_printer,
             self.package_path,
             vision_config)
             
-        self.horizon_detector = horizon.HorizonDetector(
+        self.field_boundary_detector = field_boundary.FieldBoundaryDetector(
             self.color_detector,
             vision_config,
             self.debug_printer,
@@ -203,10 +203,10 @@ class DynamicColorSpace:
         """
         # Masks new image with current color space
         mask_image = self.color_detector.mask_image(image)
-        # Get mask from horizon detector
-        self.horizon_detector.set_image(image)
-        self.horizon_detector.compute_horizon_points()
-        mask = self.horizon_detector.get_mask()
+        # Get mask from field_boundary detector
+        self.field_boundary_detector.set_image(image)
+        self.field_boundary_detector.compute_field_boundary_points()
+        mask = self.field_boundary_detector.get_mask()
         if mask is not None:
             # Get array of pixel coordinates of color candidates
             pixel_coordinates = self.pointfinder.get_coordinates_of_color_candidates(mask_image)
@@ -302,8 +302,8 @@ class Heuristic:
     def __init__(self, debug_printer):
         # type: (DebugPrinter) -> None
         """
-        Filters new color space colors according to their position relative to the horizon.
-        Only colors that occur under the horizon and have no occurrences over the horizon get picked.
+        Filters new color space colors according to their position relative to the field_boundary.
+        Only colors that occur under the field_boundary and have no occurrences over the field_boundary get picked.
 
         :param DebugPrinter debug_printer: Debug-printer
         :return: None
@@ -313,11 +313,11 @@ class Heuristic:
     def run(self, color_list, image, mask):
         # type: (np.array, np.array, np.array) -> np.array
         """
-        This method filters a given list of colors using the original image and a horizon-mask. 
+        This method filters a given list of colors using the original image and a field_boundary-mask.
 
         :param np.array color_list: list of color values, that need to be filtered
         :param np.array image: raw vision image
-        :param np.array mask: binary horizon-mask
+        :param np.array mask: binary field_boundary-mask
         :return np.array: filtered list of colors
         """
         # Simplifies the handling by merging the three color channels
@@ -334,15 +334,15 @@ class Heuristic:
     def recalculate(self, image, mask):
         # type: (np.array, np.array) -> set
         """
-        Generates a whitelist of allowed colors using the original image and the horizon-mask.
+        Generates a whitelist of allowed colors using the original image and the field_boundary-mask.
 
         :param np.array image: image
-        :param np.array mask: horizon-mask
+        :param np.array mask: field_boundary-mask
         :return set: whitelist
         """
         # Generates whitelist
-        colors_over_horizon, colors_under_horizon = self.unique_colors_for_partitions(image, mask)
-        return set(colors_under_horizon) - set(colors_over_horizon)
+        colors_over_field_boundary, colors_under_field_boundary = self.unique_colors_for_partitions(image, mask)
+        return set(colors_under_field_boundary) - set(colors_over_field_boundary)
 
     def unique_colors_for_partitions(self, image, mask):
         # type: (np.array, np.array) -> (np.array, np.array)
@@ -350,9 +350,9 @@ class Heuristic:
         Masks picture and returns the unique colors that occurs in both mask partitions.
 
         :param np.array image: image
-        :param np.array mask: horizon-mask
-        :return np.array: colors over the horizon
-        :return np.array: colors under the horizon
+        :param np.array mask: field_boundary-mask
+        :return np.array: colors over the field_boundary
+        :return np.array: colors under the field_boundary
         """
         # Calls a function to calculate the number of occurrences of all colors in the image
         return (self.get_unique_colors(cv2.bitwise_and(image, image, mask=255 - mask)),
