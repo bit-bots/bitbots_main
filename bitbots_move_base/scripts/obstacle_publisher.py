@@ -39,14 +39,16 @@ class ObstaclePublisher:
                 obs.append([self.ball.ball_relative.x, self.ball.ball_relative.y, self.ball.ball_relative.z])
 
             if self.obstacles is not None:
-
                 obs.extend([o.position.x, o.position.y, o.position.z] for o in self.obstacles.obstacles)
 
             if self.obstacles is not None or self.ball is not None:
                 h = Header()
                 h.stamp = rospy.get_rostime()
                 # TODO check if frameids are the same
-                h.frame_id = self.ball.header.frame_id
+                if self.ball is not None:
+                    h.frame_id = self.ball.header.frame_id
+                else:
+                    h.frame_id = self.obstacles.header.frame_id
                 self.obstacle_publisher.publish(create_cloud_xyz32(h, obs))
             r.sleep()
 
