@@ -16,7 +16,7 @@ class VisualCompassDummyHandler():
         config_path = os.path.join(dirname, relative_path)
 
         with open(config_path, 'r') as stream:
-            config = yaml.full_load(stream)
+            config = yaml.load(stream)
 
         source = config['dummy_handler_input']
 
@@ -28,7 +28,6 @@ class VisualCompassDummyHandler():
         self.video_getter.run()
 
         self.vc = VisualCompass(config)
-
 
         self.loop(config)
     

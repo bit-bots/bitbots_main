@@ -1,6 +1,6 @@
 # dummy_handler
   # input: "/test_data/imageset_373/frame%06d.png"
-dummy_handler_input: 0
+dummy_handler_input: 2
 
 # ros_handler
 ROS_handler_img_msg_topic: 'image_raw'
