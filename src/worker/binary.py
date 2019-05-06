@@ -38,6 +38,8 @@ class BinaryCompass(VisualCompassInterface):
                 image = self.matcher.debug_keypoints(image, matches[value], color)
             self.debug.print_debug_info(image, self.state, debugCB)
 
+        return self.state[0], self.state[1]
+
     def set_truth(self, angle, image):
         if angle == 0:
             self.groundTruth[0] = self.matcher.get_keypoints(image)[1]
@@ -51,7 +53,7 @@ class BinaryCompass(VisualCompassInterface):
     def _compute_state(self, matches):
         angle = 0 if matches[0] > matches[1] else math.pi
 
-        confidence = abs(matches[0] - matches[1])/(float(sum(matches) + 1))
+        confidence = (abs(matches[0] - matches[1])/(float(sum(matches) + 1)))**(1/float(3)) 
         return angle, confidence
 
     def get_side(self):
