@@ -1,7 +1,7 @@
 {
     "author": "Unknown", 
     "description": "Edit me!", 
-    "hostname": "nuc1", 
+    "hostname": "compi-t", 
     "keyframes": [
         {
             "duration": 1.0, 
@@ -85,7 +85,7 @@
             "pause": 0.0
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.10000000000000014, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 10, 
@@ -109,7 +109,29 @@
                 "RShoulderRoll": 1
             }, 
             "name": "frame3", 
-            "pause": 0.0
+            "pause": 0.0, 
+            "torque": {
+                "HeadPan": 2, 
+                "HeadTilt": 2, 
+                "LAnklePitch": 2, 
+                "LAnkleRoll": 2, 
+                "LElbow": 2, 
+                "LHipPitch": 2, 
+                "LHipRoll": 2, 
+                "LHipYaw": 2, 
+                "LKnee": 2, 
+                "LShoulderPitch": 2, 
+                "LShoulderRoll": 2, 
+                "RAnklePitch": 2, 
+                "RAnkleRoll": 2, 
+                "RElbow": 2, 
+                "RHipPitch": 2, 
+                "RHipRoll": 2, 
+                "RHipYaw": 2, 
+                "RKnee": 2, 
+                "RShoulderPitch": 2, 
+                "RShoulderRoll": 2
+            }
         }, 
         {
             "duration": 1.0, 
@@ -139,7 +161,7 @@
             "pause": 0.0
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.10000000000000014, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 10, 
@@ -163,7 +185,29 @@
                 "RShoulderRoll": 1
             }, 
             "name": "frame5", 
-            "pause": 0.0
+            "pause": 0.0, 
+            "torque": {
+                "HeadPan": 2, 
+                "HeadTilt": 2, 
+                "LAnklePitch": 2, 
+                "LAnkleRoll": 2, 
+                "LElbow": 2, 
+                "LHipPitch": 2, 
+                "LHipRoll": 2, 
+                "LHipYaw": 2, 
+                "LKnee": 2, 
+                "LShoulderPitch": 2, 
+                "LShoulderRoll": 2, 
+                "RAnklePitch": 2, 
+                "RAnkleRoll": 2, 
+                "RElbow": 2, 
+                "RHipPitch": 2, 
+                "RHipRoll": 2, 
+                "RHipYaw": 2, 
+                "RKnee": 2, 
+                "RShoulderPitch": 2, 
+                "RShoulderRoll": 2
+            }
         }, 
         {
             "duration": 1.0, 
@@ -193,7 +237,7 @@
             "pause": 0.0
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.10000000000000014, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 10, 
@@ -217,7 +261,29 @@
                 "RShoulderRoll": 1
             }, 
             "name": "frame7", 
-            "pause": 0.0
+            "pause": 0.0, 
+            "torque": {
+                "HeadPan": 2, 
+                "HeadTilt": 2, 
+                "LAnklePitch": 2, 
+                "LAnkleRoll": 2, 
+                "LElbow": 2, 
+                "LHipPitch": 2, 
+                "LHipRoll": 2, 
+                "LHipYaw": 2, 
+                "LKnee": 2, 
+                "LShoulderPitch": 2, 
+                "LShoulderRoll": 2, 
+                "RAnklePitch": 2, 
+                "RAnkleRoll": 2, 
+                "RElbow": 2, 
+                "RHipPitch": 2, 
+                "RHipRoll": 2, 
+                "RHipYaw": 2, 
+                "RKnee": 2, 
+                "RShoulderPitch": 2, 
+                "RShoulderRoll": 2
+            }
         }, 
         {
             "duration": 1.0, 
@@ -247,7 +313,7 @@
             "pause": 0.0
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.5000000000000001, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 10, 
@@ -271,10 +337,32 @@
                 "RShoulderRoll": 1
             }, 
             "name": "frame9", 
-            "pause": 0.0
+            "pause": 0.0, 
+            "torque": {
+                "HeadPan": 2, 
+                "HeadTilt": 2, 
+                "LAnklePitch": 2, 
+                "LAnkleRoll": 2, 
+                "LElbow": 2, 
+                "LHipPitch": 2, 
+                "LHipRoll": 2, 
+                "LHipYaw": 2, 
+                "LKnee": 2, 
+                "LShoulderPitch": 2, 
+                "LShoulderRoll": 2, 
+                "RAnklePitch": 2, 
+                "RAnkleRoll": 2, 
+                "RElbow": 2, 
+                "RHipPitch": 2, 
+                "RHipRoll": 2, 
+                "RHipYaw": 2, 
+                "RKnee": 2, 
+                "RShoulderPitch": 2, 
+                "RShoulderRoll": 2
+            }
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.8, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 47, 
@@ -298,10 +386,32 @@
                 "RShoulderRoll": 1
             }, 
             "name": "frame10", 
-            "pause": 0.0
+            "pause": 0.0, 
+            "torque": {
+                "HeadPan": 2, 
+                "HeadTilt": 2, 
+                "LAnklePitch": 2, 
+                "LAnkleRoll": 2, 
+                "LElbow": 2, 
+                "LHipPitch": 2, 
+                "LHipRoll": 2, 
+                "LHipYaw": 2, 
+                "LKnee": 2, 
+                "LShoulderPitch": 2, 
+                "LShoulderRoll": 2, 
+                "RAnklePitch": 2, 
+                "RAnkleRoll": 2, 
+                "RElbow": 2, 
+                "RHipPitch": 2, 
+                "RHipRoll": 2, 
+                "RHipYaw": 2, 
+                "RKnee": 2, 
+                "RShoulderPitch": 2, 
+                "RShoulderRoll": 2
+            }
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.10000000000000014, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 47, 
@@ -791,7 +901,7 @@
             }
         }
     ], 
-    "last_edited": "2019-05-01 19:30:20.723263", 
-    "name": "stand_up_front", 
+    "last_edited": "2019-05-04 15:40:01.152789", 
+    "name": "stand_up_front_fast", 
     "version": "0"
 }

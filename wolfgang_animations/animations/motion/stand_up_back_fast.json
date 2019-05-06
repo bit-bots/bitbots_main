@@ -1,7 +1,7 @@
 {
     "author": "Unknown", 
     "description": "Edit me!", 
-    "hostname": "nuc1", 
+    "hostname": "compi-t", 
     "keyframes": [
         {
             "duration": 1.0, 
@@ -80,7 +80,7 @@
             }
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.10000000000000014, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 0, 
@@ -129,7 +129,7 @@
             }
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.10000000000000014, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 0, 
@@ -227,7 +227,7 @@
             }
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.10000000000000014, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 0, 
@@ -276,7 +276,7 @@
             }
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.10000000000000014, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 0, 
@@ -325,7 +325,7 @@
             }
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.5000000000000001, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 0, 
@@ -815,7 +815,7 @@
             }
         }
     ], 
-    "last_edited": "2019-05-02 10:08:01.502147", 
-    "name": "stand_up_back", 
+    "last_edited": "2019-05-04 15:27:50.387926", 
+    "name": "stand_up_back_fast", 
     "version": "0"
 }
