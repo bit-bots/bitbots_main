@@ -10,6 +10,10 @@
     
     <arg name="sim_ns" default="/" />
 
+    <include file="$(find system_monitor)/launch/system_monitor.launch">
+        <arg name="required" value="false" />
+    </include>
+
     <include file="$(find humanoid_league_game_controller)/launch/game_controller.launch">
             <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
