@@ -1,5 +1,5 @@
 # dummy_handler
-  # input: "/test_data/imageset_373/frame%06d.png"
+# input: "/test_data/imageset_373/frame%06d.png"
 dummy_handler_input: 0
 
 # ros_handler
@@ -8,7 +8,7 @@ ROS_handler_img_queue_size: 1
 
 # compass
 compass_type: 'binary'
-compass_matcher: 'sift'
+compass_matcher: 'orb'
 
 # binary
 
