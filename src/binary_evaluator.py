@@ -43,21 +43,22 @@ class BinaryEvaluator(object):
         side_2_image = self.loader.getImage(4, 3, angle_2)
         self.vc.set_truth(0, side_1_image)
         self.show_img(side_1_image)
-        time.sleep(0.1)
+        time.sleep(0.5)
         self.vc.set_truth(math.pi, side_2_image)
         self.show_img(side_2_image)
-        time.sleep(0.1)
+        time.sleep(0.5)
+        cv2.destroyAllWindows()
     
     def debug_image_callback(self, debug_image):
+        return
         self.show_img(debug_image)
         time.sleep(0.5)
-        return
 
     def evaluateAllImages(self):
         confidences = list()
         fail = 0.0
-        unsave = 0.0
-        confidence_threshold = 0.5
+        unsave = 0.5
+        confidence_threshold = 0.4
         for row in range(self.dimensions[0]):
             confidences.append(list())
             for checkpoint in range(self.dimensions[1]):
@@ -67,7 +68,7 @@ class BinaryEvaluator(object):
                     image = self.loader.getImage(row, checkpoint, float(angle)/16*2*math.pi)
                     # self.show_img(image)
                     ground_truth = float(angle - 4)/16*2*math.pi
-                    compass_result = self.vc.process_image(image)
+                    compass_result = self.vc.process_image(image, debugCB=self.debug_image_callback)
                     confidence = compass_result[1]
                     fail_val = 0.0
                     if (abs(ground_truth - compass_result[0]) > 0.0001 and compass_result[1] > confidence_threshold):
@@ -75,10 +76,12 @@ class BinaryEvaluator(object):
                         fail += 1
                         fail_val = 1.0
                     if compass_result[1] <= confidence_threshold:
+                        if abs(ground_truth - compass_result[0]) > 0.0001:
+                            print("Filtered false positive")
                         # self.show_img(image)
                         unsave += 1
+                        print("Confidence too low. Value: {}".format(confidence))
                         confidence = 0.0
-                        print("Confidence too low")
                     confidences[row][checkpoint].append(confidence)
                     fails.append(fail_val)
                 for fail_obj in fails:
