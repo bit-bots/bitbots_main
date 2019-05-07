@@ -43,7 +43,7 @@ class GameStateReceiver(object):
         self.state_publisher = rospy.Publisher('gamestate', GameStateMsg, queue_size=1)
 
         self.man_penalize = False
-        self.game_controller_lost_time = 10
+        self.game_controller_lost_time = 20
 
         # The address listening on and the port for sending back the robots meta data
         self.addr = (rospy.get_param('/game_controller/listen_host'), rospy.get_param('/game_controller/listen_port'))
@@ -51,7 +51,7 @@ class GameStateReceiver(object):
 
         # The state and time we received last form the GC
         self.state = None
-        self.time = None
+        self.time = time.time()
 
         # The socket and whether it is still running
         self.socket = None
@@ -64,7 +64,7 @@ class GameStateReceiver(object):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind(self.addr)
-        self.socket.settimeout(1)
+        self.socket.settimeout(2)
         self.socket2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.socket2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
@@ -101,9 +101,17 @@ class GameStateReceiver(object):
         except AssertionError as ae:
             rospy.logerr(ae.message)
         except socket.timeout:
-            rospy.logwarn("No GameController message received (socket timeout)")
-        except ConstError as e: 
+            rospy.loginfo("No GameController message received (socket timeout)")
+        except ConstError: 
             rospy.logwarn("Parse Error: Probably using an old protocol!")
+        finally:
+            if self.get_time_since_last_package() > self.game_controller_lost_time:
+                self.time += 5  # Resend message every five seconds
+                rospy.logwarn('No game controller messages received, allowing robot to move')
+                msg = GameStateMsg()
+                msg.allowedToMove = True
+                msg.gameState = 3  # PLAYING
+                self.state_publisher.publish(msg)
 
     def answer_to_gamecontroller(self, peer):
         """ Sends a life sign to the game controller """
@@ -158,11 +166,7 @@ class GameStateReceiver(object):
         msg.penalized = me.penalty != 0
         msg.secondsTillUnpenalized = me.secs_till_unpenalized
 
-        if self.get_time_since_last_package() > self.game_controller_lost_time:
-            rospy.logwarn('No game controller messages received for {} seconds,'
-                          'allowing robot to move'.format(self.get_time_since_last_package()))
-            msg.allowedToMove = True
-        elif me.penalty != 0:
+        if me.penalty != 1:
             msg.allowedToMove = False
         elif state.game_state in ('STATE_INITIAL', 'STATE_SET'):
             msg.allowedToMove = False
