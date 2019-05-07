@@ -7,15 +7,15 @@ import numpy as np
 # Default color scheme: black on white background
 # Scale: 1 px = 1 cm.
 
-# 2018 rues in centimeter
-field_length = 900#547#900
-field_width = 600#388#600
-goal_width = 150#194#260
-goal_area_length = 60#75#100
-goal_area_width = 220#290#500
-penalty_mark_distance = 130#146#210
-center_circle_diameter = 150#120#150
-border_strip_width = 70#10#70
+# 2019 field GO (with wrong penalty mark) in centimeter
+field_length = 900
+field_width = 600
+goal_width = 260
+goal_area_length = 100
+goal_area_width = 500
+penalty_mark_distance = 200
+center_circle_diameter = 150
+border_strip_width = 70
 line_width = 5
 
 # Invert image image to get black on white background
@@ -116,7 +116,7 @@ if invert:
 #cv2.destroyAllWindows()
 
 # Save images (to directory where script is executed)
-cv2.imwrite('spl.png', img_lines)
+cv2.imwrite('germanopen2019.png', img_lines)
 #cv2.imwrite('spl.png', img_posts)
 
 
