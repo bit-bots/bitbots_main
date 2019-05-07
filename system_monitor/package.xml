@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>system_monitor</name>
+  <version>0.0.0</version>
+  <description>
+    Monitor a systems workload and publish that information to ROS
+  </description>
+
+  <maintainer email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <author email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</author>
+
+  <license>MIT</license>
+
+  <!-- <url type="website">http://wiki.ros.org/udp_bridge</url> -->
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>roslib</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <depend>std_msgs</depend>
+  <depend>python3-psutil</depend>
+
+  <export></export>
+</package>
