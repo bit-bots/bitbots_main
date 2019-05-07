@@ -1,7 +1,7 @@
 
 import sys
 from random import randint
-from .horizon import HorizonDetector
+from .field_boundary import FieldBoundaryDetector
 from .candidate import Candidate
 from .color import ColorDetector
 from .debug import DebugPrinter
@@ -11,18 +11,18 @@ import cv2
 
 
 class LineDetector:
-    def __init__(self, white_detector, field_color_detector, horizon_detector, config, debug_printer):
-        # type: (ColorDetector, ColorDetector, HorizonDetector, dict, DebugPrinter) -> None
+    def __init__(self, white_detector, field_color_detector, field_boundary_detector, config, debug_printer):
+        # type: (ColorDetector, ColorDetector, FieldBoundaryDetector, dict, DebugPrinter) -> None
         self._image = None
         self._preprocessed_image = None
         self._linepoints = None
         self._linesegments = None
         self._white_detector = white_detector
         self._field_color_detector = field_color_detector
-        self._horizon_detector = horizon_detector
+        self._field_boundary_detector = field_boundary_detector
         self._debug_printer = debug_printer
         # init config
-        self._horizon_offset = config['line_detector_horizon_offset']
+        self._field_boundary_offset = config['line_detector_field_boundary_offset']
         self._linepoints_range = config['line_detector_linepoints_range']
         self._blur_kernel_size = config['line_detector_blur_kernel_size']
 
@@ -46,7 +46,7 @@ class LineDetector:
 
             x_list = np.random.randint(0, imgshape[1],
                                        size=self._linepoints_range, dtype=int)
-            y_list = np.random.randint(self._horizon_detector.get_upper_bound(self._horizon_offset), imgshape[0],
+            y_list = np.random.randint(self._field_boundary_detector.get_upper_bound(self._field_boundary_offset), imgshape[0],
                                        size=self._linepoints_range, dtype=int)
             for p in zip(x_list, y_list):
                 if white_masked_image[p[1]][p[0]]:
@@ -79,13 +79,13 @@ class LineDetector:
                         in_candidate = True
                         break
 
-                # check if start and end is under horizon
-                under_horizon = self._horizon_detector.point_under_horizon(
-                    (x1, y1), self._horizon_offset) and \
-                                self._horizon_detector.point_under_horizon(
-                                    (x1, y1), self._horizon_offset)
+                # check if start and end is under field_boundary
+                under_field_boundary = self._field_boundary_detector.point_under_field_boundary(
+                    (x1, y1), self._field_boundary_offset) and \
+                                self._field_boundary_detector.point_under_field_boundary(
+                                    (x1, y1), self._field_boundary_offset)
 
-                if not in_candidate and under_horizon:
+                if not in_candidate and under_field_boundary:
                     self._linesegments.append((x1, y1, x2, y2))
             
         return self._linesegments
@@ -95,9 +95,9 @@ class LineDetector:
             # bilateral filter for bluring areas while protecting edges (noise reduction)
             #self._preprocessed_image = cv2.bilateralFilter(self._image, 9, 75, 75)
             self._preprocessed_image = self._image.copy()
-            # fill everything above horizon black
+            # fill everything above field_boundary black
             hpoints = np.array([[(0, 0)] +
-                                self._horizon_detector.get_horizon_points(self._horizon_offset) +
+                                self._field_boundary_detector.get_field_boundary_points(self._field_boundary_offset) +
                                 [(self._preprocessed_image.shape[1] - 1, 0)]])
             cv2.fillPoly(self._preprocessed_image, hpoints, 000000)
 
