@@ -1,5 +1,6 @@
 from orb_matcher import OrbMatcher
 from sift_matcher import SiftMatcher
+from akaze_matcher import AkazeMatcher
 from interface import Matcher as MatcherInterface
 
 class Matcher (MatcherInterface):
@@ -8,7 +9,8 @@ class Matcher (MatcherInterface):
         self.matcherType = None
         self.matcherClasses = {
             "orb": OrbMatcher,
-            "sift": SiftMatcher
+            "sift": SiftMatcher,
+            "akaze": AkazeMatcher
         }
 
         self.set_config(config)

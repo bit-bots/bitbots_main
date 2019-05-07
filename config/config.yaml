@@ -8,7 +8,7 @@ ROS_handler_img_queue_size: 1
 
 # compass
 compass_type: 'multiple'
-compass_matcher: 'orb'
+compass_matcher: 'akaze'
 
 # binary
 
@@ -18,5 +18,7 @@ compass_multiple_sample_count: 8
 # orb
 compass_orb_max_feature_count: 1000
 compass_orb_match_distance_scalar: 0.8
+# akaze
+compass_akaze_match_distance_scalar: 0.8
 # sift
 compass_sift_devicetype: 'cpu'
