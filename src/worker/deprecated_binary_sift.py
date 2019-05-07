@@ -1,9 +1,12 @@
 #!/usr/bin/env python2
+
+from __future__ import absolute_import
+
 import numpy as np
 import cv2
 from silx.image import sift
 import math
-from interface import VisualCompass
+from .interface import VisualCompass
 
 
 class BinaryCompassSift(VisualCompass):

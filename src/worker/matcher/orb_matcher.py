@@ -1,7 +1,9 @@
 #!/usr/bin/env python2
 
+from __future__ import absolute_import
+
 import cv2
-from interface import Matcher
+from .interface import Matcher
 
 class OrbMatcher(Matcher):
 

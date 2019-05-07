@@ -1,14 +1,14 @@
 # dummy_handler
   # input: "/test_data/imageset_373/frame%06d.png"
-dummy_handler_input: 2
+dummy_handler_input: 0
 
 # ros_handler
 ROS_handler_img_msg_topic: 'image_raw'
 ROS_handler_img_queue_size: 1
 
 # compass
-compass_type: 'multiple'
-compass_matcher: 'akaze'
+compass_type: 'binary'
+compass_matcher: 'sift'
 
 # binary
 

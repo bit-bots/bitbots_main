@@ -1,11 +1,14 @@
 #!/usr/bin/env python2
+
+from __future__ import absolute_import
+
 import cv2
 import math
 import yaml
 import os
 import time
 
-from videocv import Videocv
+from .videocv import Videocv
 
 class DavrosRecorder():
     """

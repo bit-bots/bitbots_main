@@ -1,10 +1,16 @@
 #!/usr/bin/env python2
+
 import cv2
 import math
 import yaml
 import os
 from videocv import Videocv
 from worker import VisualCompass
+
+try:
+    string = basestring
+except NameError:
+    string = str
 
 class VisualCompassDummyHandler():
     """
@@ -20,7 +26,7 @@ class VisualCompassDummyHandler():
 
         source = config['dummy_handler_input']
 
-        if isinstance(source, basestring):
+        if isinstance(source, string):
             root_folder = os.curdir
             source = root_folder + source
         

@@ -1,8 +1,10 @@
+from __future__ import absolute_import
+
 import math
 import colorsys 
-from matcher import Matcher
-from interface import VisualCompass as VisualCompassInterface
-from debug import Debug
+from .matcher import Matcher
+from .interface import VisualCompass as VisualCompassInterface
+from .debug import Debug
 
 
 class BinaryCompass(VisualCompassInterface):
@@ -21,9 +23,9 @@ class BinaryCompass(VisualCompassInterface):
 
     def process_image(self, image, resultCB=None, debugCB=None):
         keypoints, descriptor = self.matcher.get_keypoints(image)
-        matches = map(lambda gt: self.matcher.match(keypoints, descriptor, gt), self.groundTruth)
+        matches = list(map(lambda gt: self.matcher.match(keypoints, descriptor, gt), self.groundTruth))
 
-        match_len = map(lambda match: len(match), matches)
+        match_len = list(map(lambda match: len(match), matches))
 
         self.state = self._compute_state(match_len)
 

@@ -1,9 +1,11 @@
-from debug import Debug
+from __future__ import absolute_import
+
 import bisect
 import colorsys
 import math
-from matcher import Matcher
-from interface import VisualCompass as VisualCompassInterface
+from .matcher import Matcher
+from .interface import VisualCompass as VisualCompassInterface
+from .debug import Debug
 
 
 """class ConfidenceModell:
@@ -43,7 +45,7 @@ class MultipleCompass(VisualCompassInterface):
 
     # returns list of angle matchcount pairs
     def _compare(self, keypoints, descriptors):
-        return map(lambda x: self._build_match_tuple(x[0], keypoints, descriptors, x[1]), self.groundTruth)
+        return list(map(lambda x: self._build_match_tuple(x[0], keypoints, descriptors, x[1]), self.groundTruth))
 
     def _build_match_tuple(self, angle, keypoints, descriptors1, descriptors2):
         matches = self.matcher.match(keypoints, descriptors1, descriptors2)
@@ -58,7 +60,7 @@ class MultipleCompass(VisualCompassInterface):
     #TODO
     def _compute_state(self, matches):
         mymax = max(matches, key=lambda x: x[1])
-        mysum = sum(map(lambda x: x[1], matches))
+        mysum = sum(list(map(lambda x: x[1], matches)))
         mymean = (mysum - mymax[1]) / float(max(len(matches) - 1, 1))
         angle = mymax[0]
         confidence = (mymax[1] - mymean) / (mysum + 1)

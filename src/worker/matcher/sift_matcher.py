@@ -1,4 +1,6 @@
-from interface import Matcher
+from __future__ import absolute_import
+
+from .interface import Matcher
 
 import cv2
 import numpy as np
@@ -24,6 +26,7 @@ class SiftMatcher(Matcher):
         return res
 
     def initSift(self):
+        print(self.shape, self.dtype, self.devicetype)
         self.siftPlan = sift.SiftPlan(self.shape, self.dtype, devicetype=self.devicetype)
         self.matchPlan = sift.MatchPlan()
 

@@ -1,8 +1,10 @@
 #!/usr/bin/env python2
 
-from interface import VisualCompass as VisualCompassInterface
-from binary import BinaryCompass
-from multiple import MultipleCompass
+from __future__ import absolute_import
+
+from .interface import VisualCompass as VisualCompassInterface
+from .binary import BinaryCompass
+from .multiple import MultipleCompass
 
 
 class VisualCompass(VisualCompassInterface):

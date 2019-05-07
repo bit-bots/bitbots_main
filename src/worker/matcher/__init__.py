@@ -1,7 +1,10 @@
-from orb_matcher import OrbMatcher
-from sift_matcher import SiftMatcher
-from akaze_matcher import AkazeMatcher
-from interface import Matcher as MatcherInterface
+from __future__ import absolute_import
+
+from .orb_matcher import OrbMatcher
+from .sift_matcher import SiftMatcher
+from .akaze_matcher import AkazeMatcher
+from .interface import Matcher as MatcherInterface
+import cv2
 
 class Matcher (MatcherInterface):
     def __init__(self, config):
@@ -14,8 +17,6 @@ class Matcher (MatcherInterface):
         }
 
         self.set_config(config)
-
-
 
     #returns number of matches
     def match(self, keypoints, descriptor1, descriptor2):

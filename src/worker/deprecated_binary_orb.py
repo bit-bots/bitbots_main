@@ -1,8 +1,11 @@
 #!/usr/bin/env python2
+
+from __future__ import absolute_import
+
 import numpy as np
 import cv2
 import math
-from interface import VisualCompass
+from .interface import VisualCompass
 
 
 class BinaryCompassOrb(VisualCompass):
@@ -59,7 +62,7 @@ class BinaryCompassOrb(VisualCompass):
         return self.state
 
     def _compare(self, descriptors):
-        matches = map(lambda gt: self._match(descriptors, gt), self.groundTruth)
+        matches = list(map(lambda gt: self._match(descriptors, gt), self.groundTruth))
         return matches
 
     def _match(self, descriptors, groundTruth):
@@ -102,7 +105,7 @@ class BinaryCompassOrb(VisualCompass):
             bad.append(bad_ones)
         for index in range(len(bad)):
             self.groundTruth[index] = np.delete(self.groundTruth[index], bad[index], axis=0) 
-        print(str(map(len, bad)))
+        print(str(list(map(len, bad))))
         print(self.groundTruth[0].shape, self.groundTruth[1].shape)
 
 

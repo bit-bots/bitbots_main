@@ -1,5 +1,4 @@
 #! /usr/bin/env python2
-
 import rospy
 import rospkg
 from cv_bridge import CvBridge
