@@ -10,19 +10,21 @@ from worker import VisualCompass
 
 
 class BinaryEvaluator(object):
-    def __init__(self, data_path, dimensions, angle_steps):
+    def __init__(self, dimensions, angle_steps):
         self.dimensions = dimensions
         self.angle_steps = angle_steps
-        self.data_path = data_path
-        
-        self.loader = DataLoader(self.data_path, self.dimensions, self.angle_steps)
 
         dirname = os.path.dirname(__file__)
-        relative_path = "../config/config.yaml"
-        config_path = os.path.join(dirname, relative_path)
+        relative_config_path = "../config/config.yaml"
+        config_path = os.path.join(dirname, relative_config_path)
 
         with open(config_path, 'r') as stream:
             config = yaml.load(stream)
+
+        relative_data_path = config['evaluation_data']
+        self.data_path = os.path.join(dirname, relative_data_path)
+        
+        self.loader = DataLoader(self.data_path, self.dimensions, self.angle_steps)
 
         config['compass_type'] = 'binary'
         
@@ -112,5 +114,5 @@ class BinaryEvaluator(object):
         plt.imshow(a, cmap='hot', interpolation='nearest')
 
 if __name__ == "__main__":
-    evaluator = BinaryEvaluator("/home/florian/Projekt/bitbots/FieldData/Field_1/", (10,7), 16)
+    evaluator = BinaryEvaluator((10,7), 16)
     evaluator.evaluate()

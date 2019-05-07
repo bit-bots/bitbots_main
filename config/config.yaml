@@ -22,3 +22,6 @@ compass_orb_match_distance_scalar: 0.8
 compass_akaze_match_distance_scalar: 0.8
 # sift
 compass_sift_devicetype: 'cpu'
+
+# evaluator data path
+evaluation_data: '../evaluation_data/FieldData/Field_1/'
