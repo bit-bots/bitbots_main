@@ -1,0 +1,3 @@
+[submodule "evaluation_data/FieldData"]
+	path = evaluation_data/FieldData
+	url = https://github.com/bit-bots/FieldData
