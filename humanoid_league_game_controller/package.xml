@@ -20,7 +20,7 @@
   <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>humanoid_league_msgs</depend>
-  <depend>python-construct</depend>
+  <depend>python3-construct</depend>
 
   <export>
     <bitbots_documentation>
