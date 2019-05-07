@@ -313,11 +313,11 @@ class Heuristic:
     def run(self, color_list, image, mask):
         # type: (np.array, np.array, np.array) -> np.array
         """
-        This method filters a given list of colors using the original image and a field boundary-mask.
+        This method filters a given list of colors using the original image and a field-boundary-mask.
 
         :param np.array color_list: list of color values, that need to be filtered
         :param np.array image: raw vision image
-        :param np.array mask: binary field boundary-mask
+        :param np.array mask: binary field-boundary-mask
         :return np.array: filtered list of colors
         """
         # Simplifies the handling by merging the three color channels
@@ -334,10 +334,10 @@ class Heuristic:
     def recalculate(self, image, mask):
         # type: (np.array, np.array) -> set
         """
-        Generates a whitelist of allowed colors using the original image and the field boundary-mask.
+        Generates a whitelist of allowed colors using the original image and the field-boundary-mask.
 
         :param np.array image: image
-        :param np.array mask: field boundary-mask
+        :param np.array mask: field-boundary-mask
         :return set: whitelist
         """
         # Generates whitelist
@@ -350,7 +350,7 @@ class Heuristic:
         Masks picture and returns the unique colors that occurs in both mask partitions.
 
         :param np.array image: image
-        :param np.array mask: field boundary-mask
+        :param np.array mask: field-boundary-mask
         :return np.array: colors over the field boundary
         :return np.array: colors under the field boundary
         """
