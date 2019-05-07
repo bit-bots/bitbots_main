@@ -7,7 +7,7 @@ class OrbMatcher(Matcher):
 
     def __init__(self, config):
         self.orb = None
-        self.bf = cv2.BFMatcher()
+        self.bf = cv2.BFMatcher(cv2.NORM_HAMMING)
         self.set_config(config)
 
     def get_keypoints(self, image):
