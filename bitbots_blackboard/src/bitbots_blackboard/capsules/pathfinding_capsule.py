@@ -1,20 +1,11 @@
 import rospy
-import actionlib
 import math
-from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
 from geometry_msgs.msg import PoseStamped
-from humanoid_league_msgs.msg import Position2D
 from tf.transformations import euler_from_quaternion
 
 
 class PathfindingCapsule:
     def __init__(self):
-        self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
-        self.active = False
-        self.arrive_time = 0
-        self.counter = 0
-        self.timeout = 30
-        self.goal = MoveBaseGoal()
         # Thresholds to determine whether the transmitted goal is a new one
         self.position_threshold = 0.5
         self.orientation_threshold = 30
@@ -39,31 +30,6 @@ class PathfindingCapsule:
         orientation_distance = math.degrees(abs(old_orientation[2] - new_orientation[2]))
         return position_distance > self.position_threshold or orientation_distance > self.orientation_threshold
 
-    def call_action(self, action_msg):
-        if self._is_new_goal_far_from_old_goal(action_msg):
-            self.cancel()
-        if self.active or self.counter == 0:
-            self.counter += 1
-            return
-        self.active = True
-        self.arrive_time = rospy.get_time() + self.timeout
-        self.counter = 0
-        print("New Goal: ", action_msg)
-        self.goal.target_pose = action_msg
-        self.action_client.send_goal(self.goal, done_cb=self.done_cb)
-
-    def cancel_path(self):
-        self.action_client.cancel_goal()
-
-    def done_cb(self, id, msg):
-        rospy.loginfo("Arrived at goal!")
-        self.active = False
-        self.arrive_time = rospy.get_time()
-
-    def cancel(self):
-        rospy.loginfo("Canceling old goal!")
-        self.active = False
-
     def fix_rotation(self, msg):
         # type: (PoseStamped) -> PoseStamped
         # this adds translatory movement to a rotation to fix a pathfinding issue
@@ -72,6 +38,3 @@ class PathfindingCapsule:
             msg.pose.position.x = 0.01
             msg.pose.position.y = 0.01
         return msg
-
-    def is_walking_active(self):
-        return self.active
