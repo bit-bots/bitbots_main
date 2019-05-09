@@ -23,8 +23,17 @@ class KickBall(AbstractActionElement):
 class KickBallVeryHard(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(KickBallVeryHard, self).__init__(blackboard, dsd, parameters)
-        self.right_hard_kick = 'kick_right'  # TODO get actual name of parameter from some config
+        if 'foot' not in parameters.keys():
+            # usually, we kick with the right foot
+            self.hard_kick = 'kick_right'  # TODO get actual name of parameter from some config
+        elif 'right' == parameters['foot']:
+            self.hard_kick = 'kick_right'  # TODO get actual name of parameter from some config
+        elif 'left' == parameters['foot']:
+            self.hard_kick = 'kick_left'  # TODO get actual name of parameter from some config
+        else:
+            rospy.logerr(
+                'The parameter \'{}\' could not be used to decide which foot should kick'.format(parameters['foot']))
 
     def perform(self, reevaluate=False):
         if not self.blackboard.animation.is_animation_busy():
-            self.blackboard.animation.play_animation(self.right_hard_kick)
+            self.blackboard.animation.play_animation(self.hard_kick)

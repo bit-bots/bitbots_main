@@ -66,9 +66,10 @@ $Localization
 
 #PenaltyBehavior
 $BallSeen
-    YES --> $BallClose
-        YES --> @KickBallVeryHard
-        NO --> $GoalSeen
+    YES --> $BallKickArea
+        RIGHT --> @Stop, @KickBallVeryHard  + foot:right
+        LEFT --> @Stop, @KickBallVeryHard + foot:left
+        FAR --> $GoalSeen
             YES --> @GoToBall + target:detection_goal
             NO --> @GoToBall + target:none
     NO --> @SearchBallPenalty
