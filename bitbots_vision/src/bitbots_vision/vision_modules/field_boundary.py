@@ -87,13 +87,19 @@ class FieldBoundaryDetector:
         # Blacks out the part over the field_boundary
         return cv2.fillPoly(canvas, hpoints, 000)
 
-    def get_field_boundary_points(self):
-        # type: () -> list
+    def get_field_boundary_points(self, offset=0):
+        # type: (int) -> list
         """
-        :return points of the field_boundary as a list of x,y tuples
+        calculates the horizon if not calculated yet and returns a list
+        containing coordinates on the picture where the horizon is.
+        the offset works UPWARDS!
+        :return list of x,y tuples of the horizon:
         """
         if self._field_boundary_points is None:
             self._compute_field_boundary_points()
+        # applying the offset
+        if offset != 0:
+            return [(point[0], point[1] - offset) for point in self._field_boundary_points]
         return self._field_boundary_points
 
     def _compute_field_boundary_points(self):
