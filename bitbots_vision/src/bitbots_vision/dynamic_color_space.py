@@ -12,7 +12,6 @@ from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.client import Client
 from sensor_msgs.msg import Image
 from bitbots_msgs.msg import ColorSpace, Config
-from bitbots_vision.cfg import VisionConfig
 from bitbots_vision.vision_modules import field_boundary, color, debug, evaluator
 
 class DynamicColorSpace:
@@ -41,15 +40,9 @@ class DynamicColorSpace:
 
         # Init params
         self.vision_config = {}
-        self.turned_on = None
-
-        # Register publisher of ColorSpace-messages
-        self.pub_color_space = rospy.Publisher(
-            'color_space',
-            ColorSpace,
-            queue_size=1)
 
         # Subscribe to 'vision_config'-message
+        # The message topic name MUST be the same as in the config publisher in vision.py
         self.sub_vision_config_msg = rospy.Subscriber(
             'vision_config',
             Config,
@@ -77,20 +70,28 @@ class DynamicColorSpace:
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 vision_config['vision_debug_printer_classes']))
-
         self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
-        # Turn off dynamic color space, if parameter of yaml (dynamic reconfigure) is false
-        turned_on_tmp = self.turned_on
-        self.turned_on = vision_config['dynamic_color_space']
-        if self.turned_on != turned_on_tmp:
-            if self.turned_on:
-                rospy.loginfo('Dynamic color space turned on.')
+        # Print status of dynamic color space after toggeling 'dynamic_color_space_active' parameter
+        if 'dynamic_color_space_active' not in self.vision_config or \
+            vision_config['dynamic_color_space_active'] != self.vision_config['dynamic_color_space_active']:
+            if vision_config['dynamic_color_space_active']:
+                rospy.loginfo('Dynamic color space turned ON.')
             else:
-                rospy.loginfo('Dynamic color space turned off.')
-        
+                rospy.logwarn('Dynamic color space turned OFF.')
+
+        # Set publisher of ColorSpace-messages
+        if 'ROS_dynamic_color_space_msg_topic' not in self.vision_config or \
+                self.vision_config['ROS_dynamic_color_space_msg_topic'] != vision_config['ROS_dynamic_color_space_msg_topic']:
+            if hasattr(self, 'pub_color_space'):
+                self.pub_color_space.unregister()
+            self.pub_color_space = rospy.Publisher(
+                vision_config['ROS_dynamic_color_space_msg_topic'],
+                ColorSpace,
+                queue_size=1)
+
         # Set Color- and FieldBoundaryDetector
-        self.color_detector = color.PixelListColorDetector(
+        self.color_detector = color.DynamicPixelListColorDetector(
             self.debug_printer,
             self.package_path,
             vision_config)
@@ -144,8 +145,9 @@ class DynamicColorSpace:
         :param Image image_msg: new Image-message from Image-message subscriber
         :return: None
         """
-        # Turn off dynamic color space, if parameter of yaml is false
-        if not self.turned_on:
+        # Turn off dynamic color space, if parameter of config is false
+        if 'dynamic_color_space_active' not in self.vision_config or \
+            not self.vision_config['dynamic_color_space_active']:
             return
 
         # Drops old images
@@ -171,7 +173,7 @@ class DynamicColorSpace:
         colors = self.get_new_dynamic_colors(image)
         # Add new colors to the queue
         self.color_value_queue.append(colors)
-        # Publishes the 'color_space'-message
+        # Publishes to 'ROS_dynamic_color_space_msg_topic'
         self.publish(image_msg)
 
     def get_unique_color_values(self, image, coordinate_list):
@@ -205,8 +207,6 @@ class DynamicColorSpace:
         mask_image = self.color_detector.mask_image(image)
         # Get mask from field_boundary detector
         self.field_boundary_detector.set_image(image)
-
-        self.field_boundary_detector._compute_field_boundary_points()
         mask = self.field_boundary_detector.get_mask()
         if mask is not None:
             # Get array of pixel coordinates of color candidates
@@ -303,8 +303,8 @@ class Heuristic:
     def __init__(self, debug_printer):
         # type: (DebugPrinter) -> None
         """
-        Filters new color space colors according to their position relative to the field_boundary.
-        Only colors that occur under the field_boundary and have no occurrences over the field_boundary get picked.
+        Filters new color space colors according to their position relative to the field boundary.
+        Only colors that occur under the field boundary and have no occurrences over the field boundary get picked.
 
         :param DebugPrinter debug_printer: Debug-printer
         :return: None
@@ -314,11 +314,11 @@ class Heuristic:
     def run(self, color_list, image, mask):
         # type: (np.array, np.array, np.array) -> np.array
         """
-        This method filters a given list of colors using the original image and a field_boundary-mask.
+        This method filters a given list of colors using the original image and a field-boundary-mask.
 
         :param np.array color_list: list of color values, that need to be filtered
         :param np.array image: raw vision image
-        :param np.array mask: binary field_boundary-mask
+        :param np.array mask: binary field-boundary-mask
         :return np.array: filtered list of colors
         """
         # Simplifies the handling by merging the three color channels
@@ -335,10 +335,10 @@ class Heuristic:
     def recalculate(self, image, mask):
         # type: (np.array, np.array) -> set
         """
-        Generates a whitelist of allowed colors using the original image and the field_boundary-mask.
+        Generates a whitelist of allowed colors using the original image and the field-boundary-mask.
 
         :param np.array image: image
-        :param np.array mask: field_boundary-mask
+        :param np.array mask: field-boundary-mask
         :return set: whitelist
         """
         # Generates whitelist
@@ -351,9 +351,9 @@ class Heuristic:
         Masks picture and returns the unique colors that occurs in both mask partitions.
 
         :param np.array image: image
-        :param np.array mask: field_boundary-mask
-        :return np.array: colors over the field_boundary
-        :return np.array: colors under the field_boundary
+        :param np.array mask: field-boundary-mask
+        :return np.array: colors over the field boundary
+        :return np.array: colors under the field boundary
         """
         # Calls a function to calculate the number of occurrences of all colors in the image
         return (self.get_unique_colors(cv2.bitwise_and(image, image, mask=255 - mask)),

@@ -126,6 +126,8 @@ class Candidate:
         """
         return self._y1 + self._height
 
+    # TODO: get_rating
+
     def point_in_candidate(self, point):
         # type: (tuple) -> bool
         """

@@ -97,7 +97,7 @@ class LineDetector:
             self._preprocessed_image = self._image.copy()
             # fill everything above field_boundary black
             hpoints = np.array([[(0, 0)] +
-                                self._field_boundary_detector.get_field_boundary_points() +
+                                self._field_boundary_detector.get_field_boundary_points(self._field_boundary_offset) +
                                 [(self._preprocessed_image.shape[1] - 1, 0)]])
             cv2.fillPoly(self._preprocessed_image, hpoints, 000000)
 

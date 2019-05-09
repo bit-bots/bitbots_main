@@ -33,7 +33,7 @@
     <license>MIT</license>
     <buildtool_depend>catkin</buildtool_depend>
     <depend>rospy</depend>
-    <depend>rospkg</depend>
+    <depend>python-rospkg</depend>
     <depend>sensor_msgs</depend>
     <depend>std_msgs</depend>
     <depend>geometry_msgs</depend>
@@ -41,10 +41,12 @@
     <depend>message_runtime</depend>
     <depend>nav_msgs</depend>
     <depend>humanoid_league_msgs</depend>
+    <depend>bitbots_msgs</depend>
     <depend>dynamic_reconfigure</depend>
-    <depend>numpy</depend>
-    <depend>cv2</depend>
+    <depend>python-numpy</depend>
+    <depend>python-opencv</depend>
     <depend>wolves_image_provider</depend>
+  
 
     <export>
     <bitbots_documentation>
