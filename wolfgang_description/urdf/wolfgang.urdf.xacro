@@ -97,8 +97,8 @@
 
     <link name="r_upper_leg">
         <inertial>
-            <!--<origin xyz="-0.0056 0.004 -0.126" rpy="0 0 0" />-->
-            <origin xyz="-0.004721 -0.000424 -0.132759" rpy="0 0 0" />
+            <!--<origin xyz="0.0056 0.004 0.126" rpy="0 0 0" />-->
+            <origin xyz="0.004721 0.000424 -0.132759" rpy="0 0 0" />
             <mass value="0.248" />
             <inertia ixx="0.000660963" ixy="0.000000544" ixz="-0.000016736" iyy="0.000606384" iyz="-0.000004189" izz="0.000150136" />
         </inertial>
@@ -275,7 +275,7 @@
     <link name="l_upper_leg">
          <inertial>
             <!--<origin xyz="-0.0056 0.004 -0.126" rpy="0 0 0" />-->
-            <origin xyz="-0.004721 -0.000424 -0.132759" rpy="0 0 0" />
+            <origin xyz="0.004721 0.000424 -0.132759" rpy="0 0 0" />
             <mass value="0.248" />
             <inertia ixx="0.000660963" ixy="0.000000544" ixz="-0.000016736" iyy="0.000606384" iyz="-0.000004189" izz="0.000150136" />
         </inertial>
@@ -322,7 +322,7 @@
 
     <link name="l_lower_leg">
         <inertial>
-            <!--<origin xyz="0.012 0 -0.076" rpy="0.9 0.9 0.9" />-->
+            <!--<origin xyz="0.062 0 -0.045" rpy="0 ${-pi/4} 0" />-->
             <!-- gedreht um -45 grad-->
             <origin xyz="0.070129 -0.000102 -0.061824" rpy="0 ${-pi/4} 0" />
             <mass value="0.085" />
@@ -410,7 +410,7 @@
     <link name="r_shoulder">
         <inertial>
             <!--<origin xyz="0.012 -0.02 0" rpy="0 ${-pi/8} 0" />-->
-            <origin xyz="-0.010164 -0.022268 -0.000376" rpy="0 ${-pi/8} 0" />
+            <origin xyz="0.010164 -0.022268 -0.000376" rpy="0 ${-pi/8} 0" />
             <mass value="0.097" />
             <inertia ixx="0.000044153" ixy="-0.000000525" ixz="0.000015185" iyy="0.000086852" iyz="0.000000524" izz="0.000065734" />
             <!--<inertia ixx="0.000044153" ixy="0.000015185" ixz="-0.000000525" iyy="0.000065734" iyz="0.000000524" izz="0.000086852" />-->
@@ -433,7 +433,7 @@
     <link name="r_upper_arm">
         <inertial>
             <!--<origin xyz="0 0 -0.031" rpy="0 0 0" />-->
-            <origin xyz="-0.000158 0.000012 -0.035495" rpy="0 0 0" />
+            <origin xyz="0.000158 -0.000012 -0.035495" rpy="0 0 0" />
             <mass value="0.229" />
             <inertia ixx="0.000490959" ixy="-0.000000004" ixz="-0.000004117" iyy="0.000461542" iyz="-0.000000191" izz="0.000102122" />
         </inertial>
@@ -479,7 +479,7 @@
     <link name="l_shoulder">
         <inertial>
             <!--<origin xyz="0.012 0.02 0" rpy="0 ${-pi/8} 0" />-->
-            <origin xyz="-0.010164 0.022268 -0.000376" rpy="0 ${-pi/8} 0" />
+            <origin xyz="0.010164 0.022268 -0.000376" rpy="0 ${-pi/8} 0" />
             <mass value="0.097" />
             <!--<inertia ixx="0.000044153" ixy="0.000015185" ixz="-0.000000525" iyy="0.000065734" iyz="0.000000524" izz="0.000086852" />-->
             <inertia ixx="0.000044153" ixy="-0.000000525" ixz="0.000015185" iyy="0.000086852" iyz="0.000000524" izz="0.000065734" />
@@ -502,7 +502,7 @@
     <link name="l_upper_arm">
         <inertial>
             <!--<origin xyz="0 0 -0.031" rpy="0 0 0" />-->
-            <origin xyz="-0.000158 0.000012 -0.035495" rpy="0 0 0" />
+            <origin xyz="0.000158 -0.000012 -0.035495" rpy="0 0 0" />
             <mass value="0.229" />
             <inertia ixx="0.000490959" ixy="-0.000000004" ixz="-0.000004117" iyy="0.000461542" iyz="-0.000000191" izz="0.000102122" />
         </inertial>
@@ -548,7 +548,7 @@
     <link name="neck">
         <inertial>
             <!--<origin xyz="0.0045 0 0.016" rpy="0 0 0" />-->
-            <origin xyz="0.027758 -0.000252 0.032356" rpy="0 0 0" />
+            <origin xyz="0.027758 0.000252 0.032356" rpy="0 0 0" />
             <xacro:if value="${fake_walk== True}">
                 <mass value="0.00015587" />
             </xacro:if>            
