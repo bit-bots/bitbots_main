@@ -12,7 +12,3 @@ install(FILES plugin.xml
 install(DIRECTORY resource
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-
-install(PROGRAMS scripts/bitbots_recordui_rqt
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
