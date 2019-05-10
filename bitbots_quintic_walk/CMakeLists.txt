@@ -5,6 +5,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  rosconsole
   std_msgs
   humanoid_league_msgs
   dynamic_reconfigure
@@ -17,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   bitbots_ik
   bitbots_splines  
   message_generation
+  message_runtime
   geometry_msgs
   moveit_ros_robot_interaction
   bitbots_msgs
@@ -24,6 +26,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
+
+catkin_python_setup()
 
 add_message_files(
     FILES
@@ -48,7 +52,7 @@ catkin_package(
         DEPENDS EIGEN3 
 )
 
-include_directories( cfg/cpp
+include_directories(
         include
         ${EIGEN3_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}

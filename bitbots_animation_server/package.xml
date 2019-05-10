@@ -16,11 +16,9 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>rospy</depend>
-
-  <exec_depend>humanoid_league_msgs</exec_depend>
-  <exec_depend>actionlib</exec_depend>
-  <exec_depend>actionlib_msgs</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
+  <depend>std_msgs</depend>
+  <depend>actionlib</depend>
+  <depend>humanoid_league_msgs</depend>
 
   <export>
     <bitbots_documentation>
