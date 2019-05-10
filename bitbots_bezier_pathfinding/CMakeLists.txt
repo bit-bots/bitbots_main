@@ -5,6 +5,6 @@ find_package(catkin REQUIRED rospy geometry_msgs nav_msgs dynamic_reconfigure)
 
 catkin_python_setup()
 
-generate_dynamic_reconfigure_options(cfg/pathfinding.cfg)
+generate_dynamic_reconfigure_options(cfg/Pathfinding.cfg)
 
 catkin_package()
