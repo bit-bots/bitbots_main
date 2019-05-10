@@ -15,15 +15,17 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>nav_msgs</exec_depend>
-  <exec_depend>humanoid_league_msgs</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>robot_localization</exec_depend>
-  <exec_depend>pointcloud_to_laserscan</exec_depend>
-  <exec_depend>map_server</exec_depend>
   <exec_depend>amcl</exec_depend>
+
+  <depend>std_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>map_server</depend>
+  <depend>robot_localization</depend>
+  <depend>pointcloud_to_laserscan</depend>
+  <depend>rospy</depend>
+  <depend>humanoid_league_msgs</depend>
+  <depend>geometry_msgs</depend>
 
 
   <export>
