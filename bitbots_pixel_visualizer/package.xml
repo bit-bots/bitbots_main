@@ -27,6 +27,7 @@
   <build_export_depend>humanoid_league_msgs</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>dynamic_reconfigure</build_export_depend>
+  <depend>rospy</depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>visualization_msgs</exec_depend>

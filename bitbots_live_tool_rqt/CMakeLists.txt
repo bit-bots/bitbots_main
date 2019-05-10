@@ -2,11 +2,12 @@ cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_live_tool_rqt)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
   rospy
   std_msgs
   message_generation
 )
+
+catkin_python_setup()
 
 catkin_package(CATKIN_DEPENDS message_runtime)
 

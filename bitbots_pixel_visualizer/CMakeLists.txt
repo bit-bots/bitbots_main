@@ -11,7 +11,9 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   visualization_msgs
   humanoid_league_msgs
+  sensor_msgs
   dynamic_reconfigure
+  message_generation
 )
 
 generate_dynamic_reconfigure_options(

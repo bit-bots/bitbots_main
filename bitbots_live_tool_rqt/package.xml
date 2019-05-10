@@ -17,6 +17,7 @@
   <build_depend>rqt_gui</build_depend>
   <build_depend>rqt_gui_py</build_depend>
   <build_depend>message_generation</build_depend>
+  <depend>std_msgs</depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>rosnode</exec_depend>
   <exec_depend>rqt_gui</exec_depend>
