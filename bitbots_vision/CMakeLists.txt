@@ -24,7 +24,7 @@ FIND_PACKAGE (OpenCV REQUIRED)
 #add dynamic reconfigure api
 find_package(catkin REQUIRED dynamic_reconfigure)
 generate_dynamic_reconfigure_options(
-  cfg/vision.cfg
+  cfg/Vision.cfg
   #...
 )
 
