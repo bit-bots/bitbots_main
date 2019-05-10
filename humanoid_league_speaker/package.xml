@@ -14,9 +14,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>dynamic_reconfigure</exec_depend>
-  <exec_depend>humanoid_league_msgs</exec_depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>humanoid_league_msgs</depend>
 
   <export>
     <bitbots_documentation>

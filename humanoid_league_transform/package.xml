@@ -13,17 +13,17 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>roscpp</depend>
+  <depend>rosconsole</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf_conversions</depend>
+  <depend>message_generation</depend>
+  <depend>geometry_msgs</depend>
+
   <exec_depend>rospy</exec_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>rosconsole</exec_depend>
   <exec_depend>humanoid_league_msgs</exec_depend>
-  <exec_depend>message_generation</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>tf2</exec_depend>
-  <exec_depend>tf_conversions</exec_depend>
-  <exec_depend>message_generation</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
 
   <export>
     <bitbots_documentation>
