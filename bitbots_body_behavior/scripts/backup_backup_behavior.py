@@ -8,7 +8,7 @@ from actionlib_msgs.msg import GoalStatus
 import humanoid_league_msgs.msg
 import tf2_ros as tf2
 from tf2_geometry_msgs import PointStamped
-from humanoid_league_msgs.msg import BallRelative, GoalRelative, GameState, PlayAnimationGoal, PlayAnimationAction
+from humanoid_league_msgs.msg import BallRelative, GoalRelative, GameState, PlayAnimationGoal, PlayAnimationAction, HeadMode
 from geometry_msgs.msg import Twist
 
 
@@ -17,7 +17,7 @@ class Behavior(object):
         self.init_walking_time = 15
         self.rotation_threshold = math.radians(10)
         self.walking_rotation_scalar = 0.09
-        self.moonwalk_rotation = -0.1
+        self.moonwalk_rotation = -0.35
         self.walking_speed_forward = 0.06
         self.walking_speed_sideward = 0.06
         self.reach_ball_time = 9.0
@@ -26,12 +26,12 @@ class Behavior(object):
         self.ball_angle = 0.0
         self.ball_age = 100
         self.goal_angle = 1.0
-        self.goal_kick_threshold = math.radians(10)
+        self.goal_kick_threshold = math.radians(20)
         self.end_not_allowed_to_move = False
         self.goal_in_front = False
         self.allow_to_move = False
-        self.kick_behavior = False
-        self.goal_behavior = False
+        self.kick_behavior = True
+        self.goal_behavior = True
         rospy.init_node('backup_backup_behavior')
 
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5))
@@ -46,20 +46,25 @@ class Behavior(object):
             self.ball_relative_cb,
             queue_size=1,
             tcp_nodelay=True)
-        '''
+        
         self.goal_relative_msg = rospy.Subscriber(
             'goal_relative',
             GoalRelative,
             self.goal_relative_cb,
             queue_size=1,
             tcp_nodelay=True)
-        '''
+        
         self.game_control_msg = rospy.Subscriber(
             'gamestate',
             GameState,
             self.gamestate_cb,
             queue_size=1,
             tcp_nodelay=True)
+
+        self.pub_head_mode = rospy.Publisher(
+            'head_mode',
+            HeadMode,
+            queue_size=1)
 
         self.pub_walking = rospy.Publisher(
             'cmd_vel',
@@ -105,11 +110,11 @@ class Behavior(object):
         self.behave()
 
     def behave(self):
+        self.head_look_for_ball()
         self.stopAtBegin()
         while self.allow_to_move == False and not rospy.is_shutdown():
             time.sleep(0.1)
-            print("Waiting for game to start")
-        # self.walkIn(self.init_walking_time)
+            rospy.loginfo_throttle(2, "Waiting for game to start")
         # Start normal behavior
         while not rospy.is_shutdown():
             self.searchBall()
@@ -128,11 +133,11 @@ class Behavior(object):
         self.walkingWalkSteeredForward(0.0, 0.0)
 
     def walkIn(self, walk_time):
-        print("Walking into the field")
+        rospy.loginfo("Walking into the field")
         self.walkingWalkSteeredForward(self.walking_speed_forward * 0.5, 0, recurr=False)
         time.sleep(2)
         self.walkingWalkSteeredForward(self.walking_speed_forward, 0, recurr=False)
-        print("Max speed")
+        rospy.loginfo("Max speed")
         time.sleep(walk_time)
         self.walkingWalkSteeredForward(0, 0, recurr=False)
         time.sleep(1)
@@ -141,22 +146,22 @@ class Behavior(object):
         while self.ball_distance > 0.5 and not rospy.is_shutdown():
             self.searchBall()
             self.turnToBall()
-            print("Walking to ball")
+            rospy.loginfo_throttle(1, "Walking to ball")
             self.walkingWalkSteeredForward(self.walking_speed_forward, self.ball_angle * self.walking_rotation_scalar)
             time.sleep(0.5)
-        print("Print reached ball")
+        rospy.loginfo("Print reached ball")
 
     def searchBall(self):
         while not self.ball_seen() and not rospy.is_shutdown():
-            print("Searching for ball")
-            self.walkingTurn(self.walking_rotation_scalar * math.pi)
+            rospy.loginfo_throttle(2, "Searching for ball")
+            self.walkingTurn(self.walking_rotation_scalar * 2 * math.pi)
             time.sleep(0.5)
 
     def turnToBall(self):
         ball_angle = self.ball_angle
         delta = abs(ball_angle)
         while delta > self.rotation_threshold and not rospy.is_shutdown():
-            print("Rotating to Ball....")
+            rospy.loginfo_throttle(2, "Rotating to Ball....")
             direction = ball_angle/(delta+0.0000001)
 
             rotation = direction * self.walking_rotation_scalar * math.pi
@@ -164,13 +169,26 @@ class Behavior(object):
             time.sleep(0.5)
             ball_angle = self.ball_angle
             delta = abs(ball_angle)
-        print("Right direction")
+        rospy.loginfo("Right direction")
 
     def moonWalk(self):
+        self.head_look_forwards()
         while not self.goal_in_front and not rospy.is_shutdown():
             direction = -(self.goal_angle/abs(self.goal_angle + 0.00001))
             self.walkingWalkSteeredSidewards(direction * self.walking_speed_sideward, direction* self.moonwalk_rotation)
-        print("Goal Found")
+        self.head_look_for_ball()
+        rospy.loginfo("Goal Found")
+
+    def head_look_forwards(self):
+        head_mode = HeadMode()
+        head_mode.headMode = 7
+        self.pub_head_mode.publish(head_mode)
+
+    def head_look_for_ball(self):
+        head_mode = HeadMode()
+        head_mode.headMode = 0
+        self.pub_head_mode.publish(head_mode)
+
 
     def ball_seen(self):
         return (time.time() - self.ball_age) < 1
@@ -219,22 +237,22 @@ class Behavior(object):
         time.sleep(self.reach_ball_time)
         self.walkingWalkSteeredForward(0.0, 0.0)
         time.sleep(1)
-        print("Kick")
+        rospy.loginfo("Kick")
         if self.ball_position[1] > 0:
-            print("Left")
+            rospy.loginfo("Left")
             animation = "kick_left"
         else:
-            print("Right")
+            rospy.loginfo("Right")
             animation = "kick_right"
         try:
             self.anim.anim_run(anim=animation)
             self.anim = Anim()
         except:
-            print("Animation error")
-        print("Finished kick")
+            rospy.logerr("Animation error")
+        rospy.loginfo("Finished kick")
 
     def runThroughBall(self):
-        print("Run through ball")
+        rospy.loginfo("Run through ball")
         self.walkingWalkSteeredForward(self.walking_speed_forward,0)
         time.sleep(self.reach_ball_time)
         self.walkingWalkSteeredForward(0.0, 0.0)
