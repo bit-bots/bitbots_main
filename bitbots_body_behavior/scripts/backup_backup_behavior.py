@@ -196,6 +196,9 @@ class Behavior(object):
             time.sleep(0.5)
 
     def turnToBall(self):
+        # Save the ball angle
+        ball_angle = self.ball_angle
+        delta = abs(ball_angle)
         # Turn torwards the ball
         while delta > self.rotation_threshold and not rospy.is_shutdown():
             # Save the ball angle
