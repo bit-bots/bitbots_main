@@ -283,6 +283,12 @@ bool WorldModel::reset_filters_callback(
 
 void WorldModel::reset_all_filters() {
     ROS_INFO("Resetting all particle filters...");
+    reset_all_local_filters();
+    reset_all_global_filters();
+}
+
+void WorldModel::reset_all_local_filters() {
+    ROS_INFO("Resetting all local particle filters...");
 
     local_ball_pf_.reset(new particle_filter::ParticleFilter<PositionState>(
             config_.local_ball_particle_number, local_ball_observation_model_,
@@ -331,6 +337,45 @@ void WorldModel::reset_all_filters() {
             std::make_pair(config_.local_obstacle_max_distance * 2,
                     config_.local_obstacle_max_distance * 2),
             config_.local_obstacle_min_width, config_.local_obstacle_max_width);
+}
+
+void WorldModel::reset_all_global_filters() {
+    ROS_INFO("Resetting all global particle filters...");
+
+    global_ball_pf_.reset(new particle_filter::ParticleFilter<PositionState>(
+            config_.global_ball_particle_number, global_ball_observation_model_,
+            global_ball_movement_model_));
+    global_mate_pf_.reset(new particle_filter::ParticleFilter<PositionState>(
+            config_.global_mate_particle_number, global_mate_observation_model_,
+            global_mate_movement_model_));
+    global_opponent_pf_.reset(new particle_filter::ParticleFilter<PositionState>(
+            config_.global_opponent_particle_number,
+            global_opponent_observation_model_, global_opponent_movement_model_));
+
+    // setting the resampling strategies
+    global_ball_pf_->setResamplingStrategy(global_ball_resampling_);
+    global_mate_pf_->setResamplingStrategy(global_mate_resampling_);
+    global_opponent_pf_->setResamplingStrategy(global_opponent_resampling_);
+
+    // resetting the particles
+    global_ball_pf_->drawAllFromDistribution(global_ball_state_distribution_);
+    global_mate_pf_->drawAllFromDistribution(global_mate_state_distribution_);
+    global_opponent_pf_->drawAllFromDistribution(
+            global_opponent_state_distribution_);
+
+    // setting up the distributions for the further game
+    *global_ball_state_distribution_ = GlobalPositionStateDistribution(
+            random_number_generator_, std::make_pair(0.0, 0.0),
+            std::make_pair(config_.global_ball_max_distance * 2,
+                    config_.global_ball_max_distance * 2));
+    *global_mate_state_distribution_ = GlobalPositionStateDistribution(
+            random_number_generator_, std::make_pair(0.0, 0.0),
+            std::make_pair(config_.global_mate_max_distance * 2,
+                    config_.global_mate_max_distance * 2));
+    *global_opponent_state_distribution_ = GlobalPositionStateDistribution(
+            random_number_generator_, std::make_pair(0.0, 0.0),
+            std::make_pair(config_.global_opponent_max_distance * 2,
+                    config_.global_opponent_max_distance * 2));
 }
 
 void WorldModel::init() {
@@ -435,24 +480,30 @@ void WorldModel::exec_global_filter_step() {
     // setting the measurements manually.
     // this is used to save resources because of the necessary transformations
     // and a possibly high frequence of TeamData messages
+
+    // ROS_INFO_STREAM("Setting measurements");
     set_global_measurements(last_received_team_data_);
 
 
+    // ROS_INFO_STREAM("Measuring");
     global_ball_pf_->measure();
     global_mate_pf_->measure();
     global_opponent_pf_->measure();
 
     // manually clearing the list of measurements
     // TODO: just age the measurements instead of removing them
+    // ROS_INFO_STREAM("Cleaning measurements");
     global_ball_observation_model_->clear_measurement();
     global_mate_observation_model_->clear_measurement();
     global_opponent_observation_model_->clear_measurement();
 
+    // ROS_INFO_STREAM("Resampling");
     global_ball_pf_->resample();
     global_mate_pf_->resample();
     global_opponent_pf_->resample();
 
     // diffuse the particles (add normal distributed uncertainty)
+    // ROS_INFO_STREAM("Diffusing");
     global_ball_pf_->diffuse();
     global_mate_pf_->diffuse();
     global_opponent_pf_->diffuse();

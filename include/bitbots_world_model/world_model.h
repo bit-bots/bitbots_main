@@ -221,6 +221,8 @@ private:
     void publish_global_results();
     void exec_local_filter_step();
     void exec_global_filter_step();
+    void reset_all_local_filters();
+    void reset_all_global_filters();
 };
 
 #endif
