@@ -28,6 +28,7 @@ class BinaryEvaluator(object):
 
         config['compass_type'] = 'binary'
         
+        self.sample_count = 2 if config['compass_type'] == 'binary' else config['compass_multiple_sample_count']
         self.vc = VisualCompass(config)
     
     def show_img(self, image):
@@ -39,16 +40,12 @@ class BinaryEvaluator(object):
         self.evaluateAllImages()
 
     def setTruth(self):
-        angle_1 = math.radians(90)
-        angle_2 = math.radians(180+90)
-        side_1_image = self.loader.getImage(4, 3, angle_1)
-        side_2_image = self.loader.getImage(4, 3, angle_2)
-        self.vc.set_truth(0, side_1_image)
-        self.show_img(side_1_image)
-        time.sleep(0.5)
-        self.vc.set_truth(math.pi, side_2_image)
-        self.show_img(side_2_image)
-        time.sleep(0.5)
+        for i in range(self.sample_count):
+            angle = float(i) / self.sample_count * math.radians(360)
+            image = self.loader.getImage(4, 3, self.float_mod(angle + math.radians(90), math.radians(360)))
+            self.vc.set_truth(angle, image)
+            self.show_img(image)
+            time.sleep(0.5)
         cv2.destroyAllWindows()
     
     def debug_image_callback(self, debug_image):
@@ -112,6 +109,9 @@ class BinaryEvaluator(object):
             for checkpoint_index, checkpoint in enumerate(row):
                 a[row_index, checkpoint_index] = float(checkpoint[side])
         plt.imshow(a, cmap='hot', interpolation='nearest')
+
+    def float_mod(self,  number, modulo):
+        return number - modulo * math.floor(number / modulo)
 
 if __name__ == "__main__":
     evaluator = BinaryEvaluator((10,7), 16)
