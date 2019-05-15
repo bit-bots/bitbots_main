@@ -11,11 +11,18 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
     m_engine_rate = config.engine_rate;
     KickParams params = KickParams();
     params.trunk_movement = config.trunk_movement;
+    params.foot_rise_trunk_movement = config.foot_rise_trunk_movement;
     params.foot_rise = config.foot_rise;
     params.kick_distance = config.kick_distance;
     params.trunk_kick_pitch = config.trunk_kick_pitch;
+    params.trunk_kick_roll = config.trunk_kick_roll;
     params.trunk_height = config.trunk_height;
     params.foot_distance = config.foot_distance;
+    params.move_trunk_time = config.move_trunk_time;
+    params.raise_foot_time = config.raise_foot_time;
+    params.kick_time = config.kick_time;
+    params.move_back_time = config.move_back_time;
+    params.lower_foot_time = config.lower_foot_time;
     m_engine.set_params(params);
 }
 
