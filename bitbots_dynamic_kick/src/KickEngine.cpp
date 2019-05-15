@@ -78,6 +78,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
     m_flying_trajectories->get("pos_x").addPoint(4, 0);
     m_flying_trajectories->get("pos_x").addPoint(5, 0);
 
+    // TODO adjust when the flying foot changes
     m_flying_trajectories->get("pos_y").addPoint(0, -m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(1, -m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(2, -m_params.foot_distance);
@@ -113,7 +114,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
     m_flying_trajectories->get("yaw").addPoint(0, start_y);
     m_flying_trajectories->get("yaw").addPoint(5, start_y);
 
-    /* Support foot position */
+    /* Trunk position */
     m_trunk_trajectories->get("pos_x").addPoint(0, 0);
     m_trunk_trajectories->get("pos_x").addPoint(1, 0);
     m_trunk_trajectories->get("pos_x").addPoint(2, 0);
