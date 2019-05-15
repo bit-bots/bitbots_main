@@ -60,6 +60,7 @@ class HardwareControlManager:
         rospy.Subscriber("animation", AnimationMsg, self.animation_callback, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("head_motor_goals", JointCommand, self.head_goal_callback, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("record_motor_goals", JointCommand, self.record_goal_callback, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("kick_motor_goals", JointCommand, self.kick_goal_callback, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("pause", Bool, self.pause, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("joint_states", JointState, self.joint_state_callback, queue_size=1, tcp_nodelay=True)
 
@@ -117,6 +118,11 @@ class HardwareControlManager:
             self.blackboard.record_active = False
         else:
             self.blackboard.record_active = True
+            self.joint_goal_publisher.publish(msg)
+
+    def kick_goal_callback(self, msg):
+        if self.blackboard.current_state == STATE_CONTROLABLE:
+            # we can perform a kick
             self.joint_goal_publisher.publish(msg)
 
     def animation_callback(self, msg):
