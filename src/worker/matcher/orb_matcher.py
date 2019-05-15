@@ -20,7 +20,7 @@ class OrbMatcher(Matcher):
         good = []
         for m, n in matches:
             if m.distance < self.matchDistanceScalar * n.distance:
-                good.append(m.queryIdx)
+                good.append(int(m.queryIdx))
         
         matched_keypoints = [kp[index] for index in good]
 
