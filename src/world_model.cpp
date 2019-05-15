@@ -560,57 +560,91 @@ void WorldModel::set_global_measurements(hlm::TeamData msg) {
 
         // add the detecting robots own pose as mate measurement
         // TODO: does this work? or is that only one pose which is referenced?
-        PositionState position_state(msg.robot_positions[sender_number].x,
-                msg.robot_positions[sender_number].y);
-        global_mate_measurements_.push_back(position_state);
+        PositionState position_state;
+        if(msg.robot_positions.size() > sender_number) {
+            position_state = PositionState(msg.robot_positions[sender_number].x,
+                                         msg.robot_positions[sender_number].y);
+            global_mate_measurements_.push_back(position_state);
+        } else {
+            continue;
+        }
 
-        tf2::doTransform(pose2d_to_pose(msg.team_robot_a[sender_number].pose),
-                buffer_pose, transformStamped);
-        position_state =
-                PositionState(buffer_pose.position.x, buffer_pose.position.y);
-        global_mate_measurements_.push_back(position_state);
-        tf2::doTransform(pose2d_to_pose(msg.team_robot_b[sender_number].pose),
-                buffer_pose, transformStamped);
-        position_state =
-                PositionState(buffer_pose.position.x, buffer_pose.position.y);
-        global_mate_measurements_.push_back(position_state);
-        tf2::doTransform(pose2d_to_pose(msg.team_robot_c[sender_number].pose),
-                buffer_pose, transformStamped);
-        position_state =
-                PositionState(buffer_pose.position.x, buffer_pose.position.y);
-        global_mate_measurements_.push_back(position_state);
+        if(msg.team_robot_a.size() > sender_number && msg.team_robot_a[sender_number].pose.x < 100) {
+            tf2::doTransform(
+                    pose2d_to_pose(msg.team_robot_a[sender_number].pose),
+                    buffer_pose, transformStamped);
+            position_state =
+                    PositionState(buffer_pose.position.x,
+                                  buffer_pose.position.y);
+            global_mate_measurements_.push_back(position_state);
+        }
+        if(msg.team_robot_b.size() > sender_number && msg.team_robot_b[sender_number].pose.x < 100) {
+            tf2::doTransform(
+                    pose2d_to_pose(msg.team_robot_b[sender_number].pose),
+                    buffer_pose, transformStamped);
+            position_state =
+                    PositionState(buffer_pose.position.x,
+                                  buffer_pose.position.y);
+            global_mate_measurements_.push_back(position_state);
+        }
+        if(msg.team_robot_c.size() > sender_number && msg.team_robot_c[sender_number].pose.x < 100) {
+            tf2::doTransform(
+                    pose2d_to_pose(msg.team_robot_c[sender_number].pose),
+                    buffer_pose, transformStamped);
+            position_state =
+                    PositionState(buffer_pose.position.x,
+                                  buffer_pose.position.y);
+            global_mate_measurements_.push_back(position_state);
+        }
+
         // second, the opponents
-        tf2::doTransform(
-                pose2d_to_pose(msg.opponent_robot_a[sender_number].pose),
-                buffer_pose, transformStamped);
-        position_state =
-                PositionState(buffer_pose.position.x, buffer_pose.position.y);
-        global_opponent_measurements_.push_back(position_state);
-        tf2::doTransform(
-                pose2d_to_pose(msg.opponent_robot_b[sender_number].pose),
-                buffer_pose, transformStamped);
-        position_state =
-                PositionState(buffer_pose.position.x, buffer_pose.position.y);
-        global_opponent_measurements_.push_back(position_state);
-        tf2::doTransform(
-                pose2d_to_pose(msg.opponent_robot_c[sender_number].pose),
-                buffer_pose, transformStamped);
-        position_state =
-                PositionState(buffer_pose.position.x, buffer_pose.position.y);
-        global_opponent_measurements_.push_back(position_state);
-        tf2::doTransform(
-                pose2d_to_pose(msg.opponent_robot_d[sender_number].pose),
-                buffer_pose, transformStamped);
-        position_state =
-                PositionState(buffer_pose.position.x, buffer_pose.position.y);
-        global_opponent_measurements_.push_back(position_state);
+        if(msg.opponent_robot_a.size() > sender_number && msg.opponent_robot_a[sender_number].pose.x < 100) {
+            tf2::doTransform(
+                    pose2d_to_pose(msg.opponent_robot_a[sender_number].pose),
+                    buffer_pose, transformStamped);
+            position_state =
+                    PositionState(buffer_pose.position.x,
+                                  buffer_pose.position.y);
+            global_opponent_measurements_.push_back(position_state);
+        }
+        if(msg.opponent_robot_b.size() > sender_number && msg.opponent_robot_b[sender_number].pose.x < 100) {
+            tf2::doTransform(
+                    pose2d_to_pose(msg.opponent_robot_b[sender_number].pose),
+                    buffer_pose, transformStamped);
+            position_state =
+                    PositionState(buffer_pose.position.x,
+                                  buffer_pose.position.y);
+            global_opponent_measurements_.push_back(position_state);
+        }
+        if(msg.opponent_robot_c.size() > sender_number && msg.opponent_robot_c[sender_number].pose.x < 100) {
+            tf2::doTransform(
+                    pose2d_to_pose(msg.opponent_robot_c[sender_number].pose),
+                    buffer_pose, transformStamped);
+            position_state =
+                    PositionState(buffer_pose.position.x,
+                                  buffer_pose.position.y);
+            global_opponent_measurements_.push_back(position_state);
+        }
+        if(msg.opponent_robot_d.size() > sender_number && msg.opponent_robot_d[sender_number].pose.x < 100) {
+            tf2::doTransform(
+                    pose2d_to_pose(msg.opponent_robot_d[sender_number].pose),
+                    buffer_pose, transformStamped);
+            position_state =
+                    PositionState(buffer_pose.position.x,
+                                  buffer_pose.position.y);
+            global_opponent_measurements_.push_back(position_state);
+        }
 
         // now, the ball
-        tf2::doTransform(pose2d_to_pose(msg.ball_relative[sender_number].pose),
-                buffer_pose, transformStamped);
-        position_state =
-                PositionState(buffer_pose.position.x, buffer_pose.position.y);
-        global_ball_measurements_.push_back(position_state);
+        if(msg.ball_relative.size() > sender_number && msg.ball_relative[sender_number].pose.x < 100) {
+            tf2::doTransform(
+                    pose2d_to_pose(msg.ball_relative[sender_number].pose),
+                    buffer_pose, transformStamped);
+            position_state =
+                    PositionState(buffer_pose.position.x,
+                                  buffer_pose.position.y);
+            global_ball_measurements_.push_back(position_state);
+        }
     }
 
     // adding our own detections to the list
