@@ -3,3 +3,4 @@ numpy
 silx
 opencv-python
 pyyaml
+matplotlib
