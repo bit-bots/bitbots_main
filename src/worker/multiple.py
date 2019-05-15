@@ -63,7 +63,7 @@ class MultipleCompass(VisualCompassInterface):
         mysum = sum(list(map(lambda x: x[1], matches)))
         mymean = (mysum - mymax[1]) / float(max(len(matches) - 1, 1))
         angle = mymax[0]
-        confidence = (mymax[1] - mymean) / (mysum + 1)
+        confidence = ((mymax[1] - mymean) / (mysum + 1))**(1.0/3)
         return angle, confidence
 
     def process_image(self, image, resultCB=None, debugCB=None):
@@ -84,6 +84,8 @@ class MultipleCompass(VisualCompassInterface):
                 color = colorsys.hsv_to_rgb(hue,1,255)
                 image = self.matcher.debug_keypoints(image, matches[value][2], color)
             self.debug.print_debug_info(image, self.state, debugCB)
+
+        return self.state[0], self.state[1]
 
     def set_config(self, config):
         self.config = config
