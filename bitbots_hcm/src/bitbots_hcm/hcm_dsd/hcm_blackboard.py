@@ -103,3 +103,6 @@ class HcmBlackboard():
         self.is_stand_up_active = not self.simulation_active and rospy.get_param("hcm/stand_up_active", False) 
         self.falling_detection_active = not self.simulation_active and rospy.get_param("hcm/falling_active", False)
 
+        # kicking
+        
+

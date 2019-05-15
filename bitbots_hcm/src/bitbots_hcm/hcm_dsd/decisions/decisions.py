@@ -309,3 +309,24 @@ class Controlable(AbstractDecisionElement):
 
     def get_reevaluate(self):
         return True
+
+class Kicking(AbstractDecisionElement):
+    """
+    Decides if the robot is currently kicking
+    """
+
+    def perform(self, reevaluate=False):
+        if self.blackboard.current_time.to_sec() - self.blackboard.last_kick_feedback_time.to_sec() < 0.1:
+            self.blackboard.current_state = STATE_WALKING
+            if self.blackboard.animation_requested:
+                self.blackboard.animation_requested = False
+                # we are walking but we have to stop to play an animation
+                return "STOP_WALKING"
+            else:
+                # we are walking and can stay like this
+                return "STAY_WALKING"
+        else:
+            return "NOT_WALKING"
+
+    def get_reevaluate(self):
+        return True
