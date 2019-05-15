@@ -14,16 +14,31 @@ class SiftMatcher(Matcher):
         self.dtype = None
         self.siftPlan = None
         self.matchPlan = None
+        self.feature_dtype = np.dtype((np.record, [('x', '<f4'), ('y', '<f4'), ('scale', '<f4'), ('angle', '<f4'), ('desc', 'u1', (128,))]))
         self.set_config(config)
 
-    def match(self, _, kp1, kp2):
+    def match(self, kp, desc1, desc2):
+        keypoints = list(map(lambda keypoint: ( keypoint.pt[0], 
+                                                keypoint.pt[1],
+                                                keypoint.size,
+                                                keypoint.angle), kp))
+        features1 = np.zeros((desc1.shape[0],), dtype=self.feature_dtype)
+        features1[['x', 'y', 'scale' , 'angle']] = keypoints
+        features1['desc'] = desc1
+        features2 = np.zeros((desc2.shape[0],), dtype=self.feature_dtype)
+        features2['desc'] = desc2
+
         if self.matchPlan is None:
             self.initSift()
         try:
-            res = self.matchPlan(kp1, kp2)
+            matches = self.matchPlan(features1, features2)
         except(Exception):
             return []
-        return res
+
+        matches = matches[['x', 'y']][:,0].tolist()
+        points = cv2.KeyPoint_convert(matches)
+
+        return points
 
     def initSift(self):
         print(self.shape, self.dtype, self.devicetype)
@@ -39,31 +54,18 @@ class SiftMatcher(Matcher):
         if self.siftPlan is None:
             self.initSiftImg(image)
         
-        keypoints = self.siftPlan.keypoints(image)
-        return keypoints, keypoints
+        features = self.siftPlan.keypoints(image)
+        descriptor = features['desc']
+        keypoints = features[['x', 'y', 'scale', 'angle']]
+        keypoints = keypoints.tolist()
+        keypoints = list(map(lambda keypoint: cv2.KeyPoint( float(keypoint[0]), 
+                                                            float(keypoint[1]),
+                                                            float(keypoint[2]),
+                                                            float(keypoint[3])), keypoints))
+        return keypoints, descriptor
 
-    # TODO copy debugger from deprecated_binary_sift.py
     def debug_keypoints(self, image, debug_keypoints, color):
-        try:
-            output_image = self._plot(image, debug_keypoints, color, 2)
-        except(Exception):
-            try:
-                debug_keypoints_formated = self._convert_keypoint(debug_keypoints[:, 0])
-                output_image = self._plot(image, debug_keypoints_formated, color, 2)
-            except(Exception):
-                print("Debug failed")
-                output_image = image
-        return output_image
-        
-
-    def _plot(self, image, kp, color, size):
-        for i in range(kp.shape[0]):
-            cv2.circle(image, (kp[i].x, kp[i].y), size + int(kp[i].scale), color, thickness=2)
-        return image
-
-    def _convert_keypoint(self, kps):
-        d = np.dtype((np.record, [('x', '<f4'), ('y', '<f4'), ('scale', '<f4'), ('angle', '<f4'), ('desc', 'u1', (128,))]))
-        return kps.astype(d)
+        return cv2.drawKeypoints(image, debug_keypoints, None, color=color, flags=0)
 
     def set_config(self, config):
         self.devicetype = config['compass_sift_devicetype']
