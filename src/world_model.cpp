@@ -540,13 +540,31 @@ void WorldModel::set_global_measurements(hlm::TeamData msg) {
     geometry_msgs::Pose buffer_pose;
     for (char sender_number = 0; sender_number < msg.robot_ids.size();
             sender_number++) {
-        // the self localizatin of a robot
+        // the self localization of a robot
         mate_self_detections_[msg.robot_ids[sender_number]] =
                 msg.robot_positions[sender_number];
+        std::string mate_name = std::string("mate_") + std::to_string(msg.robot_ids[sender_number]);
+
+        // in case the frame does not exist (it is not published here), the self detection is used
+        if (!transform_buffer_._frameExists(mate_name)) {
+
+            geometry_msgs::TransformStamped transform;
+            tf2::Quaternion q;
+            transform.header.stamp = ros::Time::now();
+            transform.header.frame_id = "map";
+            transform.child_frame_id = mate_name;
+            transform.transform.translation.x = mate_self_detections_[msg.robot_ids[sender_number]].x;
+            transform.transform.translation.y = mate_self_detections_[msg.robot_ids[sender_number]].y;
+            transform.transform.translation.z = 0;
+            q.setRPY(0, 0, mate_self_detections_[msg.robot_ids[sender_number]].theta);
+            transform.transform.rotation.x = q.x();
+            transform.transform.rotation.y = q.y();
+            transform.transform.rotation.z = q.z();
+            transform.transform.rotation.w = q.w();
+            transform_broadcaster_.sendTransform(transform);
+        }
         try {
-            transformStamped = transform_buffer_.lookupTransform("map",
-                    std::string("mate_") +
-                            std::to_string(msg.robot_ids[sender_number]),
+            transformStamped = transform_buffer_.lookupTransform("map", mate_name,
                     ros::Time(0));
         } catch (tf2::TransformException& ex) {
             ROS_WARN(
