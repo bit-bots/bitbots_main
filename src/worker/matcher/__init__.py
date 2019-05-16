@@ -13,8 +13,9 @@ class Matcher (MatcherInterface):
         self.matcher = None
         self.matcherType = None
         self.matcherClasses = {
+            "akaze": AkazeMatcher,
             "orb": OrbMatcher,
-            "akaze": AkazeMatcher
+            "sift": SiftMatcher
         }
 
         self.set_config(config)
