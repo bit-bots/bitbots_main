@@ -26,7 +26,7 @@ class BinaryEvaluator(object):
         
         self.loader = DataLoader(self.data_path, self.dimensions, self.angle_steps)
 
-        config['compass_type'] = 'multiple'
+        config['compass_type'] = 'binary'
         
         self.vc = VisualCompass(config)
     
