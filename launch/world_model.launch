@@ -1,5 +1,13 @@
 <launch>
-    <node pkg="bitbots_world_model" type="world_model" name="bitbots_world_model" output="screen">
-        <rosparam command="load" file="$(find bitbots_world_model)/config/world_model_config.yaml"/>
-    </node>
+    <arg name="gdb" default="false" doc="start the world model in gdb" />
+    <group if="$(arg gdb)">
+        <node pkg="bitbots_world_model" type="world_model" name="bitbots_world_model" output="screen" launch-prefix="gdb --args">
+            <rosparam command="load" file="$(find bitbots_world_model)/config/world_model_config.yaml"/>
+        </node>
+    </group>
+    <group unless="$(arg gdb)">
+        <node pkg="bitbots_world_model" type="world_model" name="bitbots_world_model" output="screen">
+            <rosparam command="load" file="$(find bitbots_world_model)/config/world_model_config.yaml"/>
+        </node>
+    </group>
 </launch>
