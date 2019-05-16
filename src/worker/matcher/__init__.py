@@ -1,10 +1,12 @@
 from __future__ import absolute_import
 
+import cv2
+import rospy
+
 from .orb_matcher import OrbMatcher
 from .sift_matcher import SiftMatcher
 from .akaze_matcher import AkazeMatcher
 from .interface import Matcher as MatcherInterface
-import cv2
 
 class Matcher (MatcherInterface):
     def __init__(self, config):
@@ -12,7 +14,6 @@ class Matcher (MatcherInterface):
         self.matcherType = None
         self.matcherClasses = {
             "orb": OrbMatcher,
-            "sift": SiftMatcher,
             "akaze": AkazeMatcher
         }
 
@@ -38,3 +39,4 @@ class Matcher (MatcherInterface):
                 raise AssertionError(self.matcherType + ": Matcher not available!")
             matcher_class = self.matcherClasses[self.matcherType]
             self.matcher = matcher_class(config)
+            rospy.loginfo("Matcher: %(matcher_type)s is loaded." % {'matcher_type': self.matcherType})

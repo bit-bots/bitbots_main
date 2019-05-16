@@ -65,7 +65,10 @@ class VisualCompassROSHandler():
         """
         self.compass = VisualCompass(config)
 
-        if self.changed_config_param(config, 'compass_multiple_sample_count'):
+        if self.changed_config_param(config, 'compass_multiple_sample_count') or \
+            self.changed_config_param(config, 'compass_type') or \
+            self.changed_config_param(config, 'compass_matcher'):
+
             self.sample_count = 0
             self.ready_for_loop = False
 
