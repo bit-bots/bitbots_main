@@ -210,7 +210,9 @@ private:
     void publishing_timer_callback(const ros::TimerEvent&);
     void publish_local_particle_visualization();
     void publish_global_particle_visualization();
-    void publish_gmm_visualization(gmms::GaussianMixtureModel gmm,
+    void publish_local_gmm_visualization(gmms::GaussianMixtureModel gmm,
+            std::string n_space, ros::Duration lifetime);
+    void publish_global_gmm_visualization(gmms::GaussianMixtureModel gmm,
             std::string n_space, ros::Duration lifetime);
     void send_mate_transforms();
     geometry_msgs::Pose pose2d_to_pose(const geometry_msgs::Pose2D pose2D);

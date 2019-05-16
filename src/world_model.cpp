@@ -434,12 +434,21 @@ void WorldModel::publish_global_particle_visualization() {
             get_color_msg(config_.opponent_marker_color)));
 }
 
-void WorldModel::publish_gmm_visualization(gmms::GaussianMixtureModel gmm,
+void WorldModel::publish_local_gmm_visualization(gmms::GaussianMixtureModel gmm,
         std::string n_space, ros::Duration lifetime) {
     local_particles_publisher_.publish(gmm.renderMarker(
             -(config_.field_width / 2), -(config_.field_height / 2),
             (config_.field_width / 2), (config_.field_height / 2), 100, n_space,
             config_.local_publishing_frame,
+            lifetime));  // TODO: check whether x and y are in the right order
+}
+
+void WorldModel::publish_global_gmm_visualization(gmms::GaussianMixtureModel gmm,
+        std::string n_space, ros::Duration lifetime) {
+    global_particles_publisher_.publish(gmm.renderMarker(
+            -(config_.field_width / 2), -(config_.field_height / 2),
+            (config_.field_width / 2), (config_.field_height / 2), 100, n_space,
+            config_.global_publishing_frame,
             lifetime));  // TODO: check whether x and y are in the right order
 }
 
@@ -784,19 +793,19 @@ void WorldModel::publish_local_results() {
 
     // publish plotted GMMs
     if (config_.local_ball_gmm_visualization) {
-        publish_gmm_visualization(local_ball_gmm_, "local_ball_gmm",
+        publish_local_gmm_visualization(local_ball_gmm_, "local_ball_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
     if (config_.local_mate_gmm_visualization) {
-        publish_gmm_visualization(local_mates_gmm_, "local_mates_gmm",
+        publish_local_gmm_visualization(local_mates_gmm_, "local_mates_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
     if (config_.local_opponent_gmm_visualization) {
-        publish_gmm_visualization(local_opponents_gmm_, "local_opponents_gmm",
+        publish_local_gmm_visualization(local_opponents_gmm_, "local_opponents_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
     if (config_.local_obstacle_gmm_visualization) {
-        publish_gmm_visualization(local_obstacles_gmm_, "local_obstacles_gmm",
+        publish_local_gmm_visualization(local_obstacles_gmm_, "local_obstacles_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
 }
@@ -870,15 +879,15 @@ void WorldModel::publish_global_results() {
 
     // publish plotted GMMs
     if (config_.global_ball_gmm_visualization) {
-        publish_gmm_visualization(global_ball_gmm_, "global_ball_gmm",
+        publish_global_gmm_visualization(global_ball_gmm_, "global_ball_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
     if (config_.global_mate_gmm_visualization) {
-        publish_gmm_visualization(global_mates_gmm_, "global_mates_gmm",
+        publish_global_gmm_visualization(global_mates_gmm_, "global_mates_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
     if (config_.global_opponent_gmm_visualization) {
-        publish_gmm_visualization(global_opponents_gmm_, "global_opponents_gmm",
+        publish_global_gmm_visualization(global_opponents_gmm_, "global_opponents_gmm",
                 ros::Duration(1.0 / config_.publishing_frequency));
     }
 }
