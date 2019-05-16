@@ -869,6 +869,8 @@ void WorldModel::publish_global_results() {
     global_model_publisher_.publish(model_msg);
     ROS_INFO("end publishing...");
 
+    send_mate_transforms();
+
     // the rest is visualization
     if (!config_.debug_visualization) {
         return;
