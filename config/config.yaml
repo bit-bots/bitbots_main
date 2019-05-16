@@ -1,5 +1,5 @@
 # dummy_handler
-dummy_handler_input: 0
+# dummy_handler_input: 0
 
 # ros_handler
 ROS_handler_img_msg_topic: 'image_raw'
@@ -8,8 +8,10 @@ ROS_handler_img_queue_size: 1
 ROS_handler_action_server_name: 'VisualCompassSetGroundTruth'
 
 # compass
-compass_type: 'binary'
-compass_matcher: 'orb'
+compass_type: 'multiple'
+
+# Choose from: 'akaze', 'orb', 'sift'
+compass_matcher: 'akaze'
 
 # binary
 

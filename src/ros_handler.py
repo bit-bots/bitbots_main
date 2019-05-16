@@ -10,9 +10,9 @@ from bitbots_visual_compass.cfg import VisualCompassConfig
 from bitbots_msgs.msg import VisualCompassSetGroundTruthAction
 from worker import VisualCompass
 
-# TODO define message for behavior
-# TODO use set truth
-# TODO compass type|matcher ENUM in .cfg
+
+# TODO binary still usefull?
+
 
 class VisualCompassROSHandler():
     # type: () -> None
@@ -167,7 +167,7 @@ class VisualCompassROSHandler():
         """
         config_sample_count = self.config['compass_multiple_sample_count']
         if self.sample_count != config_sample_count:
-            rospy.logwarn('Visual compass: %(var)d of %(config)d sample images set. More sample images are needed to start processing loop.' %
+            rospy.loginfo('Visual compass: %(var)d of %(config)d sample images set. More sample images are needed to start processing loop.' %
                             {'var': self.sample_count, 'config': config_sample_count})
             self.ready_for_loop = False
         else:
