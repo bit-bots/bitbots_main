@@ -25,7 +25,7 @@ generate_dynamic_reconfigure_options(
 )
 
 catkin_package(
-  CATKIN_DEPENDS humanoid_league_msgs rospy rospkg std_msgs
+  CATKIN_DEPENDS humanoid_league_msgs rospy rospkg std_msgs wolves_image_provider bitbots_msgs
 )
 
 include_directories(

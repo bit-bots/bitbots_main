@@ -21,7 +21,9 @@
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>message_runtime</depend>
+  <depend>bitbots_msgs</depend>
   <depend>humanoid_league_msgs</depend>
+  <depend>wolves_image_provider</depend>
 
   <export>
     <bitbots_documentation>
