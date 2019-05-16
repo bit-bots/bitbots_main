@@ -73,7 +73,7 @@ class VisualCompassROSHandler():
         if self.changed_config_param(config, 'ROS_handler_action_server_name'):
             self.actionServer = actionlib.SimpleActionServer(config['ROS_handler_action_server_name'],
                                                             VisualCompassSetGroundTruthAction,
-                                                            execute_cb=self.action_callback,
+                                                            execute_cb=self.set_truth_callback,
                                                             auto_start = False)
             self.actionServer.start()
 
@@ -96,7 +96,7 @@ class VisualCompassROSHandler():
 
         return self.config
 
-    def action_callback(self, goal):
+    def set_truth_callback(self, goal):
         if self.image_dict:
             # TODO: check timestamps
             self.compass.set_truth(goal.orientation, self.image_dict['image'])
