@@ -93,9 +93,9 @@ class JoyNode(object):
     def joy_cb(self, msg):
         # forward and sideward walking with left joystick
         if msg.axes[1] > 0:
-            self.walk_msg.linear.x = 0.05 * msg.axes[1]
+            self.walk_msg.linear.x = 0.08 * msg.axes[1]
         elif msg.axes[1] < 0:
-            self.walk_msg.linear.x = 0.03 * msg.axes[1]
+            self.walk_msg.linear.x = 0.08 * msg.axes[1]
         else:
             self.walk_msg.linear.x = 0
 
@@ -103,33 +103,28 @@ class JoyNode(object):
             # to prevent sending a -0
             self.walk_msg.linear.y = 0
         else:
-            self.walk_msg.linear.y = 0.03 * msg.axes[0]
+            self.walk_msg.linear.y = 0.08 * msg.axes[0]
 
         # angular walking with shoulder buttons
         if msg.buttons[6]:
-            self.walk_msg.angular.z = 0.05
+            self.walk_msg.angular.z = 0.5
         elif msg.buttons[7]:
-            self.walk_msg.angular.z = -0.05
+            self.walk_msg.angular.z = -0.5
         else:
             self.walk_msg.angular.z = 0.0
+
+        if msg.axes[2] > 0:
+            self.walk_msg.angular.z = 0.6
+        elif msg.axes[2] < 0:
+            self.walk_msg.angular.z = -0.6
 
         # only publish changes
         if self.walk_msg != self.last_walk_msg:
             self.walk_publisher.publish(self.walk_msg)
         self.last_walk_msg = copy.deepcopy(self.walk_msg)
-        
-        # head movement with right joystick
-        pan_goal = None
-        tilt_goal = None
-        if msg.axes[2] > 0:
-            pan_goal = self.head_pan_pos + msg.axes[2] * 0.2
-        elif msg.axes[2] < 0:
-            pan_goal = self.head_pan_pos + msg.axes[2] * 0.2
-        if msg.axes[3] > 0:
-            tilt_goal = self.head_tilt_pos + msg.axes[3] * 0.2
-        elif msg.axes[3] < 0:
-            tilt_goal = self.head_tilt_pos + msg.axes[3] * 0.2
 
+        # head movement with right joystick
+        """
         joint_names = []
         positions = []
         if pan_goal:
@@ -144,6 +139,7 @@ class JoyNode(object):
         if len(joint_names) > 0:
             self.head_pub.publish(self.head_msg)
 
+        """
         # kicking with upper shoulder buttons
         if msg.buttons[4]:
             # L1
