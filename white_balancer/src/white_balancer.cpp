@@ -15,9 +15,11 @@ class WhiteBalancer
 {
 public:
     WhiteBalancer();
+    // Dynamic reconfigure callback
     void callbackRC(white_balancer::WhiteBalanceConfig &config, uint32_t level);
 private:
     image_transport::Publisher pub;
+    // Color temp to rgb convertion table
     const std::map<int, std::vector<int>> kelvin =  {
                                                     { 1000,  { 255,  56,   1 }},
                                                     { 1100,  { 255,  71,   1 }},
@@ -130,84 +132,95 @@ private:
                                                     { 11800, { 196, 210, 255 }},
                                                     { 11900, { 195, 210, 255 }},
                                                     { 12000, { 195, 209, 255 }}};
-
+    // Dummy color
     int temp = 1000;
+    // Image calback
     void imageCallback(const sensor_msgs::ImageConstPtr& msg);
     void set_temp(int temp);
 };
 
 WhiteBalancer::WhiteBalancer()
 {
-    ros::NodeHandle nh;
-    image_transport::ImageTransport it(nh);
-
+    // Dynamic reconfigure stuff
     dynamic_reconfigure::Server<white_balancer::WhiteBalanceConfig> server;
     dynamic_reconfigure::Server<white_balancer::WhiteBalanceConfig>::CallbackType f;
     f = boost::bind(&WhiteBalancer::callbackRC, this, _1, _2);
     server.setCallback(f);
 
+    // Register image messages
+    ros::NodeHandle nh;
+    image_transport::ImageTransport it(nh);
+
     WhiteBalancer::pub = it.advertise("/image", 1);
-    image_transport::Subscriber sub = it.subscribe("/image_raw", 1, &WhiteBalancer::imageCallback, this);
+    image_transport::Subscriber sub = it.subscribe("/image_unbalanced", 1, &WhiteBalancer::imageCallback, this);
+
     ros::spin();
 }
 
 void WhiteBalancer::set_temp(int temp)
 {
+    // Round temp
     WhiteBalancer::temp = 100 * ((int) temp / 100);
 }
 
 void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
-    // Using time point and system_clock 
-    std::chrono::time_point<std::chrono::system_clock> start, end; 
     try
     {
+        // Get RGB value for current temperature
         std::vector <int> white_value = WhiteBalancer::kelvin.at(WhiteBalancer::temp);
 
+        // Dummy scalar
         std::vector <float> scalars = {0, 0, 0};
 
+        // Calculate scalars and convert RGB to BGR
         for (int channel = 0; channel < 3; channel ++)
         {
             scalars[channel] = 255.0/white_value[2 - channel];
         }
 
+        // Get image
         cv::Mat image = cv_bridge::toCvShare(msg, "bgr8")->image;
-        start = std::chrono::system_clock::now(); 
         int dim_x = image.cols;
         int dim_y = image.rows;
 
+        // Iterate over image
         for (int row = 0; row < dim_x; row++)
         {
             for (int column = 0; column < dim_y; column++)
             {
+                // Iterate over channels
                 for (int channel = 0; channel < 3; channel++)
                 {
+                    // Get channel value at this position
                     int color = image.at<cv::Vec3b>(column, row)[channel];
+                    // Scale it
                     int new_value = scalars[channel] * color;
+                    // Clip it at 255
                     int new_value_limeted = 255 ^ ((new_value ^ 255) & -(new_value < 255)); // min(x, 255)
+                    // Set the new value in the image
                     image.at<cv::Vec3b>(column, row)[channel] = new_value_limeted;
                 }
             }
         } 
-        end = std::chrono::system_clock::now();
+        // Publish white balanced image
         sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
         WhiteBalancer::pub.publish(msg);
-        //std::cout << image << std::endl;
     }
     catch (cv_bridge::Exception& e)
     {
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
     }
-    std::chrono::duration<double> elapsed_seconds = end - start;
-    std::cout << "elapsed time: " << elapsed_seconds.count() << std::endl; 
 }
 
 void WhiteBalancer::callbackRC(white_balancer::WhiteBalanceConfig &config, uint32_t level) {
+    // Set color temperature
     WhiteBalancer::set_temp(config.temp);
 }
   
 int main(int argc, char **argv)
 {
+    // Init
     ros::init(argc, argv, "white_balancer");
     WhiteBalancer w;
 
