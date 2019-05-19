@@ -6,7 +6,7 @@ import rospkg
 import os
 from bitbots_hcm.fall_checker import FallChecker
 from geometry_msgs.msg import Twist
-from bitbots_msgs.msg import KickFeedback, KickGoal
+from bitbots_msgs.msg import KickActionFeedback
 from humanoid_league_msgs.msg import RobotControlState
 
 
@@ -105,9 +105,9 @@ class HcmBlackboard():
         self.falling_detection_active = not self.simulation_active and rospy.get_param("hcm/falling_active", False)
 
         # kicking
-        self.last_kick_feedback = None      # type: KickFeedback
+        self.last_kick_feedback = None      # type: KickActionFeedback
 
         def last_kick_feedback_callback(msg):
             self.last_kick_feedback = msg
-        rospy.Subscriber('/dynamic_kick/feedback', KickFeedback, last_kick_feedback_callback, tcp_nodelay=False, queue_size=1)
+        rospy.Subscriber('/dynamic_kick/feedback', KickActionFeedback, last_kick_feedback_callback, tcp_nodelay=False, queue_size=1)
 
