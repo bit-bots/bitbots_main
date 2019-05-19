@@ -72,14 +72,6 @@ class VisualCompassROSHandler():
             self.sample_count = 0
             self.ready_for_loop = False
 
-        # Register VisualCompassSetGroundTruthAction server
-        if self.changed_config_param(config, 'ROS_handler_action_server_name'):
-            self.actionServer = actionlib.SimpleActionServer(config['ROS_handler_action_server_name'],
-                                                            VisualCompassSetGroundTruthAction,
-                                                            execute_cb=self.set_truth_callback,
-                                                            auto_start = False)
-            self.actionServer.start()
-
         # Subscribe to Image-message
         if self.changed_config_param(config, 'ROS_handler_img_msg_topic'):
             if hasattr(self, 'sub_image_msg'):
@@ -92,6 +84,14 @@ class VisualCompassROSHandler():
                 tcp_nodelay=True,
                 buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
+
+        # Register VisualCompassSetGroundTruthAction server
+        if self.changed_config_param(config, 'ROS_handler_action_server_name'):
+            self.actionServer = actionlib.SimpleActionServer(config['ROS_handler_action_server_name'],
+                                                            VisualCompassSetGroundTruthAction,
+                                                            execute_cb=self.set_truth_callback,
+                                                            auto_start = False)
+            self.actionServer.start()
 
         self.config = config
 
