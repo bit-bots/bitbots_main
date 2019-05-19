@@ -9,7 +9,7 @@ from silx.image import sift
 
 class SiftMatcher(Matcher):
     def __init__(self, config):
-        self.devicetype = None
+        self.devicetype = "CPU"
         self.shape = None
         self.dtype = None
         self.siftPlan = None
@@ -68,4 +68,4 @@ class SiftMatcher(Matcher):
         return cv2.drawKeypoints(image, debug_keypoints, None, color=color, flags=0)
 
     def set_config(self, config):
-        self.devicetype = config['compass_sift_devicetype']
+        pass
