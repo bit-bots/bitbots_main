@@ -1,7 +1,8 @@
 #include "bitbots_quintic_walk/QuinticWalkingNode.hpp"
 
 
-QuinticWalkingNode::QuinticWalkingNode() {
+QuinticWalkingNode::QuinticWalkingNode() :
+        _robot_model_loader("/robot_description", false) {
     // init variables
     _robotState = humanoid_league_msgs::RobotControlState::CONTROLABLE;
     _walkEngine = bitbots_quintic_walk::QuinticWalk();
@@ -38,7 +39,6 @@ QuinticWalkingNode::QuinticWalkingNode() {
     _pubDebugMarker = _nh.advertise<visualization_msgs::Marker>("walk_debug_marker", 1);
 
     //load MoveIt! model    
-    _robot_model_loader = robot_model_loader::RobotModelLoader("/robot_description", false);
     _robot_model_loader.loadKinematicsSolvers(
             kinematics_plugin_loader::KinematicsPluginLoaderPtr(
                     new kinematics_plugin_loader::KinematicsPluginLoader()));
