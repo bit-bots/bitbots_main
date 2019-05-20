@@ -851,11 +851,11 @@ bool DynamixelHardwareInterface::readFootSensors(){
   msg.l_l_f = _current_pressure[0];
   msg.l_r_f = _current_pressure[1];
   msg.l_l_b = _current_pressure[2];
-  msg.l_l_f = _current_pressure[3];
+  msg.l_r_b = _current_pressure[3];
   msg.r_l_f = _current_pressure[4];
   msg.r_r_f = _current_pressure[5];
   msg.r_l_b = _current_pressure[6];
-  msg.r_l_f = _current_pressure[7];
+  msg.r_r_b = _current_pressure[7];
   _pressure_pub.publish(msg);
   return true;
 }
