@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="white_balancer" type="white_balancer" name="white_balancer" output="screen">
+        <remap from="/image_unbalanced" to="/image_raw" />
+        <rosparam command="load" file="$(find white_balancer)/config/config.yaml"/>
+    </node>
+</launch>
