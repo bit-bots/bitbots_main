@@ -20,13 +20,16 @@
   <exec_depend>rosgraph_msgs</exec_depend>
   <exec_depend>roslib</exec_depend>
   <exec_depend>rosnode</exec_depend>
-  <exec_depend>rospy</exec_depend>
   <exec_depend>rosservice</exec_depend>
   <exec_depend>rostopic</exec_depend>
   <exec_depend>rqt_gui</exec_depend>
   <exec_depend>rqt_gui_py</exec_depend>
   <exec_depend>message_runtime</exec_depend>
-  <exec_depend>bitbots_msgs</exec_depend>
+
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>std_msgs</depend>
 
   <export>
     <architecture_independent/>
