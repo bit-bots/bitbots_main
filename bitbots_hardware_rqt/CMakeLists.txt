@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   bitbots_msgs
 )
 
+catkin_python_setup()
 
 add_message_files(
    FILES
@@ -21,7 +22,7 @@ generate_messages(
   bitbots_msgs
 )
 
-catkin_package(CATKIN_DEPENDS message_runtime)
+catkin_package(CATKIN_DEPENDS message_runtime bitbots_msgs std_msgs)
 
 install(FILES plugin.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}

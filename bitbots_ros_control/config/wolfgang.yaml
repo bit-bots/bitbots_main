@@ -15,7 +15,7 @@ ros_control:
   # specification of the connected dynamixel servos
   dynamixels:
     port_info:
-      port_name: /dev/ttyACM0
+      port_name: /dev/ttyDXLBOARD
       baudrate: 2000000
       protocol_version: 2
     control_mode: position
