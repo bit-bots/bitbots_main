@@ -394,3 +394,7 @@ class Heuristic:
         new_matrix[:, 1] = np.array((input_matrix - (new_matrix[:, 0] * 256 ** 2)) / 256, dtype=np.uint8)
         new_matrix[:, 2] = np.array((input_matrix - (new_matrix[:, 0] * 256 ** 2) - (new_matrix[:, 1] * 256)), dtype=np.uint8)
         return new_matrix
+
+
+if __name__ == '__main__':
+    DynamicColorSpace()
