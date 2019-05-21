@@ -10,8 +10,10 @@ include:
     - bitbots_misc:
         - bitbots_bringup
         - bitbots_teleop
+        - system_monitor
     - bitbots_motion:
         - bitbots_animation_server
+        - bitbots_dynamic_kick
         - bitbots_hcm
         - bitbots_ik
         - bitbots_quintic_walk
