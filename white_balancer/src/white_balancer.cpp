@@ -1,4 +1,3 @@
-#include <omp.h>
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <opencv2/core.hpp>
@@ -173,40 +172,13 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
         // Get RGB value for current temperature
         std::vector <int> white_value = WhiteBalancer::kelvin.at(WhiteBalancer::temp);
 
-        // Dummy scalar
-        std::vector <float> scalars = {0, 0, 0};
-
-        // Calculate scalars and convert RGB to BGR
-        for (int channel = 0; channel < 3; channel ++)
-        {
-            scalars[channel] = 255.0/white_value[2 - channel];
-        }
-
         // Get image
         cv::Mat image = cv_bridge::toCvShare(msg, "bgr8")->image;
-        int dim_x = image.cols;
-        int dim_y = image.rows;
+        
+        cv::multiply(image, cv::Scalar((float)(255.0/white_value[2]),
+                                       (float)(255.0/white_value[1]),
+                                       (float)(255.0/white_value[0])), image);
 
-        // Iterate over image
-        #pragma parallel for
-        // Iterate over channels
-        for (int channel = 0; channel < 3; channel++)
-        {
-        for (int column = 0; column < dim_y; column++)
-        {
-            for (int row = 0; row < dim_x; row++)
-            {
-                    // Get channel value at this position
-                    int color = image.at<cv::Vec3b>(column, row)[channel];
-                    // Scale it
-                    int new_value = scalars[channel] * color;
-                    // Clip it at 255
-                    int new_value_limited = 255 ^ ((new_value ^ 255) & -(new_value < 255)); // min(x, 255)
-                    // Set the new value in the image
-                    image.at<cv::Vec3b>(column, row)[channel] = new_value_limited;
-                }
-            }
-        } 
         // Publish white balanced image
         sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
         WhiteBalancer::pub.publish(msg);
