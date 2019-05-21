@@ -27,6 +27,7 @@ class HeadModeDecision(AbstractDecisionElement):
             head_mode = self.blackboard.config['defaults']['head_mode']
         else:
             head_mode = self.blackboard.head_capsule.head_mode
+            self.publish_debug_data('using_default', False)
 
         # map results to all possible values of head_mode
         if head_mode == HeadMode.BALL_MODE:
