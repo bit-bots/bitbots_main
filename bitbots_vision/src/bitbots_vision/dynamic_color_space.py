@@ -1,15 +1,12 @@
 #! /usr/bin/env python2
 
 import cv2
-import time
 import yaml
 import rospy
 import rospkg
 import numpy as np
 from cv_bridge import CvBridge
 from collections import deque
-from dynamic_reconfigure.server import Server
-from dynamic_reconfigure.client import Client
 from sensor_msgs.msg import Image
 from bitbots_msgs.msg import ColorSpace, Config
 from bitbots_vision.vision_modules import field_boundary, color, debug, evaluator
@@ -397,8 +394,3 @@ class Heuristic:
         new_matrix[:, 1] = np.array((input_matrix - (new_matrix[:, 0] * 256 ** 2)) / 256, dtype=np.uint8)
         new_matrix[:, 2] = np.array((input_matrix - (new_matrix[:, 0] * 256 ** 2) - (new_matrix[:, 1] * 256)), dtype=np.uint8)
         return new_matrix
-
-
-if __name__ == '__main__':
-    DynamicColorSpace()
-    
