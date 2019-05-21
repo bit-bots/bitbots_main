@@ -1,3 +1,4 @@
+#include <omp.h>
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <opencv2/core.hpp>
@@ -165,6 +166,8 @@ void WhiteBalancer::set_temp(int temp)
 
 void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
+     // Get starting timepoint 
+    auto start = std::chrono::high_resolution_clock::now(); 
     try
     {
         // Get RGB value for current temperature
@@ -185,21 +188,22 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
         int dim_y = image.rows;
 
         // Iterate over image
-        for (int row = 0; row < dim_x; row++)
+        #pragma parallel for
+        // Iterate over channels
+        for (int channel = 0; channel < 3; channel++)
         {
-            for (int column = 0; column < dim_y; column++)
+        for (int column = 0; column < dim_y; column++)
+        {
+            for (int row = 0; row < dim_x; row++)
             {
-                // Iterate over channels
-                for (int channel = 0; channel < 3; channel++)
-                {
                     // Get channel value at this position
                     int color = image.at<cv::Vec3b>(column, row)[channel];
                     // Scale it
                     int new_value = scalars[channel] * color;
                     // Clip it at 255
-                    int new_value_limeted = 255 ^ ((new_value ^ 255) & -(new_value < 255)); // min(x, 255)
+                    int new_value_limited = 255 ^ ((new_value ^ 255) & -(new_value < 255)); // min(x, 255)
                     // Set the new value in the image
-                    image.at<cv::Vec3b>(column, row)[channel] = new_value_limeted;
+                    image.at<cv::Vec3b>(column, row)[channel] = new_value_limited;
                 }
             }
         } 
@@ -211,6 +215,10 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
     {
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
     }
+    auto stop = std::chrono::high_resolution_clock::now(); 
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
+    
+    std::cout << "Time taken by function: " << duration.count() << " microseconds" << std::endl; 
 }
 
 void WhiteBalancer::callbackRC(white_balancer::WhiteBalanceConfig &config, uint32_t level) {
