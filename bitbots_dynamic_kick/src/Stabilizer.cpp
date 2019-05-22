@@ -63,7 +63,12 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
     bio_ik::PoseGoal* bio_ik_trunk_goal = new bio_ik::PoseGoal();
     bio_ik_trunk_goal->setPosition(support_foot_goal.getOrigin());
     bio_ik_trunk_goal->setOrientation(support_foot_goal.getRotation());
-    bio_ik_trunk_goal->setLinkName("l_sole");
+    if(is_left_kick){
+        bio_ik_trunk_goal->setLinkName("r_sole");
+    } else{
+        bio_ik_trunk_goal->setLinkName("l_sole");
+    }
+    
 
     bio_ik::PoseGoal* bio_ik_flying_foot_goal = new bio_ik::PoseGoal();
     bio_ik_flying_foot_goal->setPosition(flying_foot_goal.getOrigin());
@@ -73,7 +78,13 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
     } else {
         bio_ik_flying_foot_goal->setLinkName("r_sole");
     }
-    ik_options.goals.emplace_back(bio_ik_flying_foot_goal);
+
+    /* switches order of flying and trunk goal according to is_left_kick */
+    if (is_left_kick){
+        ik_options.goals.emplace_back(bio_ik_trunk_goal);
+    } else {
+        ik_options.goals.emplace_back(bio_ik_flying_foot_goal);
+    }
 
     /* call bio_ik on the correct foot to calculate goal_state */
     bool success = m_goal_state->setFromIK(m_rleg_joints_group,
@@ -83,7 +94,12 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
                                            moveit::core::GroupStateValidityCallbackFn(),
                                            ik_options);
     ik_options.goals.clear();
-    ik_options.goals.emplace_back(bio_ik_trunk_goal);
+
+    if (is_left_kick){
+        ik_options.goals.emplace_back(bio_ik_flying_foot_goal);
+    } else {
+        ik_options.goals.emplace_back(bio_ik_trunk_goal);
+    }
     success = success && m_goal_state->setFromIK(m_lleg_joints_group,
                                                  EigenSTL::vector_Isometry3d(),
                                                  std::vector<std::string>(),
