@@ -23,12 +23,20 @@
   <depend>geometry_msgs</depend>
   <depend>message_runtime</depend>
   <depend>message_generation</depend>
+  <depend>actionlib</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>beignet</depend>
+  <depend>tf2</depend>
   <depend>bitbots_msgs</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>wolves_image_provider</depend>
-  <depend>actionlib</depend>
   <depend>python-cv_bridge</depend>
-  
+  <depend>python-pyopencl</depend>
+  <depend>python-numpy</depend>
+  <depend>python-silx</depend>
+  <depend>python-opencv-python</depend>
+  <depend>python-pyyaml</depend>
+  <depend>python-matplotlib</depend>
 
   <export>
     <bitbots_documentation>
