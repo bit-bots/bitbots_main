@@ -2,6 +2,7 @@
 import rospy
 import rospkg
 import actionlib
+import math
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from dynamic_reconfigure.server import Server
@@ -9,6 +10,7 @@ from humanoid_league_msgs.msg import VisualCompassRotation
 from bitbots_visual_compass.cfg import VisualCompassConfig
 from bitbots_msgs.msg import VisualCompassSetGroundTruthAction
 from worker import VisualCompass
+# TODO rosdep
 import tf2_ros as tf2
 from tf2_geometry_msgs import PoseStamped
 from tf.transformations import euler_from_quaternion
@@ -49,7 +51,8 @@ class VisualCompassROSHandler():
         self.image_dict = {}
         self.compass = None
 
-        self.my_frame = 'base_footprint'
+        self.base_frame = 'base_footprint'
+        self.camera_frame = 'camera_optical_frame'
         self.tf_buffer = tf2.Buffer()
         self.listener = tf2.TransformListener(self.tf_buffer)
 
@@ -110,11 +113,13 @@ class VisualCompassROSHandler():
         if self.image_dict:
             # TODO: check timestamps
 
-            orientation = self.tf_buffer.lookup_transform(self.my_frame, "base_footprint", goal.header.stamp).tranform.orientation
+            orientation = self.tf_buffer.lookup_transform(self.base_frame, self.camera_frame, goal.header.stamp).transform.rotation
+            yaw_angle = euler_from_quaternion(( orientation.x, 
+                                                orientation.y, 
+                                                orientation.z, 
+                                                orientation.w))[2] + 0.5 * math.pi
 
-            angle = euler_from_quaternion(orientation)[2]
-
-            self.compass.set_truth(angle, self.image_dict['image'])
+            self.compass.set_truth(yaw_angle, self.image_dict['image'])
             self.actionServer.set_succeeded()
             self.sample_count += 1
             self.check_sample_count()
