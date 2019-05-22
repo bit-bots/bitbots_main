@@ -11,6 +11,7 @@ from bitbots_msgs.msg import VisualCompassSetGroundTruthAction
 from worker import VisualCompass
 import tf2_ros as tf2
 from tf2_geometry_msgs import PoseStamped
+from tf.transformations import euler_from_quaternion
 
 
 # TODO: update docs in action
@@ -108,10 +109,12 @@ class VisualCompassROSHandler():
 
         if self.image_dict:
             # TODO: check timestamps
-            joint = ...
 
-            orientation = self.tf_buffer.lookup_transform(self.my_frame, joint, goal.header.stamp).tranform.orientation
-            self.compass.set_truth(orientation, self.image_dict['image'])
+            orientation = self.tf_buffer.lookup_transform(self.my_frame, "base_footprint", goal.header.stamp).tranform.orientation
+
+            angle = euler_from_quaternion(orientation)[2]
+
+            self.compass.set_truth(angle, self.image_dict['image'])
             self.actionServer.set_succeeded()
             self.sample_count += 1
             self.check_sample_count()
