@@ -9,10 +9,11 @@ from humanoid_league_msgs.msg import VisualCompassRotation
 from bitbots_visual_compass.cfg import VisualCompassConfig
 from bitbots_msgs.msg import VisualCompassSetGroundTruthAction
 from worker import VisualCompass
+import tf2_ros as tf2
+from tf2_geometry_msgs import PoseStamped
 
 
-# TODO binary still usefull?
-
+# TODO: update docs in action
 
 class VisualCompassROSHandler():
     # type: () -> None
@@ -46,6 +47,10 @@ class VisualCompassROSHandler():
         self.config = {}
         self.image_dict = {}
         self.compass = None
+
+        self.my_frame = 'base_footprint'
+        self.tf_buffer = tf2.Buffer()
+        self.listener = tf2.TransformListener(self.tf_buffer)
 
         # Register publisher of 'visual_compass'-messages
         self.pub_compass = rospy.Publisher(
@@ -100,9 +105,13 @@ class VisualCompassROSHandler():
         return self.config
 
     def set_truth_callback(self, goal):
+
         if self.image_dict:
             # TODO: check timestamps
-            self.compass.set_truth(goal.orientation, self.image_dict['image'])
+            joint = ...
+
+            orientation = self.tf_buffer.lookup_transform(self.my_frame, joint, goal.header.stamp).tranform.orientation
+            self.compass.set_truth(orientation, self.image_dict['image'])
             self.actionServer.set_succeeded()
             self.sample_count += 1
             self.check_sample_count()
