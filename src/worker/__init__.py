@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-import rospy
+# import rospy
 
 from .interface import VisualCompass as VisualCompassInterface
 from .binary import BinaryCompass
@@ -33,7 +33,7 @@ class VisualCompass(VisualCompassInterface):
                 raise AssertionError(self.compassType + ": Compass not available!")
             compass_class = self.compassClasses[self.compassType]
             self.compass = compass_class(config)
-            rospy.loginfo("Compass type: %(compass_type)s is loaded." % {'compass_type': self.compassType})
+            #rospy.loginfo("Compass type: %(compass_type)s is loaded." % {'compass_type': self.compassType})
 
     def set_truth(self, angle, image):
         return self.compass.set_truth(angle, image)
