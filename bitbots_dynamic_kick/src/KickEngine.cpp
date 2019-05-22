@@ -59,7 +59,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
                               const geometry_msgs::Pose &trunk_pose) {
     /*
      * Add current position, target position and current position to splines so that they describe a smooth
-     * curve to the and back
+     * curve to the ball and back
      */
     /* Splines:
      * - stand
