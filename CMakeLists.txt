@@ -5,10 +5,10 @@ project(bitbots_visual_compass)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
-  sensor_msgs
   std_msgs
-  humanoid_league_msgs
+  sensor_msgs
   geometry_msgs
+  humanoid_league_msgs
   message_generation
   dynamic_reconfigure
 )
