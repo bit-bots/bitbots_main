@@ -55,24 +55,12 @@ private:
     void loop_engine();
 
     /**
-     * Transform a newly received goal into base_link frame
-     * @param pose Input pose
-     * @return Transformed goal pose if transformation was successful
-     */
-    std::optional<geometry_msgs::Pose> transform_goal(const geometry_msgs::PoseStamped& pose);
-
-    /**
      * Retrieve current feet_positions in base_link frame
      * @param trunk_pose Output left-foot pose. In base_link frame
      * @param r_foot_pose Output right-foot pose. In base_link frame
      * @return Whether retrieval was successful or not
      */
     bool get_foot_poses(geometry_msgs::Pose &trunk_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time);
-
-    /**
-     * Normalize the received kick_movement vector
-     */
-    tf2::Vector3 normalize_speed(geometry_msgs::Vector3 kick_movement);
 
     /**
      * Publish goals to ROS

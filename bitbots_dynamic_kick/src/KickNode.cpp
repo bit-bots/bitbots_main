@@ -33,63 +33,38 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     ROS_INFO("Accepted new goal");
     m_engine.reset();
 
-    /* Only continue if necessary information is successfully retrieved */
-    if (std::optional<geometry_msgs::Pose> transformed_goal = transform_goal(goal->ball_position)) {
-        geometry_msgs::Pose trunk_pose, r_foot_pose;
-        if (get_foot_poses(trunk_pose, r_foot_pose, goal->ball_position.header.stamp)) {
+    geometry_msgs::Pose trunk_pose, r_foot_pose;
+    if (get_foot_poses(trunk_pose, r_foot_pose, goal->ball_position.header.stamp)) {
 
-            /* Set engines goal and start calculating */
-            m_engine.set_goal(transformed_goal.value(),
-                    this->normalize_speed(goal->kick_movement),
-                    trunk_pose,
-                    r_foot_pose,
-                    /* is_left_kick */ false);
-            loop_engine();
+        /* Set engines goal and start calculating */
+        m_engine.set_goal(goal->ball_position,
+                goal->kick_movement,
+                trunk_pose,
+                r_foot_pose,
+                /* is_left_kick */ false);
+        loop_engine();
 
-            /* Figure out the reason why loop_engine() returned and act accordingly */
-            if (m_server.isPreemptRequested()) {
-                /* Confirm that we canceled the previous goal */
-                ROS_INFO("Cancelled old goal");
-                bitbots_msgs::KickResult result;
-                result.result = bitbots_msgs::KickResult::ABORTED;
-                m_server.setPreempted(result);
-            } else {
-                /* Publish results */
-                ROS_INFO("Done kicking ball");
-                bitbots_msgs::KickResult result;
-                result.result = bitbots_msgs::KickResult::SUCCESS;
-                m_server.setSucceeded();
-            }
-        }
-        else {
-            /* Feet positions were not successfully retrieved */
+        /* Figure out the reason why loop_engine() returned and act accordingly */
+        if (m_server.isPreemptRequested()) {
+            /* Confirm that we canceled the previous goal */
+            ROS_INFO("Cancelled old goal");
             bitbots_msgs::KickResult result;
-            result.result = bitbots_msgs::KickResult::REJECTED;
-            m_server.setAborted(result, "Transformation of feet into base_link not possible");
+            result.result = bitbots_msgs::KickResult::ABORTED;
+            m_server.setPreempted(result);
+        } else {
+            /* Publish results */
+            ROS_INFO("Done kicking ball");
+            bitbots_msgs::KickResult result;
+            result.result = bitbots_msgs::KickResult::SUCCESS;
+            m_server.setSucceeded();
         }
-    } else {
-        /* Goal was not successfully transformed */
+    }
+    else {
+        /* Feet positions were not successfully retrieved */
         bitbots_msgs::KickResult result;
         result.result = bitbots_msgs::KickResult::REJECTED;
-        m_server.setAborted(result, "Transformation of goal into base_link not possible");
+        m_server.setAborted(result, "Transformation of feet into base_link not possible");
     }
-}
-
-std::optional<geometry_msgs::Pose> KickNode::transform_goal(const geometry_msgs::PoseStamped& pose) {
-    /* Lookup transform from pose's frame to base_link */
-    geometry_msgs::TransformStamped goal_transform;
-    try {
-        goal_transform = m_tf_buffer.lookupTransform("base_link", pose.header.frame_id, ros::Time(0), ros::Duration(1.0));
-    } catch (tf2::TransformException& ex) {
-        ROS_ERROR("%s", ex.what());
-        return std::nullopt;
-    }
-
-    /* Do transformation of pose into base_link with previously retrieved transform */
-    geometry_msgs::PoseStamped transformed_pose_stamped;
-    tf2::doTransform(pose, transformed_pose_stamped, goal_transform);
-
-    return transformed_pose_stamped.pose;
 }
 
 bool KickNode::get_foot_poses(geometry_msgs::Pose &trunk_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time) {
@@ -170,12 +145,6 @@ void KickNode::publish_goals(const JointGoals& goals) {
     command.max_currents = pwms;
 
     m_joint_goal_publisher.publish(command);
-}
-
-tf2::Vector3 KickNode::normalize_speed(geometry_msgs::Vector3 kick_movement) {
-    tf2::Vector3 tf2_vector = tf2::Vector3(kick_movement.x, kick_movement.y, kick_movement.z);
-    tf2_vector.normalize();
-    return tf2_vector;
 }
 
 int main(int argc, char *argv[]) {
