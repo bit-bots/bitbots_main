@@ -70,13 +70,13 @@ if __name__ == "__main__":
     goal.ball_position.header.stamp = rospy.Time.now()
     goal.ball_position.header.frame_id = 'base_footprint'
     goal.ball_position.pose.position.x = 0.2
-    goal.ball_position.pose.position.y = -0.1
-    goal.ball_position.pose.position.z = 0.15
+    goal.ball_position.pose.position.y = -0.2
+    goal.ball_position.pose.position.z = -1
     goal.ball_position.pose.orientation.w = 1
 
     goal.kick_movement.header.stamp = rospy.Time.now()
     goal.kick_movement.header.frame_id = 'base_footprint'
-    goal.kick_movement.vector = Vector3(1.0, 1.0, 1.0)
+    goal.kick_movement.vector = Vector3(1, 0, -1)
 
     client.send_goal(goal)
     client.done_cb = done_cb

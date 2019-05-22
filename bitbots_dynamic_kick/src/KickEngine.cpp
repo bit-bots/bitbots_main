@@ -16,7 +16,7 @@ bool KickEngine::set_goal(const geometry_msgs::PoseStamped &target_pose, const g
     if (transformed_goal) {
         m_goal_pose = transformed_goal->first;
         m_speed = transformed_goal->second;
-                     m_time = 0;
+        m_time = 0;
         m_is_left_kick = is_left_kick;
 
         /* Plan new splines according to new goal */
@@ -96,26 +96,30 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose,
         kick_foot_sign = -1;
     }
 
+    tf2::Vector3 kick_windup_point = calc_kick_windup_point();
+
 
     /* Flying foot position */
     m_flying_trajectories->get("pos_x").addPoint(fix0, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix1, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix2, 0);
-    m_flying_trajectories->get("pos_x").addPoint(fix4, m_params.kick_distance);
+    m_flying_trajectories->get("pos_x").addPoint(fix3, kick_windup_point.x());
+    m_flying_trajectories->get("pos_x").addPoint(fix4, m_goal_pose.position.x);
     m_flying_trajectories->get("pos_x").addPoint(fix5, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix6, 0);
 
-    // TODO adjust when the flying foot changes
     m_flying_trajectories->get("pos_y").addPoint(fix0, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix1, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix2, kick_foot_sign * m_params.foot_distance);
-    m_flying_trajectories->get("pos_y").addPoint(fix4, kick_foot_sign * m_params.foot_distance);
+    m_flying_trajectories->get("pos_y").addPoint(fix3, kick_windup_point.y());
+    m_flying_trajectories->get("pos_y").addPoint(fix4, m_goal_pose.position.y);
     m_flying_trajectories->get("pos_y").addPoint(fix5, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix6, kick_foot_sign * m_params.foot_distance);
 
     m_flying_trajectories->get("pos_z").addPoint(fix0, 0);
     m_flying_trajectories->get("pos_z").addPoint(fix1, 0);
     m_flying_trajectories->get("pos_z").addPoint(fix2, m_params.foot_rise);
+    m_flying_trajectories->get("pos_z").addPoint(fix3, m_params.foot_rise);
     m_flying_trajectories->get("pos_z").addPoint(fix4, m_params.foot_rise);
     m_flying_trajectories->get("pos_z").addPoint(fix5, m_params.foot_rise);
     m_flying_trajectories->get("pos_z").addPoint(fix6, 0);
@@ -135,10 +139,13 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose,
 
     /* Add these quaternions in the same fashion as before to our splines (current, target, current) */
     m_flying_trajectories->get("roll").addPoint(fix0, start_r);
+    m_flying_trajectories->get("roll").addPoint(fix3, start_r);
     m_flying_trajectories->get("roll").addPoint(fix6, start_r);
     m_flying_trajectories->get("pitch").addPoint(fix0, start_p);
+    m_flying_trajectories->get("pitch").addPoint(fix3, start_p);
     m_flying_trajectories->get("pitch").addPoint(fix6, start_p);
     m_flying_trajectories->get("yaw").addPoint(fix0, start_y);
+    m_flying_trajectories->get("yaw").addPoint(fix3, start_y);  // TODO Rotate into kicking direction
     m_flying_trajectories->get("yaw").addPoint(fix6, start_y);
 
     /* Trunk position */
@@ -244,6 +251,17 @@ std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Vector3>> KickEngine
     tf2::doTransform(kick_movement, transformed_kick_movement, kick_movement_transform);
 
     return std::pair(transformed_ball_position.pose, transformed_kick_movement.vector);
+}
+
+tf2::Vector3 KickEngine::calc_kick_windup_point() {
+    tf2::Vector3 kick_movement = tf2::Vector3(m_speed.x, m_speed.y, m_params.foot_rise).normalize();
+    kick_movement *= -m_params.kick_windup_distance;
+
+    tf2::Vector3 goal_tf2;
+    tf2::fromMsg(m_goal_pose.position, goal_tf2);
+    kick_movement += goal_tf2;
+
+    return kick_movement;
 }
 
 bool KickEngine::is_left_kick() {

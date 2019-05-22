@@ -117,6 +117,12 @@ private:
     void calc_splines(const geometry_msgs::Pose &r_foot_pose,
                       const geometry_msgs::Pose &trunk_pose);
 
+
+    /**
+     *  Calculate the point from which to perform the final kicking movement
+     */
+    tf2::Vector3 calc_kick_windup_point();
+
     geometry_msgs::PoseStamped get_current_pose(Trajectories spline_container);
 };
 
