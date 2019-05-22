@@ -51,7 +51,7 @@ public:
      * @param trunk_pose Current pose of left foot in base_link frame
      * @param r_foot_pose Current pos of right foot in base_link frame
      */
-    void set_goal(const geometry_msgs::Pose &target_pose, geometry_msgs::Vector3 speed,
+    void set_goal(const geometry_msgs::Pose &target_pose, tf2::Vector3 speed,
                   const geometry_msgs::Pose &trunk_pose, const geometry_msgs::Pose &r_foot_pose);
 
     /**
@@ -78,7 +78,7 @@ public:
 private:
     double m_time;
     geometry_msgs::Pose m_goal_pose;
-    geometry_msgs::Vector3 m_speed;
+    tf2::Vector3 m_speed;
     std::optional<Trajectories> m_trunk_trajectories, m_flying_trajectories;
     Stabilizer m_stabilizer;
     KickParams m_params;

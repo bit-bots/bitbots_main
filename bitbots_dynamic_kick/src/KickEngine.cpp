@@ -8,7 +8,7 @@ void KickEngine::reset() {
     m_flying_trajectories.reset();
 }
 
-void KickEngine::set_goal(const geometry_msgs::Pose &target_pose, geometry_msgs::Vector3 speed,
+void KickEngine::set_goal(const geometry_msgs::Pose &target_pose, tf2::Vector3 speed,
                           const geometry_msgs::Pose &trunk_pose, const geometry_msgs::Pose &r_foot_pose) {
     /* Save given goals because we reuse them later */
     m_goal_pose = target_pose;

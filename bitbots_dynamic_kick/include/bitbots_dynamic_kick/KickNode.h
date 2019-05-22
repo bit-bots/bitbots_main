@@ -70,6 +70,11 @@ private:
     bool get_foot_poses(geometry_msgs::Pose &trunk_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time);
 
     /**
+     * Normalize the received kick_movement vector
+     */
+    tf2::Vector3 normalize_speed(geometry_msgs::Vector3 kick_movement);
+
+    /**
      * Publish goals to ROS
      */
     void publish_goals(const JointGoals& goals);
