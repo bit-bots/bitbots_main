@@ -9,6 +9,7 @@ import rospy
 import actionlib
 
 from actionlib_msgs.msg import GoalStatus
+from geometry_msgs.msg import Vector3
 from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
 
 showing_feedback = False
@@ -66,13 +67,13 @@ if __name__ == "__main__":
     print()
 
     goal = KickGoal()
-    goal.foot_target.header.stamp = rospy.Time.now()
-    goal.foot_target.header.frame_id = 'base_footprint'
-    goal.foot_target.pose.position.x = 0.1
-    goal.foot_target.pose.position.y = -0.2
-    goal.foot_target.pose.position.z = 0.15
-    goal.foot_target.pose.orientation.w = 1
-    goal.foot_speed = random.randrange(1000, 5000) / 1000  # random between 1.0 and 5.0
+    goal.ball_position.header.stamp = rospy.Time.now()
+    goal.ball_position.header.frame_id = 'base_footprint'
+    goal.ball_position.pose.position.x = 0.1
+    goal.ball_position.pose.position.y = -0.2
+    goal.ball_position.pose.position.z = 0.15
+    goal.ball_position.pose.orientation.w = 1
+    goal.kick_movement = Vector3(1.0, 1.0, 1.0)
     client.send_goal(goal)
     client.done_cb = done_cb
     client.feedback_cb = feedback_cb
