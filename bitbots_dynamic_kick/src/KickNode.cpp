@@ -32,12 +32,12 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     m_engine.reset();
 
     /* Only continue if necessary information is successfully retrieved */
-    if (std::optional<geometry_msgs::Pose> transformed_goal = transform_goal(goal->foot_target)) {
+    if (std::optional<geometry_msgs::Pose> transformed_goal = transform_goal(goal->ball_position)) {
         geometry_msgs::Pose trunk_pose, r_foot_pose;
-        if (get_foot_poses(trunk_pose, r_foot_pose, goal->foot_target.header.stamp)) {
+        if (get_foot_poses(trunk_pose, r_foot_pose, goal->ball_position.header.stamp)) {
 
             /* Set engines goal and start calculating */
-            m_engine.set_goal(transformed_goal.value(), goal->foot_speed, trunk_pose, r_foot_pose);
+            m_engine.set_goal(transformed_goal.value(), goal->kick_movement, trunk_pose, r_foot_pose);
             loop_engine();
 
             /* Figure out the reason why loop_engine() returned and act accordingly */
@@ -124,7 +124,7 @@ void KickNode::loop_engine() {
             bitbots_msgs::KickFeedback feedback;
             feedback.percent_done = m_engine.get_percent_done();
             feedback.chosen_foot = m_engine.is_left_kick() ?
-                                   bitbots_msgs::KickFeedback::LEFT : bitbots_msgs::KickFeedback::RIGHT;
+                                   bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
             m_server.publishFeedback(feedback);
             publish_goals(goals.value());
             // TODO Publish support-foot
