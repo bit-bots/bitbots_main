@@ -3,6 +3,8 @@ from __future__ import absolute_import
 import colorsys
 import math
 import statistics
+import cv2
+import numpy as np
 from .matcher import Matcher
 from .interface import VisualCompass as VisualCompassInterface
 from .debug import Debug
@@ -28,7 +30,7 @@ from .angle_tagger import AngleTagger
 class MultipleCompass(VisualCompassInterface):
     def __init__(self, config):
         # ([keypoints], [descriptors])
-        self.ground_truth = (None, None)
+        self.ground_truth = ([], [])
         self.state = (None, None)
         self.config = config
         self.matcher = None
@@ -54,13 +56,14 @@ class MultipleCompass(VisualCompassInterface):
             self.ground_truth[1].extend(descriptors)
 
     def _compute_state(self, matching_keypoints):
-        angles = list(map(lambda x: x[3], matching_keypoints))
+        angles = list(map(lambda x: x.angle, matching_keypoints))
         angles.sort()
         length = len(angles)
         if length < 2:
             return .0, .0
         median = statistics.median(angles)
         confidence = statistics.stdev(angles) / math.pi
+        confidence = confidence ** (1./5)
         return median, confidence
 
     def process_image(self, image, resultCB=None, debugCB=None):
@@ -69,14 +72,15 @@ class MultipleCompass(VisualCompassInterface):
         curr_keypoints, curr_descriptors = self.matcher.get_keypoints(image)
         #matches = self._compare(keypoints, descriptors)
 
-        angle_keypoints = self.matcher.match(self.ground_truth[0], self.ground_truth[1], curr_descriptors)
+        angle_keypoints = self.matcher.match(self.ground_truth[0], np.array(self.ground_truth[1]), curr_descriptors)
 
         self.state = self._compute_state(angle_keypoints)
 
         if resultCB is not None:
             resultCB(*self.state)
 
-        if debugCB is not None:
+        if False:
+        #if debugCB is not None:
             matches = self.matcher.match(curr_keypoints, curr_descriptors, self.ground_truth[1])
             image = self.matcher.debug_keypoints(image, curr_keypoints, (0,0,0))
 

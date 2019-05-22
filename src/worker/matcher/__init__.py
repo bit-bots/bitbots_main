@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import cv2
-import rospy
+# import rospy
 
 from .orb_matcher import OrbMatcher
 from .sift_matcher import SiftMatcher
@@ -40,4 +40,4 @@ class Matcher (MatcherInterface):
                 raise AssertionError(self.matcherType + ": Matcher not available!")
             matcher_class = self.matcherClasses[self.matcherType]
             self.matcher = matcher_class(config)
-            rospy.loginfo("Matcher: %(matcher_type)s is loaded." % {'matcher_type': self.matcherType})
+            # rospy.loginfo("Matcher: %(matcher_type)s is loaded." % {'matcher_type': self.matcherType})

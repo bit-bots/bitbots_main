@@ -16,7 +16,7 @@ class AngleTagger:
         return [self.tag_one_keypoint(offset, keypoints[i]) for i in range(len(keypoints))]
 
     def tag_one_keypoint(self, offset, keypoint):
-        vector = np.array(keypoint.pt.x, keypoint.pt.y, 1)
+        vector = np.array([keypoint.pt[0], keypoint.pt[1], 1.])
         x = self.inv_rot_mat.dot(vector)[0]
-        angle = (math.atan(x) + offset) % math.tau
+        angle = (math.atan(x) + offset) % (math.pi * 2)
         return cv2.KeyPoint(.0, .0, offset, angle)
