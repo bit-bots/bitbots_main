@@ -34,8 +34,8 @@
   <depend>python-pyopencl</depend>
   <depend>python-numpy</depend>
   <depend>python-silx</depend>
-  <depend>python-opencv-python</depend>
-  <depend>python-pyyaml</depend>
+  <depend>python-opencv</depend>
+  <depend>python-yaml</depend>
   <depend>python-matplotlib</depend>
 
   <export>

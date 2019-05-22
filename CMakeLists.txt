@@ -25,7 +25,24 @@ generate_dynamic_reconfigure_options(
 )
 
 catkin_package(
-  CATKIN_DEPENDS humanoid_league_msgs rospy rospkg std_msgs geometry_msgs sensor_msgs wolves_image_provider bitbots_msgs message_generation dynamic_reconfigure
+  CATKIN_DEPENDS
+  rospy
+  rospkg
+  std_msgs
+  sensor_msgs
+  geometry_msgs
+  message_generation
+  dynamic_reconfigure
+  bitbots_msgs
+  humanoid_league_msgs
+  wolves_image_provider
+  python-cv_bridge
+  python-pyopencl
+  python-numpy
+  python-silx
+  python-opencv
+  python-yaml
+  python-matplotlib
 )
 
 include_directories(
