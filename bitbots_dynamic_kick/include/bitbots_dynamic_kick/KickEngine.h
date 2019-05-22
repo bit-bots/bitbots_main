@@ -21,9 +21,11 @@ public:
     double foot_rise_trunk_movement;
     double trunk_height = 0.4;
     double foot_distance = 0.12;
+    double kick_windup_distance = 0.2;
 
     double move_trunk_time = 1;
     double raise_foot_time = 1;
+    double move_to_ball_time = 1;
     double kick_time = 1;
     double move_back_time = 1;
     double lower_foot_time = 1;
