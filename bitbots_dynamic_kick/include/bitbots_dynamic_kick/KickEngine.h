@@ -54,7 +54,8 @@ public:
      * @param r_foot_pose Current pos of right foot in base_link frame
      */
     void set_goal(const geometry_msgs::Pose &target_pose, tf2::Vector3 speed,
-                  const geometry_msgs::Pose &trunk_pose, const geometry_msgs::Pose &r_foot_pose);
+                  const geometry_msgs::Pose &trunk_pose, const geometry_msgs::Pose &r_foot_pose,
+                  bool is_left_kick);
 
     /**
      * Reset this KickEngine completely, removing the goal, all splines and thereby stopping all output
@@ -81,6 +82,7 @@ private:
     double m_time;
     geometry_msgs::Pose m_goal_pose;
     tf2::Vector3 m_speed;
+    bool m_is_left_kick;
     std::optional<Trajectories> m_trunk_trajectories, m_flying_trajectories;
     Stabilizer m_stabilizer;
     KickParams m_params;

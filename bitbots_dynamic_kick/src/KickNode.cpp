@@ -42,8 +42,8 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
             m_engine.set_goal(transformed_goal.value(),
                     this->normalize_speed(goal->kick_movement),
                     trunk_pose,
-                    r_foot_pose
-                    );
+                    r_foot_pose,
+                    /* is_left_kick */ false);
             loop_engine();
 
             /* Figure out the reason why loop_engine() returned and act accordingly */
