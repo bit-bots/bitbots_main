@@ -55,14 +55,14 @@ class SiftMatcher(Matcher):
             self.initSiftImg(image)
         
         features = self.siftPlan.keypoints(image)
-        descriptor = features['desc']
+        descriptors = features['desc']
         keypoints = features[['x', 'y', 'scale', 'angle']]
         keypoints = keypoints.tolist()
         keypoints = list(map(lambda keypoint: cv2.KeyPoint( float(keypoint[0]), 
                                                             float(keypoint[1]),
                                                             float(keypoint[2]),
                                                             float(keypoint[3])), keypoints))
-        return keypoints, descriptor
+        return keypoints, descriptors
 
     def debug_keypoints(self, image, debug_keypoints, color):
         return cv2.drawKeypoints(image, debug_keypoints, None, color=color, flags=0)

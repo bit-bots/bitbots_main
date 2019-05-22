@@ -9,7 +9,7 @@ ROS_handler_action_server_name: 'VisualCompassSetGroundTruth'
 
 # compass
 # Choose from 'binary' or 'multiple'
-compass_type: 'binary'
+compass_type: 'multiple'
 
 # Choose from: 'akaze', 'orb', 'sift'
 compass_matcher: 'sift'
@@ -17,7 +17,7 @@ compass_matcher: 'sift'
 # binary
 
 # multiple
-compass_multiple_sample_count: 2
+compass_multiple_sample_count: 8
 
 # orb
 compass_orb_max_feature_count: 1000

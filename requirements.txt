@@ -4,3 +4,4 @@ silx
 opencv-python
 pyyaml
 matplotlib
+statistics
