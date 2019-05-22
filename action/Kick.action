@@ -1,6 +1,6 @@
 # goal definition
 geometry_msgs/PoseStamped ball_position
-geometry_msgs/Vector3 kick_movement
+geometry_msgs/Vector3Stamped kick_movement
 
 ---
 # result definition
