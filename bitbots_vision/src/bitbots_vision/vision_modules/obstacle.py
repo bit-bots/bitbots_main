@@ -136,23 +136,17 @@ class ObstacleDetector(CandidateFinder):
             # self._runtime_evaluator.start_timer()  # for runtime testing
             self._obstacles = list()
             obstacle_begin = None
-            """
-            the ordinary field_boundary and convex_field_boundary consist out of a limited amount of points (usually 30).
-            the full_field_boundary/full_convex_field_boundary have interpolated points
-             to have as many points as the width of the picture.
-            """
+            # the ordinary field_boundary and convex_field_boundary consist out of a limited amount of points (usually 30).
+            # the full_field_boundary/full_convex_field_boundary have interpolated points
+            # to have as many points as the width of the picture.
             full_convex_field_boundary = np.array(self._field_boundary_detector.get_full_convex_field_boundary()).astype(int)
             full_field_boundary = np.array(self._field_boundary_detector.get_full_field_boundary()).astype(int)
-            """
-            calculates the distance between the points of the full_field_boundary and full_convex_field_boundary
-            field_boundary_distance is a list of distances with the index being the corresponding x-coordinate
-            """
+            # calculates the distance between the points of the full_field_boundary and full_convex_field_boundary
+            # field_boundary_distance is a list of distances with the index being the corresponding x-coordinate
             field_boundary_distance = full_field_boundary-full_convex_field_boundary
-            """
-            threshold determines the minimum distance of the two field_boundarys for an object to be found
-            minWidth determines the minimum width of potential objects to be identified as candidates
-            step is the length of one step in pixel: lager step -> faster, but more inaccurate
-            """
+            # threshold determines the minimum distance of the two field_boundarys for an object to be found
+            # minWidth determines the minimum width of potential objects to be identified as candidates
+            # step is the length of one step in pixel: lager step -> faster, but more inaccurate
             # Todo: value of minWidth and step has to be tested
             threshold = self._field_boundary_diff_threshold
             min_width = self._candidate_min_width  # minimal width of an acceptable candidate in pixels
@@ -190,7 +184,7 @@ class ObstacleDetector(CandidateFinder):
             # self._runtime_evaluator.print_timer()  # for runtime testing
         return self._obstacles
 
-    def _obstacle_detector_distance(self):
+    def _obstacle_detector_distance(self):  # TODO: better name than 'distance'
         # type: () -> list[Candidate]
         """
         finds candidates using the difference of the convex field_boundary and the normal field_boundary.

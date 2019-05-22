@@ -9,15 +9,15 @@ from .evaluator import RuntimeEvaluator
 
 class FieldBoundaryDetector:
 
-    def __init__(self, field_color_detector, config, debug_printer, runtime_evaluator=None, dyn_color_detector=False):
+    def __init__(self, field_color_detector, config, debug_printer, runtime_evaluator=None, used_by_dyn_color_detector=False):
         # type: (np.matrix, ColorDetector, dict, DebugPrinter, RuntimeEvaluator, bool) -> None
         """
         This module can compute different versions of the field boundary.
-        :param field_color_detector: Todo: beschreiben
+        :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
-        :param debug_printer: outputs debug messages, necessary only for debug Todo: WIP
+        :param debug_printer: outputs debug messages, necessary only for debug
         :param runtime_evaluator: can be used to compute runtime of methods
-        :param dyn_color_detector: True when FieldBoundaryDetector used by DynamicColorSpace
+        :param used_by_dyn_color_detector: True when FieldBoundaryDetector is used by DynamicColorSpace
         """
         # set variables:
         self._image = None
@@ -30,7 +30,7 @@ class FieldBoundaryDetector:
         self._field_color_detector = field_color_detector
         self._debug_printer = debug_printer
         self._runtime_evaluator = runtime_evaluator
-        self._dyn_color_detector = dyn_color_detector
+        self._used_by_dyn_color_detector = used_by_dyn_color_detector
         # init config:
         self._x_steps = config['field_boundary_finder_horizontal_steps']
         self._y_steps = config['field_boundary_finder_vertical_steps']
@@ -42,7 +42,7 @@ class FieldBoundaryDetector:
         self._min_precise_pixel = config['field_boundary_finder_min_precision_pix']
         self._head_joint_threshold = config['field_boundary_finder_head_joint_threshold']
         # changes the search method when the FieldBoundaryDetector is used by the dynamic colorspace
-        if dyn_color_detector:
+        if used_by_dyn_color_detector:
             self._search_method = config['dynamic_color_space_field_boundary_finder_search_method']
         else:
             self._search_method = config['field_boundary_finder_search_method']
@@ -65,19 +65,19 @@ class FieldBoundaryDetector:
         self._head_joint_position = head_joint_states.position[index]
 
     def get_mask(self):
-        # type: () -> mask
+        # type: () -> np.array
         """
-        :return: #todo: was ist das
+        :return: np.array
         """
         if self._mask is None:
             self._mask = self._compute_mask()
         return self._mask
 
     def _compute_mask(self):
-        # type: () ->
+        # type: () -> np.array
         """
-        #todo: was macht das, was ist das ergebnis?
-        :return:
+        calculates a mask that contains white pixels below the field-boundary
+        :return: np.array
         """
         shape = np.shape(self._image)
         img_size = (shape[0], shape[1])
@@ -85,7 +85,7 @@ class FieldBoundaryDetector:
         canvas = np.ones(img_size, dtype=np.uint8) * 255
         hpoints = np.array([[(0, 0)] + self.get_field_boundary_points() + [(shape[1] - 1, 0)]])
         # Blacks out the part over the field_boundary
-        return cv2.fillPoly(canvas, hpoints, 000)
+        return cv2.fillPoly(canvas, hpoints, 0)
 
     def get_field_boundary_points(self, offset=0):
         # type: (int) -> list
@@ -464,7 +464,7 @@ class FieldBoundaryDetector:
 
         return stack
 
-    def _graham_point_sort(self, p, p0): # todo: warum das hier als extra methode?
+    def _graham_point_sort(self, p, p0):
         '''
         used to sort the points given to Graham's convex hull algorithm
         returns the cosine of the angle between the vector p0->p and the
@@ -472,7 +472,7 @@ class FieldBoundaryDetector:
         '''
         return -(p0[1] - p[1]) / (np.sqrt((p[0] - p0[0]) ** 2 + (p[1] - p0[1]) ** 2))
 
-    def _ccw(self, p1, p2, p3): # todo: why this as extra method
+    def _ccw(self, p1, p2, p3):
         '''
         returns whether the given points p1, p2 and p3 are 
         counter-clockwise (returns a value > 0)
@@ -481,7 +481,11 @@ class FieldBoundaryDetector:
         '''
         return (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0])
 
-    def _mask_field_boundary(self): #todo: ist das hier eine alte version der fieldboundary detection?
+    def _mask_field_boundary(self):
+        """
+        This is an old version that is not used anymore
+        :return:
+        """
         mask = self._color_detector.mask_image(self._image)
         mask = cv2.morphologyEx(
             mask,
@@ -504,9 +508,11 @@ class FieldBoundaryDetector:
             field_boundary_points.append((x, firstgreen))
         return field_boundary_points
 
-    def _precise_field_boundary(self): #todo: ist das hier eine alte version der fieldboundary detection?
+    def _precise_field_boundary(self):
         # type: () -> list
         """
+        This is an old version that is not used anymore
+
         Calculates the field_boundary coordinates in a precise way, but less fast and efficient.
         It checks after having found a field_boundary if coordinates around this point are also green
         and thus under the field_boundary.
