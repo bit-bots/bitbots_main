@@ -19,11 +19,16 @@
   <depend>rospy</depend>
   <depend>rospkg</depend>
   <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>message_runtime</depend>
+  <depend>message_generation</depend>
   <depend>bitbots_msgs</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>wolves_image_provider</depend>
+  <depend>actionlib</depend>
+  <depend>python-cv_bridge</depend>
+  
 
   <export>
     <bitbots_documentation>
