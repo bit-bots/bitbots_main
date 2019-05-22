@@ -2,3 +2,4 @@ test_data/
 .idea/
 venv/
 *.pyc
+config/config.yaml
