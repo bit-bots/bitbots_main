@@ -18,8 +18,10 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
     params.trunk_kick_roll = config.trunk_kick_roll;
     params.trunk_height = config.trunk_height;
     params.foot_distance = config.foot_distance;
+    params.kick_windup_distance = config.kick_windup_distance;
     params.move_trunk_time = config.move_trunk_time;
     params.raise_foot_time = config.raise_foot_time;
+    params.kick_windup_distance = config.kick_windup_distance;
     params.kick_time = config.kick_time;
     params.move_back_time = config.move_back_time;
     params.lower_foot_time = config.lower_foot_time;
@@ -32,12 +34,16 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     m_engine.reset();
 
     /* Only continue if necessary information is successfully retrieved */
-    if (std::optional<geometry_msgs::Pose> transformed_goal = transform_goal(goal->foot_target)) {
+    if (std::optional<geometry_msgs::Pose> transformed_goal = transform_goal(goal->ball_position)) {
         geometry_msgs::Pose trunk_pose, r_foot_pose;
-        if (get_foot_poses(trunk_pose, r_foot_pose, goal->foot_target.header.stamp)) {
+        if (get_foot_poses(trunk_pose, r_foot_pose, goal->ball_position.header.stamp)) {
 
             /* Set engines goal and start calculating */
-            m_engine.set_goal(transformed_goal.value(), goal->foot_speed, trunk_pose, r_foot_pose, /* is_left_kick */ false);
+            m_engine.set_goal(transformed_goal.value(),
+                    this->normalize_speed(goal->kick_movement),
+                    trunk_pose,
+                    r_foot_pose,
+                    /* is_left_kick */ false);
             loop_engine();
 
             /* Figure out the reason why loop_engine() returned and act accordingly */
@@ -124,7 +130,7 @@ void KickNode::loop_engine() {
             bitbots_msgs::KickFeedback feedback;
             feedback.percent_done = m_engine.get_percent_done();
             feedback.chosen_foot = m_engine.is_left_kick() ?
-                                   bitbots_msgs::KickFeedback::LEFT : bitbots_msgs::KickFeedback::RIGHT;
+                                   bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
             m_server.publishFeedback(feedback);
             publish_goals(goals.value());
             // TODO Publish support-foot
@@ -164,6 +170,12 @@ void KickNode::publish_goals(const JointGoals& goals) {
     command.max_currents = pwms;
 
     m_joint_goal_publisher.publish(command);
+}
+
+tf2::Vector3 KickNode::normalize_speed(geometry_msgs::Vector3 kick_movement) {
+    tf2::Vector3 tf2_vector = tf2::Vector3(kick_movement.x, kick_movement.y, kick_movement.z);
+    tf2_vector.normalize();
+    return tf2_vector;
 }
 
 int main(int argc, char *argv[]) {

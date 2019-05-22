@@ -8,8 +8,8 @@ void KickEngine::reset() {
     m_flying_trajectories.reset();
 }
 
-void KickEngine::set_goal(const geometry_msgs::Pose& target_pose, double speed,
-                          const geometry_msgs::Pose& trunk_pose, const geometry_msgs::Pose& r_foot_pose,
+void KickEngine::set_goal(const geometry_msgs::Pose &target_pose, tf2::Vector3 speed,
+                          const geometry_msgs::Pose &trunk_pose, const geometry_msgs::Pose &r_foot_pose,
                           bool is_left_kick) {
     /* Save given goals because we reuse them later */
     m_goal_pose = target_pose;
@@ -61,7 +61,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
                               const geometry_msgs::Pose &trunk_pose) {
     /*
      * Add current position, target position and current position to splines so that they describe a smooth
-     * curve to the and back
+     * curve to the ball and back
      */
     /* Splines:
      * - stand
@@ -88,7 +88,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
     {
         kick_foot_sign = -1;
     }
-    
+
 
     /* Flying foot position */
     m_flying_trajectories->get("pos_x").addPoint(fix0, 0);
