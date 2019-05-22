@@ -191,6 +191,10 @@ class TransformBall(object):
         else:
             goal.right_post = goal.left_post
 
+        if goal.left_post is None or goal.right_post is None:
+            rospy.logwarn('could not transform goal!')
+            return
+
         goal.center_direction.x = goal.left_post.x + (goal.right_post.x - goal.left_post.x) / 2.0
         goal.center_direction.y = goal.left_post.y + (goal.right_post.y - goal.left_post.y) / 2.0
 
