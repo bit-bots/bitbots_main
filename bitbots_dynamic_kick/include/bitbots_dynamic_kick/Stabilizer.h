@@ -23,19 +23,20 @@ public:
      * @param foot_goal Position which should be reached by the foot
      * @return JointGoals which describe required motor positions
      */
-    std::optional<JointGoals> stabilize(bool is_left_kick, geometry_msgs::PoseStamped trunk_goal_lsole, geometry_msgs::PoseStamped flying_foot_goal);
-
+    std::optional<JointGoals> stabilize(bool is_left_kick, geometry_msgs::PoseStamped trunk_goal_pose, geometry_msgs::PoseStamped flying_foot_goal_pose);
+    void use_stabilizing(bool use);
+    void use_minimal_displacement(bool use);
+    void set_stabilizing_weight(double weight);
 private:
     robot_state::RobotStatePtr m_goal_state;
-    tf2_ros::Buffer m_tf_buffer;
-    tf2_ros::TransformListener m_listener;
 
+    robot_model::RobotModelPtr m_kinematic_model;
     moveit::core::JointModelGroup* m_all_joints_group;
     moveit::core::JointModelGroup* m_legs_joints_group;
-    moveit::core::JointModelGroup* m_lleg_joints_group;
-    moveit::core::JointModelGroup* m_rleg_joints_group;
 
-
+    bool m_use_stabilizing;
+    bool m_use_minimal_displacement;
+    double m_stabilizing_weight;
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_STABILIZER_H

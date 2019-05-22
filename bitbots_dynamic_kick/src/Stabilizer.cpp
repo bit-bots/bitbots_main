@@ -1,6 +1,7 @@
 #include "bitbots_dynamic_kick/Stabilizer.h"
+#include "bitbots_dynamic_kick/DynamicBalancingGoal.h"
 
-Stabilizer::Stabilizer() : m_listener(m_tf_buffer) {
+Stabilizer::Stabilizer() {
     /* load MoveIt! model */
     robot_model_loader::RobotModelLoader robot_model_loader("/robot_description", false);
     robot_model_loader.loadKinematicsSolvers(
@@ -8,14 +9,12 @@ Stabilizer::Stabilizer() : m_listener(m_tf_buffer) {
                     new kinematics_plugin_loader::KinematicsPluginLoader()));
 
     /* Extract joint groups from loaded model */
-    moveit::core::RobotModelPtr kinematic_model = robot_model_loader.getModel();
-    m_all_joints_group = kinematic_model->getJointModelGroup("All");
-    m_legs_joints_group = kinematic_model->getJointModelGroup("Legs");
-    m_lleg_joints_group = kinematic_model->getJointModelGroup("LeftLeg");
-    m_rleg_joints_group = kinematic_model->getJointModelGroup("RightLeg");
+    m_kinematic_model = robot_model_loader.getModel();
+    m_all_joints_group = m_kinematic_model->getJointModelGroup("All");
+    m_legs_joints_group = m_kinematic_model->getJointModelGroup("Legs");
 
     /* Reset kinematic goal to default */
-    m_goal_state.reset(new robot_state::RobotState(kinematic_model));
+    m_goal_state.reset(new robot_state::RobotState(m_kinematic_model));
     m_goal_state->setToDefaultValues();
 
     /* We have to set some good initial position in the goal state,
@@ -28,7 +27,7 @@ Stabilizer::Stabilizer() : m_listener(m_tf_buffer) {
     }
 }
 
-std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs::PoseStamped trunk_goal_lsole, geometry_msgs::PoseStamped flying_foot_goal_lsole) {
+std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs::PoseStamped trunk_goal_pose, geometry_msgs::PoseStamped flying_foot_goal_pose) {
     /* ik options is basicaly the command which we send to bio_ik and which describes what we want to do */
     bio_ik::BioIKKinematicsQueryOptions ik_options;
     ik_options.replace = true;
@@ -60,17 +59,17 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
 
 
     /* construct the bio_ik Pose object which tells bio_ik what we want to achieve */
-    bio_ik::PoseGoal* bio_ik_trunk_goal = new bio_ik::PoseGoal();
+    auto *bio_ik_trunk_goal = new bio_ik::PoseGoal();
     bio_ik_trunk_goal->setPosition(support_foot_goal.getOrigin());
     bio_ik_trunk_goal->setOrientation(support_foot_goal.getRotation());
-    if(is_left_kick){
+    if (is_left_kick) {
         bio_ik_trunk_goal->setLinkName("r_sole");
-    } else{
+    } else {
         bio_ik_trunk_goal->setLinkName("l_sole");
     }
-    
+    bio_ik_trunk_goal->setWeight(0.1);
 
-    bio_ik::PoseGoal* bio_ik_flying_foot_goal = new bio_ik::PoseGoal();
+    auto *bio_ik_flying_foot_goal = new bio_ik::PoseGoal();
     bio_ik_flying_foot_goal->setPosition(flying_foot_goal.getOrigin());
     bio_ik_flying_foot_goal->setOrientation(flying_foot_goal.getRotation());
     if (is_left_kick) {
@@ -78,34 +77,28 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
     } else {
         bio_ik_flying_foot_goal->setLinkName("r_sole");
     }
+    bio_ik_flying_foot_goal->setWeight(0.1);
+
+    DynamicBalancingContext bio_ik_balancing_context(m_kinematic_model);
+    tf::Vector3 target(0, -0.1, -0.4);
+    auto *bio_ik_balance_goal = new DynamicBalancingGoal(&bio_ik_balancing_context, target, m_stabilizing_weight);
 
     /* switches order of flying and trunk goal according to is_left_kick */
-    if (is_left_kick){
-        ik_options.goals.emplace_back(bio_ik_trunk_goal);
-    } else {
-        ik_options.goals.emplace_back(bio_ik_flying_foot_goal);
+    ik_options.goals.emplace_back(bio_ik_trunk_goal);
+    ik_options.goals.emplace_back(bio_ik_flying_foot_goal);
+    if (m_use_stabilizing) {
+        ik_options.goals.emplace_back(bio_ik_balance_goal);
+    }
+    if (m_use_minimal_displacement) {
+        ik_options.goals.emplace_back(new bio_ik::MinimalDisplacementGoal());
     }
 
-    /* call bio_ik on the correct foot to calculate goal_state */
-    bool success = m_goal_state->setFromIK(m_rleg_joints_group,
+    bool success = m_goal_state->setFromIK(m_legs_joints_group,
                                            EigenSTL::vector_Isometry3d(),
                                            std::vector<std::string>(),
                                            bio_ik_timeout,
                                            moveit::core::GroupStateValidityCallbackFn(),
                                            ik_options);
-    ik_options.goals.clear();
-
-    if (is_left_kick){
-        ik_options.goals.emplace_back(bio_ik_flying_foot_goal);
-    } else {
-        ik_options.goals.emplace_back(bio_ik_trunk_goal);
-    }
-    success = success && m_goal_state->setFromIK(m_lleg_joints_group,
-                                                 EigenSTL::vector_Isometry3d(),
-                                                 std::vector<std::string>(),
-                                                 bio_ik_timeout,
-                                                 moveit::core::GroupStateValidityCallbackFn(),
-                                                 ik_options);
 
     if (success) {
         /* retrieve joint names and associated positions from  */
@@ -121,4 +114,16 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
     } else {
         return std::nullopt;
     }
+}
+
+void Stabilizer::use_stabilizing(bool use) {
+    m_use_stabilizing = use;
+}
+
+void Stabilizer::use_minimal_displacement(bool use) {
+    m_use_minimal_displacement = use;
+}
+
+void Stabilizer::set_stabilizing_weight(double weight) {
+    m_stabilizing_weight = weight;
 }

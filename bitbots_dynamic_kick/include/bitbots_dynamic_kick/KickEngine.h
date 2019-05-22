@@ -78,13 +78,13 @@ public:
     bool is_left_kick();
     int get_percent_done() const;
     void set_params(KickParams params);
+    Stabilizer m_stabilizer;
 private:
     double m_time;
     geometry_msgs::Pose m_goal_pose;
     tf2::Vector3 m_speed;
     bool m_is_left_kick;
     std::optional<Trajectories> m_trunk_trajectories, m_flying_trajectories;
-    Stabilizer m_stabilizer;
     KickParams m_params;
 
     /**
