@@ -224,6 +224,18 @@ class Vision:
             line_msg.segments.append(ls)
         self.pub_lines.publish(line_msg)
 
+        # create non_line msg
+        non_line_msg = LineInformationInImage()
+        non_line_msg.header.frame_id = image_msg.header.frame_id
+        non_line_msg.header.stamp = image_msg.header.stamp
+        for nlp in self.line_detector.get_nonlinepoints():
+            nls = LineSegmentInImage()
+            nls.start.x = nlp[0]
+            nls.start.y = nlp[1]
+            nls.end = nls.start
+            non_line_msg.segments.append(nls)
+        self.pub_non_lines.publish(non_line_msg)
+
         if self.ball_fcnn_publish_output and self.config['vision_ball_classifier'] == 'fcnn':
             fcnn_image_msg = self.ball_detector.get_cropped_msg()
             fcnn_image_msg.header.stamp = image_msg.header.stamp
@@ -266,10 +278,14 @@ class Vision:
             # draw top candidate in
             self.debug_image_dings.draw_ball_candidates([top_ball_candidate],
                                                         (0, 255, 0))
-            # draw linepoints in black
+            # draw linepoints in red
             self.debug_image_dings.draw_points(
                 self.line_detector.get_linepoints(),
                 (0, 0, 255))
+            # draw nonlinepoints in black
+            self.debug_image_dings.draw_points(
+                self.line_detector.get_nonlinepoints(),
+                (0, 0, 0))
             # debug_image_dings.draw_line_segments(line_detector.get_linesegments(), (180, 105, 255))
             if self.debug_image:
                 self.debug_image_dings.imshow()
@@ -441,6 +457,16 @@ class Vision:
                 self.pub_lines.unregister()
             self.pub_lines = rospy.Publisher(
                 config['ROS_line_msg_topic'],
+                LineInformationInImage,
+                queue_size=5)
+
+        # publisher for nonlinepoints
+        if 'ROS_non_line_msg_topic' not in self.config or \
+                self.config['ROS_non_line_msg_topic'] != config['ROS_non_line_msg_topic']:
+            if hasattr(self, 'pub_non_lines'):
+                self.pub_non_lines.unregister()
+            self.pub_non_lines = rospy.Publisher(
+                config['ROS_non_line_msg_topic'],
                 LineInformationInImage,
                 queue_size=5)
 
