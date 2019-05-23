@@ -44,13 +44,10 @@ public:
     {
         double e = 0.0;
 
-        tf::Transform base_to_goal(context.getLinkFrame(0).getOrientation(), context.getLinkFrame(0).getPosition());
-        tf::Transform base_to_reference(context.getLinkFrame(1).getOrientation(), context.getLinkFrame(1).getPosition());
-        tf::Transform reference_to_base = base_to_reference.inverse();
-        tf::Transform reference_to_goal = reference_to_base * base_to_goal;
+        bio_ik::Frame reference_to_goal = bio_ik::inverse(context.getLinkFrame(1)) * context.getLinkFrame(0);
 
-        e += reference_to_goal.getOrigin().distance2(frame_.getPosition());
-        e += (reference_to_goal.getRotation() - frame_.getOrientation()).length2();
+        e += reference_to_goal.getPosition().distance2(frame_.getPosition());
+        e += (reference_to_goal.getOrientation() - frame_.getOrientation()).length2();
 
         return e;
     }
