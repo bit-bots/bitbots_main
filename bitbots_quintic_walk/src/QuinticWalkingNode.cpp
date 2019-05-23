@@ -237,7 +237,7 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
         double pitch_vel = msg.angular_velocity.y;
 
 
-        if (abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold || pitch_vel > _imu_pitch_vel_threshold || roll_vel > _imu_roll_vel_threshold) {
+        if (abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold || abs(pitch_vel) > _imu_pitch_vel_threshold || abs(roll_vel) > _imu_roll_vel_threshold) {
             _walkEngine.requestPause();
         }
     }
