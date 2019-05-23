@@ -10,7 +10,7 @@ from cv_bridge import CvBridge, CvBridgeError
 class Loadimg:
     def __init__(self):
         rospy.init_node("bitbots_imageloader")
-        print("started")
+        rospy.loginfo("started")
         self.pub_im = rospy.Publisher(rospy.get_param("/imageloader/topic", "image_raw"), Image, queue_size=1)
         self.bridge = CvBridge()
 
@@ -24,7 +24,7 @@ class Loadimg:
         img_id = 3
         while not rospy.is_shutdown():
             for im in sorted(listdir)[:nr]:
-                print(im)
+                rospy.loginfo(im)
                 ra = cv2.imread(os.path.join(path, im))
 
                 msg = self.bridge.cv2_to_imgmsg(ra, "bgr8")
