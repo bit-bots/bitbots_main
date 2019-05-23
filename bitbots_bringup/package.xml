@@ -12,6 +12,11 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <!-- gazebo dependencies -->
+  <depend>gazebo_ros_control</depend>
+  <depend>effort_controllers</depend>
+  <depend>joint_state_controller</depend>
+
   <export>
      <bitbots_documentation>
       <status>unknown</status>
