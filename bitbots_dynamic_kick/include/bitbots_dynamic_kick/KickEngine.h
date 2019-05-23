@@ -84,7 +84,7 @@ private:
     geometry_msgs::Pose m_goal_pose;
     tf2::Vector3 m_speed;
     bool m_is_left_kick;
-    std::optional<Trajectories> m_trunk_trajectories, m_flying_trajectories;
+    std::optional<Trajectories> m_support_point_trajectories, m_flying_trajectories;
     KickParams m_params;
 
     /**

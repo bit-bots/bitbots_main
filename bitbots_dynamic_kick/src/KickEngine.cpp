@@ -4,7 +4,7 @@ KickEngine::KickEngine() {}
 
 void KickEngine::reset() {
     m_time = 0;
-    m_trunk_trajectories.reset();
+    m_support_point_trajectories.reset();
     m_flying_trajectories.reset();
 }
 
@@ -24,15 +24,17 @@ void KickEngine::set_goal(const geometry_msgs::Pose &target_pose, tf2::Vector3 s
 
 std::optional<JointGoals> KickEngine::tick(double dt) {
     /* Only do an actual tick when splines are present */
-    if (m_trunk_trajectories && m_flying_trajectories) {
+    if (m_support_point_trajectories && m_flying_trajectories) {
         /* Get should-be pose from planned splines (every axis) at current time */
-        geometry_msgs::PoseStamped trunk_pose = get_current_pose(m_trunk_trajectories.value());
+        geometry_msgs::Point support_point;
+        support_point.x = m_support_point_trajectories.value().get("pos_x").pos(m_time);
+        support_point.y = m_support_point_trajectories.value().get("pos_y").pos(m_time);
         geometry_msgs::PoseStamped flying_foot_pose = get_current_pose(m_flying_trajectories.value());
 
         m_time += dt;
 
         /* Stabilize and return result */
-        return m_stabilizer.stabilize(/* is_left_kick */ m_is_left_kick, trunk_pose, flying_foot_pose);
+        return m_stabilizer.stabilize(m_is_left_kick, support_point, flying_foot_pose);
     } else {
         return std::nullopt;
     }
@@ -134,65 +136,27 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
     m_flying_trajectories->get("yaw").addPoint(fix0, start_y);
     m_flying_trajectories->get("yaw").addPoint(fix5, start_y);
 
-    /* Trunk position */
-    m_trunk_trajectories->get("pos_x").addPoint(fix0, 0);
-    m_trunk_trajectories->get("pos_x").addPoint(fix1, 0);
-    m_trunk_trajectories->get("pos_x").addPoint(fix2, 0);
-    m_trunk_trajectories->get("pos_x").addPoint(fix3, 0);
-    m_trunk_trajectories->get("pos_x").addPoint(fix4, 0);
-    m_trunk_trajectories->get("pos_x").addPoint(fix5, 0);
+    /* Stabilizing point */
+    m_support_point_trajectories->get("pos_x").addPoint(fix0, 0);
+    m_support_point_trajectories->get("pos_x").addPoint(fix1, 0);
+    m_support_point_trajectories->get("pos_x").addPoint(fix2, 0);
+    m_support_point_trajectories->get("pos_x").addPoint(fix3, 0);
+    m_support_point_trajectories->get("pos_x").addPoint(fix4, 0);
+    m_support_point_trajectories->get("pos_x").addPoint(fix5, 0);
 
-    m_trunk_trajectories->get("pos_y").addPoint(fix0, kick_foot_sign * (m_params.foot_distance / 2.0));
-    m_trunk_trajectories->get("pos_y").addPoint(fix1, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.trunk_movement));
-    m_trunk_trajectories->get("pos_y").addPoint(fix2, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.trunk_movement - m_params.foot_rise_trunk_movement));
-    m_trunk_trajectories->get("pos_y").addPoint(fix3, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.trunk_movement - m_params.foot_rise_trunk_movement));
-    m_trunk_trajectories->get("pos_y").addPoint(fix4, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.trunk_movement - m_params.foot_rise_trunk_movement));
-    m_trunk_trajectories->get("pos_y").addPoint(fix5, kick_foot_sign * (m_params.foot_distance / 2.0));
-
-    m_trunk_trajectories->get("pos_z").addPoint(fix0, m_params.trunk_height);
-    m_trunk_trajectories->get("pos_z").addPoint(fix1, m_params.trunk_height);
-    m_trunk_trajectories->get("pos_z").addPoint(fix2, m_params.trunk_height);
-    m_trunk_trajectories->get("pos_z").addPoint(fix3, m_params.trunk_height);
-    m_trunk_trajectories->get("pos_z").addPoint(fix4, m_params.trunk_height);
-    m_trunk_trajectories->get("pos_z").addPoint(fix5, m_params.trunk_height);
-
-    /* Support trunk orientation */
-    /* Construct a start_rotation as quaternion from Pose msg */
-    start_rotation = tf::Quaternion(trunk_pose.orientation.x, trunk_pose.orientation.y,
-                                    trunk_pose.orientation.z, trunk_pose.orientation.w);
-    tf::Matrix3x3(start_rotation).getRPY(start_r, start_p, start_y);
-
-    /* Also construct one for the target */
-    target_rotation = tf::Quaternion(trunk_pose.orientation.x, trunk_pose.orientation.y,
-                                     trunk_pose.orientation.z, trunk_pose.orientation.w);
-    tf::Matrix3x3(target_rotation).getRPY(target_r, target_p, target_y);
-
-    /* Add these quaternions in the same fashion as before to our splines (current, target, current) */
-    m_trunk_trajectories->get("roll").addPoint(fix0, start_r);
-    m_trunk_trajectories->get("roll").addPoint(fix1, start_r);
-    m_trunk_trajectories->get("roll").addPoint(fix2, start_r - kick_foot_sign * m_params.trunk_kick_roll);
-    m_trunk_trajectories->get("roll").addPoint(fix4, start_r - kick_foot_sign * m_params.trunk_kick_roll);
-    m_trunk_trajectories->get("roll").addPoint(fix5, start_r);
-    m_trunk_trajectories->get("pitch").addPoint(fix0, start_p);
-    m_trunk_trajectories->get("pitch").addPoint(fix1, start_p);
-    m_trunk_trajectories->get("pitch").addPoint(fix2, start_p);
-    m_trunk_trajectories->get("pitch").addPoint(fix3, start_p - m_params.trunk_kick_pitch);
-    m_trunk_trajectories->get("pitch").addPoint(fix4, start_p);
-    m_trunk_trajectories->get("pitch").addPoint(fix5, start_p);
-    m_trunk_trajectories->get("yaw").addPoint(fix0, start_y);
-    m_trunk_trajectories->get("yaw").addPoint(fix5, start_y);
+    m_support_point_trajectories->get("pos_y").addPoint(fix0, kick_foot_sign * (m_params.foot_distance / 2.0));
+    m_support_point_trajectories->get("pos_y").addPoint(fix1, 0);
+    m_support_point_trajectories->get("pos_y").addPoint(fix2, 0);
+    m_support_point_trajectories->get("pos_y").addPoint(fix3, 0);
+    m_support_point_trajectories->get("pos_y").addPoint(fix4, 0);
+    m_support_point_trajectories->get("pos_y").addPoint(fix5, kick_foot_sign * (m_params.foot_distance / 2.0));
 }
 
 void KickEngine::init_trajectories() {
-    m_trunk_trajectories = Trajectories();
+    m_support_point_trajectories = Trajectories();
 
-    m_trunk_trajectories->add("pos_x");
-    m_trunk_trajectories->add("pos_y");
-    m_trunk_trajectories->add("pos_z");
-
-    m_trunk_trajectories->add("roll");
-    m_trunk_trajectories->add("pitch");
-    m_trunk_trajectories->add("yaw");
+    m_support_point_trajectories->add("pos_x");
+    m_support_point_trajectories->add("pos_y");
 
     m_flying_trajectories = Trajectories();
 

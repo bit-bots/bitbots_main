@@ -1,5 +1,6 @@
 #include "bitbots_dynamic_kick/Stabilizer.h"
 #include "bitbots_dynamic_kick/DynamicBalancingGoal.h"
+#include "bitbots_dynamic_kick/ReferencePoseGoal.h"
 
 Stabilizer::Stabilizer() {
     /* load MoveIt! model */
@@ -27,7 +28,7 @@ Stabilizer::Stabilizer() {
     }
 }
 
-std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs::PoseStamped trunk_goal_pose, geometry_msgs::PoseStamped flying_foot_goal_pose) {
+std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs::Point support_point, geometry_msgs::PoseStamped flying_foot_goal_pose) {
     /* ik options is basicaly the command which we send to bio_ik and which describes what we want to do */
     bio_ik::BioIKKinematicsQueryOptions ik_options;
     ik_options.replace = true;
@@ -35,56 +36,40 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
     double bio_ik_timeout = 0.01;
 
     // change goals from support foot based coordinate system to trunk based coordinate system
-    tf::Transform trunk_goal;
-    trunk_goal.setOrigin({trunk_goal_lsole.pose.position.x,
-                          trunk_goal_lsole.pose.position.y,
-                          trunk_goal_lsole.pose.position.z});
-    trunk_goal.setRotation({trunk_goal_lsole.pose.orientation.x,
-                            trunk_goal_lsole.pose.orientation.y,
-                            trunk_goal_lsole.pose.orientation.z,
-                            trunk_goal_lsole.pose.orientation.w});
-    tf::Transform support_foot_goal = trunk_goal.inverse();
-
+    tf::Vector3 stabilizing_target = {support_point.x, support_point.y, support_point.z};
 
     tf::Transform flying_foot_goal;
-    flying_foot_goal.setOrigin({flying_foot_goal_lsole.pose.position.x,
-                                flying_foot_goal_lsole.pose.position.y,
-                                flying_foot_goal_lsole.pose.position.z});
-    flying_foot_goal.setRotation({flying_foot_goal_lsole.pose.orientation.x,
-                                  flying_foot_goal_lsole.pose.orientation.y,
-                                  flying_foot_goal_lsole.pose.orientation.z,
-                                  flying_foot_goal_lsole.pose.orientation.w});
-
-    flying_foot_goal = support_foot_goal * flying_foot_goal;
+    flying_foot_goal.setOrigin({flying_foot_goal_pose.pose.position.x,
+                                flying_foot_goal_pose.pose.position.y,
+                                flying_foot_goal_pose.pose.position.z});
+    flying_foot_goal.setRotation({flying_foot_goal_pose.pose.orientation.x,
+                                  flying_foot_goal_pose.pose.orientation.y,
+                                  flying_foot_goal_pose.pose.orientation.z,
+                                  flying_foot_goal_pose.pose.orientation.w});
 
 
     /* construct the bio_ik Pose object which tells bio_ik what we want to achieve */
-    auto *bio_ik_trunk_goal = new bio_ik::PoseGoal();
-    bio_ik_trunk_goal->setPosition(support_foot_goal.getOrigin());
-    bio_ik_trunk_goal->setOrientation(support_foot_goal.getRotation());
-    if (is_left_kick) {
-        bio_ik_trunk_goal->setLinkName("r_sole");
-    } else {
-        bio_ik_trunk_goal->setLinkName("l_sole");
-    }
-    bio_ik_trunk_goal->setWeight(0.1);
-
-    auto *bio_ik_flying_foot_goal = new bio_ik::PoseGoal();
+    auto *bio_ik_flying_foot_goal = new ReferencePoseGoal();
     bio_ik_flying_foot_goal->setPosition(flying_foot_goal.getOrigin());
     bio_ik_flying_foot_goal->setOrientation(flying_foot_goal.getRotation());
     if (is_left_kick) {
         bio_ik_flying_foot_goal->setLinkName("l_sole");
+        bio_ik_flying_foot_goal->setReferenceLinkName("r_sole");
     } else {
         bio_ik_flying_foot_goal->setLinkName("r_sole");
+        bio_ik_flying_foot_goal->setReferenceLinkName("l_sole");
     }
-    bio_ik_flying_foot_goal->setWeight(0.1);
+    bio_ik_flying_foot_goal->setWeight(1);
 
     DynamicBalancingContext bio_ik_balancing_context(m_kinematic_model);
-    tf::Vector3 target(0, -0.1, -0.4);
-    auto *bio_ik_balance_goal = new DynamicBalancingGoal(&bio_ik_balancing_context, target, m_stabilizing_weight);
+    auto *bio_ik_balance_goal = new DynamicBalancingGoal(&bio_ik_balancing_context, stabilizing_target, m_stabilizing_weight);
+    if (is_left_kick) {
+        bio_ik_balance_goal->setReferenceLink("r_sole");
+    } else {
+        bio_ik_balance_goal->setReferenceLink("l_sole");
+    }
 
     /* switches order of flying and trunk goal according to is_left_kick */
-    ik_options.goals.emplace_back(bio_ik_trunk_goal);
     ik_options.goals.emplace_back(bio_ik_flying_foot_goal);
     if (m_use_stabilizing) {
         ik_options.goals.emplace_back(bio_ik_balance_goal);
