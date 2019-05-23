@@ -17,7 +17,6 @@ class ReferencePoseGoal : public bio_ik::Goal
 public:
     ReferencePoseGoal()
     {
-        weight_ = 1;
         link_name_ = "";
         reference_link_name_ = "";
     }
@@ -31,7 +30,6 @@ public:
     }
     void setLinkName(const std::string &link_name) { link_name_ = link_name; }
     void setReferenceLinkName(const std::string &reference_link_name) { reference_link_name_ = reference_link_name; }
-    void setWeight(double weight) { weight_ = weight; }
     void setPosition(tf::Vector3 position) { frame_.setPosition(position); }
     void setOrientation(tf::Quaternion rotation) { frame_.setOrientation(rotation); }
     void describe(bio_ik::GoalContext& context) const
