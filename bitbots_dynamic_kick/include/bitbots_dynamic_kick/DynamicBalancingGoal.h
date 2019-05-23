@@ -89,18 +89,22 @@ class DynamicBalancingGoal : public bio_ik::Goal {
     tf::Vector3 target_;
     const DynamicBalancingContext *balancing_context_;
     tf::Vector3 gravity_ = tf::Vector3(0, 0, -9.81);
+    std::string reference_link_;
 
 public:
     DynamicBalancingGoal(const DynamicBalancingContext *balancing_context,
                          const tf::Vector3 &target, double weight)
             : target_(target), balancing_context_(balancing_context) {
         weight_ = weight;
+        reference_link_ = "base_link";
     }
+    void setReferenceLink(std::string link) { reference_link_ = link; }
     virtual void describe(bio_ik::GoalContext &context) const {
         Goal::describe(context);
         for (size_t i = 0; i < balancing_context_->getLinkCount(); i++) {
             context.addLink(balancing_context_->getLinkName(i));
         }
+        context.addLink(reference_link_);
     }
     static inline double sign(double v) {
         if (v < 0.0)
@@ -117,11 +121,14 @@ public:
 
         double dt_rcp = balancing_context_->getTimeStep();
 
+        // Last element (after all of the regular links) is the reference link
+        bio_ik::Frame reference_link = bio_ik::inverse(context.getLinkFrame(balancing_context_->getLinkCount()));
+
         // static torques from gravity
         for (size_t i = 0; i < balancing_context_->getLinkCount(); i++) {
             tf::Vector3 center = balancing_context_->getLinkCenter(i); // m
             double mass = balancing_context_->getLinkMass(i);   // kg
-            const bio_ik::Frame& frame = context.getLinkFrame(i);
+            const bio_ik::Frame& frame = reference_link * context.getLinkFrame(i);
             bio_ik::quat_mul_vec(frame.rot, center, center);
             center += frame.pos;
             torque_g += (center - target_).cross(gravity_ * mass); // m * N
@@ -139,7 +146,7 @@ public:
             for (size_t i = 0; i < balancing_context_->getLinkCount(); i++) {
 
                 auto center = balancing_context_->getLinkCenter(i); // m
-                auto &frame = context.getLinkFrame(i);
+                auto frame = reference_link * context.getLinkFrame(i);
                 bio_ik::quat_mul_vec(frame.rot, center, center);
                 center += frame.pos;
 
