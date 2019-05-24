@@ -3,39 +3,88 @@ Launchskripte
 =============
 
 Um etwas über die Benutzung von Launchfiles zu erfahren siehe :doc:`manual/tutorials/software_overview`.
-Im Folgenden sind die Übergreifenden Launchfiles und danach die Launchfiles der einzelnen Packete aufgelistet, sowie die Parameter die angegeben werden können.
+Im Folgenden sind die Übergreifenden Launchfiles und danach die Launchfiles der einzelnen Packete aufgelistet, sowie die Parameter die angegeben werden können. Dabei werden die Defaultwerte verwendet, außer man gibt mittel parameter:=true/false an, auf was man den Parameter setzen möchte.
 Allgemein gilt für alle Launchfiles, dass sie das Load_robot_description Launchfile mit starten, wenn der Dateiname xy_standalone.launch lauetet. Das load_robot_description Launchfile lädt das URDF und sorgt dafür, dass der TF Tree gebaut wird. Startet man mehrere Launchfiles und will man besagtes Launchfile benutzen, darf nur eines der Launchfiles als standalone gestartete werden.
 
 Übergreifende Launchskripte
 ===========================
 Diese Launchskripte sind zu finden in dem Package bitbots_bringup.
 
-Alles
-_________________________________________
-Will man alle relevanten Softwarepackete, zum Beispiel für ein Spiel, starten, launched man den Teamplayer. Folgende Parameter können dabei gesetzt werden:
+Teamplayer (Alles)
+__________________
+Will man alle relevanten Softwarepakete, zum Beispiel für ein Spiel, starten, launched man den Teamplayer. Hierfür muss der Motorstrom am Roboter angeschaltet werden. Nach dem Start fährt der Roboter die Walkready Position an. Folgende Parameter können dabei gesetzt werden:
 
 +------------------+------------+-------------------------------------------------------------------------------------+
 |Parameter         |Defaultwert |  Erklärung                                                                          |
 +==================+============+=====================================================================================+
-|sim               | B          |                                                                                     |
+|sim               | false      | Ausführung in Simulation                                                            |
 +------------------+------------+-------------------------------------------------------------------------------------+
-|motion            | D          |                                                                                     |
+|motion            | true       | Starten der Motion                                                                  |
 +------------------+------------+-------------------------------------------------------------------------------------+
-|behave            | D          |                                                                                     |
+|behave            | true       | Starten des Behaviors                                                               |
 +------------------+------------+-------------------------------------------------------------------------------------+
-|vision            | D          |                                                                                     |
+|vision            | false      | Starten der Vision                                                                  |
 +------------------+------------+-------------------------------------------------------------------------------------+
-|team_comm         | D          |                                                                                     |
+|team_comm         | false      | Starten der Team Communication                                                      |
 +------------------+------------+-------------------------------------------------------------------------------------+
-|localization      | D          |                                                                                     |
+|localization      | false      | Starten der Lokalisation                                                            |
 +------------------+------------+-------------------------------------------------------------------------------------+
-|simple            | D          |                                                                                     |
+|simple            | false      | Benutzen des Simple Behaviors                                                       |
 +------------------+------------+-------------------------------------------------------------------------------------+
-|use_game_settings | D          |                                                                                     |
+|use_game_settings | true       | Game Settings an alle Softwareknoten durchreichen                                   |
++------------------+------------+-------------------------------------------------------------------------------------+
+
+Highlevel
+_________
+Dieses Launchskript startet alle spielrelevanten Komponenten außer der Motion.
+Hierfür muss der Motorstrom am Roboter angeschaltet werden. Nach dem Start fährt der Roboter die Walkready Position an.
+
++------------------+------------+-------------------------------------------------------------------------------------+
+|Parameter         |Defaultwert |  Erklärung                                                                          |
++==================+============+=====================================================================================+
+|sim               | false      | Ausführung in Simulation                                                            |
++------------------+------------+-------------------------------------------------------------------------------------+
+|motion            | true       | Starten der Motion                                                                  |
++------------------+------------+-------------------------------------------------------------------------------------+
+|behave            | true       | Starten des Behaviors                                                               |
++------------------+------------+-------------------------------------------------------------------------------------+
+|vision            | false      | Starten der Vision                                                                  |
++------------------+------------+-------------------------------------------------------------------------------------+
+|team_comm         | false      | Starten der Team Communication                                                      |
++------------------+------------+-------------------------------------------------------------------------------------+
+|localization      | false      | Starten der Lokalisation                                                            |
++------------------+------------+-------------------------------------------------------------------------------------+
+|simple            | false      | Benutzen des Simple Behaviors                                                       |
++------------------+------------+-------------------------------------------------------------------------------------+
+|use_game_settings | true       | Game Settings an alle Softwareknoten durchreichen                                   |
++------------------+------------+-------------------------------------------------------------------------------------+
+
+Motion
+______
+Diese Launchskript startet alle relevanten Softwarekomponenten um die Motion des Roboters zu gewährleisten.
+Ist diese Launchskript gestartet können die Motoren angesteuert werden und es können Bewegungen auf dem Roboter ausgeführt werden, wie Walking oder Animationen.
+Hierfür muss der Motorstrom am Roboter angeschaltet werden. Nach dem Start fährt der Roboter die Walkready Position an.
+
++------------------+------------+-------------------------------------------------------------------------------------+
+|Parameter         |Defaultwert |  Erklärung                                                                          |
++==================+============+=====================================================================================+
+|sim               | false      | Ausführung in Simulation                                                            |
++------------------+------------+-------------------------------------------------------------------------------------+
+|use_game_settings | true       | Game Settings an alle Softwareknoten durchreichen                                   |
 +------------------+------------+-------------------------------------------------------------------------------------+
 
 
+Simulator
+_________
+Diese Skript startet den Simulator.
 
++------------------+------------+-------------------------------------------------------------------------------------+
+|Parameter         |Defaultwert |  Erklärung                                                                          |
++==================+============+=====================================================================================+
+|hcm               | false      | Starten der HCM                                                                     |
++------------------+------------+-------------------------------------------------------------------------------------+
+|use_fake_walk     | false      | Nutzen eines Schwebens (Fake Walk) statt des normalen Walking                       |
++------------------+------------+-------------------------------------------------------------------------------------+
 
 
 Launchskripte einzelner Packete
@@ -54,6 +103,9 @@ Misc
 ____
 - Teleop
 - System Monitor
+- Bringup
+
+Die übergreifenden Launchskripte aus diesem Kapitel sind bereits oben erklärt. Hier werden noch die restlichen Launchfiles beschrieben.
 
 Motion
 _______
