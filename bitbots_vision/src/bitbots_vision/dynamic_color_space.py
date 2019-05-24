@@ -100,7 +100,7 @@ class DynamicColorSpace:
             self.color_detector,
             vision_config,
             self.debug_printer,
-            dyn_color_detector=True)
+            used_by_dyn_color_detector=True)
 
         # Reset queue
         if hasattr(self, 'color_value_queue'):
