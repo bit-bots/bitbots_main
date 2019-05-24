@@ -24,8 +24,6 @@ class Colors:
     LIGHT_CYAN = "\033[1;36m"
     WHITE = "\033[1;37m"
     NO_COLOR = "\033[0m"
-    BOLD = "$(tput bold)"
-    NORMAL = "$(tput sgr0)"
 
 
 def log_error(message):
@@ -35,6 +33,10 @@ def log_error(message):
 
 def log_info(message):
     print("{}[i]{} {}".format(Colors.BLUE, Colors.NO_COLOR, message.replace("\n", "\n    ")))
+
+
+def log_warn(message):
+    print("{}[w]{} {}".format(Colors.YELLOW, Colors.NO_COLOR, message.replace("\n", "\n    ")))
 
 
 def parse_args():
@@ -57,6 +59,24 @@ def parse_args():
     return parser.parse_args()
 
 
+def handle_process_output(args, process):
+    if process.returncode != 0:
+        log_error("Error calling {}".format(process.args[0]))
+        print(process.stderr)
+        if args.verbosity >= 1:
+            print(process.stdout)
+
+    else:
+        if args.verbosity >= 1:
+            print(process.stderr)
+            if args.verbosity >= 2:
+                print(process.stdout)
+
+        else:
+            if process.stderr:
+                log_warn("{} printed to stderr. Supply -v to see".format(process.args[0]))
+
+
 def filter_packages_for_bitbots(rospack):
     return [pkg_name
             for pkg_name in rospack.list()
@@ -77,21 +97,7 @@ def build_package_doc(rospack, pkg_name, args):
         cwd=rospack.get_path(pkg_name),
         encoding='ASCII')
 
-    # error handling
-    if p.returncode != 0:
-        log_error("Error calling rosdoc_list".format(pkg_name))
-        print(p.stderr)
-        if args.verbosity >= 1:
-            print(p.stdout)
-
-    # verbosity handling
-    else:
-        if args.verbosity >= 1:
-            print(p.stderr)
-            if args.verbosity >= 2:
-                print(p.stdout)
-
-            print()
+    handle_process_output(args, p)
 
 
 def build_meta_doc():
@@ -99,39 +105,30 @@ def build_meta_doc():
     doc_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "doc")
 
     p = subprocess.run(["sphinx-build", doc_dir, os.path.join(doc_dir, "_build")],
-                       stdout=subprocess.PIPE)
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='ASCII')
 
-    # error handling
-    if p.returncode != 0:
-        log_error("Error calling sphinx-build")
-        print(p.stderr)
-        if args.verbosity >= 1:
-            print(p.stdout)
-
-    # verbosity handling
-    else:
-        if args.verbosity >= 1:
-            print(p.stderr)
-            if args.verbosity >= 2:
-                print(p.stdout)
-
-            print()
+    handle_process_output(args, p)
 
 
 if __name__ == '__main__':
     args = parse_args()
     build_all = not args.meta and not args.package
 
+    log_info("Indexing packages")
     rospack = RosPack(os.getenv("ROS_PACKAGE_PATH").split(":"))
 
     if build_all:
         for pkg_name in filter_packages_for_bitbots(rospack):
+            print()
             build_package_doc(rospack, pkg_name, args)
 
     if args.package:
+        print()
         build_package_doc(rospack, args.package, args)
 
     if build_all or args.meta:
+        print()
         build_meta_doc()
 
+    print()
     log_error("Cannot yet merge package and meta documentation")
