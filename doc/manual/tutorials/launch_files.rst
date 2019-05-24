@@ -67,7 +67,7 @@ Startet das Body und das Headbehavior
 +==================+============+=====================================================================================+
 |wolfgang          | true       | Ob das Behavior für die Wolfgang Plattform gestartet werden soll                    |
 +------------------+------------+-------------------------------------------------------------------------------------+
-|duty              | TeamPlayer | ob Feldspieler Behavior oder Goalie Behavior gestartet werden soll                  |
+|duty              | TeamPlayer | ob Feldspieler Behavior oder Goalie oder Penalty Behavior gestartet werden soll     |
 +------------------+------------+-------------------------------------------------------------------------------------+
 |simple            | false      | Soll das simple Behavior gestartet werden -> nur zum Ball rennen und kicken         |
 +------------------+------------+-------------------------------------------------------------------------------------+
@@ -79,7 +79,7 @@ Startet nur das Body behavior und nicht das Head Behavior
 +------------------+------------+-------------------------------------------------------------------------------------+
 |Parameter         |Defaultwert |  Erklärung                                                                          |
 +------------------+------------+-------------------------------------------------------------------------------------+
-|duty              | TeamPlayer | ob Feldspieler Behavior oder Goalie Behavior gestartet werden soll                  |
+|duty              | TeamPlayer | ob Feldspieler Behavior oder Goalie oder Penalty Behavior gestartet werden soll     |
 +------------------+------------+-------------------------------------------------------------------------------------+
 |use_game_settings | false      | siehe Teamplayer Launchskript                                                       |
 +------------------+------------+-------------------------------------------------------------------------------------+
