@@ -455,8 +455,9 @@ bool DynamixelHardwareInterface::read()
   // either read all values or a single one, depending on config
   if (_read_position && _read_velocity && _read_effort ){
     if(syncReadAll()){
-      for (size_t num = 0; num < _joint_names.size(); num++)
-        _current_position[num] += _joint_mounting_offsets[num] + _joint_offsets[num];
+      for (size_t num = 0; num < _joint_names.size(); num++) {
+          _current_position[num] += _joint_mounting_offsets[num] + _joint_offsets[num];
+      }
     } else{
       ROS_ERROR_THROTTLE(1.0, "Couldn't read all current joint values!");
       speak("Could not read all current joint values!");
@@ -465,8 +466,9 @@ bool DynamixelHardwareInterface::read()
   }else {
     if (_read_position) {
       if (syncReadPositions()) {
-        for (size_t num = 0; num < _joint_names.size(); num++)
-          _current_position[num] += _joint_mounting_offsets[num] + _joint_offsets[num];
+        for (size_t num = 0; num < _joint_names.size(); num++) {
+            _current_position[num] += _joint_mounting_offsets[num] + _joint_offsets[num];
+        }
       } else{
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint position!");
         speak("Couldn't read current joint position!");
@@ -755,11 +757,6 @@ bool DynamixelHardwareInterface::syncReadAll() {
     uint32_t vel;
     uint32_t pos;
     for (int i = 0; i < _joint_count; i++) {
-      if (data[i] == 0){
-        // this is most propably an reading error
-        // TODO better solution for this hack
-        continue;
-      }
       eff = DXL_MAKEWORD(data[i * 10], data[i * 10 + 1]);
       vel = DXL_MAKEDWORD(DXL_MAKEWORD(data[i * 10 + 2], data[i * 10 + 3]),
                           DXL_MAKEWORD(data[i * 10 + 4], data[i * 10 + 5]));
