@@ -47,31 +47,28 @@ Next we connect some wires:
 
 Connect the USB to serial converter to your computer using a Micro USB cable.
 
+
+Run the install script in the Arduino_STM32 folder
+
+:code:`./Arduino_STM32/tools/linux64/install.sh`
+
+Then you need to logout and back in again and remove and replug the USB to serial device.
+
 Locate the script for flashing the bootloader in the Arduino_STM32 directory:
 
 :code:`Arduino_STM32/tools/linux64/stm32flash`
 
 Run the flash script:
 
-:code:`./stm32flash -w generic_boot20_pc13.bin -v /dev/ttyUSB0 -b 115200`
+:code:`./stm32flash -w <path to generic_boot20_pc13.bin> -v /dev/ttyUSB0 -b 115200`
 
+When the bootloader is successfully installed, remove the USB to serial converter and its connections to the STM32 board,
+Then place the boot 0 pin back to 0.
 
-
-
-
-When the bootloader is successfully installed, place the boot pin back to 0.
-
-Before connecting the Board, some udev rules need to be set. This is done by running the
-
-:code:`./install.sh`
-in
-
-:code:`Arduino_STM32/tools/linux64`
-
-furthermore the
 When connecting it to a computer using a micro usb cable it should appear as a ttyACM0 device in the /dev/ folder.
 
-Open the main sketch from the repository_ in the Arduino IDE.
+Clone the repository_ and open bit_foot/firmware/main/main.ino in the Arduino IDE.
+
 Since the Arduino_STM32 folder should already be in your Arduino directory, the board should already be installed.
 
 You still need to install the Arduino SAM boards from the Board Manager to install the correct compiler.
@@ -85,8 +82,14 @@ Before compiling select:
 * Optimize: not clear yet...
 * Select your port to be ttyACM0 (or ttyACM1....N is 0 is not available)
 
+Furthermore add the `ADS126X library`_ to the ArduinoIDE under Sketch..Include library..Add .zip library.
+
+.. -ADS126X library: https://github.com/Molorius/ADS126X
+
 For the left foot, the DXL_ID should be set to 100, for the right foot, it should be 101.
 
+Firstly compile your sketch. When the compilation is finished, press the reset button on the board
+and the press upload button in the Arduino IDE immediately.
 
 Calibrating the Sensors
 =======================
