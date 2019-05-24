@@ -1,5 +1,6 @@
 #! /usr/bin/env python2
 
+from geometry_msgs.msg import Point
 import os
 import cv2
 import yaml
@@ -11,7 +12,7 @@ from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image, JointState
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, PostInImage, \
-    GoalInImage
+    GoalInImage, FieldBoundaryInImage
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, live_classifier, \
     classifier, ball, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
 from bitbots_vision.cfg import VisionConfig
@@ -226,6 +227,13 @@ class Vision:
             line_msg.segments.append(ls)
         self.pub_lines.publish(line_msg)
 
+        # publish field-boundary
+        field_boundary_msg = FieldBoundaryInImage()
+        field_boundary_msg.header = image_msg.header
+        for point in self.field_boundary_detector.get_field_boundary_points():
+            field_boundary_msg.field_boundary_points.append(Point(point[0], point[1], 0))
+        self.pub_field_boundary.publish(field_boundary_msg)
+
         if self.ball_fcnn_publish_output and self.config['vision_ball_classifier'] == 'fcnn':
             fcnn_image_msg = self.ball_detector.get_cropped_msg()
             fcnn_image_msg.header.stamp = image_msg.header.stamp
@@ -439,6 +447,15 @@ class Vision:
                 BallsInImage,
                 queue_size=1)
 
+        if 'ROS_field_boundary_msg_topic' not in self.config or \
+                self.config['ROS_field_boundary_msg_topic'] != config['ROS_field_boundary_msg_topic']:
+            if hasattr(self, 'pub_field_boundary'):
+                self.pub_field_boundary.unregister()
+            self.pub_field_boundary = rospy.Publisher(
+                config['ROS_field_boundary_msg_topic'],
+                FieldBoundaryInImage,
+                queue_size=1)
+
         if 'ROS_line_msg_topic' not in self.config or \
                 self.config['ROS_line_msg_topic'] != config['ROS_line_msg_topic']:
             if hasattr(self, 'pub_lines'):
@@ -456,6 +473,7 @@ class Vision:
                 config['ROS_obstacle_msg_topic'],
                 ObstaclesInImage,
                 queue_size=3)
+
 
         if 'ROS_goal_msg_topic' not in self.config or \
                 self.config['ROS_goal_msg_topic'] != config['ROS_goal_msg_topic']:
