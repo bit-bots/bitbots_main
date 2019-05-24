@@ -78,8 +78,32 @@ def build_package_doc(rospack, pkg_name, args):
         encoding='ASCII')
 
     # error handling
-    if not p.returncode == 0:
-        log_error("Error calling rosdoc_list for package {}".format(pkg_name))
+    if p.returncode != 0:
+        log_error("Error calling rosdoc_list".format(pkg_name))
+        print(p.stderr)
+        if args.verbosity >= 1:
+            print(p.stdout)
+
+    # verbosity handling
+    else:
+        if args.verbosity >= 1:
+            print(p.stderr)
+            if args.verbosity >= 2:
+                print(p.stdout)
+
+            print()
+
+
+def build_meta_doc():
+    log_info("Building bitbots_meta documentation")
+    doc_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "doc")
+
+    p = subprocess.run(["sphinx-build", doc_dir, os.path.join(doc_dir, "_build")],
+                       stdout=subprocess.PIPE)
+
+    # error handling
+    if p.returncode != 0:
+        log_error("Error calling sphinx-build")
         print(p.stderr)
         if args.verbosity >= 1:
             print(p.stdout)
@@ -108,6 +132,6 @@ if __name__ == '__main__':
         build_package_doc(rospack, args.package, args)
 
     if build_all or args.meta:
-        log_error("Cannot yet build meta documentation")
+        build_meta_doc()
 
     log_error("Cannot yet merge package and meta documentation")
