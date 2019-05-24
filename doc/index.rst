@@ -23,7 +23,6 @@ Einstieg und Tutorials:
    manual/tutorials/hcm
    manual/tutorials/animation
    manual/tutorials/3d-Druck
-   manual/tutorials/pr-veranstaltungen
 
 Software:
 
