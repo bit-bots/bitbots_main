@@ -68,10 +68,10 @@ def handle_process_output(args, process):
 
     else:
         if args.verbosity >= 1:
-            print(process.stderr)
+            if process.stderr:
+                print(process.stderr)
             if args.verbosity >= 2:
                 print(process.stdout)
-
         else:
             if process.stderr:
                 log_warn("{} printed to stderr. Supply -v to see".format(process.args[0]))
@@ -90,13 +90,34 @@ def build_package_doc(rospack, pkg_name, args):
         return
 
     log_info("Building documentation for package {}".format(pkg_name))
+
+    if os.path.isdir(os.path.join(rospack.get_path(pkg_name), "src")):
+        log_info("Indexing source code")
+        p = subprocess.run([
+            "sphinx-apidoc",
+            "-o", os.path.join("doc", "_generated"),
+            "--ext-autodoc",
+            "--ext-doctest",
+            "--ext-intersphinx",
+            "--ext-todo",
+            "--ext-coverage",
+            "--ext-mathjax",
+            "--ext-viewcode",
+            "src"
+        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL,
+            cwd=rospack.get_path(pkg_name),
+            encoding="ASCII")
+        handle_process_output(args, p)
+
+    log_info("Compiling html to {}"
+             .format(os.path.join(os.path.basename(rospack.get_path(pkg_name)), "doc", "_build", "html", "index.html")))
+
     p = subprocess.run([
-        "rosdoc_lite",
-        rospack.get_path(pkg_name)
+        "rosdoc_lite", "./",
+        "-o", os.path.join("doc", "_build")
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL,
         cwd=rospack.get_path(pkg_name),
         encoding='ASCII')
-
     handle_process_output(args, p)
 
 
