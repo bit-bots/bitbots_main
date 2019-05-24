@@ -93,7 +93,7 @@ Dies ist jedoch nur für "echte" serielle Devices notwendig. Das DXL-Board melde
 als ACM an, dort ist es nicht nötig. Bei dem neuen QUADDXL wird dies jedoch extrem wichtig sein.
 
 Dynamixel SDK
-~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 Das Dynamixel SDK implementiert das Dynamixel Protokoll. Es stellt dabei (in verschiedenen Sprachen) 
 Methoden zum Versenden von Instruktionen und zum Lesen von Statuspaketen bereit.  Wir benutzen eine
@@ -101,7 +101,7 @@ geforkte version, da Robotis vergessen hat, das Sync Read für mehr als ein Regi
 implementieren.
 
 Dynamixel Workbench
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 Die Dynamixel Workbench bietet höhere (abstraktere) Funktionen als das Dynamixel SDK. Beispielsweise
 wird die Motorposition im SDK und auf den Motoren als Wert von 0 bis 4096 angegeben (2 Byte) und von 

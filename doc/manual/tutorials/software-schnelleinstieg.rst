@@ -1,8 +1,8 @@
 .. _Software-Schnelleinstieg:
 
-==========
+========================
 Software Schnelleinstieg
-==========
+========================
 
 Die original LaTex Version gibt es auf Overleaf_.
 
@@ -515,14 +515,14 @@ Wichtige Launchskripts
 +-----------------------------------+-----------------------------------+
 | **Desc.**                         | **Command**                       |
 +===================================+===================================+
-| Simulator                         | *roslaunch bitbots_bringup         |
+| Simulator                         | *roslaunch bitbots_bringup        |
 |                                   | start_simulator.launch*           |
 +-----------------------------------+-----------------------------------+
-| High-level                        | *roslaunch bitbots_bringup         |
+| High-level                        | *roslaunch bitbots_bringup        |
 |                                   | start_robocup_teamplayer.launch   |
 |                                   | hcm:=false duty:=TeamPlayer*      |
 +-----------------------------------+-----------------------------------+
-| kompl. Stack                      | *roslaunch bitbots_bringup         |
+| kompl. Stack                      | *roslaunch bitbots_bringup        |
 |                                   | start_robocup_teamplayer.launch   |
 |                                   | duty:=TeamPlayer*                 |
 +-----------------------------------+-----------------------------------+
