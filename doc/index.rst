@@ -32,6 +32,7 @@ Software:
     manual/software/walking
     manual/software/AI
     manual/software/Vision
+    manual/software/bitfoot
 
 Hardware:
 

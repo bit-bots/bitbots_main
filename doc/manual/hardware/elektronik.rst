@@ -34,9 +34,18 @@ Folgende Features sind geplant:
 * Stromregulierung für 5V komponenten (Odroid, Verstärker)
 * Softwareseitige Motorstromsteuerung
 
-Due Date ist ende November 2018
+Due Date ist ende Dezember 2019
 
-ForceFoot2
-==========
+Bit Foot
+========
 
-Basierend auf RHoban's ForceFoot wird ForceFoot2 eine verbesserte Version mit höheren updaterate der Wägezellen und der möglichkeit auf bis zu 4.5 MBaud mit dem Bus zu kommunizieren. Due Date ist mitte Oktober 2018
+Der Bit Foot ist ein verbesserter fußandrucksensor basierend auf dem Rhoban ForceFoot.
+
+* Schaltplan :download:`pdf <elektronik/bitfoot.pdf>`
+* PCB :download:`pdf <elektronik/bitfoot_pcb.pdf>`
+
+Auf der ursprüngliche Variante des Boards ist der DXL Bus an USART3 angeschlossen. Die alte version sinde grüne Boards, die aktuelle (V 1.0) sind schwarze Boards.
+
+Derzeit werden die Dioden (D1 und D2) und R9 nicht bestückt.
+
+R11 und R15 werden nur bestückt wenn TTL statt RS485 als BUS verwendet wird.
