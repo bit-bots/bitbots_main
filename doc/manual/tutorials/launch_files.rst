@@ -92,7 +92,74 @@ Launchskripte einzelner Packete
 Behavior
 ________
 - Body Behavior
+
+Das Body Behavior steuert das Verhalten des Roboters. Dabei geht es grob gesagt um die Taktik die verwendet wird.
+
+- behavior.launch
+
+Startet das Body und das Headbehavior
+
++------------------+------------+-------------------------------------------------------------------------------------+
+|Parameter         |Defaultwert |  Erklärung                                                                          |
++==================+============+=====================================================================================+
+|wolfgang          | false      | Ob das Behavior für die Wolfgang Plattform gestartet werden soll                    |
++------------------+------------+-------------------------------------------------------------------------------------+
+|use_game_settings | false      | siehe Teamplayer Launchskript                                                       |
++------------------+------------+-------------------------------------------------------------------------------------+
+|simple            | false      | Soll das simple Behavior gestartet werden -> nur zum Ball rennen und kicken         |
++------------------+------------+-------------------------------------------------------------------------------------+
+
+-behavior_standalone.launch
+
++------------------+------------+-------------------------------------------------------------------------------------+
+|Parameter         |Defaultwert |  Erklärung                                                                          |
++==================+============+=====================================================================================+
+|wolfgang          | true       | Ob das Behavior für die Wolfgang Plattform gestartet werden soll                    |
++------------------+------------+-------------------------------------------------------------------------------------+
+|duty              | TeamPlayer | ob Feldspieler Behavior oder Goalie oder Penalty Behavior gestartet werden soll     |
++------------------+------------+-------------------------------------------------------------------------------------+
+|simple            | false      | Soll das simple Behavior gestartet werden -> nur zum Ball rennen und kicken         |
++------------------+------------+-------------------------------------------------------------------------------------+
+
+- body_behavior.launch
+
+Startet nur das Body behavior und nicht das Head Behavior
+
++------------------+------------+-------------------------------------------------------------------------------------+
+|Parameter         |Defaultwert |  Erklärung                                                                          |
++------------------+------------+-------------------------------------------------------------------------------------+
+|duty              | TeamPlayer | ob Feldspieler Behavior oder Goalie oder Penalty Behavior gestartet werden soll     |
++------------------+------------+-------------------------------------------------------------------------------------+
+|use_game_settings | false      | siehe Teamplayer Launchskript                                                       |
++------------------+------------+-------------------------------------------------------------------------------------+
+
+- simple_behavior.launch
+
+Startet das simple Behavior. Nur zum Ball laufen und dann den Ball kicken.
+
 - Head Behavior
+
+- head_behavior.launch
+
+Startet das Head Behavior
+
++------------------+------------+-------------------------------------------------------------------------------------+
+|Parameter         |Defaultwert |  Erklärung                                                                          |
++------------------+------------+-------------------------------------------------------------------------------------+
+|depends_only      | false      | startet nur die dependency, für debugging Zwecke in Pycharm (deprecated)            |
++------------------+------------+-------------------------------------------------------------------------------------+
+|use_game_settings | false      | siehe Teamplayer Launchskript                                                       |
++------------------+------------+-------------------------------------------------------------------------------------+
+
+head_behavior_standalone.launch
+
++------------------+------------+-------------------------------------------------------------------------------------+
+|Parameter         |Defaultwert |  Erklärung                                                                          |
++------------------+------------+-------------------------------------------------------------------------------------+
+|depends_only      | false      | startet nur die dependency, für debugging Zwecke in Pycharm (deprecated)            |
++------------------+------------+-------------------------------------------------------------------------------------+
+|wolfgang          | true       | Definiert ob das Head Behavior für die Wolfgang Plattform gestartet werden soll     |
++------------------+------------+-------------------------------------------------------------------------------------+
 
 Lowlevel
 ________
