@@ -7,10 +7,37 @@ Welcome to bitbots_meta's documentation!
 ========================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: Einstieg und Tutorials:
+
+   manual/tutorials/software-overview
+   manual/tutorials/software-schnelleinstieg
+   manual/tutorials/Doku-How-To
+   manual/tutorials/colorpicker
+   manual/tutorials/pycharm-ros
+   manual/tutorials/motion
+   manual/tutorials/hcm
+   manual/tutorials/animation
+   manual/tutorials/3d-Druck
 
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Software
+
+   manual/software/ai
+   manual/software/vision
+   manual/software/walking
+
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Hardware:
+
+    manual/hardware/elektronik
+    manual/hardware/motorkabel
+    manual/hardware/schrauben
+    manual/hardware/motornummern
 
 Indices and tables
 ==================
