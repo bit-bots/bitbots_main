@@ -29,6 +29,8 @@ public:
     double kick_time = 1;
     double move_back_time = 1;
     double lower_foot_time = 1;
+
+    double stabilizing_point;
 };
 
 /**

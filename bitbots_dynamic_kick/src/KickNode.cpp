@@ -25,10 +25,12 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
     params.kick_time = config.kick_time;
     params.move_back_time = config.move_back_time;
     params.lower_foot_time = config.lower_foot_time;
+    params.stabilizing_point = config.stabilizing_point;
     m_engine.set_params(params);
     m_engine.m_stabilizer.use_minimal_displacement(config.minimal_displacement);
     m_engine.m_stabilizer.use_stabilizing(config.stabilizing);
     m_engine.m_stabilizer.set_stabilizing_weight(config.stabilizing_weight);
+    m_engine.m_stabilizer.set_flying_weight(config.flying_weight);
 }
 
 void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {

@@ -59,7 +59,7 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
         bio_ik_flying_foot_goal->setLinkName("r_sole");
         bio_ik_flying_foot_goal->setReferenceLinkName("l_sole");
     }
-    bio_ik_flying_foot_goal->setWeight(1);
+    bio_ik_flying_foot_goal->setWeight(m_flying_weight);
 
     DynamicBalancingContext bio_ik_balancing_context(m_kinematic_model);
     auto *bio_ik_balance_goal = new DynamicBalancingGoal(&bio_ik_balancing_context, stabilizing_target, m_stabilizing_weight);
@@ -111,4 +111,8 @@ void Stabilizer::use_minimal_displacement(bool use) {
 
 void Stabilizer::set_stabilizing_weight(double weight) {
     m_stabilizing_weight = weight;
+}
+
+void Stabilizer::set_flying_weight(double weight) {
+    m_flying_weight = weight;
 }
