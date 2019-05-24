@@ -79,12 +79,12 @@ Before compiling select:
 * Variant: STM32F103C8 20k RAM. 64k Flash (The other variant may also work)
 * CPU Speed: 72 Mhz
 * Upload Method: STM32duino Bootloader
-* Optimize: not clear yet...
+* Optimize: not clear yet... (use default for now)
 * Select your port to be ttyACM0 (or ttyACM1....N is 0 is not available)
 
 Furthermore add the `ADS126X library`_ to the ArduinoIDE under Sketch..Include library..Add .zip library.
 
-.. -ADS126X library: https://github.com/Molorius/ADS126X
+.. _ADS126X library: https://github.com/Molorius/ADS126X
 
 For the left foot, the DXL_ID should be set to 100, for the right foot, it should be 101.
 
@@ -93,3 +93,13 @@ and the press upload button in the Arduino IDE immediately.
 
 Calibrating the Sensors
 =======================
+
+After the device has been connected to the DXL Bus, launch the hardware interface:
+
+:code:`roslaunch bitbots_ros_control ros_control_pressure_only_standalone.launch`
+
+Then run the calibration node:
+
+:code:`rosrun bitbots_ros_control pressure_calibration.py`
+
+The node will guide you through the process of calibrating the cleats.
