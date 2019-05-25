@@ -5,6 +5,21 @@ import argparse
 import subprocess
 from rospkg import RosPack
 
+EXCLUDED_PACKAGES = [
+    'wolves_image_provider',  # not our package and we wil deprecate it soon anyways
+    'bitbots_animation_server',     # startup on import
+    'bitbots_dynamixel_debug',      # startup on import
+]
+
+INCOMPATIBLE_PACKAGES = [
+    'humanoid_league_interactive_marker',  # doesnt work properly TODO fix
+    'humanoid_league_rviz_marker',  # not currently python2 compatible
+    'udp_bridge',  # not currently python2 compatible
+    'bitbots_imageloader',  # not currently python2 compatible
+    'bitbots_vision',       # problems with VisionExtensions and numpy imports
+    'bitbots_ros_control',      # some \ref commands dont resolve
+]
+
 
 class Colors:
     BLACK = "\033[0;30m"
@@ -55,6 +70,9 @@ def parse_args():
     parser.add_argument('-v',
                         action='count', dest='verbosity', default=0,
                         help='Be more verbose. Can be given multiple times')
+    parser.add_argument('-e', '--exclude',
+                        action='append', dest='excludes', default=EXCLUDED_PACKAGES,
+                        help='Exclude a package from documentation generation generation')
 
     return parser.parse_args()
 
@@ -78,10 +96,12 @@ def handle_process_output(args, process):
                 log_warn("{} printed to stderr. Supply -v to see".format(process.args[0]))
 
 
-def filter_packages_for_bitbots(rospack):
+def filter_packages_for_bitbots(rospack, args):
     return [pkg_name
             for pkg_name in rospack.list()
             if "bitbots" in rospack.get_path(pkg_name)
+            and os.path.join("bitbots_meta", "lib") not in rospack.get_path(pkg_name)
+            and pkg_name not in args.excludes
             ]
 
 
@@ -91,11 +111,15 @@ def build_package_doc(rospack, pkg_name, args):
         return
 
     log_info("Building documentation for package {}".format(pkg_name))
+    if pkg_name in INCOMPATIBLE_PACKAGES:
+        log_warn(
+            "The package is marked as not fully compatible.\n"
+            "Sphinx will throw errors when importing this package and code documentation will be incomplete")
 
     if os.path.isdir(os.path.join(rospack.get_path(pkg_name), "src")):
         log_info("Indexing source code")
         p = subprocess.run([
-            "sphinx-apidoc",
+            "sphinx-apidoc", "-f",
             "-o", os.path.join("doc", "_generated"),
             "--ext-autodoc",
             "--ext-doctest",
@@ -140,11 +164,15 @@ if __name__ == '__main__':
     rospack = RosPack(os.getenv("ROS_PACKAGE_PATH").split(":"))
 
     if build_all:
-        for pkg_name in filter_packages_for_bitbots(rospack):
+        for pkg_name in filter_packages_for_bitbots(rospack, args):
             print()
             build_package_doc(rospack, pkg_name, args)
 
     if args.package:
+        if args.package not in filter_packages_for_bitbots(rospack, args):
+            log_error("The package {} is not a bitbots package or excluded".format(args.package))
+            exit(1)
+
         print()
         build_package_doc(rospack, args.package, args)
 
