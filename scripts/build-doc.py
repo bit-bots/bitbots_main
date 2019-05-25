@@ -62,15 +62,16 @@ def parse_args():
 def handle_process_output(args, process):
     if process.returncode != 0:
         log_error("Error calling {}".format(process.args[0]))
-        print(process.stderr)
-        if args.verbosity >= 1:
+        if process.stderr:
+            print(process.stderr)
+        if args.verbosity >= 1 and process.stdout:
             print(process.stdout)
 
     else:
         if args.verbosity >= 1:
             if process.stderr:
                 print(process.stderr)
-            if args.verbosity >= 2:
+            if args.verbosity >= 2 and process.stdout:
                 print(process.stdout)
         else:
             if process.stderr:
