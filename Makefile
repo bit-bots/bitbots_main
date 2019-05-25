@@ -7,10 +7,8 @@ build :
 	scripts/repair.sh
 
 doc :
-	python3 scripts/build-complete-doc.py
+	scripts/build-doc.py
 
-doc-meta :
-	python3 scripts/build-meta-doc.py
 
 install: pull-init
 	scripts/install.pl
