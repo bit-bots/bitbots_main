@@ -113,8 +113,9 @@ def build_package_doc(rospack, pkg_name, args):
     log_info("Building documentation for package {}".format(pkg_name))
     if pkg_name in INCOMPATIBLE_PACKAGES:
         log_warn(
-            "The package is marked as not fully compatible.\n"
-            "Sphinx will throw errors when importing this package and code documentation will be incomplete")
+            "{} is marked as not fully compatible\n"
+            "Sphinx will throw errors when it tries to import this package and code documentation will be incomplete"
+                .format(pkg_name))
 
     if os.path.isdir(os.path.join(rospack.get_path(pkg_name), "src")):
         log_info("Indexing source code")
@@ -134,7 +135,7 @@ def build_package_doc(rospack, pkg_name, args):
             encoding="ASCII")
         handle_process_output(args, p)
 
-    log_info("Compiling html to {}"
+    log_info("Building html to {}"
              .format(os.path.join(os.path.basename(rospack.get_path(pkg_name)), "doc", "_build", "html", "index.html")))
 
     p = subprocess.run([
@@ -179,6 +180,3 @@ if __name__ == '__main__':
     if build_all or args.meta:
         print()
         build_meta_doc()
-
-    print()
-    log_error("Cannot yet merge package and meta documentation")
