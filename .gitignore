@@ -1,3 +1,10 @@
+# auto-generated documentation
+**/doc/_build
+**/doc/_generated
+**/doc/manifest.yaml
+**/doc/html
+
+
 config/game_controler.yaml
 __pycache__
 *.pyc
