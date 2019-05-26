@@ -162,7 +162,12 @@ if __name__ == '__main__':
     build_all = not args.meta and not args.package
 
     log_info("Indexing packages")
-    rospack = RosPack(os.getenv("ROS_PACKAGE_PATH").split(":"))
+    ros_package_path = os.getenv("ROS_PACKAGE_PATH", "")
+    if ":" in ros_package_path:
+        ros_package_path = ros_package_path.split(":")
+    else:
+        ros_package_path = [ros_package_path]
+    rospack = RosPack(ros_package_path)
 
     if build_all:
         for pkg_name in filter_packages_for_bitbots(rospack, args):
