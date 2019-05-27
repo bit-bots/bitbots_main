@@ -68,7 +68,8 @@ class TransformBall(object):
 
     def _callback_ball(self, msg):
         if self.camera_info is None:
-            rospy.logerr_throttle(1.0, "did not receive camerainfo")
+            self.warn_camera_info()
+            return
 
         field = self.get_plane(msg.header.stamp, self.ball_height, "base_footprint")
         if field is None:
@@ -92,7 +93,8 @@ class TransformBall(object):
 
     def _callback_lines(self, msg):
         if self.camera_info is None:
-            rospy.logerr( "did not receive camerainfo")
+            self.warn_camera_info()
+            return
 
         field = self.get_plane(msg.header.stamp, 0.0, "base_footprint")
         if field is None:
@@ -154,8 +156,9 @@ class TransformBall(object):
 
     def _callback_lines_pc(self, msg):
         if self.camera_info is None:
-            rospy.logerr("did not receive camerainfo")
+            self.warn_camera_info()
             return
+
         points = []
         field = self.get_plane(msg.header.stamp, 0, "base_footprint")
         if field is None:
@@ -170,7 +173,7 @@ class TransformBall(object):
 
     def _callback_goal(self, msg):
         if self.camera_info is None:
-            rospy.logerr("did not receive camerainfo")
+            self.warn_camera_info()
             return
 
         field = self.get_plane(msg.header.stamp, 0.0, "base_footprint")
@@ -193,7 +196,7 @@ class TransformBall(object):
             goal.right_post = goal.left_post
 
         if goal.left_post is None or goal.right_post is None:
-            rospy.logwarn('could not transform goal!')
+            rospy.logwarn_throttle(5.0, 'could not transform goal!')
             return
 
         goal.center_direction.x = goal.left_post.x + (goal.right_post.x - goal.left_post.x) / 2.0
@@ -205,7 +208,7 @@ class TransformBall(object):
 
     def _callback_obstacles(self, msg):
         if self.camera_info is None:
-            rospy.logerr("did not receive camerainfo")
+            self.warn_camera_info()
             return
 
         field = self.get_plane(msg.header.stamp, 0.0, "base_footprint")
@@ -229,6 +232,9 @@ class TransformBall(object):
 
         self.obstacle_relative_pub.publish(obstacles)
 
+    def warn_camera_info(self):
+        rospy.logerr_throttle(5.0, "Did not receive CameraInfo.")
+
     def get_plane(self, stamp, object_height, base_frame):
         """ returns a plane which an object is believed to be on as a tuple of a point on this plane and a normal"""
         field_normal = PointStamped()
@@ -239,11 +245,13 @@ class TransformBall(object):
         field_normal.point.z = 1.0
         try:
             field_normal = self.tf_buffer.transform(field_normal, self.camera_info.header.frame_id, timeout=rospy.Duration(0.2))
-        except tf2_ros.LookupException:
-            rospy.logwarn("Could not transform from " + base_frame + " to " + self.camera_info.header.frame_id)
+        except tf2_ros.LookupException as ex:
+            rospy.logwarn_throttle(5.0, "Could not transform from " + base_frame + " to " + self.camera_info.header.frame_id)
+            rospy.logwarn_throttle(5.0, ex)
             return None
-        except tf2_ros.ExtrapolationException:
-            rospy.logwarn("Waiting for transforms to become available...")
+        except tf2_ros.ExtrapolationException as ex:
+            rospy.logwarn_throttle(5.0, "Waiting for transforms to become available...")
+            rospy.logwarn_throttle(5.0, ex)
             return None
 
         field_point = PointStamped()
@@ -254,8 +262,9 @@ class TransformBall(object):
         field_point.point.z = object_height
         try:
             field_point = self.tf_buffer.transform(field_point, self.camera_info.header.frame_id)
-        except tf2_ros.LookupException:
-            rospy.logwarn("Could not transform from " + base_frame + " to " + self.camera_info.header.frame_id)
+        except tf2_ros.LookupException as ex:
+            rospy.logwarn_throttle(5.0, "Could not transform from " + base_frame + " to " + self.camera_info.header.frame_id)
+            rospy.logwarn_throttle(5.0, ex)
             return None
 
         field_normal = np.array([field_normal.point.x, field_normal.point.y, field_normal.point.z])
@@ -284,13 +293,16 @@ class TransformBall(object):
         try:
             intersection_transformed = self.tf_buffer.transform(intersection_stamped, self.publish_frame)
         except tf2_ros.LookupException as ex:
-            rospy.logwarn(ex)
+            rospy.logwarn_throttle(5.0, "Could not transform from " + self.publish_frame + " to " + intersection_stamped.header.frame_id)
+            rospy.logwarn_throttle(5.0, ex)
             return None
-        except tf2_ros.ExtrapolationException:
-            rospy.logwarn("Waiting for transforms to become available...")
+        except tf2_ros.ExtrapolationException as ex:
+            rospy.logwarn_throttle(5.0, "Waiting for transforms to become available...")
+            rospy.logwarn_throttle(5.0, ex)
             return None
 
         return intersection_transformed.point
+
 
 def line_plane_intersection(plane_normal, plane_point, ray_direction):
     ndotu = plane_normal.dot(ray_direction)
