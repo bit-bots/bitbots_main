@@ -85,7 +85,7 @@ class TransformBall(object):
             br.confidence = ball.confidence
 
             # TODO: This publishes every ball in balls_in_img after each other
-            if br.ball_relative is not None: # TODO: what about "if br.ball_relative:" ?
+            if br.ball_relative is not None:
                 self.ball_relative_pub.publish(br)
             else:
                 rospy.logwarn("got a ball i could not transform, would be too far away" +
@@ -114,9 +114,6 @@ class TransformBall(object):
             # only proceed if all transformations were successful
             if rel_seg.start is not None and rel_seg.end is not None:
                 line.segments.append(rel_seg)
-
-            else:
-                rospy.logwarn_throttle(1.0, "got a segment i could not transform")
 
         for circle in msg.circles:
             rel_circle = LineCircleRelative()
@@ -183,24 +180,32 @@ class TransformBall(object):
         goal = GoalRelative()
         goal.header.stamp = msg.header.stamp
         goal.header.frame_id = self.publish_frame
-        if msg.left_post is None:
-            return
 
         transformed_left = self.transform(msg.left_post.foot_point, field, msg.header.stamp)
-        goal.left_post = transformed_left
-
-        if msg.right_post.foot_point is not None and msg.right_post.foot_point.x != 0:
-            transformed_right = self.transform(msg.right_post.foot_point, field, msg.header.stamp)
-            goal.right_post = transformed_right
+        if transformed_left is None:
+            rospy.logwarn_throttle(5.0,
+                                   "Got a left post with foot point ("
+                                   + str(msg.left_post.foot_point.x)
+                                   + str(msg.left_post.foot_point.y) + ") I could not transform.")
         else:
-            goal.right_post = goal.left_post
+            goal.left_post = transformed_left
 
-        if goal.left_post is None or goal.right_post is None:
-            rospy.logwarn_throttle(5.0, 'could not transform goal!')
-            return
 
-        goal.center_direction.x = goal.left_post.x + (goal.right_post.x - goal.left_post.x) / 2.0
-        goal.center_direction.y = goal.left_post.y + (goal.right_post.y - goal.left_post.y) / 2.0
+
+        # Messages do not contain None values so the coordinates have to be checked
+        if msg.right_post.foot_point.x != 0 and msg.right_post.foot_point.y != 0:
+            transformed_right = self.transform(msg.right_post.foot_point, field, msg.header.stamp)
+            if transformed_right is None:
+                rospy.logwarn_throttle(5.0,
+                                       "Got a left post with foot point ("
+                                       + str(msg.left_post.foot_point.x)
+                                       + str(msg.left_post.foot_point.y) + ") I could not transform.")
+            else:
+                goal.right_post = transformed_right
+
+        #TODO evaluate whether we need center direction
+        #goal.center_direction.x = goal.left_post.x + (goal.right_post.x - goal.left_post.x) / 2.0
+        #goal.center_direction.y = goal.left_post.y + (goal.right_post.y - goal.left_post.y) / 2.0
 
         goal.confidence = msg.confidence
 
