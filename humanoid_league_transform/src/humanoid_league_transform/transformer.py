@@ -67,7 +67,7 @@ class TransformBall(object):
 
     def _callback_ball(self, msg):
         if self.camera_info is None:
-            rospy.logerr_throttle(rospy.Rate(1.0), "did not receive camerainfo")
+            rospy.logerr_throttle(1.0, "did not receive camerainfo")
 
         field = self.get_plane(msg.header.stamp, self.ball_height, "base_footprint")
         if field is None:
