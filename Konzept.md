@@ -30,7 +30,11 @@ Organisatorisches
 
 Aktuelle Planung
 ================
+Stand 27.05.2019
+Wir bekommen nun eine Ballposition und eine Schussrichtung (als Vektor) übergeben. Wir rechnen dann in der Engine einen Punkt in entgegengesetzter Richtung (mit dynamic reconfigurable distance) aus, zu dem der Fuß bewegt wird. Von dort wird dann der Schuss ausgeführt.
+Zusätzlich führen wir aktuell Stabilisierung ein, was einige der Splines ersetzt: Wir brauchen Splines jetzt nur noch für den Kicking Foot. Alles andere kann über die Stabilisierung der BioIK gelöst werden. Diese benötigt dafür einen Punkt, über dem balanciert werden soll. Um die Bewegung am Anfang flüssig zu gestalten, soll dieser Punkt zunächst in der Mitte unter dem Roboter liegen und dann zu einem Fuß verschoben werden. Der genaue Punkt hierfür muss noch gefunden werden.
 
+Alter Stand 24.04.2019
 Aktuell bekommen wir von außen eine Pose übergeben, die angibt, wohin sich der Fuß bewegen soll.
 Später soll dies durch einen Punkt (Ballposition), einen Schusswinkel und ggf. eine Schussweite ersetzt werden.
 Der Bewegungsablauf erhält dann einen zusätzlichen Zwischenpunkt (Fuß um eine dynamisch rekonfigurierbare Höhe
