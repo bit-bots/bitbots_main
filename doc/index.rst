@@ -39,6 +39,8 @@ Welcome to bitbots_meta's documentation!
     manual/hardware/schrauben
     manual/hardware/motornummern
 
+`Internal Documentation <http://private.doku.bit-bots.de/>`_
+
 Indices and tables
 ==================
 
