@@ -28,7 +28,6 @@
     </group>
 
     <include file="$(find humanoid_league_transform)/launch/transformer.launch">
-        <arg name="sim" value="$(arg sim)" />
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
 
