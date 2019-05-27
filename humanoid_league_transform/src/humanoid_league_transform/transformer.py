@@ -19,25 +19,25 @@ class TransformBall(object):
     def __init__(self):
         rospy.init_node("bitbots_transformer")
 
-        rospy.Subscriber(rospy.get_param("transformer/ball/ball_topic", "ball_in_image"),
+        rospy.Subscriber(rospy.get_param("~ball/ball_topic", "/ball_in_image"),
                          BallsInImage,
                          self._callback_ball,
                          queue_size=1)
-        if rospy.get_param("transformer/lines/lines_relative", True):
-            rospy.Subscriber(rospy.get_param("transformer/lines/lines_topic", "line_in_image"),
+        if rospy.get_param("~lines/lines_relative", True):
+            rospy.Subscriber(rospy.get_param("~lines/lines_topic", "/line_in_image"),
                              LineInformationInImage,
                              self._callback_lines, queue_size=1)
-        if rospy.get_param("transformer/lines/pointcloud", False):
-            rospy.Subscriber(rospy.get_param("transformer/lines/lines_topic", "line_in_image"),
+        if rospy.get_param("~lines/pointcloud", False):
+            rospy.Subscriber(rospy.get_param("~lines/lines_topic", "/line_in_image"),
                              LineInformationInImage,
                              self._callback_lines_pc, queue_size=1)
 
-        rospy.Subscriber(rospy.get_param("transformer/goals/goals_topic", "goal_in_image"),
+        rospy.Subscriber(rospy.get_param("~goals/goals_topic", "/goal_in_image"),
                          GoalInImage, self._callback_goal, queue_size=1)
-        rospy.Subscriber(rospy.get_param("transformer/obstacles/obstacles_topic", "obstacles_in_image"),
+        rospy.Subscriber(rospy.get_param("~obstacles/obstacles_topic", "/obstacles_in_image"),
                          ObstaclesInImage, self._callback_obstacles, queue_size=1)
 
-        rospy.Subscriber(rospy.get_param("transformer/camera_info/camera_info_topic", "camera_info"),
+        rospy.Subscriber(rospy.get_param("~camera_info/camera_info_topic", "/camera_info"),
                          CameraInfo,
                          self._callback_camera_info,
                          queue_size=1)
