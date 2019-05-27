@@ -62,6 +62,8 @@ class TransformBall(object):
         rospy.spin()
 
     def _callback_camera_info(self, camera_info):
+        if camera_info.K[0] == 0:
+            rospy.logerr_throttle(5.0, "Invalid CameraInfo received. Check your camera settings.")
         self.camera_info = camera_info
 
     def _callback_ball(self, msg):
