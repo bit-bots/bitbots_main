@@ -5,8 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
     message_generation
     humanoid_league_msgs
     rospy
-    move_base
-    yocs_velocity_smoother)
+    move_base)
 
 
 catkin_python_setup()

@@ -21,7 +21,6 @@
   <depend>humanoid_league_msgs</depend>
   <depend>rospy</depend>
   <depend>move_base</depend>
-  <depend>yocs_velocity_smoother</depend>
 
   <export>
     <bitbots_documentation>
