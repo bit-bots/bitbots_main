@@ -44,9 +44,9 @@ class TransformBall(object):
 
         self.marker_pub = rospy.Publisher("ballpoint", Marker, queue_size=1)
         self.ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=1)
-        if rospy.get_param("transformer/lines/lines_relative", True):
+        if rospy.get_param("~lines/lines_relative", True):
             self.line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=1)
-        if rospy.get_param("transformer/lines/pointcloud", False):
+        if rospy.get_param("~lines/pointcloud", True):
             self.line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=1)
         self.goal_relative_pub = rospy.Publisher("goal_relative", GoalRelative, queue_size=1)
         self.obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=1)
@@ -56,9 +56,8 @@ class TransformBall(object):
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(10.0))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
-        self.ball_height = rospy.get_param("transformer/ball/ball_radius", 0.075)
+        self.ball_height = rospy.get_param("~ball/ball_radius", 0.075)
         self.publish_frame = "base_footprint"
-
 
         rospy.spin()
 
