@@ -161,8 +161,8 @@ def build_meta_doc(args):
 
 
 def build_internal_doc(args):
-    log_info("Building internal documentation")
     doc_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "doc_internal")
+    log_info("Building internal documentation to {}".format(os.path.join(doc_dir, '_build', 'index.html')))
 
     if not os.path.isdir(doc_dir):
         log_error('Path {} not found or not a directory\nInternal documentation should be located here'.format(doc_dir))
