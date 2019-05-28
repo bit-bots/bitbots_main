@@ -16,8 +16,8 @@ pipeline {
         }
         steps {
             unstash 'html'
-            sh 'rm -rf /data/doku.bit-bots.de/*'
-            sh 'cp -r ./doc/_build/* /data/doku.bit-bots.de'
+            sh 'rm -rf /data/doku.bit-bots.de/meta/*'
+            sh 'cp -r ./doc/_build/* /data/doku.bit-bots.de/meta'
         }
         }
     }
