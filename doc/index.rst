@@ -1,18 +1,14 @@
-.. BitBots documentation master file, created by
-   sphinx-quickstart on Fri Apr 27 16:15:22 2018.
+.. bitbots_meta documentation master file, created by
+   sphinx-quickstart on Fri May 24 18:17:19 2019.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to BitBots's documentation!
-===================================
-
-Public documentation
---------------------
-
-Einstieg und Tutorials:
+Welcome to bitbots_meta's documentation!
+========================================
 
 .. toctree::
    :maxdepth: 1
+   :caption: Einstieg und Tutorials:
 
    manual/tutorials/software-overview
    manual/tutorials/software-schnelleinstieg
@@ -25,32 +21,32 @@ Einstieg und Tutorials:
    manual/tutorials/3d-Druck
    manual/tutorials/launch_files
 
-Software:
 
 .. toctree::
-    :maxdepth: 1
+   :maxdepth: 1
+   :caption: Software
 
-    manual/software/walking
-    manual/software/AI
-    manual/software/Vision
+   manual/software/ai
+   manual/software/vision
+   manual/software/walking
     manual/software/bitfoot
 
 Hardware:
 
 .. toctree::
     :maxdepth: 1
+    :caption: Hardware:
 
     manual/hardware/elektronik
     manual/hardware/motorkabel
     manual/hardware/schrauben
     manual/hardware/motornummern
 
-
+`Internal Documentation <http://doku.bit-bots.de/private/>`_
 
 Indices and tables
-------------------
+==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
