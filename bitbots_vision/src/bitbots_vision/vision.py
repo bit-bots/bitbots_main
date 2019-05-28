@@ -228,12 +228,15 @@ class Vision:
         non_line_msg = LineInformationInImage()
         non_line_msg.header.frame_id = image_msg.header.frame_id
         non_line_msg.header.stamp = image_msg.header.stamp
+        i = 0
         for nlp in self.line_detector.get_nonlinepoints():
             nls = LineSegmentInImage()
             nls.start.x = nlp[0]
             nls.start.y = nlp[1]
             nls.end = nls.start
-            non_line_msg.segments.append(nls)
+            if i % 2 == 0:
+                non_line_msg.segments.append(nls)
+            i += 1
         self.pub_non_lines.publish(non_line_msg)
 
         if self.ball_fcnn_publish_output and self.config['vision_ball_classifier'] == 'fcnn':
