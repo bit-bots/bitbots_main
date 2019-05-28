@@ -66,6 +66,9 @@ def parse_args():
                       )
     mode.add_argument('-p', '--package',
                       help='Build documentation for single package only')
+    mode.add_argument('-i', '--internal',
+                      action='store_const', const=True, default=False,
+                      help='Build internal documentation from "doc_internal" only')
 
     parser.add_argument('-v',
                         action='count', dest='verbosity', default=0,
@@ -147,7 +150,7 @@ def build_package_doc(rospack, pkg_name, args):
     handle_process_output(args, p)
 
 
-def build_meta_doc():
+def build_meta_doc(args):
     log_info("Building bitbots_meta documentation")
     doc_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "doc")
 
@@ -157,9 +160,22 @@ def build_meta_doc():
     handle_process_output(args, p)
 
 
+def build_internal_doc(args):
+    log_info("Building internal documentation")
+    doc_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "doc_internal")
+
+    if not os.path.isdir(doc_dir):
+        log_error('Path {} not found or not a directory\nInternal documentation should be located here'.format(doc_dir))
+        return
+
+    p = subprocess.run(["sphinx-build", doc_dir, os.path.join(doc_dir, "_build")],
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="ASCII")
+    handle_process_output(args, p)
+
+
 if __name__ == '__main__':
     args = parse_args()
-    build_all = not args.meta and not args.package
+    build_all = not args.meta and not args.package and not args.internal
 
     log_info("Indexing packages")
     ros_package_path = os.getenv("ROS_PACKAGE_PATH", "")
@@ -184,4 +200,8 @@ if __name__ == '__main__':
 
     if build_all or args.meta:
         print()
-        build_meta_doc()
+        build_meta_doc(args)
+
+    if build_all or args.internal:
+        print()
+        build_internal_doc(args)
