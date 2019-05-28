@@ -166,7 +166,7 @@ class GameStateReceiver(object):
         msg.penalized = me.penalty != 0
         msg.secondsTillUnpenalized = me.secs_till_unpenalized
 
-        if me.penalty != 1:
+        if me.penalty != 0:
             msg.allowedToMove = False
         elif state.game_state in ('STATE_INITIAL', 'STATE_SET'):
             msg.allowedToMove = False
