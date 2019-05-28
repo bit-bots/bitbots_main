@@ -87,9 +87,9 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
 
     if (success) {
         /* retrieve joint names and associated positions from  */
-        std::vector<std::string> joint_names = m_all_joints_group->getActiveJointModelNames();
+        std::vector<std::string> joint_names = m_legs_joints_group->getActiveJointModelNames();
         std::vector<double> joint_goals;
-        m_goal_state->copyJointGroupPositions(m_all_joints_group, joint_goals);
+        m_goal_state->copyJointGroupPositions(m_legs_joints_group, joint_goals);
 
         /* construct result object */
         JointGoals result;
