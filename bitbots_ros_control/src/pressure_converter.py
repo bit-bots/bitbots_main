@@ -19,25 +19,39 @@ class PressureConverter:
 
         self.last_msgs = [] #  last messages for estimating the zero position and scaling factor
         self.save_msgs = False # whether to save messages or not
+        self.values = np.zeros((8, 10), dtype=np.float)
+        self.current_index = 0
 
         rospy.Subscriber("/foot_pressure", FootPressure, self.pressure_cb)
         self.pressure_pub = rospy.Publisher("/foot_pressure_filtered", FootPressure, queue_size=1)
         rospy.Service("/set_foot_scale", FootScale, self.foot_scale_cb)
         rospy.Service("/set_foot_zero", Empty, self.zero_cb)
+        rospy.Service("/reset_foot_calibration", Empty, self.reset_cb)
         rospy.spin()
 
     def pressure_cb(self, msg: FootPressure):
         if self.save_msgs:
             self.last_msgs.append(copy.copy(msg))
 
-        msg.l_l_f = (msg.l_l_f - self.zero[0]) * self.scale[0]
-        msg.l_l_b = (msg.l_l_b - self.zero[1]) * self.scale[1]
-        msg.l_r_f = (msg.l_r_f - self.zero[2]) * self.scale[2]
-        msg.l_r_b = (msg.l_r_b - self.zero[3]) * self.scale[3]
-        msg.r_l_f = (msg.r_l_f - self.zero[4]) * self.scale[4]
-        msg.r_l_b = (msg.r_l_b - self.zero[5]) * self.scale[5]
-        msg.r_r_f = (msg.r_r_f - self.zero[6]) * self.scale[6]
-        msg.r_r_b = (msg.r_r_b - self.zero[7]) * self.scale[7]
+        self.values[0][self.current_index] = (msg.l_l_f - self.zero[0]) * self.scale[0]
+        self.values[1][self.current_index] = (msg.l_l_b - self.zero[1]) * self.scale[1]
+        self.values[2][self.current_index] = (msg.l_r_f - self.zero[2]) * self.scale[2]
+        self.values[3][self.current_index] = (msg.l_r_b - self.zero[3]) * self.scale[3]
+        self.values[4][self.current_index] = (msg.r_l_f - self.zero[4]) * self.scale[4]
+        self.values[5][self.current_index] = (msg.r_l_b - self.zero[5]) * self.scale[5]
+        self.values[6][self.current_index] = (msg.r_r_f - self.zero[6]) * self.scale[6]
+        self.values[7][self.current_index] = (msg.r_r_b - self.zero[7]) * self.scale[7]
+
+        msg.l_l_f = float(np.mean(self.values[0]))
+        msg.l_l_b = float(np.mean(self.values[1]))
+        msg.l_r_f = float(np.mean(self.values[2]))
+        msg.l_r_b = float(np.mean(self.values[3]))
+        msg.r_l_f = float(np.mean(self.values[4]))
+        msg.r_l_b = float(np.mean(self.values[5]))
+        msg.r_r_f = float(np.mean(self.values[6]))
+        msg.r_r_b = float(np.mean(self.values[7]))
+
+        self.current_index = (self.current_index + 1) % 10
 
         self.pressure_pub.publish(msg)
 
@@ -63,11 +77,10 @@ class PressureConverter:
             message_data[7][i] = self.last_msgs[i].r_r_b
 
         self.last_msgs = []
-        zero = []
         for i in range(8):
-            zero.append(float(np.median(message_data[i])))
+            self.zero[i] = (float(np.median(message_data[i])))
 
-        rospy.set_param("~zero", zero)
+        rospy.set_param("~zero", self.zero)
         self.save_yaml()
         return EmptyResponse()
 
@@ -93,12 +106,19 @@ class PressureConverter:
             message_data[6][i] = self.last_msgs[i].r_r_f
             message_data[7][i] = self.last_msgs[i].r_r_b
 
-        single_scale = np.median(message_data[request.sensor]) / request.weight
+        single_scale = request.weight / (np.mean(message_data[request.sensor]) - self.zero[request.sensor])
+        rospy.logwarn("mean:" + str(np.median(message_data[request.sensor])))
+
         self.scale[request.sensor] = float(single_scale)
         rospy.set_param("~scale", self.scale)
         self.last_msgs = []
         self.save_yaml()
         return FootScaleResponse()
+
+    def reset_cb(self,request):
+        self.scale = [1.0] * 8
+        self.zero = [0.0] * 8
+        self.save_yaml()
 
     def save_yaml(self):
         data = {'scale': self.scale,

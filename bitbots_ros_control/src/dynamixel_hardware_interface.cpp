@@ -828,7 +828,7 @@ bool DynamixelHardwareInterface::readFootSensors(){
   // read first foot
   if(_driver->readMultipleRegisters(101, 36, 16, data)){
     for (int i = 0; i < 4; i++) {
-      uint32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i*4], data[i*4+1]), DXL_MAKEWORD(data[i*4+2], data[i*4+3]));      
+      int32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i*4], data[i*4+1]), DXL_MAKEWORD(data[i*4+2], data[i*4+3]));
       float pres_d = (float) pres;      
       // go from bytes to actual newton force
       _current_pressure[i] = (double) pres_d; //- (pow(2, 32)/2);
