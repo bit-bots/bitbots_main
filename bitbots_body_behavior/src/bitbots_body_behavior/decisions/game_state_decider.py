@@ -17,7 +17,7 @@ class GameStateDecider(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         if not self.blackboard.gamestate.is_allowed_to_move():
-            rospy.logwarn("Not allowed to move")
+            rospy.loginfo_throttle(3.0, "Not allowed to move")
             return "NOT_ALLOWED_TO_MOVE"
 
         game_state_number = self.blackboard.gamestate.get_gamestate()
