@@ -138,17 +138,17 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
 
     /* Stabilizing point */
     m_support_point_trajectories->get("pos_x").addPoint(fix0, 0);
-    m_support_point_trajectories->get("pos_x").addPoint(fix1, 0);
-    m_support_point_trajectories->get("pos_x").addPoint(fix2, 0);
-    m_support_point_trajectories->get("pos_x").addPoint(fix3, 0);
-    m_support_point_trajectories->get("pos_x").addPoint(fix4, 0);
+    m_support_point_trajectories->get("pos_x").addPoint(fix1, m_params.stabilizing_point_x);
+    m_support_point_trajectories->get("pos_x").addPoint(fix2, m_params.stabilizing_point_x);
+    m_support_point_trajectories->get("pos_x").addPoint(fix3, m_params.stabilizing_point_x);
+    m_support_point_trajectories->get("pos_x").addPoint(fix4, m_params.stabilizing_point_x);
     m_support_point_trajectories->get("pos_x").addPoint(fix5, 0);
 
     m_support_point_trajectories->get("pos_y").addPoint(fix0, kick_foot_sign * (m_params.foot_distance / 2.0));
-    m_support_point_trajectories->get("pos_y").addPoint(fix1, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.stabilizing_point));
-    m_support_point_trajectories->get("pos_y").addPoint(fix2, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.stabilizing_point));
-    m_support_point_trajectories->get("pos_y").addPoint(fix3, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.stabilizing_point));
-    m_support_point_trajectories->get("pos_y").addPoint(fix4, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.stabilizing_point));
+    m_support_point_trajectories->get("pos_y").addPoint(fix1, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.stabilizing_point_y));
+    m_support_point_trajectories->get("pos_y").addPoint(fix2, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.stabilizing_point_y));
+    m_support_point_trajectories->get("pos_y").addPoint(fix3, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.stabilizing_point_y));
+    m_support_point_trajectories->get("pos_y").addPoint(fix4, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.stabilizing_point_y));
     m_support_point_trajectories->get("pos_y").addPoint(fix5, kick_foot_sign * (m_params.foot_distance / 2.0));
 }
 

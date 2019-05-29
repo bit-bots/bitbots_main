@@ -30,7 +30,8 @@ public:
     double move_back_time = 1;
     double lower_foot_time = 1;
 
-    double stabilizing_point;
+    double stabilizing_point_x;
+    double stabilizing_point_y;
 };
 
 /**
