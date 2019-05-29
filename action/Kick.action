@@ -1,5 +1,5 @@
 # goal definition
-geometry_msgs/PoseStamped ball_position
+geometry_msgs/Vector3Stamped ball_position
 geometry_msgs/Vector3Stamped kick_movement
 
 ---
