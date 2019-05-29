@@ -47,7 +47,7 @@ public:
      * Set new goal which the engine tries to kick at. This will remove the old goal completely and plan new splines.
      * @param ball_position Pose in base_link frame which should be reached.
      *      Ideally this is also where the ball lies and a kick occurs.
-     * @param kick_movement Speed in each dimension with which to kick the ball // TODO document scale of speed (m/s, km/h, 0-1,...)
+     * @param kick_movement Speed in each dimension with which to kick the ball
      * @param r_foot_pose Current pos of right foot in base_link frame
      */
     bool
@@ -109,7 +109,9 @@ private:
     void init_trajectories();
 
     /**
-     *  // TODO Add docstring to calc_splines once we resolve issue #2
+     *  Calculate splines for a complete kick whereby m_is_left_kick should already be set correctly
+     *
+     *  @param flying_foot_pose Current pose of the foot which is supposed to be the flying/kicking one
      */
     void calc_splines(const geometry_msgs::Pose &flying_foot_pose);
 
