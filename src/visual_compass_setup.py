@@ -3,7 +3,7 @@ import rospy
 import rospkg
 import actionlib
 import math
-import pickle
+import cPickle as pickle
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from dynamic_reconfigure.server import Server
@@ -42,9 +42,9 @@ class VisualCompassSetup():
         """
         # Init ROS package
         rospack = rospkg.RosPack()
-        # self.package_path = rospack.get_path('bitbots_visual_compass')
+        self.package_path = rospack.get_path('bitbots_visual_compass')
 
-        rospy.init_node('bitbots_visual_compass')
+        rospy.init_node('bitbots_visual_compass_setup')
         rospy.loginfo('Initializing visual compass')
 
         self.bridge = CvBridge()
@@ -111,7 +111,6 @@ class VisualCompassSetup():
         return self.config
 
     def set_truth_callback(self, goal):
-
         if self.image_dict:
             # TODO: check timestamps
 
@@ -164,9 +163,12 @@ class VisualCompassSetup():
             self.processed_set_all_ground_truth_images = True
 
     def save_ground_truth(self):
-        # TODO: get keypoints
-        # TODO: save keypoints in pickle file
-        pass
+        # get keypoints
+        keypoints = self.compass.get_ground_truth_keypoints()
+        # save keypoints in pickle file
+        file_path = self.package_path + self.config['ground_truth_file']
+        pickle.dump(keypoints, open(file_path, "wb"))
+
             
     def changed_config_param(self, config, param_name):
         # type: (dict, str) -> bool

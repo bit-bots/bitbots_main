@@ -38,6 +38,12 @@ class VisualCompass(VisualCompassInterface):
     def set_truth(self, angle, image):
         return self.compass.set_truth(angle, image)
 
+    def get_ground_truth_keypoints(self):
+        return self.compass.get_ground_truth_keypoints()
+
+    def set_ground_truth_keypoints(self, ground_truth):
+        self.compass.set_ground_truth_keypoints(ground_truth)
+
     def get_side(self):
         return self.compass.get_side()
 

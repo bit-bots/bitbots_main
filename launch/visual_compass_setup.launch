@@ -1,8 +1,10 @@
 <launch>
-    <arg name="sim" default="false"/>
+    <arg name="sim" default="false" />
+    <arg name="file" default="" />
 
-    <node pkg="bitbots_visual_compass" type="visual_compass_setup.py" name="bitbots_visual_compass" output="screen">
+    <node pkg="bitbots_visual_compass" type="visual_compass_setup.py" name="bitbots_visual_compass_setup" output="screen">
         <rosparam command="load" file="$(find bitbots_visual_compass)/config/config.yaml"/>
+        <param name="ground_truth_file" value="$(arg file)" />
     </node>
 
     <!-- start the camera only when necessary -->
