@@ -57,13 +57,15 @@ class MultipleCompass(VisualCompassInterface):
 
     def _compute_state(self, matching_keypoints):
         angles = list(map(lambda x: x.angle, matching_keypoints))
-        angles.sort()
+
+
         length = len(angles)
         if length < 2:
             return .0, .0
-        median = statistics.median(angles)
-        confidence = statistics.stdev(angles) / math.pi
-        confidence = confidence ** (1./5)
+
+        z = sum(map(lambda angle: np.exp(1j * angle), angles))
+        median = np.angle(z) % (math.pi * 2)
+        confidence = (float(np.abs(z)) / length) ** (1./2)
         return median, confidence
 
     def process_image(self, image, resultCB=None, debugCB=None):
