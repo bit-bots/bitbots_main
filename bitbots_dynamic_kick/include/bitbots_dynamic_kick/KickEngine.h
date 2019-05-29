@@ -48,12 +48,14 @@ public:
      * @param ball_position Pose in base_link frame which should be reached.
      *      Ideally this is also where the ball lies and a kick occurs.
      * @param kick_movement Speed in each dimension with which to kick the ball
-     * @param r_foot_pose Current pos of right foot in base_link frame
+     * @param r_foot_pose Current pose of right foot in l_sole frame
+     * @param l_foot_pose Current pose of left foot in r_sole frame
      */
     bool
     set_goal(const geometry_msgs::Vector3Stamped &ball_position,
              const geometry_msgs::Vector3Stamped &kick_movement,
-             const geometry_msgs::Pose &r_foot_pose);
+             const geometry_msgs::Pose &r_foot_pose,
+             const geometry_msgs::Pose &l_foot_pose);
 
     /**
      * Reset this KickEngine completely, removing the goal, all splines and thereby stopping all output

@@ -35,12 +35,13 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     ROS_INFO("Accepted new goal");
     m_engine.reset();
 
-    if (auto r_foot_pose = get_foot_poses()) {
+    if (auto foot_poses = get_foot_poses()) {
 
         /* Set engines goal and start calculating */
         m_engine.set_goal(goal->ball_position,
                           goal->kick_movement,
-                          r_foot_pose.value());
+                          foot_poses->first,
+                          foot_poses->second);
         loop_engine();
 
         /* Figure out the reason why loop_engine() returned and act accordingly */
@@ -66,26 +67,25 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     }
 }
 
-std::optional<geometry_msgs::Pose> KickNode::get_foot_poses() {
+std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> KickNode::get_foot_poses() {
+    ros::Time time = ros::Time::now();
+
     /* Construct zero-positions for both feet in their respective local frames */
-    geometry_msgs::PoseStamped r_foot_pose_stamped, r_foot_origin;
+    geometry_msgs::PoseStamped r_foot_origin, l_foot_origin;
     r_foot_origin.header.frame_id = "r_sole";
     r_foot_origin.pose.orientation.w = 1;
-    r_foot_origin.header.stamp = ros::Time::now();
+    r_foot_origin.header.stamp = time;
 
-    /* Lookup transform for both feet into base_link */
-    geometry_msgs::TransformStamped trunk_transform, r_foot_transform;
-    try {
-        r_foot_transform = m_tf_buffer.lookupTransform("l_sole", "r_sole", ros::Time(0), ros::Duration(1.0));
-    } catch (tf2::TransformException &ex) {
-        ROS_ERROR("%s", ex.what());
-        return std::nullopt;
-    }
+    l_foot_origin.header.frame_id = "l_sole";
+    l_foot_origin.pose.orientation.w = 1;
+    l_foot_origin.header.stamp = time;
 
-    /* Do transformation of both feet into base_link with previously retrieved transform */
-    tf2::doTransform(r_foot_origin, r_foot_pose_stamped, r_foot_transform);
+    /* Transform both feets poses into the other foots frame */
+    geometry_msgs::PoseStamped r_foot_transformed, l_foot_transformed;
+    m_tf_buffer.transform(r_foot_origin, r_foot_transformed, "l_sole", ros::Duration(0.2)); // TODO lookup thrown exceptions in internet and catch
+    m_tf_buffer.transform(l_foot_origin, l_foot_transformed, "r_sole", ros::Duration(0.2));
 
-    return r_foot_pose_stamped.pose;
+    return std::pair(r_foot_transformed.pose, l_foot_transformed.pose);
 }
 
 void KickNode::loop_engine() {

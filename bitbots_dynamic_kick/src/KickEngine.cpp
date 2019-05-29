@@ -10,7 +10,8 @@ void KickEngine::reset() {
 
 bool KickEngine::set_goal(const geometry_msgs::Vector3Stamped &ball_position,
                           const geometry_msgs::Vector3Stamped &kick_movement,
-                          const geometry_msgs::Pose &r_foot_pose) {
+                          const geometry_msgs::Pose &r_foot_pose,
+                          const geometry_msgs::Pose &l_foot_pose) {
 
     m_is_left_kick = calc_is_left_foot_kicking(ball_position, kick_movement);
 
@@ -23,7 +24,7 @@ bool KickEngine::set_goal(const geometry_msgs::Vector3Stamped &ball_position,
 
         /* Plan new splines according to new goal */
         init_trajectories();
-        calc_splines(m_is_left_kick ? r_foot_pose : r_foot_pose);
+        calc_splines(m_is_left_kick ? l_foot_pose : r_foot_pose);
 
         return true;
 

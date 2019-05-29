@@ -58,9 +58,9 @@ private:
     /**
      * Retrieve current feet_positions in base_link frame
      *
-     * @return The right foots pose if transformation was successfull
+     * @return The pair of (right foot, left foot) poses if transformation was successfull
      */
-    std::optional<geometry_msgs::Pose> get_foot_poses();
+    std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> get_foot_poses();
 
     /**
      * Publish goals to ROS
