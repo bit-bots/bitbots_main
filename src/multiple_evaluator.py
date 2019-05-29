@@ -4,6 +4,7 @@ import cv2
 import time
 import yaml
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import numpy as np
 from evaluation_data_loader import DataLoader
 from worker import VisualCompass
@@ -26,7 +27,7 @@ class BinaryEvaluator(object):
         
         self.loader = DataLoader(self.data_path, self.dimensions, self.angle_steps)
 
-        config['compass_type'] = 'multiple'
+        #config['compass_type'] = 'multiple'
         
         self.sample_count = 2 if config['compass_type'] == 'binary' else config['compass_multiple_sample_count']
         self.vc = VisualCompass(config)
@@ -42,7 +43,7 @@ class BinaryEvaluator(object):
     def setTruth(self):
         for i in range(self.sample_count):
             angle = float(i) / self.sample_count * math.radians(360)
-            image = self.loader.getImage(4, 3, self.float_mod(angle #+ math.radians(90)
+            image = self.loader.getImage(4, 3, self.float_mod(angle + math.radians(90)
                                                               , math.radians(360)))
             self.vc.set_truth(angle, image)
             self.show_img(image)
@@ -52,8 +53,7 @@ class BinaryEvaluator(object):
 
 
         for i in range(16):
-            ax = plt.subplot(1, 1,1)
-            self.evaluateDirection(math.pi/8*i, ax)
+            self.evaluateDirection(math.pi/8*i, None)
             print(i)
             print("done")
             plt.show()
@@ -64,6 +64,8 @@ class BinaryEvaluator(object):
         time.sleep(0.5)
 
     def evaluateDirection(self, step, ax):
+        ax = plt.subplot(1, 2, 1)
+
         U = np.zeros(self.dimensions)
         V = np.zeros(self.dimensions)
         C = np.zeros(self.dimensions)
@@ -79,6 +81,9 @@ class BinaryEvaluator(object):
         Q = ax.quiver(U, V, C, pivot='mid')
         ax.axis('equal')
         ax.axis('off')
+
+        plt.subplot(1, 2, 2)
+        plt.imshow(self.loader.getImage(4, 3, step))
 
 
     def plot_confidence(self, confidences, side):
