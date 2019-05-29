@@ -28,7 +28,7 @@ class MotorVizHelper:
         if args.animation or args.all:
             rospy.Subscriber("animation", Animation, self.animation_cb, queue_size=1, tcp_nodelay=True)
         if args.head or args.all:
-            rospy.Subscriber("head_motor_goals", JointCommand, self.animation_cb, queue_size=1, tcp_nodelay=True)
+            rospy.Subscriber("head_motor_goals", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
 
         self.joint_state_msg = JointState()
