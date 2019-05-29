@@ -14,7 +14,7 @@ from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAct
 from humanoid_league_speaker.speaker import speak
 from bitbots_msgs.msg import FootPressure
 
-from bitbots_msgs.msg import JointCommand
+from bitbots_msgs.msg import JointCommand, JointTorque
 from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_CONTROLABLE, STATE_WALKING, STATE_ANIMATION_RUNNING, \
     STATE_SHUT_DOWN, STATE_HCM_OFF
 from bitbots_hcm.cfg import hcm_paramsConfig
@@ -47,6 +47,7 @@ class HardwareControlManager:
 
         # Publisher / subscriber
         self.joint_goal_publisher = rospy.Publisher('DynamixelController/command', JointCommand, queue_size=1)
+        self.joint_torque_publisher = rospy.Publisher('DynamixelController/command', JointTorque, queue_size=1) #can i pub this on /command? TODO
         self.hcm_state_publisher = rospy.Publisher('robot_state', RobotControlState, queue_size=1, latch=True)
         self.blackboard.speak_publisher = rospy.Publisher('speak', Speak, queue_size=1)
 
@@ -166,15 +167,25 @@ class HardwareControlManager:
             out_msg.accelerations = [-1] * len(out_msg.joint_names)
             out_msg.velocities = [-1] * len(out_msg.joint_names)
             out_msg.max_currents = [-1] * len(out_msg.joint_names)
+            send_torque = False
+            if hasattr(msg.position.points, 'effort'):
+                out_torque = JointTorque
+                out_torque.joint_names = msg.position.joint_names
+                out_torque.on = msg.position.points.effort
+                send_torque = True
             if self.blackboard.shut_down_request:
                 # there are sometimes transmittions errors during shutdown due to race conditions
                 # there is nothing we can do so just ignore the errors in this case
                 try:
                     self.joint_goal_publisher.publish(out_msg)
+                    if send_torque:
+                        self.joint_torque_publisher.publish(out_torque)
                 except:
                     pass
             else:
                 self.joint_goal_publisher.publish(out_msg)
+                if send_torque:
+                    self.joint_torque_publisher.publish(out_torque)
 
     def joint_state_callback(self, msg):
         self.blackboard.last_motor_update_time = msg.header.stamp

@@ -10,6 +10,7 @@ import time
 from humanoid_league_msgs.msg import PlayAnimationResult, PlayAnimationFeedback
 from humanoid_league_msgs.msg import PlayAnimationAction as PlayAction
 from humanoid_league_msgs.msg import Animation as AnimationMsg
+from bitbots_animation_server.animation import Keyframe, Animation
 from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
 
 from bitbots_animation_server.animation import parse
@@ -44,6 +45,8 @@ class PlayAnimationAction(object):
         self.action_name = name
         self.hcm_state = 0
 
+        self.parsed_animation = {}
+
         # pre defiened messages for performance
         self.anim_msg = AnimationMsg()
         self.traj_msg = JointTrajectory()
@@ -77,7 +80,7 @@ class PlayAnimationAction(object):
         # start animation
         try:
             with open(find_animation(goal.animation)) as fp:
-                parsed_animation = parse(json.load(fp))
+                self.parsed_animation = parse(json.load(fp))
         except IOError:
             rospy.logwarn("Animation '%s' not found" % goal.animation)
             self._as.set_aborted(False, "Animation not found")
@@ -88,7 +91,7 @@ class PlayAnimationAction(object):
             traceback.print_exc()
             self._as.set_aborted(False, "Animation not found")
             return
-        animator = SplineAnimator(parsed_animation, self.current_joint_states)
+        animator = SplineAnimator(self.parsed_animation, self.current_joint_states)
         rate = rospy.Rate(200)
         start_time = rospy.get_time()
 
@@ -154,21 +157,33 @@ class PlayAnimationAction(object):
         self.hcm_publisher.publish(self.anim_msg)
 
     def send_animation(self, first, last, hcm, pose):
+        #HERE
         self.anim_msg.request = False
         self.anim_msg.first = first
         self.anim_msg.last = last
         self.anim_msg.hcm = hcm
         if pose is not None:
+            torque = self.get_torque()
             self.traj_msg.joint_names = []
             self.traj_msg.points = [JointTrajectoryPoint()]
             self.traj_msg.points[0].positions = []
+            self.traj_msg.points[0].effort = []
             for joint in pose:
                 self.traj_msg.joint_names.append(joint)
                 self.traj_msg.points[0].positions.append(pose[joint])
+                for t in torque:
+                    if joint == t:
+                        self.traj_msg.points[0].effort.append(torque[t])
             self.anim_msg.position = self.traj_msg
         self.anim_msg.header.stamp = rospy.Time.now()
         self.hcm_publisher.publish(self.anim_msg)
 
+    def get_torque(self):
+        torque = {}
+        for kf in self.parsed_animation.keyframes:
+            for t in kf.torque:
+                torque[t] = kf.torque[t]
+        return torque
 
 if __name__ == "__main__":
     rospy.logdebug("starting animation node")

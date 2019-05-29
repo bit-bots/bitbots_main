@@ -40,7 +40,6 @@ class AnimationData(object):
 
 class Recorder(object):
     """ Recorder Methods are gathered in this class
-
     :param ipc: Shared Memory provider to set data
     :param gui: urwid-gui responsible for displaying this reocrd-instance
     :param logger:
@@ -71,11 +70,9 @@ class Recorder(object):
     def save_step(self, description, state=None):
         """ Save the current state of the Animation
         for later restoration by the undo-command
-
         (Yes we might save only a diff, but the Memory consumption
         should still be relatively low this way and saving / undoing
         is really cheap in terms of CPU and effort spent programming)
-
         :param description: A string describing the saved action for the user
         :param state: a AnimState can be given otherwise the current one is used
         """
@@ -168,14 +165,12 @@ class Recorder(object):
 
     def save_animation(self, path, file_name=None, save_checkbox=None, force=False):
         """ Record Command, dump all keyframedata to an animation .json file
-
         The GUI is asked for validity of the data, because the GUI keeps track
         of that anyway. If the data is not valid, saving the changes is refused
         to avoid putting defect files into our repository or even overriding
         functional ones. Forcing this method to dump results in a '_defective'
         postfix of the filename. The force feature is intended to allow "emergency"
         saves when the Programm itself is forced to exit in an inconsistent state.
-
         :param file_name: what name the new file should receive
         :param force: set True, for saving even inconsistent states.
         """
@@ -220,7 +215,6 @@ class Recorder(object):
 
     def remove(self, framenumber=None):
         """ Record Command, remove the last keyframedata
-
         :param framenumber: The Number of frame to remove. default is last
         """
         if not framenumber:
@@ -246,7 +240,6 @@ class Recorder(object):
 
     def load_animation(self, path):
         """ Record command, load a animation '.json' file
-
         :param name: name of the animation to load
         """
         data = []
@@ -300,10 +293,8 @@ class Recorder(object):
 
     def play(self, anim_path, until_frame=None):
         """ Record command, start playing an animation
-
         Can play a certain (named) animation or the current one by default.
         Also can play only a part of an animation if *start* and/or *end* are defined
-
         :param until_frame:
         """
         try:
