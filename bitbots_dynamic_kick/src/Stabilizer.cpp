@@ -1,6 +1,7 @@
 #include "bitbots_dynamic_kick/Stabilizer.h"
 #include "bitbots_dynamic_kick/DynamicBalancingGoal.h"
 #include "bitbots_dynamic_kick/ReferencePoseGoal.h"
+#include "bitbots_dynamic_kick/ReferenceOrientationGoal.h"
 
 Stabilizer::Stabilizer() {
     /* load MoveIt! model */
@@ -61,6 +62,19 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
     }
     bio_ik_flying_foot_goal->setWeight(m_flying_weight);
 
+    auto *trunk_orientation_goal = new ReferenceOrientationGoal();
+    tf::Quaternion trunk_orientation;
+    trunk_orientation.setRPY(0, 0.2, 0);
+    trunk_orientation_goal->setOrientation(trunk_orientation);
+    trunk_orientation_goal->setLinkName("base_link");
+    if (is_left_kick) {
+        trunk_orientation_goal->setReferenceLinkName("r_sole");
+    } else {
+        trunk_orientation_goal->setReferenceLinkName("l_sole");
+    }
+    trunk_orientation_goal->setWeight(m_trunk_orientation_weight);
+    ik_options.goals.emplace_back(trunk_orientation_goal);
+
     DynamicBalancingContext bio_ik_balancing_context(m_kinematic_model);
     auto *bio_ik_balance_goal = new DynamicBalancingGoal(&bio_ik_balancing_context, stabilizing_target, m_stabilizing_weight);
     if (is_left_kick) {
@@ -69,7 +83,6 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
         bio_ik_balance_goal->setReferenceLink("l_sole");
     }
 
-    /* switches order of flying and trunk goal according to is_left_kick */
     ik_options.goals.emplace_back(bio_ik_flying_foot_goal);
     if (m_use_stabilizing) {
         ik_options.goals.emplace_back(bio_ik_balance_goal);
@@ -115,4 +128,8 @@ void Stabilizer::set_stabilizing_weight(double weight) {
 
 void Stabilizer::set_flying_weight(double weight) {
     m_flying_weight = weight;
+}
+
+void Stabilizer::set_trunk_orientation_weight(double weight) {
+    m_trunk_orientation_weight = weight;
 }

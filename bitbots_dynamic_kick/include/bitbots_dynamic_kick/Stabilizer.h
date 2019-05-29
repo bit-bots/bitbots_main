@@ -28,6 +28,7 @@ public:
     void use_minimal_displacement(bool use);
     void set_stabilizing_weight(double weight);
     void set_flying_weight(double weight);
+    void set_trunk_orientation_weight(double weight);
 private:
     robot_state::RobotStatePtr m_goal_state;
 
@@ -39,6 +40,7 @@ private:
     bool m_use_minimal_displacement;
     double m_stabilizing_weight;
     double m_flying_weight;
+    double m_trunk_orientation_weight;
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_STABILIZER_H

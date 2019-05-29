@@ -1,12 +1,7 @@
-//
-// Created by timon on 5/22/19.
-//
-
 #ifndef BITBOTS_DYNAMIC_KICK_REFERENCEPOSEGOAL_H
 #define BITBOTS_DYNAMIC_KICK_REFERENCEPOSEGOAL_H
 
 #include <bio_ik/goal.h>
-#include <ros/console.h>
 
 class ReferencePoseGoal : public bio_ik::Goal
 {
