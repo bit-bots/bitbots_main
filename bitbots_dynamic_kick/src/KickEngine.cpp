@@ -8,14 +8,16 @@ void KickEngine::reset() {
     m_flying_trajectories.reset();
 }
 
-bool KickEngine::set_goal(const geometry_msgs::PoseStamped &target_pose, const geometry_msgs::Vector3Stamped &speed,
-                          const geometry_msgs::Pose &trunk_pose, const geometry_msgs::Pose &r_foot_pose,
+bool KickEngine::set_goal(const geometry_msgs::Vector3Stamped &ball_position,
+                          const geometry_msgs::Vector3Stamped &kick_movement,
+                          const geometry_msgs::Pose &trunk_pose,
+                          const geometry_msgs::Pose &r_foot_pose,
                           bool is_left_kick) {
     /* Save given goals because we reuse them later */
-    auto transformed_goal = transform_goal("l_sole", target_pose, speed);
+    auto transformed_goal = transform_goal("l_sole", ball_position, kick_movement);
     if (transformed_goal) {
-        m_goal_pose = transformed_goal->first;
-        m_speed = transformed_goal->second;
+        m_ball_position = transformed_goal->first;
+        m_kick_movement = transformed_goal->second;
         m_time = 0;
         m_is_left_kick = is_left_kick;
 
@@ -104,7 +106,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose,
     m_flying_trajectories->get("pos_x").addPoint(fix1, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix2, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix3, kick_windup_point.x());
-    m_flying_trajectories->get("pos_x").addPoint(fix4, m_goal_pose.position.x);
+    m_flying_trajectories->get("pos_x").addPoint(fix4, m_ball_position.x);
     m_flying_trajectories->get("pos_x").addPoint(fix5, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix6, 0);
 
@@ -112,7 +114,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose,
     m_flying_trajectories->get("pos_y").addPoint(fix1, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix2, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix3, kick_windup_point.y());
-    m_flying_trajectories->get("pos_y").addPoint(fix4, m_goal_pose.position.y);
+    m_flying_trajectories->get("pos_y").addPoint(fix4, m_ball_position.y);
     m_flying_trajectories->get("pos_y").addPoint(fix5, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix6, kick_foot_sign * m_params.foot_distance);
 
@@ -226,9 +228,9 @@ void KickEngine::init_trajectories() {
     m_flying_trajectories->add("yaw");
 }
 
-std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Vector3>> KickEngine::transform_goal(
+std::optional<std::pair<geometry_msgs::Vector3, geometry_msgs::Vector3>> KickEngine::transform_goal(
         const std::string &support_foot_frame,
-        const geometry_msgs::PoseStamped &ball_position,
+        const geometry_msgs::Vector3Stamped &ball_position,
         const geometry_msgs::Vector3Stamped &kick_movement) {
 
     /* Lookup transforms from goal frames to support_foot_frame */
@@ -245,20 +247,20 @@ std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Vector3>> KickEngine
     }
 
     /* Do transformation of goals into support_foot_frame with previously retrieved transform */
-    geometry_msgs::PoseStamped transformed_ball_position;
+    geometry_msgs::Vector3Stamped transformed_ball_position;
     geometry_msgs::Vector3Stamped transformed_kick_movement;
     tf2::doTransform(ball_position, transformed_ball_position, ball_position_transform);
     tf2::doTransform(kick_movement, transformed_kick_movement, kick_movement_transform);
 
-    return std::pair(transformed_ball_position.pose, transformed_kick_movement.vector);
+    return std::pair(transformed_ball_position.vector, transformed_kick_movement.vector);
 }
 
 tf2::Vector3 KickEngine::calc_kick_windup_point() {
-    tf2::Vector3 kick_movement = tf2::Vector3(m_speed.x, m_speed.y, m_params.foot_rise).normalize();
+    tf2::Vector3 kick_movement = tf2::Vector3(m_kick_movement.x, m_kick_movement.y, m_params.foot_rise).normalize();
     kick_movement *= -m_params.kick_windup_distance;
 
     tf2::Vector3 goal_tf2;
-    tf2::fromMsg(m_goal_pose.position, goal_tf2);
+    tf2::fromMsg(m_ball_position, goal_tf2);
     kick_movement += goal_tf2;
 
     return kick_movement;

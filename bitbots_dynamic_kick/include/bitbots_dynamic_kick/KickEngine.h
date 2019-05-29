@@ -48,14 +48,16 @@ public:
 
     /**
      * Set new goal which the engine tries to kick at. This will remove the old goal completely and plan new splines.
-     * @param target_pose Pose in base_link frame which should be reached.
+     * @param ball_position Pose in base_link frame which should be reached.
      *      Ideally this is also where the ball lies and a kick occurs.
-     * @param speed Speed in each dimension with which to kick the ball // TODO document scale of speed (m/s, km/h, 0-1,...)
+     * @param kick_movement Speed in each dimension with which to kick the ball // TODO document scale of speed (m/s, km/h, 0-1,...)
      * @param trunk_pose Current pose of left foot in base_link frame
      * @param r_foot_pose Current pos of right foot in base_link frame
      */
-    bool set_goal(const geometry_msgs::PoseStamped &target_pose, const geometry_msgs::Vector3Stamped &speed,
-                  const geometry_msgs::Pose &trunk_pose, const geometry_msgs::Pose &r_foot_pose,
+    bool set_goal(const geometry_msgs::Vector3Stamped &ball_position,
+                  const geometry_msgs::Vector3Stamped &kick_movement,
+                  const geometry_msgs::Pose &trunk_pose,
+                  const geometry_msgs::Pose &r_foot_pose,
                   bool is_left_kick);
 
     /**
@@ -80,9 +82,9 @@ public:
      * @param kick_movement Movement direction in which to kick the ball
      * @return pair of (transformed_pose, transformed_movement)
      */
-    std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Vector3>> transform_goal(
+    std::optional<std::pair<geometry_msgs::Vector3, geometry_msgs::Vector3>> transform_goal(
             const std::string &support_foot_frame,
-            const geometry_msgs::PoseStamped &ball_position,
+            const geometry_msgs::Vector3Stamped &ball_position,
             const geometry_msgs::Vector3Stamped &kick_movement);
 
     /**
@@ -96,8 +98,8 @@ public:
 
 private:
     double m_time;
-    geometry_msgs::Pose m_goal_pose;
-    geometry_msgs::Vector3 m_speed;
+    geometry_msgs::Vector3 m_ball_position;
+    geometry_msgs::Vector3 m_kick_movement;
     bool m_is_left_kick;
     std::optional<Trajectories> m_trunk_trajectories, m_flying_trajectories;
     Stabilizer m_stabilizer;
