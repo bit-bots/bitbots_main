@@ -35,9 +35,8 @@ class SiftMatcher(Matcher):
         except(Exception):
             return []
 
-        matches = matches[['x', 'y']][:,0].tolist()
-        points = cv2.KeyPoint_convert(matches)
-
+        matches = matches[['x', 'y', 'scale','angle']][:,0].tolist()
+        points = [cv2.KeyPoint(match[0], match[1], match[2], match[3]) for match in matches]
         return points
 
     def initSift(self):
