@@ -145,10 +145,10 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &target_pose, const geom
     m_support_point_trajectories->get("pos_x").addPoint(fix5, 0);
 
     m_support_point_trajectories->get("pos_y").addPoint(fix0, kick_foot_sign * (m_params.foot_distance / 2.0));
-    m_support_point_trajectories->get("pos_y").addPoint(fix1, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.stabilizing_point_y));
-    m_support_point_trajectories->get("pos_y").addPoint(fix2, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.stabilizing_point_y));
-    m_support_point_trajectories->get("pos_y").addPoint(fix3, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.stabilizing_point_y));
-    m_support_point_trajectories->get("pos_y").addPoint(fix4, kick_foot_sign * (m_params.foot_distance / 2.0 - m_params.stabilizing_point_y));
+    m_support_point_trajectories->get("pos_y").addPoint(fix1, kick_foot_sign * (-m_params.stabilizing_point_y));
+    m_support_point_trajectories->get("pos_y").addPoint(fix2, kick_foot_sign * (-m_params.stabilizing_point_y));
+    m_support_point_trajectories->get("pos_y").addPoint(fix3, kick_foot_sign * (-m_params.stabilizing_point_y));
+    m_support_point_trajectories->get("pos_y").addPoint(fix4, kick_foot_sign * (-m_params.stabilizing_point_y));
     m_support_point_trajectories->get("pos_y").addPoint(fix5, kick_foot_sign * (m_params.foot_distance / 2.0));
 }
 
