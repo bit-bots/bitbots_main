@@ -30,6 +30,9 @@ public:
     double kick_time = 1;
     double move_back_time = 1;
     double lower_foot_time = 1;
+
+    double stabilizing_point_x;
+    double stabilizing_point_y;
 };
 
 /**
@@ -95,13 +98,13 @@ public:
 
     void set_params(KickParams params);
 
+    Stabilizer m_stabilizer;
 private:
     double m_time;
     geometry_msgs::Vector3 m_ball_position;
     geometry_msgs::Vector3 m_kick_movement;
     bool m_is_left_kick;
-    std::optional<Trajectories> m_trunk_trajectories, m_flying_trajectories;
-    Stabilizer m_stabilizer;
+    std::optional<Trajectories> m_support_point_trajectories, m_flying_trajectories;
     KickParams m_params;
 
     tf2_ros::Buffer m_tf_buffer;
