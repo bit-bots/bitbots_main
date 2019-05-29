@@ -9,14 +9,9 @@ KickNode::KickNode() :
 
 void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t level) {
     m_engine_rate = config.engine_rate;
+
     KickParams params = KickParams();
-    params.trunk_movement = config.trunk_movement;
-    params.foot_rise_trunk_movement = config.foot_rise_trunk_movement;
     params.foot_rise = config.foot_rise;
-    params.kick_distance = config.kick_distance;
-    params.trunk_kick_pitch = config.trunk_kick_pitch;
-    params.trunk_kick_roll = config.trunk_kick_roll;
-    params.trunk_height = config.trunk_height;
     params.foot_distance = config.foot_distance;
     params.kick_windup_distance = config.kick_windup_distance;
     params.move_trunk_time = config.move_trunk_time;
@@ -28,6 +23,7 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
     params.stabilizing_point_x = config.stabilizing_point_x;
     params.stabilizing_point_y = config.stabilizing_point_y;
     m_engine.set_params(params);
+
     m_engine.m_stabilizer.use_minimal_displacement(config.minimal_displacement);
     m_engine.m_stabilizer.use_stabilizing(config.stabilizing);
     m_engine.m_stabilizer.set_stabilizing_weight(config.stabilizing_weight);

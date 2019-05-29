@@ -14,13 +14,7 @@ typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajecto
 
 class KickParams {
 public:
-    double trunk_movement;
     double foot_rise;
-    double kick_distance;
-    double trunk_kick_pitch;
-    double trunk_kick_roll;
-    double foot_rise_trunk_movement;
-    double trunk_height;
     double foot_distance;
     double kick_windup_distance;
 
