@@ -35,13 +35,12 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     ROS_INFO("Accepted new goal");
     m_engine.reset();
 
-    geometry_msgs::Pose r_foot_pose;
-    if (get_foot_poses(r_foot_pose, goal->ball_position.header.stamp)) {
+    if (auto r_foot_pose = get_foot_poses(goal->ball_position.header.stamp)) {
 
         /* Set engines goal and start calculating */
         m_engine.set_goal(goal->ball_position,
                           goal->kick_movement,
-                          r_foot_pose);
+                          r_foot_pose.value());
         loop_engine();
 
         /* Figure out the reason why loop_engine() returned and act accordingly */
@@ -58,6 +57,7 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
             result.result = bitbots_msgs::KickResult::SUCCESS;
             m_server.setSucceeded();
         }
+
     } else {
         /* Feet positions were not successfully retrieved */
         bitbots_msgs::KickResult result;
@@ -66,7 +66,7 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     }
 }
 
-bool KickNode::get_foot_poses(geometry_msgs::Pose &r_foot_pose, ros::Time time) {
+std::optional<geometry_msgs::Pose> KickNode::get_foot_poses(ros::Time time) {
     /* Construct zero-positions for both feet in their respective local frames */
     geometry_msgs::PoseStamped r_foot_pose_stamped, r_foot_origin;
     r_foot_origin.header.frame_id = "r_sole";
@@ -79,15 +79,13 @@ bool KickNode::get_foot_poses(geometry_msgs::Pose &r_foot_pose, ros::Time time) 
         r_foot_transform = m_tf_buffer.lookupTransform("l_sole", "r_sole", ros::Time(0), ros::Duration(1.0));
     } catch (tf2::TransformException &ex) {
         ROS_ERROR("%s", ex.what());
-        return false;
+        return std::nullopt;
     }
 
     /* Do transformation of both feet into base_link with previously retrieved transform */
     tf2::doTransform(r_foot_origin, r_foot_pose_stamped, r_foot_transform);
 
-    /* Set result */
-    r_foot_pose = r_foot_pose_stamped.pose;
-    return true;
+    return r_foot_pose_stamped.pose;
 }
 
 void KickNode::loop_engine() {

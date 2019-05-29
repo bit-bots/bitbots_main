@@ -57,10 +57,10 @@ private:
 
     /**
      * Retrieve current feet_positions in base_link frame
-     * @param r_foot_pose Output right-foot pose. In base_link frame
-     * @return Whether retrieval was successful or not
+     *
+     * @return The right foots pose if transformation was successfull
      */
-    bool get_foot_poses(geometry_msgs::Pose &r_foot_pose, ros::Time time);
+    std::optional<geometry_msgs::Pose> get_foot_poses(ros::Time time);
 
     /**
      * Publish goals to ROS
