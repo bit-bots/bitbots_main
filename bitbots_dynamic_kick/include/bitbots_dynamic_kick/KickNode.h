@@ -38,7 +38,8 @@ public:
      * Callback that gets executed whenever #m_server receives a new goal.
      * @param goal New goal to process
      */
-    void execute_cb(const bitbots_msgs::KickGoalConstPtr& goal);
+    void execute_cb(const bitbots_msgs::KickGoalConstPtr &goal);
+
 private:
     ros::NodeHandle m_node_handle;
     ros::Publisher m_joint_goal_publisher;
@@ -60,12 +61,14 @@ private:
      * @param r_foot_pose Output right-foot pose. In base_link frame
      * @return Whether retrieval was successful or not
      */
-    bool get_foot_poses(geometry_msgs::Pose &trunk_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time);
+    bool get_foot_poses(geometry_msgs::Pose &trunk_pose,
+                        geometry_msgs::Pose &r_foot_pose,
+                        ros::Time time);
 
     /**
      * Publish goals to ROS
      */
-    void publish_goals(const JointGoals& goals);
+    void publish_goals(const JointGoals &goals);
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_KICK_NODE_H

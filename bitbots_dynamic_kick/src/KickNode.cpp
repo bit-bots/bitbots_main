@@ -38,10 +38,9 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
 
         /* Set engines goal and start calculating */
         m_engine.set_goal(goal->ball_position,
-                goal->kick_movement,
-                trunk_pose,
-                r_foot_pose,
-                /* is_left_kick */ false);
+                          goal->kick_movement,
+                          trunk_pose,
+                          r_foot_pose);
         loop_engine();
 
         /* Figure out the reason why loop_engine() returned and act accordingly */
@@ -58,8 +57,7 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
             result.result = bitbots_msgs::KickResult::SUCCESS;
             m_server.setSucceeded();
         }
-    }
-    else {
+    } else {
         /* Feet positions were not successfully retrieved */
         bitbots_msgs::KickResult result;
         result.result = bitbots_msgs::KickResult::REJECTED;
@@ -67,7 +65,9 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     }
 }
 
-bool KickNode::get_foot_poses(geometry_msgs::Pose &trunk_pose, geometry_msgs::Pose &r_foot_pose, ros::Time time) {
+bool KickNode::get_foot_poses(geometry_msgs::Pose &trunk_pose,
+                              geometry_msgs::Pose &r_foot_pose,
+                              ros::Time time) {
     /* Construct zero-positions for both feet in their respective local frames */
     geometry_msgs::PoseStamped trunk_pose_stamped, r_foot_pose_stamped, trunk_origin, r_foot_origin;
     trunk_origin.header.frame_id = "l_sole";
@@ -82,7 +82,7 @@ bool KickNode::get_foot_poses(geometry_msgs::Pose &trunk_pose, geometry_msgs::Po
     try {
         trunk_transform = m_tf_buffer.lookupTransform("l_sole", "torso", ros::Time(0), ros::Duration(1.0));
         r_foot_transform = m_tf_buffer.lookupTransform("l_sole", "r_sole", ros::Time(0), ros::Duration(1.0));
-    } catch (tf2::TransformException& ex) {
+    } catch (tf2::TransformException &ex) {
         ROS_ERROR("%s", ex.what());
         return false;
     }
@@ -122,7 +122,7 @@ void KickNode::loop_engine() {
     }
 }
 
-void KickNode::publish_goals(const JointGoals& goals) {
+void KickNode::publish_goals(const JointGoals &goals) {
     /* Construct JointCommand message */
     bitbots_msgs::JointCommand command;
     command.header.stamp = ros::Time::now();

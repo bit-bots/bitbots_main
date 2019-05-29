@@ -57,8 +57,7 @@ public:
     bool set_goal(const geometry_msgs::Vector3Stamped &ball_position,
                   const geometry_msgs::Vector3Stamped &kick_movement,
                   const geometry_msgs::Pose &trunk_pose,
-                  const geometry_msgs::Pose &r_foot_pose,
-                  bool is_left_kick);
+                  const geometry_msgs::Pose &r_foot_pose);
 
     /**
      * Reset this KickEngine completely, removing the goal, all splines and thereby stopping all output
@@ -124,6 +123,16 @@ private:
      *  Calculate the point from which to perform the final kicking movement
      */
     tf2::Vector3 calc_kick_windup_point();
+
+    /**
+     * Choose with which foot the kick should be performed
+     *
+     * @param ball_position Position where the ball is currently located
+     * @param kick_movement Movement in x,y,z direction which the foot should do to finaly kick the ball
+     * @return Whether the resulting kick should be performed with the left foot
+     */
+    bool calc_is_left_foot_kicking(const geometry_msgs::Vector3Stamped &ball_position,
+                                   const geometry_msgs::Vector3Stamped &kick_movement);
 
     geometry_msgs::PoseStamped get_current_pose(Trajectories spline_container);
 };
