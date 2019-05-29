@@ -60,7 +60,7 @@ private:
      *
      * @return The right foots pose if transformation was successfull
      */
-    std::optional<geometry_msgs::Pose> get_foot_poses(ros::Time time);
+    std::optional<geometry_msgs::Pose> get_foot_poses();
 
     /**
      * Publish goals to ROS

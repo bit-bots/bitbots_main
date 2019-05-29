@@ -35,7 +35,7 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     ROS_INFO("Accepted new goal");
     m_engine.reset();
 
-    if (auto r_foot_pose = get_foot_poses(goal->ball_position.header.stamp)) {
+    if (auto r_foot_pose = get_foot_poses()) {
 
         /* Set engines goal and start calculating */
         m_engine.set_goal(goal->ball_position,
@@ -66,12 +66,12 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     }
 }
 
-std::optional<geometry_msgs::Pose> KickNode::get_foot_poses(ros::Time time) {
+std::optional<geometry_msgs::Pose> KickNode::get_foot_poses() {
     /* Construct zero-positions for both feet in their respective local frames */
     geometry_msgs::PoseStamped r_foot_pose_stamped, r_foot_origin;
     r_foot_origin.header.frame_id = "r_sole";
     r_foot_origin.pose.orientation.w = 1;
-    r_foot_origin.header.stamp = time;
+    r_foot_origin.header.stamp = ros::Time::now();
 
     /* Lookup transform for both feet into base_link */
     geometry_msgs::TransformStamped trunk_transform, r_foot_transform;
