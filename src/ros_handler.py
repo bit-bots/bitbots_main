@@ -17,6 +17,8 @@ from tf.transformations import euler_from_quaternion
 
 
 # TODO: update docs in action
+# TODO: dump keypoints of ground truth in pickle file
+# TODO: launch file for set ground truth
 
 class VisualCompassROSHandler():
     # type: () -> None
