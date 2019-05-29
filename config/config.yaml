@@ -7,6 +7,8 @@ ROS_handler_img_queue_size: 1
 
 ROS_handler_action_server_name: 'VisualCompassSetGroundTruth'
 
+ground_truth_file: 'dummy.pickle'
+
 # compass
 # Choose from 'binary' or 'multiple'
 compass_type: 'multiple'
