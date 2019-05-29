@@ -10,7 +10,6 @@ void KickEngine::reset() {
 
 bool KickEngine::set_goal(const geometry_msgs::Vector3Stamped &ball_position,
                           const geometry_msgs::Vector3Stamped &kick_movement,
-                          const geometry_msgs::Pose &trunk_pose,
                           const geometry_msgs::Pose &r_foot_pose) {
 
     m_is_left_kick = calc_is_left_foot_kicking(ball_position, kick_movement);
@@ -24,7 +23,7 @@ bool KickEngine::set_goal(const geometry_msgs::Vector3Stamped &ball_position,
 
         /* Plan new splines according to new goal */
         init_trajectories();
-        calc_splines(m_is_left_kick ? r_foot_pose : r_foot_pose, trunk_pose);
+        calc_splines(m_is_left_kick ? r_foot_pose : r_foot_pose);
 
         return true;
 
@@ -70,8 +69,7 @@ geometry_msgs::PoseStamped KickEngine::get_current_pose(Trajectories spline_cont
     return foot_pose;
 }
 
-void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose,
-                              const geometry_msgs::Pose &trunk_pose) {
+void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     /*
      * Add current position, target position and current position to splines so that they describe a smooth
      * curve to the ball and back

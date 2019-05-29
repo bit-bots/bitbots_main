@@ -35,13 +35,12 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     ROS_INFO("Accepted new goal");
     m_engine.reset();
 
-    geometry_msgs::Pose trunk_pose, r_foot_pose;
-    if (get_foot_poses(trunk_pose, r_foot_pose, goal->ball_position.header.stamp)) {
+    geometry_msgs::Pose r_foot_pose;
+    if (get_foot_poses(r_foot_pose, goal->ball_position.header.stamp)) {
 
         /* Set engines goal and start calculating */
         m_engine.set_goal(goal->ball_position,
                           goal->kick_movement,
-                          trunk_pose,
                           r_foot_pose);
         loop_engine();
 
@@ -67,14 +66,9 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     }
 }
 
-bool KickNode::get_foot_poses(geometry_msgs::Pose &trunk_pose,
-                              geometry_msgs::Pose &r_foot_pose,
-                              ros::Time time) {
+bool KickNode::get_foot_poses(geometry_msgs::Pose &r_foot_pose, ros::Time time) {
     /* Construct zero-positions for both feet in their respective local frames */
-    geometry_msgs::PoseStamped trunk_pose_stamped, r_foot_pose_stamped, trunk_origin, r_foot_origin;
-    trunk_origin.header.frame_id = "l_sole";
-    trunk_origin.header.stamp = time;
-    trunk_origin.pose.orientation.w = 1;
+    geometry_msgs::PoseStamped r_foot_pose_stamped, r_foot_origin;
     r_foot_origin.header.frame_id = "r_sole";
     r_foot_origin.pose.orientation.w = 1;
     r_foot_origin.header.stamp = time;
@@ -82,7 +76,6 @@ bool KickNode::get_foot_poses(geometry_msgs::Pose &trunk_pose,
     /* Lookup transform for both feet into base_link */
     geometry_msgs::TransformStamped trunk_transform, r_foot_transform;
     try {
-        trunk_transform = m_tf_buffer.lookupTransform("l_sole", "torso", ros::Time(0), ros::Duration(1.0));
         r_foot_transform = m_tf_buffer.lookupTransform("l_sole", "r_sole", ros::Time(0), ros::Duration(1.0));
     } catch (tf2::TransformException &ex) {
         ROS_ERROR("%s", ex.what());
@@ -90,11 +83,9 @@ bool KickNode::get_foot_poses(geometry_msgs::Pose &trunk_pose,
     }
 
     /* Do transformation of both feet into base_link with previously retrieved transform */
-    tf2::doTransform(trunk_origin, trunk_pose_stamped, trunk_transform);
     tf2::doTransform(r_foot_origin, r_foot_pose_stamped, r_foot_transform);
 
     /* Set result */
-    trunk_pose = trunk_pose_stamped.pose;
     r_foot_pose = r_foot_pose_stamped.pose;
     return true;
 }
