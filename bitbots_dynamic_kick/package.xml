@@ -24,6 +24,7 @@
   <depend>actionlib</depend>
   <depend>bitbots_msgs</depend>
   <depend>bitbots_splines</depend>
+  <depend>bio_ik</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
