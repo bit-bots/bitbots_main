@@ -21,7 +21,7 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
     params.kick_windup_distance = config.kick_windup_distance;
     params.move_trunk_time = config.move_trunk_time;
     params.raise_foot_time = config.raise_foot_time;
-    params.kick_windup_distance = config.kick_windup_distance;
+    params.move_to_ball_time = config.move_to_ball_time;
     params.kick_time = config.kick_time;
     params.move_back_time = config.move_back_time;
     params.lower_foot_time = config.lower_foot_time;
