@@ -103,7 +103,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     tf2::Vector3 kick_windup_point = calc_kick_windup_point();
 
     /* Flying foot position */
-    m_flying_trajectories->get("pos_x").addPoint(fix0, 0);
+    m_flying_trajectories->get("pos_x").addPoint(fix0, flying_foot_pose.position.x);
     m_flying_trajectories->get("pos_x").addPoint(fix1, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix2, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix3, kick_windup_point.x(), 0, 0);
@@ -111,7 +111,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pos_x").addPoint(fix5, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix6, 0);
 
-    m_flying_trajectories->get("pos_y").addPoint(fix0, kick_foot_sign * m_params.foot_distance);
+    m_flying_trajectories->get("pos_y").addPoint(fix0, flying_foot_pose.position.y);
     m_flying_trajectories->get("pos_y").addPoint(fix1, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix2, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix3, kick_windup_point.y(), 0, 0);
@@ -119,7 +119,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pos_y").addPoint(fix5, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix6, kick_foot_sign * m_params.foot_distance);
 
-    m_flying_trajectories->get("pos_z").addPoint(fix0, 0);
+    m_flying_trajectories->get("pos_z").addPoint(fix0, flying_foot_pose.position.z);
     m_flying_trajectories->get("pos_z").addPoint(fix1, 0);
     m_flying_trajectories->get("pos_z").addPoint(fix2, m_params.foot_rise);
     m_flying_trajectories->get("pos_z").addPoint(fix3, m_params.foot_rise);

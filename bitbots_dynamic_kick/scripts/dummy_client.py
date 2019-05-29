@@ -70,7 +70,7 @@ if __name__ == "__main__":
     goal.ball_position.header.stamp = rospy.Time.now()
     goal.ball_position.header.frame_id = 'base_footprint'
     goal.ball_position.vector.x = 0.2
-    goal.ball_position.vector.y = -0.15
+    goal.ball_position.vector.y = 0.15
     goal.ball_position.vector.z = -1
 
     goal.kick_movement.header.stamp = rospy.Time.now()
