@@ -14,15 +14,15 @@ typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajecto
 
 class KickParams {
 public:
-    double trunk_movement = 0.06;  // meters to move trunk to the left (i.e. support foot to the right)
-    double foot_rise = 0.08;        // how much the foot is raised before kicking
-    double kick_distance = 0.12;    // kick distance to the front
-    double trunk_kick_pitch = -0.2;
-    double trunk_kick_roll = 0.2;
+    double trunk_movement;
+    double foot_rise;
+    double kick_distance;
+    double trunk_kick_pitch;
+    double trunk_kick_roll;
     double foot_rise_trunk_movement;
-    double trunk_height = 0.4;
-    double foot_distance = 0.12;
-    double kick_windup_distance = 0.2;
+    double trunk_height;
+    double foot_distance;
+    double kick_windup_distance;
 
     double move_trunk_time = 1;
     double raise_foot_time = 1;
