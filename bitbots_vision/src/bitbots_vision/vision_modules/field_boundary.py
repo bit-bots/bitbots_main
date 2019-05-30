@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import rospy
+from sensor_msgs.msg import JointState
 from .color import ColorDetector
 from operator import itemgetter
 from .debug import DebugPrinter
@@ -10,7 +11,7 @@ from .evaluator import RuntimeEvaluator
 class FieldBoundaryDetector:
 
     def __init__(self, field_color_detector, config, debug_printer, runtime_evaluator=None, used_by_dyn_color_detector=False):
-        # type: (np.matrix, ColorDetector, dict, DebugPrinter, RuntimeEvaluator, bool) -> None
+        # type: (ColorDetector, dict, DebugPrinter, RuntimeEvaluator, bool) -> None
         """
         This module can compute different versions of the field boundary.
         :param field_color_detector: checks whether a color is part of the field colors
@@ -48,7 +49,7 @@ class FieldBoundaryDetector:
             self._search_method = config['field_boundary_finder_search_method']
 
     def set_image(self, image):
-        # type: () -> None
+        # type: (np.matrix) -> None
         """
         refreshes the variables after receiving an image
         :param image: the current frame of the video feed
@@ -61,8 +62,13 @@ class FieldBoundaryDetector:
         self._mask = None
 
     def set_head_joint_state(self, head_joint_states):
-        index = head_joint_states.name.index('HeadTilt')
-        self._head_joint_position = head_joint_states.position[index]
+        # type: (JointState) -> None
+        """
+        refreshes the vertical tilt of the head
+        :param head_joint_states: the current tilts of the head
+        """
+        vertical_head_tilt = head_joint_states.name.index('HeadTilt')
+        self._head_joint_position = head_joint_states.position[vertical_head_tilt]
 
     def get_mask(self):
         # type: () -> np.array
@@ -90,10 +96,10 @@ class FieldBoundaryDetector:
     def get_field_boundary_points(self, offset=0):
         # type: (int) -> list
         """
-        calculates the horizon if not calculated yet and returns a list
-        containing coordinates on the picture where the horizon is.
+        calculates the field-boundary if not calculated yet and returns a list
+        containing coordinates on the picture where the field-boundary is.
         the offset works UPWARDS!
-        :return list of x,y tuples of the horizon:
+        :return list of x,y tuples of the field_boundary:
         """
         if self._field_boundary_points is None:
             self._compute_field_boundary_points()
@@ -110,6 +116,7 @@ class FieldBoundaryDetector:
         """
         self._field_boundary_points = []
         if self._search_method == 'dynamic':
+            # decides the search method depending on the vertical tilt of the head
             if self._head_joint_position < self._head_joint_threshold:
                 self._field_boundary_points = self._sub_field_boundary_points_iteration()
             else:
@@ -119,6 +126,7 @@ class FieldBoundaryDetector:
         elif self._search_method == 'reversed':
             self._field_boundary_points = self._sub_field_boundary_points_reversed()
         else:
+            # default search method:
             self._field_boundary_points = self._sub_field_boundary_points_iteration()
 
     def _sub_field_boundary_points_binary(self):
@@ -128,7 +136,6 @@ class FieldBoundaryDetector:
         finds these points below field lines sometimes
         :return: points of the field_boundary as a list of x,y tuples
         """
-
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
         # index counting up from top to bottom and left to right
         field_mask = self._field_color_detector.mask_image(self._image)

@@ -36,6 +36,7 @@ class Vision:
 
         self.config = {}
 
+        # the head_joint_states is used by the dynamic field_boundary detector
         self.head_joint_state = None
 
         self.debug_image_dings = debug.DebugImage()  # Todo: better variable name
@@ -72,6 +73,11 @@ class Vision:
         self.handle_image(image_msg)
 
     def _head_joint_state_callback(self, headjoint_msg):
+        # type: (JointState) -> None
+        """
+        Sets a new head_joint_state for the field-boundary-module when a new msg is received
+        :param headjoint_msg: the current vertical position of the head
+        """
         self.field_boundary_detector.set_head_joint_state(headjoint_msg)
 
     def handle_image(self, image_msg):
@@ -498,6 +504,7 @@ class Vision:
                 buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
 
+        # subscriber for the vertical position of the head, used by the dynamic field-boundary-detector
         if 'ROS_head_joint_msg_topic' not in self.config or \
                 self.config['ROS_head_joint_msg_topic'] != config['ROS_head_joint_msg_topic']:
             if hasattr(self, 'head_sub'):
