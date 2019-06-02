@@ -10,11 +10,11 @@ from dynamic_reconfigure.server import Server
 from bitbots_visual_compass.cfg import VisualCompassConfig
 from bitbots_msgs.msg import VisualCompassSetGroundTruthAction
 from worker import VisualCompass
-# TODO rosdep
 import tf2_ros as tf2
 from tf2_geometry_msgs import PoseStamped
 from tf.transformations import euler_from_quaternion
 
+# TODO: rosdep
 # TODO: rename sample to ground_truth_images
 # TODO: update docs in action
 # TODO: dump keypoints of ground truth in pickle file
@@ -29,9 +29,6 @@ class VisualCompassSetup():
     Trigger: 'trigger_visual_compass'-trigger
         Gets triggered e.i. while looking at a goal side
         Returns side
-
-    Publish: 'visual_compass'-messages
-        Returns side
     """
     def __init__(self):
         # type: () -> None
@@ -45,24 +42,18 @@ class VisualCompassSetup():
         self.package_path = rospack.get_path('bitbots_visual_compass')
 
         rospy.init_node('bitbots_visual_compass_setup')
-        rospy.loginfo('Initializing visual compass')
+        rospy.loginfo('Initializing visual compass setup')
 
         self.bridge = CvBridge()
 
         self.config = {}
-        self.image_dict = {}
+        self.image_msg = None
         self.compass = None
 
         self.base_frame = 'base_footprint'
         self.camera_frame = 'camera_optical_frame'
         self.tf_buffer = tf2.Buffer()
         self.listener = tf2.TransformListener(self.tf_buffer)
-
-        # Register publisher of 'visual_compass'-messages
-        self.pub_compass = rospy.Publisher(
-            'visual_compass',
-            VisualCompassRotation,
-            queue_size=1)
 
         # Register VisualCompassConfig server for dynamic reconfigure and set callback
         Server(VisualCompassConfig, self.dynamic_reconfigure_callback)
@@ -111,7 +102,7 @@ class VisualCompassSetup():
         return self.config
 
     def set_truth_callback(self, goal):
-        if self.image_dict:
+        if self.image_msg:
             # TODO: check timestamps
 
             orientation = self.tf_buffer.lookup_transform(self.base_frame, self.camera_frame, goal.header.stamp).transform.rotation
@@ -120,7 +111,9 @@ class VisualCompassSetup():
                                                 orientation.z, 
                                                 orientation.w))[2] + 0.5 * math.pi
 
-            self.compass.set_truth(yaw_angle, self.image_dict['image'])
+            image = self.bridge.imgmsg_to_cv2(self.image_msg, 'bgr8')
+
+            self.compass.set_truth(yaw_angle, image)
             self.actionServer.set_succeeded()
             self.ground_truth_images_count += 1
             self.check_ground_truth_images_count()
@@ -141,10 +134,7 @@ class VisualCompassSetup():
         #     print("Visual Compass: Dropped Image-message")  # TODO debug printer
         #     return
 
-        # Converting the ROS image message to CV2-image
-        self.image_dict['image'] = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
-        self.image_dict['header_frame_id'] = image_msg.header.frame_id
-        self.image_dict['header_stamp'] = image_msg.header.stamp
+        self.image_msg = image_msg
 
     def check_ground_truth_images_count(self):
         # type: () -> None
@@ -159,17 +149,21 @@ class VisualCompassSetup():
         else:
             if not(self.processed_set_all_ground_truth_images):
                 rospy.loginfo('Visual compass: All ground truth images have been processed.')
-                self.save_ground_truth()
+                self.save_ground_truth(self.config['ground_truth_file_name'])
             self.processed_set_all_ground_truth_images = True
 
-    def save_ground_truth(self):
+    def save_ground_truth(self, ground_truth_file_name):
+        # type (str) -> None
+        """
+        TODO docs
+        """
         # get keypoints
         keypoints = self.compass.get_ground_truth_keypoints()
+        # generate file path
+        file_path = self.package_path + ground_truth_file_name
         # save keypoints in pickle file
-        file_path = self.package_path + self.config['ground_truth_file']
         pickle.dump(keypoints, open(file_path, "wb"))
 
-            
     def changed_config_param(self, config, param_name):
         # type: (dict, str) -> bool
         """

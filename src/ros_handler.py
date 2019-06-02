@@ -10,12 +10,12 @@ from humanoid_league_msgs.msg import VisualCompassRotation
 from bitbots_visual_compass.cfg import VisualCompassConfig
 from bitbots_msgs.msg import VisualCompassSetGroundTruthAction
 from worker import VisualCompass
-# TODO rosdep
 import tf2_ros as tf2
 from tf2_geometry_msgs import PoseStamped
 from tf.transformations import euler_from_quaternion
 
 
+# TODO rosdep
 # TODO: update docs in action
 # TODO: dump keypoints of ground truth in pickle file
 # TODO: launch file for set ground truth
