@@ -100,7 +100,7 @@ class VisualCompassStartup():
         #     print("Visual Compass: Dropped Image-message")  # TODO debug printer
         #     return
 
-        self.handle image(image_msg)
+        self.handle_image(image_msg)
 
     def handle_image(self, image_msg):
         # type: (Image) -> None
