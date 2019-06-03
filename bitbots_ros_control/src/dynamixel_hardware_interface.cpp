@@ -834,17 +834,20 @@ bool DynamixelHardwareInterface::readFootSensors(){
       _current_pressure[i] = (double) pres_d; //- (pow(2, 32)/2);
     }
   }else{
-    return false;
+    ROS_ERROR_THROTTLE(3.0, "Could not read foot with ID 101 (left foot)");
   }             
   // read second foot
-  /*if(_driver->readMultipleRegisters(102, 36, 16, data)){
+  if(_driver->readMultipleRegisters(102, 36, 16, data)){
     for (int i = 0; i < 4; i++) {
-      _current_pressure[i+4] = DXL_MAKEDWORD(DXL_MAKEWORD(data[i], data[i+1]),
-                                         DXL_MAKEWORD(data[i+2], data[i+3]));
+      int32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i*4], data[i*4+1]), DXL_MAKEWORD(data[i*4+2], data[i*4+3]));
+      float pres_d = (float) pres;
+      ROS_ERROR_THROTTLE(1,"%f",pres_d);
+      _current_pressure[i+4] = (double) pres_d;
     }
+
   }else{
-    return false;
-  }*/
+    ROS_ERROR_THROTTLE(3.0, "Could not read foot with ID 102 (right foot)");
+  }
 
   bitbots_msgs::FootPressure msg;
   msg.header.stamp = ros::Time::now();
