@@ -1,4 +1,5 @@
 #! /usr/bin/env python2
+from os import path
 import rospy
 import rospkg
 import actionlib
@@ -141,10 +142,14 @@ class VisualCompassStartup():
         """
         # generate file path
         file_path = self.package_path + ground_truth_file_name
-        # load keypoints of pickle file
-        ground_truth_keypoints = pickle.load(open( file_path, "rb" ))
-        rospy.loginfo('Loaded keypoint file at: %(path)s' % {'path': file_path})
-        return ground_truth_keypoints
+        print(file_path)
+        if path.isfile(file_path):
+            # load keypoints of pickle file
+            ground_truth_keypoints = pickle.load(open( file_path, "rb" ))
+            rospy.loginfo('Loaded keypoint file at: %(path)s' % {'path': file_path})
+            return ground_truth_keypoints
+        else:
+            rospy.logerr('Ground truth file at: %(path)s does NOT EXIST.' % {'path': file_path})
 
     def changed_config_param(self, config, param_name):
         # type: (dict, str) -> bool
