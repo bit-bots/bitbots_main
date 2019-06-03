@@ -841,7 +841,6 @@ bool DynamixelHardwareInterface::readFootSensors(){
     for (int i = 0; i < 4; i++) {
       int32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i*4], data[i*4+1]), DXL_MAKEWORD(data[i*4+2], data[i*4+3]));
       float pres_d = (float) pres;
-      ROS_ERROR_THROTTLE(1,"%f",pres_d);
       _current_pressure[i+4] = (double) pres_d;
     }
 
