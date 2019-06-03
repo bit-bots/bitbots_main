@@ -4,8 +4,6 @@
     <arg name="debug" default="false"/>
     <arg name="use_game_settings" default="false"/>
 
-
-
     <!-- start vision for wolfgang (fcnn)-->
     <group unless="$(arg dummyball)">
         <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
@@ -41,7 +39,6 @@
     <!-- remap stuff to fit the robot -->
     <group if="$(arg sim)">
         <param name="use_sim_time" value="true"/>
-        <remap to ="/camera/image_raw" from="/image_raw"/>
     </group>
 
 </launch>

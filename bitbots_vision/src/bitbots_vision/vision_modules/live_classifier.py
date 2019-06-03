@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import rospy
 import sys, os
 from .debug import DebugPrinter
 
@@ -37,10 +38,10 @@ class LiveClassifier(object):
         self.init = tf.global_variables_initializer()
         self.session.run(self.init)
         self.saver = tf.train.Saver()
-        print()
-        print("loading weights from '{}'...".format(self.model_load_path))
+        rospy.loginfo()
+        rospy.loginfo("loading weights from '{}'...".format(self.model_load_path))
         self.saver.restore(self.session, self.model_load_path)
-        print("loaded successfully.")
+        rospy.loginfo("loaded successfully.")
 
     def leaky_relu(self, x, leak=0.2, name=''):
         return tf.maximum(x, x * leak, name=name)

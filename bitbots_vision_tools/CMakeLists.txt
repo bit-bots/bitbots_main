@@ -10,11 +10,13 @@ find_package(catkin REQUIRED COMPONENTS
   humanoid_league_msgs
   sensor_msgs
   std_msgs
+  trajectory_msgs
+  message_generation
 )
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
 generate_dynamic_reconfigure_options(
-	cfg/color_test.cfg
+	cfg/ColorTest.cfg
 )
 
 catkin_package()

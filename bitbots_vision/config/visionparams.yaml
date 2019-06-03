@@ -1,6 +1,6 @@
 ball_fcnn_debug: false  # only active when true and vision/debug is true, too!
 ball_fcnn_model_path: '/models/fcnn031'
-ball_fcnn_threshold: .9  # minimal value for a candidate to be considered
+ball_fcnn_threshold: .6  # minimal value for a candidate to be considered
 ball_fcnn_expand_stepsize: 4
 ball_fcnn_pointcloud_stepsize: 10
 ball_fcnn_shuffle_candidate_list: false  # shuffles the list of possible candidate points
@@ -85,6 +85,7 @@ ROS_fcnn_img_msg_topic: 'fcnn_image'
 ROS_obstacle_msg_topic: 'obstacles_in_image'
 ROS_goal_msg_topic: 'goal_in_image'
 ROS_line_msg_topic: 'line_in_image'
+ROS_non_line_msg_topic: 'non_line_in_image'
 ROS_dynamic_color_space_msg_topic: 'dynamic_color_space'
 ROS_debug_image_msg_topic: 'debug_image'
 ROS_field_mask_image_msg_topic: 'field_mask'

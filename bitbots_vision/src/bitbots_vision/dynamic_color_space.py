@@ -1,15 +1,12 @@
 #! /usr/bin/env python2
 
 import cv2
-import time
 import yaml
 import rospy
 import rospkg
 import numpy as np
 from cv_bridge import CvBridge
 from collections import deque
-from dynamic_reconfigure.server import Server
-from dynamic_reconfigure.client import Client
 from sensor_msgs.msg import Image
 from bitbots_msgs.msg import ColorSpace, Config
 from bitbots_vision.vision_modules import field_boundary, color, debug, evaluator
@@ -402,4 +399,3 @@ class Heuristic:
 
 if __name__ == '__main__':
     DynamicColorSpace()
-    

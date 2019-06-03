@@ -61,7 +61,7 @@ class ColorTest:
         # exchange color_detector between PixelListColorDetector and HsvSpaceColorDetector
         self.use_pixel_list = config['use_pixel_list']
         if self.debug_mode:
-            print('use_pixel_list = ' + str(self.use_pixel_list))
+            rospy.logdebug('use_pixel_list = ' + str(self.use_pixel_list))
         if self.use_pixel_list:
             # TODO: fix PixelListColorDetector
             # use PixelListColorDetector
@@ -70,18 +70,18 @@ class ColorTest:
                 self.color_detector = color.PixelListColorDetector(self.package_path +
                                                                    config['pixel_list_path'])
                 if self.debug_mode:
-                    print('color_detector is instance of PixelListColorDetector('
+                    rospy.logdebug('color_detector is instance of PixelListColorDetector('
                           + self.package_path
                           + config['pixel_list_path'])
             else:
-                print('FILE "'
+                rospy.logwarn('FILE "'
                       + self.package_path + config['pixel_list_path'] + '" does NOT EXIST')
         else:
             # use HsvSpaceColorDetector
             self.color_detector = color.HsvSpaceColorDetector((config['h_min'], config['s_min'], config['v_min']),
                                                               (config['h_max'], config['s_max'], config['v_max']))
             if self.debug_mode:
-                print('color_detector is instance of HsvSpaceColorDetector('
+                rospy.logdebug('color_detector is instance of HsvSpaceColorDetector('
                       + str((config['h_min'], config['s_min'], config['v_min']))
                       + ', '
                       + str((config['h_max'], config['s_max'], config['v_max'])))

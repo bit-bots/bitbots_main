@@ -310,6 +310,7 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         :param dict config: vision config
         :param bool primary_detector: true if is primary color detector
             (only detector held by vision should be True) (Default: False)
+            This allows publishing of field mask images.
         :return: None
         """
         super(DynamicPixelListColorDetector, self).__init__(debug_printer, package_path, config)
