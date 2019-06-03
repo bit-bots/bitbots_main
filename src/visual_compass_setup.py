@@ -1,4 +1,5 @@
 #! /usr/bin/env python2
+from os import path
 import rospy
 import rospkg
 import actionlib
@@ -161,8 +162,12 @@ class VisualCompassSetup():
         keypoints = self.compass.get_ground_truth_keypoints()
         # generate file path
         file_path = self.package_path + ground_truth_file_name
+        # warn, if file does exist allready
+        if path.isfile(file_path):
+            rospy.logwarn('Ground truth file at: %(path)s does ALLREADY EXIST. This will be overwritten.' % {'path': file_path})
         # save keypoints in pickle file
         pickle.dump(keypoints, open(file_path, "wb"))
+        rospy.logwarn('Saved ground truth file at: %(path)s' % {'path': file_path})
 
     def changed_config_param(self, config, param_name):
         # type: (dict, str) -> bool
