@@ -5,6 +5,7 @@ from .evaluator import RuntimeEvaluator
 from .debug import DebugPrinter
 import cv2
 import numpy as np
+import rospy
 
 
 class ObstacleDetector(CandidateFinder):
@@ -22,7 +23,10 @@ class ObstacleDetector(CandidateFinder):
         self._field_boundary_diff_threshold = config['obstacle_field_boundary_diff_threshold']
         self._candidate_field_boundary_offset = config['obstacle_candidate_field_boundary_offset']
         self._candidate_min_width = config['obstacle_candidate_min_width']
+        self._candidate_max_width = config['obstacle_candidate_max_width']
         self._finder_step_length = config['obstacle_finder_step_length']
+        self._obstacle_finder_method = config['obstacle_finder_method']
+        self._distance_value_increase = config['obstacle_finder_value_increase']
 
         self._image = None
         self._blue_mask = None
@@ -52,9 +56,19 @@ class ObstacleDetector(CandidateFinder):
 
     def get_candidates(self):
         """ this method can be used to switch between get_candidates_fast and get_candidates_accurate"""
-        return self._get_convex_field_boundary_candidates()
 
-    def _get_step_field_boundary_candidates(self):
+        if self._obstacles is None:
+            if self._obstacle_finder_method == 'distance':
+                self._obstacles = self._obstacle_detector_distance()
+            elif self._obstacle_finder_method == 'convex':
+                self._obstacles = self._obstacle_detector_convex()
+            else:
+                self._obstacles = self._obstacle_detector_step()
+
+        return self._obstacles
+
+
+    def _obstacle_detector_step(self):
         # type: () -> list[Candidate]
         """
         finds candidates by comparing the height of adjacent field_boundary points
@@ -108,7 +122,7 @@ class ObstacleDetector(CandidateFinder):
             # self._runtime_evaluator.print_timer()  # for runtime testing
         return self._obstacles
 
-    def _get_convex_field_boundary_candidates(self):
+    def _obstacle_detector_convex(self):
         # type: () -> list[Candidate]
         """
         finds candidates using the difference of the convex field_boundary and the normal field_boundary.
@@ -122,23 +136,17 @@ class ObstacleDetector(CandidateFinder):
             # self._runtime_evaluator.start_timer()  # for runtime testing
             self._obstacles = list()
             obstacle_begin = None
-            """
-            the ordinary field_boundary and convex_field_boundary consist out of a limited amount of points (usually 30).
-            the full_field_boundary/full_convex_field_boundary have interpolated points
-             to have as many points as the width of the picture.
-            """
+            # the ordinary field_boundary and convex_field_boundary consist out of a limited amount of points (usually 30).
+            # the full_field_boundary/full_convex_field_boundary have interpolated points
+            # to have as many points as the width of the picture.
             full_convex_field_boundary = np.array(self._field_boundary_detector.get_full_convex_field_boundary()).astype(int)
             full_field_boundary = np.array(self._field_boundary_detector.get_full_field_boundary()).astype(int)
-            """
-            calculates the distance between the points of the full_field_boundary and full_convex_field_boundary
-            field_boundary_distance is a list of distances with the index being the corresponding x-coordinate
-            """
+            # calculates the distance between the points of the full_field_boundary and full_convex_field_boundary
+            # field_boundary_distance is a list of distances with the index being the corresponding x-coordinate
             field_boundary_distance = full_field_boundary-full_convex_field_boundary
-            """
-            threshold determines the minimum distance of the two field_boundarys for an object to be found
-            minWidth determines the minimum width of potential objects to be identified as candidates
-            step is the length of one step in pixel: lager step -> faster, but more inaccurate
-            """
+            # threshold determines the minimum distance of the two field_boundarys for an object to be found
+            # minWidth determines the minimum width of potential objects to be identified as candidates
+            # step is the length of one step in pixel: lager step -> faster, but more inaccurate
             # Todo: value of minWidth and step has to be tested
             threshold = self._field_boundary_diff_threshold
             min_width = self._candidate_min_width  # minimal width of an acceptable candidate in pixels
@@ -174,6 +182,67 @@ class ObstacleDetector(CandidateFinder):
                     self._obstacles.append(Candidate(x, y, w, h))
             # self._runtime_evaluator.stop_timer()  # for runtime testing
             # self._runtime_evaluator.print_timer()  # for runtime testing
+        return self._obstacles
+
+    def _obstacle_detector_distance(self):  # TODO: better name than 'distance'
+        # type: () -> list[Candidate]
+        """
+        finds candidates using the difference of the convex field_boundary and the normal field_boundary.
+        Detection of obstacles depends on their height in image and therefore their distance.
+        :return: candidate(int: x upper left point, int: y upper left point, int: width, int: height)
+        """
+        # self._runtime_evaluator.start_timer()  # for runtime testing
+        self._obstacles = list()
+        obstacle_begin = None
+
+        full_convex_field_boundary = np.array(
+            self._field_boundary_detector.
+            get_full_convex_field_boundary()).astype(int)
+        full_field_boundary = np.array(self._field_boundary_detector.get_full_field_boundary()).astype(int)
+
+        # Todo: value of minWidth and step has to be tested
+        start_threshold = self._field_boundary_diff_threshold
+        start_min_width = self._candidate_min_width  # minimal width of an acceptable candidate in pixels
+        start_max_width = self._candidate_max_width
+        distance_value_increase = float(self._distance_value_increase) / 1000
+        step = self._finder_step_length  # step size in the interpolated field_boundary
+        pic_width = len(full_convex_field_boundary)  # Width the image
+        for i in range(0, pic_width, step):  # traverses field_boundary_distance
+            current_threshold = start_threshold + int(full_field_boundary[i] * distance_value_increase)
+            if not obstacle_begin:
+                if (full_field_boundary[i] - full_convex_field_boundary[i]) > current_threshold:
+                    obstacle_begin = (i, full_convex_field_boundary[i])  # found beginning of a potential obstacle
+            else:
+                if (full_field_boundary[i] - full_convex_field_boundary[i]) < current_threshold:
+                    # candidate(x upper left point, y upper left point, width, height)
+                    x = obstacle_begin[0]
+                    w = i - x
+                    y = max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)
+                    h = np.round(np.max(full_field_boundary[x:i]) - y)
+                    current_min_width = start_min_width + int((full_convex_field_boundary[i] - h) * distance_value_increase)
+                    current_max_width = start_max_width + int((full_convex_field_boundary[i] - h) * distance_value_increase)
+                    if current_min_width < w < current_max_width:
+                        if h < 0:
+                            self._debug_printer.error('negative obstacle height', 'ObstacleDetection')
+                        self._obstacles.append(Candidate(x, y, w, h))
+                    obstacle_begin = None
+        if obstacle_begin:
+            # obstacle began but never ended (problematic edge-case):
+            # candidate(x upper left point, y upper left point, width, height)
+            i = pic_width-step  # we have to reinitialise i because it was only usable in the for-loop
+            x = obstacle_begin[0]
+            w = i - x  # calculating width of the object
+            y = max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)  # top
+            h = np.round(np.max(full_field_boundary[x:i]) - y)
+            current_min_width = start_min_width + int((full_convex_field_boundary[i] - h) * distance_value_increase)
+            current_max_width = start_max_width + int((full_convex_field_boundary[i] - h) * distance_value_increase)
+            if current_min_width < w < current_max_width:
+                if h < 0:
+                    self._debug_printer.error('negative obstacle height', 'ObstacleDetection')
+                self._obstacles.append(Candidate(x, y, w, h))
+
+        # self._runtime_evaluator.stop_timer()  # for runtime testing
+        # self._runtime_evaluator.print_timer()  # for runtime testing
         return self._obstacles
 
     def get_all_obstacles(self):

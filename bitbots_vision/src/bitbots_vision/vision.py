@@ -8,7 +8,7 @@ import rospkg
 import threading
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, JointState
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, PostInImage, \
     GoalInImage
@@ -36,6 +36,9 @@ class Vision:
 
         self.config = {}
 
+        # the head_joint_states is used by the dynamic field_boundary detector
+        self.head_joint_state = None
+
         self.debug_image_dings = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_dings:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
@@ -50,7 +53,6 @@ class Vision:
 
         # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
-        #rospy.loginfo("Vision startup")
         rospy.spin()
 
     def _image_callback(self, image_msg):
@@ -62,7 +64,6 @@ class Vision:
         Sometimes the queue gets to large, even when the size is limeted to 1. 
         That's, why we drop old images manually.
         """
-        #rospy.loginfo("image_callback")
         # drops old images and cleans up queue
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
@@ -71,8 +72,15 @@ class Vision:
 
         self.handle_image(image_msg)
 
+    def _head_joint_state_callback(self, headjoint_msg):
+        # type: (JointState) -> None
+        """
+        Sets a new head_joint_state for the field-boundary-module when a new msg is received
+        :param headjoint_msg: the current vertical position of the head
+        """
+        self.field_boundary_detector.set_head_joint_state(headjoint_msg)
+
     def handle_image(self, image_msg):
-        #rospy.loginfo("handle_image")
         # converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
@@ -270,6 +278,9 @@ class Vision:
             self.debug_image_dings.draw_field_boundary(
                 self.field_boundary_detector.get_field_boundary_points(),
                 (0, 0, 255))
+            self.debug_image_dings.draw_field_boundary(
+                self.field_boundary_detector.get_convex_field_boundary_points(),
+                (0, 255, 255))
             self.debug_image_dings.draw_ball_candidates(
                 self.ball_detector.get_candidates(),
                 (0, 0, 255))
@@ -300,7 +311,6 @@ class Vision:
         self.line_detector.compute_linepoints()
 
     def _dynamic_reconfigure_callback(self, config, level):
-        #rospy.loginfo("dynamic reconfigure callback")
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 config['vision_debug_printer_classes']))
@@ -522,6 +532,18 @@ class Vision:
                 tcp_nodelay=True,
                 buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
+
+        # subscriber for the vertical position of the head, used by the dynamic field-boundary-detector
+        if 'ROS_head_joint_msg_topic' not in self.config or \
+                self.config['ROS_head_joint_msg_topic'] != config['ROS_head_joint_msg_topic']:
+            if hasattr(self, 'head_sub'):
+                self.head_sub.unregister()
+            self.head_sub = rospy.Subscriber(
+                config['ROS_head_joint_msg_topic'],
+                JointState,
+                self._head_joint_state_callback,
+                queue_size=config['ROS_head_joint_state_queue_size'],
+                tcp_nodelay=True)
 
         # Publish Config-message
         msg = Config()
