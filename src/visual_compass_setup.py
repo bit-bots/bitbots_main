@@ -2,14 +2,14 @@
 from os import path
 import rospy
 import rospkg
-import actionlib
 import math
-import cPickle as pickle
+import cv2
+import pickle
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
+from std_msgs.msg import Header
 from dynamic_reconfigure.server import Server
 from bitbots_visual_compass.cfg import VisualCompassConfig
-from bitbots_msgs.msg import VisualCompassSetGroundTruthAction
 from worker import VisualCompass
 import tf2_ros as tf2
 from tf2_geometry_msgs import PoseStamped
@@ -17,9 +17,7 @@ from tf.transformations import euler_from_quaternion
 
 # TODO: rosdep
 # TODO: rename sample to ground_truth_images
-# TODO: update docs in action
-# TODO: dump keypoints of ground truth in pickle file
-# TODO: launch file for set ground truth
+# TODO: rename parameter and groups e.g. ros handler
 
 class VisualCompassSetup():
     # type: () -> None
@@ -51,9 +49,10 @@ class VisualCompassSetup():
         self.image_msg = None
         self.compass = None
 
+        # TODO: docs
         self.base_frame = 'base_footprint'
         self.camera_frame = 'camera_optical_frame'
-        self.tf_buffer = tf2.Buffer()
+        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5))
         self.listener = tf2.TransformListener(self.tf_buffer)
 
         # Register VisualCompassConfig server for dynamic reconfigure and set callback
@@ -88,13 +87,13 @@ class VisualCompassSetup():
                 buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
 
-        # Register VisualCompassSetGroundTruthAction server
-        if self.changed_config_param(config, 'ROS_handler_action_server_name'):
-            self.actionServer = actionlib.SimpleActionServer(config['ROS_handler_action_server_name'],
-                                                            VisualCompassSetGroundTruthAction,
-                                                            execute_cb=self.set_truth_callback,
-                                                            auto_start = False)
-            self.actionServer.start()
+        # Register message server to call set truth callback
+        if self.changed_config_param(config, 'ROS_trigger_set_ground_truth'):
+            if hasattr(self, 'sub_trigger_set_ground_truth'):
+                self.sub_image_msg.unregister()
+            self.sub_trigger_set_ground_truth = rospy.Subscriber(
+                config['ROS_trigger_set_ground_truth'],
+                Header, self.set_truth_callback)
 
         self.config = config
 
@@ -102,11 +101,11 @@ class VisualCompassSetup():
 
         return self.config
 
-    def set_truth_callback(self, goal):
+    def set_truth_callback(self, request):
         if self.image_msg:
             # TODO: check timestamps
 
-            orientation = self.tf_buffer.lookup_transform(self.base_frame, self.camera_frame, goal.header.stamp).transform.rotation
+            orientation = self.tf_buffer.lookup_transform(self.base_frame, self.camera_frame, self.image_msg.header.stamp, timeout=rospy.Duration(0.5)).transform.rotation
             yaw_angle = euler_from_quaternion(( orientation.x, 
                                                 orientation.y, 
                                                 orientation.z, 
@@ -115,12 +114,10 @@ class VisualCompassSetup():
             image = self.bridge.imgmsg_to_cv2(self.image_msg, 'bgr8')
 
             self.compass.set_truth(yaw_angle, image)
-            self.actionServer.set_succeeded()
             self.ground_truth_images_count += 1
             self.check_ground_truth_images_count()
 
         else:
-            self.actionServer.set_aborted(text="No image received yet")
             rospy.logwarn('No image received yet')
 
     def image_callback(self, image_msg):
@@ -166,7 +163,8 @@ class VisualCompassSetup():
         if path.isfile(file_path):
             rospy.logwarn('Ground truth file at: %(path)s does ALLREADY EXIST. This will be overwritten.' % {'path': file_path})
         # save keypoints in pickle file
-        pickle.dump(keypoints, open(file_path, "wb"))
+        with open(file_path, "wb") as f:
+            pickle.dump(keypoints, f)
         rospy.logwarn('Saved ground truth file at: %(path)s' % {'path': file_path})
 
     def changed_config_param(self, config, param_name):
