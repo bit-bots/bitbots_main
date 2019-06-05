@@ -104,9 +104,9 @@ $RoleDecider
         Finished --> @Stand
         NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtBall
     penalty --> $GameStateDecider
-        Initial --> @SendStop, @LookAtBall
+        Initial --> @SendStop, @LookAtBallPenalty
         Ready --> #Positioning
         Set --> @Stand
         Playing --> #PenaltyBehavior
         Finished --> @Stand
-        NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtBall
+        NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtBallPenalty

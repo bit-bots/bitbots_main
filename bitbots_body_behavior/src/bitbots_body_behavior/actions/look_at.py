@@ -6,6 +6,10 @@ class LookAtBall(AbstractActionElement):
     def perform(self):
         self.blackboard.blackboard.set_head_duty(HeadMode.BALL_MODE)
 
+class LookAtBallPenalty(AbstractActionElement):
+    def perform(self):
+        self.blackboard.blackboard.set_head_duty(HeadMode.BALL_MODE_PENALTY)
+
 
 class LookAtFieldFeatures(AbstractActionElement):
     def perform(self):

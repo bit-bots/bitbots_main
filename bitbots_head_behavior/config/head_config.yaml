@@ -7,16 +7,35 @@ behavior:
     defaults:
       head_mode: 0    # Ball mode
 
-    # Speed search pattern
-    search_pattern_tilt_speed: 2
-    search_pattern_pan_speed: 0.5
+    # Search pattern for penalty
+    search_pattern_penalty:
+      - [0, -15]
+      - [0, -57]
+      - [-57, -30]
+      - [57, -30]
+      - [30, -7]
+      - [-30, -7]
 
-    # Max values for the search pattern
-    search_pattern_pan_max: [57, -50]
-    search_pattern_tilt_max: [0, -70]
-    
-    # Number of scan lines for the search pattern
-    search_pattern_scan_lines: 4
+    # Search pattern for ball
+    search_pattern:
+        # Speed search pattern
+        tilt_speed: 2
+        pan_speed: 0.5
+
+        # Max values for the search pattern
+        pan_max: [57, -50]
+        tilt_max: [0, -70]
+        
+        # Number of scan lines for the search pattern
+        scan_lines: 4
+
+    # Search pattern for penalty
+    search_pattern_penalty:
+        tilt_speed: 1
+        pan_speed: 2
+        pan_max: [-57, 57]
+        tilt_max: [-7, -57]
+        scan_lines: 2
 
     # Values for the visual compass record pattern
     record_pattern_scan_lines: 2
