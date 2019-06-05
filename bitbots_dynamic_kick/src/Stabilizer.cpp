@@ -1,7 +1,6 @@
 #include "bitbots_dynamic_kick/Stabilizer.h"
 #include "bitbots_dynamic_kick/DynamicBalancingGoal.h"
-#include "bitbots_dynamic_kick/ReferencePoseGoal.h"
-#include "bitbots_dynamic_kick/ReferenceOrientationGoal.h"
+#include "bitbots_dynamic_kick/ReferenceGoals.h"
 
 Stabilizer::Stabilizer() {
     /* load MoveIt! model */
