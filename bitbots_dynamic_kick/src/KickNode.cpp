@@ -4,6 +4,7 @@ KickNode::KickNode() :
         m_server(m_node_handle, "dynamic_kick", boost::bind(&KickNode::execute_cb, this, _1), false),
         m_listener(m_tf_buffer) {
     m_joint_goal_publisher = m_node_handle.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
+    m_support_foot_publisher = m_node_handle.advertise<std_msgs::Char>("dynamic_kick_support_state", 1);
     m_server.start();
 }
 
@@ -101,7 +102,8 @@ void KickNode::loop_engine() {
                                    bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
             m_server.publishFeedback(feedback);
             publish_goals(goals.value());
-            // TODO Publish support-foot
+
+            publish_support_foot(m_engine.is_left_kick());
 
             if (feedback.percent_done == 100) {
                 break;
@@ -138,6 +140,12 @@ void KickNode::publish_goals(const JointGoals &goals) {
     command.max_currents = pwms;
 
     m_joint_goal_publisher.publish(command);
+}
+
+void KickNode::publish_support_foot(bool is_left_kick) {
+    std_msgs::Char msg;
+    msg.data = !is_left_kick ? 'l' : 'r';
+    m_support_foot_publisher.publish(msg);
 }
 
 int main(int argc, char *argv[]) {

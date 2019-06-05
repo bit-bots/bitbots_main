@@ -15,6 +15,7 @@
 #include <bitbots_msgs/JointCommand.h>
 #include <bitbots_dynamic_kick/DynamicKickConfig.h>
 #include "bitbots_dynamic_kick/KickEngine.h"
+#include <std_msgs/Char.h>
 
 typedef actionlib::SimpleActionServer<bitbots_msgs::KickAction> ActionServer;
 
@@ -43,6 +44,7 @@ public:
 private:
     ros::NodeHandle m_node_handle;
     ros::Publisher m_joint_goal_publisher;
+    ros::Publisher m_support_foot_publisher;
     ActionServer m_server;
     KickEngine m_engine;
     int m_engine_rate;
@@ -61,6 +63,12 @@ private:
      * @return The pair of (right foot, left foot) poses if transformation was successfull
      */
     std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> get_foot_poses();
+
+    /**
+     * Publish the current support_foot so that a correct base_footprint can be calculated
+     * @param is_left_kick Whether the left foot is the current kicking foot, meaning it is in the air
+     */
+    void publish_support_foot(bool is_left_kick);
 
     /**
      * Publish goals to ROS
