@@ -116,7 +116,8 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
     collision_detection::AllowedCollisionMatrix acm = m_planning_scene->getAllowedCollisionMatrix();
     m_planning_scene->checkCollision(req, res, *m_goal_state, acm);
     if (res.collision) {
-        ROS_ERROR_STREAM("Colliding!");
+        ROS_ERROR_STREAM("Aborting due to self collision!");
+        success = false;
     }
 
     if (success) {
