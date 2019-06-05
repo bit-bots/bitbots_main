@@ -26,9 +26,11 @@ public:
     std::optional<JointGoals> stabilize(bool is_left_kick, geometry_msgs::Point support_point, geometry_msgs::PoseStamped flying_foot_goal_pose);
     void use_stabilizing(bool use);
     void use_minimal_displacement(bool use);
+    void set_trunk_height(double height);
     void set_stabilizing_weight(double weight);
     void set_flying_weight(double weight);
     void set_trunk_orientation_weight(double weight);
+    void set_trunk_height_weight(double weight);
 private:
     robot_state::RobotStatePtr m_goal_state;
 
@@ -38,9 +40,11 @@ private:
 
     bool m_use_stabilizing;
     bool m_use_minimal_displacement;
+    double m_trunk_height;
     double m_stabilizing_weight;
     double m_flying_weight;
     double m_trunk_orientation_weight;
+    double m_trunk_height_weight;
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_STABILIZER_H

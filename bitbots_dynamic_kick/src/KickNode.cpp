@@ -29,9 +29,11 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
 
     m_engine.m_stabilizer.use_minimal_displacement(config.minimal_displacement);
     m_engine.m_stabilizer.use_stabilizing(config.stabilizing);
+    m_engine.m_stabilizer.set_trunk_height(config.trunk_height);
     m_engine.m_stabilizer.set_stabilizing_weight(config.stabilizing_weight);
     m_engine.m_stabilizer.set_flying_weight(config.flying_weight);
     m_engine.m_stabilizer.set_trunk_orientation_weight(config.trunk_orientation_weight);
+    m_engine.m_stabilizer.set_trunk_height_weight(config.trunk_height_weight);
 }
 
 void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {

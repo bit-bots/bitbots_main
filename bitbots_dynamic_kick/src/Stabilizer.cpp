@@ -74,6 +74,17 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
     trunk_orientation_goal->setWeight(m_trunk_orientation_weight);
     ik_options.goals.emplace_back(trunk_orientation_goal);
 
+    auto *trunk_height_goal = new ReferenceHeightGoal();
+    trunk_height_goal->setHeight(m_trunk_height);
+    trunk_height_goal->setWeight(m_trunk_height_weight);
+    trunk_height_goal->setLinkName("base_link");
+    if (is_left_kick) {
+        trunk_height_goal->setReferenceLinkName("r_sole");
+    } else {
+        trunk_height_goal->setReferenceLinkName("l_sole");
+    }
+    ik_options.goals.emplace_back(trunk_height_goal);
+
     DynamicBalancingContext bio_ik_balancing_context(m_kinematic_model);
     auto *bio_ik_balance_goal = new DynamicBalancingGoal(&bio_ik_balancing_context, stabilizing_target, m_stabilizing_weight);
     if (is_left_kick) {
@@ -121,6 +132,10 @@ void Stabilizer::use_minimal_displacement(bool use) {
     m_use_minimal_displacement = use;
 }
 
+void Stabilizer::set_trunk_height(double height) {
+    m_trunk_height = height;
+}
+
 void Stabilizer::set_stabilizing_weight(double weight) {
     m_stabilizing_weight = weight;
 }
@@ -131,4 +146,8 @@ void Stabilizer::set_flying_weight(double weight) {
 
 void Stabilizer::set_trunk_orientation_weight(double weight) {
     m_trunk_orientation_weight = weight;
+}
+
+void Stabilizer::set_trunk_height_weight(double weight) {
+    m_trunk_height_weight = weight;
 }
