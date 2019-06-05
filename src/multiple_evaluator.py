@@ -43,8 +43,8 @@ class BinaryEvaluator(object):
     def setTruth(self):
         for i in range(self.sample_count):
             angle = float(i) / self.sample_count * math.radians(360)
-            image = self.loader.getImage(4, 3, self.float_mod(angle + math.radians(90)
-                                                              , math.radians(360)))
+            angle = (angle + math.radians(90)) % math.radians(360)
+            image = self.loader.getImage(4, 3, angle)
             self.vc.set_truth(angle, image)
             self.show_img(image)
         cv2.destroyAllWindows()
