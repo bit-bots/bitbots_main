@@ -9,6 +9,7 @@
 #include <tf/LinearMath/Transform.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include "Stabilizer.h"
+#include <math.h>
 
 typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajectories;
 
@@ -135,6 +136,21 @@ private:
                                    const geometry_msgs::Vector3Stamped &kick_movement);
 
     geometry_msgs::PoseStamped get_current_pose(Trajectories spline_container);
+
+    /**
+     * Calculate the yaw of the kicking foot, so that it is turned
+     * in the direction of the kick
+     */
+    double calc_kick_foot_yaw();
+
+    /**
+     * Calculate the angle enclosed by two vectors, ignoring the z-component
+     * 
+     * @param vector1 First vector
+     * @param vector2 Second vector
+     */
+    double get_angular_difference(const geometry_msgs::Vector3 &vector1,
+                                              const geometry_msgs::Vector3 &vector2);
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_KICK_ENGINE_H

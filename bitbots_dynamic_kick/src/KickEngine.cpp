@@ -144,6 +144,8 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     double target_r, target_p, target_y;
     tf::Matrix3x3(target_rotation).getRPY(target_r, target_p, target_y);
 
+    target_y = calc_kick_foot_yaw();
+
     /* Add these quaternions in the same fashion as before to our splines (current, target, current) */
     m_flying_trajectories->get("roll").addPoint(fix0, start_r);
     m_flying_trajectories->get("roll").addPoint(fix3, start_r);
@@ -152,7 +154,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pitch").addPoint(fix3, start_p);
     m_flying_trajectories->get("pitch").addPoint(fix7, start_p);
     m_flying_trajectories->get("yaw").addPoint(fix0, start_y);
-    m_flying_trajectories->get("yaw").addPoint(fix3, start_y);  // TODO Rotate into kicking direction
+    m_flying_trajectories->get("yaw").addPoint(fix3, target_y);
     m_flying_trajectories->get("yaw").addPoint(fix7, start_y);
 
     /* Stabilizing point */
@@ -236,15 +238,39 @@ bool KickEngine::calc_is_left_foot_kicking(const geometry_msgs::Vector3Stamped &
     geometry_msgs::Vector3Stamped transformed_ball_position;
     m_tf_buffer.transform(ball_position, transformed_ball_position, "base_footprint", ros::Duration(0.2));
 
-    double dot_product = transformed_ball_position.vector.x * kick_movement.vector.x
-            + transformed_ball_position.vector.y * kick_movement.vector.y;
-    double determinant = transformed_ball_position.vector.x * kick_movement.vector.y
-            - transformed_ball_position.vector.y * kick_movement.vector.x;
-    double angle = std::atan2(determinant, dot_product);
+    double angle = get_angular_difference(transformed_ball_position.vector, kick_movement.vector);
 
     ROS_INFO_STREAM("Choosing " << ((angle < 0) ? "left" : "right") << " foot to kick");
 
     return angle < 0;
+}
+
+double KickEngine::calc_kick_foot_yaw() {
+    geometry_msgs::Vector3 ahead;
+    ahead.x = 1.0;
+    ahead.y = 0.0;
+    ahead.z = 0.0;
+    double kick_direction_angle = get_angular_difference(ahead, m_kick_movement);
+    if(kick_direction_angle > M_PI_4){
+        return kick_direction_angle - M_PI_2;
+    } 
+    else if(kick_direction_angle < -M_PI_4){
+        return kick_direction_angle + M_PI_2;
+    }
+    else {
+        return kick_direction_angle;
+    }
+    
+}
+
+double KickEngine::get_angular_difference(const geometry_msgs::Vector3 &vector1,
+                                          const geometry_msgs::Vector3 &vector2) {
+    double dot_product = vector1.x * vector2.x
+            + vector1.y * vector2.y;
+    double determinant = vector1.x * vector2.y
+            - vector1.y * vector2.x;
+    double angle = std::atan2(determinant, dot_product);
+    return angle;
 }
 
 bool KickEngine::is_left_kick() {
