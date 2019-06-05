@@ -318,7 +318,7 @@ class Kicking(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         if self.blackboard.last_kick_feedback is not None and \
-                self.blackboard.last_kick_feedback.feedback.percent_done != 100:
+                (rospy.Time.now() - self.blackboard.last_kick_feedback) < rospy.Duration.from_sec(1):
             return 'KICKING'
         else:
             return 'NOT_KICKING'
