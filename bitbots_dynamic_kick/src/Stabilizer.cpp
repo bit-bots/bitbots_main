@@ -26,6 +26,9 @@ Stabilizer::Stabilizer() {
     for (int i = 0; i < names_vec.size(); i++) {
         m_goal_state->setJointPositions(names_vec[i], &pos_vec[i]);
     }
+
+    /* Initialize collision model */
+    m_planning_scene.reset(new planning_scene::PlanningScene(m_kinematic_model));
 }
 
 std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs::Point support_point, geometry_msgs::PoseStamped flying_foot_goal_pose) {
@@ -107,6 +110,14 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
                                            bio_ik_timeout,
                                            moveit::core::GroupStateValidityCallbackFn(),
                                            ik_options);
+
+    collision_detection::CollisionRequest req;
+    collision_detection::CollisionResult res;
+    collision_detection::AllowedCollisionMatrix acm = m_planning_scene->getAllowedCollisionMatrix();
+    m_planning_scene->checkCollision(req, res, *m_goal_state, acm);
+    if (res.collision) {
+        ROS_ERROR_STREAM("Colliding!");
+    }
 
     if (success) {
         /* retrieve joint names and associated positions from  */
