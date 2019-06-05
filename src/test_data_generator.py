@@ -1,12 +1,9 @@
 import math
 import os
 import yaml
-import multiprocessing
-
 from evaluation_data_loader import DataLoader
 from worker import VisualCompass
 from pickle import dump
-
 
 
 def generate_configs():
@@ -18,7 +15,8 @@ def generate_configs():
                     config_table.append({"compass": compass, "matcher": matcher, "samples": samples})
             else:
                 config_table.append({"compass": compass, "matcher": matcher, "samples": 2})
-    return config_table[:1]
+    #return [{"compass": "multiple", "matcher": "orb", "samples": 11}]
+    return config_table
 
 
 def initialize_evaluation(config_table_entry):
@@ -42,6 +40,7 @@ def initialize_evaluation(config_table_entry):
     config["compass_multiple_sample_count"] = config_table_entry["samples"]
 
     compass = VisualCompass(config)
+    print (config_table_entry["compass"] + " " + config_table_entry["matcher"] + " " + str(config_table_entry["samples"]))
 
     return compass, loader, dimensions
 
@@ -76,6 +75,7 @@ def evaluate_all_images(compass, loader, dimensions):
         print ("step " + str(step) + " done.")
     return result
 
+
 def print_data(data):
     print (data)
     for d in data[0]["results"]:
@@ -84,9 +84,10 @@ def print_data(data):
             d["truth_angle"] = math.degrees(d["truth_angle"])
             print(d)
 
+
 if __name__ == "__main__":
-    pool = multiprocessing.Pool()
-    data = pool.map(evaluate, generate_configs())
+    print (generate_configs())
+    data = map(evaluate, generate_configs())
     print_data(data)
     file_path = "datadump.pickle"
 
