@@ -17,7 +17,7 @@ compass_matcher: 'sift'
 # binary
 
 # multiple
-compass_multiple_sample_count: 8
+compass_multiple_sample_count: 16
 
 # orb
 compass_orb_max_feature_count: 1000
