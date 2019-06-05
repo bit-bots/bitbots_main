@@ -4,6 +4,7 @@ import colorsys
 import math
 import statistics
 import cv2
+from profilehooks import profile
 import numpy as np
 from .matcher import Matcher
 from .interface import VisualCompass as VisualCompassInterface
@@ -65,7 +66,7 @@ class MultipleCompass(VisualCompassInterface):
 
         z = sum(map(lambda angle: np.exp(1j * angle), angles))
         median = np.angle(z) % (math.pi * 2)
-        confidence = (float(np.abs(z)) / length) ** (1./2)
+        confidence = (float(np.abs(z)) / length) ** (2./2)
         return median, confidence
 
     def process_image(self, image, resultCB=None, debugCB=None):
