@@ -234,10 +234,17 @@ tf2::Vector3 KickEngine::calc_kick_windup_point() {
 
 bool KickEngine::calc_is_left_foot_kicking(const geometry_msgs::Vector3Stamped &ball_position,
                                            const geometry_msgs::Vector3Stamped &kick_movement) {
-    // transform ball data into frame where we want to apply it
+    /* transform ball data into frame where we want to apply it */
     geometry_msgs::Vector3Stamped transformed_ball_position;
     m_tf_buffer.transform(ball_position, transformed_ball_position, "base_footprint", ros::Duration(0.2));
 
+    /* check if ball is outside of an imaginary corridor */
+    if (transformed_ball_position.vector.y > m_params.choose_foot_corridor_width / 2)
+        return true;
+    else if (transformed_ball_position.vector.y < -m_params.choose_foot_corridor_width / 2)
+        return false;
+
+    /* use the more fine grained angle based criterion */
     double angle = get_angular_difference(transformed_ball_position.vector, kick_movement.vector);
 
     ROS_INFO_STREAM("Choosing " << ((angle < 0) ? "left" : "right") << " foot to kick");

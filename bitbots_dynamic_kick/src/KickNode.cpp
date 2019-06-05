@@ -24,6 +24,7 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
     params.move_trunk_back_time = config.move_trunk_back_time;
     params.stabilizing_point_x = config.stabilizing_point_x;
     params.stabilizing_point_y = config.stabilizing_point_y;
+    params.choose_foot_corridor_width = config.choose_foot_corridor_width;
     m_engine.set_params(params);
 
     m_engine.m_stabilizer.use_minimal_displacement(config.minimal_displacement);

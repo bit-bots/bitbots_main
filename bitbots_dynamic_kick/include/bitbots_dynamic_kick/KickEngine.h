@@ -29,6 +29,8 @@ public:
 
     double stabilizing_point_x;
     double stabilizing_point_y;
+
+    double choose_foot_corridor_width;
 };
 
 /**
@@ -127,6 +129,10 @@ private:
 
     /**
      * Choose with which foot the kick should be performed
+     *
+     * This is done by checking whether the ball is outside of a corridor ranging from base_footprint forward.
+     * If it is, the foot on that side will be chosen as the kicking foot.
+     * If not, a more fine grained angle base criterion is used.
      *
      * @param ball_position Position where the ball is currently located
      * @param kick_movement Movement in x,y,z direction which the foot should do to finaly kick the ball
