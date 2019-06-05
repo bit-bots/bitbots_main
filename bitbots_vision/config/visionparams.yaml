@@ -10,7 +10,7 @@ ball_fcnn_publish_output: false
 ball_fcnn_publish_field_boundary_offset: 5
 
 field_color_detector_path: '/config/color_spaces/GO2019_interpolated.txt'
-field_color_detector_path_sim: '/config/color_spaces/f031test.yaml'
+field_color_detector_path_sim: '/config/color_spaces/f031new.yaml'
 field_color_detector_use_hsv_green: false
 field_color_detector_hsv_lower_values_h: 46
 field_color_detector_hsv_lower_values_s: 101
@@ -40,12 +40,12 @@ blue_color_detector_upper_values_h: 116
 blue_color_detector_upper_values_s: 255
 blue_color_detector_upper_values_v: 255
 
-field_boundary_finder_search_method: 'iteration'  # iteration, reversed, binary or dynamic
+field_boundary_finder_search_method: 'dynamic'  # iteration, reversed, binary or dynamic
 field_boundary_finder_vertical_steps: 30
 field_boundary_finder_horizontal_steps: 30
 field_boundary_finder_roi_height: 1
 field_boundary_finder_roi_width: 1
-field_boundary_finder_roi_increase: 0.1  # increase of kernel radius per pixel Todo: some values (0.09 and upwards throw errors in line detection)
+field_boundary_finder_roi_increase: 0.1  # increase of kernel radius per pixel
 field_boundary_finder_green_threshold: 25
 field_boundary_finder_precision_pix: 5
 field_boundary_finder_min_precision_pix: 3
@@ -62,13 +62,13 @@ vision_ball_candidate_rating_threshold: 0.5
 vision_debug_printer_classes: ''
 
 line_detector_field_boundary_offset: 15
-line_detector_linepoints_range: 10000
+line_detector_linepoints_range: 200
 line_detector_blur_kernel_size: 9
 
-obstacle_finder_method: 'distance'  # distance, convex or step
+obstacle_finder_method: 'convex'  # distance, convex or step
 obstacle_color_threshold: 10
 obstacle_white_threshold: 12
-obstacle_field_boundary_diff_threshold: 10
+obstacle_field_boundary_diff_threshold: 20
 obstacle_candidate_field_boundary_offset: 30
 obstacle_candidate_min_width: 15
 obstacle_candidate_max_width: 150
