@@ -50,9 +50,10 @@ def compare(positive_color_space, negative_color_space):
     return np.array(binary_color_space, dtype=np.uint8)
 
 def generate_color_lists(color_space):
-    color_lists = ( color_space[0].tolist(),
-                    color_space[1].tolist(),
-                    color_space[2].tolist())
+    color_space_positions = np.where(color_space == 1)
+    color_lists = ( color_space_positions[0].tolist(),
+                    color_space_positions[1].tolist(),
+                    color_space_positions[2].tolist())
     return color_lists
 
 def save(filename, color_space):           
