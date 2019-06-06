@@ -30,10 +30,10 @@ class FcnnHandler(CandidateFinder):
         candidate_refinement_iteration_count: 1
     """
 
-    def __init__(self, fcnn, horizon_detector, config, debug_printer):
+    def __init__(self, fcnn, field_boundary_detector, config, debug_printer):
         self._image = None
         self._fcnn = fcnn
-        self._horizon_detector = horizon_detector
+        self._field_boundary_detector = field_boundary_detector
         self._rated_candidates = None
         self._sorted_rated_candidates = None
         self._top_candidate = None
@@ -64,7 +64,7 @@ class FcnnHandler(CandidateFinder):
         self._max_candidate_diameter = config['max_candidate_diameter']
         self._candidate_refinement_iteration_count = \
             config['candidate_refinement_iteration_count']
-        self._horizon_offset = config['publish_horizon_offset']
+        self._field_boundary_offset = config['publish_field_boundary_offset']
 
 
     def get_candidates(self):
@@ -268,12 +268,12 @@ class FcnnHandler(CandidateFinder):
         msg = ImageWithRegionOfInterest()
         msg.header.frame_id = 'camera'
         msg.header.stamp = rospy.get_rostime()
-        horizon_top = self._horizon_detector.get_upper_bound(y_offset=self._horizon_offset)
-        image_cropped = self.get_fcnn_output()[horizon_top:]  # cut off at horizon
+        field_boundary_top = self._field_boundary_detector.get_upper_bound(y_offset=self._field_boundary_offset)
+        image_cropped = self.get_fcnn_output()[field_boundary_top:]  # cut off at field_boundary
         msg.image = self.bridge.cv2_to_imgmsg(image_cropped, "mono8")
         msg.regionOfInterest.x_offset = 0
-        msg.regionOfInterest.y_offset = horizon_top
-        msg.regionOfInterest.height = self.get_fcnn_output().shape[0] - 1 - horizon_top
+        msg.regionOfInterest.y_offset = field_boundary_top
+        msg.regionOfInterest.height = self.get_fcnn_output().shape[0] - 1 - field_boundary_top
         msg.regionOfInterest.width = self.get_fcnn_output().shape[1] - 1
         return msg
 

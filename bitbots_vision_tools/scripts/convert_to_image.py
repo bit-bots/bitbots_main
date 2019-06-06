@@ -30,8 +30,8 @@ class Converter(object):
 
     def _callback_fcnn(self, msg):
         input_image = self.bridge.imgmsg_to_cv2(msg.image, 'bgr8')  # TODO: evaluate this!!!
-        print(input_image.shape)
-        print((int(msg.regionOfInterest.width) + 1, int(msg.regionOfInterest.height) + 1))
+        rospy.logdebug(input_image.shape)
+        rospy.logdebug((int(msg.regionOfInterest.width) + 1, int(msg.regionOfInterest.height) + 1))
         input_image = cv2.resize(input_image, (int(msg.regionOfInterest.width) + 1, int(msg.regionOfInterest.height) + 1))
 
         output_image = np.zeros((self.initial_image_size[1], self.initial_image_size[0], 3), dtype=np.uint8)

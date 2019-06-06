@@ -31,7 +31,7 @@ class TFCollector(object):
     def time_cb(self, msg):
         tf = self.tf_buffer.lookup_transform("base_link", "camera", msg.stamp, timeout=rospy.Duration(0.2))
         rospy.logwarn("yaaay")
-        print(str(msg.seq) + "\n" + yaml.dump(tf), file=self.f)
+        rospy.loginfo(str(msg.seq) + "\n" + yaml.dump(tf), file=self.f)
         self.n += 1
 
 if __name__ == "__main__":

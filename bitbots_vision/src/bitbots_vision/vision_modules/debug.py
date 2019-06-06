@@ -11,16 +11,16 @@ class DebugImage:
     def set_image(self, image):
         self.raw_image = image.copy()
 
-    def draw_horizon(self, horizon_points, color):
+    def draw_field_boundary(self, field_boundary_points, color):
         """
-        draws a line where the horizon algorithm found the horizon
-        :param horizon_points list of coordinates of the horizon:
+        draws a line where the field_boundary algorithm found the field_boundary
+        :param field_boundary_points list of coordinates of the field_boundary:
         :return void:
         """
-        for i in range(len(horizon_points) - 1):
+        for i in range(len(field_boundary_points) - 1):
             cv2.line(self.raw_image,
-                     horizon_points[i],
-                     horizon_points[i+1], color)
+                     field_boundary_points[i],
+                     field_boundary_points[i+1], color)
 
     def draw_ball_candidates(self, ball_candidates, color, thickness=1):
         """

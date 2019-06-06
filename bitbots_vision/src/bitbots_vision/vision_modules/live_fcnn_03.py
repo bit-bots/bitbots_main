@@ -1,12 +1,13 @@
 import os
 import tensorflow as tf
+import rospy
 from .debug import DebugPrinter
 
 
 class FCNN03:
 
     def __init__(self, load_path, debug_printer):
-        print("setting up ball detection: FCNN03")
+        rospy.loginfo("setting up ball detection: FCNN03")
         self._debug_printer = debug_printer
 
         self._load_path = os.path.join(load_path, "model_final")
@@ -55,10 +56,10 @@ class FCNN03:
         self.init = tf.global_variables_initializer()
         self.session.run(self.init)
         self.saver = tf.train.Saver()
-        print()
-        print("loading weights from '{}'...".format(self._load_path))
+        rospy.loginfo(" ")
+        rospy.loginfo("loading weights from '{}'...".format(self._load_path))
         self.saver.restore(self.session, self._load_path)
-        print("loaded successfully.")
+        rospy.loginfo("loaded successfully.")
 
 
     def _fcnn_model(self):
