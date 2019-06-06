@@ -45,7 +45,7 @@ def init_color_space(color_path):
     return color_space  
 
 def compare(positive_color_space, negative_color_space):
-    mask = np.invert(negative_color_space)
+    mask = np.invert(np.array(negative_color_space, dtype=np.bool))
     binary_color_space = np.logical_and(mask, positive_color_space)
     return np.array(binary_color_space, dtype=np.uint8)
 
@@ -77,26 +77,29 @@ def save(filename, color_space):
 def run(positive_color_space_path, negative_color_space_path, output_path):
     print("Load positive color space '{}'".format(positive_color_space_path))
     positive_color_space = init_color_space(positive_color_space_path)
+    print(np.count_nonzero(positive_color_space))
     print("Load negative color space '{}'".format(negative_color_space_path))
     negative_color_space = init_color_space(negative_color_space_path)
+    print(np.count_nonzero(negative_color_space))
     print("Filter color spaces")
     filtered_color_space = compare(positive_color_space, negative_color_space)
+    print(np.count_nonzero(filtered_color_space))
     print("Finished filtering")
     print("Save color space")
     save(output_path, filtered_color_space)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--positive", help="Color space where the negative color space is subtracted from.", action='store_true')
-    parser.add_argument("-n", "--negative", help="Color space which is subtracted from the positive color space.", action='store_true')
-    parser.add_argument("-o", "--output", help="Saves the output in a Pickle file.", action='store_true')
+    parser.add_argument("-p", "--positive", help="Color space where the negative color space is subtracted from.")
+    parser.add_argument("-n", "--negative", help="Color space which is subtracted from the positive color space.")
+    parser.add_argument("-o", "--output", help="Saves the output in a Pickle file.")
     args = parser.parse_args()
     np.warnings.filterwarnings('ignore')
 
-    if args.positive and os.path.exists(args.yaml):
+    if args.positive and os.path.exists(args.positive):
         if args.negative and os.path.exists(args.negative):
             if args.output and os.path.exists(args.output):
-                run(args.positive, args.negative, args.output_path)
+                run(args.positive, args.negative, args.output)
             else:
                 print("Output path incorrect!")
         else:
