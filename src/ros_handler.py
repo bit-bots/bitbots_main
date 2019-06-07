@@ -15,11 +15,6 @@ from tf2_geometry_msgs import PoseStamped
 from tf.transformations import euler_from_quaternion
 
 
-# TODO rosdep
-# TODO: update docs in action
-# TODO: dump keypoints of ground truth in pickle file
-# TODO: launch file for set ground truth
-
 class VisualCompassROSHandler():
     # type: () -> None
     """

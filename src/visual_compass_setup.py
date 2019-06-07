@@ -23,6 +23,8 @@ from key_point_converter import KeyPointConverter
 # TODO: message queue size in dyn reconf
 # TODO: rename get keypoints to features
 # TODO: save meta information
+# TODO: launch headbehavior etc
+# TODO: in startup: check meta data with config
 
 class VisualCompassSetup():
     # type: () -> None
@@ -73,12 +75,15 @@ class VisualCompassSetup():
         """
         self.compass = VisualCompass(config)
 
-        if self.changed_config_param(config, 'compass_multiple_sample_count') or \
-            self.changed_config_param(config, 'compass_type') or \
-            self.changed_config_param(config, 'compass_matcher'):
+        if self.changed_config_param(config, 'compass_type') or \
+            self.changed_config_param(config, 'compass_matcher') or \
+            self.changed_config_param(config, 'compass_multiple_sample_count'):
 
             self.ground_truth_images_count = 0
             self.processed_set_all_ground_truth_images = False
+
+            rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | ground truth images: %(ground_truth)d' %
+                {'type': config['compass_type'], 'matcher': config['compass_matcher'], 'ground_truth': config['compass_multiple_sample_count']})
 
         # Subscribe to Image-message
         if self.changed_config_param(config, 'ROS_handler_img_msg_topic'):

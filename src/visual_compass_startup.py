@@ -4,6 +4,7 @@ import rospy
 import rospkg
 import actionlib
 import math
+from cv2 import KeyPoint
 import cPickle as pickle
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
@@ -11,12 +12,8 @@ from dynamic_reconfigure.server import Server
 from humanoid_league_msgs.msg import VisualCompassRotation
 from bitbots_visual_compass.cfg import VisualCompassConfig
 from worker import VisualCompass
+from key_point_converter import KeyPointConverter
 
-
-# TODO: rosdep
-# TODO: update docs in action
-# TODO: dump keypoints of ground truth in pickle file
-# TODO: launch file for set ground truth
 
 class VisualCompassStartup():
     # type: () -> None
@@ -66,11 +63,18 @@ class VisualCompassStartup():
         """
         TODO docs
         """
+        self.compass = VisualCompass(config)
+        self.compass.set_ground_truth_keypoints(self.load_ground_truth(config['ground_truth_file_name']))
+
         if self.changed_config_param(config, 'ground_truth_file_name'):
             self.is_ground_truth_set = False
 
-        self.compass = VisualCompass(config)
-        self.compass.set_ground_truth_keypoints(self.load_ground_truth(config['ground_truth_file_name']))
+        if self.changed_config_param(config, 'compass_type') or \
+            self.changed_config_param(config, 'compass_matcher') or \
+            self.changed_config_param(config, 'compass_multiple_sample_count'):
+
+            rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | ground truth images: %(ground_truth)d' %
+                {'type': config['compass_type'], 'matcher': config['compass_matcher'], 'ground_truth': config['compass_multiple_sample_count']})
 
         # Subscribe to Image-message
         if self.changed_config_param(config, 'ROS_handler_img_msg_topic'):
@@ -142,14 +146,24 @@ class VisualCompassStartup():
         """
         # generate file path
         file_path = self.package_path + ground_truth_file_name
-        print(file_path)
+        features = ([], [])
+
         if path.isfile(file_path):
             # load keypoints of pickle file
-            ground_truth_keypoints = pickle.load(open( file_path, "rb" ))
-            rospy.loginfo('Loaded keypoint file at: %(path)s' % {'path': file_path})
-            return ground_truth_keypoints
+            with open(file_path, 'rb') as f:
+                features = pickle.load(f)
+            rospy.loginfo('Loaded ground truth file at: %(path)s' % {'path': file_path})
+
+            keypoint_values = features['keypoints']
+
+            # convert keypoint values to cv2 Keypoints
+            keypoints = [KeyPoint(kp[0], kp[1], kp[2], kp[3], kp[4], kp[5], kp[6]) for kp in keypoint_values]
+
+            descriptors = features['descriptors']
+
+            return (keypoints, descriptors)
         else:
-            rospy.logerr('Ground truth file at: %(path)s does NOT EXIST.' % {'path': file_path})
+            rospy.logerr('NO ground truth file found at: %(path)s' % {'path': file_path})
 
     def changed_config_param(self, config, param_name):
         # type: (dict, str) -> bool
