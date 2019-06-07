@@ -4,6 +4,8 @@ project(white_balancer)
 
 set(CMAKE_BUILD_TYPE Debug)
 
+FIND_PACKAGE (OpenCV REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
   image_transport
   roscpp
@@ -12,7 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   rosconsole
   message_generation
-  OpenCV
   cv_bridge
 )
 
