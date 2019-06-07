@@ -1,10 +1,11 @@
 #! /usr/bin/env python2
 from os import path
+import socket
 import rospy
 import rospkg
 import math
 import cv2
-import pickle
+import cPickle as pickle
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from std_msgs.msg import Header
@@ -14,10 +15,14 @@ from worker import VisualCompass
 import tf2_ros as tf2
 from tf2_geometry_msgs import PoseStamped
 from tf.transformations import euler_from_quaternion
+from key_point_converter import KeyPointConverter
 
 # TODO: rosdep
 # TODO: rename sample to ground_truth_images
 # TODO: rename parameter and groups e.g. ros handler
+# TODO: message queue size in dyn reconf
+# TODO: rename get keypoints to features
+# TODO: save meta information
 
 class VisualCompassSetup():
     # type: () -> None
@@ -48,6 +53,7 @@ class VisualCompassSetup():
         self.config = {}
         self.image_msg = None
         self.compass = None
+        self.hostname = socket.gethostname()
 
         # TODO: docs
         self.base_frame = 'base_footprint'
@@ -93,7 +99,8 @@ class VisualCompassSetup():
                 self.sub_image_msg.unregister()
             self.sub_trigger_set_ground_truth = rospy.Subscriber(
                 config['ROS_trigger_set_ground_truth'],
-                Header, self.set_truth_callback)
+                Header, self.set_truth_callback,
+                queue_size=5)
 
         self.config = config
 
@@ -106,10 +113,11 @@ class VisualCompassSetup():
             # TODO: check timestamps
 
             orientation = self.tf_buffer.lookup_transform(self.base_frame, self.camera_frame, self.image_msg.header.stamp, timeout=rospy.Duration(0.5)).transform.rotation
-            yaw_angle = euler_from_quaternion(( orientation.x, 
-                                                orientation.y, 
-                                                orientation.z, 
-                                                orientation.w))[2] + 0.5 * math.pi
+            yaw_angle = euler_from_quaternion((
+                orientation.x, 
+                orientation.y, 
+                orientation.z, 
+                orientation.w))[2] + 0.5 * math.pi
 
             image = self.bridge.imgmsg_to_cv2(self.image_msg, 'bgr8')
 
@@ -155,17 +163,40 @@ class VisualCompassSetup():
         """
         TODO docs
         """
+        converter = KeyPointConverter()
+
         # get keypoints
-        keypoints = self.compass.get_ground_truth_keypoints()
+        features = self.compass.get_ground_truth_keypoints()
+
+        keypoints = features[0]
+
+        # convert keypoints to basic values
+        keypoint_values = [converter.key_point2values(kp) for kp in keypoints]
+
+        descriptors = features[1]
+
+        dump_features = {
+            'keypoints': keypoint_values, 
+            'descriptors': descriptors,
+            'meta': {'foo': "bar"}}
+
         # generate file path
         file_path = self.package_path + ground_truth_file_name
         # warn, if file does exist allready
         if path.isfile(file_path):
             rospy.logwarn('Ground truth file at: %(path)s does ALLREADY EXIST. This will be overwritten.' % {'path': file_path})
         # save keypoints in pickle file
-        with open(file_path, "wb") as f:
-            pickle.dump(keypoints, f)
-        rospy.logwarn('Saved ground truth file at: %(path)s' % {'path': file_path})
+        with open(file_path, 'wb') as f:
+            pickle.dump(dump_features, f)
+        info_str = "\n\t-----------------------------------------------------------------------------------------------------------------\n" + \
+        "\tSaved ground truth file at: %(path)s\n" % {'path': file_path} + \
+        "\tRUN the following command on your system (NOT THE ROBOT) to save the ground truth file in your current directory:\n" + \
+        "\n\tscp bitbots@%(host)s:%(path)s .\n" % {'path': file_path, 'host': self.hostname} + \
+        "\t-----------------------------------------------------------------------------------------------------------------"
+        rospy.loginfo(info_str)
+
+        # shutdown setup process
+        rospy.signal_shutdown('Visual compass setup finished cleanly.')
 
     def changed_config_param(self, config, param_name):
         # type: (dict, str) -> bool
