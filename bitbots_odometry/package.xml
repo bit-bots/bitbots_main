@@ -4,7 +4,7 @@
   <version>0.0.0</version>
   <description>The bitbots_odometry package</description>
 
-  <maintainer email="17vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
+  <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
@@ -22,8 +22,8 @@
   <!-- Author tags are optional, multiple are allowed, one per tag -->
   <!-- Authors do not have to be maintainers, but could be -->
   <!-- Example: -->
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
-
+  <author email="7vahl@informatik.uni-hamburg.de">Florian Vahl</author>
+  <author email="jasper@bit-bots.de">Jasper Güldenstein</author>
 
   <!-- The *depend tags are used to specify dependencies -->
   <!-- Dependencies can be catkin packages or system dependencies -->
@@ -60,6 +60,10 @@
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
+    <bitbots_documentation>
+      <status>tested_robot</status>
+      <language>c++</language>
+    </bitbots_documentation>
 
   </export>
 </package>
