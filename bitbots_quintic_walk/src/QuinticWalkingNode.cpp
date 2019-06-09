@@ -17,6 +17,7 @@ QuinticWalkingNode::QuinticWalkingNode() :
     // read config
     _nh.param<double>("engineFrequency", _engineFrequency, 100.0);
     _nh.param<bool>("/simulation_active", _simulation_active, false);
+    _nh.param<bool>("publishOdomTF", _publishOdomTF, false);
 
     /* init publisher and subscriber */
     _command_msg = bitbots_msgs::JointCommand();
@@ -435,18 +436,22 @@ void QuinticWalkingNode::publishOdometry() {
     tf::quaternionTFToMsg(odom_to_trunk.getRotation().normalize(), quat_msg);
 
     ros::Time current_time = ros::Time::now();
-    _odom_trans = geometry_msgs::TransformStamped();
-    _odom_trans.header.stamp = current_time;
-    _odom_trans.header.frame_id = "odom";
-    _odom_trans.child_frame_id = "base_link";
 
-    _odom_trans.transform.translation.x = pos[0];
-    _odom_trans.transform.translation.y = pos[1];
-    _odom_trans.transform.translation.z = pos[2];
-    _odom_trans.transform.rotation = quat_msg;
+    if (_publishOdomTF)
+    {
+        _odom_trans = geometry_msgs::TransformStamped();
+        _odom_trans.header.stamp = current_time;
+        _odom_trans.header.frame_id = "odom";
+        _odom_trans.child_frame_id = "base_link";
 
-    //send the transform
-    _odom_broadcaster.sendTransform(_odom_trans);
+        _odom_trans.transform.translation.x = pos[0];
+        _odom_trans.transform.translation.y = pos[1];
+        _odom_trans.transform.translation.z = pos[2];
+        _odom_trans.transform.rotation = quat_msg;
+
+        //send the transform
+        _odom_broadcaster.sendTransform(_odom_trans);
+    }
 
     // send the odometry also as message
     _odom_msg.header.stamp = current_time;
