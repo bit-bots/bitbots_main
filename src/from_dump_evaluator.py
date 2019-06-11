@@ -30,28 +30,36 @@ class Evaluator(object):
         
         self.loader = DataLoader(self.image_path, self.dimensions, 16)
 
-    def evaluate_all_images(self, compass, matcher, samples):
+    def evaluate_all_images(self):
+        for datum in self.data:
+            if datum["compass"] == "multiple" and datum["matcher"] == "sift":
+                self.evaluate_configuration(datum)
+
+    def filter_configuration(self, compass, matcher, samples):
         filtered_data = self.data
         filtered_data = filter(lambda entry: entry["compass"] == compass, filtered_data)
         filtered_data = filter(lambda entry: entry["matcher"] == matcher, filtered_data)
         filtered_data = filter(lambda entry: entry["samples"] == samples, filtered_data)
 
-        print(str(len(filtered_data)) + " entries left (should be 1).")
+        return filtered_data
 
-        if len(filtered_data) == 1:
-            datum = filtered_data[0]
+    def evaluate_configuration(self, config):
+        print("Compass: " + config["compass"])
+        print("Matcher: " + config["matcher"])
+        print("Samples: " + str(config["samples"]))
 
-            print("Compass: " + datum["compass"])
-            print("Matcher: " + datum["matcher"])
-            print("Samples: " + str(datum["samples"]))
+        for i in range(16):
+            angle = math.pi / 8.0 * i
 
-            for i in range(16):
-                angle = math.pi / 8.0 * i
+            plt.figure(i)
+            self.evaluate_direction(angle, config["results"])
 
-                plt.figure(i)
-                self.evaluate_direction(angle, datum["results"])
-                filename = "" + str(i) + ".png"
-                plt.savefig(os.path.join(self.visualization_path, filename))
+            folder_name = config["compass"] + "_" + config["matcher"] + "_" + str(config["samples"])
+            path = os.path.join(self.visualization_path, folder_name)
+            if not os.path.exists(path):
+                os.makedirs(path)
+            file_name = "" + str(i) + ".png"
+            plt.savefig(os.path.join(path, file_name))
 
     def evaluate_direction(self, thruth_angle, results):
         ax = plt.subplot(1, 2, 1)
@@ -81,4 +89,8 @@ class Evaluator(object):
 
 if __name__ == "__main__":
     evaluator = Evaluator()
-    evaluator.evaluate_all_images("multiple", "sift", 16)
+
+    # configuration = evaluator.filter_configuration("multiple", "sift", 16)[0]
+    # evaluator.evaluate_configuration(configuration)
+
+    evaluator.evaluate_all_images()
