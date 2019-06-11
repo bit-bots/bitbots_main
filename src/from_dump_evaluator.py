@@ -4,6 +4,7 @@ import pickle
 import yaml
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
+import matplotlib.gridspec as gridspec
 import numpy as np
 from evaluation_data_loader import DataLoader
 
@@ -63,8 +64,6 @@ class Evaluator(object):
             plt.savefig(os.path.join(path, file_name))
 
     def evaluate_direction(self, truth_angle, results):
-        ax = plt.subplot(1, 2, 1)
-
         results = filter(lambda entry: np.isclose(entry["truth_angle"], truth_angle, .002), results)
 
         U = np.zeros(self.dimensions)
@@ -85,8 +84,15 @@ class Evaluator(object):
             V[x, y] = np.imag(z) * confidence
             C[x, y] = correctness
 
+        self.plot(U, V, C, truth_angle)
+
+    def plot(self, U, V, C, truth_angle):
+        # https://matplotlib.org/users/gridspec.html
+
         cmap = colors.LinearSegmentedColormap.from_list("", ["green", "yellow", "red"])
         normalizer = colors.Normalize(0, 1)
+
+        ax = plt.subplot(1, 2, 1)
         Q = ax.quiver(U, V, C, pivot='mid', scale_units='xy', scale=1, cmap=cmap, norm=normalizer)
         ax.axis('equal')
         ax.axis('off')
