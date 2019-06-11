@@ -32,7 +32,8 @@ class DataLoader(object):
         return self.meta_data[row][checkpoint]
 
     def getMetaDataSetForImage(self, row, checkpoint, angle):
-        return self.meta_data[row][checkpoint][int((angle/(2*math.pi))*16)]
+        angle_key = int(round((angle / (2 * math.pi)) * 16)) % 16
+        return self.meta_data[row][checkpoint][angle_key]
 
     def getImage(self, row, checkpoint, angle):
         meta_data = self.getMetaDataSetForImage(row, checkpoint, angle)
