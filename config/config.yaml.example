@@ -29,3 +29,6 @@ compass_sift_devicetype: 'cpu'
 
 # evaluator data path
 evaluation_data: '../evaluation_data/FieldData/Field_1/'
+
+# visualization data path
+visualization: '../visualization'
