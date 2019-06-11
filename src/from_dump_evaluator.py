@@ -3,6 +3,7 @@ import os
 import pickle
 import yaml
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 import numpy as np
 from evaluation_data_loader import DataLoader
 
@@ -61,10 +62,10 @@ class Evaluator(object):
             file_name = "" + str(i) + ".png"
             plt.savefig(os.path.join(path, file_name))
 
-    def evaluate_direction(self, thruth_angle, results):
+    def evaluate_direction(self, truth_angle, results):
         ax = plt.subplot(1, 2, 1)
 
-        results = filter(lambda entry: np.isclose(entry["truth_angle"], thruth_angle, .002), results)
+        results = filter(lambda entry: np.isclose(entry["truth_angle"], truth_angle, .002), results)
 
         U = np.zeros(self.dimensions)
         V = np.zeros(self.dimensions)
@@ -72,25 +73,32 @@ class Evaluator(object):
         for result in results:
             angle = result["angle"]
             confidence = result["confidence"]
+            angle_diff = abs(angle - truth_angle)
+            if angle_diff > math.pi:
+                angle_diff = math.pi * 2 - angle_diff
+            correctness = angle_diff / math.pi
+
             x = result["x"]
             y = result["y"]
             z = np.exp(1j*angle)
             U[x, y] = np.real(z) * confidence
             V[x, y] = np.imag(z) * confidence
-            C[x, y] = confidence
+            C[x, y] = correctness
 
-        Q = ax.quiver(U, V, C, pivot='mid')
+        cmap = colors.LinearSegmentedColormap.from_list("", ["green", "yellow", "red"])
+        normalizer = colors.Normalize(0, 1)
+        Q = ax.quiver(U, V, C, pivot='mid', scale_units='xy', scale=1, cmap=cmap, norm=normalizer)
         ax.axis('equal')
         ax.axis('off')
 
         plt.subplot(1, 2, 2)
-        plt.imshow(self.loader.getImage(4, 3, thruth_angle))
+        plt.imshow(self.loader.getImage(4, 3, truth_angle))
 
 
 if __name__ == "__main__":
     evaluator = Evaluator()
 
-    # configuration = evaluator.filter_configuration("multiple", "sift", 16)[0]
-    # evaluator.evaluate_configuration(configuration)
+    configuration = evaluator.filter_configuration("multiple", "sift", 16)[0]
+    evaluator.evaluate_configuration(configuration)
 
-    evaluator.evaluate_all_images()
+    # evaluator.evaluate_all_images()
