@@ -24,7 +24,9 @@ class BinaryEvaluator(object):
 
         relative_data_path = config['evaluation_data']
         self.data_path = os.path.join(dirname, relative_data_path)
-        
+
+        self.visualization_path = os.path.join(dirname, config["visualization"])
+
         self.loader = DataLoader(self.data_path, self.dimensions, self.angle_steps)
 
         #config['compass_type'] = 'multiple'
@@ -53,10 +55,13 @@ class BinaryEvaluator(object):
 
 
         for i in range(16):
+
+            plt.figure(i)
             self.evaluateDirection(math.pi/8*i, None)
             print(i)
             print("done")
-            plt.show()
+            filename = "" + str(i) + ".png"
+            plt.savefig(os.path.join(self.visualization_path, filename))
     
     def debug_image_callback(self, debug_image):
         return
