@@ -1,14 +1,10 @@
 import math
 import os
-import cv2
-import time
 import pickle
 import yaml
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import numpy as np
 from evaluation_data_loader import DataLoader
-from worker import VisualCompass
 
 
 class Evaluator(object):
@@ -29,26 +25,38 @@ class Evaluator(object):
 
         relative_data_path = config['evaluation_data']
         self.image_path = os.path.join(dirname, relative_data_path)
+
+        self.visualization_path = os.path.join(dirname, config["visualization"])
         
         self.loader = DataLoader(self.image_path, self.dimensions, 16)
 
+    def evaluate_all_images(self, compass, matcher, samples):
+        filtered_data = self.data
+        filtered_data = filter(lambda entry: entry["compass"] == compass, filtered_data)
+        filtered_data = filter(lambda entry: entry["matcher"] == matcher, filtered_data)
+        filtered_data = filter(lambda entry: entry["samples"] == samples, filtered_data)
 
+        print(str(len(filtered_data)) + " entries left (should be 1).")
 
+        if len(filtered_data) == 1:
+            datum = filtered_data[0]
 
+            print("Compass: " + datum["compass"])
+            print("Matcher: " + datum["matcher"])
+            print("Samples: " + str(datum["samples"]))
 
-    def evaluateAllImages(self, compass, matcher, samples):
-        self.data
+            for i in range(16):
+                angle = math.pi / 8.0 * i
 
-        for i in range(16):
-            self.evaluateDirection(math.pi/8*i, None)
-            print(i)
-            print("done")
-            plt.show()
+                plt.figure(i)
+                self.evaluate_direction(angle, datum["results"])
+                filename = "" + str(i) + ".png"
+                plt.savefig(os.path.join(self.visualization_path, filename))
 
-    def evaluateDirection(self, angle, results):
+    def evaluate_direction(self, thruth_angle, results):
         ax = plt.subplot(1, 2, 1)
 
-        results = filter(lambda entry: math.isclose(entry["truth_angle"], angle, .1), results)
+        results = filter(lambda entry: np.isclose(entry["truth_angle"], thruth_angle, .002), results)
 
         U = np.zeros(self.dimensions)
         V = np.zeros(self.dimensions)
@@ -68,22 +76,9 @@ class Evaluator(object):
         ax.axis('off')
 
         plt.subplot(1, 2, 2)
-        plt.imshow(self.loader.getImage(4, 3, angle))
+        plt.imshow(self.loader.getImage(4, 3, thruth_angle))
 
-
-    def plot_confidence(self, confidences, side):
-        a = np.zeros((10, 7))
-        for row_index, row in enumerate(confidences):
-            for checkpoint_index, checkpoint in enumerate(row):
-                a[row_index, checkpoint_index] = float(checkpoint[side])
-        plt.imshow(a, cmap='hot', interpolation='nearest')
-
-    def calcUV(self):
-
-        fig, ax = plt.subplots()
-        Q = ax.quiver(np.ones((10, 7)), np.zeros((10, 7)), pivot='mid', units='inches')
-        plt.show()
 
 if __name__ == "__main__":
-    evaluator = Evaluator((10,7), 16)
-    evaluator.evaluate()
+    evaluator = Evaluator()
+    evaluator.evaluate_all_images("multiple", "sift", 16)
