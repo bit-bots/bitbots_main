@@ -71,3 +71,6 @@
 [submodule "lib/dwa_local_planner"]
 	path = lib/dwa_local_planner
 	url = git@github.com:Bit-Bots/dwa_local_planner.git
+[submodule "lib/vision_opencv"]
+	path = lib/vision_opencv
+	url = git@github.com:ros-perception/vision_opencv.git
