@@ -1,5 +1,5 @@
 <launch>
-    <rosparam command="load" file="$(find bitbots_vision_tools)/config/color_test_params.yaml" />
     <node pkg="bitbots_vision_tools" type="color_test.py" name="bitbots_vision_color_test" output="screen" >
+    <rosparam command="load" file="$(find bitbots_vision_tools)/config/color_test_params.yaml" />
     </node>
 </launch>

@@ -23,6 +23,9 @@
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <exec_depend>rospy</exec_depend>
+  <depend>bitbots_vision</depend>
+  <depend>image_transport</depend>
+  <depend>message_runtime</depend>
 
   <export>
     <bitbots_documentation>

@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   trajectory_msgs
   message_generation
+  bitbots_vision
 )
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
@@ -19,7 +20,9 @@ generate_dynamic_reconfigure_options(
 	cfg/ColorTest.cfg
 )
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS geometry_msgs humanoid_league_msgs image_transport message_runtime rospy sensor_msgs std_msgs
+)
 
 include_directories(
 # include
