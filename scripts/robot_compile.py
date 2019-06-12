@@ -283,6 +283,16 @@ if __name__ == '__main__':
             if host[1].startswith('odroid') or host[1].startswith('nuc'):
                 add_game_controller_config(host[1][-1:], workspace, host)
 
+            if host[1].startswith('jetson'):
+                vision_extension_result = subprocess.run([
+                    'ssh',
+                    'bitbots@{}'.format(host[0]),
+                    '{}/src/scripts/install_py_extensions.bash'.format(workspace),
+                ])
+                if vision_extension_result.returncode != 0:
+                    print_err('Installing the vision extensions failed!')
+                    exit(vision_extension_result.returncode)
+
         print_success('Sync succeeded!')
 
     if not args.sync_only:
