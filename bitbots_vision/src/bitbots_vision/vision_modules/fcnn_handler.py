@@ -51,8 +51,6 @@ class FcnnHandler(CandidateFinder):
         self._top_candidate = None
         self._fcnn_output = None
 
-        # draw the output when debug is enabled
-        self.draw_debug_image()
 
     def set_config(self, config):
         self._debug = config['debug']
@@ -258,11 +256,9 @@ class FcnnHandler(CandidateFinder):
             points = [other_point for other_point in points if not (lx <= other_point[0] <= rx and uy <= other_point[1] <= ly)]
         return candidates
 
-    def draw_debug_image(self):
-        if not self._debug:
-            return
-        cv2.imshow('FCNN Output', self.get_fcnn_output())
-        cv2.waitKey(1)
+    def get_debug_image(self):
+        if self._debug:
+            return self.bridge.cv2_to_imgmsg(self.get_fcnn_output(), "mono8")
 
     def get_cropped_msg(self):
         msg = ImageWithRegionOfInterest()

@@ -248,9 +248,10 @@ class Vision:
         self.pub_non_lines.publish(non_line_msg)
 
         if self.ball_fcnn_publish_output and self.config['vision_ball_classifier'] == 'fcnn':
-            fcnn_image_msg = self.ball_detector.get_cropped_msg()
-            fcnn_image_msg.header.stamp = image_msg.header.stamp
             self.pub_ball_fcnn.publish(self.ball_detector.get_cropped_msg())
+
+        if self.publish_fcnn_debug_image and self.config['vision_ball_classifier'] == 'fcnn':
+            self.pub_debug_fcnn_image.publish(self.ball_detector.get_debug_image())
 
         # do debug stuff
         if self.debug:
@@ -331,6 +332,8 @@ class Vision:
             rospy.logwarn('ball FCNN output publishing is enabled')
         else:
             rospy.logwarn('ball FCNN output publishing is disabled')
+
+        self.publish_fcnn_debug_image = config['ball_fcnn_debug']
 
         if config['vision_ball_classifier'] == 'dummy':
             self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, self.debug_printer)
@@ -425,7 +428,7 @@ class Vision:
         # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
         # this enables 2 fcnns with different configs.
         self.ball_fcnn_config = {
-            'debug': config['ball_fcnn_debug'] and self.debug_image,
+            'debug': config['ball_fcnn_debug'],
             'threshold': config['ball_fcnn_threshold'],
             'expand_stepsize': config['ball_fcnn_expand_stepsize'],
             'pointcloud_stepsize': config['ball_fcnn_pointcloud_stepsize'],
@@ -516,6 +519,15 @@ class Vision:
                 self.pub_debug_image.unregister()
             self.pub_debug_image = rospy.Publisher(
                 config['ROS_debug_image_msg_topic'],
+                Image,
+                queue_size=1)
+
+        if 'ROS_debug_fcnn_image_msg_topic' not in self.config or \
+                self.config['ROS_debug_fcnn_image_msg_topic'] != config['ROS_debug_fcnn_image_msg_topic']:
+            if hasattr(self, 'pub_debug_fcnn_image'):
+                self.pub_debug_fcnn_image.unregister()
+            self.pub_debug_fcnn_image = rospy.Publisher(
+                config['ROS_debug_fcnn_image_msg_topic'],
                 Image,
                 queue_size=1)
 
