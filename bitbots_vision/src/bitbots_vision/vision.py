@@ -230,7 +230,7 @@ class Vision:
         # publish field-boundary
         field_boundary_msg = FieldBoundaryInImage()
         field_boundary_msg.header = image_msg.header
-        for point in self.field_boundary_detector.get_field_boundary_points():
+        for point in self.field_boundary_detector.get_convex_field_boundary_points():
             field_boundary_msg.field_boundary_points.append(Point(point[0], point[1], 0))
         self.pub_field_boundary.publish(field_boundary_msg)
 
