@@ -6,8 +6,6 @@
 #include <cv_bridge/cv_bridge.h>
 #include <dynamic_reconfigure/server.h>
 #include <white_balancer/WhiteBalanceConfig.h>
-#include <chrono> 
-#include <ctime> 
 #include <boost/bind.hpp>
 
 
@@ -165,8 +163,6 @@ void WhiteBalancer::set_temp(int temp)
 
 void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
-     // Get starting timepoint 
-    auto start = std::chrono::high_resolution_clock::now(); 
     try
     {
         // Get RGB value for current temperature
@@ -187,10 +183,7 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
     {
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
     }
-    auto stop = std::chrono::high_resolution_clock::now(); 
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
     
-    std::cout << "Time taken by function: " << duration.count() << " microseconds" << std::endl; 
 }
 
 void WhiteBalancer::callbackRC(white_balancer::WhiteBalanceConfig &config, uint32_t level) {
