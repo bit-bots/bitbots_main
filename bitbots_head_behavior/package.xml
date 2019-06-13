@@ -19,7 +19,7 @@
   <exec_depend>humanoid_league_msgs</exec_depend>
   <exec_depend>dynamic_stack_decider</exec_depend>
   <exec_depend>bitbots_blackboard</exec_depend>  
-  <exec_depend>bitbots_ik</exec_depend>
+  <exec_depend>bio_ik_service</exec_depend>
   
   <export>
     <rosdoc config="rosdoc.yaml"/>
