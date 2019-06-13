@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import cv2
@@ -558,8 +558,13 @@ class Vision:
                 tcp_nodelay=True)
 
         # Publish Config-message
+        # Clean config dict to avoid not dumpable types
+        config_cleaned = {}
+        for key, value in config.items():
+            if str(type(value)) != "<class 'dynamic_reconfigure.encoding.Config'>":
+                config_cleaned[key] = value
         msg = Config()
-        msg.data = yaml.dump(config)
+        msg.data = yaml.dump(config_cleaned)
         self.pub_config.publish(msg)
 
         self.config = config

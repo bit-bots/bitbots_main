@@ -34,7 +34,7 @@
     <buildtool_depend>catkin</buildtool_depend>
     <build_depend>message_generation</build_depend>
     <depend>rospy</depend>
-    <depend>python-rospkg</depend>
+    <depend>python3-rospkg</depend>
     <depend>sensor_msgs</depend>
     <depend>std_msgs</depend>
     <depend>geometry_msgs</depend>
@@ -45,15 +45,16 @@
     <depend>humanoid_league_msgs</depend>
     <depend>bitbots_msgs</depend>
     <depend>dynamic_reconfigure</depend>
-    <depend>python-numpy</depend>
-    <depend>python-opencv</depend>
     <depend>wolves_image_provider</depend>
+    <depend>python3-numpy</depend>
+    <depend>python3-opencv</depend>
+    <depend>python3-tensorflow</depend>
   
 
     <export>
     <bitbots_documentation>
-      <language>python2</language>
-      <status>tested_simulator</status>
+      <language>python3</language>
+      <status>unknown</status>
     </bitbots_documentation>
   </export>
 </package>
