@@ -141,17 +141,19 @@ sub first_catkin_build() {
 
 sub clone_internal_repos() {
     # Clone internal bitbots_repos into bitbots_meta
-    my $location = get_location();
-    chdir $location;
+    chdir $start_dir;
 
-    print "Do you want to clone bitbots gogs repos ('ansible_robots', 'doku') now?$/";
+    print "Do you want to clone bitbots gogs repos ('ansible_robots', 'doku', 'basler_drivers') now?$/";
     print "[Y/n]: ";
     if (read_yes_no_input()) {
         system 'git clone gogs@gogs.mafiasi.de:Bit-Bots/ansible_robots.git'
             and print "Could not clone ansible_robots$/$/";
 
         system 'git clone gogs@gogs.mafiasi.de:Bit-Bots/doku.git'
-            and print "Could not clone doku$/$/"
+            and print "Could not clone doku$/$/";
+
+        system 'git clone gogs@gogs.mafiasi.de:Bit-Bots/basler_drivers.git'
+	    and print "Could not clone basler_drivers$/$/";
     }
 }
 
