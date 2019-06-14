@@ -1,4 +1,8 @@
 include:
+    - basler_drivers
+    - bitbots_vision:
+        - bitbots_vision
+        - python_extensions
     - bitbots_behavior:
         - bitbots_blackboard
         - bitbots_body_behavior
