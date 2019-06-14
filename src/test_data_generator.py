@@ -15,7 +15,6 @@ def generate_configs():
                     config_table.append({"compass": compass, "matcher": matcher, "samples": samples})
             else:
                 config_table.append({"compass": compass, "matcher": matcher, "samples": 2})
-    #return [{"compass": "multiple", "matcher": "orb", "samples": 11}]
     return config_table
 
 
@@ -50,7 +49,6 @@ def evaluate(config_table_entry):
 
     set_truth(compass, loader, config_table_entry)
     results = evaluate_all_images(compass, loader, dimensions)
-    # results = [{"x":5, "y": 4, "angle": 45, "confidence": .45, "truth_angle": 45}]
     config_table_entry["results"] = results
     return config_table_entry
 
@@ -59,7 +57,7 @@ def set_truth(compass, loader, config_table_entry):
     for i in range(config_table_entry["samples"]):
         angle = float(i) / config_table_entry["samples"] * math.radians(360)
         angle = (angle + math.radians(90)) % math.radians(360)
-        image = loader.getImage(4, 3, angle)
+        image = loader.get_image(4, 3, angle)
         compass.set_truth(angle, image)
 
 
@@ -69,7 +67,7 @@ def evaluate_all_images(compass, loader, dimensions):
         truth_angle = (float(step) * math.pi / 8) % (math.pi * 2)
         for i in range(dimensions[0]):
             for j in range(dimensions[1]):
-                image = loader.getImage(i, j, truth_angle)
+                image = loader.get_image(i, j, truth_angle)
                 angle, confidence = compass.process_image(image)
                 result.append({"x": i, "y": j, "angle": angle, "confidence": confidence, "truth_angle": truth_angle})
         print ("step " + str(step) + " done.")

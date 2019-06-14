@@ -29,8 +29,6 @@ class BinaryEvaluator(object):
 
         self.loader = DataLoader(self.data_path, self.dimensions, self.angle_steps)
 
-        #config['compass_type'] = 'multiple'
-        
         self.sample_count = 2 if config['compass_type'] == 'binary' else config['compass_multiple_sample_count']
         self.vc = VisualCompass(config)
     
@@ -39,25 +37,24 @@ class BinaryEvaluator(object):
         k = cv2.waitKey(1)
 
     def evaluate(self):
-        self.setTruth()
-        self.evaluateAllImages()
+        self.set_truth()
+        self.evaluate_all_images()
 
-    def setTruth(self):
+    def set_truth(self):
         for i in range(self.sample_count):
             angle = float(i) / self.sample_count * math.radians(360)
             angle = (angle + math.radians(90)) % math.radians(360)
-            image = self.loader.getImage(4, 3, angle)
+            image = self.loader.get_image(4, 3, angle)
             self.vc.set_truth(angle, image)
             self.show_img(image)
         cv2.destroyAllWindows()
 
-    def evaluateAllImages(self):
-
+    def evaluate_all_images(self):
 
         for i in range(16):
 
             plt.figure(i)
-            self.evaluateDirection(math.pi/8*i, None)
+            self.evaluate_direction(math.pi / 8 * i, None)
             print(i)
             print("done")
             filename = "" + str(i) + ".png"
@@ -68,7 +65,7 @@ class BinaryEvaluator(object):
         self.show_img(debug_image)
         time.sleep(0.5)
 
-    def evaluateDirection(self, step, ax):
+    def evaluate_direction(self, step, ax):
         ax = plt.subplot(1, 2, 1)
 
         U = np.zeros(self.dimensions)
@@ -76,7 +73,7 @@ class BinaryEvaluator(object):
         C = np.zeros(self.dimensions)
         for i in range(self.dimensions[0]):
             for j in range(self.dimensions[1]):
-                image = self.loader.getImage(i, j, step)
+                image = self.loader.get_image(i, j, step)
                 angle, confidence = self.vc.process_image(image)
                 z = np.exp(1j*angle)
                 U[i, j] = np.real(z) * confidence
@@ -88,26 +85,9 @@ class BinaryEvaluator(object):
         ax.axis('off')
 
         plt.subplot(1, 2, 2)
-        plt.imshow(self.loader.getImage(4, 3, step))
+        plt.imshow(self.loader.get_image(4, 3, step))
 
-
-    def plot_confidence(self, confidences, side):
-        a = np.zeros((10, 7))
-        for row_index, row in enumerate(confidences):
-            for checkpoint_index, checkpoint in enumerate(row):
-                a[row_index, checkpoint_index] = float(checkpoint[side])
-        plt.imshow(a, cmap='hot', interpolation='nearest')
-
-    def calcUV(self):
-
-        fig, ax = plt.subplots()
-        Q = ax.quiver(np.ones((10, 7)), np.zeros((10, 7)), pivot='mid', units='inches')
-        plt.show()
-
-    def float_mod(self,  number, modulo):
-        return number - modulo * math.floor(number / modulo)
 
 if __name__ == "__main__":
     evaluator = BinaryEvaluator((10,7), 16)
     evaluator.evaluate()
-    # evaluator.calcUV()
