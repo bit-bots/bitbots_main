@@ -74,3 +74,4 @@
 [submodule "lib/vision_opencv"]
 	path = lib/vision_opencv
 	url = git@github.com:ros-perception/vision_opencv.git
+    branch = melodic
