@@ -10,6 +10,7 @@ ros_control:
   warn_volt: 12
   read_imu: true
   onlySensors: false
+  readButtons: true
   control_loop_hz: 1000
 
   # specification of the connected dynamixel servos
