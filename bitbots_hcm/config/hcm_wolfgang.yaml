@@ -53,7 +53,7 @@ hcm:
     "falling_left": "falling_left"
     "falling_right": "falling_right"
 
-    "Wolfgang":
+    "wolfgang":
 
       #Grenzwerte müssen auf härterem boden auch härter eingestellt werden,
       #dies erfolgt mit dem boden_koeffizient

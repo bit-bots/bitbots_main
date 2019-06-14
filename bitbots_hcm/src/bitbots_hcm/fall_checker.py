@@ -11,7 +11,7 @@ class FallChecker(object):
     def __init__(self):
 
         # will be set by dynamic reconfigure
-        robot_type_name = rospy.get_param("robot_type_name", "wolfgang")
+        robot_type_name = rospy.get_param("robot_type_name", "wolfgang").lower()
 
         # load config values depending on robot type and lode them into param server to set
         # start values for dynamic reconfigure

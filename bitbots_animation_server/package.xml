@@ -19,6 +19,7 @@
   <depend>std_msgs</depend>
   <depend>actionlib</depend>
   <depend>humanoid_league_msgs</depend>
+  <depend>bitbots_splines</depend>
 
   <export>
     <bitbots_documentation>
