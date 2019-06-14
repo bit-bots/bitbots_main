@@ -35,10 +35,20 @@ class Evaluator(object):
         
         self.loader = DataLoader(self.image_path, self.dimensions, 16)
 
-    def evaluate_all_images(self):
-        for datum in self.data:
-            if datum["compass"] == "multiple" and datum["matcher"] == "sift":
-                self.evaluate_configuration(datum)
+    def evaluate_all_configurations(self, confidence_thresholds, plot):
+        config_confusion_matrices = []
+        for confidence_threshold in confidence_thresholds:
+            for datum in self.data:
+                if datum["compass"] == "multiple":
+                    confusion_matrix = self.evaluate_configuration(datum, confidence_threshold, plot)
+                    config_confusion_matrices.append({
+                        'compass': datum['compass'],
+                        'matcher': datum['matcher'],
+                        'samples': datum['samples'],
+                        'confidence_threshold': confidence_threshold,
+                        'confusion_matrix': confusion_matrix
+                    })
+        return config_confusion_matrices
 
     def filter_configuration(self, compass, matcher, samples):
         filtered_data = self.data
@@ -48,7 +58,7 @@ class Evaluator(object):
 
         return filtered_data
 
-    def evaluate_configuration(self, config):
+    def evaluate_configuration(self, config, confidence_threshold, plot):
         print("\nCompass: " + config["compass"])
         print("Matcher: " + config["matcher"])
         print("Samples: " + str(config["samples"]))
@@ -58,7 +68,7 @@ class Evaluator(object):
             angle = math.pi / 8.0 * i
 
             plt.figure(i)
-            confusion_matrix = self.evaluate_direction(angle, config["results"])
+            confusion_matrix = self.evaluate_direction(angle, config["results"], confidence_threshold, plot)
             total_confusion_matrix = np.add(total_confusion_matrix, confusion_matrix)
 
             folder_name = config["compass"] + "_" + config["matcher"] + "_" + str(config["samples"])
@@ -68,8 +78,9 @@ class Evaluator(object):
             file_name = "" + str(i) + ".png"
             plt.savefig(os.path.join(path, file_name))
         print("Total False Positives: " + str(total_confusion_matrix[0][1]))
+        return total_confusion_matrix
 
-    def evaluate_direction(self, truth_angle, results):
+    def evaluate_direction(self, truth_angle, results, confidence_threshold, plot):
         results = filter(lambda entry: np.isclose(entry["truth_angle"], truth_angle, .002), results)
 
         U = np.zeros(self.dimensions)
@@ -97,17 +108,18 @@ class Evaluator(object):
             C[x, y] = correctness
 
             if correctness > self.correctness_threshold:
-                if confidence > self.confidence_threshold:
+                if confidence > confidence_threshold:
                     true_positives.append((y, x))
                 else:
                     false_negatives.append((y, x))
             else:
-                if confidence > self.confidence_threshold:
+                if confidence > confidence_threshold:
                     false_positives.append((y, x))
                 else:
                     true_negatives.append((y, x))
 
-        self.plot(U, V, C, truth_angle, false_positives)
+        if plot:
+            self.plot(U, V, C, truth_angle, false_positives)
 
         confusion_matrix = np.array([[len(true_negatives), len(false_positives)],
                                      [len(false_negatives), len(true_positives)]])
@@ -121,7 +133,6 @@ class Evaluator(object):
         ax_image = plt.subplot(gs[0, 1])
         ax_truth = plt.subplot(gs[1, 1], xlim=(-4, 4), ylim=(-.5, .5), aspect="equal")
         ax_colorbar = plt.subplot(gs[2, 1])
-
 
         cmap = colors.LinearSegmentedColormap.from_list("", ["red", "yellow", "green"])
         normalizer = colors.Normalize(0, 1)
@@ -145,14 +156,18 @@ class Evaluator(object):
         ax_truth.axis('off')
         plt.colorbar(quiver, cax=ax_colorbar, use_gridspec=True, orientation='horizontal', aspect=50)
 
-        ax_image.imshow(self.loader.getImage(4, 3, truth_angle))
+        ax_image.imshow(self.loader.get_image(4, 3, truth_angle))
         ax_image.axis('off')
 
 
 if __name__ == "__main__":
-    evaluator = Evaluator(.5, .5)
+    evaluator = Evaluator(.3, .5)
 
     # configuration = evaluator.filter_configuration("multiple", "sift", 16)[0]
     # evaluator.evaluate_configuration(configuration)
 
-    evaluator.evaluate_all_images()
+    config_confusion_matrices = evaluator.evaluate_all_configurations([.3, .4, .5], False)
+    file_path = "confusion_matrices.pickle"
+
+    with open(file_path, 'wb') as stream:
+        pickle.dump(config_confusion_matrices, stream)
