@@ -9,6 +9,8 @@ include:
     - humanoid_league_msgs
     - wolves_image_provider
     - scripts
+    - lib
+         vision_opencv
 exclude:
     - "*.bag"
     - "*.pyc"
