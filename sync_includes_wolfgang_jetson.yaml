@@ -1,4 +1,5 @@
 include:
+    - basler_drivers
     - bitbots_misc:
         - bitbots_bringup
     - bitbots_msgs
