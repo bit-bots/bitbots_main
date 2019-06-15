@@ -16,12 +16,12 @@ import tf2_ros as tf2
 from tf2_geometry_msgs import PoseStamped
 from tf.transformations import euler_from_quaternion
 from key_point_converter import KeyPointConverter
+from datetime import datetime
 
 # TODO: rosdep
 # TODO: rename sample to ground_truth_images
 # TODO: rename parameter and groups e.g. ros handler
 # TODO: rename get keypoints to features
-# TODO: save meta information
 # TODO: launch headbehavior etc
 # TODO: in startup: check meta data with config
 # TODO: update config example
@@ -175,17 +175,26 @@ class VisualCompassSetup():
         # get keypoints
         features = self.compass.get_ground_truth_keypoints()
 
-        keypoints = features[0]
-
         # convert keypoints to basic values
+        keypoints = features[0]
         keypoint_values = [converter.key_point2values(kp) for kp in keypoints]
 
         descriptors = features[1]
 
+        meta = {
+            'device': self.hostname,
+            'date': datetime.now(),
+            'field': self.config['field'],
+            'compass_type': self.config['compass_type'],
+            'compass_matcher': self.config['compass_matcher'],
+            'ground_truth_image_count' self.config['compass_multiple_sample_count'],
+            'keypoint_count': len(keypoint_values)
+            'descriptor_count': len(descriptors)}
+
         dump_features = {
             'keypoints': keypoint_values, 
             'descriptors': descriptors,
-            'meta': {'foo': "bar"}}
+            'meta': meta}
 
         # generate file path
         file_path = self.package_path + ground_truth_file_name
