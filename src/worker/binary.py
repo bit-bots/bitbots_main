@@ -48,6 +48,12 @@ class BinaryCompass(VisualCompassInterface):
         elif angle == math.pi:
             self.groundTruth[1] = self.matcher.get_keypoints(image)[1]
 
+    def get_ground_truth_keypoints(self):
+        return self.groundTruth
+
+    def set_ground_truth_keypoints(self, ground_truth):
+        self.groundTruth = ground_truth
+
     def set_config(self, config):
         self.config = config
         self.matcher.set_config(config)

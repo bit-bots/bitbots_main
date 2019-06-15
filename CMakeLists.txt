@@ -33,7 +33,6 @@ catkin_package(
   geometry_msgs
   message_generation
   dynamic_reconfigure
-  bitbots_msgs
   humanoid_league_msgs
   wolves_image_provider
   python-cv_bridge

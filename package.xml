@@ -23,11 +23,9 @@
   <depend>geometry_msgs</depend>
   <depend>message_runtime</depend>
   <depend>message_generation</depend>
-  <depend>actionlib</depend>
   <depend>dynamic_reconfigure</depend>
   <depend>beignet</depend>
   <depend>tf2</depend>
-  <depend>bitbots_msgs</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>wolves_image_provider</depend>
   <depend>python-cv_bridge</depend>
