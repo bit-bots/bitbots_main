@@ -43,9 +43,9 @@ class BinaryCompass(VisualCompassInterface):
         return self.state[0], self.state[1]
 
     def set_truth(self, angle, image):
-        if angle == 0:
+        if 0 <= angle < math.pi:
             self.groundTruth[0] = self.matcher.get_keypoints(image)[1]
-        elif angle == math.pi:
+        else:
             self.groundTruth[1] = self.matcher.get_keypoints(image)[1]
 
     def get_ground_truth_keypoints(self):

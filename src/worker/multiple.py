@@ -4,6 +4,7 @@ import colorsys
 import math
 import statistics
 import cv2
+from profilehooks import profile
 import numpy as np
 from .matcher import Matcher
 from .interface import VisualCompass as VisualCompassInterface
@@ -29,8 +30,11 @@ from .angle_tagger import AngleTagger
 
 class MultipleCompass(VisualCompassInterface):
     def __init__(self, config):
+
         # ([keypoints], [descriptors])
         self.ground_truth = ([], [])
+
+        # (angle, confidence, matching_count)
         self.state = (None, None)
         self.config = config
         self.matcher = None
@@ -38,7 +42,8 @@ class MultipleCompass(VisualCompassInterface):
         self.angle_tagger = AngleTagger(None)
 
         # config values
-        self.sampleCount = None
+        self.sample_count = None
+        self.feature_scalar = None
 
         self.init_matcher()
         self.set_config(config)
@@ -63,20 +68,21 @@ class MultipleCompass(VisualCompassInterface):
 
     def _compute_state(self, matching_keypoints):
         angles = list(map(lambda x: x.angle, matching_keypoints))
-        angles.sort()
+
         length = len(angles)
         if length < 2:
             return .0, .0
-        median = statistics.median(angles)
-        confidence = statistics.stdev(angles) / math.pi
-        confidence = confidence ** (1./5)
+
+        z = sum(map(lambda angle: np.exp(1j * angle), angles))
+        median = np.angle(z) % (math.pi * 2)
+        confidence = (float(np.abs(z)) / length)
+        confidence *= 1 - math.exp(-(1. / self.feature_scalar) * length)
         return median, confidence
 
     def process_image(self, image, resultCB=None, debugCB=None):
         if not self.ground_truth[0]:
             return
         curr_keypoints, curr_descriptors = self.matcher.get_keypoints(image)
-        #matches = self._compare(keypoints, descriptors)
 
         angle_keypoints = self.matcher.match(self.ground_truth[0], np.array(self.ground_truth[1]), curr_descriptors)
 
@@ -101,7 +107,8 @@ class MultipleCompass(VisualCompassInterface):
 
     def set_config(self, config):
         self.config = config
-        self.sampleCount = config['compass_multiple_sample_count']
+        self.sample_count = config['compass_multiple_sample_count']
+        self.feature_scalar = config['compass_multiple_feature_scalar']
         self.matcher.set_config(config)
 
     def get_side(self):

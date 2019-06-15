@@ -42,7 +42,7 @@ class BinaryEvaluator(object):
     def setTruth(self):
         for i in range(self.sample_count):
             angle = float(i) / self.sample_count * math.radians(360)
-            image = self.loader.getImage(4, 3, self.float_mod(angle + math.radians(90), math.radians(360)))
+            image = self.loader.get_image(4, 3, self.float_mod(angle + math.radians(90), math.radians(360)))
             self.vc.set_truth(angle, image)
             self.show_img(image)
             time.sleep(0.5)
@@ -64,7 +64,7 @@ class BinaryEvaluator(object):
                 confidences[row].append(list())
                 fails = list()
                 for angle in [4,12]: #,12]:# range(self.angle_steps):
-                    image = self.loader.getImage(row, checkpoint, float(angle)/16*2*math.pi)
+                    image = self.loader.get_image(row, checkpoint, float(angle) / 16 * 2 * math.pi)
                     # self.show_img(image)
                     ground_truth = float(angle - 4)/16*2*math.pi
                     compass_result = self.vc.process_image(image, debugCB=self.debug_image_callback)
