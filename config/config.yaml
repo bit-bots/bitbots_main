@@ -5,7 +5,8 @@ dummy_handler_input: 0
 ROS_handler_img_msg_topic: 'image_raw'
 ROS_handler_img_queue_size: 1
 
-ROS_trigger_set_ground_truth: '/visual_compass_trigger_set_ground_truth'
+ROS_trigger_set_ground_truth_topic: '/visual_compass_trigger_set_ground_truth'
+ROS_trigger_set_ground_truth_queue_size: 5
 
 ground_truth_file_name: '/config/ground_truth/dummy.pickle'
 

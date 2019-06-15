@@ -20,11 +20,11 @@ from key_point_converter import KeyPointConverter
 # TODO: rosdep
 # TODO: rename sample to ground_truth_images
 # TODO: rename parameter and groups e.g. ros handler
-# TODO: message queue size in dyn reconf
 # TODO: rename get keypoints to features
 # TODO: save meta information
 # TODO: launch headbehavior etc
 # TODO: in startup: check meta data with config
+# TODO: update config example
 
 class VisualCompassSetup():
     # type: () -> None
@@ -99,13 +99,15 @@ class VisualCompassSetup():
             # https://github.com/ros/ros_comm/issues/536
 
         # Register message server to call set truth callback
-        if self.changed_config_param(config, 'ROS_trigger_set_ground_truth'):
+        if self.changed_config_param(config, 'ROS_trigger_set_ground_truth_topic') or \
+            self.changed_config_param(config, 'ROS_trigger_set_ground_truth_queue_size'):
             if hasattr(self, 'sub_trigger_set_ground_truth'):
                 self.sub_image_msg.unregister()
             self.sub_trigger_set_ground_truth = rospy.Subscriber(
-                config['ROS_trigger_set_ground_truth'],
-                Header, self.set_truth_callback,
-                queue_size=5)
+                config['ROS_trigger_set_ground_truth_topic'],
+                Header,
+                self.set_truth_callback,
+                queue_size=config['ROS_trigger_set_ground_truth_queue_size'])
 
         self.config = config
 
