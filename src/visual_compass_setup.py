@@ -20,8 +20,6 @@ from datetime import datetime
 
 # TODO: rosdep
 # TODO: launch headbehavior etc
-# TODO: in startup: check meta data with config
-# TODO: update config example
 # TODO: check published pose 
 # TODO: fix drop old images (also in startup)
 
@@ -184,17 +182,17 @@ class VisualCompassSetup():
         descriptors = features[1]
 
         meta = {
-            'device': self.hostname,
-            'date': datetime.now(),
             'field': self.config['ground_truth_field'],
+            'date': datetime.now(),
+            'device': self.hostname,
             'compass_type': self.config['compass_type'],
             'compass_matcher': self.config['compass_matcher'],
-            'ground_truth_images_count' self.config['compass_multiple_ground_truth_images_count'],
+            'compass_multiple_ground_truth_images_count' self.config['compass_multiple_ground_truth_images_count'],
             'keypoint_count': len(keypoint_values)
             'descriptor_count': len(descriptors)}
 
         dump_features = {
-            'keypoints': keypoint_values, 
+            'keypoint_values': keypoint_values, 
             'descriptors': descriptors,
             'meta': meta}
 

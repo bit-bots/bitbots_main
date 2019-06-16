@@ -156,16 +156,38 @@ class VisualCompassStartup():
                 features = pickle.load(f)
             rospy.loginfo('Loaded ground truth file at: %(path)s' % {'path': file_path})
 
-            keypoint_values = features['keypoints']
+            keypoint_values = features['keypoint_values']
+            descriptors = features['descriptors']
+            meta = features['meta']
+
+            self.check_meta_information(meta)
 
             # convert keypoint values to cv2 Keypoints
             keypoints = [KeyPoint(kp[0], kp[1], kp[2], kp[3], kp[4], kp[5], kp[6]) for kp in keypoint_values]
 
-            descriptors = features['descriptors']
-
             return (keypoints, descriptors)
         else:
             rospy.logerr('NO ground truth file found at: %(path)s' % {'path': file_path})
+
+    def check_meta_information(self, meta):
+        # type: (dict) -> None
+        """
+        TODO docs
+        """
+        rospy.loginfo('The ground truth file was recorded at field %(field)a at date %(date)s on device %(device)' % {
+            'field': meta['field'], 'date': meta['date'], 'device': meta['device']})
+
+        if meta['keypoint_count'] != meta['descriptor_count']:
+            rospy.logerr('Number of keypoints does not match number of descriptors in ground truth file.')
+        elif meta['compass_type'] != self.config['compass_type']:
+            rospy.logwarn('Config parameter "compass_type" does not match ground truth:\n' + \
+                'config: %(config)s | ground truth: %(gt)a' % {'config': self.config['compass_type'], 'gt': meta['compass_type']})
+        elif meta['compass_matcher'] != self.config['compass_matcher']:
+            rospy.logwarn('Config parameter "compass_compass" does not match ground truth:\n' + \
+                'config: %(config)s | ground truth: %(gt)a' % {'config': self.config['compass_matcher'], 'gt': meta['compass_matcher']})
+        elif meta['compass_multiple_ground_truth_images_count'] != self.config['compass_multiple_ground_truth_images_count']:
+            rospy.logwarn('Config parameter "compass_multiple_ground_truth_images_count" does not match ground truth:\n' + \
+                'config: %(config)s | ground truth: %(gt)a' % {'config': self.config['compass_multiple_ground_truth_images_count'], 'gt': meta['compass_multiple_ground_truth_images_count']})
 
     def changed_config_param(self, config, param_name):
         # type: (dict, str) -> bool
