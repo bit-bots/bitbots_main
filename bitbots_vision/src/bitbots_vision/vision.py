@@ -8,6 +8,7 @@ import rospkg
 import threading
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
+from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from sensor_msgs.msg import Image, JointState
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, PostInImage, \
@@ -561,7 +562,7 @@ class Vision:
         # Clean config dict to avoid not dumpable types
         config_cleaned = {}
         for key, value in config.items():
-            if str(type(value)) != "<class 'dynamic_reconfigure.encoding.Config'>":
+            if type(value) != DynamicReconfigureConfig:
                 config_cleaned[key] = value
         msg = Config()
         msg.data = yaml.dump(config_cleaned)
