@@ -53,6 +53,7 @@ include:
         - wolfgang_animations
         - wolfgang_description
         - wolfgang_moveit_config
+    - wolves_image_provider
 exclude:
     - "*.bag"
     - "*.pyc"
