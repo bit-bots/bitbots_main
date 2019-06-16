@@ -115,7 +115,7 @@ class LineDetector:
             green_mask = self._field_color_detector.mask_image(self._image)
             green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_CLOSE, kernel=np.ones((3, 3)), iterations=1)
 
-            green_mask = (np.ones_like(green_mask) - (green_mask/255))
+            green_mask = np.ones_like(green_mask) - (np.floor_divide(green_mask, 255))
             self._preprocessed_image = cv2.bitwise_and(self._preprocessed_image, self._preprocessed_image, mask=green_mask)
 
             # cv2.imshow('', self._preprocessed_image)

@@ -289,7 +289,7 @@ class Pointfinder():
         :return np.array: list of indices
         """
         # Normalizes the masked image to values of 1 or 0
-        normalized_image = np.divide(masked_image, 255, dtype=np.int16)
+        normalized_image = np.floor_divide(masked_image, 255, dtype=np.int16)
 
         # Calculates the count of neighbors for each pixel
         sum_array = cv2.filter2D(normalized_image, -1, self.kernel, borderType=0)
