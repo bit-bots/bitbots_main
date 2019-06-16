@@ -5,7 +5,7 @@ import rospy
 import rospkg
 import math
 import cv2
-import cPickle as pickle
+import pickle
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from std_msgs.msg import Header
@@ -57,7 +57,7 @@ class VisualCompassSetup():
         # TODO: docs
         self.base_frame = 'base_footprint'
         self.camera_frame = 'camera_optical_frame'
-        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5))
+        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(50))
         self.listener = tf2.TransformListener(self.tf_buffer)
 
         # Register VisualCompassConfig server for dynamic reconfigure and set callback
@@ -82,7 +82,7 @@ class VisualCompassSetup():
             rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | ground truth images: %(ground_truth_count)d' % {
                     'type': config['compass_type'],
                     'matcher': config['compass_matcher'],
-                    'ground_truth_count': config['compass_multiple_ground_truth_count']})
+                    'ground_truth_count': config['compass_multiple_ground_truth_images_count']})
 
         # Subscribe to Image-message
         if self.changed_config_param(config, 'img_msg_topic') or \
@@ -187,8 +187,8 @@ class VisualCompassSetup():
             'device': self.hostname,
             'compass_type': self.config['compass_type'],
             'compass_matcher': self.config['compass_matcher'],
-            'compass_multiple_ground_truth_images_count' self.config['compass_multiple_ground_truth_images_count'],
-            'keypoint_count': len(keypoint_values)
+            'compass_multiple_ground_truth_images_count': self.config['compass_multiple_ground_truth_images_count'],
+            'keypoint_count': len(keypoint_values),
             'descriptor_count': len(descriptors)}
 
         dump_features = {

@@ -76,7 +76,7 @@ class VisualCompassStartup():
             rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | ground truth images: %(ground_truth_count)d' % {
                     'type': config['compass_type'],
                     'matcher': config['compass_matcher'],
-                    'ground_truth_count': config['compass_multiple_ground_truth_count']})
+                    'ground_truth_count': config['compass_multiple_ground_truth_images_count']})
 
         # Subscribe to Image-message
         if self.changed_config_param(config, 'img_msg_topic') or \
