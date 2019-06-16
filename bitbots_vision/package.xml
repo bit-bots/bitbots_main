@@ -1,56 +1,55 @@
 <package format="2">
-    <name>bitbots_vision</name>
-    <description>
-        This is the cascade vision package of the Hamburg Bit-Bots.
-        The ball detection is realized with a cascade classifier, which makes it
-        compatible with Odroids.
-        It heavily relies on modules provided by the bitbots_vision_common
-        package.
-        We use the wolves_image_provider package as image provider.
-        Settings considering the vision are set in the visionparams.yaml
-        (bitbots_vision_cascade/config/visionparams.yaml). To be able to test
-        new parameters, the debug_visionparams.yaml are provided. These are used
-        when the vision is started with debug:=true as launchscript parameter.
-        You do NOT want to enable DEBUG on the robot.
-        The color calibration files are created with the wolves colorpicker and
-        a rosbag. The vision.py is located in bitbots_vision_cascade/scripts. It
-        defines, how the modules out of bitbots_vision_common are used. In
-        bitbots_vision_cascade/models the tensorflow classifier models are
-        stored. Due to their size, these are not part of this repository.
-        Bit-Bots use the pull_data script in bitbots_meta.
-        To tweak the camera image, use the settings in the image provider.
-        WARNING: uvcdynctrl is required by the image provider. Make sure it is
-        installed.
-    </description>
-    <version>1.1.0</version>
+  <name>bitbots_vision</name>
+  <description>
+    This is the cascade vision package of the Hamburg Bit-Bots.
+    The ball detection is realized with a cascade classifier, which makes it
+    compatible with Odroids.
+    It heavily relies on modules provided by the bitbots_vision_common
+    package.
+    We use the wolves_image_provider package as image provider.
+    Settings considering the vision are set in the visionparams.yaml
+    (bitbots_vision_cascade/config/visionparams.yaml). To be able to test
+    new parameters, the debug_visionparams.yaml are provided. These are used
+    when the vision is started with debug:=true as launchscript parameter.
+    You do NOT want to enable DEBUG on the robot.
+    The color calibration files are created with the wolves colorpicker and
+    a rosbag. The vision.py is located in bitbots_vision_cascade/scripts. It
+    defines, how the modules out of bitbots_vision_common are used. In
+    bitbots_vision_cascade/models the tensorflow classifier models are
+    stored. Due to their size, these are not part of this repository.
+    Bit-Bots use the pull_data script in bitbots_meta.
+    To tweak the camera image, use the settings in the image provider.
+    WARNING: uvcdynctrl is required by the image provider. Make sure it is
+    installed.
+  </description>
+  <version>1.1.0</version>
 
-    <maintainer email="git@nfiedler.de">Niklas Fiedler</maintainer>
-    <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <maintainer email="git@nfiedler.de">Niklas Fiedler</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
-    <author email="git@nfiedler.de">Niklas Fiedler</author>
-    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+  <author email="git@nfiedler.de">Niklas Fiedler</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
-    <license>MIT</license>
-    <buildtool_depend>catkin</buildtool_depend>
-    <build_depend>message_generation</build_depend>
-    <depend>rospy</depend>
-    <depend>python-rospkg</depend>
-    <depend>sensor_msgs</depend>
-    <depend>std_msgs</depend>
-    <depend>geometry_msgs</depend>
-    <depend>trajectory_msgs</depend>
-    <depend>image_transport</depend>
-    <depend>message_runtime</depend>
-    <depend>nav_msgs</depend>
-    <depend>humanoid_league_msgs</depend>
-    <depend>bitbots_msgs</depend>
-    <depend>dynamic_reconfigure</depend>
-    <depend>python-numpy</depend>
-    <depend>python-opencv</depend>
-    <depend>wolves_image_provider</depend>
-  
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <depend>rospy</depend>
+  <depend>python-rospkg</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>trajectory_msgs</depend>
+  <depend>image_transport</depend>
+  <depend>message_runtime</depend>
+  <depend>nav_msgs</depend>
+  <depend>humanoid_league_msgs</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>python-numpy</depend>
+  <depend>python-opencv</depend>
+  <depend>wolves_image_provider</depend>
 
-    <export>
+  <export>
     <bitbots_documentation>
       <language>python2</language>
       <status>tested_simulator</status>
