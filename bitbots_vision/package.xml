@@ -34,7 +34,7 @@
     <buildtool_depend>catkin</buildtool_depend>
     <build_depend>message_generation</build_depend>
     <depend>rospy</depend>
-    <depend>python3-rospkg</depend>
+    <depend>python-rospkg</depend>
     <depend>sensor_msgs</depend>
     <depend>std_msgs</depend>
     <depend>geometry_msgs</depend>
