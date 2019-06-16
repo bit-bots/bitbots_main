@@ -60,10 +60,10 @@ class MultipleCompass(VisualCompassInterface):
             self.ground_truth[0].extend(self.angle_tagger.tag_keypoints(angle, keypoints))
             self.ground_truth[1].extend(descriptors)
 
-    def get_ground_truth_keypoints(self):
+    def get_ground_truth_features(self):
         return self.ground_truth
 
-    def set_ground_truth_keypoints(self, ground_truth):
+    def set_ground_truth_features(self, ground_truth):
         self.ground_truth = ground_truth
 
     def _compute_state(self, matching_keypoints):
@@ -107,7 +107,7 @@ class MultipleCompass(VisualCompassInterface):
 
     def set_config(self, config):
         self.config = config
-        self.sample_count = config['compass_multiple_sample_count']
+        self.sample_count = config['compass_multiple_ground_truth_images_count']
         self.feature_scalar = config['compass_multiple_feature_scalar']
         self.matcher.set_config(config)
 

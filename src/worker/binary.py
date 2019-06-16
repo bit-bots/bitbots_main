@@ -48,10 +48,10 @@ class BinaryCompass(VisualCompassInterface):
         else:
             self.groundTruth[1] = self.matcher.get_keypoints(image)[1]
 
-    def get_ground_truth_keypoints(self):
+    def get_ground_truth_features(self):
         return self.groundTruth
 
-    def set_ground_truth_keypoints(self, ground_truth):
+    def set_ground_truth_features(self, ground_truth):
         self.groundTruth = ground_truth
 
     def set_config(self, config):

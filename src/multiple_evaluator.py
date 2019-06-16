@@ -29,7 +29,7 @@ class BinaryEvaluator(object):
 
         self.loader = DataLoader(self.data_path, self.dimensions, self.angle_steps)
 
-        self.sample_count = 2 if config['compass_type'] == 'binary' else config['compass_multiple_sample_count']
+        self.sample_count = 2 if config['compass_type'] == 'binary' else config['compass_multiple_ground_truth_images_count']
         self.vc = VisualCompass(config)
     
     def show_img(self, image):

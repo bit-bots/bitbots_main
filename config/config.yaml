@@ -1,34 +1,59 @@
-# dummy_handler
+# Dummy handler
+# Select video input source for the dummy handler to run without ROS
 dummy_handler_input: 0
 
-# ros_handler
-ROS_handler_img_msg_topic: 'image_raw'
-ROS_handler_img_queue_size: 1
 
-ROS_trigger_set_ground_truth_topic: '/visual_compass_trigger_set_ground_truth'
-ROS_trigger_set_ground_truth_queue_size: 5
+# Subscriber
+# Subscriber of the image input message
+img_msg_topic: 'image_raw'
+img_msg_queue_size: 1
 
-ground_truth_file_name: '/config/ground_truth/dummy.pickle'
+# Subscriber to a std_msgs Header message to trigger the visual compass setup
+# This will add features of the latest image to the ground truth
+ground_truth_trigger_topic: '/visual_compass_ground_truth_trigger'
+ground_truth_trigger_queue_size: 5
 
-# compass
+
+# Path to the ground truth file in the package
+ground_truth_file_path: '/config/ground_truth/dummy.pickle'
+
+# Field on which the ground truth was recorded
+ground_truth_field: 'unknown'
+
+
+# Compass type
 # Choose from 'binary' or 'multiple'
 compass_type: 'multiple'
 
+# Matcher algorithm
 # Choose from: 'akaze', 'orb', 'sift'
 compass_matcher: 'sift'
 
-# binary
 
-# multiple
-compass_multiple_sample_count: 8
+# Compass type binary
+
+# Compass type multiple
+# Count of images to compute the ground truth
+compass_multiple_ground_truth_images_count: 8
+
+
+# akaze
+# TODO
+compass_akaze_match_distance_scalar: 0.7
 
 # orb
+# Maximal feature count
 compass_orb_max_feature_count: 1000
+
+# TODO
 compass_orb_match_distance_scalar: 0.7
-# akaze
-compass_akaze_match_distance_scalar: 0.7
+
 # sift
-compass_sift_devicetype: 'cpu'
+
 
 # evaluator data path
+# TODO
 evaluation_data: '../evaluation_data/FieldData/Field_1/'
+
+# visualization data path
+visualization: '../visualization'

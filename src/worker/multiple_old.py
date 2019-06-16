@@ -89,7 +89,7 @@ class MultipleCompass(VisualCompassInterface):
 
     def set_config(self, config):
         self.config = config
-        self.sampleCount = config['compass_multiple_sample_count']
+        self.sampleCount = config['compass_multiple_ground_truth_images_count']
         self.matcher.set_config(config)
 
     def get_side(self):

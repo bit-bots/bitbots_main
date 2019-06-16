@@ -19,12 +19,11 @@ from key_point_converter import KeyPointConverter
 from datetime import datetime
 
 # TODO: rosdep
-# TODO: rename sample to ground_truth_images
-# TODO: rename parameter and groups e.g. ros handler
-# TODO: rename get keypoints to features
 # TODO: launch headbehavior etc
 # TODO: in startup: check meta data with config
 # TODO: update config example
+# TODO: check published pose 
+# TODO: fix drop old images (also in startup)
 
 class VisualCompassSetup():
     # type: () -> None
@@ -77,37 +76,40 @@ class VisualCompassSetup():
 
         if self.changed_config_param(config, 'compass_type') or \
             self.changed_config_param(config, 'compass_matcher') or \
-            self.changed_config_param(config, 'compass_multiple_sample_count'):
+            self.changed_config_param(config, 'compass_multiple_ground_truth_images_count'):
 
             self.ground_truth_images_count = 0
             self.processed_set_all_ground_truth_images = False
 
-            rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | ground truth images: %(ground_truth)d' %
-                {'type': config['compass_type'], 'matcher': config['compass_matcher'], 'ground_truth': config['compass_multiple_sample_count']})
+            rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | ground truth images: %(ground_truth_count)d' % {
+                    'type': config['compass_type'],
+                    'matcher': config['compass_matcher'],
+                    'ground_truth_count': config['compass_multiple_ground_truth_count']})
 
         # Subscribe to Image-message
-        if self.changed_config_param(config, 'ROS_handler_img_msg_topic'):
+        if self.changed_config_param(config, 'img_msg_topic') or \
+            self.changed_config_param(config, 'img_msg_queue_size'):
             if hasattr(self, 'sub_image_msg'):
                 self.sub_image_msg.unregister()
             self.sub_image_msg = rospy.Subscriber(
-                config['ROS_handler_img_msg_topic'],
+                config['img_msg_topic'],
                 Image,
                 self.image_callback,
-                queue_size=config['ROS_handler_img_queue_size'],
+                queue_size=config['img_msg_queue_size'],
                 tcp_nodelay=True,
                 buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
 
         # Register message server to call set truth callback
-        if self.changed_config_param(config, 'ROS_trigger_set_ground_truth_topic') or \
-            self.changed_config_param(config, 'ROS_trigger_set_ground_truth_queue_size'):
+        if self.changed_config_param(config, 'ground_truth_trigger_topic') or \
+            self.changed_config_param(config, 'ground_truth_trigger_queue_size'):
             if hasattr(self, 'sub_trigger_set_ground_truth'):
                 self.sub_image_msg.unregister()
             self.sub_trigger_set_ground_truth = rospy.Subscriber(
-                config['ROS_trigger_set_ground_truth_topic'],
+                config['ground_truth_trigger_topic'],
                 Header,
                 self.set_truth_callback,
-                queue_size=config['ROS_trigger_set_ground_truth_queue_size'])
+                queue_size=config['ground_truth_trigger_queue_size'])
 
         self.config = config
 
@@ -133,7 +135,7 @@ class VisualCompassSetup():
             self.check_ground_truth_images_count()
 
         else:
-            rospy.logwarn('No image received yet')
+            rospy.logwarn('No image received yet.')
 
     def image_callback(self, image_msg):
         # type: (Image) -> None
@@ -154,7 +156,7 @@ class VisualCompassSetup():
         """
         TODO docs
         """
-        config_ground_truth_images_count = self.config['compass_multiple_sample_count']
+        config_ground_truth_images_count = self.config['compass_multiple_ground_truth_images_count']
         if self.ground_truth_images_count != config_ground_truth_images_count:
             rospy.loginfo('Visual compass: %(var)d of %(config)d ground truth images set. More images are needed.' %
                             {'var': self.ground_truth_images_count, 'config': config_ground_truth_images_count})
@@ -162,10 +164,10 @@ class VisualCompassSetup():
         else:
             if not(self.processed_set_all_ground_truth_images):
                 rospy.loginfo('Visual compass: All ground truth images have been processed.')
-                self.save_ground_truth(self.config['ground_truth_file_name'])
+                self.save_ground_truth(self.config['ground_truth_file_path'])
             self.processed_set_all_ground_truth_images = True
 
-    def save_ground_truth(self, ground_truth_file_name):
+    def save_ground_truth(self, ground_truth_file_path):
         # type (str) -> None
         """
         TODO docs
@@ -173,7 +175,7 @@ class VisualCompassSetup():
         converter = KeyPointConverter()
 
         # get keypoints
-        features = self.compass.get_ground_truth_keypoints()
+        features = self.compass.get_ground_truth_features()
 
         # convert keypoints to basic values
         keypoints = features[0]
@@ -184,10 +186,10 @@ class VisualCompassSetup():
         meta = {
             'device': self.hostname,
             'date': datetime.now(),
-            'field': self.config['field'],
+            'field': self.config['ground_truth_field'],
             'compass_type': self.config['compass_type'],
             'compass_matcher': self.config['compass_matcher'],
-            'ground_truth_image_count' self.config['compass_multiple_sample_count'],
+            'ground_truth_images_count' self.config['compass_multiple_ground_truth_images_count'],
             'keypoint_count': len(keypoint_values)
             'descriptor_count': len(descriptors)}
 
@@ -197,7 +199,7 @@ class VisualCompassSetup():
             'meta': meta}
 
         # generate file path
-        file_path = self.package_path + ground_truth_file_name
+        file_path = self.package_path + ground_truth_file_path
         # warn, if file does exist allready
         if path.isfile(file_path):
             rospy.logwarn('Ground truth file at: %(path)s does ALLREADY EXIST. This will be overwritten.' % {'path': file_path})

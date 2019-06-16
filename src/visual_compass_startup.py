@@ -64,27 +64,30 @@ class VisualCompassStartup():
         TODO docs
         """
         self.compass = VisualCompass(config)
-        self.compass.set_ground_truth_keypoints(self.load_ground_truth(config['ground_truth_file_name']))
+        self.compass.set_ground_truth_features(self.load_ground_truth(config['ground_truth_file_path']))
 
-        if self.changed_config_param(config, 'ground_truth_file_name'):
+        if self.changed_config_param(config, 'ground_truth_file_path'):
             self.is_ground_truth_set = False
 
         if self.changed_config_param(config, 'compass_type') or \
             self.changed_config_param(config, 'compass_matcher') or \
-            self.changed_config_param(config, 'compass_multiple_sample_count'):
+            self.changed_config_param(config, 'compass_multiple_ground_truth_images_count'):
 
-            rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | ground truth images: %(ground_truth)d' %
-                {'type': config['compass_type'], 'matcher': config['compass_matcher'], 'ground_truth': config['compass_multiple_sample_count']})
+            rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | ground truth images: %(ground_truth_count)d' % {
+                    'type': config['compass_type'],
+                    'matcher': config['compass_matcher'],
+                    'ground_truth_count': config['compass_multiple_ground_truth_count']})
 
         # Subscribe to Image-message
-        if self.changed_config_param(config, 'ROS_handler_img_msg_topic'):
+        if self.changed_config_param(config, 'img_msg_topic') or \
+            self.changed_config_param(config, 'img_msg_queue_size'):
             if hasattr(self, 'sub_image_msg'):
                 self.sub_image_msg.unregister()
             self.sub_image_msg = rospy.Subscriber(
-                config['ROS_handler_img_msg_topic'],
+                config['img_msg_topic'],
                 Image,
                 self.image_callback,
-                queue_size=config['ROS_handler_img_queue_size'],
+                queue_size=config['img_msg_queue_size'],
                 tcp_nodelay=True,
                 buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
@@ -113,7 +116,6 @@ class VisualCompassStartup():
         TODO docs
         """
         # Set image
-        # TODO: Set y-axis orientation of IMU
         self.compass.process_image(self.bridge.imgmsg_to_cv2(image_msg, 'bgr8'))
 
         # Get angle and certainty from compass
@@ -139,13 +141,13 @@ class VisualCompassStartup():
         # Publish VisualCompassMsg-message
         self.pub_compass.publish(msg)
 
-    def load_ground_truth(self, ground_truth_file_name):
+    def load_ground_truth(self, ground_truth_file_path):
         # type: (str) -> ([], [])
         """
         TODO docs
         """
         # generate file path
-        file_path = self.package_path + ground_truth_file_name
+        file_path = self.package_path + ground_truth_file_path
         features = ([], [])
 
         if path.isfile(file_path):
