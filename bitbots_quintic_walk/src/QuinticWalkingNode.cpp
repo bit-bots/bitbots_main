@@ -230,10 +230,14 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
         // compute the pitch offset to the currently wanted pitch of the engine
         double wanted_pitch = _params.trunkPitch + _params.trunkPitchPCoefForward*_walkEngine.getFootstep().getNext().x()
         + _params.trunkPitchPCoefTurn*fabs(_walkEngine.getFootstep().getNext().z());
-
         pitch = pitch - wanted_pitch;
 
-        if (abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold) {
+        // get angular velocities
+        double roll_vel = msg.angular_velocity.x;
+        double pitch_vel = msg.angular_velocity.y;
+
+
+        if (abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold || abs(pitch_vel) > _imu_pitch_vel_threshold || abs(roll_vel) > _imu_roll_vel_threshold) {
             _walkEngine.requestPause();
         }
     }
@@ -364,6 +368,8 @@ QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_p
     _imuActive = config.imuActive;
     _imu_pitch_threshold = config.imuPitchThreshold;
     _imu_roll_threshold = config.imuRollThreshold;
+    _imu_pitch_vel_threshold = config.imuPitchVelThreshold;
+    _imu_roll_vel_threshold = config.imuRollVelThreshold;
 
     _phaseResetActive = config.phaseResetActive;
     _groundMinPressure = config.groundMinPressure;
