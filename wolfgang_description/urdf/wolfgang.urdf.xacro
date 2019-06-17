@@ -22,6 +22,10 @@
 
     <link name="base_link" />
 
+    <gazebo reference="torso">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
     <link name="torso">
         <inertial>
             <origin xyz="-0.016856 -0.00019822 0.019225" rpy="0 0 0" />
@@ -50,6 +54,10 @@
         </collision>
     </link>
 
+    <gazebo reference="r_hip_1">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
     <link name="r_hip_1">
         <inertial>
             <origin xyz="4.7878E-16 2.8449E-16 -0.013803" rpy="0 0 0" />
@@ -71,6 +79,10 @@
         </collision>
     </link>
 
+    <gazebo reference="r_hip_2">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
     <link name="r_hip_2">
         <inertial>
             <origin xyz="0.010896 0.00023756 -0.014538" rpy="0 0 0" />
@@ -91,6 +103,10 @@
             </geometry>
         </collision>
     </link>
+
+    <gazebo reference="r_upper_leg">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
 
     <link name="r_upper_leg">
         <inertial>
@@ -139,6 +155,10 @@
         </collision>
     </link>
 
+    <gazebo reference="r_lower_leg">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
     <link name="r_lower_leg">
         <inertial>
             <origin xyz="-0.0033779 6.578E-10 -0.10469" rpy="0 0 3.14159265359" />
@@ -160,6 +180,10 @@
         </collision>
     </link>
 
+    <gazebo reference="r_ankle">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
     <link name="r_ankle">
         <inertial>
             <origin xyz="-0.019434 0.00024988 0.014536" rpy="0 0 0" />
@@ -180,6 +204,11 @@
             </geometry>
         </collision>
     </link>
+
+
+    <gazebo reference="r_foot">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
 
     <link name="r_foot">
         <inertial>
@@ -204,7 +233,7 @@
             </collision>
         </xacro:if>
     </link>
-    
+
     <link name="r_sole">
         <inertial>
           <origin xyz="0 0 0" rpy="0 0 0" />
@@ -213,6 +242,11 @@
         </inertial>
     </link>
 
+
+    <gazebo reference="r_toe">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
     <link name="r_toe">
         <inertial>
           <origin xyz="0 0 0" rpy="0 0 0" />
@@ -220,6 +254,10 @@
           <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
         </inertial>
     </link>
+
+    <gazebo reference="l_hip_1">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
 
     <link name="l_hip_1">
         <inertial>
@@ -242,6 +280,10 @@
         </collision>
     </link>
 
+    <gazebo reference="l_hip_2">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
     <link name="l_hip_2">
         <inertial>
             <origin xyz="-0.019434 -0.0014499 -0.014536" rpy="0 0 0" />
@@ -262,6 +304,10 @@
             </geometry>
         </collision>
     </link>
+
+    <gazebo reference="l_upper_leg">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
 
     <link name="l_upper_leg">
         <inertial>
@@ -310,6 +356,10 @@
         </collision>
     </link>
 
+    <gazebo reference="l_lower_leg">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
     <link name="l_lower_leg">
         <inertial>
             <origin xyz="-0.0033779 -0.0012 -0.10469" rpy="0 0 0" />
@@ -330,6 +380,10 @@
             </geometry>
         </collision>
     </link>
+
+    <gazebo reference="l_ankle">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
 
     <link name="l_ankle">
         <inertial>
@@ -352,6 +406,10 @@
             <material name="metal" />
         </collision>
     </link>
+
+    <gazebo reference="l_foot">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
 
     <link name="l_foot">
         <inertial>
@@ -377,6 +435,10 @@
         </xacro:if>
     </link>
 
+    <gazebo reference="l_sole">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
     <link name="l_sole">
         <inertial>
           <origin xyz="0 0 0" rpy="0 0 0" />
@@ -385,6 +447,10 @@
         </inertial>
     </link>
 
+    <gazebo reference="l_toe">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
     <link name="l_toe">
         <inertial>
           <origin xyz="0 0 0" rpy="0 0 0" />
@@ -392,6 +458,10 @@
           <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
         </inertial>
     </link>
+
+    <gazebo reference="r_shoulder">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
 
     <link name="r_shoulder">
         <inertial>
@@ -414,6 +484,10 @@
         </collision>
     </link>
 
+    <gazebo reference="r_upper_arm">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
     <link name="r_upper_arm">
         <inertial>
             <origin xyz="0.0013671 0.00022653 -0.049517" rpy="0 0 0" />
@@ -434,6 +508,10 @@
             </geometry>
         </collision>
     </link>
+
+    <gazebo reference="r_lower_arm">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
 
     <link name="r_lower_arm">
         <inertial>
@@ -458,6 +536,10 @@
 
     <link name="r_wrist"> </link>    
 
+    <gazebo reference="l_shoulder">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
     <link name="l_shoulder">
         <inertial>
             <origin xyz="0 0.014621 0" rpy="0 0 0" />
@@ -479,6 +561,10 @@
         </collision>
     </link>
 
+    <gazebo reference="l_upper_arm">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
     <link name="l_upper_arm">
         <inertial>
             <origin xyz="0.0013671 0.00022653 -0.049517" rpy="0 0 0" />
@@ -499,6 +585,10 @@
             </geometry>
         </collision>
     </link>
+
+    <gazebo reference="l_lower_arm">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
 
     <link name="l_lower_arm">
         <inertial>
@@ -522,6 +612,10 @@
     </link>
 
     <link name="l_wrist"> </link>
+
+    <gazebo reference="neck">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
 
     <link name="neck">
         <inertial>
@@ -561,6 +655,11 @@
     <link name="r_cleat_r_front"/>
     <link name="r_cleat_l_back"/>
     <link name="r_cleat_r_back"/>
+
+
+    <gazebo reference="head">
+        <material>Gazebo/FlatBlack</material>
+    </gazebo>
 
     <link name="head">
         <inertial>
@@ -1090,9 +1189,8 @@
             <mechanicalReduction>1</mechanicalReduction>
         </actuator>
     </transmission>
-
     <gazebo reference="r_foot">
-        <material>gazebo/Grey</material>
+        <material>Gazebo/FlatBlack</material>
         <kp>1000000.0</kp>
         <kd>100.0</kd>
         <mu1>1.0</mu1>
@@ -1102,7 +1200,7 @@
         <minDepth>0.00</minDepth>
     </gazebo>
     <gazebo reference="l_foot">
-        <material>gazebo/Grey</material>
+        <material>Gazebo/FlatBlack</material>
         <kp>1000000.0</kp>
         <kd>100.0</kd>
         <mu1>1.0</mu1>
