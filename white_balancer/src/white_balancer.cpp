@@ -168,16 +168,15 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
         // Get RGB value for current temperature
         std::vector <int> white_value = WhiteBalancer::kelvin.at(WhiteBalancer::temp);
 
-        // Get image
-        cv::Mat image = cv_bridge::toCvShare(msg, "bgr8")->image;
+        // Get image 
+        cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
         
-        cv::multiply(image, cv::Scalar((float)(255.0/white_value[2]),
-                                       (float)(255.0/white_value[1]),
-                                       (float)(255.0/white_value[0])), image);
+        cv::multiply(cv_ptr->image, cv::Scalar( (float)(255.0/white_value[2]),
+                                                (float)(255.0/white_value[1]),
+                                                (float)(255.0/white_value[0])), cv_ptr->image);
 
         // Publish white balanced image
-        sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
-        WhiteBalancer::pub.publish(msg);
+        WhiteBalancer::pub.publish(cv_ptr->toImageMsg());
     }
     catch (cv_bridge::Exception& e)
     {
