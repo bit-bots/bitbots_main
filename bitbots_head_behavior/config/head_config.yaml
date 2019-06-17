@@ -10,9 +10,7 @@ behavior:
     # Search pattern for penalty
     search_pattern_penalty:
       - [0, -15]
-      - [0, -57]
-      - [-57, -30]
-      - [57, -30]
+      - [0, -30]
       - [30, -7]
       - [-30, -7]
 
