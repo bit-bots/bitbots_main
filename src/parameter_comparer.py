@@ -40,8 +40,9 @@ class Comparer(object):
                         matrices_by_matcher_with_16_05[datum['matcher']] = \
                             np.add(matrices_by_matcher_with_16_05[datum['matcher']], datum['confusion_matrix'])
 
-        #Sself.plot_splatter(matrices_by_matcher_with_16_05)
+        # self.plot_splatter(matrices_by_matcher_with_16_05)
         self.plot([matrices_by_matcher_with_16_03, matrices_by_matcher_with_16_04, matrices_by_matcher_with_16_05])
+        # print(matrices_by_matcher_with_16_03)
 
     def plot(self, matrices):
         plt.figure(2)
@@ -53,11 +54,23 @@ class Comparer(object):
         plt.show()
 
     def plot_single_entry(self, matrices, pos, ax):
-        x = matrices[0].keys()
-        # self.print_matrices(matrices)
-        for m in matrices:
+        #m03 = matrices[0]
+        #m04 = matrices[1]
+        #m05 = matrices[2]
+        #sift = [m03['sift'], m04['sift'], m05['sift']]
+        #rects1 = ax.bar(ind - width / 2, men_means, width, label='Men')
+        #rects2 = ax.bar(ind + width / 2, women_means, width, label='Women')
+
+        for i, m in enumerate(matrices):
+            x = [offset + (i - 1) * .2 for offset in range(3)]
             y = [matrix[pos[0]][pos[1]] for matrix in m.values()]
-            ax.plot(x, y)
+
+            print (x)
+            print (y)
+
+            ax.bar(x, y, width=.2)
+        ax.set_xticks(range(len(matrices[0])))
+        ax.set_xticklabels(matrices[0].keys())
 
     def plot_splatter(self, matrices):
         map(lambda x: self.plot_matrix(x), matrices.values())
