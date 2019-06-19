@@ -34,7 +34,7 @@ compass_matcher: 'sift'
 
 # Compass type multiple
 # Count of images to compute the ground truth
-compass_multiple_ground_truth_images_count: 8
+compass_multiple_ground_truth_images_count: 23
 
 # Big compass_multiple_feature_scalar -> small confidence for few found features
 compass_multiple_feature_scalar: 10

@@ -19,8 +19,8 @@ from tf.transformations import euler_from_quaternion
 from key_point_converter import KeyPointConverter
 from datetime import datetime
 
-# TODO: rosdep
-# TODO: launch: set head mode
+# TODO: rosdep, u.a. motion etc...
+# TODO: set head mode
 # TODO: check published pose 
 # TODO: fix drop old images (also in startup)
 
