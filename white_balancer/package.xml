@@ -4,10 +4,10 @@
   <version>0.0.0</version>
   <description>The white_balanceing package</description>
 
-  <maintainer email="7vahl@informatik.uni-hamurg.de">Flo^2</maintainer>
+  <maintainer email="7vahl@informatik.uni-hamurg.de">Florian Vahl</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
-  <author email="7vahl@informatik.uni-hamurg.de">Flo^2</author>
+  <author email="7vahl@informatik.uni-hamurg.de">Florian Vahl</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
   <license>MIT</license>
@@ -18,6 +18,7 @@
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>OpenCV</depend>
+  <depend>cv_bridge</depend>
 
   <export>
     <bitbots_documentation>
