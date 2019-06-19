@@ -14,6 +14,7 @@ from bitbots_visual_compass.cfg import VisualCompassConfig
 from worker import VisualCompass
 import tf2_ros as tf2
 from tf2_geometry_msgs import PoseStamped
+from humanoid_league_msgs.msg import HeadMode
 from tf.transformations import euler_from_quaternion
 from key_point_converter import KeyPointConverter
 from datetime import datetime
@@ -60,8 +61,20 @@ class VisualCompassSetup():
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(50))
         self.listener = tf2.TransformListener(self.tf_buffer)
 
+        self.pub_head_mode = rospy.Publisher(
+            'head_mode',
+            HeadMode,
+            queue_size=1)
+
         # Register VisualCompassConfig server for dynamic reconfigure and set callback
         Server(VisualCompassConfig, self.dynamic_reconfigure_callback)
+
+        rospy.sleep(2)
+
+        head_mode = HeadMode()
+        head_mode.headMode = 10
+        self.pub_head_mode.publish(head_mode)
+        rospy.loginfo("Head mode has been set!")
 
         rospy.spin()
 
