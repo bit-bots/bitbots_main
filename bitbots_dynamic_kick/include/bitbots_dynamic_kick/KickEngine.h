@@ -2,12 +2,15 @@
 #define BITBOTS_DYNAMIC_KICK_KICK_ENGINE_H
 
 #include <optional>
+#include <std_msgs/Header.h>
 #include <bitbots_splines/SmoothSpline.hpp>
 #include <bitbots_splines/SplineContainer.hpp>
 #include <bitbots_msgs/KickGoal.h>
 #include <bitbots_msgs/KickFeedback.h>
 #include <tf/LinearMath/Transform.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/convert.h>
+#include <tf2/utils.h>
 #include "Stabilizer.h"
 #include <math.h>
 
@@ -49,17 +52,19 @@ public:
 
     /**
      * Set new goal which the engine tries to kick at. This will remove the old goal completely and plan new splines.
-     * @param ball_position Pose in base_link frame which should be reached.
-     *      Ideally this is also where the ball lies and a kick occurs.
-     * @param kick_movement Speed in each dimension with which to kick the ball
+     * @param header Definition of frame and time in which the goals were published
+     * @param ball_position Position of the ball
+     * @param kick_direction Direction into which to kick the ball
+     * @param kick_speed Speed with which to kick the ball
      * @param r_foot_pose Current pose of right foot in l_sole frame
      * @param l_foot_pose Current pose of left foot in r_sole frame
      */
-    bool
-    set_goal(const geometry_msgs::Vector3Stamped &ball_position,
-             const geometry_msgs::Vector3Stamped &kick_movement,
-             const geometry_msgs::Pose &r_foot_pose,
-             const geometry_msgs::Pose &l_foot_pose);
+    bool set_goal(const std_msgs::Header &header,
+                  const geometry_msgs::Vector3 &ball_position,
+                  const geometry_msgs::Quaternion &kick_direction,
+                  const float kick_speed,
+                  const geometry_msgs::Pose &r_foot_pose,
+                  const geometry_msgs::Pose &l_foot_pose);
 
     /**
      * Reset this KickEngine completely, removing the goal, all splines and thereby stopping all output
@@ -79,14 +84,16 @@ public:
     /**
      * Transform then goal into our support_foots frame
      * @param support_foot_frame Name of the support foots frame, meaning where to transform to
-     * @param ball_position Pose of the ball
-     * @param kick_movement Movement direction in which to kick the ball
-     * @return pair of (transformed_pose, transformed_movement)
+     * @param header Frame and time in which the goals were published
+     * @param ball_position Position of the ball
+     * @param kick_direction Direction in which to kick the ball
+     * @return pair of (transformed_pose, transformed_direction)
      */
-    std::optional<std::pair<geometry_msgs::Vector3, geometry_msgs::Vector3>> transform_goal(
+    std::optional<std::pair<geometry_msgs::Vector3, geometry_msgs::Quaternion>> transform_goal(
             const std::string &support_foot_frame,
-            const geometry_msgs::Vector3Stamped &ball_position,
-            const geometry_msgs::Vector3Stamped &kick_movement);
+            const std_msgs::Header &header,
+            const geometry_msgs::Vector3 &ball_position,
+            const geometry_msgs::Quaternion &kick_direction);
 
     /**
      * Is the currently performed kick with the left foot or not
@@ -100,8 +107,9 @@ public:
     Stabilizer m_stabilizer;
 private:
     double m_time;
-    geometry_msgs::Vector3 m_ball_position;
-    geometry_msgs::Vector3 m_kick_movement;
+    tf2::Vector3 m_ball_position;
+    tf2::Quaternion m_kick_direction;
+    float m_kick_speed;
     bool m_is_left_kick;
     std::optional<Trajectories> m_support_point_trajectories, m_flying_trajectories;
     KickParams m_params;
@@ -132,14 +140,16 @@ private:
      *
      * This is done by checking whether the ball is outside of a corridor ranging from base_footprint forward.
      * If it is, the foot on that side will be chosen as the kicking foot.
-     * If not, a more fine grained angle base criterion is used.
+     * If not, a more fine grained angle based criterion is used.     *
      *
+     * @param header Definition of frame and time in which the goals were published
      * @param ball_position Position where the ball is currently located
-     * @param kick_movement Movement in x,y,z direction which the foot should do to finaly kick the ball
+     * @param kick_movement Direction into which the ball should be kicked
      * @return Whether the resulting kick should be performed with the left foot
      */
-    bool calc_is_left_foot_kicking(const geometry_msgs::Vector3Stamped &ball_position,
-                                   const geometry_msgs::Vector3Stamped &kick_movement);
+    bool calc_is_left_foot_kicking(const std_msgs::Header &header,
+                                   const geometry_msgs::Vector3 &ball_position,
+                                   const geometry_msgs::Quaternion &kick_direction);
 
     geometry_msgs::PoseStamped get_current_pose(Trajectories spline_container);
 
@@ -148,15 +158,6 @@ private:
      * in the direction of the kick
      */
     double calc_kick_foot_yaw();
-
-    /**
-     * Calculate the angle enclosed by two vectors, ignoring the z-component
-     * 
-     * @param vector1 First vector
-     * @param vector2 Second vector
-     */
-    double get_angular_difference(const geometry_msgs::Vector3 &vector1,
-                                              const geometry_msgs::Vector3 &vector2);
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_KICK_ENGINE_H

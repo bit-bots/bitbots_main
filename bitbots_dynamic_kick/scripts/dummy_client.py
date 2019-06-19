@@ -9,9 +9,11 @@ import rospy
 import actionlib
 
 from actionlib_msgs.msg import GoalStatus
-from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import Vector3, Quaternion
 from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
 from visualization_msgs.msg import Marker
+
+from tf.transformations import quaternion_from_euler
 
 showing_feedback = False
 
@@ -69,17 +71,15 @@ if __name__ == "__main__":
     print()
 
     goal = KickGoal()
-    goal.ball_position.header.stamp = rospy.Time.now()
-    goal.ball_position.header.frame_id = 'l_sole'
-    goal.ball_position.vector.x = 0.2
-    goal.ball_position.vector.y = -0.18
-    goal.ball_position.vector.z = 0
+    goal.header.stamp = rospy.Time.now()
+    goal.header.frame_id = "base_footprint"
+    goal.ball_position.x = 0.2
+    goal.ball_position.y = -0.1
+    goal.ball_position.z = 0
 
-    goal.kick_movement.header.stamp = rospy.Time.now()
-    goal.kick_movement.header.frame_id = 'base_footprint'
-    goal.kick_movement.vector = Vector3(0.2, -0.25, -1)
+    goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, -0.5))
 
-    marker = Marker()
+    """marker = Marker()
     marker.header.stamp = goal.ball_position.header.stamp
     marker.header.frame_id = goal.ball_position.header.frame_id
     marker.pose.position = goal.ball_position.vector
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     marker.id = 1
     marker.frame_locked = True
     marker_pub.publish(marker)
-
+"""
     client.send_goal(goal)
     client.done_cb = done_cb
     client.feedback_cb = feedback_cb

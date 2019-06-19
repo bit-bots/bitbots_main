@@ -42,8 +42,10 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     if (auto foot_poses = get_foot_poses()) {
 
         /* Set engines goal and start calculating */
-        m_engine.set_goal(goal->ball_position,
-                          goal->kick_movement,
+        m_engine.set_goal(goal->header,
+                          goal->ball_position,
+                          goal->kick_direction,
+                          goal->kick_speed,
                           foot_poses->first,
                           foot_poses->second);
         loop_engine();
@@ -86,7 +88,8 @@ std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> KickNode::get
 
     /* Transform both feets poses into the other foots frame */
     geometry_msgs::PoseStamped r_foot_transformed, l_foot_transformed;
-    m_tf_buffer.transform(r_foot_origin, r_foot_transformed, "l_sole", ros::Duration(0.2)); // TODO lookup thrown exceptions in internet and catch
+    m_tf_buffer.transform(r_foot_origin, r_foot_transformed, "l_sole",
+                          ros::Duration(0.2)); // TODO lookup thrown exceptions in internet and catch
     m_tf_buffer.transform(l_foot_origin, l_foot_transformed, "r_sole", ros::Duration(0.2));
 
     return std::pair(r_foot_transformed.pose, l_foot_transformed.pose);

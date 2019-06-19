@@ -8,18 +8,22 @@ void KickEngine::reset() {
     m_flying_trajectories.reset();
 }
 
-bool KickEngine::set_goal(const geometry_msgs::Vector3Stamped &ball_position,
-                          const geometry_msgs::Vector3Stamped &kick_movement,
+bool KickEngine::set_goal(const std_msgs::Header &header,
+                          const geometry_msgs::Vector3 &ball_position,
+                          const geometry_msgs::Quaternion &kick_direction,
+                          const float kick_speed,
                           const geometry_msgs::Pose &r_foot_pose,
                           const geometry_msgs::Pose &l_foot_pose) {
 
-    m_is_left_kick = calc_is_left_foot_kicking(ball_position, kick_movement);
+    m_is_left_kick = calc_is_left_foot_kicking(header, ball_position, kick_direction);
 
     /* Save given goals because we reuse them later */
-    auto transformed_goal = transform_goal((m_is_left_kick) ? "r_sole" : "l_sole", ball_position, kick_movement);
+    auto transformed_goal = transform_goal((m_is_left_kick) ? "r_sole" : "l_sole", header, ball_position,
+                                           kick_direction);
     if (transformed_goal) {
-        m_ball_position = transformed_goal->first;
-        m_kick_movement = transformed_goal->second;
+        tf2::convert(transformed_goal->first, m_ball_position);
+        tf2::convert(transformed_goal->second, m_kick_direction);
+        m_kick_speed = kick_speed;
         m_time = 0;
 
         /* Plan new splines according to new goal */
@@ -108,7 +112,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pos_x").addPoint(fix1, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix2, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix3, kick_windup_point.x(), 0, 0);
-    m_flying_trajectories->get("pos_x").addPoint(fix4, m_ball_position.x, m_kick_movement.x);
+    m_flying_trajectories->get("pos_x").addPoint(fix4, m_ball_position.x(), m_kick_direction.x());
     m_flying_trajectories->get("pos_x").addPoint(fix5, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix6, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix7, 0);
@@ -117,7 +121,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pos_y").addPoint(fix1, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix2, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix3, kick_windup_point.y(), 0, 0);
-    m_flying_trajectories->get("pos_y").addPoint(fix4, m_ball_position.y, m_kick_movement.y);
+    m_flying_trajectories->get("pos_y").addPoint(fix4, m_ball_position.y(), m_kick_direction.y());
     m_flying_trajectories->get("pos_y").addPoint(fix5, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix6, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix7, kick_foot_sign * m_params.foot_distance);
@@ -194,90 +198,100 @@ void KickEngine::init_trajectories() {
     m_flying_trajectories->add("yaw");
 }
 
-std::optional<std::pair<geometry_msgs::Vector3, geometry_msgs::Vector3>> KickEngine::transform_goal(
+std::optional<std::pair<geometry_msgs::Vector3, geometry_msgs::Quaternion>> KickEngine::transform_goal(
         const std::string &support_foot_frame,
-        const geometry_msgs::Vector3Stamped &ball_position,
-        const geometry_msgs::Vector3Stamped &kick_movement) {
+        const std_msgs::Header &header,
+        const geometry_msgs::Vector3 &ball_position,
+        const geometry_msgs::Quaternion &kick_direction) {
+    /* construct stamped goals so that they can be transformed */ // TODO Extract this into own function because we do it multiple times
+    geometry_msgs::Vector3Stamped stamped_position;
+    stamped_position.header = header;
+    stamped_position.vector = ball_position;
+    geometry_msgs::QuaternionStamped stamped_direction;
+    stamped_direction.header = header;
+    stamped_direction.quaternion = kick_direction;
 
-    /* Lookup transforms from goal frames to support_foot_frame */
-    geometry_msgs::TransformStamped ball_position_transform;
-    geometry_msgs::TransformStamped kick_movement_transform;
-    try {
-        ball_position_transform = m_tf_buffer.lookupTransform(support_foot_frame, ball_position.header.frame_id,
-                                                              ros::Time(0), ros::Duration(1.0));
-        kick_movement_transform = m_tf_buffer.lookupTransform(support_foot_frame, kick_movement.header.frame_id,
-                                                              ros::Time(0), ros::Duration(1.0));
-    } catch (tf2::TransformException &ex) { // TODO this exception is bullshit. It does not get thrown by lookupTransform
-        ROS_ERROR("%s", ex.what());
-        return std::nullopt;
-    }
+    /* do transform into support_foot frame */
+    geometry_msgs::Vector3Stamped transformed_position;
+    geometry_msgs::QuaternionStamped transformed_direction;
 
-    /* Do transformation of goals into support_foot_frame with previously retrieved transform */
-    geometry_msgs::Vector3Stamped transformed_ball_position;
-    geometry_msgs::Vector3Stamped transformed_kick_movement;
-    tf2::doTransform(ball_position, transformed_ball_position, ball_position_transform);
-    tf2::doTransform(kick_movement, transformed_kick_movement, kick_movement_transform);
+    m_tf_buffer.transform(stamped_position, transformed_position, support_foot_frame, ros::Duration(0.2));
+    m_tf_buffer.transform(stamped_direction, transformed_direction, support_foot_frame, ros::Duration(0.2));
 
-    return std::pair(transformed_ball_position.vector, transformed_kick_movement.vector);
+    return std::pair(transformed_position.vector, transformed_direction.quaternion);
 }
 
 tf2::Vector3 KickEngine::calc_kick_windup_point() {
-    tf2::Vector3 kick_movement = tf2::Vector3(m_kick_movement.x, m_kick_movement.y, m_params.foot_rise).normalize();
-    kick_movement *= -m_params.kick_windup_distance;
+    /* retrieve yaw from m_kick_direction */
+    double yaw  = tf2::getYaw(m_kick_direction);
 
-    tf2::Vector3 goal_tf2;
-    tf2::fromMsg(m_ball_position, goal_tf2);
-    kick_movement += goal_tf2;
+    /* create a vector which points in the negative direction of m_kick_direction */
+    tf2::Vector3 vec(-sin(yaw), -cos(yaw), 0);
+    vec.normalize();
 
-    return kick_movement;
+    /* take windup distance into account */
+    vec *= -m_params.kick_windup_distance;
+
+    /* add the ball position because the windup point is in support_foot_frame and not ball_frame */
+    vec += m_ball_position;
+
+    return vec;
 }
 
-bool KickEngine::calc_is_left_foot_kicking(const geometry_msgs::Vector3Stamped &ball_position,
-                                           const geometry_msgs::Vector3Stamped &kick_movement) {
-    /* transform ball data into frame where we want to apply it */
-    geometry_msgs::Vector3Stamped transformed_ball_position;
-    m_tf_buffer.transform(ball_position, transformed_ball_position, "base_footprint", ros::Duration(0.2));
+bool KickEngine::calc_is_left_foot_kicking(const std_msgs::Header &header,
+                                           const geometry_msgs::Vector3 &ball_position,
+                                           const geometry_msgs::Quaternion &kick_direction) {
+    /* prepare variables with stamps */
+    geometry_msgs::Vector3Stamped stamped_position;
+    stamped_position.header = header;
+    stamped_position.vector = ball_position;
+    geometry_msgs::QuaternionStamped stamped_direction;
+    stamped_direction.header = header;
+    stamped_direction.quaternion = kick_direction;
 
-    /* check if ball is outside of an imaginary corridor */
-    if (transformed_ball_position.vector.y > m_params.choose_foot_corridor_width / 2)
+    /* transform ball data into frame where we want to apply it */
+    tf2::Stamped<tf2::Vector3> transformed_ball_position;
+    m_tf_buffer.transform(stamped_position, transformed_ball_position, "base_footprint", ros::Duration(0.2));
+    tf2::Stamped<tf2::Quaternion> transformed_direction;
+    m_tf_buffer.transform(stamped_direction, transformed_direction, "base_footprint", ros::Duration(0.2));
+
+    /*
+     * check if ball is outside of an imaginary corridor
+     * if it is not, we use a more fined grained criterion which takes kick_direction into account
+     */
+    if (transformed_ball_position.y() > m_params.choose_foot_corridor_width / 2)
         return true;
-    else if (transformed_ball_position.vector.y < -m_params.choose_foot_corridor_width / 2)
+    else if (transformed_ball_position.y() < -m_params.choose_foot_corridor_width / 2)
         return false;
 
-    /* use the more fine grained angle based criterion */
-    double angle = get_angular_difference(transformed_ball_position.vector, kick_movement.vector);
+    /* use the more fine grained angle based criterion
+     * angle1 = angle between "forward" and "origin-to-ball-position"
+     * angle2 = yaw of kick_direction
+     * angle_diff = difference between the two on which the decision happens
+     */
+    double angle1 = transformed_ball_position.angle({1, 0, 0});
+    angle1 *= transformed_ball_position.y() < 0 ? -1 : 1;
 
-    ROS_INFO_STREAM("Choosing " << ((angle < 0) ? "left" : "right") << " foot to kick");
+    double angle2 = tf2::getYaw(transformed_direction);
+    double angle_diff = angle2 - angle1;
 
-    return angle < 0;
+    ROS_INFO_STREAM("Choosing " << ((angle_diff < 0) ? "left" : "right") << " foot to kick");
+
+    return angle_diff < 0;
 }
 
 double KickEngine::calc_kick_foot_yaw() {
-    geometry_msgs::Vector3 ahead;
-    ahead.x = 1.0;
-    ahead.y = 0.0;
-    ahead.z = 0.0;
-    double kick_direction_angle = get_angular_difference(ahead, m_kick_movement);
-    if(kick_direction_angle > M_PI_4){
-        return kick_direction_angle - M_PI_2;
-    } 
-    else if(kick_direction_angle < -M_PI_4){
-        return kick_direction_angle + M_PI_2;
-    }
-    else {
-        return kick_direction_angle;
-    }
-    
-}
+    double kick_roll_angle, kick_pitch_angle, kick_yaw_angle;
+    tf2::Matrix3x3(m_kick_direction).getRPY(kick_roll_angle, kick_pitch_angle, kick_yaw_angle);
 
-double KickEngine::get_angular_difference(const geometry_msgs::Vector3 &vector1,
-                                          const geometry_msgs::Vector3 &vector2) {
-    double dot_product = vector1.x * vector2.x
-            + vector1.y * vector2.y;
-    double determinant = vector1.x * vector2.y
-            - vector1.y * vector2.x;
-    double angle = std::atan2(determinant, dot_product);
-    return angle;
+    if (kick_yaw_angle > M_PI_4) {
+        return kick_yaw_angle - M_PI_2;
+    } else if (kick_yaw_angle < -M_PI_4) {
+        return kick_yaw_angle + M_PI_2;
+    } else {
+        return kick_yaw_angle;
+    }
+
 }
 
 bool KickEngine::is_left_kick() {
@@ -286,7 +300,8 @@ bool KickEngine::is_left_kick() {
 
 int KickEngine::get_percent_done() const {
     double duration = m_params.move_trunk_time + m_params.raise_foot_time + m_params.move_to_ball_time +
-                      m_params.kick_time + m_params.move_back_time + m_params.move_trunk_back_time  + m_params.lower_foot_time;
+                      m_params.kick_time + m_params.move_back_time + m_params.move_trunk_back_time +
+                      m_params.lower_foot_time;
     return int(m_time / duration * 100);
 }
 
