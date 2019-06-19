@@ -3,6 +3,7 @@
 
 #include <optional>
 #include <moveit/robot_model_loader/robot_model_loader.h>
+#include <moveit/planning_scene/planning_scene.h>
 #include <bio_ik/bio_ik.h>
 #include <geometry_msgs/Pose.h>
 #include <tf2_ros/transform_listener.h>
@@ -26,11 +27,14 @@ public:
     std::optional<JointGoals> stabilize(bool is_left_kick, geometry_msgs::Point support_point, geometry_msgs::PoseStamped flying_foot_goal_pose);
     void use_stabilizing(bool use);
     void use_minimal_displacement(bool use);
+    void set_trunk_height(double height);
     void set_stabilizing_weight(double weight);
     void set_flying_weight(double weight);
     void set_trunk_orientation_weight(double weight);
+    void set_trunk_height_weight(double weight);
 private:
     robot_state::RobotStatePtr m_goal_state;
+    planning_scene::PlanningScenePtr m_planning_scene;
 
     robot_model::RobotModelPtr m_kinematic_model;
     moveit::core::JointModelGroup* m_all_joints_group;
@@ -38,9 +42,11 @@ private:
 
     bool m_use_stabilizing;
     bool m_use_minimal_displacement;
+    double m_trunk_height;
     double m_stabilizing_weight;
     double m_flying_weight;
     double m_trunk_orientation_weight;
+    double m_trunk_height_weight;
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_STABILIZER_H

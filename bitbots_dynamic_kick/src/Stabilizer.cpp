@@ -1,7 +1,6 @@
 #include "bitbots_dynamic_kick/Stabilizer.h"
 #include "bitbots_dynamic_kick/DynamicBalancingGoal.h"
-#include "bitbots_dynamic_kick/ReferencePoseGoal.h"
-#include "bitbots_dynamic_kick/ReferenceOrientationGoal.h"
+#include "bitbots_dynamic_kick/ReferenceGoals.h"
 
 Stabilizer::Stabilizer() {
     /* load MoveIt! model */
@@ -27,6 +26,9 @@ Stabilizer::Stabilizer() {
     for (int i = 0; i < names_vec.size(); i++) {
         m_goal_state->setJointPositions(names_vec[i], &pos_vec[i]);
     }
+
+    /* Initialize collision model */
+    m_planning_scene.reset(new planning_scene::PlanningScene(m_kinematic_model));
 }
 
 std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs::Point support_point, geometry_msgs::PoseStamped flying_foot_goal_pose) {
@@ -75,6 +77,17 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
     trunk_orientation_goal->setWeight(m_trunk_orientation_weight);
     ik_options.goals.emplace_back(trunk_orientation_goal);
 
+    auto *trunk_height_goal = new ReferenceHeightGoal();
+    trunk_height_goal->setHeight(m_trunk_height);
+    trunk_height_goal->setWeight(m_trunk_height_weight);
+    trunk_height_goal->setLinkName("base_link");
+    if (is_left_kick) {
+        trunk_height_goal->setReferenceLinkName("r_sole");
+    } else {
+        trunk_height_goal->setReferenceLinkName("l_sole");
+    }
+    ik_options.goals.emplace_back(trunk_height_goal);
+
     DynamicBalancingContext bio_ik_balancing_context(m_kinematic_model);
     auto *bio_ik_balance_goal = new DynamicBalancingGoal(&bio_ik_balancing_context, stabilizing_target, m_stabilizing_weight);
     if (is_left_kick) {
@@ -97,6 +110,15 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
                                            bio_ik_timeout,
                                            moveit::core::GroupStateValidityCallbackFn(),
                                            ik_options);
+
+    collision_detection::CollisionRequest req;
+    collision_detection::CollisionResult res;
+    collision_detection::AllowedCollisionMatrix acm = m_planning_scene->getAllowedCollisionMatrix();
+    m_planning_scene->checkCollision(req, res, *m_goal_state, acm);
+    if (res.collision) {
+        ROS_ERROR_STREAM("Aborting due to self collision!");
+        success = false;
+    }
 
     if (success) {
         /* retrieve joint names and associated positions from  */
@@ -122,6 +144,10 @@ void Stabilizer::use_minimal_displacement(bool use) {
     m_use_minimal_displacement = use;
 }
 
+void Stabilizer::set_trunk_height(double height) {
+    m_trunk_height = height;
+}
+
 void Stabilizer::set_stabilizing_weight(double weight) {
     m_stabilizing_weight = weight;
 }
@@ -132,4 +158,8 @@ void Stabilizer::set_flying_weight(double weight) {
 
 void Stabilizer::set_trunk_orientation_weight(double weight) {
     m_trunk_orientation_weight = weight;
+}
+
+void Stabilizer::set_trunk_height_weight(double weight) {
+    m_trunk_height_weight = weight;
 }
