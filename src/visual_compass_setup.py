@@ -19,7 +19,7 @@ from key_point_converter import KeyPointConverter
 from datetime import datetime
 
 # TODO: rosdep
-# TODO: launch headbehavior etc
+# TODO: launch: set head mode
 # TODO: check published pose 
 # TODO: fix drop old images (also in startup)
 
