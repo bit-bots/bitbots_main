@@ -23,7 +23,7 @@
   <export>
     <bitbots_documentation>
       <language>c++</language>
-      <status>unknown</status>
+      <status>tested_robot</status>
     </bitbots_documentation>
   </export>
 </package>
