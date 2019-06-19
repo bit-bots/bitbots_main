@@ -193,7 +193,7 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
     }
     catch (cv_bridge::Exception& e)
     {
-        ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
+        ROS_ERROR_THROTTLE(60, "Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
     }
     
 }
