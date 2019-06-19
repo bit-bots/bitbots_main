@@ -27,4 +27,5 @@
             <param name="height" type="int" value="480" />
         </node>
     </group>
+    <include file="$(find white_balancer)/launch/white_balance.launch" />
 </launch>
