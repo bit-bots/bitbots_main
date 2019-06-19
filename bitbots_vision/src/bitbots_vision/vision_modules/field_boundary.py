@@ -117,7 +117,7 @@ class FieldBoundaryDetector:
         self._field_boundary_points = []
         if self._search_method == 'dynamic':
             # decides the search method depending on the vertical tilt of the head
-            if self._head_joint_position > self._head_joint_threshold:
+            if self._head_joint_position and self._head_joint_position > self._head_joint_threshold:
                 self._field_boundary_points = self._sub_field_boundary_points_reversed()
             else:
                 self._field_boundary_points = self._sub_field_boundary_points_iteration()

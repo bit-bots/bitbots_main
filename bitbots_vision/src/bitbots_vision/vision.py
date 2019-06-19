@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import cv2
@@ -8,6 +8,7 @@ import rospkg
 import threading
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
+from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from sensor_msgs.msg import Image, JointState
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, PostInImage, \
@@ -558,8 +559,13 @@ class Vision:
                 tcp_nodelay=True)
 
         # Publish Config-message
+        # Clean config dict to avoid not dumpable types
+        config_cleaned = {}
+        for key, value in config.items():
+            if type(value) != DynamicReconfigureConfig:
+                config_cleaned[key] = value
         msg = Config()
-        msg.data = yaml.dump(config)
+        msg.data = yaml.dump(config_cleaned)
         self.pub_config.publish(msg)
 
         self.config = config
