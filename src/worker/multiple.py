@@ -44,6 +44,7 @@ class MultipleCompass(VisualCompassInterface):
         # config values
         self.sample_count = None
         self.feature_scalar = None
+        self.feature_scalar_seed = None
 
         self.init_matcher()
         self.set_config(config)
@@ -57,8 +58,13 @@ class MultipleCompass(VisualCompassInterface):
         if 0 <= angle <= 2*math.pi:
             keypoints, descriptors = self.matcher.get_keypoints(image)
 
+            old_ground_truth_length = len(self.ground_truth[0])
             self.ground_truth[0].extend(self.angle_tagger.tag_keypoints(angle, keypoints))
             self.ground_truth[1].extend(descriptors)
+            if not self.feature_scalar:
+                self.feature_scalar = len(descriptors) / self.feature_scalar_seed
+            self.feature_scalar = statistics.mean([self.feature_scalar, len(descriptors) / self.feature_scalar_seed])
+        print("feature_scalar " + str(self.feature_scalar))
 
     def get_ground_truth_features(self):
         return self.ground_truth
@@ -108,7 +114,7 @@ class MultipleCompass(VisualCompassInterface):
     def set_config(self, config):
         self.config = config
         self.sample_count = config['compass_multiple_ground_truth_images_count']
-        self.feature_scalar = config['compass_multiple_feature_scalar']
+        self.feature_scalar_seed = float(config['compass_multiple_feature_scalar'])
         self.matcher.set_config(config)
 
     def get_side(self):
