@@ -4,6 +4,7 @@ import cv2
 import time
 import yaml
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
 import numpy as np
 from evaluation_data_loader import DataLoader
@@ -41,6 +42,7 @@ class BinaryEvaluator(object):
         self.evaluate_all_images()
 
     def set_truth(self):
+
         for i in range(self.sample_count):
             angle = float(i) / self.sample_count * math.radians(360)
             angle = (angle + math.radians(90)) % math.radians(360)
@@ -80,7 +82,9 @@ class BinaryEvaluator(object):
                 V[i, j] = np.imag(z) * confidence
                 C[i, j] = confidence
 
-        Q = ax.quiver(U, V, C, pivot='mid')
+        normalizer = colors.Normalize(0, 1)
+        quiver = ax.quiver(U, V, C, pivot='mid', scale_units='xy', scale=1, norm=normalizer)
+        # Q = ax.quiver(U, V, C, pivot='mid')
         ax.axis('equal')
         ax.axis('off')
 

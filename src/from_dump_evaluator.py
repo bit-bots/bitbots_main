@@ -175,7 +175,6 @@ class Evaluator(object):
         # ax_image.axis('off')
         # ax_colorbar.set_title("Correctness Colorbar")
 
-
 def safe_to_file(config_confusion_matrices):
     file_path = "confusion_matrices.pickle"
 
