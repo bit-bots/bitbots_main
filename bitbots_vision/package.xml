@@ -48,6 +48,7 @@
     <depend>python-numpy</depend>
     <depend>python-opencv</depend>
     <depend>wolves_image_provider</depend>
+    <depend>pylon_camera</depend>
   
 
     <export>

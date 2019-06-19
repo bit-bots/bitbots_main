@@ -3,6 +3,7 @@
     <arg name="dummyball" default="false"/>
     <arg name="debug" default="false"/>
     <arg name="use_game_settings" default="false"/>
+    <arg name="basler" default="true" />
 
     <!-- start vision for wolfgang (fcnn)-->
     <group unless="$(arg dummyball)">
@@ -33,7 +34,8 @@
 
     <!-- start the camera only when necessary -->
     <group unless="$(arg sim)">
-        <include file="$(find wolves_image_provider)/launch/image_provider.launch" />
+        <include unless="$(arg basler)" file="$(find wolves_image_provider)/launch/image_provider.launch" />
+        <include if="$(arg basler)" file="$(find bitbots_bringup)/launch/basler_camera.launch" />
     </group>
 
     <!-- remap stuff to fit the robot -->
