@@ -10,20 +10,19 @@
 
     <!-- start motion and head behavior -->
     <include file="$(find bitbots_bringup)/launch/motion_standalone.launch" />
-    <include file="$(find bitbots_head_behavior)/launch/head_behavior_standalone.launch" />
+    <include file="$(find bitbots_head_behavior)/launch/head_behavior.launch" />
 
     <!-- start the camera only when necessary -->
     <group unless="$(arg sim)">
         <!-- start basler camera setup -->
         <group if="$(arg basler)">
             <include file="$(find bitbots_bringup)/launch/basler_camera.launch" />
-            <include file="$(find bitbots_vision)/launch/vision_startup.launch" />
-            <remap from="/image" to="/camera/image_raw">
+            <include file="$(find white_balancer)/launch/white_balance.launch" />
+            <param name="img_msg_topic" value="/image" />
         </group>
         <!-- start logitech camera setup -->
         <group unless="$(arg basler)">
             <include file="$(find wolves_image_provider)/launch/image_provider.launch" />
         </group>
     </group>
-
 </launch>
