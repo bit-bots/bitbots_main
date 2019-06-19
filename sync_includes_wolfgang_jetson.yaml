@@ -6,7 +6,10 @@ include:
     - bitbots_vision:
         - bitbots_vision
         - python_extensions
+        - white_balancer
     - humanoid_league_msgs
+    - lib:
+        - vision_opencv
     - wolves_image_provider
     - scripts
     - lib:
