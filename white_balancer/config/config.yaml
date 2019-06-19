@@ -1,1 +1,5 @@
 temp: 2823 #Kelvin
+
+ROS_input_topic: "/image_raw"
+
+ROS_output_topic: "/image"

@@ -149,8 +149,21 @@ WhiteBalancer::WhiteBalancer()
     ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
 
-    WhiteBalancer::pub = it.advertise("/image", 1);
-    image_transport::Subscriber sub = it.subscribe("/image_unbalanced", 1, &WhiteBalancer::imageCallback, this);
+    ros::Duration(2.0).sleep();
+
+    std::string ROS_output_topic, ROS_input_topic;
+    if (nh.getParam("/white_balancer/ROS_output_topic", ROS_output_topic)) {
+        WhiteBalancer::pub = it.advertise(ROS_output_topic, 1);
+    } else {
+        ROS_ERROR("No output topic set");
+        exit(2);
+    }
+    if (nh.getParam("/white_balancer/ROS_output_topic", ROS_output_topic)) {
+        image_transport::Subscriber sub = it.subscribe(ROS_output_topic, 1, &WhiteBalancer::imageCallback, this);
+    } else {
+        ROS_ERROR("No output topic set");
+        exit(2);
+    }
 
     ros::spin();
 }
