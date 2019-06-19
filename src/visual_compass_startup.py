@@ -116,10 +116,7 @@ class VisualCompassStartup():
         TODO docs
         """
         # Set image
-        self.compass.process_image(self.bridge.imgmsg_to_cv2(image_msg, 'bgr8'))
-
-        # Get angle and certainty from compass
-        result = self.compass.get_side()
+        result = self.compass.process_image(self.bridge.imgmsg_to_cv2(image_msg, 'bgr8'))
 
         # Publishes the 'visual_compass'-message
         self.publish_rotation(image_msg.header.frame_id, image_msg.header.stamp, result[0], result[1])

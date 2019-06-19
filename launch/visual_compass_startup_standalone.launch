@@ -1,6 +1,8 @@
 <launch>
-    <arg name="sim" default="false"/>
-
+    <arg name="sim" default="false" />
+    <arg name="basler" default="true" />
+    <arg name="field" default="" />
+    
     <include file="$(find bitbots_visual_compass)/launch/visual_compass_startup.launch">
         <arg name="sim" value="$(arg sim)" />
         <arg name="field" value="$(arg field)" />
