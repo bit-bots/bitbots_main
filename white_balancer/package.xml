@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>white_balancer</name>
+  <version>0.0.0</version>
+  <description>The white_balanceing package</description>
+
+  <maintainer email="7vahl@informatik.uni-hamurg.de">Florian Vahl</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <author email="7vahl@informatik.uni-hamurg.de">Florian Vahl</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>image_transport</depend>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>OpenCV</depend>
+  <depend>cv_bridge</depend>
+
+  <export>
+    <bitbots_documentation>
+      <language>c++</language>
+      <status>tested_robot</status>
+    </bitbots_documentation>
+  </export>
+</package>
