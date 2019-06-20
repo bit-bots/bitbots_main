@@ -158,10 +158,11 @@ WhiteBalancer::WhiteBalancer()
         ROS_ERROR("No output topic set");
         exit(2);
     }
-    if (nh.getParam("/white_balancer/ROS_output_topic", ROS_output_topic)) {
-        image_transport::Subscriber sub = it.subscribe(ROS_output_topic, 1, &WhiteBalancer::imageCallback, this);
+    image_transport::Subscriber sub;
+    if (nh.getParam("/white_balancer/ROS_input_topic", ROS_input_topic)) {
+         sub = it.subscribe(ROS_input_topic, 1, &WhiteBalancer::imageCallback, this);
     } else {
-        ROS_ERROR("No output topic set");
+        ROS_ERROR("No input topic set");
         exit(2);
     }
 
