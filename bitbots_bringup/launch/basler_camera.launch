@@ -16,7 +16,7 @@
         </node>
         <node pkg="nodelet" type="nodelet" args="standalone image_proc/resize" name="resizer">
             <remap from="/image"  to="debayered_image" />
-            <remap from="~image" to="/image_raw" />
+            <remap from="~image" to="/image_resized" />
             <param name="use_scale" type="int" value="0" />
             <param name="width" type="int" value="620" />
             <param name="height" type="int" value="480" />
