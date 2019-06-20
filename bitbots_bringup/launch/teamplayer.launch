@@ -8,7 +8,7 @@
     <arg name="simple" default="false"/>  <!-- whether to use the simple behavior -->
     <arg name="gazebo" default="false"/>
     <!-- defines camera type -->
-    <arg name="basler" default="true"/>
+    <arg name="basler" default="true" doc="Defines the robot camera type"/>
 
     <arg name="use_game_settings" default="true"/>
     

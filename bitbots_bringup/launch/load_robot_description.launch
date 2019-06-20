@@ -9,7 +9,7 @@
     <!-- fake walk controller for gazebo -->
     <arg name="use_fake_walk" default="False" />
     <!-- defines camera type -->
-    <arg name="basler" default="true" />
+    <arg name="basler" default="true" doc="Defines the robot camera type"/>
 
 
 
