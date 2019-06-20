@@ -1,15 +1,12 @@
 import math
-
 import rospy
-
 from std_msgs.msg import Header
-
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class VisualCompassRecord(AbstractActionElement):
     """
-    Executes the configured pattern the scan the ground truth for the Visual Kompass.
+    Executes the configured pattern to scan the ground truth for the visual compass.
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
@@ -37,11 +34,11 @@ class VisualCompassRecord(AbstractActionElement):
         self.pattern = self.pattern_left + self.pattern_right
         self.threshold = self.blackboard.config['position_reached_threshold']
 
-    def _notify_visual_compass(self):
-        rospy.loginfo("Notify visual compass")
+    def _notify_visual_compass(self): 
         msg = Header()
         msg.stamp = rospy.Time.now()
         self.blackboard.head_capsule.visual_compass_record_trigger.publish(msg)
+        rospy.loginfo("Notify visual compass")
 
     def perform(self, reevaluate=False):
         """
