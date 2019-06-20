@@ -1,5 +1,7 @@
 temp: 2823 #Kelvin
 
+delay: 0.1 #Image time stamp delay
+
 ROS_input_topic: "/image_resized"
 
 ROS_output_topic: "/image_raw"

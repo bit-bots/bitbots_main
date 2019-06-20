@@ -132,9 +132,12 @@ private:
                                                     { 12000, { 195, 209, 255 }}};
     // Dummy color
     int temp = 1000;
+    // Time stamp delay
+    float delay = 0.1;
     // Image calback
     void imageCallback(const sensor_msgs::ImageConstPtr& msg);
     void set_temp(int temp);
+    void set_delay(double delay);
 };
 
 WhiteBalancer::WhiteBalancer()
@@ -175,6 +178,17 @@ void WhiteBalancer::set_temp(int temp)
     WhiteBalancer::temp = 100 * ((int) temp / 100);
 }
 
+void WhiteBalancer::set_delay(double delay)
+{
+    // Check delay diff
+    if (WhiteBalancer::delay != delay) 
+    {
+        // Set delay
+        WhiteBalancer::delay = delay;
+        ROS_INFO("Set new image timestamp delay '%f sec'!", delay);
+    }
+}
+
 void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
     try
@@ -188,6 +202,8 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
         cv::multiply(cv_ptr->image, cv::Scalar( (float)(255.0/white_value[2]),
                                                 (float)(255.0/white_value[1]),
                                                 (float)(255.0/white_value[0])), cv_ptr->image);
+        
+        cv_ptr->header.stamp = cv_ptr->header.stamp - ros::Duration(WhiteBalancer::delay);
 
         // Publish white balanced image
         WhiteBalancer::pub.publish(cv_ptr->toImageMsg());
@@ -202,6 +218,8 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 void WhiteBalancer::callbackRC(white_balancer::WhiteBalanceConfig &config, uint32_t level) {
     // Set color temperature
     WhiteBalancer::set_temp(config.temp);
+    // Set timestamp delay
+    WhiteBalancer::set_delay(config.delay);
 }
   
 int main(int argc, char **argv)
