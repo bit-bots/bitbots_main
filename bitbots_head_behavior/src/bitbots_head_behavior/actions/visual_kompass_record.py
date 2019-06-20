@@ -7,13 +7,13 @@ from std_msgs.msg import Header
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
-class VisualKompassRecord(AbstractActionElement):
+class VisualCompassRecord(AbstractActionElement):
     """
     Executes the configured pattern the scan the ground truth for the Visual Kompass.
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(VisualKompassRecord, self).__init__(blackboard, dsd, parameters)
+        super(VisualCompassRecord, self).__init__(blackboard, dsd, parameters)
         
         self.index = 0
         self.pan_speed = 1.0
