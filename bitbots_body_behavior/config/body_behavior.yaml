@@ -25,6 +25,7 @@ behavior:
     #                         0
     # To be useful for different field sizes, use values in [-1, 1] for x and y
 
+    # TODO: For four robots we need four initial positions
     role_positions:
       goalie: [-0.95, 0]
       defense: [-0.5, 0.5]
@@ -67,5 +68,19 @@ behavior:
     # the radius is the margin around the goal to both y and the positive x directions
     ball_dangerous_goal_radius: 2
 
+    # The defensive area is an area in which the players behave more defensive then usual
+    # (defensive players are actively going to the ball and goalies move in the goal to be able to block the ball).
+    # This affects the BallInDefensiveArea decision.
+    # The area is described as portion of the field [0, 1] always measured from the own goal.
+    # A value of 0.25 means, that the quarter in front of the own goal is the defensive area.
+    defensive_area: 0.25
+
+    # This is the offset the goalie keeps to avoid crashes with poles when blocking balls.
+    # The value describes the offset in meters from the goal line.
+    block_position_goal_offset: 0.15
+
+    # When the ball is closer than `max_kick_distance` meters
+    # it is close enough to be kicked
+    max_kick_distance: 0.3
 
 role: "offense"

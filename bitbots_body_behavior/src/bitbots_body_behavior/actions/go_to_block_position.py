@@ -3,14 +3,14 @@ from tf2_geometry_msgs import PoseStamped
 import rospy
 
 
-class GoToDefensePosition(AbstractActionElement):
+class GoToBlockPosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
-        super(GoToDefensePosition, self).__init__(blackboard, dsd, parameters)
+        super(GoToBlockPosition, self).__init__(blackboard, dsd, parameters)
+        self.block_position_goal_offset = self.blackboard.config['block_position_goal_offset']
 
     def perform(self, reevaluate=False):
-        # The defense position should be a position between the ball and the own goal.
-        # TODO: in the case of two defensive players, they should use an offset,
-        #  so that they are not targeting the same position
+        # The block position should be a position between the ball and the center of the goal
+        # and always in front of the goal
 
         #      y
         #      ^       ______________________
@@ -28,12 +28,22 @@ class GoToDefensePosition(AbstractActionElement):
         goal_position = (-self.blackboard.field_length / 2, 0)  # position of the own goal
         ball_position = self.blackboard.world_model.get_ball_position_xy()
 
+        x_delta = ball_position[0] - goal_position[0]
+        y_delta = ball_position[1] - goal_position[1]
+        gradient = y_delta / x_delta
+        goalie_y = self.block_position_goal_offset * gradient
+
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = 'map'
 
-        pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) /2
-        pose_msg.pose.position.y = ball_position[1] / 2
+        pose_msg.pose.position.x = -(self.connector.field_width / 2) + self.block_position_goal_offset
+        pose_msg.pose.position.y = self._stay_in_front_of_goal(goalie_y)
         pose_msg.pose.orientation.w = 1
 
         self.blackboard.pathfinding.publish(pose_msg)
+
+    def _stay_in_front_of_goal(self, y):
+        # keeps the y-values of the position in between of the goalposts.
+        # this ensures, that y is in [-self.blackboard.goal_width / 2, self.blackboard.goal_width / 2].
+        return max(-self.blackboard.goal_width / 2, min(self.blackboard.goal_width / 2, y))
