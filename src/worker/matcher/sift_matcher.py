@@ -24,8 +24,7 @@ class SiftMatcher(Matcher):
                                                 keypoint.angle), kp))
         features1 = np.zeros((desc1.shape[0],), dtype=self.feature_dtype)
 
-        for index, keypoint in enumerate(keypoints):
-            features1[index]['angle'] = keypoint[3]
+        features1[['x', 'y', 'scale','angle']] = keypoints
         
         features1['desc'] = desc1
         features2 = np.zeros((desc2.shape[0],), dtype=self.feature_dtype)
