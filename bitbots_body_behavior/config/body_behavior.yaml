@@ -72,12 +72,12 @@ behavior:
     # (defensive players are actively going to the ball and goalies move in the goal to be able to block the ball).
     # This affects the BallInDefensiveArea decision.
     # The area is described as portion of the field [0, 1] always measured from the own goal.
-    # A value of .25 means, that the quarter in front of the own goal is the defensive area.
-    defensive_area: .25
+    # A value of 0.25 means, that the quarter in front of the own goal is the defensive area.
+    defensive_area: 0.25
 
     # This is the offset the goalie keeps to avoid crashes with poles when blocking balls.
     # The value describes the offset in meters from the goal line.
-    block_position_goal_offset: .15
+    block_position_goal_offset: 0.15
 
     # When the ball is closer than `max_kick_distance` meters
     # it is close enough to be kicked
