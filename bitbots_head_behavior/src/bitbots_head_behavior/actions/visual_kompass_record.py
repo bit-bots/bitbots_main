@@ -33,8 +33,6 @@ class VisualCompassRecord(AbstractActionElement):
                                                                             min(self.blackboard.config['record_pattern_tilt_max']),
                                                                             interpolation_steps=self.interpolation_steps)
 
-        self.visual_compass_trigger = rospy.Publisher( self.blackboard.config['vc_trigger_topic'], Header, queue_size=5)
-
         # Append the two patterns and only take the first half of each
         self.pattern = self.pattern_left + self.pattern_right
         self.threshold = self.blackboard.config['position_reached_threshold']
@@ -43,7 +41,7 @@ class VisualCompassRecord(AbstractActionElement):
         rospy.loginfo("Notify visual compass")
         msg = Header()
         msg.stamp = rospy.Time.now()
-        self.visual_compass_trigger.publish(msg)
+        self.blackboard.head_capsule.visual_compass_record_trigger.publish(msg)
 
     def perform(self, reevaluate=False):
         """

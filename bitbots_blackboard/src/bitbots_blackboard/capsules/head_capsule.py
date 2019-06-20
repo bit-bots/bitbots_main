@@ -19,6 +19,7 @@ class HeadCapsule:
         self.pos_msg.max_currents = [-1, -1]
 
         self.position_publisher = None  # type: rospy.Publisher
+        self.visual_compass_record_trigger = None  # type: rospy.Publisher
 
         self.current_head_position = [0, 0]
 
