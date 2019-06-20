@@ -25,7 +25,7 @@ behavior:
     record_pattern_tilt_max: [20, -10]
 
     # Visual compass ground truth trigger topic
-    vc_trigger_topic: '/visual_compass_ground_truth_trigger'
+    visual_compass_trigger_topic: '/visual_compass_ground_truth_trigger'
 
     # These values describe the minimal required delta between current joint states and target joint states in degrees
     # to reduce unnecessary movement due to noise in the detection of the BallRelative.

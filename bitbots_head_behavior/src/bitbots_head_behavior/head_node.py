@@ -40,7 +40,7 @@ def init():
     rospy.Subscriber("/ball_relative", BallRelative, blackboard.world_model.ball_callback)
     rospy.Subscriber('/joint_states', JointState, blackboard.head_capsule.joint_state_callback)
     blackboard.head_capsule.position_publisher = rospy.Publisher("/head_motor_goals", JointCommand, queue_size=10)
-    blackboard.head_capsule.visual_compass_record_trigger = rospy.Publisher( blackboard.config['vc_trigger_topic'], Header, queue_size=5)
+    blackboard.head_capsule.visual_compass_record_trigger = rospy.Publisher( blackboard.config['visual_compass_trigger_topic'], Header, queue_size=5)
 
     dirname = os.path.dirname(os.path.realpath(__file__))
 
