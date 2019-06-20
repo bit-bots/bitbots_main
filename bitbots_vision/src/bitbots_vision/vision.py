@@ -67,7 +67,7 @@ class Vision:
         """
         # drops old images and cleans up queue
         image_age = rospy.get_rostime() - image_msg.header.stamp 
-        if image_age.to_sec() > 0.1:
+        if image_age.to_sec() > 1.0:
             self.debug_printer.info('Vision: Dropped Image-message', 'image')
             return
 
