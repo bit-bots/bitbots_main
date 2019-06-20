@@ -148,5 +148,4 @@ class HeadCapsule:
                     line -= 1
                 else:
                     line += 1
-        rospy.loginfo("Made pattern")
         return keyframes
