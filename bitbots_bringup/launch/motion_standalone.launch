@@ -1,5 +1,6 @@
 <launch>
     <arg name="sim" default="false"/>
+    <!-- defines camera type -->
     <arg name="basler" default="true"/>
 
     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
