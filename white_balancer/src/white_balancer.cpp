@@ -204,7 +204,7 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
                                                 (float)(255.0/white_value[1]),
                                                 (float)(255.0/white_value[0])), cv_ptr->image);
         
-        cv_ptr->header.stamp = cv_ptr->header.stamp - WhiteBalancer::timestamp_offset;
+        cv_ptr->header.stamp = cv_ptr->header.stamp + WhiteBalancer::timestamp_offset;
 
         // Publish white balanced image
         WhiteBalancer::pub.publish(cv_ptr->toImageMsg());
