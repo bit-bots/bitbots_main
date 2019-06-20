@@ -1,8 +1,10 @@
 <launch>
     <arg name="sim" default="false"/>
+    <arg name="basler" default="true"/>
 
     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
-        <arg name="sim" value="$(arg sim)"/>         
+        <arg name="sim" value="$(arg sim)"/>
+        <arg name="basler" value="$(arg basler)"/>           
     </include>    
 
     <include file="$(find bitbots_bringup)/launch/motion.launch">

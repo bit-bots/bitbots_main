@@ -7,6 +7,7 @@
     <arg name="localization" default="false"/>
     <arg name="simple" default="false"/>  <!-- whether to use the simple behavior -->
     <arg name="gazebo" default="false"/>
+    <arg name="basler" default="true"/>
 
     <arg name="use_game_settings" default="true"/>
     
@@ -15,6 +16,7 @@
     <group unless="$(arg gazebo)">
         <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
             <arg name="sim" value="$(arg sim)" />
+            <arg name="basler" value="$(arg basler)" />
         </include>
     </group>
 
