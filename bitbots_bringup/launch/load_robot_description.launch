@@ -22,11 +22,12 @@
 
 
     <group if="$(arg wolfgang)">
-        <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/wolfgang_basler.urdf.xacro use_fake_walk:=$(arg use_fake_walk) sim_ns:=$(arg sim_ns) --inorder" />                
         <group unless="$(arg basler)">
+            <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/wolfgang_logitech.urdf.xacro use_fake_walk:=$(arg use_fake_walk) sim_ns:=$(arg sim_ns) --inorder" />                
             <param name="urdf" value="$(find wolfgang_description)/urdf/wolfgang_logitech.urdf.xacro" />
         </group>
         <group if="$(arg basler)">
+            <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/wolfgang_basler.urdf.xacro use_fake_walk:=$(arg use_fake_walk) sim_ns:=$(arg sim_ns) --inorder" />                
             <param name="urdf" value="$(find wolfgang_description)/urdf/wolfgang_basler.urdf.xacro" />
         </group>
         <param name="robot_description_semantic" textfile="$(find wolfgang_moveit_config)/config/wolfgang.srdf" />
