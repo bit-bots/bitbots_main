@@ -72,16 +72,16 @@ class HeadCapsule:
     #####################
 
 
-    def _lineAngle(self, line,line_count, min_angle,max_angle):
+    def _lineAngle(self, line, line_count, min_angle, max_angle):
         """
         Converts a scanline number to an tilt angle
         """
         delta = abs(min_angle - max_angle)
-        steps = delta/(line_count - 1)
-        value = min_angle + steps*line
+        steps = delta / (line_count - 1)
+        value = steps * line + min_angle
         return value
 
-    def _calculateHorizontalAngle(self, is_right, angle_right,  angle_left):
+    def _calculateHorizontalAngle(self, is_right, angle_right, angle_left):
         """
         The right/left position to an pan angle
         """
@@ -95,10 +95,10 @@ class HeadCapsule:
            return [] 
         steps += 1 
         delta = abs(min_pan - max_pan) 
-        step_size = delta/float(steps) 
+        step_size = delta / float(steps) 
         output_points = list() 
         for i in range(1, steps): 
-            value = int(min_pan + i * step_size) 
+            value = int(i * step_size + min_pan) 
             point = (value, tilt)     
             output_points.append(point) 
         return output_points 
@@ -110,7 +110,7 @@ class HeadCapsule:
         :param maxHorizontalAngleRight: maximum look right angle
         :param maxVerticalAngleUp: maximum upwards angle
         :param maxVerticalAngleDown: maximum downwards angle
-        :param interpolation_steps: number of step for each line 
+        :param interpolation_steps: number of interpolation steps for each line 
         :return: List of angles (Pan, Tilt)
         """
         keyframes = []
