@@ -312,6 +312,7 @@ if __name__ == '__main__':
                 cd {workspace};
                 {clean_option}
                 if [[ -f devel/setup.zsh ]]; then
+                source /opt/ros/*/setup.zsh;
                 source devel/setup.zsh;
                 catkin build --force-color -j {jobs} {package} {quiet_option} || exit 1;
                 else;
