@@ -12,4 +12,4 @@ $HeadModeDecision
     LOOK_FORWARD --> @LookDirection + direction:FORWARD
     LOOK_UP --> @LookDirection + direction:UP
     DONT_MOVE --> @Wait + time:1
-    RECORD_MODE_VC --> @VisualKompassRecord
+    RECORD_VISUAL_COMPASS --> @VisualKompassRecord
