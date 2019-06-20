@@ -39,7 +39,7 @@ class HeadCapsule:
         :param tilt_position: tilt in radians
         :param pan_speed:
         :param tilt_speed:
-        :param no_clip:
+        :param clip: clip the motor values at the maximum value. This should almost always be true.
         :return:
         """
         rospy.logdebug("target pan/tilt: {}/{}".format(pan_position, tilt_position))
