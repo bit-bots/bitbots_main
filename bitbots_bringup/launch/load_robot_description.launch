@@ -22,7 +22,7 @@
 
 
     <group if="$(arg wolfgang)">
-        <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/wolfgang.urdf.xacro use_fake_walk:=$(arg use_fake_walk) sim_ns:=$(arg sim_ns) --inorder" />                
+        <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/wolfgang_basler.urdf.xacro use_fake_walk:=$(arg use_fake_walk) sim_ns:=$(arg sim_ns) --inorder" />                
         <group unless="$(arg basler)">
             <param name="urdf" value="$(find wolfgang_description)/urdf/wolfgang_logitech.urdf.xacro" />
         </group>
