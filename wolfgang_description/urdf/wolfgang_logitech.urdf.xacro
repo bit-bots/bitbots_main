@@ -825,7 +825,7 @@
     </joint>
     
     <joint name="head_to_camera" type="fixed">
-        <origin xyz="-0.00443 0 0.11475" rpy="0 0 0" />
+        <origin xyz="0.02 0 0.1115" rpy="0 0 0" />
         <parent link="head" />
         <child link="camera" />
         <axis xyz="0 0 0" />
@@ -1120,7 +1120,6 @@
     </gazebo>
 
   <!-- camera sensor -->
-  <!-- TODO basler sensor-->
   <gazebo reference="camera">
         <sensor name='camera' type='camera'>
           <pose>-0.050000 -0.010000 0.000000 -1.5708 0.000000 -3.141592</pose>
@@ -1194,4 +1193,3 @@
     </gazebo>
     </xacro:if>
 </robot>
-
