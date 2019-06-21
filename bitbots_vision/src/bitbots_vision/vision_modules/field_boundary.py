@@ -633,10 +633,10 @@ class FieldBoundaryDetector:
         :param offset: offset of pixels to still be accepted as under the field_boundary. Default is 0.
         :return a boolean if point is under field_boundary:
         """
-        if not 0 <= point[0] < len(self.get_full_field_boundary()):
+        if not 0 <= point[0] < len(self.get_full_convex_field_boundary()):
             rospy.logwarn('point_under_field_boundary got called with an out of bounds field_boundary point')
             return False
-        return point[1] + offset > self.get_full_field_boundary()[point[0]]
+        return point[1] + offset > self.get_full_convex_field_boundary()[point[0]]
 
     def get_upper_bound(self, y_offset=0):
         # type: () -> int
