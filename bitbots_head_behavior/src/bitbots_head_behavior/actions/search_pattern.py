@@ -17,11 +17,14 @@ class SearchPattern(AbstractActionElement):
         self.index = 0
         self.pan_speed = self.blackboard.config['search_pattern_pan_speed']
         self.tilt_speed = self.blackboard.config['search_pattern_tilt_speed']
+
+        # Generate a search pattern with the min/max values from the config. The min/max statements are used to ensure that the values aren't switched in the config. 
         self.pattern = self.blackboard.head_capsule.generate_pattern(self.blackboard.config['search_pattern_scan_lines'],
                                                                     max(self.blackboard.config['search_pattern_pan_max']),
                                                                     min(self.blackboard.config['search_pattern_pan_max']),
                                                                     max(self.blackboard.config['search_pattern_tilt_max']),
                                                                     min(self.blackboard.config['search_pattern_tilt_max']))
+        
         self.threshold = self.blackboard.config['position_reached_threshold']
 
     def perform(self, reevaluate=False):

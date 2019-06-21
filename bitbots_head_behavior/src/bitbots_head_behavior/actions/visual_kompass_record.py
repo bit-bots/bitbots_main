@@ -19,6 +19,8 @@ class VisualCompassRecord(AbstractActionElement):
         self.pan_speed = 1.0
         self.tilt_speed = 1.0
         self.interpolation_steps = 4
+
+        # Generate a scan pattern for the left side, with the min/max values from the config. The min/max statements are used to ensure that the values aren't switched in the config. 
         self.pattern_left = self.blackboard.head_capsule.generate_pattern(  self.blackboard.config['record_pattern_scan_lines'],
                                                                             max(self.blackboard.config['record_pattern_pan_max_left']),
                                                                             min(self.blackboard.config['record_pattern_pan_max_left']),
@@ -26,6 +28,7 @@ class VisualCompassRecord(AbstractActionElement):
                                                                             min(self.blackboard.config['record_pattern_tilt_max']),
                                                                             interpolation_steps=self.interpolation_steps)
 
+        # Generate a scan pattern for the right side, with the min/max values from the config. The min/max statements are used to ensure that the values aren't switched in the config. 
         self.pattern_right = self.blackboard.head_capsule.generate_pattern(  self.blackboard.config['record_pattern_scan_lines'],
                                                                             max(self.blackboard.config['record_pattern_pan_max_right']),
                                                                             min(self.blackboard.config['record_pattern_pan_max_right']),
@@ -33,7 +36,7 @@ class VisualCompassRecord(AbstractActionElement):
                                                                             min(self.blackboard.config['record_pattern_tilt_max']),
                                                                             interpolation_steps=self.interpolation_steps)
 
-        # Append the two patterns and only take the first half of each
+        # Append the two patterns
         self.pattern = self.pattern_left + self.pattern_right
         self.threshold = self.blackboard.config['position_reached_threshold']
 

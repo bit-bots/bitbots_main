@@ -90,7 +90,10 @@ class HeadCapsule:
         else: 
             return angle_left
 
-    def _interpolatedSteps(self, steps, tilt, min_pan, max_pan): 
+    def _interpolatedSteps(self, steps, tilt, min_pan, max_pan):
+        """
+        Splits a scanline in a number of dedicated steps
+        """
         if steps == 0: 
            return [] 
         steps += 1 
