@@ -1,10 +1,10 @@
 <launch>
-    <arg name="sim" default="false" />
-    <arg name="camera" default="true" />
-    <arg name="basler" default="true" />
-    <arg name="dummyball" default="false" />
-    <arg name="debug" default="false" />
-    <arg name="use_game_settings" default="false" />
+    <arg name="sim" default="false" doc="activates simulation time and switches to simulation color settings" />
+    <arg name="camera" default="true" doc="launches an image provider to get camera images" />
+    <arg name="basler" default="true" doc="launches the basler camera driver instead of the wolves image provider" />
+    <arg name="dummyball" default="false" doc="does not start the ball detection to save resouces" />
+    <arg name="debug" default="false" doc="activates publishing of several debug images" />
+    <arg name="use_game_settings" default="false" doc="loads additional game settings" />
 
     <!-- start vision for wolfgang (fcnn)-->
     <group unless="$(arg dummyball)">
