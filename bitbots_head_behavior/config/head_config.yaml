@@ -7,12 +7,13 @@ behavior:
     defaults:
       head_mode: 0    # Ball mode
 
+    # TODO maybe keep this instead of the generated lines
     # Search pattern for penalty
-    search_pattern_penalty:
-      - [0, -15]
-      - [0, -30]
-      - [30, -7]
-      - [-30, -7]
+    #search_pattern_penalty:
+    #  - [0, -15]
+    #  - [0, -30]
+    #  - [30, -7]
+    #  - [-30, -7]
 
     # Search pattern for ball
     search_pattern:
@@ -31,8 +32,8 @@ behavior:
     search_pattern_penalty:
         tilt_speed: 1
         pan_speed: 2
-        pan_max: [-57, 57]
-        tilt_max: [-7, -57]
+        pan_max: [-30, 30]
+        tilt_max: [-7, -30]
         scan_lines: 2
 
     # Values for the visual compass record pattern
