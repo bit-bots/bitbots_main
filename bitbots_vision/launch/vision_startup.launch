@@ -13,6 +13,9 @@
             <param name="vision_ball_classifier" value="fcnn" />
             <param name="vision_use_sim_color" value="$(arg sim)" />
             <param name="vision_publish_debug_image" value="$(arg debug)" />
+            <param name="vision_publish_field_mask_image" value="$(arg debug)" />
+            <param name="dynamic_color_space_publish_field_mask_image" value="$(arg debug)" />
+            <!-- also add fcnn handler debug image parameter when available -->
         </node>
     </group>
 
@@ -23,6 +26,9 @@
             <param name="vision_ball_classifier" value="dummy" />
             <param name="vision_use_sim_color" value="$(arg sim)" />
             <param name="vision_publish_debug_image" value="$(arg debug)" />
+            <param name="vision_publish_field_mask_image" value="$(arg debug)" />
+            <param name="dynamic_color_space_publish_field_mask_image" value="$(arg debug)" />
+            <!-- also add fcnn handler debug image parameter when available -->
         </node>
     </group>
 
