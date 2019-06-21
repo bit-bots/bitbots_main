@@ -22,7 +22,7 @@ behavior:
         pan_speed: 0.5
 
         # Max values for the search pattern
-        pan_max: [57, -50]
+        pan_max: [63, -63]
         tilt_max: [0, -70]
         
         # Number of scan lines for the search pattern
