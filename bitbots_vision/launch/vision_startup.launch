@@ -1,36 +1,38 @@
 <launch>
-    <arg name="sim" default="false"/>
-    <arg name="dummyball" default="false"/>
-    <arg name="debug" default="false"/>
-    <arg name="use_game_settings" default="false"/>
+    <arg name="sim" default="false" />
+    <arg name="dummyball" default="false" />
+    <arg name="debug" default="false" />
+    <arg name="use_game_settings" default="false" />
     <arg name="basler" default="true" />
 
     <!-- start vision for wolfgang (fcnn)-->
     <group unless="$(arg dummyball)">
         <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
-            <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
+            <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml" />
             <param name="vision_ball_classifier" value="fcnn" />
-            <param name="vision_publish_debug_image" value="$(arg debug)"/>
-            <param name="vision_use_sim_color" value="$(arg sim)"/>
+            <param name="vision_use_sim_color" value="$(arg sim)" />
+            <param name="vision_publish_debug_image" value="$(arg debug)" />
         </node>
     </group>
 
     <!-- start vision without balldetection-->
     <group if="$(arg dummyball)">
         <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
-            <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml"/>
-            <param name="vision_publish_debug_image" value="$(arg debug)"/>
+            <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml" />
             <param name="vision_ball_classifier" value="dummy" />
-            <param name="vision_use_sim_color" value="$(arg sim)"/>
+            <param name="vision_use_sim_color" value="$(arg sim)" />
+            <param name="vision_publish_debug_image" value="$(arg debug)" />
         </node>
     </group>
 
+    <!-- load game settings -->
     <group if="$(arg use_game_settings)">
         <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
     </group>
 
     <!-- start dynamic-color-space node -->
-    <node pkg="bitbots_vision" type="dynamic_color_space.py" name="bitbots_dynamic_color_space" output="screen"></node>
+    <node pkg="bitbots_vision" type="dynamic_color_space.py" name="bitbots_dynamic_color_space" output="screen">
+    </node>
 
     <!-- start the camera only when necessary -->
     <group unless="$(arg sim)">
@@ -38,9 +40,9 @@
         <include if="$(arg basler)" file="$(find bitbots_bringup)/launch/basler_camera.launch" />
     </group>
 
-    <!-- remap stuff to fit the robot -->
+    <!-- set use simulation time -->
     <group if="$(arg sim)">
-        <param name="use_sim_time" value="true"/>
+        <param name="use_sim_time" value="true" />
     </group>
 
 </launch>
