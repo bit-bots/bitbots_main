@@ -8,7 +8,7 @@
 # other values are invalid
 team_color: 2
 
-# the initial pose of the robot
+# the initial pose of the robot in the field
 initial_robot_x: 0
 initial_robot_y: 0
 
@@ -16,49 +16,81 @@ initial_robot_y: 0
 field_height: 9
 field_width: 6
 
-#############
-# ROS-Stuff #
-#############
+#######
+# ROS #
+#######
 
+# The topic in which the ball is published by the transformer
 ball_topic: '/pixels_relative'
 
+# The topic in which the obstacles (including team mates and opponents) are
+# published by the transformer
 obstacles_topic: '/obstacles_relative'
 
+# The topic in which the teamData message is published by the teamComm
 team_data_topic: '/team_data'
 
+
+# The topic in which the representation of the local world model is published
+# as a Model message
 local_model_topic: '/local_world_model'
 
+# The topic in which the representation of the global world model is published
+# as a Model message
 global_model_topic: '/global_world_model'
 
+# The topic in which the representation of the local world model is published
+# as a Marker message (classes separated by namespace)
 local_particles_topic: '/local_particles'
 
+# The topic in which the representation of the global world model is published
+# as a Marker message (classes separated by namespace)
 global_particles_topic: '/global_particles'
 
+# Name of the service which resets the filters
 reset_filters_service_name: 'WorldModel/reset_filters'
 
+# Frame in which local measurements are published
 local_publishing_frame: '/base_footprint'
 
+# Frame in which global measurements are published
 global_publishing_frame: '/map'
 
+# Frequency of the whole filter (and thus, the publishing of results) in Hz
 publishing_frequency: 10
 
 #################
 # Visualization #
 #################
 
+# Activate a debug output in form of Marker messages representing the
+# current state
 debug_visualization: true
+
+# Activate a debug output in form of Marker messages representing the
+# current state rendered as GMM. This requires high computational effort!
 local_ball_gmm_visualization: false
-local_mate_gmm_visualization: true
+local_mate_gmm_visualization: false
 local_opponent_gmm_visualization: false
 local_obstacle_gmm_visualization: false
 global_ball_gmm_visualization: false
-global_mate_gmm_visualization: true
+global_mate_gmm_visualization: false
 global_opponent_gmm_visualization: false
 
-ball_marker_color: 2  # yellow
-mate_marker_color: 5  # green
-opponent_marker_color: 4  # red
-obstacle_marker_color: 3 # blue
+# Colors of markers representing classes in the debug visualization output
+# 0: White
+# 1: Black
+# 2: Yellow
+# 3: Blue
+# 4: Red
+# 5: Green
+# 6: Orange
+# 7: Violet
+
+ball_marker_color: 2  # Yellow
+mate_marker_color: 5  # Green
+opponent_marker_color: 4  # Red
+obstacle_marker_color: 3 # Blue
 
 ####################
 # Particle Filters #
@@ -67,34 +99,57 @@ obstacle_marker_color: 3 # blue
 # Local Filters
 # -------------
 
+# Activate the local filtering layer (otherwise, the teamData message is the
+# only input of the global layer)
 local_filter_active: true
 
-local_ball_particle_number: 2000
+# Filter specific settings for the local ball filter
+local_ball_particle_number: 500  # Number of particles in the filter
+# Deviation of the Gaussian, based on which the particles are diffused in every
+# filtering step.
 local_ball_diffusion_x_std_dev: 1
 local_ball_diffusion_y_std_dev: 1
+# Multiplicator of the calculated diffusion based on a Gaussian
 local_ball_diffusion_multiplicator: 0.1
+# Minimal weight of a particle. For particles with a weight lower than this, the
+# value is set to the Minimum
 local_ball_min_weight: 0.001
+# Ratio of the particles resampling randomly (in the field) in every filter step
 local_ball_explorer_rate: .2
+# Highest distance allowed between robot and sampled particle
 local_ball_max_distance: 18
+# Number of components in the output GMM. This is not dynamic.
 local_ball_gmm_components: 1
+# Minimal improvement of an EM-step to continue with another iteration
 local_ball_gmm_delta: 0.1
-local_ball_gmm_iterations: 10
+# Maximal number of iterations in the EM-Algorithm to fit
+local_ball_gmm_iterations: 50
 
-local_mate_particle_number: 2000
+# Filter specific settings for the local mate filter
+# The settings affect the same aspects as in the local ball filter if not
+# specified otherwise.
+local_mate_particle_number: 500
 local_mate_diffusion_x_std_dev: 1
 local_mate_diffusion_y_std_dev: 1
 local_mate_diffusion_multiplicator: 0.1
 local_mate_min_weight: 0.001
-local_mate_explorer_rate: .2
+local_mate_explorer_rate: 0.0
 local_mate_max_distance: 18
+# Minimal number of components in the resulting GMM
 local_mate_gmm_min_components: 1
+# Maximal number of components in the resulting GMM
 local_mate_gmm_max_components: 5
+# Maximal change of number of components in a single filtering step
 local_mate_gmm_component_count_max_delta: 1
+# Minimal improvement of adding another component to keep it
 local_mate_gmm_component_delta: 1000
 local_mate_gmm_iteration_delta: 0.01
-local_mate_gmm_iterations: 10
+local_mate_gmm_iterations: 50
 
-local_opponent_particle_number: 2000
+# Filter specific settings for the local opponent filter
+# The settings affect the same aspects as in the local ball/mate filter if not
+# specified otherwise.
+local_opponent_particle_number: 500
 local_opponent_diffusion_x_std_dev: 1
 local_opponent_diffusion_y_std_dev: 1
 local_opponent_diffusion_multiplicator: 0.1
@@ -106,9 +161,12 @@ local_opponent_gmm_max_components: 5
 local_opponent_gmm_component_count_max_delta: 1
 local_opponent_gmm_component_delta: 1000
 local_opponent_gmm_iteration_delta: 0.01
-local_opponent_gmm_iterations: 10
+local_opponent_gmm_iterations: 50
 
-local_obstacle_particle_number: 2000
+# Filter specific settings for the local obstacle filter
+# The settings affect the same aspects as in the local ball/mate filter if not
+# specified otherwise.
+local_obstacle_particle_number: 500
 local_obstacle_min_width: 0.1
 local_obstacle_max_width: 2
 local_obstacle_diffusion_x_std_dev: 1
@@ -122,16 +180,21 @@ local_obstacle_gmm_max_components: 5
 local_obstacle_gmm_component_count_max_delta: 1
 local_obstacle_gmm_component_delta: 1000
 local_obstacle_gmm_iteration_delta: 0.01
-local_obstacle_gmm_iterations: 10
+local_obstacle_gmm_iterations: 50
 
 
 # Global Filters
 # -------------
 
+# Activate the global filtering layer
 global_filter_active: true
-use_local_filter_results: true  # for debug reasons
+# use results of the local filtering layer in addition to the teamData message
+use_local_filter_results: true
 
-global_ball_particle_number: 2000
+# Filter specific settings for the global ball filter
+# The settings affect the same aspects as in the local ball filter if not
+# specified otherwise.
+global_ball_particle_number: 200
 global_ball_diffusion_x_std_dev: 1
 global_ball_diffusion_y_std_dev: 1
 global_ball_diffusion_multiplicator: 0.1
@@ -140,9 +203,12 @@ global_ball_explorer_rate: .2
 global_ball_max_distance: 18
 global_ball_gmm_components: 1
 global_ball_gmm_delta: 0.1
-global_ball_gmm_iterations: 10
+global_ball_gmm_iterations: 100
 
-global_mate_particle_number: 2000
+# Filter specific settings for the global mate filter
+# The settings affect the same aspects as in the local ball/mate filter if not
+# specified otherwise.
+global_mate_particle_number: 200
 global_mate_diffusion_x_std_dev: 1
 global_mate_diffusion_y_std_dev: 1
 global_mate_diffusion_multiplicator: 0.1
@@ -154,9 +220,13 @@ global_mate_gmm_max_components: 5
 global_mate_gmm_component_count_max_delta: 1
 global_mate_gmm_component_delta: 1000
 global_mate_gmm_iteration_delta: 0.01
-global_mate_gmm_iterations: 10
+global_mate_gmm_iterations: 100
 
-global_opponent_particle_number: 100
+
+# Filter specific settings for the global opponent filter
+# The settings affect the same aspects as in the local ball/mate filter if not
+# specified otherwise.
+global_opponent_particle_number: 200
 global_opponent_diffusion_x_std_dev: 1
 global_opponent_diffusion_y_std_dev: 1
 global_opponent_diffusion_multiplicator: 0.1
@@ -168,5 +238,5 @@ global_opponent_gmm_max_components: 5
 global_opponent_gmm_component_count_max_delta: 1
 global_opponent_gmm_component_delta: 1000
 global_opponent_gmm_iteration_delta: 0.01
-global_opponent_gmm_iterations: 10
+global_opponent_gmm_iterations: 100
 
