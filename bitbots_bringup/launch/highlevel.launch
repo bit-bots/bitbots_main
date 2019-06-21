@@ -6,6 +6,8 @@
     <arg name="teamcom" default="false"/>
     <arg name="localization" default="false"/>
     <arg name="simple" default="false"/> <!-- whether to use the simple behavior -->
+    <!-- defines camera type -->
+    <arg name="basler" default="true" doc="Defines the robot camera type"/>
 
     <arg name="use_game_settings" default="true"/>
     
@@ -23,6 +25,7 @@
         <include file="$(find bitbots_vision)/launch/vision_startup.launch">
             <arg name="sim" value="$(arg sim)" />
             <arg name="debug" value="true" />
+            <arg name="basler" value="$(arg basler)" />
             <arg name="use_game_settings" value="$(arg use_game_settings)"/>
         </include>
     </group>
