@@ -36,20 +36,22 @@ To start the vision, use
 roslaunch bitbots_vision vision_startup.launch
 ```
 
-```sim:=true``` sets the param ```ùse_sim_time``` true and does not start a image provider(for ROS-bags or simulator)
-```dummyball:=true``` does not start the ball detection to save resouces
-```debug:=true``` publishes a debug-image which can be inspected in the rqt image view
-```use_game_settings:=true``` does load additional game settings
+```sim:=true``` does activate simulation time and switches to simulation color settings
+```camera:=false``` does deactivate all image providers (e.g. for use with rosbags or in simulation)
 ```basler:=false```does start wolves image provider instead of the basler camera driver
+```dummyball:=true``` does not start the ball detection to save resources
+```debug:=true``` does activate publishing of several debug images which can be inspected in the rqt image view
+```use_game_settings:=true``` does load additional game settings
  
 **bitbots_vision**
 - *vision_startup*: starts the vision and a camera image provider
     - Params: 
-        - debug [true/FALSE], 
         - sim [true/FALSE],
+        - camera [TRUE/false],
+        - basler [TRUE/false],
         - dummyball [true/FALSE],
-        - use_game_settings [true/FALSE],
-        - basler [TRUE/false]
+        - debug [true/FALSE],
+        - use_game_settings [true/FALSE]
 
 **bitbots_vision_tools**
 - *bitbots_vision_recordbag*: records a rosbag containing the camera image as image_raw and stores it as /tmp/tmpbag.bag
