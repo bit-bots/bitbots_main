@@ -2,13 +2,14 @@
 $HeadModeDecision
     BALL_MODE --> $BallSeen
         YES --> @TrackBall
-        NO --> @PatternSearch
+        NO --> @SearchPattern
     POST_MODE --> $PostSeen
         YES --> @TrackPost
-        NO --> @PatternSearch + goal:own
+        NO --> @SearchPattern + goal:own
     BALL_GOAL_TRACKING --> @Wait + time:1
-    FIELD_FEATURES --> @PatternSearch
+    FIELD_FEATURES --> @SearchPattern
     LOOK_DOWN --> @LookDirection + direction:DOWN
     LOOK_FORWARD --> @LookDirection + direction:FORWARD
     LOOK_UP --> @LookDirection + direction:UP
     DONT_MOVE --> @Wait + time:1
+    RECORD_VISUAL_COMPASS --> @VisualCompassRecord

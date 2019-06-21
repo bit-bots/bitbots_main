@@ -5,16 +5,26 @@ import rospy
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
-class PatternSearch(AbstractActionElement):
+class SearchPattern(AbstractActionElement):
     """
     Executes the configured search_pattern repeatingly in order to try and and see as much
     space as possible and hopefully see the ball.
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(PatternSearch, self).__init__(blackboard, dsd, parameters)
+        super(SearchPattern, self).__init__(blackboard, dsd, parameters)
+        
         self.index = 0
-        self.pattern = self.blackboard.config['search_pattern']
+        self.pan_speed = self.blackboard.config['search_pattern_pan_speed']
+        self.tilt_speed = self.blackboard.config['search_pattern_tilt_speed']
+
+        # Generate a search pattern with the min/max values from the config. The min/max statements are used to ensure that the values aren't switched in the config. 
+        self.pattern = self.blackboard.head_capsule.generate_pattern(self.blackboard.config['search_pattern_scan_lines'],
+                                                                    max(self.blackboard.config['search_pattern_pan_max']),
+                                                                    min(self.blackboard.config['search_pattern_pan_max']),
+                                                                    max(self.blackboard.config['search_pattern_tilt_max']),
+                                                                    min(self.blackboard.config['search_pattern_tilt_max']))
+        
         self.threshold = self.blackboard.config['position_reached_threshold']
 
     def perform(self, reevaluate=False):
@@ -30,7 +40,7 @@ class PatternSearch(AbstractActionElement):
         head_tilt = head_tilt / 180.0 * math.pi
         rospy.logdebug("Searching at {}, {}".format(head_pan, head_tilt))
 
-        self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt)
+        self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, pan_speed=self.pan_speed, tilt_speed=self.tilt_speed)
 
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
         distance = math.sqrt((current_head_pan - head_pan) ** 2 + (current_head_tilt - head_tilt) ** 2)

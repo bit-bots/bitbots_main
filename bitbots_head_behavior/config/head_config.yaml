@@ -7,16 +7,25 @@ behavior:
     defaults:
       head_mode: 0    # Ball mode
 
-    # Search patterns in degrees, [pan, tilt]
-    search_pattern:
-      - [0, -15]
-      - [0, -65]
-      - [63, -57]
-      - [-63, -57]
-      - [-57, -30]
-      - [57, -30]
-      - [30, -7]
-      - [-30, -7]
+    # Speed search pattern
+    search_pattern_tilt_speed: 2
+    search_pattern_pan_speed: 0.5
+
+    # Max values for the search pattern
+    search_pattern_pan_max: [57, -50]
+    search_pattern_tilt_max: [0, -70]
+    
+    # Number of scan lines for the search pattern
+    search_pattern_scan_lines: 4
+
+    # Values for the visual compass record pattern
+    record_pattern_scan_lines: 2
+    record_pattern_pan_max_left: [90, 20]
+    record_pattern_pan_max_right: [-20, -160]
+    record_pattern_tilt_max: [20, -10]
+
+    # Visual compass ground truth trigger topic
+    visual_compass_trigger_topic: '/visual_compass_ground_truth_trigger'
 
     # These values describe the minimal required delta between current joint states and target joint states in degrees
     # to reduce unnecessary movement due to noise in the detection of the BallRelative.
@@ -33,5 +42,5 @@ behavior:
     position_reached_threshold: 5
 
     # After `ball_lost_time` seconds, the ball is considered lost and will be searched
-    ball_lost_time: 1
+    ball_lost_time: 3
     post_lost_time: 1

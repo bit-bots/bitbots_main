@@ -13,7 +13,7 @@ class HeadModeDecision(AbstractDecisionElement):
     @staticmethod
     def _register():
         return ['BALL_MODE', 'POST_MODE', 'BALL_GOAL_TRACKING', 'FIELD_FEATURES',
-                'NON_FIELD_FEATURES', 'LOOK_DOWN', 'LOOK_UP', 'LOOK_FORWARD', 'DONT_MOVE']
+                'NON_FIELD_FEATURES', 'LOOK_DOWN', 'LOOK_UP', 'LOOK_FORWARD', 'DONT_MOVE', 'RECORD_VISUAL_COMPASS']
 
     def perform(self, reevaluate=False):
         """
@@ -48,6 +48,8 @@ class HeadModeDecision(AbstractDecisionElement):
             return 'LOOK_FORWARD'
         elif head_mode == HeadMode.DONT_MOVE:
             return 'DONT_MOVE'
+        elif head_mode == HeadMode.RECORD_VISUAL_COMPASS:
+            return 'RECORD_VISUAL_COMPASS'
         else:
             rospy.logerr('the set head_mode ({}) is not known'.format(head_mode))
 
