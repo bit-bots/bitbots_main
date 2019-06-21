@@ -1,5 +1,5 @@
 ball_fcnn_debug: false  # only active when true and vision/debug is true, too!
-ball_fcnn_model_path: '/models/fcnn031'
+ball_fcnn_model_path: '/models/fcnn032'
 ball_fcnn_threshold: .6  # minimal value for a candidate to be considered
 ball_fcnn_expand_stepsize: 4
 ball_fcnn_pointcloud_stepsize: 10
@@ -40,7 +40,7 @@ blue_color_detector_upper_values_h: 116
 blue_color_detector_upper_values_s: 255
 blue_color_detector_upper_values_v: 255
 
-field_boundary_finder_search_method: 'dynamic'  # iteration, reversed, binary or dynamic
+field_boundary_finder_search_method: 'iteration'  # iteration, reversed, binary or dynamic
 field_boundary_finder_vertical_steps: 30
 field_boundary_finder_horizontal_steps: 30
 field_boundary_finder_roi_height: 1
