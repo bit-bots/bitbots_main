@@ -3,6 +3,9 @@ $HeadModeDecision
     BALL_MODE --> $BallSeen
         YES --> @TrackBall
         NO --> @SearchPattern
+    BALL_MODE_PENALTY --> $BallSeen
+        YES --> @TrackBall
+        NO --> @SearchPattern
     POST_MODE --> $PostSeen
         YES --> @TrackPost
         NO --> @SearchPattern + goal:own

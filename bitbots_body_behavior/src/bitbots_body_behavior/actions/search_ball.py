@@ -39,10 +39,9 @@ class SearchBallPenalty(AbstractActionElement):
         self.time_last_movement = rospy.Time.now()
 
     def perform(self, reevaluate=False):
-        self.blackboard.blackboard.set_head_duty(HeadMode.BALL_MODE)
+        self.blackboard.blackboard.set_head_duty(HeadMode.BALL_MODE_PENALTY)
         # TODO make parameter value
         if rospy.Time.now() - self.time_last_movement > rospy.Duration(3):
-            # remember that we turned around
             self.time_last_movement = rospy.Time.now()
 
             # goal to go straight

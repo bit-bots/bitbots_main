@@ -13,7 +13,8 @@ class HeadModeDecision(AbstractDecisionElement):
     @staticmethod
     def _register():
         return ['BALL_MODE', 'POST_MODE', 'BALL_GOAL_TRACKING', 'FIELD_FEATURES',
-                'NON_FIELD_FEATURES', 'LOOK_DOWN', 'LOOK_UP', 'LOOK_FORWARD', 'DONT_MOVE', 'RECORD_VISUAL_COMPASS']
+                'NON_FIELD_FEATURES', 'LOOK_DOWN', 'LOOK_UP', 'LOOK_FORWARD',
+                'DONT_MOVE', 'RECORD_VISUAL_COMPASS', 'BALL_MODE_PENALTY']
 
     def perform(self, reevaluate=False):
         """
@@ -32,6 +33,8 @@ class HeadModeDecision(AbstractDecisionElement):
         # map results to all possible values of head_mode
         if head_mode == HeadMode.BALL_MODE:
             return 'BALL_MODE'
+        elif head_mode == HeadMode.BALL_MODE_PENALTY:
+            return 'BALL_MODE_PENALTY'
         elif head_mode == HeadMode.POST_MODE:
             return 'POST_MODE'
         elif head_mode == HeadMode.BALL_GOAL_TRACKING:

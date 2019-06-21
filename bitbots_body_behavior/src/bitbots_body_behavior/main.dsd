@@ -66,9 +66,10 @@ $Localization
 
 #PenaltyBehavior
 $BallSeen
-    YES --> $BallClose
-        YES --> @KickBallVeryHard
-        NO --> $GoalSeen
+    YES --> $BallKickArea
+        RIGHT --> @Stop, @KickBallVeryHard  + foot:right
+        LEFT --> @Stop, @KickBallVeryHard + foot:left
+        FAR --> $GoalSeen
             YES --> @GoToBall + target:detection_goal
             NO --> @GoToBall + target:none
     NO --> @SearchBallPenalty
@@ -103,9 +104,9 @@ $RoleDecider
         Finished --> @Stand
         NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtBall
     penalty --> $GameStateDecider
-        Initial --> @SendStop, @LookAtBall
+        Initial --> @SendStop, @LookAtBallPenalty
         Ready --> #Positioning
         Set --> @Stand
         Playing --> #PenaltyBehavior
         Finished --> @Stand
-        NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtBall
+        NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtBallPenalty
