@@ -62,7 +62,7 @@ vision_ball_candidate_rating_threshold: 0.5
 vision_debug_printer_classes: ''
 
 line_detector_field_boundary_offset: 15
-line_detector_linepoints_range: 200
+line_detector_linepoints_range: 0
 line_detector_blur_kernel_size: 9
 
 obstacle_finder_method: 'convex'  # distance, convex or step
