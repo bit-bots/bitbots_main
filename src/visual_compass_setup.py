@@ -69,14 +69,33 @@ class VisualCompassSetup():
         # Register VisualCompassConfig server for dynamic reconfigure and set callback
         Server(VisualCompassConfig, self.dynamic_reconfigure_callback)
 
-        rospy.sleep(2)
+        rospy.logwarn("------------------------------------------------")
+        rospy.logwarn("||                 WARNING                    ||")
+        rospy.logwarn("||Please remove the LAN cable from the Robot, ||")
+        rospy.logwarn("||after pressing 'YES' you have 10 Seconds    ||")
+        rospy.logwarn("||until the head moves OVER the LAN port!!!   ||")
+        rospy.logwarn("------------------------------------------------\n\n")
 
-        head_mode = HeadMode()
-        head_mode.headMode = 10
-        self.pub_head_mode.publish(head_mode)
-        rospy.loginfo("Head mode has been set!")
+        try:
+            input = raw_input
+        except NameError:
+            pass
+        
+        accept = input("Do you REALLY want to start? (YES/n)")
 
-        rospy.spin()
+        if accept == "YES":
+            rospy.logwarn("REMOVE THE LAN CABLE NOW!!!!!")
+
+            rospy.sleep(10)
+
+            head_mode = HeadMode()
+            head_mode.headMode = 10
+            self.pub_head_mode.publish(head_mode)
+            rospy.loginfo("Head mode has been set!")
+
+            rospy.spin()
+        else:
+            rospy.signal_shutdown("You aborted the process! Shuting down correctly.")
 
     def dynamic_reconfigure_callback(self, config, level):
         # type: (dict, TODO) -> None
