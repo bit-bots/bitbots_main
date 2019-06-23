@@ -133,11 +133,11 @@ class VisualCompassSetup():
             # TODO: check timestamps
 
             orientation = self.tf_buffer.lookup_transform(self.base_frame, self.camera_frame, self.image_msg.header.stamp, timeout=rospy.Duration(0.5)).transform.rotation
-            yaw_angle = euler_from_quaternion((
+            yaw_angle = (euler_from_quaternion((
                 orientation.x, 
                 orientation.y, 
                 orientation.z, 
-                orientation.w))[2] + 0.5 * math.pi
+                orientation.w))[2] + 0.5 * math.pi) % (2 * math.pi)
 
             image = self.bridge.imgmsg_to_cv2(self.image_msg, 'bgr8')
 
