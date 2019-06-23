@@ -3,6 +3,7 @@ include:
     - basler_drivers
     - bitbots_vision:
         - bitbots_vision
+        - white_balancer
         - python_extensions
     - bitbots_behavior:
         - bitbots_blackboard
