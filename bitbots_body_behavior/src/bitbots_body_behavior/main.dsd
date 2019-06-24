@@ -57,9 +57,9 @@ $Localization
 $Localization
     YES --> $BallSeen
         YES --> $BallInDefensiveArea
-            YES --> #KickBall
+            YES --> #GoAndKickBallAway
             NO -->  $BallClose
-                YES --> #KickBall
+                YES --> #GoAndKickBallAway
                 NO --> @GoToDefensePosition
         NO --> @SearchBall
     NO --> #NoLocalizationPlayerBehavior
