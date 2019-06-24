@@ -102,10 +102,10 @@ def synchronize(sync_includes_file, host, workspace, package=None):
         print_err('Synchronizing the workspace failed!')
         sys.exit(sync_result.returncode)
 
-    if host[1].startswith('jetson') or host[1].startswith('nuc'):  # workaround for vision on nuc
+    if host[1].startswith('jetson'):
         call = ['ssh',
                 'bitbots@{}'.format(host[0]),
-                'sed -i "/camera_name/s/ROBOT/{}/" ~/wolfgang_ws/src/wolves_image_provider/config/camera_settings.yaml'.format(robot_name_name)]
+                'test -d ~/wolfgang_ws/src/wolves_image_provider && sed -i "/camera_name/s/ROBOT/{}/" ~/wolfgang_ws/src/wolves_image_provider/config/camera_settings.yaml || exit 0'.format(robot_name_name)]
         camera_result = subprocess.run(call)
         if camera_result.returncode != 0:
             print_err('Configuring the camera calibration failed!')
@@ -285,7 +285,7 @@ if __name__ == '__main__':
             if host[1].startswith('odroid') or host[1].startswith('nuc'):
                 add_game_controller_config(host[1][-1:], workspace, host)
 
-            if host[1].startswith('jetson') or host[1].startswith('nuc'):  # workaround for vision on nuc
+            if host[1].startswith('jetson'):
                 vision_extension_result = subprocess.run([
                     'ssh',
                     'bitbots@{}'.format(host[0]),
