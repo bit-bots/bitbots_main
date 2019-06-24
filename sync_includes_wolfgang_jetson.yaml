@@ -15,6 +15,7 @@ include:
     - lib:
         - vision_opencv
 exclude:
+    - ".git"
     - "*.bag"
     - "*.pyc"
     - "cmake-build-debug"
