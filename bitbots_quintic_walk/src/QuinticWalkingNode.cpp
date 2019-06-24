@@ -17,7 +17,7 @@ QuinticWalkingNode::QuinticWalkingNode() :
     // read config
     _nh.param<double>("engineFrequency", _engineFrequency, 100.0);
     _nh.param<bool>("/simulation_active", _simulation_active, false);
-    _nh.param<bool>("publishOdomTF", _publishOdomTF, false);
+    _nh.param<bool>("/walking/publishOdomTF", _publishOdomTF, false);
 
     /* init publisher and subscriber */
     _command_msg = bitbots_msgs::JointCommand();
