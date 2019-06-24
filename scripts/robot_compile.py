@@ -215,6 +215,8 @@ if __name__ == '__main__':
     # Convert names to numbers
     names = {'amy': 1,
              'rory': 2,
+             'jack': 3,
+             'donna': 4,
              'davros': 5}
     if hostname in names.keys():
         number = names[hostname]
