@@ -182,7 +182,7 @@ class HardwareControlManager:
 
     def main_loop(self):
         """  """
-        rate = rospy.Rate(20)
+        rate = rospy.Rate(200)
 
         while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
             self.blackboard.current_time = rospy.Time.now()
