@@ -16,6 +16,7 @@ include:
         - bitbots_dynamic_kick
         - bitbots_hcm
         - bitbots_ik
+        - bitbots_odometry
         - bitbots_quintic_walk
         - bitbots_splines
     - bitbots_msgs
