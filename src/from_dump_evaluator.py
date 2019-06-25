@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import math
 import os
 import pickle
@@ -15,7 +17,7 @@ class Evaluator(object):
         self.confidence_threshold = confidence_threshold
         self.correctness_threshold = correctness_threshold
 
-        self.dimensions = (10, 7)
+        self.dimensions = (7, 10)
         dirname = os.path.dirname(__file__)
 
         relative_config_path = "../config/config.yaml"
@@ -33,7 +35,7 @@ class Evaluator(object):
 
         self.visualization_path = os.path.join(dirname, config["visualization"])
         
-        self.loader = DataLoader(self.image_path, self.dimensions, 16)
+        self.loader = DataLoader(self.image_path, (10, 7), 16)
 
     def evaluate_all_configurations(self, confidence_thresholds, plot):
         config_confusion_matrices = []
@@ -67,7 +69,7 @@ class Evaluator(object):
         for i in range(16):
             angle = math.pi / 8.0 * i
 
-            plt.figure(i)
+            plt.figure(i, dpi=300)
             confusion_matrix = self.evaluate_direction(angle, config["results"], confidence_threshold, plot)
             total_confusion_matrix = np.add(total_confusion_matrix, confusion_matrix)
 
@@ -76,7 +78,7 @@ class Evaluator(object):
             if not os.path.exists(path):
                 os.makedirs(path)
             file_name = "" + str(i) + ".png"
-            plt.savefig(os.path.join(path, file_name))
+            plt.savefig(os.path.join(path, file_name), transparent=True)
         print("Total False Positives: " + str(total_confusion_matrix[0][1]))
         return total_confusion_matrix
 
@@ -100,9 +102,9 @@ class Evaluator(object):
                 angle_diff = math.pi * 2 - angle_diff
             correctness = 1 - (angle_diff / math.pi)
 
-            x = result["x"]
-            y = 6 - result["y"]
-            z = np.exp(1j*angle)
+            y = 9 - result["x"]
+            x = 6 - result["y"]
+            z = np.exp(1j * (angle + math.pi / 2.))
             U[x, y] = np.real(z) * confidence
             V[x, y] = np.imag(z) * confidence
             C[x, y] = correctness
@@ -127,24 +129,32 @@ class Evaluator(object):
 
     def plot(self, U, V, C, truth_angle, false_positives):
         # https://matplotlib.org/users/gridspec.html
-        gs = gridspec.GridSpec(3, 2, width_ratios=[1, 1], height_ratios=[20, 8, 1])
-
+        gs = gridspec.GridSpec(2, 2, width_ratios=[10, 1], height_ratios=[1, 8])
         ax_quiver = plt.subplot(gs[:, 0])
-        ax_image = plt.subplot(gs[0, 1])
-        ax_truth = plt.subplot(gs[1, 1], xlim=(-4, 4), ylim=(-.5, .5), aspect="equal")
-        ax_colorbar = plt.subplot(gs[2, 1])
+        # ax_image = plt.subplot(gs[0, 0])
+        ax_truth = plt.subplot(gs[0, 1], xlim=(-.5, .5), ylim=(-.5, .5), aspect="equal")
+        ax_colorbar = plt.subplot(gs[1, 1])
 
         cmap = colors.LinearSegmentedColormap.from_list("", ["red", "yellow", "green"])
         normalizer = colors.Normalize(0, 1)
 
         quiver = ax_quiver.quiver(U, V, C, pivot='mid', scale_units='xy', scale=1, cmap=cmap, norm=normalizer)
         ax_quiver.axis('equal')
+        ax_quiver.set_xlim(-.5, 9.5)
+        ax_quiver.set_ylim(-.5, 6.5)
+
+        ax_quiver.set_xticks(range(0, 10, 3))
+        ax_quiver.set_xticklabels(map(lambda x: str(x) + "m", range(0, 10, 3)))
+        ax_quiver.xaxis.tick_top()
+
+        ax_quiver.set_yticks(range(0, 7, 2))
+        ax_quiver.set_yticklabels(map(lambda x: str(x) + "m", range(0, 7, 2)))
         # ax_quiver.axis('off')
         for fp in false_positives:
             circle = plt.Circle(fp, .5, fill=False)
             ax_quiver.add_artist(circle)
 
-        z_truth = np.exp(1j*truth_angle)
+        z_truth = np.exp(1j * (truth_angle + math.radians(90)))
         ax_truth.arrow(
             -np.real(z_truth) / 2.,
             -np.imag(z_truth) / 2.,
@@ -154,20 +164,28 @@ class Evaluator(object):
             head_width=0.1,
             head_length=0.2)
         ax_truth.axis('off')
-        plt.colorbar(quiver, cax=ax_colorbar, use_gridspec=True, orientation='horizontal', aspect=50)
 
-        ax_image.imshow(self.loader.get_image(4, 3, truth_angle))
-        ax_image.axis('off')
+        cb = plt.colorbar(quiver, cax=ax_colorbar, use_gridspec=True, orientation='vertical', aspect=50)
+        yrange = np.arange(0, 1.1, .25)
+        cb.set_ticks(yrange)
+        cb.set_ticklabels(map(lambda x: str((1-x)*180) + "°", yrange))
+
+        # ax_image.imshow(self.loader.get_image(4, 3, truth_angle))
+        # ax_image.set_title("Hallo\nDies ist ein Test.\nWie viel passt rein?")
+        # ax_image.axis('off')
+        # ax_colorbar.set_title("Correctness Colorbar")
 
 
-if __name__ == "__main__":
-    evaluator = Evaluator(.3, .5)
-
-    # configuration = evaluator.filter_configuration("multiple", "sift", 16)[0]
-    # evaluator.evaluate_configuration(configuration)
-
-    config_confusion_matrices = evaluator.evaluate_all_configurations([.3, .4, .5], False)
+def safe_to_file(config_confusion_matrices):
     file_path = "confusion_matrices.pickle"
 
     with open(file_path, 'wb') as stream:
         pickle.dump(config_confusion_matrices, stream)
+
+if __name__ == "__main__":
+    evaluator = Evaluator(.5, .75)
+
+    configuration = evaluator.filter_configuration("multiple", "sift", 16)[0]
+    evaluator.evaluate_configuration(configuration, .5, True)
+
+    # safe_to_file(evaluator.evaluate_all_configurations([.3, .4, .5], True))
