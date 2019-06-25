@@ -7,9 +7,16 @@ import cv2
 class AngleTagger:
 
     def __init__(self, rotation_matrix):
+        #TODO
+        #Logitech
+        """
         rotation_matrix = np.array([[475.225100, 0.000000, 322.862838],
                         [0.000000, 478.700781, 174.340100],
-                        [0.000000, 0.000000, 1.000000]])
+                        [0.000000, 0.000000, 1.000000]])"""
+        #Basler
+        rotation_matrix = np.array([[1058.439188, 0.000000, 310.612349], 
+                                    [0.000000, 1092.738996, 229.659998], 
+                                    [0.000000, 0.000000, 1.000000]])
         self.inv_rot_mat = np.linalg.inv(rotation_matrix)
 
     def tag_keypoints(self, offset, keypoints):

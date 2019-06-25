@@ -157,7 +157,8 @@ class VisualCompassStartup():
             descriptors = features['descriptors']
             meta = features['meta']
 
-            self.check_meta_information(meta)
+            # TODO broken
+            # self.check_meta_information(meta)
 
             # convert keypoint values to cv2 Keypoints
             keypoints = [KeyPoint(kp[0], kp[1], kp[2], kp[3], kp[4], kp[5], kp[6]) for kp in keypoint_values]
