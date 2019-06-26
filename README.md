@@ -33,7 +33,7 @@ To start the vision, use
 roslaunch bitbots_vision vision_startup.launch
 ```
 
-```sim:=true``` does activate simulation time and switches to simulation color settings
+```sim:=true``` does activate simulation time, switch to simulation color settings and deactivate launching of an image provider
 ```camera:=false``` does deactivate all image providers (e.g. for use with rosbags or in simulation)
 ```basler:=false```does start wolves image provider instead of the basler camera driver
 ```dummyball:=true``` does not start the ball detection to save resources
