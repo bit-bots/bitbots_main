@@ -32,6 +32,6 @@
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
 
-    <include file="$(find bitbots_odometry)/launch/odometry_fuser.launch" />
+    <include unless="$(arg sim)" file="$(find bitbots_odometry)/launch/odometry_fuser.launch" />
 
 </launch>
