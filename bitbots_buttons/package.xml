@@ -23,7 +23,7 @@
   <export>
     <bitbots_documentation>
       <language>python3</language>
-      <status>broken</status>
+      <status>tested_robot</status>
     </bitbots_documentation>
   </export>
 </package>
