@@ -1,6 +1,6 @@
 <launch>
-    <arg name="sim" default="false" doc="true: activates simulation time and switches to simulation color settings" />
-    <arg name="camera" default="true" doc="true: launches an image provider to get images from a camera" />
+    <arg name="sim" default="false" doc="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
+    <arg name="camera" default="true" doc="true: launches an image provider to get images from a camera (unless sim:=true)" />
     <arg name="basler" default="true" doc="true: launches the basler camera driver instead of the wolves image provider" />
     <arg name="dummyball" default="false" doc="true: does not start the ball detection to save resources" />
     <arg name="debug" default="false" doc="true: activates publishing of several debug images" />
@@ -43,8 +43,10 @@
 
     <!-- start the camera only when necessary -->
     <group if="$(arg camera)">
-        <include unless="$(arg basler)" file="$(find wolves_image_provider)/launch/image_provider.launch" />
-        <include if="$(arg basler)" file="$(find bitbots_bringup)/launch/basler_camera.launch" />
+        <group unless="$(arg sim)">
+            <include unless="$(arg basler)" file="$(find wolves_image_provider)/launch/image_provider.launch" />
+            <include if="$(arg basler)" file="$(find bitbots_bringup)/launch/basler_camera.launch" />
+        </group>
     </group>
 
     <!-- set use simulation time -->
