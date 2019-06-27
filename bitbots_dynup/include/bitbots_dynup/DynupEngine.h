@@ -14,22 +14,13 @@ typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajecto
 
 class DynUpParams {
 public:
-    double foot_rise;
-    double foot_distance;
-    double kick_windup_distance;
+    double leg_min_length;
+    double arm_max_length;
+    double time_foot_close;
+    double time_hands_front;
+    double time_foot_ground;
+    double time_torso_45;
 
-    double move_trunk_time = 1;
-    double raise_foot_time = 1;
-    double move_to_ball_time = 1;
-    double kick_time = 1;
-    double move_back_time = 1;
-    double lower_foot_time = 1;
-    double move_trunk_back_time = 1;
-
-    double stabilizing_point_x;
-    double stabilizing_point_y;
-
-    double choose_foot_corridor_width;
 };
 
 /**
@@ -66,7 +57,7 @@ private:
     tf2_ros::TransformListener m_listener;
     geometry_msgs::PoseStamped  get_current_pose(Trajectories spline_container, std::string frame_id);
 
-    void calc_front_splines(const geometry_msgs::Pose &foot_pose);
+    void calc_front_splines();
     void calc_back_splines();
     void calc_squat_splines();
     void init_trajectories();

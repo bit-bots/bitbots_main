@@ -33,7 +33,7 @@ public:
     DynUpNode();
 
     /** Callback for dynamic reconfigure */
-    void reconfigure_callback(bitbots_dynamic_DynUp::DynamicDynUpConfig &config, uint32_t level);
+    void reconfigure_callback(bitbots_dynup::DynUpConfig &config, uint32_t level);
 
     /**
      * Callback that gets executed whenever #m_server receives a new goal.
@@ -46,7 +46,7 @@ private:
     ros::Publisher m_joint_goal_publisher;
     ros::Publisher m_support_foot_publisher;
     ActionServer m_server;
-    DynUpEngine m_engine;
+    DynupEngine m_engine;
     int m_engine_rate;
     tf2_ros::Buffer m_tf_buffer;
     tf2_ros::TransformListener m_listener;

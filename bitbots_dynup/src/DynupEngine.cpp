@@ -41,7 +41,7 @@ geometry_msgs::PoseStamped DynupEngine::get_current_pose(Trajectories spline_con
     return foot_pose;
 }
 
-void DynupEngine::calc_front_splines(const geometry_msgs::Pose &foot_pose){
+void DynupEngine::calc_front_splines(){
     /*
     calculates splines for front up
     */
@@ -53,6 +53,8 @@ void DynupEngine::calc_front_splines(const geometry_msgs::Pose &foot_pose){
     double time_start = 0;
 
     // hand
+    geometry_msgs::Pose hand_pose; //TODO read actual pose
+
     m_hand_trajectories->get("pos_x").addPoint(time_start, hand_pose.position.x);
     m_hand_trajectories->get("pos_y").addPoint(time_start, hand_pose.position.y);
     m_hand_trajectories->get("pos_z").addPoint(time_start, hand_pose.position.z);
@@ -62,11 +64,12 @@ void DynupEngine::calc_front_splines(const geometry_msgs::Pose &foot_pose){
                                   hand_pose.orientation.z, hand_pose.orientation.w);
     double hand_start_r, hand_start_p, hand_start_y;
     tf::Matrix3x3(hand_start_rotation).getRPY(hand_start_r, hand_start_p, hand_start_y);
-    m_hand_trajectories->get("roll").addPoint(time_start, start_r);
-    m_hand_trajectories->get("pitch").addPoint(time_start, start_p);
-    m_hand_trajectories->get("yaw").addPoint(time_start, start_y);
+    m_hand_trajectories->get("roll").addPoint(time_start, hand_start_r);
+    m_hand_trajectories->get("pitch").addPoint(time_start, hand_start_p);
+    m_hand_trajectories->get("yaw").addPoint(time_start, hand_start_y);
 
     // foot
+    geometry_msgs::Pose foot_pose; //TODO read actual pose
     m_foot_trajectories->get("pos_x").addPoint(time_start, foot_pose.position.x);
     m_foot_trajectories->get("pos_y").addPoint(time_start, foot_pose.position.y);
     m_foot_trajectories->get("pos_z").addPoint(time_start, foot_pose.position.z);
@@ -86,7 +89,7 @@ void DynupEngine::calc_front_splines(const geometry_msgs::Pose &foot_pose){
     /*
      * pull legs to body
     */
-    time_foot_close = 0; // TODO
+    double time_foot_close = m_params.time_foot_close; // TODO
     m_foot_trajectories->get("pos_x").addPoint(time_foot_close, 0);
     m_foot_trajectories->get("pos_y").addPoint(time_foot_close, 0);
     m_foot_trajectories->get("pos_z").addPoint(time_foot_close, m_params.leg_min_length);
@@ -98,30 +101,30 @@ void DynupEngine::calc_front_splines(const geometry_msgs::Pose &foot_pose){
     /*
      * hands to the front
      */
-    time_hands_front = 0; //TODO parameter
+    double time_hands_front = m_params.time_hands_front; //TODO parameter
     m_hand_trajectories->get("pos_x").addPoint(time_hands_front, 0);
     m_hand_trajectories->get("pos_y").addPoint(time_hands_front, 0);
     m_hand_trajectories->get("pos_z").addPoint(time_hands_front, m_params.arm_max_length);
     m_hand_trajectories->get("roll").addPoint(time_hands_front, 0);
-    m_hand_trajectories->get("pitch").addPoint(time_hands_front, math.pi);
+    m_hand_trajectories->get("pitch").addPoint(time_hands_front, 3.14); //todo pi
     m_hand_trajectories->get("yaw").addPoint(time_hands_front, 0);
 
     /*
      * Foot under body
      */
-    time_foot_ground = 0; //TODO
+    double time_foot_ground = m_params.time_foot_ground; //TODO
     m_foot_trajectories->get("pos_x").addPoint(time_foot_ground, 0);
     m_foot_trajectories->get("pos_y").addPoint(time_foot_ground, 0);
     m_foot_trajectories->get("pos_z").addPoint(time_foot_ground, m_params.leg_min_length);
     m_foot_trajectories->get("roll").addPoint(time_foot_ground, 0);
-    m_foot_trajectories->get("pitch").addPoint(time_foot_ground, math.pi);
+    m_foot_trajectories->get("pitch").addPoint(time_foot_ground, 3.14); //todo pi
     m_foot_trajectories->get("yaw").addPoint(time_foot_ground, 0);
 
 
     /*
      * Torso 45°
      */
-    time_torso_45 = 0; //TODO
+    double time_torso_45 = m_params.time_torso_45; //TODO
     m_hand_trajectories->get("pos_x").addPoint(time_torso_45, m_params.arm_max_length);
     m_hand_trajectories->get("pos_y").addPoint(time_torso_45, 0);
     m_hand_trajectories->get("pos_z").addPoint(time_torso_45, 0);
@@ -133,7 +136,7 @@ void DynupEngine::calc_front_splines(const geometry_msgs::Pose &foot_pose){
     m_foot_trajectories->get("pos_y").addPoint(time_torso_45, 0);
     m_foot_trajectories->get("pos_z").addPoint(time_torso_45, m_params.leg_min_length);
     m_foot_trajectories->get("roll").addPoint(time_torso_45, 0);
-    m_foot_trajectories->get("pitch").addPoint(time_torso_45, math.pi);
+    m_foot_trajectories->get("pitch").addPoint(time_torso_45, 3.14); //todo pi
     m_foot_trajectories->get("yaw").addPoint(time_torso_45, 0);
 
 }
@@ -208,6 +211,6 @@ int DynupEngine::get_percent_done() const {
     return int(m_time / duration * 100);
 }
 
-void DynupEngine::set_params(KickParams params) {
+void DynupEngine::set_params(DynUpParams params) {
     m_params = params;
 }
