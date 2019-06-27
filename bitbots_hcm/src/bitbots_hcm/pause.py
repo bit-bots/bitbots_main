@@ -24,12 +24,10 @@ class Pause(object):
         self.pause = False
 
         self.manual_penalize_service = rospy.Service("manual_penalize", ManualPenalize, self.manual_update)
-        rospy.Subscriber("gamestate", GameState, self.game_controler_update)
         self.pause_publisher = rospy.Publisher("/pause", Bool, queue_size=10, latch=True)
         self.speak_publisher = rospy.Publisher("/speak", Speak, queue_size=10)
 
         self.talking = rospy.get_param("/pause/talking", True)
-
 
 
     def manual_update(self, req):
@@ -47,13 +45,6 @@ class Pause(object):
         self.set_pause(self.penalty_manual)
         return True
 
-    def game_controler_update(self, msg):
-        # if something changed
-        if self.game_controller_penalty is not msg.penalized:
-            self.game_controller_penalty = msg.penalized
-            if not self.penalty_manual:
-                self.set_pause(self.game_controller_penalty)
-
     def set_pause(self, state):
         self.pause = state
         if state:
@@ -63,6 +54,7 @@ class Pause(object):
         rospy.logwarn(text)
         speak(text, self.speak_publisher, speaking_active=self.talking, priority=Speak.HIGH_PRIORITY)
         self.pause_publisher.publish(Bool(state))
+
 
 if __name__ == "__main__":
     pause = Pause()

@@ -198,8 +198,10 @@ class Fallen(AbstractDecisionElement):
                 return "FALLEN_FRONT"
             if fallen_side == self.blackboard.fall_checker.BACK:
                 return "FALLEN_BACK"
-            if fallen_side == self.blackboard.fall_checker.SIDE:
-                return "FALLEN_SIDE"
+            if fallen_side == self.blackboard.fall_checker.RIGHT:
+                return "FALLEN_RIGHT"
+            if fallen_side == self.blackboard.fall_checker.LEFT:
+                return "FALLEN_LEFT"
         else:
             # robot is not fallen
             return "NOT_FALLEN"

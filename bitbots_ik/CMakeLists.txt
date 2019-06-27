@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   bio_ik
   moveit_core
   moveit_ros_move_group
+  moveit_ros_planning
   moveit_ros_planning_interface
 )
 find_package(Eigen3 REQUIRED)

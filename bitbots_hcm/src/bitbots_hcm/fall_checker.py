@@ -11,7 +11,7 @@ class FallChecker(object):
     def __init__(self):
 
         # will be set by dynamic reconfigure
-        robot_type_name = rospy.get_param("robot_type_name", "wolfgang")
+        robot_type_name = rospy.get_param("robot_type_name", "wolfgang").lower()
 
         # load config values depending on robot type and lode them into param server to set
         # start values for dynamic reconfigure
@@ -108,13 +108,20 @@ class FallChecker(object):
 
         # Decides which side is facing downwards.
         if smooth_accel[0] > 7:
+            rospy.loginfo("FALLEN TO THE FRONT")
             return self.FRONT
 
         if smooth_accel[0] < -7:
+            rospy.loginfo("FALLEN TO THE BACK")
             return self.BACK
 
-        if abs(smooth_accel[1]) > 7:
-            return self.SIDE
+        if smooth_accel[1] < -7:
+            rospy.loginfo("FALLEN TO THE RIGHT")
+            return self.RIGHT
+
+        if smooth_accel[1] > 7:
+            rospy.loginfo("FALLEN TO THE LEFT")
+            return self.LEFT
 
         # If no side is facing downwards, the robot is not fallen yet.
         return None
