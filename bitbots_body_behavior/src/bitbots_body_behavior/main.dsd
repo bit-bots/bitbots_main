@@ -83,30 +83,30 @@ $Localization
 -->BodyBehavior
 $RoleDecider
     goalie --> $GameStateDecider
-        Initial --> @SendStop, @LookAtBall
+        Initial --> @LookAtBall, @StandAndWait
         Ready --> #Positioning
-        Set --> @Stand
+        Set --> @StandAndWait
         Playing --> #GoalieBehavior
-        Finished --> @Stand
-        NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtBall
+        Finished --> @StandAndWait
+        NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     offense --> $GameStateDecider
-        Initial --> @SendStop, @LookAtBall
+        Initial --> @LookAtBall, @StandAndWait
         Ready --> #Positioning
-        Set --> @Stand
+        Set --> @StandAndWait
         Playing --> #OffenseBehavior
-        Finished --> @Stand
-        NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtBall
+        Finished --> @StandAndWait
+        NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     defense --> $GameStateDecider
-        Initial --> @SendStop, @LookAtBall
+        Initial --> @LookAtBall, @StandAndWait
         Ready --> #Positioning
-        Set --> @Stand
+        Set --> @StandAndWait
         Playing --> #DefenseBehavior
-        Finished --> @Stand
-        NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtBall
+        Finished --> @StandAndWait
+        NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     penalty --> $GameStateDecider
-        Initial --> @SendStop, @LookAtBallPenalty
+        Initial --> @LookAtBallPenalty, @StandAndWait
         Ready --> #Positioning
-        Set --> @Stand
+        Set --> @StandAndWait
         Playing --> #PenaltyBehavior
-        Finished --> @Stand
-        NOT_ALLOWED_TO_MOVE --> @Stand, @LookAtBallPenalty
+        Finished --> @StandAndWait
+        NOT_ALLOWED_TO_MOVE --> @LookAtBallPenalty, @StandAndWait
