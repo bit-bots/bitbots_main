@@ -21,7 +21,7 @@ class PathfindingCapsule:
         map_goal = self.transform_goal_to_map(msg)
         if map_goal and self.is_new_goal_far_from_old_goal(map_goal):
             self.goal = map_goal
-            self.pathfinding_pub.publish(self.fix_rotation(msg))
+            self.pathfinding_pub.publish(self.fix_rotation(map_goal))
 
     def is_new_goal_far_from_old_goal(self, new_goal_msg):
         # type: (PoseStamped) -> bool
