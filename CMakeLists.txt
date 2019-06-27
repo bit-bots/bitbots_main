@@ -2,11 +2,17 @@ cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_msgs)
 
 find_package(catkin REQUIRED COMPONENTS
+  actionlib_msgs
   roscpp
   rospy
   message_generation
   std_msgs
   sensor_msgs
+)
+
+add_action_files(
+  DIRECTORY action
+  FILES DynUp.action
 )
 
 add_message_files(
@@ -28,10 +34,11 @@ add_service_files(
 
 generate_messages(
   DEPENDENCIES
+  actionlib_msgs
   std_msgs
   sensor_msgs
 )
 
 catkin_package(
-  CATKIN_DEPENDS roscpp std_msgs sensor_msgs actionlib_msgs message_runtime
+  CATKIN_DEPENDS roscpp std_msgs sensor_msgs actionlib_msgs
 )
