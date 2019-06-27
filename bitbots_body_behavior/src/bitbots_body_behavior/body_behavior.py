@@ -13,7 +13,8 @@ import os
 import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf2_geometry_msgs import PoseStamped
-from humanoid_league_msgs.msg import BallRelative, GameState, Speak, HeadMode, Strategy, TeamData, PlayAnimationAction, GoalRelative
+from humanoid_league_msgs.msg import BallRelative, GameState, HeadMode, Strategy, TeamData,\
+    PlayAnimationAction, GoalRelative, RobotControlState
 
 from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider import dsd
@@ -40,6 +41,7 @@ if __name__ == "__main__":
     rospy.Subscriber("gamestate", GameState, D.blackboard.gamestate.gamestate_callback)
     rospy.Subscriber("team_data", TeamData, D.blackboard.team_data.team_data_callback)
     rospy.Subscriber("amcl_pose", PoseWithCovarianceStamped, D.blackboard.world_model.position_callback)
+    rospy.Subscriber("robot_state", RobotControlState, D.blackboard.blackboard.robot_state_callback)
 
     D.blackboard.animation.server = actionlib.SimpleActionClient("bitbots_animation", PlayAnimationAction)
 
