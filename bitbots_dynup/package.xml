@@ -1,21 +1,15 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>bitbots_dynamic_kick</name>
+  <name>bitbots_dynup</name>
   <version>0.0.0</version>
-  <description>
-	  The bitbots_dynamic_kick package implements a kick which is not based on keyframe animations.
-	  Instead it aims to dynamically reach it's movement goal while keeping the robot stable and controllable.
+  <description>todo
   </description>
 
-  <maintainer email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</maintainer>
-  <maintainer email="7bormann@informatik.uni-hamburg.de">Frederico Bormann</maintainer>
-  <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
+  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
 
   <license>MIT</license>
 
-  <author email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</author>
-  <author email="7bormann@informatik.uni-hamburg.de">Frederico Bormann</author>
-  <author email="7engelke@informatik.uni-hamburg.de">Timon Engelke</author>
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 

@@ -1,6 +1,6 @@
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = "bitbots_dynup"
-PROJECT_BRIEF          = "Dynamic kick stand up for RoboCup Humanoid Soccer"
+PROJECT_BRIEF          = "Dynamic stand up for RoboCup Humanoid Soccer"
 OUTPUT_DIRECTORY       = docs
 ALLOW_UNICODE_NAMES    = YES
 OUTPUT_LANGUAGE        = English

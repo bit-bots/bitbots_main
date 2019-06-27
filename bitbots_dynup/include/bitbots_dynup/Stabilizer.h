@@ -1,5 +1,5 @@
-#ifndef BITBOTS_DYNAMIC_KICK_STABILIZER_H
-#define BITBOTS_DYNAMIC_KICK_STABILIZER_H
+#ifndef BITBOTS_DYNUP_STABILIZER_H
+#define BITBOTS_DYNUP_STABILIZER_H
 
 #include <optional>
 #include <moveit/robot_model_loader/robot_model_loader.h>
@@ -43,4 +43,4 @@ private:
     double m_trunk_orientation_weight;
 };
 
-#endif  // BITBOTS_DYNAMIC_KICK_STABILIZER_H
+#endif  // BITBOTS_DYNUP_STABILIZER_H

@@ -1,14 +1,14 @@
 #include "bitbots_dynup/DynupNode.h"
 
-KickNode::KickNode() :
-        m_server(m_node_handle, "dynup", boost::bind(&KickNode::execute_cb, this, _1), false),
+DynUpNode::DynUpNode() :
+        m_server(m_node_handle, "dynup", boost::bind(&DynUpNode::execute_cb, this, _1), false),
         m_listener(m_tf_buffer) {
     m_joint_goal_publisher = m_node_handle.advertise<bitbots_msgs::JointCommand>("dynup_motor_goals", 1);
     m_support_foot_publisher = m_node_handle.advertise<std_msgs::Char>("dynup_support_state", 1);
     m_server.start();
 }
 
-void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t level) {
+void DynUpNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t level) {
     m_engine_rate = config.engine_rate;
 
     KickParams params = KickParams();
@@ -34,7 +34,7 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
     m_engine.m_stabilizer.set_trunk_orientation_weight(config.trunk_orientation_weight);
 }
 
-void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
+void DynUpNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     // TODO: maybe switch to goal callback to be able to reject goals properly
     ROS_INFO("Accepted new goal");
     m_engine.reset();
@@ -71,7 +71,7 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     }
 }
 
-std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> KickNode::get_foot_poses() {
+std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> DynUpNode::get_foot_poses() {
     ros::Time time = ros::Time::now();
 
     /* Construct zero-positions for both feet in their respective local frames */
@@ -92,7 +92,7 @@ std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> KickNode::get
     return std::pair(r_foot_transformed.pose, l_foot_transformed.pose);
 }
 
-void KickNode::loop_engine() {
+void DynUpNode::loop_engine() {
     /* Do the loop as long as nothing cancels it */
     while (m_server.isActive() && !m_server.isPreemptRequested()) {
         if (std::optional<JointGoals> goals = m_engine.tick(1.0 / m_engine_rate)) {
@@ -118,7 +118,7 @@ void KickNode::loop_engine() {
     }
 }
 
-void KickNode::publish_goals(const JointGoals &goals) {
+void DynUpNode::publish_goals(const JointGoals &goals) {
     /* Construct JointCommand message */
     bitbots_msgs::JointCommand command;
     command.header.stamp = ros::Time::now();
@@ -143,7 +143,7 @@ void KickNode::publish_goals(const JointGoals &goals) {
     m_joint_goal_publisher.publish(command);
 }
 
-void KickNode::publish_support_foot(bool is_left_kick) {
+void DynUpNode::publish_support_foot(bool is_left_kick) {
     std_msgs::Char msg;
     msg.data = !is_left_kick ? 'l' : 'r';
     m_support_foot_publisher.publish(msg);
@@ -152,12 +152,12 @@ void KickNode::publish_support_foot(bool is_left_kick) {
 int main(int argc, char *argv[]) {
     /* Setup ROS node */
     ros::init(argc, argv, "dynamic_kick");
-    KickNode node;
+    DynUpNode node;
 
     /* Setup dynamic_reconfigure */
     dynamic_reconfigure::Server<bitbots_dynamic_kick::DynamicKickConfig> dyn_reconf_server;
     dynamic_reconfigure::Server<bitbots_dynamic_kick::DynamicKickConfig>::CallbackType f;
-    f = boost::bind(&KickNode::reconfigure_callback, &node, _1, _2);
+    f = boost::bind(&DynUpNode::reconfigure_callback, &node, _1, _2);
     dyn_reconf_server.setCallback(f);
 
     ROS_INFO("Initialized dynamic kick and waiting for actions");
