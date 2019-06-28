@@ -27,7 +27,7 @@ class VisualCompassFilter:
         self.listener = tf2.TransformListener(self.tf_buffer)
 
         # Filter constant
-        self.K = 0.8
+        self.K = 0.9
 
         self.threshold = 0.3
 
@@ -103,7 +103,7 @@ class VisualCompassFilter:
 
     def _runFilter(self, oldVectorWithOdom, currentVector):
         new_vector_confidence = self._vectorToAngle(currentVector)
-        dynamicK = self.K * (1 - (new_vector_confidence * 0.5))
+        dynamicK = self.K * (1 - (new_vector_confidence * 0.3))
         return oldVectorWithOdom * dynamicK + currentVector * (1 - dynamicK)
 
     def _getYawFromTf(self, frame1, frame2, stamp, timeout=0.5):
