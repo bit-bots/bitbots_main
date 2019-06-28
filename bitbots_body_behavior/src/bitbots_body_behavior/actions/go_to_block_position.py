@@ -37,7 +37,7 @@ class GoToBlockPosition(AbstractActionElement):
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = 'map'
 
-        pose_msg.pose.position.x = -(self.connector.field_width / 2) + self.block_position_goal_offset
+        pose_msg.pose.position.x = -(self.blackboard.world_model.field_width / 2) + self.block_position_goal_offset
         pose_msg.pose.position.y = self._stay_in_front_of_goal(goalie_y)
         pose_msg.pose.orientation.w = 1
 
