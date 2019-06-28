@@ -98,7 +98,7 @@ sub prepare_ros() {
         system "echo \"deb http://packages.ros.org/ros/ubuntu \$(lsb_release -sc) main\" | sudo tee /etc/apt/sources.list.d/ros-final.list"
             and die "Unable to add ROS sources";
     }
-    system "sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116"
+    system "sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654"
         or system "sudo apt update"
         or system "sudo apt install -y python-catkin-tools python-rosdep"
         and die "Unable to install rosdep";
