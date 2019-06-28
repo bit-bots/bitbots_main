@@ -39,7 +39,7 @@ class VisualCompassFilter:
     def _getYawOrientationInBasefootprintFrame(self, visualCompassAngle, header):
         # TODO stamp
         camera_yaw_angle = self._getYawFromTf(self.camera_frame, self.base_frame, header) + 0.5 * math.pi
-        correctedAngle = (visualCompassAngle + camera_yaw_angle) % (2 * math.pi)
+        correctedAngle = (visualCompassAngle - camera_yaw_angle) % (2 * math.pi)
         return correctedAngle
 
     def _initFilter(self, vector):
