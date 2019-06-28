@@ -35,4 +35,4 @@ class BlackboardCapsule:
         self.state = msg
 
     def is_currently_walking(self):
-        return self.state == RobotControlState.WALKING
+        return self.state.state == RobotControlState.WALKING
