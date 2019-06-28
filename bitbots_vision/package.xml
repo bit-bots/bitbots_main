@@ -49,6 +49,8 @@
   <depend>python3-opencv</depend>
   <depend>python3-tensorflow</depend>
   <depend>pylon_camera</depend>
+  <depend>white_balancer</depend>
+  <depend>bitbots_bringup</depend>
 
   <export>
     <bitbots_documentation>
