@@ -8,8 +8,7 @@ from tf.transformations import euler_from_quaternion
 import numpy as np
 
 class VisualCompassFilter:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self):
 
         # TODO remove next lines
         rospack = rospkg.RosPack()
@@ -38,9 +37,9 @@ class VisualCompassFilter:
 
         lastTimestamp = None
 
-    def _getYawOrientationInBasefootprintFrame(self, visualCompassAngle, header):
+    def _getYawOrientationInBasefootprintFrame(self, visualCompassAngle, stamp):
         # TODO stamp
-        camera_yaw_angle = self._getYawFromTf(self.camera_frame, self.base_frame, header) + 0.5 * math.pi
+        camera_yaw_angle = self._getYawFromTf(self.camera_frame, self.base_frame, stamp) + 0.5 * math.pi
         correctedAngle = (visualCompassAngle - camera_yaw_angle) % (2 * math.pi)
         return correctedAngle
 
@@ -48,14 +47,14 @@ class VisualCompassFilter:
         rospy.loginfo("Init filter")
         self.filteredVector = vector
 
-    def setMeasurement(self, angle, confidence, header):
+    def filterMeasurement(self, angle, confidence, stamp):
 
         limitedConfidence = self._cutAtThreshold(confidence)
 
-        relativeYawAngle = self._getYawOrientationInBasefootprintFrame(angle, header)
+        relativeYawAngle = self._getYawOrientationInBasefootprintFrame(angle, stamp)
         relativeYawVector = self._angleToVector(relativeYawAngle, limitedConfidence)
 
-        self.currentTimestamp = header
+        self.currentTimestamp = stamp
 
         if self.filteredVector is None:
             self._initFilter(relativeYawVector)
@@ -67,7 +66,7 @@ class VisualCompassFilter:
         # Set new timestamp
         self.lastTimestamp = self.currentTimestamp
 
-        return math.degrees(self.getFilteredValue()[0]), self.getFilteredValue()[1]
+        return self._vectorToAngle(self.filteredVector)
 
     def _cutAtThreshold(self, confidence):
         if confidence <= self.threshold:
@@ -103,7 +102,9 @@ class VisualCompassFilter:
         return self._angleToVector(angle, confidence)
 
     def _runFilter(self, oldVectorWithOdom, currentVector):
-        return oldVectorWithOdom * self.K + currentVector * (1 - self.K)
+        new_vector_confidence = self._vectorToAngle(currentVector)
+        dynamicK = self.K * (1 - (new_vector_confidence * 0.5))
+        return oldVectorWithOdom * dynamicK + currentVector * (1 - dynamicK)
 
     def _getYawFromTf(self, frame1, frame2, stamp, timeout=0.5):
         orientation = self.tf_buffer.lookup_transform(frame1, frame2, stamp, timeout=rospy.Duration(timeout)).transform.rotation

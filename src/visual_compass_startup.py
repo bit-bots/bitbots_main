@@ -13,6 +13,7 @@ from humanoid_league_msgs.msg import VisualCompassRotation
 from bitbots_visual_compass.cfg import VisualCompassConfig
 from worker import VisualCompass
 from key_point_converter import KeyPointConverter
+from visual_compass_filter import VisualCompassFilter
 
 
 class VisualCompassStartup():
@@ -47,6 +48,8 @@ class VisualCompassStartup():
         self.config = {}
         self.compass = None
 
+        self.filter = None
+
         # Register publisher of 'visual_compass'-messages
         self.pub_compass = rospy.Publisher(
             'visual_compass',
@@ -65,6 +68,8 @@ class VisualCompassStartup():
         """
         self.compass = VisualCompass(config)
         self.compass.set_ground_truth_features(self.load_ground_truth(config['ground_truth_file_path']))
+
+        self.filter = VisualCompassFilter()
 
         if self.changed_config_param(config, 'ground_truth_file_path'):
             self.is_ground_truth_set = False
@@ -115,9 +120,15 @@ class VisualCompassStartup():
         """
         TODO docs
         """
-        # Set image
-        result = self.compass.process_image(self.bridge.imgmsg_to_cv2(image_msg, 'bgr8'))
 
+        image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
+
+        # Set image
+        compass_result_angle, compass_result_confidence = self.compass.process_image(image)
+
+        # Filter results
+        result = self.filter.filterMeasurement(compass_result_angle, compass_result_confidence, image_msg.header.stamp)
+        
         # Publishes the 'visual_compass'-message
         self.publish_rotation(image_msg.header.frame_id, image_msg.header.stamp, result[0], result[1])
     
