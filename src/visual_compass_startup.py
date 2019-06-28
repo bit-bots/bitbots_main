@@ -50,6 +50,8 @@ class VisualCompassStartup():
 
         self.filter = None
 
+        self.lastTimestamp = rospy.Time.now()
+
         # Register publisher of 'visual_compass'-messages
         self.pub_compass = rospy.Publisher(
             'visual_compass',
@@ -112,8 +114,10 @@ class VisualCompassStartup():
         # if image_age.to_sec() > 0.1:
         #     print("Visual Compass: Dropped Image-message")  # TODO debug printer
         #     return
-
-        self.handle_image(image_msg)
+        now = rospy.Time.now()
+        if rospy.Duration(self.config['max_fps']) < now - self.lastTimestamp:
+            self.handle_image(image_msg)
+            self.lastTimestamp = rospy.Time.now()
 
     def handle_image(self, image_msg):
         # type: (Image) -> None
@@ -148,6 +152,8 @@ class VisualCompassStartup():
 
         # Publish VisualCompassMsg-message
         self.pub_compass.publish(msg)
+
+
 
     def load_ground_truth(self, ground_truth_file_path):
         # type: (str) -> ([], [])

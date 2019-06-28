@@ -13,6 +13,8 @@ img_msg_queue_size: 1
 ground_truth_trigger_topic: '/visual_compass_ground_truth_trigger'
 ground_truth_trigger_queue_size: 5
 
+# Maximum number of frames per second in ROS
+max_fps: 1.0
 
 # Path to the ground truth file in the package
 ground_truth_file_path: '/config/ground_truth/dummy.pickle'
