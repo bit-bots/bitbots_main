@@ -22,7 +22,9 @@ class VisualCompassFilter:
         self.camera_frame = 'camera_optical_frame'
         self.odom_frame = "odom"
 
-        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(120))
+        self.buffer_time = 10
+
+        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(self.buffer_time))
         self.listener = tf2.TransformListener(self.tf_buffer)
 
         # Filter constant
@@ -73,6 +75,9 @@ class VisualCompassFilter:
         return confidence
 
     def _odomOffset(self, vector, lastTimestamp, currentTimestamp):
+        if rospy.Duration(self.buffer_time) <= rospy.Time.now() - lastTimestamp:
+            rospy.logwarn("No new values from visual compass for {} seconds".format(self.buffer_time))
+            return np.array([0,0], dtype=np.float32)
         # reset filter if timestamps are too fare off.
         oldOrientation = self._getYawFromTf(self.odom_frame, self.base_frame, lastTimestamp)
         currentOrientation = self._getYawFromTf(self.odom_frame, self.base_frame, currentTimestamp)
