@@ -15,6 +15,7 @@ class GameStatusCapsule:
         self.team_id = rospy.get_param("team_id", 8)
         self.gamestate = GameState()
         self.last_update = 0
+        self.unpenalized_since = 0
 
     def is_game_state_equals(self, value):
         assert value in [GameState.GAMESTATE_PLAYING, GameState.GAMESTATE_FINISHED, GameState.GAMESTATE_INITAL,
@@ -58,9 +59,16 @@ class GameStatusCapsule:
             # Time from the message plus seconds passed since receiving it
             return self.gamestate.dropInTime + (rospy.get_time() - self.last_update)
 
+    def get_seconds_since_unpenalized(self):
+        return rospy.get_time() - self.unpenalized_since
+
     def is_allowed_to_move(self):
         return self.gamestate.allowedToMove or rospy.get_time() - self.last_update > 15
 
     def gamestate_callback(self, gs):
-        self.gamestate = gs
+        if self.gamestate.penalized and not gs.penalized:
+            print("update")
+            self.unpenalized_since = rospy.get_time()
+
         self.last_update = rospy.get_time()
+        self.gamestate = gs

@@ -37,32 +37,43 @@ $BallSeen
         NO --> @LookAtBall
     NO --> @LookAtBall
 
-#GoalieBehavior
+#Positioning
 $Localization
-    YES --> $BallSeen
-        YES --> $BallDangerous
-            YES --> #GoAndKickBallMapGoal
-            NO --> @LookAtBall
-        NO --> @SearchBall
-    NO --> #NoLocalizationGoalieBehavior
+    YES --> @GoToRolePosition, @LookAtFieldFeatures
+    NO --> @GoToRelativePosition + x:2 + y:0 + t:0
+
+#GoalieBehavior
+$JustUnpenalized
+    YES --> #Positioning
+    NO --> $Localization
+        YES --> $BallSeen
+            YES --> $BallDangerous
+                YES --> #GoAndKickBallMapGoal
+                NO --> @LookAtBall
+            NO --> @SearchBall
+        NO --> #NoLocalizationGoalieBehavior
 
 #OffenseBehavior
-$Localization
-    YES --> $BallSeen
-        YES --> #GoAndKickBallMapGoal
-        NO --> @SearchBall
-    NO --> #NoLocalizationPlayerBehavior
+$JustUnpenalized
+    YES --> #Positioning
+    NO --> $Localization
+        YES --> $BallSeen
+            YES --> #GoAndKickBallMapGoal
+            NO --> @SearchBall
+        NO --> #NoLocalizationPlayerBehavior
 
 #DefenseBehavior
-$Localization
-    YES --> $BallSeen
-        YES --> $BallInDefensiveArea
-            YES --> #GoAndKickBallAway
-            NO -->  $BallClose
+$JustUnpenalized
+    YES --> #Positioning
+    NO --> $Localization
+        YES --> $BallSeen
+            YES --> $BallInDefensiveArea
                 YES --> #GoAndKickBallAway
-                NO --> @GoToDefensePosition
-        NO --> @SearchBall
-    NO --> #NoLocalizationPlayerBehavior
+                NO -->  $BallClose
+                    YES --> #GoAndKickBallAway
+                    NO --> @GoToDefensePosition
+            NO --> @SearchBall
+        NO --> #NoLocalizationPlayerBehavior
 
 #PenaltyBehavior
 $BallSeen
@@ -73,11 +84,6 @@ $BallSeen
             YES --> @GoToBall + target:detection_goal
             NO --> @GoToBall + target:none
     NO --> @SearchBallPenalty
-
-#Positioning
-$Localization
-    YES --> @GoToRolePosition, @LookAtFieldFeatures
-    NO --> @GoToRelativePosition + x:2 + y:0 + t:0
 
 
 -->BodyBehavior
