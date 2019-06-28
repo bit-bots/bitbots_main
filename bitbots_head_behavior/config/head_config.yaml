@@ -36,6 +36,14 @@ behavior:
         tilt_max: [-7, -30]
         scan_lines: 2
 
+    # Search pattern for penalty
+    visual_compass_features_pattern:
+        tilt_speed: 1
+        pan_speed: 1
+        pan_max: [-45, 45]
+        tilt_max: [7, -7]
+        scan_lines: 2
+
     # Values for the visual compass record pattern
     record_pattern_scan_lines: 2
     record_pattern_pan_max_left: [90, 20]
