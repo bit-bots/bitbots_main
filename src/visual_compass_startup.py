@@ -134,7 +134,7 @@ class VisualCompassStartup():
         result = self.filter.filterMeasurement(compass_result_angle, compass_result_confidence, image_msg.header.stamp)
         
         # Publishes the 'visual_compass'-message
-        self.publish_rotation(image_msg.header.frame_id, image_msg.header.stamp, result[0], result[1])
+        self.publish_rotation("base_footprint", image_msg.header.stamp, result[0], result[1])
     
     def publish_rotation(self, header_frame_id, header_stamp, orientation, confidence):
         # type: (TODO, TODO, float, float) -> None
