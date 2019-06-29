@@ -621,8 +621,8 @@
         <parent link="base_link" />
         <child link="r_hip_1" />
         <axis xyz="0 0 -1" />
-        <limit effort="10.0" velocity="5.759586525" lower="-0.9250245035547" upper="0.9250245035547" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="7.57" velocity="8.22" lower="-0.9250245035547" upper="0.9250245035547" />
+        <dynamics damping="${d}" friction="0.1" />
     </joint>
 
     <joint name="RHipRoll" type="revolute">
@@ -630,8 +630,8 @@
         <parent link="r_hip_1" />
         <child link="r_hip_2" />
         <axis xyz="1 0 0" />
-        <limit effort="10.0" velocity="5.759586525" lower="-1.57" upper="0.7853981633955001" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="7.57" velocity="8.22" lower="-1.57" upper="0.7853981633955001" />
+        <dynamics damping="${d}" friction="0.1" />
     </joint>
 
     <joint name="RHipPitch" type="revolute">
@@ -639,8 +639,8 @@
         <parent link="r_hip_2" />
         <child link="r_upper_leg" />
         <axis xyz="0 1 0" />
-        <limit effort="10.0" velocity="5.759586525" lower="-1.919862177189" upper="0.48869219055720003" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="7.57" velocity="8.22" lower="-1.919862177189" upper="0.48869219055720003" />
+        <dynamics damping="${d}" friction="0.1" />
     </joint>
 
     <joint name="RKnee" type="revolute">
@@ -648,8 +648,8 @@
         <parent link="r_upper_leg" />
         <child link="r_lower_leg" />
         <axis xyz="0 1 0" />
-        <limit effort="10.0" velocity="5.759586525" lower="0" upper="2.268928027587" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="7.57" velocity="8.22" lower="0" upper="2.268928027587" />
+        <dynamics damping="${d}" friction="0.1" />
     </joint>
 
     <joint name="RAnklePitch" type="revolute">
@@ -657,8 +657,8 @@
         <parent link="r_lower_leg" />
         <child link="r_ankle" />
         <axis xyz="0 -1 0" />
-        <limit effort="10.0" velocity="5.759586525" lower="-1.2391837689129" upper="1.6406094968706" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="7.57" velocity="8.22" lower="-1.2391837689129" upper="1.6406094968706" />
+        <dynamics damping="${d}" friction="0.1" />
     </joint>
 
     <joint name="RAnkleRoll" type="revolute">
@@ -666,8 +666,8 @@
         <parent link="r_ankle" />
         <child link="r_foot" />
         <axis xyz="-1 0 0" />
-        <limit effort="10.0" velocity="5.759586525" lower="-1.4660765716716" upper="1.4660765716716" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="7.57" velocity="8.22" lower="-1.4660765716716" upper="1.4660765716716" />
+        <dynamics damping="${d}" friction="0.1" />
     </joint>
 
     <joint name="r_foot_to_sole" type="fixed">
@@ -689,8 +689,8 @@
         <parent link="base_link" />
         <child link="l_hip_1" />
         <axis xyz="0 0 -1" />
-        <limit effort="10.0" velocity="5.759586525" lower="-0.9250245035547" upper="0.9250245035547" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="7.57" velocity="8.22" lower="-0.9250245035547" upper="0.9250245035547" />
+        <dynamics damping="${d}" friction="0.1" />
     </joint>
 
     <joint name="LHipRoll" type="revolute">
@@ -698,8 +698,8 @@
         <parent link="l_hip_1" />
         <child link="l_hip_2" />
         <axis xyz="1 0 0" />
-        <limit effort="10.0" velocity="5.759586525" lower="-0.7853981633955001" upper="1.57" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="7.57" velocity="8.22" lower="-0.7853981633955001" upper="1.57" />
+        <dynamics damping="${d}" friction="0.1" />
     </joint>
 
     <joint name="LHipPitch" type="revolute">
@@ -707,8 +707,8 @@
         <parent link="l_hip_2" />
         <child link="l_upper_leg" />
         <axis xyz="0 -1 0" />
-        <limit effort="10.0" velocity="5.759586525" lower="-0.48869219055720003" upper="1.919862177189" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="7.57" velocity="8.22" lower="-0.48869219055720003" upper="1.919862177189" />
+        <dynamics damping="${d}" friction="0.1" />
     </joint>
 
     <joint name="LKnee" type="revolute">
@@ -716,8 +716,8 @@
         <parent link="l_upper_leg" />
         <child link="l_lower_leg" />
         <axis xyz="0 -1 0" />
-        <limit effort="10.0" velocity="5.759586525" lower="-2.268928027587" upper="0" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="7.57" velocity="8.22" lower="-2.268928027587" upper="0" />
+        <dynamics damping="${d}" friction="0.1" />
     </joint>
 
     <joint name="LAnklePitch" type="revolute">
@@ -725,8 +725,8 @@
         <parent link="l_lower_leg" />
         <child link="l_ankle" />
         <axis xyz="0 1 0" />
-        <limit effort="10.0" velocity="5.759586525" lower="-1.6406094968706" upper="1.2391837689129" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="7.57" velocity="8.22" lower="-1.6406094968706" upper="1.2391837689129" />
+        <dynamics damping="${d}" friction="0.1" />
     </joint>
 
     <joint name="LAnkleRoll" type="revolute">
@@ -734,8 +734,8 @@
         <parent link="l_ankle" />
         <child link="l_foot" />
         <axis xyz="-1 0 0" />
-        <limit effort="10.0" velocity="5.759586525" lower="-1.4660765716716" upper="1.4660765716716" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="7.57" velocity="8.22" lower="-1.4660765716716" upper="1.4660765716716" />
+        <dynamics damping="${d}" friction="0.1" />
     </joint>
 
     <joint name="left_foot_to_sole" type="fixed">
@@ -769,8 +769,8 @@
         <parent link="torso" />
         <child link="r_shoulder" />
         <axis xyz="0 -1 0" />
-        <limit effort="7.3" velocity="8.16814089" lower="-3.1415926535820002" upper="3.1415926535820002" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="5.43" velocity="10.33" lower="-3.1415926535820002" upper="3.1415926535820002" />
+        <dynamics damping="${d}" friction="0.09" />
     </joint>
 
     <joint name="RShoulderRoll" type="revolute">
@@ -778,8 +778,8 @@
         <parent link="r_shoulder" />
         <child link="r_upper_arm" />
         <axis xyz="-1 0 0" />
-        <limit effort="7.3" velocity="8.16814089" lower="-0.7853981633955001" upper="2.3561944901865" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="5.43" velocity="10.33" lower="-0.7853981633955001" upper="2.3561944901865" />
+        <dynamics damping="${d}" friction="0.09" />
     </joint>
 
     <joint name="RElbow" type="revolute">
@@ -787,8 +787,8 @@
         <parent link="r_upper_arm" />
         <child link="r_lower_arm" />
         <axis xyz="0 1 0" />
-        <limit effort="7.3" velocity="8.16814089" lower="-1.635" upper="1.5707963267910001" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="5.43" velocity="10.33" lower="-1.635" upper="1.5707963267910001" />
+        <dynamics damping="${d}" friction="0.09" />
     </joint>
 
     <joint name="r_elbow_to_wrist" type="fixed">
@@ -802,8 +802,8 @@
         <parent link="torso" />
         <child link="l_shoulder" />
         <axis xyz="0 1 0" />
-        <limit effort="7.3" velocity="8.16814089" lower="-3.1415926535820002" upper="3.1415926535820002" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="5.43" velocity="10.33" lower="-3.1415926535820002" upper="3.1415926535820002" />
+        <dynamics damping="${d}" friction="0.09" />
     </joint>
 
     <joint name="LShoulderRoll" type="revolute">
@@ -811,8 +811,8 @@
         <parent link="l_shoulder" />
         <child link="l_upper_arm" />
         <axis xyz="-1 0 0" />
-        <limit effort="7.3" velocity="8.16814089" lower="-2.3561944901865" upper="0.7853981633955001" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="5.43" velocity="10.33" lower="-2.3561944901865" upper="0.7853981633955001" />
+        <dynamics damping="${d}" friction="0.09" />
     </joint>
 
     <joint name="LElbow" type="revolute">
@@ -820,8 +820,8 @@
         <parent link="l_upper_arm" />
         <child link="l_lower_arm" />
         <axis xyz="0 -1 0" />
-        <limit effort="7.3" velocity="8.16814089" lower="-1.1344640137935" upper="1.5707963267910001" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="5.43" velocity="10.33" lower="-1.1344640137935" upper="1.5707963267910001" />
+        <dynamics damping="${d}" friction="0.09" />
     </joint>
 
     <joint name="l_elbow_to_wrist" type="fixed">
@@ -835,8 +835,8 @@
         <parent link="torso" />
         <child link="neck" />
         <axis xyz="0 0 1" />
-        <limit effort="7.3" velocity="8.16814089" lower="-1.2" upper="1.2" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="5.43" velocity="10.33" lower="-1.2" upper="1.2" />
+        <dynamics damping="${d}" friction="0.09" />
     </joint>
 
     <joint name="HeadTilt" type="revolute">
@@ -844,8 +844,8 @@
         <parent link="neck" />
         <child link="head" />
         <axis xyz="0 -1 0" />
-        <limit effort="7.3" velocity="8.16814089" lower="-1.2" upper="0.2" />
-        <dynamics damping="${d}" friction="${f}" />
+        <limit effort="5.43" velocity="10.33" lower="-1.2" upper="0.2" />
+        <dynamics damping="${d}" friction="0.09" />
     </joint>
     
     <joint name="head_to_camera" type="fixed">
