@@ -1,33 +1,29 @@
+import abc
 import math
 
 import rospy
 
-from humanoid_league_msgs.msg import HeadMode
-
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
-class SearchPattern(AbstractActionElement):
+class AbstractSearchPattern(AbstractActionElement):
     """
     Executes the configured search_pattern repeatingly in order to try and and see as much
     space as possible and hopefully see the ball.
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(SearchPattern, self).__init__(blackboard, dsd, parameters)
-        
+        super(AbstractSearchPattern, self).__init__(blackboard, dsd, parameters)
+
         self.index = 0
 
-        head_mode = self.blackboard.head_capsule.head_mode
-        if head_mode == HeadMode.BALL_MODE_PENALTY:
-            pattern_config = self.blackboard.config['search_pattern_penalty']
-        else:
-            pattern_config = self.blackboard.config['search_pattern']
+        pattern_config = self.get_search_pattern()
 
         self.pan_speed = pattern_config['pan_speed']
         self.tilt_speed = pattern_config['tilt_speed']
 
-        # Generate a search pattern with the min/max values from the config. The min/max statements are used to ensure that the values aren't switched in the config. 
+        # Generate a search pattern with the min/max values from the config.
+        # The min/max statements are used to ensure that the values aren't switched in the config.
         self.pattern = self.blackboard.head_capsule.generate_pattern(pattern_config['scan_lines'],
                                                                      max(pattern_config['pan_max']),
                                                                      min(pattern_config['pan_max']),
@@ -35,6 +31,10 @@ class SearchPattern(AbstractActionElement):
                                                                      min(pattern_config['tilt_max']))
         
         self.threshold = self.blackboard.config['position_reached_threshold']
+
+    @abc.abstractmethod
+    def get_search_pattern(self):
+        """Get the respective search pattern from the child class"""
 
     def perform(self, reevaluate=False):
         """
@@ -57,3 +57,23 @@ class SearchPattern(AbstractActionElement):
         # Increment index when position is reached
         if distance < (self.threshold / 180.0 * math.pi):
             self.index = (self.index + 1) % len(self.pattern)
+
+
+class BallSearchPattern(AbstractSearchPattern):
+    def get_search_pattern(self):
+        return self.blackboard.config['search_pattern']
+
+
+class PenaltySearchPattern(AbstractSearchPattern):
+    def get_search_pattern(self):
+        return self.blackboard.config['search_pattern_penalty']
+
+
+class GoalSearchPattern(AbstractSearchPattern):
+    def get_search_pattern(self):
+        return self.blackboard.config['search_pattern']
+
+
+class FieldFeaturesSearchPattern(AbstractSearchPattern):
+    def get_search_pattern(self):
+        return self.blackboard.config['search_pattern']
