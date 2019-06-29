@@ -1,0 +1,10 @@
+check_rate: 40 #Hz
+constraints:
+  - source_topic: "/image_raw"
+    warn_delay: 1
+    error_delay: 4
+    destination_topic: "/debug_image"
+  - source_topic: "/image"
+    warn_delay: 1
+    error_delay: 4
+    destination_topic: "NOW"
