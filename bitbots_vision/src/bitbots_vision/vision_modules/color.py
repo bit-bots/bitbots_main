@@ -6,6 +6,7 @@ import time
 import rospy
 import VisionExtensions
 import numpy as np
+import os
 from collections import deque
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
@@ -208,18 +209,19 @@ class PixelListColorDetector(ColorDetector):
 
         self.config = config
 
+        package_path = os.path.join(package_path, 'config/color_spaces')
         # concatenate color-path to file containing the accepted colors of base color space
         if self.config['vision_use_sim_color']:
-            self.color_path = package_path + self.config['field_color_detector_path_sim']
+            self.color_path = os.path.join(package_path, self.config['field_color_detector_path_sim'])
         else:
-            self.color_path = package_path + self.config['field_color_detector_path']
+            self.color_path = os.path.join(package_path, self.config['field_color_detector_path'])
 
         # Set publisher to 'ROS_field_mask_image_msg_topic'
         self.imagepublisher = rospy.Publisher(
             self.config['ROS_field_mask_image_msg_topic'],
             Image,
             queue_size=1)
-        
+
         self.color_space = self.init_color_space(self.color_path)
 
     def init_color_space(self, color_path):
