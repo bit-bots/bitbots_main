@@ -209,12 +209,12 @@ class PixelListColorDetector(ColorDetector):
 
         self.config = config
 
-        package_path = os.path.join(package_path, 'config/color_spaces')
+        color_space_path = os.path.join(package_path, 'config/color_spaces')
         # concatenate color-path to file containing the accepted colors of base color space
         if self.config['vision_use_sim_color']:
-            self.color_path = os.path.join(package_path, self.config['field_color_detector_path_sim'])
+            self.color_path = os.path.join(color_space_path, self.config['field_color_detector_path_sim'])
         else:
-            self.color_path = os.path.join(package_path, self.config['field_color_detector_path'])
+            self.color_path = os.path.join(color_space_path, self.config['field_color_detector_path'])
 
         # Set publisher to 'ROS_field_mask_image_msg_topic'
         self.imagepublisher = rospy.Publisher(
