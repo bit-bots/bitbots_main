@@ -445,7 +445,7 @@ class Vision:
             if 'ball_fcnn_model_path' not in self.config or \
                     self.config['ball_fcnn_model_path'] != config['ball_fcnn_model_path'] or \
                     self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                ball_fcnn_path = self.package_path + config['ball_fcnn_model_path']
+                ball_fcnn_path = os.path.join(self.package_path, 'models', config['ball_fcnn_model_path'])
                 if not os.path.exists(ball_fcnn_path):
                     rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
                 self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path, self.debug_printer)
