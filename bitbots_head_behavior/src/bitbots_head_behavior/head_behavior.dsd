@@ -16,4 +16,4 @@ $HeadModeDecision
     LOOK_UP --> @LookDirection + direction:UP
     DONT_MOVE --> @Wait + time:1
     RECORD_VISUAL_COMPASS --> @VisualCompassRecord
-    LOOK_FOR_VISUAL_COMPASS_FEATURES --> @LookForVisualCompassFeatures
+    LOOK_FOR_VISUAL_COMPASS_FEATURES --> @VisualCompassSearchPattern

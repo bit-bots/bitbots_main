@@ -36,7 +36,7 @@ behavior:
         tilt_max: [-7, -30]
         scan_lines: 2
 
-    # Search pattern for penalty
+    # Search pattern for visual compass features search
     visual_compass_features_pattern:
         tilt_speed: 1
         pan_speed: 1
