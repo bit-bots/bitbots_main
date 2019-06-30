@@ -1,5 +1,13 @@
-check_rate: 40  # Hz
-constraints:
-  - source_topic: "/image_raw"
-    warn_delay: 0.2
-    error_delay: 1
+nuc:
+  check_rate: 40  # Hz
+  constraints:
+    - source_topic: "/image_raw"
+      warn_delay: 0.2
+      error_delay: 1
+
+jetson:
+  check_rate: 40  # Hz
+  constraints:
+    - source_topic: "/image_raw"
+      warn_delay: 0.2
+      error_delay: 1

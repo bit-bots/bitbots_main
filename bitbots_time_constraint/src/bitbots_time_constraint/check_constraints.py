@@ -5,6 +5,7 @@ import rospy
 import rostopic
 import rospkg
 import yaml
+import socket
 import os
 
 class AutoSubscriber:
@@ -57,9 +58,15 @@ class ConstraintChecker:
 
         rospy.init_node("bitbots_time_constraint", anonymous=False)
 
-        self.rate = rospy.get_param('~check_rate')
+        self.device_name = socket.gethostname()[:-1]
 
-        self.constraints = rospy.get_param('~constraints')
+        try:
+            config = rospy.get_param('~' + self.device_name)
+        except KeyError:
+            rospy.logerr("I am not the device which is selected in the config file.")
+
+        self.constraints = config['constraints']
+        self.rate = config['check_rate']
 
         self._check_min_time(self.rate)
 
