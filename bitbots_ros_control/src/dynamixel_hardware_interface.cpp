@@ -647,6 +647,8 @@ bool DynamixelHardwareInterface::switchDynamixelControlMode()
     return true;
   }
   // Torque on dynamixels has to be disabled to change operating mode
+  // save last torque state for later
+  bool torque_before_switch = current_torque_;
   setTorque(false);
   ros::Duration(0.5).sleep();
 
@@ -671,8 +673,8 @@ bool DynamixelHardwareInterface::switchDynamixelControlMode()
   _driver->syncWrite("Operating_Mode", o);
 
   ros::Duration(0.5).sleep();
-  //reenable torque
-  setTorque(true);
+  //reenable torque if it was previously enabled
+  setTorque(torque_before_switch);
 }
 
 bool DynamixelHardwareInterface::syncReadPositions(){
