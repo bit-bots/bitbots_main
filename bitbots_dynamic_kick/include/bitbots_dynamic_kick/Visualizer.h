@@ -26,6 +26,7 @@ namespace MarkerIDs {
 class VisualizationParams {
 public:
     bool force_enable;
+    int spline_smoothnes;
 };
 
 

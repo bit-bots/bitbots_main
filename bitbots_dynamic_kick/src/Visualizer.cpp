@@ -35,13 +35,13 @@ void Visualizer::display_flying_splines(Trajectories &splines, std::string suppo
     path.header.stamp = ros::Time::now();
     path.header.frame_id = support_foot_frame;
 
-    for (int i = 0; i < splines.size(); i++) {
+    for (int i = 0; i < splines.size() * m_params.spline_smoothnes; i++) {
         geometry_msgs::PoseStamped pose;
         pose.header.stamp = path.header.stamp;
         pose.header.frame_id = support_foot_frame;
-        pose.pose.position.x = splines.get("pos_x").pos(i);
-        pose.pose.position.y = splines.get("pos_y").pos(i);
-        pose.pose.position.z = splines.get("pos_z").pos(i);
+        pose.pose.position.x = splines.get("pos_x").pos((float) i / (float) m_params.spline_smoothnes);
+        pose.pose.position.y = splines.get("pos_y").pos((float) i / (float) m_params.spline_smoothnes);
+        pose.pose.position.z = splines.get("pos_z").pos((float) i / (float) m_params.spline_smoothnes);
         pose.pose.orientation.w = 1;
 
         path.poses.push_back(pose);
@@ -70,8 +70,8 @@ void Visualizer::display_received_goal(const bitbots_msgs::KickGoalConstPtr &goa
     marker.pose.position.z = goal->ball_position.z;
     marker.pose.orientation = goal->kick_direction;
     marker.scale.x = 0.08 + (goal->kick_speed / 3);
-    marker.scale.y = 0.05;
-    marker.scale.z = 0.05;
+    marker.scale.y = 0.03;
+    marker.scale.z = 0.03;
     marker.color.a = 1;
     marker.color.r = 1;
 
@@ -97,9 +97,9 @@ void Visualizer::display_windup_point(tf2::Vector3 kick_windup_point, std::strin
     marker.pose.position.y = kick_windup_point.y();
     marker.pose.position.z = kick_windup_point.z();
     marker.pose.orientation.w = 1;
-    marker.scale.x = 0.02;
-    marker.scale.y = 0.02;
-    marker.scale.z = 0.02;
+    marker.scale.x = 0.03;
+    marker.scale.y = 0.03;
+    marker.scale.z = 0.03;
     marker.color.a = 1;
     marker.color.g = 1;
 

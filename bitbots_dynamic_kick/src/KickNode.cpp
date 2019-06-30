@@ -39,6 +39,7 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
     
 	VisualizationParams viz_params = VisualizationParams();
     viz_params.force_enable = config.force_enable;
+    viz_params.spline_smoothnes = config.spline_smoothnes;
     m_visualizer.set_params(viz_params);
     
 }
