@@ -79,6 +79,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
     registerInterface(&_imu_interface);
   }
 
+  _torquelessMode = nh.param("torquelessMode", false);
   _readButtons = nh.param("readButtons", false);
   _current_pressure.resize(8, 0);
 
@@ -390,21 +391,31 @@ void DynamixelHardwareInterface::processVTE(bool success){
 
 void DynamixelHardwareInterface::setTorque(bool enabled)
 {
-  std::vector<int32_t> torque(_joint_names.size(), enabled);
-  int32_t* t = &torque[0];
-  _driver->syncWrite("Torque_Enable", t);
-  current_torque_ = enabled;
+  //only set values if we're not in torqueless mode
+  if(!_torquelessMode){
+      std::vector<int32_t> torque(_joint_names.size(), enabled);
+      int32_t* t = &torque[0];
+      _driver->syncWrite("Torque_Enable", t);
+      current_torque_ = enabled;
+  }
 }
 
 void DynamixelHardwareInterface::setTorqueForServos(std::vector<int32_t> torque)
 {
-  int32_t* t = &torque[0];
-  _driver->syncWrite("Torque_Enable", t);
+  //only set values if we're not in torqueless mode
+  if(!_torquelessMode){
+    int32_t* t = &torque[0];
+    _driver->syncWrite("Torque_Enable", t);
+  }
 }
 
 
 void DynamixelHardwareInterface::setTorqueForServos(bitbots_msgs::JointTorque msg)
 {
+  if(_torquelessMode){
+    return;
+  }
+
   // we save the goal torque value. It will be set during write process
   for(int i = 0; i < msg.joint_names.size(); i++){
     bool success = false;
