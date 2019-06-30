@@ -10,15 +10,14 @@ import actionlib
 
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Vector3
-from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
+from bitbots_msgs.msg import DynUpGoal, DynUpAction, DynUpFeedback
 from visualization_msgs.msg import Marker
 
 showing_feedback = False
 
 if __name__ == "__main__":
     print("[..] Initializing node", end='')
-    rospy.init_node('dynamic_kick_dummy_client', anonymous=True)
-    marker_pub = rospy.Publisher("/debug/dynamic_kick_ball_marker", Marker, queue_size=1)
+    rospy.init_node('dynup_dummy_client', anonymous=True)
     print("\r[OK] Initializing node")
 
 
@@ -60,41 +59,16 @@ if __name__ == "__main__":
             print()
 
 
-    print('[..] Connecting to action server \'dynamic_kick\'', end='')
+    print('[..] Connecting to action server \'dynup\'', end='')
     sys.stdout.flush()
-    client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
+    client = actionlib.SimpleActionClient('dynup', DynUpAction)
     if not client.wait_for_server():
         exit(1)
-    print('\r[OK] Connecting to action server \'dynamic_kick\'')
+    print('\r[OK] Connecting to action server \'dynup\'')
     print()
 
-    goal = KickGoal()
-    goal.ball_position.header.stamp = rospy.Time.now()
-    goal.ball_position.header.frame_id = 'l_sole'
-    goal.ball_position.vector.x = 0.2
-    goal.ball_position.vector.y = -0.18
-    goal.ball_position.vector.z = 0
-
-    goal.kick_movement.header.stamp = rospy.Time.now()
-    goal.kick_movement.header.frame_id = 'base_footprint'
-    goal.kick_movement.vector = Vector3(0.2, -0.25, -1)
-
-    marker = Marker()
-    marker.header.stamp = goal.ball_position.header.stamp
-    marker.header.frame_id = goal.ball_position.header.frame_id
-    marker.pose.position = goal.ball_position.vector
-    marker.pose.orientation.w = 1
-    marker.scale = Vector3(0.05, 0.05, 0.05)
-    marker.type = Marker.SPHERE
-    marker.action = Marker.ADD
-    marker.lifetime = rospy.Duration(8)
-    marker.color.a = 1
-    marker.color.r = 1
-    marker.color.g = 1
-    marker.color.b = 1
-    marker.id = 1
-    marker.frame_locked = True
-    marker_pub.publish(marker)
+    goal = DynUpGoal()
+    goal.front = True
 
     client.send_goal(goal)
     client.done_cb = done_cb

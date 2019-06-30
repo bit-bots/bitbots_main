@@ -89,6 +89,6 @@ int main(int argc, char *argv[]) {
     f = boost::bind(&DynUpNode::reconfigure_callback, &node, _1, _2);
     dyn_reconf_server.setCallback(f);
 
-    ROS_INFO("Initialized dynamic kick and waiting for actions");
+    ROS_INFO("Initialized DynUp and waiting for actions");
     ros::spin();
 }
