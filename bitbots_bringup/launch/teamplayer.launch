@@ -7,6 +7,8 @@
     <arg name="localization" default="false"/>
     <arg name="simple" default="false"/>  <!-- whether to use the simple behavior -->
     <arg name="gazebo" default="false"/>
+    <!-- defines camera type -->
+    <arg name="basler" default="true" doc="Defines the robot camera type"/>
 
     <arg name="use_game_settings" default="true"/>
     
@@ -15,10 +17,12 @@
     <group unless="$(arg gazebo)">
         <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
             <arg name="sim" value="$(arg sim)" />
+            <arg name="basler" value="$(arg basler)" />
         </include>
     </group>
 
     <include file="$(find bitbots_bringup)/launch/highlevel.launch">
+        <arg name="basler" value="$(arg basler)" />
         <arg name="sim" value="$(arg sim)" />
         <arg name="behave" value="$(arg behave)" />
         <arg name="vision" value="$(arg vision)" />

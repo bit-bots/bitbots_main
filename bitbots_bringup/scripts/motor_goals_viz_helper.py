@@ -30,7 +30,7 @@ class MotorVizHelper:
         if args.animation or args.all:
             rospy.Subscriber("animation", Animation, self.animation_cb, queue_size=1, tcp_nodelay=True)
         if args.head or args.all:
-            rospy.Subscriber("head_motor_goals", JointCommand, self.animation_cb, queue_size=1, tcp_nodelay=True)
+            rospy.Subscriber("head_motor_goals", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
         if args.kick or args.all:
             rospy.Subscriber("kick_motor_goals", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
@@ -41,23 +41,53 @@ class MotorVizHelper:
         self.joint_state_msg.position = JOINT_GOALS
         self.joint_publisher.publish(self.joint_state_msg)
 
+        self.joint_command_msg = JointCommand()
+        self.joint_command_msg.joint_names = JOINT_NAMES
+        self.joint_command_msg.positions = JOINT_GOALS
+        self.joint_command_msg.velocities = [-1] * 20
+
         rate = rospy.Rate(100)
+        self.update_time = rospy.Time.now()
         while not rospy.is_shutdown():
+            self.update_joint_states(self.joint_command_msg)
             self.joint_state_msg.header.stamp = rospy.Time.now()
             self.joint_publisher.publish(self.joint_state_msg)
             rate.sleep()
 
     def joint_command_cb(self, msg: JointCommand):
-        self.joint_state_msg.header = msg.header
-        self.joint_state_msg.name = JOINT_NAMES
+        self.joint_command_msg.header.stamp = rospy.Time.now()
         for i in range(len(msg.joint_names)):
             name = msg.joint_names[i]
-            self.joint_state_msg.position[JOINT_NAMES.index(name)] = msg.positions[i]
+            self.joint_command_msg.positions[JOINT_NAMES.index(name)] = msg.positions[i]
+            self.joint_command_msg.velocities[JOINT_NAMES.index(name)] = msg.velocities[i]
 
     def animation_cb(self, msg: Animation):
-        self.joint_state_msg.header = msg.header
-        self.joint_state_msg.name = list(msg.position.joint_names)
-        self.joint_state_msg.position = list(msg.position.points[0].positions)
+        self.joint_command_msg.header.stamp = rospy.Time.now()
+        for i in range(len(msg.position.joint_names)):
+            name = msg.joint_names[i]
+            self.joint_command_msg.positions[JOINT_NAMES.index(name)] = msg.position.points[0].positions[i]
+            self.joint_command_msg.velocities[JOINT_NAMES.index(name)] = -1
 
-helper = MotorVizHelper()
+    def update_joint_states(self, msg):
+        for i in range(len(msg.joint_names)):
+            name = msg.joint_names[i]
+            if msg.velocities[i] == -1:
+                self.joint_state_msg.position[JOINT_NAMES.index(name)] = msg.positions[i]
+            else:
+                old_pos = self.joint_state_msg.position[JOINT_NAMES.index(name)]
+                time_delta = rospy.Time.now() - self.update_time
+                time_delta_secs = time_delta.to_sec()
+                print(time_delta_secs)
+                max_rad = time_delta_secs * msg.velocities[i]
+                if msg.positions[i] - old_pos > max_rad:
+                    new_pos = old_pos + max_rad
+                elif msg.positions[i] - old_pos < -max_rad:
+                    new_pos = old_pos - max_rad
+                else:
+                    new_pos = msg.positions[i]
+                self.joint_state_msg.position[JOINT_NAMES.index(name)] = new_pos
+        self.update_time = rospy.Time.now()
+
+if __name__ == '__main__':
+    helper = MotorVizHelper()
 
