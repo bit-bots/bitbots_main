@@ -61,7 +61,7 @@ class MultipleCompass(VisualCompassInterface):
             old_ground_truth_length = len(self.ground_truth[0])
             self.ground_truth[0].extend(self.angle_tagger.tag_keypoints(angle, keypoints))
             self.ground_truth[1].extend(descriptors)
-            if not self.feature_scalar:
+            if self.feature_scalar is None:
                 self.feature_scalar = len(descriptors) / self.feature_scalar_seed
             self.feature_scalar = statistics.mean([self.feature_scalar, len(descriptors) / self.feature_scalar_seed])
         print("feature_scalar " + str(self.feature_scalar))
@@ -82,7 +82,7 @@ class MultipleCompass(VisualCompassInterface):
         z = sum(map(lambda angle: np.exp(1j * angle), angles))
         median = np.angle(z) % (math.pi * 2)
         confidence = (float(np.abs(z)) / length)
-        confidence *= 1 - math.exp(-(1. / self.feature_scalar) * length)
+        #confidence *= 1 - math.exp(-(1. / self.feature_scalar) * length)
         return median, confidence
 
     def process_image(self, image, resultCB=None, debugCB=None):
