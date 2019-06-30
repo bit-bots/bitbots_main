@@ -115,7 +115,7 @@ class VisualCompassStartup():
         #     print("Visual Compass: Dropped Image-message")  # TODO debug printer
         #     return
         now = rospy.Time.now()
-        if rospy.Duration(self.config['max_fps']) < now - self.lastTimestamp:
+        if rospy.Duration(0) < now - self.lastTimestamp:
             self.handle_image(image_msg)
             self.lastTimestamp = rospy.Time.now()
 
