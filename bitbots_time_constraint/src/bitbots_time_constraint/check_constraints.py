@@ -57,18 +57,9 @@ class ConstraintChecker:
 
         rospy.init_node("bitbots_time_constraint", anonymous=False)
 
-        config_path = os.path.join(self.package_path, "config/constraints.yaml")
+        self.rate = rospy.get_param('~check_rate')
 
-        with open(config_path, 'r') as stream:
-            try:
-                constraint_config = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                rospy.roserr("Config not found!!!!")
-                rospy.signal_shutdown("")
-
-        self.rate = constraint_config['check_rate']
-
-        self.constraints = constraint_config['constraints']
+        self.constraints = rospy.get_param('~constraints')
 
         self._check_min_time(self.rate)
 
@@ -90,7 +81,7 @@ class ConstraintChecker:
         min_time = 1/freq
         too_small_warn_times = [element['warn_delay'] <= min_time for element in self.constraints]
         too_small_error_times = [element['error_delay'] <= min_time for element in self.constraints]
-        
+
         if any(too_small_warn_times + too_small_error_times):
             rospy.logwarn("Warn delays too small for check freq.")
     

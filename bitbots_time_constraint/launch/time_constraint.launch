@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <launch>
     <node pkg="bitbots_time_constraint" type="check_constraints.py" name="bitbots_time_constraint" output="screen">
+        <rosparam command="load" file="$(find bitbots_time_constraint)/config/constraints.yaml" />
     </node>
 </launch>
