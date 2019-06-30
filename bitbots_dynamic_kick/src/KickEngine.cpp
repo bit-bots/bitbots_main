@@ -229,7 +229,7 @@ tf2::Vector3 KickEngine::calc_kick_windup_point() {
     double yaw = tf2::getYaw(m_kick_direction);
 
     /* create a vector which points in the negative direction of m_kick_direction */
-    tf2::Vector3 vec(-cos(yaw), -sin(yaw), 0);
+    tf2::Vector3 vec(cos(yaw), sin(yaw), 0);
     vec.normalize();
 
     /* take windup distance into account */
@@ -237,6 +237,7 @@ tf2::Vector3 KickEngine::calc_kick_windup_point() {
 
     /* add the ball position because the windup point is in support_foot_frame and not ball_frame */
     vec += m_ball_position;
+    vec.setZ(m_params.foot_rise);
 
     m_visualizer.display_windup_point(vec, (m_is_left_kick) ? "r_sole" : "l_sole");
     return vec;
