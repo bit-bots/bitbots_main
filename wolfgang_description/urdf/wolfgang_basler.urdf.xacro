@@ -1222,10 +1222,10 @@
         <sensor name='camera' type='camera'>
           <pose>-0.050000 -0.010000 0.000000 -1.5708 0.000000 -3.141592</pose>
           <camera name='__default__'>
-            <horizontal_fov>1.012300</horizontal_fov>
+            <horizontal_fov>0.57</horizontal_fov>
             <image>
-              <width>800</width>
-              <height>600</height>
+              <width>620</width>
+              <height>480</height>
             </image>
             <clip>
               <near>0.001000</near>
