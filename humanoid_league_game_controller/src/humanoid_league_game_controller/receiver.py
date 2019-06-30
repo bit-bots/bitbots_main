@@ -179,7 +179,6 @@ class GameStateReceiver(object):
             elif state.secondary_state in (
                     'STATE_DIRECT_FREEKICK',
                     'STATE_INDIRECT_FREEKICK',
-                    'STATE_PENALTYKICK',
                     'STATE_CORNER_KICK',
                     'STATE_GOAL_KICK',
                     'STATE_THROW_IN'):
@@ -188,6 +187,12 @@ class GameStateReceiver(object):
                 else:
                     msg.allowedToMove = True
                 msg.secondaryStateTeam = state.secondary_state_info[0]
+            elif state.secondary_state == 'STATE_PENALTYKICK':
+                # we have penalty kick and ball is ready
+                if state.secondary_state_info[0] == self.team and state.secondary_state[1] == 0:
+                   msg.allowedToMove = True
+                else:
+                   msg.allowedToMove = False
             elif state.kick_of_team == self.team:
                 msg.allowedToMove = True
             else:
