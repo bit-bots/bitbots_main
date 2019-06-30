@@ -201,27 +201,32 @@ void KickEngine::init_trajectories() {
     m_flying_trajectories->add("yaw");
 }
 
-std::optional<std::pair<geometry_msgs::Vector3, geometry_msgs::Quaternion>> KickEngine::transform_goal(
+std::optional<std::pair<geometry_msgs::Point, geometry_msgs::Quaternion>> KickEngine::transform_goal(
         const std::string &support_foot_frame,
         const std_msgs::Header &header,
         const geometry_msgs::Vector3 &ball_position,
         const geometry_msgs::Quaternion &kick_direction) {
     /* construct stamped goals so that they can be transformed */ // TODO Extract this into own function because we do it multiple times
-    geometry_msgs::Vector3Stamped stamped_position;
+    geometry_msgs::PointStamped stamped_position;       // TODO Make KickGoal a point as well so we dont have to do transformations here
+    stamped_position.point.x = ball_position.x;
+    stamped_position.point.y = ball_position.y;
+    stamped_position.point.z = ball_position.z;
     stamped_position.header = header;
-    stamped_position.vector = ball_position;
+    //stamped_position.vector = ball_position;
     geometry_msgs::QuaternionStamped stamped_direction;
     stamped_direction.header = header;
     stamped_direction.quaternion = kick_direction;
 
     /* do transform into support_foot frame */
-    geometry_msgs::Vector3Stamped transformed_position;
+    geometry_msgs::PointStamped transformed_position;
     geometry_msgs::QuaternionStamped transformed_direction;
 
     m_tf_buffer.transform(stamped_position, transformed_position, support_foot_frame, ros::Duration(0.2));
     m_tf_buffer.transform(stamped_direction, transformed_direction, support_foot_frame, ros::Duration(0.2));
 
-    return std::pair(transformed_position.vector, transformed_direction.quaternion);
+    auto x = m_tf_buffer.lookupTransform(support_foot_frame, header.frame_id, header.stamp, ros::Duration(0.2));
+
+    return std::pair(transformed_position.point, transformed_direction.quaternion);
 }
 
 tf2::Vector3 KickEngine::calc_kick_windup_point() {
@@ -237,6 +242,7 @@ tf2::Vector3 KickEngine::calc_kick_windup_point() {
 
     /* add the ball position because the windup point is in support_foot_frame and not ball_frame */
     vec += m_ball_position;
+
     vec.setZ(m_params.foot_rise);
 
     m_visualizer.display_windup_point(vec, (m_is_left_kick) ? "r_sole" : "l_sole");

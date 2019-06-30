@@ -90,7 +90,7 @@ public:
      * @param kick_direction Direction in which to kick the ball
      * @return pair of (transformed_pose, transformed_direction)
      */
-    std::optional<std::pair<geometry_msgs::Vector3, geometry_msgs::Quaternion>> transform_goal(
+    std::optional<std::pair<geometry_msgs::Point, geometry_msgs::Quaternion>> transform_goal(
             const std::string &support_foot_frame,
             const std_msgs::Header &header,
             const geometry_msgs::Vector3 &ball_position,
