@@ -56,7 +56,7 @@ class ConstraintChecker:
         rospack = rospkg.RosPack()
         self.package_path = rospack.get_path('bitbots_time_constraint')
 
-        rospy.init_node("bitbots_time_constraint", anonymous=False)
+        rospy.init_node("bitbots_time_constraint", anonymous=True)
 
         self.device_name = socket.gethostname()[:-1]
 
