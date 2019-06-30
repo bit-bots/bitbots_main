@@ -21,8 +21,8 @@ sensors = ['left foot, left front', 'left foot, left back', 'left foot, right fr
            'right foot, left front','right foot, left back','right foot, right front','right foot, right back',]
 scale = rospy.ServiceProxy("/set_foot_scale", FootScale)
 request = FootScaleRequest()
-request.weight = 0.810
-rospy.loginfo("default calibration weight is 0.81 kg. Change the code when using a different weight.")
+request.weight = 1.3
+rospy.loginfo("default calibration weight is 1.3 kg. Change the code when using a different weight.")
 for i in range(len(sensors)):
     request.sensor = i
     rospy.loginfo("Place calibration weight on " + sensors[i] + " cleat. Then press enter.")

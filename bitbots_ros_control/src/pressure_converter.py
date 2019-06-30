@@ -1,14 +1,17 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 import rospy
 from bitbots_msgs.msg import FootPressure
 from bitbots_msgs.srv import FootScale, FootScaleRequest, FootScaleResponse
 from std_srvs.srv import Empty, EmptyRequest, EmptyResponse
+from geometry_msgs.msg import PointStamped, TransformStamped
 import copy
 import numpy as np
 import yaml
 import rospkg
+import tf2_ros
 import os
+
 
 class PressureConverter:
     def __init__(self):
@@ -21,15 +24,19 @@ class PressureConverter:
         self.save_msgs = False # whether to save messages or not
         self.values = np.zeros((8, 10), dtype=np.float)
         self.current_index = 0
-
+        self.tf_broadcaster = tf2_ros.TransformBroadcaster()
         rospy.Subscriber("/foot_pressure", FootPressure, self.pressure_cb)
         self.pressure_pub = rospy.Publisher("/foot_pressure_filtered", FootPressure, queue_size=1)
+
+        self.cop_l_pub = rospy.Publisher("/cop_l", PointStamped, queue_size=1)
+        self.cop_r_pub = rospy.Publisher("/cop_r", PointStamped, queue_size=1)
         rospy.Service("/set_foot_scale", FootScale, self.foot_scale_cb)
         rospy.Service("/set_foot_zero", Empty, self.zero_cb)
         rospy.Service("/reset_foot_calibration", Empty, self.reset_cb)
         rospy.spin()
 
-    def pressure_cb(self, msg: FootPressure):
+    def pressure_cb(self, msg):
+        # type:(FootPressure) -> None
         if self.save_msgs:
             self.last_msgs.append(copy.copy(msg))
 
@@ -55,7 +62,43 @@ class PressureConverter:
 
         self.pressure_pub.publish(msg)
 
-    def zero_cb(self, request: EmptyRequest):
+        pos = [0.085, 0.045]
+        cop_l = PointStamped()
+        cop_l.header.frame_id = "l_sole"
+        cop_l.header.stamp = msg.header.stamp
+        sum_of_forces = msg.l_l_f + msg.l_l_b +  msg.l_r_f + msg.l_r_b
+        if sum_of_forces != 0.0:
+            cop_l.point.x = (msg.l_l_f * pos[0] - msg.l_l_b * pos[0] + msg.l_r_f * pos[0] - msg.l_r_b * pos[0]) / sum_of_forces
+            cop_l.point.y = (msg.l_l_f * pos[1] + msg.l_l_b * pos[1] - msg.l_r_f * pos[1] - msg.l_r_b * pos[1]) / sum_of_forces
+            self.cop_l_pub.publish(cop_l)
+
+        cop_r = PointStamped()
+        cop_r.header.frame_id = "r_sole"
+        cop_r.header.stamp = msg.header.stamp
+        sum_of_forces = msg.r_l_f + msg.r_l_b + msg.r_r_b + msg.r_r_f
+        if sum_of_forces != 0.0:
+            cop_r.point.x = (msg.r_l_f * pos[0] - msg.r_l_b * pos[0] + msg.r_r_f * pos[0] - msg.r_r_b * pos[0]) / sum_of_forces
+            cop_r.point.y = (msg.r_l_f * pos[1] + msg.r_l_b * pos[1] - msg.r_r_f * pos[1] - msg.r_r_b * pos[1]) / sum_of_forces
+            self.cop_r_pub.publish(cop_r)
+
+        cop_r_tf = TransformStamped()
+        cop_r_tf.header = cop_r.header
+        cop_r_tf.child_frame_id = "cop_r"
+        cop_r_tf.transform.translation.x = cop_r.point.x
+        cop_r_tf.transform.translation.y = cop_r.point.y
+        cop_r_tf.transform.rotation.w = 1.0
+        self.tf_broadcaster.sendTransform(cop_r_tf)
+
+        cop_l_tf = TransformStamped()
+        cop_l_tf.header = cop_l.header
+        cop_l_tf.child_frame_id = "cop_l"
+        cop_l_tf.transform.translation.x = cop_l.point.x
+        cop_l_tf.transform.translation.y = cop_l.point.y
+        cop_l_tf.transform.rotation.w = 1.0
+        self.tf_broadcaster.sendTransform(cop_l_tf)
+
+    def zero_cb(self, request):
+        #EmptyRequest):
         # save messages
         self.save_msgs = True
         while len(self.last_msgs) < 100:
@@ -84,7 +127,8 @@ class PressureConverter:
         self.save_yaml()
         return EmptyResponse()
 
-    def foot_scale_cb(self, request: FootScaleRequest):
+    def foot_scale_cb(self, request):
+        #FootScaleRequest):
         # save messages
         self.save_msgs = True
         while len(self.last_msgs) < 100:
@@ -126,7 +170,7 @@ class PressureConverter:
 
         r = rospkg.RosPack()
         path = r.get_path("bitbots_ros_control")
-        with open(path + "/config/pressure_" + "amy" + ".yaml", 'w') as f:
+        with open(path + "/config/pressure_" + os.getenv("ROBOT_NAME") + ".yaml", 'w') as f:
             rospy.loginfo("pressure sensor configuration saved")
             yaml.dump(data, f)
             f.close()

@@ -23,4 +23,8 @@
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
 
+
+    <node pkg="bitbots_ros_control" type="pressure_converter.py" name="pressure_converter" output="screen">
+        <rosparam file="$(find bitbots_ros_control)/config/pressure_$(env ROBOT_NAME).yaml" command="load" />
+    </node>
 </launch>

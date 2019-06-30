@@ -826,6 +826,7 @@ bool DynamixelHardwareInterface::readButtons(){
 bool DynamixelHardwareInterface::readFootSensors(){
   uint8_t *data = (uint8_t *) malloc(16 * sizeof(uint8_t));
   // read first foot
+
   if(_driver->readMultipleRegisters(101, 36, 16, data)){
     for (int i = 0; i < 4; i++) {
       int32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i*4], data[i*4+1]), DXL_MAKEWORD(data[i*4+2], data[i*4+3]));
@@ -834,7 +835,7 @@ bool DynamixelHardwareInterface::readFootSensors(){
       _current_pressure[i] = (double) pres_d; //- (pow(2, 32)/2);
     }
   }else{
-    ROS_ERROR_THROTTLE(3.0, "Could not read foot with ID 101 (left foot)");
+    ROS_ERROR_THROTTLE(3.0, "Could not read foot with ID 101 (right foot)");
   }             
   // read second foot
   if(_driver->readMultipleRegisters(102, 36, 16, data)){
@@ -845,7 +846,7 @@ bool DynamixelHardwareInterface::readFootSensors(){
     }
 
   }else{
-    ROS_ERROR_THROTTLE(3.0, "Could not read foot with ID 102 (right foot)");
+    ROS_ERROR_THROTTLE(3.0, "Could not read foot with ID 102 (left foot)");
   }
 
   bitbots_msgs::FootPressure msg;
