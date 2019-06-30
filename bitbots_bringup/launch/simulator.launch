@@ -5,6 +5,7 @@
     <arg name="use_fake_walk" default="False"/>
     <param name="/use_sim_time" value="true" />
     <param name="/simulation_active" value="true"/>
+    <arg name="basler" default="true" doc="Defines the robot camera type"/>
 
     <!-- remaps necessary for other parts of our software -->
     <remap from="camera/image_raw" to="image_raw"/>
@@ -15,6 +16,7 @@
         <arg name="sim" value="true"/>
         <arg name="sim_ns" default="$(arg sim_ns)" />
         <arg name="use_fake_walk" default="$(arg use_fake_walk)"/>
+        <arg name="basler" default="$(arg basler)"/>
     </include>
 
     <!-- launch gazebo with soccer field -->
