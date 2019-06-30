@@ -90,7 +90,7 @@ class ConstraintChecker:
         min_time = 1/freq
         too_small_warn_times = [element['warn_delay'] <= min_time for element in self.constraints]
         too_small_error_times = [element['error_delay'] <= min_time for element in self.constraints]
-
+        
         if any(too_small_warn_times + too_small_error_times):
             rospy.logwarn("Warn delays too small for check freq.")
     
