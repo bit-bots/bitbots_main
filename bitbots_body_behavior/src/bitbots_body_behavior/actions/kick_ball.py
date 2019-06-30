@@ -52,7 +52,7 @@ class KickBallDynamic(AbstractActionElement):
                 goal.header.frame_id = "base_footprint" # get_ball_uv() always returns ball in base_footprint
                 goal.ball_position.x, goal.ball_position.y = self.blackboard.world_model.get_ball_position_uv()
                 goal.ball_position.z = 0
-                goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, -3.14/2))
+                goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, 0))
                 goal.kick_speed = 1
 
                 self.blackboard.kick.kick(goal)
