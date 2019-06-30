@@ -32,7 +32,8 @@
 
   <exec_depend>imu_complementary_filter</exec_depend>
   <exec_depend>imu_sensor_controller</exec_depend>
-  
+  <exec_depend>joint_state_controller</exec_depend>
+
 
   <export>
     <controller_interface plugin="${prefix}/dynamixel_controllers_plugin.xml"/>
