@@ -7,6 +7,8 @@ class BallClose(AbstractDecisionElement):
         self.ball_close_distance = self.blackboard.config['ball_close_distance']
 
     def perform(self, reevaluate=False):
+        self.publish_debug_data("ball_distance", self.blackboard.world_model.get_ball_distance())
+
         if self.blackboard.world_model.get_ball_distance() < self.ball_close_distance:
             return 'YES'
         return 'NO'

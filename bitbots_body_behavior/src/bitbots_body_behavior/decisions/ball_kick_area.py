@@ -16,6 +16,9 @@ class BallKickArea(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         ball_position = self.blackboard.world_model.get_ball_position_uv()
+
+        self.publish_debug_data("ball_position", {"u": ball_position[0], "v": ball_position[1]})
+
         if self.right_kick_min_x <= ball_position[0] <= self.right_kick_max_x and \
            self.right_kick_min_y <= ball_position[1] <= self.right_kick_max_y:
             return 'RIGHT'
