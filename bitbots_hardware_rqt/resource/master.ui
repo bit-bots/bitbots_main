@@ -739,13 +739,25 @@
            </item>
           </widget>
           <widget class="QTableWidget" name="tableWidget_2">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>230</y>
+             <y>200</y>
              <width>1221</width>
              <height>221</height>
             </rect>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QAbstractScrollArea::AdjustToContents</enum>
            </property>
            <property name="alternatingRowColors">
             <bool>true</bool>
@@ -782,52 +794,52 @@
            </row>
            <column>
             <property name="text">
-             <string>M11</string>
+             <string>M1</string>
             </property>
            </column>
            <column>
             <property name="text">
-             <string>M12</string>
+             <string>M2</string>
             </property>
            </column>
            <column>
             <property name="text">
-             <string>M13</string>
+             <string>M3</string>
             </property>
            </column>
            <column>
             <property name="text">
-             <string>M14</string>
+             <string>M4</string>
             </property>
            </column>
            <column>
             <property name="text">
-             <string>M15</string>
+             <string>M5</string>
             </property>
            </column>
            <column>
             <property name="text">
-             <string>M16</string>
+             <string>M6</string>
             </property>
            </column>
            <column>
             <property name="text">
-             <string>M17</string>
+             <string>M7</string>
             </property>
            </column>
            <column>
             <property name="text">
-             <string>M18</string>
+             <string>M8</string>
             </property>
            </column>
            <column>
             <property name="text">
-             <string>M19</string>
+             <string>M9</string>
             </property>
            </column>
            <column>
             <property name="text">
-             <string>M20</string>
+             <string>M10</string>
             </property>
            </column>
            <item row="0" column="0">
@@ -1413,7 +1425,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap>../../../RobocupPraktikum/hardware_info/resource/Arrows1.png</pixmap>
+          <pixmap>./Arrows1.png</pixmap>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -1482,7 +1494,7 @@
               <string/>
              </property>
              <property name="pixmap">
-              <pixmap>../../../RobocupPraktikum/hardware_info/resource/Circle.png</pixmap>
+              <pixmap>./Circle.png</pixmap>
              </property>
              <property name="scaledContents">
               <bool>false</bool>
