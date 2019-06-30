@@ -12,6 +12,7 @@
 #include <tf2/convert.h>
 #include <tf2/utils.h>
 #include "Stabilizer.h"
+#include "Visualizer.h"
 #include <math.h>
 
 typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajectories;
@@ -48,7 +49,7 @@ public:
  */
 class KickEngine {
 public:
-    KickEngine();
+    explicit KickEngine(Visualizer &visualizer);
 
     /**
      * Set new goal which the engine tries to kick at. This will remove the old goal completely and plan new splines.
@@ -113,6 +114,7 @@ private:
     bool m_is_left_kick;
     std::optional<Trajectories> m_support_point_trajectories, m_flying_trajectories;
     KickParams m_params;
+    Visualizer &m_visualizer;
 
     tf2_ros::Buffer m_tf_buffer;
     tf2_ros::TransformListener m_listener;

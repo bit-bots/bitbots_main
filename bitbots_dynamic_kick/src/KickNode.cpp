@@ -2,7 +2,9 @@
 
 KickNode::KickNode() :
         m_server(m_node_handle, "dynamic_kick", boost::bind(&KickNode::execute_cb, this, _1), false),
-        m_listener(m_tf_buffer) {
+        m_listener(m_tf_buffer),
+        m_visualizer("/debug/dynamic_kick", m_node_handle),
+        m_engine(m_visualizer) {
     m_joint_goal_publisher = m_node_handle.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
     m_support_foot_publisher = m_node_handle.advertise<std_msgs::Char>("dynamic_kick_support_state", 1);
     m_server.start();
@@ -33,7 +35,12 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
     m_engine.m_stabilizer.set_stabilizing_weight(config.stabilizing_weight);
     m_engine.m_stabilizer.set_flying_weight(config.flying_weight);
     m_engine.m_stabilizer.set_trunk_orientation_weight(config.trunk_orientation_weight);
-    m_engine.m_stabilizer.set_trunk_height_weight(config.trunk_height_weight);
+	m_engine.m_stabilizer.set_trunk_height_weight(config.trunk_height_weight);
+    
+	VisualizationParams viz_params = VisualizationParams();
+    viz_params.force_enable = config.force_enable;
+    m_visualizer.set_params(viz_params);
+    
 }
 
 void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
@@ -42,6 +49,8 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
     m_engine.reset();
 
     if (auto foot_poses = get_foot_poses()) {
+
+        m_visualizer.display_received_goal(goal);
 
         /* Set engines goal and start calculating */
         m_engine.set_goal(goal->header,

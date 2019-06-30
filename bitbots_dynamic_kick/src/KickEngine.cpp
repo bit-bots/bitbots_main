@@ -1,6 +1,8 @@
 #include "bitbots_dynamic_kick/KickEngine.h"
 
-KickEngine::KickEngine() : m_listener(m_tf_buffer) {}
+KickEngine::KickEngine(Visualizer &visualizer) :
+        m_listener(m_tf_buffer),
+        m_visualizer(visualizer){}
 
 void KickEngine::reset() {
     m_time = 0;
@@ -29,6 +31,7 @@ bool KickEngine::set_goal(const std_msgs::Header &header,
         /* Plan new splines according to new goal */
         init_trajectories();
         calc_splines(m_is_left_kick ? l_foot_pose : r_foot_pose);
+        m_visualizer.display_fyling_splines(m_flying_trajectories.value(), (m_is_left_kick) ? "r_sole" : "l_sole");
 
         return true;
 
@@ -223,7 +226,7 @@ std::optional<std::pair<geometry_msgs::Vector3, geometry_msgs::Quaternion>> Kick
 
 tf2::Vector3 KickEngine::calc_kick_windup_point() {
     /* retrieve yaw from m_kick_direction */
-    double yaw  = tf2::getYaw(m_kick_direction);
+    double yaw = tf2::getYaw(m_kick_direction);
 
     /* create a vector which points in the negative direction of m_kick_direction */
     tf2::Vector3 vec(-sin(yaw), -cos(yaw), 0);

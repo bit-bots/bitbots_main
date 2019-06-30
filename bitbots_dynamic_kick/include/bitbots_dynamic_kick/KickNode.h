@@ -16,6 +16,7 @@
 #include <bitbots_dynamic_kick/DynamicKickConfig.h>
 #include "bitbots_dynamic_kick/KickEngine.h"
 #include <std_msgs/Char.h>
+#include "bitbots_dynamic_kick/Visualizer.h"
 
 typedef actionlib::SimpleActionServer<bitbots_msgs::KickAction> ActionServer;
 
@@ -50,6 +51,7 @@ private:
     int m_engine_rate;
     tf2_ros::Buffer m_tf_buffer;
     tf2_ros::TransformListener m_listener;
+    Visualizer m_visualizer;
 
     /**
      * Do main loop in which KickEngine::tick() gets called repeatedly.

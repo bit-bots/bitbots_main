@@ -79,6 +79,8 @@ if __name__ == "__main__":
 
     goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, -0.5))
 
+    goal.kick_speed = 1
+
     """marker = Marker()
     marker.header.stamp = goal.ball_position.header.stamp
     marker.header.frame_id = goal.ball_position.header.frame_id
