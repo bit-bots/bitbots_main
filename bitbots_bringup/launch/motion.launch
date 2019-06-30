@@ -1,5 +1,6 @@
 <launch>
     <arg name="sim" default="false"/>
+    <arg name="walking" default="true" doc="start the walking" />
     <arg name="use_game_settings" default="false"/>
 
     <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
@@ -16,10 +17,12 @@
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
 
-    <include file="$(find bitbots_quintic_walk)/launch/quintic_walk.launch">
-        <arg name="sim" value="$(arg sim)"/>
-        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
-    </include>
+    <group if="$(arg walking)">
+        <include file="$(find bitbots_quintic_walk)/launch/quintic_walk.launch">
+            <arg name="sim" value="$(arg sim)"/>
+            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+        </include>
+    </group>
 
     <group unless="$(arg sim)">
         <include file="$(find bitbots_ros_control)/launch/ros_control.launch">
