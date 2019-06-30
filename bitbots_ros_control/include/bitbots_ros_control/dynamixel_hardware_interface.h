@@ -175,7 +175,7 @@ private:
   double _warn_temp;
   double _warn_volt;
 
-
+  bool _torquelessMode;
   bool _read_imu;
   bool _read_pressure;
   bool _readButtons;
