@@ -13,12 +13,14 @@
 #include <bitbots_splines/SmoothSpline.hpp>
 #include <bitbots_splines/SplineContainer.hpp>
 #include <geometry_msgs/PoseStamped.h>
+#include <tf2/LinearMath/Vector3.h>
 
 typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajectories;
 
 
 namespace MarkerIDs {
     const int received_goal = 1;
+    const int kick_windup_point = 2;
 }
 
 class VisualizationParams {
@@ -36,12 +38,15 @@ public:
 
     void display_received_goal(const bitbots_msgs::KickGoalConstPtr &goal);
 
-    void display_fyling_splines(Trajectories &splines, std::string support_foot_frame);
+    void display_flying_splines(Trajectories &splines, std::string support_foot_frame);
+
+    void display_windup_point(tf2::Vector3 kick_windup_point, std::string support_foot_frame);
 
 private:
     ros::NodeHandle m_node_handle;
     ros::Publisher m_goal_publisher;
     ros::Publisher m_spline_publisher;
+    ros::Publisher m_windup_publisher;
     std::string m_base_topic;
     const std::string m_marker_ns = "bitbots_dynamic_kick";
     VisualizationParams m_params;

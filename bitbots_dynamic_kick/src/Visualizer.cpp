@@ -15,6 +15,8 @@ Visualizer::Visualizer(std::string base_topic, ros::NodeHandle &node_handle) :
             /* queue_size */ 5, /* latch */ true);
     m_spline_publisher = m_node_handle.advertise<nav_msgs::Path>(m_base_topic + "flying_foot_spline",
             /* queue_size */ 5, /* latch */ true);
+    m_windup_publisher = m_node_handle.advertise<visualization_msgs::Marker>(m_base_topic + "kick_windup_point",
+            /* queue_size */ 5, /* latch */ true);
 
     m_node_handle.getParam("/debug_active", m_param_debug_active);
 }
@@ -25,7 +27,7 @@ void Visualizer::set_params(VisualizationParams params) {
 }
 
 
-void Visualizer::display_fyling_splines(Trajectories &splines, std::string support_foot_frame) {
+void Visualizer::display_flying_splines(Trajectories &splines, std::string support_foot_frame) {
     if (!is_enabled())
         return;
 
@@ -75,6 +77,35 @@ void Visualizer::display_received_goal(const bitbots_msgs::KickGoalConstPtr &goa
 
     m_goal_publisher.publish(marker);
 }
+
+
+void Visualizer::display_windup_point(tf2::Vector3 kick_windup_point, std::string support_foot_frame) {
+    if (!is_enabled())
+        return;
+
+    visualization_msgs::Marker marker;
+
+    marker.ns = m_marker_ns;
+    marker.id = MarkerIDs::received_goal;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.lifetime = ros::Duration(1000);
+    marker.frame_locked = false;
+    marker.header.frame_id = support_foot_frame;
+    marker.header.stamp = ros::Time::now();
+    marker.pose.position.x = kick_windup_point.x();
+    marker.pose.position.y = kick_windup_point.y();
+    marker.pose.position.z = kick_windup_point.z();
+    marker.pose.orientation.w = 1;
+    marker.scale.x = 0.02;
+    marker.scale.y = 0.02;
+    marker.scale.z = 0.02;
+    marker.color.a = 1;
+    marker.color.g = 1;
+
+    m_windup_publisher.publish(marker);
+}
+
 
 bool Visualizer::is_enabled() {
     return m_params.force_enable || m_param_debug_active;

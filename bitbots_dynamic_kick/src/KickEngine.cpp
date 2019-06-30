@@ -31,7 +31,7 @@ bool KickEngine::set_goal(const std_msgs::Header &header,
         /* Plan new splines according to new goal */
         init_trajectories();
         calc_splines(m_is_left_kick ? l_foot_pose : r_foot_pose);
-        m_visualizer.display_fyling_splines(m_flying_trajectories.value(), (m_is_left_kick) ? "r_sole" : "l_sole");
+        m_visualizer.display_flying_splines(m_flying_trajectories.value(), (m_is_left_kick) ? "r_sole" : "l_sole");
 
         return true;
 
@@ -124,7 +124,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pos_y").addPoint(fix1, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix2, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix3, kick_windup_point.y(), 0, 0);
-    m_flying_trajectories->get("pos_y").addPoint(fix4, m_ball_position.y(), m_kick_direction.y());
+    m_flying_trajectories->get("pos_y").addPoint(fix4, m_ball_position.y(), m_kick_speed, 0);
     m_flying_trajectories->get("pos_y").addPoint(fix5, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix6, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix7, kick_foot_sign * m_params.foot_distance);
@@ -229,7 +229,7 @@ tf2::Vector3 KickEngine::calc_kick_windup_point() {
     double yaw = tf2::getYaw(m_kick_direction);
 
     /* create a vector which points in the negative direction of m_kick_direction */
-    tf2::Vector3 vec(-sin(yaw), -cos(yaw), 0);
+    tf2::Vector3 vec(-cos(yaw), -sin(yaw), 0);
     vec.normalize();
 
     /* take windup distance into account */
@@ -238,6 +238,7 @@ tf2::Vector3 KickEngine::calc_kick_windup_point() {
     /* add the ball position because the windup point is in support_foot_frame and not ball_frame */
     vec += m_ball_position;
 
+    m_visualizer.display_windup_point(vec, (m_is_left_kick) ? "r_sole" : "l_sole");
     return vec;
 }
 
