@@ -403,28 +403,6 @@ class Vision:
             self.debug_printer
         )
 
-        # load cascade
-        if config['vision_ball_classifier'] == 'cascade':
-            self.cascade_path = self.package_path + config['cascade_classifier_path']
-            if 'cascade_classifier_path' not in self.config or \
-                    self.config['cascade_classifier_path'] != config['cascade_classifier_path'] or \
-                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                if os.path.exists(self.cascade_path):
-                    self.cascade = cv2.CascadeClassifier(self.cascade_path)
-                else:
-                    rospy.logerr(
-                        'AAAAHHHH! The specified cascade config file doesn\'t exist!')
-            if 'classifier_model_path' not in self.config or \
-                    self.config['classifier_model_path'] != config['classifier_model_path'] or \
-                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                self.ball_classifier = live_classifier.LiveClassifier(
-                    self.package_path + config['classifier_model_path'])
-                rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
-            self.ball_detector = classifier.ClassifierHandler(self.ball_classifier, self.debug_printer)
-
-            self.ball_finder = ball.BallFinder(self.cascade, config, self.debug_printer)
-
-
         # set up ball config for fcnn
         # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
         # this enables 2 fcnns with different configs.
