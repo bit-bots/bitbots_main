@@ -83,4 +83,11 @@ behavior:
     # it is close enough to be kicked
     max_kick_distance: 0.3
 
+    # configurations for the use of bitbots_dynamic_kick package
+    dynamic_kick:
+      # time to wait for a dynamic_kick server
+      wait_time: 10
+      # base topic under which an actionserver listens for KickAction messages
+      topic: "/dynamic_kick"
+
 role: "offense"
