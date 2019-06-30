@@ -14,8 +14,8 @@
 .idea/tasks.xml
 .idea/*
 
-bitbots_quintic_walk/.idea/
-bitbots_quintic_walk/cmake-build-debug/
+**/.idea/
+**/cmake-build-debug/
 
 # Sensitive or high-churn files:
 .idea/dataSources/
