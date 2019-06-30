@@ -255,7 +255,7 @@ class Vision:
             self.pub_debug_fcnn_image.publish(self.ball_detector.get_debug_image())
 
         # do debug stuff
-        if self.do_publish_debug_image:
+        if self.publish_debug_image:
             self.debug_image_dings.set_image(image)
             self.debug_image_dings.draw_obstacle_candidates(
                 self.obstacle_detector.get_candidates(),
@@ -319,8 +319,8 @@ class Vision:
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
         self._ball_candidate_y_offset = config['vision_ball_candidate_field_boundary_y_offset']
 
-        self.do_publish_debug_image = config['vision_publish_debug_image']
-        if self.do_publish_debug_image:
+        self.publish_debug_image = config['vision_publish_debug_image']
+        if self.publish_debug_image:
             rospy.logwarn('Debug images are enabled')
         else:
             rospy.loginfo('Debug images are disabled')
