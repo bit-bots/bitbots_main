@@ -2,7 +2,7 @@
 <package format="2">
   <name>bitbots_time_constraint</name>
   <version>1.0.0</version>
-  <description>TODO</description>
+  <description>Add time constraints to certian ROS topics and get warned if they are not satisfyed.</description>
 
   <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
@@ -20,7 +20,7 @@
   <export>
     <bitbots_documentation>
       <language>python3</language>
-      <status>untested</status>
+      <status>tested_viz</status>
     </bitbots_documentation>
   </export>
 </package>
