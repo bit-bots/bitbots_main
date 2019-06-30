@@ -16,7 +16,7 @@ from bitbots_msgs.msg import FootPressure
 
 from bitbots_msgs.msg import JointCommand
 from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_CONTROLABLE, STATE_WALKING, STATE_ANIMATION_RUNNING, \
-    STATE_SHUT_DOWN, STATE_HCM_OFF
+    STATE_SHUT_DOWN, STATE_HCM_OFF, STATE_KICKING
 from bitbots_hcm.cfg import hcm_paramsConfig
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from dynamic_stack_decider.dsd import DSD
@@ -121,7 +121,7 @@ class HardwareControlManager:
             self.joint_goal_publisher.publish(msg)
 
     def kick_goal_callback(self, msg):
-        if self.blackboard.current_state == STATE_CONTROLABLE:
+        if self.blackboard.current_state == STATE_KICKING:
             # we can perform a kick
             self.joint_goal_publisher.publish(msg)
 
