@@ -7,7 +7,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": 10, 
+                "HeadTilt": 39, 
                 "LAnklePitch": -27, 
                 "LAnkleRoll": 0, 
                 "LElbow": -20, 
@@ -28,13 +28,35 @@
                 "RShoulderRoll": 18
             }, 
             "name": "frame0", 
-            "pause": 0.0
+            "pause": 0.0, 
+            "torque": {
+                "HeadPan": 2, 
+                "HeadTilt": 2, 
+                "LAnklePitch": 2, 
+                "LAnkleRoll": 2, 
+                "LElbow": 2, 
+                "LHipPitch": 2, 
+                "LHipRoll": 2, 
+                "LHipYaw": 2, 
+                "LKnee": 2, 
+                "LShoulderPitch": 2, 
+                "LShoulderRoll": 2, 
+                "RAnklePitch": 2, 
+                "RAnkleRoll": 2, 
+                "RElbow": 2, 
+                "RHipPitch": 2, 
+                "RHipRoll": 2, 
+                "RHipYaw": 2, 
+                "RKnee": 2, 
+                "RShoulderPitch": 2, 
+                "RShoulderRoll": 2
+            }
         }, 
         {
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": 10, 
+                "HeadTilt": 39, 
                 "LAnklePitch": -27, 
                 "LAnkleRoll": 0, 
                 "LElbow": -20, 
@@ -55,13 +77,35 @@
                 "RShoulderRoll": 59
             }, 
             "name": "frame1", 
-            "pause": 0.0
+            "pause": 0.0, 
+            "torque": {
+                "HeadPan": 2, 
+                "HeadTilt": 2, 
+                "LAnklePitch": 2, 
+                "LAnkleRoll": 2, 
+                "LElbow": 2, 
+                "LHipPitch": 2, 
+                "LHipRoll": 2, 
+                "LHipYaw": 2, 
+                "LKnee": 2, 
+                "LShoulderPitch": 2, 
+                "LShoulderRoll": 2, 
+                "RAnklePitch": 2, 
+                "RAnkleRoll": 2, 
+                "RElbow": 2, 
+                "RHipPitch": 2, 
+                "RHipRoll": 2, 
+                "RHipYaw": 2, 
+                "RKnee": 2, 
+                "RShoulderPitch": 2, 
+                "RShoulderRoll": 2
+            }
         }, 
         {
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": 10, 
+                "HeadTilt": 39, 
                 "LAnklePitch": -27, 
                 "LAnkleRoll": 0, 
                 "LElbow": -20, 
@@ -82,13 +126,35 @@
                 "RShoulderRoll": 25
             }, 
             "name": "frame2", 
-            "pause": 0.0
+            "pause": 0.0, 
+            "torque": {
+                "HeadPan": 2, 
+                "HeadTilt": 2, 
+                "LAnklePitch": 2, 
+                "LAnkleRoll": 2, 
+                "LElbow": 2, 
+                "LHipPitch": 2, 
+                "LHipRoll": 2, 
+                "LHipYaw": 2, 
+                "LKnee": 2, 
+                "LShoulderPitch": 2, 
+                "LShoulderRoll": 2, 
+                "RAnklePitch": 2, 
+                "RAnkleRoll": 2, 
+                "RElbow": 2, 
+                "RHipPitch": 2, 
+                "RHipRoll": 2, 
+                "RHipYaw": 2, 
+                "RKnee": 2, 
+                "RShoulderPitch": 2, 
+                "RShoulderRoll": 2
+            }
         }, 
         {
-            "duration": 0.10000000000000014, 
+            "duration": 0.1, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": 10, 
+                "HeadTilt": 39, 
                 "LAnklePitch": -27, 
                 "LAnkleRoll": 0, 
                 "LElbow": -20, 
@@ -137,7 +203,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": 10, 
+                "HeadTilt": 39, 
                 "LAnklePitch": -27, 
                 "LAnkleRoll": 0, 
                 "LElbow": -20, 
@@ -158,13 +224,35 @@
                 "RShoulderRoll": 1
             }, 
             "name": "frame4", 
-            "pause": 0.0
+            "pause": 0.0, 
+            "torque": {
+                "HeadPan": 2, 
+                "HeadTilt": 2, 
+                "LAnklePitch": 2, 
+                "LAnkleRoll": 2, 
+                "LElbow": 2, 
+                "LHipPitch": 2, 
+                "LHipRoll": 2, 
+                "LHipYaw": 2, 
+                "LKnee": 2, 
+                "LShoulderPitch": 2, 
+                "LShoulderRoll": 2, 
+                "RAnklePitch": 2, 
+                "RAnkleRoll": 2, 
+                "RElbow": 2, 
+                "RHipPitch": 2, 
+                "RHipRoll": 2, 
+                "RHipYaw": 2, 
+                "RKnee": 2, 
+                "RShoulderPitch": 2, 
+                "RShoulderRoll": 2
+            }
         }, 
         {
-            "duration": 0.10000000000000014, 
+            "duration": 0.1, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": 10, 
+                "HeadTilt": 39, 
                 "LAnklePitch": -27, 
                 "LAnkleRoll": 0, 
                 "LElbow": -20, 
@@ -213,7 +301,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": 10, 
+                "HeadTilt": 39, 
                 "LAnklePitch": -27, 
                 "LAnkleRoll": 0, 
                 "LElbow": -20, 
@@ -234,13 +322,35 @@
                 "RShoulderRoll": 1
             }, 
             "name": "frame6", 
-            "pause": 0.0
+            "pause": 0.0, 
+            "torque": {
+                "HeadPan": 2, 
+                "HeadTilt": 2, 
+                "LAnklePitch": 2, 
+                "LAnkleRoll": 2, 
+                "LElbow": 2, 
+                "LHipPitch": 2, 
+                "LHipRoll": 2, 
+                "LHipYaw": 2, 
+                "LKnee": 2, 
+                "LShoulderPitch": 2, 
+                "LShoulderRoll": 2, 
+                "RAnklePitch": 2, 
+                "RAnkleRoll": 2, 
+                "RElbow": 2, 
+                "RHipPitch": 2, 
+                "RHipRoll": 2, 
+                "RHipYaw": 2, 
+                "RKnee": 2, 
+                "RShoulderPitch": 2, 
+                "RShoulderRoll": 2
+            }
         }, 
         {
-            "duration": 0.10000000000000014, 
+            "duration": 0.1, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": 10, 
+                "HeadTilt": 39, 
                 "LAnklePitch": -27, 
                 "LAnkleRoll": 0, 
                 "LElbow": -74, 
@@ -289,7 +399,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": 10, 
+                "HeadTilt": 39, 
                 "LAnklePitch": -27, 
                 "LAnkleRoll": 0, 
                 "LElbow": -74, 
@@ -310,13 +420,35 @@
                 "RShoulderRoll": 1
             }, 
             "name": "frame8", 
-            "pause": 0.0
+            "pause": 0.0, 
+            "torque": {
+                "HeadPan": 2, 
+                "HeadTilt": 2, 
+                "LAnklePitch": 2, 
+                "LAnkleRoll": 2, 
+                "LElbow": 2, 
+                "LHipPitch": 2, 
+                "LHipRoll": 2, 
+                "LHipYaw": 2, 
+                "LKnee": 2, 
+                "LShoulderPitch": 2, 
+                "LShoulderRoll": 2, 
+                "RAnklePitch": 2, 
+                "RAnkleRoll": 2, 
+                "RElbow": 2, 
+                "RHipPitch": 2, 
+                "RHipRoll": 2, 
+                "RHipYaw": 2, 
+                "RKnee": 2, 
+                "RShoulderPitch": 2, 
+                "RShoulderRoll": 2
+            }
         }, 
         {
-            "duration": 0.5000000000000001, 
+            "duration": 0.5, 
             "goals": {
                 "HeadPan": 0, 
-                "HeadTilt": 10, 
+                "HeadTilt": 39, 
                 "LAnklePitch": -83, 
                 "LAnkleRoll": 0, 
                 "LElbow": -74, 
@@ -705,7 +837,7 @@
             }
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.5, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 47, 
@@ -754,7 +886,7 @@
             }
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.5, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 47, 
@@ -803,7 +935,7 @@
             }
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.5, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 47, 
@@ -812,7 +944,7 @@
                 "LElbow": -88, 
                 "LHipPitch": 50, 
                 "LHipRoll": -4, 
-                "LHipYaw": 3, 
+                "LHipYaw": 2, 
                 "LKnee": -59, 
                 "LShoulderPitch": 11, 
                 "LShoulderRoll": -14, 
@@ -852,7 +984,7 @@
             }
         }, 
         {
-            "duration": 1.0, 
+            "duration": 0.1, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 47, 
