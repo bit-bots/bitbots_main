@@ -21,7 +21,8 @@ class BallSeen(AbstractDecisionElement):
         :param reevaluate: Has no effect
         """
 
-        if rospy.get_time() - self.blackboard.world_model.ball_last_seen() < self.ball_lost_time:
+        ball_last_seen = self.blackboard.world_model.ball_last_seen()
+        if ball_last_seen != 0 and rospy.get_time() - ball_last_seen < self.ball_lost_time:
             return 'YES'
         return 'NO'
 
