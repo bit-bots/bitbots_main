@@ -28,6 +28,7 @@
         </include>
         <rosparam file="$(find wolfgang_description)/config/wolfgang_control_simple_physics.yaml" command="load" ns="$(arg sim_ns)"/>
         <node name="keep_stable" pkg="bitbots_bringup" type="keep_stable_in_sim.py" output="screen" respawn="true"/>
+        <node name="map_odom" pkg="bitbots_move_base" type="tf_map_odom.py" output="screen" respawn="true"/>
     </group>
     <group unless="$(arg use_fake_walk)">
         <include file="$(find gazebo_ros)/launch/empty_world.launch">
