@@ -52,7 +52,6 @@ def state_update(state_msg):
         goal_index2 += 1
 
     ball_pose = state_msg.pose[ball_index]
-    rospy.logerr_throttle(1, state_msg.pose[ball_index])
     goal1_pose = state_msg.pose[goal_index1]
     goal2_pose = state_msg.pose[goal_index2]
 
@@ -68,7 +67,7 @@ def state_update(state_msg):
     p_pixel = np.matmul(k, p)
     p_pixel = p_pixel * (1/p_pixel[2])
 
-    if(p_pixel[0] <= 0 and p_pixel[0] <= cam_info.width and p_pixel[1] <= 0 and p_pixel[1] <= cam_info.height)
+    if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height:
         ball = BallRelative()
         ball_pose_stamped = tf_buffer.transform(ball_pose_stamped, "base_footprint",
                                                 timeout=rospy.Duration(0.1))
@@ -84,12 +83,12 @@ def state_update(state_msg):
         goal_pose_stamped.pose = gp
 
         left_post = deepcopy(goal_pose_stamped)
-        left_post.pose.position.y += 2.7
+        left_post.pose.position.y += 1.35
 
         left_post = tf_buffer.transform(left_post, cam_info.header.frame_id,
                                                 timeout=rospy.Duration(0.1))
         right_post = goal_pose_stamped
-        right_post.pose.position.y -= 2.7
+        right_post.pose.position.y -= 1.35
 
         right_post = tf_buffer.transform(right_post, cam_info.header.frame_id,
                                                 timeout=rospy.Duration(0.1))
@@ -101,7 +100,7 @@ def state_update(state_msg):
         p_pixel = np.matmul(k, p)
         p_pixel = p_pixel * (1 / p_pixel[2])
         lp = False
-        if (p_pixel[0] <= 0 and p_pixel[0] <= cam_info.width and p_pixel[1] <= 0 and p_pixel[1] <= cam_info.height)
+        if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height:
             goal.left_post = tf_buffer.transform(left_post, "base_footprint",
                                                 timeout=rospy.Duration(0.1)).pose.position
             lp = True
@@ -112,11 +111,11 @@ def state_update(state_msg):
         p_pixel = p_pixel * (1 / p_pixel[2])
 
         rp = False
-        if (p_pixel[0] <= 0 and p_pixel[0] <= cam_info.width and p_pixel[1] <= 0 and p_pixel[1] <= cam_info.height)
+        if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height:
             goal.right_post = tf_buffer.transform(right_post, "base_footprint",
                                                 timeout=rospy.Duration(0.1)).pose.position
             rp = True
-
+        rospy.logwarn("lp: " + str(lp) + " rp: " +str(rp))
         if rp or lp:
             if not lp:
                 goal.left_post = goal.right_post
@@ -134,7 +133,7 @@ def cam_info_cb(msg):
 if __name__ == "__main__":
     ball_pub = rospy.Publisher("/ball_relative", BallRelative, queue_size=1)
     goal_pub = rospy.Publisher("/goal_relative", GoalRelative, queue_size=1)
-    model_subscriber = rospy.Subscriber("/gazebo/model_states", ModelStates, state_update, tcp_nodelay=True)
+    model_subscriber = rospy.Subscriber("/gazebo/model_states", ModelStates, state_update, tcp_nodelay=True, queue_size=1)
     cam_info_sub = rospy.Subscriber("/camera_info", CameraInfo, cam_info_cb)
 
     rate = rospy.Rate(10)
