@@ -33,7 +33,17 @@ class PressureConverter:
         rospy.Service("/set_foot_scale", FootScale, self.foot_scale_cb)
         rospy.Service("/set_foot_zero", Empty, self.zero_cb)
         rospy.Service("/reset_foot_calibration", Empty, self.reset_cb)
+
+        self.threshold = 0
+        self.dyn_reconf = Server(bitbots_ros_control_paramsConfig, self.reconfigure)
+
         rospy.spin()
+
+    def reconfigure(self, config, level):
+        """ Dynamic reconfigure """
+        # just pass on to the StandupHandler, as all the variables are located there
+        self.threshold = config.cop_threshold
+        return config
 
     def pressure_cb(self, msg):
         # type:(FootPressure) -> None
@@ -67,21 +77,28 @@ class PressureConverter:
         cop_l.header.frame_id = "l_sole"
         cop_l.header.stamp = msg.header.stamp
         sum_of_forces = msg.l_l_f + msg.l_l_b +  msg.l_r_f + msg.l_r_b
-        if sum_of_forces > 0.0:
+        if sum_of_forces > self.threshold:
             cop_l.point.x = (msg.l_l_f * pos[0] - msg.l_l_b * pos[0] + msg.l_r_f * pos[0] - msg.l_r_b * pos[0]) / sum_of_forces
             cop_l.point.y = (msg.l_l_f * pos[1] + msg.l_l_b * pos[1] - msg.l_r_f * pos[1] - msg.l_r_b * pos[1]) / sum_of_forces
-            self.cop_l_pub.publish(cop_l)
+        else:
+            cop_l.point.x = 0
+            cop_l.point.y = 0
+        self.cop_l_pub.publish(cop_l)
+
 
         cop_r = PointStamped()
         cop_r.header.frame_id = "r_sole"
         cop_r.header.stamp = msg.header.stamp
         sum_of_forces = msg.r_l_f + msg.r_l_b + msg.r_r_b + msg.r_r_f
-        if sum_of_forces > 0.0:
+        if sum_of_forces > self.threshold:
             cop_r.point.x = (msg.r_l_f * pos[0] - msg.r_l_b * pos[0] + msg.r_r_f * pos[0] - msg.r_r_b * pos[0]) / sum_of_forces
             cop_r.point.y = (msg.r_l_f * pos[1] + msg.r_l_b * pos[1] - msg.r_r_f * pos[1] - msg.r_r_b * pos[1]) / sum_of_forces
-            self.cop_r_pub.publish(cop_r)
+        else:
+            cop_r.point.x = 0
+            cop_r.point.y = 0
+        self.cop_r_pub.publish(cop_r)
 
-        cop_r_tf = TransformStamped()
+    cop_r_tf = TransformStamped()
         cop_r_tf.header = cop_r.header
         cop_r_tf.child_frame_id = "cop_r"
         cop_r_tf.transform.translation.x = cop_r.point.x
