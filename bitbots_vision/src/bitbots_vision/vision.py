@@ -14,7 +14,7 @@ from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationI
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, PostInImage, \
     GoalInImage
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, live_classifier, \
-    classifier, ball, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
+    classifier, ball, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator, yolo_handler
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config
 
@@ -430,6 +430,10 @@ class Vision:
                 self.ball_fcnn_config,
                 self.debug_printer)
 
+        if config['vision_ball_classifier'] == 'yolo':
+            rospy.logwarn("yolo is running now")
+            # TODO replace following strings with path to config/weights
+            self.ball_detector = yolo_handler("config", "weight")
         # publishers
 
         # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!
