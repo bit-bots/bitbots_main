@@ -15,11 +15,13 @@ void DynUpNode::reconfigure_callback(bitbots_dynup::DynUpConfig &config, uint32_
     //params.leg_min_length = config.leg_min_length;
     params.foot_distance = config.foot_distance;
     params.rise_time = config.rise_time;
+    params.trunk_x = config.trunk_x;
     params.trunk_height = config.trunk_height;
     params.trunk_pitch = config.trunk_pitch;
     params.start_trunk_height = config.start_trunk_height;
     params.start_x = config.start_x;
     params.start_pitch = config.start_pitch;
+    params.start_foot_distance = config.start_foot_distance;
 
     m_engine.set_params(params);
 

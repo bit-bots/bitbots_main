@@ -170,7 +170,7 @@ void DynupEngine::calc_squat_splines(){
 
     // m_foot_trajectories are for left foot
     m_foot_trajectories->get("pos_x").addPoint(0, 0);
-    m_foot_trajectories->get("pos_y").addPoint(0, m_params.foot_distance);
+    m_foot_trajectories->get("pos_y").addPoint(0, m_params.start_foot_distance);
     m_foot_trajectories->get("pos_z").addPoint(0, 0);
     m_foot_trajectories->get("roll").addPoint(0, 0);
     m_foot_trajectories->get("pitch").addPoint(0, 0);
@@ -185,13 +185,13 @@ void DynupEngine::calc_squat_splines(){
 
     // m_trunk_trajectories are for trunk (relative to right foot)
     m_trunk_trajectories->get("pos_x").addPoint(0, m_params.start_x);
-    m_trunk_trajectories->get("pos_y").addPoint(0, m_params.foot_distance / 2.0);
+    m_trunk_trajectories->get("pos_y").addPoint(0, m_params.start_foot_distance / 2.0);
     m_trunk_trajectories->get("pos_z").addPoint(0, m_params.start_trunk_height);
     m_trunk_trajectories->get("roll").addPoint(0, 0);
     m_trunk_trajectories->get("pitch").addPoint(0, m_params.start_pitch);
     m_trunk_trajectories->get("yaw").addPoint(0, 0);
 
-    m_trunk_trajectories->get("pos_x").addPoint(m_params.rise_time, 0);
+    m_trunk_trajectories->get("pos_x").addPoint(m_params.rise_time, m_params.trunk_x);
     m_trunk_trajectories->get("pos_y").addPoint(m_params.rise_time, m_params.foot_distance / 2.0);
     m_trunk_trajectories->get("pos_z").addPoint(m_params.rise_time, m_params.trunk_height);
     m_trunk_trajectories->get("roll").addPoint(m_params.rise_time, 0);

@@ -23,12 +23,13 @@ public:
 
     double foot_distance;
     double rise_time;
+    double trunk_x;
     double trunk_height;
     double trunk_pitch;
     double start_x;
     double start_trunk_height;
     double start_pitch;
-
+    double start_foot_distance;
 };
 
 /**
