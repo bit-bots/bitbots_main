@@ -3,16 +3,21 @@
 import argparse
 
 import rospy
+from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import JointState
 from bitbots_msgs.msg import JointCommand
 from humanoid_league_msgs.msg import Animation
 
-JOINT_NAMES = ['LHipYaw', 'LHipRoll', 'LHipPitch', 'LKnee', 'LAnklePitch', 'LAnkleRoll', 'RHipYaw', 'RHipRoll', 'RHipPitch', 'RKnee', 'RAnklePitch', 'RAnkleRoll', 'LShoulderRoll', 'LShoulderPitch', 'LElbow', 'RShoulderRoll', 'RShoulderPitch', 'RElbow', 'HeadPan', 'HeadTilt']
-JOINT_GOALS = [0, 0, 0.7, -1, -0.4, 0, 0, 0, -0.7, 1, 0.4, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+# List of all joint names. Do not change the order as it is important for Gazebo
+JOINT_NAMES = ['HeadPan', 'HeadTilt', 'LShoulderPitch', 'LShoulderRoll', 'LElbow', 'RShoulderPitch',
+               'RShoulderRoll', 'RElbow', 'LHipYaw', 'LHipRoll', 'LHipPitch', 'LKnee', 'LAnklePitch',
+               'LAnkleRoll', 'RHipYaw', 'RHipRoll', 'RHipPitch', 'RKnee', 'RAnklePitch', 'RAnkleRoll']
+JOINT_GOALS = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.7, -1, -0.4, 0, 0, 0, -0.7, 1, 0.4, 0]
+
 
 class MotorVizHelper:
     def __init__(self):
-        # get rid of addional ROS args when used in launch file
+        # get rid of additional ROS args when used in launch file
         args0 = rospy.myargv()
 
         parser = argparse.ArgumentParser()
@@ -21,25 +26,33 @@ class MotorVizHelper:
         parser.add_argument("--head", help="Directly get head motor goals", action="store_true")
         parser.add_argument("--kick", help="Directly get kick motor goals", action="store_true")
         parser.add_argument("--all", help="Directly get all motor goals", action="store_true")
+        parser.add_argument("--gazebo", help="Publish for Gazebo instead of rviz", action="store_true")
         args = parser.parse_args(args0[1:])
 
         rospy.init_node("motor_viz_helper", anonymous=False)
-        self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=1, tcp_nodelay=True)
+        if args.gazebo:
+            self.joint_publisher = rospy.Publisher('JointGroupController/command', Float64MultiArray, queue_size=10, tcp_nodelay=True)
+        else:
+            self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=10, tcp_nodelay=True)
+
         if args.walking or args.all:
-            rospy.Subscriber("walking_motor_goals", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
+            rospy.Subscriber("walking_motor_goals", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
         if args.animation or args.all:
-            rospy.Subscriber("animation", Animation, self.animation_cb, queue_size=1, tcp_nodelay=True)
+            rospy.Subscriber("animation", Animation, self.animation_cb, queue_size=10, tcp_nodelay=True)
         if args.head or args.all:
-            rospy.Subscriber("head_motor_goals", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
+            rospy.Subscriber("head_motor_goals", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
         if args.kick or args.all:
-            rospy.Subscriber("kick_motor_goals", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
+            rospy.Subscriber("kick_motor_goals", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
+        rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
 
         self.joint_state_msg = JointState()
         self.joint_state_msg.header.stamp = rospy.Time.now()
         self.joint_state_msg.name = JOINT_NAMES
         self.joint_state_msg.position = JOINT_GOALS
-        self.joint_publisher.publish(self.joint_state_msg)
+        if args.gazebo:
+            self.joint_publisher.publish(self.get_float_array())
+        else:
+            self.joint_publisher.publish(self.joint_state_msg)
 
         self.joint_command_msg = JointCommand()
         self.joint_command_msg.joint_names = JOINT_NAMES
@@ -51,7 +64,10 @@ class MotorVizHelper:
         while not rospy.is_shutdown():
             self.update_joint_states(self.joint_command_msg)
             self.joint_state_msg.header.stamp = rospy.Time.now()
-            self.joint_publisher.publish(self.joint_state_msg)
+            if args.gazebo:
+                self.joint_publisher.publish(self.get_float_array())
+            else:
+                self.joint_publisher.publish(self.joint_state_msg)
             rate.sleep()
 
     def joint_command_cb(self, msg: JointCommand):
@@ -64,7 +80,7 @@ class MotorVizHelper:
     def animation_cb(self, msg: Animation):
         self.joint_command_msg.header.stamp = rospy.Time.now()
         for i in range(len(msg.position.joint_names)):
-            name = msg.joint_names[i]
+            name = msg.position.joint_names[i]
             self.joint_command_msg.positions[JOINT_NAMES.index(name)] = msg.position.points[0].positions[i]
             self.joint_command_msg.velocities[JOINT_NAMES.index(name)] = -1
 
@@ -77,7 +93,6 @@ class MotorVizHelper:
                 old_pos = self.joint_state_msg.position[JOINT_NAMES.index(name)]
                 time_delta = rospy.Time.now() - self.update_time
                 time_delta_secs = time_delta.to_sec()
-                print(time_delta_secs)
                 max_rad = time_delta_secs * msg.velocities[i]
                 if msg.positions[i] - old_pos > max_rad:
                     new_pos = old_pos + max_rad
@@ -87,6 +102,12 @@ class MotorVizHelper:
                     new_pos = msg.positions[i]
                 self.joint_state_msg.position[JOINT_NAMES.index(name)] = new_pos
         self.update_time = rospy.Time.now()
+
+    def get_float_array(self):
+        msg = Float64MultiArray()
+        msg.data = self.joint_state_msg.position
+        return msg
+
 
 if __name__ == '__main__':
     helper = MotorVizHelper()

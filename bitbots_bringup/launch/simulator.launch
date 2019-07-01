@@ -5,6 +5,7 @@
     <arg name="use_fake_walk" default="False"/>
     <param name="/use_sim_time" value="true" />
     <param name="/simulation_active" value="true"/>
+    <arg name="basler" default="true" doc="Defines the robot camera type"/>
 
     <!-- remaps necessary for other parts of our software -->
     <remap from="camera/image_raw" to="image_raw"/>
@@ -15,6 +16,7 @@
         <arg name="sim" value="true"/>
         <arg name="sim_ns" default="$(arg sim_ns)" />
         <arg name="use_fake_walk" default="$(arg use_fake_walk)"/>
+        <arg name="basler" default="$(arg basler)"/>
     </include>
 
     <!-- launch gazebo with soccer field -->
@@ -25,6 +27,8 @@
             <arg name="paused" value="false"/>
         </include>
         <rosparam file="$(find wolfgang_description)/config/wolfgang_control_simple_physics.yaml" command="load" ns="$(arg sim_ns)"/>
+        <node name="keep_stable" pkg="bitbots_bringup" type="keep_stable_in_sim.py" output="screen" respawn="true"/>
+        <node name="map_odom" pkg="bitbots_move_base" type="tf_map_odom.py" output="screen" respawn="true"/>
     </group>
     <group unless="$(arg use_fake_walk)">
         <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -40,6 +44,6 @@
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg sim_ns)" args="joint_state_controller JointGroupController" />
 
     <!-- map motion goals for simulator -->
-    <node name="pub_goals_sim" pkg="bitbots_bringup" type="motion_in_gazebo.py" output="screen" respawn="true"/>
+    <node name="pub_goals_sim" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" output="screen" respawn="true" args="--gazebo" />
 
 </launch>
