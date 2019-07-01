@@ -78,6 +78,9 @@
         <include file="$(find bitbots_body_behavior)/launch/behavior.launch" />
     </group>
 
+    <!-- launch pathplanning -->
+    <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch" />
+
     <!-- simulate map frame -->
 
     <node name="map_odom" pkg="bitbots_move_base" type="tf_map_odom.py" output="screen" respawn="true"/>
