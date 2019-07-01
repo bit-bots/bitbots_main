@@ -1,0 +1,80 @@
+<launch>
+    <!-- set parameter -->
+    <arg name="sim_ns" default="/" />
+    <arg name="hcm" default="false"/>
+    <arg name="use_fake_walk" doc="fake the falking by using simplified physics and move the robot around on the plain field" default="false"/>
+    <arg name="basler" default="true" doc="Defines the robot camera type"/>
+    <arg name="vision_debug" default="false" doc="activates the debug output of the vision pipeline"/>
+    <arg name="dummyball" default="false" doc="true: does not start the ball detection to save resources" />
+
+    <param name="/use_sim_time" value="true" />
+    <param name="/simulation_active" value="true"/>
+
+
+    <!-- remaps necessary for other parts of our software -->
+    <remap from="camera/image_raw" to="image_raw"/>
+    <remap from="camera/camera_info" to="camera_info"/>
+    <remap from="imu" to="imu/data"/>
+
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
+        <arg name="sim" value="true"/>
+        <arg name="sim_ns" default="$(arg sim_ns)" />
+        <arg name="use_fake_walk" default="$(arg use_fake_walk)"/>
+        <arg name="basler" default="$(arg basler)"/>
+    </include>
+
+    <!-- launch motion and gazebo with soccer field -->
+    <group if="$(arg use_fake_walk)">
+        <include file="$(find gazebo_ros)/launch/empty_world.launch">
+            <!-- use simpler physics when faking walk -->
+            <arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer_simple_physics.world"/>
+            <arg name="paused" value="false"/>
+        </include>
+        <rosparam file="$(find wolfgang_description)/config/wolfgang_control_simple_physics.yaml" command="load" ns="$(arg sim_ns)"/>
+        <node name="keep_stable" pkg="bitbots_bringup" type="keep_stable_in_sim.py" output="screen" respawn="true"/>
+        <!-- launch the motion without the walking -->
+        <include file="$(find bitbots_bringup)/launch/motion.launch">
+            <arg name="sim" value="true"/>
+            <arg name="walking" value="false"/>
+        </include>
+    </group>
+    <group unless="$(arg use_fake_walk)">
+        <include file="$(find gazebo_ros)/launch/empty_world.launch">
+            <arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer.world"/>
+            <arg name="paused" value="false"/>
+        </include>
+        <rosparam file="$(find wolfgang_description)/config/wolfgang_control.yaml" command="load" ns="$(arg sim_ns)"/>
+        <!-- launch the motion including the walking -->
+        <include file="$(find bitbots_bringup)/launch/motion.launch">
+            <arg name="sim" value="true"/>
+        </include>
+    </group>
+
+    <!-- launch vision -->
+    <include file="$(find bitbots_vision)/launch/vision_startup.launch">
+        <arg name="debug" value="$(arg vision_debug)"/>
+        <arg name="sim" value="true"/>
+        <arg name="dummyball" value="$(arg dummyball)"/>
+    </include>
+
+    <!-- launch transformer -->
+
+    <include file="$(find humanoid_league_transform)/launch/transformer.launch" />
+
+    <!-- launch game controller -->
+
+    <include file="$(find humanoid_league_game_controller)/launch/game_controller.launch" />
+
+    <!-- simulate map frame -->
+
+    <node name="map_odom" pkg="bitbots_move_base" type="tf_map_odom.py" output="screen" respawn="true"/>
+
+    <!-- spawn URDF and load the controllers -->
+
+    <node name="spawn_urdf" pkg="gazebo_ros" ns="$(arg sim_ns)" type="spawn_model" args="-param /robot_description -urdf -model $(arg sim_ns) -x -1.5 -y 3.3 -z 0.43 -Y -1.5 -P 0.26" output="screen" />
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg sim_ns)" args="joint_state_controller JointGroupController" />
+
+    <!-- map motion goals for simulator -->
+    <node name="pub_goals_sim" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" output="screen" respawn="true" args="--gazebo" />
+
+</launch>
