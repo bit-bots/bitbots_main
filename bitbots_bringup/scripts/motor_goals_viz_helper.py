@@ -18,7 +18,6 @@ class MotorVizHelper:
     def __init__(self):
         # get rid of additional ROS args when used in launch file
         args0 = rospy.myargv()
-        print(args0)
 
         parser = argparse.ArgumentParser()
         parser.add_argument("--walking", "-w", help="Directly get walking motor goals", action="store_true")
