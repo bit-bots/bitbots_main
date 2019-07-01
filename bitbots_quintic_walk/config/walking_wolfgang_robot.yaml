@@ -91,4 +91,8 @@ walking:
   imuActive: False
   imuPitchThreshold: 1.0
   imuRollThreshold: 1.0
+  imuPitchVelThreshold: 1.0
+  imuRollVelThreshold: 1.0
   pauseDuration: 1.0
+
+  publishOdomTF: False

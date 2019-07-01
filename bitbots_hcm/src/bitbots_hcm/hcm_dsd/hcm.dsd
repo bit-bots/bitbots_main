@@ -22,7 +22,7 @@ $Falling
 
 #Penalty
 $Penalty
-    PENALIZED --> @StopWalking, @PlayAnimationPenalty, @StayInPenalty
+    PENALIZED --> @PenaltyStopWalking, @PlayAnimationPenalty, @StayInPenalty
     FREE --> $MotorOffTimer
         SIMULATION --> #Falling
         TURN_MOTORS_OFF --> @PlayAnimationSitDown, @TurnMotorsOff, @StayMotorsOff

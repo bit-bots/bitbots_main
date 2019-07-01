@@ -16,10 +16,10 @@ hcm:
   animations:
     walkready: "walkready"
     walkready_sim: "walkready"
-    falling_front: "falling_front" # TODO Animation Falling
+    falling_front: "falling_front"
     falling_back: "falling_back"
-    falling_left: "walkready"
-    falling_right: "walkready"
+    falling_left: "falling_left"
+    falling_right: "falling_right"
     stand_up_front: "stand_up_front_fast"
     stand_up_back: "stand_up_back_fast"
     stand_up_left: "turning_back_left"
@@ -53,7 +53,7 @@ hcm:
     "falling_left": "falling_left"
     "falling_right": "falling_right"
 
-    "Wolfgang":
+    "wolfgang":
 
       #Grenzwerte müssen auf härterem boden auch härter eingestellt werden,
       #dies erfolgt mit dem boden_koeffizient

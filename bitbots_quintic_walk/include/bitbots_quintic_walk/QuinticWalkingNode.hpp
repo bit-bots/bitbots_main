@@ -84,7 +84,11 @@ private:
     bool _imuActive;
     double _imu_pitch_threshold;
     double _imu_roll_threshold;
+    double _imu_pitch_vel_threshold;
+    double _imu_roll_vel_threshold;
 
+
+    bool _publishOdomTF;
     int _odomPubFactor;
     std::chrono::time_point<std::chrono::steady_clock> _last_update_time;
     double _last_ros_update_time;
@@ -93,7 +97,7 @@ private:
     int _marker_id;
 
     bitbots_quintic_walk::WalkingParameter _params;
-
+    
     Eigen::Vector3d _trunkPos;
     Eigen::Vector3d _trunkAxis;
     Eigen::Vector3d _footPos;
