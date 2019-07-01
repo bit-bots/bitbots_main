@@ -126,7 +126,14 @@ class Candidate:
         """
         return self._y1 + self._height
 
-    # TODO: get_rating
+    def get_rating(self):
+        # type: () -> float
+        """
+        returns...
+
+        :return int: lower right y
+        """
+        return self.rating
 
     def point_in_candidate(self, point):
         # type: (tuple) -> bool
