@@ -106,9 +106,24 @@
         </widget>
        </item>
        <item>
-        <widget class="QLCDNumber" name="RobotState">
-         <property name="value" stdset="0">
-          <double>-1.000000000000000</double>
+        <widget class="QLabel" name="label_14">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:20pt; font-weight:600;&quot;&gt;NONE&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="textFormat">
+          <enum>Qt::RichText</enum>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
@@ -1252,7 +1267,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap>../../../../../../../../../../../RobocupPraktikum/hardware_info/resource/Arrows1.png</pixmap>
+          <pixmap>Arrows1.png</pixmap>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -1281,6 +1296,12 @@
             <widget class="QLabel" name="label_5">
              <property name="text">
               <string>Roll:</string>
+             </property>
+             <property name="textFormat">
+              <enum>Qt::RichText</enum>
+             </property>
+             <property name="scaledContents">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -1321,7 +1342,7 @@
               <string/>
              </property>
              <property name="pixmap">
-              <pixmap>../../../../../../../../../../../RobocupPraktikum/hardware_info/resource/Circle.png</pixmap>
+              <pixmap>Circle.png</pixmap>
              </property>
              <property name="scaledContents">
               <bool>false</bool>

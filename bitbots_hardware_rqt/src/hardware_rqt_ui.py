@@ -91,19 +91,19 @@ class HardwareUI(Plugin):
         self.totrigger.connect(lambda: self.update_graph(self.torqueplt, self.torquelist, self.combobox, 2))
 
 
-        self.diagnostics = rospy.Subscriber("/diagnostics", DiagnosticArray, self.set_motor_diagnostics)
-        self.joint_states = rospy.Subscriber("/joint_states", JointState, self.set_motor_joint_states)
-        self.buttons = rospy.Subscriber("/buttons", Buttons, self.set_buttons)
-        self.imu = rospy.Subscriber("/imu/data", Imu, self.emit_imu_trigger)
-        self.state = rospy.Subscriber("/robot_state", RobotControlState, self.set_robot_state)
+        #self._robot_ip = [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0]
+        self._robot, button_pressed = QInputDialog.getText(self._widget, "Robot?", \
+                "Select your Robot. Example: nuc1", QLineEdit.Normal, "")
+     
+        self.diagnostics = rospy.Subscriber("/{}/diagnostics".format(self._robot), DiagnosticArray, self.set_motor_diagnostics)
+        self.joint_states = rospy.Subscriber("/{}/joint_states".format(self._robot), JointState, self.set_motor_joint_states)
+        self.buttons = rospy.Subscriber("/{}/buttons".format(self._robot), Buttons, self.set_buttons)
+        self.imu = rospy.Subscriber("/{}/imu/data".format(self._robot), Imu, self.emit_imu_trigger)
+        self.state = rospy.Subscriber("/{}/robot_state".format(self._robot), RobotControlState, self.set_robot_state)
 
         self.imutrigger.connect(self.set_imu)
 
-        #self._robot_ip = [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0]
-        self._robot_port, button_pressed = QInputDialog.getText(self._widget, "Change Port?", \
-                "Please select the port you want to listen on. Leave blank for port 5005.", QLineEdit.Normal, "")
-        if button_pressed and self._robot_port == "":
-            self._robot_port = "5005"
+
 
         #self.rcvthread = ReceiverThread(self._robot_ip, self._robot_port)
         #self.rcvthread.start()
@@ -154,7 +154,22 @@ class HardwareUI(Plugin):
         self._widget.checkBox.setCheckState(data.button2)
 
     def set_robot_state(self, data):
-        self._widget.RobotState.display(data.state)
+        states= {0:"CONTROLLABLE", 
+                 1:"FALLING",
+                 2:"FALLEN",
+                 3:"GETTING UP",
+                 4:"ANIMATION RUNNING",
+                 5:"STARTUP",
+                 6:"SHUTDOWN",
+                 7:"PENALTY",
+                 8:"PENALTY ANIM",
+                 9:"RECORD",
+                 10:"WALKING",
+                 11:"MOTOR OFF",
+                 12:"HCM OFF",
+                 13:"HARDWARE PROBLEM",
+                 14:"PICKED UP"}
+        self._widget.label_14.setText(states[data.state])
 
     def set_motor_diagnostics(self, data):
         """Updates the table in the motor overview tab"""
@@ -163,7 +178,7 @@ class HardwareUI(Plugin):
 
         self.motorheaderlist = []
         for i in range(len(data.status)):
-            if data.status[i].level == 1:
+            if data.status[i].level == 1:   
                 self.templist[int(data.status[i].hardware_id)-101].append(float(data.status[i].values[3].value))
                 self.voltagelist[int(data.status[i].hardware_id)-101].append(float(data.status[i].values[1].value))
                 if len(self.templist[i]) > 20:
@@ -190,6 +205,8 @@ class HardwareUI(Plugin):
 
             self._widget.tableWidget.setHorizontalHeaderLabels(self.motorheaderlist)
             self._widget.tableWidget_2.setHorizontalHeaderLabels(self.motorheaderlist[10:])
+            self._widget.tableWidget.reset()
+            self._widget.tableWidget_2.reset()
             self._widget.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
 
         self.tetrigger.emit()
@@ -225,8 +242,8 @@ class HardwareUI(Plugin):
         if self.current_tab == number:
             graph.clear()
             graph.setXRange(-1,21)
-            for i in range(0, len(glist)):
-                if cbox.currentText() == 'All' or cbox.currentIndex() == i:   
+            for i in range(len(glist)):
+                if cbox.currentText() == 'All' or cbox.currentIndex()-1 == i:   
                     path = pg.arrayToQPath(np.arange(len(glist[i])), glist[i])
                     item = QtGui.QGraphicsPathItem(path)
                     item.setPen(pg.mkPen(color=self.colorlist[i]))
