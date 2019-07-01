@@ -22,14 +22,14 @@ class MotorVizHelper:
         args = parser.parse_args(args0[1:])
 
         rospy.init_node("motor_viz_helper", anonymous=False)
-        self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=1, tcp_nodelay=True)
+        self.joint_publisher = rospy.Publisher('joint_states', JointState, queue_size=10, tcp_nodelay=True)
         if args.walking or args.all:
-            rospy.Subscriber("walking_motor_goals", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
+            rospy.Subscriber("walking_motor_goals", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
         if args.animation or args.all:
-            rospy.Subscriber("animation", Animation, self.animation_cb, queue_size=1, tcp_nodelay=True)
+            rospy.Subscriber("animation", Animation, self.animation_cb, queue_size=10, tcp_nodelay=True)
         if args.head or args.all:
             rospy.Subscriber("head_motor_goals", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
 
         self.joint_state_msg = JointState()
         self.joint_state_msg.header.stamp = rospy.Time.now()
@@ -60,7 +60,7 @@ class MotorVizHelper:
     def animation_cb(self, msg: Animation):
         self.joint_command_msg.header.stamp = rospy.Time.now()
         for i in range(len(msg.position.joint_names)):
-            name = msg.joint_names[i]
+            name = msg.position.joint_names[i]
             self.joint_command_msg.positions[JOINT_NAMES.index(name)] = msg.position.points[0].positions[i]
             self.joint_command_msg.velocities[JOINT_NAMES.index(name)] = -1
 
@@ -73,7 +73,6 @@ class MotorVizHelper:
                 old_pos = self.joint_state_msg.position[JOINT_NAMES.index(name)]
                 time_delta = rospy.Time.now() - self.update_time
                 time_delta_secs = time_delta.to_sec()
-                print(time_delta_secs)
                 max_rad = time_delta_secs * msg.velocities[i]
                 if msg.positions[i] - old_pos > max_rad:
                     new_pos = old_pos + max_rad
