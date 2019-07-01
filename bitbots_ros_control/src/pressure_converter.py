@@ -5,6 +5,7 @@ from bitbots_msgs.msg import FootPressure
 from bitbots_msgs.srv import FootScale, FootScaleRequest, FootScaleResponse
 from std_srvs.srv import Empty, EmptyRequest, EmptyResponse
 from geometry_msgs.msg import PointStamped, TransformStamped
+from geometry_msgs.msg import WrenchStamped
 import copy
 import numpy as np
 import yaml
@@ -30,6 +31,25 @@ class PressureConverter:
 
         self.cop_l_pub = rospy.Publisher("/cop_l", PointStamped, queue_size=1)
         self.cop_r_pub = rospy.Publisher("/cop_r", PointStamped, queue_size=1)
+        self.wrench_pub = rospy.Publisher("/foot_pressure_wrench", WrenchStamped, queue_size=1)
+
+        self.wrenches = []
+        cleats_and_cop = ["l_cleat_l_front",
+                          "l_cleat_l_back",
+                          "l_cleat_r_front",
+                          "l_cleat_r_back",
+                          "r_cleat_l_front",
+                          "r_cleat_l_back",
+                          "r_cleat_r_front",
+                          "r_cleat_r_back",
+                          "cop_l",
+                          "cop_r"]
+        for i in range(10):
+            wrench = WrenchStamped()
+            wrench.header.frame_id = cleats_and_cop[i]
+            self.wrenches.append(wrench)
+
+
         rospy.Service("/set_foot_scale", FootScale, self.foot_scale_cb)
         rospy.Service("/set_foot_zero", Empty, self.zero_cb)
         rospy.Service("/reset_foot_calibration", Empty, self.reset_cb)
@@ -49,20 +69,25 @@ class PressureConverter:
         self.values[6][self.current_index] = (msg.r_r_f - self.zero[6]) * self.scale[6]
         self.values[7][self.current_index] = (msg.r_r_b - self.zero[7]) * self.scale[7]
 
-        msg.l_l_f = max(float(np.mean(self.values[0])), 0)
-        msg.l_l_b = max(float(np.mean(self.values[1])), 0)
-        msg.l_r_f = max(float(np.mean(self.values[2])), 0)
-        msg.l_r_b = max(float(np.mean(self.values[3])), 0)
-        msg.r_l_f = max(float(np.mean(self.values[4])), 0)
-        msg.r_l_b = max(float(np.mean(self.values[5])), 0)
-        msg.r_r_f = max(float(np.mean(self.values[6])), 0)
-        msg.r_r_b = max(float(np.mean(self.values[7])), 0)
+        for i in range(8):
+            self.wrenches[i].header.stamp = msg.header.stamp
+            self.wrenches[i].wrench.force.z = max(float(np.mean(self.values[i])), 0)
+            self.wrench_pub.publish(self.wrenches[i])
+
+        msg.l_l_f = self.wrenches[0].wrench.force.z
+        msg.l_l_b = self.wrenches[1].wrench.force.z
+        msg.l_r_f = self.wrenches[2].wrench.force.z
+        msg.l_r_b = self.wrenches[3].wrench.force.z
+        msg.r_l_f = self.wrenches[4].wrench.force.z
+        msg.r_l_b = self.wrenches[5].wrench.force.z
+        msg.r_r_f = self.wrenches[6].wrench.force.z
+        msg.r_r_b = self.wrenches[7].wrench.force.z
 
         self.current_index = (self.current_index + 1) % 10
 
         self.pressure_pub.publish(msg)
 
-        pos = [0.085, 0.045]
+        pos = [0.085, 0.045] # hacky, maybe we should get this from tf..
         cop_l = PointStamped()
         cop_l.header.frame_id = "l_sole"
         cop_l.header.stamp = msg.header.stamp
@@ -72,6 +97,10 @@ class PressureConverter:
             cop_l.point.y = (msg.l_l_f * pos[1] + msg.l_l_b * pos[1] - msg.l_r_f * pos[1] - msg.l_r_b * pos[1]) / sum_of_forces
             self.cop_l_pub.publish(cop_l)
 
+        self.wrenches[8].header.stamp = msg.header.stamp
+        self.wrenches[8].wrench.force.z = sum_of_forces
+        self.wrench_pub.publish(self.wrenches[8])
+
         cop_r = PointStamped()
         cop_r.header.frame_id = "r_sole"
         cop_r.header.stamp = msg.header.stamp
@@ -80,6 +109,10 @@ class PressureConverter:
             cop_r.point.x = (msg.r_l_f * pos[0] - msg.r_l_b * pos[0] + msg.r_r_f * pos[0] - msg.r_r_b * pos[0]) / sum_of_forces
             cop_r.point.y = (msg.r_l_f * pos[1] + msg.r_l_b * pos[1] - msg.r_r_f * pos[1] - msg.r_r_b * pos[1]) / sum_of_forces
             self.cop_r_pub.publish(cop_r)
+
+        self.wrenches[9].header.stamp = msg.header.stamp
+        self.wrenches[9].wrench.force.z = sum_of_forces
+        self.wrench_pub.publish(self.wrenches[9])
 
         cop_r_tf = TransformStamped()
         cop_r_tf.header = cop_r.header
