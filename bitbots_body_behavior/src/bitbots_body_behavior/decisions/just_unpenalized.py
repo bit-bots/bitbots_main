@@ -5,8 +5,6 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 class JustUnpenalized(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         self._debug_data = self.blackboard.gamestate.get_seconds_since_unpenalized()
-        print(self.blackboard.gamestate.unpenalized_since)
-        print(rospy.get_time())
         if self.blackboard.gamestate.get_seconds_since_unpenalized() < 1:
             return 'YES'
         else:
