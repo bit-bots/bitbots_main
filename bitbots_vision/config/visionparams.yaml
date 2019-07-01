@@ -51,7 +51,7 @@ field_boundary_finder_precision_pix: 5
 field_boundary_finder_min_precision_pix: 3
 field_boundary_finder_head_joint_threshold: -0.5
 
-vision_ball_classifier: 'fcnn'  # fcnn or dummy
+vision_ball_classifier: 'yolo'  # fcnn or dummy
 vision_publish_debug_image: false
 vision_publish_field_mask_image: false
 vision_parallelize: true
