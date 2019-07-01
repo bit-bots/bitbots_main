@@ -18,17 +18,12 @@ $BallKickArea
 
 #NoLocalizationPlayerBehavior
 $BallSeen
-    YES --> $BallDangerous
-        YES --> $BallClose
-            YES --> $GoalSeen
-                YES --> #GoAndKickBallDetectionGoal
-                NO --> @GoToBall + target:none, @SearchGoal
-            NO --> @GoToBall + target:none
-        NO --> $BallInDefensiveArea
-            YES --> @GoToBlockPosition, @LookAtBall
-            NO --> @LookAtBall
+    YES --> $BallClose
+        YES --> $GoalSeen
+            YES --> #GoAndKickBallDetectionGoal
+            NO --> @GoToBall + target:none, @SearchGoal
+        NO --> @GoToBall + target:none
     NO --> @SearchBall
-
 
 #NoLocalizationGoalieBehavior
 $BallSeen
