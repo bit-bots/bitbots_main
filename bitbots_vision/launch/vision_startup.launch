@@ -10,7 +10,6 @@
     <group unless="$(arg dummyball)">
         <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
             <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml" />
-            <param name="vision_ball_classifier" value="fcnn" />
             <param name="vision_use_sim_color" value="$(arg sim)" />
             <param name="vision_publish_debug_image" value="$(arg debug)" />
             <param name="vision_publish_field_mask_image" value="$(arg debug)" />
