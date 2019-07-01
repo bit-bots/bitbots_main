@@ -49,14 +49,14 @@ class PressureConverter:
         self.values[6][self.current_index] = (msg.r_r_f - self.zero[6]) * self.scale[6]
         self.values[7][self.current_index] = (msg.r_r_b - self.zero[7]) * self.scale[7]
 
-        msg.l_l_f = float(np.mean(self.values[0]))
-        msg.l_l_b = float(np.mean(self.values[1]))
-        msg.l_r_f = float(np.mean(self.values[2]))
-        msg.l_r_b = float(np.mean(self.values[3]))
-        msg.r_l_f = float(np.mean(self.values[4]))
-        msg.r_l_b = float(np.mean(self.values[5]))
-        msg.r_r_f = float(np.mean(self.values[6]))
-        msg.r_r_b = float(np.mean(self.values[7]))
+        msg.l_l_f = max(float(np.mean(self.values[0])), 0)
+        msg.l_l_b = max(float(np.mean(self.values[1])), 0)
+        msg.l_r_f = max(float(np.mean(self.values[2])), 0)
+        msg.l_r_b = max(float(np.mean(self.values[3])), 0)
+        msg.r_l_f = max(float(np.mean(self.values[4])), 0)
+        msg.r_l_b = max(float(np.mean(self.values[5])), 0)
+        msg.r_r_f = max(float(np.mean(self.values[6])), 0)
+        msg.r_r_b = max(float(np.mean(self.values[7])), 0)
 
         self.current_index = (self.current_index + 1) % 10
 
@@ -67,7 +67,7 @@ class PressureConverter:
         cop_l.header.frame_id = "l_sole"
         cop_l.header.stamp = msg.header.stamp
         sum_of_forces = msg.l_l_f + msg.l_l_b +  msg.l_r_f + msg.l_r_b
-        if sum_of_forces != 0.0:
+        if sum_of_forces > 0.0:
             cop_l.point.x = (msg.l_l_f * pos[0] - msg.l_l_b * pos[0] + msg.l_r_f * pos[0] - msg.l_r_b * pos[0]) / sum_of_forces
             cop_l.point.y = (msg.l_l_f * pos[1] + msg.l_l_b * pos[1] - msg.l_r_f * pos[1] - msg.l_r_b * pos[1]) / sum_of_forces
             self.cop_l_pub.publish(cop_l)
@@ -76,7 +76,7 @@ class PressureConverter:
         cop_r.header.frame_id = "r_sole"
         cop_r.header.stamp = msg.header.stamp
         sum_of_forces = msg.r_l_f + msg.r_l_b + msg.r_r_b + msg.r_r_f
-        if sum_of_forces != 0.0:
+        if sum_of_forces > 0.0:
             cop_r.point.x = (msg.r_l_f * pos[0] - msg.r_l_b * pos[0] + msg.r_r_f * pos[0] - msg.r_r_b * pos[0]) / sum_of_forces
             cop_r.point.y = (msg.r_l_f * pos[1] + msg.r_l_b * pos[1] - msg.r_r_f * pos[1] - msg.r_r_b * pos[1]) / sum_of_forces
             self.cop_r_pub.publish(cop_r)
