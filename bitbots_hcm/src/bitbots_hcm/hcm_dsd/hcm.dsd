@@ -14,9 +14,11 @@ $Falling
             FREE --> $Walking
                 STOP_WALKING --> @StopWalking
                 STAY_WALKING --> @StayWalking
-                NOT_WALKING --> $Controlable
-                    NOT_WALKREADY --> @PlayAnimationWalkready
-                    WALKREADY --> @StayControlable
+                NOT_WALKING --> $Kicking
+                    NOT_KICKING --> $Controlable
+                        NOT_WALKREADY --> @PlayAnimationWalkready
+                        WALKREADY --> @StayControlable
+                    KICKING --> @StayKicking
 
 #Penalty
 $Penalty
