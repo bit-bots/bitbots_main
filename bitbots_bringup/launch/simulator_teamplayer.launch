@@ -2,10 +2,11 @@
     <!-- set parameter -->
     <arg name="sim_ns" default="/" />
     <arg name="hcm" default="false"/>
-    <arg name="use_fake_walk" doc="fake the falking by using simplified physics and move the robot around on the plain field" default="false"/>
+    <arg name="use_fake_walk" doc="fake the walking by using simplified physics and move the robot around on the plain field" default="false"/>
     <arg name="basler" default="true" doc="Defines the robot camera type"/>
     <arg name="vision_debug" default="false" doc="activates the debug output of the vision pipeline"/>
     <arg name="dummyball" default="false" doc="true: does not start the ball detection to save resources" />
+    <arg name="use_fake_vision" doc="fake the vision detections in the simulators" default="false"/>
 
     <param name="/use_sim_time" value="true" />
     <param name="/simulation_active" value="true"/>
@@ -50,12 +51,17 @@
         </include>
     </group>
 
-    <!-- launch vision -->
-    <include file="$(find bitbots_vision)/launch/vision_startup.launch">
-        <arg name="debug" value="$(arg vision_debug)"/>
-        <arg name="sim" value="true"/>
-        <arg name="dummyball" value="$(arg dummyball)"/>
-    </include>
+    <!-- launch some kind of vision -->
+    <group unless="$(arg use_fake_vision)">
+        <include file="$(find bitbots_vision)/launch/vision_startup.launch">
+            <arg name="debug" value="$(arg vision_debug)"/>
+            <arg name="sim" value="true"/>
+            <arg name="dummyball" value="$(arg dummyball)"/>
+        </include>
+    </group>
+    <group if="$(arg use_fake_vision)">
+        <node name="sim_fake_vision" pkg="bitbots_bringup" type="fake_vis_in_sim.py" output="screen" respawn="true"/>
+    </group>
 
     <!-- launch transformer -->
 
