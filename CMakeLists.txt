@@ -19,7 +19,7 @@ add_message_files(
   FILES
   ColorSpace.msg
   Config.msg
-  CpuMessage.msg
+  Cpu.msg
   FootPressure.msg
   JointCommand.msg
   JointTorque.msg
@@ -28,6 +28,7 @@ add_message_files(
 add_service_files(
    FILES
    ManualPenalize.srv
+   FootScale.srv
 )
 
 
@@ -39,5 +40,5 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS roscpp std_msgs sensor_msgs actionlib_msgs
+  CATKIN_DEPENDS roscpp std_msgs sensor_msgs actionlib_msgs message_runtime
 )
