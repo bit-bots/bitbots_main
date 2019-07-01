@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+#TODO: foot sensors
+#segfault imu
+#timestamp
+#logging
+#cleanup
+
 from python_qt_binding.QtWidgets import QMainWindow, QLabel, QTableWidgetItem, QTableWidget,QComboBox, QInputDialog, QLineEdit
 import pyqtgraph as pg
 from python_qt_binding import loadUi, QtCore, QtGui
@@ -22,10 +28,22 @@ import getpass, datetime, sys, socket
 
 class HardwareUI(Plugin):
     """Backend for the GUI. Receives UDP data and distributes it across all GUI elements."""
-    sig = QtCore.pyqtSignal(str)
+    tetrigger = QtCore.pyqtSignal()
+    totrigger = QtCore.pyqtSignal()
+    votrigger = QtCore.pyqtSignal()
+    imutrigger = QtCore.pyqtSignal(Imu)
+
     def __init__(self, context):
         """Loads up the master.ui GUI file and adds some additional widgets that cannot be added beforehand. Also sets some necessary variables."""
         super(HardwareUI, self).__init__(context)
+        self._widget = QMainWindow()
+
+        rp = rospkg.RosPack()
+        ui_file = os.path.join(rp.get_path('bitbots_hardware_rqt'), 'resource', 'master.ui')
+        loadUi(ui_file, self._widget, {})
+
+        self.current_tab = 0
+        self.current_outer_tab = 0
 
         self.historydict = []
         self.colorlist = []     #Holds information about the graph colors, so we can distinguish between the different motors
@@ -52,32 +70,9 @@ class HardwareUI(Plugin):
         for i in range(0, 20):
             self.colorlist.append((random.randrange(50,255),random.randrange(0,255),random.randrange(0,255)))
 
-        self.diagnostics = rospy.Subscriber("/diagnostics", DiagnosticArray, self.set_motor_diagnostics)
-        self.joint_states = rospy.Subscriber("/joint_states", JointState, self.set_motor_joint_states)
-        self.buttons = rospy.Subscriber("/buttons", Buttons, self.set_buttons)
-        self.imu = rospy.Subscriber("/imu/data", Imu, self.set_imu)
-        self.state = rospy.Subscriber("/robot_state", RobotControlState, self.set_robot_state)
-
         self.templist = [[] for i in range(20)]
         self.torquelist = [[] for i in range(20)]
-        self.voltagelist = []
-
-        self._widget = QMainWindow()
-
-        #self._robot_ip = [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0]
-        self._robot_port, button_pressed = QInputDialog.getText(self._widget, "Change Port?", \
-                "Please select the port you want to listen on. Leave blank for port 5005.", QLineEdit.Normal, "")
-        if button_pressed and self._robot_port == "":
-            self._robot_port = "5005"
-        self.current_tab = 0
-
-        #self.rcvthread = ReceiverThread(self._robot_ip, self._robot_port)
-        #self.rcvthread.start()
-        rp = rospkg.RosPack()
-        ui_file = os.path.join(rp.get_path('bitbots_hardware_rqt'), 'resource', 'master.ui')
-        loadUi(ui_file, self._widget, {})
-
-        self.write_log = False
+        self.voltagelist = [[] for i in range(20)]
 
         self.crosshair = QLabel()
         self.pixmap = QtGui.QPixmap(os.path.join(rp.get_path('bitbots_hardware_rqt'), 'resource', 'cross.png'))
@@ -91,10 +86,39 @@ class HardwareUI(Plugin):
         self.crosshair2.setParent(self._widget.label_11)
         self.crosshair2.move(87, 87)
 
+        self.make_Graphs()
+
+        self.votrigger.connect(lambda: self.update_graph(self.voltageplt, self.voltagelist, self.combobox2, 3))
+        self.tetrigger.connect(lambda: self.update_graph(self.tempplt, self.templist, self.combobox3, 1))
+        self.totrigger.connect(lambda: self.update_graph(self.torqueplt, self.torquelist, self.combobox, 2))
+
+
+        self.diagnostics = rospy.Subscriber("/diagnostics", DiagnosticArray, self.set_motor_diagnostics)
+        self.joint_states = rospy.Subscriber("/joint_states", JointState, self.set_motor_joint_states)
+        self.buttons = rospy.Subscriber("/buttons", Buttons, self.set_buttons)
+        self.imu = rospy.Subscriber("/imu/data", Imu, self.emit_imu_trigger)
+        self.state = rospy.Subscriber("/robot_state", RobotControlState, self.set_robot_state)
+
+        self.imutrigger.connect(self.set_imu)
+
+        #self._robot_ip = [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0]
+        self._robot_port, button_pressed = QInputDialog.getText(self._widget, "Change Port?", \
+                "Please select the port you want to listen on. Leave blank for port 5005.", QLineEdit.Normal, "")
+        if button_pressed and self._robot_port == "":
+            self._robot_port = "5005"
+
+        #self.rcvthread = ReceiverThread(self._robot_ip, self._robot_port)
+        #self.rcvthread.start()
+
+
+        self.write_log = False
+
         self._widget.GraphenView.currentChanged.connect(self.current_graph_changed)
+        self._widget.tabWidget.currentChanged.connect(self.current_outer_tab_changed)
+
 
         self._widget.checkBox_5.stateChanged.connect(self.write_log_trigger)
-        self.make_Graphs()
+
 
         #self._widget.label_14.setText("IP: "+ [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0])
 
@@ -128,6 +152,8 @@ class HardwareUI(Plugin):
         """Handles the changing between tabs, so that only the active tab is updated, to reduce lag"""
         self.current_tab = change
 
+    def current_outer_tab_changed(self, change):
+        self.current_outer_tab = change
 
     def process_data(self, data):
         """Triggered each time we receive an UDP message. Calls methods to update each GUI element"""
@@ -137,16 +163,20 @@ class HardwareUI(Plugin):
             self.logfile.write(data)
             self.logfile.write("\n \n")
 
+    def emit_imu_trigger(self, data):
+        self.imutrigger.emit(data)
+
     def set_imu(self, data):
         """Updates the IMU/Gyro widgets."""
-        self._widget.label_8.setText(str(math.degrees(data.angular_velocity.x)))
-        self._widget.label_9.setText(str(math.degrees(data.angular_velocity.y)))
-        self._widget.label_10.setText(str(math.degrees(data.angular_velocity.z)))
+        if self.current_outer_tab == 2:
+            self._widget.label_8.setText(str(math.degrees(data.angular_velocity.x)))
+            self._widget.label_9.setText(str(math.degrees(data.angular_velocity.y)))
+            self._widget.label_10.setText(str(math.degrees(data.angular_velocity.z)))
 
-        self.crosshair.move((187+(math.degrees(data.angular_velocity.x)*400/360)), \
-            (187+(math.degrees(data.angular_velocity.y)*400/360)))    #To place the crosshair on the circle, circle diametre is 400px, crosshair is 25px wide
-        yawx, yawy = self.calcPosInCicle(data.angular_velocity.z)
-        self.crosshair2.move(yawx, yawy)
+            self.crosshair.move((187+(math.degrees(data.angular_velocity.x)*400/360)), \
+                (187+(math.degrees(data.angular_velocity.y)*400/360)))    #To place the crosshair on the circle, circle diametre is 400px, crosshair is 25px wide
+            yawx, yawy = self.calcPosInCicle(data.angular_velocity.z)
+            self.crosshair2.move(yawx, yawy)
 
     def set_buttons(self, data):
         """Updates the widgets placed in the topbar"""
@@ -171,41 +201,44 @@ class HardwareUI(Plugin):
     def set_motor_diagnostics(self, data):
         """Updates the table in the motor overview tab"""
         self.motorheaderlist = []
-        for i in range(0, len(data.status)):
-            self.templist[int(data.status[i].hardware_id)-100].append(float(data.status[i].values[3].value))
-            self.torquelist[int(data.status[i].hardware_id)-100].append(float(data.status[i].values[1].value))
-            #print(self.templist)
-            if len(self.templist[i]) > 20:
-                self.templist[i].pop(0)
-            if self.current_tab == 0:
-                if data.status[i].level == 1:
-                    if not data.status[i].values[2].value in self.motorheaderlist:
-                        self.motorheaderlist.append(data.status[i].values[2].value)
-                    for j in range(0, len(self.motorheaderlist)):
-                        if j < 10:
-                            selected = self._widget.tableWidget
-                            k=j
-                        else:
-                            selected = self._widget.tableWidget_2
-                            k=j-10
+        for i in range(len(data.status)):
+            if data.status[i].level == 1:
+                self.templist[int(data.status[i].hardware_id)-101].append(float(data.status[i].values[3].value))
+                self.voltagelist[int(data.status[i].hardware_id)-101].append(float(data.status[i].values[1].value))
+                if len(self.templist[i]) > 20:
+                    self.templist[i].pop(0)
+                if len(self.voltagelist[i]) > 20:
+                    self.voltagelist[i].pop(0)    
+                if self.current_tab == 0:
+                    if data.status[i].level == 1:
+                        if not data.status[i].values[2].value in self.motorheaderlist:
+                            self.motorheaderlist.append(data.status[i].values[2].value)
+                        for j in range(0, len(self.motorheaderlist)):
+                            if j < 10:
+                                selected = self._widget.tableWidget
+                                k=j
+                            else:
+                                selected = self._widget.tableWidget_2
+                                k=j-10
 
-                        if self.motorheaderlist[j] == data.status[i].values[2].value:
-                            selected.setItem(0, k, QTableWidgetItem(data.status[i].message))
-                            selected.setItem(1, k, QTableWidgetItem(str(round(float(data.status[i].values[3].value),2))))
-                            selected.setItem(3, k, QTableWidgetItem(str(round(float(data.status[i].values[1].value),2))))
-                            selected.setItem(4, k, QTableWidgetItem(data.status[i].values[0].value))
+                            if self.motorheaderlist[j] == data.status[i].values[2].value:
+                                selected.setItem(0, k, QTableWidgetItem(data.status[i].message))
+                                selected.setItem(1, k, QTableWidgetItem(str(round(float(data.status[i].values[3].value),2))))
+                                selected.setItem(3, k, QTableWidgetItem(str(round(float(data.status[i].values[1].value),2))))
+                                selected.setItem(4, k, QTableWidgetItem(data.status[i].values[0].value))
 
             self._widget.tableWidget.setHorizontalHeaderLabels(self.motorheaderlist)
             self._widget.tableWidget_2.setHorizontalHeaderLabels(self.motorheaderlist[10:])
             self._widget.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
 
-        self.set_motor_temperature_graph()
-        self.set_motor_voltage_graph(data) #TODO
+        self.tetrigger.emit()
+        self.votrigger.emit()
 
     def set_motor_joint_states(self, data):
         if self.current_tab == 0:
             self.motorheaderlist = []
             for i in range(0, len(data.name)):
+                self.torquelist[i].append(float(data.effort[i]))
                 if not data.name[i] in self.motorheaderlist:
                     self.motorheaderlist.append(data.name[i])
                 for j in range(0, len(self.motorheaderlist)):    
@@ -224,55 +257,19 @@ class HardwareUI(Plugin):
             self._widget.tableWidget.setHorizontalHeaderLabels(self.motorheaderlist)
             self._widget.tableWidget_2.setHorizontalHeaderLabels(self.motorheaderlist[10:])
 
-        self.set_motor_torque_graph()
+            self.totrigger.emit()
 
-    def set_motor_temperature_graph(self):
+    def update_graph(self, graph, glist, cbox, number):
         """Updates the graph that displays the motors temperature"""
-        if self.current_tab == 1:
-            self.tempplt.clear()
-            self.tempplt.setXRange(-1,21)
-            self.tempplt.setYRange(-1, 100)
-            for i in range(0, len(self.templist)):
-                if self.combobox3.currentText() == 'All' or self.combobox3.currentIndex() == i:   
-                    path = pg.arrayToQPath(np.arange(len(self.templist[i])), self.templist[i])
+        if self.current_tab == number:
+            graph.clear()
+            graph.setXRange(-1,21)
+            for i in range(0, len(glist)):
+                if cbox.currentText() == 'All' or cbox.currentIndex() == i:   
+                    path = pg.arrayToQPath(np.arange(len(glist[i])), glist[i])
                     item = QtGui.QGraphicsPathItem(path)
                     item.setPen(pg.mkPen(color=self.colorlist[i]))
-                    self.tempplt.addItem(item)
-
-
-    def set_motor_torque_graph(self):
-        """Updates the graph that displays the motors torque"""
-        if self.current_tab == 2:
-            self.torqueplt.clear()
-            self.tempplt.setXRange(-1,21)
-            self.tempplt.setYRange(-1, 100)
-            for i in range(0, len(self.torquelist)):
-                if self.combobox.currentText() == 'All' or self.combobox.currentIndex() == i:   
-                #if the combobox says 'All', plot all, else only plot the one where the name equals the selected name
-                    path = pg.arrayToQPath(np.arange(len(self.torquelist[i])), self.torquelist[i])
-                    item = QtGui.QGraphicsPathItem(path)
-                    item.setPen(pg.mkPen(color=self.colorlist[i]))
-                    self.torqueplt.addItem(item)
-                if len(self.torquelist[i]) > 20:
-                    self.torquelist[i].pop(0)
-            
-
-    def set_motor_voltage_graph(self, data):
-        """Updates the graph that displays the motors voltage"""
-        if self.current_tab == 3:
-            self.voltageplt.clear()
-            for i in range(0, len(data.status)):
-                if len(self.voltagelist) <= i:
-                    self.voltagelist.append([float(data.status.i.values[1].value)])
-                else: 
-                    self.voltagelist[i].append(float(data.status.i.values[1].value))
-                if self.combobox2.currentText() == 'All' or self.combobox2.currentIndex() == i:   
-                    path = pg.arrayToQPath(np.arange(len(self.voltagelist[i])), self.voltagelist[i])
-                    item = QtGui.QGraphicsPathItem(path)
-                    item.setPen(pg.mkPen(color=self.colorlist[i]))
-                    self.voltageplt.addItem(item)
-                if len(self.voltagelist[i]) > 20:
-                    self.voltagelist[i].pop(0)
+                    graph.addItem(item)
 
 
 
@@ -283,6 +280,7 @@ class HardwareUI(Plugin):
         Creates a plot with grid and legend, then adds it to the coresponding layout.
         """
         self.tempplt = pg.plot()
+        self.tempplt.setYRange(-1, 100)
         self.tempplt.showGrid(x=True, y=True)
         self.tempplt.addLegend()
         for i in range(0, 10):  
@@ -303,6 +301,7 @@ class HardwareUI(Plugin):
         self.tempplt.win.hide()
 
         self.torqueplt = pg.plot()
+        self.torqueplt.setYRange(-1, 2)
         self.torqueplt.showGrid(x=True, y=True)
         self.torqueplt.addLegend()
         for i in range(0, 10):
@@ -321,6 +320,7 @@ class HardwareUI(Plugin):
         self.torqueplt.win.hide()
 
         self.voltageplt = pg.plot()
+        self.voltageplt.setYRange(-1, 30)
         self.voltageplt.showGrid(x=True, y=True)
         self.voltageplt.addLegend()
         for i in range(0, 10):
