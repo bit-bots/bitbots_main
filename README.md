@@ -2,13 +2,14 @@ README
 ======
 
 This is the vision package of the Hamburg Bit-Bots.
-For standardized camers such as USB-webcams we use the wolves_image_provider package as image provider.
+For standardized cameras such as USB-webcams we use the wolves_image_provider package as image provider.
 Alternatively every image source, that publishes sensor_msgs/Image messages (i.e. basler driver for basler cameras) is supported.
 Settings considering the vision are set in the visionparams.yaml (bitbots_vision/config/visionparams.yaml).
 You do NOT want to enable DEBUG on the robot.
 The color calibration files are created with the wolves colorpicker and a rosbag.
 The source code of the vision is located in bitbots_vision/src.
 In bitbots_vision/models the fcnn models are stored. Due to their size, these are not part of this repository.
+After changes in the models or config/color_spaces directory, rebuilding the vision node is required to see these changes in dynamic reconfigure.
 To tweak the camera image, use the settings in the image provider.
 
 Neural Network Models
