@@ -31,8 +31,8 @@ class PressureConverter:
 
         self.cop_l_pub = rospy.Publisher("/cop_l", PointStamped, queue_size=1)
         self.cop_r_pub = rospy.Publisher("/cop_r", PointStamped, queue_size=1)
-        self.wrench_pub = rospy.Publisher("/foot_pressure_wrench", WrenchStamped, queue_size=1)
 
+        self.wrench_pubs = []
         self.wrenches = []
         cleats_and_cop = ["l_cleat_l_front",
                           "l_cleat_l_back",
@@ -48,6 +48,7 @@ class PressureConverter:
             wrench = WrenchStamped()
             wrench.header.frame_id = cleats_and_cop[i]
             self.wrenches.append(wrench)
+            self.wrench_pubs.append(rospy.Publisher("/wrench" + cleats_and_cop[i], WrenchStamped, queue_size=1))
 
 
         rospy.Service("/set_foot_scale", FootScale, self.foot_scale_cb)
@@ -72,7 +73,7 @@ class PressureConverter:
         for i in range(8):
             self.wrenches[i].header.stamp = msg.header.stamp
             self.wrenches[i].wrench.force.z = max(float(np.mean(self.values[i])), 0)
-            self.wrench_pub.publish(self.wrenches[i])
+            self.wrench_pubs[i].publish(self.wrenches[i])
 
         msg.l_l_f = self.wrenches[0].wrench.force.z
         msg.l_l_b = self.wrenches[1].wrench.force.z
@@ -99,7 +100,7 @@ class PressureConverter:
 
         self.wrenches[8].header.stamp = msg.header.stamp
         self.wrenches[8].wrench.force.z = sum_of_forces
-        self.wrench_pub.publish(self.wrenches[8])
+        self.wrench_pubs[8].publish(self.wrenches[8])
 
         cop_r = PointStamped()
         cop_r.header.frame_id = "r_sole"
@@ -112,7 +113,7 @@ class PressureConverter:
 
         self.wrenches[9].header.stamp = msg.header.stamp
         self.wrenches[9].wrench.force.z = sum_of_forces
-        self.wrench_pub.publish(self.wrenches[9])
+        self.wrench_pubs[9].publish(self.wrenches[9])
 
         cop_r_tf = TransformStamped()
         cop_r_tf.header = cop_r.header
