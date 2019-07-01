@@ -32,7 +32,7 @@ QuinticWalkingNode::QuinticWalkingNode() :
     //_subJointStates = _nh.subscribe("joint_states", 1, &QuinticWalkingNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
     _subKick = _nh.subscribe("kick", 1, &QuinticWalkingNode::kickCb, this, ros::TransportHints().tcpNoDelay());
     _subImu = _nh.subscribe("imu/data", 1, &QuinticWalkingNode::imuCb, this, ros::TransportHints().tcpNoDelay());
-    _subPressure = _nh.subscribe("pressure", 1, &QuinticWalkingNode::pressureCb, this,
+    _subPressure = _nh.subscribe("foot_pressure_filtered", 1, &QuinticWalkingNode::pressureCb, this,
                                  ros::TransportHints().tcpNoDelay());
 
     /* debug publisher */
@@ -302,8 +302,8 @@ void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg) {
 
         // check if robot is unstable and should pause
         // this is true if the robot is falling to the outside or to front or back
-        if (_copStopActive && (s_io_ratio < _ioPressureThreshold || s_fb_ratio < 1 / _fbPressureThreshold ||
-                               s_fb_ratio > _fbPressureThreshold)) {
+        if (_copStopActive && (s_io_ratio > _ioPressureThreshold || 1 / s_io_ratio > _ioPressureThreshold
+                               1 / s_fb_ratio > _fbPressureThreshold || s_fb_ratio > _fbPressureThreshold)) {
             _walkEngine.requestPause();
             ROS_WARN("CoP stop!");
         }
