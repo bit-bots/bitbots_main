@@ -28,7 +28,6 @@ class PressureConverter:
         self.values = np.zeros((8, 10), dtype=np.float)
         self.current_index = 0
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
-        rospy.Subscriber("/foot_pressure", FootPressure, self.pressure_cb)
         self.pressure_pub = rospy.Publisher("/foot_pressure_filtered", FootPressure, queue_size=1)
 
         self.cop_l_pub = rospy.Publisher("/cop_l", PointStamped, queue_size=1)
@@ -57,8 +56,10 @@ class PressureConverter:
         rospy.Service("/set_foot_zero", Empty, self.zero_cb)
         rospy.Service("/reset_foot_calibration", Empty, self.reset_cb)
 
-        self.threshold = 0
+        self.threshold = 0.0
         self.dyn_reconf = Server(bitbots_ros_control_paramsConfig, self.reconfigure)
+
+        rospy.Subscriber("/foot_pressure", FootPressure, self.pressure_cb)
 
         rospy.spin()
 
@@ -83,7 +84,8 @@ class PressureConverter:
         self.values[7][self.current_index] = (msg.r_r_b - self.zero[7]) * self.scale[7]
 
         for i in range(8):
-            self.wrenches[i].header.stamp = msg.header.stamp
+            # past dated for tf
+            self.wrenches[i].header.stamp = msg.header.stamp - rospy.Duration(0.1)
             self.wrenches[i].wrench.force.z = max(float(np.mean(self.values[i])), 0)
             self.wrench_pubs[i].publish(self.wrenches[i])
 
@@ -104,35 +106,34 @@ class PressureConverter:
         cop_l = PointStamped()
         cop_l.header.frame_id = "l_sole"
         cop_l.header.stamp = msg.header.stamp
-        sum_of_forces = msg.l_l_f + msg.l_l_b +  msg.l_r_f + msg.l_r_b
-        if sum_of_forces > self.threshold:
-            cop_l.point.x = (msg.l_l_f * pos[0] - msg.l_l_b * pos[0] + msg.l_r_f * pos[0] - msg.l_r_b * pos[0]) / sum_of_forces
-            cop_l.point.y = (msg.l_l_f * pos[1] + msg.l_l_b * pos[1] - msg.l_r_f * pos[1] - msg.l_r_b * pos[1]) / sum_of_forces
+        sum_of_forces_l = msg.l_l_f + msg.l_l_b +  msg.l_r_f + msg.l_r_b
+        if sum_of_forces_l > self.threshold:
+            cop_l.point.x = (msg.l_l_f * pos[0] - msg.l_l_b * pos[0] + msg.l_r_f * pos[0] - msg.l_r_b * pos[0]) / sum_of_forces_l
+            cop_l.point.y = (msg.l_l_f * pos[1] + msg.l_l_b * pos[1] - msg.l_r_f * pos[1] - msg.l_r_b * pos[1]) / sum_of_forces_l
         else:
             cop_l.point.x = 0
             cop_l.point.y = 0
         self.cop_l_pub.publish(cop_l)
 
-
-        self.wrenches[8].header.stamp = msg.header.stamp
-        self.wrenches[8].wrench.force.z = sum_of_forces
-        self.wrench_pubs[8].publish(self.wrenches[8])
+        # past dated for tf
+        self.wrenches[8].header.stamp = msg.header.stamp - rospy.Duration(0.05)
+        self.wrenches[8].wrench.force.z = sum_of_forces_l
 
         cop_r = PointStamped()
         cop_r.header.frame_id = "r_sole"
         cop_r.header.stamp = msg.header.stamp
-        sum_of_forces = msg.r_l_f + msg.r_l_b + msg.r_r_b + msg.r_r_f
-        if sum_of_forces > self.threshold:
-            cop_r.point.x = (msg.r_l_f * pos[0] - msg.r_l_b * pos[0] + msg.r_r_f * pos[0] - msg.r_r_b * pos[0]) / sum_of_forces
-            cop_r.point.y = (msg.r_l_f * pos[1] + msg.r_l_b * pos[1] - msg.r_r_f * pos[1] - msg.r_r_b * pos[1]) / sum_of_forces
+        sum_of_forces_r = msg.r_l_f + msg.r_l_b + msg.r_r_b + msg.r_r_f
+        if sum_of_forces_r > self.threshold:
+            cop_r.point.x = (msg.r_l_f * pos[0] - msg.r_l_b * pos[0] + msg.r_r_f * pos[0] - msg.r_r_b * pos[0]) / sum_of_forces_r
+            cop_r.point.y = (msg.r_l_f * pos[1] + msg.r_l_b * pos[1] - msg.r_r_f * pos[1] - msg.r_r_b * pos[1]) / sum_of_forces_r
         else:
             cop_r.point.x = 0
             cop_r.point.y = 0
         self.cop_r_pub.publish(cop_r)
 
-        self.wrenches[9].header.stamp = msg.header.stamp
-        self.wrenches[9].wrench.force.z = sum_of_forces
-        self.wrench_pubs[9].publish(self.wrenches[9])
+        # past dated for tf
+        self.wrenches[9].header.stamp = msg.header.stamp - rospy.Duration(0.05)
+        self.wrenches[9].wrench.force.z = sum_of_forces_r
 
         cop_r_tf = TransformStamped()
         cop_r_tf.header = cop_r.header
@@ -150,6 +151,9 @@ class PressureConverter:
         cop_l_tf.transform.rotation.w = 1.0
         self.tf_broadcaster.sendTransform(cop_l_tf)
 
+        # do this last so rviz can get the tf first
+        self.wrench_pubs[8].publish(self.wrenches[8])
+        self.wrench_pubs[9].publish(self.wrenches[9])
     def zero_cb(self, request):
         #EmptyRequest):
         # save messages
