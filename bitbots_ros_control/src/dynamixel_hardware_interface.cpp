@@ -842,7 +842,7 @@ bool DynamixelHardwareInterface::readFootSensors(){
       int32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i*4], data[i*4+1]), DXL_MAKEWORD(data[i*4+2], data[i*4+3]));
       float pres_d = (float) pres;      
       // go from bytes to actual newton force
-      _current_pressure[i] = (double) pres_d; //- (pow(2, 32)/2);
+      _current_pressure[i+4] = (double) pres_d; //- (pow(2, 32)/2);
     }
   }else{
     ROS_ERROR_THROTTLE(3.0, "Could not read foot with ID 101 (right foot)");
@@ -852,7 +852,7 @@ bool DynamixelHardwareInterface::readFootSensors(){
     for (int i = 0; i < 4; i++) {
       int32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i*4], data[i*4+1]), DXL_MAKEWORD(data[i*4+2], data[i*4+3]));
       float pres_d = (float) pres;
-      _current_pressure[i+4] = (double) pres_d;
+      _current_pressure[i] = (double) pres_d;
     }
 
   }else{
