@@ -83,9 +83,18 @@ class ButtonNode(object):
         speak("1 short", self.speak_publisher, speaking_active=self.speaking_active)
         self.shoot_publisher.publish(Bool(True))
 
+        if self.manual_penality_mode:
+        # switch penalty state by calling service on motion
+
+            try:
+                response = self.manual_penalize_method(0)  # penalize
+            except rospy.ServiceException as exc:
+                print("Service did not process request: " + str(exc))
+
     def button1_long(self):
         rospy.logwarn('Button 1 Pressed long')
         speak("1 long", self.speak_publisher, speaking_active=self.speaking_active)
+
 
     def button2_short(self):
         rospy.logwarn('Button 2 Pressed short')
@@ -94,7 +103,7 @@ class ButtonNode(object):
             # switch penalty state by calling service on motion
 
             try:
-                response = self.manual_penalize_method(2)  # argument 2 for switch
+                response = self.manual_penalize_method(1)  # unpenalize
             except rospy.ServiceException as exc:
                 print("Service did not process request: " + str(exc))
 
