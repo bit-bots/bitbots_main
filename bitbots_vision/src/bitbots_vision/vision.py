@@ -183,14 +183,26 @@ class Vision:
             obstacle_msg.confidence = 1.0
             obstacle_msg.playerNumber = 42
             obstacles_msg.obstacles.append(obstacle_msg)
-        for white_obs in self.obstacle_detector.get_white_obstacles():
-            post_msg = PostInImage()
-            post_msg.width = white_obs.get_width()
-            post_msg.confidence = 1.0
-            post_msg.foot_point.x = white_obs.get_center_x()
-            post_msg.foot_point.y = white_obs.get_lower_right_y()
-            post_msg.top_point = post_msg.foot_point
-            goal_parts_msg.posts.append(post_msg)
+
+        if self.config['vision_ball_classifier'] == 'yolo':
+            cand = self.goalpost_detector.get_candidates()
+            for goalposts in cand:
+                post_msg = PostInImage()
+                post_msg.width = goalposts.get_width()
+                post_msg.confidence = goalposts.get_rating()
+                post_msg.foot_point.x = goalposts.get_center_x()
+                post_msg.foot_point.y = goalposts.get_lower_right_y()
+                post_msg.top_point = post_msg.foot_point
+                goal_parts_msg.posts.append(post_msg)
+        else:
+            for white_obs in self.obstacle_detector.get_white_obstacles():
+                post_msg = PostInImage()
+                post_msg.width = white_obs.get_width()
+                post_msg.confidence = 1.0
+                post_msg.foot_point.x = white_obs.get_center_x()
+                post_msg.foot_point.y = white_obs.get_lower_right_y()
+                post_msg.top_point = post_msg.foot_point
+                goal_parts_msg.posts.append(post_msg)
         for other_obs in self.obstacle_detector.get_other_obstacles():
             obstacle_msg = ObstacleInImage()
             obstacle_msg.color = ObstacleInImage.UNDEFINED
@@ -213,8 +225,10 @@ class Vision:
         for post in goal_parts_msg.posts:
             if post.foot_point.x < left_post.foot_point.x:
                 left_post = post
+                left_post.confidence = post.confidence
             if post.foot_point.x > right_post.foot_point.x:
                 right_post = post
+                right_post.confidence = post.confidence
         goal_msg.left_post = left_post
         goal_msg.right_post = right_post
         goal_msg.confidence = 1.0
@@ -272,8 +286,12 @@ class Vision:
                 (255, 0, 0),
                 thickness=3
             )
+            if self.config['vision_ball_classifier'] == "yolo":
+                post_candidates = self.goalpost_detector.get_candidates()
+            else:
+                post_candidates = self.obstacle_detector.get_white_obstacles()
             self.debug_image_dings.draw_obstacle_candidates(
-                self.obstacle_detector.get_white_obstacles(),
+                post_candidates,
                 (255, 255, 255),
                 thickness=3
             )
@@ -433,8 +451,9 @@ class Vision:
         if config['vision_ball_classifier'] == 'yolo':
             rospy.logwarn("yolo is running now")
             # TODO replace following strings with path to config/weights
-            self.ball_detector = yolo_handler("config", "weight")
-        # publishers
+            yolo = yolo_handler.YoloHandler("FOO", "BAR")
+            self.ball_detector = yolo_handler.YoloBallDetector(yolo)
+            self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
 
         # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!
         if 'ROS_ball_msg_topic' not in self.config or \
