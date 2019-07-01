@@ -3,8 +3,6 @@
 
 #TODO: foot sensors
 #segfault imu
-#timestamp
-#logging
 #cleanup
 
 from python_qt_binding.QtWidgets import QMainWindow, QLabel, QTableWidgetItem, QTableWidget,QComboBox, QInputDialog, QLineEdit
@@ -110,15 +108,8 @@ class HardwareUI(Plugin):
         #self.rcvthread = ReceiverThread(self._robot_ip, self._robot_port)
         #self.rcvthread.start()
 
-
-        self.write_log = False
-
         self._widget.GraphenView.currentChanged.connect(self.current_graph_changed)
         self._widget.tabWidget.currentChanged.connect(self.current_outer_tab_changed)
-
-
-        self._widget.checkBox_5.stateChanged.connect(self.write_log_trigger)
-
 
         #self._widget.label_14.setText("IP: "+ [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0])
 
@@ -133,20 +124,7 @@ class HardwareUI(Plugin):
         xPos = math.sin(radOrienation) * 100 + 87
         return xPos, yPos
 
-    def write_log_trigger(self):
-        """Enables or disables the output of a log file
-
-        When triggered writes a file with a header and sets a flag to write data into the file.
-        """
-        if self._widget.checkBox_5.isChecked():
-            filename = 'hardware_log_' + str(rospy.get_rostime().secs) + '.txt'
-            self.logfile = open(filename, 'w+')
-            self.logfile.write(" Host: " + os.uname()[1] + "\n User: " + getpass.getuser() + "\n Time: " + str(datetime.datetime.now()) + \
-                "\n =========================\n \n")
-            self.write_log = True
-        elif self.write_log:
-            self.write_log = False
-            self.logfile.close()
+ 
 
     def current_graph_changed(self, change):
         """Handles the changing between tabs, so that only the active tab is updated, to reduce lag"""
@@ -154,14 +132,6 @@ class HardwareUI(Plugin):
 
     def current_outer_tab_changed(self, change):
         self.current_outer_tab = change
-
-    def process_data(self, data):
-        """Triggered each time we receive an UDP message. Calls methods to update each GUI element"""
-
-        #Writes into the logfile, if logging is enabled
-        if self.write_log:  #TODO: Move Logging or remove
-            self.logfile.write(data)
-            self.logfile.write("\n \n")
 
     def emit_imu_trigger(self, data):
         self.imutrigger.emit(data)
@@ -182,24 +152,15 @@ class HardwareUI(Plugin):
         """Updates the widgets placed in the topbar"""
         self._widget.checkBox.setCheckState(data.button1)
         self._widget.checkBox.setCheckState(data.button2)
-        #timestamp = data['timestamp'].split('.')  TODO: reimplement timestamp
-        #self._widget.label_13.setText(timestamp[0])
 
     def set_robot_state(self, data):
         self._widget.RobotState.display(data.state)
 
-    def set_cpu_tab(self, data):
-        """Updates the widgets in the CPU tab"""
-        for i in data['cpulist']:
-            if i['name'] == 'cpu_name':
-                self._widget.tableWidget_3.setItem(0, 0, QTableWidgetItem(i['usage']))      #TODO: Configure this for robots.
-                self._widget.tableWidget_3.setItem(1, 0, QTableWidgetItem(i['temp']))
-            elif i['name'] == 'cpu_name2':
-                self._widget.tableWidget_4.setItem(0, 0, QTableWidgetItem(i['usage']))
-                self._widget.tableWidget_4.setItem(1, 0, QTableWidgetItem(i['temp']))
-
     def set_motor_diagnostics(self, data):
         """Updates the table in the motor overview tab"""
+        self.timestamp = data.header.stamp.secs  #setting timestamp here, because this topic should always exist.
+        self._widget.label_13.setText(str(self.timestamp))
+
         self.motorheaderlist = []
         for i in range(len(data.status)):
             if data.status[i].level == 1:

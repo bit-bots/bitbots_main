@@ -1,4 +1,4 @@
-<library path="scripts">
+<library path="src">
   <class name="HardwareUI" type="hardware_rqt_ui.HardwareUI" base_class_type="rqt_gui_py::Plugin">
     <description>
       TODO

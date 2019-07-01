@@ -13,7 +13,6 @@ catkin_python_setup()
 
 add_message_files(
    FILES
-   BatteryMessage.msg
 )
 
 generate_messages(

@@ -51,7 +51,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>../../../RobocupPraktikum/hardware_info/resource/bitbots_logo.png</pixmap>
+        <pixmap>../../../../../../../../../../../RobocupPraktikum/hardware_info/resource/bitbots_logo.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>false</bool>
@@ -70,13 +70,6 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QLabel" name="label_14">
-         <property name="text">
-          <string>IP: none</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </item>
      <item>
@@ -91,30 +84,10 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QCheckBox" name="checkBox_2">
-         <property name="text">
-          <string>Charging</string>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="1">
         <widget class="QCheckBox" name="checkBox_3">
          <property name="text">
           <string>Button 2</string>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QCheckBox" name="checkBox_4">
-         <property name="text">
-          <string>Camera</string>
          </property>
          <property name="checkable">
           <bool>false</bool>
@@ -142,28 +115,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QProgressBar" name="progressBar">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="value">
-        <number>24</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QCheckBox" name="checkBox_5">
-         <property name="text">
-          <string>Write Log</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <layout class="QVBoxLayout" name="verticalLayout_2"/>
      </item>
     </layout>
    </widget>
@@ -186,7 +138,7 @@
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Motor&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="Motor">
      <attribute name="title">
@@ -1274,9 +1226,121 @@
       </layout>
      </widget>
     </widget>
+    <widget class="QWidget" name="gyro">
+     <attribute name="title">
+      <string>Gyro</string>
+     </attribute>
+     <widget class="QWidget" name="horizontalLayoutWidget_3">
+      <property name="geometry">
+       <rect>
+        <x>9</x>
+        <y>9</y>
+        <width>1011</width>
+        <height>471</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="pixmap">
+          <pixmap>../../../../../../../../../../../RobocupPraktikum/hardware_info/resource/Arrows1.png</pixmap>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <layout class="QGridLayout" name="gridLayout_5">
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_6">
+             <property name="text">
+              <string>Yaw:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_7">
+             <property name="text">
+              <string>Pitch:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Roll:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_8">
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLabel" name="label_10">
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QLabel" name="label_11">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="pixmap">
+              <pixmap>../../../../../../../../../../../RobocupPraktikum/hardware_info/resource/Circle.png</pixmap>
+             </property>
+             <property name="scaledContents">
+              <bool>false</bool>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
     <widget class="QWidget" name="fuesse">
      <attribute name="title">
-      <string>Füße</string>
+      <string>Feet</string>
      </attribute>
      <widget class="QWidget" name="horizontalLayoutWidget">
       <property name="geometry">
@@ -1395,375 +1459,6 @@
           </widget>
          </item>
         </layout>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="gyro">
-     <attribute name="title">
-      <string>Gyro</string>
-     </attribute>
-     <widget class="QWidget" name="horizontalLayoutWidget_3">
-      <property name="geometry">
-       <rect>
-        <x>9</x>
-        <y>9</y>
-        <width>1011</width>
-        <height>471</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <item>
-        <widget class="QLabel" name="label_4">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="pixmap">
-          <pixmap>./Arrows1.png</pixmap>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <layout class="QGridLayout" name="gridLayout_5">
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_6">
-             <property name="text">
-              <string>Yaw:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_7">
-             <property name="text">
-              <string>Pitch:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>Roll:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="label_8">
-             <property name="text">
-              <string>0</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLabel" name="label_9">
-             <property name="text">
-              <string>0</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLabel" name="label_10">
-             <property name="text">
-              <string>0</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QLabel" name="label_11">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="pixmap">
-              <pixmap>./Circle.png</pixmap>
-             </property>
-             <property name="scaledContents">
-              <bool>false</bool>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="Rechner">
-     <attribute name="title">
-      <string>Rechner</string>
-     </attribute>
-     <widget class="QWidget" name="horizontalLayoutWidget_2">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>1031</width>
-        <height>561</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QListView" name="listView_2">
-         <widget class="QTableWidget" name="tableWidget_3">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>1221</width>
-            <height>221</height>
-           </rect>
-          </property>
-          <property name="baseSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="sizeAdjustPolicy">
-           <enum>QAbstractScrollArea::AdjustToContents</enum>
-          </property>
-          <property name="alternatingRowColors">
-           <bool>true</bool>
-          </property>
-          <row>
-           <property name="text">
-            <string>Auslastung</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>Temperatur</string>
-           </property>
-          </row>
-          <column>
-           <property name="text">
-            <string>CPU1</string>
-           </property>
-          </column>
-          <item row="0" column="0">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="flags">
-            <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsEnabled</set>
-           </property>
-          </item>
-          <item row="1" column="0">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="flags">
-            <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsEnabled</set>
-           </property>
-          </item>
-         </widget>
-        </widget>
-       </item>
-       <item>
-        <widget class="QListView" name="listView_3">
-         <widget class="QTableWidget" name="tableWidget_4">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>1221</width>
-            <height>221</height>
-           </rect>
-          </property>
-          <property name="baseSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="sizeAdjustPolicy">
-           <enum>QAbstractScrollArea::AdjustToContents</enum>
-          </property>
-          <property name="alternatingRowColors">
-           <bool>true</bool>
-          </property>
-          <row>
-           <property name="text">
-            <string>Auslastung</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>Temperatur</string>
-           </property>
-          </row>
-          <column>
-           <property name="text">
-            <string>CPU2</string>
-           </property>
-          </column>
-          <item row="0" column="0">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="flags">
-            <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsEnabled</set>
-           </property>
-          </item>
-          <item row="1" column="0">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="flags">
-            <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsEnabled</set>
-           </property>
-          </item>
-         </widget>
-        </widget>
-       </item>
-       <item>
-        <widget class="QListView" name="listView">
-         <widget class="QTableWidget" name="tableWidget_5">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>1221</width>
-            <height>221</height>
-           </rect>
-          </property>
-          <property name="baseSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="sizeAdjustPolicy">
-           <enum>QAbstractScrollArea::AdjustToContents</enum>
-          </property>
-          <property name="alternatingRowColors">
-           <bool>true</bool>
-          </property>
-          <row>
-           <property name="text">
-            <string>Auslastung</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>Temperatur</string>
-           </property>
-          </row>
-          <column>
-           <property name="text">
-            <string>CPU3</string>
-           </property>
-          </column>
-          <item row="0" column="0">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="flags">
-            <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsEnabled</set>
-           </property>
-          </item>
-          <item row="1" column="0">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="flags">
-            <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsEnabled</set>
-           </property>
-          </item>
-         </widget>
-        </widget>
-       </item>
-       <item>
-        <widget class="QListView" name="listView_3">
-         <widget class="QTableWidget" name="tableWidget_6">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>1221</width>
-            <height>221</height>
-           </rect>
-          </property>
-          <property name="baseSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="sizeAdjustPolicy">
-           <enum>QAbstractScrollArea::AdjustToContents</enum>
-          </property>
-          <property name="alternatingRowColors">
-           <bool>true</bool>
-          </property>
-          <row>
-           <property name="text">
-            <string>Auslastung</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>Temperatur</string>
-           </property>
-          </row>
-          <column>
-           <property name="text">
-            <string>GPU1</string>
-           </property>
-          </column>
-          <item row="0" column="0">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="flags">
-            <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsEnabled</set>
-           </property>
-          </item>
-          <item row="1" column="0">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="flags">
-            <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsEnabled</set>
-           </property>
-          </item>
-         </widget>
-        </widget>
        </item>
       </layout>
      </widget>
