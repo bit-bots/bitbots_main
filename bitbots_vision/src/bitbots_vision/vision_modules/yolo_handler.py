@@ -1,13 +1,14 @@
 import cv2
 import argparse
 import numpy as np
-from candidate import CandidateFinder, Candidate
+from .candidate import CandidateFinder, Candidate
 
 # todo implement candidate finder
-class YoloHandler(CandidateFinder):
+
+class YoloHandler():
     def __init__(self, config, weight):
-        configpath = "/home/jonas/git/bitbots/yolo/fork/darknet/cfg/yolov3-voc.cfg"
-        weightpath = "/home/jonas/git/bitbots/yolo/fork/darknet/yolov3-voc_last.weights2"
+        configpath = "/home/florian/Desktop/yolov3tiny/yolov3tiny-ballgoalpost_final.weights"
+        weightpath = "/home/florian/Desktop/yolov3tiny/yolov3tiny-ballgoalpost.cfg"
         self.classes = ["ball", "goalpost"]
         self.image = None
         self.width = None
@@ -30,20 +31,9 @@ class YoloHandler(CandidateFinder):
 
         return output_layers
 
-
-    def draw_prediction(self, img, class_id, confidence, x, y, x_plus_w, y_plus_h):
-        label = str(self.classes[class_id])
-
-
-        color = self.COLORS[class_id]
-
-        cv2.rectangle(img, (x, y), (x_plus_w, y_plus_h), color, 2)
-
-        cv2.putText(img, label, (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-
-
-
     def set_image(self, img):
+        if np.array_equal(img,self.image):
+            return
         self.image = img
         self.width = img.shape[1]
         self.height = img.shape[0]
@@ -97,18 +87,44 @@ class YoloHandler(CandidateFinder):
 
 
     def get_candidates(self):
+        self.predict()
         return [self.ball_candidates, self.goalpost_candidates]
 
+class YoloBallDetector(CandidateFinder):
+
+    def __init__(self, yolo):
+        self.yolo = yolo
+
+    def set_image(self, image):
+        self.yolo.set_image(image)
+
+    def get_candidates(self):
+        return self.yolo.get_candidates()[0]
+
     def get_top_candidates(self, count = 1):
-        self.ball_candidates = Candidate.sort_candidates(self.ball_candidates)
-        self.goalpost_candidates = Candidate.sort_candidates(self.goalpost_candidates)
-        return [self.ball_candidates[:count], self.goalpost_candidates[:count]]
+        ball_candidates = self.get_candidates()
+        ball_candidates = Candidate.sort_candidates(ball_candidates)
+        return ball_candidates[:count]
 
+    def compute_top_candidate(self):
+        pass
 
-    def get_best_ball_candidate(self):
-        self.ball_candidates = Candidate.sort_candidates(self.ball_candidates)
-        return self.ball_candidates[0]
+class YoloGoalpostDetector(CandidateFinder):
 
-    def get_goalpost_candidates(self):
-        self.goalpost_candidates = Candidate.sort_candidates(self.goalpost_candidates)
-        return self.goalpost_candidates
+    def __init__(self, yolo):
+        self.yolo = yolo
+
+    def set_image(self, image):
+        self.yolo.set_image(image)
+
+    def get_candidates(self):
+        return self.yolo.get_candidates()[1]
+
+    def get_top_candidates(self, count = 1):
+        ball_candidates = self.get_candidates()
+        ball_candidates = Candidate.sort_candidates(ball_candidates)
+        return ball_candidates[:count]
+
+    def compute_top_candidate(self):
+        pass
+
