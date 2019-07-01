@@ -115,7 +115,7 @@ def state_update(state_msg):
             goal.right_post = tf_buffer.transform(right_post, "base_footprint",
                                                 timeout=rospy.Duration(0.1)).pose.position
             rp = True
-        rospy.logwarn("lp: " + str(lp) + " rp: " +str(rp))
+
         if rp or lp:
             if not lp:
                 goal.left_post = goal.right_post
