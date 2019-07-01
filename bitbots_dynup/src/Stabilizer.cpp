@@ -29,7 +29,7 @@ Stabilizer::Stabilizer() {
     }
 }
 
-std::optional<JointGoals> Stabilizer::stabilize(geometry_msgs::Point support_point, geometry_msgs::PoseStamped l_foot_goal_pose, geometry_msgs::PoseStamped r_foot_goal_pose, geometry_msgs::PoseStamped l_hand_goal_pose, geometry_msgs::PoseStamped r_hand_goal_pose) {
+std::optional<JointGoals> Stabilizer::stabilize(geometry_msgs::Point support_point, geometry_msgs::PoseStamped l_foot_goal_pose, geometry_msgs::PoseStamped r_foot_goal_pose) {
     /* ik options is basicaly the command which we send to bio_ik and which describes what we want to do */
     bio_ik::BioIKKinematicsQueryOptions ik_options;
     ik_options.replace = true;

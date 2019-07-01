@@ -7,27 +7,36 @@ std::optional<JointGoals> DynupEngine::tick(double dt) {
     /* Only do an actual tick when splines are present */
     if (m_hand_trajectories && m_foot_trajectories) {
         /* Get should-be pose from planned splines (every axis) at current time */
-        geometry_msgs::PoseStamped l_foot_pose = get_current_pose(m_hand_trajectories.value(), "l_sole");
-        geometry_msgs::PoseStamped r_foot_pose = get_current_pose(m_hand_trajectories.value(), "r_sole");
-        geometry_msgs::PoseStamped l_hand_pose = get_current_pose(m_foot_trajectories.value(), "l_hand");
-        geometry_msgs::PoseStamped r_hand_pose = get_current_pose(m_foot_trajectories.value(), "r_hand");
+        geometry_msgs::PoseStamped l_foot_pose = get_current_pose(m_hand_trajectories.value(), true);
+        geometry_msgs::PoseStamped r_foot_pose = get_current_pose(m_hand_trajectories.value(), false);
+        //geometry_msgs::PoseStamped l_hand_pose = get_current_pose(m_foot_trajectories.value(), "l_hand");
+        //geometry_msgs::PoseStamped r_hand_pose = get_current_pose(m_foot_trajectories.value(), "r_hand");
 
 
         m_time += dt;
-
+        //TODO support point between feet
         /* Stabilize and return result */
-        return std::nullopt;; //TODO m_stabilizer.stabilize(m_is_left_kick, support_point, flying_foot_pose);
+        return m_stabilizer.stabilize(support_point, l_foot_pose, r_foot_pose);
     } else {
         return std::nullopt;
     }
 }
 
-geometry_msgs::PoseStamped DynupEngine::get_current_pose(Trajectories spline_container, std::string frame_id) {
+geometry_msgs::PoseStamped DynupEngine::get_current_pose_foot(Trajectories spline_container, bool left_foot) {
     geometry_msgs::PoseStamped foot_pose;
-    foot_pose.header.frame_id = frame_id;
+    if(left_foot){
+        foot_pose.header.frame_id = "l_sole";
+    }else{
+        foot_pose.header.frame_id = "r_sole";
+    }
     foot_pose.header.stamp = ros::Time::now();
     foot_pose.pose.position.x = spline_container.get("pos_x").pos(m_time);
     foot_pose.pose.position.y = spline_container.get("pos_y").pos(m_time);
+    if(left_foot){
+        foot_pose.pose.position.y += m_params.foot_distance;
+    }else{
+        foot_pose.pose.position.y -= m_params.foot_distance;
+    }
     foot_pose.pose.position.z = spline_container.get("pos_z").pos(m_time);
     tf2::Quaternion q;
     /* Apparently, the axis order is different than expected */
@@ -42,6 +51,11 @@ geometry_msgs::PoseStamped DynupEngine::get_current_pose(Trajectories spline_con
 }
 
 void DynupEngine::calc_front_splines(){
+
+    //
+    // TODO THIS IS CURRENTLY NOT USEEEEEEED
+    //
+
     /*
     calculates splines for front up
     */
@@ -150,7 +164,23 @@ void DynupEngine::calc_back_splines(){
 
 void DynupEngine::calc_squat_splines(){
 
-    //TODO from back to squat
+    // current position as first spline point
+
+    m_foot_trajectories->get("pos_x").addPoint(0, m_params.start_x);
+    m_foot_trajectories->get("pos_y").addPoint(0, 0);
+    m_foot_trajectories->get("pos_z").addPoint(0, m_params.start_trunk_height);
+
+    m_foot_trajectories->get("roll").addPoint(0, 0);
+    m_foot_trajectories->get("pitch").addPoint(0, m_params.start_pitch);
+    m_foot_trajectories->get("yaw").addPoint(0, 0);
+
+    // point at end
+    m_foot_trajectories->get("pos_x").addPoint(m_params.rise_time, 0);
+    m_foot_trajectories->get("pos_y").addPoint(m_params.rise_time, 0);
+    m_foot_trajectories->get("pos_z").addPoint(m_params.rise_time, m_params.trunk_height);
+    m_foot_trajectories->get("roll").addPoint(m_params.rise_time, 0);
+    m_foot_trajectories->get("pitch").addPoint(m_params.rise_time, m_params.trunk_pitch);
+    m_foot_trajectories->get("yaw").addPoint(m_params.rise_time, 0);
 
 }
 
@@ -174,12 +204,12 @@ void DynupEngine::start(bool front) {
 
     init_trajectories();
 
-     if(front){
+     /*if(front){
      //TODO decide on which side we are lying on
         calc_front_splines();
      }else{
         calc_back_splines();
-     }
+     }*/
      calc_squat_splines();
 }
 
@@ -207,7 +237,7 @@ void DynupEngine::init_trajectories() {
 }
 
 int DynupEngine::get_percent_done() const {
-    double duration = 0; //TODO
+    double duration = m_params.rise_time;
     return int(m_time / duration * 100);
 }
 

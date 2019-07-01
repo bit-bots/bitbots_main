@@ -3,8 +3,7 @@
 DynUpNode::DynUpNode() :
         m_server(m_node_handle, "dynup", boost::bind(&DynUpNode::execute_cb, this, _1), false),
         m_listener(m_tf_buffer) {
-    m_joint_goal_publisher = m_node_handle.advertise<bitbots_msgs::JointCommand>("dynup_motor_goals", 1);
-    m_support_foot_publisher = m_node_handle.advertise<std_msgs::Char>("dynup_support_state", 1);
+    m_joint_goal_publisher = m_node_handle.advertise<bitbots_msgs::JointCommand>("animation_motor_goals", 1);
     m_server.start();
 }
 
@@ -14,6 +13,10 @@ void DynUpNode::reconfigure_callback(bitbots_dynup::DynUpConfig &config, uint32_
     DynUpParams params = DynUpParams();
     //TODO actually set parameters like
     //params.leg_min_length = config.leg_min_length;
+    params.foot_distance = config.foot_distance;
+    params.rise_time = config.rise_time;
+    params.trunk_height = config.trunk_height;
+    params.trunk_pitch = config.trunk_height;
     m_engine.set_params(params);
 
     m_engine.m_stabilizer.use_minimal_displacement(config.minimal_displacement);
@@ -27,7 +30,7 @@ void DynUpNode::execute_cb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     // TODO: maybe switch to goal callback to be able to reject goals properly
     ROS_INFO("Accepted new goal");
 
-    m_engine.start(true);
+    m_engine.start(true); //todo we are currently only getting up from squad
     loop_engine();
 }
 

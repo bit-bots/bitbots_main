@@ -21,6 +21,14 @@ public:
     double time_foot_ground;
     double time_torso_45;
 
+    double foot_distance;
+    double rise_time;
+    double trunk_height;
+    double trunk_pitch;
+    double start_x;
+    double start_trunk_height;
+    double start_pitch;
+
 };
 
 /**
@@ -50,12 +58,13 @@ public:
     Stabilizer m_stabilizer;
 private:
     double m_time;
+
     std::optional<Trajectories> m_foot_trajectories, m_hand_trajectories;
     DynUpParams m_params;
 
     tf2_ros::Buffer m_tf_buffer;
     tf2_ros::TransformListener m_listener;
-    geometry_msgs::PoseStamped  get_current_pose(Trajectories spline_container, std::string frame_id);
+    geometry_msgs::PoseStamped  get_current_pose(Trajectories spline_container,  bool left_foot);
 
     void calc_front_splines();
     void calc_back_splines();

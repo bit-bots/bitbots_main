@@ -92,7 +92,7 @@ void QuinticWalkingNode::run() {
                                  || _robotState == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
             // see if the walk engine has new goals for us
             bool newGoals = _walkEngine.updateState(dt, _currentOrders, walkableState);
-            if (newGoals) { //todo
+            if (true) { //TODO we are currently always sending goals to prevent the HCM from thinking that we stopped
                 calculateJointGoals();
             }
         }

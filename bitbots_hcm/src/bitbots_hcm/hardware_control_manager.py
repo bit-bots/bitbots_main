@@ -204,6 +204,7 @@ class HardwareControlManager:
         # we got external shutdown, tell it to the DSD, it will handle it
         self.blackboard.shut_down_request = True
         rospy.logwarn("You're stopping the HCM. The robot will sit down and power off its motors.")
+        speak("Stopping HCM", self.blackboard.speak_publisher, priority=Speak.HIGH_PRIORITY)
         # now wait for it finishing the shutdown procedure
         while not self.blackboard.current_state == STATE_HCM_OFF:
             # we still have to update everything
