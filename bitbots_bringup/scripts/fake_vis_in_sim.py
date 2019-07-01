@@ -11,7 +11,7 @@ from copy import deepcopy
 
 rospy.init_node("fake_vis_in_sim")
 
-tf_buffer = tf2_ros.Buffer(rospy.Duration(10))
+tf_buffer = tf2_ros.Buffer(rospy.Duration(30))
 tf_listener = tf2_ros.TransformListener(tf_buffer)
 
 
@@ -60,7 +60,7 @@ def state_update(state_msg):
     ball_pose_stamped.header.frame_id = "map"
     ball_pose_stamped.pose = ball_pose
 
-    ball_pose_stamped = tf_buffer.transform(ball_pose_stamped, cam_info.header.frame_id, timeout=rospy.Duration(0.1))
+    ball_pose_stamped = tf_buffer.transform(ball_pose_stamped, cam_info.header.frame_id, timeout=rospy.Duration(0.5))
 
     p = [ball_pose_stamped.pose.position.x, ball_pose_stamped.pose.position.y, ball_pose_stamped.pose.position.z]
     k = np.reshape(cam_info.K, (3,3))
@@ -70,7 +70,7 @@ def state_update(state_msg):
     if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height:
         ball = BallRelative()
         ball_pose_stamped = tf_buffer.transform(ball_pose_stamped, "base_footprint",
-                                                timeout=rospy.Duration(0.1))
+                                                timeout=rospy.Duration(0.5))
         ball.header = ball_pose_stamped.header
         ball.ball_relative = ball_pose_stamped.pose.position
         ball.confidence = 1.0
@@ -86,12 +86,12 @@ def state_update(state_msg):
         left_post.pose.position.y += 1.35
 
         left_post = tf_buffer.transform(left_post, cam_info.header.frame_id,
-                                                timeout=rospy.Duration(0.1))
+                                                timeout=rospy.Duration(0.5))
         right_post = goal_pose_stamped
         right_post.pose.position.y -= 1.35
 
         right_post = tf_buffer.transform(right_post, cam_info.header.frame_id,
-                                                timeout=rospy.Duration(0.1))
+                                                timeout=rospy.Duration(0.5))
 
 
         goal = GoalRelative()
@@ -102,7 +102,7 @@ def state_update(state_msg):
         lp = False
         if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height:
             goal.left_post = tf_buffer.transform(left_post, "base_footprint",
-                                                timeout=rospy.Duration(0.1)).pose.position
+                                                timeout=rospy.Duration(0.5)).pose.position
             lp = True
 
         p = [right_post.pose.position.x, right_post.pose.position.y, right_post.pose.position.z]
@@ -113,7 +113,7 @@ def state_update(state_msg):
         rp = False
         if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height:
             goal.right_post = tf_buffer.transform(right_post, "base_footprint",
-                                                timeout=rospy.Duration(0.1)).pose.position
+                                                timeout=rospy.Duration(0.5)).pose.position
             rp = True
 
         if rp or lp:
@@ -131,16 +131,18 @@ def cam_info_cb(msg):
 
 
 if __name__ == "__main__":
+    # wait for transforms to become available
+    tf_buffer.can_transform("base_footprint", "camera_optical_frame", rospy.Time(0), timeout=rospy.Duration(30))
+    tf_buffer.can_transform("map", "camera_optical_frame", rospy.Time(0), timeout=rospy.Duration(30))
+
     ball_pub = rospy.Publisher("/ball_relative", BallRelative, queue_size=1)
     goal_pub = rospy.Publisher("/goal_relative", GoalRelative, queue_size=1)
     model_subscriber = rospy.Subscriber("/gazebo/model_states", ModelStates, state_update, tcp_nodelay=True, queue_size=1)
     cam_info_sub = rospy.Subscriber("/camera_info", CameraInfo, cam_info_cb)
 
-    rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         try:
             rospy.spin()
-            rate.sleep()
         except rospy.exceptions.ROSTimeMovedBackwardsException:
             rospy.logwarn(
             "We moved backwards in time. I hope you just resetted the simulation. If not there is something wrong")
