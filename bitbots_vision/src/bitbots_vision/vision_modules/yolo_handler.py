@@ -1,10 +1,10 @@
 import cv2
 import argparse
 import numpy as np
-import Candidate
+from .candidate import CandidateFinder, Candidate
 
 # todo implement candidate finder
-class YoloHandler():
+class YoloHandler(CandidateFinder):
     def __init__(self, config, weight):
         configpath = "/home/jonas/git/bitbots/yolo/fork/darknet/cfg/yolov3-voc.cfg"
         weightpath = "/home/jonas/git/bitbots/yolo/fork/darknet/yolov3-voc_last.weights2"
@@ -97,18 +97,18 @@ class YoloHandler():
 
 
     def get_candidates(self):
-        return self.get_top_candidates()
+        return [self.ball_candidates(), self.goalpost_candidates]
 
-    def get_top_candidates(self):
-        self.ball_candidates = candidate.sort_candidates(self.ball_candidates)
-        self.goalpost_candidates = candidate.sort_candidates(self.goalpost_candidates)
-        return [self.ball_candidates[0], self.goalpost_candidates[0]]
+    def get_top_candidates(self, count = 1):
+        self.ball_candidates = Candidate.sort_candidates(self.ball_candidates)
+        self.goalpost_candidates = Candidate.sort_candidates(self.goalpost_candidates)
+        return [self.ball_candidates[:count], self.goalpost_candidates[:count]]
 
 
     def get_best_ball_candidate(self):
-        self.ball_candidates = candidate.sort_candidates(self.ball_candidates)
+        self.ball_candidates = Candidate.sort_candidates(self.ball_candidates)
         return self.ball_candidates[0]
 
     def get_goalpost_candidates(self):
-        self.goalpost_candidates = candidate.sort_candidates(self.goalpost_candidates)
+        self.goalpost_candidates = Candidate.sort_candidates(self.goalpost_candidates)
         return self.goalpost_candidates
