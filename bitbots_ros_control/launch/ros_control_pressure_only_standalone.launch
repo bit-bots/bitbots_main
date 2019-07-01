@@ -8,6 +8,9 @@
 
     <node pkg="bitbots_ros_control" type="dynamixel_controller_manager_node" name="ros_control" output="screen"/> 
 
-    <rosparam file="$(find bitbots_ros_control)/config/controller.yaml" command="load" />            
-    
+    <rosparam file="$(find bitbots_ros_control)/config/controller.yaml" command="load" />
+
+    <node pkg="bitbots_ros_control" type="pressure_converter.py" name="pressure_converter" output="screen">
+        <rosparam file="$(find bitbots_ros_control)/config/pressure_amy.yaml" command="load" />
+    </node>
 </launch>
