@@ -51,7 +51,7 @@ field_boundary_finder_precision_pix: 5
 field_boundary_finder_min_precision_pix: 3
 field_boundary_finder_head_joint_threshold: -0.5
 
-vision_ball_classifier: 'fcnn'  # cascade, fcnn or dummy
+vision_ball_classifier: 'fcnn'  # fcnn or dummy
 vision_publish_debug_image: false
 vision_publish_field_mask_image: false
 vision_parallelize: true
@@ -97,10 +97,6 @@ ball_finder_classify_threshold: 0.5
 ball_finder_scale_factor: 1.1
 ball_finder_min_neighbors: 1
 ball_finder_min_size: 10
-
-classifier_model_path: '/models/classifier_01'
-
-cascade_classifier_path: '/classifier/cascadeNew.xml'
 
 dynamic_color_space_active: true
 dynamic_color_space_publish_field_mask_image: false
