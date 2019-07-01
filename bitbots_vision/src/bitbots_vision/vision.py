@@ -255,7 +255,7 @@ class Vision:
             self.pub_debug_fcnn_image.publish(self.ball_detector.get_debug_image())
 
         # do debug stuff
-        if self.debug:
+        if self.publish_debug_image:
             self.debug_image_dings.set_image(image)
             self.debug_image_dings.draw_obstacle_candidates(
                 self.obstacle_detector.get_candidates(),
@@ -302,11 +302,9 @@ class Vision:
             # self.debug_image_dings.draw_points(
             #     self.line_detector.get_nonlinepoints(),
             #     (0, 0, 0))
-            # debug_image_dings.draw_line_segments(line_detector.get_linesegments(), (180, 105, 255))
-            if self.debug_image:
-                self.debug_image_dings.imshow()
-            if self.debug_image_msg:
-                self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(self.debug_image_dings.get_image(), 'bgr8'))
+
+            # publish debug image
+            self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(self.debug_image_dings.get_image(), 'bgr8'))
 
     def _conventional_precalculation(self):
         self.obstacle_detector.compute_all_obstacles()
@@ -321,10 +319,8 @@ class Vision:
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
         self._ball_candidate_y_offset = config['vision_ball_candidate_field_boundary_y_offset']
 
-        self.debug_image = config['vision_debug_image']
-        self.debug_image_msg = config['vision_publish_debug_image']
-        self.debug = self.debug_image or self.debug_image_msg
-        if self.debug:
+        self.publish_debug_image = config['vision_publish_debug_image']
+        if self.publish_debug_image:
             rospy.logwarn('Debug images are enabled')
         else:
             rospy.loginfo('Debug images are disabled')
@@ -334,7 +330,7 @@ class Vision:
         else:
             rospy.logwarn('ball FCNN output publishing is disabled')
 
-        self.publish_fcnn_debug_image = config['ball_fcnn_debug']
+        self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
 
         if config['vision_ball_classifier'] == 'dummy':
             self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, self.debug_printer)
@@ -429,7 +425,7 @@ class Vision:
         # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
         # this enables 2 fcnns with different configs.
         self.ball_fcnn_config = {
-            'debug': config['ball_fcnn_debug'],
+            'debug': config['ball_fcnn_publish_debug_img'],
             'threshold': config['ball_fcnn_threshold'],
             'expand_stepsize': config['ball_fcnn_expand_stepsize'],
             'pointcloud_stepsize': config['ball_fcnn_pointcloud_stepsize'],

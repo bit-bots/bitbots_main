@@ -1,4 +1,4 @@
-ball_fcnn_debug: false  # only active when true and vision/debug is true, too!
+ball_fcnn_publish_debug_img: false  # toggles publishing of the fcnn heatmap image for debug purposes
 ball_fcnn_model_path: '/models/2019_05_timon_basler'
 ball_fcnn_threshold: .6  # minimal value for a candidate to be considered
 ball_fcnn_expand_stepsize: 4
@@ -52,7 +52,6 @@ field_boundary_finder_min_precision_pix: 3
 field_boundary_finder_head_joint_threshold: -0.5
 
 vision_ball_classifier: 'fcnn'  # cascade, fcnn or dummy
-vision_debug_image: false
 vision_publish_debug_image: false
 vision_publish_field_mask_image: false
 vision_parallelize: true
