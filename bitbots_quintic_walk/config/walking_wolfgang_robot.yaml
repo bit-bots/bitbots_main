@@ -59,7 +59,7 @@ walking:
   trunkXOffsetPCoefTurn: 0.0
   # Trunk pitch orientation proportional to forward step
   # (in rad/m)
-  trunkPitchPCoefForward: 2.3
+  trunkPitchPCoefForward: 2.1
   # Trunk pitch orientation proportional to rotation step
   # (in 1)
   trunkPitchPCoefTurn: -0.15
@@ -88,7 +88,7 @@ walking:
   acc: -1
   pwm: -1
 
-  imuActive: False
+  imuActive: True
   imuPitchThreshold: 0.65
   imuRollThreshold: 0.4
   imuPitchVelThreshold: 1.1

@@ -92,7 +92,7 @@ void QuinticWalkingNode::run() {
                                  || _robotState == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
             // see if the walk engine has new goals for us
             bool newGoals = _walkEngine.updateState(dt, _currentOrders, walkableState);
-            if (newGoals) { //todo
+            if (true) { //todo
                 calculateJointGoals();
             }
         }
@@ -302,7 +302,7 @@ void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg) {
 
         // check if robot is unstable and should pause
         // this is true if the robot is falling to the outside or to front or back
-        if (_copStopActive && (s_io_ratio > _ioPressureThreshold || 1 / s_io_ratio > _ioPressureThreshold
+        if (_copStopActive && (s_io_ratio > _ioPressureThreshold || 1 / s_io_ratio > _ioPressureThreshold ||
                                1 / s_fb_ratio > _fbPressureThreshold || s_fb_ratio > _fbPressureThreshold)) {
             _walkEngine.requestPause();
             ROS_WARN("CoP stop!");
