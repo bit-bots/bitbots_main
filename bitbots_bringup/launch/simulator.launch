@@ -43,6 +43,6 @@
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg sim_ns)" args="joint_state_controller JointGroupController" />
 
     <!-- map motion goals for simulator -->
-    <node name="pub_goals_sim" pkg="bitbots_bringup" type="motion_in_gazebo.py" output="screen" respawn="true"/>
+    <node name="pub_goals_sim" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" output="screen" respawn="true" args="--gazebo" />
 
 </launch>
