@@ -19,24 +19,30 @@ def state_update(state_msg):
     global roll
     global pitch
     global yaw
+    global ball_pose
+    global ball_twist
 
     index = 0
     for name in state_msg.name:
         if name == "/":
-            break
-        index += 1
 
-    position = state_msg.pose[index].position
-    orientation = state_msg.pose[index].orientation
-    quaternion = (
-        orientation.x,
-        orientation.y,
-        orientation.z,
-        orientation.w)
-    euler = tf.transformations.euler_from_quaternion(quaternion)
-    roll = euler[0]
-    pitch = euler[1]
-    yaw = euler[2]
+            position = state_msg.pose[index].position
+            orientation = state_msg.pose[index].orientation
+            quaternion = (
+                orientation.x,
+                orientation.y,
+                orientation.z,
+                orientation.w)
+            euler = tf.transformations.euler_from_quaternion(quaternion)
+            roll = euler[0]
+            pitch = euler[1]
+            yaw = euler[2]
+        elif name == "teensize_ball":
+
+            ball_pose = state_msg.pose[index]
+            ball_twist = state_msg.twist[index]
+
+        index += 1
 
 
 if __name__ == "__main__":
@@ -49,6 +55,8 @@ if __name__ == "__main__":
 
     request = SetModelStateRequest()
     request.model_state.model_name = "/"
+    ball_request = SetModelStateRequest()
+    ball_request.model_state.model_name = "teensize_ball"
     # wait because we want to be called
     rospy.sleep(1.0)
     rate = rospy.Rate(10)
@@ -63,6 +71,12 @@ if __name__ == "__main__":
                 request.model_state.pose.orientation.z = quaternion[2]
                 request.model_state.pose.orientation.w = quaternion[3]
                 set_state(request)
+            if ball_pose:
+                ball_request.model_state.pose = ball_pose
+                ball_request.model_state.pose.position.z = 0.095
+                ball_request.model_state.twist = ball_twist
+                set_state(ball_request)
+
             rate.sleep()
         except rospy.exceptions.ROSTimeMovedBackwardsException:
             rospy.logwarn(
