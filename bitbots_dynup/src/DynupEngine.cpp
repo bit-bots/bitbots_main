@@ -12,8 +12,8 @@ std::optional<JointGoals> DynupEngine::tick(double dt) {
     /* Only do an actual tick when splines are present */
     if (m_hand_trajectories && m_foot_trajectories) {
         /* Get should-be pose from planned splines (every axis) at current time */
-        geometry_msgs::PoseStamped l_foot_pose = get_current_foot_pose(m_foot_trajectories.value(), true);
-        geometry_msgs::PoseStamped r_foot_pose = get_current_foot_pose(m_foot_trajectories.value(), false);
+        geometry_msgs::PoseStamped l_foot_pose = get_current_pose(m_foot_trajectories.value(), true);
+        geometry_msgs::PoseStamped trunk_pose = get_current_pose(m_trunk_trajectories.value(), false);
         //geometry_msgs::PoseStamped l_hand_pose = get_current_pose(m_foot_trajectories.value(), "l_hand");
         //geometry_msgs::PoseStamped r_hand_pose = get_current_pose(m_foot_trajectories.value(), "r_hand");
 
@@ -21,43 +21,34 @@ std::optional<JointGoals> DynupEngine::tick(double dt) {
         m_time += dt;
         //TODO support point between feet
         geometry_msgs::Point support_point;
-        support_point.x = (l_foot_pose.pose.position.x + r_foot_pose.pose.position.x) / 2;
-        support_point.y = (l_foot_pose.pose.position.y + r_foot_pose.pose.position.y) / 2;
-        support_point.z = (l_foot_pose.pose.position.z + r_foot_pose.pose.position.z) / 2;
         /* Stabilize and return result */
-        return m_stabilizer.stabilize(support_point, l_foot_pose, r_foot_pose);
+        return m_stabilizer.stabilize(support_point, l_foot_pose, trunk_pose);
     } else {
         return std::nullopt;
     }
 }
 
-geometry_msgs::PoseStamped DynupEngine::get_current_foot_pose(Trajectories spline_container, bool left_foot) {
-    geometry_msgs::PoseStamped foot_pose;
-    if(left_foot){
-        foot_pose.header.frame_id = "l_sole";
+geometry_msgs::PoseStamped DynupEngine::get_current_pose(Trajectories spline_container, bool foot) {
+    geometry_msgs::PoseStamped pose;
+    if(foot){
+        pose.header.frame_id = "l_sole";
     }else{
-        foot_pose.header.frame_id = "r_sole";
+        pose.header.frame_id = "torso";
     }
-    foot_pose.header.stamp = ros::Time::now();
-    foot_pose.pose.position.x = spline_container.get("pos_x").pos(m_time);
-    foot_pose.pose.position.y = spline_container.get("pos_y").pos(m_time);
-    if(left_foot){
-        foot_pose.pose.position.y += m_params.foot_distance;
-    }else{
-        foot_pose.pose.position.y -= m_params.foot_distance;
-    }
-    foot_pose.pose.position.z = spline_container.get("pos_z").pos(m_time);
-    ROS_WARN_STREAM(foot_pose.pose.position.z << " " << m_time);
+    pose.header.stamp = ros::Time::now();
+    pose.pose.position.x = spline_container.get("pos_x").pos(m_time);
+    pose.pose.position.y = spline_container.get("pos_y").pos(m_time);
+    pose.pose.position.z = spline_container.get("pos_z").pos(m_time);
     tf2::Quaternion q;
     /* Apparently, the axis order is different than expected */
     q.setEuler(spline_container.get("pitch").pos(m_time),
                spline_container.get("roll").pos(m_time),
                spline_container.get("yaw").pos(m_time));
-    foot_pose.pose.orientation.x = q.x();
-    foot_pose.pose.orientation.y = q.y();
-    foot_pose.pose.orientation.z = q.z();
-    foot_pose.pose.orientation.w = q.w();
-    return foot_pose;
+    pose.pose.orientation.x = q.x();
+    pose.pose.orientation.y = q.y();
+    pose.pose.orientation.z = q.z();
+    pose.pose.orientation.w = q.w();
+    return pose;
 }
 
 void DynupEngine::calc_front_splines(){
@@ -175,23 +166,37 @@ void DynupEngine::calc_back_splines(){
 void DynupEngine::calc_squat_splines(){
 
     // current position as first spline point
+    // all positions relative to right foot
 
-    m_foot_trajectories->get("pos_x").addPoint(0, m_params.start_x);
-    m_foot_trajectories->get("pos_y").addPoint(0, 0);
-    m_foot_trajectories->get("pos_z").addPoint(0, 10);
-    ROS_WARN_STREAM("foo");
-
+    // m_foot_trajectories are for left foot
+    m_foot_trajectories->get("pos_x").addPoint(0, 0);
+    m_foot_trajectories->get("pos_y").addPoint(0, m_params.foot_distance);
+    m_foot_trajectories->get("pos_z").addPoint(0, 0);
     m_foot_trajectories->get("roll").addPoint(0, 0);
-    m_foot_trajectories->get("pitch").addPoint(0, m_params.start_pitch);
+    m_foot_trajectories->get("pitch").addPoint(0, 0);
     m_foot_trajectories->get("yaw").addPoint(0, 0);
 
-    // point at end
     m_foot_trajectories->get("pos_x").addPoint(m_params.rise_time, 0);
-    m_foot_trajectories->get("pos_y").addPoint(m_params.rise_time, 0);
-    m_foot_trajectories->get("pos_z").addPoint(m_params.rise_time, m_params.trunk_height);
+    m_foot_trajectories->get("pos_y").addPoint(m_params.rise_time, m_params.foot_distance);
+    m_foot_trajectories->get("pos_z").addPoint(m_params.rise_time, 0);
     m_foot_trajectories->get("roll").addPoint(m_params.rise_time, 0);
-    m_foot_trajectories->get("pitch").addPoint(m_params.rise_time, m_params.trunk_pitch);
+    m_foot_trajectories->get("pitch").addPoint(m_params.rise_time, 0);
     m_foot_trajectories->get("yaw").addPoint(m_params.rise_time, 0);
+
+    // m_trunk_trajectories are for trunk (relative to right foot)
+    m_trunk_trajectories->get("pos_x").addPoint(0, m_params.start_x);
+    m_trunk_trajectories->get("pos_y").addPoint(0, m_params.foot_distance / 2.0);
+    m_trunk_trajectories->get("pos_z").addPoint(0, m_params.start_trunk_height);
+    m_trunk_trajectories->get("roll").addPoint(0, 0);
+    m_trunk_trajectories->get("pitch").addPoint(0, m_params.start_pitch);
+    m_trunk_trajectories->get("yaw").addPoint(0, 0);
+
+    m_trunk_trajectories->get("pos_x").addPoint(m_params.rise_time, 0);
+    m_trunk_trajectories->get("pos_y").addPoint(m_params.rise_time, m_params.foot_distance / 2.0);
+    m_trunk_trajectories->get("pos_z").addPoint(m_params.rise_time, m_params.trunk_height);
+    m_trunk_trajectories->get("roll").addPoint(m_params.rise_time, 0);
+    m_trunk_trajectories->get("pitch").addPoint(m_params.rise_time, m_params.trunk_pitch);
+    m_trunk_trajectories->get("yaw").addPoint(m_params.rise_time, 0);
 
 }
 
@@ -235,6 +240,15 @@ void DynupEngine::init_trajectories() {
     m_foot_trajectories->add("pitch");
     m_foot_trajectories->add("yaw");
 
+    m_trunk_trajectories = Trajectories();
+
+    m_trunk_trajectories->add("pos_x");
+    m_trunk_trajectories->add("pos_y");
+    m_trunk_trajectories->add("pos_z");
+
+    m_trunk_trajectories->add("roll");
+    m_trunk_trajectories->add("pitch");
+    m_trunk_trajectories->add("yaw");
 
     m_hand_trajectories = Trajectories();
 

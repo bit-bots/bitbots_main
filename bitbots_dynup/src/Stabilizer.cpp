@@ -1,7 +1,6 @@
 #include "bitbots_dynup/Stabilizer.h"
 #include "bitbots_dynup/DynamicBalancingGoal.h"
-#include "bitbots_dynup/ReferencePoseGoal.h"
-#include "bitbots_dynup/ReferenceOrientationGoal.h"
+#include "bitbots_dynup/ReferenceGoals.h"
 
 Stabilizer::Stabilizer() {
     /* load MoveIt! model */
@@ -30,29 +29,31 @@ Stabilizer::Stabilizer() {
     }
 }
 
-std::optional<JointGoals> Stabilizer::stabilize(geometry_msgs::Point support_point, geometry_msgs::PoseStamped& l_foot_goal_pose, geometry_msgs::PoseStamped& r_foot_goal_pose) {
+std::optional<JointGoals> Stabilizer::stabilize(geometry_msgs::Point support_point, geometry_msgs::PoseStamped& l_foot_goal_pose, geometry_msgs::PoseStamped& trunk_goal_pose) {
     /* ik options is basicaly the command which we send to bio_ik and which describes what we want to do */
     bio_ik::BioIKKinematicsQueryOptions ik_options;
     ik_options.replace = true;
     ik_options.return_approximate_solution = true;
     double bio_ik_timeout = 0.01;
 
-    tf::Stamped<tf::Pose> tf_l_foot, tf_r_foot;
+    tf::Stamped<tf::Pose> tf_l_foot, tf_trunk;
     tf::poseStampedMsgToTF(l_foot_goal_pose, tf_l_foot);
-    tf::poseStampedMsgToTF(r_foot_goal_pose, tf_r_foot);
+    tf::poseStampedMsgToTF(trunk_goal_pose, tf_trunk);
 
     /* construct the bio_ik Pose object which tells bio_ik what we want to achieve */
-    auto *bio_ik_l_foot_goal = new bio_ik::PoseGoal();
+    auto *bio_ik_l_foot_goal = new ReferencePoseGoal();
     bio_ik_l_foot_goal->setPosition(tf_l_foot.getOrigin());
-    bio_ik_l_foot_goal->setOrientation(tf_r_foot.getRotation());
+    bio_ik_l_foot_goal->setOrientation(tf_l_foot.getRotation());
     bio_ik_l_foot_goal->setLinkName("l_sole");
     bio_ik_l_foot_goal->setWeight(1.0);
+    bio_ik_l_foot_goal->setReferenceLinkName("r_sole");
 
-    auto *bio_ik_r_foot_goal = new bio_ik::PoseGoal();
-    bio_ik_r_foot_goal->setPosition(tf_r_foot.getOrigin());
-    bio_ik_r_foot_goal->setOrientation(tf_r_foot.getRotation());
-    bio_ik_r_foot_goal->setLinkName("l_sole");
-    bio_ik_r_foot_goal->setWeight(1.0);
+    auto *bio_ik_trunk_goal = new ReferencePoseGoal();
+    bio_ik_trunk_goal->setPosition(tf_trunk.getOrigin());
+    bio_ik_trunk_goal->setOrientation(tf_trunk.getRotation());
+    bio_ik_trunk_goal->setLinkName("torso");
+    bio_ik_trunk_goal->setWeight(1.0);
+    bio_ik_trunk_goal->setReferenceLinkName("r_sole");
 
     tf::Vector3 stabilizing_target = {support_point.x, support_point.y, support_point.z};
     DynamicBalancingContext bio_ik_balancing_context(m_kinematic_model);
@@ -61,7 +62,7 @@ std::optional<JointGoals> Stabilizer::stabilize(geometry_msgs::Point support_poi
 
 
     ik_options.goals.emplace_back(bio_ik_l_foot_goal);
-    ik_options.goals.emplace_back(bio_ik_r_foot_goal);
+    ik_options.goals.emplace_back(bio_ik_trunk_goal);
 
     if (m_use_stabilizing && false) {
         ik_options.goals.emplace_back(bio_ik_balance_goal);

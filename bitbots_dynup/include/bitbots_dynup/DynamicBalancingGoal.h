@@ -1,7 +1,7 @@
 // Walking, 2018, Philipp Ruppel
 
-#ifndef BITBOTS_DYNUP_BALANCING_GOAL_H
-#define BITBOTS_DYNUP_BALANCING_GOAL_H
+#ifndef BITBOTS_DYNAMIC_KICK_DYNAMIC_BALANCING_GOAL_H
+#define BITBOTS_DYNAMIC_KICK_DYNAMIC_BALANCING_GOAL_H
 #include <vector>
 #include <string>
 #include <tf/LinearMath/Vector3.h>
@@ -16,10 +16,6 @@ class DynamicBalancingContext {
     std::vector<double> link_masses_;
     std::vector<std::string> link_names_;
     double total_mass_ = 0.0;
-    std::vector<std::vector<tf::Vector3>> history_;
-    std::vector<std::vector<tf::Quaternion>> history_r_;
-    double time_step_ = 1.0;
-    std::vector<tf::Matrix3x3> inertials_;
 
 public:
     explicit DynamicBalancingContext(const moveit::core::RobotModelConstPtr &robot_model) {
@@ -37,22 +33,9 @@ public:
             link_centers_.push_back(center);
             link_masses_.push_back(mass);
             link_names_.push_back(link_name);
-            if (link_urdf->inertial) {
-                inertials_.emplace_back(
-                        link_urdf->inertial->ixx, link_urdf->inertial->ixy,
-                        link_urdf->inertial->ixz, link_urdf->inertial->ixy,
-                        link_urdf->inertial->iyy, link_urdf->inertial->iyz,
-                        link_urdf->inertial->ixz, link_urdf->inertial->iyz,
-                        link_urdf->inertial->izz);
-            } else {
-                inertials_.emplace_back(0, 0, 0, 0, 0, 0, 0, 0, 0);
-            }
             total_mass_ += mass;
         }
     }
-    const tf::Matrix3x3 &getInertial(size_t i) const { return inertials_[i]; }
-    void setTimeStep(double dt) { time_step_ = dt; }
-    double getTimeStep() const { return time_step_; }
     inline const tf::Vector3 &getLinkCenter(size_t index) const {
         return link_centers_[index];
     }
@@ -62,27 +45,6 @@ public:
     }
     inline size_t getLinkCount() const { return link_names_.size(); }
     inline double getTotalMass() const { return total_mass_; }
-    inline size_t getHistorySize() const { return history_.size(); }
-    inline const tf::Vector3 &getLinkPosition(size_t link_index,
-                                              size_t history_index = 0) const {
-        return (
-                *(history_.data() + history_.size() - 1 - history_index))[link_index];
-    }
-    inline const tf::Quaternion &getLinkOrientation(size_t link_index,
-                                                    size_t history_index) const {
-        return (*(history_r_.data() + history_r_.size() - 1 -
-                  history_index))[link_index];
-    }
-    inline tf::Vector3 getCenterOfGravity(size_t history_index = 0) const {
-        tf::Vector3 center_of_gravity(0, 0, 0);
-        for (size_t i = 0; i < getLinkCount(); i++) {
-            auto center = getLinkPosition(i);
-            double mass = getLinkMass(i);
-            center_of_gravity += center * mass;
-        }
-        center_of_gravity /= getTotalMass();
-        return center_of_gravity;
-    }
 };
 
 class DynamicBalancingGoal : public bio_ik::Goal {
@@ -106,20 +68,8 @@ public:
         }
         context.addLink(reference_link_);
     }
-    static inline double sign(double v) {
-        if (v < 0.0)
-            return -1.0;
-        if (v > 0.0)
-            return +1.0;
-        return 0.0;
-    }
     virtual double evaluate(const bio_ik::GoalContext &context) const {
-
         tf::Vector3 torque_g = tf::Vector3(0, 0, 0);
-        tf::Vector3 torque_r = tf::Vector3(0, 0, 0);
-        tf::Vector3 torque_v = tf::Vector3(0, 0, 0);
-
-        double dt_rcp = balancing_context_->getTimeStep();
 
         // Last element (after all of the regular links) is the reference link
         bio_ik::Frame reference_link = bio_ik::inverse(context.getLinkFrame(balancing_context_->getLinkCount()));
@@ -134,51 +84,9 @@ public:
             torque_g += (center - target_).cross(gravity_ * mass); // m * N
         }
 
-        // torque_sum *= 20;
-
-        double friction = 0.1;
-
-        // simplified inverted pendulum model
-        if (balancing_context_->getHistorySize() >= 2) {
-            tf::Vector3 p0(0, 0, 0);
-            tf::Vector3 p1(0, 0, 0);
-            tf::Vector3 p2(0, 0, 0);
-            for (size_t i = 0; i < balancing_context_->getLinkCount(); i++) {
-
-                auto center = balancing_context_->getLinkCenter(i); // m
-                auto frame = reference_link * context.getLinkFrame(i);
-                bio_ik::quat_mul_vec(frame.rot, center, center);
-                center += frame.pos;
-
-                p0 += balancing_context_->getLinkPosition(i, 1) *
-                      balancing_context_->getLinkMass(i);
-                p1 += balancing_context_->getLinkPosition(i, 0) *
-                      balancing_context_->getLinkMass(i);
-                // p2 += context.getLinkFrame(i).pos *
-                // balancing_context_->getLinkMass(i);
-                p2 += center * balancing_context_->getLinkMass(i);
-            }
-            double s = 1.0 / balancing_context_->getTotalMass();
-            p0 *= s;
-            p1 *= s;
-            p2 *= s;
-
-            tf::Vector3 v0 = (p1 - p0) * dt_rcp; // m / s
-            tf::Vector3 v1 = (p2 - p1) * dt_rcp; // m / s
-
-            v0 *= (1.0 - friction);
-
-            tf::Vector3 a = (v1 - v0) * dt_rcp; // m / s²
-
-            tf::Vector3 f =
-                    balancing_context_->getTotalMass() * a; // kg * m / s² = N
-
-            torque_v -= (p1 - target_).cross(f) * 0.5; // m * N
-        }
-
         double m = balancing_context_->getTotalMass();
-        return (torque_g.length2() + (torque_v + torque_r).length2()) / (m * m * gravity_.length2());
+        return torque_g.length2() / (m * m * gravity_.length2());
     }
 };
 
-#endif  // BITBOTS_DYNUP_BALANCING_GOAL_H
+#endif  // BITBOTS_DYNAMIC_KICK_DYNAMIC_BALANCING_GOAL_H

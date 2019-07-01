@@ -61,12 +61,12 @@ public:
 private:
     double m_time;
 
-    std::optional<Trajectories> m_foot_trajectories, m_hand_trajectories;
+    std::optional<Trajectories> m_foot_trajectories, m_hand_trajectories, m_trunk_trajectories;
     DynUpParams m_params;
 
     tf2_ros::Buffer m_tf_buffer;
     tf2_ros::TransformListener m_listener;
-    geometry_msgs::PoseStamped  get_current_foot_pose(Trajectories spline_container,  bool left_foot);
+    geometry_msgs::PoseStamped  get_current_pose(Trajectories spline_container,  bool left_foot);
 
     void calc_front_splines();
     void calc_back_splines();
