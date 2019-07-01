@@ -2,19 +2,28 @@
 
 DynupEngine::DynupEngine() : m_listener(m_tf_buffer) {}
 
+void DynupEngine::reset() {
+    m_time = 0;
+    m_hand_trajectories.reset();
+    m_foot_trajectories.reset();
+}
 
 std::optional<JointGoals> DynupEngine::tick(double dt) {
     /* Only do an actual tick when splines are present */
     if (m_hand_trajectories && m_foot_trajectories) {
         /* Get should-be pose from planned splines (every axis) at current time */
-        geometry_msgs::PoseStamped l_foot_pose = get_current_pose(m_hand_trajectories.value(), true);
-        geometry_msgs::PoseStamped r_foot_pose = get_current_pose(m_hand_trajectories.value(), false);
+        geometry_msgs::PoseStamped l_foot_pose = get_current_foot_pose(m_foot_trajectories.value(), true);
+        geometry_msgs::PoseStamped r_foot_pose = get_current_foot_pose(m_foot_trajectories.value(), false);
         //geometry_msgs::PoseStamped l_hand_pose = get_current_pose(m_foot_trajectories.value(), "l_hand");
         //geometry_msgs::PoseStamped r_hand_pose = get_current_pose(m_foot_trajectories.value(), "r_hand");
 
 
         m_time += dt;
         //TODO support point between feet
+        geometry_msgs::Point support_point;
+        support_point.x = (l_foot_pose.pose.position.x + r_foot_pose.pose.position.x) / 2;
+        support_point.y = (l_foot_pose.pose.position.y + r_foot_pose.pose.position.y) / 2;
+        support_point.z = (l_foot_pose.pose.position.z + r_foot_pose.pose.position.z) / 2;
         /* Stabilize and return result */
         return m_stabilizer.stabilize(support_point, l_foot_pose, r_foot_pose);
     } else {
@@ -22,7 +31,7 @@ std::optional<JointGoals> DynupEngine::tick(double dt) {
     }
 }
 
-geometry_msgs::PoseStamped DynupEngine::get_current_pose_foot(Trajectories spline_container, bool left_foot) {
+geometry_msgs::PoseStamped DynupEngine::get_current_foot_pose(Trajectories spline_container, bool left_foot) {
     geometry_msgs::PoseStamped foot_pose;
     if(left_foot){
         foot_pose.header.frame_id = "l_sole";
@@ -38,6 +47,7 @@ geometry_msgs::PoseStamped DynupEngine::get_current_pose_foot(Trajectories splin
         foot_pose.pose.position.y -= m_params.foot_distance;
     }
     foot_pose.pose.position.z = spline_container.get("pos_z").pos(m_time);
+    ROS_WARN_STREAM(foot_pose.pose.position.z << " " << m_time);
     tf2::Quaternion q;
     /* Apparently, the axis order is different than expected */
     q.setEuler(spline_container.get("pitch").pos(m_time),
@@ -168,7 +178,8 @@ void DynupEngine::calc_squat_splines(){
 
     m_foot_trajectories->get("pos_x").addPoint(0, m_params.start_x);
     m_foot_trajectories->get("pos_y").addPoint(0, 0);
-    m_foot_trajectories->get("pos_z").addPoint(0, m_params.start_trunk_height);
+    m_foot_trajectories->get("pos_z").addPoint(0, 10);
+    ROS_WARN_STREAM("foo");
 
     m_foot_trajectories->get("roll").addPoint(0, 0);
     m_foot_trajectories->get("pitch").addPoint(0, m_params.start_pitch);

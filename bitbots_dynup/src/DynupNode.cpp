@@ -16,7 +16,11 @@ void DynUpNode::reconfigure_callback(bitbots_dynup::DynUpConfig &config, uint32_
     params.foot_distance = config.foot_distance;
     params.rise_time = config.rise_time;
     params.trunk_height = config.trunk_height;
-    params.trunk_pitch = config.trunk_height;
+    params.trunk_pitch = config.trunk_pitch;
+    params.start_trunk_height = config.start_trunk_height;
+    params.start_x = config.start_x;
+    params.start_pitch = config.start_pitch;
+
     m_engine.set_params(params);
 
     m_engine.m_stabilizer.use_minimal_displacement(config.minimal_displacement);
@@ -29,9 +33,13 @@ void DynUpNode::reconfigure_callback(bitbots_dynup::DynUpConfig &config, uint32_
 void DynUpNode::execute_cb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     // TODO: maybe switch to goal callback to be able to reject goals properly
     ROS_INFO("Accepted new goal");
+    m_engine.reset();
 
     m_engine.start(true); //todo we are currently only getting up from squad
     loop_engine();
+    bitbots_msgs::DynUpResult r;
+    r.successful = true;
+    m_server.setSucceeded(r);
 }
 
 void DynUpNode::loop_engine() {
