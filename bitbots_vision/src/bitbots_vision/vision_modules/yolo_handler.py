@@ -1,7 +1,7 @@
 import cv2
 import argparse
 import numpy as np
-from .candidate import CandidateFinder, Candidate
+from candidate import CandidateFinder, Candidate
 
 # todo implement candidate finder
 class YoloHandler(CandidateFinder):
@@ -47,7 +47,7 @@ class YoloHandler(CandidateFinder):
         self.image = img
         self.width = img.shape[1]
         self.height = img.shape[0]
-        self.blob = cv2.dnn.blobFromImage(img, 1, (416, 416), (0,0,0), True, crop=False)
+        self.blob = cv2.dnn.blobFromImage(img, 0.00392, (416, 416), (0,0,0), True, crop=False)
         self.outs = None
         self.goalpost_candidates = None
         self.ball_candidates = None
@@ -97,7 +97,7 @@ class YoloHandler(CandidateFinder):
 
 
     def get_candidates(self):
-        return [self.ball_candidates(), self.goalpost_candidates]
+        return [self.ball_candidates, self.goalpost_candidates]
 
     def get_top_candidates(self, count = 1):
         self.ball_candidates = Candidate.sort_candidates(self.ball_candidates)
