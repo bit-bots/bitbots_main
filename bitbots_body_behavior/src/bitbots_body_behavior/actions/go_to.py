@@ -45,6 +45,8 @@ class GoToRelativePosition(AbstractActionElement):
 
             # To have the object we are going to in front of us, go to a point behind it
             self.blackboard.pathfinding.publish(pose_msg)
+        if not self.blackboard.blackboard.is_currently_walking():
+            self.pop()
 
 
 class GoToAbsolutePosition(AbstractActionElement):
