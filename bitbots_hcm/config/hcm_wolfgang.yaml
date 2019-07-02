@@ -15,7 +15,7 @@ hcm:
   anim_server_wait_time: 1 # time the hcm waits for animation server
   animations:
     walkready: "walkready"
-    walkready_sim: "walkready"
+    walkready_sim: "walkready_sim"
     falling_front: "falling_front" # TODO Animation Falling
     falling_back: "falling_back"
     falling_left: "walkready"
