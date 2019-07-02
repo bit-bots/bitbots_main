@@ -7,7 +7,23 @@ KickNode::KickNode() :
         m_engine(m_visualizer) {
     m_joint_goal_publisher = m_node_handle.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
     m_support_foot_publisher = m_node_handle.advertise<std_msgs::Char>("dynamic_kick_support_state", 1);
+    m_cop_l_subscriber = m_node_handle.subscribe("cop_l", 1, &KickNode::cop_l_callback, this);
+    m_cop_r_subscriber = m_node_handle.subscribe("cop_r", 1, &KickNode::cop_r_callback, this);
     m_server.start();
+}
+
+inline void KickNode::cop_l_callback(const geometry_msgs::PointStamped cop) {
+    if (cop.header.frame_id != "l_sole") {
+        ROS_ERROR_STREAM("cop_l not in l_sole frame! Stabilizing will not work.");
+    }
+    m_engine.m_stabilizer.m_cop_left = cop.point;
+}
+
+inline void KickNode::cop_r_callback(const geometry_msgs::PointStamped cop) {
+    if (cop.header.frame_id != "r_sole") {
+        ROS_ERROR_STREAM("cop_r not in r_sole frame! Stabilizing will not work.");
+    }
+    m_engine.m_stabilizer.m_cop_right = cop.point;
 }
 
 void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t level) {
@@ -31,12 +47,15 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
 
     m_engine.m_stabilizer.use_minimal_displacement(config.minimal_displacement);
     m_engine.m_stabilizer.use_stabilizing(config.stabilizing);
+    m_engine.m_stabilizer.use_cop(config.use_center_of_pressure);
     m_engine.m_stabilizer.set_trunk_height(config.trunk_height);
     m_engine.m_stabilizer.set_stabilizing_weight(config.stabilizing_weight);
     m_engine.m_stabilizer.set_flying_weight(config.flying_weight);
     m_engine.m_stabilizer.set_trunk_orientation_weight(config.trunk_orientation_weight);
 	m_engine.m_stabilizer.set_trunk_height_weight(config.trunk_height_weight);
-    
+	m_engine.m_stabilizer.set_p_factor(config.stabilizing_p);
+    m_engine.m_stabilizer.set_i_factor(config.stabilizing_i);
+
 	VisualizationParams viz_params = VisualizationParams();
     viz_params.force_enable = config.force_enable;
     viz_params.spline_smoothnes = config.spline_smoothnes;

@@ -23,8 +23,11 @@ bool KickEngine::set_goal(const std_msgs::Header &header,
     auto transformed_goal = transform_goal((m_is_left_kick) ? "r_sole" : "l_sole", header, ball_position,
                                            kick_direction);
     if (transformed_goal) {
+        m_stabilizer.reset();
         tf2::convert(transformed_goal->first, m_ball_position);
         tf2::convert(transformed_goal->second, m_kick_direction);
+        m_kick_direction.normalize();
+
         m_kick_speed = kick_speed;
         m_time = 0;
 
@@ -48,11 +51,20 @@ std::optional<JointGoals> KickEngine::tick(double dt) {
         support_point.x = m_support_point_trajectories.value().get("pos_x").pos(m_time);
         support_point.y = m_support_point_trajectories.value().get("pos_y").pos(m_time);
         geometry_msgs::PoseStamped flying_foot_pose = get_current_pose(m_flying_trajectories.value());
+        bool cop_support_point;
+        /* use COP based support point only when the weight is on the support foot */
+        if (m_time > m_params.move_trunk_time + m_params.raise_foot_time / 2.0 &&
+            m_time < m_params.move_trunk_time + m_params.raise_foot_time + m_params.move_to_ball_time +
+                     m_params.kick_time + m_params.move_back_time + m_params.lower_foot_time) {
+            cop_support_point = true;
+        } else {
+            cop_support_point = false;
+        }
 
         m_time += dt;
 
         /* Stabilize and return result */
-        return m_stabilizer.stabilize(m_is_left_kick, support_point, flying_foot_pose);
+        return m_stabilizer.stabilize(m_is_left_kick, support_point, flying_foot_pose, cop_support_point);
     } else {
         return std::nullopt;
     }
@@ -93,13 +105,13 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     /* The fix* variables describe the discrete points in time where the positions are given by the parameters.
      * Between them, the spline interpolation happens. */
     double fix0 = 0;
-    double fix1 = fix0 + m_params.move_trunk_time;
-    double fix2 = fix1 + m_params.raise_foot_time;
-    double fix3 = fix2 + m_params.move_to_ball_time;
-    double fix4 = fix3 + m_params.kick_time;
-    double fix5 = fix4 + m_params.move_back_time;
-    double fix6 = fix5 + m_params.lower_foot_time;
-    double fix7 = fix6 + m_params.move_trunk_back_time;
+    double fix1 = fix0 + m_params.move_trunk_time;              // trunk is now over stabilizing point
+    double fix2 = fix1 + m_params.raise_foot_time;              // foot is raised
+    double fix3 = fix2 + m_params.move_to_ball_time;            // windup point is reached
+    double fix4 = fix3 + m_params.kick_time;                    // ball contact happens HERE
+    double fix5 = fix4 + m_params.move_back_time;               // foot is over original position
+    double fix6 = fix5 + m_params.lower_foot_time;              // foot is on the ground
+    double fix7 = fix6 + m_params.move_trunk_back_time;         // trunk is moved back over base_footprint
 
     int kick_foot_sign;
     if (m_is_left_kick) {
@@ -115,7 +127,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pos_x").addPoint(fix1, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix2, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix3, kick_windup_point.x(), 0, 0);
-    m_flying_trajectories->get("pos_x").addPoint(fix4, m_ball_position.x(), m_kick_direction.x());
+    m_flying_trajectories->get("pos_x").addPoint(fix4, m_ball_position.x(), m_kick_direction.x() * m_kick_speed, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix5, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix6, 0);
     m_flying_trajectories->get("pos_x").addPoint(fix7, 0);
@@ -124,7 +136,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pos_y").addPoint(fix1, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix2, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix3, kick_windup_point.y(), 0, 0);
-    m_flying_trajectories->get("pos_y").addPoint(fix4, m_ball_position.y(), m_kick_speed, 0);
+    m_flying_trajectories->get("pos_y").addPoint(fix4, m_ball_position.y(), m_kick_direction.y() * m_kick_speed, 0);
     m_flying_trajectories->get("pos_y").addPoint(fix5, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix6, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(fix7, kick_foot_sign * m_params.foot_distance);
@@ -161,7 +173,10 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pitch").addPoint(fix3, start_p);
     m_flying_trajectories->get("pitch").addPoint(fix7, start_p);
     m_flying_trajectories->get("yaw").addPoint(fix0, start_y);
+    m_flying_trajectories->get("yaw").addPoint(fix2, start_y);
     m_flying_trajectories->get("yaw").addPoint(fix3, target_y);
+    m_flying_trajectories->get("yaw").addPoint(fix4, target_y);
+    m_flying_trajectories->get("yaw").addPoint(fix5, start_y);
     m_flying_trajectories->get("yaw").addPoint(fix7, start_y);
 
     /* Stabilizing point */
@@ -311,8 +326,8 @@ bool KickEngine::is_left_kick() {
 
 int KickEngine::get_percent_done() const {
     double duration = m_params.move_trunk_time + m_params.raise_foot_time + m_params.move_to_ball_time +
-                      m_params.kick_time + m_params.move_back_time + m_params.move_trunk_back_time +
-                      m_params.lower_foot_time;
+                      m_params.kick_time + m_params.move_back_time + m_params.lower_foot_time +
+                      m_params.move_trunk_back_time;
     return int(m_time / duration * 100);
 }
 
