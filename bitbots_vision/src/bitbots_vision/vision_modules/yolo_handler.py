@@ -1,4 +1,5 @@
 import cv2
+import os
 import argparse
 import numpy as np
 from .candidate import CandidateFinder, Candidate
@@ -7,8 +8,11 @@ from .candidate import CandidateFinder, Candidate
 
 class YoloHandler():
     def __init__(self, config, model_path):
-        configpath = "/home/florian/Desktop/yolov3tiny/yolov3tiny-ballgoalpost_final.weights"
-        weightpath = "/home/florian/Desktop/yolov3tiny/yolov3tiny-ballgoalpost.cfg"
+        weightpath = os.path.join(model_path, "yolo_weights.weights")
+        configpath = os.path.join(model_path, "config.cfg")
+        datapath = os.path.join(model_path, "obj.data")
+
+        self.config = config
         self.classes = ["ball", "goalpost"]
         self.image = None
         self.width = None
