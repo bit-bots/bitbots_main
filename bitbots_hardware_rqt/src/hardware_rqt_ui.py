@@ -196,12 +196,14 @@ class HardwareUI(Plugin):
                             else:
                                 selected = self._widget.tableWidget_2
                                 k=j-10
-
-                            if self.motorheaderlist[j] == data.status[i].values[2].value:
-                                selected.setItem(0, k, QTableWidgetItem(data.status[i].message))
-                                selected.setItem(1, k, QTableWidgetItem(str(round(float(data.status[i].values[3].value),2))))
-                                selected.setItem(3, k, QTableWidgetItem(str(round(float(data.status[i].values[1].value),2))))
-                                selected.setItem(4, k, QTableWidgetItem(data.status[i].values[0].value))
+                            try:
+                                if self.motorheaderlist[j] == data.status[i].values[2].value:
+                                        selected.setItem(0, k, QTableWidgetItem(data.status[i].message))
+                                        selected.setItem(1, k, QTableWidgetItem(str(round(float(data.status[i].values[3].value),2))))
+                                        selected.setItem(3, k, QTableWidgetItem(str(round(float(data.status[i].values[1].value),2))))
+                                        selected.setItem(4, k, QTableWidgetItem(data.status[i].values[0].value))
+                            except IndexError:
+                                rospy.logwarn("Received a message that misses some information.")
 
             self._widget.tableWidget.setHorizontalHeaderLabels(self.motorheaderlist)
             self._widget.tableWidget_2.setHorizontalHeaderLabels(self.motorheaderlist[10:])
