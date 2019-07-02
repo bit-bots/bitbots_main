@@ -69,6 +69,8 @@ def state_update(state_msg):
 
     if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height:
         ball = BallRelative()
+        ball.header.stamp = ball_pose_stamped.header.stamp
+        ball.header.frame_id = "base_footprint"
         ball_pose_stamped = tf_buffer.transform(ball_pose_stamped, "base_footprint",
                                                 timeout=rospy.Duration(0.5))
         ball.header = ball_pose_stamped.header
@@ -95,6 +97,8 @@ def state_update(state_msg):
 
 
         goal = GoalRelative()
+        goal.header.stamp = goal_pose_stamped.header.stamp
+        goal.header.frame_id = "base_footprint"
         p = [left_post.pose.position.x, left_post.pose.position.y, left_post.pose.position.z]
         k = np.reshape(cam_info.K, (3, 3))
         p_pixel = np.matmul(k, p)
