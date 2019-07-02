@@ -188,6 +188,8 @@ private:
   double* _linear_acceleration;
   double* _linear_acceleration_covariance;
 
+  int _reading_errors;
+  int _reading_successes;
 
   diagnostic_msgs::DiagnosticStatus _status_board;
   diagnostic_msgs::DiagnosticStatus _status_IMU;

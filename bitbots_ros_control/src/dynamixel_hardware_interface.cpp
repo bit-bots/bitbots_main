@@ -471,7 +471,6 @@ bool DynamixelHardwareInterface::read()
       }
     } else{
       ROS_ERROR_THROTTLE(1.0, "Couldn't read all current joint values!");
-      speak("Could not read all current joint values!");
       read_successful = false;
     }
   }else {
@@ -537,7 +536,22 @@ bool DynamixelHardwareInterface::read()
   // remember 
   if (!read_successful) {
     _lost_servo_connection = true;
+    _reading_errors += 1;
+  }else{
+    _reading_successes += 1;
   }
+
+  if(_reading_errors + _reading_successes > 200 && _reading_errors / _reading_successes > 0.05){
+    speak("Multiple servo reading errors!");
+    _reading_errors = 0;
+    _reading_successes = 0;
+  }
+
+  if(_reading_errors + _reading_successes > 2000){
+    _reading_errors = 0;
+    _reading_successes = 0;
+  }
+
   return read_successful;
 
 }
