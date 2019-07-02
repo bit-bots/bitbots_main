@@ -146,7 +146,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pos_z").addPoint(fix3, m_params.foot_rise);
     m_flying_trajectories->get("pos_z").addPoint(fix4, m_params.foot_rise);
     m_flying_trajectories->get("pos_z").addPoint(fix5, m_params.foot_rise);
-    m_flying_trajectories->get("pos_z").addPoint(fix6, 0);
+    m_flying_trajectories->get("pos_z").addPoint(fix6, 0.4 * m_params.foot_rise);
     m_flying_trajectories->get("pos_z").addPoint(fix7, 0);
 
     /* Flying foot orientation */

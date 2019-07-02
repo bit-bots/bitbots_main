@@ -39,8 +39,8 @@ public:
     void set_flying_weight(double weight);
     void set_trunk_orientation_weight(double weight);
     void set_trunk_height_weight(double weight);
-    void set_p_factor(double factor);
-    void set_i_factor(double factor);
+    void set_p_factor(double factor_x, double factor_y);
+    void set_i_factor(double factor_x, double factor_y);
 private:
     robot_state::RobotStatePtr m_goal_state;
     planning_scene::PlanningScenePtr m_planning_scene;
@@ -60,8 +60,10 @@ private:
     double m_flying_weight;
     double m_trunk_orientation_weight;
     double m_trunk_height_weight;
-    double m_p_factor;
-    double m_i_factor;
+    double m_p_x_factor;
+    double m_p_y_factor;
+    double m_i_x_factor;
+    double m_i_y_factor;
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_STABILIZER_H

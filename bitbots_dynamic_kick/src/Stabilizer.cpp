@@ -56,13 +56,13 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
         if (is_left_kick) {
             m_cop_error_sum_x += m_cop_right.x - support_point.x;
             m_cop_error_sum_y += m_cop_right.y - support_point.y;
-            stabilizing_target.setX(support_point.x - m_cop_right.x * m_p_factor + m_i_factor * m_cop_error_sum_x);
-            stabilizing_target.setY(support_point.y - m_cop_right.y * m_p_factor + m_i_factor * m_cop_error_sum_y);
+            stabilizing_target.setX(support_point.x - m_cop_right.x * m_p_x_factor - m_i_x_factor * m_cop_error_sum_x);
+            stabilizing_target.setY(support_point.y - m_cop_right.y * m_p_y_factor - m_i_y_factor * m_cop_error_sum_y);
         } else {
             m_cop_error_sum_x += m_cop_left.x - support_point.x;
             m_cop_error_sum_y += m_cop_left.y - support_point.y;
-            stabilizing_target.setX(support_point.x - m_cop_left.x * m_p_factor + m_i_factor * m_cop_error_sum_x);
-            stabilizing_target.setY(support_point.y - m_cop_left.y * m_p_factor + m_i_factor * m_cop_error_sum_y);
+            stabilizing_target.setX(support_point.x - m_cop_left.x * m_p_x_factor - m_i_x_factor * m_cop_error_sum_x);
+            stabilizing_target.setY(support_point.y - m_cop_left.y * m_p_y_factor - m_i_y_factor * m_cop_error_sum_y);
         }
         stabilizing_target.setZ(0);
     } else {
@@ -197,10 +197,12 @@ void Stabilizer::set_trunk_height_weight(double weight) {
     m_trunk_height_weight = weight;
 }
 
-void Stabilizer::set_p_factor(double factor) {
-    m_p_factor = factor;
+void Stabilizer::set_p_factor(double factor_x, double factor_y) {
+    m_p_x_factor = factor_x;
+    m_p_y_factor = factor_y;
 }
 
-void Stabilizer::set_i_factor(double factor) {
-    m_i_factor = factor;
+void Stabilizer::set_i_factor(double factor_x, double factor_y) {
+    m_i_x_factor = factor_x;
+    m_i_y_factor = factor_y;
 }
