@@ -27,8 +27,8 @@ class WorldModelCapsule:
         self.obstacles = ObstaclesRelative()
         self.my_data = dict()
         self.counter = 0
-        self.ball_seen_time = -100
-        self.goal_seen_time = -100
+        self.ball_seen_time = rospy.Time(0)
+        self.goal_seen_time = rospy.Time(0)
         self.field_length = field_length
         self.field_width = field_width
 
@@ -69,13 +69,13 @@ class WorldModelCapsule:
         if ball.header.frame_id != 'base_footprint':
             try:
                 self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
-                self.ball_seen_time = rospy.get_time()
+                self.ball_seen_time = rospy.Time.now()
 
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 rospy.logwarn(e)
         else:
             self.ball = ball_buffer
-            self.ball_seen_time = rospy.get_time()
+            self.ball_seen_time = rospy.Time.now()
 
 
     ###########
@@ -154,7 +154,7 @@ class WorldModelCapsule:
         else:
             self.goal_odom.left_post = goal_left_buffer.point
             self.goal_odom.right_post = goal_right_buffer.point
-        self.goal_seen_time = rospy.get_time()
+        self.goal_seen_time = rospy.Time.now()
 
     #############
     # ## Common #

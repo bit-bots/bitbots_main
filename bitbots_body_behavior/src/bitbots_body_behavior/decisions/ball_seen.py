@@ -6,10 +6,10 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 class BallSeen(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallSeen, self).__init__(blackboard, dsd, parameters)
-        self.ball_lost_time = self.blackboard.config['ball_lost_time']
+        self.ball_lost_time = rospy.Duration.from_sec(self.blackboard.config['ball_lost_time'])
 
     def perform(self, reevaluate=False):
-        if rospy.get_time() - self.blackboard.world_model.ball_last_seen() < self.ball_lost_time:
+        if rospy.Time.now() - self.blackboard.world_model.ball_last_seen() < self.ball_lost_time:
             return 'YES'
         return 'NO'
 

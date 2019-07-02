@@ -14,7 +14,9 @@ class SearchBall(AbstractActionElement):
     def perform(self, reevaluate=False):
         self.blackboard.blackboard.set_head_duty(HeadMode.BALL_MODE)
         # TODO make parameter value
-        if rospy.Time.now() - self.time_last_turn > rospy.Duration(10):
+        if self.time_last_turn < self.blackboard.world_model.ball_last_seen():
+            self.time_last_turn = rospy.Time.now()
+        if rospy.Time.now() - self.time_last_turn > rospy.Duration(20):
             # remember that we turned around
             self.time_last_turn = rospy.Time.now()
 
