@@ -8,6 +8,7 @@
     <arg name="dummyball" default="false" doc="true: does not start the ball detection to save resources" />
     <arg name="use_fake_vision" doc="fake the vision detections in the simulators" default="false"/>
     <arg name="use_behavior" doc="start the behavior" default="true"/>
+    <arg name="use_game_controller" doc="start the game controller" default="true"/>
 
     <param name="/use_sim_time" value="true" />
     <param name="/simulation_active" value="true"/>
@@ -70,7 +71,9 @@
 
     <!-- launch game controller -->
 
-    <include file="$(find humanoid_league_game_controller)/launch/game_controller.launch" />
+    <group if="$(arg use_game_controller)">
+        <include file="$(find humanoid_league_game_controller)/launch/game_controller.launch" />
+    </group>
 
     <!-- launch the behavior -->
 
