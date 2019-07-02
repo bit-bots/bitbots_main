@@ -15,6 +15,7 @@ https://github.com/Rhoban/model/
 
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PointStamped.h>
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Float64.h>
@@ -64,6 +65,9 @@ private:
     void robStateCb(humanoid_league_msgs::RobotControlState msg);
     void jointStateCb(sensor_msgs::JointState msg);
     void kickCb(std_msgs::BoolConstPtr msg);
+    void cop_l_cb(const geometry_msgs::PointStamped msg);
+    void cop_r_cb(const geometry_msgs::PointStamped msg);
+
 
     void calculateJointGoals();
     double getTimeDelta();
@@ -76,8 +80,12 @@ private:
     double _engineFrequency;
 
     bool _phaseResetActive;
+    double _phaseResetPhase;
     double _groundMinPressure;
     bool _copStopActive;
+    double _copXThreshold;
+    double _copYThreshold;
+    bool _pressureStopActive;
     double _ioPressureThreshold;
     double _fbPressureThreshold;
 
@@ -128,6 +136,12 @@ private:
     ros::Subscriber _subKick;
     ros::Subscriber _subImu;
     ros::Subscriber _subPressure;
+    ros::Subscriber _subCopL;
+    ros::Subscriber _subCopR;
+
+    geometry_msgs::PointStamped _cop_l;
+    geometry_msgs::PointStamped _cop_r;
+
 
     // MoveIt!
     robot_model_loader::RobotModelLoader _robot_model_loader;

@@ -76,10 +76,28 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
     } else if (_engineState == "startMovement") {
         // in this state we do a single "step" where we only move the trunk
         if (halfStepFinished) {
-            //start step is finished, go to next state
-            buildNormalTrajectories(orders);
-            _engineState = "walking";
-        }        
+            if (ordersZero) {
+                _engineState = "stopMovement";
+                buildStopMovementTrajectories(orders);
+            }else{
+                //start step is finished, go to next state
+                buildTrajectories(orders, false, true, false);
+                _engineState = "startStep";
+            }
+        }
+    } else if (_engineState == "startStep"){
+        if (halfStepFinished) {
+            if (ordersZero) {
+                // we have zero command vel -> we should stop
+                _engineState = "stopStep";
+                //_phase = 0.0;
+                buildStopStepTrajectories(orders);
+            } else {
+                //start step is finished, go to next state
+                buildNormalTrajectories(orders);
+                _engineState = "walking";
+            }
+        }
     } else if (_engineState == "walking") {
         // check if a half step was finished and we are unstable
         if (halfStepFinished && _pauseRequested){
@@ -266,15 +284,15 @@ void QuinticWalk::saveCurrentTrunkState(){
 
 
 void QuinticWalk::buildNormalTrajectories(const Eigen::Vector3d& orders){
-    buildTrajectories(orders, false, false);
+    buildTrajectories(orders, false, false, false);
 }
 
 void QuinticWalk::buildKickTrajectories(const Eigen::Vector3d& orders){
-    buildTrajectories(orders, false, true);
+    buildTrajectories(orders, false, false, true);
 }
 
 void QuinticWalk::buildStartTrajectories(const Eigen::Vector3d& orders){
-    buildTrajectories(orders, true, false);
+    buildTrajectories(orders, true, false, false);
 }
 
 void QuinticWalk::buildStopStepTrajectories(const Eigen::Vector3d& orders){
@@ -286,17 +304,17 @@ void QuinticWalk::buildStopMovementTrajectories(const Eigen::Vector3d& orders){
 }
 
 
-void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startStep, bool kickStep)
+void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMovement, bool startStep, bool kickStep)
 {
     // save the current trunk state to use it later
-    if(!startStep){
+    if(!startMovement){
         saveCurrentTrunkState();
     }else{
         _trunkPosAtLast.y() -= _footstep.getNext().y();
         //trunkPos = Eigen::Rotation2Dd(-_footstep.getNext().z()).toRotationMatrix() * trunkPos;
     }
 
-    if(startStep){
+    if(startMovement){
         // update support foot and compute odometry
         _footstep.stepFromOrders(Eigen::Vector3d());
     }else{
@@ -326,7 +344,7 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startSte
 
 
     //Only move the trunk on the first half cycle after a walk enable
-    if (startStep) {
+    if (startMovement) {
         doubleSupportLength = halfPeriod;
         singleSupportLength = 0.0;
     }
@@ -430,13 +448,23 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startSte
         _footstep.getNext().x()/halfPeriod;
 
     //Trunk position
-    point("trunk_pos_x", 0.0, 
-        _trunkPosAtLast.x(), 
-        _trunkVelAtLast.x(), 
-        _trunkAccAtLast.x());
-    point("trunk_pos_x", halfPeriod+timeShift, 
-        trunkApexSupport.x(), 
-        trunkVelSupport);
+    if(startStep){
+        point("trunk_pos_x", 0.0,
+            0.0,
+            0.0,
+            0.0);
+        point("trunk_pos_x", halfPeriod+timeShift,
+            trunkApexSupport.x(),
+            0.0);
+    }else{
+        point("trunk_pos_x", 0.0,
+            _trunkPosAtLast.x(),
+            _trunkVelAtLast.x(),
+            _trunkAccAtLast.x());
+        point("trunk_pos_x", halfPeriod+timeShift,
+            trunkApexSupport.x(),
+            trunkVelSupport);
+    }
     point("trunk_pos_x", period+timeShift, 
         trunkApexNext.x(), 
         trunkVelNext);

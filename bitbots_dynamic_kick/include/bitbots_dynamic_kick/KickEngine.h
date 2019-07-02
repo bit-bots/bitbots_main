@@ -77,7 +77,7 @@ public:
  */
 class KickEngine {
 public:
-    explicit KickEngine(Visualizer &visualizer);
+    explicit KickEngine();
 
     /**
      * Set new goal which the engine tries to kick at. This will remove the old goal completely and plan new splines.

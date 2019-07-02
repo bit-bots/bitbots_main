@@ -235,7 +235,7 @@ private:
         void buildStopStepTrajectories(const Eigen::Vector3d& orders);
         void buildStopMovementTrajectories(const Eigen::Vector3d& orders);
 
-        void buildTrajectories(const Eigen::Vector3d& orders, bool startStep, bool kickStep);
+        void buildTrajectories(const Eigen::Vector3d& orders, bool startMovement, bool startStep, bool kickStep);
         void buildWalkDisableTrajectories(const Eigen::Vector3d& orders, bool footInIdlePosition);
 
         void saveCurrentTrunkState();

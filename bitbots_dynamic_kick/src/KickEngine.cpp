@@ -1,8 +1,7 @@
 #include "bitbots_dynamic_kick/KickEngine.h"
 
-KickEngine::KickEngine(Visualizer &visualizer) :
-        m_listener(m_tf_buffer),
-        m_visualizer(visualizer) {
+KickEngine::KickEngine() :
+        m_listener(m_tf_buffer)  {
 }
 
 void KickEngine::reset() {
@@ -18,8 +17,7 @@ bool KickEngine::set_goal(const std_msgs::Header &header,
                           const geometry_msgs::Pose &r_foot_pose,
                           const geometry_msgs::Pose &l_foot_pose) {
 
-    m_is_left_kick = calc_is_left_foot_kicking(header, ball_position,
-                                               kick_direction); // TODO Internal state is dirty when goal transformation fails
+    m_is_left_kick = calc_is_left_foot_kicking(header, ball_position, kick_direction); // TODO Internal state is dirty when goal transformation fails
 
     /* Save given goals because we reuse them later */
     auto transformed_goal = transform_goal((m_is_left_kick) ? "r_sole" : "l_sole", header, ball_position,
@@ -36,7 +34,7 @@ bool KickEngine::set_goal(const std_msgs::Header &header,
         /* Plan new splines according to new goal */
         init_trajectories();
         calc_splines(m_is_left_kick ? l_foot_pose : r_foot_pose);
-        m_visualizer.display_flying_splines(m_flying_trajectories.value(), (m_is_left_kick) ? "r_sole" : "l_sole");
+        m_stabilizer.m_visualizer.display_flying_splines(m_flying_trajectories.value(), (m_is_left_kick) ? "r_sole" : "l_sole");
 
         return true;
 
@@ -54,10 +52,21 @@ std::optional<JointGoals> KickEngine::tick(double dt) {
         support_point.y = m_support_point_trajectories.value().get("pos_y").pos(m_time);
         geometry_msgs::PoseStamped flying_foot_pose = get_current_pose(m_flying_trajectories.value());
 
+        /* calculate if we want to use center-of-pressure in the current phase */
+        bool cop_support_point;
+        /* use COP based support point only when the weight is on the support foot
+         * while raising/lowering the foot, the weight is not completely on the support foot (that's why /2.0)*/
+        if (m_time > m_params.move_trunk_time + m_params.raise_foot_time / 2.0 &&
+            m_time < m_phase_timings.move_back + m_params.lower_foot_time / 2.0) {
+            cop_support_point = true;
+        } else {
+            cop_support_point = false;
+        }
+
         m_time += dt;
 
         /* Stabilize and return result */
-        return m_stabilizer.stabilize(m_is_left_kick, support_point, flying_foot_pose);
+        return m_stabilizer.stabilize(m_is_left_kick, support_point, flying_foot_pose, cop_support_point);
     } else {
         return std::nullopt;
     }
@@ -141,7 +150,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pos_z").addPoint(m_phase_timings.windup, m_params.foot_rise);
     m_flying_trajectories->get("pos_z").addPoint(m_phase_timings.kick, m_params.foot_rise);
     m_flying_trajectories->get("pos_z").addPoint(m_phase_timings.move_back, m_params.foot_rise);
-    m_flying_trajectories->get("pos_z").addPoint(m_phase_timings.lower_foot, 0);
+    m_flying_trajectories->get("pos_z").addPoint(m_phase_timings.lower_foot, 0.4 * m_params.foot_rise);
     m_flying_trajectories->get("pos_z").addPoint(m_phase_timings.move_trunk_back, 0);
 
     /* Flying foot orientation */
@@ -254,7 +263,7 @@ tf2::Vector3 KickEngine::calc_kick_windup_point() {
 
     vec.setZ(m_params.foot_rise);
 
-    m_visualizer.display_windup_point(vec, (m_is_left_kick) ? "r_sole" : "l_sole");
+    m_stabilizer.m_visualizer.display_windup_point(vec, (m_is_left_kick) ? "r_sole" : "l_sole");
     return vec;
 }
 
@@ -319,10 +328,7 @@ bool KickEngine::is_left_kick() {
 }
 
 int KickEngine::get_percent_done() const {
-    double duration = m_params.move_trunk_time + m_params.raise_foot_time + m_params.move_to_ball_time +
-                      m_params.kick_time + m_params.move_back_time + m_params.move_trunk_back_time +
-                      m_params.lower_foot_time;
-    return int(m_time / duration * 100);
+    return int(m_time / m_phase_timings.move_trunk_back * 100);
 }
 
 const KickPhase KickEngine::getPhase() {
