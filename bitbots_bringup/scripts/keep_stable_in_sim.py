@@ -65,6 +65,7 @@ if __name__ == "__main__":
             # check if we have values already, otherwise we will do math with none
             if(yaw):
                 request.model_state.pose.position = position
+                request.model_state.pose.position.z = 0.43  # the robot is not and will not be ready for take off.
                 quaternion = tf.transformations.quaternion_from_euler(0, 0, yaw)
                 request.model_state.pose.orientation.x = quaternion[0]
                 request.model_state.pose.orientation.y = quaternion[1]
