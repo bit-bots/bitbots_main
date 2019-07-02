@@ -57,6 +57,8 @@ class YoloHandler():
                 class_id = out[0]
                 confidence = out[1]
                 x, y, w, h = out[2]
+                x = x - int(self.image.shape[0] // 2)
+                y = y - int(self.image.shape[1] // 2)
                 c = Candidate(x, y, w, h)
                 c.rating = confidence
                 class_id = class_id
