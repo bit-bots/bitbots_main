@@ -2,7 +2,10 @@
 #include "bitbots_dynamic_kick/DynamicBalancingGoal.h"
 #include "bitbots_dynamic_kick/ReferenceGoals.h"
 
-Stabilizer::Stabilizer() : m_cop_error_sum_x(0), m_cop_error_sum_y(0) {
+Stabilizer::Stabilizer() :
+        m_cop_error_sum_x(0),
+        m_cop_error_sum_y(0),
+        m_visualizer("/debug/dynamic_kick") {
     /* load MoveIt! model */
     robot_model_loader::RobotModelLoader robot_model_loader("/robot_description", false);
     robot_model_loader.loadKinematicsSolvers(
@@ -33,6 +36,8 @@ void Stabilizer::reset() {
     for (int i = 0; i < names_vec.size(); i++) {
         m_goal_state->setJointPositions(names_vec[i], &pos_vec[i]);
     }
+    m_cop_error_sum_x = 0.0;
+    m_cop_error_sum_y = 0.0;
 }
 
 std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs::Point support_point,
@@ -63,6 +68,7 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
     } else {
         stabilizing_target = {support_point.x, support_point.y, support_point.z};
     }
+    m_visualizer.display_stabilizing_point(stabilizing_target, is_left_kick ? "r_sole" : "l_sole");
 
     tf::Transform flying_foot_goal;
     flying_foot_goal.setOrigin({flying_foot_goal_pose.pose.position.x,

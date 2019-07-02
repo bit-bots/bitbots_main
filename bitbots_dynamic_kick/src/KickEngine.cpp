@@ -1,8 +1,7 @@
 #include "bitbots_dynamic_kick/KickEngine.h"
 
-KickEngine::KickEngine(Visualizer &visualizer) :
-        m_listener(m_tf_buffer),
-        m_visualizer(visualizer){}
+KickEngine::KickEngine() :
+        m_listener(m_tf_buffer) {}
 
 void KickEngine::reset() {
     m_time = 0;
@@ -34,7 +33,7 @@ bool KickEngine::set_goal(const std_msgs::Header &header,
         /* Plan new splines according to new goal */
         init_trajectories();
         calc_splines(m_is_left_kick ? l_foot_pose : r_foot_pose);
-        m_visualizer.display_flying_splines(m_flying_trajectories.value(), (m_is_left_kick) ? "r_sole" : "l_sole");
+        m_stabilizer.m_visualizer.display_flying_splines(m_flying_trajectories.value(), (m_is_left_kick) ? "r_sole" : "l_sole");
 
         return true;
 
@@ -260,7 +259,7 @@ tf2::Vector3 KickEngine::calc_kick_windup_point() {
 
     vec.setZ(m_params.foot_rise);
 
-    m_visualizer.display_windup_point(vec, (m_is_left_kick) ? "r_sole" : "l_sole");
+    m_stabilizer.m_visualizer.display_windup_point(vec, (m_is_left_kick) ? "r_sole" : "l_sole");
     return vec;
 }
 

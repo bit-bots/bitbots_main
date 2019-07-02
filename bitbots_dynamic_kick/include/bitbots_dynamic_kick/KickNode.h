@@ -54,7 +54,6 @@ private:
     int m_engine_rate;
     tf2_ros::Buffer m_tf_buffer;
     tf2_ros::TransformListener m_listener;
-    Visualizer m_visualizer;
 
     /**
      * Do main loop in which KickEngine::tick() gets called repeatedly.
