@@ -131,25 +131,7 @@ class WorldModelCapsule:
     def goal_callback(self, msg):
         # type: (GoalRelative) -> None
         self.goal = msg
-<<<<<<< HEAD
-        self.goal_seen_time = rospy.get_time()
-=======
-        # todo: transform to base_footprint too!
-        goal_left_buffer = PointStamped(self.goal.header, self.goal.left_post)
-        goal_right_buffer = PointStamped(self.goal.header, self.goal.right_post)
-        self.goal_odom.header = self.goal.header
-        if goal_left_buffer.header.frame_id != 'odom':
-            try:
-                self.goal_odom.left_post = self.tf_buffer.transform(goal_left_buffer, 'odom', timeout=rospy.Duration(0.2)).point
-                self.goal_odom.right_post = self.tf_buffer.transform(goal_right_buffer, 'odom', timeout=rospy.Duration(0.2)).point
-                self.goal_odom.header.frame_id = 'odom'
-            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                rospy.logwarn(e)
-        else:
-            self.goal_odom.left_post = goal_left_buffer.point
-            self.goal_odom.right_post = goal_right_buffer.point
         self.goal_seen_time = rospy.Time.now()
->>>>>>> f4598fb... switched to proper time types (Time, Duration)
 
     #############
     # ## Common #
