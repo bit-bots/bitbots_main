@@ -4,7 +4,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 import humanoid_league_msgs.msg
 from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_ANIMATION_RUNNING, STATE_CONTROLABLE, STATE_FALLEN, STATE_FALLING, \
     STATE_HARDWARE_PROBLEM, STATE_MOTOR_OFF, STATE_PENALTY, STATE_PICKED_UP, STATE_RECORD, STATE_SHUT_DOWN, \
-    STATE_STARTUP, STATE_WALKING, STATE_HCM_OFF
+    STATE_STARTUP, STATE_WALKING, STATE_HCM_OFF, STATE_KICKING
 
 
 class StartHCM(AbstractDecisionElement):
@@ -107,6 +107,7 @@ class MotorOffTimer(AbstractDecisionElement):
 
         if self.blackboard.simulation_active:
             return "SIMULATION"
+        return "MOTORS_ARE_ON"  # TODO check if motors are on when it is possible
         # check if the time is reached
         if self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec() > self.blackboard.motor_off_time:
             rospy.logwarn_throttle(5, "Didn't recieve goals for " + str(
@@ -305,6 +306,23 @@ class Controlable(AbstractDecisionElement):
                 return False
             i += 1
         return True
+
+    def get_reevaluate(self):
+        return True
+
+
+class Kicking(AbstractDecisionElement):
+    """
+    Decides if the robot is currently kicking
+    """
+
+    def perform(self, reevaluate=False):
+        if self.blackboard.last_kick_feedback is not None and \
+                (rospy.Time.now() - self.blackboard.last_kick_feedback) < rospy.Duration.from_sec(1):
+            self.blackboard.current_state = STATE_KICKING
+            return 'KICKING'
+        else:
+            return 'NOT_KICKING'
 
     def get_reevaluate(self):
         return True

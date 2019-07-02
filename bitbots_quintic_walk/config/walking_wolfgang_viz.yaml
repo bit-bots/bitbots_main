@@ -1,7 +1,7 @@
 walking:
   # Full walk cycle frequency
   # (in Hz, > 0)
-  freq: 1.3
+  freq: 0.5
   # Length of double support phase in half cycle
   # (ratio, [0:1])
   doubleSupportRatio: 0.05
@@ -35,7 +35,7 @@ walking:
   trunkHeight: 0.40
   # Trunk pitch orientation
   # (in rad)
-  trunkPitch: 0.18
+  trunkPitch: 0.0
   # Phase offset of trunk oscillation
   # (half cycle phase, [-1:1])
   trunkPhase: 0.0
@@ -59,10 +59,10 @@ walking:
   trunkXOffsetPCoefTurn: 0.0
   # Trunk pitch orientation proportional to forward step
   # (in rad/m)
-  trunkPitchPCoefForward: 2.1
+  trunkPitchPCoefForward: 0.0
   # Trunk pitch orientation proportional to rotation step
   # (in 1)
-  trunkPitchPCoefTurn: -0.15
+  trunkPitchPCoefTurn: 0.0
 
   # update frequency of the engine
   engineFreq: 200.0
@@ -88,7 +88,7 @@ walking:
   acc: -1
   pwm: -1
 
-  imuActive: False
+  imuActive: True
   imuPitchThreshold: 0.5
   imuRollThreshold: 0.4
   imuPitchVelThreshold: 1.1
