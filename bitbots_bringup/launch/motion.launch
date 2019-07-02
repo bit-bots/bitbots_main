@@ -2,6 +2,7 @@
     <arg name="sim" default="false"/>
     <arg name="walking" default="true" doc="start the walking" />
     <arg name="use_game_settings" default="false"/>
+    <arg name="dynamic_kick" default="true" />
 
     <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
     <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
@@ -36,5 +37,6 @@
         <arg name="sim" value="$(arg sim)"/>
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
+    <node if="$(arg dynamic_kick)" pkg="bitbots_dynamic_kick" name="dynamic_kick" type="KickNode" />
 
 </launch>
