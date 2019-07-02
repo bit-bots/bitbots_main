@@ -1,0 +1,3 @@
+<launch>
+    <node name="odometry_fuser" pkg="bitbots_odometry" type="odometry_fuser" />
+</launch>

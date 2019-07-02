@@ -87,3 +87,5 @@ walking:
   imuActive: False
   imuPitchThreshold: 1
   imuRollThreshold: 1
+
+  publishOdomTF: True

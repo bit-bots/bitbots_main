@@ -17,6 +17,7 @@ QuinticWalkingNode::QuinticWalkingNode() :
     // read config
     _nh.param<double>("engineFrequency", _engineFrequency, 100.0);
     _nh.param<bool>("/simulation_active", _simulation_active, false);
+    _nh.param<bool>("/walking/publishOdomTF", _publishOdomTF, false);
 
     /* init publisher and subscriber */
     _command_msg = bitbots_msgs::JointCommand();
@@ -31,7 +32,7 @@ QuinticWalkingNode::QuinticWalkingNode() :
     //_subJointStates = _nh.subscribe("joint_states", 1, &QuinticWalkingNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
     _subKick = _nh.subscribe("kick", 1, &QuinticWalkingNode::kickCb, this, ros::TransportHints().tcpNoDelay());
     _subImu = _nh.subscribe("imu/data", 1, &QuinticWalkingNode::imuCb, this, ros::TransportHints().tcpNoDelay());
-    _subPressure = _nh.subscribe("pressure", 1, &QuinticWalkingNode::pressureCb, this,
+    _subPressure = _nh.subscribe("foot_pressure_filtered", 1, &QuinticWalkingNode::pressureCb, this,
                                  ros::TransportHints().tcpNoDelay());
 
     /* debug publisher */
@@ -91,7 +92,7 @@ void QuinticWalkingNode::run() {
                                  || _robotState == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
             // see if the walk engine has new goals for us
             bool newGoals = _walkEngine.updateState(dt, _currentOrders, walkableState);
-            if (newGoals) { //todo
+            if (true) { //todo
                 calculateJointGoals();
             }
         }
@@ -230,10 +231,14 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
         // compute the pitch offset to the currently wanted pitch of the engine
         double wanted_pitch = _params.trunkPitch + _params.trunkPitchPCoefForward*_walkEngine.getFootstep().getNext().x()
         + _params.trunkPitchPCoefTurn*fabs(_walkEngine.getFootstep().getNext().z());
-
         pitch = pitch - wanted_pitch;
 
-        if (abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold) {
+        // get angular velocities
+        double roll_vel = msg.angular_velocity.x;
+        double pitch_vel = msg.angular_velocity.y;
+
+
+        if (abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold || abs(pitch_vel) > _imu_pitch_vel_threshold || abs(roll_vel) > _imu_roll_vel_threshold) {
             _walkEngine.requestPause();
         }
     }
@@ -297,8 +302,8 @@ void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg) {
 
         // check if robot is unstable and should pause
         // this is true if the robot is falling to the outside or to front or back
-        if (_copStopActive && (s_io_ratio < _ioPressureThreshold || s_fb_ratio < 1 / _fbPressureThreshold ||
-                               s_fb_ratio > _fbPressureThreshold)) {
+        if (_copStopActive && (s_io_ratio > _ioPressureThreshold || 1 / s_io_ratio > _ioPressureThreshold ||
+                               1 / s_fb_ratio > _fbPressureThreshold || s_fb_ratio > _fbPressureThreshold)) {
             _walkEngine.requestPause();
             ROS_WARN("CoP stop!");
         }
@@ -364,6 +369,8 @@ QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_p
     _imuActive = config.imuActive;
     _imu_pitch_threshold = config.imuPitchThreshold;
     _imu_roll_threshold = config.imuRollThreshold;
+    _imu_pitch_vel_threshold = config.imuPitchVelThreshold;
+    _imu_roll_vel_threshold = config.imuRollVelThreshold;
 
     _phaseResetActive = config.phaseResetActive;
     _groundMinPressure = config.groundMinPressure;
@@ -429,18 +436,22 @@ void QuinticWalkingNode::publishOdometry() {
     tf::quaternionTFToMsg(odom_to_trunk.getRotation().normalize(), quat_msg);
 
     ros::Time current_time = ros::Time::now();
-    _odom_trans = geometry_msgs::TransformStamped();
-    _odom_trans.header.stamp = current_time;
-    _odom_trans.header.frame_id = "odom";
-    _odom_trans.child_frame_id = "base_link";
 
-    _odom_trans.transform.translation.x = pos[0];
-    _odom_trans.transform.translation.y = pos[1];
-    _odom_trans.transform.translation.z = pos[2];
-    _odom_trans.transform.rotation = quat_msg;
+    if (_publishOdomTF)
+    {
+        _odom_trans = geometry_msgs::TransformStamped();
+        _odom_trans.header.stamp = current_time;
+        _odom_trans.header.frame_id = "odom";
+        _odom_trans.child_frame_id = "base_link";
 
-    //send the transform
-    _odom_broadcaster.sendTransform(_odom_trans);
+        _odom_trans.transform.translation.x = pos[0];
+        _odom_trans.transform.translation.y = pos[1];
+        _odom_trans.transform.translation.z = pos[2];
+        _odom_trans.transform.rotation = quat_msg;
+
+        //send the transform
+        _odom_broadcaster.sendTransform(_odom_trans);
+    }
 
     // send the odometry also as message
     _odom_msg.header.stamp = current_time;

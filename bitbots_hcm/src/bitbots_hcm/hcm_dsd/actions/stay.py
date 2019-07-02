@@ -51,3 +51,6 @@ class StayRecord(AbstractStay):
 class StayShutDown(AbstractStay):
     def perform(self):
         self.blackboard.current_state = STATE_HCM_OFF
+
+class StayKicking(AbstractStay):
+    pass
