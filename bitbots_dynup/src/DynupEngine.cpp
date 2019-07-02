@@ -163,18 +163,22 @@ void DynupEngine::calc_back_splines(){
 }
 
 
-void DynupEngine::calc_squat_splines(){
+void DynupEngine::calc_squat_splines(geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose trunk_pose){
 
     // current position as first spline point
     // all positions relative to right foot
 
     // m_foot_trajectories are for left foot
-    m_foot_trajectories->get("pos_x").addPoint(0, 0);
-    m_foot_trajectories->get("pos_y").addPoint(0, m_params.start_foot_distance);
-    m_foot_trajectories->get("pos_z").addPoint(0, 0);
-    m_foot_trajectories->get("roll").addPoint(0, 0);
-    m_foot_trajectories->get("pitch").addPoint(0, 0);
-    m_foot_trajectories->get("yaw").addPoint(0, 0);
+    m_foot_trajectories->get("pos_x").addPoint(0, l_foot_pose.position.x);
+    m_foot_trajectories->get("pos_y").addPoint(0, l_foot_pose.position.y);
+    m_foot_trajectories->get("pos_z").addPoint(0, l_foot_pose.position.z);
+    double r, p, y;
+    tf2::Quaternion q;
+    tf2::convert(l_foot_pose.orientation, q);
+    tf2::Matrix3x3(q).getRPY(r, p, y);
+    m_foot_trajectories->get("roll").addPoint(0, r);
+    m_foot_trajectories->get("pitch").addPoint(0, p);
+    m_foot_trajectories->get("yaw").addPoint(0, y);
 
     m_foot_trajectories->get("pos_x").addPoint(m_params.rise_time, 0);
     m_foot_trajectories->get("pos_y").addPoint(m_params.rise_time, m_params.foot_distance);
@@ -184,12 +188,14 @@ void DynupEngine::calc_squat_splines(){
     m_foot_trajectories->get("yaw").addPoint(m_params.rise_time, 0);
 
     // m_trunk_trajectories are for trunk (relative to right foot)
-    m_trunk_trajectories->get("pos_x").addPoint(0, m_params.start_x);
-    m_trunk_trajectories->get("pos_y").addPoint(0, m_params.start_foot_distance / 2.0);
-    m_trunk_trajectories->get("pos_z").addPoint(0, m_params.start_trunk_height);
-    m_trunk_trajectories->get("roll").addPoint(0, 0);
-    m_trunk_trajectories->get("pitch").addPoint(0, m_params.start_pitch);
-    m_trunk_trajectories->get("yaw").addPoint(0, 0);
+    m_trunk_trajectories->get("pos_x").addPoint(0, trunk_pose.position.x);
+    m_trunk_trajectories->get("pos_y").addPoint(0, trunk_pose.position.y);
+    m_trunk_trajectories->get("pos_z").addPoint(0, trunk_pose.position.z);
+    tf2::convert(trunk_pose.orientation, q);
+    tf2::Matrix3x3(q).getRPY(r, p, y);
+    m_trunk_trajectories->get("roll").addPoint(0, r);
+    m_trunk_trajectories->get("pitch").addPoint(0, p);
+    m_trunk_trajectories->get("yaw").addPoint(0, y);
 
     m_trunk_trajectories->get("pos_x").addPoint(m_params.rise_time, m_params.trunk_x);
     m_trunk_trajectories->get("pos_y").addPoint(m_params.rise_time, m_params.foot_distance / 2.0);
@@ -197,11 +203,10 @@ void DynupEngine::calc_squat_splines(){
     m_trunk_trajectories->get("roll").addPoint(m_params.rise_time, 0);
     m_trunk_trajectories->get("pitch").addPoint(m_params.rise_time, m_params.trunk_pitch);
     m_trunk_trajectories->get("yaw").addPoint(m_params.rise_time, 0);
-
 }
 
 
-void DynupEngine::start(bool front) {
+void DynupEngine::start(bool front, geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose trunk_pose) {
     /*
      * Add current position, target position and current position to splines so that they describe a smooth
      * curve to the ball and back
@@ -226,7 +231,7 @@ void DynupEngine::start(bool front) {
      }else{
         calc_back_splines();
      }*/
-     calc_squat_splines();
+     calc_squat_splines(l_foot_pose, trunk_pose);
 }
 
 void DynupEngine::init_trajectories() {

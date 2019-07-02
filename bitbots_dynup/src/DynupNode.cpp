@@ -37,11 +37,18 @@ void DynUpNode::execute_cb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     ROS_INFO("Accepted new goal");
     m_engine.reset();
 
-    m_engine.start(true); //todo we are currently only getting up from squad
-    loop_engine();
-    bitbots_msgs::DynUpResult r;
-    r.successful = true;
-    m_server.setSucceeded(r);
+    if (std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> poses = get_current_poses()) {
+        m_engine.start(true, poses->first, poses->second); //todo we are currently only getting up from squad
+        loop_engine();
+        bitbots_msgs::DynUpResult r;
+        r.successful = true;
+        m_server.setSucceeded(r);
+    } else {
+        ROS_ERROR_STREAM("Could not determine foot positions! Aborting standup.");
+        bitbots_msgs::DynUpResult r;
+        r.successful = false;
+        m_server.setAborted(r);
+    }
 }
 
 void DynUpNode::loop_engine() {
@@ -64,6 +71,33 @@ void DynUpNode::loop_engine() {
         ros::Rate loop_rate(m_engine_rate);
         loop_rate.sleep();
     }
+}
+
+std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> DynUpNode::get_current_poses() {
+    // return left foot pose and trunk pose relative to right foot
+    ros::Time time = ros::Time::now();
+
+    /* Construct zero-positions for both poses in their respective local frames */
+    geometry_msgs::PoseStamped l_foot_origin, trunk_origin;
+    l_foot_origin.header.frame_id = "l_sole";
+    l_foot_origin.pose.orientation.w = 1;
+    l_foot_origin.header.stamp = time;
+
+    trunk_origin.header.frame_id = "torso";
+    trunk_origin.pose.orientation.w = 1;
+    trunk_origin.header.stamp = time;
+
+    /* Transform both poses into the right foot frame */
+    geometry_msgs::PoseStamped l_foot_transformed, trunk_transformed;
+    try {
+        m_tf_buffer.transform(l_foot_origin, l_foot_transformed, "r_sole",
+                              ros::Duration(0.2)); // TODO lookup thrown exceptions in internet and catch
+        m_tf_buffer.transform(trunk_origin, trunk_transformed, "r_sole", ros::Duration(0.2));
+        return std::pair(l_foot_transformed.pose, trunk_transformed.pose);
+    } catch (tf2::TransformException) {
+        return std::nullopt;
+    }
+
 }
 
 void DynUpNode::publish_goals(const JointGoals &goals) {
@@ -105,3 +139,4 @@ int main(int argc, char *argv[]) {
     ROS_INFO("Initialized DynUp and waiting for actions");
     ros::spin();
 }
+

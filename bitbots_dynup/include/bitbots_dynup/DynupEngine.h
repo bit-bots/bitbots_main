@@ -50,7 +50,7 @@ public:
      */
     std::optional<JointGoals> tick(double dt);
 
-    void start(bool front);
+    void start(bool front, geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose trunk_pose);
 
     int get_percent_done() const;
 
@@ -67,14 +67,16 @@ private:
 
     tf2_ros::Buffer m_tf_buffer;
     tf2_ros::TransformListener m_listener;
-    geometry_msgs::PoseStamped  get_current_pose(Trajectories spline_container,  bool left_foot);
+
+    geometry_msgs::PoseStamped get_current_pose(Trajectories spline_container, bool left_foot);
 
     void calc_front_splines();
+
     void calc_back_splines();
-    void calc_squat_splines();
+
+    void calc_squat_splines(geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose trunk_pose);
+
     void init_trajectories();
-
-
 
 };
 

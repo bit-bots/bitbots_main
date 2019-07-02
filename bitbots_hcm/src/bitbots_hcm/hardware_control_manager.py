@@ -109,7 +109,6 @@ class HardwareControlManager:
             self.joint_goal_publisher.publish(msg)
 
     def dynup_callback(self, msg):
-        rospy.logwarn(self.blackboard.current_state)
         if self.blackboard.current_state == STATE_FALLEN:
             self.joint_goal_publisher.publish(msg)
 

@@ -4,6 +4,7 @@ import humanoid_league_msgs.msg
 import bitbots_msgs.msg
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard, STATE_GETTING_UP
+from time import sleep
 
 
 class AbstractPlayAnimation(AbstractActionElement):
@@ -177,11 +178,8 @@ class PlayAnimationDynup(AbstractActionElement):
 
         if self.animation_finished():
             # we are finished playing this animation
+            sleep(1)
             return self.pop()
-
-    def chose_animation(self):
-        # this is what has to be implemented returning the animation to play
-        raise NotImplementedError
 
     def start_animation(self):
         """

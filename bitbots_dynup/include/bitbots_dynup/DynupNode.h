@@ -74,6 +74,8 @@ private:
      * Publish goals to ROS
      */
     void publish_goals(const JointGoals &goals);
+
+    std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> get_current_poses();
 };
 
 #endif  // BITBOTS_DYNUP_NODE_H
