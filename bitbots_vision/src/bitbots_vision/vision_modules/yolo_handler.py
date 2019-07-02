@@ -1,6 +1,10 @@
 import cv2
 import os
-from pydarknet import Detector, Image
+import rospy
+try:
+    from pydarknet import Detector, Image
+except:
+    rospy.logerr("Not able to run YOLO!")
 import numpy as np
 from candidate import CandidateFinder, Candidate
 
@@ -13,7 +17,7 @@ class YoloHandler():
         datapath = os.path.join(model_path, "obj.data")
 
         self.config = config
-        
+
         self.net = Detector(bytes(configpath, encoding="utf-8"), bytes(weightpath, encoding="utf-8"), 0,
                        bytes(datapath, encoding="utf-8"))
         self.classes = ["ball", "goalpost"]
