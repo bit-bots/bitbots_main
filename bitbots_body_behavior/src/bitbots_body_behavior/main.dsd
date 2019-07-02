@@ -38,23 +38,26 @@ $Localization
     NO --> @GoToRelativePosition + x:2 + y:0 + t:0
 
 #GoalieBehavior
-$JustUnpenalized
-    YES --> #Positioning
-    NO --> $Localization
-        YES --> $BallSeen
+$Localization
+    YES --> $JustUnpenalized
+        YES --> #Positioning
+        NO --> $BallSeen
             YES --> $BallDangerous
                 YES --> #GoAndKickBallMapGoal
                 NO --> @LookAtBall
-            NO --> @SearchBall
+    NO --> $JustUnpenalized
+        YES --> @GoToRelativePosition + x:2 + y:0 + t:0
         NO --> #NoLocalizationGoalieBehavior
 
 #OffenseBehavior
-$JustUnpenalized
-    YES --> #Positioning
-    NO --> $Localization
-        YES --> $BallSeen
+$Localization
+    YES --> $JustUnpenalized
+        YES --> #Positioning
+        NO --> $BallSeen
             YES --> #GoAndKickBallMapGoal
             NO --> @SearchBall
+    NO --> $JustUnpenalized
+        YES --> @GoToRelativePosition + x:2 + y:0 + t:0
         NO --> #NoLocalizationPlayerBehavior
 
 #DefenseBehavior
