@@ -14,7 +14,10 @@ class YoloHandler():
     def __init__(self, config, model_path):
         weightpath = os.path.join(model_path, "yolo_weights.weights")
         configpath = os.path.join(model_path, "config.cfg")
-        datapath = os.path.join(model_path, "obj.data")
+        datapath = os.path.join("/tmp/obj.data")
+        namepath = os.path.join(model_path, "obj.names")
+
+        self._generate_dummy_obj_data_file(namepath)
 
         self.config = config
 
@@ -28,6 +31,11 @@ class YoloHandler():
         self.nms_threshold = 0.4
         self.goalpost_candidates = None
         self.ball_candidates = None
+
+    def _generate_dummy_obj_data_file(self, obj_name_path):
+        obj_data = "classes = 2\nnames = " + obj_name_path
+        with open('/tmp/obj.data', 'w') as f:
+            f.write(obj_data)
 
     def set_image(self, img):
         if np.array_equal(img,self.image):
