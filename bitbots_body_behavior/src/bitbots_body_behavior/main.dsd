@@ -37,6 +37,11 @@ $Localization
     YES --> @GoToRolePosition, @LookAtFieldFeatures
     NO --> @GoToRelativePosition + x:2 + y:0 + t:0
 
+#PositioningReady
+$Localization
+    YES --> @GoToRolePosition, @LookAtFieldFeatures
+    NO --> @GoToRelativePosition + x:2 + y:0 + t:0, @StandAndWait
+
 #GoalieBehavior
 $Localization
     YES --> $JustUnpenalized
@@ -88,28 +93,28 @@ $BallSeen
 $RoleDecider
     goalie --> $GameStateDecider
         Initial --> @LookAtBall, @StandAndWait
-        Ready --> #Positioning
+        Ready --> #PositioningReady
         Set --> @StandAndWait
         Playing --> #GoalieBehavior
         Finished --> @StandAndWait
         NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     offense --> $GameStateDecider
         Initial --> @LookAtBall, @StandAndWait
-        Ready --> #Positioning
+        Ready --> #PositioningReady
         Set --> @StandAndWait
         Playing --> #OffenseBehavior
         Finished --> @StandAndWait
         NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     defense --> $GameStateDecider
         Initial --> @LookAtBall, @StandAndWait
-        Ready --> #Positioning
+        Ready --> #PositioningReady
         Set --> @StandAndWait
         Playing --> #DefenseBehavior
         Finished --> @StandAndWait
         NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     penalty --> $GameStateDecider
         Initial --> @LookAtBallPenalty, @StandAndWait
-        Ready --> #Positioning
+        Ready --> #PositioningReady
         Set --> @StandAndWait
         Playing --> #PenaltyBehavior
         Finished --> @StandAndWait
