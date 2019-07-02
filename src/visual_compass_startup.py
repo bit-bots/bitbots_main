@@ -9,7 +9,7 @@ import cPickle as pickle
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from dynamic_reconfigure.server import Server
-from humanoid_league_msgs.msg import VisualCompassRotation
+from humanoid_league_msgs.msg import VisualCompassRotation, GameState
 from bitbots_visual_compass.cfg import VisualCompassConfig
 from worker import VisualCompass
 from key_point_converter import KeyPointConverter
@@ -47,6 +47,7 @@ class VisualCompassStartup():
 
         self.config = {}
         self.compass = None
+        self.orientation_offset = 0  # Orientation changes about PI in the second game half
 
         self.filter = None
 
@@ -84,6 +85,14 @@ class VisualCompassStartup():
                     'type': config['compass_type'],
                     'matcher': config['compass_matcher'],
                     'ground_truth_count': config['compass_multiple_ground_truth_images_count']})
+
+        # Subscribe to game state
+        self.game_state_msg = rospy.Subscriber(
+            'gamestate',
+            GameState,
+            self.gamestate_callback,
+            queue_size=1,
+            tcp_nodelay=True)
 
         # Subscribe to Image-message
         if self.changed_config_param(config, 'img_msg_topic') or \
@@ -135,7 +144,13 @@ class VisualCompassStartup():
         
         # Publishes the 'visual_compass'-message
         self.publish_rotation("base_footprint", image_msg.header.stamp, result[0], result[1])
-    
+
+    def gamestate_callback(self, msg):
+        if msg.data.firstHalf:
+            self.orientation_offset = 0
+        else:
+            self.orientation_offset = math.pi
+
     def publish_rotation(self, header_frame_id, header_stamp, orientation, confidence):
         # type: (TODO, TODO, float, float) -> None
         """
@@ -147,7 +162,7 @@ class VisualCompassStartup():
         msg.header.frame_id = header_frame_id
         msg.header.stamp = header_stamp
 
-        msg.orientation = orientation
+        msg.orientation = (orientation + self.orientation_offset) % (2 * math.pi)  # Orientation changes about PI in the second game half
         msg.confidence = confidence
 
         # Publish VisualCompassMsg-message
