@@ -101,13 +101,13 @@ class GameStateReceiver(object):
         except AssertionError as ae:
             rospy.logerr(ae.message)
         except socket.timeout:
-            rospy.loginfo("No GameController message received (socket timeout)")
+            rospy.loginfo_throttle(5.0, "No GameController message received (socket timeout)")
         except ConstError: 
             rospy.logwarn("Parse Error: Probably using an old protocol!")
         finally:
             if self.get_time_since_last_package() > self.game_controller_lost_time:
                 self.time += 5  # Resend message every five seconds
-                rospy.logwarn('No game controller messages received, allowing robot to move')
+                rospy.logwarn_throttle(5.0, 'No game controller messages received, allowing robot to move')
                 msg = GameStateMsg()
                 msg.allowedToMove = True
                 msg.gameState = 3  # PLAYING
