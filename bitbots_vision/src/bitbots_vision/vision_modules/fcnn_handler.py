@@ -19,15 +19,16 @@ class FcnnHandler(CandidateFinder):
     copy them into the vision package config):
 
     ball_fcnn:
-        model_path: '/models/fcnn03'
-        debug: true  # only active when true and vision/debug is true, too!
-        threshold: .5  # minimal value for a candidate to be considered
+        publish_debug_img: false  # toggles publishing of the fcnn heatmap image for debug purposes
+        model_path: '/models/2019_05_timon_basler'
+        threshold: .6  # minimal value for a candidate to be considered
         expand_stepsize: 4
         pointcloud_stepsize: 10
-        shuffle_candidate_list: true  # shuffles the list of possible candidate points
-        min_candidate_diameter: 10
-        max_candidate_diameter: 200
-        candidate_refinement_iteration_count: 1
+        shuffle_candidate_list: false  # shuffles the list of possible candidate points
+        min_ball_diameter: 15
+        max_ball_diameter: 150
+        publish_output: false
+        publish_field_boundary_offset: 5
     """
 
     def __init__(self, fcnn, field_boundary_detector, config, debug_printer):

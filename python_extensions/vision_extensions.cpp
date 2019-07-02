@@ -296,6 +296,7 @@ static struct PyModuleDef visionmodule = {
 
 PyMODINIT_FUNC
 PyInit_VisionExtensions(void) {
+    import_array();
     return PyModule_Create(&visionmodule);
 }
 #else
@@ -326,7 +327,6 @@ int main(int argc, char *argv[]) {
     Py_Initialize();
 
 #if PY_MAJOR_VERSION >= 3
-    import_array();
     /* Optionally import the module; alternatively,
        import can be deferred until the embedded script
        imports it. */

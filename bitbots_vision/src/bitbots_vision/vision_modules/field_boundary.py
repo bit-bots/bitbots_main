@@ -117,7 +117,7 @@ class FieldBoundaryDetector:
         self._field_boundary_points = []
         if self._search_method == 'dynamic':
             # decides the search method depending on the vertical tilt of the head
-            if self._head_joint_position > self._head_joint_threshold:
+            if self._head_joint_position and self._head_joint_position > self._head_joint_threshold:
                 self._field_boundary_points = self._sub_field_boundary_points_reversed()
             else:
                 self._field_boundary_points = self._sub_field_boundary_points_iteration()
@@ -608,6 +608,17 @@ class FieldBoundaryDetector:
         footpoint = (candidate[0] + candidate[2] // 2, candidate[1] + candidate[3] + y_offset)
         return self.point_under_field_boundary(footpoint)
 
+    def candidate_under_convex_field_boundary(self, candidate, y_offset=0):
+        # type: (tuple, int) -> bool
+        """
+        returns whether the candidate is under the convex field_boundary or not
+        :param candidate: the candidate, a tuple (upleft_x, upleft_y, width, height)
+        :param y_offset: an offset in y-direction (higher offset allows points in a wider range over the field_boundary)
+        :return: whether the candidate is under the convex field_boundary or not
+        """
+        footpoint = (candidate[0] + candidate[2] // 2, candidate[1] + candidate[3] + y_offset)
+        return self.point_under_convex_field_boundary(footpoint)
+
     def compute_all(self):
         self.compute_full_convex_field_boundary()
         self.compute_full_field_boundary()
@@ -616,9 +627,22 @@ class FieldBoundaryDetector:
         # type: (list, int) -> list
         return [candidate for candidate in candidates if self.candidate_under_field_boundary(candidate, y_offset)]
 
+    def candidates_under_convex_field_boundary(self, candidates, y_offset=0):
+        # type: (list, int) -> list
+        return [candidate for candidate in candidates if self.candidate_under_convex_field_boundary(candidate, y_offset)]
+
     def balls_under_field_boundary(self, balls, y_offset=0):
         # type: (list, int) -> list
         return [candidate for candidate in balls if self.candidate_under_field_boundary(
+            (candidate.get_upper_left_x(),
+             candidate.get_upper_left_y(),
+             candidate.get_width(),
+             candidate.get_height()),
+            y_offset)]
+
+    def balls_under_convex_field_boundary(self, balls, y_offset=0):
+        # type: (list, int) -> list
+        return [candidate for candidate in balls if self.candidate_under_convex_field_boundary(
             (candidate.get_upper_left_x(),
              candidate.get_upper_left_y(),
              candidate.get_width(),
@@ -637,6 +661,19 @@ class FieldBoundaryDetector:
             rospy.logwarn('point_under_field_boundary got called with an out of bounds field_boundary point')
             return False
         return point[1] + offset > self.get_full_field_boundary()[point[0]]
+
+    def point_under_convex_field_boundary(self, point, offset=0):
+        # type: (tuple, int) -> bool
+        """
+        returns if given coordinate is a point under the convex field_boundary
+        :param point: coordinate (x, y) to test
+        :param offset: offset of pixels to still be accepted as under the field_boundary. Default is 0.
+        :return a boolean if point is under the convex field_boundary:
+        """
+        if not 0 <= point[0] < len(self.get_full_convex_field_boundary()):
+            rospy.logwarn('point_under_field_boundary got called with an out of bounds field_boundary point')
+            return False
+        return point[1] + offset > self.get_full_convex_field_boundary()[point[0]]
 
     def get_upper_bound(self, y_offset=0):
         # type: () -> int

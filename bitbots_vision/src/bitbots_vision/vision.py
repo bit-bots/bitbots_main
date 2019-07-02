@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import cv2
@@ -8,6 +8,7 @@ import rospkg
 import threading
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
+from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from sensor_msgs.msg import Image, JointState
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, PostInImage, \
@@ -66,7 +67,7 @@ class Vision:
         """
         # drops old images and cleans up queue
         image_age = rospy.get_rostime() - image_msg.header.stamp 
-        if image_age.to_sec() > 0.1:
+        if image_age.to_sec() > 1.0:
             self.debug_printer.info('Vision: Dropped Image-message', 'image')
             return
 
@@ -113,7 +114,7 @@ class Vision:
         ball_candidates = self.ball_detector.get_candidates()
 
         if ball_candidates:
-            balls_under_field_boundary = self.field_boundary_detector.balls_under_field_boundary(ball_candidates)
+            balls_under_field_boundary = self.field_boundary_detector.balls_under_convex_field_boundary(ball_candidates)
             if balls_under_field_boundary:
                 sorted_rated_candidates = sorted(balls_under_field_boundary, key=lambda x: x.rating)
                 top_ball_candidate = list([max(sorted_rated_candidates[0:1], key=lambda x: x.rating)])[0]
@@ -233,19 +234,19 @@ class Vision:
         self.pub_lines.publish(line_msg)
 
         # create non_line msg
-        non_line_msg = LineInformationInImage()
-        non_line_msg.header.frame_id = image_msg.header.frame_id
-        non_line_msg.header.stamp = image_msg.header.stamp
-        i = 0
-        for nlp in self.line_detector.get_nonlinepoints():
-            nls = LineSegmentInImage()
-            nls.start.x = nlp[0]
-            nls.start.y = nlp[1]
-            nls.end = nls.start
-            if i % 2 == 0:
-                non_line_msg.segments.append(nls)
-            i += 1
-        self.pub_non_lines.publish(non_line_msg)
+        # non_line_msg = LineInformationInImage()
+        # non_line_msg.header.frame_id = image_msg.header.frame_id
+        # non_line_msg.header.stamp = image_msg.header.stamp
+        # i = 0
+        # for nlp in self.line_detector.get_nonlinepoints():
+        #     nls = LineSegmentInImage()
+        #     nls.start.x = nlp[0]
+        #     nls.start.y = nlp[1]
+        #     nls.end = nls.start
+        #     if i % 2 == 0:
+        #         non_line_msg.segments.append(nls)
+        #     i += 1
+        # self.pub_non_lines.publish(non_line_msg)
 
         if self.ball_fcnn_publish_output and self.config['vision_ball_classifier'] == 'fcnn':
             self.pub_ball_fcnn.publish(self.ball_detector.get_cropped_msg())
@@ -254,7 +255,7 @@ class Vision:
             self.pub_debug_fcnn_image.publish(self.ball_detector.get_debug_image())
 
         # do debug stuff
-        if self.debug:
+        if self.publish_debug_image:
             self.debug_image_dings.set_image(image)
             self.debug_image_dings.draw_obstacle_candidates(
                 self.obstacle_detector.get_candidates(),
@@ -298,14 +299,12 @@ class Vision:
                 self.line_detector.get_linepoints(),
                 (0, 0, 255))
             # draw nonlinepoints in black
-            self.debug_image_dings.draw_points(
-                self.line_detector.get_nonlinepoints(),
-                (0, 0, 0))
-            # debug_image_dings.draw_line_segments(line_detector.get_linesegments(), (180, 105, 255))
-            if self.debug_image:
-                self.debug_image_dings.imshow()
-            if self.debug_image_msg:
-                self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(self.debug_image_dings.get_image(), 'bgr8'))
+            # self.debug_image_dings.draw_points(
+            #     self.line_detector.get_nonlinepoints(),
+            #     (0, 0, 0))
+
+            # publish debug image
+            self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(self.debug_image_dings.get_image(), 'bgr8'))
 
     def _conventional_precalculation(self):
         self.obstacle_detector.compute_all_obstacles()
@@ -320,10 +319,8 @@ class Vision:
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
         self._ball_candidate_y_offset = config['vision_ball_candidate_field_boundary_y_offset']
 
-        self.debug_image = config['vision_debug_image']
-        self.debug_image_msg = config['vision_publish_debug_image']
-        self.debug = self.debug_image or self.debug_image_msg
-        if self.debug:
+        self.publish_debug_image = config['vision_publish_debug_image']
+        if self.publish_debug_image:
             rospy.logwarn('Debug images are enabled')
         else:
             rospy.loginfo('Debug images are disabled')
@@ -333,7 +330,7 @@ class Vision:
         else:
             rospy.logwarn('ball FCNN output publishing is disabled')
 
-        self.publish_fcnn_debug_image = config['ball_fcnn_debug']
+        self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
 
         if config['vision_ball_classifier'] == 'dummy':
             self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, self.debug_printer)
@@ -402,33 +399,11 @@ class Vision:
             self.debug_printer
         )
 
-        # load cascade
-        if config['vision_ball_classifier'] == 'cascade':
-            self.cascade_path = self.package_path + config['cascade_classifier_path']
-            if 'cascade_classifier_path' not in self.config or \
-                    self.config['cascade_classifier_path'] != config['cascade_classifier_path'] or \
-                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                if os.path.exists(self.cascade_path):
-                    self.cascade = cv2.CascadeClassifier(self.cascade_path)
-                else:
-                    rospy.logerr(
-                        'AAAAHHHH! The specified cascade config file doesn\'t exist!')
-            if 'classifier_model_path' not in self.config or \
-                    self.config['classifier_model_path'] != config['classifier_model_path'] or \
-                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                self.ball_classifier = live_classifier.LiveClassifier(
-                    self.package_path + config['classifier_model_path'])
-                rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
-            self.ball_detector = classifier.ClassifierHandler(self.ball_classifier, self.debug_printer)
-
-            self.ball_finder = ball.BallFinder(self.cascade, config, self.debug_printer)
-
-
         # set up ball config for fcnn
         # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
         # this enables 2 fcnns with different configs.
         self.ball_fcnn_config = {
-            'debug': config['ball_fcnn_debug'],
+            'debug': config['ball_fcnn_publish_debug_img'],
             'threshold': config['ball_fcnn_threshold'],
             'expand_stepsize': config['ball_fcnn_expand_stepsize'],
             'pointcloud_stepsize': config['ball_fcnn_pointcloud_stepsize'],
@@ -444,7 +419,7 @@ class Vision:
             if 'ball_fcnn_model_path' not in self.config or \
                     self.config['ball_fcnn_model_path'] != config['ball_fcnn_model_path'] or \
                     self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                ball_fcnn_path = self.package_path + config['ball_fcnn_model_path']
+                ball_fcnn_path = os.path.join(self.package_path, 'models', config['ball_fcnn_model_path'])
                 if not os.path.exists(ball_fcnn_path):
                     rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
                 self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path, self.debug_printer)
@@ -477,14 +452,14 @@ class Vision:
                 queue_size=5)
 
         # publisher for nonlinepoints
-        if 'ROS_non_line_msg_topic' not in self.config or \
-                self.config['ROS_non_line_msg_topic'] != config['ROS_non_line_msg_topic']:
-            if hasattr(self, 'pub_non_lines'):
-                self.pub_non_lines.unregister()
-            self.pub_non_lines = rospy.Publisher(
-                config['ROS_non_line_msg_topic'],
-                LineInformationInImage,
-                queue_size=5)
+        # if 'ROS_non_line_msg_topic' not in self.config or \
+        #         self.config['ROS_non_line_msg_topic'] != config['ROS_non_line_msg_topic']:
+        #     if hasattr(self, 'pub_non_lines'):
+        #         self.pub_non_lines.unregister()
+        #     self.pub_non_lines = rospy.Publisher(
+        #         config['ROS_non_line_msg_topic'],
+        #         LineInformationInImage,
+        #         queue_size=5)
 
         if 'ROS_obstacle_msg_topic' not in self.config or \
                 self.config['ROS_obstacle_msg_topic'] != config['ROS_obstacle_msg_topic']:
@@ -558,8 +533,13 @@ class Vision:
                 tcp_nodelay=True)
 
         # Publish Config-message
+        # Clean config dict to avoid not dumpable types
+        config_cleaned = {}
+        for key, value in config.items():
+            if type(value) != DynamicReconfigureConfig:
+                config_cleaned[key] = value
         msg = Config()
-        msg.data = yaml.dump(config)
+        msg.data = yaml.dump(config_cleaned)
         self.pub_config.publish(msg)
 
         self.config = config

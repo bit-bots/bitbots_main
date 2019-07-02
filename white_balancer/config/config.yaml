@@ -1,0 +1,7 @@
+temp: 2823 #Kelvin
+
+timestamp_offset: -0.1 #Image timestamp offset
+
+ROS_input_topic: "/image_resized"
+
+ROS_output_topic: "/image_raw"

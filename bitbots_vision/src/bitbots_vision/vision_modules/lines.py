@@ -16,7 +16,7 @@ class LineDetector:
         self._image = None
         self._preprocessed_image = None
         self._linepoints = None
-        self._nonlinepoints = None  # these are points that are not found on a line, helpful for localisation
+        # self._nonlinepoints = None  # these are points that are not found on a line, helpful for localisation
         self._linesegments = None
         self._white_detector = white_detector
         self._field_color_detector = field_color_detector
@@ -31,7 +31,7 @@ class LineDetector:
         self._image = image
         self._preprocessed_image = None
         self._linepoints = None
-        self._nonlinepoints = None
+        # self._nonlinepoints = None
         self._linesegments = None
 
     def set_candidates(self, candidates):
@@ -39,10 +39,10 @@ class LineDetector:
         self._candidates = candidates
 
     def compute_linepoints(self):
-        if self._linepoints is None or self._nonlinepoints is None:
-
+        # if self._linepoints is None or self._nonlinepoints is None:
+        if self._linepoints is None:
             self._linepoints = list()
-            self._nonlinepoints = list()
+            # self._nonlinepoints = list()
             imgshape = self._get_preprocessed_image().shape
             white_masked_image = self._white_detector.mask_image(
                 self._get_preprocessed_image())
@@ -54,17 +54,17 @@ class LineDetector:
             for p in zip(x_list, y_list):
                 if white_masked_image[p[1]][p[0]]:
                     self._linepoints.append(p)
-                else:
-                    if self._field_boundary_detector.point_under_field_boundary(p):
-                        self._nonlinepoints.append(p)
+                # else:
+                    # if self._field_boundary_detector.point_under_field_boundary(p):
+                    #     self._nonlinepoints.append(p)
 
     def get_linepoints(self):
         self.compute_linepoints()
         return self._linepoints
 
-    def get_nonlinepoints(self):
-        self.compute_linepoints()
-        return self._nonlinepoints
+    # def get_nonlinepoints(self):
+        # self.compute_linepoints()
+        # return self._nonlinepoints
 
     def get_linesegments(self):
 
@@ -115,7 +115,7 @@ class LineDetector:
             green_mask = self._field_color_detector.mask_image(self._image)
             green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_CLOSE, kernel=np.ones((3, 3)), iterations=1)
 
-            green_mask = (np.ones_like(green_mask) - (green_mask/255))
+            green_mask = np.ones_like(green_mask) - (np.floor_divide(green_mask, 255))
             self._preprocessed_image = cv2.bitwise_and(self._preprocessed_image, self._preprocessed_image, mask=green_mask)
 
             # cv2.imshow('', self._preprocessed_image)
