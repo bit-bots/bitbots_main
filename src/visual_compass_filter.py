@@ -23,7 +23,7 @@ class VisualCompassFilter:
         self.listener = tf2.TransformListener(self.tf_buffer)
 
         # Filter constant
-        self.K = 0.9
+        self.K = 0.99
 
         # Threshold to ignore values
         self.threshold = 0.3
