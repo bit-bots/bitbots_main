@@ -2,7 +2,7 @@
      <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
     </include>
 
-    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
+    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_viz.yaml" command="load"/>
 
     <param name="/walking/publishOdomTF" type="bool" value="True" />
 
