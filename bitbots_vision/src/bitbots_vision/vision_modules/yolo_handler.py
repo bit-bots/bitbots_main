@@ -1,12 +1,13 @@
 import cv2
 import os
 import rospy
+import time
 try:
     from pydarknet import Detector, Image
 except:
     rospy.logerr("Not able to run YOLO!")
 import numpy as np
-from candidate import CandidateFinder, Candidate
+from .candidate import CandidateFinder, Candidate
 
 # todo implement candidate finder
 
@@ -21,14 +22,11 @@ class YoloHandler():
 
         self.config = config
 
-        self.net = Detector(bytes(configpath, encoding="utf-8"), bytes(weightpath, encoding="utf-8"), 0,
+        self.net = Detector(bytes(configpath, encoding="utf-8"), bytes(weightpath, encoding="utf-8"), 0.5,
                        bytes(datapath, encoding="utf-8"))
         self.classes = ["ball", "goalpost"]
         self.image = None
-        self.COLORS = np.random.uniform(0, 255, size=(len(self.classes), 3))
         self.results = None
-        self.confidence_threshold = 0.5
-        self.nms_threshold = 0.4
         self.goalpost_candidates = None
         self.ball_candidates = None
 
@@ -42,45 +40,30 @@ class YoloHandler():
             return
         self.image = img
         self.results =  None
-        self.image = Image(img)
+        self.image = img
         self.goalpost_candidates = None
         self.ball_candidates = None
 
 
     def predict(self):
         if self.results is None:
-            results = self.net.detect(self.image)
+            self.results = self.net.detect(Image(self.image))
             class_ids = []
             confidences = []
             boxes = []
             self.ball_candidates = []
             self.goalpost_candidates = []
-            for out in results:
-                print(out[2])
+            for out in self.results:
                 class_id = out[0]
                 confidence = out[1]
                 x, y, w, h = out[2]
-                boxes.append([x, y, w, h])
-                confidences.append(confidence)
-                class_ids.append(class_id)
-
-            indices = cv2.dnn.NMSBoxes(boxes, confidences, self.confidence_threshold, self.nms_threshold)
-
-            for i in indices:
-                i = i[0]
-                box = boxes[i]
-                x = box[0]
-                y = box[1]
-                w = box[2]
-                h = box[3]
                 c = Candidate(x, y, w, h)
-                c.rating = confidences[i]
-                class_id = class_ids[i]
+                c.rating = confidence
+                class_id = class_id
                 if class_id == b"ball":
                     self.ball_candidates.append(c)
                 if class_id == b"goalpost":
                     self.goalpost_candidates.append(c)
-
 
     def get_candidates(self):
         self.predict()
