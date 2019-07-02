@@ -9,6 +9,9 @@
     <group if="$(arg torquelessMode)">
         <rosparam param="torquelessMode" ns="/ros_control">true</rosparam>
     </group>
+    <group unless="$(arg torquelessMode)">
+        <rosparam param="torquelessMode" ns="/ros_control">false</rosparam>
+    </group>
 
     <node pkg="bitbots_ros_control" type="dynamixel_controller_manager_node" name="ros_control" output="screen"/> 
 
