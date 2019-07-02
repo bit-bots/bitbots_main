@@ -6,7 +6,7 @@ from .candidate import CandidateFinder, Candidate
 # todo implement candidate finder
 
 class YoloHandler():
-    def __init__(self, config, weight):
+    def __init__(self, config, model_path):
         configpath = "/home/florian/Desktop/yolov3tiny/yolov3tiny-ballgoalpost_final.weights"
         weightpath = "/home/florian/Desktop/yolov3tiny/yolov3tiny-ballgoalpost.cfg"
         self.classes = ["ball", "goalpost"]

@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python2
 
 import os
 import cv2
@@ -434,14 +434,14 @@ class Vision:
 
         # load fcnn
         if config['vision_ball_classifier'] == 'fcnn':
-            if 'ball_fcnn_model_path' not in self.config or \
-                    self.config['ball_fcnn_model_path'] != config['ball_fcnn_model_path'] or \
+            if 'nn_model_path' not in self.config or \
+                    self.config['nn_model_path'] != config['nn_model_path'] or \
                     self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                ball_fcnn_path = self.package_path + config['ball_fcnn_model_path']
+                ball_fcnn_path = self.package_path + config['nn_model_path']
                 if not os.path.exists(ball_fcnn_path):
                     rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
                 self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path, self.debug_printer)
-                rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
+                rospy.loginfo(config['vision_ball_classifier'] + " vision is running now")
             self.ball_detector = fcnn_handler.FcnnHandler(
                 self.ball_fcnn,
                 self.field_boundary_detector,
@@ -449,11 +449,18 @@ class Vision:
                 self.debug_printer)
 
         if config['vision_ball_classifier'] == 'yolo':
-            rospy.logwarn("yolo is running now")
-            # TODO replace following strings with path to config/weights
-            yolo = yolo_handler.YoloHandler("FOO", "BAR")
-            self.ball_detector = yolo_handler.YoloBallDetector(yolo)
-            self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
+            if 'nn_model_path' not in self.config or \
+                    self.config['nn_model_path'] != config['nn_model_path'] or \
+                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
+                yolo_model_path = self.package_path + config['nn_model_path']
+                if not os.path.exists(yolo_model_path):
+                    rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist!')
+                # TODO replace following strings with path to config/weights
+                yolo = yolo_handler.YoloHandler(config, yolo_model_path)
+                self.ball_detector = yolo_handler.YoloBallDetector(yolo)
+                self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
+                rospy.loginfo(config['vision_ball_classifier'] + " vision is running now")
+            
 
         # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!
         if 'ROS_ball_msg_topic' not in self.config or \
