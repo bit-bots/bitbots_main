@@ -89,7 +89,7 @@ walking:
   pwm: -1
 
   imuActive: True
-  imuPitchThreshold: 0.65
+  imuPitchThreshold: 0.5
   imuRollThreshold: 0.4
   imuPitchVelThreshold: 1.1
   imuRollVelThreshold: 1.0
