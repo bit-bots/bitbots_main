@@ -49,7 +49,7 @@ public:
  */
 class KickEngine {
 public:
-    explicit KickEngine(Visualizer &visualizer);
+    explicit KickEngine();
 
     /**
      * Set new goal which the engine tries to kick at. This will remove the old goal completely and plan new splines.
@@ -114,7 +114,6 @@ private:
     bool m_is_left_kick;
     std::optional<Trajectories> m_support_point_trajectories, m_flying_trajectories;
     KickParams m_params;
-    Visualizer &m_visualizer;
 
     tf2_ros::Buffer m_tf_buffer;
     tf2_ros::TransformListener m_listener;

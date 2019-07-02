@@ -7,6 +7,7 @@
 #include <bio_ik/bio_ik.h>
 #include <geometry_msgs/Pose.h>
 #include <tf2_ros/transform_listener.h>
+#include "Visualizer.h"
 
 typedef std::pair<std::vector<std::string>, std::vector<double>> JointGoals;
 
@@ -17,6 +18,7 @@ class Stabilizer {
 public:
     Stabilizer();
 
+    Visualizer m_visualizer;
     geometry_msgs::Point m_cop_left;
     geometry_msgs::Point m_cop_right;
 

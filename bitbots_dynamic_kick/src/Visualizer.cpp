@@ -1,9 +1,8 @@
 #include "bitbots_dynamic_kick/Visualizer.h"
 
 
-Visualizer::Visualizer(std::string base_topic, ros::NodeHandle &node_handle) :
+Visualizer::Visualizer(std::string base_topic) :
         m_base_topic(base_topic),
-        m_node_handle(node_handle),
         m_params() {
     /* make sure m_base_topic has consistent scheme */
     if (base_topic.compare(base_topic.size() - 1, 1, "/") != 0) {
@@ -16,6 +15,8 @@ Visualizer::Visualizer(std::string base_topic, ros::NodeHandle &node_handle) :
     m_spline_publisher = m_node_handle.advertise<nav_msgs::Path>(m_base_topic + "flying_foot_spline",
             /* queue_size */ 5, /* latch */ true);
     m_windup_publisher = m_node_handle.advertise<visualization_msgs::Marker>(m_base_topic + "kick_windup_point",
+            /* queue_size */ 5, /* latch */ true);
+    m_stabilizing_publisher = m_node_handle.advertise<visualization_msgs::Marker>(m_base_topic + "kick_stabilizing_point",
             /* queue_size */ 5, /* latch */ true);
 
     m_node_handle.getParam("/debug_active", m_param_debug_active);
@@ -104,6 +105,34 @@ void Visualizer::display_windup_point(tf2::Vector3 kick_windup_point, std::strin
     marker.color.g = 1;
 
     m_windup_publisher.publish(marker);
+}
+
+
+void Visualizer::display_stabilizing_point(tf::Vector3 kick_windup_point, std::string support_foot_frame) {
+    if (!is_enabled())
+        return;
+
+    visualization_msgs::Marker marker;
+
+    marker.ns = m_marker_ns;
+    marker.id = MarkerIDs::kick_stabilizing_point;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.lifetime = ros::Duration(1000);
+    marker.frame_locked = false;
+    marker.header.frame_id = support_foot_frame;
+    marker.header.stamp = ros::Time::now();
+    marker.pose.position.x = kick_windup_point.x();
+    marker.pose.position.y = kick_windup_point.y();
+    marker.pose.position.z = kick_windup_point.z();
+    marker.pose.orientation.w = 1;
+    marker.scale.x = 0.03;
+    marker.scale.y = 0.03;
+    marker.scale.z = 0.03;
+    marker.color.a = 1;
+    marker.color.g = 1;
+
+    m_stabilizing_publisher.publish(marker);
 }
 
 
