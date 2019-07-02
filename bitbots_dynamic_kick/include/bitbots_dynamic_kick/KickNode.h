@@ -9,6 +9,7 @@
 #include <actionlib/server/simple_action_server.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PointStamped.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <bitbots_msgs/KickAction.h>
@@ -46,6 +47,8 @@ private:
     ros::NodeHandle m_node_handle;
     ros::Publisher m_joint_goal_publisher;
     ros::Publisher m_support_foot_publisher;
+    ros::Subscriber m_cop_l_subscriber;
+    ros::Subscriber m_cop_r_subscriber;
     ActionServer m_server;
     KickEngine m_engine;
     int m_engine_rate;
@@ -76,6 +79,8 @@ private:
      * Publish goals to ROS
      */
     void publish_goals(const JointGoals &goals);
+    inline void cop_l_callback(const geometry_msgs::PointStamped cop);
+    inline void cop_r_callback(const geometry_msgs::PointStamped cop);
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_KICK_NODE_H

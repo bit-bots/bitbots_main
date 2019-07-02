@@ -17,6 +17,9 @@ class Stabilizer {
 public:
     Stabilizer();
 
+    geometry_msgs::Point m_cop_left;
+    geometry_msgs::Point m_cop_right;
+
     /**
      * Calculate required motor positions to reach foot_goal with a foot while keeping the robot as stable as possible.
      * The stabilization itself is achieved by using moveit with bio_ik
@@ -24,15 +27,17 @@ public:
      * @param foot_goal Position which should be reached by the foot
      * @return JointGoals which describe required motor positions
      */
-    std::optional<JointGoals> stabilize(bool is_left_kick, geometry_msgs::Point support_point, geometry_msgs::PoseStamped flying_foot_goal_pose);
+    std::optional<JointGoals> stabilize(bool is_left_kick, geometry_msgs::Point support_point, geometry_msgs::PoseStamped flying_foot_goal_pose, bool cop_support_point);
     void reset();
     void use_stabilizing(bool use);
     void use_minimal_displacement(bool use);
+    void use_cop(bool use);
     void set_trunk_height(double height);
     void set_stabilizing_weight(double weight);
     void set_flying_weight(double weight);
     void set_trunk_orientation_weight(double weight);
     void set_trunk_height_weight(double weight);
+    void set_p_factor(double factor);
 private:
     robot_state::RobotStatePtr m_goal_state;
     planning_scene::PlanningScenePtr m_planning_scene;
@@ -43,11 +48,13 @@ private:
 
     bool m_use_stabilizing;
     bool m_use_minimal_displacement;
+    bool m_use_cop;
     double m_trunk_height;
     double m_stabilizing_weight;
     double m_flying_weight;
     double m_trunk_orientation_weight;
     double m_trunk_height_weight;
+    double m_p_factor;
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_STABILIZER_H

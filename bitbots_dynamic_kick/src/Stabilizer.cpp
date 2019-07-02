@@ -35,15 +35,30 @@ void Stabilizer::reset() {
     }
 }
 
-std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs::Point support_point, geometry_msgs::PoseStamped flying_foot_goal_pose) {
+std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs::Point support_point,
+        geometry_msgs::PoseStamped flying_foot_goal_pose, bool cop_support_point) {
     /* ik options is basicaly the command which we send to bio_ik and which describes what we want to do */
     bio_ik::BioIKKinematicsQueryOptions ik_options;
     ik_options.replace = true;
     ik_options.return_approximate_solution = true;
     double bio_ik_timeout = 0.01;
 
-    // change goals from support foot based coordinate system to trunk based coordinate system
-    tf::Vector3 stabilizing_target = {support_point.x, support_point.y, support_point.z};
+    tf::Vector3 stabilizing_target;
+    if (cop_support_point && m_use_cop) {
+        /* calculate stabilizing target from center of pressure
+         * the cop is in corresponding sole frame
+         * optimal stabilizing would be centered above sole center */
+        if (is_left_kick) {
+            stabilizing_target.setX(m_cop_right.x * m_p_factor);
+            stabilizing_target.setY(m_cop_right.y * m_p_factor);
+        } else {
+            stabilizing_target.setX(m_cop_left.x * m_p_factor);
+            stabilizing_target.setY(m_cop_left.y * m_p_factor);
+        }
+        stabilizing_target.setZ(0);
+    } else {
+        stabilizing_target = {support_point.x, support_point.y, support_point.z};
+    }
 
     tf::Transform flying_foot_goal;
     flying_foot_goal.setOrigin({flying_foot_goal_pose.pose.position.x,
@@ -148,6 +163,10 @@ void Stabilizer::use_minimal_displacement(bool use) {
     m_use_minimal_displacement = use;
 }
 
+void Stabilizer::use_cop(bool use) {
+    m_use_cop = use;
+}
+
 void Stabilizer::set_trunk_height(double height) {
     m_trunk_height = height;
 }
@@ -166,4 +185,8 @@ void Stabilizer::set_trunk_orientation_weight(double weight) {
 
 void Stabilizer::set_trunk_height_weight(double weight) {
     m_trunk_height_weight = weight;
+}
+
+void Stabilizer::set_p_factor(double factor) {
+    m_p_factor = factor;
 }

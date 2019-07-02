@@ -51,11 +51,20 @@ std::optional<JointGoals> KickEngine::tick(double dt) {
         support_point.x = m_support_point_trajectories.value().get("pos_x").pos(m_time);
         support_point.y = m_support_point_trajectories.value().get("pos_y").pos(m_time);
         geometry_msgs::PoseStamped flying_foot_pose = get_current_pose(m_flying_trajectories.value());
+        bool cop_support_point;
+        /* use COP based support point only when the weight is on the support foot */
+        if (m_time > m_params.move_trunk_time + m_params.raise_foot_time / 2.0 &&
+            m_time < m_params.move_trunk_time + m_params.raise_foot_time + m_params.move_to_ball_time +
+                     m_params.kick_time + m_params.move_back_time + m_params.lower_foot_time) {
+            cop_support_point = true;
+        } else {
+            cop_support_point = false;
+        }
 
         m_time += dt;
 
         /* Stabilize and return result */
-        return m_stabilizer.stabilize(m_is_left_kick, support_point, flying_foot_pose);
+        return m_stabilizer.stabilize(m_is_left_kick, support_point, flying_foot_pose, cop_support_point);
     } else {
         return std::nullopt;
     }
@@ -317,8 +326,8 @@ bool KickEngine::is_left_kick() {
 
 int KickEngine::get_percent_done() const {
     double duration = m_params.move_trunk_time + m_params.raise_foot_time + m_params.move_to_ball_time +
-                      m_params.kick_time + m_params.move_back_time + m_params.move_trunk_back_time +
-                      m_params.lower_foot_time;
+                      m_params.kick_time + m_params.move_back_time + m_params.lower_foot_time +
+                      m_params.move_trunk_back_time;
     return int(m_time / duration * 100);
 }
 

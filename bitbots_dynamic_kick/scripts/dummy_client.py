@@ -74,7 +74,7 @@ if __name__ == "__main__":
     goal.header.stamp = rospy.Time.now()
     goal.header.frame_id = "base_footprint"
     goal.ball_position.x = 0.2
-    goal.ball_position.y = 0.09
+    goal.ball_position.y = -0.09
     goal.ball_position.z = 0
 
     goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, 0))
