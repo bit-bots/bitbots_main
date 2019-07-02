@@ -25,6 +25,7 @@ public:
      * @return JointGoals which describe required motor positions
      */
     std::optional<JointGoals> stabilize(bool is_left_kick, geometry_msgs::Point support_point, geometry_msgs::PoseStamped flying_foot_goal_pose);
+    void reset();
     void use_stabilizing(bool use);
     void use_minimal_displacement(bool use);
     void set_trunk_height(double height);

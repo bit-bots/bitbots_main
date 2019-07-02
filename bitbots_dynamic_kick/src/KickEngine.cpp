@@ -23,6 +23,7 @@ bool KickEngine::set_goal(const std_msgs::Header &header,
     auto transformed_goal = transform_goal((m_is_left_kick) ? "r_sole" : "l_sole", header, ball_position,
                                            kick_direction);
     if (transformed_goal) {
+        m_stabilizer.reset();
         tf2::convert(transformed_goal->first, m_ball_position);
         tf2::convert(transformed_goal->second, m_kick_direction);
         m_kick_speed = kick_speed;

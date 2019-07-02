@@ -18,6 +18,13 @@ Stabilizer::Stabilizer() {
     m_goal_state.reset(new robot_state::RobotState(m_kinematic_model));
     m_goal_state->setToDefaultValues();
 
+    reset();
+
+    /* Initialize collision model */
+    m_planning_scene.reset(new planning_scene::PlanningScene(m_kinematic_model));
+}
+
+void Stabilizer::reset() {
     /* We have to set some good initial position in the goal state,
      * since we are using a gradient based method. Otherwise, the
      * first step will be not correct */
@@ -26,9 +33,6 @@ Stabilizer::Stabilizer() {
     for (int i = 0; i < names_vec.size(); i++) {
         m_goal_state->setJointPositions(names_vec[i], &pos_vec[i]);
     }
-
-    /* Initialize collision model */
-    m_planning_scene.reset(new planning_scene::PlanningScene(m_kinematic_model));
 }
 
 std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs::Point support_point, geometry_msgs::PoseStamped flying_foot_goal_pose) {
