@@ -473,14 +473,27 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMov
         _trunkPosAtLast.y(), 
         _trunkVelAtLast.y(), 
         _trunkAccAtLast.y());
-    point("trunk_pos_y", halfPeriod+timeShift-pauseLength, 
-        trunkApexSupport.y());
-    point("trunk_pos_y", halfPeriod+timeShift+pauseLength, 
-        trunkApexSupport.y());
-    point("trunk_pos_y", period+timeShift-pauseLength, 
-        trunkApexNext.y());
-    point("trunk_pos_y", period+timeShift+pauseLength, 
-        trunkApexNext.y());
+    if(startStep || startMovement){
+        double apex_sup = trunkApexSupport.y();
+        point("trunk_pos_y", halfPeriod+timeShift-pauseLength,
+            apex_sup * _params.firstStepSwingFactor);
+        point("trunk_pos_y", halfPeriod+timeShift+pauseLength,
+            apex_sup  * _params.firstStepSwingFactor);
+        double apex_next = trunkApexNext.y();
+        point("trunk_pos_y", period+timeShift-pauseLength,
+             apex_next * _params.firstStepSwingFactor);
+        point("trunk_pos_y", period+timeShift+pauseLength,
+             apex_next * _params.firstStepSwingFactor);
+    }else{
+        point("trunk_pos_y", halfPeriod+timeShift-pauseLength,
+            trunkApexSupport.y());
+        point("trunk_pos_y", halfPeriod+timeShift+pauseLength,
+            trunkApexSupport.y());
+        point("trunk_pos_y", period+timeShift-pauseLength,
+            trunkApexNext.y());
+        point("trunk_pos_y", period+timeShift+pauseLength,
+            trunkApexNext.y());
+    }
 
     point("trunk_pos_z", 0.0, 
         _trunkPosAtLast.z(), 

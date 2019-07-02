@@ -403,6 +403,8 @@ QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_p
     _params.trunkPitchPCoefForward = config.trunkPitchPCoefForward;
     _params.trunkPitchPCoefTurn = config.trunkPitchPCoefTurn;
 
+    _params.firstStepSwingFactor = config.firstStepSwingFactor;
+
     _params.kickLength = config.kickLength;
     _params.kickPhase = config.kickPhase;
     _params.footPutDownRollOffset = config.footPutDownRollOffset;
@@ -586,6 +588,14 @@ QuinticWalkingNode::publishDebug(tf::Transform &trunk_to_support_foot_goal, tf::
     pose_msg.orientation = tf::createQuaternionMsgFromRollPitchYaw(_trunkAxis[0], _trunkAxis[1], _trunkAxis[2]);
     msg.engine_trunk_goal = pose_msg;
     publishMarker("engine_trunk_goal", current_support_frame, pose_msg, r, g, b, a);
+
+    if(_trunkPos[1] >0){
+        _trunkPos[1] = _trunkPos[1] - _params.footDistance /2;
+    }else{
+        _trunkPos[1] = _trunkPos[1] + _params.footDistance /2;
+    }
+    tf::pointEigenToMsg(_trunkPos, pose_msg.position);
+    msg.engine_trunk_goal_abs = pose_msg;
 
     // resulting trunk pose
     geometry_msgs::Pose pose;
