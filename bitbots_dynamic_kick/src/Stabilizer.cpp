@@ -3,8 +3,6 @@
 #include "bitbots_dynamic_kick/ReferenceGoals.h"
 
 Stabilizer::Stabilizer() :
-        m_cop_error_sum_x(0),
-        m_cop_error_sum_y(0),
         m_visualizer("/debug/dynamic_kick") {
     /* load MoveIt! model */
     robot_model_loader::RobotModelLoader robot_model_loader("/robot_description", false);
@@ -36,8 +34,8 @@ void Stabilizer::reset() {
     for (int i = 0; i < names_vec.size(); i++) {
         m_goal_state->setJointPositions(names_vec[i], &pos_vec[i]);
     }
-    m_cop_error_sum_x = 0.0;
-    m_cop_error_sum_y = 0.0;
+    m_cop_x_error_sum = 0.0;
+    m_cop_y_error_sum = 0.0;
 }
 
 std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs::Point support_point,
@@ -53,17 +51,22 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
         /* calculate stabilizing target from center of pressure
          * the cop is in corresponding sole frame
          * optimal stabilizing would be centered above sole center */
+        double cop_x, cop_y, last_cop_x, last_cop_y, cop_x_error, cop_y_error;
         if (is_left_kick) {
-            m_cop_error_sum_x += m_cop_right.x - support_point.x;
-            m_cop_error_sum_y += m_cop_right.y - support_point.y;
-            stabilizing_target.setX(support_point.x - m_cop_right.x * m_p_x_factor - m_i_x_factor * m_cop_error_sum_x);
-            stabilizing_target.setY(support_point.y - m_cop_right.y * m_p_y_factor - m_i_y_factor * m_cop_error_sum_y);
+            cop_x = m_cop_right.x;
+            cop_y = m_cop_right.y;
         } else {
-            m_cop_error_sum_x += m_cop_left.x - support_point.x;
-            m_cop_error_sum_y += m_cop_left.y - support_point.y;
-            stabilizing_target.setX(support_point.x - m_cop_left.x * m_p_x_factor - m_i_x_factor * m_cop_error_sum_x);
-            stabilizing_target.setY(support_point.y - m_cop_left.y * m_p_y_factor - m_i_y_factor * m_cop_error_sum_y);
+            cop_x = m_cop_left.x;
+            cop_y = m_cop_left.y;
         }
+        cop_x_error = cop_x - support_point.x;
+        cop_y_error = cop_y - support_point.y;
+        m_cop_x_error_sum += cop_x_error;
+        m_cop_y_error_sum += cop_y_error;
+        stabilizing_target.setX(support_point.x - cop_x * m_p_x_factor - m_i_x_factor * m_cop_x_error_sum - m_d_x_factor * (cop_x_error - m_cop_x_error));
+        stabilizing_target.setY(support_point.y- cop_y * m_p_y_factor - m_i_y_factor * m_cop_y_error_sum - m_d_y_factor * (cop_y_error - m_cop_y_error));
+        m_cop_x_error = cop_x_error;
+        m_cop_y_error = cop_y_error;
         stabilizing_target.setZ(0);
     } else {
         stabilizing_target = {support_point.x, support_point.y, support_point.z};
@@ -205,4 +208,9 @@ void Stabilizer::set_p_factor(double factor_x, double factor_y) {
 void Stabilizer::set_i_factor(double factor_x, double factor_y) {
     m_i_x_factor = factor_x;
     m_i_y_factor = factor_y;
+}
+
+void Stabilizer::set_d_factor(double factor_x, double factor_y) {
+    m_d_x_factor = factor_x;
+    m_d_y_factor = factor_y;
 }

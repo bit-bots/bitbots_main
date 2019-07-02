@@ -144,7 +144,6 @@ private:
     bool m_is_left_kick;
     std::optional<Trajectories> m_support_point_trajectories, m_flying_trajectories;
     KickParams m_params;
-    Visualizer &m_visualizer;
     PhaseTimings m_phase_timings;
 
     tf2_ros::Buffer m_tf_buffer;

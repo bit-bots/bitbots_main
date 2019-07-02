@@ -54,6 +54,7 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
 	m_engine.m_stabilizer.set_trunk_height_weight(config.trunk_height_weight);
 	m_engine.m_stabilizer.set_p_factor(config.stabilizing_p_x, config.stabilizing_p_y);
     m_engine.m_stabilizer.set_i_factor(config.stabilizing_i_x, config.stabilizing_i_y);
+    m_engine.m_stabilizer.set_d_factor(config.stabilizing_d_x, config.stabilizing_d_y);
 
 	VisualizationParams viz_params = VisualizationParams();
     viz_params.force_enable = config.force_enable;
