@@ -60,6 +60,8 @@ class YoloHandler():
                 class_id = out[0]
                 confidence = out[1]
                 x, y, w, h = out[2]
+                x = x - int(self.img.shape[0] // 2)
+                y = y - int(self.img.shape[1] // 2)
                 boxes.append([x, y, w, h])
                 confidences.append(confidence)
                 class_ids.append(class_id)
