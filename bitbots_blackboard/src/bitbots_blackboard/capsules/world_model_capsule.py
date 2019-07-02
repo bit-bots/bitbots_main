@@ -123,14 +123,33 @@ class WorldModelCapsule:
         else, it is the point between the posts
         :return:
         """
-        return (self.goal.left_post.x + self.goal.right_post.x / 2.0), \
-               (self.goal.left_post.y + self.goal.right_post.y / 2.0)
+        left = PointStamped(self.goal_odom.header, self.goal_odom.left_post)
+        right = PointStamped(self.goal_odom.header, self.goal_odom.right_post)
+        left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2))
+        right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2))
+
+        return (left_bfp.x + right_bfp.x / 2.0), \
+               (left_bfp.y + right_bfp.y / 2.0)
 
 
 
     def goal_callback(self, msg):
         # type: (GoalRelative) -> None
         self.goal = msg
+        # todo: transform to base_footprint too!
+        goal_left_buffer = PointStamped(self.goal.header, self.goal.left_post)
+        goal_right_buffer = PointStamped(self.goal.header, self.goal.left_post)
+        self.goal_odom.header = self.goal.header
+        if goal_left_buffer.header.frame_id != 'odom':
+            try:
+                self.goal_odom.left_post = self.tf_buffer.transform(goal_left_buffer, 'odom', timeout=rospy.Duration(0.2))
+                self.goal_odom.right_post = self.tf_buffer.transform(goal_right_buffer, 'odom', timeout=rospy.Duration(0.2))
+                self.goal_odom.header.frame_id = 'odom'
+            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                rospy.logwarn(e)
+        else:
+            self.goal_odom.left_post = goal_left_buffer
+            self.goal_odom.right_post = goal_right_buffer
         self.goal_seen_time = rospy.get_time()
 
     #############

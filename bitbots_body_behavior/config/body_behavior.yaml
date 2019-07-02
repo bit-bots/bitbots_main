@@ -40,7 +40,7 @@ behavior:
 
     # When the goal has not been seen for `goal_lost_time` seconds,
     # it is considered lost and will be searched
-    goal_lost_time: 5
+    goal_lost_time: 30
 
 
     # When the ball is closer than `ball_close_distance` meters
