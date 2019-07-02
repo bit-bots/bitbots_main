@@ -39,8 +39,9 @@ public:
     void set_flying_weight(double weight);
     void set_trunk_orientation_weight(double weight);
     void set_trunk_height_weight(double weight);
-    void set_p_factor(double factor);
-    void set_i_factor(double factor);
+    void set_p_factor(double factor_x, double factor_y);
+    void set_i_factor(double factor_x, double factor_y);
+    void set_d_factor(double factor_x, double factor_y);
 private:
     robot_state::RobotStatePtr m_goal_state;
     planning_scene::PlanningScenePtr m_planning_scene;
@@ -49,8 +50,10 @@ private:
     moveit::core::JointModelGroup* m_all_joints_group;
     moveit::core::JointModelGroup* m_legs_joints_group;
 
-    double m_cop_error_sum_x;
-    double m_cop_error_sum_y;
+    double m_cop_x_error_sum;
+    double m_cop_y_error_sum;
+    double m_cop_x_error;
+    double m_cop_y_error;
 
     bool m_use_stabilizing;
     bool m_use_minimal_displacement;
@@ -60,8 +63,12 @@ private:
     double m_flying_weight;
     double m_trunk_orientation_weight;
     double m_trunk_height_weight;
-    double m_p_factor;
-    double m_i_factor;
+    double m_p_x_factor;
+    double m_p_y_factor;
+    double m_i_x_factor;
+    double m_i_y_factor;
+    double m_d_x_factor;
+    double m_d_y_factor;
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_STABILIZER_H

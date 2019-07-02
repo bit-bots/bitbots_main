@@ -37,6 +37,34 @@ public:
     double choose_foot_corridor_width;
 };
 
+
+enum KickPhase {
+    Initial,
+    MoveTrunk,
+    RaiseFoot,
+    Windup,
+    Kick,
+    MoveBack,
+    LowerFoot,
+    MoveTrunkBack,
+    Done
+};
+
+/**
+ * An instance of this class describes after which time a KickPhase is done
+ */
+class PhaseTimings {
+public:
+    double move_trunk;
+    double raise_foot;
+    double windup;
+    double kick;
+    double move_back;
+    double lower_foot;
+    double move_trunk_back;
+};
+
+
 /**
  * The KickEngine takes care of choosing an optimal foot to reach a given goal,
  * planning that foots required movement (rotation and positioning)
@@ -105,6 +133,8 @@ public:
 
     void set_params(KickParams params);
 
+    const KickPhase getPhase();
+
     Stabilizer m_stabilizer;
 private:
     double m_time;
@@ -114,6 +144,7 @@ private:
     bool m_is_left_kick;
     std::optional<Trajectories> m_support_point_trajectories, m_flying_trajectories;
     KickParams m_params;
+    PhaseTimings m_phase_timings;
 
     tf2_ros::Buffer m_tf_buffer;
     tf2_ros::TransformListener m_listener;
