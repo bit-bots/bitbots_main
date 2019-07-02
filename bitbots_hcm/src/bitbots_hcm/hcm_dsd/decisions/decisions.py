@@ -107,6 +107,7 @@ class MotorOffTimer(AbstractDecisionElement):
 
         if self.blackboard.simulation_active:
             return "SIMULATION"
+        return "MOTORS_ARE_ON"  # TODO check if motors are on when it is possible
         # check if the time is reached
         if self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec() > self.blackboard.motor_off_time:
             rospy.logwarn_throttle(5, "Didn't recieve goals for " + str(
