@@ -65,6 +65,8 @@ class WorldModelCapsule:
         if ball.confidence == 0:
             return
 
+        # adding a minor delay to timestamp to ease transformations.
+        ball.header.stamp = ball.header.stamp + rospy.Duration.from_sec(0.01)
         ball_buffer = PointStamped(ball.header, ball.ball_relative)
         if ball.header.frame_id != 'base_footprint':
             try:
@@ -141,6 +143,8 @@ class WorldModelCapsule:
         # type: (GoalRelative) -> None
         self.goal = msg
         # todo: transform to base_footprint too!
+        # adding a minor delay to timestamp to ease transformations.
+        self.goal.header.stamp = self.goal.header.stamp + rospy.Duration.from_sec(0.01)
         goal_left_buffer = PointStamped(self.goal.header, self.goal.left_post)
         goal_right_buffer = PointStamped(self.goal.header, self.goal.right_post)
         self.goal_odom.header = self.goal.header
