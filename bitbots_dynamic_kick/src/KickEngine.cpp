@@ -94,13 +94,13 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     /* The fix* variables describe the discrete points in time where the positions are given by the parameters.
      * Between them, the spline interpolation happens. */
     double fix0 = 0;
-    double fix1 = fix0 + m_params.move_trunk_time;
-    double fix2 = fix1 + m_params.raise_foot_time;
-    double fix3 = fix2 + m_params.move_to_ball_time;
-    double fix4 = fix3 + m_params.kick_time;
-    double fix5 = fix4 + m_params.move_back_time;
-    double fix6 = fix5 + m_params.lower_foot_time;
-    double fix7 = fix6 + m_params.move_trunk_back_time;
+    double fix1 = fix0 + m_params.move_trunk_time;              // trunk is now over stabilizing point
+    double fix2 = fix1 + m_params.raise_foot_time;              // foot is raised
+    double fix3 = fix2 + m_params.move_to_ball_time;            // windup point is reached
+    double fix4 = fix3 + m_params.kick_time;                    // ball contact happens HERE
+    double fix5 = fix4 + m_params.move_back_time;               // foot is over original position
+    double fix6 = fix5 + m_params.lower_foot_time;              // foot is on the ground
+    double fix7 = fix6 + m_params.move_trunk_back_time;         // trunk is moved back over base_footprint
 
     int kick_foot_sign;
     if (m_is_left_kick) {
@@ -162,7 +162,10 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pitch").addPoint(fix3, start_p);
     m_flying_trajectories->get("pitch").addPoint(fix7, start_p);
     m_flying_trajectories->get("yaw").addPoint(fix0, start_y);
+    m_flying_trajectories->get("yaw").addPoint(fix2, start_y);
     m_flying_trajectories->get("yaw").addPoint(fix3, target_y);
+    m_flying_trajectories->get("yaw").addPoint(fix4, target_y);
+    m_flying_trajectories->get("yaw").addPoint(fix5, start_y);
     m_flying_trajectories->get("yaw").addPoint(fix7, start_y);
 
     /* Stabilizing point */
