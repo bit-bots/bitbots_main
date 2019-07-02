@@ -2,7 +2,7 @@
 #include "bitbots_dynamic_kick/DynamicBalancingGoal.h"
 #include "bitbots_dynamic_kick/ReferenceGoals.h"
 
-Stabilizer::Stabilizer() {
+Stabilizer::Stabilizer() : m_cop_error_sum_x(0), m_cop_error_sum_y(0) {
     /* load MoveIt! model */
     robot_model_loader::RobotModelLoader robot_model_loader("/robot_description", false);
     robot_model_loader.loadKinematicsSolvers(
@@ -49,11 +49,15 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
          * the cop is in corresponding sole frame
          * optimal stabilizing would be centered above sole center */
         if (is_left_kick) {
-            stabilizing_target.setX(m_cop_right.x * m_p_factor);
-            stabilizing_target.setY(m_cop_right.y * m_p_factor);
+            m_cop_error_sum_x += m_cop_right.x - support_point.x;
+            m_cop_error_sum_y += m_cop_right.y - support_point.y;
+            stabilizing_target.setX(support_point.x - m_cop_right.x * m_p_factor + m_i_factor * m_cop_error_sum_x);
+            stabilizing_target.setY(support_point.y - m_cop_right.y * m_p_factor + m_i_factor * m_cop_error_sum_y);
         } else {
-            stabilizing_target.setX(m_cop_left.x * m_p_factor);
-            stabilizing_target.setY(m_cop_left.y * m_p_factor);
+            m_cop_error_sum_x += m_cop_left.x - support_point.x;
+            m_cop_error_sum_y += m_cop_left.y - support_point.y;
+            stabilizing_target.setX(support_point.x - m_cop_left.x * m_p_factor + m_i_factor * m_cop_error_sum_x);
+            stabilizing_target.setY(support_point.y - m_cop_left.y * m_p_factor + m_i_factor * m_cop_error_sum_y);
         }
         stabilizing_target.setZ(0);
     } else {
@@ -189,4 +193,8 @@ void Stabilizer::set_trunk_height_weight(double weight) {
 
 void Stabilizer::set_p_factor(double factor) {
     m_p_factor = factor;
+}
+
+void Stabilizer::set_i_factor(double factor) {
+    m_i_factor = factor;
 }
