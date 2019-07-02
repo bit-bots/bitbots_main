@@ -88,7 +88,7 @@ walking:
   acc: -1
   pwm: -1
 
-  imuActive: True
+  imuActive: False
   imuPitchThreshold: 0.5
   imuRollThreshold: 0.4
   imuPitchVelThreshold: 1.1
