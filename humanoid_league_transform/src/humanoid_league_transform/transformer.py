@@ -19,6 +19,12 @@ class TransformBall(object):
     def __init__(self):
         rospy.init_node("bitbots_transformer")
 
+
+        self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(10.0))
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
+
+        # time 0 takes the most current transform available
+        self.tf_buffer.can_transform("base_footprint", "camera_optical_frame", rospy.Time(0), timeout=rospy.Duration(30))
         rospy.Subscriber(rospy.get_param("~ball/ball_topic", "/ball_in_image"),
                          BallsInImage,
                          self._callback_ball,
@@ -52,9 +58,6 @@ class TransformBall(object):
         self.obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=1)
 
         self.camera_info = None
-
-        self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(10.0))
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
         self.ball_height = rospy.get_param("~ball/ball_radius", 0.075)
         self.publish_frame = "base_footprint"
