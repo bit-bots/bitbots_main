@@ -723,7 +723,7 @@
         <parent link="r_upper_leg" />
         <child link="r_lower_leg" />
         <axis xyz="0 1 0" />
-        <limit effort="${tofa*8.4}" velocity="4.712388975" lower="0" upper="2.268928027587" />
+        <limit effort="${tofa*8.4}" velocity="4.712388975" lower="0" upper="2.74016693" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
 
@@ -791,7 +791,7 @@
         <parent link="l_upper_leg" />
         <child link="l_lower_leg" />
         <axis xyz="0 -1 0" />
-        <limit effort="${tofa*8.4}" velocity="4.712388975" lower="-2.268928027587" upper="0" />
+        <limit effort="${tofa*8.4}" velocity="4.712388975" lower="-2.74016693" upper="0" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
 
