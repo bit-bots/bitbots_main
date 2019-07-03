@@ -29,8 +29,8 @@ $BallSeen
 $BallSeen
     YES --> $BallClose
         YES --> #GoAndKickBallAway
-        NO --> @LookAtBall
-    NO --> @LookAtBall
+        NO --> @Stop, @LookAtBall
+    NO --> @Stop, @LookAtBall
 
 #Positioning
 $Localization
@@ -49,7 +49,7 @@ $Localization
         NO --> $BallSeen
             YES --> $BallDangerous
                 YES --> #GoAndKickBallMapGoal
-                NO --> @LookAtBall
+                NO --> @Stop, @LookAtBall
     NO --> $JustUnpenalized
         YES --> @GoToRelativePosition + x:2 + y:0 + t:0
         NO --> #NoLocalizationGoalieBehavior
