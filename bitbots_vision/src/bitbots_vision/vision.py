@@ -434,10 +434,10 @@ class Vision:
 
         # load fcnn
         if config['vision_ball_classifier'] == 'fcnn':
-            if 'nn_model_path' not in self.config or \
-                    self.config['nn_model_path'] != config['nn_model_path'] or \
+            if 'neural_network_model_path' not in self.config or \
+                    self.config['neural_network_model_path'] != config['neural_network_model_path'] or \
                     self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                ball_fcnn_path = os.path.join(self.package_path, 'models', config['nn_model_path'])
+                ball_fcnn_path = os.path.join(self.package_path, 'models', config['neural_network_model_path'])
                 if not os.path.exists(ball_fcnn_path):
                     rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
                 self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path, self.debug_printer)
@@ -449,10 +449,10 @@ class Vision:
                 self.debug_printer)
 
         if config['vision_ball_classifier'] == 'yolo':
-            if 'nn_model_path' not in self.config or \
-                    self.config['nn_model_path'] != config['nn_model_path'] or \
+            if 'neural_network_model_path' not in self.config or \
+                    self.config['neural_network_model_path'] != config['neural_network_model_path'] or \
                     self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                yolo_model_path = os.path.join(self.package_path, 'models', config['nn_model_path'])
+                yolo_model_path = os.path.join(self.package_path, 'models', config['neural_network_model_path'])
                 if not os.path.exists(yolo_model_path):
                     rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist!')
                 # TODO replace following strings with path to config/weights
