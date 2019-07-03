@@ -24,8 +24,6 @@ class GoToRelativePosition(AbstractActionElement):
 
         """
         super(GoToRelativePosition, self).__init__(blackboard, dsd)
-        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5.0))
-        tf_listener = tf2.TransformListener(self.tf_buffer)
         self.point = float(parameters.get('x', 0)), float(parameters.get('y', 0)), float(parameters.get('t', 0))
         self.first = True
 

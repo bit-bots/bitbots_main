@@ -14,9 +14,6 @@ class AbstractLookAt(AbstractActionElement):
         super(AbstractLookAt, self).__init__(blackboard, dsd, parameters)
 
         self.head_tf_frame = 'base_link'  # base_link is required by bio_ik
-        self.tf_buffer = tf2.Buffer(rospy.Duration(5))
-        # tf_listener is necessary, even though unused!
-        self.tf_listener = tf2.TransformListener(self.tf_buffer)
         self.bio_ik_request = IKRequest()
 
         # Service proxy for LookAt
@@ -51,7 +48,7 @@ class AbstractLookAt(AbstractActionElement):
         """
         # transform the points reference frame to be the head
         try:
-            point = self.tf_buffer.transform(point, self.head_tf_frame, timeout=rospy.Duration(0.9))
+            point = self.blackboard.head_capsule.tf_buffer.transform(point, self.head_tf_frame, timeout=rospy.Duration(0.9))
         except tf2.LookupException as e:
             rospy.logwarn('The frame {} is not being published (LookupException)'.format(self.head_tf_frame))
             return

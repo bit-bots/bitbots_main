@@ -10,8 +10,6 @@ class CircleBall(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(CircleBall, self).__init__(blackboard, dsd, parameters)
 
-        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5.0))
-        tf_listener = tf2.TransformListener(self.tf_buffer)
 
     def perform(self, reevaluate=False):
         """
