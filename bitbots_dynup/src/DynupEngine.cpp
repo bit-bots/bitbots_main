@@ -201,6 +201,7 @@ void DynupEngine::calc_squat_splines(geometry_msgs::Pose l_foot_pose, geometry_m
     m_trunk_trajectories->get("pos_y").addPoint(m_params.rise_time, m_params.foot_distance / 2.0);
     m_trunk_trajectories->get("pos_z").addPoint(m_params.rise_time, m_params.trunk_height);
     m_trunk_trajectories->get("roll").addPoint(m_params.rise_time, 0);
+    m_trunk_trajectories->get("pitch").addPoint(m_params.rise_time / 2.0, m_params.trunk_pitch);
     m_trunk_trajectories->get("pitch").addPoint(m_params.rise_time, m_params.trunk_pitch);
     m_trunk_trajectories->get("yaw").addPoint(m_params.rise_time, 0);
 }
