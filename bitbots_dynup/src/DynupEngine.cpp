@@ -223,6 +223,7 @@ void DynupEngine::start(bool front, geometry_msgs::Pose l_foot_pose, geometry_ms
      *    - move arms in finish position
      */
 
+    m_stabilizer.reset();
     init_trajectories();
 
      /*if(front){

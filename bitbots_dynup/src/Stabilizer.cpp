@@ -18,13 +18,18 @@ Stabilizer::Stabilizer() {
     m_goal_state.reset(new robot_state::RobotState(m_kinematic_model));
     m_goal_state->setToDefaultValues();
 
+    reset();
+}
+
+void Stabilizer::reset() {
     /* We have to set some good initial position in the goal state,
      * since we are using a gradient based method. Otherwise, the
      * first step will be not correct */
-     //TODO
     std::vector<std::string> names_vec = {"HeadPan", "HeadTilt", "LAnklePitch", "LAnkleRoll", "LElbow", "LHipPitch", "LHipRoll", "LHipYaw", "LKnee", "LShoulderPitch", "LShoulderRoll", "RAnklePitch", "RAnkleRoll", "RElbow", "RHipPitch", "RHipRoll", "RHipYaw", "RKnee", "RShoulderPitch", "RShoulderRoll"};
     std::vector<double> pos_vec = {0, 47, -80, 0, -88, 65, -7, 2, -157, 11, -14, 80, 1, 97, -63, -3, 0, 157, -14,  14};
-
+    for (double& pos: pos_vec) {
+        pos = pos / 180.0 * M_PI;
+    }
     for (int i = 0; i < names_vec.size(); i++) {
         m_goal_state->setJointPositions(names_vec[i], &pos_vec[i]);
     }
