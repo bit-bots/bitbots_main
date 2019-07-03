@@ -185,13 +185,13 @@ class Vision:
             obstacles_msg.obstacles.append(obstacle_msg)
 
         if self.config['vision_ball_classifier'] == 'yolo':
-            cand = self.goalpost_detector.get_candidates()
-            for goalposts in cand:
+            candidates = self.goalpost_detector.get_candidates()
+            for goalpost in candidates:
                 post_msg = PostInImage()
-                post_msg.width = goalposts.get_width()
-                post_msg.confidence = goalposts.get_rating()
-                post_msg.foot_point.x = goalposts.get_center_x()
-                post_msg.foot_point.y = goalposts.get_lower_right_y()
+                post_msg.width = goalpost.get_width()
+                post_msg.confidence = goalpost.get_rating()
+                post_msg.foot_point.x = goalpost.get_center_x()
+                post_msg.foot_point.y = goalpost.get_lower_right_y()
                 post_msg.top_point = post_msg.foot_point
                 goal_parts_msg.posts.append(post_msg)
         else:
