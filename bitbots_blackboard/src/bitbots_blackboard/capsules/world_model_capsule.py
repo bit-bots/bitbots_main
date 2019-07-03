@@ -17,10 +17,13 @@ from humanoid_league_msgs.msg import Position2D, ObstaclesRelative, GoalRelative
 class WorldModelCapsule:
     def __init__(self, field_length, field_width):
         self.position = Position2D()
-        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5))
+        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
         self.ball = PointStamped()  # The ball in the base footprint frame
         self.goal = GoalRelative()
+        self.goal_odom = GoalRelative()
+        self.goal_odom.header.stamp = rospy.Time.now()
+        self.goal_odom.header.frame_id = 'odom'
         self.obstacles = ObstaclesRelative()
         self.my_data = dict()
         self.counter = 0
@@ -62,6 +65,8 @@ class WorldModelCapsule:
         if ball.confidence == 0:
             return
 
+        # adding a minor delay to timestamp to ease transformations.
+        ball.header.stamp = ball.header.stamp + rospy.Duration.from_sec(0.01)
         ball_buffer = PointStamped(ball.header, ball.ball_relative)
         if ball.header.frame_id != 'base_footprint':
             try:
@@ -123,15 +128,36 @@ class WorldModelCapsule:
         else, it is the point between the posts
         :return:
         """
-        return (self.goal.left_post.x + self.goal.right_post.x / 2.0), \
-               (self.goal.left_post.y + self.goal.right_post.y / 2.0)
+        left = PointStamped(self.goal_odom.header, self.goal_odom.left_post)
+        right = PointStamped(self.goal_odom.header, self.goal_odom.right_post)
+
+        left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
+        right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2)).point
+
+        return (left_bfp.x + right_bfp.x / 2.0), \
+               (left_bfp.y + right_bfp.y / 2.0)
 
 
 
     def goal_callback(self, msg):
         # type: (GoalRelative) -> None
         self.goal = msg
-        self.goal_seen_time = rospy.Time.now()
+        # todo: transform to base_footprint too!
+        # adding a minor delay to timestamp to ease transformations.
+        self.goal.header.stamp = self.goal.header.stamp + rospy.Duration.from_sec(0.01)
+        goal_left_buffer = PointStamped(self.goal.header, self.goal.left_post)
+        goal_right_buffer = PointStamped(self.goal.header, self.goal.right_post)
+        self.goal_odom.header = self.goal.header
+        if goal_left_buffer.header.frame_id != 'odom':
+            try:
+                self.goal_odom.left_post = self.tf_buffer.transform(goal_left_buffer, 'odom', timeout=rospy.Duration(0.2)).point
+                self.goal_odom.right_post = self.tf_buffer.transform(goal_right_buffer, 'odom', timeout=rospy.Duration(0.2)).point
+                self.goal_odom.header.frame_id = 'odom'
+            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                rospy.logwarn(e)
+        else:
+            self.goal_odom.left_post = goal_left_buffer.point
+            self.goal_odom.right_post = goal_right_buffer.point
 
     #############
     # ## Common #
