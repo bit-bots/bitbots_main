@@ -21,9 +21,9 @@ $BallSeen
     YES --> $BallClose
         YES --> $GoalSeen
             YES --> #GoAndKickBallDetectionGoal
-            NO --> @GoToBall + target:none, @SearchGoal
+            NO --> @Stop, @SearchGoal
         NO --> @GoToBall + target:none
-    NO --> @SearchBall
+    NO --> @Stop, @SearchBall
 
 #NoLocalizationGoalieBehavior
 $BallSeen
@@ -37,24 +37,32 @@ $Localization
     YES --> @GoToRolePosition, @LookAtFieldFeatures
     NO --> @GoToRelativePosition + x:2 + y:0 + t:0
 
+#PositioningReady
+$Localization
+    YES --> @GoToRolePosition, @LookAtFieldFeatures
+    NO --> @GoToRelativePosition + x:2 + y:0 + t:0, @StandAndWait
+
 #GoalieBehavior
-$JustUnpenalized
-    YES --> #Positioning
-    NO --> $Localization
-        YES --> $BallSeen
+$Localization
+    YES --> $JustUnpenalized
+        YES --> #Positioning
+        NO --> $BallSeen
             YES --> $BallDangerous
                 YES --> #GoAndKickBallMapGoal
                 NO --> @LookAtBall
-            NO --> @SearchBall
+    NO --> $JustUnpenalized
+        YES --> @GoToRelativePosition + x:2 + y:0 + t:0
         NO --> #NoLocalizationGoalieBehavior
 
 #OffenseBehavior
-$JustUnpenalized
-    YES --> #Positioning
-    NO --> $Localization
-        YES --> $BallSeen
+$Localization
+    YES --> $JustUnpenalized
+        YES --> #Positioning
+        NO --> $BallSeen
             YES --> #GoAndKickBallMapGoal
-            NO --> @SearchBall
+            NO --> @Stop, @SearchBall
+    NO --> $JustUnpenalized
+        YES --> @GoToRelativePosition + x:2 + y:0 + t:0
         NO --> #NoLocalizationPlayerBehavior
 
 #DefenseBehavior
@@ -67,7 +75,7 @@ $JustUnpenalized
                 NO -->  $BallClose
                     YES --> #GoAndKickBallAway
                     NO --> @GoToDefensePosition
-            NO --> @SearchBall
+            NO --> @Stop, @SearchBall
         NO --> #NoLocalizationPlayerBehavior
 
 #PenaltyBehavior
@@ -85,28 +93,28 @@ $BallSeen
 $RoleDecider
     goalie --> $GameStateDecider
         Initial --> @LookAtBall, @StandAndWait
-        Ready --> #Positioning
+        Ready --> #PositioningReady
         Set --> @StandAndWait
         Playing --> #GoalieBehavior
         Finished --> @StandAndWait
         NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     offense --> $GameStateDecider
         Initial --> @LookAtBall, @StandAndWait
-        Ready --> #Positioning
+        Ready --> #PositioningReady
         Set --> @StandAndWait
         Playing --> #OffenseBehavior
         Finished --> @StandAndWait
         NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     defense --> $GameStateDecider
         Initial --> @LookAtBall, @StandAndWait
-        Ready --> #Positioning
+        Ready --> #PositioningReady
         Set --> @StandAndWait
         Playing --> #DefenseBehavior
         Finished --> @StandAndWait
         NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     penalty --> $GameStateDecider
         Initial --> @LookAtBallPenalty, @StandAndWait
-        Ready --> #Positioning
+        Ready --> #PositioningReady
         Set --> @StandAndWait
         Playing --> #PenaltyBehavior
         Finished --> @StandAndWait

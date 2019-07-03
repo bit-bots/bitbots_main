@@ -18,8 +18,6 @@ class GoToBall(AbstractActionElement):
         else:
             self.target = parameters['target']
 
-        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5.0))
-        tf_listener = tf2.TransformListener(self.tf_buffer)
         self.approach_distance = blackboard.config['ball_approach_distance']
 
     def perform(self, reevaluate=False):

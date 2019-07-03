@@ -1,7 +1,7 @@
 import rospy
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
 from bitbots_msgs.msg import JointCommand
-
+import tf2_ros as tf2
 
 class HeadCapsule:
     def __init__(self, blackboard):
@@ -21,7 +21,12 @@ class HeadCapsule:
         self.position_publisher = None  # type: rospy.Publisher
         self.visual_compass_record_trigger = None  # type: rospy.Publisher
 
+        self.tf_buffer = tf2.Buffer(rospy.Duration(5))
+        # tf_listener is necessary, even though unused!
+        self.tf_listener = tf2.TransformListener(self.tf_buffer)
+
         self.current_head_position = [0, 0]
+        self.pattern_index = 0
 
     def head_mode_callback(self, msg):
         """
@@ -47,7 +52,7 @@ class HeadCapsule:
 
         # 3 is slower than maximum, maybe it is good
         if clip:
-            pan_position = min(max(pan_position, -1.2), 1.2)
+            pan_position = min(max(pan_position, -2.35), 2.35)
             tilt_position = min(max(tilt_position, -1.2), 0.2)
         self.pos_msg.positions = pan_position, tilt_position
         self.pos_msg.velocities = [pan_speed, tilt_speed]

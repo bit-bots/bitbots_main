@@ -14,9 +14,6 @@ class AbstractLookAt(AbstractActionElement):
         super(AbstractLookAt, self).__init__(blackboard, dsd, parameters)
 
         self.head_tf_frame = 'base_link'  # base_link is required by bio_ik
-        self.tf_buffer = tf2.Buffer(rospy.Duration(5))
-        # tf_listener is necessary, even though unused!
-        self.tf_listener = tf2.TransformListener(self.tf_buffer)
         self.bio_ik_request = IKRequest()
 
         # Service proxy for LookAt
@@ -51,7 +48,7 @@ class AbstractLookAt(AbstractActionElement):
         """
         # transform the points reference frame to be the head
         try:
-            point = self.tf_buffer.transform(point, self.head_tf_frame, timeout=rospy.Duration(0.9))
+            point = self.blackboard.head_capsule.tf_buffer.transform(point, self.head_tf_frame, timeout=rospy.Duration(0.9))
         except tf2.LookupException as e:
             rospy.logwarn('The frame {} is not being published (LookupException)'.format(self.head_tf_frame))
             return
@@ -66,7 +63,7 @@ class AbstractLookAt(AbstractActionElement):
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
         if abs(current_head_pan - head_pan) >= math.radians(min_pan_delta) or \
                 abs(current_head_tilt - head_tilt) >= math.radians(min_tilt_delta):
-            self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, pan_speed=1.0, tilt_speed=1.0)
+            self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, pan_speed=2.0, tilt_speed=2.0)
 
 
 class LookDirection(AbstractLookAt):

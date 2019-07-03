@@ -158,7 +158,6 @@ class WorldModelCapsule:
         else:
             self.goal_odom.left_post = goal_left_buffer.point
             self.goal_odom.right_post = goal_right_buffer.point
-        self.goal_seen_time = rospy.Time.now()
 
     #############
     # ## Common #
