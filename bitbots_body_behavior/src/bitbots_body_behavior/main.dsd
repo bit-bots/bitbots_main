@@ -21,9 +21,9 @@ $BallSeen
     YES --> $BallClose
         YES --> $GoalSeen
             YES --> #GoAndKickBallDetectionGoal
-            NO --> @SearchGoal, @GoToBall + target:none
+            NO --> @Stop, @SearchGoal
         NO --> @GoToBall + target:none
-    NO --> @SearchBall
+    NO --> @Stop, @SearchBall
 
 #NoLocalizationGoalieBehavior
 $BallSeen
@@ -60,7 +60,7 @@ $Localization
         YES --> #Positioning
         NO --> $BallSeen
             YES --> #GoAndKickBallMapGoal
-            NO --> @SearchBall
+            NO --> @Stop, @SearchBall
     NO --> $JustUnpenalized
         YES --> @GoToRelativePosition + x:2 + y:0 + t:0
         NO --> #NoLocalizationPlayerBehavior
@@ -75,7 +75,7 @@ $JustUnpenalized
                 NO -->  $BallClose
                     YES --> #GoAndKickBallAway
                     NO --> @GoToDefensePosition
-            NO --> @SearchBall
+            NO --> @Stop, @SearchBall
         NO --> #NoLocalizationPlayerBehavior
 
 #PenaltyBehavior
