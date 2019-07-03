@@ -1,7 +1,7 @@
 // Walking, 2018, Philipp Ruppel
 
-#ifndef BITBOTS_DYNAMIC_KICK_DYNAMIC_BALANCING_GOAL_H
-#define BITBOTS_DYNAMIC_KICK_DYNAMIC_BALANCING_GOAL_H
+#ifndef BITBOTS_DYNUP_DYNAMIC_BALANCING_GOAL_H
+#define BITBOTS_DYNUP_KICK_DYNAMIC_BALANCING_GOAL_H
 #include <vector>
 #include <string>
 #include <tf/LinearMath/Vector3.h>
@@ -89,4 +89,4 @@ public:
     }
 };
 
-#endif  // BITBOTS_DYNAMIC_KICK_DYNAMIC_BALANCING_GOAL_H
+#endif  // BITBOTS_DYNUP_DYNAMIC_BALANCING_GOAL_H
