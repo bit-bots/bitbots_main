@@ -28,7 +28,7 @@
                 "RShoulderRoll": 0
             }, 
             "name": "frame0", 
-            "pause": 2.0,
+            "pause": 0.5,
             "torque": {
                 "HeadPan": 2, 
                 "HeadTilt": 2, 
