@@ -12,7 +12,8 @@ from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from sensor_msgs.msg import Image, JointState
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, PostInImage, \
-    GoalInImage
+    GoalInImage, Speak
+from humanoid_league_speaker.speaker import speak
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, live_classifier, \
     classifier, ball, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator, yolo_handler
 from bitbots_vision.cfg import VisionConfig
@@ -52,6 +53,9 @@ class Vision:
             queue_size=1,
             latch=True)
 
+        # Speak publisher
+        self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
+
         # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
         rospy.spin()
@@ -84,6 +88,11 @@ class Vision:
     def handle_image(self, image_msg):
         # converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
+
+        mean = cv2.mean(image)
+
+        if sum(mean) < self._blind_threshold:
+            speak("I am blind! Help me!", self.speak_publisher)
 
         # setup detectors
         self.field_boundary_detector.set_image(image)
@@ -334,6 +343,7 @@ class Vision:
                 config['vision_debug_printer_classes']))
         self.runtime_evaluator = evaluator.RuntimeEvaluator(self.debug_printer)
 
+        self._blind_threshold = config['vision_blind_threshold']
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
         self._ball_candidate_y_offset = config['vision_ball_candidate_field_boundary_y_offset']
 
