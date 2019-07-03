@@ -38,5 +38,6 @@
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
     <node if="$(arg dynamic_kick)" pkg="bitbots_dynamic_kick" name="dynamic_kick" type="KickNode" />
+    <node pkg="bitbots_dynup" name="dynup" type="DynupNode" />
 
 </launch>
