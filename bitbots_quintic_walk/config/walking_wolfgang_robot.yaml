@@ -96,3 +96,5 @@ walking:
   pauseDuration: 0.5
 
   publishOdomTF: False
+
+  firstStepSwingFactor: 1.0

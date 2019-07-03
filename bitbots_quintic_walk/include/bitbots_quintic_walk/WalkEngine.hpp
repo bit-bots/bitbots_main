@@ -95,6 +95,7 @@ struct WalkingParameter{
     double footPutDownRollOffset;
     double kickVel;
     double pauseDuration;
+    double firstStepSwingFactor;
 };
 
 /**

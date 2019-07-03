@@ -15,6 +15,7 @@ std_msgs/String engine_state
 
 # output of the walk engine, in frame of the support foot
 geometry_msgs/Pose engine_trunk_goal
+geometry_msgs/Pose engine_trunk_goal_abs
 geometry_msgs/Pose engine_fly_goal
 
 
