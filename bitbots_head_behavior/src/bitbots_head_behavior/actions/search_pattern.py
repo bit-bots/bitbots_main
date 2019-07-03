@@ -40,7 +40,7 @@ class AbstractSearchPattern(AbstractActionElement):
 
         :param reevaluate:  No effect here
         """
-        index = self.blackboard.head_capsule.pattern_index
+        index = self.blackboard.head_capsule.pattern_index % len(self.pattern)
 
         head_pan, head_tilt = self.pattern[int(index)]
 
@@ -56,7 +56,7 @@ class AbstractSearchPattern(AbstractActionElement):
 
         # Increment index when position is reached
         if distance < math.radians(self.threshold):
-            self.blackboard.head_capsule.pattern_index = (index + 1) % len(self.pattern)
+            self.blackboard.head_capsule.pattern_index = index + 1
 
 
 class BallSearchPattern(AbstractSearchPattern):
