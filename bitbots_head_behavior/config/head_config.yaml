@@ -19,7 +19,7 @@ behavior:
     search_pattern:
         # Speed search pattern
         tilt_speed: 2
-        pan_speed: 0.5
+        pan_speed: 2
 
         # Max values for the search pattern
         pan_max: [63, -63]
@@ -55,8 +55,8 @@ behavior:
 
     # These values describe the minimal required delta between current joint states and target joint states in degrees
     # to reduce unnecessary movement due to noise in the detection of the BallRelative.
-    ball_tracking_min_pan_delta: 8
-    ball_tracking_min_tilt_delta: 5
+    ball_tracking_min_pan_delta: 3
+    ball_tracking_min_tilt_delta: 3
 
     # Positions for static head modes
     look_down_position: [0, -65]
@@ -68,5 +68,5 @@ behavior:
     position_reached_threshold: 5
 
     # After `ball_lost_time` seconds, the ball is considered lost and will be searched
-    ball_lost_time: 3
+    ball_lost_time: 2
     post_lost_time: 1
