@@ -194,6 +194,8 @@ class Fallen(AbstractDecisionElement):
 
         if self.blackboard.is_stand_up_active and fallen_side is not None:
             self.blackboard.current_state = STATE_FALLEN
+            #TODO
+            self.blackboard.hacky_sequence_dynup_running = True
             # we play a stand up animation
             if fallen_side == self.blackboard.fall_checker.FRONT:
                 return "FALLEN_FRONT"
@@ -208,7 +210,7 @@ class Fallen(AbstractDecisionElement):
             return "NOT_FALLEN"
 
     def get_reevaluate(self):
-        return True
+        return not self.blackboard.hacky_sequence_dynup_running
 
 
 class Falling(AbstractDecisionElement):
