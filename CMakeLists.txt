@@ -12,7 +12,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_action_files(
   DIRECTORY action
-  FILES DynUp.action
+  FILES
+  DynUp.action
+  Kick.action
 )
 
 add_message_files(
