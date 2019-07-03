@@ -52,7 +52,7 @@ class HeadCapsule:
 
         # 3 is slower than maximum, maybe it is good
         if clip:
-            pan_position = min(max(pan_position, -1.2), 1.2)
+            pan_position = min(max(pan_position, -2.35), 2.35)
             tilt_position = min(max(tilt_position, -1.2), 0.2)
         self.pos_msg.positions = pan_position, tilt_position
         self.pos_msg.velocities = [pan_speed, tilt_speed]

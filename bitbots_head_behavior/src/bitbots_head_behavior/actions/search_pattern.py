@@ -71,7 +71,7 @@ class PenaltySearchPattern(AbstractSearchPattern):
 
 class GoalSearchPattern(AbstractSearchPattern):
     def get_search_pattern(self):
-        return self.blackboard.config['search_pattern']
+        return self.blackboard.config['search_pattern_goal']
 
 
 class FieldFeaturesSearchPattern(AbstractSearchPattern):

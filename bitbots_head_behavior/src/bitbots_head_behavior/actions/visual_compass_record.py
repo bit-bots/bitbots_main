@@ -55,7 +55,7 @@ class VisualCompassRecord(AbstractActionElement):
         head_pan = head_pan / 180.0 * math.pi
         head_tilt = head_tilt / 180.0 * math.pi
         rospy.logdebug("Searching at {}, {}".format(head_pan, head_tilt))
-        self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, pan_speed=self.pan_speed, tilt_speed=self.tilt_speed, clip=False)
+        self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, pan_speed=self.pan_speed, tilt_speed=self.tilt_speed)
 
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
         distance = math.sqrt((current_head_pan - head_pan) ** 2 + (current_head_tilt - head_tilt) ** 2)
