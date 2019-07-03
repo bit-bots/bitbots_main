@@ -139,7 +139,7 @@ class PlayAnimationAction(object):
     def check_for_new_goal(self):
         if self._as.is_new_goal_available():
             next_goal = self._as.next_goal
-            if not next_goal.get_goal():
+            if not next_goal or not next_goal.get_goal():
                 return
             rospy.logdebug("New goal: " + next_goal.get_goal().animation)
             if next_goal.get_goal().hcm:
