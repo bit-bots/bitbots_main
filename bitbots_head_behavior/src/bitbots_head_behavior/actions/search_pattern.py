@@ -15,8 +15,6 @@ class AbstractSearchPattern(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(AbstractSearchPattern, self).__init__(blackboard, dsd, parameters)
 
-        self.index = 0
-
         pattern_config = self.get_search_pattern()
 
         self.pan_speed = pattern_config['pan_speed']
@@ -42,7 +40,9 @@ class AbstractSearchPattern(AbstractActionElement):
 
         :param reevaluate:  No effect here
         """
-        head_pan, head_tilt = self.pattern[int(self.index)]
+        index = self.blackboard.head_capsule.pattern_index
+
+        head_pan, head_tilt = self.pattern[int(index)]
 
         # Convert to radians
         head_pan = math.radians(head_pan)
@@ -56,7 +56,7 @@ class AbstractSearchPattern(AbstractActionElement):
 
         # Increment index when position is reached
         if distance < math.radians(self.threshold):
-            self.index = (self.index + 1) % len(self.pattern)
+            self.blackboard.head_capsule.pattern_index = (index + 1) % len(self.pattern)
 
 
 class BallSearchPattern(AbstractSearchPattern):

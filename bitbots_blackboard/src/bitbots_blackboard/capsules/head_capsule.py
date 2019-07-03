@@ -26,6 +26,7 @@ class HeadCapsule:
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
 
         self.current_head_position = [0, 0]
+        self.pattern_index = 0
 
     def head_mode_callback(self, msg):
         """
