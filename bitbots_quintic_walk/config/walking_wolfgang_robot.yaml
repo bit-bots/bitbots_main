@@ -95,6 +95,6 @@ walking:
   imuRollVelThreshold: 1.0
   pauseDuration: 0.5
 
-  publishOdomTF: False
+  publishOdomTF: True
 
   firstStepSwingFactor: 1.0
