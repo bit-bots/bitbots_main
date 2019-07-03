@@ -105,6 +105,7 @@ class HcmBlackboard():
         self.fall_checker = FallChecker()
         self.is_stand_up_active = True  #not self.simulation_active and rospy.get_param("hcm/stand_up_active", False)
         self.falling_detection_active = not self.simulation_active and rospy.get_param("hcm/falling_active", False)
+        self.hacky_sequence_dynup_running = False
 
         # kicking
         self.last_kick_feedback = None      # type: rospy.Time
