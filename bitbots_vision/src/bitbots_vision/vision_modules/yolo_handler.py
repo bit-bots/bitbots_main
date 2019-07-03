@@ -5,7 +5,7 @@ import time
 try:
     from pydarknet import Detector, Image
 except:
-    rospy.logerr("Not able to run YOLO!")
+    rospy.logerr("Not able to run YOLO! Its only executable under python3 with yolo34py or yolo34py-gpu installed.")
 import numpy as np
 from .candidate import CandidateFinder, Candidate
 
