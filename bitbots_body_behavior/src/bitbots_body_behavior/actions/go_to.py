@@ -45,6 +45,9 @@ class GoToRelativePosition(AbstractActionElement):
 
             # To have the object we are going to in front of us, go to a point behind it
             self.blackboard.pathfinding.publish(pose_msg)
+            # TODO: this in good
+            # waiting until the robot started to walk
+            rospy.sleep(0.25)
         if not self.blackboard.blackboard.is_currently_walking():
             self.pop()
 
