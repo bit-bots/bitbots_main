@@ -46,9 +46,9 @@ behavior:
 
     # Values for the visual compass record pattern
     record_pattern_scan_lines: 2
-    record_pattern_pan_max_left: [90, 20]
-    record_pattern_pan_max_right: [-20, -160]
-    record_pattern_tilt_max: [20, -10]
+    record_pattern_pan_max_left: [-80, 0]
+    record_pattern_pan_max_right: [0, -80]
+    record_pattern_tilt_max: [14, 0]
 
     # Visual compass ground truth trigger topic
     visual_compass_trigger_topic: '/visual_compass_ground_truth_trigger'
