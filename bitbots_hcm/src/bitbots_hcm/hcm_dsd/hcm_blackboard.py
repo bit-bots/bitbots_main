@@ -59,6 +59,7 @@ class HcmBlackboard():
 
         # Animation
         self.animation_action_client = None
+        self.dynup_action_client = None
         self.last_animation_goal_time = rospy.Time()
         self.external_animation_running = False
         self.animation_requested = False
@@ -102,8 +103,9 @@ class HcmBlackboard():
 
         # falling
         self.fall_checker = FallChecker()
-        self.is_stand_up_active = not self.simulation_active and rospy.get_param("hcm/stand_up_active", False) 
+        self.is_stand_up_active = True  #not self.simulation_active and rospy.get_param("hcm/stand_up_active", False)
         self.falling_detection_active = not self.simulation_active and rospy.get_param("hcm/falling_active", False)
+        self.hacky_sequence_dynup_running = False
 
         # kicking
         self.last_kick_feedback = None      # type: rospy.Time
