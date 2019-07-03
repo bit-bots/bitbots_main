@@ -114,8 +114,8 @@ def synchronize(sync_includes_file, host, workspace, package=None):
 
 # noinspection PyUnboundLocalVariable
 def configure(args):
-    start_motion = args.yes_to_all or input('Start motion on boot? (Y/n) ').lower() != 'n'
-    start_behaviour = args.yes_to_all or input('Start behaviour on boot? (Y/n) ').lower() != 'n'
+    start_motion = args.yes_to_all or input('Start motion on boot? (y/N) ').lower() == 'y'
+    start_behaviour = args.yes_to_all or input('Start behaviour on boot? (y/N) ').lower() == 'y'
     start_vision = args.yes_to_all or input('Start vision on boot? (Y/n) ').lower() != 'n'
     start_roscore = args.yes_to_all or input('Start roscore on boot? (Y/n) ').lower() != 'n'
 
@@ -131,22 +131,22 @@ def configure(args):
         }
         
         if host[0].startswith('nuc'):
-            data['motion'] = 'sudo /bin/systemctl start bitbots_motion.service; sudo /bin/systemctl enable bitbots_motion.service; ' \
+            data['motion'] = 'sudo /bin/systemctl enable --now bitbots_motion.service; ' \
                 if start_motion else \
-                'sudo /bin/systemctl disable bitbots_motion.service; '
+                'sudo /bin/systemctl disable --now bitbots_motion.service; '
 
-            data['behavior'] = 'sudo /bin/systemctl start bitbots_highlevel.service; sudo /bin/systemctl enable bitbots_highlevel.service; ' \
+            data['behavior'] = 'sudo /bin/systemctl enable --now bitbots_highlevel.service; ' \
                 if start_behaviour else \
-                'sudo /bin/systemctl disable bitbots_highlevel.service; '
+                'sudo /bin/systemctl disable --now bitbots_highlevel.service; '
 
-            data['roscore'] = 'sudo /bin/systemctl start roscore.service; sudo /bin/systemctl enable roscore.service; ' \
+            data['roscore'] = 'sudo /bin/systemctl enable --now roscore.service; ' \
                 if start_roscore else \
-                'sudo /bin/systemctl disable roscore.service; '
+                'sudo /bin/systemctl disable --now roscore.service; '
 
         elif host[0].startswith('jetson'):
-            data['vision'] = 'sudo /bin/systemctl start bitbots_vision.service; sudo /bin/systemctl start bitbots_vision.service; ' \
+            data['vision'] = 'sudo /bin/systemctl stop bitbots_vision.service; sudo /bin/systemctl enable --now bitbots_vision.service; ' \
                 if start_vision else \
-                'sudo /bin/systemctl disable bitbots_vision.service; '
+                'sudo /bin/systemctl disable --now bitbots_vision.service; '
 
         print_info('Configuring boot for {}...'.format(host[1]))
         r = subprocess.run([
