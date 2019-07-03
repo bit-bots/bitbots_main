@@ -127,7 +127,7 @@ void DynUpNode::publish_goals(const JointGoals &goals) {
 
 int main(int argc, char *argv[]) {
     /* Setup ROS node */
-    ros::init(argc, argv, "dynamic_kick");
+    ros::init(argc, argv, "dynup");
     DynUpNode node;
 
     /* Setup dynamic_reconfigure */
