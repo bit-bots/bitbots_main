@@ -481,7 +481,6 @@ bool DynamixelHardwareInterface::read()
         }
       } else{
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint position!");
-        speak("Couldn't read current joint position!");
         _driver->reinitSyncReadHandler("Present_Position");
         read_successful = false;
       }
@@ -490,7 +489,6 @@ bool DynamixelHardwareInterface::read()
     if (_read_velocity) {
       if (!syncReadVelocities()) {
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint velocity!");
-        speak("Couldn't read current joint velocity!");
         _driver->reinitSyncReadHandler("Present_Velocity");
         read_successful = false;
       }
@@ -499,7 +497,6 @@ bool DynamixelHardwareInterface::read()
     if (_read_effort) {
       if (!syncReadEfforts()) {
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint effort!");
-        speak("Couldn't read current joint effort!");
         _driver->reinitSyncReadHandler("Present_Current");
         read_successful = false;
       }
@@ -511,12 +508,10 @@ bool DynamixelHardwareInterface::read()
       bool success = true;
       if(!syncReadVoltageAndTemp()){
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current input volatage and temperature!");
-        speak("Couldn't read current input volatage and temperature!");
         success = false;
       }
       if(!syncReadError()){
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current error bytes!");  
-        speak("Couldn't read current error bytes!");      
         success = false;
         _driver->reinitSyncReadHandler("Hardware_Error_Status");
       }
