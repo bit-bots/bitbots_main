@@ -129,9 +129,9 @@ class Candidate:
     def get_rating(self):
         # type: () -> float
         """
-        returns...
+        returns rating of the candidate
 
-        :return int: lower right y
+        :return float: rating
         """
         return self.rating
 
