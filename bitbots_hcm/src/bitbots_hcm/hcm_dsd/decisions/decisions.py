@@ -193,6 +193,7 @@ class Fallen(AbstractDecisionElement):
         fallen_side = self.blackboard.fall_checker.check_fallen(self.blackboard.smooth_accel, self.blackboard.gyro)
 
         if self.blackboard.is_stand_up_active and fallen_side is not None:
+            self.blackboard.current_state = STATE_FALLEN
             # we play a stand up animation
             if fallen_side == self.blackboard.fall_checker.FRONT:
                 return "FALLEN_FRONT"

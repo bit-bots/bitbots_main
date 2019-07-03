@@ -110,6 +110,7 @@ class HardwareControlManager:
             self.joint_goal_publisher.publish(msg)
 
     def dynup_callback(self, msg):
+        # TODO use STATE_GETTING_UP
         if self.blackboard.current_state == STATE_FALLEN:
             self.joint_goal_publisher.publish(msg)
 
