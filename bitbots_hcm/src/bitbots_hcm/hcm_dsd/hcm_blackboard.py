@@ -4,6 +4,7 @@ import math
 import json
 import rospkg
 import os
+from std_srvs.srv import Empty
 from bitbots_hcm.fall_checker import FallChecker
 from geometry_msgs.msg import Twist
 from bitbots_msgs.msg import KickActionFeedback
@@ -56,6 +57,8 @@ class HcmBlackboard():
         self.pressure_timeout_duration = rospy.get_param("hcm/pressure_timeout_duration")
         self.last_pressure_update_time = None
         self.pressure = []
+        foot_zero_service_name = rospy.get_param("hcm/foot_zero_service")
+        self.foot_zero_service = rospy.ServiceProxy(foot_zero_service_name, Empty)
 
         # Animation
         self.animation_action_client = None

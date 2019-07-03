@@ -6,7 +6,7 @@ $Falling
     FALLING_BACK --> @PlayAnimationFallingBack
     NOT_FALLING --> $Fallen
         FALLEN_FRONT --> @PlayAnimationStandUpFront, @PlayAnimationDynup
-        FALLEN_BACK --> @PlayAnimationStandUpBack, @PlayAnimationDynup
+        FALLEN_BACK --> @SetFootZero, @PlayAnimationStandUpBack, @PlayAnimationDynup
         FALLEN_RIGHT --> @PlayAnimationStandUpRight, @PlayAnimationDynup
         FALLEN_LEFT --> @PlayAnimationStandUpLeft, @PlayAnimationDynup
         NOT_FALLEN --> $ExternalAnimation

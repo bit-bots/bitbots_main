@@ -6,6 +6,7 @@ hcm:
   #Pressure sensors
   pressure_timeout_duration: 0.1 # time without messages from the foot pressure sensors till error is produced [s]
   pressure_sensors_installed: false
+  foot_zero_service: "set_foot_zero"
 
   # Motors
   motor_off_time: 30000000 # time of no use or updates when the hcm goes to soft off
