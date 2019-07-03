@@ -189,3 +189,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+bitbots_visual_compass/test_data/
+bitbots_visual_compass/config/config.yaml

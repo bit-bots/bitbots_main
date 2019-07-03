@@ -1,0 +1,8 @@
+pyopencl
+numpy
+silx
+opencv-python
+pyyaml
+matplotlib
+statistics
+profilehooks

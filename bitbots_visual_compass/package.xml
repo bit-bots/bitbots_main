@@ -1,0 +1,45 @@
+<package format="2">
+  <name>bitbots_visual_compass</name>
+  <version>0.0.0</version>
+  <description>The visual_compass package</description>
+
+  <maintainer email="7baumann@informatik.uni-hamburg.de">Patrick Baumann</maintainer>
+  <maintainer email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</maintainer>
+  <maintainer email="7ostendo@informatik.uni-hamburg.de">Benedikt Ostendorf</maintainer>
+  <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
+
+  <author email="7baumann@informatik.uni-hamburg.de">Patrick Baumann</author>
+  <author email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</author>
+  <author email="7ostendo@informatik.uni-hamburg.de">Benedikt Ostendorf</author>
+  <author email="7vahl@informatik.uni-hamburg.de">Florian Vahl</author>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+  <depend>rospkg</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>message_runtime</depend>
+  <depend>message_generation</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>beignet</depend>
+  <depend>tf2</depend>
+  <depend>humanoid_league_msgs</depend>
+  <depend>wolves_image_provider</depend>
+  <depend>python-cv_bridge</depend>
+  <depend>python-pyopencl</depend>
+  <depend>python-numpy</depend>
+  <depend>python-silx</depend>
+  <depend>python-opencv</depend>
+  <depend>python-yaml</depend>
+  <depend>python-matplotlib</depend>
+
+  <export>
+    <bitbots_documentation>
+      <language>python2</language>
+      <status>unknown</status>
+    </bitbots_documentation>
+  </export>
+</package>

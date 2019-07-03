@@ -1,0 +1,23 @@
+<launch>
+    <arg name="sim" default="false" />
+    <arg name="basler" default="true" />
+    <arg name="field" default="" />
+    
+    <include file="$(find bitbots_visual_compass)/launch/visual_compass_startup.launch">
+        <arg name="sim" value="$(arg sim)" />
+        <arg name="field" value="$(arg field)" />
+    </include>
+
+    <!-- start the camera only when necessary -->
+    <group unless="$(arg sim)">
+        <!-- start basler camera setup -->
+        <group if="$(arg basler)">
+            <include file="$(find bitbots_bringup)/launch/basler_camera.launch" />
+            <param name="img_msg_topic" value="/image_raw" />
+        </group>
+        <!-- start logitech camera setup -->
+        <group unless="$(arg basler)">
+            <include file="$(find wolves_image_provider)/launch/image_provider.launch" />
+        </group>
+    </group>
+</launch>
