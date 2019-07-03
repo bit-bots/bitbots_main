@@ -714,7 +714,7 @@
                 "RShoulderRoll": 14
             }, 
             "name": "frame14", 
-            "pause": 0.0, 
+            "pause": 1.0, 
             "torque": {
                 "HeadPan": 2, 
                 "HeadTilt": 2, 
