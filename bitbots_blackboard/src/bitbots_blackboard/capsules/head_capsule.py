@@ -1,7 +1,7 @@
 import rospy
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
 from bitbots_msgs.msg import JointCommand
-
+import tf2_ros as tf2
 
 class HeadCapsule:
     def __init__(self, blackboard):
@@ -20,6 +20,10 @@ class HeadCapsule:
 
         self.position_publisher = None  # type: rospy.Publisher
         self.visual_compass_record_trigger = None  # type: rospy.Publisher
+
+        self.tf_buffer = tf2.Buffer(rospy.Duration(5))
+        # tf_listener is necessary, even though unused!
+        self.tf_listener = tf2.TransformListener(self.tf_buffer)
 
         self.current_head_position = [0, 0]
 
