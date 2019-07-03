@@ -146,7 +146,7 @@ class VisualCompassStartup():
         self.publish_rotation("base_footprint", image_msg.header.stamp, result[0], result[1])
 
     def gamestate_callback(self, msg):
-        if msg.data.firstHalf:
+        if msg.firstHalf:
             self.orientation_offset = 0
         else:
             self.orientation_offset = math.pi
