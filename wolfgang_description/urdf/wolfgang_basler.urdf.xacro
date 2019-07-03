@@ -910,7 +910,7 @@
         <parent link="torso" />
         <child link="neck" />
         <axis xyz="0 0 1" />
-        <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-1.2" upper="1.2" />
+        <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-2.35" upper="2.35" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
 
@@ -919,7 +919,7 @@
         <parent link="neck" />
         <child link="head" />
         <axis xyz="0 -1 0" />
-        <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-1.2" upper="0.2" />
+        <limit effort="${tofa*2.5}" velocity="5.6548668" lower="-1.57" upper="0.2" />
         <dynamics damping="${d}" friction="${f}" />
     </joint>
     
