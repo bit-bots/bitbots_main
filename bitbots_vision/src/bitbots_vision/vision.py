@@ -14,7 +14,7 @@ from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationI
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, PostInImage, \
     GoalInImage
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, live_classifier, \
-    classifier, ball, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator
+    classifier, ball, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator, yolo_handler
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config
 
@@ -183,14 +183,26 @@ class Vision:
             obstacle_msg.confidence = 1.0
             obstacle_msg.playerNumber = 42
             obstacles_msg.obstacles.append(obstacle_msg)
-        for white_obs in self.obstacle_detector.get_white_obstacles():
-            post_msg = PostInImage()
-            post_msg.width = white_obs.get_width()
-            post_msg.confidence = 1.0
-            post_msg.foot_point.x = white_obs.get_center_x()
-            post_msg.foot_point.y = white_obs.get_lower_right_y()
-            post_msg.top_point = post_msg.foot_point
-            goal_parts_msg.posts.append(post_msg)
+
+        if self.config['vision_ball_classifier'] == 'yolo':
+            candidates = self.goalpost_detector.get_candidates()
+            for goalpost in candidates:
+                post_msg = PostInImage()
+                post_msg.width = goalpost.get_width()
+                post_msg.confidence = goalpost.get_rating()
+                post_msg.foot_point.x = goalpost.get_center_x()
+                post_msg.foot_point.y = goalpost.get_lower_right_y()
+                post_msg.top_point = post_msg.foot_point
+                goal_parts_msg.posts.append(post_msg)
+        else:
+            for white_obs in self.obstacle_detector.get_white_obstacles():
+                post_msg = PostInImage()
+                post_msg.width = white_obs.get_width()
+                post_msg.confidence = 1.0
+                post_msg.foot_point.x = white_obs.get_center_x()
+                post_msg.foot_point.y = white_obs.get_lower_right_y()
+                post_msg.top_point = post_msg.foot_point
+                goal_parts_msg.posts.append(post_msg)
         for other_obs in self.obstacle_detector.get_other_obstacles():
             obstacle_msg = ObstacleInImage()
             obstacle_msg.color = ObstacleInImage.UNDEFINED
@@ -213,8 +225,10 @@ class Vision:
         for post in goal_parts_msg.posts:
             if post.foot_point.x < left_post.foot_point.x:
                 left_post = post
+                left_post.confidence = post.confidence
             if post.foot_point.x > right_post.foot_point.x:
                 right_post = post
+                right_post.confidence = post.confidence
         goal_msg.left_post = left_post
         goal_msg.right_post = right_post
         goal_msg.confidence = 1.0
@@ -272,8 +286,12 @@ class Vision:
                 (255, 0, 0),
                 thickness=3
             )
+            if self.config['vision_ball_classifier'] == "yolo":
+                post_candidates = self.goalpost_detector.get_candidates()
+            else:
+                post_candidates = self.obstacle_detector.get_white_obstacles()
             self.debug_image_dings.draw_obstacle_candidates(
-                self.obstacle_detector.get_white_obstacles(),
+                post_candidates,
                 (255, 255, 255),
                 thickness=3
             )
@@ -416,20 +434,33 @@ class Vision:
 
         # load fcnn
         if config['vision_ball_classifier'] == 'fcnn':
-            if 'ball_fcnn_model_path' not in self.config or \
-                    self.config['ball_fcnn_model_path'] != config['ball_fcnn_model_path'] or \
+            if 'neural_network_model_path' not in self.config or \
+                    self.config['neural_network_model_path'] != config['neural_network_model_path'] or \
                     self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
-                ball_fcnn_path = os.path.join(self.package_path, 'models', config['ball_fcnn_model_path'])
+                ball_fcnn_path = os.path.join(self.package_path, 'models', config['neural_network_model_path'])
                 if not os.path.exists(ball_fcnn_path):
                     rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
                 self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path, self.debug_printer)
-                rospy.logwarn(config['vision_ball_classifier'] + " vision is running now")
+                rospy.loginfo(config['vision_ball_classifier'] + " vision is running now")
             self.ball_detector = fcnn_handler.FcnnHandler(
                 self.ball_fcnn,
                 self.field_boundary_detector,
                 self.ball_fcnn_config,
                 self.debug_printer)
 
+        if config['vision_ball_classifier'] == 'yolo':
+            if 'neural_network_model_path' not in self.config or \
+                    self.config['neural_network_model_path'] != config['neural_network_model_path'] or \
+                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
+                yolo_model_path = os.path.join(self.package_path, 'models', config['neural_network_model_path'])
+                if not os.path.exists(yolo_model_path):
+                    rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist!')
+                # TODO replace following strings with path to config/weights
+                yolo = yolo_handler.YoloHandler(config, yolo_model_path)
+                self.ball_detector = yolo_handler.YoloBallDetector(yolo)
+                self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
+                rospy.loginfo(config['vision_ball_classifier'] + " vision is running now")
+            
         # publishers
 
         # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!

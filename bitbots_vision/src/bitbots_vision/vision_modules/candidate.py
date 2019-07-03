@@ -126,7 +126,14 @@ class Candidate:
         """
         return self._y1 + self._height
 
-    # TODO: get_rating
+    def get_rating(self):
+        # type: () -> float
+        """
+        returns rating of the candidate
+
+        :return float: rating
+        """
+        return self.rating
 
     def point_in_candidate(self, point):
         # type: (tuple) -> bool
@@ -144,6 +151,17 @@ class Candidate:
                 self.get_upper_left_y()
                 <= point[1]
                 <= self.get_upper_left_y() + self.get_height())
+
+    @staticmethod
+    def sort_candidates(candidatelist):
+        """
+        Returns a sorted list of the candidates.
+        The first list element is the highest rated candidate.
+        :param candidatelist:
+        :return: sorted candidate list
+        """
+        return sorted(candidatelist, key = lambda candidate: candidate.rating, reverse=True)
+
 
     def __str__(self):
         return 'x1,y1: {0},{1} | width,height: {2},{3} | rating: {4}'.format(
