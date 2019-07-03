@@ -11,7 +11,7 @@ class PostSeen(AbstractDecisionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(PostSeen, self).__init__(blackboard, dsd, parameters)
-        self.post_lost_time = self.blackboard.config['post_lost_time']
+        self.post_lost_time = rospy.Duration.from_sec(self.blackboard.config['post_lost_time'])
 
     def perform(self, reevaluate=False):
         """
@@ -21,7 +21,7 @@ class PostSeen(AbstractDecisionElement):
         :param reevaluate: Has no effect
         """
 
-        if rospy.get_time() - self.blackboard.world_model.goal_last_seen() < self.post_lost_time:
+        if rospy.Time.now() - self.blackboard.world_model.goal_last_seen() < self.post_lost_time:
             return 'YES'
         return 'NO'
 

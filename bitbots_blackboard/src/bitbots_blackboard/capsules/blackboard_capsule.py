@@ -6,6 +6,7 @@ BehaviourBlackboardCapsule
 import math
 import rosparam
 import rospy
+import tf2_ros as tf2
 from humanoid_league_msgs.msg import RobotControlState
 
 from humanoid_league_msgs.msg import HeadMode
@@ -17,6 +18,9 @@ class BlackboardCapsule:
         self.head_pub = None  # type: rospy.Publisher
         self.duty = rospy.get_param('role')  # TODO: adapt to Leo's script
         self.state = None  # type: RobotControlState
+
+        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30.0))
+        self.tf_listener = tf2.TransformListener(self.tf_buffer)
 
     #####################
     # ## Tracking Part ##
