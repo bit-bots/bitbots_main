@@ -19,14 +19,14 @@ behavior:
     search_pattern:
         # Speed search pattern
         tilt_speed: 2
-        pan_speed: 2
+        pan_speed: 1
 
         # Max values for the search pattern
         pan_max: [120, -120]
         tilt_max: [0, -70]
         
         # Number of scan lines for the search pattern
-        scan_lines: 4
+        scan_lines: 3
 
     # Search pattern for penalty
     search_pattern_penalty:
