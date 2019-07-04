@@ -93,10 +93,15 @@ class PlayAnimationStandUpBack(AbstractPlayAnimation):
         rospy.loginfo("PLAYING STAND UP BACK ANIMATION")
         return self.blackboard.stand_up_back_animation
 
-class PlayAnimationStandUpSide(AbstractPlayAnimation):
+class PlayAnimationStandUpLeft(AbstractPlayAnimation):
     def chose_animation(self):
-        rospy.loginfo("PLAYING STAND UP SIDE ANIMATION")
-        return self.blackboard.stand_up_side_animation
+        rospy.loginfo("PLAYING STAND UP LEFT ANIMATION")
+        return self.blackboard.stand_up_left_animation
+
+class PlayAnimationStandUpRight(AbstractPlayAnimation):
+    def chose_animation(self):
+        rospy.loginfo("PLAYING STAND UP RIGHT ANIMATION")
+        return self.blackboard.stand_up_right_animation
 
 
 class PlayAnimationFallingLeft(AbstractPlayAnimation):

@@ -16,15 +16,14 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>rospy</depend>
-
-  <exec_depend>humanoid_league_msgs</exec_depend>
-  <exec_depend>actionlib</exec_depend>
-  <exec_depend>actionlib_msgs</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
+  <depend>std_msgs</depend>
+  <depend>actionlib</depend>
+  <depend>humanoid_league_msgs</depend>
+  <depend>bitbots_splines</depend>
 
   <export>
     <bitbots_documentation>
-      <status>tested_robot</status>
+      <status>tested_integration</status>
       <language>python3</language>
     </bitbots_documentation>
   </export>

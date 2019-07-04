@@ -8,9 +8,9 @@ import sys
 import humanoid_league_msgs.msg
 
 
-def anim_run(anim=None):
+def anim_run(anim=None, hcm=False):
     anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
-    rospy.init_node('anim_sender', anonymous=False)
+    rospy.init_node('anim_sender', anonymous=True)
     if anim is None:
         anim = rospy.get_param("~anim")
     if anim is None or anim == "":
@@ -26,7 +26,7 @@ def anim_run(anim=None):
         rospy.logwarn("Animation server now running, hcm will go on.")
     goal = humanoid_league_msgs.msg.PlayAnimationGoal()
     goal.animation = anim
-    goal.hcm = False
+    goal.hcm = hcm
     state = anim_client.send_goal_and_wait(goal)
     if state == GoalStatus.PENDING:
         print('Pending')
@@ -58,6 +58,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         # Support for _anim:=NAME -style execution for legacy reasons
         if sys.argv[1].startswith('_anim:=') or sys.argv[1].startswith('anim:='):
-            anim_run(sys.argv[1].split(':=')[1])
+            anim_run(sys.argv[1].split(':=')[1], 'hcm' in sys.argv)
         else:
-            anim_run(sys.argv[1])
+            anim_run(sys.argv[1], 'hcm' in sys.argv)

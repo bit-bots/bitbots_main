@@ -1,19 +1,19 @@
 walking:
   # Full walk cycle frequency
   # (in Hz, > 0)
-  freq: 0.2
+  freq: 1.3
   # Length of double support phase in half cycle
   # (ratio, [0:1])
-  doubleSupportRatio: 0.2
+  doubleSupportRatio: 0.05
   # Lateral distance between the feet center
   # (in m, >= 0)
-  footDistance: 0.18
+  footDistance: 0.2
   # Maximum flying foot height
   # (in m, >= 0)
-  footRise: 0.07
+  footRise: 0.06
   # Pause of Z movement on highest point
   # (single support cycle ratio, [0,1])
-  footZPause: 0.0  
+  footZPause: 0.0
   # Phase of flying foot apex
   # (single support cycle phase, [0:1])
   footApexPhase: 0.5
@@ -35,7 +35,7 @@ walking:
   trunkHeight: 0.40
   # Trunk pitch orientation
   # (in rad)
-  trunkPitch: 0.36
+  trunkPitch: 0.18
   # Phase offset of trunk oscillation
   # (half cycle phase, [-1:1])
   trunkPhase: 0.0
@@ -47,7 +47,7 @@ walking:
   trunkYOffset: 0.0
   # Trunk lateral oscillation amplitude ratio
   # (ratio, >= 0)
-  trunkSwing: 0.8
+  trunkSwing: 0.2
   # Trunk swing pause length in phase at apex
   # (half cycle ratio, [0:1])
   trunkPause: 0.0
@@ -59,10 +59,10 @@ walking:
   trunkXOffsetPCoefTurn: 0.0
   # Trunk pitch orientation proportional to forward step
   # (in rad/m)
-  trunkPitchPCoefForward: 0.0
+  trunkPitchPCoefForward: 2.1
   # Trunk pitch orientation proportional to rotation step
   # (in 1)
-  trunkPitchPCoefTurn: 0.0
+  trunkPitchPCoefTurn: -0.15
 
   # update frequency of the engine
   engineFreq: 200.0
@@ -72,23 +72,29 @@ walking:
 
   debugActive: True
 
-  kickLength: 0.08
-  kickVel: 0.0
+  kickLength: 0.09
+  kickVel: 0.2
   kickPhase: 0.75
 
 
   trunkYOnlyInDoubleSupport: False
 
-  maxStepX: 0.1
-  maxStepY: 0.08
-  maxStepXY: 0.1
-  maxStepZ: 0.4
+  maxStepX: 0.06
+  maxStepY: 0.05
+  maxStepXY: 0.09
+  maxStepZ: 0.45
 
   vel: -1
   acc: -1
   pwm: -1
 
   imuActive: False
-  imuPitchThreshold: 1.0
-  imuRollThreshold: 1.0
-  pauseDuration: 1.0
+  imuPitchThreshold: 0.5
+  imuRollThreshold: 0.4
+  imuPitchVelThreshold: 1.1
+  imuRollVelThreshold: 1.0
+  pauseDuration: 0.5
+
+  publishOdomTF: False
+
+  firstStepSwingFactor: 1.0

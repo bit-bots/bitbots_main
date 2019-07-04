@@ -15,14 +15,15 @@ hcm:
   anim_server_wait_time: 1 # time the hcm waits for animation server
   animations:
     walkready: "walkready"
-    walkready_sim: "init"
-    falling_front: "walkready" # TODO Animation Falling
-    falling_back: "walkready"
-    falling_left: "walkready"
-    falling_right: "walkready"
-    stand_up_front: "stand_up_front"
-    stand_up_back: "stand_up_back"
-    stand_up_side: "stand_up_back"
+    walkready_sim: "walkready_sim"
+    falling_front: "falling_front"
+    falling_back: "falling_back"
+    falling_left: "falling_left"
+    falling_right: "falling_right"
+    stand_up_front: "stand_up_front_fast"
+    stand_up_back: "stand_up_back_flo"
+    stand_up_left: "turning_back_left"
+    stand_up_right: "turning_back_right"
     sit_down: "walkready"
     penalty: "walkready"
     motor_off: "walkready"
@@ -35,10 +36,10 @@ hcm:
   falling_active: true # enables the check for falling and coresponding counter meassurements
   #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
   #Grenzwerte sanfter --> zu spaete Raktion
-  threshold_gyro_y_front: 4 # > gyroY
-  threshold_gyro_x_side: 4 # > gyroX
-  falling_threshold_orientation_left_right: 30 # > Point of no return in degrees
-  falling_threshold_orientation_front_back: 60 # < Point of no return in degrees
+  threshold_gyro_y_front: 7 # > gyroY
+  threshold_gyro_x_side: 7 # > gyroX
+  falling_threshold_orientation_left_right: 60 # > Point of no return in degrees
+  falling_threshold_orientation_front_back: 45 # < Point of no return in degrees
   falling_new_front: 32
   falling_new_back: -6
   falling_new_left: -18
@@ -52,7 +53,7 @@ hcm:
     "falling_left": "falling_left"
     "falling_right": "falling_right"
 
-    "Wolfgang":
+    "wolfgang":
 
       #Grenzwerte müssen auf härterem boden auch härter eingestellt werden,
       #dies erfolgt mit dem boden_koeffizient

@@ -44,6 +44,7 @@ class PlayAnimationAction(object):
         self.current_joint_states = None
         self.action_name = name
         self.hcm_state = 0
+        self.current_animation = None
 
         self.parsed_animation = {}
 
@@ -64,6 +65,7 @@ class PlayAnimationAction(object):
     def execute_cb(self, goal):
         """ This is called, when someone calls the animation action"""
         first = True
+        self.current_animation = goal.animation
 
         # publish info to the console for the user
         rospy.loginfo("Request to play animation %s", goal.animation)
@@ -77,27 +79,21 @@ class PlayAnimationAction(object):
             self._as.set_aborted(text="HCM not controlable. Will now come controlable. Try again later.")
             return
 
+        animator = self.get_animation_splines(self.current_animation)
         # start animation
-        try:
-            with open(find_animation(goal.animation)) as fp:
-                self.parsed_animation = parse(json.load(fp))
-        except IOError:
-            rospy.logwarn("Animation '%s' not found" % goal.animation)
-            self._as.set_aborted(False, "Animation not found")
-            return
-        except ValueError:
-            rospy.logwarn("Animation '%s' had an ValueError. Propably there is a syntax error in the animation file. "
-                          "See traceback" % goal.animation)
-            traceback.print_exc()
-            self._as.set_aborted(False, "Animation not found")
-            return
-        animator = SplineAnimator(self.parsed_animation, self.current_joint_states)
         rate = rospy.Rate(200)
         start_time = rospy.get_time()
 
         while not rospy.is_shutdown():
             # first check if we have another goal
             self.check_for_new_goal()
+            new_goal = self._as.current_goal.goal.goal.animation
+            # if there is a new goal, calculate new splines and reset the time
+            if new_goal != self.current_animation:
+                self.current_animation = new_goal
+                animator = self.get_animation_splines(self.current_animation)
+                first = True
+
             # if we're here we want to play the next keyframe, cause there is no other goal
             # compute next pose
             t = rospy.get_time() - animator.get_start_time()
@@ -127,22 +123,39 @@ class PlayAnimationAction(object):
             except rospy.exceptions.ROSInterruptException:
                 exit()
 
+    def get_animation_splines(self, animation_name):
+        try:
+            with open(find_animation(animation_name)) as fp:
+                parsed_animation = parse(json.load(fp))
+        except IOError:
+            rospy.logwarn("Animation '%s' not found" % animation_name)
+            self._as.set_aborted(False, "Animation not found")
+            return
+        except ValueError:
+            rospy.logwarn("Animation '%s' had an ValueError. Propably there is a syntax error in the animation file. "
+                          "See traceback" % animation_name)
+            traceback.print_exc()
+            self._as.set_aborted(False, "Animation not found")
+            return
+        return SplineAnimator(parsed_animation, self.current_joint_states)
+
     def check_for_new_goal(self):
         if self._as.is_new_goal_available():
-                next_goal = self._as.next_goal
-                rospy.logwarn("New goal: " + next_goal.get_goal().animation)
-                if next_goal.get_goal().hcm:
-                    rospy.logdebug("Accepted hcm animation %s", next_goal.get_goal().animation)
-                    # cancel old stuff and restart
-                    self._as.current_goal.set_aborted()
-                    self._as.accept_new_goal()
-                    return
-                else:
-                    # can't run this animation now
-                    self._as.next_goal.set_rejected()
-                    # delete the next goal to make sure, that we can accept something else
-                    self._as.next_goal = None
-                    rospy.logdebug("Couldn't start non hcm animation, bc another one is already running.")
+            next_goal = self._as.next_goal
+            if not next_goal.get_goal():
+                return
+            rospy.logdebug("New goal: " + next_goal.get_goal().animation)
+            if next_goal.get_goal().hcm:
+                rospy.logdebug("Accepted hcm animation %s", next_goal.get_goal().animation)
+                # cancel old stuff and restart
+                self._as.current_goal.set_aborted()
+                self._as.accept_new_goal()
+            else:
+                # can't run this animation now
+                self._as.next_goal.set_rejected()
+                # delete the next goal to make sure, that we can accept something else
+                self._as.next_goal = None
+                rospy.logwarn("Couldn't start non hcm animation because another one is already running.")
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""

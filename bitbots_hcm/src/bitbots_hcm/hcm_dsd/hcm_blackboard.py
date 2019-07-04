@@ -6,6 +6,7 @@ import rospkg
 import os
 from bitbots_hcm.fall_checker import FallChecker
 from geometry_msgs.msg import Twist
+from bitbots_msgs.msg import KickActionFeedback
 from humanoid_league_msgs.msg import RobotControlState
 
 
@@ -26,6 +27,7 @@ STATE_MOTOR_OFF=11
 STATE_HCM_OFF=12
 STATE_HARDWARE_PROBLEM=13
 STATE_PICKED_UP = 14
+STATE_KICKING = 15
 
 
 class HcmBlackboard():
@@ -73,7 +75,8 @@ class HcmBlackboard():
         self.motor_off_animation = rospy.get_param("hcm/animations/motor_off")
         self.stand_up_front_animation = rospy.get_param("hcm/animations/stand_up_front")
         self.stand_up_back_animation = rospy.get_param("hcm/animations/stand_up_back")
-        self.stand_up_side_animation = rospy.get_param("hcm/animations/stand_up_side")
+        self.stand_up_left_animation = rospy.get_param("hcm/animations/stand_up_left")
+        self.stand_up_right_animation = rospy.get_param("hcm/animations/stand_up_right")
 
         # motors
         self.last_motor_goal_time = rospy.Time.now() # initilize with current time, or motors will be turned off on start
@@ -101,4 +104,11 @@ class HcmBlackboard():
         self.fall_checker = FallChecker()
         self.is_stand_up_active = not self.simulation_active and rospy.get_param("hcm/stand_up_active", False) 
         self.falling_detection_active = not self.simulation_active and rospy.get_param("hcm/falling_active", False)
+
+        # kicking
+        self.last_kick_feedback = None      # type: rospy.Time
+
+        def last_kick_feedback_callback(msg):
+            self.last_kick_feedback = rospy.Time.now()
+        rospy.Subscriber('/dynamic_kick/feedback', KickActionFeedback, last_kick_feedback_callback, tcp_nodelay=False, queue_size=1)
 

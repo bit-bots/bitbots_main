@@ -1,7 +1,8 @@
 #include "bitbots_quintic_walk/QuinticWalkingNode.hpp"
 
 
-QuinticWalkingNode::QuinticWalkingNode() {
+QuinticWalkingNode::QuinticWalkingNode() :
+        _robot_model_loader("/robot_description", false) {
     // init variables
     _robotState = humanoid_league_msgs::RobotControlState::CONTROLABLE;
     _walkEngine = bitbots_quintic_walk::QuinticWalk();
@@ -16,6 +17,7 @@ QuinticWalkingNode::QuinticWalkingNode() {
     // read config
     _nh.param<double>("engineFrequency", _engineFrequency, 100.0);
     _nh.param<bool>("/simulation_active", _simulation_active, false);
+    _nh.param<bool>("/walking/publishOdomTF", _publishOdomTF, false);
 
     /* init publisher and subscriber */
     _command_msg = bitbots_msgs::JointCommand();
@@ -30,15 +32,17 @@ QuinticWalkingNode::QuinticWalkingNode() {
     //_subJointStates = _nh.subscribe("joint_states", 1, &QuinticWalkingNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
     _subKick = _nh.subscribe("kick", 1, &QuinticWalkingNode::kickCb, this, ros::TransportHints().tcpNoDelay());
     _subImu = _nh.subscribe("imu/data", 1, &QuinticWalkingNode::imuCb, this, ros::TransportHints().tcpNoDelay());
-    _subPressure = _nh.subscribe("pressure", 1, &QuinticWalkingNode::pressureCb, this,
+    _subPressure = _nh.subscribe("foot_pressure_filtered", 1, &QuinticWalkingNode::pressureCb, this,
                                  ros::TransportHints().tcpNoDelay());
+    _subCopL = _nh.subscribe("cop_l", 1, &QuinticWalkingNode::cop_l_cb, this, ros::TransportHints().tcpNoDelay());
+    _subCopR = _nh.subscribe("cop_r", 1, &QuinticWalkingNode::cop_r_cb, this, ros::TransportHints().tcpNoDelay());
+
 
     /* debug publisher */
     _pubDebug = _nh.advertise<bitbots_quintic_walk::WalkingDebug>("walk_debug", 1);
     _pubDebugMarker = _nh.advertise<visualization_msgs::Marker>("walk_debug_marker", 1);
 
     //load MoveIt! model    
-    _robot_model_loader = robot_model_loader::RobotModelLoader("/robot_description", false);
     _robot_model_loader.loadKinematicsSolvers(
             kinematics_plugin_loader::KinematicsPluginLoaderPtr(
                     new kinematics_plugin_loader::KinematicsPluginLoader()));
@@ -91,7 +95,7 @@ void QuinticWalkingNode::run() {
                                  || _robotState == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
             // see if the walk engine has new goals for us
             bool newGoals = _walkEngine.updateState(dt, _currentOrders, walkableState);
-            if (newGoals) { //todo
+            if (_walkEngine.getState() != "idle") { //todo
                 calculateJointGoals();
             }
         }
@@ -230,79 +234,125 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
         // compute the pitch offset to the currently wanted pitch of the engine
         double wanted_pitch = _params.trunkPitch + _params.trunkPitchPCoefForward*_walkEngine.getFootstep().getNext().x()
         + _params.trunkPitchPCoefTurn*fabs(_walkEngine.getFootstep().getNext().z());
+        pitch = pitch + wanted_pitch;
 
-        pitch = pitch - wanted_pitch;
+        // get angular velocities
+        double roll_vel = msg.angular_velocity.x;
+        double pitch_vel = msg.angular_velocity.y;
 
-        if (abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold) {
+
+        if (abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold || abs(pitch_vel) > _imu_pitch_vel_threshold || abs(roll_vel) > _imu_roll_vel_threshold) {
             _walkEngine.requestPause();
+            if(abs(roll) > _imu_roll_threshold){
+                ROS_WARN("imu roll angle stop");
+            }else if(abs(pitch) > _imu_pitch_threshold){
+                ROS_WARN("imu pitch angle stop");
+            }else if(abs(pitch_vel) > _imu_pitch_vel_threshold ){
+                ROS_WARN("imu roll vel stop");
+            }else{
+                ROS_WARN("imu pitch vel stop");
+            }
         }
     }
 }
 
 void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg) {
 
-    // we only want to check stuff if we are walking and in single support
-    if (_walkEngine.getState() == "walking" && !_walkEngine.isDoubleSupport()) {
+    // we just want to look at the support foot. choose the 4 values from the message accordingly
+    // s = support, n = not support, i = inside, o = outside, f = front, b = back
+    double sob;
+    double sof;
+    double sif;
+    double sib;
 
-        // we just want to look at the support foot. choose the 4 values from the message accordingly
-        // s = support, n = not support, i = inside, o = outside, f = front, b = back
-        double sob;
-        double sof;
-        double sif;
-        double sib;
+    double nob;
+    double nof;
+    double nif;
+    double nib;
 
-        double nob;
-        double nof;
-        double nif;
-        double nib;
+    if (_walkEngine.isLeftSupport()) {
+        sob = msg.l_l_b;
+        sof = msg.l_l_f;
+        sif = msg.l_r_f;
+        sib = msg.l_r_b;
 
-        if (_walkEngine.isLeftSupport()) {
-            sob = msg.l_l_b;
-            sof = msg.l_l_f;
-            sif = msg.l_r_f;
-            sib = msg.l_r_b;
+        nib = msg.r_l_b;
+        nif = msg.r_l_f;
+        nof = msg.r_r_f;
+        nob = msg.r_r_b;
+    } else {
+        sib = msg.r_l_b;
+        sif = msg.r_l_f;
+        sof = msg.r_r_f;
+        sob = msg.r_r_b;
 
-            nib = msg.r_l_b;
-            nif = msg.r_l_f;
-            nof = msg.r_r_f;
-            nob = msg.r_r_b;
-        } else {
-            sib = msg.r_l_b;
-            sif = msg.r_l_f;
-            sof = msg.r_r_f;
-            sob = msg.r_r_b;
+        nob = msg.l_l_b;
+        nof = msg.l_l_f;
+        nif = msg.l_r_f;
+        nib = msg.l_r_b;
+    }
 
-            nob = msg.l_l_b;
-            nof = msg.l_l_f;
-            nif = msg.l_r_f;
-            nib = msg.l_r_b;
-        }
+    // sum to get overall pressure on foot
+    double s_sum = sob + sof + sif + sib;
+    double n_sum = nob + nof + nif + nib;
 
-        // sum to get overall pressure on foot
-        double s_sum = sob + sof + sif + sib;
-        double n_sum = nob + nof + nif + nib;
-
-        // ratios between pressures to get relative position of CoP
-        double s_io_ratio = (sif + sib) / (sof + sob);
-        double s_fb_ratio = (sif + sof) / (sib + sob);
-
-        // check for early step end
-        // phase has to be far enough to have right foot lifted
-        // foot has to have ground contact
-        double phase = _walkEngine.getPhase();
-        if (_phaseResetActive && ((phase > 0.45 && phase < 0.5) || (phase > 0.95)) && n_sum > _groundMinPressure) {
-            ROS_WARN("Phase resetted!");
-            _walkEngine.endStep();
-        }
-
-        // check if robot is unstable and should pause
-        // this is true if the robot is falling to the outside or to front or back
-        if (_copStopActive && (s_io_ratio < _ioPressureThreshold || s_fb_ratio < 1 / _fbPressureThreshold ||
-                               s_fb_ratio > _fbPressureThreshold)) {
-            _walkEngine.requestPause();
-            ROS_WARN("CoP stop!");
+    // ratios between pressures to get relative position of CoP
+    double s_io_ratio = 100;
+    if(sof + sob != 0){
+        s_io_ratio = (sif + sib) / (sof + sob);
+        if (s_io_ratio == 0){
+            s_io_ratio = 100;
         }
     }
+    double s_fb_ratio = 100;
+    if(sib + sob != 0){
+        s_fb_ratio= (sif + sof) / (sib + sob);
+        if (s_fb_ratio == 0){
+            s_fb_ratio = 100;
+        }
+    }
+
+    // check for early step end
+    // phase has to be far enough (almost at end of step) to have right foot lifted
+    // foot has to have ground contact
+    double phase = _walkEngine.getPhase();
+    if (_phaseResetActive && ((phase > 0.5 - _phaseResetPhase && phase < 0.5) || (phase > 1 - _phaseResetPhase)) && n_sum > _groundMinPressure) {
+        ROS_WARN("Phase resetted!");
+        _walkEngine.endStep();
+    }
+
+    // check if robot is unstable and should pause
+    // this is true if the robot is falling to the outside or to front or back
+    if (_pressureStopActive && (s_io_ratio > _ioPressureThreshold || 1 / s_io_ratio > _ioPressureThreshold ||
+                           1 / s_fb_ratio > _fbPressureThreshold || s_fb_ratio > _fbPressureThreshold)) {
+        _walkEngine.requestPause();
+
+        //TODO this is debug
+        if(s_io_ratio > _ioPressureThreshold || 1 / s_io_ratio > _ioPressureThreshold){
+            ROS_WARN("CoP io stop!");
+        }else{
+            ROS_WARN("CoP fb stop!");
+        }
+    }
+
+    // decide which CoP
+    geometry_msgs::PointStamped cop;
+    if(_walkEngine.isLeftSupport()){
+        cop = _cop_l;
+    }else{
+        cop = _cop_r;
+    }
+
+    if(_copStopActive && (abs(cop.point.x) > _copXThreshold || abs(cop.point.y) > _copYThreshold)){
+         _walkEngine.requestPause();
+        if(abs(cop.point.x) > _copXThreshold){
+            ROS_WARN("cop x stop");
+        }else{
+            ROS_WARN("cop y stop");
+        }
+    }
+
+
 }
 
 void QuinticWalkingNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {
@@ -317,8 +367,17 @@ void QuinticWalkingNode::jointStateCb(const sensor_msgs::JointState msg) {
 }
 
 void QuinticWalkingNode::kickCb(const std_msgs::BoolConstPtr msg) {
-    _walkEngine.requestKick(true); //todo decide foot
+    _walkEngine.requestKick(msg->data);
 }
+
+void QuinticWalkingNode::cop_l_cb(const geometry_msgs::PointStamped msg) {
+    _cop_l = msg;
+}
+
+void QuinticWalkingNode::cop_r_cb(const geometry_msgs::PointStamped msg) {
+    _cop_r = msg;
+}
+
 
 void
 QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level) {
@@ -344,6 +403,8 @@ QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_p
     _params.trunkPitchPCoefForward = config.trunkPitchPCoefForward;
     _params.trunkPitchPCoefTurn = config.trunkPitchPCoefTurn;
 
+    _params.firstStepSwingFactor = config.firstStepSwingFactor;
+
     _params.kickLength = config.kickLength;
     _params.kickPhase = config.kickPhase;
     _params.footPutDownRollOffset = config.footPutDownRollOffset;
@@ -364,10 +425,16 @@ QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_p
     _imuActive = config.imuActive;
     _imu_pitch_threshold = config.imuPitchThreshold;
     _imu_roll_threshold = config.imuRollThreshold;
+    _imu_pitch_vel_threshold = config.imuPitchVelThreshold;
+    _imu_roll_vel_threshold = config.imuRollVelThreshold;
 
     _phaseResetActive = config.phaseResetActive;
+    _phaseResetPhase = config.phaseResetPhase;
     _groundMinPressure = config.groundMinPressure;
     _copStopActive = config.copStopActive;
+    _copXThreshold = config.copXThreshold;
+    _copYThreshold = config.copYThreshold;
+    _pressureStopActive = config.pressureStopActive;
     _ioPressureThreshold = config.ioPressureThreshold;
     _fbPressureThreshold = config.fbPressureThreshold;
     _params.pauseDuration = config.pauseDuration;
@@ -429,18 +496,22 @@ void QuinticWalkingNode::publishOdometry() {
     tf::quaternionTFToMsg(odom_to_trunk.getRotation().normalize(), quat_msg);
 
     ros::Time current_time = ros::Time::now();
-    _odom_trans = geometry_msgs::TransformStamped();
-    _odom_trans.header.stamp = current_time;
-    _odom_trans.header.frame_id = "odom";
-    _odom_trans.child_frame_id = "base_link";
 
-    _odom_trans.transform.translation.x = pos[0];
-    _odom_trans.transform.translation.y = pos[1];
-    _odom_trans.transform.translation.z = pos[2];
-    _odom_trans.transform.rotation = quat_msg;
+    if (_publishOdomTF)
+    {
+        _odom_trans = geometry_msgs::TransformStamped();
+        _odom_trans.header.stamp = current_time;
+        _odom_trans.header.frame_id = "odom";
+        _odom_trans.child_frame_id = "base_link";
 
-    //send the transform
-    _odom_broadcaster.sendTransform(_odom_trans);
+        _odom_trans.transform.translation.x = pos[0];
+        _odom_trans.transform.translation.y = pos[1];
+        _odom_trans.transform.translation.z = pos[2];
+        _odom_trans.transform.rotation = quat_msg;
+
+        //send the transform
+        _odom_broadcaster.sendTransform(_odom_trans);
+    }
 
     // send the odometry also as message
     _odom_msg.header.stamp = current_time;
@@ -517,6 +588,14 @@ QuinticWalkingNode::publishDebug(tf::Transform &trunk_to_support_foot_goal, tf::
     pose_msg.orientation = tf::createQuaternionMsgFromRollPitchYaw(_trunkAxis[0], _trunkAxis[1], _trunkAxis[2]);
     msg.engine_trunk_goal = pose_msg;
     publishMarker("engine_trunk_goal", current_support_frame, pose_msg, r, g, b, a);
+
+    if(_trunkPos[1] >0){
+        _trunkPos[1] = _trunkPos[1] - _params.footDistance /2;
+    }else{
+        _trunkPos[1] = _trunkPos[1] + _params.footDistance /2;
+    }
+    tf::pointEigenToMsg(_trunkPos, pose_msg.position);
+    msg.engine_trunk_goal_abs = pose_msg;
 
     // resulting trunk pose
     geometry_msgs::Pose pose;

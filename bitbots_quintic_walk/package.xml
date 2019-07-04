@@ -15,6 +15,7 @@
 
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
 
   <depend>roscpp</depend>
   <depend>humanoid_league_msgs</depend>
@@ -38,7 +39,7 @@
 
   <export>
     <bitbots_documentation>
-      <status>tested_viz</status>
+      <status>tested_integration</status>
       <language>c++</language>
     </bitbots_documentation>
   </export>
