@@ -948,7 +948,7 @@
     </joint>
     
     <joint name="head_to_camera" type="fixed">
-        <origin xyz="-0.00443 0.11475" rpy="0 0 0" />
+        <origin xyz="-0.00443 0 0.11475" rpy="0 0 0" />
         <parent link="head" />
         <child link="camera" />
         <axis xyz="0 0 0" />
