@@ -369,7 +369,7 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMov
         point("foot_pos_x",
               doubleSupportLength + singleSupportLength * _params.footPutDownPhase * _params.footOvershootPhase,
               _footstep.getNext().x() +
-              (_footstep.getNext().x() - _footstep.getLast().x()) * _params.footOvershootRatio);
+              _footstep.getNext().x() * _params.footOvershootRatio);
     }
     point("foot_pos_x", doubleSupportLength + singleSupportLength * _params.footPutDownPhase,
         _footstep.getNext().x());
@@ -452,9 +452,6 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMov
         point("trunk_pos_x", 0.0,
             0.0,
             0.0,
-            0.0);
-        point("trunk_pos_x", halfPeriod+timeShift,
-            trunkApexSupport.x(),
             0.0);
     }else{
         point("trunk_pos_x", 0.0,
