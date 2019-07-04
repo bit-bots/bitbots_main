@@ -63,7 +63,8 @@ class YoloHandler():
                 c.rating = confidence
                 class_id = class_id
                 if class_id == b"ball":
-                    self.ball_candidates.append(c)
+                    if max(w,h) < 190:
+                        self.ball_candidates.append(c)
                 if class_id == b"goalpost":
                     self.goalpost_candidates.append(c)
 
