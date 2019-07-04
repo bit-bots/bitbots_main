@@ -316,7 +316,7 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMov
 
     if(startMovement){
         // update support foot and compute odometry
-        _footstep.stepFromOrders(Eigen::Vector3d());
+        _footstep.stepFromOrders(Eigen::Vector3d::Zero());
     }else{
         _footstep.stepFromOrders(orders);
     }
@@ -551,14 +551,14 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMov
         axisAtNext.y(),
         axisVel.y());
 
-    point("trunk_axis_z", 0.0, 
+    point("trunk_axis_z", 0.0,
         _trunkAxisPosAtLast.z(),
         _trunkAxisVelAtLast.z(),
         _trunkAxisAccAtLast.z());
     point("trunk_axis_z", halfPeriod+timeShift, 
         axisAtSupport.z(),
         axisVel.z());
-    point("trunk_axis_z", period+timeShift, 
+    point("trunk_axis_z", period+timeShift,
         axisAtNext.z(),
         axisVel.z());
 }

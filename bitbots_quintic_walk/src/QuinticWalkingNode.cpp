@@ -577,12 +577,28 @@ QuinticWalkingNode::publishDebug(tf::Transform &trunk_to_support_foot_goal, tf::
 
     msg.engine_state.data = _walkEngine.getState();
 
+    // footsteps
+    msg.footstep_last.x = _walkEngine.getFootstep().getLast()[0];
+    msg.footstep_last.y = _walkEngine.getFootstep().getLast()[1];
+    msg.footstep_last.z = _walkEngine.getFootstep().getLast()[2];
+
+    msg.footstep_next.x = _walkEngine.getFootstep().getNext()[0];
+    msg.footstep_next.y = _walkEngine.getFootstep().getNext()[1];
+    msg.footstep_next.z = _walkEngine.getFootstep().getNext()[2];
+
+
+
     // engine output
     geometry_msgs::Pose pose_msg;
     tf::pointEigenToMsg(_footPos, pose_msg.position);
     pose_msg.orientation = tf::createQuaternionMsgFromRollPitchYaw(_footAxis[0], _footAxis[1], _footAxis[2]);
     msg.engine_fly_goal = pose_msg;
     publishMarker("engine_fly_goal", current_support_frame, pose_msg, 0, 0, 1, a);
+
+    msg.engine_fly_axis.x = _footAxis[0];
+    msg.engine_fly_axis.x = _footAxis[1];
+    msg.engine_fly_axis.x = _footAxis[2];
+
 
     tf::pointEigenToMsg(_trunkPos, pose_msg.position);
     pose_msg.orientation = tf::createQuaternionMsgFromRollPitchYaw(_trunkAxis[0], _trunkAxis[1], _trunkAxis[2]);
@@ -596,6 +612,10 @@ QuinticWalkingNode::publishDebug(tf::Transform &trunk_to_support_foot_goal, tf::
     }
     tf::pointEigenToMsg(_trunkPos, pose_msg.position);
     msg.engine_trunk_goal_abs = pose_msg;
+
+    msg.engine_trunk_axis.x = _trunkAxis[0];
+    msg.engine_trunk_axis.y = _trunkAxis[1];
+    msg.engine_trunk_axis.z = _trunkAxis[2];
 
     // resulting trunk pose
     geometry_msgs::Pose pose;
