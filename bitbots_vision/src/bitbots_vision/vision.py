@@ -13,7 +13,6 @@ from sensor_msgs.msg import Image, JointState
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, PostInImage, \
     GoalInImage, Speak
-from humanoid_league_speaker.speaker import speak
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, live_classifier, \
     classifier, ball, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator, yolo_handler
 from bitbots_vision.cfg import VisionConfig
@@ -55,6 +54,7 @@ class Vision:
 
         # Speak publisher
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
+        self._first_callback = True
 
         # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
@@ -85,14 +85,21 @@ class Vision:
         """
         self.field_boundary_detector.set_head_joint_state(headjoint_msg)
 
+    def _speak(self, string, speech_publisher):
+        speak_message = Speak()
+        speak_message.text = string
+        speech_publisher.publish(speak_message)
+
     def handle_image(self, image_msg):
         # converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
-        mean = cv2.mean(image)
 
-        if sum(mean) < self._blind_threshold:
-            speak("I am blind! Help me!", self.speak_publisher)
+        if self._first_callback:
+            mean = cv2.mean(image)
+
+            if sum(mean) < self._blind_threshold:
+                self._speak("Hey!   Remove my camera cap!", self.speak_publisher)
 
         # setup detectors
         self.field_boundary_detector.set_image(image)
@@ -332,6 +339,8 @@ class Vision:
 
             # publish debug image
             self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(self.debug_image_dings.get_image(), 'bgr8'))
+
+        self._first_callback = False
 
     def _conventional_precalculation(self):
         self.obstacle_detector.compute_all_obstacles()
