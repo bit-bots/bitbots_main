@@ -153,11 +153,13 @@ class WorldModelCapsule:
                 self.goal_odom.left_post = self.tf_buffer.transform(goal_left_buffer, 'odom', timeout=rospy.Duration(0.2)).point
                 self.goal_odom.right_post = self.tf_buffer.transform(goal_right_buffer, 'odom', timeout=rospy.Duration(0.2)).point
                 self.goal_odom.header.frame_id = 'odom'
+                self.goal_seen_time = rospy.Time.now()
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 rospy.logwarn(e)
         else:
             self.goal_odom.left_post = goal_left_buffer.point
             self.goal_odom.right_post = goal_right_buffer.point
+            self.goal_seen_time = rospy.Time.now()
 
     #############
     # ## Common #
