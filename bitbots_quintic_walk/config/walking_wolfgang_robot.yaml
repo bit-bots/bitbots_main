@@ -59,10 +59,10 @@ walking:
   trunkXOffsetPCoefTurn: 0.0
   # Trunk pitch orientation proportional to forward step
   # (in rad/m)
-  trunkPitchPCoefForward: 2.1
+  trunkPitchPCoefForward: 1.2
   # Trunk pitch orientation proportional to rotation step
   # (in 1)
-  trunkPitchPCoefTurn: -0.15
+  trunkPitchPCoefTurn: -0.05
 
   # update frequency of the engine
   engineFreq: 200.0
