@@ -1,19 +1,19 @@
 #GoAndKickBallMapGoal
 $BallKickArea
-    LEFT --> @Stop, @KickBallDynamic
-    RIGHT --> @Stop, @KickBallDynamic
+    LEFT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
+    RIGHT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
     FAR --> @GoToBall + target:map_goal
 
 #GoAndKickBallDetectionGoal
 $BallKickArea
-    LEFT --> @Stop, @KickBallDynamic
-    RIGHT --> @Stop, @KickBallDynamic
+    LEFT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
+    RIGHT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
     FAR --> @GoToBall + target:detection_goal
 
 #GoAndKickBallAway
 $BallKickArea
-    LEFT --> @Stop, @KickBallDynamic
-    RIGHT --> @Stop, @KickBallDynamic
+    LEFT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
+    RIGHT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
     FAR --> @GoToBall + target:none
 
 #NoLocalizationPlayerBehavior
