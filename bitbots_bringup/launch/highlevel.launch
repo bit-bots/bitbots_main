@@ -7,7 +7,7 @@
     <arg name="localization" default="false"/>
     <arg name="simple" default="false"/> <!-- whether to use the simple behavior -->
     <!-- defines camera type -->
-    <arg name="basler" default="true" doc="Defines the robot camera type"/>
+    <arg name="basler" default="false" doc="Defines the robot camera type"/>
 
     <arg name="use_game_settings" default="true"/>
     
