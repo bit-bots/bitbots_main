@@ -747,7 +747,7 @@
         <parent link="r_upper_leg" />
         <child link="r_lower_leg" />
         <axis xyz="0 1 0" />
-        <limit effort="7.57" velocity="8.22" lower="0" upper="2.268928027587" />
+        <limit effort="7.57" velocity="8.22" lower="0" upper="2.74016693" />
         <dynamics damping="${d}" friction="0.1" />
     </joint>
 
@@ -815,7 +815,7 @@
         <parent link="l_upper_leg" />
         <child link="l_lower_leg" />
         <axis xyz="0 -1 0" />
-        <limit effort="7.57" velocity="8.22" lower="-2.268928027587" upper="0" />
+        <limit effort="7.57" velocity="8.22" lower="-2.74016693" upper="0" />
         <dynamics damping="${d}" friction="0.1" />
     </joint>
 
@@ -934,7 +934,7 @@
         <parent link="torso" />
         <child link="neck" />
         <axis xyz="0 0 1" />
-        <limit effort="5.43" velocity="10.33" lower="-1.2" upper="1.2" />
+        <limit effort="5.43" velocity="10.33" lower="-2.35" upper="2.35" />
         <dynamics damping="${d}" friction="0.09" />
     </joint>
 
@@ -943,7 +943,7 @@
         <parent link="neck" />
         <child link="head" />
         <axis xyz="0 -1 0" />
-        <limit effort="5.43" velocity="10.33" lower="-1.2" upper="0.2" />
+        <limit effort="5.43" velocity="10.33" lower="-1.57" upper="0.2" />
         <dynamics damping="${d}" friction="0.09" />
     </joint>
     
