@@ -4,6 +4,7 @@ from bitbots_blackboard.capsules.animation_capsule import AnimationCapsule
 from bitbots_blackboard.capsules.blackboard_capsule import BlackboardCapsule
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
 from bitbots_blackboard.capsules.head_capsule import HeadCapsule
+from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from bitbots_blackboard.capsules.pathfinding_capsule import PathfindingCapsule
 from bitbots_blackboard.capsules.team_data_capsule import TeamDataCapsule
 from bitbots_blackboard.capsules.world_model_capsule import WorldModelCapsule
@@ -21,6 +22,7 @@ class BodyBlackboard:
         self.blackboard = BlackboardCapsule()
         self.gamestate = GameStatusCapsule()
         self.animation = AnimationCapsule()
+        self.kick = KickCapsule(self)
         self.pathfinding = PathfindingCapsule()
         self.world_model = WorldModelCapsule(self.field_length, self.field_width)
         self.team_data = TeamDataCapsule()

@@ -1,19 +1,19 @@
 #GoAndKickBallMapGoal
 $BallKickArea
-    LEFT --> @Stop, @KickBall + foot:left
-    RIGHT --> @Stop, @KickBall + foot:right
+    LEFT --> @Stop, @KickBallDynamic
+    RIGHT --> @Stop, @KickBallDynamic
     FAR --> @GoToBall + target:map_goal
 
 #GoAndKickBallDetectionGoal
 $BallKickArea
-    LEFT --> @Stop, @KickBall + foot:left
-    RIGHT --> @Stop, @KickBall + foot:right
+    LEFT --> @Stop, @KickBallDynamic
+    RIGHT --> @Stop, @KickBallDynamic
     FAR --> @GoToBall + target:detection_goal
 
 #GoAndKickBallAway
 $BallKickArea
-    LEFT --> @Stop, @KickBall + foot:left
-    RIGHT --> @Stop, @KickBall + foot:right
+    LEFT --> @Stop, @KickBallDynamic
+    RIGHT --> @Stop, @KickBallDynamic
     FAR --> @GoToBall + target:none
 
 #NoLocalizationPlayerBehavior
@@ -81,8 +81,8 @@ $JustUnpenalized
 #PenaltyBehavior
 $BallSeen
     YES --> $BallKickArea
-        RIGHT --> @Stop, @KickBallVeryHard  + foot:right
-        LEFT --> @Stop, @KickBallVeryHard + foot:left
+        RIGHT --> @Stop, @KickBallDynamic + type:penalty
+        LEFT --> @Stop, @KickBallDynamic + type:penalty
         FAR --> $GoalSeen
             YES --> @GoToBall + target:detection_goal
             NO --> @GoToBall + target:none
