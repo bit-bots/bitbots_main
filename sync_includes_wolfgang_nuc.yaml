@@ -24,7 +24,6 @@ include:
     - bitbots_navigation:
         - bitbots_localization
         - bitbots_move_base
-        - bitbots_bezier_pathfinding
     - center_of_mass
     - dynamic_stack_decider
     - humanoid_base_footprint
