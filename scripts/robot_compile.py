@@ -130,7 +130,7 @@ def configure(args):
             'vision': ''
         }
         
-        if host[0].startswith('nuc'):
+        if host[1].startswith('nuc'):
             data['motion'] = 'sudo /bin/systemctl enable --now bitbots_motion.service; ' \
                 if start_motion else \
                 'sudo /bin/systemctl disable --now bitbots_motion.service; '
