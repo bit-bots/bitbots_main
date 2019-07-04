@@ -10,7 +10,7 @@ class GoalSeen(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         self.publish_debug_data("goal_seen_time", rospy.Time.now() - self.blackboard.world_model.goal_last_seen())
-        if rospy.Time.now() - self.blackboard.world_model.goal_last_seen() < self.goal_lost_time:
+        if self.blackboard.world_model.goal_last_seen() != rospy.Time(0):
             return 'YES'
         return 'NO'
 
