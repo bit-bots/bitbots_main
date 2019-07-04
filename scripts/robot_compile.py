@@ -158,30 +158,33 @@ def configure(args):
             print_err('Configuring {} failed!'.format(host[1]))
             exit(r.returncode)
 
-        print_info('Calling game_settings on host {}'.format(host[1]))
-        with subprocess.Popen([
-            'ssh', 'bitbots@{}'.format(host[0]),
-            'bash -c \'source wolfgang_ws/devel/setup.bash && rosrun bitbots_bringup game_settings.py --no-teamplayer\''
-        ], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.DEVNULL,
-        universal_newlines=True) as proc:
-            akk = ''
-            skipInput = False
-            while proc.returncode is None:
-                out = proc.stdout.read(1)
-                print(out, end='', flush=True)
+        if host[0].startswith('nuc'):
+            # Game settings script is only necessary on nuc because ros parameters
+            # are set and that is only necessary once
+            print_info('Calling game_settings on host {}'.format(host[1]))
+            with subprocess.Popen([
+                'ssh', 'bitbots@{}'.format(host[0]),
+                'bash -c \'source wolfgang_ws/devel/setup.bash && rosrun bitbots_bringup game_settings.py --no-teamplayer\''
+            ], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            universal_newlines=True) as proc:
+                akk = ''
+                skipInput = False
+                while proc.returncode is None:
+                    out = proc.stdout.read(1)
+                    print(out, end='', flush=True)
 
-                if out == '\n':
-                    akk = ''
-                    skipInput = False
-                else:
-                    akk += out
+                    if out == '\n':
+                        akk = ''
+                        skipInput = False
+                    else:
+                        akk += out
 
-                if not skipInput and re.search(r'Value.*:', akk) is not None:
-                    proc.stdin.write(input() + '\n')
-                    proc.stdin.flush()
-                    skipInput = True
-                    time.sleep(1)
-                    proc.poll()
+                    if not skipInput and re.search(r'Value.*:', akk) is not None:
+                        proc.stdin.write(input() + '\n')
+                        proc.stdin.flush()
+                        skipInput = True
+                        time.sleep(1)
+                        proc.poll()
 
     print_success('Successfully configured all robots')
 
