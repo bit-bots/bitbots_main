@@ -38,7 +38,7 @@ walking:
   trunkPitch: 0.18
   # Phase offset of trunk oscillation
   # (half cycle phase, [-1:1])
-  trunkPhase: 0.0
+  trunkPhase: -0.1
   # Trunk forward offset
   # (in m)
   trunkXOffset: 0.0
