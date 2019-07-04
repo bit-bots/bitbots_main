@@ -40,7 +40,7 @@ ros_control:
       Status_Return_Level: 2 # 0 status for all instructions(not sync or bulk), 1 ping and read, 2 only ping
       Velocity_I_Gain: 1920 # [/ 65,536]
       Velocity_P_Gain: 100 # [/128]
-      Position_D_Gain: 0# 2800 # [/16] 0~16,383
+      Position_D_Gain: 0 #2800 # [/16] 0~16,383
       Position_I_Gain: 0 #180000 # [/ 65,536] 0~16,383
       Position_P_Gain: 850 #1100 # [/ 128] 0~16,383
       Feedforward_2nd_Gain: 0 # [/4]
