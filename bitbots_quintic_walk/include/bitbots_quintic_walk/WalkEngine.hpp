@@ -96,6 +96,7 @@ struct WalkingParameter{
     double kickVel;
     double pauseDuration;
     double firstStepSwingFactor;
+    int startMovements;
 };
 
 /**
@@ -201,6 +202,8 @@ private:
 
         double _timePaused;
 
+        int _startMovementsDone;
+
         /**
          * Currently used parameters
          */
@@ -236,7 +239,7 @@ private:
         void buildStopStepTrajectories(const Eigen::Vector3d& orders);
         void buildStopMovementTrajectories(const Eigen::Vector3d& orders);
 
-        void buildTrajectories(const Eigen::Vector3d& orders, bool startMovement, bool startStep, bool kickStep);
+        void buildTrajectories(const Eigen::Vector3d& orders, bool startMovement, bool firstStartMovement, bool startStep, bool kickStep);
         void buildWalkDisableTrajectories(const Eigen::Vector3d& orders, bool footInIdlePosition);
 
         void saveCurrentTrunkState();
