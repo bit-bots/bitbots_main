@@ -326,7 +326,7 @@ def main():
         elif args.configure_only:
             print_info("Not compiling on {} due to configure-only mode".format(target.hostname))
         else:
-            build(target)
+            build(target, args.package, verbose=not args.quiet, pre_clean=args.clean_build)
 
         # configure
         if args.sync_only:
