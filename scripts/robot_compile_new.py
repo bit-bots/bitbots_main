@@ -107,8 +107,8 @@ def parse_arguments():
     parser.add_argument("--clean-build", action="store_true",
                         help="Clean workspace before building. --package is given, clean only that package")
     parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
-    parser.add_argument("--clean-all", action="store_true",
-                        help="Clean workspace and source directory before building/syncing")
+    parser.add_argument("--clean-built", action="store_true",
+                        help="Clean build directory befor compiling")
     parser.add_argument("-q", "--quiet", action="store_true", help="Less output")
     return parser.parse_args()
 
@@ -150,7 +150,7 @@ def parse_targets(targets):
     return res
 
 
-def get_includes_from_file(file_path, package):
+def get_includes_from_file(file_path, package=None):
     """
     Retrieve a list of file to sync from and includes-file
 
@@ -187,11 +187,23 @@ def get_includes_from_file(file_path, package):
     return includes
 
 
-def sync(target, package, verbose=True):
+def sync(target, package=None, verbose=True, pre_clean=False):
     """
     :type target: Target
     :type package: str
+    :type verbose: bool
+    :type pre_clean: bool
     """
+    if pre_clean:
+        cmd = [
+            "ssh bitbots@{}".format(target.hostname),
+            "rm -rf {}/src/*".format(target.workspace)
+        ]
+        print_info("Calling {}".format("".join(cmd)))
+        clean_result = subprocess.run(cmd)
+        if clean_result.returncode != 0:
+            print_warn("Cleaning of source directory on {} failed. Continuing anyways".format(target.hostname))
+
     cmd = [
         "rsync",
         "--checksum",
@@ -205,6 +217,7 @@ def sync(target, package, verbose=True):
         "bitbots@{}:{}/src/".format(target.ip, target.workspace)
     ])
 
+    print_info("Calling {}".format("".join(cmd)))
     sync_result = subprocess.run(cmd)
     if sync_result.returncode != 0:
         print_err("Synchronizing {} failed with error code {}".format(target.hostname, sync_result.returncode))
@@ -213,9 +226,39 @@ def sync(target, package, verbose=True):
     print_success("Synchronized {}".format(target.hostname))
 
 
-def build(target):
-    """.:type target: Target"""
-    pass
+def build(target, package=None, pre_clean=False, verbose=True):
+    """
+    :type target: Target
+    :type package: str
+    :type pre_clean: bool
+    :type verbose: bool
+    """
+    cmd = [
+        "ssh",
+        "bitbots@{}".format(target.hostname),
+        '''
+        sync;
+        cd {workspace};
+        source devel/setup.zsh;
+        {cmd_clean}
+        catkin build --force-color {package} {quiet_option} || exit 1;
+        ./src/scripts/repair.sh {quiet_option};
+        sync;
+        '''.format(**{
+            "workspace": target.workspace,
+            "cmd_clean": "cakin clean -y {};".format(package) if pre_clean else "",
+            "quiet_option": "> /dev/null" if not verbose else "",
+            "package": package
+        })
+    ]
+
+    print_info("Calling {}".format("".join(cmd)))
+    build_result = subprocess.run(cmd)
+    if build_result.returncode != 0:
+        print_err("Build on {} failed".format(target.hostname))
+        sys.exit(build_result.returncode)
+
+    print_success("Build on {} succeeded".format(target.hostname))
 
 
 def main():
@@ -245,7 +288,7 @@ def main():
         elif args.compile_only:
             print_info("Not configuring {} due to compile-only mode".format(target.hostname))
         else:
-            build(target)
+            build(target, args.package, args.clean_build)
 
 
 if __name__ == "__main__":
