@@ -30,6 +30,10 @@ def print_success(msg):
     print("\033[92m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
 
 
+def print_bit_bot():
+    print()
+
+
 def print_info(msg):
     print('\033[96m' + str(msg) + '\033[0m')
 
@@ -65,12 +69,13 @@ class Target:
         jetson4 = __prefix__ + "33"
         davros = __prefix__ + "25"
 
-    def __init__(self, ip):
+    def __init__(self, ip, ssh_target):
         """
         :type ip: str
-        :type hostname: str
+        :type ssh_target: str
         """
         self.ip = ip  # type: str
+        self.ssh_target = ssh_target    # type: str
 
         # figure out hostname
         for name, iip in self.IPs.__dict__.items():
@@ -92,7 +97,7 @@ class Target:
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Compile and comfingure software for the Wolfgang humanoid robot "
+    parser = argparse.ArgumentParser(description="Compile and configure software for the Wolfgang humanoid robot "
                                                  "platform")
     parser.add_argument("target", type=str, help="The target robot or computer you want to compile for. Multiple "
                                                  "targets can be specified seperated by ,")
@@ -102,7 +107,7 @@ def parse_arguments():
     mode.add_argument("-c", "--compile-only", action="store_true", help="Only build on the target")
     mode.add_argument("-k", "--configure-only", action="store_true", help="Only configure the target")
 
-    parser.add_argument("-p", "--package", help="Sync/Compile only the given ROS package")
+    parser.add_argument("-p", "--package", default='', help="Sync/Compile only the given ROS package")
     parser.add_argument("-y", "--yes-to-all", action="store_true", help="Answer yes to all questions")
     parser.add_argument("--clean-build", action="store_true",
                         help="Clean workspace before building. --package is given, clean only that package")
@@ -127,19 +132,19 @@ def parse_targets(targets):
         # this means, a whole robot is meant
         if hasattr(Target.RobotComputers, target):
             for computer in getattr(Target.RobotComputers, target):
-                res.append(Target(getattr(Target.IPs, computer)))
+                res.append(Target(getattr(Target.IPs, computer), getattr(Target.IPs, computer)))
                 print_info("Using robot={} hostname={} ip={} for target {}".format(
                     res[-1].robot_name, res[-1].hostname, res[-1].ip, target))
 
         # this mean, a hostname was specified
         elif hasattr(Target.IPs, target):
-            res.append(Target(getattr(Target.IPs, target)))
+            res.append(Target(getattr(Target.IPs, target), target))
             print_info("Using robot={} hostname={} ip={} for target {}".format(
                 res[-1].robot_name, res[-1].hostname, res[-1].ip, target))
 
         # this means an IP address was specified
         elif target in Target.IPs.__dict__.values():
-            res.append(Target(target))
+            res.append(Target(target, target))
             print_info("Using robot={} hostname={} ip={} for target {}".format(
                 res[-1].robot_name, res[-1].hostname, res[-1].ip, target))
 
@@ -150,7 +155,7 @@ def parse_targets(targets):
     return res
 
 
-def get_includes_from_file(file_path, package=None):
+def get_includes_from_file(file_path, package=''):
     """
     Retrieve a list of file to sync from and includes-file
 
@@ -170,7 +175,7 @@ def get_includes_from_file(file_path, package=None):
         for entry in data['include']:
             if isinstance(entry, dict):
                 for folder, subfolders in entry.items():
-                    if package is None:
+                    if package == '':
                         includes.append('--include=+ {}'.format(folder))
                         for subfolder in subfolders:
                             includes.append('--include=+ {}/{}'.format(folder, subfolder))
@@ -187,7 +192,7 @@ def get_includes_from_file(file_path, package=None):
     return includes
 
 
-def sync(target, package=None, verbose=True, pre_clean=False):
+def sync(target, package='', verbose=True, pre_clean=False):
     """
     :type target: Target
     :type package: str
@@ -199,7 +204,7 @@ def sync(target, package=None, verbose=True, pre_clean=False):
             "ssh bitbots@{}".format(target.hostname),
             "rm -rf {}/src/*".format(target.workspace)
         ]
-        print_info("Calling {}".format("".join(cmd)))
+        print_info("Calling {}".format(" ".join(cmd)))
         clean_result = subprocess.run(cmd)
         if clean_result.returncode != 0:
             print_warn("Cleaning of source directory on {} failed. Continuing anyways".format(target.hostname))
@@ -208,25 +213,25 @@ def sync(target, package=None, verbose=True, pre_clean=False):
         "rsync",
         "--checksum",
         "--archive",
-        "--delete"
         "-v" if verbose else "",
+        "--delete",
     ]
     cmd.extend(get_includes_from_file(target.sync_includes_file, package))
     cmd.extend([
-        BITBOTS_META,
-        "bitbots@{}:{}/src/".format(target.ip, target.workspace)
+        BITBOTS_META + "/",
+        "bitbots@{}:{}/src/".format(target.ssh_target, target.workspace)
     ])
 
-    print_info("Calling {}".format("".join(cmd)))
+    print_info("Calling {}".format(" ".join(cmd)))
     sync_result = subprocess.run(cmd)
     if sync_result.returncode != 0:
         print_err("Synchronizing {} failed with error code {}".format(target.hostname, sync_result.returncode))
         sys.exit(sync_result.returncode)
 
-    print_success("Synchronized {}".format(target.hostname))
+    print_success("Synchronization of {} successful".format(target.hostname))
 
 
-def build(target, package=None, pre_clean=False, verbose=True):
+def build(target, package='', verbose=True, pre_clean=False):
     """
     :type target: Target
     :type package: str
@@ -235,7 +240,7 @@ def build(target, package=None, pre_clean=False, verbose=True):
     """
     cmd = [
         "ssh",
-        "bitbots@{}".format(target.hostname),
+        "bitbots@{}".format(target.ssh_target),
         '''
         sync;
         cd {workspace};
@@ -252,7 +257,7 @@ def build(target, package=None, pre_clean=False, verbose=True):
         })
     ]
 
-    print_info("Calling {}".format("".join(cmd)))
+    print_info("Calling {}".format(" ".join(cmd)))
     build_result = subprocess.run(cmd)
     if build_result.returncode != 0:
         print_err("Build on {} failed".format(target.hostname))
@@ -263,6 +268,7 @@ def build(target, package=None, pre_clean=False, verbose=True):
 
 def main():
     args = parse_arguments()
+    print_bit_bot()
     targets = parse_targets(args.target)
 
     for target in targets:
@@ -272,7 +278,7 @@ def main():
         elif args.configure_only:
             print_info("Not syncing to {} due to configure-only mode".format(target.hostname))
         else:
-            sync(target, args.package)
+            sync(target, args.package, verbose=not args.quiet, pre_clean=args.clean_src)
 
         # build
         if args.sync_only:
@@ -288,7 +294,7 @@ def main():
         elif args.compile_only:
             print_info("Not configuring {} due to compile-only mode".format(target.hostname))
         else:
-            build(target, args.package, args.clean_build)
+            pass
 
 
 if __name__ == "__main__":
