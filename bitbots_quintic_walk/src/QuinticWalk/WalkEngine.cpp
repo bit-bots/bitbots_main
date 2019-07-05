@@ -23,8 +23,7 @@ QuinticWalk::QuinticWalk() :
     _trunkAxisVelAtLast(),
     _trunkAxisAccAtLast(),
     _trajs(),
-    _timePaused(0.0),
-    _startMovementsDone(0)
+    _timePaused(0.0)
 {   
     // make sure to call the reset method after having the parameters
     _trajs = bitbots_splines::TrajectoriesInit();
@@ -74,22 +73,16 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d& orders, bool wal
         // state is idle and orders are not zero, we can start walking
         buildStartTrajectories(orders);
         _engineState = "startMovement";
-        _startMovementsDone = 0;
     } else if (_engineState == "startMovement") {
         // in this state we do a single "step" where we only move the trunk
         if (halfStepFinished) {
             if (ordersZero) {
                 _engineState = "stopMovement";
                 buildStopMovementTrajectories(orders);
-                _startMovementsDone = 0;
-            }else if(_startMovementsDone >= _params.startMovements){
-                //start step is finished, go to next state
-                buildTrajectories(orders, false, false, true, false);
-                _engineState = "startStep";
-                _startMovementsDone = 0;
             }else{
-                _startMovementsDone++;
-                buildTrajectories(orders, true, false, false, false);
+                //start step is finished, go to next state
+                buildTrajectories(orders, false, true, false);
+                _engineState = "startStep";
             }
         }
     } else if (_engineState == "startStep"){
@@ -291,15 +284,15 @@ void QuinticWalk::saveCurrentTrunkState(){
 
 
 void QuinticWalk::buildNormalTrajectories(const Eigen::Vector3d& orders){
-    buildTrajectories(orders, false, false, false, false);
+    buildTrajectories(orders, false, false, false);
 }
 
 void QuinticWalk::buildKickTrajectories(const Eigen::Vector3d& orders){
-    buildTrajectories(orders, false, false, false, true);
+    buildTrajectories(orders, false, false, true);
 }
 
 void QuinticWalk::buildStartTrajectories(const Eigen::Vector3d& orders){
-    buildTrajectories(orders, false, true, false, false);
+    buildTrajectories(orders, true, false, false);
 }
 
 void QuinticWalk::buildStopStepTrajectories(const Eigen::Vector3d& orders){
@@ -311,17 +304,17 @@ void QuinticWalk::buildStopMovementTrajectories(const Eigen::Vector3d& orders){
 }
 
 
-void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMovement, bool firstStartMovement, bool startStep, bool kickStep)
+void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMovement, bool startStep, bool kickStep)
 {
     // save the current trunk state to use it later
-    if(!firstStartMovement){
+    if(!startMovement){
         saveCurrentTrunkState();
     }else{
         _trunkPosAtLast.y() -= _footstep.getNext().y();
         //trunkPos = Eigen::Rotation2Dd(-_footstep.getNext().z()).toRotationMatrix() * trunkPos;
     }
 
-    if(startMovement || firstStartMovement){
+    if(startMovement){
         // update support foot and compute odometry
         _footstep.stepFromOrders(Eigen::Vector3d::Zero());
     }else{
@@ -351,7 +344,7 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMov
 
 
     //Only move the trunk on the first half cycle after a walk enable
-    if (startMovement || firstStartMovement) {
+    if (startMovement) {
         doubleSupportLength = halfPeriod;
         singleSupportLength = 0.0;
     }
@@ -477,7 +470,7 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMov
         _trunkPosAtLast.y(), 
         _trunkVelAtLast.y(), 
         _trunkAccAtLast.y());
-    if(startStep || startMovement || firstStartMovement){
+    if(startStep || startMovement){
         point("trunk_pos_y", halfPeriod+timeShift-pauseLength,
             trunkPointMiddle.y() + trunkVect.y() * _params.firstStepSwingFactor);
         point("trunk_pos_y", halfPeriod+timeShift+pauseLength,

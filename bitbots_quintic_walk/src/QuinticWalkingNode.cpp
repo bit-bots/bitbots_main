@@ -404,7 +404,6 @@ QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_p
     _params.trunkPitchPCoefTurn = config.trunkPitchPCoefTurn;
 
     _params.firstStepSwingFactor = config.firstStepSwingFactor;
-    _params.startMovements = config.startMovements;
 
     _params.kickLength = config.kickLength;
     _params.kickPhase = config.kickPhase;
