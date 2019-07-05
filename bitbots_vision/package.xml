@@ -41,6 +41,7 @@
   <depend>image_transport</depend>
   <depend>message_runtime</depend>
   <depend>nav_msgs</depend>
+  <depend>humanoid_league_speaker</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>bitbots_msgs</depend>
   <depend>dynamic_reconfigure</depend>
@@ -51,6 +52,7 @@
   <depend>pylon_camera</depend>
   <depend>white_balancer</depend>
   <depend>bitbots_bringup</depend>
+
 
   <export>
     <bitbots_documentation>
