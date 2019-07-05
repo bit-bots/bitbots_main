@@ -159,8 +159,6 @@ class PlayAnimationDynup(AbstractActionElement):
     def perform(self, reevaluate=False):
         # we never want to leave the action when we play an animation
         # deactivate the reevaluate
-        if not self.blackboard.shut_down_request:
-            self.do_not_reevaluate()
 
         if self.first_perform:
             # get the animation that should be played
