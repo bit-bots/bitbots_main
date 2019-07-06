@@ -65,7 +65,7 @@ if __name__ == "__main__":
             # check if we have values already, otherwise we will do math with none
             if(yaw):
                 request.model_state.pose.position = position
-                quaternion = tf.transformations.quaternion_from_euler(0, 0.37, yaw)
+                quaternion = tf.transformations.quaternion_from_euler(0, 0, yaw)
                 request.model_state.pose.orientation.x = quaternion[0]
                 request.model_state.pose.orientation.y = quaternion[1]
                 request.model_state.pose.orientation.z = quaternion[2]
