@@ -76,7 +76,7 @@ class GoalSearchPattern(AbstractSearchPattern):
 
 class FieldFeaturesSearchPattern(AbstractSearchPattern):
     def get_search_pattern(self):
-        return self.blackboard.config['search_pattern']
+        return self.blackboard.config['search_pattern_field_features']
 
 
 class VisualCompassSearchPattern(AbstractSearchPattern):
