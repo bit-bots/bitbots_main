@@ -56,7 +56,7 @@ class MotorVizHelper:
 
         self.joint_command_msg = JointCommand()
         self.joint_command_msg.joint_names = JOINT_NAMES
-        self.joint_command_msg.positions = JOINT_GOALS
+        self.joint_command_msg.positions = [0] * 20
         self.joint_command_msg.velocities = [-1] * 20
 
         rate = rospy.Rate(100)
