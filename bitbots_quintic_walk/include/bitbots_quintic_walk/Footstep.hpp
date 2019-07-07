@@ -49,7 +49,7 @@ class Footstep
          */
         void reset(bool isLeftSupportFoot);
 
-        // reset odomery
+        // reset odometry
         void resetInWorld(bool isLeftSupportFoot);
 
         /**
@@ -76,7 +76,7 @@ class Footstep
 
         /**
          * Left and right, current or next pose
-         * of foot in world intial frame
+         * of foot in world initial frame
          */
         const Eigen::Vector3d& getLeft() const;
         const Eigen::Vector3d& getRight() const;

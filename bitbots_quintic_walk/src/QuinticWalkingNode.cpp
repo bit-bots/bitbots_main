@@ -74,11 +74,6 @@ QuinticWalkingNode::QuinticWalkingNode() :
 
 
 void QuinticWalkingNode::run() {
-    /* 
-    This is the main loop which takes care of stopping and starting of the walking.
-    A small state machine is tracking in which state the walking is and builds the trajectories accordingly.
-    */
-
     int odom_counter = 0;
 
     while (ros::ok()) {
@@ -90,6 +85,9 @@ void QuinticWalkingNode::run() {
             _walkEngine.reset();
         } else {
             // we don't want to walk, even if we have orders, if we are not in the right state
+            /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
+             * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
+            // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
             bool walkableState = _robotState == humanoid_league_msgs::RobotControlState::CONTROLABLE ||
                                  _robotState == humanoid_league_msgs::RobotControlState::WALKING
                                  || _robotState == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
@@ -172,6 +170,7 @@ double QuinticWalkingNode::getTimeDelta() {
         std::chrono::time_point<std::chrono::steady_clock> current_time = std::chrono::steady_clock::now();
         // only take real time difference if walking was not stopped before
         // using c++ time since it is more performant than ros time. We only need a local difference, so it doesnt matter as long as we are not simulating
+        // TODO Is this really necessary?
         auto time_diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - _last_update_time);
         dt = time_diff_ms.count() / 1000.0;
         if (dt == 0) {
@@ -207,17 +206,21 @@ void QuinticWalkingNode::cmdVelCb(const geometry_msgs::Twist msg) {
     for (int i = 0; i < 3; i++) {
         _currentOrders[i] = std::max(std::min(_currentOrders[i], _max_step[i]), _max_step[i] * -1);
     }
-    // translational orders (x+y) should not exed combined limit. scale if necessary
-    if(_max_step_xy != 0){
-        double scaling_factor = (_currentOrders[0] + _currentOrders[1])/_max_step_xy;
+    // translational orders (x+y) should not exceed combined limit. scale if necessary
+    if (_max_step_xy != 0) {
+        double scaling_factor = (_currentOrders[0] + _currentOrders[1]) / _max_step_xy;
         for (int i = 0; i < 2; i++) {
             _currentOrders[i] = _currentOrders[i] / std::max(scaling_factor, 1.0);
         }
     }
 
     // warn user that speed was limited
-    if(msg.linear.x * factor != _currentOrders[0] || msg.linear.y * factor != _currentOrders[1] || msg.angular.z * factor != _currentOrders[2]){
-        ROS_WARN("Speed command was x: %.2f y: %.2f z: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f xy: %.2f", msg.linear.x, msg.linear.y, msg.angular.z, msg.linear.x + msg.linear.y, _max_step[0]/factor, _max_step[1]/factor, _max_step[2]/factor, _max_step_xy/factor);
+    if (msg.linear.x * factor != _currentOrders[0] ||
+        msg.linear.y * factor != _currentOrders[1] ||
+        msg.angular.z * factor != _currentOrders[2]) {
+        ROS_WARN("Speed command was x: %.2f y: %.2f z: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f xy: %.2f",
+                 msg.linear.x, msg.linear.y, msg.angular.z, msg.linear.x + msg.linear.y, _max_step[0] / factor,
+                 _max_step[1] / factor, _max_step[2] / factor, _max_step_xy / factor);
     }
 }
 
@@ -232,32 +235,31 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
         tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
         // compute the pitch offset to the currently wanted pitch of the engine
-        double wanted_pitch = _params.trunkPitch + _params.trunkPitchPCoefForward*_walkEngine.getFootstep().getNext().x()
-        + _params.trunkPitchPCoefTurn*fabs(_walkEngine.getFootstep().getNext().z());
+        double wanted_pitch =
+                _params.trunkPitch + _params.trunkPitchPCoefForward * _walkEngine.getFootstep().getNext().x()
+                + _params.trunkPitchPCoefTurn * fabs(_walkEngine.getFootstep().getNext().z());
         pitch = pitch + wanted_pitch;
 
         // get angular velocities
         double roll_vel = msg.angular_velocity.x;
         double pitch_vel = msg.angular_velocity.y;
-
-
-        if (abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold || abs(pitch_vel) > _imu_pitch_vel_threshold || abs(roll_vel) > _imu_roll_vel_threshold) {
+        if (abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold ||
+            abs(pitch_vel) > _imu_pitch_vel_threshold || abs(roll_vel) > _imu_roll_vel_threshold) {
             _walkEngine.requestPause();
-            if(abs(roll) > _imu_roll_threshold){
+            if (abs(roll) > _imu_roll_threshold) {
                 ROS_WARN("imu roll angle stop");
-            }else if(abs(pitch) > _imu_pitch_threshold){
+            } else if (abs(pitch) > _imu_pitch_threshold) {
                 ROS_WARN("imu pitch angle stop");
-            }else if(abs(pitch_vel) > _imu_pitch_vel_threshold ){
+            } else if (abs(pitch_vel) > _imu_pitch_vel_threshold) {
                 ROS_WARN("imu roll vel stop");
-            }else{
+            } else {
                 ROS_WARN("imu pitch vel stop");
             }
         }
     }
 }
 
-void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg) {
-
+void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg) { // TODO Remove this method since cop_cb is now used
     // we just want to look at the support foot. choose the 4 values from the message accordingly
     // s = support, n = not support, i = inside, o = outside, f = front, b = back
     double sob;
@@ -298,16 +300,16 @@ void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg) {
 
     // ratios between pressures to get relative position of CoP
     double s_io_ratio = 100;
-    if(sof + sob != 0){
+    if (sof + sob != 0) {
         s_io_ratio = (sif + sib) / (sof + sob);
-        if (s_io_ratio == 0){
+        if (s_io_ratio == 0) {
             s_io_ratio = 100;
         }
     }
     double s_fb_ratio = 100;
-    if(sib + sob != 0){
-        s_fb_ratio= (sif + sof) / (sib + sob);
-        if (s_fb_ratio == 0){
+    if (sib + sob != 0) {
+        s_fb_ratio = (sif + sof) / (sib + sob);
+        if (s_fb_ratio == 0) {
             s_fb_ratio = 100;
         }
     }
@@ -316,7 +318,8 @@ void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg) {
     // phase has to be far enough (almost at end of step) to have right foot lifted
     // foot has to have ground contact
     double phase = _walkEngine.getPhase();
-    if (_phaseResetActive && ((phase > 0.5 - _phaseResetPhase && phase < 0.5) || (phase > 1 - _phaseResetPhase)) && n_sum > _groundMinPressure) {
+    if (_phaseResetActive && ((phase > 0.5 - _phaseResetPhase && phase < 0.5) || (phase > 1 - _phaseResetPhase)) &&
+        n_sum > _groundMinPressure) {
         ROS_WARN("Phase resetted!");
         _walkEngine.endStep();
     }
@@ -324,30 +327,30 @@ void QuinticWalkingNode::pressureCb(const bitbots_msgs::FootPressure msg) {
     // check if robot is unstable and should pause
     // this is true if the robot is falling to the outside or to front or back
     if (_pressureStopActive && (s_io_ratio > _ioPressureThreshold || 1 / s_io_ratio > _ioPressureThreshold ||
-                           1 / s_fb_ratio > _fbPressureThreshold || s_fb_ratio > _fbPressureThreshold)) {
+                                1 / s_fb_ratio > _fbPressureThreshold || s_fb_ratio > _fbPressureThreshold)) {
         _walkEngine.requestPause();
 
         //TODO this is debug
-        if(s_io_ratio > _ioPressureThreshold || 1 / s_io_ratio > _ioPressureThreshold){
+        if (s_io_ratio > _ioPressureThreshold || 1 / s_io_ratio > _ioPressureThreshold) {
             ROS_WARN("CoP io stop!");
-        }else{
+        } else {
             ROS_WARN("CoP fb stop!");
         }
     }
 
     // decide which CoP
     geometry_msgs::PointStamped cop;
-    if(_walkEngine.isLeftSupport()){
+    if (_walkEngine.isLeftSupport()) {
         cop = _cop_l;
-    }else{
+    } else {
         cop = _cop_r;
     }
 
-    if(_copStopActive && (abs(cop.point.x) > _copXThreshold || abs(cop.point.y) > _copYThreshold)){
-         _walkEngine.requestPause();
-        if(abs(cop.point.x) > _copXThreshold){
+    if (_copStopActive && (abs(cop.point.x) > _copXThreshold || abs(cop.point.y) > _copYThreshold)) {
+        _walkEngine.requestPause();
+        if (abs(cop.point.x) > _copXThreshold) {
             ROS_WARN("cop x stop");
-        }else{
+        } else {
             ROS_WARN("cop y stop");
         }
     }
@@ -497,8 +500,7 @@ void QuinticWalkingNode::publishOdometry() {
 
     ros::Time current_time = ros::Time::now();
 
-    if (_publishOdomTF)
-    {
+    if (_publishOdomTF) {
         _odom_trans = geometry_msgs::TransformStamped();
         _odom_trans.header.stamp = current_time;
         _odom_trans.header.frame_id = "odom";
@@ -605,10 +607,10 @@ QuinticWalkingNode::publishDebug(tf::Transform &trunk_to_support_foot_goal, tf::
     msg.engine_trunk_goal = pose_msg;
     publishMarker("engine_trunk_goal", current_support_frame, pose_msg, r, g, b, a);
 
-    if(_trunkPos[1] >0){
-        _trunkPos[1] = _trunkPos[1] - _params.footDistance /2;
-    }else{
-        _trunkPos[1] = _trunkPos[1] + _params.footDistance /2;
+    if (_trunkPos[1] > 0) {
+        _trunkPos[1] = _trunkPos[1] - _params.footDistance / 2;
+    } else {
+        _trunkPos[1] = _trunkPos[1] + _params.footDistance / 2;
     }
     tf::pointEigenToMsg(_trunkPos, pose_msg.position);
     msg.engine_trunk_goal_abs = pose_msg;
@@ -845,9 +847,9 @@ int main(int argc, char **argv) {
     dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>::CallbackType f;
     f = boost::bind(&QuinticWalkingNode::reconf_callback, &node, _1, _2);
     server.setCallback(f);
-    // reset engine
-    node.initializeEngine();
+
     // run the node
+    node.initializeEngine();
     node.run();
 }
 

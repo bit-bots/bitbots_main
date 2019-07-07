@@ -196,7 +196,6 @@ void QuinticWalk::endStep(){
 }
 
 void QuinticWalk::reset(){
-    // completly reset the engine, e.g. when robot fell down
     _engineState = "idle";
     _phase = 0.0;
     _timePaused = 0.0;
