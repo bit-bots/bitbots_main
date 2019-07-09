@@ -6,6 +6,7 @@ import yaml
 import rospy
 import rospkg
 import threading
+from profilehooks import profile, timecall
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
