@@ -40,6 +40,8 @@ class ObstacleDetector(CandidateFinder):
         self._other_obstacles = None
 
     def set_image(self, image):
+        if np.array_equal(image,self._image):
+            return
         self._image = image
         self._blue_mask = None
         self._red_mask = None
@@ -319,3 +321,82 @@ class ObstacleDetector(CandidateFinder):
                 continue
             else:
                 self._other_obstacles.append(obstacle)
+
+
+class RedObstacleDetector(CandidateFinder):
+
+    def __init__(self, obstacle_detector):
+        self.obstacle_detector = obstacle_detector
+
+    def set_image(self, image):
+        self.obstacle_detector.set_image(image)
+
+    def get_candidates(self):
+        return self.obstacle_detector.get_red_obstacles()
+
+    def get_top_candidates(self, count = 1):
+        candidates = self.get_candidates()
+        candidates = Candidate.sort_candidates(candidates)
+        return candidates[:count]
+
+    def compute_top_candidate(self):
+        pass
+
+
+class BlueObstacleDetector(CandidateFinder):
+
+    def __init__(self, obstacle_detector):
+        self.obstacle_detector = obstacle_detector
+
+    def set_image(self, image):
+        self.obstacle_detector.set_image(image)
+
+    def get_candidates(self):
+        return self.obstacle_detector.get_blue_obstacles()
+
+    def get_top_candidates(self, count = 1):
+        candidates = self.get_candidates()
+        candidates = Candidate.sort_candidates(candidates)
+        return candidates[:count]
+
+    def compute_top_candidate(self):
+        pass
+
+
+class WhiteObstacleDetector(CandidateFinder):
+
+    def __init__(self, obstacle_detector):
+        self.obstacle_detector = obstacle_detector
+
+    def set_image(self, image):
+        self.obstacle_detector.set_image(image)
+
+    def get_candidates(self):
+        return self.obstacle_detector.get_white_obstacles()
+
+    def get_top_candidates(self, count = 1):
+        candidates = self.get_candidates()
+        candidates = Candidate.sort_candidates(candidates)
+        return candidates[:count]
+
+    def compute_top_candidate(self):
+        pass
+
+class UnknownObstacleDetector(CandidateFinder):
+
+    def __init__(self, obstacle_detector):
+        self.obstacle_detector = obstacle_detector
+
+    def set_image(self, image):
+        self.obstacle_detector.set_image(image)
+
+    def get_candidates(self):
+        return self.obstacle_detector.get_other_obstacles()
+
+    def get_top_candidates(self, count = 1):
+        candidates = self.get_candidates()
+        candidates = Candidate.sort_candidates(candidates)
+        return candidates[:count]
+
+    def compute_top_candidate(self):
+        pass
