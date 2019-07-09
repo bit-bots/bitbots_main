@@ -40,8 +40,8 @@ class Vision:
         # the head_joint_states is used by the dynamic field_boundary detector
         self.head_joint_state = None
 
-        self.debug_image_dings = debug.DebugImage()  # Todo: better variable name
-        if self.debug_image_dings:
+        self.debug_image_drawer = debug.DebugImage()  # Todo: better variable name
+        if self.debug_image_drawer:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
         # Register publisher of 'vision_config'-messages
@@ -86,16 +86,9 @@ class Vision:
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
         # setup detectors
-        self.field_boundary_detector.set_image(image)
-        self.obstacle_detector.set_image(image)
-        self.line_detector.set_image(image)
-
-        self.runtime_evaluator.set_image()
-
-        self.ball_detector.set_image(image)
+        self._distribute_images(image)
 
         if self.config['vision_parallelize']:
-            self.field_boundary_detector.compute_all()  # computes stuff which is needed later in the processing
             fcnn_thread = threading.Thread(target=self.ball_detector.compute_top_candidate)
             conventional_thread = threading.Thread(target=self._conventional_precalculation())
 
@@ -122,98 +115,83 @@ class Vision:
                 top_ball_candidate = None
         else:
             top_ball_candidate = None
-        """
-        # check whether ball candidates are under the field_boundary
-        # TODO: handle multiple ball candidates
-        top_ball_candidate = self.ball_detector.get_top_candidate()
-        if top_ball_candidate:
-            ball = []
-            ball.append(top_ball_candidate)
-            ball_under_field_boundary = self.field_boundary_detector.balls_under_field_boundary(ball)
-            if ball_under_field_boundary:
-                top_ball_candidate = ball_under_field_boundary[0]
-            else:
-                top_ball_candidate = None
-        #"""
+
+        self.top_ball_candidate = top_ball_candidate
 
         # check whether ball candidates are over rating threshold
-        if top_ball_candidate and top_ball_candidate.rating > self._ball_candidate_threshold:
+        if top_ball_candidate and top_ball_candidate.get_rating() > self._ball_candidate_threshold:
             # create ball msg
             # TODO: publish empty msg if no top candidate as described in msg description
             balls_msg = BallsInImage()
             balls_msg.header.frame_id = image_msg.header.frame_id
             balls_msg.header.stamp = image_msg.header.stamp
 
-            ball_msg = BallInImage()
-            ball_msg.center.x = top_ball_candidate.get_center_x()
-            ball_msg.center.y = top_ball_candidate.get_center_y()
-            ball_msg.diameter = top_ball_candidate.get_diameter()
-            ball_msg.confidence = 1
+            ball_msg = self._build_ball_msg(top_ball_candidate)
 
             balls_msg.candidates.append(ball_msg)
-            self.debug_printer.info('found a ball! \o/', 'ball')
             self.pub_balls.publish(balls_msg)
+
+        # create obstacle msg
+        obstacles_msg = ObstaclesInImage()
+        obstacles_msg.header.frame_id = image_msg.header.frame_id
+        obstacles_msg.header.stamp = image_msg.header.stamp
+
+        obstacles_msg.obstacles.extend(self._build_obstacle_msgs(ObstacleInImage.ROBOT_MAGENTA, self.red_obstacle_detector.get_candidates()))
+
+        obstacles_msg.obstacles.extend(self._build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN, self.blue_obstacle_detector.get_candidates()))
+
+        obstacles_msg.obstacles.extend(self._build_obstacle_msgs(ObstacleInImage.UNDEFINED, self.unknown_obstacle_detector.get_candidates()))
+
+        self.pub_obstacle.publish(obstacles_msg)
 
         # create goalpost msg
         goal_parts_msg = GoalPartsInImage()
         goal_parts_msg.header.frame_id = image_msg.header.frame_id
         goal_parts_msg.header.stamp = image_msg.header.stamp
 
-        # create obstacle msg
-        obstacles_msg = ObstaclesInImage()
-        obstacles_msg.header.frame_id = image_msg.header.frame_id
-        obstacles_msg.header.stamp = image_msg.header.stamp
-        for red_obs in self.obstacle_detector.get_red_obstacles():
-            obstacle_msg = ObstacleInImage()
-            obstacle_msg.color = ObstacleInImage.ROBOT_MAGENTA
-            obstacle_msg.top_left.x = red_obs.get_upper_left_x()
-            obstacle_msg.top_left.y = red_obs.get_upper_left_y()
-            obstacle_msg.height = int(red_obs.get_height())
-            obstacle_msg.width = int(red_obs.get_width())
-            obstacle_msg.confidence = 1.0
-            obstacle_msg.playerNumber = 42
-            obstacles_msg.obstacles.append(obstacle_msg)
-        for blue_obs in self.obstacle_detector.get_blue_obstacles():
-            obstacle_msg = ObstacleInImage()
-            obstacle_msg.color = ObstacleInImage.ROBOT_CYAN
-            obstacle_msg.top_left.x = blue_obs.get_upper_left_x()
-            obstacle_msg.top_left.y = blue_obs.get_upper_left_y()
-            obstacle_msg.height = int(blue_obs.get_height())
-            obstacle_msg.width = int(blue_obs.get_width())
-            obstacle_msg.confidence = 1.0
-            obstacle_msg.playerNumber = 42
-            obstacles_msg.obstacles.append(obstacle_msg)
+        goal_parts_msg.posts.extend(self._build_goalpost_msg(self.goalpost_detector.get_candidates()))
 
-        if self.config['vision_ball_classifier'] == 'yolo':
-            candidates = self.goalpost_detector.get_candidates()
-            for goalpost in candidates:
-                post_msg = PostInImage()
-                post_msg.width = goalpost.get_width()
-                post_msg.confidence = goalpost.get_rating()
-                post_msg.foot_point.x = goalpost.get_center_x()
-                post_msg.foot_point.y = goalpost.get_lower_right_y()
-                post_msg.top_point = post_msg.foot_point
-                goal_parts_msg.posts.append(post_msg)
-        else:
-            for white_obs in self.obstacle_detector.get_white_obstacles():
-                post_msg = PostInImage()
-                post_msg.width = white_obs.get_width()
-                post_msg.confidence = 1.0
-                post_msg.foot_point.x = white_obs.get_center_x()
-                post_msg.foot_point.y = white_obs.get_lower_right_y()
-                post_msg.top_point = post_msg.foot_point
-                goal_parts_msg.posts.append(post_msg)
-        for other_obs in self.obstacle_detector.get_other_obstacles():
-            obstacle_msg = ObstacleInImage()
-            obstacle_msg.color = ObstacleInImage.UNDEFINED
-            obstacle_msg.top_left.x = other_obs.get_upper_left_x()
-            obstacle_msg.top_left.y = other_obs.get_upper_left_y()
-            obstacle_msg.height = int(other_obs.get_height())
-            obstacle_msg.width = int(other_obs.get_width())
-            obstacle_msg.confidence = 1.0
-            obstacles_msg.obstacles.append(obstacle_msg)
-        self.pub_obstacle.publish(obstacles_msg)
+        goal_msg = self._build_goal_msg(goal_parts_msg)
 
+        if goal_msg:
+            self.pub_goal.publish(goal_msg)
+
+        # create line msg
+        line_msg = LineInformationInImage()  # Todo: add lines
+        line_msg.header.frame_id = image_msg.header.frame_id
+        line_msg.header.stamp = image_msg.header.stamp
+        for lp in self.line_detector.get_linepoints():
+            ls = LineSegmentInImage()
+            ls.start.x = lp[0]
+            ls.start.y = lp[1]
+            ls.end = ls.start
+            line_msg.segments.append(ls)
+        self.pub_lines.publish(line_msg)
+
+        if self.ball_fcnn_publish_output and self.config['vision_ball_classifier'] == 'fcnn':
+            self.pub_ball_fcnn.publish(self.ball_detector.get_cropped_msg())
+
+        if self.publish_fcnn_debug_image and self.config['vision_ball_classifier'] == 'fcnn':
+            self.pub_debug_fcnn_image.publish(self.ball_detector.get_debug_image())
+
+        # do debug stuff
+        if self.publish_debug_image:
+            #Draw debug image
+            debug_image = self._get_debug_image(image)
+            # publish debug image
+            self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(debug_image, 'bgr8'))
+
+    def _distribute_images(self, image):
+        self.field_boundary_detector.set_image(image)
+        self.obstacle_detector.set_image(image)
+        self.red_obstacle_detector.set_image(image)
+        self.blue_obstacle_detector.set_image(image)
+        self.goalpost_detector.set_image(image)
+        self.line_detector.set_image(image)
+        self.ball_detector.set_image(image)
+        self.runtime_evaluator.set_image()
+
+    def _build_goal_msg(self, goal_parts_msg):
         goal_msg = GoalInImage()
         goal_msg.header = goal_parts_msg.header
         left_post = PostInImage()
@@ -233,96 +211,93 @@ class Vision:
         goal_msg.right_post = right_post
         goal_msg.confidence = 1.0
         if goal_parts_msg.posts:
-            self.pub_goal.publish(goal_msg)
+            return goal_msg
 
-        # create line msg
-        line_msg = LineInformationInImage()  # Todo: add lines
-        line_msg.header.frame_id = image_msg.header.frame_id
-        line_msg.header.stamp = image_msg.header.stamp
-        for lp in self.line_detector.get_linepoints():
-            ls = LineSegmentInImage()
-            ls.start.x = lp[0]
-            ls.start.y = lp[1]
-            ls.end = ls.start
-            line_msg.segments.append(ls)
-        self.pub_lines.publish(line_msg)
 
-        # create non_line msg
-        # non_line_msg = LineInformationInImage()
-        # non_line_msg.header.frame_id = image_msg.header.frame_id
-        # non_line_msg.header.stamp = image_msg.header.stamp
-        # i = 0
-        # for nlp in self.line_detector.get_nonlinepoints():
-        #     nls = LineSegmentInImage()
-        #     nls.start.x = nlp[0]
-        #     nls.start.y = nlp[1]
-        #     nls.end = nls.start
-        #     if i % 2 == 0:
-        #         non_line_msg.segments.append(nls)
-        #     i += 1
-        # self.pub_non_lines.publish(non_line_msg)
+    def _build_ball_msg(self, top_ball_candidate):
+        ball_msg = BallInImage()
+        ball_msg.center.x = top_ball_candidate.get_center_x()
+        ball_msg.center.y = top_ball_candidate.get_center_y()
+        ball_msg.diameter = top_ball_candidate.get_diameter()
+        ball_msg.confidence = top_ball_candidate.get_rating()
+        self.debug_printer.info('found a ball! \o/', 'ball')
+        return ball_msg
 
-        if self.ball_fcnn_publish_output and self.config['vision_ball_classifier'] == 'fcnn':
-            self.pub_ball_fcnn.publish(self.ball_detector.get_cropped_msg())
+    def _build_goalpost_msg(self, goalposts):
+        message_list = []
+        for goalpost in goalposts: # self.goalpost_detector.get_candidates():
+            post_msg = PostInImage()
+            post_msg.width = goalpost.get_width()
+            post_msg.confidence = goalpost.get_rating()
+            post_msg.foot_point.x = goalpost.get_center_x()
+            post_msg.foot_point.y = goalpost.get_lower_right_y()
+            post_msg.top_point = post_msg.foot_point
+            message_list.append(post_msg)
+        return message_list
 
-        if self.publish_fcnn_debug_image and self.config['vision_ball_classifier'] == 'fcnn':
-            self.pub_debug_fcnn_image.publish(self.ball_detector.get_debug_image())
+    def _build_obstacle_msgs(self, obstacle_color, detections):
+        """
+        :param obstacle_color: color of the obstacles
+        :return: list of obstacle msgs
+        """
+        message_list = []
+        for obstacle in detections:
+            obstacle_msg = ObstacleInImage()
+            obstacle_msg.color = obstacle_color
+            obstacle_msg.top_left.x = obstacle.get_upper_left_x()
+            obstacle_msg.top_left.y = obstacle.get_upper_left_y()
+            obstacle_msg.height = int(obstacle.get_height())
+            obstacle_msg.width = int(obstacle.get_width())
+            obstacle_msg.confidence = obstacle.get_rating()
+            obstacle_msg.playerNumber = 42
+            message_list.append(obstacle_msg)
+        return message_list
 
-        # do debug stuff
-        if self.publish_debug_image:
-            self.debug_image_dings.set_image(image)
-            self.debug_image_dings.draw_obstacle_candidates(
-                self.obstacle_detector.get_candidates(),
-                (0, 0, 0),
-                thickness=3
-            )
-            self.debug_image_dings.draw_obstacle_candidates(
-                self.obstacle_detector.get_red_obstacles(),
-                (0, 0, 255),
-                thickness=3
-            )
-            self.debug_image_dings.draw_obstacle_candidates(
-                self.obstacle_detector.get_blue_obstacles(),
-                (255, 0, 0),
-                thickness=3
-            )
-            if self.config['vision_ball_classifier'] == "yolo":
-                post_candidates = self.goalpost_detector.get_candidates()
-            else:
-                post_candidates = self.obstacle_detector.get_white_obstacles()
-            self.debug_image_dings.draw_obstacle_candidates(
-                post_candidates,
-                (255, 255, 255),
-                thickness=3
-            )
-            self.debug_image_dings.draw_field_boundary(
-                self.field_boundary_detector.get_field_boundary_points(),
-                (0, 0, 255))
-            self.debug_image_dings.draw_field_boundary(
-                self.field_boundary_detector.get_convex_field_boundary_points(),
-                (0, 255, 255))
-            self.debug_image_dings.draw_ball_candidates(
+    def _get_debug_image(self, image):
+        self.debug_image_drawer.set_image(image)
+        self.debug_image_drawer.draw_obstacle_candidates(
+            self.unknown_obstacle_detector.get_candidates(),
+            (0, 0, 0),
+            thickness=3
+        )
+        self.debug_image_drawer.draw_obstacle_candidates(
+            self.red_obstacle_detector.get_candidates(),
+            (0, 0, 255),
+            thickness=3
+        )
+        self.debug_image_drawer.draw_obstacle_candidates(
+            self.blue_obstacle_detector.get_candidates(),
+            (255, 0, 0),
+            thickness=3
+        )            
+        self.debug_image_drawer.draw_obstacle_candidates(
+            self.goalpost_detector.get_candidates(),
+            (255, 255, 255),
+            thickness=3
+        )
+        self.debug_image_drawer.draw_field_boundary(
+            self.field_boundary_detector.get_field_boundary_points(),
+            (0, 0, 255))
+        self.debug_image_drawer.draw_field_boundary(
+            self.field_boundary_detector.get_convex_field_boundary_points(),
+            (0, 255, 255))
+        self.debug_image_drawer.draw_ball_candidates(
+            self.ball_detector.get_candidates(),
+            (0, 0, 255))
+        self.debug_image_drawer.draw_ball_candidates(
+            self.field_boundary_detector.balls_under_field_boundary(
                 self.ball_detector.get_candidates(),
-                (0, 0, 255))
-            self.debug_image_dings.draw_ball_candidates(
-                self.field_boundary_detector.balls_under_field_boundary(
-                    self.ball_detector.get_candidates(),
-                    self._ball_candidate_y_offset),
-                (0, 255, 255))
-            # draw top candidate in
-            self.debug_image_dings.draw_ball_candidates([top_ball_candidate],
-                                                        (0, 255, 0))
-            # draw linepoints in red
-            self.debug_image_dings.draw_points(
-                self.line_detector.get_linepoints(),
-                (0, 0, 255))
-            # draw nonlinepoints in black
-            # self.debug_image_dings.draw_points(
-            #     self.line_detector.get_nonlinepoints(),
-            #     (0, 0, 0))
+                self._ball_candidate_y_offset),
+            (0, 255, 255))
+        # draw top candidate in
+        self.debug_image_drawer.draw_ball_candidates([self.top_ball_candidate],
+                                                    (0, 255, 0))
+        # draw linepoints in red
+        self.debug_image_drawer.draw_points(
+            self.line_detector.get_linepoints(),
+            (0, 0, 255))
 
-            # publish debug image
-            self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(self.debug_image_dings.get_image(), 'bgr8'))
+        return self.debug_image_drawer.get_image()
 
     def _conventional_precalculation(self):
         self.obstacle_detector.compute_all_obstacles()
@@ -417,6 +392,11 @@ class Vision:
             self.debug_printer
         )
 
+        self.goalpost_detector = obstacle.WhiteObstacleDetector(self.obstacle_detector)
+        self.red_obstacle_detector = obstacle.RedObstacleDetector(self.obstacle_detector)
+        self.blue_obstacle_detector = obstacle.BlueObstacleDetector(self.obstacle_detector)
+        self.unknown_obstacle_detector = obstacle.UnknownObstacleDetector(self.obstacle_detector)
+
         # set up ball config for fcnn
         # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
         # this enables 2 fcnns with different configs.
@@ -481,16 +461,6 @@ class Vision:
                 config['ROS_line_msg_topic'],
                 LineInformationInImage,
                 queue_size=5)
-
-        # publisher for nonlinepoints
-        # if 'ROS_non_line_msg_topic' not in self.config or \
-        #         self.config['ROS_non_line_msg_topic'] != config['ROS_non_line_msg_topic']:
-        #     if hasattr(self, 'pub_non_lines'):
-        #         self.pub_non_lines.unregister()
-        #     self.pub_non_lines = rospy.Publisher(
-        #         config['ROS_non_line_msg_topic'],
-        #         LineInformationInImage,
-        #         queue_size=5)
 
         if 'ROS_obstacle_msg_topic' not in self.config or \
                 self.config['ROS_obstacle_msg_topic'] != config['ROS_obstacle_msg_topic']:
