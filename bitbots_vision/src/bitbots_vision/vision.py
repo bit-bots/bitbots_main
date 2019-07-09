@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python2
 
 import os
 import cv2
@@ -95,37 +95,48 @@ class Vision:
         # converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
-
+        # Check if its the first callback
         if self._first_callback:
+            # Calc the mean brightness of the image to detect forgotten camera caps
             mean = cv2.mean(image)
 
             if sum(mean) < self._blind_threshold:
                 self._speak("Hey!   Remove my camera cap!", self.speak_publisher)
 
-        # setup detectors
+        # distribute the image to the detectors
         self._distribute_images(image)
 
+        # Check if the vision should run the conventional and neural net part parrall
         if self.config['vision_parallelize']:
+            # Create and start threads for conventional calculation and neural net
             fcnn_thread = threading.Thread(target=self.ball_detector.compute_top_candidate)
             conventional_thread = threading.Thread(target=self._conventional_precalculation())
 
             conventional_thread.start()
             fcnn_thread.start()
 
+            # Wait for both threads
             conventional_thread.join()
             fcnn_thread.join()
         else:
+            # Calc conventional calculation and neural net
             self.ball_detector.compute_top_candidate()
             self._conventional_precalculation()
 
         # TODO: handle all ball candidates
 
         #"""
+
+        # Grab ball candidates from ball detector
         ball_candidates = self.ball_detector.get_candidates()
 
+        # Check if there are any ball candidates
         if ball_candidates:
+            # Only take candidates under the convex field boundary
             balls_under_field_boundary = self.field_boundary_detector.balls_under_convex_field_boundary(ball_candidates)
+            # Check if there are still candidates left
             if balls_under_field_boundary:
+                # Sort candidates and take the one which has the biggest confidence
                 sorted_rated_candidates = sorted(balls_under_field_boundary, key=lambda x: x.rating)
                 top_ball_candidate = list([max(sorted_rated_candidates[0:1], key=lambda x: x.rating)])[0]
             else:
@@ -143,64 +154,84 @@ class Vision:
             balls_msg.header.frame_id = image_msg.header.frame_id
             balls_msg.header.stamp = image_msg.header.stamp
 
+            # Build the ball message which will be embedded in the balls message
             ball_msg = self._build_ball_msg(top_ball_candidate)
-
             balls_msg.candidates.append(ball_msg)
+
+            # Publish balls
             self.pub_balls.publish(balls_msg)
 
-        # create obstacle msg
+        # Create obstacle msg
         obstacles_msg = ObstaclesInImage()
+
+        # Add header
         obstacles_msg.header.frame_id = image_msg.header.frame_id
         obstacles_msg.header.stamp = image_msg.header.stamp
 
+        # Add red obstacles
         obstacles_msg.obstacles.extend(self._build_obstacle_msgs(ObstacleInImage.ROBOT_MAGENTA, self.red_obstacle_detector.get_candidates()))
-
+        # Add blue obstacles
         obstacles_msg.obstacles.extend(self._build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN, self.blue_obstacle_detector.get_candidates()))
-
+        # Add UFO's (Undefined Found Obstacles)
         obstacles_msg.obstacles.extend(self._build_obstacle_msgs(ObstacleInImage.UNDEFINED, self.unknown_obstacle_detector.get_candidates()))
 
+        # Publish obstacles
         self.pub_obstacle.publish(obstacles_msg)
 
-        # create goalpost msg
+        # Areate goalparts msg
         goal_parts_msg = GoalPartsInImage()
+        # Add header
         goal_parts_msg.header.frame_id = image_msg.header.frame_id
         goal_parts_msg.header.stamp = image_msg.header.stamp
 
+        # Add detected goal parts to the message
         goal_parts_msg.posts.extend(self._build_goalpost_msg(self.goalpost_detector.get_candidates()))
 
+        # Build goal message out of goal parts
         goal_msg = self._build_goal_msg(goal_parts_msg)
 
+        # Check if there is a goal
         if goal_msg:
+            # If we have a goal, lets publish it
             self.pub_goal.publish(goal_msg)
 
-        # create line msg
+        # Create line msg
         line_msg = LineInformationInImage()  # Todo: add lines
         line_msg.header.frame_id = image_msg.header.frame_id
         line_msg.header.stamp = image_msg.header.stamp
+
+        # Build a LineSegmentInImage message for each linepoint
         for lp in self.line_detector.get_linepoints():
+            # Create LineSegmentInImage message
             ls = LineSegmentInImage()
             ls.start.x = lp[0]
             ls.start.y = lp[1]
             ls.end = ls.start
             line_msg.segments.append(ls)
+        # Publish lines
         self.pub_lines.publish(line_msg)
 
+        # Publish fcnn output under the field boundary
         if self.ball_fcnn_publish_output and self.config['vision_ball_classifier'] == 'fcnn':
             self.pub_ball_fcnn.publish(self.ball_detector.get_cropped_msg())
 
+        # Publish whole fcnn output
         if self.publish_fcnn_debug_image and self.config['vision_ball_classifier'] == 'fcnn':
             self.pub_debug_fcnn_image.publish(self.ball_detector.get_debug_image())
 
-        # do debug stuff
+        # Check if we should draw debug image
         if self.publish_debug_image:
             #Draw debug image
             debug_image = self._get_debug_image(image)
             # publish debug image
             self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(debug_image, 'bgr8'))
         
+        # Now this is not the first callback anymore
         self._first_callback = False
 
     def _distribute_images(self, image):
+        # Set the image for each detector 
+        # TODO make Subscriber
         self.field_boundary_detector.set_image(image)
         self.obstacle_detector.set_image(image)
         self.red_obstacle_detector.set_image(image)
@@ -211,24 +242,34 @@ class Vision:
         self.runtime_evaluator.set_image()
 
     def _build_goal_msg(self, goal_parts_msg):
+        # Make new goal message
         goal_msg = GoalInImage()
+        # Add header of the goal parts
         goal_msg.header = goal_parts_msg.header
+        # Create goal posts at unrealistic high/low values
         left_post = PostInImage()
         left_post.foot_point.x = 9999999999
         left_post.confidence = 1.0
         right_post = PostInImage()
         right_post.foot_point.x = -9999999999
         right_post.confidence = 1.0
+
+        # Set our posts
         for post in goal_parts_msg.posts:
+            # Decide if its a left post
             if post.foot_point.x < left_post.foot_point.x:
                 left_post = post
                 left_post.confidence = post.confidence
+            # Decide if its a right post
             if post.foot_point.x > right_post.foot_point.x:
                 right_post = post
                 right_post.confidence = post.confidence
+
+        # Set posts in message
         goal_msg.left_post = left_post
         goal_msg.right_post = right_post
         goal_msg.confidence = 1.0
+        # Return message if there are any posts
         if goal_parts_msg.posts:
             return goal_msg
 
