@@ -124,13 +124,17 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
 
     tf2::Vector3 kick_windup_point = calc_kick_windup_point();
 
+    /* build vector of speeds in each direction */
+    double speed_yaw = tf2::getYaw(m_kick_direction);
+    tf2::Vector3 speed_vector(cos(speed_yaw), sin(speed_yaw), 0);
+
     /* Flying foot position */
     m_flying_trajectories->get("pos_x").addPoint(0, flying_foot_pose.position.x);
     m_flying_trajectories->get("pos_x").addPoint(m_phase_timings.move_trunk, 0);
     m_flying_trajectories->get("pos_x").addPoint(m_phase_timings.raise_foot, 0);
     m_flying_trajectories->get("pos_x").addPoint(m_phase_timings.windup, kick_windup_point.x(), 0, 0);
     m_flying_trajectories->get("pos_x").addPoint(m_phase_timings.kick, m_ball_position.x(),
-                                                 m_kick_direction.x() * m_kick_speed, 0);
+                                                 speed_vector.x() * m_kick_speed, 0);
     m_flying_trajectories->get("pos_x").addPoint(m_phase_timings.move_back, 0);
     m_flying_trajectories->get("pos_x").addPoint(m_phase_timings.lower_foot, 0);
     m_flying_trajectories->get("pos_x").addPoint(m_phase_timings.move_trunk_back, 0);
@@ -139,7 +143,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.move_trunk, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.raise_foot, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.windup, kick_windup_point.y(), 0, 0);
-    m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.kick, m_ball_position.y(), m_kick_direction.y() * m_kick_speed, 0);
+    m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.kick, m_ball_position.y(), speed_vector.y() * m_kick_speed, 0);
     m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.move_back, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.lower_foot, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.move_trunk_back, kick_foot_sign * m_params.foot_distance);
