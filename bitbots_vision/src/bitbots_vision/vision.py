@@ -411,7 +411,8 @@ class Vision:
             self.debug_printer
         )
 
-        self.goalpost_detector = obstacle.WhiteObstacleDetector(self.obstacle_detector)
+        if not config['vision_ball_classifier'] in ['yolo_opencv', 'yolo_darknet']:
+            self.goalpost_detector = obstacle.WhiteObstacleDetector(self.obstacle_detector)
         self.red_obstacle_detector = obstacle.RedObstacleDetector(self.obstacle_detector)
         self.blue_obstacle_detector = obstacle.BlueObstacleDetector(self.obstacle_detector)
         self.unknown_obstacle_detector = obstacle.UnknownObstacleDetector(self.obstacle_detector)
