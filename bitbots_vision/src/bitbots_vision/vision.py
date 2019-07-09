@@ -196,6 +196,8 @@ class Vision:
             debug_image = self._get_debug_image(image)
             # publish debug image
             self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(debug_image, 'bgr8'))
+        
+        self._first_callback = False
 
     def _distribute_images(self, image):
         self.field_boundary_detector.set_image(image)
@@ -314,8 +316,6 @@ class Vision:
             (0, 0, 255))
 
         return self.debug_image_drawer.get_image()
-
-        self._first_callback = False
 
     def _conventional_precalculation(self):
         self.obstacle_detector.compute_all_obstacles()
