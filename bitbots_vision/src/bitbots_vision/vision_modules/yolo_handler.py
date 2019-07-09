@@ -5,13 +5,11 @@ import time
 try:
     from pydarknet import Detector, Image
 except:
-    rospy.logerr("Not able to run YOLO! Its only executable under python3 with yolo34py or yolo34py-gpu installed.")
+    rospy.logerr("Not able to run Darknet YOLO! Its only executable under python3 with yolo34py or yolo34py-gpu installed.")
 import numpy as np
 from .candidate import CandidateFinder, Candidate
 
-# todo implement candidate finder
-
-class YoloHandler():
+class YoloHandlerDarknet():
     def __init__(self, config, model_path):
         weightpath = os.path.join(model_path, "yolo_weights.weights")
         configpath = os.path.join(model_path, "config.cfg")
@@ -65,6 +63,89 @@ class YoloHandler():
                 if class_id == b"ball":
                     self.ball_candidates.append(c)
                 if class_id == b"goalpost":
+                    self.goalpost_candidates.append(c)
+
+    def get_candidates(self):
+        self.predict()
+        return [self.ball_candidates, self.goalpost_candidates]
+
+
+class YoloHandlerOpenCV():
+    def __init__(self, config, model_path):
+        weightpath = os.path.join(model_path, "yolo_weights.weights")
+        configpath = os.path.join(model_path, "config.cfg")
+        self.config = config
+        self.classes = ["ball", "goalpost"]
+        self.nms_threshold = 0.4
+        self.confidence_threshold = 0.5
+        self.image = None
+        self.blob = None
+        self.goalpost_candidates = None
+        self.ball_candidates = None
+        self.results = None
+        self.COLORS = np.random.uniform(0, 255, size=(len(self.classes), 3))
+        self.net = cv2.dnn.readNet(weightpath, configpath)
+
+    
+    def get_output_layers(self, net):
+        layer_names = net.getLayerNames()
+
+        output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+
+        return output_layers
+
+    def set_image(self, img):
+        if np.array_equal(img,self.image):
+            return
+        self.image = img
+        self.width = img.shape[1]
+        self.height = img.shape[0]
+        self.blob = cv2.dnn.blobFromImage(img, 0.00392, (416, 416), (0,0,0), True, crop=False)
+        self.outs = None
+        self.goalpost_candidates = None
+        self.ball_candidates = None
+
+
+    def predict(self):
+        if self.outs is None:
+            self.net.setInput(self.blob)
+            self.outs = self.net.forward(self.get_output_layers(self.net))
+            class_ids = []
+            confidences = []
+            boxes = []
+            self.ball_candidates = []
+            self.goalpost_candidates = []
+            for out in self.outs:
+                for detection in out:
+                    scores = detection[5:]
+                    class_id = np.argmax(scores)
+                    confidence = scores[class_id]
+                    if confidence > 0.5:
+                        center_x = int(detection[0] * self.width)
+                        center_y = int(detection[1] * self.height)
+                        w = int(detection[2] * self.width)
+                        h = int(detection[3] * self.height)
+                        x = center_x - w / 2
+                        y = center_y - h / 2
+                        class_ids.append(class_id)
+                        confidences.append(float(confidence))
+                        boxes.append([x, y, w, h])
+
+            indices = cv2.dnn.NMSBoxes(boxes, confidences, self.confidence_threshold, self.nms_threshold)
+
+            for i in indices:
+                i = i[0]
+                box = boxes[i]
+                x = box[0]
+                y = box[1]
+                w = box[2]
+                h = box[3]
+                c = Candidate(x, y, w, h)
+                c.rating = confidences[i]
+                class_id = class_ids[i]
+                if class_id == 0:
+                    self.ball_candidates.append(c)
+                if class_id == 1:
                     self.goalpost_candidates.append(c)
 
     def get_candidates(self):

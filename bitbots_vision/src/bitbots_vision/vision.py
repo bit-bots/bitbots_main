@@ -447,15 +447,18 @@ class Vision:
                 self.ball_fcnn_config,
                 self.debug_printer)
 
-        if config['vision_ball_classifier'] == 'yolo':
+        if config['vision_ball_classifier'] in ['yolo_opencv', 'yolo_darknet']:
             if 'neural_network_model_path' not in self.config or \
                     self.config['neural_network_model_path'] != config['neural_network_model_path'] or \
                     self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
                 yolo_model_path = os.path.join(self.package_path, 'models', config['neural_network_model_path'])
                 if not os.path.exists(yolo_model_path):
                     rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist!')
-                # TODO replace following strings with path to config/weights
-                yolo = yolo_handler.YoloHandler(config, yolo_model_path)
+                
+                if config['vision_ball_classifier'] == 'yolo_opencv':
+                    yolo = yolo_handler.YoloHandlerOpenCV(config, yolo_model_path)
+                else:
+                    yolo = yolo_handler.YoloHandlerDarknet(config, yolo_model_path)
                 self.ball_detector = yolo_handler.YoloBallDetector(yolo)
                 self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
                 rospy.loginfo(config['vision_ball_classifier'] + " vision is running now")
