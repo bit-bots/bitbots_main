@@ -98,3 +98,4 @@ walking:
   publishOdomTF: True
 
   firstStepSwingFactor: 1.0
+  startMovements: 1
