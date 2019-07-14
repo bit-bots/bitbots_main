@@ -9,7 +9,7 @@ from cv_bridge import CvBridge
 from collections import deque
 from sensor_msgs.msg import Image
 from bitbots_msgs.msg import ColorSpace, Config
-from bitbots_vision.vision_modules import field_boundary, color, debug, evaluator
+from bitbots_vision.vision_modules import field_boundary, color, evaluator
 
 class DynamicColorSpace:
     def __init__(self):
@@ -64,9 +64,6 @@ class DynamicColorSpace:
         # Load dict from string in yaml-format in msg.data
         vision_config = yaml.load(msg.data)
 
-        self.debug_printer = debug.DebugPrinter(
-            debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
-                vision_config['vision_debug_printer_classes']))
         self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
         # Print status of dynamic color space after toggeling 'dynamic_color_space_active' parameter
@@ -89,14 +86,12 @@ class DynamicColorSpace:
 
         # Set Color- and FieldBoundaryDetector
         self.color_detector = color.DynamicPixelListColorDetector(
-            self.debug_printer,
             self.package_path,
             vision_config)
 
         self.field_boundary_detector = field_boundary.FieldBoundaryDetector(
             self.color_detector,
             vision_config,
-            self.debug_printer,
             used_by_dyn_color_detector=True)
 
         # Reset queue
@@ -108,11 +103,10 @@ class DynamicColorSpace:
         self.color_value_queue = deque(maxlen=self.queue_max_size)
 
         self.pointfinder = Pointfinder(
-            self.debug_printer,
             vision_config['dynamic_color_space_threshold'],
             vision_config['dynamic_color_space_kernel_radius'])
 
-        self.heuristic = Heuristic(self.debug_printer)
+        self.heuristic = Heuristic()
 
         # Subscribe to Image-message
         if 'ROS_img_msg_topic' not in self.vision_config or \
@@ -150,7 +144,7 @@ class DynamicColorSpace:
         # Drops old images
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 0.1:
-            self.debug_printer.info('Dynamic color space: Dropped Image-message', 'image')
+            rospy.loginfo('Vision: Dropped incoming Image-message', name='bitbots_vision')
             return
 
         self.handle_image(image_msg)
@@ -253,19 +247,16 @@ class DynamicColorSpace:
 
 
 class Pointfinder():
-    def __init__(self, debug_printer, threshold, kernel_radius):
-        # type: (DebugPrinter, float, int) -> None
+    def __init__(self, threshold, kernel_radius):
+        # type: (float, int) -> None
         """
         Pointfinder is used to find false-color pixels with higher true-color / false-color ratio as threshold in their surrounding in masked image.
 
-        :param DebugPrinter: debug-printer
         :param float threshold: necessary amount of previously detected color in percentage
         :param int kernel_radius: radius surrounding the center element of kernel matrix, defines relevant surrounding of pixel
         :return: None
         """
         # Init params
-        self.debug_printer = debug_printer
-
         self.threshold = threshold
 
         self.kernel_radius = kernel_radius
@@ -297,16 +288,14 @@ class Pointfinder():
         return np.array(np.where(sum_array > self.threshold * (self.kernel.size - 1)))
 
 class Heuristic:
-    def __init__(self, debug_printer):
-        # type: (DebugPrinter) -> None
+    def __init__(self):
+        # type: () -> None
         """
         Filters new color space colors according to their position relative to the field boundary.
         Only colors that occur under the field boundary and have no occurrences over the field boundary get picked.
 
-        :param DebugPrinter debug_printer: Debug-printer
         :return: None
         """
-        self.debug_printer = debug_printer
 
     def run(self, color_list, image, mask):
         # type: (np.array, np.array, np.array) -> np.array

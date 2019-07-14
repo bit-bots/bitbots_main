@@ -4,19 +4,17 @@ import rospy
 from sensor_msgs.msg import JointState
 from .color import ColorDetector
 from operator import itemgetter
-from .debug import DebugPrinter
 from .evaluator import RuntimeEvaluator
 
 
 class FieldBoundaryDetector:
 
-    def __init__(self, field_color_detector, config, debug_printer, runtime_evaluator=None, used_by_dyn_color_detector=False):
-        # type: (ColorDetector, dict, DebugPrinter, RuntimeEvaluator, bool) -> None
+    def __init__(self, field_color_detector, config, runtime_evaluator=None, used_by_dyn_color_detector=False):
+        # type: (ColorDetector, dict, RuntimeEvaluator, bool) -> None
         """
         This module can compute different versions of the field boundary.
         :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
-        :param debug_printer: outputs debug messages, necessary only for debug
         :param runtime_evaluator: can be used to compute runtime of methods
         :param used_by_dyn_color_detector: True when FieldBoundaryDetector is used by DynamicColorSpace
         """
@@ -29,7 +27,6 @@ class FieldBoundaryDetector:
         self._convex_field_boundary_full = None
         self._mask = None
         self._field_color_detector = field_color_detector
-        self._debug_printer = debug_printer
         self._runtime_evaluator = runtime_evaluator
         self._used_by_dyn_color_detector = used_by_dyn_color_detector
         # init config:

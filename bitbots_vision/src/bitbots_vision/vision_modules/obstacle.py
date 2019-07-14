@@ -2,7 +2,6 @@ from .candidate import CandidateFinder, Candidate
 from .color import ColorDetector
 from .field_boundary import FieldBoundaryDetector
 from .evaluator import RuntimeEvaluator
-from .debug import DebugPrinter
 import cv2
 import numpy as np
 import rospy
@@ -10,9 +9,8 @@ import rospy
 
 class ObstacleDetector(CandidateFinder):
     def __init__(self, red_color_detector, blue_color_detector, white_color_detector, field_boundary_detector,
-                 runtime_evaluator, config, debug_printer):
-        # type: (ColorDetector, ColorDetector, ColorDetector, FieldBoundaryDetector, RuntimeEvaluator, dict, DebugPrinter) -> None
-        self._debug_printer = debug_printer
+                 runtime_evaluator, config):
+        # type: (ColorDetector, ColorDetector, ColorDetector, FieldBoundaryDetector, RuntimeEvaluator, dict) -> None
         self._red_color_detector = red_color_detector
         self._blue_color_detector = blue_color_detector
         self._white_color_detector = white_color_detector
@@ -167,7 +165,7 @@ class ObstacleDetector(CandidateFinder):
                             y = max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)
                             h = np.round(np.max(full_field_boundary[x:i]) - y)
                             if h < 0:
-                                self._debug_printer.error('negative obstacle height', 'ObstacleDetection')
+                                rospy.logerr('Vision obstacle detection: Negative obstacle height', name='bitbots_vision_obstacle_detection')
                             self._obstacles.append(Candidate(x, y, w, h))
                         obstacle_begin = None
             if obstacle_begin:
@@ -180,7 +178,7 @@ class ObstacleDetector(CandidateFinder):
                     y = max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)  # top
                     h = np.round(np.max(full_field_boundary[x:i]) - y)
                     if h < 0:
-                        self._debug_printer.error('negative obstacle height', 'ObstacleDetection')
+                        rospy.logerr('Vision obstacle detection: Negative obstacle height', name='bitbots_vision_obstacle_detection')
                     self._obstacles.append(Candidate(x, y, w, h))
             # self._runtime_evaluator.stop_timer()  # for runtime testing
             # self._runtime_evaluator.print_timer()  # for runtime testing
@@ -225,7 +223,7 @@ class ObstacleDetector(CandidateFinder):
                     current_max_width = start_max_width + int((full_convex_field_boundary[i] - h) * distance_value_increase)
                     if current_min_width < w < current_max_width:
                         if h < 0:
-                            self._debug_printer.error('negative obstacle height', 'ObstacleDetection')
+                            rospy.logerr('Vision obstacle detection: Negative obstacle height', name='bitbots_vision_obstacle_detection')
                         self._obstacles.append(Candidate(x, y, w, h))
                     obstacle_begin = None
         if obstacle_begin:
@@ -240,7 +238,7 @@ class ObstacleDetector(CandidateFinder):
             current_max_width = start_max_width + int((full_convex_field_boundary[i] - h) * distance_value_increase)
             if current_min_width < w < current_max_width:
                 if h < 0:
-                    self._debug_printer.error('negative obstacle height', 'ObstacleDetection')
+                    rospy.logerr('Vision obstacle detection: Negative obstacle height', name='bitbots_vision_obstacle_detection')
                 self._obstacles.append(Candidate(x, y, w, h))
 
         # self._runtime_evaluator.stop_timer()  # for runtime testing

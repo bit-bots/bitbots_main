@@ -2,7 +2,7 @@ from .candidate import CandidateFinder
 
 
 class DummyClassifier(CandidateFinder):
-    def __init__(self, classifier, stuff, debug_printer):
+    def __init__(self, classifier, stuff):
         self._classified_candidates = []
         self._sorted_candidates = []
         self._top_candidate = None
