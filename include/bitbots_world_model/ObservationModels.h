@@ -11,21 +11,11 @@
 
 
 /**
- * @class MyObservationModel
+ * @class LocalObstacleObservationModel
  *
- * @brief Observation model that measures a MyState.
+ * @brief Observation model that measures a PositionStateW
  *
- * The measurement is made according to the formula
- * \f[
- *     w = \frac{1}{|x^2 - 2|}
- * \f]
- * where x is the variable of MyState and w is the weight that is returned.
- * This is a measure for the distance from x to the squareroot of two. If
- * The distance is low, the returned weight is high.
- *
- * @author Stephan Wirth
- *
- * @brief Test class for ParticleFilter.
+ * @author Niklas Fiedler
  *
  */
 class LocalObstacleObservationModel
@@ -42,20 +32,46 @@ public:
     ~LocalObstacleObservationModel();
 
     /**
+     * Measures the weight of a PositionStateW particle and returns it.
      *
-     * @param state Reference to the state that has to be weightened.
+     * @param state Reference to the particle that has to be weightened.
      * @return weight for the given state.
      */
     double measure(const PositionStateW& state) const;
 
+    /**
+     * Setting the measurements which are used as a base to weight the
+     * particles.
+     *
+     * @param measurement vector of PositionStateW used as mesurement
+     */
     void set_measurement(std::vector<PositionStateW> measurement);
 
+    /**
+     * Sets the minimal weight a particle can have. In case the measured weight
+     * is below that value, it is set to it.
+     *
+     * @param min_weight the minimal weight a particle can have
+     */
     void set_min_weight(double min_weight);
 
+    /**
+     * Returns the minimal weight a particle can have.
+     *
+     * @return the minimal weight a particle can have
+     */
     double get_min_weight() const;
 
+    /**
+     * Clears the list of measurements.
+     */
     void clear_measurement();
 
+    /**
+     * Returns true if the vector of measurements is not empty.
+     *
+     * @return true if the vector of measurements is not empty
+     */
     bool measurements_available();
 
 protected:
@@ -87,12 +103,31 @@ public:
 
     void set_measurement(std::vector<PositionState> measurement);
 
+    /**
+     * Sets the minimal weight a particle can have. In case the measured weight
+     * is below that value, it is set to it.
+     *
+     * @param min_weight the minimal weight a particle can have
+     */
     void set_min_weight(double min_weight);
 
+    /**
+     * Returns the minimal weight a particle can have.
+     *
+     * @return the minimal weight a particle can have
+     */
     double get_min_weight() const;
 
+    /**
+     * Clears the list of measurements.
+     */
     void clear_measurement();
 
+    /**
+     * Returns true if the vector of measurements is not empty.
+     *
+     * @return true if the vector of measurements is not empty
+     */
     bool measurements_available();
 
 protected:
@@ -124,12 +159,31 @@ public:
 
     void set_measurement(std::vector<PositionState> measurement);
 
+    /**
+     * Sets the minimal weight a particle can have. In case the measured weight
+     * is below that value, it is set to it.
+     *
+     * @param min_weight the minimal weight a particle can have
+     */
     void set_min_weight(double min_weight);
 
+    /**
+     * Returns the minimal weight a particle can have.
+     *
+     * @return the minimal weight a particle can have
+     */
     double get_min_weight() const;
 
+    /**
+     * Clears the list of measurements.
+     */
     void clear_measurement();
 
+    /**
+     * Returns true if the vector of measurements is not empty.
+     *
+     * @return true if the vector of measurements is not empty
+     */
     bool measurements_available();
 
 protected:
@@ -161,12 +215,31 @@ public:
 
     void set_measurement(std::vector<PositionState> measurement);
 
+    /**
+     * Sets the minimal weight a particle can have. In case the measured weight
+     * is below that value, it is set to it.
+     *
+     * @param min_weight the minimal weight a particle can have
+     */
     void set_min_weight(double min_weight);
 
+    /**
+     * Returns the minimal weight a particle can have.
+     *
+     * @return the minimal weight a particle can have
+     */
     double get_min_weight() const;
 
+    /**
+     * Clears the list of measurements.
+     */
     void clear_measurement();
 
+    /**
+     * Returns true if the vector of measurements is not empty.
+     *
+     * @return true if the vector of measurements is not empty
+     */
     bool measurements_available();
 
 protected:
@@ -203,14 +276,40 @@ public:
 
     void set_measurement(humanoid_league_msgs::PixelsRelative measurement);
 
-    void set_min_weight(double min_weight);
-
+    /**
+     * Setting the number of measurements in the environment of a particle which
+     * has to be considered in the weighting of a particle.
+     *
+     * @param k the number of measurements in the environment of a particle
+     * which has to be considered
+     */
     void set_k(int k);
 
+    /**
+     * Sets the minimal weight a particle can have. In case the measured weight
+     * is below that value, it is set to it.
+     *
+     * @param min_weight the minimal weight a particle can have
+     */
+    void set_min_weight(double min_weight);
+
+    /**
+     * Returns the minimal weight a particle can have.
+     *
+     * @return the minimal weight a particle can have
+     */
     double get_min_weight() const;
 
+    /**
+     * Clears the list of measurements.
+     */
     void clear_measurement();
 
+    /**
+     * Returns true if the vector of measurements is not empty.
+     *
+     * @return true if the vector of measurements is not empty
+     */
     bool measurements_available();
 
 protected:

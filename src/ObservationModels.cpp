@@ -13,6 +13,7 @@ LocalObstacleObservationModel::measure(const PositionStateW& state) const {
         // on empty measurements.");
         return 1.0;
     }
+    // The maximal value of the measured and the minimal weight.
     return std::max(min_weight_,
             1 / state.calcDistance(*std::min_element(last_measurement_.begin(),
                         last_measurement_.end(),
@@ -55,6 +56,7 @@ double LocalRobotObservationModel::measure(const PositionState& state) const {
         // on empty measurements.");
         return 1.0;
     }
+    // The maximal value of the measured and the minimal weight.
     return std::max(min_weight_,
             1 / state.calcDistance(*std::min_element(last_measurement_.begin(),
                         last_measurement_.end(),
@@ -98,6 +100,7 @@ double GlobalBallObservationModel::measure(const PositionState& state) const {
         // on empty measurements.");
         return 1.0;
     }
+    // The maximal value of the measured and the minimal weight.
     return std::max(min_weight_,
             1 / state.calcDistance(*std::min_element(last_measurement_.begin(),
                         last_measurement_.end(),
@@ -140,6 +143,7 @@ double GlobalRobotObservationModel::measure(const PositionState& state) const {
         // on empty measurements.");
         return 1.0;
     }
+    // The maximal value of the measured and the minimal weight.
     return std::max(min_weight_,
             1 / state.calcDistance(*std::min_element(last_measurement_.begin(),
                         last_measurement_.end(),
@@ -187,16 +191,21 @@ double LocalFcnnObservationModel::measure(const PositionState& state) const {
         weighted_measurements.push_back(WeightedMeasurement{
                 state.calcDistance(measurement), measurement.value});
     }
+    // put k in a appropriate bounds (in case it is larger than the number of
+    // measurements)
     int k = std::min(
             k_, static_cast<int>(
                         weighted_measurements
-                                .size()));  // put k in a appropriate bounds
+                                .size()));
+    // partly sorting the weighted measurements based on their distance so that
+    // the k closest measurements can be selected
     std::nth_element(weighted_measurements.begin(),
             weighted_measurements.begin() + (k - 1),
             weighted_measurements.end(),
             [](WeightedMeasurement& a, WeightedMeasurement& b) {
                 return (a.distance < b.distance);
             });
+    // summing up the weight to the k measurements
     double weighted_weight = 0;
     for (std::vector<WeightedMeasurement>::iterator it =
                     weighted_measurements.begin();
@@ -204,6 +213,7 @@ double LocalFcnnObservationModel::measure(const PositionState& state) const {
         weighted_weight += it->weight / it->distance;
     }
 
+    // The maximal value of the measured and the minimal weight.
     return std::max(min_weight_, weighted_weight);
 }
 

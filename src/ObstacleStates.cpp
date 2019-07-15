@@ -93,7 +93,6 @@ PositionState::renderMarker(PositionState particle_state,
 }
 
 double PositionState::calcDistance(const PositionState& state) const {
-    // TODO
     double diff = std::sqrt(std::pow(getXPos() - state.getXPos(), 2) +
                             std::pow(getYPos() - state.getYPos(), 2));
     if (diff == 0.0) {
@@ -104,7 +103,6 @@ double PositionState::calcDistance(const PositionState& state) const {
 
 double PositionState::calcDistance(
         const humanoid_league_msgs::PixelRelative& pixel) const {
-    // TODO
     double diff = std::sqrt(std::pow(getXPos() - pixel.position.x, 2) +
                             std::pow(getYPos() - pixel.position.y, 2));
     if (diff == 0.0) {
@@ -215,7 +213,6 @@ visualization_msgs::Marker PositionStateW::renderPointsMarker(
 }
 
 double PositionStateW::calcDistance(const PositionStateW& state) const {
-    // TODO
     double diff = std::sqrt(std::pow(getXPos() - state.getXPos(), 2) +
                             std::pow(getYPos() - state.getYPos(), 2));
     if (diff == 0.0) {
@@ -298,7 +295,6 @@ float PoseState::getOrientation() const {
 }
 
 double PoseState::calcDistance(const PoseState& state) const {
-    // TODO
     double diff = std::sqrt(std::pow(getXPos() - state.getXPos(), 2) +
                             std::pow(getYPos() - state.getYPos(), 2));
     if (diff == 0.0) {
