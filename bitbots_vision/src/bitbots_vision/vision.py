@@ -45,6 +45,8 @@ class Vision:
         if self.debug_image_drawer:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
+
+        # Register static publishers
         # Register publisher of 'vision_config'-messages
         # For changes of topic name: also change topic name in dynamic_color_space.py
         self.pub_config = rospy.Publisher(
@@ -87,11 +89,20 @@ class Vision:
         self.field_boundary_detector.set_head_joint_state(headjoint_msg)
 
     def _speak(self, string, speech_publisher):
+        """
+        Sends a speak message and let the robot say the given string.
+        :param string: Text the robot should say
+        :param speech_publisher: ROS publisher for the speech message
+        """
         speak_message = Speak()
         speak_message.text = string
         speech_publisher.publish(speak_message)
 
     def handle_image(self, image_msg):
+        """
+        Runs the vision pipeline
+        :param image_msg: Image message provided by ROS
+        """
         # converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
@@ -185,7 +196,7 @@ class Vision:
         goal_parts_msg.header.stamp = image_msg.header.stamp
 
         # Add detected goal parts to the message
-        goal_parts_msg.posts.extend(self._build_goalpost_msg(self.goalpost_detector.get_candidates()))
+        goal_parts_msg.posts.extend(self._build_goalpost_msgs(self.goalpost_detector.get_candidates()))
 
         # Build goal message out of goal parts
         goal_msg = self._build_goal_msg(goal_parts_msg)
@@ -230,7 +241,10 @@ class Vision:
         self._first_callback = False
 
     def _distribute_images(self, image):
-        # Set the image for each detector 
+        """
+        Set the image for each detector
+        :param image: the current image
+        """
         # TODO make Subscriber
         self.field_boundary_detector.set_image(image)
         self.obstacle_detector.set_image(image)
@@ -242,6 +256,12 @@ class Vision:
         self.runtime_evaluator.set_image()
 
     def _build_goal_msg(self, goal_parts_msg):
+        """
+        Builds a goal message with a right and left post. If there is only one post in the image, the right and left post are the same. 
+        This should be reworked! The vision should only publish posts and e.g. the worldmodel builds a goal out of this context. 
+        :param top_ball_candidate: best rated ball candidate
+        :return: ball msg
+        """
         # Make new goal message
         goal_msg = GoalInImage()
         # Add header of the goal parts
@@ -275,6 +295,12 @@ class Vision:
 
 
     def _build_ball_msg(self, top_ball_candidate):
+        """
+        Builds a ball message
+        :param top_ball_candidate: best rated ball candidate
+        :return: ball msg
+        """
+        # Create a empty ball message
         ball_msg = BallInImage()
         ball_msg.center.x = top_ball_candidate.get_center_x()
         ball_msg.center.y = top_ball_candidate.get_center_y()
@@ -283,9 +309,17 @@ class Vision:
         self.debug_printer.info('found a ball! \o/', 'ball')
         return ball_msg
 
-    def _build_goalpost_msg(self, goalposts):
+    def _build_goalpost_msgs(self, goalposts):
+        """
+        Builds a list of goalpost messages
+        :param goalposts: goalpost candidates 
+        :return: list of goalposts msgs
+        """
+        # Create an empty list of goalposts
         message_list = []
-        for goalpost in goalposts: # self.goalpost_detector.get_candidates():
+        # Iterate over all goalpost candidates 
+        for goalpost in goalposts:
+            # Create a empty post message
             post_msg = PostInImage()
             post_msg.width = goalpost.get_width()
             post_msg.confidence = goalpost.get_rating()
@@ -297,7 +331,9 @@ class Vision:
 
     def _build_obstacle_msgs(self, obstacle_color, detections):
         """
+        Builds a list of obstacles for a certain color
         :param obstacle_color: color of the obstacles
+        :param detections: obstacle candidates 
         :return: list of obstacle msgs
         """
         message_list = []
@@ -314,82 +350,113 @@ class Vision:
         return message_list
 
     def _get_debug_image(self, image):
+        """
+        Draws a debug image
+        :param image: untouched image
+        :return: image with debug annotations
+        """
+        # Submit image to the debug image drawer
         self.debug_image_drawer.set_image(image)
+        # Draw unknown obstacles
         self.debug_image_drawer.draw_obstacle_candidates(
             self.unknown_obstacle_detector.get_candidates(),
             (0, 0, 0),
             thickness=3
         )
+        # Draw red obstacles
         self.debug_image_drawer.draw_obstacle_candidates(
             self.red_obstacle_detector.get_candidates(),
             (0, 0, 255),
             thickness=3
         )
+        # Draw blue obstacles
         self.debug_image_drawer.draw_obstacle_candidates(
             self.blue_obstacle_detector.get_candidates(),
             (255, 0, 0),
             thickness=3
         )            
+        # Draw goal post obstacles
         self.debug_image_drawer.draw_obstacle_candidates(
             self.goalpost_detector.get_candidates(),
             (255, 255, 255),
             thickness=3
         )
+        # Draw field boundary
         self.debug_image_drawer.draw_field_boundary(
             self.field_boundary_detector.get_field_boundary_points(),
             (0, 0, 255))
+        # Draw convex field boundary
         self.debug_image_drawer.draw_field_boundary(
             self.field_boundary_detector.get_convex_field_boundary_points(),
             (0, 255, 255))
+        # Draw all ball candidates
         self.debug_image_drawer.draw_ball_candidates(
             self.ball_detector.get_candidates(),
             (0, 0, 255))
+        # Draw possible ball candidates
         self.debug_image_drawer.draw_ball_candidates(
             self.field_boundary_detector.balls_under_field_boundary(
                 self.ball_detector.get_candidates(),
                 self._ball_candidate_y_offset),
             (0, 255, 255))
-        # draw top candidate in
+        # Draw top ball candidate
         self.debug_image_drawer.draw_ball_candidates([self.top_ball_candidate],
                                                     (0, 255, 0))
-        # draw linepoints in red
+        # Draw linepoints
         self.debug_image_drawer.draw_points(
             self.line_detector.get_linepoints(),
             (0, 0, 255))
 
+        # Return image returned from the debug image drawer
         return self.debug_image_drawer.get_image()
 
     def _conventional_precalculation(self):
+        """
+        Kicks of the conventional calculations
+        """
         self.obstacle_detector.compute_all_obstacles()
         self.line_detector.compute_linepoints()
 
     def _dynamic_reconfigure_callback(self, config, level):
+        """
+        Callback for the dynamic reconfigure configuration. This callback also gets calles for the inertial configuration.
+        :param config: New config
+        :param level: No idea what this is for. I google this if we are landed #TODO
+        """
         self.debug_printer = debug.DebugPrinter(
             debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
                 config['vision_debug_printer_classes']))
+
+        # Inits runtime evaluator 
         self.runtime_evaluator = evaluator.RuntimeEvaluator(self.debug_printer)
 
+        # Set some thresholds
+        # Brightness threshold which determins if the camera cap is on the camera. 
         self._blind_threshold = config['vision_blind_threshold']
+        # Threshold for ball candidates
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
+        # Maximum offset for balls over the convex field boundary
         self._ball_candidate_y_offset = config['vision_ball_candidate_field_boundary_y_offset']
 
+        # Should the debug image be published?
         self.publish_debug_image = config['vision_publish_debug_image']
         if self.publish_debug_image:
             rospy.logwarn('Debug images are enabled')
         else:
             rospy.loginfo('Debug images are disabled')
+
+        # Should the fcnn output (only under the field boundary) be published?
         self.ball_fcnn_publish_output = config['ball_fcnn_publish_output']
         if self.ball_fcnn_publish_output:
             rospy.logwarn('ball FCNN output publishing is enabled')
         else:
             rospy.logwarn('ball FCNN output publishing is disabled')
 
+        # Should the whole fcnn output be published?
         self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
 
-        if config['vision_ball_classifier'] == 'dummy':
-            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, self.debug_printer)
 
-        # Print status of color config
+        # Print if the vision uses the sim color or not (only prints when it changes or its the fist callback)
         if 'vision_use_sim_color' not in self.config or \
             config['vision_use_sim_color'] != self.config['vision_use_sim_color']:
             if config['vision_use_sim_color']:
@@ -397,6 +464,7 @@ class Vision:
             else:
                 rospy.loginfo('Loaded color space for REAL WORLD.')
 
+        # Set the white color detector
         self.white_color_detector = color.HsvSpaceColorDetector(
             self.debug_printer,
             [config['white_color_detector_lower_values_h'], config['white_color_detector_lower_values_s'],
@@ -404,6 +472,7 @@ class Vision:
             [config['white_color_detector_upper_values_h'], config['white_color_detector_upper_values_s'],
              config['white_color_detector_upper_values_v']])
 
+        # Set the red color detector
         self.red_color_detector = color.HsvSpaceColorDetector(
             self.debug_printer,
             [config['red_color_detector_lower_values_h'], config['red_color_detector_lower_values_s'],
@@ -411,6 +480,7 @@ class Vision:
             [config['red_color_detector_upper_values_h'], config['red_color_detector_upper_values_s'],
              config['red_color_detector_upper_values_v']])
 
+        # Set the blue color detector
         self.blue_color_detector = color.HsvSpaceColorDetector(
             self.debug_printer,
             [config['blue_color_detector_lower_values_h'], config['blue_color_detector_lower_values_s'],
@@ -418,24 +488,29 @@ class Vision:
             [config['blue_color_detector_upper_values_h'], config['blue_color_detector_upper_values_s'],
              config['blue_color_detector_upper_values_v']])
 
+        # Check if the dynamic color space field color detector or the static field color detector should be used
         if config['dynamic_color_space_active']:
+            # Set dynamic color space field color detector
             self.field_color_detector = color.DynamicPixelListColorDetector(
                 self.debug_printer,
                 self.package_path,
                 config,
                 primary_detector=True)
         else:
+            # Set the static field color detector
             self.field_color_detector = color.PixelListColorDetector(
                 self.debug_printer,
                 self.package_path,
                 config)
 
+        # Set the field boundary detector
         self.field_boundary_detector = field_boundary.FieldBoundaryDetector(
             self.field_color_detector,
             config,
             self.debug_printer,
             self.runtime_evaluator)
 
+        # Set the line detector
         self.line_detector = lines.LineDetector(
             self.white_color_detector,
             self.field_color_detector,
@@ -443,6 +518,7 @@ class Vision:
             config,
             self.debug_printer)
 
+        # Set the obstacle detector
         self.obstacle_detector = obstacle.ObstacleDetector(
             self.red_color_detector,
             self.blue_color_detector,
@@ -453,11 +529,17 @@ class Vision:
             self.debug_printer
         )
 
+        # If we don't use YOLO set the conventional goalpost detector.
         if not config['vision_ball_classifier'] in ['yolo_opencv', 'yolo_darknet']:
             self.goalpost_detector = obstacle.WhiteObstacleDetector(self.obstacle_detector)
+        # Set the other obstacle detectors
         self.red_obstacle_detector = obstacle.RedObstacleDetector(self.obstacle_detector)
         self.blue_obstacle_detector = obstacle.BlueObstacleDetector(self.obstacle_detector)
         self.unknown_obstacle_detector = obstacle.UnknownObstacleDetector(self.obstacle_detector)
+
+        # If dummy ball detection is activated, set the dummy ballfinder as ball detector
+        if config['vision_ball_classifier'] == 'dummy':
+            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, self.debug_printer)
 
         # set up ball config for fcnn
         # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
@@ -474,142 +556,149 @@ class Vision:
             'publish_field_boundary_offset': config['ball_fcnn_publish_field_boundary_offset'],
         }
 
-        # load fcnn
+        # Check if the fcnn ball detector is activated 
         if config['vision_ball_classifier'] == 'fcnn':
-            if 'neural_network_model_path' not in self.config or \
-                    self.config['neural_network_model_path'] != config['neural_network_model_path'] or \
-                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
+            # Check if its the first callback, the fcnn is newly activated or the model has changed
+            if 'neural_network_model_path' not in self.config or self.config['neural_network_model_path'] != config['neural_network_model_path'] or self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
+                # Build absolute model path
                 ball_fcnn_path = os.path.join(self.package_path, 'models', config['neural_network_model_path'])
+                # Check if it exists
                 if not os.path.exists(ball_fcnn_path):
                     rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
-                self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path, self.debug_printer)
-                rospy.loginfo(config['vision_ball_classifier'] + " vision is running now")
+                else:
+                    self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path, self.debug_printer)
+                    rospy.loginfo("FCNN vision is running now")
             self.ball_detector = fcnn_handler.FcnnHandler(
                 self.ball_fcnn,
                 self.field_boundary_detector,
                 self.ball_fcnn_config,
                 self.debug_printer)
 
+        # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
         if config['vision_ball_classifier'] in ['yolo_opencv', 'yolo_darknet']:
-            if 'neural_network_model_path' not in self.config or \
-                    self.config['neural_network_model_path'] != config['neural_network_model_path'] or \
-                    self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
+            if 'neural_network_model_path' not in self.config or self.config['neural_network_model_path'] != config['neural_network_model_path'] or self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
+                # Build absolute model path
                 yolo_model_path = os.path.join(self.package_path, 'models', config['neural_network_model_path'])
+                # Check if it exists
                 if not os.path.exists(yolo_model_path):
                     rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist!')
-                
-                if config['vision_ball_classifier'] == 'yolo_opencv':
-                    yolo = yolo_handler.YoloHandlerOpenCV(config, yolo_model_path)
                 else:
-                    yolo = yolo_handler.YoloHandlerDarknet(config, yolo_model_path)
-                self.ball_detector = yolo_handler.YoloBallDetector(yolo)
-                self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
-                rospy.loginfo(config['vision_ball_classifier'] + " vision is running now")
+                    # Decide which yolo implementation should be used
+                    if config['vision_ball_classifier'] == 'yolo_opencv':
+                        # Load OpenCV implementation (uses OpenCL)
+                        yolo = yolo_handler.YoloHandlerOpenCV(config, yolo_model_path)
+                    else:
+                        # Load Darknet implementation (uses CUDA)
+                        yolo = yolo_handler.YoloHandlerDarknet(config, yolo_model_path)
+                    # Set both ball and goalpost detector
+                    self.ball_detector = yolo_handler.YoloBallDetector(yolo)
+                    self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
+                    rospy.loginfo(config['vision_ball_classifier'] + " vision is running now")
             
-        # publishers
-
+        # Now register all publishers
         # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!
-        if 'ROS_ball_msg_topic' not in self.config or \
-                self.config['ROS_ball_msg_topic'] != config['ROS_ball_msg_topic']:
-            if hasattr(self, 'pub_balls'):
-                self.pub_balls.unregister()
-            self.pub_balls = rospy.Publisher(
-                config['ROS_ball_msg_topic'],
-                BallsInImage,
-                queue_size=1)
 
-        if 'ROS_line_msg_topic' not in self.config or \
-                self.config['ROS_line_msg_topic'] != config['ROS_line_msg_topic']:
-            if hasattr(self, 'pub_lines'):
-                self.pub_lines.unregister()
-            self.pub_lines = rospy.Publisher(
-                config['ROS_line_msg_topic'],
-                LineInformationInImage,
-                queue_size=5)
+        self._create_or_update_publisher(self.config, config, 'ROS_ball_msg_topic', BallsInImage, self.pub_balls)
 
-        if 'ROS_obstacle_msg_topic' not in self.config or \
-                self.config['ROS_obstacle_msg_topic'] != config['ROS_obstacle_msg_topic']:
-            if hasattr(self, 'pub_obstacle'):
-                self.pub_obstacle.unregister()
-            self.pub_obstacle = rospy.Publisher(
-                config['ROS_obstacle_msg_topic'],
-                ObstaclesInImage,
-                queue_size=3)
+        self._create_or_update_publisher(self.config, config, 'ROS_line_msg_topic', LineInformationInImage, self.pub_lines, queue_size=5)
 
-        if 'ROS_goal_msg_topic' not in self.config or \
-                self.config['ROS_goal_msg_topic'] != config['ROS_goal_msg_topic']:
-            if hasattr(self, 'pub_goal'):
-                self.pub_goal.unregister()
-            self.pub_goal = rospy.Publisher(
-                config['ROS_goal_msg_topic'],
-                GoalInImage,
-                queue_size=3)
+        self._create_or_update_publisher(self.config, config, 'ROS_obstacle_msg_topic', ObstaclesInImage, self.pub_obstacle, queue_size=3)
 
-        if 'ROS_fcnn_img_msg_topic' not in self.config or \
-                self.config['ROS_fcnn_img_msg_topic'] != config['ROS_fcnn_img_msg_topic']:
-            if hasattr(self, 'pub_ball_fcnn'):
-                self.pub_ball_fcnn.unregister()
-            self.pub_ball_fcnn = rospy.Publisher(
-                config['ROS_fcnn_img_msg_topic'],
-                ImageWithRegionOfInterest,
-                queue_size=1)
+        self._create_or_update_publisher(self.config, config, 'ROS_goal_msg_topic', GoalInImage, self.pub_goal, queue_size=3)
 
-        if 'ROS_debug_image_msg_topic' not in self.config or \
-                self.config['ROS_debug_image_msg_topic'] != config['ROS_debug_image_msg_topic']:
-            if hasattr(self, 'pub_debug_image'):
-                self.pub_debug_image.unregister()
-            self.pub_debug_image = rospy.Publisher(
-                config['ROS_debug_image_msg_topic'],
-                Image,
-                queue_size=1)
+        self._create_or_update_publisher(self.config, config, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest, self.pub_ball_fcnn)
 
-        if 'ROS_debug_fcnn_image_msg_topic' not in self.config or \
-                self.config['ROS_debug_fcnn_image_msg_topic'] != config['ROS_debug_fcnn_image_msg_topic']:
-            if hasattr(self, 'pub_debug_fcnn_image'):
-                self.pub_debug_fcnn_image.unregister()
-            self.pub_debug_fcnn_image = rospy.Publisher(
-                config['ROS_debug_fcnn_image_msg_topic'],
-                Image,
-                queue_size=1)
+        self._create_or_update_publisher(self.config, config, 'ROS_debug_image_msg_topic', Image, self.pub_debug_image)
+
+        self._create_or_update_publisher(self.config, config, 'ROS_debug_fcnn_image_msg_topic', Immessage_typemessage_typeage, self.pub_debug_fcnn_image)
 
         # subscribers
-        if 'ROS_img_msg_topic' not in self.config or \
-                self.config['ROS_img_msg_topic'] != config['ROS_img_msg_topic']:
-            if hasattr(self, 'image_sub'):
-                self.image_sub.unregister()
-            self.image_sub = rospy.Subscriber(
-                config['ROS_img_msg_topic'],
-                Image,
-                self._image_callback,
-                queue_size=config['ROS_img_queue_size'],
-                tcp_nodelay=True,
-                buff_size=60000000)
-            # https://github.com/ros/ros_comm/issues/536
 
+        self._create_or_update_subscriber(self.config, config, 'ROS_img_msg_topic', Image, self.image_sub, self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
+        
+        # TODO replace with transform from basefootprint to camera_optical_frame
         # subscriber for the vertical position of the head, used by the dynamic field-boundary-detector
-        if 'ROS_head_joint_msg_topic' not in self.config or \
-                self.config['ROS_head_joint_msg_topic'] != config['ROS_head_joint_msg_topic']:
-            if hasattr(self, 'head_sub'):
-                self.head_sub.unregister()
-            self.head_sub = rospy.Subscriber(
-                config['ROS_head_joint_msg_topic'],
-                JointState,
-                self._head_joint_state_callback,
-                queue_size=config['ROS_head_joint_state_queue_size'],
-                tcp_nodelay=True)
+        self._create_or_update_subscriber(self.config, config, 'ROS_head_joint_msg_topic', JointState, self.head_sub, self._head_joint_state_callback, queue_size=config['ROS_head_joint_state_queue_size'])
 
-        # Publish Config-message
-        # Clean config dict to avoid not dumpable types
-        config_cleaned = {}
-        for key, value in config.items():
-            if type(value) != DynamicReconfigureConfig:
-                config_cleaned[key] = value
-        msg = Config()
-        msg.data = yaml.dump(config_cleaned)
-        self.pub_config.publish(msg)
+        # Publish Config-message (mainly for the dynamic color space node)
+        self._publish_vision_config(config)
 
+        # The old config gets replaced with the new config
         self.config = config
         return config
+
+    def _create_or_update_publisher(self, old_config, new_config, topic_key, message_type, publisher_object, queue_size=1):
+        """
+        Creates or updates an publisher
+        :param old_config: Previous config entries
+        :param new_config: Current config entries
+        :param topic_key: The config key, where the topic name is stored
+        :param message_type: The ROS message type of the topic we want to publish
+        :param publisher_object: The python object, that represents the publisher
+        :param queue_size: The ROS message queue size
+        """
+        # Check if its the first call or the topic changed
+        if topic_key not in old_config or old_config[topic_key] != new_config[topic_key]:
+            # Try to unregister old publishers, this intentionally fails in the first call
+            try:
+                self.publisher_object.unregister()
+            except AttributeError: 
+                pass
+            # Create the new publisher
+            publisher_object = rospy.Publisher(
+                new_config[topic_key],
+                message_type,
+                queue_size)
+            rospy.loginfo("Registered new publisher to " + str(new_config[topic_key]))
+
+    def _create_or_update_subscriber(self, old_config, new_config, topic_key, message_type, subscriber_object, callback, queue_size=1, buff_size=65536):
+        """
+        Creates or updates an subscriber
+        :param old_config: Previous config entries
+        :param new_config: Current config entries
+        :param topic_key: The config key, where the topic name is stored
+        :param message_type: The ROS message type of the topic we want to subscribe
+        :param subscriber_object: The python object, that represents the subscriber
+        :param callback: The subscriber callback function
+        :param queue_size: The ROS message queue size
+        :param buff_size: The ROS message buffer size
+        """
+        # Check if its the first call or the topic changed
+        if topic_key not in old_config or old_config[topic_key] != new_config[topic_key]:
+            # Try to unregister old subscribers, this intentionally fails in the first call
+            try:
+                self.subscriber_object.unregister()
+            except AttributeError: 
+                pass
+            # Create the new subscriber
+            self.image_sub = rospy.Subscriber(
+                config[topic_key],
+                message_type,
+                callback,
+                queue_size=queue_size,
+                tcp_nodelay=True,
+                buff_size=buff_size)
+
+    def _publish_vision_config(self, config):
+        """
+        Publishes the given config. 
+        :param config: A vision config
+        """
+        # Clean config dict to avoid not dumpable types
+        config_cleaned = {}
+        # Iterate over all config keys and values
+        for key, value in config.items():
+            # Check if the value is dumpable
+            if type(value) != DynamicReconfigureConfig:
+                config_cleaned[key] = value
+        # Create new config message
+        msg = Config()
+        # The message contains a string. So the config gets serialized and send as string
+        msg.data = yaml.dump(config_cleaned)
+        # Publish config
+        self.pub_config.publish(msg)
+            
+            
 
 if __name__ == '__main__':
     Vision()
