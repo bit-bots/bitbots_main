@@ -41,6 +41,19 @@ class Vision:
         # the head_joint_states is used by the dynamic field_boundary detector
         self.head_joint_state = None
 
+        # Publisher placeholder
+        self.pub_balls = None
+        self.pub_lines = None
+        self.pub_obstacle = None
+        self.pub_goal = None
+        self.pub_ball_fcnn = None
+        self.pub_debug_image = None
+        self.pub_debug_fcnn_image = None
+
+        # Subsciber placeholder
+        self.image_sub = None
+        self.head_sub = None
+
         self.debug_image_drawer = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_drawer:
             self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
@@ -598,27 +611,27 @@ class Vision:
         # Now register all publishers
         # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!
 
-        self._create_or_update_publisher(self.config, config, 'ROS_ball_msg_topic', BallsInImage, self.pub_balls)
+        self.pub_balls = self._create_or_update_publisher(self.config, config, 'ROS_ball_msg_topic', BallsInImage, self.pub_balls)
 
-        self._create_or_update_publisher(self.config, config, 'ROS_line_msg_topic', LineInformationInImage, self.pub_lines, queue_size=5)
+        self.pub_lines = self._create_or_update_publisher(self.config, config, 'ROS_line_msg_topic', LineInformationInImage, self.pub_lines, queue_size=5)
 
-        self._create_or_update_publisher(self.config, config, 'ROS_obstacle_msg_topic', ObstaclesInImage, self.pub_obstacle, queue_size=3)
+        self.pub_obstacle = self._create_or_update_publisher(self.config, config, 'ROS_obstacle_msg_topic', ObstaclesInImage, self.pub_obstacle, queue_size=3)
 
-        self._create_or_update_publisher(self.config, config, 'ROS_goal_msg_topic', GoalInImage, self.pub_goal, queue_size=3)
+        self.pub_goal = self._create_or_update_publisher(self.config, config, 'ROS_goal_msg_topic', GoalInImage, self.pub_goal, queue_size=3)
 
-        self._create_or_update_publisher(self.config, config, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest, self.pub_ball_fcnn)
+        self.pub_ball_fcnn = self._create_or_update_publisher(self.config, config, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest, self.pub_ball_fcnn)
 
-        self._create_or_update_publisher(self.config, config, 'ROS_debug_image_msg_topic', Image, self.pub_debug_image)
+        self.pub_debug_image = self._create_or_update_publisher(self.config, config, 'ROS_debug_image_msg_topic', Image, self.pub_debug_image)
 
-        self._create_or_update_publisher(self.config, config, 'ROS_debug_fcnn_image_msg_topic', Immessage_typemessage_typeage, self.pub_debug_fcnn_image)
+        self.pub_debug_fcnn_image = self._create_or_update_publisher(self.config, config, 'ROS_debug_fcnn_image_msg_topic', Image, self.pub_debug_fcnn_image)
 
         # subscribers
 
-        self._create_or_update_subscriber(self.config, config, 'ROS_img_msg_topic', Image, self.image_sub, self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
+        self.image_sub = self._create_or_update_subscriber(self.config, config, 'ROS_img_msg_topic', Image, self.image_sub, self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
         
         # TODO replace with transform from basefootprint to camera_optical_frame
         # subscriber for the vertical position of the head, used by the dynamic field-boundary-detector
-        self._create_or_update_subscriber(self.config, config, 'ROS_head_joint_msg_topic', JointState, self.head_sub, self._head_joint_state_callback, queue_size=config['ROS_head_joint_state_queue_size'])
+        self.head_sub = self._create_or_update_subscriber(self.config, config, 'ROS_head_joint_msg_topic', JointState, self.head_sub, self._head_joint_state_callback, queue_size=config['ROS_head_joint_state_queue_size'])
 
         # Publish Config-message (mainly for the dynamic color space node)
         self._publish_vision_config(config)
@@ -636,20 +649,20 @@ class Vision:
         :param message_type: The ROS message type of the topic we want to publish
         :param publisher_object: The python object, that represents the publisher
         :param queue_size: The ROS message queue size
+        :return: adjusted publisher object
         """
         # Check if its the first call or the topic changed
         if topic_key not in old_config or old_config[topic_key] != new_config[topic_key]:
-            # Try to unregister old publishers, this intentionally fails in the first call
-            try:
-                self.publisher_object.unregister()
-            except AttributeError: 
-                pass
+            # Check if an publisher exists and unregister him
+            if publisher_object is not None:
+                publisher_object.unregister()
             # Create the new publisher
             publisher_object = rospy.Publisher(
                 new_config[topic_key],
                 message_type,
                 queue_size)
             rospy.loginfo("Registered new publisher to " + str(new_config[topic_key]))
+        return publisher_object
 
     def _create_or_update_subscriber(self, old_config, new_config, topic_key, message_type, subscriber_object, callback, queue_size=1, buff_size=65536):
         """
@@ -662,22 +675,22 @@ class Vision:
         :param callback: The subscriber callback function
         :param queue_size: The ROS message queue size
         :param buff_size: The ROS message buffer size
+        :return: adjusted subscriber object
         """
         # Check if its the first call or the topic changed
         if topic_key not in old_config or old_config[topic_key] != new_config[topic_key]:
-            # Try to unregister old subscribers, this intentionally fails in the first call
-            try:
-                self.subscriber_object.unregister()
-            except AttributeError: 
-                pass
+            # Check if an subsciber exists and unregister him
+            if subscriber_object is not None:
+                subscriber_object.unregister()
             # Create the new subscriber
-            self.image_sub = rospy.Subscriber(
-                config[topic_key],
+            subscriber_object = rospy.Subscriber(
+                new_config[topic_key],
                 message_type,
                 callback,
                 queue_size=queue_size,
                 tcp_nodelay=True,
                 buff_size=buff_size)
+        return subscriber_object
 
     def _publish_vision_config(self, config):
         """
