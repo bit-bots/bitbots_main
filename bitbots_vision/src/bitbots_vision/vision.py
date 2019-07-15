@@ -119,6 +119,10 @@ class Vision:
         # converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
+        # Skip if image is None
+        if image is None:
+            return
+
         # Check if its the first callback
         if self._first_callback:
             # Calc the mean brightness of the image to detect forgotten camera caps
@@ -628,7 +632,7 @@ class Vision:
         # subscribers
 
         self.image_sub = self._create_or_update_subscriber(self.config, config, 'ROS_img_msg_topic', Image, self.image_sub, self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
-        
+
         # TODO replace with transform from basefootprint to camera_optical_frame
         # subscriber for the vertical position of the head, used by the dynamic field-boundary-detector
         self.head_sub = self._create_or_update_subscriber(self.config, config, 'ROS_head_joint_msg_topic', JointState, self.head_sub, self._head_joint_state_callback, queue_size=config['ROS_head_joint_state_queue_size'])
@@ -660,7 +664,7 @@ class Vision:
             publisher_object = rospy.Publisher(
                 new_config[topic_key],
                 message_type,
-                queue_size)
+                queue_size=queue_size)
             rospy.loginfo("Registered new publisher to " + str(new_config[topic_key]))
         return publisher_object
 
