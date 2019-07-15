@@ -580,8 +580,8 @@ class Vision:
                 # Build absolute model path
                 ball_fcnn_path = os.path.join(self.package_path, 'models', config['neural_network_model_path'])
                 # Check if it exists
-                if not os.path.exists(ball_fcnn_path):
-                    rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist!')
+                if not os.path.exists(os.path.join(ball_fcnn_path, "model_final.index")):
+                    rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist! Maybe its a YOLO model? Look twice.')
                 else:
                     self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path, self.debug_printer)
                     rospy.loginfo("FCNN vision is running now")
@@ -597,8 +597,8 @@ class Vision:
                 # Build absolute model path
                 yolo_model_path = os.path.join(self.package_path, 'models', config['neural_network_model_path'])
                 # Check if it exists
-                if not os.path.exists(yolo_model_path):
-                    rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist!')
+                if not os.path.exists(os.path.join(yolo_model_path, "yolo_weights.weights")):
+                    rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist! Maybe its an fcnn model?')
                 else:
                     # Decide which yolo implementation should be used
                     if config['vision_ball_classifier'] == 'yolo_opencv':
@@ -611,6 +611,7 @@ class Vision:
                     self.ball_detector = yolo_handler.YoloBallDetector(yolo)
                     self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
                     rospy.loginfo(config['vision_ball_classifier'] + " vision is running now")
+
             
         # Now register all publishers
         # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!
@@ -694,6 +695,7 @@ class Vision:
                 queue_size=queue_size,
                 tcp_nodelay=True,
                 buff_size=buff_size)
+            rospy.loginfo("Registered new subscriber at " + str(new_config[topic_key]))
         return subscriber_object
 
     def _publish_vision_config(self, config):
