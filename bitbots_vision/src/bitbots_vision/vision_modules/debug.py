@@ -67,33 +67,3 @@ class DebugImage:
         """
         cv2.imshow('Debug Image', self.raw_image)
         cv2.waitKey(1)
-
-
-class DebugPrinter:
-    def __init__(self, debug_classes=None):
-        self._debug_classes = [debug_class.lower() for debug_class in debug_classes]
-        self._all = 'all' in debug_classes
-
-    def set_debug_classes(self, debug_classes):
-        self._debug_classes = [debug_class.lower() for debug_class in debug_classes]
-        self._all = 'all' in debug_classes
-        self.info('reset debug_classes to: ' + str(debug_classes) + '.', 'debug')
-
-    def info(self, message, debug_class=''):
-        if self._all or debug_class in self._debug_classes:
-            rospy.loginfo(debug_class + ': ' + str(message))
-
-    def warn(self, message, debug_class=''):
-        if self._all or debug_class in self._debug_classes:
-            rospy.logwarn(debug_class + ': ' + str(message))
-
-    def error(self, message, debug_class=''):
-        rospy.logerr(debug_class + ': ' + str(message))
-
-    @staticmethod
-    def generate_debug_class_list_from_string(string):
-        return string.replace(' ', '').split(',')
-
-
-
-

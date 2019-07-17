@@ -1,18 +1,17 @@
 
 from .candidate import Candidate
-from .debug import DebugPrinter
+import rospy
 import numpy as np
 import cv2
 
 
 class BallFinder():
-    def __init__(self, cascade, config, debug_printer):
-        # type: (np.matrix, cv2.CascadeClassifier, dict, DebugPrinter) -> None
+    def __init__(self, cascade, config):
+        # type: (np.matrix, cv2.CascadeClassifier, dict) -> None
         self._candidates = None
         self._ball = None
         self._cascade = cascade
         self._image = None
-        self._debug_printer = debug_printer
 
         self._debug = False
 

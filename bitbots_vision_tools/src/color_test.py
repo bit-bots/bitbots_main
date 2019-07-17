@@ -1,7 +1,7 @@
 #! /usr/bin/env python2
 from dynamic_reconfigure.server import Server
 from bitbots_vision_tools.cfg import ColorTestConfig
-from bitbots_vision.vision_modules import color, debug
+from bitbots_vision.vision_modules import color
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import rospy
@@ -40,12 +40,8 @@ class ColorTest:
         self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask_img, '8UC1'))
 
     def _dynamic_reconfigure_callback(self, config, level):
-        self.debug_printer = debug.DebugPrinter(
-            debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
-                config['debug_printer_classes']))
 
         self.color_detector = color.HsvSpaceColorDetector(
-            self.debug_printer,
             (config['lower_values_h'], config['lower_values_s'], config['lower_values_v']),
             (config['upper_values_h'], config['upper_values_s'], config['upper_values_v']))
 

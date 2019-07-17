@@ -1,6 +1,4 @@
 #color_test_params:
-debug_printer_classes: 'color_tester'
-
 #field_color_detector:
 path: '/config/testfield_color01.yaml'
 

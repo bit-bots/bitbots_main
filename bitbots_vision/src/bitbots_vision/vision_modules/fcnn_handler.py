@@ -8,7 +8,6 @@ import itertools
 import random
 import rospy
 from .live_fcnn_03 import FCNN03
-from .debug import DebugPrinter
 
 
 class FcnnHandler(CandidateFinder):
@@ -31,7 +30,7 @@ class FcnnHandler(CandidateFinder):
         publish_field_boundary_offset: 5
     """
 
-    def __init__(self, fcnn, field_boundary_detector, config, debug_printer):
+    def __init__(self, fcnn, field_boundary_detector, config):
         self._image = None
         self._fcnn = fcnn
         self._field_boundary_detector = field_boundary_detector
@@ -39,7 +38,6 @@ class FcnnHandler(CandidateFinder):
         self._sorted_rated_candidates = None
         self._top_candidate = None
         self._fcnn_output = None
-        self._debug_printer = debug_printer
         self.bridge = CvBridge()
         # init config
         self.set_config(config)
@@ -113,11 +111,11 @@ class FcnnHandler(CandidateFinder):
         When you use it once, use it all the time.
         :return: the candidate with the highest rating (candidate)
         """
-        self._debug_printer.info('get top candidate compute', 'fcnn')
+        rospy.logdebug('Vision FCNN handler: get top candidate compute', name='bitbots_vision_fcnn')
         start = cv2.getTickCount()
         self.compute_top_candidate()
         end = cv2.getTickCount()
-        self._debug_printer.info('->' + str((end - start) / cv2.getTickFrequency()), 'fcnn')
+        rospy.logdebug('Vision FCNN handler: ->' + str((end - start) / cv2.getTickFrequency()), name='bitbots_vision_fcnn')
         if self._top_candidate:
             return self._top_candidate[0]
         return None
@@ -150,18 +148,18 @@ class FcnnHandler(CandidateFinder):
         start = cv2.getTickCount()
         out = self.get_fcnn_output()
         end = cv2.getTickCount()
-        self._debug_printer.info('Net:' + str((end - start) / cv2.getTickFrequency()), 'fcnn')
+        rospy.logdebug('Vision FCNN handler: Net:' + str((end - start) / cv2.getTickFrequency()), name='bitbots_vision_fcnn')
         start = cv2.getTickCount()
         r, out_bin = cv2.threshold(out, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         tuple_candidates = VisionExtensions.findSpots(out_bin, self._pointcloud_stepsize, self._expand_stepsize, self._candidate_refinement_iteration_count)
         candidates = list()
-        self._debug_printer.info(len(tuple_candidates), 'fcnn')
+        rospy.logdebug.info('Vision FCNN handler: ' + str(len(tuple_candidates)), name='bitbots_vision_fcnn')
         for candidate in tuple_candidates:
             # calculate final width and height
             width, height = candidate[0] - candidate[1], candidate[3] - candidate[2]
             candidates.append(Candidate(candidate[1], candidate[2], width, height))
         end = cv2.getTickCount()
-        self._debug_printer.info('Cluster:' + str((end - start) / cv2.getTickFrequency()), 'fcnn')
+        rospy.logdebug.info('Vision FCNN handler: Cluster:' + str((end - start) / cv2.getTickFrequency()), name='bitbots_vision_fcnn')
         return candidates
 
     def _get_raw_candidates(self):

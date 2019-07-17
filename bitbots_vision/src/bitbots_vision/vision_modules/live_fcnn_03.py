@@ -1,14 +1,12 @@
 import os
 import tensorflow as tf
 import rospy
-from .debug import DebugPrinter
 
 
 class FCNN03:
 
-    def __init__(self, load_path, debug_printer):
+    def __init__(self, load_path):
         rospy.loginfo("setting up ball detection: FCNN03")
-        self._debug_printer = debug_printer
 
         self._load_path = os.path.join(load_path, "model_final")
 

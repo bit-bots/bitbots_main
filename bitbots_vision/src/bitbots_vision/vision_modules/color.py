@@ -11,7 +11,6 @@ from collections import deque
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from bitbots_msgs.msg import ColorSpace
-from .debug import DebugPrinter
 
 
 class ColorDetector(object):
@@ -21,15 +20,13 @@ class ColorDetector(object):
     or to create masked binary images.
     """
 
-    def __init__(self, debug_printer):
-        # type: (DebugPrinter) -> None
+    def __init__(self):
+        # type: () -> None
         """
         Initialization of ColorDetector.
 
-        :param DebugPrinter debug_printer: debug-printer
         :return: None
         """
-        self._debug_printer = debug_printer
         pass
 
     @abc.abstractmethod
@@ -103,17 +100,16 @@ class HsvSpaceColorDetector(ColorDetector):
     HsvSpaceColorDetector is a ColorDetector, that is based on the HSV-color space.
     The HSV-color space is adjustable by setting min- and max-values for hue, saturation and value.
     """
-    def __init__(self, debug_printer, min_vals, max_vals):
-        # type: (DebugPrinter, tuple[int, int, int], tuple[int, int, int]) -> None
+    def __init__(self, min_vals, max_vals):
+        # type: (tuple[int, int, int], tuple[int, int, int]) -> None
         """
         Initialization of HsvSpaceColorDetector.
 
-        :param DebugPrinter debug_printer: debug-printer
         :param tuple min_vals: a tuple of the minimal accepted hsv-values
         :param tuple max_vals: a tuple of the maximal accepted hsv-values
         :return: None
         """
-        super(HsvSpaceColorDetector, self).__init__(debug_printer)
+        super(HsvSpaceColorDetector, self).__init__()
         self.min_vals = np.array(min_vals)
         self.max_vals = np.array(max_vals)
 
@@ -194,17 +190,16 @@ class PixelListColorDetector(ColorDetector):
         'field_color_detector_path'
     """
 
-    def __init__(self, debug_printer, package_path, config):
-        # type:(DebugPrinter, str, dict, bool) -> None
+    def __init__(self, package_path, config):
+        # type:(str, dict, bool) -> None
         """
         Initialization of PixelListColorDetector.
 
-        :param DebugPrinter debug_printer: debug-printer
         :param str package_path: path of package
         :param dict config: vision config
         :return: None
         """
-        super(PixelListColorDetector, self).__init__(debug_printer)
+        super(PixelListColorDetector, self).__init__()
         self.bridge = CvBridge()
 
         self.config = config
@@ -238,7 +233,7 @@ class PixelListColorDetector(ColorDetector):
                 try:
                     color_values = yaml.safe_load(stream)
                 except yaml.YAMLError as exc:
-                    self._debug_printer.error(exc, 'PixelListColorDetector')
+                    rospy.logerr('Vision color detector: ' + exc, name='bitbots_vision_color_detector')
                     # TODO: what now??? Handle the error?
 
         # pickle-file is stored as '.txt'
@@ -247,7 +242,7 @@ class PixelListColorDetector(ColorDetector):
                 with open(color_path, 'rb') as f:
                     color_values = pickle.load(f)
             except pickle.PickleError as exc:
-                self._debug_printer.error(exc, 'PixelListColorDetector')
+                rospy.logerr('Vision color detector: ' + exc, name='bitbots_vision_color_detector')
             
         # compatibility with colorpicker
         if 'color_values' in color_values.keys():
@@ -302,12 +297,11 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         'ROS_dynamic_color_space_field_mask_image_msg_topic'-messages
     """
 
-    def __init__(self, debug_printer, package_path, config, primary_detector=False):
-        # type:(DebugPrinter, str, dict, bool) -> None
+    def __init__(self, package_path, config, primary_detector=False):
+        # type:(str, dict, bool) -> None
         """
         Initialization of DynamicPixelListColorDetector.
 
-        :param DebugPrinter debug_printer: debug-printer
         :param str package_path: path of package
         :param dict config: vision config
         :param bool primary_detector: true if is primary color detector
@@ -315,7 +309,7 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
             This allows publishing of field mask images.
         :return: None
         """
-        super(DynamicPixelListColorDetector, self).__init__(debug_printer, package_path, config)
+        super(DynamicPixelListColorDetector, self).__init__(package_path, config)
 
         self.primary_detector = primary_detector
 

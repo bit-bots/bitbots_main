@@ -1,7 +1,6 @@
 from .candidate import Candidate, CandidateFinder
 from .obstacle import ObstacleDetector
 from .color import ColorDetector
-from .debug import DebugPrinter
 
 from VisionExtensions import expandPoint
 
@@ -11,13 +10,12 @@ class ObstaclePostDetector(CandidateFinder):
     searches goalposts based on the obstacle detector.
     """
 
-    def __init__(self, obstacle_detector, white_color_detector, config, debug_printer):
-        # type: (ObstacleDetector, ColorDetector, dict, DebugPrinter) -> None
+    def __init__(self, obstacle_detector, white_color_detector, config):
+        # type: (ObstacleDetector, ColorDetector, dict) -> None
         self._obstacle_detector = obstacle_detector
         self._white_color_detector = white_color_detector
         self._expand_stepsize = config['expand_stepsize']
         self._white_threshold = config['white_threshold']
-        self._debug_printer = debug_printer
 
         self._white_masked_image = None
         self._image = None

@@ -4,15 +4,14 @@ from random import randint
 from .field_boundary import FieldBoundaryDetector
 from .candidate import Candidate
 from .color import ColorDetector
-from .debug import DebugPrinter
 import math
 import numpy as np
 import cv2
 
 
 class LineDetector:
-    def __init__(self, white_detector, field_color_detector, field_boundary_detector, config, debug_printer):
-        # type: (ColorDetector, ColorDetector, FieldBoundaryDetector, dict, DebugPrinter) -> None
+    def __init__(self, white_detector, field_color_detector, field_boundary_detector, config):
+        # type: (ColorDetector, ColorDetector, FieldBoundaryDetector, dict) -> None
         self._image = None
         self._preprocessed_image = None
         self._linepoints = None
@@ -21,7 +20,6 @@ class LineDetector:
         self._white_detector = white_detector
         self._field_color_detector = field_color_detector
         self._field_boundary_detector = field_boundary_detector
-        self._debug_printer = debug_printer
         # init config
         self._field_boundary_offset = config['line_detector_field_boundary_offset']
         self._linepoints_range = config['line_detector_linepoints_range']

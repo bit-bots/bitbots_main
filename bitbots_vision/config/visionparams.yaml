@@ -58,7 +58,6 @@ vision_parallelize: true
 vision_use_sim_color: false
 vision_ball_candidate_field_boundary_y_offset: 0
 vision_ball_candidate_rating_threshold: 0.5
-vision_debug_printer_classes: ''
 vision_blind_threshold: 30
 
 line_detector_field_boundary_offset: 15

@@ -88,7 +88,7 @@ class Vision:
         # drops old images and cleans up queue
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 1.0:
-            self.debug_printer.info('Vision: Dropped Image-message', 'image')
+            rospy.loginfo('Vision: Dropped incoming Image-message', name='bitbots_vision')
             return
 
         self.handle_image(image_msg)
@@ -323,7 +323,6 @@ class Vision:
         ball_msg.center.y = top_ball_candidate.get_center_y()
         ball_msg.diameter = top_ball_candidate.get_diameter()
         ball_msg.confidence = top_ball_candidate.get_rating()
-        self.debug_printer.info('found a ball! \o/', 'ball')
         return ball_msg
 
     def _build_goalpost_msgs(self, goalposts):
@@ -440,12 +439,10 @@ class Vision:
         :param config: New config
         :param level: No idea what this is for. I google this if we are landed #TODO
         """
-        self.debug_printer = debug.DebugPrinter(
-            debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
-                config['vision_debug_printer_classes']))
 
         # Inits runtime evaluator 
         self.runtime_evaluator = evaluator.RuntimeEvaluator(self.debug_printer)
+        self.runtime_evaluator = evaluator.RuntimeEvaluator()
 
         # Set some thresholds
         # Brightness threshold which determins if the camera cap is on the camera. 
@@ -483,7 +480,6 @@ class Vision:
 
         # Set the white color detector
         self.white_color_detector = color.HsvSpaceColorDetector(
-            self.debug_printer,
             [config['white_color_detector_lower_values_h'], config['white_color_detector_lower_values_s'],
              config['white_color_detector_lower_values_v']],
             [config['white_color_detector_upper_values_h'], config['white_color_detector_upper_values_s'],
@@ -491,7 +487,6 @@ class Vision:
 
         # Set the red color detector
         self.red_color_detector = color.HsvSpaceColorDetector(
-            self.debug_printer,
             [config['red_color_detector_lower_values_h'], config['red_color_detector_lower_values_s'],
              config['red_color_detector_lower_values_v']],
             [config['red_color_detector_upper_values_h'], config['red_color_detector_upper_values_s'],
@@ -499,7 +494,6 @@ class Vision:
 
         # Set the blue color detector
         self.blue_color_detector = color.HsvSpaceColorDetector(
-            self.debug_printer,
             [config['blue_color_detector_lower_values_h'], config['blue_color_detector_lower_values_s'],
              config['blue_color_detector_lower_values_v']],
             [config['blue_color_detector_upper_values_h'], config['blue_color_detector_upper_values_s'],
@@ -509,14 +503,12 @@ class Vision:
         if config['dynamic_color_space_active']:
             # Set dynamic color space field color detector
             self.field_color_detector = color.DynamicPixelListColorDetector(
-                self.debug_printer,
                 self.package_path,
                 config,
                 primary_detector=True)
         else:
             # Set the static field color detector
             self.field_color_detector = color.PixelListColorDetector(
-                self.debug_printer,
                 self.package_path,
                 config)
 
@@ -524,7 +516,6 @@ class Vision:
         self.field_boundary_detector = field_boundary.FieldBoundaryDetector(
             self.field_color_detector,
             config,
-            self.debug_printer,
             self.runtime_evaluator)
 
         # Set the line detector
@@ -532,8 +523,7 @@ class Vision:
             self.white_color_detector,
             self.field_color_detector,
             self.field_boundary_detector,
-            config,
-            self.debug_printer)
+            config)
 
         # Set the obstacle detector
         self.obstacle_detector = obstacle.ObstacleDetector(
@@ -542,9 +532,7 @@ class Vision:
             self.white_color_detector,
             self.field_boundary_detector,
             self.runtime_evaluator,
-            config,
-            self.debug_printer
-        )
+            config)
 
         # If we don't use YOLO set the conventional goalpost detector.
         if not config['vision_ball_classifier'] in ['yolo_opencv', 'yolo_darknet']:
@@ -556,7 +544,7 @@ class Vision:
 
         # If dummy ball detection is activated, set the dummy ballfinder as ball detector
         if config['vision_ball_classifier'] == 'dummy':
-            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None, self.debug_printer)
+            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None)
 
         # set up ball config for fcnn
         # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
@@ -583,13 +571,12 @@ class Vision:
                 if not os.path.exists(os.path.join(ball_fcnn_path, "model_final.index")):
                     rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist! Maybe its a YOLO model? Look twice.')
                 else:
-                    self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path, self.debug_printer)
+                    self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
                     rospy.loginfo("FCNN vision is running now")
             self.ball_detector = fcnn_handler.FcnnHandler(
                 self.ball_fcnn,
                 self.field_boundary_detector,
-                self.ball_fcnn_config,
-                self.debug_printer)
+                self.ball_fcnn_config)
 
         # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
         if config['vision_ball_classifier'] in ['yolo_opencv', 'yolo_darknet']:
