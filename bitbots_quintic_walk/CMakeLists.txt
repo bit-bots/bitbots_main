@@ -64,8 +64,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 
 set(SOURCES
-    src/QuinticWalk/Footstep.cpp
-    src/QuinticWalk/WalkEngine.cpp
+        src/Footstep.cpp
+        src/WalkEngine.cpp
     src/QuinticWalkingNode.cpp
     src/TrajectoryUtils.cpp
 )
@@ -81,7 +81,7 @@ add_library(${PROJECT_NAME} ${SOURCES})
 
 add_executable(QuinticWalkingNode
         src/QuinticWalkingNode.cpp
-    src/QuinticWalk/WalkEngine.cpp
+        src/WalkEngine.cpp
 )
 
 add_dependencies(QuinticWalkingNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
