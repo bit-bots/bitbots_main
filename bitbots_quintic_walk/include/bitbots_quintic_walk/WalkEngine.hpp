@@ -9,7 +9,7 @@ https://github.com/Rhoban/model/
 #include <algorithm>
 #include <Eigen/Dense>
 #include "Footstep.hpp"
-#include "bitbots_splines/TrajectoryUtils.h"
+#include "bitbots_quintic_walk/TrajectoryUtils.h"
 #include <tf/transform_datatypes.h>
 #include <Eigen/Dense>
 #include <tf_conversions/tf_eigen.h>
@@ -229,7 +229,7 @@ namespace bitbots_quintic_walk {
          * Generated half walk 
          * cycle trajectory
          */
-        bitbots_splines::Trajectories _trajs;
+        Trajectories _trajs;
 
         void updatePhase(double dt);
 
@@ -262,4 +262,5 @@ namespace bitbots_quintic_walk {
     };
 
 }
+
 #endif

@@ -66,7 +66,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(SOURCES
     src/QuinticWalk/Footstep.cpp
     src/QuinticWalk/WalkEngine.cpp
-    src/QuinticWalkingNode.cpp    
+    src/QuinticWalkingNode.cpp
+    src/TrajectoryUtils.cpp
 )
 
 
