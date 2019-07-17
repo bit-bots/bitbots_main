@@ -56,7 +56,7 @@ class Vision:
 
         self.debug_image_drawer = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_drawer:
-            self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
+            self.runtime_evaluator = evaluator.RuntimeEvaluator()
 
 
         # Register static publishers
@@ -441,7 +441,6 @@ class Vision:
         """
 
         # Inits runtime evaluator 
-        self.runtime_evaluator = evaluator.RuntimeEvaluator(self.debug_printer)
         self.runtime_evaluator = evaluator.RuntimeEvaluator()
 
         # Set some thresholds
@@ -564,9 +563,9 @@ class Vision:
         # Check if the fcnn ball detector is activated 
         if config['vision_ball_classifier'] == 'fcnn':
             # Check if its the first callback, the fcnn is newly activated or the model has changed
-            if 'neural_network_model_path' not in self.config or self.config['neural_network_model_path'] != config['neural_network_model_path'] or self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
+            if 'fcnn_model_path' not in self.config or self.config['fcnn_model_path'] != config['fcnn_model_path'] or self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
                 # Build absolute model path
-                ball_fcnn_path = os.path.join(self.package_path, 'models', config['neural_network_model_path'])
+                ball_fcnn_path = os.path.join(self.package_path, 'models', config['fcnn_model_path'])
                 # Check if it exists
                 if not os.path.exists(os.path.join(ball_fcnn_path, "model_final.index")):
                     rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist! Maybe its a YOLO model? Look twice.')
@@ -580,9 +579,9 @@ class Vision:
 
         # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
         if config['vision_ball_classifier'] in ['yolo_opencv', 'yolo_darknet']:
-            if 'neural_network_model_path' not in self.config or self.config['neural_network_model_path'] != config['neural_network_model_path'] or self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
+            if 'yolo_model_path' not in self.config or self.config['yolo_model_path'] != config['yolo_model_path'] or self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
                 # Build absolute model path
-                yolo_model_path = os.path.join(self.package_path, 'models', config['neural_network_model_path'])
+                yolo_model_path = os.path.join(self.package_path, 'models', config['yolo_model_path'])
                 # Check if it exists
                 if not os.path.exists(os.path.join(yolo_model_path, "yolo_weights.weights")):
                     rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist! Maybe its an fcnn model?')
