@@ -153,13 +153,13 @@ class FcnnHandler(CandidateFinder):
         r, out_bin = cv2.threshold(out, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         tuple_candidates = VisionExtensions.findSpots(out_bin, self._pointcloud_stepsize, self._expand_stepsize, self._candidate_refinement_iteration_count)
         candidates = list()
-        rospy.logdebug.info('Vision FCNN handler: ' + str(len(tuple_candidates)), name='bitbots_vision_fcnn')
+        rospy.logdebug('Vision FCNN handler: ' + str(len(tuple_candidates)), name='bitbots_vision_fcnn')
         for candidate in tuple_candidates:
             # calculate final width and height
             width, height = candidate[0] - candidate[1], candidate[3] - candidate[2]
             candidates.append(Candidate(candidate[1], candidate[2], width, height))
         end = cv2.getTickCount()
-        rospy.logdebug.info('Vision FCNN handler: Cluster:' + str((end - start) / cv2.getTickFrequency()), name='bitbots_vision_fcnn')
+        rospy.logdebug('Vision FCNN handler: Cluster:' + str((end - start) / cv2.getTickFrequency()), name='bitbots_vision_fcnn')
         return candidates
 
     def _get_raw_candidates(self):
