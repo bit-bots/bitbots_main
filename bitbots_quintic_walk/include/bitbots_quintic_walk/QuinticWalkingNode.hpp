@@ -47,7 +47,6 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
-
     class QuinticWalkingNode {
     public:
         QuinticWalkingNode();
@@ -60,6 +59,10 @@ namespace bitbots_quintic_walk {
 
         /**
          * Dynamic reconfigure callback. Takes in new parameters and applies them to the needed software parts
+         * @param config New configuration
+         * @param level Number which represents which classes of configuration options were changed.
+         *      Each parameter can be defined with a level in the .cfg file. The levels of all changed values then
+         *      get bitwise ORed and passed to this callback
          */
         void reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level);
 
@@ -69,13 +72,19 @@ namespace bitbots_quintic_walk {
         void initializeEngine();
 
     private:
+        /**
+         * Publish bitbots_msgs/JointCommand message to the correct topic
+         * @param joint_names Names of joints which should be set to new positions
+         * @param positions Target positions of the previously mentioned joints
+         */
         void publishControllerCommands(std::vector<std::string> joint_names, std::vector<double> positions);
 
         void publishDebug(tf::Transform &trunk_to_support_foot, tf::Transform &trunk_to_flying_foot);
 
-        void
-        publishMarker(std::string name_space, std::string frame, geometry_msgs::Pose pose, float r, float g, float b,
-                      float a);
+        void publishMarker(std::string name_space,
+                           std::string frame,
+                           geometry_msgs::Pose pose,
+                           float r, float g, float b, float a);
 
         void publishMarkers();
 
@@ -97,7 +106,9 @@ namespace bitbots_quintic_walk {
 
         void cop_r_cb(const geometry_msgs::PointStamped msg);
 
-
+        /**
+         * This method computes the next motor goals and publishes them.
+         */
         void calculateJointGoals();
 
         double getTimeDelta();

@@ -113,10 +113,6 @@ namespace bitbots_quintic_walk {
     }
 
     void QuinticWalkingNode::calculateJointGoals() {
-        /*
-        This method computes the next motor goals and publishes them.
-        */
-
         // read the cartesian positions and orientations for trunk and fly foot
         _walkEngine.computeCartesianPosition(_trunkPos, _trunkAxis, _footPos, _footAxis, _isLeftSupport);
 
@@ -173,7 +169,6 @@ namespace bitbots_quintic_walk {
             std::chrono::time_point<std::chrono::steady_clock> current_time = std::chrono::steady_clock::now();
             // only take real time difference if walking was not stopped before
             // using c++ time since it is more performant than ros time. We only need a local difference, so it doesnt matter as long as we are not simulating
-            // TODO Is this really necessary?
             auto time_diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - _last_update_time);
             dt = time_diff_ms.count() / 1000.0;
             if (dt == 0) {
@@ -740,10 +735,9 @@ namespace bitbots_quintic_walk {
         _pubDebug.publish(msg);
     }
 
-    void
-    QuinticWalkingNode::publishMarker(std::string name_space, std::string frame, geometry_msgs::Pose pose, float r,
-                                      float g,
-                                      float b, float a) {
+    void QuinticWalkingNode::publishMarker(std::string name_space,
+                                           std::string frame,
+                                           geometry_msgs::Pose pose, float r, float g, float b, float a) {
         visualization_msgs::Marker marker_msg;
         marker_msg.header.stamp = ros::Time::now();
         marker_msg.header.frame_id = frame;
