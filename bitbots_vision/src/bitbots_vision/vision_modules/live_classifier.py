@@ -9,7 +9,7 @@ class LiveClassifier(object):
     def __init__(self, load_path):
         """
         Constructor
-        
+
         :param load_path: path (str) where data should be loaded from
         """
         if load_path[-1] != "/":

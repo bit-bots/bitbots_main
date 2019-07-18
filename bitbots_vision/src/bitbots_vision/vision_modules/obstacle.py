@@ -38,7 +38,7 @@ class ObstacleDetector(CandidateFinder):
         self._other_obstacles = None
 
     def set_image(self, image):
-        if np.array_equal(image,self._image):
+        if np.array_equal(image, self._image):
             return
         self._image = image
         self._blue_mask = None
@@ -66,7 +66,6 @@ class ObstacleDetector(CandidateFinder):
                 self._obstacles = self._obstacle_detector_step()
 
         return self._obstacles
-
 
     def _obstacle_detector_step(self):
         # type: () -> list[Candidate]
@@ -98,9 +97,7 @@ class ObstacleDetector(CandidateFinder):
                                     0,
                                     obstacle_begin[1] - self._candidate_field_boundary_offset),
                                 b[0] - obstacle_begin[0],
-                                a[1] - max(
-                                           0,
-                                           obstacle_begin[1] - self._candidate_field_boundary_offset)
+                                a[1] - max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)
                             )
                         )
                         obstacle_begin = None
@@ -113,9 +110,7 @@ class ObstacleDetector(CandidateFinder):
                             0,
                             obstacle_begin[1] - self._candidate_field_boundary_offset),
                         b[0] - obstacle_begin[0],
-                        a[1] - max(
-                                   0,
-                                   obstacle_begin[1] - self._candidate_field_boundary_offset)
+                        a[1] - max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)
                     )
                 )
             # self._runtime_evaluator.stop_timer()  # for runtime testing
@@ -143,7 +138,7 @@ class ObstacleDetector(CandidateFinder):
             full_field_boundary = np.array(self._field_boundary_detector.get_full_field_boundary()).astype(int)
             # calculates the distance between the points of the full_field_boundary and full_convex_field_boundary
             # field_boundary_distance is a list of distances with the index being the corresponding x-coordinate
-            field_boundary_distance = full_field_boundary-full_convex_field_boundary
+            field_boundary_distance = full_field_boundary - full_convex_field_boundary
             # threshold determines the minimum distance of the two field_boundarys for an object to be found
             # minWidth determines the minimum width of potential objects to be identified as candidates
             # step is the length of one step in pixel: lager step -> faster, but more inaccurate
@@ -160,7 +155,7 @@ class ObstacleDetector(CandidateFinder):
                     if field_boundary_distance[i] < threshold:  # found end of obstacle
                         # candidate(x upper left point, y upper left point, width, height)
                         x = obstacle_begin[0]
-                        w = i-x
+                        w = i - x
                         if w > min_width:
                             y = max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)
                             h = np.round(np.max(full_field_boundary[x:i]) - y)
@@ -229,7 +224,7 @@ class ObstacleDetector(CandidateFinder):
         if obstacle_begin:
             # obstacle began but never ended (problematic edge-case):
             # candidate(x upper left point, y upper left point, width, height)
-            i = pic_width-step  # we have to reinitialise i because it was only usable in the for-loop
+            i = pic_width - step  # we have to reinitialise i because it was only usable in the for-loop
             x = obstacle_begin[0]
             w = i - x  # calculating width of the object
             y = max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)  # top
@@ -332,7 +327,7 @@ class RedObstacleDetector(CandidateFinder):
     def get_candidates(self):
         return self.obstacle_detector.get_red_obstacles()
 
-    def get_top_candidates(self, count = 1):
+    def get_top_candidates(self, count=1):
         candidates = self.get_candidates()
         candidates = Candidate.sort_candidates(candidates)
         return candidates[:count]
@@ -349,7 +344,7 @@ class BlueObstacleDetector(CandidateFinder):
     def get_candidates(self):
         return self.obstacle_detector.get_blue_obstacles()
 
-    def get_top_candidates(self, count = 1):
+    def get_top_candidates(self, count=1):
         candidates = self.get_candidates()
         candidates = Candidate.sort_candidates(candidates)
         return candidates[:count]
@@ -366,7 +361,7 @@ class WhiteObstacleDetector(CandidateFinder):
     def get_candidates(self):
         return self.obstacle_detector.get_white_obstacles()
 
-    def get_top_candidates(self, count = 1):
+    def get_top_candidates(self, count=1):
         candidates = self.get_candidates()
         candidates = Candidate.sort_candidates(candidates)
         return candidates[:count]
@@ -382,7 +377,7 @@ class UnknownObstacleDetector(CandidateFinder):
     def get_candidates(self):
         return self.obstacle_detector.get_other_obstacles()
 
-    def get_top_candidates(self, count = 1):
+    def get_top_candidates(self, count=1):
         candidates = self.get_candidates()
         candidates = Candidate.sort_candidates(candidates)
         return candidates[:count]

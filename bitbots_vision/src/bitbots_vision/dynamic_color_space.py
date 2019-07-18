@@ -16,7 +16,7 @@ class DynamicColorSpace:
         # type: () -> None
         """
         DynamicColorSpace is a ROS node, that is used by the vision node to better recognize the field color.
-        DynamicColorSpace is able to calculate dynamically changing color spaces to accommodate e.g. 
+        DynamicColorSpace is able to calculate dynamically changing color spaces to accommodate e.g.
         changing lighting conditions or to compensate for not optimized base color space files.
 
         This node subscribes to an Image-message (default: image_raw) and to the 'vision_config'-message.
@@ -68,7 +68,7 @@ class DynamicColorSpace:
 
         # Print status of dynamic color space after toggeling 'dynamic_color_space_active' parameter
         if 'dynamic_color_space_active' not in self.vision_config or \
-            vision_config['dynamic_color_space_active'] != self.vision_config['dynamic_color_space_active']:
+                vision_config['dynamic_color_space_active'] != self.vision_config['dynamic_color_space_active']:
             if vision_config['dynamic_color_space_active']:
                 rospy.loginfo('Dynamic color space turned ON.')
             else:
@@ -130,7 +130,7 @@ class DynamicColorSpace:
         This method is called by the Image-message subscriber.
         Old Image-messages were dropped.
 
-        Sometimes the queue gets to large, even when the size is limeted to 1. 
+        Sometimes the queue gets to large, even when the size is limeted to 1.
         That's, why we drop old images manually.
 
         :param Image image_msg: new Image-message from Image-message subscriber
@@ -138,11 +138,11 @@ class DynamicColorSpace:
         """
         # Turn off dynamic color space, if parameter of config is false
         if 'dynamic_color_space_active' not in self.vision_config or \
-            not self.vision_config['dynamic_color_space_active']:
+                not self.vision_config['dynamic_color_space_active']:
             return
 
         # Drops old images
-        image_age = rospy.get_rostime() - image_msg.header.stamp 
+        image_age = rospy.get_rostime() - image_msg.header.stamp
         if image_age.to_sec() > 0.1:
             rospy.loginfo('Vision: Dropped incoming Image-message', name='bitbots_vision')
             return
@@ -218,10 +218,10 @@ class DynamicColorSpace:
         :return np.array: color space
         """
         # Initializes an empty color space
-        color_space = np.array([]).reshape(0,3)
+        color_space = np.array([]).reshape(0, 3)
         # Stack every color space in the queue
         for new_color_value_list in queue:
-            color_space = np.append(color_space, new_color_value_list[:,:], axis=0)
+            color_space = np.append(color_space, new_color_value_list[:, :], axis=0)
         # Return a color space, which contains all colors from the queue
         return color_space
 
@@ -239,9 +239,9 @@ class DynamicColorSpace:
         color_space_msg = ColorSpace()
         color_space_msg.header.frame_id = image_msg.header.frame_id
         color_space_msg.header.stamp = image_msg.header.stamp
-        color_space_msg.blue  = color_space[:,0].tolist()
-        color_space_msg.green = color_space[:,1].tolist()
-        color_space_msg.red   = color_space[:,2].tolist()
+        color_space_msg.blue  = color_space[:, 0].tolist()
+        color_space_msg.green = color_space[:, 1].tolist()
+        color_space_msg.red   = color_space[:, 2].tolist()
         # Publish ColorSpace-message
         self.pub_color_space.publish(color_space_msg)
 
@@ -313,7 +313,7 @@ class Heuristic:
         color_set = set(color_list)
         # Generates whitelist
         whitelist = self.recalculate(image, mask)
-        # Takes only whitelisted values 
+        # Takes only whitelisted values
         color_set = color_set.intersection(whitelist)
         # Restructures the color channels
         return self.deserialize(np.array(list(color_set)))
@@ -351,7 +351,7 @@ class Heuristic:
         Calculates unique color for an input image.
 
         :param np.array image: image
-        :return np.array: unique colors 
+        :return np.array: unique colors
         """
         # Simplifies the handling by merging the 3 color channels
         serialized_img = self.serialize(np.reshape(image, (1, int(image.size / 3), 3))[0])
@@ -367,8 +367,8 @@ class Heuristic:
         :return: list of serialized colors
         """
         return np.array(
-            np.multiply(input_matrix[:, 0], 256 ** 2) \
-            + np.multiply(input_matrix[:, 1], 256) \
+            np.multiply(input_matrix[:, 0], 256 ** 2)
+            + np.multiply(input_matrix[:, 1], 256)
             + input_matrix[:, 2], dtype=np.int32)
 
     def deserialize(self, input_matrix):

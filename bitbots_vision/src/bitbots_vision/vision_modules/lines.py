@@ -95,7 +95,7 @@ class LineDetector:
 
                 if not in_candidate and under_field_boundary:
                     self._linesegments.append((x1, y1, x2, y2))
-            
+
         return self._linesegments
 
     def _get_preprocessed_image(self):

@@ -4,7 +4,7 @@ import rospy
 import time
 try:
     from pydarknet import Detector, Image
-except:
+except ImportError:
     rospy.logerr("Not able to run Darknet YOLO! Its only executable under python3 with yolo34py or yolo34py-gpu installed.")
 import numpy as np
 from .candidate import CandidateFinder, Candidate
@@ -20,8 +20,7 @@ class YoloHandlerDarknet():
 
         self.config = config
 
-        self.net = Detector(bytes(configpath, encoding="utf-8"), bytes(weightpath, encoding="utf-8"), 0.5,
-                       bytes(datapath, encoding="utf-8"))
+        self.net = Detector(bytes(configpath, encoding="utf-8"), bytes(weightpath, encoding="utf-8"), 0.5, bytes(datapath, encoding="utf-8"))
         self.classes = ["ball", "goalpost"]
         self.image = None
         self.results = None
@@ -34,14 +33,13 @@ class YoloHandlerDarknet():
             f.write(obj_data)
 
     def set_image(self, img):
-        if np.array_equal(img,self.image):
+        if np.array_equal(img, self.image):
             return
         self.image = img
-        self.results =  None
+        self.results = None
         self.image = img
         self.goalpost_candidates = None
         self.ball_candidates = None
-
 
     def predict(self):
         if self.results is None:
@@ -96,16 +94,15 @@ class YoloHandlerOpenCV():
         return output_layers
 
     def set_image(self, img):
-        if np.array_equal(img,self.image):
+        if np.array_equal(img, self.image):
             return
         self.image = img
         self.width = img.shape[1]
         self.height = img.shape[0]
-        self.blob = cv2.dnn.blobFromImage(img, 0.00392, (416, 416), (0,0,0), True, crop=False)
+        self.blob = cv2.dnn.blobFromImage(img, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
         self.outs = None
         self.goalpost_candidates = None
         self.ball_candidates = None
-
 
     def predict(self):
         if self.outs is None:
@@ -164,7 +161,7 @@ class YoloBallDetector(CandidateFinder):
     def get_candidates(self):
         return self.yolo.get_candidates()[0]
 
-    def get_top_candidates(self, count = 1):
+    def get_top_candidates(self, count=1):
         ball_candidates = self.get_candidates()
         ball_candidates = Candidate.sort_candidates(ball_candidates)
         return ball_candidates[:count]
@@ -183,7 +180,7 @@ class YoloGoalpostDetector(CandidateFinder):
     def get_candidates(self):
         return self.yolo.get_candidates()[1]
 
-    def get_top_candidates(self, count = 1):
+    def get_top_candidates(self, count=1):
         ball_candidates = self.get_candidates()
         ball_candidates = Candidate.sort_candidates(ball_candidates)
         return ball_candidates[:count]

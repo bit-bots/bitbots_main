@@ -39,13 +39,10 @@ class FCNN03:
         # init network & load weights
         self._initialize_network()
 
-
     def predict(self, batch):
-        res = self.session.run(self._fcnn_out,
-                                feed_dict={self.X: batch, self._keep_prob: 1.0})
+        res = self.session.run(self._fcnn_out, feed_dict={self.X: batch, self._keep_prob: 1.0})
 
         return res
-
 
     def _initialize_network(self):
         config = tf.ConfigProto()
@@ -58,7 +55,6 @@ class FCNN03:
         rospy.loginfo("loading weights from '{}'...".format(self._load_path))
         self.saver.restore(self.session, self._load_path)
         rospy.loginfo("loaded successfully.")
-
 
     def _fcnn_model(self):
         with tf.variable_scope("conv", dtype=tf.float32):
@@ -131,7 +127,6 @@ class FCNN03:
                 out = tf.nn.relu(out)
                 out = tf.nn.dropout(out, keep_prob=self._keep_prob)
                 # 38x50x64
-
 
             #################
             # Decoding part #

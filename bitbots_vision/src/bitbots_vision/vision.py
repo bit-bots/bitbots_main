@@ -62,7 +62,6 @@ class Vision:
             # TODO Evaluate removing of runtime eval
             self.runtime_evaluator = evaluator.RuntimeEvaluator()
 
-
         # Register static publishers
         # Register publisher of 'vision_config'-messages
         # For changes of topic name: also change topic name in dynamic_color_space.py
@@ -86,17 +85,17 @@ class Vision:
         This method is called by the Image-message subscriber.
         Old Image-messages were dropped.
 
-        Sometimes the queue gets to large, even when the size is limeted to 1. 
+        Sometimes the queue gets to large, even when the size is limeted to 1.
         That's, why we drop old images manually.
         """
         # drops old images and cleans up queue
-        image_age = rospy.get_rostime() - image_msg.header.stamp 
+        image_age = rospy.get_rostime() - image_msg.header.stamp
         if image_age.to_sec() > 1.0:
             rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message', name='bitbots_vision')
             return
-            
+
         self.handle_image(image_msg)
-    
+
     def _head_joint_state_callback(self, headjoint_msg):
         # type: (JointState) -> None
         """
@@ -200,13 +199,13 @@ class Vision:
         obstacles_msg.header.stamp = image_msg.header.stamp
 
         # Add red obstacles
-        obstacles_msg.obstacles.extend( Vision._build_obstacle_msgs(ObstacleInImage.ROBOT_MAGENTA,
+        obstacles_msg.obstacles.extend(Vision._build_obstacle_msgs(ObstacleInImage.ROBOT_MAGENTA,
                                         self.red_obstacle_detector.get_candidates()))
         # Add blue obstacles
-        obstacles_msg.obstacles.extend( Vision._build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN,
+        obstacles_msg.obstacles.extend(Vision._build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN,
                                         self.blue_obstacle_detector.get_candidates()))
         # Add UFO's (Undefined Found Obstacles)
-        obstacles_msg.obstacles.extend( Vision._build_obstacle_msgs(ObstacleInImage.UNDEFINED,
+        obstacles_msg.obstacles.extend(Vision._build_obstacle_msgs(ObstacleInImage.UNDEFINED,
                                         self.unknown_obstacle_detector.get_candidates()))
 
         # Publish obstacles
@@ -255,11 +254,11 @@ class Vision:
 
         # Check if we should draw debug image
         if self.publish_debug_image:
-            #Draw debug image
+            # Draw debug image
             debug_image = self._get_debug_image(image)
             # publish debug image
             self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(debug_image, 'bgr8'))
-        
+
         # Now this is not the first callback anymore
         self._first_callback = False
 
@@ -281,8 +280,8 @@ class Vision:
     @staticmethod
     def _build_goal_msg(goal_parts_msg):
         """
-        Builds a goal message with a right and left post. If there is only one post in the image, the right and left post are the same. 
-        This should be reworked! The vision should only publish posts and e.g. the worldmodel builds a goal out of this context. 
+        Builds a goal message with a right and left post. If there is only one post in the image, the right and left post are the same.
+        This should be reworked! The vision should only publish posts and e.g. the worldmodel builds a goal out of this context.
         :param top_ball_candidate: best rated ball candidate
         :return: ball msg
         """
@@ -336,12 +335,12 @@ class Vision:
     def _build_goalpost_msgs(goalposts):
         """
         Builds a list of goalpost messages
-        :param goalposts: goalpost candidates 
+        :param goalposts: goalpost candidates
         :return: list of goalposts msgs
         """
         # Create an empty list of goalposts
         message_list = []
-        # Iterate over all goalpost candidates 
+        # Iterate over all goalpost candidates
         for goalpost in goalposts:
             # Create a empty post message
             post_msg = PostInImage()
@@ -358,18 +357,18 @@ class Vision:
         """
         Builds a list of obstacles for a certain color
         :param obstacle_color: color of the obstacles
-        :param detections: obstacle candidates 
+        :param detections: obstacle candidates
         :return: list of obstacle msgs
         """
         message_list = []
-        for obstacle in detections:
+        for detected_obstacle in detections:
             obstacle_msg = ObstacleInImage()
             obstacle_msg.color = obstacle_color
-            obstacle_msg.top_left.x = obstacle.get_upper_left_x()
-            obstacle_msg.top_left.y = obstacle.get_upper_left_y()
-            obstacle_msg.height = int(obstacle.get_height())
-            obstacle_msg.width = int(obstacle.get_width())
-            obstacle_msg.confidence = obstacle.get_rating()
+            obstacle_msg.top_left.x = detected_obstacle.get_upper_left_x()
+            obstacle_msg.top_left.y = detected_obstacle.get_upper_left_y()
+            obstacle_msg.height = int(detected_obstacle.get_height())
+            obstacle_msg.width = int(detected_obstacle.get_width())
+            obstacle_msg.confidence = detected_obstacle.get_rating()
             obstacle_msg.playerNumber = 42
             message_list.append(obstacle_msg)
         return message_list
@@ -399,7 +398,7 @@ class Vision:
             self.blue_obstacle_detector.get_candidates(),
             (255, 0, 0),
             thickness=3
-        )            
+        )
         # Draw goal post obstacles
         self.debug_image_drawer.draw_obstacle_candidates(
             self.goalpost_detector.get_candidates(),
@@ -425,8 +424,9 @@ class Vision:
                 self._ball_candidate_y_offset),
             (0, 255, 255))
         # Draw top ball candidate
-        self.debug_image_drawer.draw_ball_candidates([self.top_ball_candidate],
-                                                    (0, 255, 0))
+        self.debug_image_drawer.draw_ball_candidates(
+            [self.top_ball_candidate],
+            (0, 255, 0))
         # Draw linepoints
         self.debug_image_drawer.draw_points(
             self.line_detector.get_linepoints(),
@@ -449,11 +449,11 @@ class Vision:
         :param level: No idea what this is for. I google this if we are landed #TODO
         """
 
-        # Inits runtime evaluator 
+        # Inits runtime evaluator
         self.runtime_evaluator = evaluator.RuntimeEvaluator()
 
         # Set some thresholds
-        # Brightness threshold which determins if the camera cap is on the camera. 
+        # Brightness threshold which determins if the camera cap is on the camera.
         self._blind_threshold = config['vision_blind_threshold']
         # Threshold for ball candidates
         self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
@@ -477,10 +477,9 @@ class Vision:
         # Should the whole fcnn output be published?
         self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
 
-
         # Print if the vision uses the sim color or not (only prints when it changes or its the fist callback)
         if 'vision_use_sim_color' not in self.config or \
-            config['vision_use_sim_color'] != self.config['vision_use_sim_color']:
+                config['vision_use_sim_color'] != self.config['vision_use_sim_color']:
             if config['vision_use_sim_color']:
                 rospy.logwarn('Loaded color space for SIMULATOR.')
             else:
@@ -489,12 +488,12 @@ class Vision:
         # Set the white color detector
         self.white_color_detector = color.HsvSpaceColorDetector(
             [
-                config['white_color_detector_lower_values_h'], 
+                config['white_color_detector_lower_values_h'],
                 config['white_color_detector_lower_values_s'],
                 config['white_color_detector_lower_values_v']
             ],
             [
-                config['white_color_detector_upper_values_h'], 
+                config['white_color_detector_upper_values_h'],
                 config['white_color_detector_upper_values_s'],
                 config['white_color_detector_upper_values_v']
             ])
@@ -502,12 +501,12 @@ class Vision:
         # Set the red color detector
         self.red_color_detector = color.HsvSpaceColorDetector(
             [
-                config['red_color_detector_lower_values_h'], 
+                config['red_color_detector_lower_values_h'],
                 config['red_color_detector_lower_values_s'],
                 config['red_color_detector_lower_values_v']
             ],
             [
-                config['red_color_detector_upper_values_h'], 
+                config['red_color_detector_upper_values_h'],
                 config['red_color_detector_upper_values_s'],
                 config['red_color_detector_upper_values_v']
             ])
@@ -515,12 +514,12 @@ class Vision:
         # Set the blue color detector
         self.blue_color_detector = color.HsvSpaceColorDetector(
             [
-                config['blue_color_detector_lower_values_h'], 
+                config['blue_color_detector_lower_values_h'],
                 config['blue_color_detector_lower_values_s'],
                 config['blue_color_detector_lower_values_v']
             ],
             [
-                config['blue_color_detector_upper_values_h'], 
+                config['blue_color_detector_upper_values_h'],
                 config['blue_color_detector_upper_values_s'],
                 config['blue_color_detector_upper_values_v']
             ])
@@ -587,7 +586,7 @@ class Vision:
             'publish_field_boundary_offset': config['ball_fcnn_publish_field_boundary_offset'],
         }
 
-        # Check if the fcnn ball detector is activated 
+        # Check if the fcnn ball detector is activated
         if config['vision_ball_classifier'] == 'fcnn':
             # Check if its the first callback, the fcnn is newly activated or the model has changed
             if 'fcnn_model_path' not in self.config or self.config['fcnn_model_path'] != config['fcnn_model_path'] or self.config['vision_ball_classifier'] != config['vision_ball_classifier']:
@@ -625,9 +624,8 @@ class Vision:
                     self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
                     rospy.loginfo(config['vision_ball_classifier'] + " vision is running now")
 
-            
         # TODO check if a ball detector has been set
-        
+
         # Now register all publishers
         # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!
 
@@ -717,7 +715,7 @@ class Vision:
 
     def _publish_vision_config(self, config):
         """
-        Publishes the given config. 
+        Publishes the given config.
         :param config: A vision config
         """
         # Clean config dict to avoid not dumpable types
@@ -733,8 +731,6 @@ class Vision:
         msg.data = yaml.dump(config_cleaned)
         # Publish config
         self.pub_config.publish(msg)
-            
-            
 
 if __name__ == '__main__':
     Vision()

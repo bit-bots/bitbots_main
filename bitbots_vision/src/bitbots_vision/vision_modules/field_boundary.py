@@ -386,7 +386,7 @@ class FieldBoundaryDetector:
         This is a modified Graham's convex hull algorithm. Instead of returning the list
         of points that form the entire convex hull of the input point set, it returns
         only the "half" of the hull which has the lower y-coordinates and spans between the
-        points with x=0 and x=self._image.shape[1]-1. 
+        points with x=0 and x=self._image.shape[1]-1.
         '''
 
         if len(points) < 3:
@@ -394,13 +394,13 @@ class FieldBoundaryDetector:
             return points
 
         # sort by increasing x-coordinates, then sort points with the same x-coordinate
-        # by increasing y-coordinates 
+        # by increasing y-coordinates
         my_points = sorted(points, key=lambda p: (p[0] + 1) * self._image.shape[1] + p[1])
 
         # take the bottommost point
         p0 = my_points[0]
 
-        # sort the points according to the angle between the vector p0 -> p 
+        # sort the points according to the angle between the vector p0 -> p
         # and the inverted y-axis
         my_points[1:] = sorted(my_points[1:], key=lambda p: self._graham_point_sort(p, p0))
         num_points = len(my_points)
@@ -425,7 +425,7 @@ class FieldBoundaryDetector:
         i = 2
         while (i < num_points) and (stack[-1][0] != self._image.shape[1] - 1):
 
-            #  
+            #
             # uncomment to show debug output (perform the algorithm step by step):
             # (used for the images in the paper)
 
@@ -478,7 +478,7 @@ class FieldBoundaryDetector:
 
     def _ccw(self, p1, p2, p3):
         '''
-        returns whether the given points p1, p2 and p3 are 
+        returns whether the given points p1, p2 and p3 are
         counter-clockwise (returns a value > 0)
         clockwise (returns a value < 0) or
         collinear (returns 0) to each other

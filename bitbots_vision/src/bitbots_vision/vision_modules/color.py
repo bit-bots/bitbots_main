@@ -243,19 +243,17 @@ class PixelListColorDetector(ColorDetector):
                     color_values = pickle.load(f)
             except pickle.PickleError as exc:
                 rospy.logerr('Vision color detector: ' + exc, name='bitbots_vision_color_detector')
-            
+
         # compatibility with colorpicker
         if 'color_values' in color_values.keys():
             color_values = color_values['color_values']['greenField']
         length = len(color_values['red'])
         if length == len(color_values['green']) and \
-                        length == len(color_values['blue']):
+                length == len(color_values['blue']):
             # setting colors from yaml file to True in color space
             for x in range(length):
-                color_space[color_values['blue'][x],
-                                color_values['green'][x],
-                                color_values['red'][x]] = 1
-        return color_space  
+                color_space[color_values['blue'][x], color_values['green'][x], color_values['red'][x]] = 1
+        return color_space
 
     def match_pixel(self, pixel):
         # type: (np.array) -> bool
@@ -278,7 +276,7 @@ class PixelListColorDetector(ColorDetector):
         """
         mask = VisionExtensions.maskImg(image, self.color_space)
 
-        # toggle publishing of 'field_mask'-messages   
+        # toggle publishing of 'field_mask'-messages
         if self.config['vision_publish_field_mask_image']:
             self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask, '8UC1'))
 
@@ -293,7 +291,7 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
     The color space is represented by boolean-values for RGB-color-values.
 
     Subscribes to: 'ROS_dynamic_color_space_msg_topic'
-    Publishes: 'ROS_field_mask_image_msg_topic' and 
+    Publishes: 'ROS_field_mask_image_msg_topic' and
         'ROS_dynamic_color_space_field_mask_image_msg_topic'-messages
     """
 
@@ -317,7 +315,7 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
 
         # toggle publishing of mask_img msg
         self.publish_field_mask_img_msg = self.config['vision_publish_field_mask_image']
-        
+
         # toggle publishing of mask_img_dyn msg with dynamic color space
         self.publish_dyn_field_mask_msg = self.config['dynamic_color_space_publish_field_mask_image']
 
@@ -352,8 +350,8 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         # toggle publishing of dynamic field masks
         if (self.primary_detector and self.publish_dyn_field_mask_msg):
             self.imagepublisher_dyn.publish(self.bridge.cv2_to_imgmsg(dyn_mask, '8UC1'))
-  
-        # toggle publishing of field masks       
+
+        # toggle publishing of field masks
         if (self.primary_detector and self.publish_field_mask_img_msg):
             self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(static_mask, '8UC1'))
 
