@@ -88,9 +88,9 @@ class Vision:
         # drops old images and cleans up queue
         image_age = rospy.get_rostime() - image_msg.header.stamp 
         if image_age.to_sec() > 1.0:
-            rospy.loginfo('Vision: Dropped incoming Image-message', name='bitbots_vision')
+            rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message', name='bitbots_vision')
             return
-
+            
         self.handle_image(image_msg)
 
     def _head_joint_state_callback(self, headjoint_msg):
@@ -153,8 +153,6 @@ class Vision:
 
         # TODO: handle all ball candidates
 
-        #"""
-
         # Grab ball candidates from ball detector
         ball_candidates = self.ball_detector.get_candidates()
 
@@ -206,7 +204,7 @@ class Vision:
         # Publish obstacles
         self.pub_obstacle.publish(obstacles_msg)
 
-        # Areate goalparts msg
+        # Create goalparts msg
         goal_parts_msg = GoalPartsInImage()
         # Add header
         goal_parts_msg.header.frame_id = image_msg.header.frame_id
