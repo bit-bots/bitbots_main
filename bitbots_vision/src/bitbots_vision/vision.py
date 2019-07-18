@@ -14,8 +14,8 @@ from sensor_msgs.msg import Image, JointState
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, PostInImage, \
     GoalInImage, Speak
-from bitbots_vision.vision_modules import lines, field_boundary, color, debug, live_classifier, \
-    classifier, ball, fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator, yolo_handler
+from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
+    fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator, yolo_handler
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config
 
