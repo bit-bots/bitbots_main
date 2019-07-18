@@ -80,6 +80,7 @@ class YoloHandlerOpenCV():
         self.confidence_threshold = 0.5
         self.image = None
         self.blob = None
+        self.outs = None
         self.goalpost_candidates = None
         self.ball_candidates = None
         self.results = None
@@ -169,7 +170,7 @@ class YoloBallDetector(CandidateFinder):
         return ball_candidates[:count]
 
     def compute_top_candidate(self):
-        pass
+        self.yolo.predict()
 
 class YoloGoalpostDetector(CandidateFinder):
 
@@ -188,5 +189,5 @@ class YoloGoalpostDetector(CandidateFinder):
         return ball_candidates[:count]
 
     def compute_top_candidate(self):
-        pass
+        self.yolo.predict()
 
