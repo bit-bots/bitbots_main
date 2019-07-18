@@ -87,8 +87,8 @@ class YoloHandlerOpenCV():
         self.COLORS = np.random.uniform(0, 255, size=(len(self.classes), 3))
         self.net = cv2.dnn.readNet(weightpath, configpath)
 
-    
-    def get_output_layers(self, net):
+    @staticmethod
+    def get_output_layers(net):
         layer_names = net.getLayerNames()
 
         output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
@@ -110,7 +110,7 @@ class YoloHandlerOpenCV():
     def predict(self):
         if self.outs is None:
             self.net.setInput(self.blob)
-            self.outs = self.net.forward(self.get_output_layers(self.net))
+            self.outs = self.net.forward(YoloHandlerOpenCV.get_output_layers(self.net))
             class_ids = []
             confidences = []
             boxes = []
