@@ -59,7 +59,7 @@ class Vision:
 
         self.debug_image_drawer = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_drawer:
-            # TODO Evaluate removing of runtime eval 
+            # TODO Evaluate removing of runtime eval
             self.runtime_evaluator = evaluator.RuntimeEvaluator()
 
 
@@ -96,7 +96,7 @@ class Vision:
             return
             
         self.handle_image(image_msg)
-
+    
     def _head_joint_state_callback(self, headjoint_msg):
         # type: (JointState) -> None
         """
@@ -105,7 +105,8 @@ class Vision:
         """
         self.field_boundary_detector.set_head_joint_state(headjoint_msg)
 
-    def _speak(self, string, speech_publisher):
+    @staticmethod
+    def _speak(string, speech_publisher):
         """
         Sends a speak message and let the robot say the given string.
         :param string: Text the robot should say
@@ -133,7 +134,7 @@ class Vision:
             mean = cv2.mean(image)
 
             if sum(mean) < self._blind_threshold:
-                self._speak("Hey!   Remove my camera cap!", self.speak_publisher)
+                Vision._speak("Hey!   Remove my camera cap!", self.speak_publisher)
 
         # distribute the image to the detectors
         self._distribute_images(image)
@@ -185,7 +186,7 @@ class Vision:
             balls_msg.header.stamp = image_msg.header.stamp
 
             # Build the ball message which will be embedded in the balls message
-            ball_msg = self._build_ball_msg(top_ball_candidate)
+            ball_msg = Vision._build_ball_msg(top_ball_candidate)
             balls_msg.candidates.append(ball_msg)
 
             # Publish balls
@@ -199,13 +200,13 @@ class Vision:
         obstacles_msg.header.stamp = image_msg.header.stamp
 
         # Add red obstacles
-        obstacles_msg.obstacles.extend( self._build_obstacle_msgs(ObstacleInImage.ROBOT_MAGENTA, 
+        obstacles_msg.obstacles.extend( Vision._build_obstacle_msgs(ObstacleInImage.ROBOT_MAGENTA,
                                         self.red_obstacle_detector.get_candidates()))
         # Add blue obstacles
-        obstacles_msg.obstacles.extend( self._build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN, 
+        obstacles_msg.obstacles.extend( Vision._build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN,
                                         self.blue_obstacle_detector.get_candidates()))
         # Add UFO's (Undefined Found Obstacles)
-        obstacles_msg.obstacles.extend( self._build_obstacle_msgs(ObstacleInImage.UNDEFINED, 
+        obstacles_msg.obstacles.extend( Vision._build_obstacle_msgs(ObstacleInImage.UNDEFINED,
                                         self.unknown_obstacle_detector.get_candidates()))
 
         # Publish obstacles
@@ -218,10 +219,10 @@ class Vision:
         goal_parts_msg.header.stamp = image_msg.header.stamp
 
         # Add detected goal parts to the message
-        goal_parts_msg.posts.extend(self._build_goalpost_msgs(self.goalpost_detector.get_candidates()))
+        goal_parts_msg.posts.extend(Vision._build_goalpost_msgs(self.goalpost_detector.get_candidates()))
 
         # Build goal message out of goal parts
-        goal_msg = self._build_goal_msg(goal_parts_msg)
+        goal_msg = Vision._build_goal_msg(goal_parts_msg)
 
         # Check if there is a goal
         if goal_msg:
@@ -277,7 +278,8 @@ class Vision:
         self.ball_detector.set_image(image)
         self.runtime_evaluator.set_image()
 
-    def _build_goal_msg(self, goal_parts_msg):
+    @staticmethod
+    def _build_goal_msg(goal_parts_msg):
         """
         Builds a goal message with a right and left post. If there is only one post in the image, the right and left post are the same. 
         This should be reworked! The vision should only publish posts and e.g. the worldmodel builds a goal out of this context. 
@@ -315,8 +317,8 @@ class Vision:
         if goal_parts_msg.posts:
             return goal_msg
 
-
-    def _build_ball_msg(self, top_ball_candidate):
+    @staticmethod
+    def _build_ball_msg(top_ball_candidate):
         """
         Builds a ball message
         :param top_ball_candidate: best rated ball candidate
@@ -330,7 +332,8 @@ class Vision:
         ball_msg.confidence = top_ball_candidate.get_rating()
         return ball_msg
 
-    def _build_goalpost_msgs(self, goalposts):
+    @staticmethod
+    def _build_goalpost_msgs(goalposts):
         """
         Builds a list of goalpost messages
         :param goalposts: goalpost candidates 
@@ -350,7 +353,8 @@ class Vision:
             message_list.append(post_msg)
         return message_list
 
-    def _build_obstacle_msgs(self, obstacle_color, detections):
+    @staticmethod
+    def _build_obstacle_msgs(obstacle_color, detections):
         """
         Builds a list of obstacles for a certain color
         :param obstacle_color: color of the obstacles
@@ -627,27 +631,27 @@ class Vision:
         # Now register all publishers
         # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!
 
-        self.pub_balls = self._create_or_update_publisher(self.config, config, 'ROS_ball_msg_topic', BallsInImage, self.pub_balls)
+        self.pub_balls = Vision._create_or_update_publisher(self.config, config, 'ROS_ball_msg_topic', BallsInImage, self.pub_balls)
 
-        self.pub_lines = self._create_or_update_publisher(self.config, config, 'ROS_line_msg_topic', LineInformationInImage, self.pub_lines, queue_size=5)
+        self.pub_lines = Vision._create_or_update_publisher(self.config, config, 'ROS_line_msg_topic', LineInformationInImage, self.pub_lines, queue_size=5)
 
-        self.pub_obstacle = self._create_or_update_publisher(self.config, config, 'ROS_obstacle_msg_topic', ObstaclesInImage, self.pub_obstacle, queue_size=3)
+        self.pub_obstacle = Vision._create_or_update_publisher(self.config, config, 'ROS_obstacle_msg_topic', ObstaclesInImage, self.pub_obstacle, queue_size=3)
 
-        self.pub_goal = self._create_or_update_publisher(self.config, config, 'ROS_goal_msg_topic', GoalInImage, self.pub_goal, queue_size=3)
+        self.pub_goal = Vision._create_or_update_publisher(self.config, config, 'ROS_goal_msg_topic', GoalInImage, self.pub_goal, queue_size=3)
 
-        self.pub_ball_fcnn = self._create_or_update_publisher(self.config, config, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest, self.pub_ball_fcnn)
+        self.pub_ball_fcnn = Vision._create_or_update_publisher(self.config, config, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest, self.pub_ball_fcnn)
 
-        self.pub_debug_image = self._create_or_update_publisher(self.config, config, 'ROS_debug_image_msg_topic', Image, self.pub_debug_image)
+        self.pub_debug_image = Vision._create_or_update_publisher(self.config, config, 'ROS_debug_image_msg_topic', Image, self.pub_debug_image)
 
-        self.pub_debug_fcnn_image = self._create_or_update_publisher(self.config, config, 'ROS_debug_fcnn_image_msg_topic', Image, self.pub_debug_fcnn_image)
+        self.pub_debug_fcnn_image = Vision._create_or_update_publisher(self.config, config, 'ROS_debug_fcnn_image_msg_topic', Image, self.pub_debug_fcnn_image)
 
         # subscribers
 
-        self.image_sub = self._create_or_update_subscriber(self.config, config, 'ROS_img_msg_topic', Image, self.image_sub, self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
+        self.image_sub = Vision._create_or_update_subscriber(self.config, config, 'ROS_img_msg_topic', Image, self.image_sub, self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
 
         # TODO replace with transform from basefootprint to camera_optical_frame
         # subscriber for the vertical position of the head, used by the dynamic field-boundary-detector
-        self.head_sub = self._create_or_update_subscriber(self.config, config, 'ROS_head_joint_msg_topic', JointState, self.head_sub, self._head_joint_state_callback, queue_size=config['ROS_head_joint_state_queue_size'])
+        self.head_sub = Vision._create_or_update_subscriber(self.config, config, 'ROS_head_joint_msg_topic', JointState, self.head_sub, self._head_joint_state_callback, queue_size=config['ROS_head_joint_state_queue_size'])
 
         # Publish Config-message (mainly for the dynamic color space node)
         self._publish_vision_config(config)
@@ -656,7 +660,8 @@ class Vision:
         self.config = config
         return config
 
-    def _create_or_update_publisher(self, old_config, new_config, topic_key, message_type, publisher_object, queue_size=1):
+    @staticmethod
+    def _create_or_update_publisher(old_config, new_config, topic_key, message_type, publisher_object, queue_size=1):
         """
         Creates or updates an publisher
         :param old_config: Previous config entries
@@ -680,7 +685,8 @@ class Vision:
             rospy.loginfo("Registered new publisher to " + str(new_config[topic_key]))
         return publisher_object
 
-    def _create_or_update_subscriber(self, old_config, new_config, topic_key, message_type, subscriber_object, callback, queue_size=1, buff_size=65536):
+    @staticmethod
+    def _create_or_update_subscriber(old_config, new_config, topic_key, message_type, subscriber_object, callback, queue_size=1, buff_size=65536):
         """
         Creates or updates an subscriber
         :param old_config: Previous config entries
