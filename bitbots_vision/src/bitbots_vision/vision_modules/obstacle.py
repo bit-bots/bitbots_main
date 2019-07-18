@@ -337,9 +337,6 @@ class RedObstacleDetector(CandidateFinder):
         candidates = Candidate.sort_candidates(candidates)
         return candidates[:count]
 
-    def compute_top_candidate(self):
-        pass
-
 
 class BlueObstacleDetector(CandidateFinder):
 
@@ -356,9 +353,6 @@ class BlueObstacleDetector(CandidateFinder):
         candidates = self.get_candidates()
         candidates = Candidate.sort_candidates(candidates)
         return candidates[:count]
-
-    def compute_top_candidate(self):
-        pass
 
 
 class WhiteObstacleDetector(CandidateFinder):
@@ -377,9 +371,6 @@ class WhiteObstacleDetector(CandidateFinder):
         candidates = Candidate.sort_candidates(candidates)
         return candidates[:count]
 
-    def compute_top_candidate(self):
-        pass
-
 class UnknownObstacleDetector(CandidateFinder):
 
     def __init__(self, obstacle_detector):
@@ -395,6 +386,3 @@ class UnknownObstacleDetector(CandidateFinder):
         candidates = self.get_candidates()
         candidates = Candidate.sort_candidates(candidates)
         return candidates[:count]
-
-    def compute_top_candidate(self):
-        pass
