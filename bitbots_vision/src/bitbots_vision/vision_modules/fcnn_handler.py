@@ -91,6 +91,7 @@ class FcnnHandler(CandidateFinder):
                <= candidate.get_diameter() \
                <= self._max_candidate_diameter
 
+    # TODO neue strucktur
     def compute_top_candidate(self):
         if self._top_candidate is None:
             if self._sorted_rated_candidates is None:
