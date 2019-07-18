@@ -19,6 +19,9 @@ from bitbots_vision.vision_modules import lines, field_boundary, color, debug, l
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config
 
+# TODO remove log names
+# TODO evaluate log levels
+
 class Vision:
     def __init__(self):
         # type () -> None
@@ -56,6 +59,7 @@ class Vision:
 
         self.debug_image_drawer = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_drawer:
+            # TODO Evaluate removing of runtime eval 
             self.runtime_evaluator = evaluator.RuntimeEvaluator()
 
 
@@ -588,7 +592,7 @@ class Vision:
                     if config['vision_ball_classifier'] == 'yolo_opencv':
                         # Load OpenCV implementation (uses OpenCL)
                         yolo = yolo_handler.YoloHandlerOpenCV(config, yolo_model_path)
-                    else:
+                    elif config['vision_ball_classifier'] == 'yolo_darknet':
                         # Load Darknet implementation (uses CUDA)
                         yolo = yolo_handler.YoloHandlerDarknet(config, yolo_model_path)
                     # Set both ball and goalpost detector
@@ -597,6 +601,8 @@ class Vision:
                     rospy.loginfo(config['vision_ball_classifier'] + " vision is running now")
 
             
+        # TODO check if a ball detector has been set
+        
         # Now register all publishers
         # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!
 
