@@ -192,6 +192,8 @@ namespace bitbots_quintic_walk {
         ros::Subscriber _subCopL;
         ros::Subscriber _subCopR;
 
+        dynamic_reconfigure::Server<bitbots_quintic_walk_paramsConfig> _server;
+
         geometry_msgs::PointStamped _cop_l;
         geometry_msgs::PointStamped _cop_r;
 

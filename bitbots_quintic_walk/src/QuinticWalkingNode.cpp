@@ -73,6 +73,9 @@ namespace bitbots_quintic_walk {
         _bioIK_solver.set_use_approximate(true);
 
         _first_run = true;
+
+        // initialize dynamic-reconfigure
+        _server.setCallback(boost::bind(&QuinticWalkingNode::reconf_callback, this, _1, _2));
     }
 
 
@@ -818,12 +821,7 @@ namespace bitbots_quintic_walk {
 int main(int argc, char **argv) {
     ros::init(argc, argv, "quintic_walking");
     // init node
-    bitbots_quintic_walk::QuinticWalkingNode node = bitbots_quintic_walk::QuinticWalkingNode();
-    // set the dynamic reconfigure and load standard params
-    dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig> server;
-    dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>::CallbackType f;
-    f = boost::bind(&bitbots_quintic_walk::QuinticWalkingNode::reconf_callback, &node, _1, _2);
-    server.setCallback(f);
+    bitbots_quintic_walk::QuinticWalkingNode node;
 
     // run the node
     node.initializeEngine();
