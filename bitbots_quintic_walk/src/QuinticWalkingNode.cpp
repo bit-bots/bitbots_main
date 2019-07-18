@@ -385,36 +385,9 @@ namespace bitbots_quintic_walk {
     void
     QuinticWalkingNode::reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config,
                                         uint32_t level) {
-        _params.freq = config.freq;
-        _params.doubleSupportRatio = config.doubleSupportRatio;
-        _params.footDistance = config.footDistance;
-        _params.footRise = config.footRise;
-        _params.footZPause = config.footZPause;
-        _params.footPutDownZOffset = config.footPutDownZOffset;
-        _params.footPutDownPhase = config.footPutDownPhase;
-        _params.footApexPhase = config.footApexPhase;
-        _params.footOvershootRatio = config.footOvershootRatio;
-        _params.footOvershootPhase = config.footOvershootPhase;
-        _params.trunkHeight = config.trunkHeight;
-        _params.trunkPitch = config.trunkPitch;
-        _params.trunkPhase = config.trunkPhase;
-        _params.trunkXOffset = config.trunkXOffset;
-        _params.trunkYOffset = config.trunkYOffset;
-        _params.trunkSwing = config.trunkSwing;
-        _params.trunkPause = config.trunkPause;
-        _params.trunkXOffsetPCoefForward = config.trunkXOffsetPCoefForward;
-        _params.trunkXOffsetPCoefTurn = config.trunkXOffsetPCoefTurn;
-        _params.trunkPitchPCoefForward = config.trunkPitchPCoefForward;
-        _params.trunkPitchPCoefTurn = config.trunkPitchPCoefTurn;
+        _params = config;
 
-        _params.firstStepSwingFactor = config.firstStepSwingFactor;
-
-        _params.kickLength = config.kickLength;
-        _params.kickPhase = config.kickPhase;
-        _params.footPutDownRollOffset = config.footPutDownRollOffset;
-        _params.kickVel = config.kickVel;
-
-        _walkEngine.setParameters(_params);
+        _walkEngine.reconf_callback(_params);
         _bioIK_solver.set_bioIK_timeout(config.bioIKTime);
 
         _debugActive = config.debugActive;

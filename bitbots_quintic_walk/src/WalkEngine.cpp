@@ -762,7 +762,7 @@ bool QuinticWalk::isDoubleSupport(){
     return _trajs.get("is_double_support").pos(getTrajsTime()) >= 0.5;
 }
 
-void QuinticWalk::setParameters(const WalkingParameter& params)
+void QuinticWalk::reconf_callback(const bitbots_quintic_walk_paramsConfig &params)
 {
     _params = params;
     _footstep.setFootDistance(_params.footDistance);

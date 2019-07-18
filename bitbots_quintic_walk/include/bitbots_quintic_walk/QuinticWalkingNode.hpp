@@ -145,7 +145,7 @@ namespace bitbots_quintic_walk {
         int _robotState;
         int _marker_id;
 
-        bitbots_quintic_walk::WalkingParameter _params;
+        bitbots_quintic_walk_paramsConfig _params;
 
         Eigen::Vector3d _trunkPos;
         Eigen::Vector3d _trunkAxis;
