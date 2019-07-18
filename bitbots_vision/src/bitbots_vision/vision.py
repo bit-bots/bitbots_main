@@ -199,11 +199,14 @@ class Vision:
         obstacles_msg.header.stamp = image_msg.header.stamp
 
         # Add red obstacles
-        obstacles_msg.obstacles.extend(self._build_obstacle_msgs(ObstacleInImage.ROBOT_MAGENTA, self.red_obstacle_detector.get_candidates()))
+        obstacles_msg.obstacles.extend( self._build_obstacle_msgs(ObstacleInImage.ROBOT_MAGENTA, 
+                                        self.red_obstacle_detector.get_candidates()))
         # Add blue obstacles
-        obstacles_msg.obstacles.extend(self._build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN, self.blue_obstacle_detector.get_candidates()))
+        obstacles_msg.obstacles.extend( self._build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN, 
+                                        self.blue_obstacle_detector.get_candidates()))
         # Add UFO's (Undefined Found Obstacles)
-        obstacles_msg.obstacles.extend(self._build_obstacle_msgs(ObstacleInImage.UNDEFINED, self.unknown_obstacle_detector.get_candidates()))
+        obstacles_msg.obstacles.extend( self._build_obstacle_msgs(ObstacleInImage.UNDEFINED, 
+                                        self.unknown_obstacle_detector.get_candidates()))
 
         # Publish obstacles
         self.pub_obstacle.publish(obstacles_msg)
@@ -481,24 +484,42 @@ class Vision:
 
         # Set the white color detector
         self.white_color_detector = color.HsvSpaceColorDetector(
-            [config['white_color_detector_lower_values_h'], config['white_color_detector_lower_values_s'],
-             config['white_color_detector_lower_values_v']],
-            [config['white_color_detector_upper_values_h'], config['white_color_detector_upper_values_s'],
-             config['white_color_detector_upper_values_v']])
+            [
+                config['white_color_detector_lower_values_h'], 
+                config['white_color_detector_lower_values_s'],
+                config['white_color_detector_lower_values_v']
+            ],
+            [
+                config['white_color_detector_upper_values_h'], 
+                config['white_color_detector_upper_values_s'],
+                config['white_color_detector_upper_values_v']
+            ])
 
         # Set the red color detector
         self.red_color_detector = color.HsvSpaceColorDetector(
-            [config['red_color_detector_lower_values_h'], config['red_color_detector_lower_values_s'],
-             config['red_color_detector_lower_values_v']],
-            [config['red_color_detector_upper_values_h'], config['red_color_detector_upper_values_s'],
-             config['red_color_detector_upper_values_v']])
+            [
+                config['red_color_detector_lower_values_h'], 
+                config['red_color_detector_lower_values_s'],
+                config['red_color_detector_lower_values_v']
+            ],
+            [
+                config['red_color_detector_upper_values_h'], 
+                config['red_color_detector_upper_values_s'],
+                config['red_color_detector_upper_values_v']
+            ])
 
         # Set the blue color detector
         self.blue_color_detector = color.HsvSpaceColorDetector(
-            [config['blue_color_detector_lower_values_h'], config['blue_color_detector_lower_values_s'],
-             config['blue_color_detector_lower_values_v']],
-            [config['blue_color_detector_upper_values_h'], config['blue_color_detector_upper_values_s'],
-             config['blue_color_detector_upper_values_v']])
+            [
+                config['blue_color_detector_lower_values_h'], 
+                config['blue_color_detector_lower_values_s'],
+                config['blue_color_detector_lower_values_v']
+            ],
+            [
+                config['blue_color_detector_upper_values_h'], 
+                config['blue_color_detector_upper_values_s'],
+                config['blue_color_detector_upper_values_v']
+            ])
 
         # Check if the dynamic color space field color detector or the static field color detector should be used
         if config['dynamic_color_space_active']:
