@@ -1,9 +1,13 @@
 pipeline {
     agent none
 
+	triggers {
+		cron 'H 6 * * * '
+	}
+
     stages {
         stage('Build documentation') {
-        agent { docker image: 'bitbots_builder', registryUrl: 'http://localhost:5000' }
+        agent { docker image: 'bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000' }
         steps {
             sh './scripts/build-doc.py --meta -v'
             stash name: 'html', includes: 'doc/_build/**'
@@ -16,8 +20,7 @@ pipeline {
         }
         steps {
             unstash 'html'
-            sh 'rm -rf /data/doku.bit-bots.de/meta/*'
-            sh 'cp -r ./doc/_build/* /data/doku.bit-bots.de/meta'
+			sh 'rsync --delete -v -r ./doc/_build/ /srv/data/doku.bit-bots.de/meta/'
         }
         }
     }
