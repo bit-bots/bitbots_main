@@ -21,6 +21,9 @@ from bitbots_msgs.msg import Config
 
 # TODO remove log names
 # TODO evaluate log levels
+# TODO evaluate removing runtime evaluator
+# TODO set image for color detector
+# TODO param changed for every dyn reconfigure param
 
 class Vision:
     def __init__(self):
@@ -129,11 +132,8 @@ class Vision:
 
         # Check if its the first callback
         if self._first_callback:
-            # Calc the mean brightness of the image to detect forgotten camera caps
-            mean = cv2.mean(image)
-
-            if sum(mean) < self._blind_threshold:
-                Vision._speak("Hey!   Remove my camera cap!", self.speak_publisher)
+            # Check if a cap may be on the camera
+            self.handle_forgotten_camera_cap(image)
 
         # distribute the image to the detectors
         self._distribute_images(image)
@@ -731,6 +731,20 @@ class Vision:
         msg.data = yaml.dump(config_cleaned)
         # Publish config
         self.pub_config.publish(msg)
+
+    def handle_forgotten_camera_cap(self, image):
+        # type: (np.array) -> None
+        """
+        Detects a forgotten cap on the camera and notifies this via speech
+
+        :param image: Image
+        """
+        # Calc the mean brightness of the image to detect a forgotten camera cap
+        mean = cv2.mean(image)
+
+        # Notify if there is a camera cap detected
+        if sum(mean) < self._blind_threshold:
+            Vision._speak("Hey!   Remove my camera cap!", self.speak_publisher)
 
 if __name__ == '__main__':
     Vision()
