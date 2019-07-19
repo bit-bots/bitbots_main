@@ -16,8 +16,7 @@ pipeline {
         }
         steps {
             unstash 'html'
-            sh 'rm -rf /data/doku.bit-bots.de/meta/*'
-            sh 'cp -r ./doc/_build/* /data/doku.bit-bots.de/meta'
+			sh 'rsync --delete -v -r ./doc/_build/ /srv/data/doku.bit-bots.de/meta/'
         }
         }
     }
