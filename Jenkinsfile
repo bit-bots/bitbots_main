@@ -1,6 +1,10 @@
 pipeline {
     agent none
 
+	triggers {
+		cron 'H 6 * * * '
+	}
+
     stages {
         stage('Build documentation') {
         agent { docker image: 'bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000' }
