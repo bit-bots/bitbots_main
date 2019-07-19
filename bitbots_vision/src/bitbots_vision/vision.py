@@ -44,6 +44,9 @@ class Vision:
 
         self.config = {}
 
+        # Inits runtime evaluator
+        self.runtime_evaluator = evaluator.RuntimeEvaluator()
+
         # the head_joint_states is used by the dynamic field_boundary detector
         self.head_joint_state = None
 
@@ -448,10 +451,6 @@ class Vision:
         :param config: New config
         :param level: No idea what this is for. I google this if we are landed #TODO
         """
-
-        # Inits runtime evaluator
-        self.runtime_evaluator = evaluator.RuntimeEvaluator()
-
         # Set some thresholds
         # Brightness threshold which determins if the camera cap is on the camera.
         self._blind_threshold = config['vision_blind_threshold']
@@ -467,6 +466,7 @@ class Vision:
         else:
             rospy.loginfo('Debug images are disabled')
 
+        # TODO what is the meaning of this parameter? What is the fcnn output?
         # Should the fcnn output (only under the field boundary) be published?
         self.ball_fcnn_publish_output = config['ball_fcnn_publish_output']
         if self.ball_fcnn_publish_output:
@@ -477,28 +477,33 @@ class Vision:
         # Should the whole fcnn output be published?
         self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
 
-        # Print if the vision uses the sim color or not (only prints when it changes or its the fist callback)
-        if 'vision_use_sim_color' not in self.config or \
-                config['vision_use_sim_color'] != self.config['vision_use_sim_color']:
+        # Print if the vision uses the sim color or not
+        if Vision._config_param_change(self.config, config, ['vision_use_sim_color']):
             if config['vision_use_sim_color']:
                 rospy.logwarn('Loaded color space for SIMULATOR.')
             else:
                 rospy.loginfo('Loaded color space for REAL WORLD.')
 
         # Set the white color detector
-        self.white_color_detector = color.HsvSpaceColorDetector(
-            [
-                config['white_color_detector_lower_values_h'],
-                config['white_color_detector_lower_values_s'],
-                config['white_color_detector_lower_values_v']
-            ],
-            [
-                config['white_color_detector_upper_values_h'],
-                config['white_color_detector_upper_values_s'],
-                config['white_color_detector_upper_values_v']
-            ])
+        if Vision._config_param_change(self.config, config, [
+                'white_color_detector_lower_values_h', 'white_color_detector_lower_values_s', 'white_color_detector_lower_values_v',
+                'white_color_detector_upper_values_h', 'white_color_detector_upper_values_s', 'white_color_detector_upper_values_v']):
+            self.white_color_detector = color.HsvSpaceColorDetector(
+                [
+                    config['white_color_detector_lower_values_h'],
+                    config['white_color_detector_lower_values_s'],
+                    config['white_color_detector_lower_values_v']
+                ],
+                [
+                    config['white_color_detector_upper_values_h'],
+                    config['white_color_detector_upper_values_s'],
+                    config['white_color_detector_upper_values_v']
+                ])
 
         # Set the red color detector
+        if Vision._config_param_change(self.config, config, [
+                'red_color_detector_lower_values_h', 'red_color_detector_lower_values_s', 'red_color_detector_lower_values_v',
+                'red_color_detector_upper_values_h', 'red_color_detector_upper_values_s', 'red_color_detector_upper_values_v']):
         self.red_color_detector = color.HsvSpaceColorDetector(
             [
                 config['red_color_detector_lower_values_h'],
@@ -512,6 +517,9 @@ class Vision:
             ])
 
         # Set the blue color detector
+        if Vision._config_param_change(self.config, config, [
+                'blue_color_detector_lower_values_h', 'blue_color_detector_lower_values_s', 'blue_color_detector_lower_values_v',
+                'blue_color_detector_upper_values_h', 'blue_color_detector_upper_values_s', 'blue_color_detector_upper_values_v']):
         self.blue_color_detector = color.HsvSpaceColorDetector(
             [
                 config['blue_color_detector_lower_values_h'],
@@ -524,6 +532,7 @@ class Vision:
                 config['blue_color_detector_upper_values_v']
             ])
 
+        # TODO BELOW: check wether config params have changed
         # Check if the dynamic color space field color detector or the static field color detector should be used
         if config['dynamic_color_space_active']:
             # Set dynamic color space field color detector
@@ -630,27 +639,27 @@ class Vision:
         # Now register all publishers
         # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!
 
-        self.pub_balls = Vision._create_or_update_publisher(self.config, config, 'ROS_ball_msg_topic', BallsInImage, self.pub_balls)
+        self.pub_balls = Vision._create_or_update_publisher(self.config, config, self.pub_balls, 'ROS_ball_msg_topic', BallsInImage)
 
-        self.pub_lines = Vision._create_or_update_publisher(self.config, config, 'ROS_line_msg_topic', LineInformationInImage, self.pub_lines, queue_size=5)
+        self.pub_lines = Vision._create_or_update_publisher(self.config, config, self.pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
 
-        self.pub_obstacle = Vision._create_or_update_publisher(self.config, config, 'ROS_obstacle_msg_topic', ObstaclesInImage, self.pub_obstacle, queue_size=3)
+        self.pub_obstacle = Vision._create_or_update_publisher(self.config, config, self.pub_obstacle, 'ROS_obstacle_msg_topic', ObstaclesInImage, queue_size=3)
 
-        self.pub_goal = Vision._create_or_update_publisher(self.config, config, 'ROS_goal_msg_topic', GoalInImage, self.pub_goal, queue_size=3)
+        self.pub_goal = Vision._create_or_update_publisher(self.config, config, self.pub_goal, 'ROS_goal_msg_topic', GoalInImage, queue_size=3)
 
-        self.pub_ball_fcnn = Vision._create_or_update_publisher(self.config, config, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest, self.pub_ball_fcnn)
+        self.pub_ball_fcnn = Vision._create_or_update_publisher(self.config, config, self.pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
 
-        self.pub_debug_image = Vision._create_or_update_publisher(self.config, config, 'ROS_debug_image_msg_topic', Image, self.pub_debug_image)
+        self.pub_debug_image = Vision._create_or_update_publisher(self.config, config, self.pub_debug_image, 'ROS_debug_image_msg_topic', Image)
 
-        self.pub_debug_fcnn_image = Vision._create_or_update_publisher(self.config, config, 'ROS_debug_fcnn_image_msg_topic', Image, self.pub_debug_fcnn_image)
+        self.pub_debug_fcnn_image = Vision._create_or_update_publisher(self.config, config, self.pub_debug_fcnn_image, 'ROS_debug_fcnn_image_msg_topic', Image)
 
         # subscribers
 
-        self.image_sub = Vision._create_or_update_subscriber(self.config, config, 'ROS_img_msg_topic', Image, self.image_sub, callback=self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
+        self.image_sub = Vision._create_or_update_subscriber(self.config, config, self.image_sub, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
 
         # TODO replace with transform from basefootprint to camera_optical_frame
         # subscriber for the vertical position of the head, used by the dynamic field-boundary-detector
-        self.head_sub = Vision._create_or_update_subscriber(self.config, config, 'ROS_head_joint_msg_topic', JointState, self.head_sub, callback=self._head_joint_state_callback, queue_size=config['ROS_head_joint_state_queue_size'])
+        self.head_sub = Vision._create_or_update_subscriber(self.config, config, self.head_sub, 'ROS_head_joint_msg_topic', JointState, callback=self._head_joint_state_callback, queue_size=config['ROS_head_joint_state_queue_size'])
 
         # Publish Config-message (mainly for the dynamic color space node)
         self._publish_vision_config(config)
@@ -660,61 +669,74 @@ class Vision:
         return config
 
     @staticmethod
-    def _config_param_change(old_config, new_config, param_name):
-        # type: (dict, dict, str) -> bool
+    def _config_param_change(old_config, new_config, params):
+        # type: (dict, dict, [str]) -> bool
         """
-        Checks whether a config param has changed.
+        Checks whether some of the specified config params have changed.
 
-        :param old_config: old config dict
-        :param new_config: new config dict
-        :param param_name: Name of the parameter to be checked
+        :param dict old_config: old config dict
+        :param dict new_config: new config dict
+        :param list of str params: List of names of parameters to be checked
         :return bool: True if parameter has changed
         """
-        if param_name not in new_config:
-            raise KeyError('\'{}\' not in dict.'.format(param_name))
-        return param_name not in old_config or new_config[param_name] != old_config[param_name]
+        for param in params:
+            if param not in new_config:
+                raise KeyError('\'{}\' not in dict.'.format(param))
+            elif param not in old_config or old_config[param] != new_config[param]:
+                return True
+        return False
 
     @staticmethod
-    def _create_or_update_publisher(old_config, new_config, topic_key, message_type, publisher_object, queue_size=1):
+    def _create_or_update_publisher(old_config, new_config, publisher_object, topic_key, data_class, subscriber_listener=None, tcp_nodelay=False, latch=False, headers=None, queue_size=None):
         """
         Creates or updates an publisher
         :param old_config: Previous config entries
         :param new_config: Current config entries
-        :param topic_key: The config key, where the topic name is stored
-        :param message_type: The ROS message type of the topic we want to publish
         :param publisher_object: The python object, that represents the publisher
+        :param topic_key: The config key, where the topic name is stored
+        :param data_class: Data type class for ROS messages of the topic we want to subscribe
+        :param subscriber_listener: Listener for subscription events
+        :param tcp_nodelay: If True, this enables lower latency publishing at the cost of efficiency
+        :param latch: If True, the last message, that has been published, will be sent to a new subscriber immediately
+        :param headers: The ROS publisher headers
         :param queue_size: The ROS message queue size
         :return: adjusted publisher object
         """
-        # Check if its the first call or the topic changed
-        if topic_key not in old_config or old_config[topic_key] != new_config[topic_key]:
+        # Check if topic parameter has changed
+        if Vision._config_param_change(old_config, new_config, [topic_key]):
             # Check if an publisher exists and unregister him
             if publisher_object is not None:
                 publisher_object.unregister()
             # Create the new publisher
             publisher_object = rospy.Publisher(
                 new_config[topic_key],
-                message_type,
+                data_class,
+                subscriber_listener=subscriber_listener,
+                tcp_nodelay=tcp_nodelay,
+                latch=latch,
+                headers=headers,
                 queue_size=queue_size)
             rospy.loginfo("Registered new publisher to " + str(new_config[topic_key]))
         return publisher_object
 
     @staticmethod
-    def _create_or_update_subscriber(old_config, new_config, topic_key, data_class, subscriber_object, callback=None, callback_args=None, queue_size=None, buff_size=65536, tcp_nodelay=False):
+    def _create_or_update_subscriber(old_config, new_config, subscriber_object, topic_key, data_class, callback=None, callback_args=None, queue_size=None, buff_size=65536, tcp_nodelay=False):
         """
         Creates or updates an subscriber
         :param old_config: Previous config entries
         :param new_config: Current config entries
+        :param subscriber_object: The python object, that represents the subscriber
         :param topic_key: The config key, where the topic name is stored
         :param data_class: Data type class for ROS messages of the topic we want to subscribe
-        :param subscriber_object: The python object, that represents the subscriber
         :param callback: The subscriber callback function
+        :param callback_args: Additional arguments for the callback method
         :param queue_size: The ROS message queue size
         :param buff_size: The ROS message buffer size
+        :param tcp_nodelay: If True, requests tcp_nodelay from publisher
         :return: adjusted subscriber object
         """
         # Check if topic parameter has changed
-        if Vision._config_param_change(old_config, new_config, topic_key):
+        if Vision._config_param_change(old_config, new_config, [topic_key]):
             # Check if an subsciber exists and unregister him
             if subscriber_object is not None:
                 subscriber_object.unregister()
