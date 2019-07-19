@@ -3,7 +3,7 @@ pipeline {
 
     stages {
         stage('Build documentation') {
-        agent { docker image: 'bitbots_builder', registryUrl: 'http://localhost:5000' }
+        agent { docker image: 'bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000' }
         steps {
             sh './scripts/build-doc.py --meta -v'
             stash name: 'html', includes: 'doc/_build/**'
