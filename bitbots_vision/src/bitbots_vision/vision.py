@@ -133,7 +133,7 @@ class Vision:
         # Check if its the first callback
         if self._first_callback:
             # Check if a cap may be on the camera
-            self.handle_forgotten_camera_cap(image)
+            self._handle_forgotten_camera_cap(image)
 
         # distribute the image to the detectors
         self._distribute_images(image)
@@ -567,10 +567,6 @@ class Vision:
         self.blue_obstacle_detector = obstacle.BlueObstacleDetector(self.obstacle_detector)
         self.unknown_obstacle_detector = obstacle.UnknownObstacleDetector(self.obstacle_detector)
 
-        # If dummy ball detection is activated, set the dummy ballfinder as ball detector
-        if config['vision_ball_classifier'] == 'dummy':
-            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None)
-
         # set up ball config for fcnn
         # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
         # this enables 2 fcnns with different configs.
@@ -585,6 +581,10 @@ class Vision:
             'candidate_refinement_iteration_count': config['ball_fcnn_candidate_refinement_iteration_count'],
             'publish_field_boundary_offset': config['ball_fcnn_publish_field_boundary_offset'],
         }
+
+        # If dummy ball detection is activated, set the dummy ballfinder as ball detector
+        if config['vision_ball_classifier'] == 'dummy':
+            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None)
 
         # Check if the fcnn ball detector is activated
         if config['vision_ball_classifier'] == 'fcnn':
@@ -625,6 +625,7 @@ class Vision:
                     rospy.loginfo(config['vision_ball_classifier'] + " vision is running now")
 
         # TODO check if a ball detector has been set
+            # TODO Maybe set dummy ballfinder instead?
 
         # Now register all publishers
         # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!
@@ -645,11 +646,11 @@ class Vision:
 
         # subscribers
 
-        self.image_sub = Vision._create_or_update_subscriber(self.config, config, 'ROS_img_msg_topic', Image, self.image_sub, self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
+        self.image_sub = Vision._create_or_update_subscriber(self.config, config, 'ROS_img_msg_topic', Image, self.image_sub, callback=self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
 
         # TODO replace with transform from basefootprint to camera_optical_frame
         # subscriber for the vertical position of the head, used by the dynamic field-boundary-detector
-        self.head_sub = Vision._create_or_update_subscriber(self.config, config, 'ROS_head_joint_msg_topic', JointState, self.head_sub, self._head_joint_state_callback, queue_size=config['ROS_head_joint_state_queue_size'])
+        self.head_sub = Vision._create_or_update_subscriber(self.config, config, 'ROS_head_joint_msg_topic', JointState, self.head_sub, callback=self._head_joint_state_callback, queue_size=config['ROS_head_joint_state_queue_size'])
 
         # Publish Config-message (mainly for the dynamic color space node)
         self._publish_vision_config(config)
@@ -657,6 +658,21 @@ class Vision:
         # The old config gets replaced with the new config
         self.config = config
         return config
+
+    @staticmethod
+    def _config_param_change(old_config, new_config, param_name):
+        # type: (dict, dict, str) -> bool
+        """
+        Checks whether a config param has changed.
+
+        :param old_config: old config dict
+        :param new_config: new config dict
+        :param param_name: Name of the parameter to be checked
+        :return bool: True if parameter has changed
+        """
+        if param_name not in new_config:
+            raise KeyError('\'{}\' not in dict.'.format(param_name))
+        return param_name not in old_config or new_config[param_name] != old_config[param_name]
 
     @staticmethod
     def _create_or_update_publisher(old_config, new_config, topic_key, message_type, publisher_object, queue_size=1):
@@ -684,32 +700,33 @@ class Vision:
         return publisher_object
 
     @staticmethod
-    def _create_or_update_subscriber(old_config, new_config, topic_key, message_type, subscriber_object, callback, queue_size=1, buff_size=65536):
+    def _create_or_update_subscriber(old_config, new_config, topic_key, data_class, subscriber_object, callback=None, callback_args=None, queue_size=None, buff_size=65536, tcp_nodelay=False):
         """
         Creates or updates an subscriber
         :param old_config: Previous config entries
         :param new_config: Current config entries
         :param topic_key: The config key, where the topic name is stored
-        :param message_type: The ROS message type of the topic we want to subscribe
+        :param data_class: Data type class for ROS messages of the topic we want to subscribe
         :param subscriber_object: The python object, that represents the subscriber
         :param callback: The subscriber callback function
         :param queue_size: The ROS message queue size
         :param buff_size: The ROS message buffer size
         :return: adjusted subscriber object
         """
-        # Check if its the first call or the topic changed
-        if topic_key not in old_config or old_config[topic_key] != new_config[topic_key]:
+        # Check if topic parameter has changed
+        if Vision._config_param_change(old_config, new_config, topic_key):
             # Check if an subsciber exists and unregister him
             if subscriber_object is not None:
                 subscriber_object.unregister()
             # Create the new subscriber
             subscriber_object = rospy.Subscriber(
                 new_config[topic_key],
-                message_type,
+                data_class,
                 callback,
+                callback_args=callback_args,
                 queue_size=queue_size,
-                tcp_nodelay=True,
-                buff_size=buff_size)
+                buff_size=buff_size,
+                tcp_nodelay=tcp_nodelay)
             rospy.loginfo("Registered new subscriber at " + str(new_config[topic_key]))
         return subscriber_object
 
@@ -732,7 +749,7 @@ class Vision:
         # Publish config
         self.pub_config.publish(msg)
 
-    def handle_forgotten_camera_cap(self, image):
+    def _handle_forgotten_camera_cap(self, image):
         # type: (np.array) -> None
         """
         Detects a forgotten cap on the camera and notifies this via speech
