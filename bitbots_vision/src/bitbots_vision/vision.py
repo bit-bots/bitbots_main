@@ -19,7 +19,6 @@ from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config
 
-# TODO remove log names
 # TODO evaluate log levels
 # TODO evaluate removing runtime evaluator
 # TODO set image for color detector
