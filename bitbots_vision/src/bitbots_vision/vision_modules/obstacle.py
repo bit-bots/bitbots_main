@@ -210,35 +210,40 @@ class ObstacleDetector(CandidateFinder):
             else:
                 if (full_field_boundary[i] - full_convex_field_boundary[i]) < current_threshold:
                     # candidate(x upper left point, y upper left point, width, height)
-                    x = obstacle_begin[0]
-                    w = i - x
-                    y = max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)
-                    h = np.round(np.max(full_field_boundary[x:i]) - y)
-                    current_min_width = start_min_width + int((full_convex_field_boundary[i] - h) * distance_value_increase)
-                    current_max_width = start_max_width + int((full_convex_field_boundary[i] - h) * distance_value_increase)
-                    if current_min_width < w < current_max_width:
-                        if h < 0:
-                            rospy.logerr('Vision obstacle detection: Negative obstacle height')
-                        self._obstacles.append(Candidate(x, y, w, h))
+                    self._build_and_save_obstacle_candidate(obstacle_begin,
+                        i,
+                        full_field_boundary,
+                        full_convex_field_boundary,
+                        start_min_width,
+                        start_max_width,
+                        distance_value_increase)
                     obstacle_begin = None
         if obstacle_begin:
             # obstacle began but never ended (problematic edge-case):
             # candidate(x upper left point, y upper left point, width, height)
             i = pic_width - step  # we have to reinitialise i because it was only usable in the for-loop
-            x = obstacle_begin[0]
-            w = i - x  # calculating width of the object
-            y = max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)  # top
-            h = np.round(np.max(full_field_boundary[x:i]) - y)
-            current_min_width = start_min_width + int((full_convex_field_boundary[i] - h) * distance_value_increase)
-            current_max_width = start_max_width + int((full_convex_field_boundary[i] - h) * distance_value_increase)
-            if current_min_width < w < current_max_width:
-                if h < 0:
-                    rospy.logerr('Vision obstacle detection: Negative obstacle height')
-                self._obstacles.append(Candidate(x, y, w, h))
-
+            self._build_and_save_obstacle_candidate(obstacle_begin,
+                i,
+                full_field_boundary,
+                full_convex_field_boundary,
+                start_min_width,
+                start_max_width,
+                distance_value_increase)
         # self._runtime_evaluator.stop_timer()  # for runtime testing
         # self._runtime_evaluator.print_timer()  # for runtime testing
         return self._obstacles
+
+    def _build_and_save_obstacle_candidate(self, obstacle_begin, i, full_field_boundary, full_convex_field_boundary, start_min_width, start_max_width, distance_value_increase):
+        x = obstacle_begin[0]
+        w = i - x  # calculating width of the object
+        y = max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)  # top
+        h = np.round(np.max(full_field_boundary[x:i]) - y)
+        current_min_width = start_min_width + int((full_convex_field_boundary[i] - h) * distance_value_increase)
+        current_max_width = start_max_width + int((full_convex_field_boundary[i] - h) * distance_value_increase)
+        if current_min_width < w < current_max_width:
+            if h < 0:
+                rospy.logerr('Vision obstacle detection: Negative obstacle height')
+            self._obstacles.append(Candidate(x, y, w, h))
 
     def get_all_obstacles(self):
         # type: () -> list[Candidate]
