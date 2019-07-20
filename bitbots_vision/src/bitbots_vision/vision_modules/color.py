@@ -134,7 +134,6 @@ class HsvSpaceColorDetector(ColorDetector):
         :return bool: whether pixel is in color space or not
         """
         pixel = self.pixel_bgr2hsv(pixel)
-        # TODO: optimize comparisons
         return (self.max_vals[0] >= pixel[0] >= self.min_vals[0]) and \
                (self.max_vals[1] >= pixel[1] >= self.min_vals[1]) and \
                (self.max_vals[2] >= pixel[2] >= self.min_vals[2])
@@ -234,7 +233,6 @@ class PixelListColorDetector(ColorDetector):
                     color_values = yaml.safe_load(stream)
                 except yaml.YAMLError as exc:
                     rospy.logerr('Vision color detector: ' + exc)
-                    # TODO: what now??? Handle the error?
 
         # pickle-file is stored as '.txt'
         elif color_path.endswith('.txt'):

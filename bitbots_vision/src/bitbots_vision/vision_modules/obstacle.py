@@ -179,7 +179,7 @@ class ObstacleDetector(CandidateFinder):
             # self._runtime_evaluator.print_timer()  # for runtime testing
         return self._obstacles
 
-    def _obstacle_detector_distance(self):  # TODO: better name than 'distance'
+    def _obstacle_detector_distance(self):
         # type: () -> list[Candidate]
         """
         finds candidates using the difference of the convex field_boundary and the normal field_boundary.

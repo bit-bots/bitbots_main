@@ -19,10 +19,6 @@ from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config
 
-# TODO evaluate log levels
-# TODO evaluate removing runtime evaluator
-# TODO set image for color detector
-# TODO param changed for every dyn reconfigure param
 
 class Vision:
     def __init__(self):
@@ -64,7 +60,6 @@ class Vision:
 
         self.debug_image_drawer = debug.DebugImage()  # Todo: better variable name
         if self.debug_image_drawer:
-            # TODO Evaluate removing of runtime eval
             self.runtime_evaluator = evaluator.RuntimeEvaluator()
 
         # Register static publishers
@@ -137,8 +132,20 @@ class Vision:
             # Check if a cap may be on the camera
             self._handle_forgotten_camera_cap(image)
 
+        # Instances that should be notified with the new image
+        internal_image_subscribers =[
+            self.field_boundary_detector,
+            self.obstacle_detector,
+            self.red_obstacle_detector,
+            self.blue_obstacle_detector,
+            self.goalpost_detector,
+            self.line_detector,
+            self.ball_detector,
+            self.runtime_evaluator,
+        ]
+
         # distribute the image to the detectors
-        self._distribute_images(image)
+        self._distribute_images(image, internal_image_subscribers)
 
         # Check if the vision should run the conventional and neural net part parrall
         if self.config['vision_parallelize']:
@@ -156,8 +163,6 @@ class Vision:
             # Calc conventional calculation and neural net
             self.ball_detector.compute_top_candidate()
             self._conventional_precalculation()
-
-        # TODO: handle all ball candidates
 
         # Grab ball candidates from ball detector
         ball_candidates = self.ball_detector.get_candidates()
@@ -181,7 +186,6 @@ class Vision:
         # check whether ball candidates are over rating threshold
         if top_ball_candidate and top_ball_candidate.get_rating() > self._ball_candidate_threshold:
             # create ball msg
-            # TODO: publish empty msg if no top candidate as described in msg description
             balls_msg = BallsInImage()
             balls_msg.header.frame_id = image_msg.header.frame_id
             balls_msg.header.stamp = image_msg.header.stamp
@@ -264,20 +268,14 @@ class Vision:
         # Now this is not the first callback anymore
         self._first_callback = False
 
-    def _distribute_images(self, image):
+    def _distribute_images(self, image, internal_image_subscribers):
         """
         Set the image for each detector
         :param image: the current image
         """
-        # TODO make Subscriber
-        self.field_boundary_detector.set_image(image)
-        self.obstacle_detector.set_image(image)
-        self.red_obstacle_detector.set_image(image)
-        self.blue_obstacle_detector.set_image(image)
-        self.goalpost_detector.set_image(image)
-        self.line_detector.set_image(image)
-        self.ball_detector.set_image(image)
-        self.runtime_evaluator.set_image()
+        for vision_object in internal_image_subscribers:
+            vision_object.set_image(image)
+
 
     @staticmethod
     def _build_goal_msg(goal_parts_msg):
@@ -448,7 +446,7 @@ class Vision:
         """
         Callback for the dynamic reconfigure configuration. This callback also gets calles for the inertial configuration.
         :param config: New config
-        :param level: No idea what this is for. I google this if we are landed #TODO
+        :param level: Custom defineable value
         """
         # Set some thresholds
         # Brightness threshold which determins if the camera cap is on the camera.
@@ -465,7 +463,6 @@ class Vision:
         else:
             rospy.loginfo('Debug images are disabled')
 
-        # TODO what is the meaning of this parameter? What is the fcnn output?
         # Should the fcnn output (only under the field boundary) be published?
         self.ball_fcnn_publish_output = config['ball_fcnn_publish_output']
         if self.ball_fcnn_publish_output:
@@ -531,7 +528,6 @@ class Vision:
                     config['blue_color_detector_upper_values_v']
                 ])
 
-        # TODO BELOW: check wether config params have changed
         # Check if the dynamic color space field color detector or the static field color detector should be used
         if config['dynamic_color_space_active']:
             # Set dynamic color space field color detector
@@ -632,11 +628,7 @@ class Vision:
                     self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
                     rospy.loginfo(config['vision_ball_classifier'] + " vision is running now")
 
-        # TODO check if a ball detector has been set
-            # TODO Maybe set dummy ballfinder instead?
-
         # Now register all publishers
-        # TODO: topic: ball_in_... BUT MSG TYPE: balls_in_img... CHANGE TOPIC TYPE!
 
         self.pub_balls = Vision._create_or_update_publisher(self.config, config, self.pub_balls, 'ROS_ball_msg_topic', BallsInImage)
 
@@ -656,7 +648,6 @@ class Vision:
 
         self.image_sub = Vision._create_or_update_subscriber(self.config, config, self.image_sub, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
 
-        # TODO replace with transform from basefootprint to camera_optical_frame
         # subscriber for the vertical position of the head, used by the dynamic field-boundary-detector
         self.head_sub = Vision._create_or_update_subscriber(self.config, config, self.head_sub, 'ROS_head_joint_msg_topic', JointState, callback=self._head_joint_state_callback, queue_size=config['ROS_head_joint_state_queue_size'])
 
