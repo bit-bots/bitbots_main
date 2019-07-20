@@ -58,7 +58,7 @@ class Vision:
         self.image_sub = None
         self.head_sub = None
 
-        self.debug_image_drawer = debug.DebugImage()  # Todo: better variable name
+        self.debug_image_drawer = debug.DebugImage()
         if self.debug_image_drawer:
             self.runtime_evaluator = evaluator.RuntimeEvaluator()
 
