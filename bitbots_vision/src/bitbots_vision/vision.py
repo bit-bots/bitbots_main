@@ -503,33 +503,33 @@ class Vision:
         if Vision._config_param_change(self.config, config, [
                 'red_color_detector_lower_values_h', 'red_color_detector_lower_values_s', 'red_color_detector_lower_values_v',
                 'red_color_detector_upper_values_h', 'red_color_detector_upper_values_s', 'red_color_detector_upper_values_v']):
-        self.red_color_detector = color.HsvSpaceColorDetector(
-            [
-                config['red_color_detector_lower_values_h'],
-                config['red_color_detector_lower_values_s'],
-                config['red_color_detector_lower_values_v']
-            ],
-            [
-                config['red_color_detector_upper_values_h'],
-                config['red_color_detector_upper_values_s'],
-                config['red_color_detector_upper_values_v']
-            ])
+            self.red_color_detector = color.HsvSpaceColorDetector(
+                [
+                    config['red_color_detector_lower_values_h'],
+                    config['red_color_detector_lower_values_s'],
+                    config['red_color_detector_lower_values_v']
+                ],
+                [
+                    config['red_color_detector_upper_values_h'],
+                    config['red_color_detector_upper_values_s'],
+                    config['red_color_detector_upper_values_v']
+                ])
 
         # Set the blue color detector
         if Vision._config_param_change(self.config, config, [
                 'blue_color_detector_lower_values_h', 'blue_color_detector_lower_values_s', 'blue_color_detector_lower_values_v',
                 'blue_color_detector_upper_values_h', 'blue_color_detector_upper_values_s', 'blue_color_detector_upper_values_v']):
-        self.blue_color_detector = color.HsvSpaceColorDetector(
-            [
-                config['blue_color_detector_lower_values_h'],
-                config['blue_color_detector_lower_values_s'],
-                config['blue_color_detector_lower_values_v']
-            ],
-            [
-                config['blue_color_detector_upper_values_h'],
-                config['blue_color_detector_upper_values_s'],
-                config['blue_color_detector_upper_values_v']
-            ])
+            self.blue_color_detector = color.HsvSpaceColorDetector(
+                [
+                    config['blue_color_detector_lower_values_h'],
+                    config['blue_color_detector_lower_values_s'],
+                    config['blue_color_detector_lower_values_v']
+                ],
+                [
+                    config['blue_color_detector_upper_values_h'],
+                    config['blue_color_detector_upper_values_s'],
+                    config['blue_color_detector_upper_values_v']
+                ])
 
         # TODO BELOW: check wether config params have changed
         # Check if the dynamic color space field color detector or the static field color detector should be used
@@ -686,7 +686,7 @@ class Vision:
         return False
 
     @staticmethod
-    def _create_or_update_publisher(old_config, new_config, publisher_object, topic_key, data_class, subscriber_listener=None, tcp_nodelay=False, latch=False, headers=None, queue_size=None):
+    def _create_or_update_publisher(old_config, new_config, publisher_object, topic_key, data_class, subscriber_listener=None, tcp_nodelay=False, latch=False, headers=None, queue_size=1):
         """
         Creates or updates an publisher
         :param old_config: Previous config entries
@@ -719,7 +719,7 @@ class Vision:
         return publisher_object
 
     @staticmethod
-    def _create_or_update_subscriber(old_config, new_config, subscriber_object, topic_key, data_class, callback=None, callback_args=None, queue_size=None, buff_size=65536, tcp_nodelay=False):
+    def _create_or_update_subscriber(old_config, new_config, subscriber_object, topic_key, data_class, callback=None, callback_args=None, queue_size=1, buff_size=65536, tcp_nodelay=False):
         """
         Creates or updates an subscriber
         :param old_config: Previous config entries
