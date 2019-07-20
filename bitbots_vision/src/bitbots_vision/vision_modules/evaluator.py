@@ -84,7 +84,7 @@ class RuntimeEvaluator:
          and prints the result
         """
         # the results are only printed out after we collected enough measurements:
-        rospy.loginfo("Vision runtime evaluator: {} Progress:".format(self.name)+str(self.count+1)+"/"+str(self.queue_size), name='bitbots_vision_runtime_evaluator')
+        rospy.loginfo("Vision runtime evaluator: {} Progress:".format(self.name)+str(self.count+1)+"/"+str(self.queue_size))
         if self.count == self.queue_size - 1:
             avg = np.array(self.queue).mean()  # calculates the average of our measurements
-            rospy.loginfo("Vision runtime evaluator: {} timer: {}".format(self.name, avg), name='bitbots_vision_runtime_evaluator')
+            rospy.loginfo("Vision runtime evaluator: {} timer: {}".format(self.name, avg))

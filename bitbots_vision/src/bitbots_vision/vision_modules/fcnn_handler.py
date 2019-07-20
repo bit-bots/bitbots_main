@@ -112,11 +112,11 @@ class FcnnHandler(CandidateFinder):
         When you use it once, use it all the time.
         :return: the candidate with the highest rating (candidate)
         """
-        rospy.logdebug('Vision FCNN handler: get top candidate compute', name='bitbots_vision_fcnn')
+        rospy.logdebug('Vision FCNN handler: get top candidate compute')
         start = cv2.getTickCount()
         self.compute_top_candidate()
         end = cv2.getTickCount()
-        rospy.logdebug('Vision FCNN handler: ->' + str((end - start) / cv2.getTickFrequency()), name='bitbots_vision_fcnn')
+        rospy.logdebug('Vision FCNN handler: ->' + str((end - start) / cv2.getTickFrequency()))
         if self._top_candidate:
             return self._top_candidate[0]
         return None
@@ -149,18 +149,18 @@ class FcnnHandler(CandidateFinder):
         start = cv2.getTickCount()
         out = self.get_fcnn_output()
         end = cv2.getTickCount()
-        rospy.logdebug('Vision FCNN handler: Net:' + str((end - start) / cv2.getTickFrequency()), name='bitbots_vision_fcnn')
+        rospy.logdebug('Vision FCNN handler: Net:' + str((end - start) / cv2.getTickFrequency()))
         start = cv2.getTickCount()
         r, out_bin = cv2.threshold(out, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         tuple_candidates = VisionExtensions.findSpots(out_bin, self._pointcloud_stepsize, self._expand_stepsize, self._candidate_refinement_iteration_count)
         candidates = list()
-        rospy.logdebug('Vision FCNN handler: ' + str(len(tuple_candidates)), name='bitbots_vision_fcnn')
+        rospy.logdebug('Vision FCNN handler: ' + str(len(tuple_candidates)))
         for candidate in tuple_candidates:
             # calculate final width and height
             width, height = candidate[0] - candidate[1], candidate[3] - candidate[2]
             candidates.append(Candidate(candidate[1], candidate[2], width, height))
         end = cv2.getTickCount()
-        rospy.logdebug('Vision FCNN handler: Cluster:' + str((end - start) / cv2.getTickFrequency()), name='bitbots_vision_fcnn')
+        rospy.logdebug('Vision FCNN handler: Cluster:' + str((end - start) / cv2.getTickFrequency()))
         return candidates
 
     def _get_raw_candidates(self):

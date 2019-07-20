@@ -233,7 +233,7 @@ class PixelListColorDetector(ColorDetector):
                 try:
                     color_values = yaml.safe_load(stream)
                 except yaml.YAMLError as exc:
-                    rospy.logerr('Vision color detector: ' + exc, name='bitbots_vision_color_detector')
+                    rospy.logerr('Vision color detector: ' + exc)
                     # TODO: what now??? Handle the error?
 
         # pickle-file is stored as '.txt'
@@ -242,7 +242,7 @@ class PixelListColorDetector(ColorDetector):
                 with open(color_path, 'rb') as f:
                     color_values = pickle.load(f)
             except pickle.PickleError as exc:
-                rospy.logerr('Vision color detector: ' + exc, name='bitbots_vision_color_detector')
+                rospy.logerr('Vision color detector: ' + exc)
 
         # compatibility with colorpicker
         if 'color_values' in color_values.keys():

@@ -339,23 +339,3 @@ int main(int argc, char *argv[]) {
 #endif
     return 0;
 }
-
-//#if PY_MAJOR_VERSION >= 3
-//PyMODINIT_FUNC initVisionExtensions(void) {
-    //import_array();
-    //(void) Py_InitModule("VisionExtensions", VisionMethods);
-//}
-
-//int main(int argc, char *argv[]) {
-
-//     Pass argv[0] to the Python interpreter 
-    //Py_SetProgramName(argv[0]);
-
-  //   Initialize the Python interpreter.  Required. 
-    //Py_Initialize();
-
-    //initVisionExtensions();
-
-    //return 0;
-//}
-//#endif
