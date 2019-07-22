@@ -90,7 +90,7 @@ class Vision:
         """
         # drops old images and cleans up queue
         image_age = rospy.get_rostime() - image_msg.header.stamp
-        if image_age.to_sec() > 1.0:
+        if 1.0 < image_age.to_sec() < 1000.0:
             rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message')
             return
 
