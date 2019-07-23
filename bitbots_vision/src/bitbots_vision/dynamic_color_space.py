@@ -218,7 +218,7 @@ class DynamicColorSpace:
         :return np.array: color space
         """
         # Initializes an empty color space
-        color_space = np.array([]).reshape(0, 3)
+        color_space = np.array([], dtype=np.uint8).reshape(0, 3)
         # Stack every color space in the queue
         for new_color_value_list in queue:
             color_space = np.append(color_space, new_color_value_list[:, :], axis=0)
