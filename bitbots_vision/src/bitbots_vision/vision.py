@@ -39,9 +39,6 @@ class Vision:
 
         self.config = {}
 
-        # Inits runtime evaluator
-        self.runtime_evaluator = evaluator.RuntimeEvaluator()
-
         # the head_joint_states is used by the dynamic field_boundary detector
         self.head_joint_state = None
 
@@ -448,6 +445,7 @@ class Vision:
         :param config: New config
         :param level: Custom defineable value
         """
+        self.runtime_evaluator = evaluator.RuntimeEvaluator()
         # Set some thresholds
         # Brightness threshold which determins if the camera cap is on the camera.
         self._blind_threshold = config['vision_blind_threshold']
@@ -679,9 +677,9 @@ class Vision:
     @staticmethod
     def _create_or_update_publisher(old_config, new_config, publisher_object, topic_key, data_class, subscriber_listener=None, tcp_nodelay=False, latch=False, headers=None, queue_size=1):
         """
-        Creates or updates an publisher
-        :param old_config: Previous config entries
-        :param new_config: Current config entries
+        Creates or updates a publisher
+        :param old_config: Previous config dict
+        :param new_config: Current config dict
         :param publisher_object: The python object, that represents the publisher
         :param topic_key: The config key, where the topic name is stored
         :param data_class: Data type class for ROS messages of the topic we want to subscribe
@@ -712,9 +710,9 @@ class Vision:
     @staticmethod
     def _create_or_update_subscriber(old_config, new_config, subscriber_object, topic_key, data_class, callback=None, callback_args=None, queue_size=1, buff_size=65536, tcp_nodelay=False):
         """
-        Creates or updates an subscriber
-        :param old_config: Previous config entries
-        :param new_config: Current config entries
+        Creates or updates a subscriber
+        :param old_config: Previous config dict
+        :param new_config: Current config dict
         :param subscriber_object: The python object, that represents the subscriber
         :param topic_key: The config key, where the topic name is stored
         :param data_class: Data type class for ROS messages of the topic we want to subscribe
