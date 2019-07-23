@@ -2,6 +2,7 @@ import cv2
 import os
 import rospy
 import time
+from profilehooks import profile
 try:
     from pydarknet import Detector, Image
 except ImportError:
@@ -134,10 +135,10 @@ class YoloHandlerOpenCV():
             for i in indices:
                 i = i[0]
                 box = boxes[i]
-                x = box[0]
-                y = box[1]
-                w = box[2]
-                h = box[3]
+                x = int(box[0])
+                y = int(box[1])
+                w = int(box[2])
+                h = int(box[3])
                 c = Candidate(x, y, w, h)
                 c.rating = confidences[i]
                 class_id = class_ids[i]
