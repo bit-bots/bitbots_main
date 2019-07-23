@@ -569,6 +569,15 @@ class Vision:
         self.blue_obstacle_detector = obstacle.BlueObstacleDetector(self.obstacle_detector)
         self.unknown_obstacle_detector = obstacle.UnknownObstacleDetector(self.obstacle_detector)
 
+        # Check if model directory has changed
+        # Get current hash for the model directory
+        current_hash = Vision.get_directory_hash(os.path.join(self.package_path, "models"))
+        # Get hash for the model directory at build time
+        build_hash = config['hidden_model_directory_hash']
+        # Check if hash is still the same
+        if current_hash != build_hash:
+            rospy.logwarn("Neural Network models not up to date! \nRebuild the vision to refresh neural network paths! \nMake sure you restart your roscore/maser afterwards.")
+
         # set up ball config for fcnn
         # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
         # this enables 2 fcnns with different configs.
@@ -772,6 +781,15 @@ class Vision:
         # Notify if there is a camera cap detected
         if sum(mean) < self._blind_threshold:
             Vision._speak("Hey!   Remove my camera cap!", self.speak_publisher)
+
+    @staticmethod
+    def get_directory_hash(directory):
+        hashsum = -1
+        for dirpath, dirnames, filenames in os.walk(directory):
+            for f in filenames:
+                fp = os.path.join(dirpath, f)
+                hashsum += int(os.path.getsize(fp)) + int(os.path.getmtime(fp))
+        return hashsum % 65536
 
 if __name__ == '__main__':
     Vision()
