@@ -4,7 +4,8 @@ from bitbots_quintic_walk.msg import WalkingDebug
 from humanoid_league_msgs.msg import BallRelative, BallsInImage, \
 LineInformationInImage, LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative, \
 ObstaclesInImage, ObstaclesRelative, ObstacleRelative, \
-GoalInImage, GoalRelative
+GoalInImage, GoalRelative, \
+FieldBoundaryInImage, PixelsRelative, PixelRelative
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import CameraInfo, PointCloud2
 import sensor_msgs.point_cloud2 as pc2
@@ -40,8 +41,12 @@ class TransformBall(object):
 
         rospy.Subscriber(rospy.get_param("~goals/goals_topic", "/goal_in_image"),
                          GoalInImage, self._callback_goal, queue_size=1)
+
         rospy.Subscriber(rospy.get_param("~obstacles/obstacles_topic", "/obstacles_in_image"),
                          ObstaclesInImage, self._callback_obstacles, queue_size=1)
+
+        rospy.Subscriber(rospy.get_param("~field_boundary/field_boundary_topic", "/field_boundary_in_image"),
+                         ObstaclesInImage, self._callback_field_boundary, queue_size=1)
 
         rospy.Subscriber(rospy.get_param("~camera_info/camera_info_topic", "/camera_info"),
                          CameraInfo,
@@ -56,6 +61,7 @@ class TransformBall(object):
             self.line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=1)
         self.goal_relative_pub = rospy.Publisher("goal_relative", GoalRelative, queue_size=1)
         self.obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=1)
+        self.field_boundary_pub = rospy.Publisher("field_boundary_relative", PixelsRelative, queue_size=1)
 
         self.camera_info = None
 
@@ -239,6 +245,28 @@ class TransformBall(object):
             obstacles.obstacles.append(obstacle)
 
         self.obstacle_relative_pub.publish(obstacles)
+
+    def _callback_field_boundary(self, msg):
+        if self.camera_info is None:
+            self.warn_camera_info()
+            return
+
+        field = self.get_plane(msg.header.stamp, 0.0, "base_footprint")
+        if field is None:
+            return
+
+        field_boundary = PixelsRelative()
+        field_boundary.header = msg.header
+
+        for p in msg.field_boundary_points:
+            p_relative = self.transform(p, field, msg.header.stamp)
+            if p_relative is not None:
+                field_boundary.pixels.append(p_relative)
+            else:
+                rospy.logwarn("At least one point of the Field Boundary could not be transformed, dropping message")
+                return
+
+        self.field_boundary_pub.publish(field_boundary)
 
     def warn_camera_info(self):
         rospy.logerr_throttle(5.0, "Did not receive CameraInfo.")

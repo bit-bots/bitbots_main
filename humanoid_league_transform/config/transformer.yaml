@@ -15,5 +15,9 @@ goals:
 obstacles:
   obstacles_topic: '/obstacles_in_image'
 
+field_boundary:
+  field_boundary_topic: '/field_boundary_in_image'
+
 camera_info:
   camera_info_topic: '/camera_info'
+
