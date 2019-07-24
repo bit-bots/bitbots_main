@@ -93,14 +93,6 @@ class Vision:
 
         self.handle_image(image_msg)
 
-    def _head_joint_state_callback(self, headjoint_msg):
-        # type: (JointState) -> None
-        """
-        Sets a new head_joint_state for the field-boundary-module when a new msg is received
-        :param headjoint_msg: the current vertical position of the head
-        """
-        self.field_boundary_detector.set_head_joint_state(headjoint_msg)
-
     @staticmethod
     def _speak(string, speech_publisher):
         """
@@ -540,7 +532,7 @@ class Vision:
                 config)
 
         # Set the field boundary detector
-        self.field_boundary_detector = field_boundary.FieldBoundaryDetector(
+        self.field_boundary_detector = Vision._get_field_boundary_detector(config)(
             self.field_color_detector,
             config,
             self.runtime_evaluator)
@@ -790,6 +782,19 @@ class Vision:
                 fp = os.path.join(dirpath, f)
                 hashsum += int(os.path.getsize(fp)) + int(os.path.getmtime(fp))
         return hashsum % 65536
+
+    @staticmethod
+    def _get_field_boundary_detector(config):
+        search_method = config['field_boundary_finder_search_method']
+        if search_method == 'dynamic':
+            return field_boundary.DynamicFieldBoundaryDetector
+        elif search_method == 'binary':
+            return field_boundary.BinaryFieldBoundaryDetector
+        elif search_method == 'reversed':
+            return field_boundary.ReversedFieldBoundaryDetector
+        else:
+            # default search method:
+            return field_boundary.IterationFieldBoundaryDetector
 
 if __name__ == '__main__':
     Vision()

@@ -89,10 +89,10 @@ class DynamicColorSpace:
             self.package_path,
             vision_config)
 
-        self.field_boundary_detector = field_boundary.FieldBoundaryDetector(
+        # Get correct detector and init it
+        self.field_boundary_detector = DynamicColorSpace.get_field_boundary_detector(vision_config)(
             self.color_detector,
-            vision_config,
-            used_by_dyn_color_detector=True)
+            vision_config)
 
         # Reset queue
         if hasattr(self, 'color_value_queue'):
@@ -244,6 +244,19 @@ class DynamicColorSpace:
         color_space_msg.red   = color_space[:, 2].tolist()
         # Publish ColorSpace-message
         self.pub_color_space.publish(color_space_msg)
+
+    @staticmethod
+    def get_field_boundary_detector(config):
+        search_method = config['dynamic_color_space_field_boundary_finder_search_method']
+        if search_method == 'dynamic':
+            return field_boundary.DynamicFieldBoundaryDetector
+        elif search_method == 'binary':
+            return field_boundary.BinaryFieldBoundaryDetector
+        elif search_method == 'reversed':
+            return field_boundary.ReversedFieldBoundaryDetector
+        else:
+            # default search method:
+            return field_boundary.IterationFieldBoundaryDetector
 
 
 class Pointfinder():

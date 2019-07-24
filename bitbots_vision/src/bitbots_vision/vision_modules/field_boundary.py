@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import rospy
+import abc
 from sensor_msgs.msg import JointState
 from .color import ColorDetector
 from operator import itemgetter
@@ -8,8 +9,7 @@ from .evaluator import RuntimeEvaluator
 
 
 class FieldBoundaryDetector:
-
-    def __init__(self, field_color_detector, config, runtime_evaluator=None, used_by_dyn_color_detector=False):
+    def __init__(self, field_color_detector, config, runtime_evaluator=None):
         # type: (ColorDetector, dict, RuntimeEvaluator, bool) -> None
         """
         This module can compute different versions of the field boundary.
@@ -20,7 +20,6 @@ class FieldBoundaryDetector:
         """
         # set variables:
         self._image = None
-        self._head_joint_position = None
         self._field_boundary_points = None
         self._field_boundary_full = None
         self._convex_field_boundary_points = None
@@ -28,7 +27,6 @@ class FieldBoundaryDetector:
         self._mask = None
         self._field_color_detector = field_color_detector
         self._runtime_evaluator = runtime_evaluator
-        self._used_by_dyn_color_detector = used_by_dyn_color_detector
         # init config:
         self._x_steps = config['field_boundary_finder_horizontal_steps']
         self._y_steps = config['field_boundary_finder_vertical_steps']
@@ -38,12 +36,6 @@ class FieldBoundaryDetector:
         self._green_threshold = config['field_boundary_finder_green_threshold']
         self._precise_pixel = config['field_boundary_finder_precision_pix']
         self._min_precise_pixel = config['field_boundary_finder_min_precision_pix']
-        self._head_joint_threshold = config['field_boundary_finder_head_joint_threshold']
-        # changes the search method when the FieldBoundaryDetector is used by the dynamic colorspace
-        if used_by_dyn_color_detector:
-            self._search_method = config['dynamic_color_space_field_boundary_finder_search_method']
-        else:
-            self._search_method = config['field_boundary_finder_search_method']
 
     def set_image(self, image):
         # type: (np.matrix) -> None
@@ -57,15 +49,6 @@ class FieldBoundaryDetector:
         self._convex_field_boundary_full = None
         self._convex_field_boundary_points = None
         self._mask = None
-
-    def set_head_joint_state(self, head_joint_states):
-        # type: (JointState) -> None
-        """
-        refreshes the vertical tilt of the head
-        :param head_joint_states: the current tilts of the head
-        """
-        vertical_head_tilt = head_joint_states.name.index('HeadTilt')
-        self._head_joint_position = head_joint_states.position[vertical_head_tilt]
 
     def get_mask(self):
         # type: () -> np.array
@@ -105,217 +88,12 @@ class FieldBoundaryDetector:
             return [(point[0], point[1] - offset) for point in self._field_boundary_points]
         return self._field_boundary_points
 
+    @abc.abstractmethod
     def _compute_field_boundary_points(self):
-        # type:
         """
-        calls the method specified in the config (visionparams.yaml) to compute the field boundary points
-        :return: points of the field_boundary as a list of x,y tuples
+        calls the method to compute the field boundary points and saves it in the class variable _field_boundary_points
         """
-        self._field_boundary_points = []
-        if self._search_method == 'dynamic':
-            # decides the search method depending on the vertical tilt of the head
-            if self._head_joint_position and self._head_joint_position > self._head_joint_threshold:
-                self._field_boundary_points = self._sub_field_boundary_points_reversed()
-            else:
-                self._field_boundary_points = self._sub_field_boundary_points_iteration()
-        elif self._search_method == 'binary':
-            self._field_boundary_points = self._sub_field_boundary_points_binary()
-        elif self._search_method == 'reversed':
-            self._field_boundary_points = self._sub_field_boundary_points_reversed()
-        else:
-            # default search method:
-            self._field_boundary_points = self._sub_field_boundary_points_iteration()
-
-    def _sub_field_boundary_points_binary(self):
-        # type: () -> list
-        """
-        Finds the points of the field edge visible in the image. Uses a faster binary search method, that unfortunately
-        finds these points below field lines sometimes
-        :return: points of the field_boundary as a list of x,y tuples
-        """
-        # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
-        # index counting up from top to bottom and left to right
-        field_mask = self._field_color_detector.mask_image(self._image)
-        # noise reduction on the field_mask:
-        field_mask = cv2.morphologyEx(
-            field_mask,
-            cv2.MORPH_CLOSE,
-            np.ones((5, 5), dtype=np.uint8),
-            iterations=2)
-
-        # the stepsize is the number of pixels traversed in the image by going one step
-        y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
-        x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
-
-        # the region of interest (roi) for a specific point is a rectangle
-        # with the point in the middle of its top row; the point is slightly left of center when the width is even
-        roi_start_height_y = self._roi_height
-        roi_start_width_x = self._roi_width
-        roi_start_radius_x = roi_start_width_x // 2
-        # increase of roi radius per pixel, e.g. 0.1 increases the radius by 1 for every 10 pixels
-        # this accommodates for size difference of objects in the image depending on their distance
-        # and therefore height in image:
-        roi_increase = self._roi_increase
-        # height/width/radius-in-x-direction of the roi after maximum increase at the bottom of the image
-        roi_max_height_y = roi_start_height_y + int(self._image.shape[0] * roi_increase * 2)
-        roi_max_width_x = roi_start_width_x + int(self._image.shape[0] * roi_increase * 2)
-        roi_max_radius_x = roi_max_width_x // 2
-        # extents the outermost pixels of the image as the roi will go beyond the image at the edges
-        # Syntax: cv2.copyMakeBorder(image, top, bottom, left, right, type of extension)
-        field_mask = cv2.copyMakeBorder(field_mask, 0, roi_max_height_y, roi_max_radius_x, roi_max_radius_x,
-                                        cv2.BORDER_REPLICATE)
-
-        # uncomment this to use a kernel for the roi
-        # kernel = np.zeros((roi_height, roi_width))  # creates a kernel with 0 everywhere
-        # kernel[int(kernel_height/2):, :] = 1  # use this to fill in other values at specific places in the kernel
-
-        green_threshold = self._green_threshold
-        for x_step in range(0, self._x_steps):  # traverse columns (x_steps)
-            roi_mean = 0
-            y_step = 0
-            roi_current_height_y = 0
-            # binary search for finding the first green pixel:
-            first = 0  # top of the column
-            last = self._y_steps - 1  # bottom of the column
-            # calculate the x coordinate in the image of a column:
-            x_image = int(round(x_step * x_stepsize)) + roi_max_radius_x
-            while first < last:
-                y_step = (first + last) // 2
-                y_image = int(round(y_step * y_stepsize))  # calculate the y coordinate in the image of a y_step
-
-                # creates the roi for a point (y_image, x_image)
-                roi_current_radius_x = roi_start_radius_x + int(y_image * roi_increase)
-                roi_current_height_y = roi_start_height_y + int(y_image * roi_increase * 2)
-                roi = field_mask[y_image:y_image + roi_current_height_y,
-                                 x_image - (roi_current_radius_x - 1):x_image + roi_current_radius_x]
-
-                roi_mean = roi.mean()
-                # roi_mean = (roi * kernel).sum()  # uncomment when using a kernel
-                if roi_mean > green_threshold:  # is the roi green enough?
-                    # the value is green enough, therefore the field_boundary is somewhere above this point
-                    # the area left to search can be halved by setting the new "last" above "y_current"
-                    last = y_step - 1
-                else:
-                    # the value isn't green enough, therefore the field_boundary is somewhere below this point
-                    # the area left to search can be halved by setting the new "first" below "y_current"
-                    first = y_step + 1
-            # During binary search the field_boundary is either approached from the bottom or from the top.
-            # When approaching the field_boundary from the top,
-            # y_step stops one step above the field_boundary on a non green point.
-            # Therefore the y_step has to be increased when it stops on a non green point.
-            if roi_mean <= green_threshold:
-                y_step += 1
-            # calculate the y coordinate in the image of the y_step the topmost green pixel was found on with an offset
-            # of roi_height, as the region of interest extends this far below the point
-            y_image = int(round(y_step * y_stepsize)) + roi_current_height_y
-            self._field_boundary_points.append((x_image - roi_max_radius_x, y_image))
-        return self._field_boundary_points
-
-    def _sub_field_boundary_points_reversed(self):
-        # type: () -> list
-        """
-        Finds the points of the field boundary visible in the image. Uses the reversed method iterating from bottom to
-        top until it finds enough non green points. Useful for when two fields are adjacent to each other.
-        :return: points of the field_boundary as a list of x,y tuples
-        """
-
-        # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
-        # index counting up from top to bottom and left to right
-        field_mask = self._field_color_detector.mask_image(self._image)
-        # noise reduction on the field_mask:
-        field_mask = cv2.morphologyEx(
-            field_mask,
-            cv2.MORPH_CLOSE,
-            np.ones((5, 5), dtype=np.uint8),
-            iterations=2)
-
-        # the stepsize is the number of pixels traversed in the image by going one step
-        y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
-        x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
-
-        # the region of interest (roi) for a specific point is a rectangle with the point in the middle of its top row
-        # the point is slightly left of center when the width is even
-        roi_start_height_y = self._roi_height
-        roi_start_width_x = self._roi_width
-        roi_start_radius_x = roi_start_width_x // 2
-        # increase of roi radius per pixel, e.g. 0.1 increases the radius by 1 for every 10 pixels
-        # this accommodates for size difference of objects in the image depending on their distance
-        # and therefore height in image:
-        roi_increase = self._roi_increase
-        # height/width/radius-in-x-direction of the roi after maximum increase at the bottom of the image
-        roi_max_height_y = roi_start_height_y + int(self._image.shape[0] * roi_increase * 2)
-        roi_max_width_x = roi_start_width_x + int(self._image.shape[0] * roi_increase * 2)
-        roi_max_radius_x = roi_max_width_x // 2
-        # extents the outermost pixels of the image as the roi will go beyond the image at the edges
-        # Syntax: cv2.copyMakeBorder(image, top, bottom, left, right, type of extension)
-        field_mask = cv2.copyMakeBorder(field_mask, roi_start_height_y, 0, roi_max_radius_x, roi_max_radius_x,
-                                        cv2.BORDER_REPLICATE)
-
-        # uncomment this to use a kernel for the roi
-        kernel = np.ones((roi_max_height_y, roi_max_width_x))  # creates a kernel with 0 everywhere
-        # use this to fill in other values at specific places in the kernel
-        kernel[0: int(roi_max_height_y // 5), int(roi_max_width_x // 2.2): int(roi_max_width_x - roi_max_width_x // 2.2)] = 10
-
-        green_threshold = self._green_threshold
-        for x_step in range(self._x_steps):  # traverse columns (x_steps)
-            top_green = roi_start_height_y  # set field_boundary point to worst case
-            # calculate the x coordinate in the image of a column:
-            x_image = int(round(x_step * x_stepsize)) + roi_max_radius_x
-            for y_step in range(self._y_steps):
-                # calculate the y coordinate in the image of a y_step:
-                y_image = int(self._image.shape[0] - (round(y_step * y_stepsize))) + roi_start_height_y
-
-                # creates the roi for a point (y_image, x_image)
-                roi_current_radius_x = roi_start_radius_x + int(y_image * roi_increase)
-                roi_current_height_y = roi_start_height_y + int(y_image * roi_increase * 2)
-                roi = field_mask[y_image - roi_current_height_y:y_image,
-                                 x_image - (roi_current_radius_x - 1):x_image + roi_current_radius_x]
-
-                # roi_mean = roi.mean()
-
-                roi_mean = (roi * kernel[roi_current_height_y - 1, roi_current_radius_x * 2 - 1]).mean()  # uncomment when using a kernel
-                if roi_mean <= green_threshold:
-                    top_green = y_image
-                    break
-            self._field_boundary_points.append((x_image - roi_max_radius_x, top_green))
-        return self._field_boundary_points
-
-    def _sub_field_boundary_points_iteration(self):
-        # type: () -> list
-        """
-        Finds the points of the field boundary visible in the image. Uses the standard method iterating from top to
-        bottom until it finds enough green points.
-        :return: points of the field_boundary as a list of x,y tuples
-        """
-
-        # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
-        # index counting up from top to bottom and left to right
-        field_mask = self._field_color_detector.mask_image(self._image)
-        # noise reduction on the field_mask:
-        field_mask = cv2.morphologyEx(
-            field_mask,
-            cv2.MORPH_CLOSE,
-            np.ones((5, 5), dtype=np.uint8),
-            iterations=2)
-
-        # Syntax: cv2.resize(image, (width, height), type of interpolation)
-        field_mask = cv2.resize(field_mask, (self._x_steps, self._y_steps), interpolation=cv2.INTER_LINEAR)
-
-        # the stepsize is the number of pixels traversed in the image by going one step
-        y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
-        x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
-
-        min_y = self._image.shape[0] - 1
-        for x_step in range(self._x_steps):  # traverse columns
-            firstgreen = min_y  # set field_boundary point to worst case
-            x = int(round(x_step * x_stepsize))  # get x value of step (depends on image size)
-            for y_step in range(self._y_steps):  # traverse rows
-                y = int(round(y_step * y_stepsize))  # get y value of step (depends on image size)
-                if field_mask[y_step, x_step] > 100:  # when the pixel is in the color space
-                    firstgreen = y
-                    break
-            self._field_boundary_points.append((x, firstgreen))
-        return self._field_boundary_points
+        raise NotImplementedError
 
     def get_convex_field_boundary_points(self):
         '''
@@ -423,50 +201,6 @@ class FieldBoundaryDetector:
                            max(0, x - 2):(x + 3)]) > 100:  # when the pixel is in the color space
                     firstgreen = y
                     break
-            field_boundary_points.append((x, firstgreen))
-        return field_boundary_points
-
-    def _precise_field_boundary(self):
-        # type: () -> list
-        """
-        This is an old version that is not used anymore
-
-        Calculates the field_boundary coordinates in a precise way, but less fast and efficient.
-        It checks after having found a field_boundary if coordinates around this point are also green
-        and thus under the field_boundary.
-        It additionally employs checking between the last point known as not the field_boundary and the field_boundary point
-        to see if the field_boundary starts somewhere in between. (Currently actually a TODO)
-        see also: _fast_field_boundary()
-        :return list of coordinates of the field_boundary:
-        """
-        # worst case:
-        min_y = self._image.shape[0] - 1
-        y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
-        x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
-        field_boundary_points = []
-        for x_step in range(self._x_steps):  # traverse columns
-            firstgreen = min_y  # set field_boundary point to worst case
-            x = int(round(x_step * x_stepsize))  # get x value of step (depends on image size)
-            for y_step in range(self._y_steps):  # traverse rows
-                y = int(round(y_step * y_stepsize))  # get y value of step (depends on image size)
-                if self._color_detector.match_pixel(self._image[y][x]):  # when the pixel is in the color space
-                    if (y + self._precise_pixel) < min_y:
-                        for i in range(self._precise_pixel):
-                            greencount = 0
-                            if self._color_detector.match_pixel(self._image[y, x]):
-                                greencount += 1
-                            if greencount >= self._min_precise_pixel:
-                                firstgreen = y
-                                break
-                        firstgreen = y
-                        firstgreen_precise = int(round(
-                            (firstgreen - y_stepsize)
-                            / 2.0))
-                        if firstgreen_precise >= 0 and \
-                                self._color_detector.match_pixel(
-                                    self._image[firstgreen_precise, x]):
-                            firstgreen = firstgreen_precise
-                        break
             field_boundary_points.append((x, firstgreen))
         return field_boundary_points
 
@@ -614,3 +348,255 @@ class FieldBoundaryDetector:
             buffer1 = buffer2
         equalized_points.append(points[-1])
         return equalized_points
+
+
+class IterationFieldBoundaryDetector(FieldBoundaryDetector):
+    def __init__(self, field_color_detector, config, runtime_evaluator=None,):
+        super().__init__(field_color_detector, config, runtime_evaluator=runtime_evaluator)
+
+    def _compute_field_boundary_points(self):
+        self._field_boundary_points = IterationFieldBoundaryAlgorithm.calculate_field_boundary(self._image, self._field_color_detector, self._x_steps, self._y_steps, self._roi_height, self._roi_width, self._roi_increase, self._green_threshold)
+
+
+class BinaryFieldBoundaryDetector(FieldBoundaryDetector):
+    def __init__(self, field_color_detector, config, runtime_evaluator=None):
+        super().__init__(field_color_detector, config, runtime_evaluator=runtime_evaluator)
+
+    def _compute_field_boundary_points(self):
+        self._field_boundary_points = BinaryFieldBoundaryAlgorithm.calculate_field_boundary(self._image, self._field_color_detector, self._x_steps, self._y_steps, self._roi_height, self._roi_width, self._roi_increase, self._green_threshold)
+
+
+class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
+    def __init__(self, field_color_detector, config, runtime_evaluator=None):
+        super().__init__(field_color_detector, config, runtime_evaluator=runtime_evaluator)
+
+    def _compute_field_boundary_points(self):
+        self._field_boundary_points = ReversedFieldBoundaryAlgorithm.calculate_field_boundary(self._image, self._field_color_detector, self._x_steps, self._y_steps, self._roi_height, self._roi_width, self._roi_increase, self._green_threshold)
+
+
+class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
+    def __init__(self, field_color_detector, config, runtime_evaluator=None):
+        super().__init__(field_color_detector, config, runtime_evaluator=runtime_evaluator)
+        # TF stuff TODO
+        self.over_horizon_algorithm = ReversedFieldBoundaryAlgorithm
+        self.under_horizon_algorithm = IterationFieldBoundaryAlgorithm
+
+    def _only_field_visible(self):
+        return False # TODO implement
+
+    def _compute_field_boundary_points(self):
+        if self._only_field_visible():
+            selected_algorithm = self.under_horizon_algorithm
+        else:
+            selected_algorithm = self.over_horizon_algorithm
+        # Calc field boundary
+        self._field_boundary_points = selected_algorithm.calculate_field_boundary(self._image, self._field_color_detector, self._x_steps, self._y_steps, self._roi_height, self._roi_width, self._roi_increase, self._green_threshold)
+
+
+class FieldBoundaryAlgorithm():
+    @abc.abstractmethod
+    def calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
+        pass
+
+
+class IterationFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
+    @staticmethod
+    def calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
+        # type: () -> list
+        """
+        Finds the points of the field boundary visible in the image. Uses the standard method iterating from top to
+        bottom until it finds enough green points.
+        """
+
+        # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
+        # index counting up from top to bottom and left to right
+        field_mask = _field_color_detector.mask_image(_image)
+        # noise reduction on the field_mask:
+        field_mask = cv2.morphologyEx(
+            field_mask,
+            cv2.MORPH_CLOSE,
+            np.ones((5, 5), dtype=np.uint8),
+            iterations=2)
+
+        # Syntax: cv2.resize(image, (width, height), type of interpolation)
+        field_mask = cv2.resize(field_mask, (_x_steps, _y_steps), interpolation=cv2.INTER_LINEAR)
+
+        # the stepsize is the number of pixels traversed in the image by going one step
+        y_stepsize = (_image.shape[0] - 1) / float(_y_steps - 1)
+        x_stepsize = (_image.shape[1] - 1) / float(_x_steps - 1)
+
+        min_y = _image.shape[0] - 1
+
+        _field_boundary_points = []
+        for x_step in range(_x_steps):  # traverse columns
+            firstgreen = min_y  # set field_boundary point to worst case
+            x = int(round(x_step * x_stepsize))  # get x value of step (depends on image size)
+            for y_step in range(_y_steps):  # traverse rows
+                y = int(round(y_step * y_stepsize))  # get y value of step (depends on image size)
+                if field_mask[y_step, x_step] > 100:  # when the pixel is in the color space
+                    firstgreen = y
+                    break
+            _field_boundary_points.append((x, firstgreen))
+        return _field_boundary_points
+
+
+class ReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
+    @staticmethod
+    def calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
+        # type: () -> list
+        """
+        Finds the points of the field boundary visible in the image. Uses the reversed method iterating from bottom to
+        top until it finds enough non green points. Useful for when two fields are adjacent to each other.
+        """
+
+        # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
+        # index counting up from top to bottom and left to right
+        field_mask = _field_color_detector.mask_image(_image)
+        # noise reduction on the field_mask:
+        field_mask = cv2.morphologyEx(
+            field_mask,
+            cv2.MORPH_CLOSE,
+            np.ones((5, 5), dtype=np.uint8),
+            iterations=2)
+
+        # the stepsize is the number of pixels traversed in the image by going one step
+        y_stepsize = (_image.shape[0] - 1) / float(_y_steps - 1)
+        x_stepsize = (_image.shape[1] - 1) / float(_x_steps - 1)
+
+        # the region of interest (roi) for a specific point is a rectangle with the point in the middle of its top row
+        # the point is slightly left of center when the width is even
+        roi_start_height_y = _roi_height
+        roi_start_width_x = _roi_width
+        roi_start_radius_x = roi_start_width_x // 2
+        # increase of roi radius per pixel, e.g. 0.1 increases the radius by 1 for every 10 pixels
+        # this accommodates for size difference of objects in the image depending on their distance
+        # and therefore height in image:
+        roi_increase = _roi_increase
+        # height/width/radius-in-x-direction of the roi after maximum increase at the bottom of the image
+        roi_max_height_y = roi_start_height_y + int(_image.shape[0] * roi_increase * 2)
+        roi_max_width_x = roi_start_width_x + int(_image.shape[0] * roi_increase * 2)
+        roi_max_radius_x = roi_max_width_x // 2
+        # extents the outermost pixels of the image as the roi will go beyond the image at the edges
+        # Syntax: cv2.copyMakeBorder(image, top, bottom, left, right, type of extension)
+        field_mask = cv2.copyMakeBorder(field_mask, roi_start_height_y, 0, roi_max_radius_x, roi_max_radius_x,
+                                        cv2.BORDER_REPLICATE)
+
+        # uncomment this to use a kernel for the roi
+        kernel = np.ones((roi_max_height_y, roi_max_width_x))  # creates a kernel with 0 everywhere
+        # use this to fill in other values at specific places in the kernel
+        kernel[0: int(roi_max_height_y // 5), int(roi_max_width_x // 2.2): int(roi_max_width_x - roi_max_width_x // 2.2)] = 10
+
+        green_threshold = _green_threshold
+
+        _field_boundary_points = []
+        for x_step in range(_x_steps):  # traverse columns (x_steps)
+            top_green = roi_start_height_y  # set field_boundary point to worst case
+            # calculate the x coordinate in the image of a column:
+            x_image = int(round(x_step * x_stepsize)) + roi_max_radius_x
+            for y_step in range(_y_steps):
+                # calculate the y coordinate in the image of a y_step:
+                y_image = int(_image.shape[0] - (round(y_step * y_stepsize))) + roi_start_height_y
+
+                # creates the roi for a point (y_image, x_image)
+                roi_current_radius_x = roi_start_radius_x + int(y_image * roi_increase)
+                roi_current_height_y = roi_start_height_y + int(y_image * roi_increase * 2)
+                roi = field_mask[y_image - roi_current_height_y:y_image,
+                                 x_image - (roi_current_radius_x - 1):x_image + roi_current_radius_x]
+
+                # roi_mean = roi.mean()
+
+                roi_mean = (roi * kernel[roi_current_height_y - 1, roi_current_radius_x * 2 - 1]).mean()  # uncomment when using a kernel
+                if roi_mean <= green_threshold:
+                    top_green = y_image
+                    break
+            _field_boundary_points.append((x_image - roi_max_radius_x, top_green))
+        return _field_boundary_points
+
+
+class BinaryFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
+    @staticmethod
+    def calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
+        """
+        Finds the points of the field edge visible in the image. Uses a faster binary search method, that unfortunately
+        finds these points below field lines sometimes
+        """
+        # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
+        # index counting up from top to bottom and left to right
+        field_mask = _field_color_detector.mask_image(_image)
+        # noise reduction on the field_mask:
+        field_mask = cv2.morphologyEx(
+            field_mask,
+            cv2.MORPH_CLOSE,
+            np.ones((5, 5), dtype=np.uint8),
+            iterations=2)
+
+        # the stepsize is the number of pixels traversed in the image by going one step
+        y_stepsize = (_image.shape[0] - 1) / float(_y_steps - 1)
+        x_stepsize = (_image.shape[1] - 1) / float(_x_steps - 1)
+
+        # the region of interest (roi) for a specific point is a rectangle
+        # with the point in the middle of its top row; the point is slightly left of center when the width is even
+        roi_start_height_y = _roi_height
+        roi_start_width_x = _roi_width
+        roi_start_radius_x = roi_start_width_x // 2
+        # increase of roi radius per pixel, e.g. 0.1 increases the radius by 1 for every 10 pixels
+        # this accommodates for size difference of objects in the image depending on their distance
+        # and therefore height in image:
+        roi_increase = _roi_increase
+        # height/width/radius-in-x-direction of the roi after maximum increase at the bottom of the image
+        roi_max_height_y = roi_start_height_y + int(_image.shape[0] * roi_increase * 2)
+        roi_max_width_x = roi_start_width_x + int(_image.shape[0] * roi_increase * 2)
+        roi_max_radius_x = roi_max_width_x // 2
+        # extents the outermost pixels of the image as the roi will go beyond the image at the edges
+        # Syntax: cv2.copyMakeBorder(image, top, bottom, left, right, type of extension)
+        field_mask = cv2.copyMakeBorder(field_mask, 0, roi_max_height_y, roi_max_radius_x, roi_max_radius_x,
+                                        cv2.BORDER_REPLICATE)
+
+        # uncomment this to use a kernel for the roi
+        # kernel = np.zeros((roi_height, roi_width))  # creates a kernel with 0 everywhere
+        # kernel[int(kernel_height/2):, :] = 1  # use this to fill in other values at specific places in the kernel
+
+        green_threshold = _green_threshold
+
+        _field_boundary_points = []
+
+        for x_step in range(0, _x_steps):  # traverse columns (x_steps)
+            roi_mean = 0
+            y_step = 0
+            roi_current_height_y = 0
+            # binary search for finding the first green pixel:
+            first = 0  # top of the column
+            last = _y_steps - 1  # bottom of the column
+            # calculate the x coordinate in the image of a column:
+            x_image = int(round(x_step * x_stepsize)) + roi_max_radius_x
+            while first < last:
+                y_step = (first + last) // 2
+                y_image = int(round(y_step * y_stepsize))  # calculate the y coordinate in the image of a y_step
+
+                # creates the roi for a point (y_image, x_image)
+                roi_current_radius_x = roi_start_radius_x + int(y_image * roi_increase)
+                roi_current_height_y = roi_start_height_y + int(y_image * roi_increase * 2)
+                roi = field_mask[y_image:y_image + roi_current_height_y,
+                                 x_image - (roi_current_radius_x - 1):x_image + roi_current_radius_x]
+
+                roi_mean = roi.mean()
+                # roi_mean = (roi * kernel).sum()  # uncomment when using a kernel
+                if roi_mean > green_threshold:  # is the roi green enough?
+                    # the value is green enough, therefore the field_boundary is somewhere above this point
+                    # the area left to search can be halved by setting the new "last" above "y_current"
+                    last = y_step - 1
+                else:
+                    # the value isn't green enough, therefore the field_boundary is somewhere below this point
+                    # the area left to search can be halved by setting the new "first" below "y_current"
+                    first = y_step + 1
+            # During binary search the field_boundary is either approached from the bottom or from the top.
+            # When approaching the field_boundary from the top,
+            # y_step stops one step above the field_boundary on a non green point.
+            # Therefore the y_step has to be increased when it stops on a non green point.
+            if roi_mean <= green_threshold:
+                y_step += 1
+            # calculate the y coordinate in the image of the y_step the topmost green pixel was found on with an offset
+            # of roi_height, as the region of interest extends this far below the point
+            y_image = int(round(y_step * y_stepsize)) + roi_current_height_y
+            _field_boundary_points.append((x_image - roi_max_radius_x, y_image))
+        return _field_boundary_points
