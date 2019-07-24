@@ -333,49 +333,8 @@ class FieldBoundaryDetector:
         """
         field_boundary_points = self.get_field_boundary_points()
 
-        #
-        # uncomment this block and the one below to view the
-        # old and new field_boundary
-        # (used for the images in the paper)
-        #
-        # # draw the old field_boundary line
-        # my_img = np.copy(self._image)
-        # for i in range(len(field_boundary_points) - 1):
-        #     cv2.line(my_img, field_boundary_points[i], field_boundary_points[i+1], (255,0,0))
-        # # fill the area below the old field_boundary black
-        # preprocessed_image = np.zeros(self._image.shape)
-        # hpoints = np.array([[(0, 0)] +
-        #                     field_boundary_points +
-        #                     [(preprocessed_image.shape[1] - 1, 0)]])
-        # cv2.fillPoly(preprocessed_image, np.int32(hpoints), 1)
-
         # calculate the "convex hull" of the field_boundary points
-        field_boundary_points = self._graham(field_boundary_points)
-
-        # # fill the area below the new field_boundary black
-        # preprocessed_image2 = np.zeros(self._image.shape)
-        # hpoints = np.array([[(0, 0)] +
-        #                     field_boundary_points +
-        #                     [(preprocessed_image2.shape[1] - 1, 0)]])
-        # cv2.fillPoly(preprocessed_image2, np.int32(hpoints), 1)
-        # # show the results
-        # cv2.imshow('old field_boundary', preprocessed_image)
-        # cv2.waitKey(1)
-        # cv2.imshow('"grahamed" field_boundary', preprocessed_image2)
-        # cv2.waitKey(1)
-        # res_image = preprocessed_image2 - preprocessed_image
-        # cv2.imshow('areas above the "grahamed" field_boundary', res_image)
-        # cv2.waitKey(1)
-        # res_image = preprocessed_image - preprocessed_image2
-        # cv2.imshow('potential obstacles', res_image)
-        # cv2.waitKey(1)
-        # # draw the new field_boundary line
-        # for i in range(len(field_boundary_points) - 1):
-        #     cv2.line(my_img, field_boundary_points[i], field_boundary_points[i+1], (0,255,255))
-        # cv2.imshow('graham: input blue, output yellow', my_img)
-        # cv2.waitKey(1)
-
-        self._convex_field_boundary_points = field_boundary_points
+        self._convex_field_boundary_points = self._graham(field_boundary_points)
 
     def _graham(self, points):
         '''
@@ -409,53 +368,8 @@ class FieldBoundaryDetector:
         # last element in the list
         stack = [my_points[0], my_points[1]]
 
-        #
-        # uncomment to show the sorted points
-        # (used for the images in the paper)
-        #
-        # my_img = np.copy(self._image)
-        # font = cv2.FONT_HERSHEY_SIMPLEX
-        # for j in range(len(my_points)):
-        #         cv2.line(my_img, my_points[j], my_points[j], (0,0,255),2)
-        #         cv2.putText(my_img,'{}'.format(j),(my_points[j][0], my_points[j][1]),
-        #             font, 0.5,(0,255,255),2,cv2.LINE_AA)
-        # cv2.imshow("sorted points by angle", my_img)
-        # cv2.waitKey(0)
-
         i = 2
         while (i < num_points) and (stack[-1][0] != self._image.shape[1] - 1):
-
-            #
-            # uncomment to show debug output (perform the algorithm step by step):
-            # (used for the images in the paper)
-
-            # cv2.waitKey(10)
-            # my_img = np.copy(self._image)
-            # font = cv2.FONT_HERSHEY_SIMPLEX
-            # for j in range(len(stack) - 1):
-            #     cv2.line(my_img, stack[j], stack[j+1], (255,255,0))
-            #
-            # for j in range(len(stack)):
-            #     cv2.putText(my_img,'{}'.format(j),stack[j], font, 0.5,(0,255,255),2,cv2.LINE_AA)
-            # name = 'graham: i = {}'.format(i)
-            #
-            # if (len(stack) >= 2):
-            #    cv2.putText(my_img,'{}'.format(self._ccw(stack[-1], stack[-2],
-            #       my_points[i]) <= 0),(my_points[i][0], my_points[i][1]-20), font,
-            #       0.5,(0,255,0),2,cv2.LINE_AA)
-            #
-            # cv2.line(my_img, stack[-1], stack[-2], (255,0,0),2)
-            #
-            # cv2.line(my_img, my_points[i], my_points[i], (0,0,255),3)
-            #
-            # cv2.putText(my_img,'|stack| = {}'.format(len(stack)),
-            #    (self._image.shape[1]-150, self._image.shape[0]-20), font, 0.5,
-            #    (0,0,255),1,cv2.LINE_AA)
-            #
-            # cv2.imshow(name, my_img)
-            # cv2.waitKey(0)
-            # cv2.destroyWindow(name)
-            # cv2.waitKey(10)
 
             if len(stack) < 2 or self._ccw(stack[-1], stack[-2], my_points[i]) <= 0:
                 # extend the hull
