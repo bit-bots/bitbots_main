@@ -203,7 +203,7 @@ class HardwareUI(Plugin):
                                         selected.setItem(3, k, QTableWidgetItem(str(round(float(data.status[i].values[1].value),2))))
                                         selected.setItem(4, k, QTableWidgetItem(data.status[i].values[0].value))
                             except IndexError:
-                                rospy.logwarn("Received a message that misses some information.")
+                                rospy.logwarn("Received a message that misses some information. Faulty message: " + data.status[i])
 
             self._widget.tableWidget.setHorizontalHeaderLabels(self.motorheaderlist)
             self._widget.tableWidget_2.setHorizontalHeaderLabels(self.motorheaderlist[10:])
