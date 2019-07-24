@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import os
+import sys
 import cv2
 import yaml
 import rospy
@@ -39,9 +40,6 @@ class Vision:
 
         self.config = {}
 
-        # the head_joint_states is used by the dynamic field_boundary detector
-        self.head_joint_state = None
-
         # Publisher placeholder
         self.pub_balls = None
         self.pub_lines = None
@@ -53,7 +51,6 @@ class Vision:
 
         # Subsciber placeholder
         self.image_sub = None
-        self.head_sub = None
 
         self.debug_image_drawer = debug.DebugImage()
         if self.debug_image_drawer:
@@ -72,6 +69,8 @@ class Vision:
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
         self._first_callback = True
 
+        self.reconfigure_active = False
+
         # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
         rospy.spin()
@@ -85,13 +84,23 @@ class Vision:
         Sometimes the queue gets to large, even when the size is limeted to 1.
         That's, why we drop old images manually.
         """
-        # drops old images and cleans up queue
+        # drops old images and cleans up queue. Still accepts very old images, that are most likely from ros bags.
         image_age = rospy.get_rostime() - image_msg.header.stamp
         if 1.0 < image_age.to_sec() < 1000.0:
             rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message')
             return
 
-        self.handle_image(image_msg)
+        # Dont process images if reconfiguration is in progress
+        if self.reconfigure_active:
+            return
+
+        # Catch type errors that occur during reconfiguration :(
+        try:
+            self.handle_image(image_msg)
+        except TypeError as err:
+            if not self.reconfigure_active:
+                print("Unexpected error:", sys.exc_info()[0])
+                raise
 
     @staticmethod
     def _speak(string, speech_publisher):
@@ -437,6 +446,9 @@ class Vision:
         :param config: New config
         :param level: Custom defineable value
         """
+        # Deactivates Vision temporarally
+        self.reconfigure_active = True
+
         self.runtime_evaluator = evaluator.RuntimeEvaluator()
         # Set some thresholds
         # Brightness threshold which determins if the camera cap is on the camera.
@@ -647,14 +659,15 @@ class Vision:
 
         self.image_sub = Vision._create_or_update_subscriber(self.config, config, self.image_sub, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
 
-        # subscriber for the vertical position of the head, used by the dynamic field-boundary-detector
-        self.head_sub = Vision._create_or_update_subscriber(self.config, config, self.head_sub, 'ROS_head_joint_msg_topic', JointState, callback=self._head_joint_state_callback, queue_size=config['ROS_head_joint_state_queue_size'])
-
         # Publish Config-message (mainly for the dynamic color space node)
         self._publish_vision_config(config)
 
         # The old config gets replaced with the new config
         self.config = config
+
+        # Activate Vision again
+        self.reconfigure_active = False
+
         return config
 
     @staticmethod
