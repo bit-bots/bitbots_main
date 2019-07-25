@@ -11,17 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_python_setup()
 
-add_message_files(
-   FILES
-   BatteryMessage.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  bitbots_msgs
-)
-
 catkin_package(CATKIN_DEPENDS message_runtime bitbots_msgs std_msgs)
 
 install(FILES plugin.xml
