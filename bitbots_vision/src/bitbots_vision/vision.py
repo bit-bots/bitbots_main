@@ -483,7 +483,7 @@ class Vision:
         self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
 
         # Print if the vision uses the sim color or not
-        if Vision._config_param_change(self.config, config, ['vision_use_sim_color']):
+        if Vision._config_param_change(self.config, config, 'vision_use_sim_color'):
             if config['vision_use_sim_color']:
                 rospy.logwarn('Loaded color space for SIMULATOR.')
             else:
@@ -689,12 +689,18 @@ class Vision:
 
         :param dict old_config: old config dict
         :param dict new_config: new config dict
-        :param list of str params: List of names of parameters to be checked
+        :param list of str or str params: Parameter name or list of names to be checked
         :return bool: True if parameter has changed
         """
+        # Make single parameters without list possible
+        if not isinstance(params, list):
+            params = [params]
+        # Iterate over params
         for param in params:
+            # Check if param exists in new config
             if param not in new_config:
                 raise KeyError('\'{}\' not in dict.'.format(param))
+            # Check if param is new or if param has changed
             elif param not in old_config or old_config[param] != new_config[param]:
                 return True
         return False
@@ -716,7 +722,7 @@ class Vision:
         :return: adjusted publisher object
         """
         # Check if topic parameter has changed
-        if Vision._config_param_change(old_config, new_config, [topic_key]):
+        if Vision._config_param_change(old_config, new_config, topic_key):
             # Check if an publisher exists and unregister him
             if publisher_object is not None:
                 publisher_object.unregister()
@@ -749,7 +755,7 @@ class Vision:
         :return: adjusted subscriber object
         """
         # Check if topic parameter has changed
-        if Vision._config_param_change(old_config, new_config, [topic_key]):
+        if Vision._config_param_change(old_config, new_config, topic_key):
             # Check if an subsciber exists and unregister him
             if subscriber_object is not None:
                 subscriber_object.unregister()
