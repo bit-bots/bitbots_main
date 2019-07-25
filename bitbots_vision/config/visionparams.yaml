@@ -51,7 +51,7 @@ field_boundary_detector_roi_increase: 0.08  # increase of kernel radius per pixe
 field_boundary_detector_green_threshold: 150
 field_boundary_detector_precision_pix: 5
 field_boundary_detector_min_precision_pix: 3
-field_boundary_detector_head_joint_threshold: -0.5
+field_boundary_detector_head_tilt_threshold: 20
 
 vision_ball_classifier: 'yolo_opencv'  # fcnn or yolo_opencv or yolo_darknet or dummy
 vision_publish_debug_image: false

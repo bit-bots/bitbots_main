@@ -144,7 +144,7 @@ class Vision:
         ]
 
         # distribute the image to the detectors
-        self._distribute_images(image, internal_image_subscribers)
+        self._distribute_images(image, image_msg.header.stamp, internal_image_subscribers)
 
         # Check if the vision should run the conventional and neural net part parrall
         if self.config['vision_parallelize']:
@@ -267,14 +267,20 @@ class Vision:
         # Now this is not the first callback anymore
         self._first_callback = False
 
-    def _distribute_images(self, image, internal_image_subscribers):
+    def _distribute_images(self, image, stamp, internal_image_subscribers):
         """
         Set the image for each detector
         :param image: the current image
         """
+        # Iterate over subscribers
         for vision_object in internal_image_subscribers:
+            # Try to send image time stamp
+            try:
+                vision_object.set_time_stamp(stamp)
+            except AttributeError:
+                pass
+            # Send image
             vision_object.set_image(image)
-
 
     @staticmethod
     def _build_goal_msg(goal_parts_msg):

@@ -2,6 +2,9 @@ import numpy as np
 import cv2
 import rospy
 import abc
+import math
+import tf2_ros as tf2
+from tf.transformations import euler_from_quaternion
 from sensor_msgs.msg import JointState
 from .color import ColorDetector
 from operator import itemgetter
@@ -51,7 +54,6 @@ class FieldBoundaryDetector:
         }
         return detectors[search_method]
 
-
     def set_image(self, image):
         # type: (np.matrix) -> None
         """
@@ -64,6 +66,9 @@ class FieldBoundaryDetector:
         self._convex_field_boundary_full = None
         self._convex_field_boundary_points = None
         self._mask = None
+
+    def set_time_stamp(self, time_stamp):
+        self._image_time_stamp = time_stamp
 
     def get_mask(self):
         # type: () -> np.array
@@ -450,15 +455,41 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
         :param runtime_evaluator: can be used to compute runtime of methods
         """
         super().__init__(field_color_detector, config, runtime_evaluator=runtime_evaluator)
-        # TF stuff TODO
+
         self.over_horizon_algorithm = ReversedFieldBoundaryAlgorithm
         self.under_horizon_algorithm = IterationFieldBoundaryAlgorithm
+        self.base_frame = "camera_optical_frame"
+        self.camera_frame = "base_footprint"
+        self.tilt_threshold = math.radians(config['field_boundary_detector_head_tilt_threshold'])
+
+        # TF stuff
+        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5))
+        self.listener = tf2.TransformListener(self.tf_buffer)
 
     def _only_field_visible(self):
         """
-        Check head orientation and decide if we should use the iteration or reversed iteration method. TODO implement tf
+        Check head orientation and decide if we should use the iteration or reversed iteration method.
         """
-        return False
+        # Check if we can use tf. Otherwise switch to reversed iteration detector
+        try:
+            # Get quaternion from tf
+            orientation = self.tf_buffer.lookup_transform(self.camera_frame, self.base_frame, self._image_time_stamp, timeout=rospy.Duration(0.5)).transform.rotation
+            # Convert into an usable tilt angle
+            tilt_angle =  (1.5 * math.pi - euler_from_quaternion((
+                orientation.x,
+                orientation.y,
+                orientation.z,
+                orientation.w))[0]) % (2 * math.pi)
+            # Check if it satisfied the threshold
+            if tilt_angle > self.tilt_threshold and tilt_angle < math.pi:
+                return True
+            else:
+                return False
+        # Switch to reversed iteration detector
+        except tf2.TransformException:
+            # Warn user
+            rospy.logwarn_throttle(10, "Not able to use tf for dynamic field boundary algorithm selection. Using reversed iteration method instead")
+            return False
 
     def _compute_field_boundary_points(self):
         """
