@@ -11,7 +11,7 @@ from profilehooks import profile, timecall
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
-from sensor_msgs.msg import Image, JointState
+from sensor_msgs.msg import Image
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, PostInImage, \
     GoalInImage, Speak
