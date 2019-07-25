@@ -806,6 +806,12 @@ class Vision:
 
     @staticmethod
     def get_directory_hash(directory):
+        """
+        Generates a hash to check if something in the model (including sub directories) directory has changed.
+        This algorithm needs to be identical to the algorithm in the Vision.cfg file!
+        :param directory: Path to the model directors
+        :return: Hashvalue of the directory
+        """
         hashsum = -1
         for dirpath, dirnames, filenames in os.walk(directory):
             for f in filenames:
