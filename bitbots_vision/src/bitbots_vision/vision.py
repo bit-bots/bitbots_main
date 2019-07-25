@@ -97,10 +97,11 @@ class Vision:
         # Catch type errors that occur during reconfiguration :(
         try:
             self.handle_image(image_msg)
-        except TypeError as err:
+        except (TypeError, cv2.error):
             if not self.reconfigure_active:
-                print("Unexpected error:", sys.exc_info()[0])
                 raise
+            else:
+                rospy.loginfo("Dropped image due to dynamic reconfigure callback!")
 
     @staticmethod
     def _speak(string, speech_publisher):
