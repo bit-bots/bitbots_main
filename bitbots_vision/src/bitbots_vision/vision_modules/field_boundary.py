@@ -473,7 +473,7 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
         # Check if we can use tf. Otherwise switch to reversed iteration detector
         try:
             # Get quaternion from tf
-            orientation = self.tf_buffer.lookup_transform(self.camera_frame, self.base_frame, self._image_time_stamp, timeout=rospy.Duration(0.5)).transform.rotation
+            orientation = self.tf_buffer.lookup_transform(self.camera_frame, self.base_frame, self._image_time_stamp).transform.rotation
             # Convert into an usable tilt angle
             tilt_angle =  (1.5 * math.pi - euler_from_quaternion((
                 orientation.x,
@@ -486,9 +486,13 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
             else:
                 return False
         # Switch to reversed iteration detector
-        except tf2.TransformException:
+        except tf2.LookupException:
+            rospy.logwarn_throttle(10, "TF for dynamic field boundary algorithm selection not active. Using reversed iteration method instead")
+            return False
+        except tf2.ExtrapolationException as ecp:
             # Warn user
-            rospy.logwarn_throttle(10, "Not able to use tf for dynamic field boundary algorithm selection. Using reversed iteration method instead")
+            rospy.logwarn_throttle(10, "Extrapolation exception! Not able to use tf for dynamic field boundary algorithm selection. Using reversed iteration method instead")
+            rospy.logwarn_throttle(10, ecp)
             return False
 
     def _compute_field_boundary_points(self):
