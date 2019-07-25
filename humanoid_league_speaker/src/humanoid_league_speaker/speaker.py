@@ -48,6 +48,8 @@ class Speaker(object):
         self.message_level = None
         self.amplitude = None
 
+        self.female_robots = ["donna", "amy"]
+
         # --- Dynamic Reconfigure ---
         # dyn reconfigure to turn speaking on/off, set volume and to set priority level
         # will use values from config/speaker_params as start
@@ -82,7 +84,10 @@ class Speaker(object):
         """ Speak this specific text"""
         # todo make volume adjustable, some how like this
         #        command = ("espeak", "-a", self.amplitude, text)
-        command = ("espeak", text)
+        if os.getenv('ROBOT_NAME') in self.female_robots:
+            command = ("espeak", "-p 99", text)
+        else:
+            command = ("espeak", text)
         try:
             # we start a new process for espeak, so this node can recieve more text while speaking
             process = subprocess.Popen(command, stdout=subprocess.PIPE,
