@@ -12,11 +12,10 @@ class FieldBoundaryDetector:
     def __init__(self, field_color_detector, config, runtime_evaluator=None):
         # type: (ColorDetector, dict, RuntimeEvaluator, bool) -> None
         """
-        This module can compute different versions of the field boundary.
+        This is the abctract class for the field boundary detector.
         :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
         :param runtime_evaluator: can be used to compute runtime of methods
-        :param used_by_dyn_color_detector: True when FieldBoundaryDetector is used by DynamicColorSpace
         """
         # set variables:
         self._image = None
@@ -193,33 +192,6 @@ class FieldBoundaryDetector:
         '''
         return (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0])
 
-    def _mask_field_boundary(self):
-        """
-        This is an old version that is not used anymore
-        :return:
-        """
-        mask = self._color_detector.mask_image(self._image)
-        mask = cv2.morphologyEx(
-            mask,
-            cv2.MORPH_CLOSE,
-            np.ones((5, 5), dtype=np.uint8),
-            iterations=2)
-        min_y = self._image.shape[0] - 1
-        y_stepsize = (self._image.shape[0] - 1) / float(self._y_steps - 1)
-        x_stepsize = (self._image.shape[1] - 1) / float(self._x_steps - 1)
-        field_boundary_points = []
-        for x_step in range(self._x_steps):  # traverse columns
-            firstgreen = min_y  # set field_boundary point to worst case
-            x = int(round(x_step * x_stepsize))  # get x value of step (depends on image size)
-            for y_step in range(self._y_steps):  # traverse rows
-                y = int(round(y_step * y_stepsize))  # get y value of step (depends on image size)
-                if np.mean(mask[max(0, y - 2):(y + 3),
-                           max(0, x - 2):(x + 3)]) > 100:  # when the pixel is in the color space
-                    firstgreen = y
-                    break
-            field_boundary_points.append((x, firstgreen))
-        return field_boundary_points
-
     def compute_full_field_boundary(self):
         if self._field_boundary_full is None:
             xp, fp = zip(*self.get_field_boundary_points())
@@ -279,10 +251,6 @@ class FieldBoundaryDetector:
         """
         footpoint = (candidate[0] + candidate[2] // 2, candidate[1] + candidate[3] + y_offset)
         return self.point_under_convex_field_boundary(footpoint)
-
-    def compute_all(self):
-        self.compute_full_convex_field_boundary()
-        self.compute_full_field_boundary()
 
     def candidates_under_field_boundary(self, candidates, y_offset=0):
         # type: (list, int) -> list
