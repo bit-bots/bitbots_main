@@ -27,14 +27,14 @@ class FieldBoundaryDetector:
         self._field_color_detector = field_color_detector
         self._runtime_evaluator = runtime_evaluator
         # init config:
-        self._x_steps = config['field_boundary_finder_horizontal_steps']
-        self._y_steps = config['field_boundary_finder_vertical_steps']
-        self._roi_height = config['field_boundary_finder_roi_height']
-        self._roi_width = config['field_boundary_finder_roi_width']
-        self._roi_increase = config['field_boundary_finder_roi_increase']
-        self._green_threshold = config['field_boundary_finder_green_threshold']
-        self._precise_pixel = config['field_boundary_finder_precision_pix']
-        self._min_precise_pixel = config['field_boundary_finder_min_precision_pix']
+        self._x_steps = config['field_boundary_detector_horizontal_steps']
+        self._y_steps = config['field_boundary_detector_vertical_steps']
+        self._roi_height = config['field_boundary_detector_roi_height']
+        self._roi_width = config['field_boundary_detector_roi_width']
+        self._roi_increase = config['field_boundary_detector_roi_increase']
+        self._green_threshold = config['field_boundary_detector_green_threshold']
+        self._precise_pixel = config['field_boundary_detector_precision_pix']
+        self._min_precise_pixel = config['field_boundary_detector_min_precision_pix']
 
     @staticmethod
     def get_by_name(search_method):

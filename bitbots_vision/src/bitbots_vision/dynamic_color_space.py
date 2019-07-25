@@ -91,7 +91,7 @@ class DynamicColorSpace:
 
         # Get field boundary detector class by name from config
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
-            vision_config['dynamic_color_space_field_boundary_finder_search_method'])
+            vision_config['dynamic_color_space_field_boundary_detector_search_method'])
 
         # Set the field boundary detector
         self.field_boundary_detector = field_boundary_detector_class(

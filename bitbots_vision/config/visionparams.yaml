@@ -42,16 +42,16 @@ blue_color_detector_upper_values_h: 116
 blue_color_detector_upper_values_s: 255
 blue_color_detector_upper_values_v: 255
 
-field_boundary_finder_search_method: 'dynamic'  # iteration, reversed, binary or dynamic
-field_boundary_finder_vertical_steps: 30
-field_boundary_finder_horizontal_steps: 30
-field_boundary_finder_roi_height: 1
-field_boundary_finder_roi_width: 1
-field_boundary_finder_roi_increase: 0.08  # increase of kernel radius per pixel
-field_boundary_finder_green_threshold: 150
-field_boundary_finder_precision_pix: 5
-field_boundary_finder_min_precision_pix: 3
-field_boundary_finder_head_joint_threshold: -0.5
+field_boundary_detector_search_method: 'dynamic'  # iteration, reversed, binary or dynamic
+field_boundary_detector_vertical_steps: 30
+field_boundary_detector_horizontal_steps: 30
+field_boundary_detector_roi_height: 1
+field_boundary_detector_roi_width: 1
+field_boundary_detector_roi_increase: 0.08  # increase of kernel radius per pixel
+field_boundary_detector_green_threshold: 150
+field_boundary_detector_precision_pix: 5
+field_boundary_detector_min_precision_pix: 3
+field_boundary_detector_head_joint_threshold: -0.5
 
 vision_ball_classifier: 'yolo_opencv'  # fcnn or yolo_opencv or yolo_darknet or dummy
 vision_publish_debug_image: false
@@ -105,4 +105,4 @@ dynamic_color_space_publish_field_mask_image: false
 dynamic_color_space_queue_max_size: 10
 dynamic_color_space_threshold: 0.8
 dynamic_color_space_kernel_radius: 1
-dynamic_color_space_field_boundary_finder_search_method: 'reversed' # iteration, reversed, binary or dynamic
+dynamic_color_space_field_boundary_detector_search_method: 'reversed' # iteration, reversed, binary or dynamic
