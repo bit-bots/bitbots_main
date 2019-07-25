@@ -132,14 +132,14 @@ class FieldBoundaryDetector:
 
     def _graham(self, points):
         '''
-        input: list of points (a point is a 2D array (x,y)) with increasing x-coordinates,
-               including one point with x = 0 and one point with x = self._image.shape[1]-1
-        output: list of points, see below for more detail
-
         This is a modified Graham's convex hull algorithm. Instead of returning the list
         of points that form the entire convex hull of the input point set, it returns
         only the "half" of the hull which has the lower y-coordinates and spans between the
         points with x=0 and x=self._image.shape[1]-1.
+
+        :param points:  list of points (a point is a 2D array (x,y)) with increasing x-coordinates,
+                        including one point with x = 0 and one point with x = self._image.shape[1]-1
+        :return: list of points, see below for more detail
         '''
 
         if len(points) < 3:
@@ -286,13 +286,31 @@ class FieldBoundaryDetector:
 
     def candidates_under_field_boundary(self, candidates, y_offset=0):
         # type: (list, int) -> list
+        """
+        Removes candidates that are not under the field boundary from list
+        :param balls: list of all candidates
+        :param y_offset: If the ball is within this offset over the field boundary its still accepted.
+        :return: list of candidates under the field boundary
+        """
         return [candidate for candidate in candidates if self.candidate_under_field_boundary(candidate, y_offset)]
 
     def candidates_under_convex_field_boundary(self, candidates, y_offset=0):
         # type: (list, int) -> list
+        """
+        Removes candidates that are not under the convex field boundary from list
+        :param balls: list of all candidates
+        :param y_offset: If the ball is within this offset over the field boundary its still accepted.
+        :return: list of candidates under convex the field boundary
+        """
         return [candidate for candidate in candidates if self.candidate_under_convex_field_boundary(candidate, y_offset)]
 
     def balls_under_field_boundary(self, balls, y_offset=0):
+        """
+        Removes balls that are not under the field boundary from list
+        :param balls: list of all candidates
+        :param y_offset: If the ball is within this offset over the field boundary its still accepted.
+        :return: list of balls under the field boundary
+        """
         # type: (list, int) -> list
         return [candidate for candidate in balls if self.candidate_under_field_boundary(
             (candidate.get_upper_left_x(),
@@ -303,6 +321,12 @@ class FieldBoundaryDetector:
 
     def balls_under_convex_field_boundary(self, balls, y_offset=0):
         # type: (list, int) -> list
+        """
+        Removes balls that are not under the convex field boundary from list
+        :param balls: list of all candidates
+        :param y_offset: If the ball is within this offset over the field boundary its still accepted.
+        :return: list of balls under the convex field boundary
+        """
         return [candidate for candidate in balls if self.candidate_under_convex_field_boundary(
             (candidate.get_upper_left_x(),
              candidate.get_upper_left_y(),
@@ -367,52 +391,137 @@ class FieldBoundaryDetector:
 
 
 class IterationFieldBoundaryDetector(FieldBoundaryDetector):
-    def __init__(self, field_color_detector, config, runtime_evaluator=None,):
+    def __init__(self, field_color_detector, config, runtime_evaluator=None):
+        """
+        This is the iteration field boundary detector.
+        It uses the iteration detection method and finds the field boundary via scan lines running down from top to bottom.
+        :param field_color_detector: checks whether a color is part of the field colors
+        :param config: the configuration contained in visionparams.yaml
+        :param runtime_evaluator: can be used to compute runtime of methods
+        """
         super().__init__(field_color_detector, config, runtime_evaluator=runtime_evaluator)
 
     def _compute_field_boundary_points(self):
-        self._field_boundary_points = IterationFieldBoundaryAlgorithm.calculate_field_boundary(self._image, self._field_color_detector, self._x_steps, self._y_steps, self._roi_height, self._roi_width, self._roi_increase, self._green_threshold)
+        """
+        Calls the method to compute the field boundary via the iteration method and saves it in the class variable _field_boundary_points
+        """
+        # Calc field boundary
+        self._field_boundary_points = IterationFieldBoundaryAlgorithm.calculate_field_boundary(
+            self._image,
+            self._field_color_detector,
+            self._x_steps,
+            self._y_steps,
+            self._roi_height,
+            self._roi_width,
+            self._roi_increase,
+            self._green_threshold)
 
 
 class BinaryFieldBoundaryDetector(FieldBoundaryDetector):
     def __init__(self, field_color_detector, config, runtime_evaluator=None):
+        """
+        This is the binary search field boundary detector.
+        It uses the binary detection method and finds the field boundary via binary search.
+        :param field_color_detector: checks whether a color is part of the field colors
+        :param config: the configuration contained in visionparams.yaml
+        :param runtime_evaluator: can be used to compute runtime of methods
+        """
         super().__init__(field_color_detector, config, runtime_evaluator=runtime_evaluator)
 
     def _compute_field_boundary_points(self):
-        self._field_boundary_points = BinaryFieldBoundaryAlgorithm.calculate_field_boundary(self._image, self._field_color_detector, self._x_steps, self._y_steps, self._roi_height, self._roi_width, self._roi_increase, self._green_threshold)
+        """
+        Calls the method to compute the field boundary via the binary search and saves it in the class variable _field_boundary_points
+        """
+        # Calc field boundary
+        self._field_boundary_points = BinaryFieldBoundaryAlgorithm.calculate_field_boundary(
+            self._image,
+            self._field_color_detector,
+            self._x_steps,
+            self._y_steps,
+            self._roi_height,
+            self._roi_width,
+            self._roi_increase,
+            self._green_threshold)
 
 
 class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
     def __init__(self, field_color_detector, config, runtime_evaluator=None):
+        """
+        This is the reversed iteration field boundary detector.
+        It uses the reversed detection method and finds the field boundary via scan lines running up from bottom to top.
+        :param field_color_detector: checks whether a color is part of the field colors
+        :param config: the configuration contained in visionparams.yaml
+        :param runtime_evaluator: can be used to compute runtime of methods
+        """
         super().__init__(field_color_detector, config, runtime_evaluator=runtime_evaluator)
 
     def _compute_field_boundary_points(self):
-        self._field_boundary_points = ReversedFieldBoundaryAlgorithm.calculate_field_boundary(self._image, self._field_color_detector, self._x_steps, self._y_steps, self._roi_height, self._roi_width, self._roi_increase, self._green_threshold)
+        """
+        Calls the method to compute the field boundary via the reversed iteration method and saves it in the class variable _field_boundary_points
+        """
+        # Calc field boundary
+        self._field_boundary_points = ReversedFieldBoundaryAlgorithm.calculate_field_boundary(
+            self._image,
+            self._field_color_detector,
+            self._x_steps,
+            self._y_steps,
+            self._roi_height,
+            self._roi_width,
+            self._roi_increase,
+            self._green_threshold)
 
 
 class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
     def __init__(self, field_color_detector, config, runtime_evaluator=None):
+        """
+        This is the dynamic field boundary detector.
+        It switches between the iteration and reversed iteration method. It depends on how much the robot head is tilted.
+        This improves performance (iteration) and enables operation with two field next to each other (reversed).
+        :param field_color_detector: checks whether a color is part of the field colors
+        :param config: the configuration contained in visionparams.yaml
+        :param runtime_evaluator: can be used to compute runtime of methods
+        """
         super().__init__(field_color_detector, config, runtime_evaluator=runtime_evaluator)
         # TF stuff TODO
         self.over_horizon_algorithm = ReversedFieldBoundaryAlgorithm
         self.under_horizon_algorithm = IterationFieldBoundaryAlgorithm
 
     def _only_field_visible(self):
-        return False # TODO implement
+        """
+        Check head orientation and decide if we should use the iteration or reversed iteration method. TODO implement tf
+        """
+        return False
 
     def _compute_field_boundary_points(self):
+        """
+        Calls the method to compute the field boundary and saves it in the class variable _field_boundary_points
+        """
         if self._only_field_visible():
             selected_algorithm = self.under_horizon_algorithm
         else:
             selected_algorithm = self.over_horizon_algorithm
         # Calc field boundary
-        self._field_boundary_points = selected_algorithm.calculate_field_boundary(self._image, self._field_color_detector, self._x_steps, self._y_steps, self._roi_height, self._roi_width, self._roi_increase, self._green_threshold)
-
+        self._field_boundary_points = selected_algorithm.calculate_field_boundary(
+            self._image,
+            self._field_color_detector,
+            self._x_steps,
+            self._y_steps,
+            self._roi_height,
+            self._roi_width,
+            self._roi_increase,
+            self._green_threshold)
 
 class FieldBoundaryAlgorithm():
+    """
+    Definition of the interface for an field boundary algorithm
+    """
     @abc.abstractmethod
     def calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
-        pass
+        """
+        Calculates (if implemented) the field boundary
+        :returns: list of field boundary points
+        """
+        raise NotImplementedError
 
 
 class IterationFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
@@ -422,6 +531,7 @@ class IterationFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         """
         Finds the points of the field boundary visible in the image. Uses the standard method iterating from top to
         bottom until it finds enough green points.
+        :returns: list of field boundary points
         """
 
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
@@ -463,6 +573,7 @@ class ReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         """
         Finds the points of the field boundary visible in the image. Uses the reversed method iterating from bottom to
         top until it finds enough non green points. Useful for when two fields are adjacent to each other.
+        :returns: list of field boundary points
         """
 
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
@@ -535,6 +646,7 @@ class BinaryFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         """
         Finds the points of the field edge visible in the image. Uses a faster binary search method, that unfortunately
         finds these points below field lines sometimes
+        :returns: list of field boundary points
         """
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
         # index counting up from top to bottom and left to right
