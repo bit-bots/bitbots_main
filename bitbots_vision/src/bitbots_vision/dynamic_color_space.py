@@ -99,10 +99,6 @@ class DynamicColorSpace:
             vision_config,
             self.runtime_evaluator)
 
-        # Reset queue
-        if hasattr(self, 'color_value_queue'):
-            self.color_value_queue.clear()
-
         # Set params
         self.queue_max_size = vision_config['dynamic_color_space_queue_max_size']
         self.color_value_queue = deque(maxlen=self.queue_max_size)
