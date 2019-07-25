@@ -544,8 +544,12 @@ class Vision:
                 self.package_path,
                 config)
 
+        # Get field boundary detector class by name from config
+        field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
+            config['field_boundary_finder_search_method'])
+
         # Set the field boundary detector
-        self.field_boundary_detector = Vision._get_field_boundary_detector(config)(
+        self.field_boundary_detector = field_boundary_detector_class(
             self.field_color_detector,
             config,
             self.runtime_evaluator)
@@ -797,18 +801,6 @@ class Vision:
                 hashsum += int(os.path.getsize(fp)) + int(os.path.getmtime(fp))
         return hashsum % 65536
 
-    @staticmethod
-    def _get_field_boundary_detector(config):
-        search_method = config['field_boundary_finder_search_method']
-        if search_method == 'dynamic':
-            return field_boundary.DynamicFieldBoundaryDetector
-        elif search_method == 'binary':
-            return field_boundary.BinaryFieldBoundaryDetector
-        elif search_method == 'reversed':
-            return field_boundary.ReversedFieldBoundaryDetector
-        else:
-            # default search method:
-            return field_boundary.IterationFieldBoundaryDetector
 
 if __name__ == '__main__':
     Vision()

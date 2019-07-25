@@ -37,6 +37,22 @@ class FieldBoundaryDetector:
         self._precise_pixel = config['field_boundary_finder_precision_pix']
         self._min_precise_pixel = config['field_boundary_finder_min_precision_pix']
 
+    @staticmethod
+    def get_by_name(search_method):
+        # type: (String) -> FieldBoundaryDetector
+        """
+        Returns the matching field boundary detector for an String
+        :param image: the current frame of the video feed
+        """
+        detectors = {
+            'dynamic': DynamicFieldBoundaryDetector,
+            'binary': BinaryFieldBoundaryDetector,
+            'reversed': ReversedFieldBoundaryDetector,
+            'iteration': IterationFieldBoundaryDetector,
+        }
+        return detectors[search_method]
+
+
     def set_image(self, image):
         # type: (np.matrix) -> None
         """
