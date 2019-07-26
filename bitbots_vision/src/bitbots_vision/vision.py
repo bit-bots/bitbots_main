@@ -465,19 +465,21 @@ class Vision:
         # Maximum offset for balls over the convex field boundary
         self._ball_candidate_y_offset = config['vision_ball_candidate_field_boundary_y_offset']
 
-        # Should the debug image be published?
-        self.publish_debug_image = config['vision_publish_debug_image']
-        if self.publish_debug_image:
-            rospy.logwarn('Debug images are enabled')
-        else:
-            rospy.loginfo('Debug images are disabled')
+        if Vision._config_param_change(self.config, config, 'vision_publish_debug_image'):
+            # Should the debug image be published?
+            self.publish_debug_image = config['vision_publish_debug_image']
+            if self.publish_debug_image:
+                rospy.logwarn('Debug images are enabled')
+            else:
+                rospy.loginfo('Debug images are disabled')
 
-        # Should the fcnn output (only under the field boundary) be published?
-        self.ball_fcnn_publish_output = config['ball_fcnn_publish_output']
-        if self.ball_fcnn_publish_output:
-            rospy.logwarn('ball FCNN output publishing is enabled')
-        else:
-            rospy.logwarn('ball FCNN output publishing is disabled')
+        if Vision._config_param_change(self.config, config, 'ball_fcnn_publish_output'):
+            # Should the fcnn output (only under the field boundary) be published?
+            self.ball_fcnn_publish_output = config['ball_fcnn_publish_output']
+            if self.ball_fcnn_publish_output:
+                rospy.logwarn('ball FCNN output publishing is enabled')
+            else:
+                rospy.logwarn('ball FCNN output publishing is disabled')
 
         # Should the whole fcnn output be published?
         self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
