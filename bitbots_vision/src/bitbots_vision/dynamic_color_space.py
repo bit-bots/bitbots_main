@@ -62,7 +62,7 @@ class DynamicColorSpace:
         :return: None
         """
         # Load dict from string in yaml-format in msg.data
-        vision_config = yaml.load(msg.data)
+        vision_config = yaml.load(msg.data, Loader=yaml.FullLoader)
 
         self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 

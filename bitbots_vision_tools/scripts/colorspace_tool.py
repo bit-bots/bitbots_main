@@ -59,7 +59,7 @@ class ColorspaceTool():
         with open(color_path, 'r') as stream:
             print("Loading file...")
             try:
-                color_values = yaml.load(stream)
+                color_values = yaml.load(stream, Loader=yaml.FullLoader)
             except IOError:
                 print("Not able to read the File!!!")
             # Compatibility check
