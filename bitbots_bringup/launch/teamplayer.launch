@@ -31,6 +31,8 @@
         <arg name="simple" value="$(arg simple)" />
     </include>
 
+    <include file="$(find bitbots_bringup)/launch/tools.launch" />
+
     <group if="$(arg motion)">
         <include file="$(find bitbots_bringup)/launch/motion.launch">
             <arg name="sim" value="$(arg sim)"/>
