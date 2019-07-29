@@ -5,17 +5,12 @@
     <arg name="vision" default="false"/>
     <arg name="teamcom" default="false"/>
     <arg name="localization" default="false"/>
-    <arg name="simple" default="false"/> <!-- whether to use the simple behavior -->
-    <!-- defines camera type -->
+    <arg name="simple" default="false" doc="Whether to use the simple behavior" />
     <arg name="basler" default="true" doc="Defines the robot camera type"/>
 
     <arg name="use_game_settings" default="true"/>
     
     <arg name="sim_ns" default="/" />
-
-    <include file="$(find system_monitor)/launch/system_monitor.launch">
-        <arg name="required" value="false" />
-    </include>
 
     <include file="$(find humanoid_league_game_controller)/launch/game_controller.launch">
             <arg name="use_game_settings" value="$(arg use_game_settings)"/>
@@ -49,9 +44,6 @@
     <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch">
         <arg name="localization" value="$(arg localization)"/>
     </include>
-    <!-- include file="$(find bitbots_bezier_pathfinding)/launch/bezier_pathfinding.launch">
-        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
-    </include -->
 
     <group if="$(arg behave)">
         <include file="$(find bitbots_body_behavior)/launch/behavior.launch">
@@ -59,6 +51,4 @@
             <arg name="simple" value="$(arg simple)"/>
         </include>
     </group>
-
-    <include file="$(find udp_bridge)/launch/send.launch" />
 </launch>

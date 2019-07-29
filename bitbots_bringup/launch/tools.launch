@@ -1,0 +1,7 @@
+<launch>
+    <include file="$(find system_monitor)/launch/system_monitor.launch">
+        <arg name="required" value="false" />
+    </include>
+
+    <include file="$(find udp_bridge)/launch/send.launch" />
+</launch>
