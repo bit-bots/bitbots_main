@@ -1,3 +1,5 @@
+import os
+import rospy
 from humanoid_league_msgs.msg import BallInImage, ObstacleInImage, PostInImage, GoalInImage, Speak
 
 class ROS_Utils:
@@ -107,7 +109,7 @@ class ROS_Utils:
         return False
 
     @staticmethod
-    def add_model_enums(self, cfg_type, package_path):
+    def add_model_enums(cfg_type, package_path):
         """
         Add models to dynamic reconfigure enums.
 
@@ -147,7 +149,7 @@ class ROS_Utils:
         ROS_Utils._change_enum_items(cfg_type, 'yolo_model_path', yolo_paths)
 
     @staticmethod
-    def add_color_space_enums(self, cfg_type, package_path):
+    def add_color_space_enums(cfg_type, package_path):
         """
         Add models to dynamic reconfigure enums.
 
@@ -182,7 +184,7 @@ class ROS_Utils:
         :return: adjusted publisher object
         """
         # Check if topic parameter has changed
-        if Vision._config_param_change(old_config, new_config, topic_key):
+        if ROS_Utils.config_param_change(old_config, new_config, topic_key):
             # Check if an publisher exists and unregister him
             if publisher_object is not None:
                 publisher_object.unregister()
@@ -215,7 +217,7 @@ class ROS_Utils:
         :return: adjusted subscriber object
         """
         # Check if topic parameter has changed
-        if Vision._config_param_change(old_config, new_config, topic_key):
+        if ROS_Utils.config_param_change(old_config, new_config, topic_key):
             # Check if an subsciber exists and unregister him
             if subscriber_object is not None:
                 subscriber_object.unregister()
@@ -337,3 +339,27 @@ class ROS_Utils:
         speak_message = Speak()
         speak_message.text = string
         speech_publisher.publish(speak_message)
+
+    @staticmethod
+    def config_param_change(old_config, new_config, params):
+        # type: (dict, dict, [str]) -> bool
+        """
+        Checks whether some of the specified config params have changed.
+
+        :param dict old_config: old config dict
+        :param dict new_config: new config dict
+        :param list of str or str params: Parameter name or list of names to be checked
+        :return bool: True if parameter has changed
+        """
+        # Make single parameters without list possible
+        if not isinstance(params, list):
+            params = [params]
+        # Iterate over params
+        for param in params:
+            # Check if param exists in new config
+            if param not in new_config:
+                raise KeyError('\'{}\' not in dict.'.format(param))
+            # Check if param is new or if param has changed
+            elif param not in old_config or old_config[param] != new_config[param]:
+                return True
+        return False

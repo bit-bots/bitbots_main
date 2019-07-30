@@ -72,8 +72,8 @@ class Vision:
         self.reconfigure_active = False
 
         # Add model enums to config
-        ros_utils.ROS_Utils.add_model_enums(VisionConfig)
-        ros_utils.ROS_Utils.add_color_space_enums(VisionConfig)
+        ros_utils.ROS_Utils.add_model_enums(VisionConfig, self.package_path)
+        ros_utils.ROS_Utils.add_color_space_enums(VisionConfig, self.package_path)
 
         # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
@@ -362,7 +362,7 @@ class Vision:
         # Maximum offset for balls over the convex field boundary
         self._ball_candidate_y_offset = config['vision_ball_candidate_field_boundary_y_offset']
 
-        if Vision._config_param_change(self.config, config, 'vision_publish_debug_image'):
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'vision_publish_debug_image'):
             # Should the debug image be published?
             self.publish_debug_image = config['vision_publish_debug_image']
             if self.publish_debug_image:
@@ -370,7 +370,7 @@ class Vision:
             else:
                 rospy.loginfo('Debug images are disabled')
 
-        if Vision._config_param_change(self.config, config, 'ball_fcnn_publish_output'):
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'ball_fcnn_publish_output'):
             # Should the fcnn output (only under the field boundary) be published?
             self.ball_fcnn_publish_output = config['ball_fcnn_publish_output']
             if self.ball_fcnn_publish_output:
@@ -382,14 +382,14 @@ class Vision:
         self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
 
         # Print if the vision uses the sim color or not
-        if Vision._config_param_change(self.config, config, 'vision_use_sim_color'):
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'vision_use_sim_color'):
             if config['vision_use_sim_color']:
                 rospy.logwarn('Loaded color space for SIMULATOR.')
             else:
                 rospy.loginfo('Loaded color space for REAL WORLD.')
 
         # Set the white color detector
-        if Vision._config_param_change(self.config, config, [
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, [
                 'white_color_detector_lower_values_h', 'white_color_detector_lower_values_s', 'white_color_detector_lower_values_v',
                 'white_color_detector_upper_values_h', 'white_color_detector_upper_values_s', 'white_color_detector_upper_values_v']):
             self.white_color_detector = color.HsvSpaceColorDetector(
@@ -405,7 +405,7 @@ class Vision:
                 ])
 
         # Set the red color detector
-        if Vision._config_param_change(self.config, config, [
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, [
                 'red_color_detector_lower_values_h', 'red_color_detector_lower_values_s', 'red_color_detector_lower_values_v',
                 'red_color_detector_upper_values_h', 'red_color_detector_upper_values_s', 'red_color_detector_upper_values_v']):
             self.red_color_detector = color.HsvSpaceColorDetector(
@@ -421,7 +421,7 @@ class Vision:
                 ])
 
         # Set the blue color detector
-        if Vision._config_param_change(self.config, config, [
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, [
                 'blue_color_detector_lower_values_h', 'blue_color_detector_lower_values_s', 'blue_color_detector_lower_values_v',
                 'blue_color_detector_upper_values_h', 'blue_color_detector_upper_values_s', 'blue_color_detector_upper_values_v']):
             self.blue_color_detector = color.HsvSpaceColorDetector(
@@ -570,30 +570,6 @@ class Vision:
         self.reconfigure_active = False
 
         return config
-
-    @staticmethod
-    def _config_param_change(old_config, new_config, params):
-        # type: (dict, dict, [str]) -> bool
-        """
-        Checks whether some of the specified config params have changed.
-
-        :param dict old_config: old config dict
-        :param dict new_config: new config dict
-        :param list of str or str params: Parameter name or list of names to be checked
-        :return bool: True if parameter has changed
-        """
-        # Make single parameters without list possible
-        if not isinstance(params, list):
-            params = [params]
-        # Iterate over params
-        for param in params:
-            # Check if param exists in new config
-            if param not in new_config:
-                raise KeyError('\'{}\' not in dict.'.format(param))
-            # Check if param is new or if param has changed
-            elif param not in old_config or old_config[param] != new_config[param]:
-                return True
-        return False
 
     def _publish_vision_config(self, config):
         """
