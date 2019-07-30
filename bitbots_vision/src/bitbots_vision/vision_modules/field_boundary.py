@@ -499,11 +499,9 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
         Calls the method to compute the field boundary and saves it in the class variable _field_boundary_points
         """
         if self._only_field_visible():
-            rospy.logwarn_throttle(2,"Using iteration")
             selected_algorithm = self.under_horizon_algorithm
         else:
             selected_algorithm = self.over_horizon_algorithm
-            rospy.logwarn_throttle(2,"Rev iteration")
         # Calc field boundary
         self._field_boundary_points = selected_algorithm.calculate_field_boundary(
             self._image,
