@@ -197,7 +197,7 @@ class ROS_Utils:
                 latch=latch,
                 headers=headers,
                 queue_size=queue_size)
-            rospy.loginfo("Registered new publisher to " + str(new_config[topic_key]))
+            rospy.logdebug("Registered new publisher to " + str(new_config[topic_key]))
         return publisher_object
 
     @staticmethod
@@ -230,7 +230,7 @@ class ROS_Utils:
                 queue_size=queue_size,
                 buff_size=buff_size,
                 tcp_nodelay=tcp_nodelay)
-            rospy.loginfo("Registered new subscriber at " + str(new_config[topic_key]))
+            rospy.logdebug("Registered new subscriber at " + str(new_config[topic_key]))
         return subscriber_object
 
     @staticmethod
