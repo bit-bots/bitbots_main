@@ -9,7 +9,7 @@ from cv_bridge import CvBridge
 from collections import deque
 from sensor_msgs.msg import Image
 from bitbots_msgs.msg import ColorSpace, Config
-from bitbots_vision.vision_modules import field_boundary, color, evaluator
+from bitbots_vision.vision_modules import field_boundary, color, evaluator, ros_utils
 
 class DynamicColorSpace:
     def __init__(self):
@@ -67,22 +67,15 @@ class DynamicColorSpace:
         self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
         # Print status of dynamic color space after toggeling 'dynamic_color_space_active' parameter
-        if 'dynamic_color_space_active' not in self.vision_config or \
-                vision_config['dynamic_color_space_active'] != self.vision_config['dynamic_color_space_active']:
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'dynamic_color_space_active'):
             if vision_config['dynamic_color_space_active']:
                 rospy.loginfo('Dynamic color space turned ON.')
             else:
                 rospy.logwarn('Dynamic color space turned OFF.')
 
         # Set publisher of ColorSpace-messages
-        if 'ROS_dynamic_color_space_msg_topic' not in self.vision_config or \
-                self.vision_config['ROS_dynamic_color_space_msg_topic'] != vision_config['ROS_dynamic_color_space_msg_topic']:
-            if hasattr(self, 'pub_color_space'):
-                self.pub_color_space.unregister()
-            self.pub_color_space = rospy.Publisher(
-                vision_config['ROS_dynamic_color_space_msg_topic'],
-                ColorSpace,
-                queue_size=1)
+        self.pub_balls = ros_utils.ROS_Utils.create_or_update_publisher(self.vision_config, vision_config, self.pub_color_space, 'ROS_dynamic_color_space_msg_topic', ColorSpace)
+
 
         # Set Color- and FieldBoundaryDetector
         self.color_detector = color.DynamicPixelListColorDetector(
@@ -107,21 +100,11 @@ class DynamicColorSpace:
             vision_config['dynamic_color_space_threshold'],
             vision_config['dynamic_color_space_kernel_radius'])
 
+        # Create a new heuristic instance
         self.heuristic = Heuristic()
 
         # Subscribe to Image-message
-        if 'ROS_img_msg_topic' not in self.vision_config or \
-                self.vision_config['ROS_img_msg_topic'] != vision_config['ROS_img_msg_topic']:
-            if hasattr(self, 'sub_image_msg'):
-                self.sub_image_msg.unregister()
-            self.sub_image_msg = rospy.Subscriber(
-                vision_config['ROS_img_msg_topic'],
-                Image,
-                self.image_callback,
-                queue_size=vision_config['ROS_img_queue_size'],
-                tcp_nodelay=True,
-                buff_size=60000000)
-            # https://github.com/ros/ros_comm/issues/536
+        self.sub_image_msg = ros_utils.ROS_Utils.create_or_update_subscriber(self.vision_config, vision_config, self.sub_image_msg, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=vision_config['ROS_img_queue_size'], buff_size=60000000)
 
         self.vision_config = vision_config
 
