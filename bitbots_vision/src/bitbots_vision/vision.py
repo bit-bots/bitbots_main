@@ -10,7 +10,6 @@ import threading
 from profilehooks import profile, timecall
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
-from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from sensor_msgs.msg import Image
 from humanoid_league_msgs.msg import BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, \
@@ -561,7 +560,7 @@ class Vision:
         self.image_sub = ros_utils.ROS_Utils.create_or_update_subscriber(self.config, config, self.image_sub, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
 
         # Publish Config-message (mainly for the dynamic color space node)
-        self._publish_vision_config(config)
+        ros_utils.ROS_Utils.publish_vision_config(config, self.pub_config)
 
         # The old config gets replaced with the new config
         self.config = config
@@ -570,25 +569,6 @@ class Vision:
         self.reconfigure_active = False
 
         return config
-
-    def _publish_vision_config(self, config):
-        """
-        Publishes the given config.
-        :param config: A vision config
-        """
-        # Clean config dict to avoid not dumpable types
-        config_cleaned = {}
-        # Iterate over all config keys and values
-        for key, value in config.items():
-            # Check if the value is dumpable
-            if type(value) != DynamicReconfigureConfig:
-                config_cleaned[key] = value
-        # Create new config message
-        msg = Config()
-        # The message contains a string. So the config gets serialized and send as string
-        msg.data = yaml.dump(config_cleaned)
-        # Publish config
-        self.pub_config.publish(msg)
 
     def _handle_forgotten_camera_cap(self, image):
         # type: (np.array) -> None

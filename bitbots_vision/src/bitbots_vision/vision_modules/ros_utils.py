@@ -1,6 +1,9 @@
 import os
 import rospy
+import yaml
+from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from humanoid_league_msgs.msg import BallInImage, ObstacleInImage, PostInImage, GoalInImage, Speak
+from bitbots_msgs.msg import Config
 
 class ROS_Utils:
     """
@@ -363,3 +366,24 @@ class ROS_Utils:
             elif param not in old_config or old_config[param] != new_config[param]:
                 return True
         return False
+
+    @staticmethod
+    def publish_vision_config(config, publisher):
+        """
+        Publishes the given config.
+        :param config: A vision config
+        :param publisher: The ROS publisher object
+        """
+        # Clean config dict to avoid not dumpable types
+        config_cleaned = {}
+        # Iterate over all config keys and values
+        for key, value in config.items():
+            # Check if the value is dumpable
+            if type(value) != DynamicReconfigureConfig:
+                config_cleaned[key] = value
+        # Create new config message
+        msg = Config()
+        # The message contains a string. So the config gets serialized and send as string
+        msg.data = yaml.dump(config_cleaned)
+        # Publish config
+        publisher.publish(msg)
