@@ -472,8 +472,8 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
         """
         # Check if we can use tf. Otherwise switch to reversed iteration detector
         try:
-            # Get quaternion from tf
-            orientation = self.tf_buffer.lookup_transform(self.camera_frame, self.base_frame, self._image_time_stamp).transform.rotation
+            # Get quaternion from newest tf
+            orientation = self.tf_buffer.lookup_transform(self.camera_frame, self.base_frame, rospy.Time(0)).transform.rotation
             # Convert into an usable tilt angle
             tilt_angle =  (1.5 * math.pi - euler_from_quaternion((
                 orientation.x,
@@ -487,12 +487,11 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
                 return False
         # Switch to reversed iteration detector
         except tf2.LookupException:
-            rospy.logwarn_throttle(10, "TF for dynamic field boundary algorithm selection not active. Using reversed iteration method instead")
+            rospy.logwarn_throttle(2, "TF for dynamic field boundary algorithm selection not active. Maybe TF becomes avalabile in a few seconds. Using reversed iteration method instead")
             return False
         except tf2.ExtrapolationException as ecp:
             # Warn user
-            rospy.logwarn_throttle(10, "Extrapolation exception! Not able to use tf for dynamic field boundary algorithm selection. Using reversed iteration method instead")
-            rospy.logwarn_throttle(10, ecp)
+            rospy.logwarn_throttle(2, "Extrapolation exception! Not able to use tf for dynamic field boundary algorithm selection. Using reversed iteration method instead")
             return False
 
     def _compute_field_boundary_points(self):
@@ -500,9 +499,11 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
         Calls the method to compute the field boundary and saves it in the class variable _field_boundary_points
         """
         if self._only_field_visible():
+            rospy.logwarn_throttle(2,"Using iteration")
             selected_algorithm = self.under_horizon_algorithm
         else:
             selected_algorithm = self.over_horizon_algorithm
+            rospy.logwarn_throttle(2,"Rev iteration")
         # Calc field boundary
         self._field_boundary_points = selected_algorithm.calculate_field_boundary(
             self._image,
