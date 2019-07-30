@@ -38,6 +38,12 @@ class DynamicColorSpace:
         # Init params
         self.vision_config = {}
 
+        # Publisher placeholder
+        self.pub_color_space = None
+
+        # Subsciber placeholder
+        self.sub_image_msg = None
+
         # Subscribe to 'vision_config'-message
         # The message topic name MUST be the same as in the config publisher in vision.py
         self.sub_vision_config_msg = rospy.Subscriber(
@@ -67,14 +73,14 @@ class DynamicColorSpace:
         self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
 
         # Print status of dynamic color space after toggeling 'dynamic_color_space_active' parameter
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'dynamic_color_space_active'):
+        if ros_utils.ROS_Utils.config_param_change(self.vision_config, vision_config, 'dynamic_color_space_active'):
             if vision_config['dynamic_color_space_active']:
                 rospy.loginfo('Dynamic color space turned ON.')
             else:
                 rospy.logwarn('Dynamic color space turned OFF.')
 
         # Set publisher of ColorSpace-messages
-        self.pub_balls = ros_utils.ROS_Utils.create_or_update_publisher(self.vision_config, vision_config, self.pub_color_space, 'ROS_dynamic_color_space_msg_topic', ColorSpace)
+        self.pub_color_space = ros_utils.ROS_Utils.create_or_update_publisher(self.vision_config, vision_config, self.pub_color_space, 'ROS_dynamic_color_space_msg_topic', ColorSpace)
 
 
         # Set Color- and FieldBoundaryDetector
@@ -104,7 +110,7 @@ class DynamicColorSpace:
         self.heuristic = Heuristic()
 
         # Subscribe to Image-message
-        self.sub_image_msg = ros_utils.ROS_Utils.create_or_update_subscriber(self.vision_config, vision_config, self.sub_image_msg, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=vision_config['ROS_img_queue_size'], buff_size=60000000)
+        self.sub_image_msg = ros_utils.ROS_Utils.create_or_update_subscriber(self.vision_config, vision_config, self.sub_image_msg, 'ROS_img_msg_topic', Image, callback=self.image_callback, queue_size=vision_config['ROS_img_queue_size'], buff_size=60000000)
 
         self.vision_config = vision_config
 
