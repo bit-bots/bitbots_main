@@ -1,5 +1,6 @@
 import cv2
 import os
+import abc
 import rospy
 import time
 from profilehooks import profile
@@ -10,7 +11,33 @@ except ImportError:
 import numpy as np
 from .candidate import CandidateFinder, Candidate
 
-class YoloHandlerDarknet():
+class YoloHandler():
+    def __init__(self, config, model_path):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def set_image(self, img):
+        """
+        Image setter abstact method. (Cached)
+        :param img: Image
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def predict(self):
+        """
+        Implemented version should run the neural metwork on the latest image. (Cached)
+        """
+        raise NotImplementedError
+
+    def get_candidates(self):
+        """
+        Runs neural network and returns results for all classes. (Cached)
+        """
+        self.predict()
+        return [self.ball_candidates, self.goalpost_candidates]
+
+class YoloHandlerDarknet(YoloHandler):
     def __init__(self, config, model_path):
         weightpath = os.path.join(model_path, "yolo_weights.weights")
         configpath = os.path.join(model_path, "config.cfg")
@@ -64,12 +91,8 @@ class YoloHandlerDarknet():
                 if class_id == b"goalpost":
                     self.goalpost_candidates.append(c)
 
-    def get_candidates(self):
-        self.predict()
-        return [self.ball_candidates, self.goalpost_candidates]
 
-
-class YoloHandlerOpenCV():
+class YoloHandlerOpenCV(YoloHandler):
     def __init__(self, config, model_path):
         weightpath = os.path.join(model_path, "yolo_weights.weights")
         configpath = os.path.join(model_path, "config.cfg")
@@ -147,9 +170,6 @@ class YoloHandlerOpenCV():
                 if class_id == 1:
                     self.goalpost_candidates.append(c)
 
-    def get_candidates(self):
-        self.predict()
-        return [self.ball_candidates, self.goalpost_candidates]
 
 class YoloBallDetector(CandidateFinder):
 
