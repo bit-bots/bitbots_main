@@ -12,8 +12,8 @@ from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from sensor_msgs.msg import Image
-from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, \
-    LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, PostInImage, \
+from humanoid_league_msgs.msg import BallsInImage, LineInformationInImage, \
+    LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, \
     GoalInImage, Speak
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator, yolo_handler, ros_utils
