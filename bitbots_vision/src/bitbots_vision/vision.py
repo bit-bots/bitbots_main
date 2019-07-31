@@ -15,7 +15,7 @@ from humanoid_league_msgs.msg import BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, \
     GoalInImage, Speak
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
-    fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, evaluator, yolo_handler, ros_utils
+    fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, yolo_handler, ros_utils
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config
 
@@ -48,13 +48,11 @@ class Vision:
         self.pub_debug_image = None
         self.pub_debug_fcnn_image = None
 
-        # Subsciber placeholder
+        # Subscriber placeholder
         self.image_sub = None
 
         self.debug_image_drawer = debug.DebugImage()
         if self.debug_image_drawer:
-            self.runtime_evaluator = evaluator.RuntimeEvaluator()
-
         # Register static publishers
         # Register publisher of 'vision_config'-messages
         # For changes of topic name: also change topic name in dynamic_color_space.py
@@ -132,7 +130,6 @@ class Vision:
             self.goalpost_detector,
             self.line_detector,
             self.ball_detector,
-            self.runtime_evaluator,
         ]
 
         # distribute the image to the detectors
@@ -348,7 +345,6 @@ class Vision:
         # Deactivates Vision temporarally
         self.reconfigure_active = True
 
-        self.runtime_evaluator = evaluator.RuntimeEvaluator()
         # Set some thresholds
         # Brightness threshold which determins if the camera cap is on the camera.
         self._blind_threshold = config['vision_blind_threshold']
@@ -451,8 +447,7 @@ class Vision:
         # Set the field boundary detector
         self.field_boundary_detector = field_boundary_detector_class(
             self.field_color_detector,
-            config,
-            self.runtime_evaluator)
+            config)
 
         # Set the line detector
         self.line_detector = lines.LineDetector(
@@ -467,7 +462,6 @@ class Vision:
             self.blue_color_detector,
             self.white_color_detector,
             self.field_boundary_detector,
-            self.runtime_evaluator,
             config)
 
         # If we don't use YOLO set the conventional goalpost detector.

@@ -9,7 +9,7 @@ from cv_bridge import CvBridge
 from collections import deque
 from sensor_msgs.msg import Image
 from bitbots_msgs.msg import ColorSpace, Config
-from bitbots_vision.vision_modules import field_boundary, color, evaluator, ros_utils
+from bitbots_vision.vision_modules import field_boundary, color, ros_utils
 
 class DynamicColorSpace:
     def __init__(self):
@@ -70,8 +70,6 @@ class DynamicColorSpace:
         # Load dict from string in yaml-format in msg.data
         vision_config = yaml.load(msg.data, Loader=yaml.FullLoader)
 
-        self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
-
         # Print status of dynamic color space after toggeling 'dynamic_color_space_active' parameter
         if ros_utils.ROS_Utils.config_param_change(self.vision_config, vision_config, 'dynamic_color_space_active'):
             if vision_config['dynamic_color_space_active']:
@@ -95,8 +93,7 @@ class DynamicColorSpace:
         # Set the field boundary detector
         self.field_boundary_detector = field_boundary_detector_class(
             self.color_detector,
-            vision_config,
-            self.runtime_evaluator)
+            vision_config)
 
         # Set params
         self.queue_max_size = vision_config['dynamic_color_space_queue_max_size']

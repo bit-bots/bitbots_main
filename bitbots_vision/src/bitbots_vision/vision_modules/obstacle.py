@@ -1,21 +1,18 @@
 from .candidate import CandidateFinder, Candidate
 from .color import ColorDetector
 from .field_boundary import FieldBoundaryDetector
-from .evaluator import RuntimeEvaluator
 import cv2
 import numpy as np
 import rospy
 
 
 class ObstacleDetector(CandidateFinder):
-    def __init__(self, red_color_detector, blue_color_detector, white_color_detector, field_boundary_detector,
-                 runtime_evaluator, config):
-        # type: (ColorDetector, ColorDetector, ColorDetector, FieldBoundaryDetector, RuntimeEvaluator, dict) -> None
+    def __init__(self, red_color_detector, blue_color_detector, white_color_detector, field_boundary_detector, config):
+        # type: (ColorDetector, ColorDetector, ColorDetector, FieldBoundaryDetector, dict) -> None
         self._red_color_detector = red_color_detector
         self._blue_color_detector = blue_color_detector
         self._white_color_detector = white_color_detector
         self._field_boundary_detector = field_boundary_detector
-        self._runtime_evaluator = runtime_evaluator
         self._color_threshold = config['obstacle_color_threshold']
         self._white_threshold = config['obstacle_white_threshold']
         self._field_boundary_diff_threshold = config['obstacle_field_boundary_diff_threshold']
@@ -75,7 +72,6 @@ class ObstacleDetector(CandidateFinder):
         :return: candidate(int: x upper left point, int: y upper left point, int: width, int: height)
         """
         if self._obstacles is None:
-            # self._runtime_evaluator.start_timer() # for runtime testing
             self._obstacles = list()
             obstacle_begin = None
             field_boundary_points = self._field_boundary_detector.get_field_boundary_points()
@@ -113,8 +109,6 @@ class ObstacleDetector(CandidateFinder):
                         a[1] - max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)
                     )
                 )
-            # self._runtime_evaluator.stop_timer()  # for runtime testing
-            # self._runtime_evaluator.print_timer()  # for runtime testing
         return self._obstacles
 
     def _obstacle_detector_convex(self):
@@ -128,7 +122,6 @@ class ObstacleDetector(CandidateFinder):
         # Todo: increase step length before beginning of obstacle has been found, decrease it afterwards
         # Todo: interpolate individual points instead of the whole list (see get_full_field_boundary)
         if self._obstacles is None:
-            # self._runtime_evaluator.start_timer()  # for runtime testing
             self._obstacles = list()
             obstacle_begin = None
             # the ordinary field_boundary and convex_field_boundary consist out of a limited amount of points (usually 30).
@@ -175,8 +168,6 @@ class ObstacleDetector(CandidateFinder):
                     if h < 0:
                         rospy.logerr('Vision obstacle detection: Negative obstacle height')
                     self._obstacles.append(Candidate(x, y, w, h))
-            # self._runtime_evaluator.stop_timer()  # for runtime testing
-            # self._runtime_evaluator.print_timer()  # for runtime testing
         return self._obstacles
 
     def _obstacle_detector_distance(self): 
@@ -186,7 +177,6 @@ class ObstacleDetector(CandidateFinder):
         Detection of obstacles depends on their height in image and therefore their distance.
         :return: candidate(int: x upper left point, int: y upper left point, int: width, int: height)
         """
-        # self._runtime_evaluator.start_timer()  # for runtime testing
         self._obstacles = list()
         obstacle_begin = None
 
@@ -229,8 +219,6 @@ class ObstacleDetector(CandidateFinder):
                 start_min_width,
                 start_max_width,
                 distance_value_increase)
-        # self._runtime_evaluator.stop_timer()  # for runtime testing
-        # self._runtime_evaluator.print_timer()  # for runtime testing
         return self._obstacles
 
     def _build_and_save_obstacle_candidate(self, obstacle_begin, i, full_field_boundary, full_convex_field_boundary, start_min_width, start_max_width, distance_value_increase):
