@@ -67,9 +67,6 @@ class FieldBoundaryDetector:
         self._convex_field_boundary_points = None
         self._mask = None
 
-    def set_time_stamp(self, time_stamp):
-        self._image_time_stamp = time_stamp
-
     def get_mask(self):
         # type: () -> np.array
         """
