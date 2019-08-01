@@ -279,10 +279,16 @@ class ColorspaceTool():
             blue = [np.asscalar(x) for x in blue]
             output_type = "interpolated"
             print("Exporting interpolated points")
-        else:
+        elif len(self.main_cluster) > 0:
             red, green, blue = self.get_colorspace_points(self.main_cluster)
             output_type = "clustered"
             print("Exporting cluster points")
+        else:
+            red = self.colorspace_points[0]
+            green = self.colorspace_points[1]
+            blue = self.colorspace_points[2]
+            output_type = "resized"
+            print("Exporting resized points")
 
         data = dict(
             red=red,
