@@ -19,10 +19,7 @@ class StartHCM(AbstractDecisionElement):
         else:
             if not reevaluate:
                 self.blackboard.current_state = STATE_STARTUP
-            if self.blackboard.simulation_active:
-                return "SIMULATION"
-            else:
-                return "ROBOT"
+            return "ROBOT"
 
     def get_reevaluate(self):
         return True
@@ -49,7 +46,7 @@ class CheckIMU(AbstractDecisionElement):
             return "PROBLEM"
         elif not reevaluate and self.blackboard.current_state == STATE_HARDWARE_PROBLEM:
             # had IMU problem before, just tell that this is solved now
-            ROS_INFO("IMU is now connected. Will resume.")
+            rospy.loinfo("IMU is now connected. Will resume.") #TODO this message is never send
         return "CONNECTION"
 
     def get_reevaluate(self):
