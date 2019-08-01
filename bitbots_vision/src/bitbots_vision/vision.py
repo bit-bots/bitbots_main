@@ -48,12 +48,13 @@ class Vision:
         self.pub_ball_fcnn = None
         self.pub_debug_image = None
         self.pub_debug_fcnn_image = None
+        self.pub_field_boundary = None
 
         # Subscriber placeholder
         self.image_sub = None
 
         self.debug_image_drawer = debug.DebugImage()
-        if self.debug_image_drawer:
+        
         # Register static publishers
         # Register publisher of 'vision_config'-messages
         # For changes of topic name: also change topic name in dynamic_color_space.py
