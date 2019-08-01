@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+from geometry_msgs.msg import Point
 import os
 import sys
 import cv2
@@ -13,7 +14,7 @@ from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
 from humanoid_league_msgs.msg import BallsInImage, LineInformationInImage, \
     LineSegmentInImage, ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, GoalPartsInImage, \
-    GoalInImage, Speak
+    GoalInImage, Speak, FieldBoundaryInImage
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, yolo_handler, ros_utils
 from bitbots_vision.cfg import VisionConfig
@@ -238,7 +239,15 @@ class Vision:
         # Publish lines
         self.pub_lines.publish(line_msg)
 
-        # Publish fcnn output under the field boundary
+        # create non_line msg
+
+        # publish field-boundary # TODO !!!!
+        field_boundary_msg = FieldBoundaryInImage()
+        field_boundary_msg.header = image_msg.header
+        for point in self.field_boundary_detector.get_convex_field_boundary_points():
+            field_boundary_msg.field_boundary_points.append(Point(point[0], point[1], 0))
+        self.pub_field_boundary.publish(field_boundary_msg)
+
         if self.ball_fcnn_publish_output and self.config['vision_ball_classifier'] == 'fcnn':
             self.pub_ball_fcnn.publish(self.ball_detector.get_cropped_msg())
 
@@ -542,6 +551,8 @@ class Vision:
         self.pub_ball_fcnn = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
 
         self.pub_debug_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_debug_image, 'ROS_debug_image_msg_topic', Image)
+
+        self.pub_field_boundary = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundaryInImage)
 
         self.pub_debug_fcnn_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_debug_fcnn_image, 'ROS_debug_fcnn_image_msg_topic', Image)
 
