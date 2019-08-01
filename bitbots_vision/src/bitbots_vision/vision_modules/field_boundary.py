@@ -8,17 +8,15 @@ from tf.transformations import euler_from_quaternion
 from sensor_msgs.msg import JointState
 from .color import ColorDetector
 from operator import itemgetter
-from .evaluator import RuntimeEvaluator
 
 
 class FieldBoundaryDetector:
-    def __init__(self, field_color_detector, config, runtime_evaluator=None):
-        # type: (ColorDetector, dict, RuntimeEvaluator, bool) -> None
+    def __init__(self, field_color_detector, config):
+        # type: (ColorDetector, dict) -> None
         """
         This is the abctract class for the field boundary detector.
         :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
-        :param runtime_evaluator: can be used to compute runtime of methods
         """
         # set variables:
         self._image = None
@@ -28,7 +26,6 @@ class FieldBoundaryDetector:
         self._convex_field_boundary_full = None
         self._mask = None
         self._field_color_detector = field_color_detector
-        self._runtime_evaluator = runtime_evaluator
         # init config:
         self._x_steps = config['field_boundary_detector_horizontal_steps']
         self._y_steps = config['field_boundary_detector_vertical_steps']
@@ -361,15 +358,14 @@ class FieldBoundaryDetector:
 
 
 class IterationFieldBoundaryDetector(FieldBoundaryDetector):
-    def __init__(self, field_color_detector, config, runtime_evaluator=None):
+    def __init__(self, field_color_detector, config):
         """
         This is the iteration field boundary detector.
         It uses the iteration detection method and finds the field boundary via scan lines running down from top to bottom.
         :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
-        :param runtime_evaluator: can be used to compute runtime of methods
         """
-        super().__init__(field_color_detector, config, runtime_evaluator=runtime_evaluator)
+        super().__init__(field_color_detector, config)
 
     def _compute_field_boundary_points(self):
         """
@@ -388,15 +384,14 @@ class IterationFieldBoundaryDetector(FieldBoundaryDetector):
 
 
 class BinaryFieldBoundaryDetector(FieldBoundaryDetector):
-    def __init__(self, field_color_detector, config, runtime_evaluator=None):
+    def __init__(self, field_color_detector, config):
         """
         This is the binary search field boundary detector.
         It uses the binary detection method and finds the field boundary via binary search.
         :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
-        :param runtime_evaluator: can be used to compute runtime of methods
         """
-        super().__init__(field_color_detector, config, runtime_evaluator=runtime_evaluator)
+        super().__init__(field_color_detector, config)
 
     def _compute_field_boundary_points(self):
         """
@@ -415,15 +410,14 @@ class BinaryFieldBoundaryDetector(FieldBoundaryDetector):
 
 
 class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
-    def __init__(self, field_color_detector, config, runtime_evaluator=None):
+    def __init__(self, field_color_detector, config):
         """
         This is the reversed iteration field boundary detector.
         It uses the reversed detection method and finds the field boundary via scan lines running up from bottom to top.
         :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
-        :param runtime_evaluator: can be used to compute runtime of methods
         """
-        super().__init__(field_color_detector, config, runtime_evaluator=runtime_evaluator)
+        super().__init__(field_color_detector, config)
 
     def _compute_field_boundary_points(self):
         """
@@ -442,16 +436,15 @@ class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
 
 
 class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
-    def __init__(self, field_color_detector, config, runtime_evaluator=None):
+    def __init__(self, field_color_detector, config):
         """
         This is the dynamic field boundary detector.
         It switches between the iteration and reversed iteration method. It depends on how much the robot head is tilted.
         This improves performance (iteration) and enables operation with two field next to each other (reversed).
         :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
-        :param runtime_evaluator: can be used to compute runtime of methods
         """
-        super().__init__(field_color_detector, config, runtime_evaluator=runtime_evaluator)
+        super().__init__(field_color_detector, config)
 
         self.over_horizon_algorithm = ReversedFieldBoundaryAlgorithm
         self.under_horizon_algorithm = IterationFieldBoundaryAlgorithm
