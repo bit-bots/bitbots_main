@@ -1,8 +1,9 @@
 import os
 import rospy
 import yaml
+from geometry_msgs.msg import Point
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
-from humanoid_league_msgs.msg import BallInImage, ObstacleInImage, PostInImage, GoalInImage, Speak
+from humanoid_league_msgs.msg import BallInImage, ObstacleInImage, PostInImage, GoalInImage, FieldBoundaryInImage, Speak
 from bitbots_msgs.msg import Config
 
 class ROS_Utils:
@@ -331,6 +332,19 @@ class ROS_Utils:
             obstacle_msg.playerNumber = 42
             message_list.append(obstacle_msg)
         return message_list
+
+    @staticmethod
+    def build_field_boundary_msg(field_boundary):
+        """
+        Builds a list of obstacles for a certain color
+        :param obstacle_color: color of the obstacles
+        :param detections: obstacle candidates
+        :return: list of obstacle msgs
+        """
+        field_boundary_msg = FieldBoundaryInImage()
+        for point in field_boundary:
+            field_boundary_msg.field_boundary_points.append(Point(point[0], point[1], 0))
+        return field_boundary_msg
 
     @staticmethod
     def speak(string, speech_publisher):
