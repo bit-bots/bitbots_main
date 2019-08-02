@@ -40,7 +40,6 @@ class LineDetector:
         # if self._linepoints is None or self._nonlinepoints is None:
         if self._linepoints is None:
             self._linepoints = list()
-            # self._nonlinepoints = list()
             imgshape = self._get_preprocessed_image().shape
             white_masked_image = self._white_detector.mask_image(
                 self._get_preprocessed_image())
@@ -52,17 +51,10 @@ class LineDetector:
             for p in zip(x_list, y_list):
                 if white_masked_image[p[1]][p[0]]:
                     self._linepoints.append(p)
-                # else:
-                    # if self._field_boundary_detector.point_under_field_boundary(p):
-                    #     self._nonlinepoints.append(p)
 
     def get_linepoints(self):
         self.compute_linepoints()
         return self._linepoints
-
-    # def get_nonlinepoints(self):
-        # self.compute_linepoints()
-        # return self._nonlinepoints
 
     def get_linesegments(self):
 
@@ -100,8 +92,6 @@ class LineDetector:
 
     def _get_preprocessed_image(self):
         if self._preprocessed_image is None:
-            # bilateral filter for bluring areas while protecting edges (noise reduction)
-            #self._preprocessed_image = cv2.bilateralFilter(self._image, 9, 75, 75)
             self._preprocessed_image = self._image.copy()
             # fill everything above field_boundary black
             hpoints = np.array([[(0, 0)] +
@@ -116,8 +106,6 @@ class LineDetector:
             green_mask = np.ones_like(green_mask) - (np.floor_divide(green_mask, 255))
             self._preprocessed_image = cv2.bitwise_and(self._preprocessed_image, self._preprocessed_image, mask=green_mask)
 
-            # cv2.imshow('', self._preprocessed_image)
-            # cv2.waitKey(1)
         return self._preprocessed_image
 
     @staticmethod
