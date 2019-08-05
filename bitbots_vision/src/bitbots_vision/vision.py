@@ -125,21 +125,15 @@ class Vision:
                 rospy.loginfo('Loaded color space for REAL WORLD.')
 
         # Set the white color detector
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, [
-                'white_color_detector_lower_values_h', 'white_color_detector_lower_values_s', 'white_color_detector_lower_values_v',
-                'white_color_detector_upper_values_h', 'white_color_detector_upper_values_s', 'white_color_detector_upper_values_v']):
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, '^white_color_detector_'):
             self.white_color_detector = color.HsvSpaceColorDetector(config, "white")
 
         # Set the red color detector
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, [
-                'red_color_detector_lower_values_h', 'red_color_detector_lower_values_s', 'red_color_detector_lower_values_v',
-                'red_color_detector_upper_values_h', 'red_color_detector_upper_values_s', 'red_color_detector_upper_values_v']):
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, '^red_color_detector_'):
             self.red_color_detector = color.HsvSpaceColorDetector(config, "red")
 
         # Set the blue color detector
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, [
-                'blue_color_detector_lower_values_h', 'blue_color_detector_lower_values_s', 'blue_color_detector_lower_values_v',
-                'blue_color_detector_upper_values_h', 'blue_color_detector_upper_values_s', 'blue_color_detector_upper_values_v']):
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, '^blue_color_detector_'):
             self.blue_color_detector = color.HsvSpaceColorDetector(config, "blue")
 
         # Check if the dynamic color space field color detector or the static field color detector should be used

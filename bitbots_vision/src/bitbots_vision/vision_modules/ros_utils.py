@@ -1,4 +1,5 @@
 import os
+import re
 import rospy
 import yaml
 from geometry_msgs.msg import Point
@@ -365,12 +366,19 @@ class ROS_Utils:
 
         :param dict old_config: old config dict
         :param dict new_config: new config dict
-        :param list of str or str params: Parameter name or list of names to be checked
+        :param list of str or str params: regex discribing parameter name or list of parameter names
         :return bool: True if parameter has changed
         """
-        # Make single parameters without list possible
+        # Make regex instead of list possible
         if not isinstance(params, list):
-            params = [params]
+            # Build regex
+            regex = re.compile(params)
+            # Filter parameter names by regex
+            params = list(filter(regex.search, list(new_config.keys())))
+            # Check if parameters matching this regex exist
+            if len(params) == 0:
+                raise KeyError('Regex \'{}\' has no matches in dict.'.format(params))
+
         # Iterate over params
         for param in params:
             # Check if param exists in new config
