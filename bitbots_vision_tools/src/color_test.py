@@ -41,9 +41,7 @@ class ColorTest:
 
     def _dynamic_reconfigure_callback(self, config, level):
 
-        self.color_detector = color.HsvSpaceColorDetector(
-            (config['lower_values_h'], config['lower_values_s'], config['lower_values_v']),
-            (config['upper_values_h'], config['upper_values_s'], config['upper_values_v']))
+        self.color_detector = color.HsvSpaceColorDetector(config, "test")
 
         # Register publisher for 'color_tester_mask_image'-messages
         if 'color_tester_mask_image' not in self.config or \

@@ -100,30 +100,34 @@ class HsvSpaceColorDetector(ColorDetector):
     HsvSpaceColorDetector is a ColorDetector, that is based on the HSV-color space.
     The HSV-color space is adjustable by setting min- and max-values for hue, saturation and value.
     """
-    def __init__(self, min_vals, max_vals):
-        # type: (tuple[int, int, int], tuple[int, int, int]) -> None
+    def __init__(self, config, color):
+        # type: (dict, string) -> None
         """
         Initialization of HsvSpaceColorDetector.
 
-        :param tuple min_vals: a tuple of the minimal accepted hsv-values
-        :param tuple max_vals: a tuple of the maximal accepted hsv-values
+        :param dict config: vision config
+        :param string color: color (described in the config) that should be detected.
         :return: None
         """
         super(HsvSpaceColorDetector, self).__init__()
-        self.min_vals = np.array(min_vals)
-        self.max_vals = np.array(max_vals)
 
-    def set_config(self, min_vals, max_vals):
-        # type: (tuple[int, int, int], tuple[int, int, int]) -> None
-        """
-        Updates the hsv-space configuration
+        detector_name = "{}_color_detector".format(color)
 
-        :param min_vals: a tuple of the minimal accepted hsv-values
-        :param max_vals: a tuple of the maximal accepted hsv-values
-        :return: None
-        """
-        self.min_vals = np.array(min_vals)
-        self.max_vals = np.array(max_vals)
+        try:
+            self.min_vals = np.array([
+                        config[detector_name + '_lower_values_h'],
+                        config[detector_name + '_lower_values_s'],
+                        config[detector_name + '_lower_values_v']
+                ])
+
+            self.max_vals = np.array([
+                        config[detector_name + '_upper_values_h'],
+                        config[detector_name + '_upper_values_s'],
+                        config[detector_name + '_upper_values_v']
+                ])
+        except KeyError:
+            rospy.logerr("Undefined hsv color detector for color '{}'. Check config values.".format(color))
+            raise
 
     def match_pixel(self, pixel):
         # type: (np.array) -> bool
