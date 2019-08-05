@@ -96,11 +96,6 @@ ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'
 ROS_head_joint_msg_topic: 'joint_states'
 ROS_head_joint_state_queue_size: 1
 
-ball_finder_classify_threshold: 0.5
-ball_finder_scale_factor: 1.1
-ball_finder_min_neighbors: 1
-ball_finder_min_size: 10
-
 dynamic_color_space_active: true
 dynamic_color_space_publish_field_mask_image: false
 dynamic_color_space_queue_max_size: 10
