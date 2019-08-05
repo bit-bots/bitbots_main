@@ -49,10 +49,6 @@ private:
     }
     std::vector<JointCommandData> buf_data;
     for(unsigned int i = 0; i < command_msg.joint_names.size(); i++){
-      /*if(_joint_map.find(command_msg.joint_names[i] == _joint_map.end())){
-          ROS_WARN("Joint %s in JointCommand message is not known.", command_msg.joint_names[i].c_str());
-          continue;
-      }*/
       JointCommandData strct;
       strct.id = _joint_map[command_msg.joint_names[i]];
       strct.pos = command_msg.positions[i];

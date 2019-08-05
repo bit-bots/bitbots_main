@@ -90,9 +90,6 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
     return true;
   }
 
-  // TODO reboot all dynamixels to prevent old error bytes
-  // this need a possibility of setting the motor power off and on
-
   // Load dynamixel config from parameter server
   if (!loadDynamixels(nh))
   {
@@ -135,7 +132,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
     if (!writeROMRAM(nh)){
         ROS_WARN("Couldn't write ROM and RAM values to all servos.");
     }
-    //magic sleep preventing problems after setting ROM values
+    // magic sleep preventing problems after setting ROM values
     // not sure if still needed for never firmware, but better keep it to be save
     sleep(1);
   }
@@ -178,7 +175,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   setTorque(nh.param("dynamixels/auto_torque", false));
 
   ROS_INFO("Hardware interface init finished.");
-  speak("ross control startup successfull");
+  speak("ros control startup successful");
   return true;
 }
 
@@ -193,7 +190,6 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
   Adds all dynamixel to the driver if they are pingable.
   */
   bool success = true;
-
 
   // prepare diagnostic msg
   diagnostic_msgs::DiagnosticArray array_msg = diagnostic_msgs::DiagnosticArray();
@@ -297,7 +293,6 @@ bool DynamixelHardwareInterface::writeROMRAM(ros::NodeHandle& nh){
   return sucess;
 }
 
-
 diagnostic_msgs::DiagnosticStatus DynamixelHardwareInterface::createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map){
   /**
    * Create a single Diagnostic message for one servo. This is used to build the array message which is then published.
@@ -323,6 +318,7 @@ void DynamixelHardwareInterface::processVTE(bool success){
   /**
    *  This processses the data for voltage, temperature and error
    */
+
   // prepare diagnostic msg
   diagnostic_msgs::DiagnosticArray array_msg = diagnostic_msgs::DiagnosticArray();
   std::vector<diagnostic_msgs::DiagnosticStatus> array = std::vector<diagnostic_msgs::DiagnosticStatus>();
@@ -524,6 +520,7 @@ bool DynamixelHardwareInterface::read()
 
   if (first_cycle_)
   {
+    // prevent jerky motions on startup
     _goal_position = _current_position;
     first_cycle_ = false;
   }
@@ -554,6 +551,7 @@ bool DynamixelHardwareInterface::read()
 void DynamixelHardwareInterface::write()
 {
   if(_onlySensors){
+    // nothing to write when we are in sensor only mode
     return;
   }
 
@@ -632,6 +630,9 @@ void DynamixelHardwareInterface::write()
 }
 
 void DynamixelHardwareInterface::speak(std::string text){
+  /**
+   *  Helper method to send a message for text-to-speech output
+   */
   humanoid_league_msgs::Speak msg = humanoid_league_msgs::Speak();
   msg.text = text;
   msg.priority = humanoid_league_msgs::Speak::HIGH_PRIORITY;
@@ -666,10 +667,12 @@ bool DynamixelHardwareInterface::switchDynamixelControlMode()
   if(_onlySensors){
     return true;
   }
+
   // Torque on dynamixels has to be disabled to change operating mode
   // save last torque state for later
   bool torque_before_switch = current_torque_;
   setTorque(false);
+  // magic sleep to make sure that dynamixel have internally processed the request
   ros::Duration(0.5).sleep();
 
   int32_t value = 3;
@@ -849,9 +852,9 @@ bool DynamixelHardwareInterface::readFootSensors(){
   if(_driver->readMultipleRegisters(101, 36, 16, data)){
     for (int i = 0; i < 4; i++) {
       int32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i*4], data[i*4+1]), DXL_MAKEWORD(data[i*4+2], data[i*4+3]));
-      float pres_d = (float) pres;      
-      // go from bytes to actual newton force
-      _current_pressure[i+4] = (double) pres_d; //- (pow(2, 32)/2);
+      float pres_d = (float) pres;
+      // we directly provide raw data since the scaling has to be calibrated by another node for every robot anyway
+      _current_pressure[i+4] = (double) pres_d;
     }
   }else{
     ROS_ERROR_THROTTLE(3.0, "Could not read foot with ID 101 (right foot)");
@@ -925,7 +928,8 @@ bool DynamixelHardwareInterface::syncWriteProfileAcceleration() {
       // we want to set to maximum, which is 0
       goal_acceleration[num] = 0;  
     }else{
-      goal_acceleration[num] = std::max(static_cast<int>(_goal_acceleration[num] * 572.9577952 / 214.577), 1); //572.9577952 for change of units, 214.577 rev/min^2 per LSB
+      //572.9577952 for change of units, 214.577 rev/min^2 per LSB
+      goal_acceleration[num] = std::max(static_cast<int>(_goal_acceleration[num] * 572.9577952 / 214.577), 1);
     }
   }
   _driver->syncWrite("Profile_Acceleration", goal_acceleration);

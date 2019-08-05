@@ -13,7 +13,6 @@ int main(int argc, char** argv)
   // Load dynamixels
   bitbots_ros_control::DynamixelHardwareInterface hw;
 
-
   // set the dynamic reconfigure and load standard params
   dynamic_reconfigure::Server<bitbots_ros_control::bitbots_ros_control_paramsConfig> server;
   dynamic_reconfigure::Server<bitbots_ros_control::bitbots_ros_control_paramsConfig>::CallbackType f;
@@ -25,8 +24,6 @@ int main(int argc, char** argv)
     ROS_ERROR_STREAM("Failed to initialize hardware interface.");
     return 1;
   }
-
-  bool controller_stopped = false;
 
   // Create separate queue, because otherwise controller manager will freeze
   ros::NodeHandle nh;
@@ -51,18 +48,6 @@ int main(int argc, char** argv)
       if (first_update) {
         first_update = false;
       } else {
-        // start or stop joint state controller if connection lost / restored
-        /*if(read_sucessfull && controller_stopped){
-          ROS_WARN("start");
-          cm.getControllerByName("joint_state_controller")->startRequest(current_time);
-          if(cm.getControllerByName("joint_state_controller")->isRunning()){
-            controller_stopped = false;
-          }
-        }else if (!read_sucessfull && !controller_stopped){
-          ROS_WARN("stop");
-          cm.getControllerByName("joint_state_controller")->stopRequest(current_time);
-          controller_stopped = true;
-        }*/
         cm.update(current_time, period);
       }
       hw.write();
