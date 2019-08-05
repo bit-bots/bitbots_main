@@ -53,7 +53,7 @@ field_boundary_detector_precision_pix: 5
 field_boundary_detector_min_precision_pix: 3
 field_boundary_detector_head_tilt_threshold: 20
 
-vision_ball_classifier: 'yolo_darknet'  # fcnn or yolo_opencv or yolo_darknet or dummy
+vision_ball_detector: 'yolo_darknet'  # fcnn or yolo_opencv or yolo_darknet or dummy
 vision_publish_debug_image: false
 vision_publish_field_mask_image: false
 vision_parallelize: true
