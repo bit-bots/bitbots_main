@@ -65,8 +65,11 @@ class Vision:
 
         # Speak publisher
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
+
+        # Needed for operations that should be executed just once
         self._first_callback = True
 
+        # Needed to determine whether reconfiguration is currently in progress or not
         self.reconfigure_active = False
 
         # Add model enums to config
@@ -75,7 +78,234 @@ class Vision:
 
         # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
+
         rospy.spin()
+
+    def _dynamic_reconfigure_callback(self, config, level):
+        """
+        Callback for the dynamic reconfigure configuration. This callback also gets calles for the inertial configuration.
+        :param config: New config
+        :param level: Custom defineable value
+        """
+        # Deactivates Vision temporarally
+        self.reconfigure_active = True
+
+        # Set some thresholds
+        # Brightness threshold which determins if the camera cap is on the camera.
+        self._blind_threshold = config['vision_blind_threshold']
+        # Threshold for ball candidates
+        self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
+        # Maximum offset for balls over the convex field boundary
+        self._ball_candidate_y_offset = config['vision_ball_candidate_field_boundary_y_offset']
+
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'vision_publish_debug_image'):
+            # Should the debug image be published?
+            self.publish_debug_image = config['vision_publish_debug_image']
+            if self.publish_debug_image:
+                rospy.logwarn('Debug images are enabled')
+            else:
+                rospy.loginfo('Debug images are disabled')
+
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'ball_fcnn_publish_output'):
+            # Should the fcnn output (only under the field boundary) be published?
+            self.ball_fcnn_publish_output = config['ball_fcnn_publish_output']
+            if self.ball_fcnn_publish_output:
+                rospy.logwarn('ball FCNN output publishing is enabled')
+            else:
+                rospy.logwarn('ball FCNN output publishing is disabled')
+
+        # Should the whole fcnn output be published?
+        self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
+
+        # Print if the vision uses the sim color or not
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'vision_use_sim_color'):
+            if config['vision_use_sim_color']:
+                rospy.logwarn('Loaded color space for SIMULATOR.')
+            else:
+                rospy.loginfo('Loaded color space for REAL WORLD.')
+
+        # Set the white color detector
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, [
+                'white_color_detector_lower_values_h', 'white_color_detector_lower_values_s', 'white_color_detector_lower_values_v',
+                'white_color_detector_upper_values_h', 'white_color_detector_upper_values_s', 'white_color_detector_upper_values_v']):
+            self.white_color_detector = color.HsvSpaceColorDetector(
+                [
+                    config['white_color_detector_lower_values_h'],
+                    config['white_color_detector_lower_values_s'],
+                    config['white_color_detector_lower_values_v']
+                ],
+                [
+                    config['white_color_detector_upper_values_h'],
+                    config['white_color_detector_upper_values_s'],
+                    config['white_color_detector_upper_values_v']
+                ])
+
+        # Set the red color detector
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, [
+                'red_color_detector_lower_values_h', 'red_color_detector_lower_values_s', 'red_color_detector_lower_values_v',
+                'red_color_detector_upper_values_h', 'red_color_detector_upper_values_s', 'red_color_detector_upper_values_v']):
+            self.red_color_detector = color.HsvSpaceColorDetector(
+                [
+                    config['red_color_detector_lower_values_h'],
+                    config['red_color_detector_lower_values_s'],
+                    config['red_color_detector_lower_values_v']
+                ],
+                [
+                    config['red_color_detector_upper_values_h'],
+                    config['red_color_detector_upper_values_s'],
+                    config['red_color_detector_upper_values_v']
+                ])
+
+        # Set the blue color detector
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, [
+                'blue_color_detector_lower_values_h', 'blue_color_detector_lower_values_s', 'blue_color_detector_lower_values_v',
+                'blue_color_detector_upper_values_h', 'blue_color_detector_upper_values_s', 'blue_color_detector_upper_values_v']):
+            self.blue_color_detector = color.HsvSpaceColorDetector(
+                [
+                    config['blue_color_detector_lower_values_h'],
+                    config['blue_color_detector_lower_values_s'],
+                    config['blue_color_detector_lower_values_v']
+                ],
+                [
+                    config['blue_color_detector_upper_values_h'],
+                    config['blue_color_detector_upper_values_s'],
+                    config['blue_color_detector_upper_values_v']
+                ])
+
+        # Check if the dynamic color space field color detector or the static field color detector should be used
+        if config['dynamic_color_space_active']:
+            # Set dynamic color space field color detector
+            self.field_color_detector = color.DynamicPixelListColorDetector(
+                self.package_path,
+                config,
+                primary_detector=True)
+        else:
+            # Set the static field color detector
+            self.field_color_detector = color.PixelListColorDetector(
+                self.package_path,
+                config)
+
+        # Get field boundary detector class by name from config
+        field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
+            config['field_boundary_detector_search_method'])
+
+        # Set the field boundary detector
+        self.field_boundary_detector = field_boundary_detector_class(
+            self.field_color_detector,
+            config)
+
+        # Set the line detector
+        self.line_detector = lines.LineDetector(
+            self.white_color_detector,
+            self.field_color_detector,
+            self.field_boundary_detector,
+            config)
+
+        # Set the obstacle detector
+        self.obstacle_detector = obstacle.ObstacleDetector(
+            self.red_color_detector,
+            self.blue_color_detector,
+            self.white_color_detector,
+            self.field_boundary_detector,
+            config)
+
+        # If we don't use YOLO set the conventional goalpost detector.
+        if not config['vision_ball_detector'] in ['yolo_opencv', 'yolo_darknet']:
+            self.goalpost_detector = obstacle.WhiteObstacleDetector(self.obstacle_detector)
+        # Set the other obstacle detectors
+        self.red_obstacle_detector = obstacle.RedObstacleDetector(self.obstacle_detector)
+        self.blue_obstacle_detector = obstacle.BlueObstacleDetector(self.obstacle_detector)
+        self.unknown_obstacle_detector = obstacle.UnknownObstacleDetector(self.obstacle_detector)
+
+        # set up ball config for fcnn
+        # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
+        # this enables 2 fcnns with different configs.
+        self.ball_fcnn_config = {
+            'debug': config['ball_fcnn_publish_debug_img'],
+            'threshold': config['ball_fcnn_threshold'],
+            'expand_stepsize': config['ball_fcnn_expand_stepsize'],
+            'pointcloud_stepsize': config['ball_fcnn_pointcloud_stepsize'],
+            'shuffle_candidate_list': config['ball_fcnn_shuffle_candidate_list'],
+            'min_candidate_diameter': config['ball_fcnn_min_ball_diameter'],
+            'max_candidate_diameter': config['ball_fcnn_max_ball_diameter'],
+            'candidate_refinement_iteration_count': config['ball_fcnn_candidate_refinement_iteration_count'],
+            'publish_field_boundary_offset': config['ball_fcnn_publish_field_boundary_offset'],
+        }
+
+        # If dummy ball detection is activated, set the dummy ballfinder as ball detector
+        if config['vision_ball_detector'] == 'dummy':
+            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None)
+
+        # Check if the fcnn ball detector is activated
+        if config['vision_ball_detector'] == 'fcnn':
+            # Check if its the first callback, the fcnn is newly activated or the model has changed
+            if 'fcnn_model_path' not in self.config or self.config['fcnn_model_path'] != config['fcnn_model_path'] or self.config['vision_ball_detector'] != config['vision_ball_detector']:
+                # Build absolute model path
+                ball_fcnn_path = os.path.join(self.package_path, 'models', config['fcnn_model_path'])
+                # Check if it exists
+                if not os.path.exists(os.path.join(ball_fcnn_path, "model_final.index")):
+                    rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist! Maybe its a YOLO model? Look twice.')
+                else:
+                    self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
+                    rospy.loginfo("FCNN vision is running now")
+            self.ball_detector = fcnn_handler.FcnnHandler(
+                self.ball_fcnn,
+                self.field_boundary_detector,
+                self.ball_fcnn_config)
+
+        # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
+        if config['vision_ball_detector'] in ['yolo_opencv', 'yolo_darknet']:
+            if 'yolo_model_path' not in self.config or self.config['yolo_model_path'] != config['yolo_model_path'] or self.config['vision_ball_detector'] != config['vision_ball_detector']:
+                # Build absolute model path
+                yolo_model_path = os.path.join(self.package_path, 'models', config['yolo_model_path'])
+                # Check if it exists
+                if not os.path.exists(os.path.join(yolo_model_path, "yolo_weights.weights")):
+                    rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist! Maybe its an fcnn model?')
+                else:
+                    # Decide which yolo implementation should be used
+                    if config['vision_ball_detector'] == 'yolo_opencv':
+                        # Load OpenCV implementation (uses OpenCL)
+                        yolo = yolo_handler.YoloHandlerOpenCV(config, yolo_model_path)
+                    elif config['vision_ball_detector'] == 'yolo_darknet':
+                        # Load Darknet implementation (uses CUDA)
+                        yolo = yolo_handler.YoloHandlerDarknet(config, yolo_model_path)
+                    # Set both ball and goalpost detector
+                    self.ball_detector = yolo_handler.YoloBallDetector(yolo)
+                    self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
+                    rospy.loginfo(config['vision_ball_detector'] + " vision is running now")
+
+        # Now register all publishers
+
+        self.pub_balls = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_balls, 'ROS_ball_msg_topic', BallsInImage)
+
+        self.pub_lines = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
+
+        self.pub_obstacle = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_obstacle, 'ROS_obstacle_msg_topic', ObstaclesInImage, queue_size=3)
+
+        self.pub_goal = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_goal, 'ROS_goal_msg_topic', GoalInImage, queue_size=3)
+
+        self.pub_ball_fcnn = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
+
+        self.pub_debug_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_debug_image, 'ROS_debug_image_msg_topic', Image)
+
+        self.convex_pub_field_boundary = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.convex_pub_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundaryInImage)
+
+        self.pub_debug_fcnn_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_debug_fcnn_image, 'ROS_debug_fcnn_image_msg_topic', Image)
+
+        # subscribers
+
+        self.image_sub = ros_utils.ROS_Utils.create_or_update_subscriber(self.config, config, self.image_sub, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
+
+        # Publish Config-message (mainly for the dynamic color space node)
+        ros_utils.ROS_Utils.publish_vision_config(config, self.pub_config)
+
+        # The old config gets replaced with the new config
+        self.config = config
+
+        # Activate Vision again
+        self.reconfigure_active = False
+
+        return config
 
     def _image_callback(self, image_msg):
         # type: (Image) -> None
@@ -92,7 +322,7 @@ class Vision:
             rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message')
             return
 
-        # Dont process images if reconfiguration is in progress
+        # Do not process images if reconfiguration is in progress
         if self.reconfigure_active:
             return
 
@@ -346,232 +576,6 @@ class Vision:
         """
         self.obstacle_detector.compute_all_obstacles()
         self.line_detector.compute_linepoints()
-
-    def _dynamic_reconfigure_callback(self, config, level):
-        """
-        Callback for the dynamic reconfigure configuration. This callback also gets calles for the inertial configuration.
-        :param config: New config
-        :param level: Custom defineable value
-        """
-        # Deactivates Vision temporarally
-        self.reconfigure_active = True
-
-        # Set some thresholds
-        # Brightness threshold which determins if the camera cap is on the camera.
-        self._blind_threshold = config['vision_blind_threshold']
-        # Threshold for ball candidates
-        self._ball_candidate_threshold = config['vision_ball_candidate_rating_threshold']
-        # Maximum offset for balls over the convex field boundary
-        self._ball_candidate_y_offset = config['vision_ball_candidate_field_boundary_y_offset']
-
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'vision_publish_debug_image'):
-            # Should the debug image be published?
-            self.publish_debug_image = config['vision_publish_debug_image']
-            if self.publish_debug_image:
-                rospy.logwarn('Debug images are enabled')
-            else:
-                rospy.loginfo('Debug images are disabled')
-
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'ball_fcnn_publish_output'):
-            # Should the fcnn output (only under the field boundary) be published?
-            self.ball_fcnn_publish_output = config['ball_fcnn_publish_output']
-            if self.ball_fcnn_publish_output:
-                rospy.logwarn('ball FCNN output publishing is enabled')
-            else:
-                rospy.logwarn('ball FCNN output publishing is disabled')
-
-        # Should the whole fcnn output be published?
-        self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
-
-        # Print if the vision uses the sim color or not
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'vision_use_sim_color'):
-            if config['vision_use_sim_color']:
-                rospy.logwarn('Loaded color space for SIMULATOR.')
-            else:
-                rospy.loginfo('Loaded color space for REAL WORLD.')
-
-        # Set the white color detector
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, [
-                'white_color_detector_lower_values_h', 'white_color_detector_lower_values_s', 'white_color_detector_lower_values_v',
-                'white_color_detector_upper_values_h', 'white_color_detector_upper_values_s', 'white_color_detector_upper_values_v']):
-            self.white_color_detector = color.HsvSpaceColorDetector(
-                [
-                    config['white_color_detector_lower_values_h'],
-                    config['white_color_detector_lower_values_s'],
-                    config['white_color_detector_lower_values_v']
-                ],
-                [
-                    config['white_color_detector_upper_values_h'],
-                    config['white_color_detector_upper_values_s'],
-                    config['white_color_detector_upper_values_v']
-                ])
-
-        # Set the red color detector
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, [
-                'red_color_detector_lower_values_h', 'red_color_detector_lower_values_s', 'red_color_detector_lower_values_v',
-                'red_color_detector_upper_values_h', 'red_color_detector_upper_values_s', 'red_color_detector_upper_values_v']):
-            self.red_color_detector = color.HsvSpaceColorDetector(
-                [
-                    config['red_color_detector_lower_values_h'],
-                    config['red_color_detector_lower_values_s'],
-                    config['red_color_detector_lower_values_v']
-                ],
-                [
-                    config['red_color_detector_upper_values_h'],
-                    config['red_color_detector_upper_values_s'],
-                    config['red_color_detector_upper_values_v']
-                ])
-
-        # Set the blue color detector
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, [
-                'blue_color_detector_lower_values_h', 'blue_color_detector_lower_values_s', 'blue_color_detector_lower_values_v',
-                'blue_color_detector_upper_values_h', 'blue_color_detector_upper_values_s', 'blue_color_detector_upper_values_v']):
-            self.blue_color_detector = color.HsvSpaceColorDetector(
-                [
-                    config['blue_color_detector_lower_values_h'],
-                    config['blue_color_detector_lower_values_s'],
-                    config['blue_color_detector_lower_values_v']
-                ],
-                [
-                    config['blue_color_detector_upper_values_h'],
-                    config['blue_color_detector_upper_values_s'],
-                    config['blue_color_detector_upper_values_v']
-                ])
-
-        # Check if the dynamic color space field color detector or the static field color detector should be used
-        if config['dynamic_color_space_active']:
-            # Set dynamic color space field color detector
-            self.field_color_detector = color.DynamicPixelListColorDetector(
-                self.package_path,
-                config,
-                primary_detector=True)
-        else:
-            # Set the static field color detector
-            self.field_color_detector = color.PixelListColorDetector(
-                self.package_path,
-                config)
-
-        # Get field boundary detector class by name from config
-        field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
-            config['field_boundary_detector_search_method'])
-
-        # Set the field boundary detector
-        self.field_boundary_detector = field_boundary_detector_class(
-            self.field_color_detector,
-            config)
-
-        # Set the line detector
-        self.line_detector = lines.LineDetector(
-            self.white_color_detector,
-            self.field_color_detector,
-            self.field_boundary_detector,
-            config)
-
-        # Set the obstacle detector
-        self.obstacle_detector = obstacle.ObstacleDetector(
-            self.red_color_detector,
-            self.blue_color_detector,
-            self.white_color_detector,
-            self.field_boundary_detector,
-            config)
-
-        # If we don't use YOLO set the conventional goalpost detector.
-        if not config['vision_ball_detector'] in ['yolo_opencv', 'yolo_darknet']:
-            self.goalpost_detector = obstacle.WhiteObstacleDetector(self.obstacle_detector)
-        # Set the other obstacle detectors
-        self.red_obstacle_detector = obstacle.RedObstacleDetector(self.obstacle_detector)
-        self.blue_obstacle_detector = obstacle.BlueObstacleDetector(self.obstacle_detector)
-        self.unknown_obstacle_detector = obstacle.UnknownObstacleDetector(self.obstacle_detector)
-
-        # set up ball config for fcnn
-        # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
-        # this enables 2 fcnns with different configs.
-        self.ball_fcnn_config = {
-            'debug': config['ball_fcnn_publish_debug_img'],
-            'threshold': config['ball_fcnn_threshold'],
-            'expand_stepsize': config['ball_fcnn_expand_stepsize'],
-            'pointcloud_stepsize': config['ball_fcnn_pointcloud_stepsize'],
-            'shuffle_candidate_list': config['ball_fcnn_shuffle_candidate_list'],
-            'min_candidate_diameter': config['ball_fcnn_min_ball_diameter'],
-            'max_candidate_diameter': config['ball_fcnn_max_ball_diameter'],
-            'candidate_refinement_iteration_count': config['ball_fcnn_candidate_refinement_iteration_count'],
-            'publish_field_boundary_offset': config['ball_fcnn_publish_field_boundary_offset'],
-        }
-
-        # If dummy ball detection is activated, set the dummy ballfinder as ball detector
-        if config['vision_ball_detector'] == 'dummy':
-            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None)
-
-        # Check if the fcnn ball detector is activated
-        if config['vision_ball_detector'] == 'fcnn':
-            # Check if its the first callback, the fcnn is newly activated or the model has changed
-            if 'fcnn_model_path' not in self.config or self.config['fcnn_model_path'] != config['fcnn_model_path'] or self.config['vision_ball_detector'] != config['vision_ball_detector']:
-                # Build absolute model path
-                ball_fcnn_path = os.path.join(self.package_path, 'models', config['fcnn_model_path'])
-                # Check if it exists
-                if not os.path.exists(os.path.join(ball_fcnn_path, "model_final.index")):
-                    rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist! Maybe its a YOLO model? Look twice.')
-                else:
-                    self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
-                    rospy.loginfo("FCNN vision is running now")
-            self.ball_detector = fcnn_handler.FcnnHandler(
-                self.ball_fcnn,
-                self.field_boundary_detector,
-                self.ball_fcnn_config)
-
-        # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
-        if config['vision_ball_detector'] in ['yolo_opencv', 'yolo_darknet']:
-            if 'yolo_model_path' not in self.config or self.config['yolo_model_path'] != config['yolo_model_path'] or self.config['vision_ball_detector'] != config['vision_ball_detector']:
-                # Build absolute model path
-                yolo_model_path = os.path.join(self.package_path, 'models', config['yolo_model_path'])
-                # Check if it exists
-                if not os.path.exists(os.path.join(yolo_model_path, "yolo_weights.weights")):
-                    rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist! Maybe its an fcnn model?')
-                else:
-                    # Decide which yolo implementation should be used
-                    if config['vision_ball_detector'] == 'yolo_opencv':
-                        # Load OpenCV implementation (uses OpenCL)
-                        yolo = yolo_handler.YoloHandlerOpenCV(config, yolo_model_path)
-                    elif config['vision_ball_detector'] == 'yolo_darknet':
-                        # Load Darknet implementation (uses CUDA)
-                        yolo = yolo_handler.YoloHandlerDarknet(config, yolo_model_path)
-                    # Set both ball and goalpost detector
-                    self.ball_detector = yolo_handler.YoloBallDetector(yolo)
-                    self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
-                    rospy.loginfo(config['vision_ball_detector'] + " vision is running now")
-
-        # Now register all publishers
-
-        self.pub_balls = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_balls, 'ROS_ball_msg_topic', BallsInImage)
-
-        self.pub_lines = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
-
-        self.pub_obstacle = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_obstacle, 'ROS_obstacle_msg_topic', ObstaclesInImage, queue_size=3)
-
-        self.pub_goal = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_goal, 'ROS_goal_msg_topic', GoalInImage, queue_size=3)
-
-        self.pub_ball_fcnn = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
-
-        self.pub_debug_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_debug_image, 'ROS_debug_image_msg_topic', Image)
-
-        self.convex_pub_field_boundary = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.convex_pub_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundaryInImage)
-
-        self.pub_debug_fcnn_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_debug_fcnn_image, 'ROS_debug_fcnn_image_msg_topic', Image)
-
-        # subscribers
-
-        self.image_sub = ros_utils.ROS_Utils.create_or_update_subscriber(self.config, config, self.image_sub, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
-
-        # Publish Config-message (mainly for the dynamic color space node)
-        ros_utils.ROS_Utils.publish_vision_config(config, self.pub_config)
-
-        # The old config gets replaced with the new config
-        self.config = config
-
-        # Activate Vision again
-        self.reconfigure_active = False
-
-        return config
 
     def _handle_forgotten_camera_cap(self, image):
         # type: (np.array) -> None
