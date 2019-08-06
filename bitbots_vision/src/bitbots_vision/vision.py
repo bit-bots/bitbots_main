@@ -125,15 +125,15 @@ class Vision:
                 rospy.loginfo('Loaded color space for REAL WORLD.')
 
         # Set the white color detector
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, '^white_color_detector_'):
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, r'^white_color_detector_'):
             self.white_color_detector = color.HsvSpaceColorDetector(config, "white")
 
         # Set the red color detector
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, '^red_color_detector_'):
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, r'^red_color_detector_'):
             self.red_color_detector = color.HsvSpaceColorDetector(config, "red")
 
         # Set the blue color detector
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, '^blue_color_detector_'):
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, r'^blue_color_detector_'):
             self.blue_color_detector = color.HsvSpaceColorDetector(config, "blue")
 
         # Check if the dynamic color space field color detector or the static field color detector should be used
@@ -203,7 +203,7 @@ class Vision:
         # Check if the fcnn ball detector is activated
         if config['vision_ball_detector'] == 'fcnn':
             # Check if its the first callback, the fcnn is newly activated or the model has changed
-            if 'fcnn_model_path' not in self.config or self.config['fcnn_model_path'] != config['fcnn_model_path'] or self.config['vision_ball_detector'] != config['vision_ball_detector']:
+            if ros_utils.ROS_Utils.config_param_change(self.config, config, ['fcnn_model_path', 'vision_ball_detector']):
                 # Build absolute model path
                 ball_fcnn_path = os.path.join(self.package_path, 'models', config['fcnn_model_path'])
                 # Check if it exists
@@ -212,14 +212,15 @@ class Vision:
                 else:
                     self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
                     rospy.loginfo("FCNN vision is running now")
-            self.ball_detector = fcnn_handler.FcnnHandler(
-                self.ball_fcnn,
-                self.field_boundary_detector,
-                self.ball_fcnn_config)
+            if ros_utils.ROS_Utils.config_param_change(self.config, config, r'^ball_fcnn_'):
+                self.ball_detector = fcnn_handler.FcnnHandler(
+                    self.ball_fcnn,
+                    self.field_boundary_detector,
+                    self.ball_fcnn_config)
 
         # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
         if config['vision_ball_detector'] in ['yolo_opencv', 'yolo_darknet']:
-            if 'yolo_model_path' not in self.config or self.config['yolo_model_path'] != config['yolo_model_path'] or self.config['vision_ball_detector'] != config['vision_ball_detector']:
+            if ros_utils.ROS_Utils.config_param_change(self.config, config, ['yolo_model_path', 'vision_ball_detector']):
                 # Build absolute model path
                 yolo_model_path = os.path.join(self.package_path, 'models', config['yolo_model_path'])
                 # Check if it exists
