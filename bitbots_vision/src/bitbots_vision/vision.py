@@ -151,16 +151,16 @@ class Vision:
         if config['dynamic_color_space_active']:
             # Set dynamic color space field color detector
             self.field_color_detector = color.DynamicPixelListColorDetector(
-                self.package_path,
                 config,
+                self.package_path,
                 self.pub_field_mask_image,
                 self.pub_dynamic_color_space_field_mask_image)
         else:
             # Set the static field color detector
             self.field_color_detector = color.PixelListColorDetector(
+                config,
                 self.package_path,
-                self.pub_field_mask_image,
-                config)
+                self.pub_field_mask_image)
 
         # Get field boundary detector class by name from config
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(

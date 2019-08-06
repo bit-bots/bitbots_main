@@ -82,8 +82,8 @@ class DynamicColorSpace:
 
         # Set Color- and FieldBoundaryDetector
         self.color_detector = color.DynamicPixelListColorDetector(
-            self.package_path,
-            vision_config)
+            vision_config,
+            self.package_path)
 
         # Get field boundary detector class by name from config
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
