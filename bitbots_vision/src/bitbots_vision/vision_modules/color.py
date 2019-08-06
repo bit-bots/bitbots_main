@@ -154,30 +154,6 @@ class HsvSpaceColorDetector(ColorDetector):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         return cv2.inRange(image, self.min_vals, self.max_vals)
 
-    # do not use this stuff!
-    # def pixel_bgr2hsv(self, bgr_pixel):
-    #     normalized_bgr_pixel = (bgr_pixel[0] / 255,
-    #                             bgr_pixel[1] / 255,
-    #                             bgr_pixel[2] / 255)
-    #     min_bgr = min(normalized_bgr_pixel)
-    #     index_max = max(xrange(len(bgr_pixel)), key=bgr_pixel.__getitem__)
-    #
-    #     # set V
-    #     v = normalized_bgr_pixel[index_max]
-    #     # set S
-    #     s = 0
-    #     if v is not 0:
-    #         s = (v - min_bgr) / float(v)
-    #     # set H
-    #     buf = v - min_bgr
-    #     if index_max is 0:
-    #         h = 120 + 30 * (normalized_bgr_pixel[2] - normalized_bgr_pixel[1]) / buf
-    #     elif index_max is 1:
-    #         h = 60 + 30 * (normalized_bgr_pixel[0] - normalized_bgr_pixel[2]) / buf
-    #     else:
-    #         h = 30 * (normalized_bgr_pixel[1] - normalized_bgr_pixel[0]) / buf
-    #     return tuple((int(h), int(s * 255), int(v * 255)))
-
 
 class PixelListColorDetector(ColorDetector):
     """
@@ -193,13 +169,14 @@ class PixelListColorDetector(ColorDetector):
         'field_color_detector_path'
     """
 
-    def __init__(self, package_path, config):
-        # type:(str, dict, bool) -> None
+    def __init__(self, package_path, config, pub_field_mask_image):
+        # type:(str, dict, rospy.Publisher) -> None
         """
         Initialization of PixelListColorDetector.
 
         :param str package_path: path of package
         :param dict config: vision config
+        :param rospy.Publisher pub_field_mask_image: Publisher of field mask images
         :return: None
         """
         super(PixelListColorDetector, self).__init__()
@@ -207,18 +184,17 @@ class PixelListColorDetector(ColorDetector):
 
         self.config = config
 
+        self.pub_field_mask_image = pub_field_mask_image
+
+        # toggle publishing of mask_img msg
+        self.publish_field_mask_img_msg = self.config['vision_publish_field_mask_image']
+
         color_space_path = os.path.join(package_path, 'config/color_spaces')
         # concatenate color-path to file containing the accepted colors of base color space
         if self.config['vision_use_sim_color']:
             self.color_path = os.path.join(color_space_path, self.config['field_color_detector_path_sim'])
         else:
             self.color_path = os.path.join(color_space_path, self.config['field_color_detector_path'])
-
-        # Set publisher to 'ROS_field_mask_image_msg_topic'
-        self.imagepublisher = rospy.Publisher(
-            self.config['ROS_field_mask_image_msg_topic'],
-            Image,
-            queue_size=1)
 
         self.color_space = self.init_color_space(self.color_path)
 
@@ -279,8 +255,8 @@ class PixelListColorDetector(ColorDetector):
         mask = VisionExtensions.maskImg(image, self.color_space)
 
         # toggle publishing of 'field_mask'-messages
-        if self.config['vision_publish_field_mask_image']:
-            self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask, '8UC1'))
+        if self.publish_field_mask_img_msg]:
+            self.pub_field_mask_image.publish(self.bridge.cv2_to_imgmsg(mask, '8UC1'))
 
         return mask
 
@@ -297,43 +273,29 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         'ROS_dynamic_color_space_field_mask_image_msg_topic'-messages
     """
 
-    def __init__(self, package_path, config, primary_detector=False):
-        # type:(str, dict, bool) -> None
+    def __init__(self, package_path, config, pub_field_mask_image, pub_dynamic_color_space_field_mask_image, primary_detector=False):
+        # type:(str, dict, rospy.Publisher, rospy.Publisher, bool) -> None
         """
         Initialization of DynamicPixelListColorDetector.
 
         :param str package_path: path of package
         :param dict config: vision config
-        :param bool primary_detector: true if is primary color detector
-            (only detector held by vision should be True) (Default: False)
+        :param rospy.Publisher pub_field_mask_image: Publisher of field mask images
+        :param rospy.Publisher pub_dynamic_color_space_field_mask_image: Publisher of dynamic color space field mask images
+        :param bool primary_detector: true if it is the primary color detector
+            (only the detector held by the vision node should be True) (Default: False)
             This allows publishing of field mask images.
         :return: None
         """
-        super(DynamicPixelListColorDetector, self).__init__(package_path, config)
+        super(DynamicPixelListColorDetector, self).__init__(package_path, config, pub_field_mask_image)
 
+        self.pub_dynamic_color_space_field_mask_image = pub_dynamic_color_space_field_mask_image
         self.primary_detector = primary_detector
 
         self.base_color_space = np.copy(self.color_space)
 
-        # toggle publishing of mask_img msg
-        self.publish_field_mask_img_msg = self.config['vision_publish_field_mask_image']
-
         # toggle publishing of mask_img_dyn msg with dynamic color space
         self.publish_dyn_field_mask_msg = self.config['dynamic_color_space_publish_field_mask_image']
-
-        # Subscribe to 'ROS_dynamic_color_space_msg_topic'
-        self.color_space_subscriber = rospy.Subscriber(
-            config['ROS_dynamic_color_space_msg_topic'],
-            ColorSpace,
-            self.color_space_callback,
-            queue_size=1,
-            buff_size=2**20)
-
-        # Set publisher to 'ROS_dynamic_color_space_field_mask_image_msg_topic'
-        self.imagepublisher_dyn = rospy.Publisher(
-            self.config['ROS_dynamic_color_space_field_mask_image_msg_topic'],
-            Image,
-            queue_size=1)
 
     def mask_image(self, image):
         # type: (np.array) -> np.array
@@ -351,18 +313,18 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
 
         # toggle publishing of dynamic field masks
         if (self.primary_detector and self.publish_dyn_field_mask_msg):
-            self.imagepublisher_dyn.publish(self.bridge.cv2_to_imgmsg(dyn_mask, '8UC1'))
+            self.pub_dynamic_color_space_field_mask_image.publish(self.bridge.cv2_to_imgmsg(dyn_mask, '8UC1'))
 
         # toggle publishing of field masks
         if (self.primary_detector and self.publish_field_mask_img_msg):
-            self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(static_mask, '8UC1'))
+            self.pub_field_mask_image.publish(self.bridge.cv2_to_imgmsg(static_mask, '8UC1'))
 
         return dyn_mask
 
     def color_space_callback(self, msg):
         # type: (ColorSpace) -> None
         """
-        This callback gets called, after subscriber received ColorSpaceMessage from DynamicColorSpace-Node.
+        This callback gets called inside the vision node, after subscriber received ColorSpaceMessage from DynamicColorSpace-Node.
 
         :param ColorSpaceMessage msg: ColorSpaceMessage
         :return: None

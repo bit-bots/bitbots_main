@@ -47,10 +47,10 @@ class Vision:
         self.pub_ball_fcnn = None
         self.pub_debug_image = None
         self.pub_debug_fcnn_image = None
-        self.convex_pub_field_boundary = None
+        self.pub_convex_field_boundary = None
 
         # Subscriber placeholder
-        self.image_sub = None
+        self.sub_image = None
 
         self.debug_image_drawer = debug.DebugImage()
 
@@ -66,8 +66,8 @@ class Vision:
         # Speak publisher
         self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
 
-        # Needed for operations that should be executed just once
-        self._first_callback = True
+        # Needed for operations that should only be executed on the first image
+        self._first_image_callback = True
 
         # Needed to determine whether reconfiguration is currently in progress or not
         self.reconfigure_active = False
@@ -98,16 +98,16 @@ class Vision:
         # Maximum offset for balls over the convex field boundary
         self._ball_candidate_y_offset = config['vision_ball_candidate_field_boundary_y_offset']
 
+        # Should the debug image be published?
         if ros_utils.ROS_Utils.config_param_change(self.config, config, 'vision_publish_debug_image'):
-            # Should the debug image be published?
             self.publish_debug_image = config['vision_publish_debug_image']
             if self.publish_debug_image:
                 rospy.logwarn('Debug images are enabled')
             else:
                 rospy.loginfo('Debug images are disabled')
 
+        # Should the fcnn output (only under the field boundary) be published?
         if ros_utils.ROS_Utils.config_param_change(self.config, config, 'ball_fcnn_publish_output'):
-            # Should the fcnn output (only under the field boundary) be published?
             self.ball_fcnn_publish_output = config['ball_fcnn_publish_output']
             if self.ball_fcnn_publish_output:
                 rospy.logwarn('ball FCNN output publishing is enabled')
@@ -115,7 +115,12 @@ class Vision:
                 rospy.logwarn('ball FCNN output publishing is disabled')
 
         # Should the whole fcnn output be published?
-        self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
+        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'ball_fcnn_publish_debug_img'):
+            self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
+            if self.ball_fcnn_publish_output:
+                rospy.logwarn('Ball FCNN debug image publishing is enabled')
+            else:
+                rospy.loginfo('Ball FCNN debug image publishing is disabled')
 
         # Print if the vision uses the sim color or not
         if ros_utils.ROS_Utils.config_param_change(self.config, config, 'vision_use_sim_color'):
@@ -142,11 +147,14 @@ class Vision:
             self.field_color_detector = color.DynamicPixelListColorDetector(
                 self.package_path,
                 config,
+                self.pub_field_mask_image,
+                self.pub_dynamic_color_space_field_mask_image,
                 primary_detector=True)
         else:
             # Set the static field color detector
             self.field_color_detector = color.PixelListColorDetector(
                 self.package_path,
+                self.pub_field_mask_image,
                 config)
 
         # Get field boundary detector class by name from config
@@ -181,9 +189,9 @@ class Vision:
         self.blue_obstacle_detector = obstacle.BlueObstacleDetector(self.obstacle_detector)
         self.unknown_obstacle_detector = obstacle.UnknownObstacleDetector(self.obstacle_detector)
 
-        # set up ball config for fcnn
-        # these config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
-        # this enables 2 fcnns with different configs.
+        # Set up ball config for fcnn
+        # These config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
+        # This enables support for several FCNNs with different configs.
         self.ball_fcnn_config = {
             'debug': config['ball_fcnn_publish_debug_img'],
             'threshold': config['ball_fcnn_threshold'],
@@ -240,26 +248,20 @@ class Vision:
                     rospy.loginfo(config['vision_ball_detector'] + " vision is running now")
 
         # Now register all publishers
-
         self.pub_balls = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_balls, 'ROS_ball_msg_topic', BallsInImage)
-
         self.pub_lines = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
-
         self.pub_obstacle = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_obstacle, 'ROS_obstacle_msg_topic', ObstaclesInImage, queue_size=3)
-
         self.pub_goal = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_goal, 'ROS_goal_msg_topic', GoalInImage, queue_size=3)
-
         self.pub_ball_fcnn = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
-
         self.pub_debug_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_debug_image, 'ROS_debug_image_msg_topic', Image)
-
-        self.convex_pub_field_boundary = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.convex_pub_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundaryInImage)
-
+        self.pub_convex_field_boundary = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundaryInImage)
         self.pub_debug_fcnn_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_debug_fcnn_image, 'ROS_debug_fcnn_image_msg_topic', Image)
+        self.pub_field_mask_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_field_mask_image, 'ROS_field_mask_image_msg_topic', Image)
+        self.pub_dynamic_color_space_field_mask_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_dynamic_color_space_field_mask_image, 'ROS_dynamic_color_space_field_mask_image_msg_topic', Image)
 
         # subscribers
-
-        self.image_sub = ros_utils.ROS_Utils.create_or_update_subscriber(self.config, config, self.image_sub, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
+        self.sub_image = ros_utils.ROS_Utils.create_or_update_subscriber(self.config, config, self.sub_image, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
+        self.sub_dynamic_color_space_msg_topic = ros_utils.ROS_Utils.create_or_update_subscriber(self.config, config, self.sub_dynamic_color_space_msg_topic, 'ROS_dynamic_color_space_msg_topic', ColorSpace, callback=self.field_boundary_detector.color_space_callback, queue_size=1, buff_size=2**20)
 
         # Publish Config-message (mainly for the dynamic color space node)
         ros_utils.ROS_Utils.publish_vision_config(config, self.pub_config)
@@ -294,6 +296,8 @@ class Vision:
         # Catch type errors that occur during reconfiguration :(
         try:
             self.handle_image(image_msg)
+            # Now this is not the first image callback anymore
+            self._first_image_callback = False
         except (TypeError, cv2.error):
             if not self.reconfigure_active:
                 raise
@@ -312,8 +316,8 @@ class Vision:
         if image is None:
             return
 
-        # Check if its the first callback
-        if self._first_callback:
+        # Check if its the first image callback
+        if self._first_image_callback:
             # Check if a cap may be on the camera
             self._handle_forgotten_camera_cap(image)
 
@@ -443,14 +447,15 @@ class Vision:
         # Copy header
         convex_field_boundary_msg.header = image_msg.header
         # Publish field boundary
-        self.convex_pub_field_boundary.publish(convex_field_boundary_msg)
+        self.pub_convex_field_boundary.publish(convex_field_boundary_msg)
 
-        if self.ball_fcnn_publish_output and self.config['vision_ball_detector'] == 'fcnn':
-            self.pub_ball_fcnn.publish(self.ball_detector.get_cropped_msg())
+        if self.config['vision_ball_detector'] == 'fcnn':
+            if self.ball_fcnn_publish_output:
+                self.pub_ball_fcnn.publish(self.ball_detector.get_cropped_msg())
 
-        # Publish whole fcnn output
-        if self.publish_fcnn_debug_image and self.config['vision_ball_detector'] == 'fcnn':
-            self.pub_debug_fcnn_image.publish(self.ball_detector.get_debug_image())
+            # Publish whole fcnn output
+            if self.publish_fcnn_debug_image:
+                self.pub_debug_fcnn_image.publish(self.ball_detector.get_debug_image())
 
         # Check if we should draw debug image
         if self.publish_debug_image:
@@ -458,9 +463,6 @@ class Vision:
             debug_image = self._get_debug_image(image)
             # publish debug image
             self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(debug_image, 'bgr8'))
-
-        # Now this is not the first callback anymore
-        self._first_callback = False
 
     @staticmethod
     def _distribute_images(image, internal_image_subscribers):
