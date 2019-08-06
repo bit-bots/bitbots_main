@@ -46,7 +46,7 @@ class CheckIMU(AbstractDecisionElement):
             return "PROBLEM"
         elif not reevaluate and self.blackboard.current_state == STATE_HARDWARE_PROBLEM:
             # had IMU problem before, just tell that this is solved now
-            rospy.loinfo("IMU is now connected. Will resume.") #TODO this message is never send
+            rospy.loginfo("IMU is now connected. Will resume.") #TODO this message is never send
         return "CONNECTION"
 
     def get_reevaluate(self):
