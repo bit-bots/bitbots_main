@@ -17,7 +17,7 @@ from humanoid_league_msgs.msg import BallsInImage, LineInformationInImage, \
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, yolo_handler, ros_utils
 from bitbots_vision.cfg import VisionConfig
-from bitbots_msgs.msg import Config
+from bitbots_msgs.msg import Config, ColorSpace
 
 
 class Vision:
@@ -48,9 +48,12 @@ class Vision:
         self.pub_debug_image = None
         self.pub_debug_fcnn_image = None
         self.pub_convex_field_boundary = None
+        self.pub_field_mask_image = None
+        self.pub_dynamic_color_space_field_mask_image = None
 
         # Subscriber placeholder
         self.sub_image = None
+        self.sub_dynamic_color_space_msg_topic = None
 
         self.debug_image_drawer = debug.DebugImage()
 
@@ -150,8 +153,7 @@ class Vision:
                 self.package_path,
                 config,
                 self.pub_field_mask_image,
-                self.pub_dynamic_color_space_field_mask_image,
-                primary_detector=True)
+                self.pub_dynamic_color_space_field_mask_image)
         else:
             # Set the static field color detector
             self.field_color_detector = color.PixelListColorDetector(
