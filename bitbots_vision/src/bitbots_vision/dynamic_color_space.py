@@ -80,7 +80,6 @@ class DynamicColorSpace:
         # Set publisher of ColorSpace-messages
         self.pub_color_space = ros_utils.ROS_Utils.create_or_update_publisher(self.vision_config, vision_config, self.pub_color_space, 'ROS_dynamic_color_space_msg_topic', ColorSpace)
 
-
         # Set Color- and FieldBoundaryDetector
         self.color_detector = color.DynamicPixelListColorDetector(
             self.package_path,
