@@ -27,6 +27,7 @@ class Animation:
     def __init__(self, name, keyframes, default_interpolator=None):
         self.name = name
         self.keyframes = keyframes
+        self.default_interpolator = default_interpolator
 
 
 def parse(info):

@@ -177,7 +177,7 @@ class HardwareControlManager:
             if hasattr(msg.position.points, 'effort'):
                 out_torque = JointTorque
                 out_torque.joint_names = msg.position.joint_names
-                out_torque.on = msg.position.points.effort
+                out_torque.on = msg.position.points[0].effort
                 send_torque = True
             if self.blackboard.shut_down_request:
                 # there are sometimes transmittions errors during shutdown due to race conditions

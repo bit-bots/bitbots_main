@@ -126,7 +126,7 @@ class PlayAnimationAction(object):
     def get_animation_splines(self, animation_name):
         try:
             with open(find_animation(animation_name)) as fp:
-                parsed_animation = parse(json.load(fp))
+                self.parsed_animation = parse(json.load(fp))
         except IOError:
             rospy.logwarn("Animation '%s' not found" % animation_name)
             self._as.set_aborted(False, "Animation not found")
@@ -137,7 +137,7 @@ class PlayAnimationAction(object):
             traceback.print_exc()
             self._as.set_aborted(False, "Animation not found")
             return
-        return SplineAnimator(parsed_animation, self.current_joint_states)
+        return SplineAnimator(self.parsed_animation, self.current_joint_states)
 
     def check_for_new_goal(self):
         if self._as.is_new_goal_available():
@@ -186,17 +186,20 @@ class PlayAnimationAction(object):
                 self.traj_msg.points[0].positions.append(pose[joint])
                 for t in torque:
                     if joint == t:
-                        self.traj_msg.points[0].effort.append(torque[t])
+                        self.traj_msg.points[0].effort.append(bool(torque[t]))
             self.anim_msg.position = self.traj_msg
         self.anim_msg.header.stamp = rospy.Time.now()
+        #print(self.anim_msg.position.points[0])
         self.hcm_publisher.publish(self.anim_msg)
 
     def get_torque(self):
         torque = {}
-        for kf in self.parsed_animation.keyframes:
-            for t in kf.torque:
-                torque[t] = kf.torque[t]
+        if not self.parsed_animation == {}:
+            for kf in self.parsed_animation.keyframes:
+                for t in kf.torque:
+                    torque[t] = kf.torque[t]
         return torque
+        
 
 if __name__ == "__main__":
     rospy.logdebug("starting animation node")
