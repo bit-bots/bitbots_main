@@ -9,8 +9,6 @@ import numpy as np
 import os
 from collections import deque
 from cv_bridge import CvBridge
-from sensor_msgs.msg import Image
-from bitbots_msgs.msg import ColorSpace
 
 
 class ColorDetector(object):
