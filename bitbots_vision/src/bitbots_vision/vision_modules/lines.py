@@ -44,12 +44,23 @@ class LineDetector:
             white_masked_image = self._white_detector.mask_image(
                 self._get_preprocessed_image())
 
+            # get the maximum height of the field boundary
+            max_field_boundary_heigth = self._field_boundary_detector.get_upper_bound(
+                self._field_boundary_offset)
+
+            # Check if there is some space between the field boundary and the image border.
+            # If the field boundary equals the image border there is no need to search for line points. Also it crashes if these two are equal arrrgh...
+            if max_field_boundary_heigth < imgshape[0]:
+                # Get X samples
             x_list = np.random.randint(0, imgshape[1],
                                        size=self._linepoints_range, dtype=int)
-            y_list = np.random.randint(self._field_boundary_detector.get_upper_bound(self._field_boundary_offset), imgshape[0],
+                # get Y samples
+                y_list = np.random.randint(max_field_boundary_heigth, imgshape[0],
                                        size=self._linepoints_range, dtype=int)
+                # Check for each sample pair if their pixel in the binary white mask is true.
             for p in zip(x_list, y_list):
                 if white_masked_image[p[1]][p[0]]:
+                        # Append these points to our list
                     self._linepoints.append(p)
 
     def get_linepoints(self):
