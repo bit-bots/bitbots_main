@@ -47,7 +47,7 @@ class HardwareControlManager:
 
         # Publisher / subscriber
         self.joint_goal_publisher = rospy.Publisher('DynamixelController/command', JointCommand, queue_size=1)
-        self.joint_torque_publisher = rospy.Publisher('DynamixelController/command', JointTorque, queue_size=1) #can i pub this on /command? TODO
+        #self.joint_torque_publisher = rospy.Publisher('DynamixelController/torque', JointTorque) #can i pub this on /command? No you can't TODO
         self.hcm_state_publisher = rospy.Publisher('robot_state', RobotControlState, queue_size=1, latch=True)
         self.blackboard.speak_publisher = rospy.Publisher('speak', Speak, queue_size=1)
 
@@ -174,24 +174,18 @@ class HardwareControlManager:
             out_msg.velocities = [-1] * len(out_msg.joint_names)
             out_msg.max_currents = [-1] * len(out_msg.joint_names)
             send_torque = False
-            if hasattr(msg.position.points, 'effort'):
-                out_torque = JointTorque
-                out_torque.joint_names = msg.position.joint_names
-                out_torque.on = msg.position.points[0].effort
-                send_torque = True
+            if not len(msg.position.points[0].effort) == 0:
+                out_msg.max_currents = [-x for x in msg.position.points[0].effort]
+                print(out_msg)
             if self.blackboard.shut_down_request:
                 # there are sometimes transmittions errors during shutdown due to race conditions
                 # there is nothing we can do so just ignore the errors in this case
                 try:
                     self.joint_goal_publisher.publish(out_msg)
-                    if send_torque:
-                        self.joint_torque_publisher.publish(out_torque)
                 except:
                     pass
             else:
                 self.joint_goal_publisher.publish(out_msg)
-                if send_torque:
-                    self.joint_torque_publisher.publish(out_torque)
 
     def joint_state_callback(self, msg):
         self.blackboard.last_motor_update_time = msg.header.stamp
