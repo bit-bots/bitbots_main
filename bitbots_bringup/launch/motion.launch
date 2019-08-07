@@ -17,10 +17,10 @@
         </include>
         <!--<include file="$(find bitbots_odometry)/launch/odometry_fuser.launch" />-->
         <node name="set_volume" pkg="bitbots_bringup" type="set_volume.sh" args="100%" />
+        <include file="$(find bitbots_buttons)/launch/buttons.launch"/>
     </group>
 
     <include file="$(find humanoid_league_speaker)/launch/speaker.launch"/>
-    <include file="$(find bitbots_buttons)/launch/buttons.launch"/>
 
     <include file="$(find bitbots_animation_server)/launch/animation.launch">
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
