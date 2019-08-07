@@ -224,7 +224,7 @@ class Vision:
                 else:
                     self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
                     rospy.loginfo("FCNN vision is running now")
-            if ros_utils.ROS_Utils.config_param_change(self.config, config, r'^ball_fcnn_') or ros_utils.ROS_Utils.config_param_change(self.config, config, 'vision_ball_detector'):
+            if ros_utils.ROS_Utils.config_param_change(self.config, config, r'^(ball_fcnn_)|(vision_ball_)'):
                 self.ball_detector = fcnn_handler.FcnnHandler(
                     self.ball_fcnn,
                     self.field_boundary_detector,
