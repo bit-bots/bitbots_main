@@ -9,7 +9,7 @@ try:
 except ImportError:
     rospy.logerr("Not able to run Darknet YOLO! Its only executable under python3 with yolo34py or yolo34py-gpu installed.")
 import numpy as np
-from .candidate import CandidateFinder, Candidate
+from .candidate import CandidateFinder, BallDetector, Candidate
 
 class YoloHandler():
     def __init__(self, config, model_path):
@@ -171,7 +171,7 @@ class YoloHandlerOpenCV(YoloHandler):
                     self.goalpost_candidates.append(c)
 
 
-class YoloBallDetector(CandidateFinder):
+class YoloBallDetector(BallDetector):
 
     def __init__(self, yolo):
         self.yolo = yolo

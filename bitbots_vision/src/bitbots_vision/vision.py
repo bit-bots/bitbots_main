@@ -311,6 +311,7 @@ class Vision:
 
         # Do not process images if reconfiguration is in progress
         if self.reconfigure_active:
+            rospy.loginfo("Dropped image due to dynamic reconfigure callback!")
             return
 
         # Catch type errors that occur during reconfiguration :(
@@ -373,33 +374,17 @@ class Vision:
             self._conventional_precalculation()
 
         # Grab ball candidates from ball detector
-        ball_candidates = self.ball_detector.get_candidates()
-
-        # Check if there are any ball candidates
-        if ball_candidates:
-            # Only take candidates under the convex field boundary
-            balls_under_field_boundary = self.field_boundary_detector.balls_under_convex_field_boundary(ball_candidates)
-            # Check if there are still candidates left
-            if balls_under_field_boundary:
-                # Sort candidates and take the one which has the biggest confidence
-                sorted_rated_candidates = sorted(balls_under_field_boundary, key=lambda x: x.rating)
-                top_ball_candidate = list([max(sorted_rated_candidates[0:1], key=lambda x: x.rating)])[0]
-            else:
-                top_ball_candidate = None
-        else:
-            top_ball_candidate = None
-
-        self.top_ball_candidate = top_ball_candidate
+        self.top_ball_candidate = self.ball_detector.get_top_ball_under_convex_field_boundary(self.field_boundary_detector)
 
         # check whether ball candidates are over rating threshold
-        if top_ball_candidate and top_ball_candidate.get_rating() > self._ball_candidate_threshold:
+        if self.top_ball_candidate and self.top_ball_candidate.get_rating() > self._ball_candidate_threshold:
             # create ball msg
             balls_msg = BallsInImage()
             balls_msg.header.frame_id = image_msg.header.frame_id
             balls_msg.header.stamp = image_msg.header.stamp
 
             # Build the ball message which will be embedded in the balls message
-            ball_msg = ros_utils.ROS_Utils.build_ball_msg(top_ball_candidate)
+            ball_msg = ros_utils.ROS_Utils.build_ball_msg(self.top_ball_candidate)
             balls_msg.candidates.append(ball_msg)
 
             # Publish balls

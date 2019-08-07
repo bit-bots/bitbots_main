@@ -3,14 +3,14 @@ from cv_bridge import CvBridge
 from humanoid_league_msgs.msg import ImageWithRegionOfInterest
 import VisionExtensions
 import numpy as np
-from .candidate import CandidateFinder, Candidate
+from .candidate import Candidate, BallDetector
 import itertools
 import random
 import rospy
 from .live_fcnn_03 import FCNN03
 
 
-class FcnnHandler(CandidateFinder):
+class FcnnHandler(BallDetector):
     """
     This handles FCNNs, meaning it finds and rates candidates in their output.
 
