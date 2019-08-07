@@ -666,6 +666,7 @@ class RecordUI(Plugin):
                 self._sliders[k].setEnabled(v)
 
         self.set_sliders_and_text_fields(manual=False)
+        self.box_ticked()
             #self.set_sliders_and_text_fields(manual=True)
 
     def motor_switcher(self):
@@ -858,7 +859,7 @@ class RecordUI(Plugin):
         if not self._widget.frameList.currentItem() == None:
             if not self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
                 self.treeModeChanged(self._widget.treeModeSelector.currentIndex())
-                self.record(keep=True)
+                #self.record(keep=True)
 
     def update_frames(self, keep=False):
         
