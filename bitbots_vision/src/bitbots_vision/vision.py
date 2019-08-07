@@ -93,7 +93,7 @@ class Vision:
         # Deactivates Vision temporarally
         self.reconfigure_active = True
 
-        self._register_all_publishers(config)
+        self._register_or_update_all_publishers(config)
 
         # Set some thresholds
         # Brightness threshold which determins if the camera cap is on the camera.
@@ -251,7 +251,7 @@ class Vision:
                     self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
                     rospy.loginfo(config['vision_ball_detector'] + " vision is running now")
 
-        self._register_all_subscribers(config)
+        self._register_or_update_all_subscribers(config)
 
         # Publish Config-message (mainly for the dynamic color space node)
         ros_utils.ROS_Utils.publish_vision_config(config, self.pub_config)
@@ -264,7 +264,7 @@ class Vision:
 
         return config
 
-    def _register_all_publishers(self, config):
+    def _register_or_update_all_publishers(self, config):
         # type: (dict) -> None
         """
         This method registers all publishers needed for the vision node.
@@ -283,7 +283,7 @@ class Vision:
         self.pub_field_mask_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_field_mask_image, 'ROS_field_mask_image_msg_topic', Image)
         self.pub_dynamic_color_space_field_mask_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_dynamic_color_space_field_mask_image, 'ROS_dynamic_color_space_field_mask_image_msg_topic', Image)
 
-    def _register_all_subscribers(self, config):
+    def _register_or_update_all_subscribers(self, config):
         # type: (dict) -> None
         """
         This method registers all subscribers needed for the vision node.
