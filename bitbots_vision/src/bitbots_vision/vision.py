@@ -379,79 +379,55 @@ class Vision:
 
         # check whether ball candidates are over rating threshold
         if self.top_ball_candidate and self.top_ball_candidate.get_rating() > self._ball_candidate_threshold:
-            # create ball msg
-            balls_msg = BallsInImage()
-            balls_msg.header.frame_id = image_msg.header.frame_id
-            balls_msg.header.stamp = image_msg.header.stamp
-
             # Build the ball message which will be embedded in the balls message
             ball_msg = ros_utils.ROS_Utils.build_ball_msg(self.top_ball_candidate)
-            balls_msg.candidates.append(ball_msg)
-
+            # Create a list of balls, currently only containing the top candidate
+            list_of_balls = [ball_msg]
+            # Create balls msg with the list of balls
+            balls_msg = ros_utils.ROS_Utils.build_balls_msg(image_msg.header, list_of_balls)
             # Publish balls
             self.pub_balls.publish(balls_msg)
 
-        # Create obstacle msg
-        obstacles_msg = ObstaclesInImage()
-
-        # Add header
-        obstacles_msg.header.frame_id = image_msg.header.frame_id
-        obstacles_msg.header.stamp = image_msg.header.stamp
-
+        # Init list for obstacle msgs
+        list_of_obstacle_msgs = []
         # Add red obstacles
-        obstacles_msg.obstacles.extend(ros_utils.ROS_Utils.build_obstacle_msgs(ObstacleInImage.ROBOT_MAGENTA,
+        list_of_obstacle_msgs.extend(ros_utils.ROS_Utils.build_obstacle_msgs(ObstacleInImage.ROBOT_MAGENTA,
             self.red_obstacle_detector.get_candidates()))
         # Add blue obstacles
-        obstacles_msg.obstacles.extend(ros_utils.ROS_Utils.build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN,
+        list_of_obstacle_msgs.extend(ros_utils.ROS_Utils.build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN,
             self.blue_obstacle_detector.get_candidates()))
         # Add UFO's (Undefined Found Obstacles)
-        obstacles_msg.obstacles.extend(ros_utils.ROS_Utils.build_obstacle_msgs(ObstacleInImage.UNDEFINED,
+        list_of_obstacle_msgs.extend(ros_utils.ROS_Utils.build_obstacle_msgs(ObstacleInImage.UNDEFINED,
             self.unknown_obstacle_detector.get_candidates()))
-
+        # Build obstacles msgs containing all obstacles
+        obstacles_msg = ros_utils.ROS_Utils.build_obstacles_msg(image_msg.header, list_of_obstacle_msgs)
         # Publish obstacles
         self.pub_obstacle.publish(obstacles_msg)
 
+        # Get goalpost msgs and add them to the detected goal parts list
+        goal_parts = ros_utils.ROS_Utils.build_goalpost_msgs(self.goalpost_detector.get_candidates())
         # Create goalparts msg
-        goal_parts_msg = GoalPartsInImage()
-        # Add header
-        goal_parts_msg.header.frame_id = image_msg.header.frame_id
-        goal_parts_msg.header.stamp = image_msg.header.stamp
-
-        # Add detected goal parts to the message
-        goal_parts_msg.posts.extend(ros_utils.ROS_Utils.build_goalpost_msgs(self.goalpost_detector.get_candidates()))
-
+        goal_parts_msg = ros_utils.ROS_Utils.build_goal_parts_msg(image_msg.header, goal_parts)
         # Build goal message out of goal parts
         goal_msg = ros_utils.ROS_Utils.build_goal_msg(goal_parts_msg)
-
         # Check if there is a goal
         if goal_msg:
             # If we have a goal, lets publish it
             self.pub_goal.publish(goal_msg)
 
-        # Create line msg
-        line_msg = LineInformationInImage()  # Todo: add lines
-        line_msg.header.frame_id = image_msg.header.frame_id
-        line_msg.header.stamp = image_msg.header.stamp
-
         # Build a LineSegmentInImage message for each linepoint
-        for lp in self.line_detector.get_linepoints():
-            # Create LineSegmentInImage message
-            ls = LineSegmentInImage()
-            ls.start.x = lp[0]
-            ls.start.y = lp[1]
-            ls.end = ls.start
-            line_msg.segments.append(ls)
+        line_points = self.line_detector.get_linepoints()
+        # Create line segments
+        line_segments = ros_utils.ROS_Utils.convert_line_points_to_line_segment_msgs(line_points)
+        # Create line msg
+        line_msg = ros_utils.ROS_Utils.build_line_information_in_image_msg(image_msg.header, line_segments)
         # Publish lines
         self.pub_lines.publish(line_msg)
-
-        # create non_line msg
 
         # Get field boundary msg
         convex_field_boundary = self.field_boundary_detector.get_convex_field_boundary_points()
         # Build ros message
-        convex_field_boundary_msg = ros_utils.ROS_Utils.build_field_boundary_msg(convex_field_boundary)
-        # Copy header
-        convex_field_boundary_msg.header = image_msg.header
+        convex_field_boundary_msg = ros_utils.ROS_Utils.build_field_boundary_msg(image_msg.header, convex_field_boundary)
         # Publish field boundary
         self.pub_convex_field_boundary.publish(convex_field_boundary_msg)
 

@@ -239,6 +239,44 @@ class ROS_Utils:
         return subscriber_object
 
     @staticmethod
+    def build_goal_parts_msg(header, goal_parts):
+        """
+        Builds a GoalPartsInImage message out of a list of PostInImage messages
+        :param header: ros header of the new message. Mostly the header of the image
+        :param goal_parts: a list of goal part messages, e.g. PostInImage
+        :return: GoalPartsInImage message
+        """
+        # Create goalparts msg
+        goal_parts_msg = GoalPartsInImage()
+        # Add header
+        goal_parts_msg.header.frame_id = header.frame_id
+        goal_parts_msg.header.stamp = header.stamp
+        # Add detected goal parts to the message
+        goal_parts_msg.posts = goal_parts
+        return goal_parts_msg
+
+    @staticmethod
+    def build_goalpost_msgs(goalposts):
+        """
+        Builds a list of goalpost messages
+        :param goalposts: goalpost candidates
+        :return: list of goalposts msgs
+        """
+        # Create an empty list of goalposts
+        message_list = []
+        # Iterate over all goalpost candidates
+        for goalpost in goalposts:
+            # Create a empty post message
+            post_msg = PostInImage()
+            post_msg.width = goalpost.get_width()
+            post_msg.confidence = goalpost.get_rating()
+            post_msg.foot_point.x = goalpost.get_center_x()
+            post_msg.foot_point.y = goalpost.get_lower_right_y()
+            post_msg.top_point = post_msg.foot_point
+            message_list.append(post_msg)
+        return message_list
+
+    @staticmethod
     def build_goal_msg(goal_parts_msg):
         """
         Builds a goal message with a right and left post. If there is only one post in the image, the right and left post are the same.
@@ -278,6 +316,24 @@ class ROS_Utils:
             return goal_msg
 
     @staticmethod
+    def build_balls_msg(header, balls):
+        """
+        Builds a balls message out of a list of ball messages
+        :param header: ros header of the new message. Mostly the header of the image
+        :param balls: A list of BallInImage messages
+        :return: balls msg
+        """
+        # create ball msg
+        balls_msg = BallsInImage()
+        # Set header
+        balls_msg.header.frame_id = header.frame_id
+        balls_msg.header.stamp = header.stamp
+        # Add balls
+        for ball in balls:
+            balls_msg.candidates.append(ball)
+        return balls_msg
+
+    @staticmethod
     def build_ball_msg(top_ball_candidate):
         """
         Builds a ball message
@@ -293,25 +349,21 @@ class ROS_Utils:
         return ball_msg
 
     @staticmethod
-    def build_goalpost_msgs(goalposts):
+    def build_obstacles_msg(header, obstacles):
         """
-        Builds a list of goalpost messages
-        :param goalposts: goalpost candidates
-        :return: list of goalposts msgs
+        Builds a ObstaclesInImage message containing a list of obstacle messages
+        :param header: ros header of the new message. Mostly the header of the image
+        :param obstacles: a list of obstacle messages
+        :return: ObstaclesInImage message
         """
-        # Create an empty list of goalposts
-        message_list = []
-        # Iterate over all goalpost candidates
-        for goalpost in goalposts:
-            # Create a empty post message
-            post_msg = PostInImage()
-            post_msg.width = goalpost.get_width()
-            post_msg.confidence = goalpost.get_rating()
-            post_msg.foot_point.x = goalpost.get_center_x()
-            post_msg.foot_point.y = goalpost.get_lower_right_y()
-            post_msg.top_point = post_msg.foot_point
-            message_list.append(post_msg)
-        return message_list
+        # Create obstacle msg
+        obstacles_msg = ObstaclesInImage()
+        # Add header
+        obstacles_msg.header.frame_id = header.frame_id
+        obstacles_msg.header.stamp = header.stamp
+        # Add red obstacles
+        obstacles_msg.obstacles = obstacles
+        return obstacles_msg
 
     @staticmethod
     def build_obstacle_msgs(obstacle_color, detections):
@@ -335,17 +387,55 @@ class ROS_Utils:
         return message_list
 
     @staticmethod
-    def build_field_boundary_msg(field_boundary):
+    def build_field_boundary_msg(header, field_boundary):
         """
         Builds a list of obstacles for a certain color
         :param obstacle_color: color of the obstacles
         :param detections: obstacle candidates
         :return: list of obstacle msgs
         """
+        # Create message
         field_boundary_msg = FieldBoundaryInImage()
+        # Add header
+        field_boundary_msg.header = header
+        # Add field boundary points
         for point in field_boundary:
             field_boundary_msg.field_boundary_points.append(Point(point[0], point[1], 0))
         return field_boundary_msg
+
+    @staticmethod
+    def build_line_information_in_image_msg(header, line_segments):
+        """
+        Builds a LineInformationInImage that consists of line segments
+        :param header: ros header of the new message. Mostly the header of the image
+        :param line_segments: A list of LineSegmentInImage messages
+        :return: Final LineInformationInImage message
+        """
+        # Create message
+        line_msg = LineInformationInImage()
+        # Set header values
+        line_msg.header.frame_id = header.frame_id
+        line_msg.header.stamp = header.stamp
+        # Set line segments
+        line_msg.segments = line_segments
+        return line_msg
+
+    @staticmethod
+    def convert_line_points_to_line_segment_msgs(line_points):
+        """
+        Converts a list of linepoints in the form [(x,y), ...] into a list of LineSegmentInImage messages
+        :param line_points: A list of linepoints in the form [(x,y), ...]
+        :return: A list of LineSegmentInImage messages
+        """
+        line_segments = []
+        for line_point in line_points:
+            # Create LineSegmentInImage message
+            line_segment = LineSegmentInImage()
+            line_segment.start.x = line_point[0]
+            line_segment.start.y = line_point[1]
+            line_segment.end = line_segment.start
+            line_segments.append(line_segment)
+        return line_segments
 
     @staticmethod
     def speak(string, speech_publisher):
