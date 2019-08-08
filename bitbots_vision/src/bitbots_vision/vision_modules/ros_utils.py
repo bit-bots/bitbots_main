@@ -5,7 +5,7 @@ import yaml
 from geometry_msgs.msg import Point
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from humanoid_league_msgs.msg import BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, \
-    ObstacleInImage, GoalPartsInImage, GoalInImage, FieldBoundaryInImage, Speak
+    ObstacleInImage, GoalPartsInImage, PostInImage, GoalInImage, FieldBoundaryInImage, Speak
 from bitbots_msgs.msg import Config
 
 class ROS_Utils:
