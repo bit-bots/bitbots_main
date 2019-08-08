@@ -4,7 +4,7 @@ import rospy
 import yaml
 from geometry_msgs.msg import Point
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
-from humanoid_league_msgs.msg import BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, \
+from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, \
     ObstacleInImage, GoalPartsInImage, PostInImage, GoalInImage, FieldBoundaryInImage, Speak
 from bitbots_msgs.msg import Config
 
