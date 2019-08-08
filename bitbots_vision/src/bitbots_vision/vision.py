@@ -463,61 +463,87 @@ class Vision:
         :param image: untouched image
         :return: image with debug annotations
         """
+        # Define the debug image
+        debug_image_description = [
+            {
+                # Unknown obstacles
+                'type': "obstacle",
+                'color': (0, 0, 0),
+                'thickness': 3,
+                'data': self.unknown_obstacle_detector.get_candidates(),
+            },
+            {
+                # Red obstacles
+                'type': "obstacle",
+                'color': (0, 0, 255),
+                'thickness': 3,
+                'data': self.red_obstacle_detector.get_candidates(),
+            },
+            {
+                # Blue obstacles
+                'type': "obstacle",
+                'color': (255, 0, 0),
+                'thickness': 3,
+                'data': self.blue_obstacle_detector.get_candidates(),
+            },
+            {
+                # Goal posts
+                'type': "obstacle",
+                'color': (255, 255, 255),
+                'thickness': 3,
+                'data': self.goalpost_detector.get_candidates(),
+            },
+            {
+                # Field boundary
+                'type': "field_boundary",
+                'color': (0, 0, 255),
+                'thickness': 1,
+                'data': self.field_boundary_detector.get_field_boundary_points(),
+            },
+            {
+                # Convex field boundary
+                'type': "field_boundary",
+                'color': (0, 255, 255),
+                'thickness': 1,
+                'data': self.field_boundary_detector.get_convex_field_boundary_points(),
+            },
+            {
+                # All ball candidates
+                'type': "ball",
+                'color': (0, 0, 255),
+                'thickness': 1,
+                'data': self.ball_detector.get_candidates(),
+            },
+            {
+                # Possible ball candidates
+                'type': "ball",
+                'color': (0, 255, 255),
+                'thickness': 1,
+                'data': self.field_boundary_detector.balls_under_field_boundary(
+                            self.ball_detector.get_candidates(),
+                            self._ball_candidate_y_offset)
+            },
+            {
+                # Top ball candidate
+                'type': "ball",
+                'color': (0, 255, 0),
+                'thickness': 1,
+                'data': [self.top_ball_candidate]
+            },
+            {
+                # Line points
+                'type': "line_point",
+                'color': (0, 0, 255),
+                'thickness': -1,
+                'data': self.line_detector.get_linepoints(),
+            },
+        ]
+
         # Submit image to the debug image drawer
         self.debug_image_drawer.set_image(image)
-        # Draw unknown obstacles
-        self.debug_image_drawer.draw_obstacle_candidates(
-            self.unknown_obstacle_detector.get_candidates(),
-            (0, 0, 0),
-            thickness=3
-        )
-        # Draw red obstacles
-        self.debug_image_drawer.draw_obstacle_candidates(
-            self.red_obstacle_detector.get_candidates(),
-            (0, 0, 255),
-            thickness=3
-        )
-        # Draw blue obstacles
-        self.debug_image_drawer.draw_obstacle_candidates(
-            self.blue_obstacle_detector.get_candidates(),
-            (255, 0, 0),
-            thickness=3
-        )
-        # Draw goal post obstacles
-        self.debug_image_drawer.draw_obstacle_candidates(
-            self.goalpost_detector.get_candidates(),
-            (255, 255, 255),
-            thickness=3
-        )
-        # Draw field boundary
-        self.debug_image_drawer.draw_field_boundary(
-            self.field_boundary_detector.get_field_boundary_points(),
-            (0, 0, 255))
-        # Draw convex field boundary
-        self.debug_image_drawer.draw_field_boundary(
-            self.field_boundary_detector.get_convex_field_boundary_points(),
-            (0, 255, 255))
-        # Draw all ball candidates
-        self.debug_image_drawer.draw_ball_candidates(
-            self.ball_detector.get_candidates(),
-            (0, 0, 255))
-        # Draw possible ball candidates
-        self.debug_image_drawer.draw_ball_candidates(
-            self.field_boundary_detector.balls_under_field_boundary(
-                self.ball_detector.get_candidates(),
-                self._ball_candidate_y_offset),
-            (0, 255, 255))
-        # Draw top ball candidate
-        self.debug_image_drawer.draw_ball_candidates(
-            [self.top_ball_candidate],
-            (0, 255, 0))
-        # Draw linepoints
-        self.debug_image_drawer.draw_points(
-            self.line_detector.get_linepoints(),
-            (0, 0, 255))
 
-        # Return image returned from the debug image drawer
-        return self.debug_image_drawer.get_image()
+        # Draw and return image from the debug image drawer
+        return self.debug_image_drawer.draw(debug_image_description)
 
     def _conventional_precalculation(self):
         """
