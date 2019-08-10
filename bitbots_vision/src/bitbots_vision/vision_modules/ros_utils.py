@@ -148,8 +148,7 @@ class ROS_Utils:
                     'value': folder,
                     'description': 'yolo {}'.format(folder)})
             else:
-                # TODO handel other types
-                pass
+                rospy.logwarn("Directory '{}' contains unknown model type. Please remove all non model directories from the 'models' directory!".format(folder))
         # Add enums to configuration
         ROS_Utils._change_enum_items(cfg_type, 'fcnn_model_path', fcnn_paths)
         ROS_Utils._change_enum_items(cfg_type, 'yolo_model_path', yolo_paths)
