@@ -374,6 +374,10 @@ class Vision:
             self.ball_detector.compute_top_candidate()
             self._conventional_precalculation()
 
+        ########
+        # Ball #
+        ########
+
         # Grab ball candidates from ball detector
         self.top_ball_candidate = self.ball_detector.get_top_ball_under_convex_field_boundary(self.field_boundary_detector)
 
@@ -387,6 +391,10 @@ class Vision:
             balls_msg = ros_utils.ROS_Utils.build_balls_msg(image_msg.header, list_of_balls)
             # Publish balls
             self.pub_balls.publish(balls_msg)
+
+        #############
+        # Obstacles #
+        #############
 
         # Init list for obstacle msgs
         list_of_obstacle_msgs = []
@@ -404,6 +412,10 @@ class Vision:
         # Publish obstacles
         self.pub_obstacle.publish(obstacles_msg)
 
+        ########
+        # Goal #
+        ########
+
         # Get goalpost msgs and add them to the detected goal parts list
         goal_parts = ros_utils.ROS_Utils.build_goalpost_msgs(self.goalpost_detector.get_candidates())
         # Create goalparts msg
@@ -415,6 +427,10 @@ class Vision:
             # If we have a goal, lets publish it
             self.pub_goal.publish(goal_msg)
 
+        #########
+        # Lines #
+        #########
+
         # Build a LineSegmentInImage message for each linepoint
         line_points = self.line_detector.get_linepoints()
         # Create line segments
@@ -424,6 +440,10 @@ class Vision:
         # Publish lines
         self.pub_lines.publish(line_msg)
 
+        ##################
+        # Field boundary #
+        ##################
+
         # Get field boundary msg
         convex_field_boundary = self.field_boundary_detector.get_convex_field_boundary_points()
         # Build ros message
@@ -432,10 +452,11 @@ class Vision:
         self.pub_convex_field_boundary.publish(convex_field_boundary_msg)
 
         if self.config['vision_ball_detector'] == 'fcnn':
+            # Publish fcnn output for the region of interest under the field boundary (for the world model)
             if self.ball_fcnn_publish_output:
                 self.pub_ball_fcnn.publish(self.ball_detector.get_cropped_msg())
 
-            # Publish whole fcnn output
+            # Publish whole fcnn output for debug purposes
             if self.publish_fcnn_debug_image:
                 self.pub_debug_fcnn_image.publish(self.ball_detector.get_debug_image())
 
