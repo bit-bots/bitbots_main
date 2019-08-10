@@ -491,7 +491,7 @@ class ROS_Utils:
         # Iterate over all config keys and values
         for key, value in config.items():
             # Check if the value is dumpable
-            if type(value) != DynamicReconfigureConfig:
+            if not isinstance(value, DynamicReconfigureConfig):
                 config_cleaned[key] = value
         # Create new config message
         msg = Config()
