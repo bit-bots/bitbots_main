@@ -215,6 +215,19 @@ class BallDetector(CandidateFinder):
         :param field_boundary_detector: A field boundary detector object
         :return: top candidate or None if no candidate exists
         """
+        # Get all balls
+        balls = self.get_sorted_top_balls_under_convex_field_boundary(field_boundary_detector)
+        # Check if there are any
+        if balls:
+            # Return the best
+            return balls[0]
+
+    def get_sorted_top_balls_under_convex_field_boundary(self, field_boundary_detector):
+        """
+        Returns the best candidates under the convex field boundary.
+        :param field_boundary_detector: A field boundary detector object
+        :return: list of top candidates sorted by rating
+        """
         # Get candidates
         ball_candidates = self.get_candidates()
         # Check if there are any ball candidates
@@ -225,4 +238,5 @@ class BallDetector(CandidateFinder):
             if balls_under_field_boundary:
                 # Sort candidates and take the one which has the biggest confidence
                 sorted_rated_candidates = sorted(balls_under_field_boundary, key=lambda x: x.get_rating())
-                return sorted_rated_candidates[0]
+                return sorted_rated_candidates
+        return list()
