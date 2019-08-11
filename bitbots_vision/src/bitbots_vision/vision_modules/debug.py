@@ -119,11 +119,3 @@ class DebugImage:
             draw_function(draw_type['data'], draw_type['color'], draw_type['thickness'])
         # Return the image
         return self.get_image()
-
-    def imshow(self):
-        """
-        Shows the drawn debug image.
-        :return void:
-        """
-        cv2.imshow('Debug Image', self.raw_image)
-        cv2.waitKey(1)
