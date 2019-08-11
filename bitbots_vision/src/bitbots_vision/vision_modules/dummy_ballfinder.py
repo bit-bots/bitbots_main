@@ -1,7 +1,7 @@
 from .candidate import CandidateFinder
 
 
-class DummyClassifier(CandidateFinder):
+class DummyClassifier(BallDetector):
     def __init__(self, classifier, stuff):
         self._classified_candidates = []
         self._sorted_candidates = []
