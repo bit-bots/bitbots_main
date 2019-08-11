@@ -210,7 +210,7 @@ class Vision:
 
         # If dummy ball detection is activated, set the dummy ballfinder as ball detector
         if config['vision_ball_detector'] == 'dummy':
-            self.ball_detector = dummy_ballfinder.DummyClassifier(None, None)
+            self.ball_detector = dummy_ballfinder.DummyClassifier()
 
         # Check if the fcnn ball detector is activated
         if config['vision_ball_detector'] == 'fcnn':

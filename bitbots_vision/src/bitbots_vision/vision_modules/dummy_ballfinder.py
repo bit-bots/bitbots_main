@@ -5,6 +5,8 @@ class DummyClassifier(BallDetector):
     """
     Dummy ball detector that we use if we want the run vision to without neural network e.g..
     """
+    def __init__(self):
+        self._detected_candidates = []
         self._sorted_candidates = []
         self._top_candidate = None
 
@@ -29,6 +31,7 @@ class DummyClassifier(BallDetector):
         Actually does something. It returns an empty list.
         :return: a empty list
         """
+        return self._detected_candidates
 
     def get_top_candidates(self, count=1):
         """
