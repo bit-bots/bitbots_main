@@ -35,7 +35,7 @@ class LineDetector:
         # type: (list) -> None
         self._candidates = candidates
 
-    def compute_linepoints(self):
+    def compute(self):
         # if self._linepoints is None or self._nonlinepoints is None:
         if self._linepoints is None:
             self._linepoints = list()
@@ -63,7 +63,7 @@ class LineDetector:
                         self._linepoints.append(p)
 
     def get_linepoints(self):
-        self.compute_linepoints()
+        self.compute()
         return self._linepoints
 
     def get_linesegments(self):

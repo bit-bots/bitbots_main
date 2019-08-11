@@ -170,7 +170,7 @@ class ObstacleDetector(CandidateFinder):
                     self._obstacles.append(Candidate(x, y, w, h))
         return self._obstacles
 
-    def _obstacle_detector_distance(self): 
+    def _obstacle_detector_distance(self):
         # type: () -> list[Candidate]
         """
         finds candidates using the difference of the convex field_boundary and the normal field_boundary.
@@ -261,7 +261,7 @@ class ObstacleDetector(CandidateFinder):
             self._colorsort_obstacles()
         return self._other_obstacles
 
-    def compute_all_obstacles(self):
+    def compute(self):
         self._colorsort_obstacles()
 
     def _colorsort_obstacles(self):
@@ -337,6 +337,9 @@ class BlueObstacleDetector(CandidateFinder):
     def get_candidates(self):
         return self.obstacle_detector.get_blue_obstacles()
 
+    def compute(self):
+        self.obstacle_detector.compute()
+
     def get_top_candidates(self, count=1):
         candidates = self.get_candidates()
         candidates = Candidate.sort_candidates(candidates)
@@ -354,6 +357,9 @@ class WhiteObstacleDetector(CandidateFinder):
     def get_candidates(self):
         return self.obstacle_detector.get_white_obstacles()
 
+    def compute(self):
+        self.obstacle_detector.compute()
+
     def get_top_candidates(self, count=1):
         candidates = self.get_candidates()
         candidates = Candidate.sort_candidates(candidates)
@@ -369,6 +375,9 @@ class UnknownObstacleDetector(CandidateFinder):
 
     def get_candidates(self):
         return self.obstacle_detector.get_other_obstacles()
+
+    def compute(self):
+        self.obstacle_detector.compute()
 
     def get_top_candidates(self, count=1):
         candidates = self.get_candidates()

@@ -360,7 +360,7 @@ class Vision:
         # Check if the vision should run the conventional and neural net part parrall
         if self.config['vision_parallelize']:
             # Create and start threads for conventional calculation and neural net
-            fcnn_thread = threading.Thread(target=self.ball_detector.compute_top_candidate)
+            fcnn_thread = threading.Thread(target=self.ball_detector.compute)
             conventional_thread = threading.Thread(target=self._conventional_precalculation())
 
             conventional_thread.start()
@@ -371,7 +371,7 @@ class Vision:
             fcnn_thread.join()
         else:
             # Calc conventional calculation and neural net
-            self.ball_detector.compute_top_candidate()
+            self.ball_detector.compute()
             self._conventional_precalculation()
 
         ########
@@ -570,8 +570,8 @@ class Vision:
         """
         Kicks of the conventional calculations
         """
-        self.obstacle_detector.compute_all_obstacles()
-        self.line_detector.compute_linepoints()
+        self.obstacle_detector.compute()
+        self.line_detector.compute()
 
     def _handle_forgotten_camera_cap(self, image):
         # type: (np.array) -> None

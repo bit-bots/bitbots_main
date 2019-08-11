@@ -38,6 +38,12 @@ class ClassifierHandler(CandidateFinder):
                 self._classified_candidates = list()
         return self._classified_candidates
 
+    def compute(self):
+        """
+        Method to satisfy the interface
+        """
+        pass
+
     def get_top_candidates(self, count=1):
         if self._sorted_candidates is None:
             self._sorted_candidates = sorted(self.get_candidates(), key=lambda x: x.rating)

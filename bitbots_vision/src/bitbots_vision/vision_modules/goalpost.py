@@ -26,6 +26,12 @@ class ObstaclePostDetector(CandidateFinder):
         self._goalposts = None
         self._white_masked_image = self._white_color_detector.mask_image(image)
 
+    def compute(self):
+        """
+        Method to satisfy the interface
+        """
+        pass
+
     def get_candidates(self):
         # type: () -> list[Candidate]
         if self._goalposts is None:

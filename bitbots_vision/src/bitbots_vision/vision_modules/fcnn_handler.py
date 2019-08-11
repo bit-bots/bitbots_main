@@ -91,35 +91,12 @@ class FcnnHandler(BallDetector):
                <= candidate.get_diameter() \
                <= self._max_candidate_diameter
 
-    # TODO neue strucktur
-    def compute_top_candidate(self):
-        if self._top_candidate is None:
-            if self._sorted_rated_candidates is None:
-                if self.get_top_candidates():
-                    self._top_candidate = list([max(
-                        self.get_top_candidates(),
-                        key=lambda x: x.rating
-                    )])
-                else:
-                    self._top_candidate = list()  # empty list -> initialized, but no candidate available
-            else:
-                self._top_candidate = list([self._sorted_rated_candidates[0]])
-
-    def get_top_candidate(self):
+    def compute(self):
         """
-        Use this to return the best candidate.
-        ONLY, when never use get top candidate*s*
-        When you use it once, use it all the time.
-        :return: the candidate with the highest rating (candidate)
+        Runs the neural network.
         """
-        rospy.logdebug('Vision FCNN handler: get top candidate compute')
-        start = cv2.getTickCount()
-        self.compute_top_candidate()
-        end = cv2.getTickCount()
-        rospy.logdebug('Vision FCNN handler: ->' + str((end - start) / cv2.getTickFrequency()))
-        if self._top_candidate:
-            return self._top_candidate[0]
-        return None
+        # Call get candidates and drop the returned solution because it get cached for the real call
+        self.get_candidates()
 
     def get_top_candidates(self, count=1):
         """

@@ -18,7 +18,7 @@ class DummyClassifier(BallDetector):
         """
         pass
 
-    def compute_top_candidate(self):
+    def compute(self):
         """
         Method to satisfy the interface.
         Actually does nothing, except the extrem complicated command 'pass'.

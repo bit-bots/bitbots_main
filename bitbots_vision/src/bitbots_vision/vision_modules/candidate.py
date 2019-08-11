@@ -191,6 +191,13 @@ class CandidateFinder(object):
         """
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def compute(self):
+        """
+        Runs the most intense calculation without returning any output.
+        """
+        raise NotImplementedError
+
     def get_top_candidate(self):
         """
         Returns the best candidate.
