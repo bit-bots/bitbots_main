@@ -225,4 +225,4 @@ class BallDetector(CandidateFinder):
             if balls_under_field_boundary:
                 # Sort candidates and take the one which has the biggest confidence
                 sorted_rated_candidates = sorted(balls_under_field_boundary, key=lambda x: x.get_rating())
-                return list([max(sorted_rated_candidates[0:1], key=lambda x: x.get_rating())])[0]
+                return sorted_rated_candidates[0]
