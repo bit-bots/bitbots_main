@@ -13,6 +13,7 @@ from humanoid_league_msgs.msg import Animation as AnimationMsg
 from bitbots_animation_server.animation import Keyframe, Animation
 from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
 
+
 from bitbots_animation_server.animation import parse
 from sensor_msgs.msg import Imu, JointState
 from bitbots_animation_server.resource_manager import find_animation
@@ -50,6 +51,8 @@ class PlayAnimationAction(object):
 
         # pre defiened messages for performance
         self.anim_msg = AnimationMsg()
+        # AnimationMsg takes a JointTrajectory message to also be able to process trajectorys. To keep this functionality, we use
+        # this message type, even though we only need a single joint goal in this case.
         self.traj_msg = JointTrajectory()
         self.traj_point = JointTrajectoryPoint()
 
@@ -75,7 +78,6 @@ class PlayAnimationAction(object):
             # but we send a request, so that we may can soon
             self.send_animation_request()
             rospy.loginfo("HCM not controlable. Only sended request to make it come controlable.")
-            #rospy.loginfo("Will now wait for HCM to get controlable.")
             self._as.set_aborted(text="HCM not controlable. Will now come controlable. Try again later.")
             return
 
@@ -170,7 +172,6 @@ class PlayAnimationAction(object):
         self.hcm_publisher.publish(self.anim_msg)
 
     def send_animation(self, first, last, hcm, pose):
-        #HERE
         self.anim_msg.request = False
         self.anim_msg.first = first
         self.anim_msg.last = last
@@ -179,6 +180,7 @@ class PlayAnimationAction(object):
             torque = self.get_torque()
             self.traj_msg.joint_names = []
             self.traj_msg.points = [JointTrajectoryPoint()]
+            # We are only using a single point in the trajectory message, since we don't want to send a trajectory, but a single joint goal
             self.traj_msg.points[0].positions = []
             self.traj_msg.points[0].effort = []
             for joint in pose:
