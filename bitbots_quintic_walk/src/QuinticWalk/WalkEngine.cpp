@@ -196,7 +196,6 @@ void QuinticWalk::endStep(){
 }
 
 void QuinticWalk::reset(){
-    // completly reset the engine, e.g. when robot fell down
     _engineState = "idle";
     _phase = 0.0;
     _timePaused = 0.0;
@@ -316,7 +315,7 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMov
 
     if(startMovement){
         // update support foot and compute odometry
-        _footstep.stepFromOrders(Eigen::Vector3d());
+        _footstep.stepFromOrders(Eigen::Vector3d::Zero());
     }else{
         _footstep.stepFromOrders(orders);
     }
@@ -369,7 +368,7 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMov
         point("foot_pos_x",
               doubleSupportLength + singleSupportLength * _params.footPutDownPhase * _params.footOvershootPhase,
               _footstep.getNext().x() +
-              (_footstep.getNext().x() - _footstep.getLast().x()) * _params.footOvershootRatio);
+              _footstep.getNext().x() * _params.footOvershootRatio);
     }
     point("foot_pos_x", doubleSupportLength + singleSupportLength * _params.footPutDownPhase,
         _footstep.getNext().x());
@@ -452,9 +451,6 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMov
         point("trunk_pos_x", 0.0,
             0.0,
             0.0,
-            0.0);
-        point("trunk_pos_x", halfPeriod+timeShift,
-            trunkApexSupport.x(),
             0.0);
     }else{
         point("trunk_pos_x", 0.0,
@@ -551,14 +547,14 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMov
         axisAtNext.y(),
         axisVel.y());
 
-    point("trunk_axis_z", 0.0, 
+    point("trunk_axis_z", 0.0,
         _trunkAxisPosAtLast.z(),
         _trunkAxisVelAtLast.z(),
         _trunkAxisAccAtLast.z());
     point("trunk_axis_z", halfPeriod+timeShift, 
         axisAtSupport.z(),
         axisVel.z());
-    point("trunk_axis_z", period+timeShift, 
+    point("trunk_axis_z", period+timeShift,
         axisAtNext.z(),
         axisVel.z());
 }

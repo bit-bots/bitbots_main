@@ -38,7 +38,7 @@ walking:
   trunkPitch: 0.18
   # Phase offset of trunk oscillation
   # (half cycle phase, [-1:1])
-  trunkPhase: 0.0
+  trunkPhase: -0.1
   # Trunk forward offset
   # (in m)
   trunkXOffset: 0.0
@@ -59,10 +59,10 @@ walking:
   trunkXOffsetPCoefTurn: 0.0
   # Trunk pitch orientation proportional to forward step
   # (in rad/m)
-  trunkPitchPCoefForward: 2.1
+  trunkPitchPCoefForward: 1.2
   # Trunk pitch orientation proportional to rotation step
   # (in 1)
-  trunkPitchPCoefTurn: -0.15
+  trunkPitchPCoefTurn: -0.05
 
   # update frequency of the engine
   engineFreq: 200.0
@@ -95,6 +95,7 @@ walking:
   imuRollVelThreshold: 1.0
   pauseDuration: 0.5
 
-  publishOdomTF: False
+  publishOdomTF: True
 
   firstStepSwingFactor: 1.0
+  startMovements: 1

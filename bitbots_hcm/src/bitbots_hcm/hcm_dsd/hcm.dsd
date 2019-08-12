@@ -5,10 +5,10 @@ $Falling
     FALLING_FRONT --> @PlayAnimationFallingFront
     FALLING_BACK --> @PlayAnimationFallingBack
     NOT_FALLING --> $Fallen
-        FALLEN_FRONT --> @PlayAnimationStandUpFront
-        FALLEN_BACK --> @PlayAnimationStandUpBack
-        FALLEN_RIGHT --> @PlayAnimationStandUpRight
-        FALLEN_LEFT --> @PlayAnimationStandUpLeft
+        FALLEN_FRONT --> @PlayAnimationStandUpFront, @Wait + time:1, @PlayAnimationDynup
+        FALLEN_BACK --> @SetFootZero, @PlayAnimationStandUpBack, @PlayAnimationDynup
+        FALLEN_RIGHT --> @PlayAnimationStandUpRight, @PlayAnimationDynup
+        FALLEN_LEFT --> @PlayAnimationStandUpLeft, @PlayAnimationDynup
         NOT_FALLEN --> $ExternalAnimation
             ANIMATION_RUNNING --> @StayAnimationRunning
             FREE --> $Walking

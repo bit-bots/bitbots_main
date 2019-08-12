@@ -35,7 +35,7 @@ https://github.com/Rhoban/model/
 #include <tf/transform_broadcaster.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/kinematics_base/kinematics_base.h>
-#include <moveit/move_group_interface/move_group_interface.h> 
+#include <moveit/move_group_interface/move_group_interface.h>
 
 #include <bitbots_quintic_walk/bitbots_quintic_walk_paramsConfig.h>
 #include "bitbots_ik/AnalyticIKSolver.hpp"
@@ -48,28 +48,54 @@ https://github.com/Rhoban/model/
 class QuinticWalkingNode {
 public:
     QuinticWalkingNode();
+
+    /**
+     * This is the main loop which takes care of stopping and starting of the walking.
+     * A small state machine is tracking in which state the walking is and builds the trajectories accordingly.
+     */
     void run();
+
+    /**
+     * Dynamic reconfigure callback. Takes in new parameters and applies them to the needed software parts
+     */
     void reconf_callback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level);
+
+    /**
+     * Initialize internal WalkEngine to correctly zeroed, usable state
+     */
     void initializeEngine();
 
 private:
-    void publishControllerCommands(std::vector <std::string> joint_names, std::vector<double> positions);
-    void publishDebug(tf::Transform& trunk_to_support_foot, tf::Transform& trunk_to_flying_foot);
-    void publishMarker(std::string name_space, std::string frame, geometry_msgs::Pose pose, float r, float g, float b, float a);
+    void publishControllerCommands(std::vector<std::string> joint_names, std::vector<double> positions);
+
+    void publishDebug(tf::Transform &trunk_to_support_foot, tf::Transform &trunk_to_flying_foot);
+
+    void publishMarker(std::string name_space, std::string frame, geometry_msgs::Pose pose, float r, float g, float b,
+                       float a);
+
     void publishMarkers();
+
     void publishOdometry();
 
     void cmdVelCb(geometry_msgs::Twist msg);
+
     void imuCb(sensor_msgs::Imu msg);
+
     void pressureCb(bitbots_msgs::FootPressure msg);
+
     void robStateCb(humanoid_league_msgs::RobotControlState msg);
+
     void jointStateCb(sensor_msgs::JointState msg);
+
     void kickCb(std_msgs::BoolConstPtr msg);
+
     void cop_l_cb(const geometry_msgs::PointStamped msg);
+
     void cop_r_cb(const geometry_msgs::PointStamped msg);
 
 
     void calculateJointGoals();
+
     double getTimeDelta();
 
     bool _debugActive;
@@ -105,15 +131,27 @@ private:
     int _marker_id;
 
     bitbots_quintic_walk::WalkingParameter _params;
-    
+
     Eigen::Vector3d _trunkPos;
     Eigen::Vector3d _trunkAxis;
     Eigen::Vector3d _footPos;
     Eigen::Vector3d _footAxis;
     bool _isLeftSupport;
 
+    /**
+     * Saves current orders as [x-direction, y-direction, z-rotation]
+     */
     Eigen::Vector3d _currentOrders;
+
+    /**
+     * Saves max values we can move in a single step as [x-direction, y-direction, z-rotation].
+     * Is used to limit _currentOrders to sane values
+     */
     Eigen::Vector3d _max_step;
+
+    /**
+     * Measures how much distance we can traverse in X and Y direction combined
+     */
     double _max_step_xy;
     bitbots_quintic_walk::QuinticWalk _walkEngine;
 
@@ -152,7 +190,7 @@ private:
     const robot_state::JointModelGroup *_legs_joints_group;
     const robot_state::JointModelGroup *_lleg_joints_group;
     const robot_state::JointModelGroup *_rleg_joints_group;
-    
+
     // IK solver
     bitbots_ik::BioIKSolver _bioIK_solver;
 

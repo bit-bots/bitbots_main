@@ -6,7 +6,7 @@ https://github.com/Rhoban/model/
 #ifndef QUINTICWALK_HPP
 #define QUINTICWALK_HPP
 
-#include <algorithm> 
+#include <algorithm>
 #include <Eigen/Dense>
 #include "Footstep.hpp"
 #include "bitbots_splines/TrajectoryUtils.h"
@@ -19,84 +19,84 @@ https://github.com/Rhoban/model/
 #include "bitbots_splines/Angle.h"
 #include "bitbots_splines/Euler.h"
 #include "bitbots_quintic_walk/common.h"
-#include <math.h>       
+#include <math.h>
 
 namespace bitbots_quintic_walk {
 
-struct WalkingParameter{
-    //Full walk cycle frequency 
-    //(in Hz, > 0)
-    double freq;
-    //Length of double support phase in half cycle
-    //(ratio, [0:1])
-    double doubleSupportRatio;
-    //Lateral distance between the feet center 
-    //(in m, >= 0)
-    double footDistance;
-    //Maximum flying foot height
-    //(in m, >= 0)
-    double footRise;
-    // Pause of Z movement on highest point
-    //(single support cycle ratio, [0,1]) 
-    double footZPause;
-    //Let the foot's downward trajectory end above the ground
-    //this is helpful if the support leg bends
-    //(in m, >= 0)
-    double footPutDownZOffset;
-    //Phase time for moving the foot from Z offset to ground, 
-    // also used for X and Y since they should not move after contact to the ground
-    //(phase between apex and single support end [0:1])
-    double footPutDownPhase;
-    //Phase of flying foot apex
-    //(single support cycle phase, [0:1])
-    double footApexPhase;
-    //Foot X/Y overshoot in ratio of step length
-    //(ratio, >= 0)
-    double footOvershootRatio;
-    //Foot X/Y overshoot phase
-    //(single support cycle phase, [footApexPhase:1]
-    double footOvershootPhase;
-    //Height of the trunk from ground
-    //(in m, > 0)
-    double trunkHeight;
-    //Trunk pitch orientation
-    //(in rad)
-    double trunkPitch;
-    //Phase offset of trunk oscillation
-    //(half cycle phase, [0:1])
-    double trunkPhase;
-    //Trunk forward offset
-    //(in m)
-    double trunkXOffset;
-    //Trunk lateral offset
-    //(in m)
-    double trunkYOffset;
-    //Trunk lateral oscillation amplitude ratio
-    //(ratio, >= 0)
-    double trunkSwing;
-    //Trunk swing pause length in phase at apex
-    //(half cycle ratio, [0:1])
-    double trunkPause;
-    //Trunk forward offset proportional to forward step
-    //(in 1)
-    double trunkXOffsetPCoefForward;
-    //Trunk forward offset proportional to rotation step
-    //(in m/rad)
-    double trunkXOffsetPCoefTurn;
-    //Trunk pitch orientation proportional to forward step
-    //(in rad/m)
-    double trunkPitchPCoefForward;
-    //Trunk pitch orientation proportional to rotation step
-    //(in 1)
-    double trunkPitchPCoefTurn;
-    double trunkYOnlyInDoubleSupport;
-    double kickLength;
-    double kickPhase;
-    double footPutDownRollOffset;
-    double kickVel;
-    double pauseDuration;
-    double firstStepSwingFactor;
-};
+    struct WalkingParameter {
+        //Full walk cycle frequency
+        //(in Hz, > 0)
+        double freq;
+        //Length of double support phase in half cycle
+        //(ratio, [0:1])
+        double doubleSupportRatio;
+        //Lateral distance between the feet center
+        //(in m, >= 0)
+        double footDistance;
+        //Maximum flying foot height
+        //(in m, >= 0)
+        double footRise;
+        // Pause of Z movement on highest point
+        //(single support cycle ratio, [0,1])
+        double footZPause;
+        //Let the foot's downward trajectory end above the ground
+        //this is helpful if the support leg bends
+        //(in m, >= 0)
+        double footPutDownZOffset;
+        //Phase time for moving the foot from Z offset to ground,
+        // also used for X and Y since they should not move after contact to the ground
+        //(phase between apex and single support end [0:1])
+        double footPutDownPhase;
+        //Phase of flying foot apex
+        //(single support cycle phase, [0:1])
+        double footApexPhase;
+        //Foot X/Y overshoot in ratio of step length
+        //(ratio, >= 0)
+        double footOvershootRatio;
+        //Foot X/Y overshoot phase
+        //(single support cycle phase, [footApexPhase:1]
+        double footOvershootPhase;
+        //Height of the trunk from ground
+        //(in m, > 0)
+        double trunkHeight;
+        //Trunk pitch orientation
+        //(in rad)
+        double trunkPitch;
+        //Phase offset of trunk oscillation
+        //(half cycle phase, [0:1])
+        double trunkPhase;
+        //Trunk forward offset
+        //(in m)
+        double trunkXOffset;
+        //Trunk lateral offset
+        //(in m)
+        double trunkYOffset;
+        //Trunk lateral oscillation amplitude ratio
+        //(ratio, >= 0)
+        double trunkSwing;
+        //Trunk swing pause length in phase at apex
+        //(half cycle ratio, [0:1])
+        double trunkPause;
+        //Trunk forward offset proportional to forward step
+        //(in 1)
+        double trunkXOffsetPCoefForward;
+        //Trunk forward offset proportional to rotation step
+        //(in m/rad)
+        double trunkXOffsetPCoefTurn;
+        //Trunk pitch orientation proportional to forward step
+        //(in rad/m)
+        double trunkPitchPCoefForward;
+        //Trunk pitch orientation proportional to rotation step
+        //(in 1)
+        double trunkPitchPCoefTurn;
+        double trunkYOnlyInDoubleSupport;
+        double kickLength;
+        double kickPhase;
+        double footPutDownRollOffset;
+        double kickVel;
+        double pauseDuration;
+        double firstStepSwingFactor;
+    };
 
 /**
  * QuinticWalk
@@ -107,8 +107,7 @@ struct WalkingParameter{
  * Expressed all target state in cartesian
  * space with respect to current cupport foot
  */
-class QuinticWalk
-{
+    class QuinticWalk {
     public:
 
         /**
@@ -141,20 +140,20 @@ class QuinticWalk
 
         /**
          * Return true if both feet are currently on the ground
-         */ 
+         */
         bool isDoubleSupport();
 
         /**
          * Assign given parameters vector
          */
-        void setParameters(const WalkingParameter& params);
+        void setParameters(const WalkingParameter &params);
 
         /**
          * Update the internal walk state
          * (pĥase, trajectories) from given 
          * elapsed time since last update() call
          */
-        bool updateState(double dt, const Eigen::Vector3d& orders, bool walkableState);
+        bool updateState(double dt, const Eigen::Vector3d &orders, bool walkableState);
 
         /**
          * Compute current cartesian
@@ -164,14 +163,15 @@ class QuinticWalk
          * Return false is the target is
          * unreachable.
          */
+        void computeCartesianPosition(Eigen::Vector3d &trunkPos, Eigen::Vector3d &trunkAxis,
+                                      Eigen::Vector3d &footPos, Eigen::Vector3d &footAxis, bool &isLeftsupportFoot);
 
-        void computeCartesianPosition(Eigen::Vector3d& trunkPos, Eigen::Vector3d& trunkAxis,
-                                                   Eigen::Vector3d& footPos, Eigen::Vector3d& footAxis, bool& isLeftsupportFoot);
-
-        void computeCartesianPositionAtTime(Eigen::Vector3d& trunkPos, Eigen::Vector3d& trunkAxis, Eigen::Vector3d& footPos,
-                                        Eigen::Vector3d& footAxis, bool& isLeftsupportFoot, double time);
+        void
+        computeCartesianPositionAtTime(Eigen::Vector3d &trunkPos, Eigen::Vector3d &trunkAxis, Eigen::Vector3d &footPos,
+                                       Eigen::Vector3d &footAxis, bool &isLeftsupportFoot, double time);
 
         void requestKick(bool left);
+
         void requestPause();
 
         /**
@@ -179,11 +179,14 @@ class QuinticWalk
          */
         void endStep();
 
+        /**
+         * Completely reset the engine, e.g. when robot fell down
+         */
         void reset();
 
         std::string getState();
 
-private:
+    private:
 
         std::string _engineState;
 
@@ -230,27 +233,33 @@ private:
 
         void updatePhase(double dt);
 
-        void buildNormalTrajectories(const Eigen::Vector3d& orders);
-        void buildKickTrajectories(const Eigen::Vector3d& orders);
-        void buildStartTrajectories(const Eigen::Vector3d& orders);
-        void buildStopStepTrajectories(const Eigen::Vector3d& orders);
-        void buildStopMovementTrajectories(const Eigen::Vector3d& orders);
+        void buildNormalTrajectories(const Eigen::Vector3d &orders);
 
-        void buildTrajectories(const Eigen::Vector3d& orders, bool startMovement, bool startStep, bool kickStep);
-        void buildWalkDisableTrajectories(const Eigen::Vector3d& orders, bool footInIdlePosition);
+        void buildKickTrajectories(const Eigen::Vector3d &orders);
+
+        void buildStartTrajectories(const Eigen::Vector3d &orders);
+
+        void buildStopStepTrajectories(const Eigen::Vector3d &orders);
+
+        void buildStopMovementTrajectories(const Eigen::Vector3d &orders);
+
+        void buildTrajectories(const Eigen::Vector3d &orders, bool startMovement, bool startStep, bool kickStep);
+
+        void buildWalkDisableTrajectories(const Eigen::Vector3d &orders, bool footInIdlePosition);
 
         void saveCurrentTrunkState();
+
         void useCurrentTrunkState();
 
         void point(std::string spline, double t, double pos, double vel = 0, double acc = 0);
-        
+
         /**
          * Reset the trunk position and
          * orientation state vectors at last
          * half cycle as stopped pose
          */
         void resetTrunkLastState();
-};
+    };
 
 }
 #endif
