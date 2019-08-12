@@ -1,35 +1,27 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="respawn" default="false" />
-    <arg name="debug" default="false" />
-    <arg name="config_file" default="$(find bitbots_ceiling_cam)/config/camera_settings_deckenkamera.yaml" />
-
     <!-- camera driver -->
-    <node name="ceiling_camera" pkg="pylon_camera" type="pylon_camera_node" output="screen"
-          respawn="$(arg respawn)">
-        <rosparam command="load" file="$(arg config_file)" />
+    <node name="ceiling_cam" pkg="pylon_camera" type="pylon_camera_node" output="screen">
+        <rosparam command="load" file="$(find bitbots_ceiling_cam)/config/camera_settings_ceiling_cam.yaml" />
+        <!-- the driver is publishing an uncessary rect image -->
+        <remap from="/ceiling_cam/image_rect" to="/ceiling_cam/bad_image_rect"/>
     </node>
 
-    <!-- image processing -->
-    <node pkg="nodelet" type="nodelet" args="standalone image_proc/debayer" name="debayer">
-            <!--<remap from="image_raw"  to="/pylon_camera_node/image_raw" />
-            <remap from="image_mono" to="debayered_image" />
-            <param name="height" value="20" />
-            <param name="width" value="30" /> -->
-    </node>
-    <node pkg="nodelet" type="nodelet" args="standalone image_proc/rectify" name="rectify">
-            <!--<remap from="image_mono"  to="debayered_image" /> -->
-    </node>
+    <group ns="/ceiling_cam">
+        <node pkg="nodelet" type="nodelet" args="standalone image_proc/debayer" name="debayer">
+        </node>
 
-  <!-- Apriltag detection -->
-  <rosparam command="load" file="$(find bitbots_ceiling_cam)/config/settings.yaml"/>
-  <rosparam command="load" file="$(find bitbots_ceiling_cam)/config/tags.yaml"/>
+        <node pkg="nodelet" type="nodelet" args="standalone image_proc/rectify" name="rectify">
+        </node>
 
-  <node pkg="apriltag_ros" type="apriltag_ros_continuous_node" name="apriltag_ros_continuous_node" clear_params="true" output="screen">
-    <remap from="image_rect" to="ceiling_cam/image_rect" />
-    <remap from="camera_info" to="ceiling_cam/camera_info" />
+        <rosparam command="load" file="$(find bitbots_ceiling_cam)/config/april_tag_settings.yaml" ns="april_tag_detection"/>
+        <rosparam command="load" file="$(find bitbots_ceiling_cam)/config/april_tags.yaml" ns="april_tag_detection"/>
 
-    <param name="camera_frame" type="str" value="ceiling_cam" />
-    <param name="publish_tag_detections_image" type="bool" value="$(arg debug)" />
-  </node>
+
+        <node pkg="apriltag_ros" type="apriltag_ros_continuous_node" name="april_tag_detection" clear_params="true" output="screen">
+            <param name="camera_frame" type="str" value="ceiling_cam" />
+            <param name="publish_tag_detections_image" type="bool" value="true" />
+        </node>
+    </group>
+
 </launch>

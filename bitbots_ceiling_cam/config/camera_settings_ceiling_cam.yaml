@@ -1,5 +1,5 @@
 #  The tf frame under which the images were published
-camera_frame: camera_optical_frame
+camera_frame: ceiling_cam
 
 #  The DeviceUserID of the camera. If empty, the first camera found in the
 #  device list will be used
@@ -10,7 +10,7 @@ device_user_id: ""
 #  from the ROS-CameraInfoManager:
 #  http://docs.ros.org/api/camera_info_manager/html/classcamera__info__manager_
 #  1_1CameraInfoManager.html#details
-camera_info_url: "package://ceiling_cam/config/camera_calibration_ceiling_cam.yaml"
+camera_info_url: "package://bitbots_ceiling_cam/config/camera_calibration_ceiling_cam.yaml"
 
 #  The encoding of the pixels -- channel meaning, ordering, size
 #  taken from the list of strings in include/sensor_msgs/image_encodings.h
