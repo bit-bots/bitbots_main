@@ -599,7 +599,6 @@ class RecordUI(Plugin):
         self.box_ticked()
 
     def frame_list(self):
-        #self._widget.frameList.itemClicked.connect(self.frame_select)
         self._widget.frameList.itemSelectionChanged.connect(self.frame_select)
         self._widget.lineFrameName.textEdited.connect(self.frame_meta_update)
         self._widget.spinBoxPause.valueChanged.connect(self.frame_meta_update)
@@ -667,7 +666,6 @@ class RecordUI(Plugin):
 
         self.set_sliders_and_text_fields(manual=False)
         self.box_ticked()
-            #self.set_sliders_and_text_fields(manual=True)
 
     def motor_switcher(self):
         self._widget.motorTree.setHeaderLabel("Stiff Motors")
@@ -859,7 +857,6 @@ class RecordUI(Plugin):
         if not self._widget.frameList.currentItem() == None:
             if not self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
                 self.treeModeChanged(self._widget.treeModeSelector.currentIndex())
-                #self.record(keep=True)
 
     def update_frames(self, keep=False):
         
@@ -900,6 +897,3 @@ class RecordUI(Plugin):
         """Clean up by sending the HCM a signal that we are no longer recording and by stopping publishers"""
         self._joint_pub.publish(JointCommand())
         rospy.sleep(1)
-        #self.state_sub.unregister()
-        #self._joint_pub.unregister()
-        #self.effort_pub.unregister()
