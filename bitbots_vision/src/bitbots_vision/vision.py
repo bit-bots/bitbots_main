@@ -352,6 +352,7 @@ class Vision:
             self.goalpost_detector,
             self.line_detector,
             self.ball_detector,
+            self.debug_image_drawer,
         ]
 
         # distribute the image to the detectors
@@ -559,10 +560,7 @@ class Vision:
                 'data': self.line_detector.get_linepoints(),
             },
         ]
-
-        # Submit image to the debug image drawer
-        self.debug_image_drawer.set_image(image)
-
+        
         # Draw and return image from the debug image drawer
         return self.debug_image_drawer.draw(debug_image_description)
 
