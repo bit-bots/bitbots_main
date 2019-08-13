@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rosrun dynamic_reconfigure dynparam set /bitbots_vision vision_publish_debug_image true
