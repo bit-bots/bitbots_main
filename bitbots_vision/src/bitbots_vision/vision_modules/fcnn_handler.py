@@ -1,6 +1,5 @@
 import cv2
 from cv_bridge import CvBridge
-from humanoid_league_msgs.msg import ImageWithRegionOfInterest
 import VisionExtensions
 import numpy as np
 from .candidate import Candidate, BallDetector
@@ -30,7 +29,7 @@ class FcnnHandler(BallDetector):
         publish_field_boundary_offset: 5
     """
 
-    def __init__(self, fcnn, field_boundary_detector, config):
+    def __init__(self, fcnn, config):
         """
         Inits the fcnn handler.
         :param fcnn: a fcnn model
@@ -38,7 +37,6 @@ class FcnnHandler(BallDetector):
         """
         self._image = None
         self._fcnn = fcnn
-        self._field_boundary_detector = field_boundary_detector
         self._rated_candidates = None
         self._sorted_rated_candidates = None
         self._top_candidate = None
@@ -71,7 +69,6 @@ class FcnnHandler(BallDetector):
         self._max_candidate_diameter = config['max_candidate_diameter']
         self._candidate_refinement_iteration_count = \
             config['candidate_refinement_iteration_count']
-        self._field_boundary_offset = config['publish_field_boundary_offset']
 
 
     def get_candidates(self):
@@ -189,21 +186,3 @@ class FcnnHandler(BallDetector):
         if self._debug:
             # Create image message with fcnn heatmap
             return self.bridge.cv2_to_imgmsg(self.get_fcnn_output(), "mono8")
-
-    def get_cropped_msg(self):
-        """
-        Returns a region of interest with the fcnn heatmap under the field boundary.
-        :return: fcnn heatmap under the field boundary
-        """
-        msg = ImageWithRegionOfInterest()
-        msg.header.frame_id = 'camera'
-        msg.header.stamp = rospy.get_rostime()
-        field_boundary_top = self._field_boundary_detector.get_upper_bound(y_offset=self._field_boundary_offset)
-        image_cropped = self.get_fcnn_output()[field_boundary_top:]  # cut off at field_boundary
-        msg.image = self.bridge.cv2_to_imgmsg(image_cropped, "mono8")
-        msg.regionOfInterest.x_offset = 0
-        msg.regionOfInterest.y_offset = field_boundary_top
-        msg.regionOfInterest.height = self.get_fcnn_output().shape[0] - 1 - field_boundary_top
-        msg.regionOfInterest.width = self.get_fcnn_output().shape[1] - 1
-        return msg
-
