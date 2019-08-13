@@ -233,22 +233,22 @@ class FieldBoundaryDetector:
         # type: (tuple, int) -> bool
         """
         returns whether the candidate is under the field_boundary or not
-        :param candidate: the candidate, a tuple (upleft_x, upleft_y, width, height)
+        :param candidate: the candidate
         :param y_offset: an offset in y-direction (higher offset allows points in a wider range over the field_boundary)
         :return: whether the candidate is under the field_boundary or not
         """
-        footpoint = (candidate[0] + candidate[2] // 2, candidate[1] + candidate[3] + y_offset)
+        footpoint = candidate.get_footpoint()
         return self.point_under_field_boundary(footpoint)
 
     def candidate_under_convex_field_boundary(self, candidate, y_offset=0):
         # type: (tuple, int) -> bool
         """
         returns whether the candidate is under the convex field_boundary or not
-        :param candidate: the candidate, a tuple (upleft_x, upleft_y, width, height)
+        :param candidate: the candidate
         :param y_offset: an offset in y-direction (higher offset allows points in a wider range over the field_boundary)
         :return: whether the candidate is under the convex field_boundary or not
         """
-        footpoint = (candidate[0] + candidate[2] // 2, candidate[1] + candidate[3] + y_offset)
+        footpoint = candidate.get_footpoint()
         return self.point_under_convex_field_boundary(footpoint)
 
     def candidates_under_field_boundary(self, candidates, y_offset=0):
@@ -270,36 +270,6 @@ class FieldBoundaryDetector:
         :return: list of candidates under convex the field boundary
         """
         return [candidate for candidate in candidates if self.candidate_under_convex_field_boundary(candidate, y_offset)]
-
-    def balls_under_field_boundary(self, balls, y_offset=0):
-        """
-        Removes balls that are not under the field boundary from list
-        :param balls: list of all candidates
-        :param y_offset: If the ball is within this offset over the field boundary its still accepted.
-        :return: list of balls under the field boundary
-        """
-        # type: (list, int) -> list
-        return [candidate for candidate in balls if self.candidate_under_field_boundary(
-            (candidate.get_upper_left_x(),
-             candidate.get_upper_left_y(),
-             candidate.get_width(),
-             candidate.get_height()),
-            y_offset)]
-
-    def balls_under_convex_field_boundary(self, balls, y_offset=0):
-        # type: (list, int) -> list
-        """
-        Removes balls that are not under the convex field boundary from list
-        :param balls: list of all candidates
-        :param y_offset: If the ball is within this offset over the field boundary its still accepted.
-        :return: list of balls under the convex field boundary
-        """
-        return [candidate for candidate in balls if self.candidate_under_convex_field_boundary(
-            (candidate.get_upper_left_x(),
-             candidate.get_upper_left_y(),
-             candidate.get_width(),
-             candidate.get_height()),
-            y_offset)]
 
     def point_under_field_boundary(self, point, offset=0):
         # type: (tuple, int) -> bool

@@ -210,7 +210,7 @@ class Vision:
 
         # If dummy ball detection is activated, set the dummy ballfinder as ball detector
         if config['vision_ball_detector'] == 'dummy':
-            self.ball_detector = dummy_ballfinder.DummyBallDetector()
+            self.ball_detector = dummy_ballfinder.DummyBallDetector(self.field_boundary_detector)
 
         # Check if the fcnn ball detector is activated
         if config['vision_ball_detector'] == 'fcnn':
@@ -228,6 +228,7 @@ class Vision:
             if ROS_Utils.config_param_change(self.config, config, r'^(ball_fcnn_)|(vision_ball_)'):
                 self.ball_detector = fcnn_handler.FcnnHandler(
                     self.ball_fcnn,
+                    self.field_boundary_detector,
                     self.ball_fcnn_config)
 
         # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
@@ -247,7 +248,7 @@ class Vision:
                         # Load Darknet implementation (uses CUDA)
                         yolo = yolo_handler.YoloHandlerDarknet(config, yolo_model_path)
                     # Set both ball and goalpost detector
-                    self.ball_detector = yolo_handler.YoloBallDetector(yolo)
+                    self.ball_detector = yolo_handler.YoloBallDetector(yolo, self.field_boundary_detector, config)
                     self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
                     rospy.loginfo(config['vision_ball_detector'] + " vision is running now")
 

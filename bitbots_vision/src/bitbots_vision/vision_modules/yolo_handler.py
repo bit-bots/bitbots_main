@@ -173,8 +173,10 @@ class YoloHandlerOpenCV(YoloHandler):
 
 class YoloBallDetector(BallDetector):
 
-    def __init__(self, yolo):
+    def __init__(self, yolo, field_boundary_detector, config):
+        super().__init__(field_boundary_detector)
         self.yolo = yolo
+        self.config = config
 
     def set_image(self, image):
         self.yolo.set_image(image)

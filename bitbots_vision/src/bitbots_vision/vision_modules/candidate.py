@@ -126,6 +126,15 @@ class Candidate:
         """
         return self._y1 + self._height
 
+    def get_footpoint(self):
+        # type: () -> (int, int)
+        """
+        returns...
+
+        :return tuple: returns the lowest point of the candidate
+        """
+        return (self.get_center_x(), self.get_lower_right_y)
+
     def get_rating(self):
         # type: () -> float
         """
@@ -208,24 +217,24 @@ class CandidateFinder(object):
 
 
 class BallDetector(CandidateFinder):
+    def __init__(self, field_boundary_detector):
+        self.field_boundary_detector = field_boundary_detector
 
-    def get_top_ball_under_convex_field_boundary(self, field_boundary_detector):
+    def get_top_ball_under_convex_field_boundary(self):
         """
         Returns the best candidate under the convex field boundary.
-        :param field_boundary_detector: A field boundary detector object
         :return: top candidate or None if no candidate exists
         """
         # Get all balls
-        balls = self.get_sorted_top_balls_under_convex_field_boundary(field_boundary_detector)
+        balls = self.get_sorted_top_balls_under_convex_field_boundary()
         # Check if there are any
         if balls:
             # Return the best
             return balls[0]
 
-    def get_sorted_top_balls_under_convex_field_boundary(self, field_boundary_detector):
+    def get_sorted_top_balls_under_convex_field_boundary(self):
         """
         Returns the best candidates under the convex field boundary.
-        :param field_boundary_detector: A field boundary detector object
         :return: list of top candidates sorted by rating
         """
         # Get candidates
@@ -233,7 +242,7 @@ class BallDetector(CandidateFinder):
         # Check if there are any ball candidates
         if ball_candidates:
             # Only take candidates under the convex field boundary
-            balls_under_field_boundary = field_boundary_detector.balls_under_convex_field_boundary(ball_candidates)
+            balls_under_field_boundary = self.field_boundary_detector.candidates_under_convex_field_boundary(ball_candidates)
             # Check if there are still candidates left
             if balls_under_field_boundary:
                 # Sort candidates and take the one which has the biggest confidence

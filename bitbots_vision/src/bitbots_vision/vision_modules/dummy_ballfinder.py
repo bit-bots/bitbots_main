@@ -5,7 +5,8 @@ class DummyBallDetector(BallDetector):
     """
     Dummy ball detector that we use if we want the run vision to without neural network e.g..
     """
-    def __init__(self):
+    def __init__(self, field_boundary_detector):
+        super().__init__(field_boundary_detector)
         self._detected_candidates = []
         self._sorted_candidates = []
         self._top_candidate = None

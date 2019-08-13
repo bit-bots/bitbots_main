@@ -29,12 +29,13 @@ class FcnnHandler(BallDetector):
         publish_field_boundary_offset: 5
     """
 
-    def __init__(self, fcnn, config):
+    def __init__(self, fcnn, field_boundary_detector, config):
         """
         Inits the fcnn handler.
         :param fcnn: a fcnn model
         :param config: TODO
         """
+        super().__init__(field_boundary_detector)
         self._image = None
         self._fcnn = fcnn
         self._rated_candidates = None
