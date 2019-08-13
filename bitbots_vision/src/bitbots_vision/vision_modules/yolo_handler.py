@@ -83,8 +83,7 @@ class YoloHandlerDarknet(YoloHandler):
                 x, y, w, h = out[2]
                 x = x - int(w // 2)
                 y = y - int(h // 2)
-                c = Candidate(int(x), int(y), int(w), int(h))
-                c.rating = confidence
+                c = Candidate(int(x), int(y), int(w), int(h), confidence)
                 class_id = class_id
                 if class_id == b"ball":
                     self.ball_candidates.append(c)
@@ -162,8 +161,7 @@ class YoloHandlerOpenCV(YoloHandler):
                 y = int(box[1])
                 w = int(box[2])
                 h = int(box[3])
-                c = Candidate(x, y, w, h)
-                c.rating = confidences[i]
+                c = Candidate(x, y, w, h, confidences[i])
                 class_id = class_ids[i]
                 if class_id == 0:
                     self.ball_candidates.append(c)
@@ -173,8 +171,7 @@ class YoloHandlerOpenCV(YoloHandler):
 
 class YoloBallDetector(BallDetector):
 
-    def __init__(self, yolo, field_boundary_detector, config):
-        super().__init__(field_boundary_detector)
+    def __init__(self, yolo, config):
         self.yolo = yolo
         self.config = config
 

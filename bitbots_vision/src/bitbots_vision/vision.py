@@ -210,7 +210,7 @@ class Vision:
 
         # If dummy ball detection is activated, set the dummy ballfinder as ball detector
         if config['vision_ball_detector'] == 'dummy':
-            self.ball_detector = dummy_ballfinder.DummyBallDetector(self.field_boundary_detector)
+            self.ball_detector = dummy_ballfinder.DummyBallDetector()
 
         # Check if the fcnn ball detector is activated
         if config['vision_ball_detector'] == 'fcnn':
@@ -228,7 +228,6 @@ class Vision:
             if ROS_Utils.config_param_change(self.config, config, r'^(ball_fcnn_)|(vision_ball_)'):
                 self.ball_detector = fcnn_handler.FcnnHandler(
                     self.ball_fcnn,
-                    self.field_boundary_detector,
                     self.ball_fcnn_config)
 
         # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
@@ -243,13 +242,13 @@ class Vision:
                     # Decide which yolo implementation should be used
                     if config['vision_ball_detector'] == 'yolo_opencv':
                         # Load OpenCV implementation (uses OpenCL)
-                        yolo = yolo_handler.YoloHandlerOpenCV(config, yolo_model_path)
+                        self.yolo = yolo_handler.YoloHandlerOpenCV(config, yolo_model_path)
                     elif config['vision_ball_detector'] == 'yolo_darknet':
                         # Load Darknet implementation (uses CUDA)
-                        yolo = yolo_handler.YoloHandlerDarknet(config, yolo_model_path)
+                        self.yolo = yolo_handler.YoloHandlerDarknet(config, yolo_model_path)
                     # Set both ball and goalpost detector
-                    self.ball_detector = yolo_handler.YoloBallDetector(yolo, self.field_boundary_detector, config)
-                    self.goalpost_detector = yolo_handler.YoloGoalpostDetector(yolo)
+                    self.ball_detector = yolo_handler.YoloBallDetector(self.yolo, config)
+                    self.goalpost_detector = yolo_handler.YoloGoalpostDetector(self.yolo)
                     rospy.loginfo(config['vision_ball_detector'] + " vision is running now")
 
         self._register_or_update_all_subscribers(config)
@@ -380,7 +379,7 @@ class Vision:
         ########
 
         # Grab ball candidates from ball detector
-        top_ball_candidate = self.ball_detector.get_top_ball_under_convex_field_boundary()
+        top_ball_candidate = self.ball_detector.get_top_ball_under_convex_field_boundary(self.field_boundary_detector, self._ball_candidate_y_offset)
         # check whether ball candidates are over rating threshold
         if top_ball_candidate and top_ball_candidate.get_rating() > self._ball_candidate_threshold:
             # Build the ball message which will be embedded in the balls message
@@ -554,7 +553,7 @@ class Vision:
                 'type': "ball",
                 'color': (0, 255, 0),
                 'thickness': 1,
-                'data': [self.ball_detector.get_top_ball_under_convex_field_boundary()]
+                'data': [self.ball_detector.get_top_ball_under_convex_field_boundary(self.field_boundary_detector, self._ball_candidate_y_offset)]
             },
             {
                 # Line points
