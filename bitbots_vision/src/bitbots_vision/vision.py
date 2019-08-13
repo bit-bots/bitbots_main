@@ -380,12 +380,11 @@ class Vision:
         ########
 
         # Grab ball candidates from ball detector
-        self.top_ball_candidate = self.ball_detector.get_top_ball_under_convex_field_boundary(self.field_boundary_detector)
-
+        top_ball_candidate = self.ball_detector.get_top_ball_under_convex_field_boundary()
         # check whether ball candidates are over rating threshold
-        if self.top_ball_candidate and self.top_ball_candidate.get_rating() > self._ball_candidate_threshold:
+        if top_ball_candidate and top_ball_candidate.get_rating() > self._ball_candidate_threshold:
             # Build the ball message which will be embedded in the balls message
-            ball_msg = ROS_Utils.build_ball_msg(self.top_ball_candidate)
+            ball_msg = ROS_Utils.build_ball_msg(top_ball_candidate)
             # Create a list of balls, currently only containing the top candidate
             list_of_balls = [ball_msg]
             # Create balls msg with the list of balls
@@ -546,7 +545,7 @@ class Vision:
                 'type': "ball",
                 'color': (0, 255, 255),
                 'thickness': 1,
-                'data': self.field_boundary_detector.balls_under_field_boundary(
+                'data': self.field_boundary_detector.candidates_under_field_boundary(
                             self.ball_detector.get_candidates(),
                             self._ball_candidate_y_offset)
             },
@@ -555,7 +554,7 @@ class Vision:
                 'type': "ball",
                 'color': (0, 255, 0),
                 'thickness': 1,
-                'data': [self.top_ball_candidate]
+                'data': [self.ball_detector.get_top_ball_under_convex_field_boundary()]
             },
             {
                 # Line points
