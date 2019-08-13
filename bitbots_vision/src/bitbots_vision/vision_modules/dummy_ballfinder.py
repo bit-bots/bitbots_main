@@ -1,7 +1,7 @@
 from .candidate import CandidateFinder, BallDetector
 
 
-class DummyClassifier(BallDetector):
+class DummyBallDetector(BallDetector):
     """
     Dummy ball detector that we use if we want the run vision to without neural network e.g..
     """
