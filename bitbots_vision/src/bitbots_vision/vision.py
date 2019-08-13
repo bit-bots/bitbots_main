@@ -15,7 +15,8 @@ from humanoid_league_msgs.msg import BallsInImage, LineInformationInImage, \
     ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, \
     GoalInImage, FieldBoundaryInImage, Speak
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
-    fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, yolo_handler, ros_utils
+    fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, yolo_handler
+from bitbots_vision.vision_modules.ros_utils import ROS_Utils
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config, ColorSpace
 
@@ -76,8 +77,8 @@ class Vision:
         self.reconfigure_active = False
 
         # Add model enums to config
-        ros_utils.ROS_Utils.add_model_enums(VisionConfig, self.package_path)
-        ros_utils.ROS_Utils.add_color_space_enums(VisionConfig, self.package_path)
+        ROS_Utils.add_model_enums(VisionConfig, self.package_path)
+        ROS_Utils.add_color_space_enums(VisionConfig, self.package_path)
 
         # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
@@ -104,7 +105,7 @@ class Vision:
         self._ball_candidate_y_offset = config['vision_ball_candidate_field_boundary_y_offset']
 
         # Should the debug image be published?
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'vision_publish_debug_image'):
+        if ROS_Utils.config_param_change(self.config, config, 'vision_publish_debug_image'):
             self.publish_debug_image = config['vision_publish_debug_image']
             if self.publish_debug_image:
                 rospy.logwarn('Debug images are enabled')
@@ -112,7 +113,7 @@ class Vision:
                 rospy.loginfo('Debug images are disabled')
 
         # Should the fcnn output (only under the field boundary) be published?
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'ball_fcnn_publish_output'):
+        if ROS_Utils.config_param_change(self.config, config, 'ball_fcnn_publish_output'):
             self.ball_fcnn_publish_output = config['ball_fcnn_publish_output']
             if self.ball_fcnn_publish_output:
                 rospy.logwarn('ball FCNN output publishing is enabled')
@@ -120,7 +121,7 @@ class Vision:
                 rospy.logwarn('ball FCNN output publishing is disabled')
 
         # Should the whole fcnn output be published?
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'ball_fcnn_publish_debug_img'):
+        if ROS_Utils.config_param_change(self.config, config, 'ball_fcnn_publish_debug_img'):
             self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
             if self.ball_fcnn_publish_output:
                 rospy.logwarn('Ball FCNN debug image publishing is enabled')
@@ -128,22 +129,22 @@ class Vision:
                 rospy.loginfo('Ball FCNN debug image publishing is disabled')
 
         # Print if the vision uses the sim color or not
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, 'vision_use_sim_color'):
+        if ROS_Utils.config_param_change(self.config, config, 'vision_use_sim_color'):
             if config['vision_use_sim_color']:
                 rospy.logwarn('Loaded color space for SIMULATOR.')
             else:
                 rospy.loginfo('Loaded color space for REAL WORLD.')
 
         # Set the white color detector
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, r'^white_color_detector_'):
+        if ROS_Utils.config_param_change(self.config, config, r'^white_color_detector_'):
             self.white_color_detector = color.HsvSpaceColorDetector(config, "white")
 
         # Set the red color detector
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, r'^red_color_detector_'):
+        if ROS_Utils.config_param_change(self.config, config, r'^red_color_detector_'):
             self.red_color_detector = color.HsvSpaceColorDetector(config, "red")
 
         # Set the blue color detector
-        if ros_utils.ROS_Utils.config_param_change(self.config, config, r'^blue_color_detector_'):
+        if ROS_Utils.config_param_change(self.config, config, r'^blue_color_detector_'):
             self.blue_color_detector = color.HsvSpaceColorDetector(config, "blue")
 
         # Check if the dynamic color space field color detector or the static field color detector should be used
@@ -205,17 +206,16 @@ class Vision:
             'min_candidate_diameter': config['ball_fcnn_min_ball_diameter'],
             'max_candidate_diameter': config['ball_fcnn_max_ball_diameter'],
             'candidate_refinement_iteration_count': config['ball_fcnn_candidate_refinement_iteration_count'],
-            'publish_field_boundary_offset': config['ball_fcnn_publish_field_boundary_offset'],
         }
 
         # If dummy ball detection is activated, set the dummy ballfinder as ball detector
         if config['vision_ball_detector'] == 'dummy':
-            self.ball_detector = dummy_ballfinder.DummyClassifier()
+            self.ball_detector = dummy_ballfinder.DummyBallDetector()
 
         # Check if the fcnn ball detector is activated
         if config['vision_ball_detector'] == 'fcnn':
             # Check if its the first callback, the fcnn is newly activated or the model has changed
-            if ros_utils.ROS_Utils.config_param_change(self.config, config, ['fcnn_model_path', 'vision_ball_detector']):
+            if ROS_Utils.config_param_change(self.config, config, ['fcnn_model_path', 'vision_ball_detector']):
                 # Build absolute model path
                 ball_fcnn_path = os.path.join(self.package_path, 'models', config['fcnn_model_path'])
                 # Check if it exists
@@ -225,15 +225,14 @@ class Vision:
                     self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
                     rospy.loginfo("FCNN vision is running now")
             #Check if ball_fcnn or vision_ball config has changed
-            if ros_utils.ROS_Utils.config_param_change(self.config, config, r'^(ball_fcnn_)|(vision_ball_)'):
+            if ROS_Utils.config_param_change(self.config, config, r'^(ball_fcnn_)|(vision_ball_)'):
                 self.ball_detector = fcnn_handler.FcnnHandler(
                     self.ball_fcnn,
-                    self.field_boundary_detector,
                     self.ball_fcnn_config)
 
         # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
         if config['vision_ball_detector'] in ['yolo_opencv', 'yolo_darknet']:
-            if ros_utils.ROS_Utils.config_param_change(self.config, config, ['yolo_model_path', 'vision_ball_detector']):
+            if ROS_Utils.config_param_change(self.config, config, ['yolo_model_path', 'vision_ball_detector']):
                 # Build absolute model path
                 yolo_model_path = os.path.join(self.package_path, 'models', config['yolo_model_path'])
                 # Check if it exists
@@ -255,7 +254,7 @@ class Vision:
         self._register_or_update_all_subscribers(config)
 
         # Publish Config-message (mainly for the dynamic color space node)
-        ros_utils.ROS_Utils.publish_vision_config(config, self.pub_config)
+        ROS_Utils.publish_vision_config(config, self.pub_config)
 
         # The old config gets replaced with the new config
         self.config = config
@@ -273,16 +272,16 @@ class Vision:
         :param dict config: new, incoming config
         :return: None
         """
-        self.pub_balls = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_balls, 'ROS_ball_msg_topic', BallsInImage)
-        self.pub_lines = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
-        self.pub_obstacle = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_obstacle, 'ROS_obstacle_msg_topic', ObstaclesInImage, queue_size=3)
-        self.pub_goal = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_goal, 'ROS_goal_msg_topic', GoalInImage, queue_size=3)
-        self.pub_ball_fcnn = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
-        self.pub_debug_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_debug_image, 'ROS_debug_image_msg_topic', Image)
-        self.pub_convex_field_boundary = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundaryInImage)
-        self.pub_debug_fcnn_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_debug_fcnn_image, 'ROS_debug_fcnn_image_msg_topic', Image)
-        self.pub_field_mask_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_field_mask_image, 'ROS_field_mask_image_msg_topic', Image)
-        self.pub_dynamic_color_space_field_mask_image = ros_utils.ROS_Utils.create_or_update_publisher(self.config, config, self.pub_dynamic_color_space_field_mask_image, 'ROS_dynamic_color_space_field_mask_image_msg_topic', Image)
+        self.pub_balls = ROS_Utils.create_or_update_publisher(self.config, config, self.pub_balls, 'ROS_ball_msg_topic', BallsInImage)
+        self.pub_lines = ROS_Utils.create_or_update_publisher(self.config, config, self.pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
+        self.pub_obstacle = ROS_Utils.create_or_update_publisher(self.config, config, self.pub_obstacle, 'ROS_obstacle_msg_topic', ObstaclesInImage, queue_size=3)
+        self.pub_goal = ROS_Utils.create_or_update_publisher(self.config, config, self.pub_goal, 'ROS_goal_msg_topic', GoalInImage, queue_size=3)
+        self.pub_ball_fcnn = ROS_Utils.create_or_update_publisher(self.config, config, self.pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
+        self.pub_debug_image = ROS_Utils.create_or_update_publisher(self.config, config, self.pub_debug_image, 'ROS_debug_image_msg_topic', Image)
+        self.pub_convex_field_boundary = ROS_Utils.create_or_update_publisher(self.config, config, self.pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundaryInImage)
+        self.pub_debug_fcnn_image = ROS_Utils.create_or_update_publisher(self.config, config, self.pub_debug_fcnn_image, 'ROS_debug_fcnn_image_msg_topic', Image)
+        self.pub_field_mask_image = ROS_Utils.create_or_update_publisher(self.config, config, self.pub_field_mask_image, 'ROS_field_mask_image_msg_topic', Image)
+        self.pub_dynamic_color_space_field_mask_image = ROS_Utils.create_or_update_publisher(self.config, config, self.pub_dynamic_color_space_field_mask_image, 'ROS_dynamic_color_space_field_mask_image_msg_topic', Image)
 
     def _register_or_update_all_subscribers(self, config):
         # type: (dict) -> None
@@ -292,8 +291,8 @@ class Vision:
         :param dict config: new, incoming config
         :return: None
         """
-        self.sub_image = ros_utils.ROS_Utils.create_or_update_subscriber(self.config, config, self.sub_image, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
-        self.sub_dynamic_color_space_msg_topic = ros_utils.ROS_Utils.create_or_update_subscriber(self.config, config, self.sub_dynamic_color_space_msg_topic, 'ROS_dynamic_color_space_msg_topic', ColorSpace, callback=self.field_color_detector.color_space_callback, queue_size=1, buff_size=2**20)
+        self.sub_image = ROS_Utils.create_or_update_subscriber(self.config, config, self.sub_image, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_queue_size'], buff_size=60000000)
+        self.sub_dynamic_color_space_msg_topic = ROS_Utils.create_or_update_subscriber(self.config, config, self.sub_dynamic_color_space_msg_topic, 'ROS_dynamic_color_space_msg_topic', ColorSpace, callback=self.field_color_detector.color_space_callback, queue_size=1, buff_size=2**20)
 
     def _image_callback(self, image_msg):
         # type: (Image) -> None
@@ -385,11 +384,11 @@ class Vision:
         # check whether ball candidates are over rating threshold
         if self.top_ball_candidate and self.top_ball_candidate.get_rating() > self._ball_candidate_threshold:
             # Build the ball message which will be embedded in the balls message
-            ball_msg = ros_utils.ROS_Utils.build_ball_msg(self.top_ball_candidate)
+            ball_msg = ROS_Utils.build_ball_msg(self.top_ball_candidate)
             # Create a list of balls, currently only containing the top candidate
             list_of_balls = [ball_msg]
             # Create balls msg with the list of balls
-            balls_msg = ros_utils.ROS_Utils.build_balls_msg(image_msg.header, list_of_balls)
+            balls_msg = ROS_Utils.build_balls_msg(image_msg.header, list_of_balls)
             # Publish balls
             self.pub_balls.publish(balls_msg)
 
@@ -400,16 +399,16 @@ class Vision:
         # Init list for obstacle msgs
         list_of_obstacle_msgs = []
         # Add red obstacles
-        list_of_obstacle_msgs.extend(ros_utils.ROS_Utils.build_obstacle_msgs(ObstacleInImage.ROBOT_MAGENTA,
+        list_of_obstacle_msgs.extend(ROS_Utils.build_obstacle_msgs(ObstacleInImage.ROBOT_MAGENTA,
             self.red_obstacle_detector.get_candidates()))
         # Add blue obstacles
-        list_of_obstacle_msgs.extend(ros_utils.ROS_Utils.build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN,
+        list_of_obstacle_msgs.extend(ROS_Utils.build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN,
             self.blue_obstacle_detector.get_candidates()))
         # Add UFO's (Undefined Found Obstacles)
-        list_of_obstacle_msgs.extend(ros_utils.ROS_Utils.build_obstacle_msgs(ObstacleInImage.UNDEFINED,
+        list_of_obstacle_msgs.extend(ROS_Utils.build_obstacle_msgs(ObstacleInImage.UNDEFINED,
             self.unknown_obstacle_detector.get_candidates()))
         # Build obstacles msgs containing all obstacles
-        obstacles_msg = ros_utils.ROS_Utils.build_obstacles_msg(image_msg.header, list_of_obstacle_msgs)
+        obstacles_msg = ROS_Utils.build_obstacles_msg(image_msg.header, list_of_obstacle_msgs)
         # Publish obstacles
         self.pub_obstacle.publish(obstacles_msg)
 
@@ -418,11 +417,11 @@ class Vision:
         ########
 
         # Get goalpost msgs and add them to the detected goal parts list
-        goal_parts = ros_utils.ROS_Utils.build_goalpost_msgs(self.goalpost_detector.get_candidates())
+        goal_parts = ROS_Utils.build_goalpost_msgs(self.goalpost_detector.get_candidates())
         # Create goalparts msg
-        goal_parts_msg = ros_utils.ROS_Utils.build_goal_parts_msg(image_msg.header, goal_parts)
+        goal_parts_msg = ROS_Utils.build_goal_parts_msg(image_msg.header, goal_parts)
         # Build goal message out of goal parts
-        goal_msg = ros_utils.ROS_Utils.build_goal_msg(goal_parts_msg)
+        goal_msg = ROS_Utils.build_goal_msg(goal_parts_msg)
         # Check if there is a goal
         if goal_msg:
             # If we have a goal, lets publish it
@@ -435,9 +434,9 @@ class Vision:
         # Build a LineSegmentInImage message for each linepoint
         line_points = self.line_detector.get_linepoints()
         # Create line segments
-        line_segments = ros_utils.ROS_Utils.convert_line_points_to_line_segment_msgs(line_points)
+        line_segments = ROS_Utils.convert_line_points_to_line_segment_msgs(line_points)
         # Create line msg
-        line_msg = ros_utils.ROS_Utils.build_line_information_in_image_msg(image_msg.header, line_segments)
+        line_msg = ROS_Utils.build_line_information_in_image_msg(image_msg.header, line_segments)
         # Publish lines
         self.pub_lines.publish(line_msg)
 
@@ -448,14 +447,19 @@ class Vision:
         # Get field boundary msg
         convex_field_boundary = self.field_boundary_detector.get_convex_field_boundary_points()
         # Build ros message
-        convex_field_boundary_msg = ros_utils.ROS_Utils.build_field_boundary_msg(image_msg.header, convex_field_boundary)
+        convex_field_boundary_msg = ROS_Utils.build_field_boundary_msg(image_msg.header, convex_field_boundary)
         # Publish field boundary
         self.pub_convex_field_boundary.publish(convex_field_boundary_msg)
 
         if self.config['vision_ball_detector'] == 'fcnn':
             # Publish fcnn output for the region of interest under the field boundary (for the world model)
             if self.ball_fcnn_publish_output:
-                self.pub_ball_fcnn.publish(self.ball_detector.get_cropped_msg())
+                roi_msg = ROS_Utils.build_fcnn_region_of_interest(
+                    self.ball_detector.get_fcnn_output(),
+                    self.field_boundary_detector,
+                    image_msg.header,
+                    self.config['ball_fcnn_publish_field_boundary_offset'])
+                self.pub_ball_fcnn.publish(roi_msg)
 
             # Publish whole fcnn output for debug purposes
             if self.publish_fcnn_debug_image:
@@ -583,7 +587,7 @@ class Vision:
 
         # Notify if there is a camera cap detected
         if sum(mean) < self._blind_threshold:
-            ros_utils.ROS_Utils.speak("Hey!   Remove my camera cap!", self.speak_publisher)
+            ROS_Utils.speak("Hey!   Remove my camera cap!", self.speak_publisher)
 
 
 if __name__ == '__main__':
