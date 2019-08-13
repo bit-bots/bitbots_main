@@ -131,7 +131,7 @@ class Vision:
         ball_candidates = self.ball_detector.get_candidates()
 
         if ball_candidates:
-            balls_under_field_boundary = self.field_boundary_detector.balls_under_convex_field_boundary(ball_candidates)
+            balls_under_field_boundary = self.field_boundary_detector.balls_under_convex_field_boundary(ball_candidates, self._ball_candidate_y_offset)
             if balls_under_field_boundary:
                 sorted_rated_candidates = sorted(balls_under_field_boundary, key=lambda x: x.rating)
                 top_ball_candidate = list([max(sorted_rated_candidates[0:1], key=lambda x: x.rating)])[0]
