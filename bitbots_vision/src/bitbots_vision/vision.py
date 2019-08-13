@@ -564,7 +564,7 @@ class Vision:
                 'data': self.line_detector.get_linepoints(),
             },
         ]
-        
+
         # Draw and return image from the debug image drawer
         return self.debug_image_drawer.draw(debug_image_description)
 
@@ -572,8 +572,14 @@ class Vision:
         """
         Kicks of the conventional calculations
         """
-        self.obstacle_detector.compute()
-        self.line_detector.compute()
+        # Modules that should run their calculations
+        modules = [
+            self.obstacle_detector,
+            self.line_detector,
+        ]
+        # Run all modules
+        for module in modules:
+            module.compute()
 
     def _handle_forgotten_camera_cap(self, image):
         # type: (np.array) -> None
