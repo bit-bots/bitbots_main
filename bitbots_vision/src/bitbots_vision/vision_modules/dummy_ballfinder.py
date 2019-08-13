@@ -1,4 +1,4 @@
-from .candidate import CandidateFinder
+from .candidate import CandidateFinder, BallDetector
 
 
 class DummyClassifier(BallDetector):
