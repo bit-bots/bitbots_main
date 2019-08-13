@@ -133,7 +133,7 @@ class Candidate:
 
         :return tuple: returns the lowest point of the candidate
         """
-        return (self.get_center_x(), self.get_lower_right_y)
+        return (self.get_center_x(), self.get_lower_right_y())
 
     def get_rating(self):
         # type: () -> float
