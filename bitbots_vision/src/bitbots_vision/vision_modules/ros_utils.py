@@ -2,10 +2,11 @@ import os
 import re
 import rospy
 import yaml
+from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, \
-    ObstacleInImage, GoalPartsInImage, PostInImage, GoalInImage, FieldBoundaryInImage, Speak
+    ObstacleInImage, GoalPartsInImage, PostInImage, GoalInImage, FieldBoundaryInImage, Speak, ImageWithRegionOfInterest
 from bitbots_msgs.msg import Config
 
 class ROS_Utils:
@@ -499,3 +500,26 @@ class ROS_Utils:
         msg.data = yaml.dump(config_cleaned)
         # Publish config
         publisher.publish(msg)
+
+    @staticmethod
+    def build_fcnn_region_of_interest(fcnn_output, field_boundary_detector, header, offset):
+        """
+        Returns a region of interest with the fcnn heatmap under the field boundary.
+        :param fcnn_output: the fcnn output
+        :param field_boundary_detector: the field boundary detector
+        :param header: ros header of the new message. Mostly the header of the image
+        :param offset: an offset for the field boundary
+        :return: fcnn heatmap under the field boundary
+        """
+        bridge = CvBridge()
+        msg = ImageWithRegionOfInterest()
+        msg.header.frame_id = header.frame_id
+        msg.header.stamp = header.stamp
+        field_boundary_top = field_boundary_detector.get_upper_bound(y_offset=offset)
+        image_cropped = fcnn_output[field_boundary_top:]  # cut off at field_boundary
+        msg.image = bridge.cv2_to_imgmsg(image_cropped, "mono8")
+        msg.regionOfInterest.x_offset = 0
+        msg.regionOfInterest.y_offset = field_boundary_top
+        msg.regionOfInterest.height = fcnn_output.shape[0] - 1 - field_boundary_top
+        msg.regionOfInterest.width = fcnn_output.shape[1] - 1
+        return msg
