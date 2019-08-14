@@ -5,8 +5,8 @@ import rospy
 import time
 import math
 import inspect
-
 from copy import deepcopy
+
 from python_qt_binding.QtCore import Qt, QMetaType, QDataStream, QVariant, pyqtSignal
 from python_qt_binding import loadUi
 from rqt_gui_py.plugin import Plugin
@@ -26,7 +26,7 @@ from .animation_recording import Recorder
 
 
 class DragDropList(QListWidget):
-    """ QListWidget with an event that is called when a drag and drop action was performed."""
+    ''' QListWidget with an event that is called when a drag and drop action was performed.'''
     keyPressed = pyqtSignal()
 
     def __init__(self, parent, ui):
@@ -144,14 +144,14 @@ class RecordUI(Plugin):
         self.update_time = rospy.Duration(0.1)
 
         for k,v in self.ids.iteritems():
-            print(k)
+            rospy.loginfo(k)
             self._initial_joints.name.append(k)
             self._initial_joints.position.append(0)
 
         while not self._initial_joints:
             if not rospy.is_shutdown():
                 time.rospy.sleep(0.5)
-                print("wait")
+                rospy.logwarn("wait")
             else:
                 return
 
@@ -170,7 +170,7 @@ class RecordUI(Plugin):
         host = os.environ['ROS_MASTER_URI'].split('/')[2].split(':')[0]
         self._robot_anim_path = "bitbots@{}:~/wolfgang_ws/src/wolfgang_robot/wolfgang_animations/animations/motion/".format(host)
                 
-        print("Set animation path to: "+str(self._robot_anim_path+"record.json"))
+        rospy.loginfo("Set animation path to: "+str(self._robot_anim_path+"record.json"))
 
         initTorque = {}
         for k, v in self._workingValues.items():
@@ -187,6 +187,9 @@ class RecordUI(Plugin):
         self.set_sliders_and_text_fields(manual=True)
 
     def state_update(self, joint_states):
+        '''
+        Callback method for /joint_states. Updates the sliders to the actual values of the motors when the robot moves.
+        '''
         if not self._initial_joints:
             self._initial_joints = joint_states
             time.rospy.sleep(1)
@@ -201,10 +204,10 @@ class RecordUI(Plugin):
 
 
     def motor_controller(self):
-        """
+        '''
         Sets up the GUI in the middle of the Screen to control the motors. 
         Uses self._motorValues to determine which motors are present.
-        """
+        '''
         i = 0
         for k, v in sorted(self._currentGoals.items()):
             group = QGroupBox()
@@ -218,7 +221,6 @@ class RecordUI(Plugin):
             textfield = QLineEdit()
             textfield.setText('0')
             textfield.textEdited.connect(self.textfield_update)
-            #textfield.setValidator(QDoubleValidator(-181.0, 181.0, 2))
             self._textFields[k] = textfield
 
             label = QLabel()
@@ -233,10 +235,10 @@ class RecordUI(Plugin):
             i = i+1
 
     def action_connect(self):
-        """
+        '''
         Connects the actions in the top bar to the corresponding functions, and sets their shortcuts
         :return: 
-        """
+        '''
         self._widget.actionNew.triggered.connect(self.new)
         self._widget.actionOpen.triggered.connect(self.open)
         self._widget.actionSave.triggered.connect(self.save)
@@ -265,6 +267,9 @@ class RecordUI(Plugin):
         self._widget.treeModeSelector.currentIndexChanged.connect(self.treeModeChanged)
 
     def help(self):
+        '''
+        Prints out the help dialogue
+        '''
         helpDialog = QMessageBox.about(self._widget, "About RecordUI", "This is RecordUI, a tool to record robot animations.\n \n Keyboard shortcuts: \n \n \
             New: Ctrl + N \n \
             Open: Ctrl + O \n \
@@ -372,7 +377,7 @@ class RecordUI(Plugin):
         j = 0
         for i in range(0, len(steps)):
             j += 1
-            print(steps[i]["name"])
+            rospy.loginfo(steps[i]["name"])
             if steps[i]["name"] == self._selected_frame["name"]:
                 break
         self._recorder.play(self._robot_anim_path, j)
@@ -389,6 +394,7 @@ class RecordUI(Plugin):
         pos_msg.positions = []
         pos_msg.accelerations = [-1.0] * 20
         pos_msg.max_currents = [-1.0] * 20
+
 
         for k,v in self._workingValues.items():
             pos_msg.joint_names.append(k)
@@ -433,6 +439,9 @@ class RecordUI(Plugin):
         self._joint_pub.publish(pos_msg)
 
     def set_all_joints_stiff(self):
+        '''
+        Enables torque for all motors
+        '''
         if self._widget.frameList.currentItem().text() == '#CURRENT_FRAME':
             for k, v in self._treeItems.items():
                 v.setCheckState(0, Qt.Checked)
@@ -456,7 +465,11 @@ class RecordUI(Plugin):
         except:
             return
         if frame:
-            self._recorder.duplicate(frame)
+            if not frame == "#CURRENT_FRAME":
+                self._recorder.duplicate(frame)
+                self._widget.statusBar.showMessage("Duplicated frame "+ frame)
+            else:
+                self._widget.statusBar.showMessage("Cannot duplicate current frame. Record first.")
             self.update_frames()
 
     def delete(self):
@@ -468,7 +481,11 @@ class RecordUI(Plugin):
         except:
             return
         if frame:
-            self._recorder.delete(frame)
+            if not frame == "#CURRENT_FRAME":
+                self._recorder.delete(frame)
+                self._widget.statusBar.showMessage("Deleted frame "+ frame)
+            else: 
+                self._widget.statusBar.showMessage("Cannot delete current frame.")
             self.update_frames()
 
     def record(self, keep=False):
@@ -516,15 +533,22 @@ class RecordUI(Plugin):
                                       True)
 
  
-
+            self._widget.statusBar.showMessage("Recorded frame "+ self._workingName)
         self.update_frames(keep)
 
+
     def undo(self):
+        '''
+        Undos the previous action
+        '''
         status = self._recorder.undo()
         self._widget.statusBar.showMessage(status)
         self.update_frames()
 
     def redo(self):
+        '''
+        Redos an action
+        '''
         status = self._recorder.redo()
         self._widget.statusBar.showMessage(status)
         self.update_frames()
@@ -559,6 +583,7 @@ class RecordUI(Plugin):
 
         self.updateTreeConfig(self._widget.treeModeSelector.currentIndex())
         self.box_ticked()
+        self._widget.statusBar.showMessage("Mirrored frame to "+ direction)
         
 
     def invertFrame(self):
@@ -597,20 +622,29 @@ class RecordUI(Plugin):
         boxmode[self._widget.frameList.currentItem().text()] = deepcopy(tempDict)
         self.updateTreeConfig(self._widget.treeModeSelector.currentIndex())
         self.box_ticked()
+        self._widget.statusBar.showMessage("Inverted frame")
 
     def frame_list(self):
-        #self._widget.frameList.itemClicked.connect(self.frame_select)
+        '''
+        Connects triggers from the frame list to their callback methods.
+        '''
         self._widget.frameList.itemSelectionChanged.connect(self.frame_select)
         self._widget.lineFrameName.textEdited.connect(self.frame_meta_update)
         self._widget.spinBoxPause.valueChanged.connect(self.frame_meta_update)
         self._widget.spinBoxDuration.valueChanged.connect(self.frame_meta_update)
 
     def frame_meta_update(self):
+        '''
+        Updates the respective values for the two spin boxes and the frame name, when they are changed
+        '''
         self._workingDuration = self._widget.spinBoxDuration.value()
         self._workingPause = self._widget.spinBoxPause.value()
         self._workingName = self._widget.lineFrameName.text()
 
     def frame_select(self):
+        '''
+        Loads all information on a specific frame into the working values, if the frame selection changes
+        '''
         if not (self._widget.frameList.currentItem() == None):
             self.copyOldTreeConfig()
             selected_frame_name = self._widget.frameList.currentItem().text()
@@ -666,9 +700,12 @@ class RecordUI(Plugin):
                 self._sliders[k].setEnabled(v)
 
         self.set_sliders_and_text_fields(manual=False)
-            #self.set_sliders_and_text_fields(manual=True)
+        self.box_ticked()
 
     def motor_switcher(self):
+        '''
+        Loads the motors into the tree and adds the checkboxes
+        '''
         self._widget.motorTree.setHeaderLabel("Stiff Motors")
         self._motorCheckBody.setText(0, "Body")
         self._motorCheckBody.setFlags(self._motorCheckBody.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
@@ -742,14 +779,12 @@ class RecordUI(Plugin):
                     else:
                         for k in self._workingValues:
                             tempDict2[k] = 2
-                    #rospy.loginfo('Selected Save mode.')
                 elif index == 0:
                     if self._selected_frame["name"] in self._checkBoxesPower.keys():
                         tempDict2 = deepcopy(self._checkBoxesPower[self._selected_frame["name"]])
                     else:
                         for k in self._workingValues:
                             tempDict2[k] = 2
-                    #rospy.loginfo('Selected Power mode.')
             else:
                 for k in self._workingValues:
                     tempDict2[k] = 2
@@ -791,16 +826,15 @@ class RecordUI(Plugin):
         self.set_sliders_and_text_fields(manual=True)
 
     def set_sliders_and_text_fields(self, manual):
-        """
+        '''
         Updates the text fields and sliders in self._sliders and self._textfields and also frame name and duration and pause 
         to the values in self._workingValues. 
-        """
+        '''
         for k, v in self._workingValues.items():
             try:
                 if not self._treeItems[k].checkState(0) == 0:
-                    #if not self._motorSwitched[k] or manual:
-                        self._textFields[k].setText(str(int(round(math.degrees(v)))))
-                        self._sliders[k].setValue(int(round(math.degrees(v))))
+                    self._textFields[k].setText(str(int(round(math.degrees(v)))))
+                    self._sliders[k].setValue(int(round(math.degrees(v))))
 
             except KeyError:
                 rospy.logwarn("Found a key-value pair for motor (%s), which doesn't seem to exist (yet). Ignoring it." % k)
@@ -830,8 +864,6 @@ class RecordUI(Plugin):
 
         self.set_sliders_and_text_fields(manual=False)
 
-        ## Wolfgang part
-
         torque_msg = JointTorque()
         torque_msg.joint_names = []
         torque_msg.on = []
@@ -858,14 +890,13 @@ class RecordUI(Plugin):
         if not self._widget.frameList.currentItem() == None:
             if not self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
                 self.treeModeChanged(self._widget.treeModeSelector.currentIndex())
-                self.record(keep=True)
 
     def update_frames(self, keep=False):
         
-        """
+        '''
         updates the list of frames present in the current animation
         :return: 
-        """
+        '''
         current_index = self._widget.frameList.currentIndex()
         current_mode = self._widget.treeModeSelector.currentIndex()
         current_state = self._recorder.get_animation_state()
@@ -891,14 +922,11 @@ class RecordUI(Plugin):
             self._current = True
 
     def change_frame_order(self, new_order):
-        """ Calls the recorder to update frame order and updates the gui"""
+        ''' Calls the recorder to update frame order and updates the gui'''
         self._recorder.change_frame_order(new_order)
         self.update_frames()
 
     def shutdown_plugin(self):
-        """Clean up by sending the HCM a signal that we are no longer recording and by stopping publishers"""
+        '''Clean up by sending the HCM a signal that we are no longer recording'''
         self._joint_pub.publish(JointCommand())
         rospy.sleep(1)
-        #self.state_sub.unregister()
-        #self._joint_pub.unregister()
-        #self.effort_pub.unregister()

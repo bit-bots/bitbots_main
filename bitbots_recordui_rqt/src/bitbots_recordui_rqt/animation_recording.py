@@ -3,7 +3,7 @@
 import datetime
 
 # todo
-# copy past of frames, from one animation to another
+# copy paste of frames, from one animation to another
 # record button next to frame name filed
 # set min max for joint value fields
 
@@ -25,8 +25,9 @@ import subprocess
 
 
 class AnimationData(object):
-    """ Defines a current status of the recorded Animation
-    """
+    ''' 
+    Defines a current status of the recorded Animation
+    '''
 
     def __init__(self):
         self.anim_steps = []
@@ -39,14 +40,14 @@ class AnimationData(object):
 
 
 class Recorder(object):
-    """ Recorder Methods are gathered in this class
+    ''' Recorder Methods are gathered in this class
 
     :param ipc: Shared Memory provider to set data
     :param gui: urwid-gui responsible for displaying this reocrd-instance
     :param logger:
         the logger to use, defaults to 'record-gui' the logger is
         important for the commuication with the gui-console
-    """
+    '''
 
     def __init__(self):
         self.steps = []
@@ -69,7 +70,7 @@ class Recorder(object):
         self.current_state.description = description
 
     def save_step(self, description, state=None):
-        """ Save the current state of the Animation
+        ''' Save the current state of the Animation
         for later restoration by the undo-command
 
         (Yes we might save only a diff, but the Memory consumption
@@ -78,7 +79,7 @@ class Recorder(object):
 
         :param description: A string describing the saved action for the user
         :param state: a AnimState can be given otherwise the current one is used
-        """
+        '''
 
         rospy.logdebug("Saving step: %s" % description)
         if not state:
@@ -87,15 +88,13 @@ class Recorder(object):
         self.save_animation("backup")
 
     def undo(self, amount=1):
-        """ Undo <amount> of steps or the last Step if not given
-        """
+        ''' Undo <amount> of steps or the last Step if omitted
+        '''
         if amount > len(self.steps) or self.steps[-1][1] == "Initial step":
             rospy.logwarn("I cannot undo what did not happen!")
             return "I cannot undo what did not happen!"
         if amount == 1:
             state, description = self.steps.pop()
-            #if state.anim_steps == self.current_state.anim_steps:
-            #    state, description = self.steps.pop()
             self.redo_steps.append((state, description, self.current_state))
             rospy.loginfo("Undoing: %s" % description)
             if self.steps:
@@ -115,8 +114,8 @@ class Recorder(object):
             return "Undoing %i steps" % amount
 
     def redo(self, amount=1):
-        """ Redo <amount> of steps, or the last step if omitted
-        """
+        ''' Redo <amount> of steps, or the last step if omitted
+        '''
         post_state = None
         if not self.redo_steps:
             rospy.logwarn("Cannot redo what was not undone!")
@@ -133,8 +132,8 @@ class Recorder(object):
         return "Last noted step is now: %s " % self.steps[-1][1]
 
     def record(self, motor_pos, motor_torque, frame_name, duration, pause, seq_pos=None, override=False):
-        """ Record Command, save current keyframe-data
-        """
+        ''' Record Command, save current keyframe-data
+        '''
         frame = {
             "name": frame_name,
             "duration": duration,
@@ -155,30 +154,21 @@ class Recorder(object):
         return True
 
     def clear(self):
-        """ Record Command, clear all keyframe-data
-        """
+        ''' Record Command, clear all keyframe-data
+        '''
         newsteps = []
         for i in self.steps:
             if i[1] == 'Initial step':
                 newsteps.append(i)
         self.steps = deepcopy(newsteps)
-        #self.save_step("Clearing all keyframe data")
         self.current_state.anim_steps = []
         return True
 
-    def save_animation(self, path, file_name=None, save_checkbox=None, force=False):
-        """ Record Command, dump all keyframedata to an animation .json file
-
-        The GUI is asked for validity of the data, because the GUI keeps track
-        of that anyway. If the data is not valid, saving the changes is refused
-        to avoid putting defect files into our repository or even overriding
-        functional ones. Forcing this method to dump results in a '_defective'
-        postfix of the filename. The force feature is intended to allow "emergency"
-        saves when the Programm itself is forced to exit in an inconsistent state.
+    def save_animation(self, path, file_name=None, save_checkbox=None):
+        ''' Record Command, dump all keyframedata to an animation .json file
 
         :param file_name: what name the new file should receive
-        :param force: set True, for saving even inconsistent states.
-        """
+        '''
         if not self.current_state.anim_steps:
             rospy.loginfo("There is nothing to save.")
             return "There is nothing to save."
@@ -219,10 +209,10 @@ class Recorder(object):
         return ("Saving to '%s'" % path + ". Done.")
 
     def remove(self, framenumber=None):
-        """ Record Command, remove the last keyframedata
+        ''' Record Command, remove the last keyframedata
 
         :param framenumber: The Number of frame to remove. default is last
-        """
+        '''
         if not framenumber:
             if not self.current_state.anim_steps:
                 rospy.logwarn("Nothing to revert, framelist is empty!")
@@ -245,10 +235,10 @@ class Recorder(object):
         return True
 
     def load_animation(self, path):
-        """ Record command, load a animation '.json' file
+        ''' Record command, load a animation '.json' file
 
-        :param name: name of the animation to load
-        """
+        :param path: path of the animation to load
+        '''
         data = []
         with open(path) as fp:
             try:
@@ -275,37 +265,14 @@ class Recorder(object):
 
         self.current_state.anim_steps = data[u'keyframes']
 
-        # get metadata from the file, if specified
-    def get_meta(key, default="Unknown"):
-        """ Retrieve the meta-information for given key from data
-        :param str key:
-        :param default: returned if key does not exist
-        :type default: any
-        """
-        if not key in data:
-            msg = "key %s not found in the animation" % key
-            rospy.logdebug(msg)
-            return default
-        return data[key]
-
-        self.current_state.name = get_meta('name', 'NONAME')
-        self.current_state.description = get_meta('description', "Edit me!")
-        self.current_state.version = get_meta('version', 0)
-        self.current_state.last_edited = get_meta('last_edited')
-        self.current_state.author = get_meta('author')
-        self.current_state.last_hostname = get_meta('hostname')
-
-        rospy.loginfo("Animation with %d frames loaded" % len(self.current_state.anim_steps))
-        return True
-
     def play(self, anim_path, until_frame=None):
-        """ Record command, start playing an animation
+        ''' Record command, start playing an animation
 
         Can play a certain (named) animation or the current one by default.
-        Also can play only a part of an animation if *start* and/or *end* are defined
+        Also can play only a part of an animation if end is defined
 
-        :param until_frame:
-        """
+        :param until_frame: the frame until which the animation should be played
+        '''
         try:
             if not self.current_state.anim_steps:
                 rospy.loginfo("Refusing to play, because nothing to play exists!")
@@ -333,7 +300,7 @@ class Recorder(object):
             return "There is no Robot! Can't play Animation!"
 
     def execute_play(self, anim_dict, anim_path):
-        """ We make a temporary copy of the animation and call the animation play action to play it"""
+        ''' We make a temporary copy of the animation and call the animation play action to play it'''
         anim_package = rosparam.get_param("robot_type_name").lower() + "_animations"
         rospack = rospkg.RosPack()
         path = rospack.get_path(anim_package)
@@ -346,6 +313,7 @@ class Recorder(object):
         self.play_animation("record")
 
     def play_animation(self, name):
+        '''Sends the animation to the animation server '''
         first_try = self.anim_client.wait_for_server(
             rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 10)))
         if not first_try:
@@ -360,7 +328,7 @@ class Recorder(object):
         rospy.sleep(0.5)
 
     def change_frame_order(self, new_order):
-        """ Changes the order of the frames given an array of frame names"""
+        ''' Changes the order of the frames given an array of frame names'''
         new_ordered_frames = []
         for frame_name in new_order:
             for frame in self.current_state.anim_steps:
