@@ -1,14 +1,14 @@
 #Falling
 $Falling
-    FALLING_LEFT --> @PlayAnimationFallingLeft
-    FALLING_RIGHT --> @PlayAnimationFallingRight
-    FALLING_FRONT --> @PlayAnimationFallingFront
-    FALLING_BACK --> @PlayAnimationFallingBack
+    FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft
+    FALLING_RIGHT --> @CancelGoals, @PlayAnimationFallingRight
+    FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront
+    FALLING_BACK --> @CancelGoals, @PlayAnimationFallingBack
     NOT_FALLING --> $Fallen
-        FALLEN_FRONT --> @PlayAnimationStandUpFront, @Wait + time:1, @PlayAnimationDynup
-        FALLEN_BACK --> @SetFootZero, @PlayAnimationStandUpBack, @PlayAnimationDynup
-        FALLEN_RIGHT --> @PlayAnimationStandUpRight, @PlayAnimationDynup
-        FALLEN_LEFT --> @PlayAnimationStandUpLeft, @PlayAnimationDynup
+        FALLEN_FRONT --> @CancelGoals, @PlayAnimationStandUpFront, @Wait + time:1, @PlayAnimationDynup
+        FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationStandUpBack, @PlayAnimationDynup
+        FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight, @PlayAnimationDynup
+        FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft, @PlayAnimationDynup
         NOT_FALLEN --> $ExternalAnimation
             ANIMATION_RUNNING --> @StayAnimationRunning
             FREE --> $Walking
