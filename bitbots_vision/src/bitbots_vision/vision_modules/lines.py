@@ -10,6 +10,9 @@ import cv2
 
 
 class LineDetector:
+    """
+    Detecting field lines in the image.
+    """
     def __init__(self, white_detector, field_color_detector, field_boundary_detector, config):
         # type: (ColorDetector, ColorDetector, FieldBoundaryDetector, dict) -> None
         self._image = None
@@ -19,12 +22,17 @@ class LineDetector:
         self._white_detector = white_detector
         self._field_color_detector = field_color_detector
         self._field_boundary_detector = field_boundary_detector
-        # init config
+        # Init config
         self._field_boundary_offset = config['line_detector_field_boundary_offset']
         self._linepoints_range = config['line_detector_linepoints_range']
         self._blur_kernel_size = config['line_detector_blur_kernel_size']
 
     def set_image(self, image):
+        # type: (np.matrix) -> None
+        """
+        refreshes the variables after receiving an image
+        :param image: the current frame of the video feed
+        """
         self._image = image
         self._preprocessed_image = None
         self._linepoints = None
@@ -32,18 +40,27 @@ class LineDetector:
         self._linesegments = None
 
     def set_candidates(self, candidates):
+        """
+        Used for the unused hough line implementation.
+        """
         # type: (list) -> None
         self._candidates = candidates
 
     def compute(self):
-        # if self._linepoints is None or self._nonlinepoints is None:
+        """
+        Computes the linepoints
+        """
+        # Check if points are allready cached
         if self._linepoints is None:
+            # Empty line point list
             self._linepoints = list()
+            # Get image shape
             imgshape = self._get_preprocessed_image().shape
+            # Mask white parts of the image using a white color detector
             white_masked_image = self._white_detector.mask_image(
                 self._get_preprocessed_image())
 
-            # get the maximum height of the field boundary
+            # Get the maximum height of the field boundary
             max_field_boundary_heigth = self._field_boundary_detector.get_upper_bound(
                 self._field_boundary_offset)
 
@@ -63,12 +80,21 @@ class LineDetector:
                         self._linepoints.append(p)
 
     def get_linepoints(self):
+        """
+        Computes (cached) and returns the linepoints
+        """
+        # Compute line points
         self.compute()
+        # Return line points
         return self._linepoints
 
     def get_linesegments(self):
-
+        """
+        Computes (not cached) and returns the line segments (Currently unused)
+        """
+        # Mask white parts of the image
         img = self._white_detector.mask_image(self._get_preprocessed_image())
+        # Use hough lines algorithm to find lines in this mask
         lines = cv2.HoughLinesP(img,
                                 1,
                                 math.pi / 180,
@@ -78,9 +104,11 @@ class LineDetector:
         self._linesegments = []
         if lines is None:
             return self._linesegments
+        # Iterate over hough lines
         for l in lines:
+            # Iterate over start and end
             for x1, y1, x2, y2 in l:
-                # check if start or end is in any of the candidates
+                # Check if start or end is in any of the candidates
                 in_candidate = False
                 for candidate in self._candidates:
                     if candidate and (
@@ -88,22 +116,25 @@ class LineDetector:
                             candidate.point_in_candidate((x2, y2))):
                         in_candidate = True
                         break
-
-                # check if start and end is under field_boundary
+                # Check if start and end is under field_boundary
                 under_field_boundary = self._field_boundary_detector.point_under_field_boundary(
                     (x1, y1), self._field_boundary_offset) and \
                                 self._field_boundary_detector.point_under_field_boundary(
                                     (x1, y1), self._field_boundary_offset)
-
+                # Add segment if it is not in any candidate and it starts and ends under the field boundary
                 if not in_candidate and under_field_boundary:
                     self._linesegments.append((x1, y1, x2, y2))
-
         return self._linesegments
 
     def _get_preprocessed_image(self):
+        """
+        Preprocesses image
+        """
+        # Check if it is cached
         if self._preprocessed_image is None:
+            # Copy the image
             self._preprocessed_image = self._image.copy()
-            # fill everything above field_boundary black
+            # Fill everything above field_boundary black
             hpoints = np.array([[(0, 0)] +
                                 self._field_boundary_detector.get_field_boundary_points(self._field_boundary_offset) +
                                 [(self._preprocessed_image.shape[1] - 1, 0)]])
