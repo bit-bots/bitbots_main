@@ -4,16 +4,18 @@ import rospy
 
 
 class FCNN03:
-
+    """
+    Defines the FCNN neural network
+    """
     def __init__(self, load_path):
-        rospy.loginfo("setting up ball detection: FCNN03")
-
+        rospy.loginfo("Setting up ball detection: FCNN03")
+        # Make fcnn load path
         self._load_path = os.path.join(load_path, "model_final")
-
+        # Define input and output shape of the fcnn
         self.input_shape = (150, 200, 3)  # y, x, z
         self.output_shape = (150, 200, 1)  # y, x, z
 
-        # placeholders
+        # Define tensorflow placeholders
         with tf.variable_scope("placeholders"):
             self._keep_prob = tf.placeholder("float", name="keep_prob")
             self.X = tf.placeholder(
@@ -33,18 +35,22 @@ class FCNN03:
                     self.output_shape[2]],
                 name="Y")
 
-        # create network
+        # Create network
         self._fcnn_out, self._fcnn_logits = self._fcnn_model()
 
-        # init network & load weights
+        # Init network & load weights
         self._initialize_network()
 
     def predict(self, batch):
-        res = self.session.run(self._fcnn_out, feed_dict={self.X: batch, self._keep_prob: 1.0})
-
-        return res
+        """
+        Runs the fcnn neural network
+        """
+        return self.session.run(self._fcnn_out, feed_dict={self.X: batch, self._keep_prob: 1.0})
 
     def _initialize_network(self):
+        """
+        Init tensorflow
+        """
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         self.session = tf.Session(config=config)
@@ -57,6 +63,9 @@ class FCNN03:
         rospy.loginfo("loaded successfully.")
 
     def _fcnn_model(self):
+        """
+        Defines the fcnn model layers
+        """
         with tf.variable_scope("conv", dtype=tf.float32):
             #################
             # Encoding part #
