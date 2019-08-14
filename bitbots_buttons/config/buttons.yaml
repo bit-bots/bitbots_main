@@ -1,6 +1,6 @@
 buttons:
   manual_penalty: True
-  foot_zero: True
+  in_game: True
   speak_active: True
   short_time: 2 #[s]
   debounce_time: 0.1 #[s]
