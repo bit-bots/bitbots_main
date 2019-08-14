@@ -181,11 +181,6 @@ class YoloBallDetector(BallDetector):
     def get_candidates(self):
         return self.yolo.get_candidates()[0]
 
-    def get_top_candidates(self, count=1):
-        ball_candidates = self.get_candidates()
-        ball_candidates = Candidate.sort_candidates(ball_candidates)
-        return ball_candidates[:count]
-
     def compute(self):
         self.yolo.predict()
 
@@ -199,11 +194,6 @@ class YoloGoalpostDetector(CandidateFinder):
 
     def get_candidates(self):
         return self.yolo.get_candidates()[1]
-
-    def get_top_candidates(self, count=1):
-        ball_candidates = self.get_candidates()
-        ball_candidates = Candidate.sort_candidates(ball_candidates)
-        return ball_candidates[:count]
 
     def compute(self):
         self.yolo.predict()

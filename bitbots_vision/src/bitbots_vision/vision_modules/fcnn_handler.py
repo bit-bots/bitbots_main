@@ -117,20 +117,6 @@ class FcnnHandler(BallDetector):
         # Call get candidates and drop the returned solution because it get cached for the real call
         self.get_candidates()
 
-    def get_top_candidates(self, count=1):
-        """
-        Returns the 'count' best candidates.
-        :param count: Number of top-candidates to return
-        :return: the count top candidates
-        """
-        if count < 1:
-            raise ValueError('the count must be equal or greater 1!')
-        # Check if cached
-        if self._sorted_rated_candidates is None:
-            # Sort candidates by rating
-            self._sorted_rated_candidates = sorted(self.get_candidates(), key=lambda x: x.get_rating())
-        return self._sorted_rated_candidates[0:count]
-
     def get_fcnn_output(self):
         """
         Calculates the fcnn heatmap. The output gets cached.

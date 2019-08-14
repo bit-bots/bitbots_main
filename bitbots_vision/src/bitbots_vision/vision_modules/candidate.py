@@ -182,15 +182,15 @@ class Candidate:
 
 
 class CandidateFinder(object):
-
-    @abc.abstractmethod
     def get_top_candidates(self, count=1):
         """
         Returns the count best candidates.
         :param count: Number of top-candidates to return
         :return: the count top candidates
         """
-        raise NotImplementedError
+        ball_candidates = self.get_candidates()
+        ball_candidates = Candidate.sort_candidates(ball_candidates)
+        return ball_candidates[:count]
 
     @abc.abstractmethod
     def get_candidates(self):
