@@ -169,7 +169,7 @@ class Candidate:
         :param candidatelist:
         :return: sorted candidate list
         """
-        return sorted(candidatelist, key = lambda candidate: candidate.rating, reverse=True)
+        return sorted(candidatelist, key = lambda candidate: candidate.get_rating(), reverse=True)
 
 
     def __str__(self):
