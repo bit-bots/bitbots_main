@@ -132,26 +132,16 @@ class LineDetector:
         """
         # Check if it is cached
         if self._preprocessed_image is None:
-            # Copy the image
-            self._preprocessed_image = self._image.copy()
-            # Fill everything above field_boundary black
-            hpoints = np.array([[(0, 0)] +
-                                self._field_boundary_detector.get_field_boundary_points(self._field_boundary_offset) +
-                                [(self._preprocessed_image.shape[1] - 1, 0)]])
-            cv2.fillPoly(self._preprocessed_image, hpoints, 000000)
-
-            # get negated green mask
+            # Get part under the field boundary as white mask
+            mask = self._field_boundary_detector.get_mask()
+            # And operation between the mask and the image. This blacks out the part above the field boundary
+            image_under_fieldboundary = cv2.bitwise_and(self._image, self._image, mask=mask)
+            # Get green mask
             green_mask = self._field_color_detector.mask_image(self._image)
+            # Noise reduction on the green field mask
             green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_CLOSE, kernel=np.ones((3, 3)), iterations=1)
-
+            # Invert and scale the field mask
             green_mask = np.ones_like(green_mask) - (np.floor_divide(green_mask, 255))
-            self._preprocessed_image = cv2.bitwise_and(self._preprocessed_image, self._preprocessed_image, mask=green_mask)
-
+            # Only take parts that are under not green and the field boundary
+            self._preprocessed_image = cv2.bitwise_and(image_under_fieldboundary, image_under_fieldboundary, mask=green_mask)
         return self._preprocessed_image
-
-    @staticmethod
-    def filter_points_with_candidates(linepoints, candidates):
-        filtered_linepoints = linepoints
-        for candidate in candidates:
-            filtered_linepoints = [linepoint for linepoint in linepoints if not candidate.point_in_candidate(linepoint)]
-        return filtered_linepoints
