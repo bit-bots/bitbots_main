@@ -69,23 +69,24 @@ class FieldBoundaryDetector:
         """
         :return: np.array
         """
-        if self._mask is None:
-            self._mask = self._compute_mask()
+        # Compute mask (cached)
+        self._compute_mask()
         return self._mask
 
     def _compute_mask(self):
-        # type: () -> np.array
+        # type: () -> None
         """
-        calculates a mask that contains white pixels below the field-boundary
-        :return: np.array
+        Calculates a mask that contains white pixels below the field-boundary
         """
-        shape = np.shape(self._image)
-        img_size = (shape[0], shape[1])
-        # Generates a white canvas
-        canvas = np.ones(img_size, dtype=np.uint8) * 255
-        hpoints = np.array([[(0, 0)] + self.get_field_boundary_points() + [(shape[1] - 1, 0)]])
-        # Blacks out the part over the field_boundary
-        return cv2.fillPoly(canvas, hpoints, 0)
+        # Check if fieldboundary is allready cached
+        if self._mask is None:
+            shape = np.shape(self._image)
+            img_size = (shape[0], shape[1])
+            # Generates a white canvas
+            canvas = np.ones(img_size, dtype=np.uint8) * 255
+            hpoints = np.array([[(0, 0)] + self.get_field_boundary_points() + [(shape[1] - 1, 0)]])
+            # Blacks out the part over the field_boundary
+            self._mask = cv2.fillPoly(canvas, hpoints, 0)
 
     def get_field_boundary_points(self, offset=0):
         # type: (int) -> list
