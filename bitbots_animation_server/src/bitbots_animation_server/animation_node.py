@@ -191,7 +191,6 @@ class PlayAnimationAction(object):
                         self.traj_msg.points[0].effort.append(bool(torque[t]))
             self.anim_msg.position = self.traj_msg
         self.anim_msg.header.stamp = rospy.Time.now()
-        #print(self.anim_msg.position.points[0])
         self.hcm_publisher.publish(self.anim_msg)
 
     def get_torque(self):
