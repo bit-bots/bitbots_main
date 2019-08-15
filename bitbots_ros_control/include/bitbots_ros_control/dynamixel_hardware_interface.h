@@ -70,7 +70,7 @@ enum ControlMode {
 class DynamixelHardwareInterface : public hardware_interface::RobotHW
 {
 public:
-  DynamixelHardwareInterface();
+  DynamixelHardwareInterface(boost::shared_ptr<DynamixelDriver> driver);
   void reconf_callback(bitbots_ros_control::bitbots_ros_control_paramsConfig &config, uint32_t level);
 
   bool init(ros::NodeHandle& nh);
@@ -98,25 +98,19 @@ private:
   void writeTorqueForServos(std::vector<int32_t> torque);
   void individualTorqueCb(bitbots_msgs::JointTorque msg);
 
-
   bool syncReadPositions();
   bool syncReadVelocities();
   bool syncReadEfforts();
   bool syncReadAll();
   bool syncReadVoltageAndTemp();
   bool syncReadError();
-  bool readImu();
   bool readButtons();
-  bool readFootSensors();
-
 
   bool syncWritePosition();
   bool syncWriteVelocity();
   bool syncWriteProfileVelocity();
   bool syncWriteCurrent();
   bool syncWriteProfileAcceleration();
-
-
 
   bool first_cycle_;
   bool _lost_servo_connection;
@@ -127,13 +121,10 @@ private:
   boost::shared_ptr<DynamixelDriver> _driver;
 
   hardware_interface::JointStateInterface _jnt_state_interface;
-
   hardware_interface::PositionJointInterface _jnt_pos_interface;
   hardware_interface::VelocityJointInterface _jnt_vel_interface;
   hardware_interface::EffortJointInterface _jnt_eff_interface;
   hardware_interface::PosVelAccCurJointInterface _jnt_posvelacccur_interface;
-
-  hardware_interface::ImuSensorInterface _imu_interface;
 
   ControlMode _control_mode;
 
@@ -154,7 +145,6 @@ private:
   std::vector<double> _last_goal_velocity;
   std::vector<double> _last_goal_acceleration;
 
-
   bool _read_position;
   bool _read_velocity;
   bool _read_effort;
@@ -166,41 +156,26 @@ private:
   std::vector<double> _current_temperature;
   std::vector<uint8_t> _current_error;
 
-  std::vector<double> _current_pressure;
-
   int _read_VT_counter;
   int _VT_update_rate;
   double _warn_temp;
   double _warn_volt;
 
   bool _torquelessMode;
-  bool _read_imu;
-  bool _read_pressure;
   bool _readButtons;
   bool _onlySensors;  
-  uint32_t _last_seq_number;
-  double* _orientation; //quaternion (x,y,z,w)
-  double* _orientation_covariance;
-  double* _angular_velocity;
-  double* _angular_velocity_covariance;
-  double* _linear_acceleration;
-  double* _linear_acceleration_covariance;
 
   int _reading_errors;
   int _reading_successes;
 
   diagnostic_msgs::DiagnosticStatus _status_board;
-  diagnostic_msgs::DiagnosticStatus _status_IMU;
   diagnostic_msgs::DiagnosticStatus _status_servo;
   // subscriber / publisher
   ros::Subscriber _set_torque_sub;
   ros::Publisher _diagnostic_pub;
   ros::Publisher _speak_pub;
   ros::Publisher _button_pub;
-  ros::Publisher _pressure_pub;
   ros::Subscriber _set_torque_indiv_sub;
-  ros::Subscriber _update_pid_sub;
-
 
 };
 }

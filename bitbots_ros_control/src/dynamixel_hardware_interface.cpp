@@ -7,9 +7,10 @@
 namespace bitbots_ros_control
 {
 
-DynamixelHardwareInterface::DynamixelHardwareInterface()
-  : first_cycle_(true), _read_position(true), _read_velocity(false), _read_effort(true), _driver(new DynamixelDriver())
-{}
+DynamixelHardwareInterface::DynamixelHardwareInterface(DynamixelDriver driver)
+  : first_cycle_(true), _read_position(true), _read_velocity(false), _read_effort(true){
+  _driver = driver
+}
 
 bool DynamixelHardwareInterface::init(ros::NodeHandle& nh){
   /*
@@ -25,65 +26,8 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh){
   _set_torque_indiv_sub = nh.subscribe<bitbots_msgs::JointTorque>("set_torque_individual", 1, &DynamixelHardwareInterface::individualTorqueCb, this, ros::TransportHints().tcpNoDelay());
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
-  _button_pub = nh.advertise<bitbots_buttons::Buttons>("/buttons", 1, this);
-  _pressure_pub = nh.advertise<bitbots_msgs::FootPressure>("/foot_pressure", 1, this);
-  _status_board.name = "DXL_board";
-  _status_board.hardware_id = std::to_string(1);
-  _status_IMU.name = "IMU";
-  _status_IMU.hardware_id = std::to_string(2);
-
-  // init driver
-  ROS_INFO_STREAM("Loading parameters from namespace " << nh.getNamespace());
-  std::string port_name;
-  nh.getParam("dynamixels/port_info/port_name", port_name);
-  int baudrate;
-  nh.getParam("dynamixels/port_info/baudrate", baudrate);
-  if(!_driver->init(port_name.c_str(), uint32_t(baudrate))){
-    ROS_ERROR("Error opening serial port %s", port_name.c_str());
-    speak("Error opening serial port");
-    sleep(1);
-    exit(1);
-  }
-  float protocol_version;
-  nh.getParam("dynamixels/port_info/protocol_version", protocol_version);
-  _driver->setPacketHandler(protocol_version);
-
-  // alloc memory for imu values
-  _orientation = (double*) malloc(4 * sizeof(double));
-  std::fill(_orientation, _orientation+4, 0);
-  _orientation_covariance = (double*) malloc(9 * sizeof(double));
-  std::fill(_orientation_covariance, _orientation_covariance+9, 0);
-  _angular_velocity = (double*) malloc(3 * sizeof(double));
-  std::fill(_angular_velocity, _angular_velocity+3, 0);
-  _angular_velocity_covariance = (double*) malloc(9 * sizeof(double));
-  std::fill(_angular_velocity_covariance, _angular_velocity_covariance+9, 0);
-  _linear_acceleration = (double*) malloc(3 * sizeof(double));
-  std::fill(_linear_acceleration, _linear_acceleration+3, 0);
-  _linear_acceleration_covariance = (double*) malloc(9 * sizeof(double));
-  std::fill(_linear_acceleration_covariance, _linear_acceleration_covariance+9, 0);
-
-  // init IMU
-  std::string imu_name;
-  std::string imu_frame;
-  nh.getParam("IMU/name", imu_name);
-  nh.getParam("IMU/frame", imu_frame);
-  nh.getParam("read_imu", _read_imu);
-  if(_read_imu){
-    hardware_interface::ImuSensorHandle imu_handle(imu_name, imu_frame, _orientation, _orientation_covariance, _angular_velocity, _angular_velocity_covariance, _linear_acceleration, _linear_acceleration_covariance);
-    _imu_interface.registerHandle(imu_handle);
-    registerInterface(&_imu_interface);
-  }
 
   _torquelessMode = nh.param("torquelessMode", false);
-  _readButtons = nh.param("readButtons", false);
-  _current_pressure.resize(8, 0);
-
-  // ignore rest of the code if we are running in special "onlySensors" mode
-  _onlySensors = nh.param("onlySensors", false);
-  if(_onlySensors){
-    ROS_WARN("Ignoring servo errors since onlySensors is set to true!");
-    return true;
-  }
 
   // Load dynamixel config from parameter server
   if (!loadDynamixels(nh)){
@@ -167,7 +111,6 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh){
   writeTorque(nh.param("dynamixels/auto_torque", false));
 
   ROS_INFO("Hardware interface init finished.");
-  speak("ros control startup successful");
   return true;
 }
 
@@ -442,24 +385,6 @@ bool DynamixelHardwareInterface::read(){
   /**
    * This is part of the main loop and handles reading of all connected devices
    */
-
-  if(_read_imu){
-      if(!readImu()){
-          ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
-          speak("Could not read IMU");
-      }
-  }
-
-  if(_readButtons && !readButtons()){
-    ROS_ERROR_THROTTLE(1.0, "Couldn't read Buttons");
-  }
-
-  if (_read_pressure){
-    if(!readFootSensors()){
-      ROS_ERROR_THROTTLE(1.0, "Couldn't read foot sensor values");
-    }
-  }
-
   bool read_successful = true;
 
   // either read all values or a single one, depending on config
@@ -555,11 +480,6 @@ void DynamixelHardwareInterface::write()
   /**
    * This is part of the mainloop and handles all the writing to the connected devices
    */
-
-  if(_onlySensors){
-    // nothing to write when we are in sensor only mode
-    return;
-  }
 
   //check if we have to switch the torque
   if(current_torque_ != goal_torque_){
@@ -816,100 +736,6 @@ bool DynamixelHardwareInterface::syncReadAll() {
     return false;
   }
 }
-
-bool DynamixelHardwareInterface::readImu(){
-  /**
-   * Reads the IMU
-   */
-  uint8_t *data = (uint8_t *) malloc(110 * sizeof(uint8_t));
-
-    if(_driver->readMultipleRegisters(241, 36, 32, data)){
-      //todo we have to check if we jumped one sequence number
-        uint32_t highest_seq_number = 0;
-        uint32_t new_value_index=0;
-        uint32_t current_seq_number= 0;
-        // imu gives us 2 values at the same time, lets see which one is the newest
-        for(int i =0; i < 2; i++){
-            //the sequence number are the bytes 12 to 15 for each of the two 16 Bytes
-            current_seq_number = DXL_MAKEDWORD(DXL_MAKEWORD(data[16*i+12], data[16*i+13]),
-                                             DXL_MAKEWORD(data[16*i+14], data[16*i+15]));
-          if(current_seq_number>highest_seq_number){
-              highest_seq_number=current_seq_number;
-              new_value_index=i;
-            }
-        }
-      // linear acceleration are two signed bytes with 256 LSB per g
-      _linear_acceleration[0] = (((short) DXL_MAKEWORD(data[16*new_value_index], data[16*new_value_index+1])) / 256.0 ) * gravity * 1;
-      _linear_acceleration[1] = (((short) DXL_MAKEWORD(data[16*new_value_index+2], data[16*new_value_index+3])) / 256.0 ) * gravity * 1;
-      _linear_acceleration[2] = (((short)DXL_MAKEWORD(data[16*new_value_index+4], data[16*new_value_index+5])) / 256.0 ) * gravity * 1;
-      // angular velocity are two signed bytes with 14.375 per deg/s
-      _angular_velocity[0] = (((short)DXL_MAKEWORD(data[16*new_value_index+6], data[16*new_value_index+7])) / 14.375) * M_PI/180 * 1;
-      _angular_velocity[1] = (((short)DXL_MAKEWORD(data[16*new_value_index+8], data[16*new_value_index+9])) / 14.375) * M_PI/180 * 1;
-      _angular_velocity[2] = (((short)DXL_MAKEWORD(data[16*new_value_index+10], data[16*new_value_index+11])) / 14.375) * M_PI/180 * -1;
-      return true;
-    }else {
-      return false;
-    }
-}
-
-bool DynamixelHardwareInterface::readButtons(){
-  /**
-   * Reads the buttons
-   */
-  uint8_t *data = (uint8_t *) malloc(sizeof(uint8_t));
-  if(_driver->readMultipleRegisters(242, 36, 8, data)){;
-    bitbots_buttons::Buttons msg;
-    msg.button1 = !(*data & 64);
-    msg.button2 = !(*data & 32);
-    _button_pub.publish(msg);
-    return true;
-  }
-  return false;
-}
-
-bool DynamixelHardwareInterface::readFootSensors(){
-  /**
-   * Reads the foot pressure sensors of the BitFoots
-   */
-  uint8_t *data = (uint8_t *) malloc(16 * sizeof(uint8_t));
-  // read first foot
-
-  if(_driver->readMultipleRegisters(101, 36, 16, data)){
-    for (int i = 0; i < 4; i++) {
-      int32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i*4], data[i*4+1]), DXL_MAKEWORD(data[i*4+2], data[i*4+3]));
-      float pres_d = (float) pres;
-      // we directly provide raw data since the scaling has to be calibrated by another node for every robot anyway
-      _current_pressure[i+4] = (double) pres_d;
-    }
-  }else{
-    ROS_ERROR_THROTTLE(3.0, "Could not read foot with ID 101 (right foot)");
-  }             
-  // read second foot
-  if(_driver->readMultipleRegisters(102, 36, 16, data)){
-    for (int i = 0; i < 4; i++) {
-      int32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i*4], data[i*4+1]), DXL_MAKEWORD(data[i*4+2], data[i*4+3]));
-      float pres_d = (float) pres;
-      _current_pressure[i] = (double) pres_d;
-    }
-
-  }else{
-    ROS_ERROR_THROTTLE(3.0, "Could not read foot with ID 102 (left foot)");
-  }
-
-  bitbots_msgs::FootPressure msg;
-  msg.header.stamp = ros::Time::now();
-  msg.l_l_f = _current_pressure[0];
-  msg.l_r_f = _current_pressure[1];
-  msg.l_l_b = _current_pressure[2];
-  msg.l_r_b = _current_pressure[3];
-  msg.r_l_f = _current_pressure[4];
-  msg.r_r_f = _current_pressure[5];
-  msg.r_l_b = _current_pressure[6];
-  msg.r_r_b = _current_pressure[7];
-  _pressure_pub.publish(msg);
-  return true;
-}
-
 
 bool DynamixelHardwareInterface::syncWritePosition(){
   /**
