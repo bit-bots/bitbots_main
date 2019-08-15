@@ -22,17 +22,18 @@ class ButtonHardwareInterface : public hardware_interface::RobotHW
 {
 public:
   ButtonHardwareInterface(boost::shared_ptr<DynamixelDriver> driver);
-  void reconf_callback(bitbots_ros_control::bitbots_ros_control_paramsConfig &config, uint32_t level);
 
   bool init(ros::NodeHandle& nh);
   bool read();
   void write();
 
+  void set_driver(boost::shared_ptr<DynamixelDriver> driver);
+
 private:
   ros::NodeHandle _nh;
   boost::shared_ptr<DynamixelDriver> _driver;
 
+};
 }
-
 
 #endif

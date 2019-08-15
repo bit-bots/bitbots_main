@@ -3,29 +3,20 @@
 namespace bitbots_ros_control
 {
 
-BitFootHardwareInterface::BitFootHardwareInterface(boost::shared_ptr<DynamixelDriver> driver){
-  _driver = driver
-  _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
-  _pressure_pub = nh.advertise<bitbots_msgs::FootPressure>("/foot_pressure", 1, this);
+BitFootHardwareInterface::BitFootHardwareInterface(){}
 
+void BitFootHardwareInterface::set_driver(boost::shared_ptr<DynamixelDriver> driver){
+  _driver = driver;
 }
 
 bool BitFootHardwareInterface::init(ros::NodeHandle& nh){
   _nh = nh;
   _current_pressure.resize(8, 0);
-
+  _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
+  _pressure_pub = nh.advertise<bitbots_msgs::FootPressure>("/foot_pressure", 1, this);
 }
 
 bool BitFootHardwareInterface::read(){
-  if (_read_pressure){
-    if(!readFootSensors()){
-      ROS_ERROR_THROTTLE(1.0, "Couldn't read foot sensor values");
-    }
-  }
-}
-
-
-bool DynamixelHardwareInterface::readFootSensors(){
   /**
    * Reads the foot pressure sensors of the BitFoots
    */

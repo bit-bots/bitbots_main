@@ -67,15 +67,17 @@ enum ControlMode {
   CurrentBasedPositionControl
 };
 
-class DynamixelHardwareInterface : public hardware_interface::RobotHW
+class DynamixelServoHardwareInterface : public hardware_interface::RobotHW
 {
 public:
-  DynamixelHardwareInterface(boost::shared_ptr<DynamixelDriver> driver);
+  DynamixelServoHardwareInterface(boost::shared_ptr<DynamixelDriver> driver);
   void reconf_callback(bitbots_ros_control::bitbots_ros_control_paramsConfig &config, uint32_t level);
 
   bool init(ros::NodeHandle& nh);
   bool read();
   void write();
+
+  void set_driver(boost::shared_ptr<DynamixelDriver> driver);
 
 private:
   ros::NodeHandle _nh;
@@ -104,7 +106,6 @@ private:
   bool syncReadAll();
   bool syncReadVoltageAndTemp();
   bool syncReadError();
-  bool readButtons();
 
   bool syncWritePosition();
   bool syncWriteVelocity();
@@ -162,19 +163,15 @@ private:
   double _warn_volt;
 
   bool _torquelessMode;
-  bool _readButtons;
-  bool _onlySensors;  
+  bool _onlySensors;
 
   int _reading_errors;
   int _reading_successes;
 
-  diagnostic_msgs::DiagnosticStatus _status_board;
-  diagnostic_msgs::DiagnosticStatus _status_servo;
   // subscriber / publisher
   ros::Subscriber _set_torque_sub;
   ros::Publisher _diagnostic_pub;
   ros::Publisher _speak_pub;
-  ros::Publisher _button_pub;
   ros::Subscriber _set_torque_indiv_sub;
 
 };

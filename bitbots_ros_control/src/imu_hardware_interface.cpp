@@ -1,17 +1,24 @@
 #include <bitbots_ros_control/imu_hardware_interface.h>
 
+#define gravity 9.80665
+
 namespace bitbots_ros_control
 {
 
-ImuHardwareInterface::ImuHardwareInterface(boost::shared_ptr<DynamixelDriver> driver){
-  _driver = driver
-  _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
-  _status_IMU.name = "IMU";
-  _status_IMU.hardware_id = std::to_string(1);
+ImuHardwareInterface::ImuHardwareInterface(){}
+
+
+void ImuHardwareInterface::set_driver(boost::shared_ptr<DynamixelDriver> driver){
+  _driver = driver;
 }
 
 bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   _nh = nh;
+
+  _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
+  _status_IMU.name = "IMU";
+  _status_IMU.hardware_id = std::to_string(1);
+
 
   // alloc memory for imu values
   _orientation = (double*) malloc(4 * sizeof(double));
@@ -42,16 +49,6 @@ bool ImuHardwareInterface::init(ros::NodeHandle& nh){
 }
 
 bool ImuHardwareInterface::read(){
-  if(_read_imu){
-    if(!readImu()){
-      ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
-      speak("Could not read IMU");
-    }
-  }
-}
-
-
-bool DynamixelHardwareInterface::readImu(){
   /**
    * Reads the IMU
    */
@@ -82,6 +79,7 @@ bool DynamixelHardwareInterface::readImu(){
       _angular_velocity[2] = (((short)DXL_MAKEWORD(data[16*new_value_index+10], data[16*new_value_index+11])) / 14.375) * M_PI/180 * -1;
       return true;
     }else {
+      ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
       return false;
     }
 }

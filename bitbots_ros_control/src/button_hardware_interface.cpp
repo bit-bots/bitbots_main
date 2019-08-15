@@ -3,28 +3,20 @@
 namespace bitbots_ros_control
 {
 
-ButtonHardwareInterface::ButtonHardwareInterface(boost::shared_ptr<DynamixelDriver> driver){
-  _driver = driver
-  _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
-  _button_pub = nh.advertise<bitbots_buttons::Buttons>("/buttons", 1, this);
+ButtonHardwareInterface::ButtonHardwareInterface(){}
 
+void ButtonHardwareInterface::set_driver(boost::shared_ptr<DynamixelDriver> driver){
+  _driver = driver;
 }
 
 bool ButtonHardwareInterface::init(ros::NodeHandle& nh){
   _nh = nh;
   _readButtons = nh.param("readButtons", false);
-
+  _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
+  _button_pub = nh.advertise<bitbots_buttons::Buttons>("/buttons", 1, this);
 }
 
 bool ButtonHardwareInterface::read(){
-
-  if(_readButtons && !readButtons()){
-    ROS_ERROR_THROTTLE(1.0, "Couldn't read Buttons");
-  }
-}
-
-
-bool DynamixelHardwareInterface::readButtons(){
   /**
    * Reads the buttons
    */
@@ -36,6 +28,7 @@ bool DynamixelHardwareInterface::readButtons(){
     _button_pub.publish(msg);
     return true;
   }
+  ROS_ERROR_THROTTLE(1.0, "Couldn't read Buttons");
   return false;
 }
 

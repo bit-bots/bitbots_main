@@ -17,7 +17,7 @@ int main(int argc, char** argv)
   // set the dynamic reconfigure and load standard params for servo interface
   dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_hardware_interface_paramsConfig> server;
   dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_hardware_interface_paramsConfig>::CallbackType f;
-  f = boost::bind(&bitbots_ros_control::DynamixelHardwareInterface::reconf_callback,&hw, _1, _2);
+  f = boost::bind(&bitbots_ros_control::DynamixelServoHardwareInterface::reconf_callback,&hw, _1, _2);
   server.setCallback(f);
 
   if (!hw.init(pnh))

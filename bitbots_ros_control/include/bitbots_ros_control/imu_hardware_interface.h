@@ -22,19 +22,17 @@ class ImuHardwareInterface : public hardware_interface::RobotHW
 {
 public:
   ImuHardwareInterface(boost::shared_ptr<DynamixelDriver> driver);
-  void reconf_callback(bitbots_ros_control::bitbots_ros_control_paramsConfig &config, uint32_t level);
 
   bool init(ros::NodeHandle& nh);
   bool read();
   void write();
 
-private:
-  bool readImu();
+  void set_driver(boost::shared_ptr<DynamixelDriver> driver);
 
+private:
   ros::NodeHandle _nh;
   boost::shared_ptr<DynamixelDriver> _driver;
   hardware_interface::ImuSensorInterface _imu_interface;
-  bool _read_imu;
 
   uint32_t _last_seq_number;
   double* _orientation; //quaternion (x,y,z,w)
@@ -47,6 +45,7 @@ private:
   diagnostic_msgs::DiagnosticStatus _status_IMU;
 
 
+};
 }
 
 #endif

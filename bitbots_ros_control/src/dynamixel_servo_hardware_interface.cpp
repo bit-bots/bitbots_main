@@ -2,17 +2,20 @@
 #define DXL_MAKEWORD(a, b)  ((uint16_t)(((uint8_t)(((uint64_t)(a)) & 0xff)) | ((uint16_t)((uint8_t)(((uint64_t)(b)) & 0xff))) << 8))
 #define DXL_MAKEDWORD(a, b) ((uint32_t)(((uint16_t)(((uint64_t)(a)) & 0xffff)) | ((uint32_t)((uint16_t)(((uint64_t)(b)) & 0xffff))) << 16))
 
-#define gravity 9.80665
-
 namespace bitbots_ros_control
 {
 
-DynamixelHardwareInterface::DynamixelHardwareInterface(DynamixelDriver driver)
+DynamixelServoHardwareInterface::DynamixelServoHardwareInterface()
   : first_cycle_(true), _read_position(true), _read_velocity(false), _read_effort(true){
-  _driver = driver
 }
 
-bool DynamixelHardwareInterface::init(ros::NodeHandle& nh){
+
+void DynamixelServoHardwareInterface::set_driver(boost::shared_ptr<DynamixelDriver> driver){
+  _driver = driver;
+}
+
+
+bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
   /*
   * This initializes the hardware interface based on the values set in the config.
   * The servos are pinged to verify that a connection is present and to know which type of servo it is.
@@ -22,8 +25,8 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh){
 
   // Init subscriber / publisher
   _switch_individual_torque = false;
-  _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this, ros::TransportHints().tcpNoDelay());
-  _set_torque_indiv_sub = nh.subscribe<bitbots_msgs::JointTorque>("set_torque_individual", 1, &DynamixelHardwareInterface::individualTorqueCb, this, ros::TransportHints().tcpNoDelay());
+  _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelServoHardwareInterface::setTorque, this, ros::TransportHints().tcpNoDelay());
+  _set_torque_indiv_sub = nh.subscribe<bitbots_msgs::JointTorque>("set_torque_individual", 1, &DynamixelServoHardwareInterface::individualTorqueCb, this, ros::TransportHints().tcpNoDelay());
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
 
@@ -114,7 +117,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh){
   return true;
 }
 
-bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh){
+bool DynamixelServoHardwareInterface::loadDynamixels(ros::NodeHandle& nh){
   /**
    * Load config and try to ping servos to test if everything is correct.
    * Adds all dynamixel to the driver if they are pingable.
@@ -189,19 +192,13 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh){
   }
 
   // generate a diagnostic message
-  _status_board.level = diagnostic_msgs::DiagnosticStatus::OK;
-  _status_board.message = "DXL board started";
-  array.push_back(_status_board);
-  _status_IMU.level = diagnostic_msgs::DiagnosticStatus::OK;
-  _status_IMU.message = "IMU started";
-  array.push_back(_status_IMU);
   array_msg.status = array;
   _diagnostic_pub.publish(array_msg);
 
   return success;
 }
 
-bool DynamixelHardwareInterface::writeROMRAM(ros::NodeHandle& nh){
+bool DynamixelServoHardwareInterface::writeROMRAM(ros::NodeHandle& nh){
   /**
    * This method writes the ROM and RAM values specified in the config to all servos.
    */
@@ -228,7 +225,7 @@ bool DynamixelHardwareInterface::writeROMRAM(ros::NodeHandle& nh){
   return sucess;
 }
 
-diagnostic_msgs::DiagnosticStatus DynamixelHardwareInterface::createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map){
+diagnostic_msgs::DiagnosticStatus DynamixelServoHardwareInterface::createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map){
   /**
    * Create a single Diagnostic message for one servo. This is used to build the array message which is then published.
    */
@@ -249,7 +246,7 @@ diagnostic_msgs::DiagnosticStatus DynamixelHardwareInterface::createServoDiagMsg
     return servo_status;
 }
 
-void DynamixelHardwareInterface::processVTE(bool success){
+void DynamixelServoHardwareInterface::processVTE(bool success){
   /**
    *  This processes the data for voltage, temperature and error of the servos. It is mainly used as diagnostic message.
    */
@@ -320,7 +317,7 @@ void DynamixelHardwareInterface::processVTE(bool success){
   _diagnostic_pub.publish(array_msg);
 }
 
-void DynamixelHardwareInterface::writeTorque(bool enabled){
+void DynamixelServoHardwareInterface::writeTorque(bool enabled){
   /**
    * This writes the torque for all servos to the same value
    */
@@ -333,7 +330,7 @@ void DynamixelHardwareInterface::writeTorque(bool enabled){
   }
 }
 
-void DynamixelHardwareInterface::writeTorqueForServos(std::vector<int32_t> torque){
+void DynamixelServoHardwareInterface::writeTorqueForServos(std::vector<int32_t> torque){
   /**
    * This writes the torque off all servos individually depended on the give vector.
    */
@@ -345,7 +342,7 @@ void DynamixelHardwareInterface::writeTorqueForServos(std::vector<int32_t> torqu
 }
 
 
-void DynamixelHardwareInterface::individualTorqueCb(bitbots_msgs::JointTorque msg){
+void DynamixelServoHardwareInterface::individualTorqueCb(bitbots_msgs::JointTorque msg){
   /**
    * Handles incomming JointTroque messages and remembers the requested torque configuration of the servos.
    * It will not directly written since this has to happen in the main write loop
@@ -374,14 +371,14 @@ void DynamixelHardwareInterface::individualTorqueCb(bitbots_msgs::JointTorque ms
   _switch_individual_torque = true;
 }
 
-void DynamixelHardwareInterface::setTorque(std_msgs::BoolConstPtr enabled){
+void DynamixelServoHardwareInterface::setTorque(std_msgs::BoolConstPtr enabled){
   /**
    * This saves the given required value, so that it can be written to the servos in the write method
    */
   goal_torque_ = enabled->data;
 }
 
-bool DynamixelHardwareInterface::read(){
+bool DynamixelServoHardwareInterface::read(){
   /**
    * This is part of the main loop and handles reading of all connected devices
    */
@@ -475,7 +472,7 @@ bool DynamixelHardwareInterface::read(){
 
 }
 
-void DynamixelHardwareInterface::write()
+void DynamixelServoHardwareInterface::write()
 {
   /**
    * This is part of the mainloop and handles all the writing to the connected devices
@@ -547,7 +544,7 @@ void DynamixelHardwareInterface::write()
   }
 }
 
-void DynamixelHardwareInterface::speak(std::string text){
+void DynamixelServoHardwareInterface::speak(std::string text){
   /**
    *  Helper method to send a message for text-to-speech output
    */
@@ -557,7 +554,7 @@ void DynamixelHardwareInterface::speak(std::string text){
   _speak_pub.publish(msg);
 }
 
-bool DynamixelHardwareInterface::stringToControlMode(std::string _control_modestr, ControlMode& control_mode)
+bool DynamixelServoHardwareInterface::stringToControlMode(std::string _control_modestr, ControlMode& control_mode)
 {
   /**
    * Helper method to parse strings to corresponding control modes
@@ -580,7 +577,7 @@ bool DynamixelHardwareInterface::stringToControlMode(std::string _control_modest
   }
 }
 
-bool DynamixelHardwareInterface::switchDynamixelControlMode()
+bool DynamixelServoHardwareInterface::switchDynamixelControlMode()
 {
   /**
    * This method switches the control mode of all servos
@@ -618,7 +615,7 @@ bool DynamixelHardwareInterface::switchDynamixelControlMode()
   writeTorque(torque_before_switch);
 }
 
-bool DynamixelHardwareInterface::syncReadPositions(){
+bool DynamixelServoHardwareInterface::syncReadPositions(){
   /**
    * Reads all position information with a single sync read
    */
@@ -642,7 +639,7 @@ bool DynamixelHardwareInterface::syncReadPositions(){
   return success;
 }
 
-bool DynamixelHardwareInterface::syncReadVelocities(){
+bool DynamixelServoHardwareInterface::syncReadVelocities(){
   /**
    * Reads all velocity information with a single sync read
    */
@@ -657,7 +654,7 @@ bool DynamixelHardwareInterface::syncReadVelocities(){
   return success;
 }
 
-bool DynamixelHardwareInterface::syncReadEfforts() {
+bool DynamixelServoHardwareInterface::syncReadEfforts() {
   /**
    * Reads all effort information with a single sync read
    */
@@ -672,7 +669,7 @@ bool DynamixelHardwareInterface::syncReadEfforts() {
   return success;
 }
 
-bool DynamixelHardwareInterface::syncReadError(){
+bool DynamixelServoHardwareInterface::syncReadError(){
   /**
    * Reads all error bytes with a single sync read
    */
@@ -686,7 +683,7 @@ bool DynamixelHardwareInterface::syncReadError(){
   return success;
 }
 
-bool DynamixelHardwareInterface::syncReadVoltageAndTemp(){
+bool DynamixelServoHardwareInterface::syncReadVoltageAndTemp(){
   /**
    * Reads all voltages and temperature information with a single sync read
    */
@@ -708,7 +705,7 @@ bool DynamixelHardwareInterface::syncReadVoltageAndTemp(){
   }
 }
 
-bool DynamixelHardwareInterface::syncReadAll() {
+bool DynamixelServoHardwareInterface::syncReadAll() {
   /**
    * Reads all positions, velocities and efforts with a single sync read
    */
@@ -737,7 +734,7 @@ bool DynamixelHardwareInterface::syncReadAll() {
   }
 }
 
-bool DynamixelHardwareInterface::syncWritePosition(){
+bool DynamixelServoHardwareInterface::syncWritePosition(){
   /**
    * Writes all goal positions with a single sync write
    */
@@ -751,7 +748,7 @@ bool DynamixelHardwareInterface::syncWritePosition(){
   free(goal_position);
 }
 
-bool DynamixelHardwareInterface::syncWriteVelocity() {
+bool DynamixelServoHardwareInterface::syncWriteVelocity() {
   /**
    * Writes all goal velocities with a single sync write
    */
@@ -763,7 +760,7 @@ bool DynamixelHardwareInterface::syncWriteVelocity() {
   free(goal_velocity);
 }
 
-bool DynamixelHardwareInterface::syncWriteProfileVelocity() {
+bool DynamixelServoHardwareInterface::syncWriteProfileVelocity() {
   /**
    * Writes all profile velocities with a single sync write
    */
@@ -781,7 +778,7 @@ bool DynamixelHardwareInterface::syncWriteProfileVelocity() {
   free(goal_velocity);
 }
 
-bool DynamixelHardwareInterface::syncWriteProfileAcceleration() {
+bool DynamixelServoHardwareInterface::syncWriteProfileAcceleration() {
   /**
    * Writes all profile accelerations with a single sync write
    */
@@ -799,7 +796,7 @@ bool DynamixelHardwareInterface::syncWriteProfileAcceleration() {
   free(goal_acceleration);
 }
 
-bool DynamixelHardwareInterface::syncWriteCurrent() {
+bool DynamixelServoHardwareInterface::syncWriteCurrent() {
   /**
    * Writes all goal currents with a single sync write
    */
@@ -822,7 +819,7 @@ bool DynamixelHardwareInterface::syncWriteCurrent() {
   free(goal_current);
 }
 
-bool DynamixelHardwareInterface::syncWritePWM() {
+bool DynamixelServoHardwareInterface::syncWritePWM() {
   int* goal_current = (int*)malloc(_joint_names.size() * sizeof(int));
   for (size_t num = 0; num < _joint_names.size(); num++) {
     if(_goal_effort[num] < 0){
@@ -858,7 +855,7 @@ bool DynamixelHardwareInterface::syncWritePWM() {
 
 }*/
 
-void DynamixelHardwareInterface::reconf_callback(bitbots_ros_control::bitbots_ros_control_paramsConfig &config, uint32_t level) {
+void DynamixelServoHardwareInterface::reconf_callback(bitbots_ros_control::bitbots_ros_control_paramsConfig &config, uint32_t level) {
   _read_position = config.read_position;
   _read_velocity = config.read_velocity;
   _read_effort = config.read_effort;
