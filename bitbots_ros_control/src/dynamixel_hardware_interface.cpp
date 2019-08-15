@@ -11,15 +11,18 @@ DynamixelHardwareInterface::DynamixelHardwareInterface()
   : first_cycle_(true), _read_position(true), _read_velocity(false), _read_effort(true), _driver(new DynamixelDriver())
 {}
 
-bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
-{
+bool DynamixelHardwareInterface::init(ros::NodeHandle& nh){
+  /*
+  * This initializes the hardware interface based on the values set in the config.
+  * The servos are pinged to verify that a connection is present and to know which type of servo it is.
+  */
   _nh = nh;
   _lost_servo_connection = false;
 
   // Init subscriber / publisher
   _switch_individual_torque = false;
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this, ros::TransportHints().tcpNoDelay());
-  _set_torque_indiv_sub = nh.subscribe<bitbots_msgs::JointTorque>("set_torque_individual", 1, &DynamixelHardwareInterface::setTorqueForServos, this, ros::TransportHints().tcpNoDelay());
+  _set_torque_indiv_sub = nh.subscribe<bitbots_msgs::JointTorque>("set_torque_individual", 1, &DynamixelHardwareInterface::individualTorqueCb, this, ros::TransportHints().tcpNoDelay());
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
   _button_pub = nh.advertise<bitbots_buttons::Buttons>("/buttons", 1, this);
@@ -44,7 +47,6 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   float protocol_version;
   nh.getParam("dynamixels/port_info/protocol_version", protocol_version);
   _driver->setPacketHandler(protocol_version);
-  
 
   // alloc memory for imu values
   _orientation = (double*) malloc(4 * sizeof(double));
@@ -84,8 +86,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   }
 
   // Load dynamixel config from parameter server
-  if (!loadDynamixels(nh))
-  {
+  if (!loadDynamixels(nh)){
     ROS_ERROR_STREAM("Failed to ping all motors.");
     speak("Failed to ping all motors.");
     return false;
@@ -107,6 +108,8 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
 
   // Switch dynamixels to correct control mode (position, velocity, effort)
   switchDynamixelControlMode();
+
+  // allocate correct memory for number of used joints
   _joint_count = _joint_names.size();
   _current_position.resize(_joint_count, 0);
   _current_velocity.resize(_joint_count, 0);
@@ -114,7 +117,6 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   _current_input_voltage.resize(_joint_count, 0);
   _current_temperature.resize(_joint_count, 0);
   _current_error.resize(_joint_count, 0);
-
   _goal_position.resize(_joint_count, 0);
   _goal_velocity.resize(_joint_count, 0);
   _goal_acceleration.resize(_joint_count, 0);
@@ -131,9 +133,8 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
     sleep(1);
   }
 
-  // register interfaces
-  for (unsigned int i = 0; i < _joint_names.size(); i++)
-  {
+  // register ros_control interfaces
+  for (unsigned int i = 0; i < _joint_names.size(); i++){
     hardware_interface::JointStateHandle state_handle(_joint_names[i], &_current_position[i], &_current_velocity[i], &_current_effort[i]);
     _jnt_state_interface.registerHandle(state_handle);
 
@@ -151,38 +152,30 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
 
   }
   registerInterface(&_jnt_state_interface);
-  if (_control_mode == PositionControl)
-  {
+  if (_control_mode == PositionControl){
     //registerInterface(&_jnt_pos_interface);
     //todo hack
     registerInterface(&_jnt_posvelacccur_interface);
-  } else if (_control_mode == VelocityControl)
-  {
+  } else if (_control_mode == VelocityControl){
     registerInterface(&_jnt_vel_interface);
-  } else if (_control_mode == EffortControl)
-  {
+  } else if (_control_mode == EffortControl){
     registerInterface(&_jnt_eff_interface);
   } else if(_control_mode == CurrentBasedPositionControl ){
     registerInterface(&_jnt_posvelacccur_interface);
   }
 
-  setTorque(nh.param("dynamixels/auto_torque", false));
+  writeTorque(nh.param("dynamixels/auto_torque", false));
 
   ROS_INFO("Hardware interface init finished.");
   speak("ros control startup successful");
   return true;
 }
 
-void DynamixelHardwareInterface::update_pid(std_msgs::BoolConstPtr msg){
-  _update_pid = true;
-}
-
-bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
-{
-  /*
-  Load config and try to ping servos to test if everything is correct.
-  Adds all dynamixel to the driver if they are pingable.
-  */
+bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh){
+  /**
+   * Load config and try to ping servos to test if everything is correct.
+   * Adds all dynamixel to the driver if they are pingable.
+   */
   bool success = true;
 
   // prepare diagnostic msg
@@ -219,9 +212,11 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
     dxls.emplace_back(name, id);
   }
 
+  // sort the servos by id. This way the servos will always be read and written in ID order later, making debug easier.
   std::sort(dxls.begin(), dxls.end(),
         [](std::pair<std::string, int>& a, std::pair<std::string, int>& b) { return a.second < b.second; });
 
+  // iterate over all servos and load each into the driver
   for(std::pair<std::string, int> &joint : dxls) {
     std::string dxl_name = joint.first;
     _joint_names.push_back(dxl_name);
@@ -250,6 +245,7 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
     _joint_ids.push_back(uint8_t(motor_id));
   }
 
+  // generate a diagnostic message
   _status_board.level = diagnostic_msgs::DiagnosticStatus::OK;
   _status_board.message = "DXL board started";
   array.push_back(_status_board);
@@ -263,14 +259,16 @@ bool DynamixelHardwareInterface::loadDynamixels(ros::NodeHandle& nh)
 }
 
 bool DynamixelHardwareInterface::writeROMRAM(ros::NodeHandle& nh){
+  /**
+   * This method writes the ROM and RAM values specified in the config to all servos.
+   */
   ROS_INFO("Writing ROM and RAM values");
   XmlRpc::XmlRpcValue dxls;
   nh.getParam("dynamixels/ROM_RAM", dxls);
   ROS_ASSERT(dxls.getType() == XmlRpc::XmlRpcValue::TypeStruct);
   bool sucess = true;
   int i = 0;  
-  for(XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = dxls.begin(); it != dxls.end(); ++it)
-  {
+  for(XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = dxls.begin(); it != dxls.end(); ++it){
     std::string register_name = (std::string)(it->first);
     int register_value;
     nh.getParam(("dynamixels/ROM_RAM/" + register_name).c_str(), register_value);
@@ -310,7 +308,7 @@ diagnostic_msgs::DiagnosticStatus DynamixelHardwareInterface::createServoDiagMsg
 
 void DynamixelHardwareInterface::processVTE(bool success){
   /**
-   *  This processses the data for voltage, temperature and error
+   *  This processes the data for voltage, temperature and error of the servos. It is mainly used as diagnostic message.
    */
 
   // prepare diagnostic msg
@@ -331,7 +329,7 @@ void DynamixelHardwareInterface::processVTE(bool success){
       continue;
     }
     map.insert(std::make_pair("Input Voltage", std::to_string(_current_input_voltage[i])));
-    if(_current_input_voltage[i] > _warn_volt){
+    if(_current_input_voltage[i] < _warn_volt){
       message = "Power getting low";
       level = diagnostic_msgs::DiagnosticStatus::WARN;
     }
@@ -367,7 +365,7 @@ void DynamixelHardwareInterface::processVTE(bool success){
         message = message + "Overload";
         // turn off torque on all motors
         // todo should also turn off power, but is not possible yet
-        setTorque(false);
+        goal_torque_ = false;
         ROS_ERROR("OVERLOAD ERROR!!! OVERLOAD ERROR!!! OVERLOAD ERROR!!! In Motor %d", i);
         speak("Overload Error!");
       }
@@ -379,8 +377,10 @@ void DynamixelHardwareInterface::processVTE(bool success){
   _diagnostic_pub.publish(array_msg);
 }
 
-void DynamixelHardwareInterface::setTorque(bool enabled)
-{
+void DynamixelHardwareInterface::writeTorque(bool enabled){
+  /**
+   * This writes the torque for all servos to the same value
+   */
   //only set values if we're not in torqueless mode
   if(!_torquelessMode){
       std::vector<int32_t> torque(_joint_names.size(), enabled);
@@ -390,8 +390,10 @@ void DynamixelHardwareInterface::setTorque(bool enabled)
   }
 }
 
-void DynamixelHardwareInterface::setTorqueForServos(std::vector<int32_t> torque)
-{
+void DynamixelHardwareInterface::writeTorqueForServos(std::vector<int32_t> torque){
+  /**
+   * This writes the torque off all servos individually depended on the give vector.
+   */
   //only set values if we're not in torqueless mode
   if(!_torquelessMode){
     int32_t* t = &torque[0];
@@ -400,8 +402,11 @@ void DynamixelHardwareInterface::setTorqueForServos(std::vector<int32_t> torque)
 }
 
 
-void DynamixelHardwareInterface::setTorqueForServos(bitbots_msgs::JointTorque msg)
-{
+void DynamixelHardwareInterface::individualTorqueCb(bitbots_msgs::JointTorque msg){
+  /**
+   * Handles incomming JointTroque messages and remembers the requested torque configuration of the servos.
+   * It will not directly written since this has to happen in the main write loop
+   */
   if(_torquelessMode){
     return;
   }
@@ -426,14 +431,18 @@ void DynamixelHardwareInterface::setTorqueForServos(bitbots_msgs::JointTorque ms
   _switch_individual_torque = true;
 }
 
-void DynamixelHardwareInterface::setTorque(std_msgs::BoolConstPtr enabled)
-{
-  // we save the goal torque value. It will be set during write process
+void DynamixelHardwareInterface::setTorque(std_msgs::BoolConstPtr enabled){
+  /**
+   * This saves the given required value, so that it can be written to the servos in the write method
+   */
   goal_torque_ = enabled->data;
 }
 
-bool DynamixelHardwareInterface::read()
-{
+bool DynamixelHardwareInterface::read(){
+  /**
+   * This is part of the main loop and handles reading of all connected devices
+   */
+
   if(_read_imu){
       if(!readImu()){
           ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
@@ -512,8 +521,7 @@ bool DynamixelHardwareInterface::read()
     }
   }
 
-  if (first_cycle_)
-  {
+  if (first_cycle_){
     // prevent jerky motions on startup
     _goal_position = _current_position;
     first_cycle_ = false;
@@ -544,6 +552,10 @@ bool DynamixelHardwareInterface::read()
 
 void DynamixelHardwareInterface::write()
 {
+  /**
+   * This is part of the mainloop and handles all the writing to the connected devices
+   */
+
   if(_onlySensors){
     // nothing to write when we are in sensor only mode
     return;
@@ -551,23 +563,22 @@ void DynamixelHardwareInterface::write()
 
   //check if we have to switch the torque
   if(current_torque_ != goal_torque_){
-    setTorque(goal_torque_);
+    writeTorque(goal_torque_);
   }
 
   if(_switch_individual_torque){
-    setTorqueForServos(_goal_torque_individual);
+    writeTorqueForServos(_goal_torque_individual);
     _switch_individual_torque = false;
   }
 
   // reset torques if we lost connection to them
   if(_lost_servo_connection){
     ROS_INFO_THROTTLE(5, "resetting torque after lost connection");
-    setTorqueForServos(_goal_torque_individual);
+    writeTorqueForServos(_goal_torque_individual);
     _lost_servo_connection = false;
   }
 
-  if (_control_mode == PositionControl)
-  {
+  if (_control_mode == PositionControl){
     if(_goal_effort != _last_goal_effort){
       syncWritePWM();
       _last_goal_effort = _goal_effort;
@@ -587,11 +598,9 @@ void DynamixelHardwareInterface::write()
       syncWritePosition();
       _last_goal_position =_goal_position;
     }
-  } else if (_control_mode == VelocityControl)
-  {
+  } else if (_control_mode == VelocityControl){
       syncWriteVelocity();
-  } else if (_control_mode == EffortControl)
-  {
+  } else if (_control_mode == EffortControl){
       syncWriteCurrent();
   }else if (_control_mode == CurrentBasedPositionControl){
     // only write things if it is necessary
@@ -630,16 +639,16 @@ void DynamixelHardwareInterface::speak(std::string text){
 
 bool DynamixelHardwareInterface::stringToControlMode(std::string _control_modestr, ControlMode& control_mode)
 {
-  if (_control_modestr == "position")
-  {
+  /**
+   * Helper method to parse strings to corresponding control modes
+   */
+  if (_control_modestr == "position"){
     control_mode = PositionControl;
     return true;
-  } else if (_control_modestr == "velocity")
-  {
+  } else if (_control_modestr == "velocity"){
     control_mode = VelocityControl;
     return true;
-  } else if (_control_modestr == "effort")
-  {
+  } else if (_control_modestr == "effort"){
     control_mode = EffortControl;
     return true;
   } else if (_control_modestr == "current_based"){
@@ -653,6 +662,9 @@ bool DynamixelHardwareInterface::stringToControlMode(std::string _control_modest
 
 bool DynamixelHardwareInterface::switchDynamixelControlMode()
 {
+  /**
+   * This method switches the control mode of all servos
+   */
   if(_onlySensors){
     return true;
   }
@@ -660,19 +672,16 @@ bool DynamixelHardwareInterface::switchDynamixelControlMode()
   // Torque on dynamixels has to be disabled to change operating mode
   // save last torque state for later
   bool torque_before_switch = current_torque_;
-  setTorque(false);
+  writeTorque(false);
   // magic sleep to make sure that dynamixel have internally processed the request
   ros::Duration(0.5).sleep();
 
   int32_t value = 3;
-  if (_control_mode == PositionControl)
-  {
+  if (_control_mode == PositionControl){
     value = 3;;
-  } else if (_control_mode == VelocityControl)
-  {
+  } else if (_control_mode == VelocityControl){
     value = 1;
-  } else if (_control_mode == EffortControl)
-  {
+  } else if (_control_mode == EffortControl){
     value = 0;
   }else if (_control_mode == CurrentBasedPositionControl){
     value = 5;
@@ -686,10 +695,13 @@ bool DynamixelHardwareInterface::switchDynamixelControlMode()
 
   ros::Duration(0.5).sleep();
   //reenable torque if it was previously enabled
-  setTorque(torque_before_switch);
+  writeTorque(torque_before_switch);
 }
 
 bool DynamixelHardwareInterface::syncReadPositions(){
+  /**
+   * Reads all position information with a single sync read
+   */
   bool success;
   int32_t *data = (int32_t *) malloc(_joint_count * sizeof(int32_t));
   success = _driver->syncRead("Present_Position", data);
@@ -711,6 +723,9 @@ bool DynamixelHardwareInterface::syncReadPositions(){
 }
 
 bool DynamixelHardwareInterface::syncReadVelocities(){
+  /**
+   * Reads all velocity information with a single sync read
+   */
   bool success;
   int32_t *data = (int32_t *) malloc(_joint_count * sizeof(int32_t));
   success = _driver->syncRead("Present_Velocity", data);
@@ -723,6 +738,9 @@ bool DynamixelHardwareInterface::syncReadVelocities(){
 }
 
 bool DynamixelHardwareInterface::syncReadEfforts() {
+  /**
+   * Reads all effort information with a single sync read
+   */
   bool success; //todo maybe 16bit has to be used in stead, like in the readAll method
   int32_t *data = (int32_t *) malloc(_joint_count * sizeof(int32_t));
   success = _driver->syncRead("Present_Current", data);
@@ -735,6 +753,9 @@ bool DynamixelHardwareInterface::syncReadEfforts() {
 }
 
 bool DynamixelHardwareInterface::syncReadError(){
+  /**
+   * Reads all error bytes with a single sync read
+   */
   bool success; 
   int32_t *data = (int32_t *) malloc(_joint_count * sizeof(int32_t));
   success = _driver->syncRead("Hardware_Error_Status", data);
@@ -746,6 +767,9 @@ bool DynamixelHardwareInterface::syncReadError(){
 }
 
 bool DynamixelHardwareInterface::syncReadVoltageAndTemp(){
+  /**
+   * Reads all voltages and temperature information with a single sync read
+   */
   std::vector<uint8_t> data;
   if(_driver->syncReadMultipleRegisters(144, 3, &data)) {
     uint16_t volt;
@@ -765,6 +789,9 @@ bool DynamixelHardwareInterface::syncReadVoltageAndTemp(){
 }
 
 bool DynamixelHardwareInterface::syncReadAll() {
+  /**
+   * Reads all positions, velocities and efforts with a single sync read
+   */
   std::vector<uint8_t> data;
   if(_driver->syncReadMultipleRegisters(126, 10, &data)) {
     int16_t eff;
@@ -791,6 +818,9 @@ bool DynamixelHardwareInterface::syncReadAll() {
 }
 
 bool DynamixelHardwareInterface::readImu(){
+  /**
+   * Reads the IMU
+   */
   uint8_t *data = (uint8_t *) malloc(110 * sizeof(uint8_t));
 
     if(_driver->readMultipleRegisters(241, 36, 32, data)){
@@ -823,6 +853,9 @@ bool DynamixelHardwareInterface::readImu(){
 }
 
 bool DynamixelHardwareInterface::readButtons(){
+  /**
+   * Reads the buttons
+   */
   uint8_t *data = (uint8_t *) malloc(sizeof(uint8_t));
   if(_driver->readMultipleRegisters(242, 36, 8, data)){;
     bitbots_buttons::Buttons msg;
@@ -835,6 +868,9 @@ bool DynamixelHardwareInterface::readButtons(){
 }
 
 bool DynamixelHardwareInterface::readFootSensors(){
+  /**
+   * Reads the foot pressure sensors of the BitFoots
+   */
   uint8_t *data = (uint8_t *) malloc(16 * sizeof(uint8_t));
   // read first foot
 
@@ -876,6 +912,9 @@ bool DynamixelHardwareInterface::readFootSensors(){
 
 
 bool DynamixelHardwareInterface::syncWritePosition(){
+  /**
+   * Writes all goal positions with a single sync write
+   */
   int* goal_position = (int*)malloc(_joint_names.size() * sizeof(int));
   float radian;
   for (size_t num = 0; num < _joint_names.size(); num++) {
@@ -887,6 +926,9 @@ bool DynamixelHardwareInterface::syncWritePosition(){
 }
 
 bool DynamixelHardwareInterface::syncWriteVelocity() {
+  /**
+   * Writes all goal velocities with a single sync write
+   */
   int* goal_velocity = (int*)malloc(_joint_names.size() * sizeof(int));
   for (size_t num = 0; num < _joint_names.size(); num++) {
     goal_velocity[num] = _driver->convertVelocity2Value(_joint_ids[num], _goal_velocity[num]);
@@ -896,6 +938,9 @@ bool DynamixelHardwareInterface::syncWriteVelocity() {
 }
 
 bool DynamixelHardwareInterface::syncWriteProfileVelocity() {
+  /**
+   * Writes all profile velocities with a single sync write
+   */
   int* goal_velocity = (int*)malloc(_joint_names.size() * sizeof(int));
   for (size_t num = 0; num < _joint_names.size(); num++) {
     if(_goal_velocity[num] < 0){
@@ -911,6 +956,9 @@ bool DynamixelHardwareInterface::syncWriteProfileVelocity() {
 }
 
 bool DynamixelHardwareInterface::syncWriteProfileAcceleration() {
+  /**
+   * Writes all profile accelerations with a single sync write
+   */
   int* goal_acceleration = (int*)malloc(_joint_names.size() * sizeof(int));
   for (size_t num = 0; num < _joint_names.size(); num++) {
     if(_goal_acceleration[num] < 0){
@@ -926,6 +974,9 @@ bool DynamixelHardwareInterface::syncWriteProfileAcceleration() {
 }
 
 bool DynamixelHardwareInterface::syncWriteCurrent() {
+  /**
+   * Writes all goal currents with a single sync write
+   */
   int* goal_current = (int*)malloc(_joint_names.size() * sizeof(int));
   for (size_t num = 0; num < _joint_names.size(); num++) {
     if(_goal_effort[num] < 0){

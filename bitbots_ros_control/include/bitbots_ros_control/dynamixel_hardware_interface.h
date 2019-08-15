@@ -93,10 +93,10 @@ private:
 
   bool goal_torque_;
   bool current_torque_;
-  void setTorque(bool enabled);
+  void writeTorque(bool enabled);
   void setTorque(std_msgs::BoolConstPtr enabled);
-  void setTorqueForServos(std::vector<int32_t> torque);
-  void setTorqueForServos(bitbots_msgs::JointTorque msg);
+  void writeTorqueForServos(std::vector<int32_t> torque);
+  void individualTorqueCb(bitbots_msgs::JointTorque msg);
 
 
   bool syncReadPositions();
