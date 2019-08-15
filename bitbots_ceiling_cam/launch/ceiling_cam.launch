@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <launch>
+    <!-- Transform from camera to field -->
+    <node pkg="tf" type="static_transform_publisher" name="field_mount" args="-0.051 -0.113 3.370 0.997 -0.012 0.070 0.026 ceiling_cam field 100" />
+    
     <!-- camera driver -->
     <node name="ceiling_cam" pkg="pylon_camera" type="pylon_camera_node" output="screen">
         <rosparam command="load" file="$(find bitbots_ceiling_cam)/config/camera_settings_ceiling_cam.yaml" />
