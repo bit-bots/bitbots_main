@@ -13,10 +13,6 @@ DynamixelHardwareInterface::DynamixelHardwareInterface()
 
 bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
 {
-
-  //reset tty port
-  system("tput reset > /dev/ttyACM0");
-
   _nh = nh;
   _lost_servo_connection = false;
 
@@ -45,7 +41,6 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
     sleep(1);
     exit(1);
   }
-
   float protocol_version;
   nh.getParam("dynamixels/port_info/protocol_version", protocol_version);
   _driver->setPacketHandler(protocol_version);
