@@ -1,4 +1,4 @@
-#include <bitbots_ros_control/dynamixel_hardware_interface.h>
+#include <bitbots_ros_control/dynamixel_servo_hardware_interface.h>
 #include <ros/callback_queue.h>
 #include <controller_manager/controller_manager.h>
 #include <dynamic_reconfigure/server.h>

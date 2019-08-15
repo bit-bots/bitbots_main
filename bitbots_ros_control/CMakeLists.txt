@@ -27,7 +27,7 @@ set(HEADERS
         src/wolfgang_hardware_interface.cpp include/bitbots_ros_control/wolfgang_hardware_interface.h)
 
 set(SOURCES
-  src/dynamixel_hardware_interface.cpp
+        src/dynamixel_servo_hardware_interface.cpp
   src/imu_hardware_interface.cpp
   src/bitfoot_hardware_interface.cpp
   src/button_hardware_interface.cpp

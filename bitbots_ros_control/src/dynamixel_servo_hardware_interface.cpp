@@ -1,4 +1,4 @@
-#include <bitbots_ros_control/dynamixel_hardware_interface.h>
+#include <bitbots_ros_control/dynamixel_servo_hardware_interface.h>
 #define DXL_MAKEWORD(a, b)  ((uint16_t)(((uint8_t)(((uint64_t)(a)) & 0xff)) | ((uint16_t)((uint8_t)(((uint64_t)(b)) & 0xff))) << 8))
 #define DXL_MAKEDWORD(a, b) ((uint32_t)(((uint16_t)(((uint64_t)(a)) & 0xffff)) | ((uint32_t)((uint16_t)(((uint64_t)(b)) & 0xffff))) << 16))
 
