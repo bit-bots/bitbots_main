@@ -3,6 +3,9 @@
   <include file="$(find wolfgang_description)/launch/wolfgang_rviz.launch">        
   </include>
 
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
+    </include>
+
   <!-- We do not have a robot connected, so publish fake joint states -->
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
     <param name="/use_gui" value="true"/>

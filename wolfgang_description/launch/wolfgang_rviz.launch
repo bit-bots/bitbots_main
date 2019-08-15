@@ -1,17 +1,6 @@
 <launch>
-  <arg name="gui" default="true" />
-
-  <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
-        <arg name="wolfgang" value="true"/>        
-  </include>
-
-  <param name="use_gui" value="$(arg gui)" />
-
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
-
   <node name="rviz" pkg="rviz" type="rviz" output="screen" required="true"
       args="-d $(find wolfgang_description)/config/wolfgang.rviz" >
   </node>
-
 
 </launch>
