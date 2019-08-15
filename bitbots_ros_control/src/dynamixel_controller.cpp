@@ -5,7 +5,7 @@
 namespace dynamixel_controller
 {
 bool DynamixelController::init(hardware_interface::PosVelAccCurJointInterface* hw, ros::NodeHandle &n){
-    // List of controlled joints
+    // Get list of controlled joints from paramserver
     std::string param_name = "joints";
     if(!n.getParam(param_name, joint_names_))
     {
@@ -17,7 +17,8 @@ bool DynamixelController::init(hardware_interface::PosVelAccCurJointInterface* h
     if(n_joints_ == 0){
         ROS_ERROR_STREAM("List of joint names is empty.");
         return false;
-    }   
+    }
+    // get handles for joints
     for(unsigned int i=0; i<n_joints_; i++)
     {
         try
@@ -32,8 +33,6 @@ bool DynamixelController::init(hardware_interface::PosVelAccCurJointInterface* h
         }
     }
 
-    //commands_buffer_.writeFromNonRT(std::vector<double>(n_joints_, 0.0));
-
     sub_command_ = n.subscribe("command", 1, &DynamixelController::commandCB, this, ros::TransportHints().tcpNoDelay());
     return true;
 }
@@ -42,11 +41,10 @@ void DynamixelController::starting(const ros::Time& time){}
 void DynamixelController::update(const ros::Time& /*time*/, const ros::Duration& /*period*/) {    
     std::vector<JointCommandData> & buf_data  = *commands_buffer_.readFromRT();
 
+    // set command for all registered joints
     for(unsigned int i = 0; i < buf_data.size(); i++){
         joints_[buf_data[i].id].setCommand(buf_data[i].pos, buf_data[i].vel, buf_data[i].acc, buf_data[i].cur);        
     }
-   //std::cout << ::getpid();
-
 }
 }
 PLUGINLIB_EXPORT_CLASS(dynamixel_controller::DynamixelController, controller_interface::ControllerBase)

@@ -102,7 +102,7 @@ class PressureConverter:
 
         self.pressure_pub.publish(msg)
 
-        pos = [0.085, 0.045] # hacky, maybe we should get this from tf..
+        pos = [0.085, 0.045] # todo hacky, maybe we should get this from tf..
         cop_l = PointStamped()
         cop_l.header.frame_id = "l_sole"
         cop_l.header.stamp = msg.header.stamp
