@@ -15,6 +15,7 @@ class PathfindingCapsule:
         self.orientation_threshold = 10
         self.pathfinding_pub = None  # type: rospy.Publisher
         self.goal = None  # type: PoseStamped
+        self.current_pose = None # type: PoseStamped
 
     def publish(self, msg):
         # type: (PoseStamped) -> None
@@ -70,3 +71,14 @@ class PathfindingCapsule:
             msg.pose.position.x = 0.01
             msg.pose.position.y = 0.01
         return msg
+
+    def feedback_callback(self, msg):
+        # type: (PoseStamped) -> None
+        self.current_pose = msg.feedback.base_position
+
+    def get_goal(self):
+        # type: () -> PoseStamped
+        return self.goal
+
+    def get_current_pose(self):
+        return self.current_pose

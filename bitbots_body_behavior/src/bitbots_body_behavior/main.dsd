@@ -1,14 +1,18 @@
 #GoAndKickBallMapGoal
-$BallKickArea
-    LEFT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
-    RIGHT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
-    FAR --> @GoToBall + target:map_goal
+$AlignedToGoal
+    YES --> $BallKickArea
+        LEFT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
+        RIGHT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
+        FAR --> @GoToBall + target:map_goal
+    NO -->  @GoToBall + target:map_goal
 
 #GoAndKickBallDetectionGoal
-$BallKickArea
-    LEFT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
-    RIGHT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
-    FAR --> @GoToBall + target:detection_goal
+$AlignedToGoal
+    YES --> $BallKickArea
+        LEFT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
+        RIGHT --> @Stop, @GoToRelativePosition + x:0.5 + y:0 + t:0
+        FAR --> @GoToBall + target:detection_goal
+    NO --> @GoToBall + target:detection_goal
 
 #GoAndKickBallAway
 $BallKickArea
