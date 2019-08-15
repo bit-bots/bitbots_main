@@ -12,10 +12,12 @@ field_length = 900
 field_width = 600
 goal_width = 260
 goal_area_length = 100
-goal_area_width = 500
-penalty_mark_distance = 200
+goal_area_width = 300
+penalty_area_length = 200
+penalty_area_width = 500
+penalty_mark_distance = 150
 center_circle_diameter = 150
-border_strip_width = 70
+border_strip_width = 100
 line_width = 5
 
 # Invert image image to get black on white background
@@ -48,6 +50,12 @@ goal_area_left_end = (border_strip_width + goal_area_length, field_width/2 + bor
 
 goal_area_right_start = (image_size[1] - goal_area_left_start[0], goal_area_left_start[1])
 goal_area_right_end = (image_size[1] - goal_area_left_end[0], goal_area_left_end[1])
+
+penalty_area_left_start = (border_strip_width,  border_strip_width + field_width/2 - penalty_area_width/2)
+penalty_area_left_end = (border_strip_width + penalty_area_length, field_width/2 + border_strip_width + penalty_area_width/2)
+
+penalty_area_right_start = (image_size[1] - penalty_area_left_start[0], penalty_area_left_start[1])
+penalty_area_right_end = (image_size[1] - penalty_area_left_end[0], penalty_area_left_end[1])
 
 goalpost_left_1 = (border_strip_width, border_strip_width+field_width/2 + goal_width/2)
 goalpost_left_2 = (border_strip_width, border_strip_width+field_width/2 - goal_width/2)
@@ -95,6 +103,10 @@ else:
 img_lines = cv2.rectangle(img_lines, goal_area_left_start, goal_area_left_end, color, line_width)
 img_lines = cv2.rectangle(img_lines, goal_area_right_start, goal_area_right_end, color, line_width)
 
+# Draw penalty area
+img_lines = cv2.rectangle(img_lines, penalty_area_left_start, penalty_area_left_end, color, line_width)
+img_lines = cv2.rectangle(img_lines, penalty_area_right_start, penalty_area_right_end, color, line_width)
+
 # Create black image in correct size for goalposts
 img_posts = np.zeros(image_size, np.uint8)
 
@@ -116,7 +128,7 @@ if invert:
 #cv2.destroyAllWindows()
 
 # Save images (to directory where script is executed)
-cv2.imwrite('germanopen2019.png', img_lines)
+cv2.imwrite('robocup2019.png', img_lines)
 #cv2.imwrite('spl.png', img_posts)
 
 
