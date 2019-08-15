@@ -67,7 +67,10 @@ def state_update(state_msg):
     p_pixel = np.matmul(k, p)
     p_pixel = p_pixel * (1/p_pixel[2])
 
-    if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height:
+    # make sure that the transformed pixel is inside the resolution and positive.
+    # also z has to be positive to make sure that the ball is in front of the camera and not in the back
+    if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height \
+            and ball_pose_stamped.pose.position.z > 0:
         ball = BallRelative()
         ball.header.stamp = ball_pose_stamped.header.stamp
         ball.header.frame_id = "base_footprint"
@@ -104,7 +107,8 @@ def state_update(state_msg):
         p_pixel = np.matmul(k, p)
         p_pixel = p_pixel * (1 / p_pixel[2])
         lp = False
-        if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height:
+        if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height\
+                and left_post.pose.position.z > 0:
             goal.left_post = tf_buffer.transform(left_post, "base_footprint",
                                                 timeout=rospy.Duration(0.5)).pose.position
             lp = True
@@ -115,7 +119,8 @@ def state_update(state_msg):
         p_pixel = p_pixel * (1 / p_pixel[2])
 
         rp = False
-        if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height:
+        if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height\
+            and right_post.pose.position.z:
             goal.right_post = tf_buffer.transform(right_post, "base_footprint",
                                                 timeout=rospy.Duration(0.5)).pose.position
             rp = True
