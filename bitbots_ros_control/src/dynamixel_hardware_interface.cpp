@@ -18,14 +18,12 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
   system("tput reset > /dev/ttyACM0");
 
   _nh = nh;
-  _update_pid = false;
   _lost_servo_connection = false;
 
   // Init subscriber / publisher
   _switch_individual_torque = false;
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelHardwareInterface::setTorque, this, ros::TransportHints().tcpNoDelay());
   _set_torque_indiv_sub = nh.subscribe<bitbots_msgs::JointTorque>("set_torque_individual", 1, &DynamixelHardwareInterface::setTorqueForServos, this, ros::TransportHints().tcpNoDelay());
-  _update_pid_sub = nh.subscribe<std_msgs::BoolConstPtr>("update_pid", 1, &DynamixelHardwareInterface::update_pid, this, ros::TransportHints().tcpNoDelay());
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
   _button_pub = nh.advertise<bitbots_buttons::Buttons>("/buttons", 1, this);
@@ -98,6 +96,7 @@ bool DynamixelHardwareInterface::init(ros::NodeHandle& nh)
     return false;
   }  
 
+  // init the different sync write and read commands that will maybe necessary
   _driver->addSyncWrite("Torque_Enable");
   _driver->addSyncWrite("Goal_Position");
   _driver->addSyncWrite("Goal_Velocity");
@@ -553,11 +552,6 @@ void DynamixelHardwareInterface::write()
   if(_onlySensors){
     // nothing to write when we are in sensor only mode
     return;
-  }
-
-  if(_update_pid){
-    writeROMRAM(_nh);
-    _update_pid = false;
   }
 
   //check if we have to switch the torque

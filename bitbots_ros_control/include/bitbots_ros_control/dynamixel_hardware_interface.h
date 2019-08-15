@@ -78,8 +78,7 @@ public:
   void write();
 
 private:
-  void update_pid(std_msgs::BoolConstPtr);
-  ros::NodeHandle _nh; 
+  ros::NodeHandle _nh;
 
   bool syncWritePWM();
 
@@ -160,7 +159,6 @@ private:
   bool _read_velocity;
   bool _read_effort;
   bool _read_volt_temp;
-  bool _update_pid;
   std::vector<double> _current_position;
   std::vector<double> _current_velocity;
   std::vector<double> _current_effort;
