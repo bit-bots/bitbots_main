@@ -42,3 +42,5 @@ private:
   ros::Publisher _pressure_pub;
 
 }
+
+#endif

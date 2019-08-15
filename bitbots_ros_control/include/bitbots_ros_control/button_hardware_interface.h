@@ -33,3 +33,6 @@ private:
   boost::shared_ptr<DynamixelDriver> _driver;
 
 }
+
+
+#endif

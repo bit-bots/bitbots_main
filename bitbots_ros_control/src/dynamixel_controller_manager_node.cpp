@@ -3,6 +3,7 @@
 #include <controller_manager/controller_manager.h>
 #include <dynamic_reconfigure/server.h>
 #include <bitbots_ros_control/bitbots_ros_control_paramsConfig.h>
+#include <bitbots_ros_control/wolfgang_hardware_interface.h>
 
 
 int main(int argc, char** argv)
@@ -10,29 +11,12 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "dynamixel_controller_manager");
   ros::NodeHandle pnh("~");
 
-  // init driver
-  ROS_INFO_STREAM("Loading parameters from namespace " << nh.getNamespace());
-  std::string port_name;
-  nh.getParam("dynamixels/port_info/port_name", port_name);
-  int baudrate;
-  nh.getParam("dynamixels/port_info/baudrate", baudrate);
-  boost::shared_ptr<DynamixelDriver> driver;
-  if(!driver->init(port_name.c_str(), uint32_t(baudrate))){
-    ROS_ERROR("Error opening serial port %s", port_name.c_str());
-    speak("Error opening serial port");
-    sleep(1);
-    exit(1);
-  }
-  float protocol_version;
-  nh.getParam("dynamixels/port_info/protocol_version", protocol_version);
-  driver->setPacketHandler(protocol_version);
-
   // create hardware interfaces
-  bitbots_ros_control::DynamixelHardwareInterface hw = bitbots_ros_control::DynamixelHardwareInterface(driver);
+  bitbots_ros_control::WolfgangHardwareInterface hw = bitbots_ros_control::WolfgangHardwareInterface();
 
-  // set the dynamic reconfigure and load standard params
-  dynamic_reconfigure::Server<bitbots_ros_control::bitbots_ros_control_paramsConfig> server;
-  dynamic_reconfigure::Server<bitbots_ros_control::bitbots_ros_control_paramsConfig>::CallbackType f;
+  // set the dynamic reconfigure and load standard params for servo interface
+  dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_hardware_interface_paramsConfig> server;
+  dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_hardware_interface_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_ros_control::DynamixelHardwareInterface::reconf_callback,&hw, _1, _2);
   server.setCallback(f);
 

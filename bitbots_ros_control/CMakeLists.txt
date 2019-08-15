@@ -19,14 +19,20 @@ find_package(catkin REQUIRED COMPONENTS
 
 set(HEADERS
   include/${PROJECT_NAME}/dynamixel_hardware_interface.h
+  include/${PROJECT_NAME}/imu_hardware_interface.h
+  include/${PROJECT_NAME}/bitfoot_hardware_interface.h
+  include/${PROJECT_NAME}/button_hardware_interface.h
   include/${PROJECT_NAME}/dynamixel_controller.hpp
   include/${PROJECT_NAME}/posvelacccur_command_interface.h
-)
+        src/wolfgang_hardware_interface.cpp include/bitbots_ros_control/wolfgang_hardware_interface.h)
 
 set(SOURCES
   src/dynamixel_hardware_interface.cpp
+  src/imu_hardware_interface.cpp
+  src/bitfoot_hardware_interface.cpp
+  src/button_hardware_interface.cpp
   src/dynamixel_controller.cpp
-)
+        src/wolfgang_hardware_interface.cpp include/bitbots_ros_control/wolfgang_hardware_interface.h)
 
 generate_dynamic_reconfigure_options(
         cfg/bitbots_ros_control_params.cfg
