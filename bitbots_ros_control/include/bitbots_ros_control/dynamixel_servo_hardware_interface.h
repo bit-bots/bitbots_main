@@ -21,6 +21,7 @@
 #include <dynamic_reconfigure/server.h>
 
 #include <bitbots_ros_control/dynamixel_servo_hardware_interface_paramsConfig.h>
+#include <bitbots_ros_control/utils.h>
 
 #include <dynamixel_workbench/dynamixel_driver.h>
 #include <bitset>
@@ -86,8 +87,6 @@ private:
   bool switchDynamixelControlMode();
   diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map);
   void processVTE(bool success);
-
-  void speak(std::string text);
 
   bool goal_torque_;
   bool current_torque_;

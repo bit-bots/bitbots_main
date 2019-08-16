@@ -1,9 +1,12 @@
 #include <bitbots_ros_control/dynamixel_servo_hardware_interface.h>
+
 #define DXL_MAKEWORD(a, b)  ((uint16_t)(((uint8_t)(((uint64_t)(a)) & 0xff)) | ((uint16_t)((uint8_t)(((uint64_t)(b)) & 0xff))) << 8))
 #define DXL_MAKEDWORD(a, b) ((uint32_t)(((uint16_t)(((uint64_t)(a)) & 0xffff)) | ((uint32_t)((uint16_t)(((uint64_t)(b)) & 0xffff))) << 16))
 
 namespace bitbots_ros_control
 {
+
+DynamixelServoHardwareInterface::DynamixelServoHardwareInterface(){}
 
 DynamixelServoHardwareInterface::DynamixelServoHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver)
   : first_cycle_(true), _read_position(true), _read_velocity(false), _read_effort(true){
@@ -30,7 +33,7 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
   // Load dynamixel config from parameter server
   if (!loadDynamixels(nh)){
     ROS_ERROR_STREAM("Failed to ping all motors.");
-    speak("Failed to ping all motors.");
+    speak_error(_speak_pub, "Failed to ping all motors.");
     return false;
   }  
 
@@ -130,7 +133,7 @@ bool DynamixelServoHardwareInterface::loadDynamixels(ros::NodeHandle& nh){
   ROS_INFO("Control mode: %s", control_mode.c_str() );
   if (!stringToControlMode(control_mode, _control_mode)) {
     ROS_ERROR_STREAM("Unknown control mode'" << control_mode << "'.");
-    speak("Wrong control mode specified");
+    speak_error(_speak_pub, "Wrong control mode specified");
     return false;
   }
 
@@ -302,7 +305,7 @@ void DynamixelServoHardwareInterface::processVTE(bool success){
         // todo should also turn off power, but is not possible yet
         goal_torque_ = false;
         ROS_ERROR("OVERLOAD ERROR!!! OVERLOAD ERROR!!! OVERLOAD ERROR!!! In Motor %d", i);
-        speak("Overload Error!");
+        speak_error(_speak_pub, "Overload Error!");
       }
     }
     
@@ -453,7 +456,7 @@ bool DynamixelServoHardwareInterface::read(){
   }
 
   if(_reading_errors + _reading_successes > 200 && _reading_errors / _reading_successes > 0.05){
-    speak("Multiple servo reading errors!");
+    speak_error(_speak_pub, "Multiple servo reading errors!");
     _reading_errors = 0;
     _reading_successes = 0;
   }
@@ -537,16 +540,6 @@ void DynamixelServoHardwareInterface::write()
     }
 
   }
-}
-
-void DynamixelServoHardwareInterface::speak(std::string text){
-  /**
-   *  Helper method to send a message for text-to-speech output
-   */
-  humanoid_league_msgs::Speak msg = humanoid_league_msgs::Speak();
-  msg.text = text;
-  msg.priority = humanoid_league_msgs::Speak::HIGH_PRIORITY;
-  _speak_pub.publish(msg);
 }
 
 bool DynamixelServoHardwareInterface::stringToControlMode(std::string _control_modestr, ControlMode& control_mode)

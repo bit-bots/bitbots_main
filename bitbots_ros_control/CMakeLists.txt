@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_ros_control)
+set(CMAKE_CXX_STANDARD 17)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -24,7 +25,8 @@ set(HEADERS
   include/${PROJECT_NAME}/button_hardware_interface.h
   include/${PROJECT_NAME}/dynamixel_controller.hpp
   include/${PROJECT_NAME}/posvelacccur_command_interface.h
-  include/${PROJECT_NAME}/wolfgang_hardware_interface.h)
+  include/${PROJECT_NAME}/wolfgang_hardware_interface.h
+  include/${PROJECT_NAME}/utils.h)
 
 set(SOURCES
   src/dynamixel_servo_hardware_interface.cpp
@@ -33,6 +35,8 @@ set(SOURCES
   src/button_hardware_interface.cpp
   src/dynamixel_controller.cpp
   src/wolfgang_hardware_interface.cpp
+  src/node.cpp
+  src/utils.cpp
 )
 
 generate_dynamic_reconfigure_options(
@@ -42,29 +46,16 @@ generate_dynamic_reconfigure_options(
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES bitbots_ros_control
   CATKIN_DEPENDS roscpp std_msgs dynamixel_workbench_toolbox hardware_interface controller_manager controller_interface
 )
-
-
-add_compile_options(-std=c++11)
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
 )
-add_library(bitbots_ros_control
- ${HEADERS} ${SOURCES}
-)
-add_dependencies(bitbots_ros_control 
-  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(bitbots_ros_control
-  ${catkin_LIBRARIES}
-)
 
-add_executable(dynamixel_controller_manager_node src/node.cpp)
+add_executable(node ${SOURCES})
 
-add_dependencies(dynamixel_controller_manager_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
-target_link_libraries(dynamixel_controller_manager_node bitbots_ros_control)
+add_dependencies(node ${PROJECT_NAME}_gencfg)
+target_link_libraries(node ${catkin_LIBRARIES})
+

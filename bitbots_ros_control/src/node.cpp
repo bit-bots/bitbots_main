@@ -1,21 +1,17 @@
-#include <bitbots_ros_control/dynamixel_servo_hardware_interface.h>
 #include <ros/callback_queue.h>
 #include <controller_manager/controller_manager.h>
-#include <dynamic_reconfigure/server.h>
 #include <bitbots_ros_control/bitbots_ros_control_paramsConfig.h>
 #include <bitbots_ros_control/wolfgang_hardware_interface.h>
 
 
-int main(int argc, char** argv)
-{
+int main (int argc, char *argv[]){
   ros::init(argc, argv, "dynamixel_controller_manager");
   ros::NodeHandle pnh("~");
 
   // create hardware interfaces
   bitbots_ros_control::WolfgangHardwareInterface hw = bitbots_ros_control::WolfgangHardwareInterface(pnh);
 
-  if (!hw.init(pnh))
-  {
+  if (!hw.init(pnh)){
     ROS_ERROR_STREAM("Failed to initialize hardware interface.");
     return 1;
   }
@@ -33,8 +29,7 @@ int main(int argc, char** argv)
   bool first_update = true;
   ros::Rate rate(pnh.param("control_loop_hz", 200));
 
-  while (ros::ok())
-  {    
+  while (ros::ok()){
     bool read_sucessfull = hw.read();
     ros::Duration period = ros::Time::now() - current_time;
     current_time = ros::Time::now(); 

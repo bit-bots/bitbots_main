@@ -1,4 +1,3 @@
-
 #include "bitbots_ros_control/wolfgang_hardware_interface.h"
 
 
@@ -22,7 +21,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
   boost::shared_ptr<DynamixelDriver> driver;
   if(!driver->init(port_name.c_str(), uint32_t(baudrate))){
     ROS_ERROR("Error opening serial port %s", port_name.c_str());
-    speak(_speak_pub, "Error opening serial port");
+    speak_error(_speak_pub, "Error opening serial port");
     sleep(1);
     exit(1);
   }
@@ -52,9 +51,9 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle& root_nh){
   sucess = sucess && _right_foot.init(root_nh);
   sucess = sucess && _buttons.init(root_nh);
   if(sucess) {
-    speak(_speak_pub, "ros control startup successful");
+    speak_error(_speak_pub, "ros control startup successful");
   }else{
-    speak(_speak_pub, "error starting ros control");
+    speak_error(_speak_pub, "error starting ros control");
   }
 
 }

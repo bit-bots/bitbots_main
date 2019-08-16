@@ -7,18 +7,8 @@
 #include <bitbots_ros_control/button_hardware_interface.h>
 #include <hardware_interface/robot_hw.h>
 
+
 namespace bitbots_ros_control {
-
-void speak(const ros::Publisher& speak_pub, std::string text){
-  /**
-   *  Helper method to send a message for text-to-speech output
-   */
-  humanoid_league_msgs::Speak msg = humanoid_league_msgs::Speak();
-  msg.text = text;
-  msg.priority = humanoid_league_msgs::Speak::HIGH_PRIORITY;
-  speak_pub.publish(msg);
-}
-
 
 class WolfgangHardwareInterface : public hardware_interface::RobotHW {
 public:
