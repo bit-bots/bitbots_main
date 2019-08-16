@@ -127,13 +127,16 @@ class ROS_Utils:
         models_directory = os.path.join(package_path, "models")
 
         # All models
-        model_paths = os.listdir(models_directory)
+        model_names = os.listdir(models_directory)
 
         fcnn_paths = []
         yolo_paths = []
 
+        # Sort models alphabetically
+        model_names.sort()
+
         # Iterate over every model directory
-        for folder in model_paths:
+        for folder in model_names:
             # Is this model an fcnn model
             if os.path.exists(os.path.join(models_directory, folder, "model_final.index")):
                 # Append list with a new enum item
@@ -164,8 +167,12 @@ class ROS_Utils:
         """
         # Directory in which the color spaces are saved
         color_spaces_path = os.path.join(package_path, "config/color_spaces")
+        # All color spaces
+        color_spaces = os.listdir(color_spaces_path)
+        # Sort color spaces alphabetically
+        color_spaces.sort()
         # Get all files in this directory
-        color_space_files = [file for file in os.listdir(color_spaces_path) if os.path.isfile(os.path.join(color_spaces_path, file))]
+        color_space_files = [file for file in color_spaces if os.path.isfile(os.path.join(color_spaces_path, file))]
         # Create list with a new enum item for each file
         field_color_space_enum = [{'name': cs_file, 'value': cs_file, 'description': 'yolo {}'.format(cs_file)} for cs_file in color_space_files]
 
