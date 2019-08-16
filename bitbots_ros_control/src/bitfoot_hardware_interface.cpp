@@ -3,64 +3,50 @@
 namespace bitbots_ros_control
 {
 
-BitFootHardwareInterface::BitFootHardwareInterface(){}
-
-void BitFootHardwareInterface::set_driver(boost::shared_ptr<DynamixelDriver> driver){
+BitFootHardwareInterface::BitFootHardwareInterface(boost::shared_ptr<DynamixelDriver>&){
   _driver = driver;
 }
 
 bool BitFootHardwareInterface::init(ros::NodeHandle& nh){
   _nh = nh;
-  _current_pressure.resize(8, 0);
+  _current_pressure.resize(4, 0);
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
   _pressure_pub = nh.advertise<bitbots_msgs::FootPressure>("/foot_pressure", 1, this);
+  //TODO read ID from config
+
+  hardware_interface::FootPressureSensorHandle pressure_handle(_name, _frame, _left_back, _left_front, _right_front, _right_back);
+  _pressure_interface.registerHandle(pressure_handle);
+  registerInterface(&_pressure_interface);
+
 }
 
 bool BitFootHardwareInterface::read(){
   /**
-   * Reads the foot pressure sensors of the BitFoots
+   * Reads the foot pressure sensors of the BitFoot
    */
   uint8_t *data = (uint8_t *) malloc(16 * sizeof(uint8_t));
   // read first foot
 
-  if(_driver->readMultipleRegisters(101, 36, 16, data)){
+  if(_driver->readMultipleRegisters(_id, 36, 16, data)){
     for (int i = 0; i < 4; i++) {
       int32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i*4], data[i*4+1]), DXL_MAKEWORD(data[i*4+2], data[i*4+3]));
       float pres_d = (float) pres;
       // we directly provide raw data since the scaling has to be calibrated by another node for every robot anyway
-      _current_pressure[i+4] = (double) pres_d;
-    }
-  }else{
-    ROS_ERROR_THROTTLE(3.0, "Could not read foot with ID 101 (right foot)");
-  }
-  // read second foot
-  if(_driver->readMultipleRegisters(102, 36, 16, data)){
-    for (int i = 0; i < 4; i++) {
-      int32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i*4], data[i*4+1]), DXL_MAKEWORD(data[i*4+2], data[i*4+3]));
-      float pres_d = (float) pres;
       _current_pressure[i] = (double) pres_d;
     }
-
   }else{
-    ROS_ERROR_THROTTLE(3.0, "Could not read foot with ID 102 (left foot)");
+    ROS_ERROR_THROTTLE(3.0, "Could not read foot sensor with ID %f", _id);
   }
 
-  bitbots_msgs::FootPressure msg;
-  msg.header.stamp = ros::Time::now();
-  msg.l_l_f = _current_pressure[0];
-  msg.l_r_f = _current_pressure[1];
-  msg.l_l_b = _current_pressure[2];
-  msg.l_r_b = _current_pressure[3];
-  msg.r_l_f = _current_pressure[4];
-  msg.r_r_f = _current_pressure[5];
-  msg.r_l_b = _current_pressure[6];
-  msg.r_r_b = _current_pressure[7];
-  _pressure_pub.publish(msg);
+  _left_front = _current_pressure[0];
+  _right_front = _current_pressure[1];
+  _left_back = _current_pressure[2];
+  _right_back = _current_pressure[3];
+
   return true;
 }
 
-
 // we dont write anything to the pressure sensors
-void write(){}
+void BitFootHardwareInterface::write() {
 
 }

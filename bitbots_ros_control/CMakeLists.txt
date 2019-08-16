@@ -32,7 +32,7 @@ set(SOURCES
   src/bitfoot_hardware_interface.cpp
   src/button_hardware_interface.cpp
   src/dynamixel_controller.cpp
-        src/wolfgang_hardware_interface.cpp include/bitbots_ros_control/wolfgang_hardware_interface.h)
+        src/wolfgang_hardware_interface.cpp include/bitbots_ros_control/wolfgang_hardware_interface.h include/bitbots_ros_control/foot_pressure_sensor_interface.h include/bitbots_ros_control/bitfoot_controller.h src/bit_foot_controller.cpp)
 
 generate_dynamic_reconfigure_options(
         cfg/bitbots_ros_control_params.cfg

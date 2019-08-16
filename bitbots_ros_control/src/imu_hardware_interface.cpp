@@ -5,12 +5,10 @@
 namespace bitbots_ros_control
 {
 
-ImuHardwareInterface::ImuHardwareInterface(){}
-
-
-void ImuHardwareInterface::set_driver(boost::shared_ptr<DynamixelDriver> driver){
+ImuHardwareInterface::ImuHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver)
   _driver = driver;
 }
+
 
 bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   _nh = nh;
@@ -39,12 +37,9 @@ bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   std::string imu_frame;
   nh.getParam("IMU/name", imu_name);
   nh.getParam("IMU/frame", imu_frame);
-  nh.getParam("read_imu", _read_imu);
-  if(_read_imu){
-    hardware_interface::ImuSensorHandle imu_handle(imu_name, imu_frame, _orientation, _orientation_covariance, _angular_velocity, _angular_velocity_covariance, _linear_acceleration, _linear_acceleration_covariance);
-    _imu_interface.registerHandle(imu_handle);
-    registerInterface(&_imu_interface);
-  }
+  hardware_interface::ImuSensorHandle imu_handle(imu_name, imu_frame, _orientation, _orientation_covariance, _angular_velocity, _angular_velocity_covariance, _linear_acceleration, _linear_acceleration_covariance);
+  _imu_interface.registerHandle(imu_handle);
+  registerInterface(&_imu_interface);
 
 }
 

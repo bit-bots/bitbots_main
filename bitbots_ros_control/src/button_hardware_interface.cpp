@@ -3,9 +3,7 @@
 namespace bitbots_ros_control
 {
 
-ButtonHardwareInterface::ButtonHardwareInterface(){}
-
-void ButtonHardwareInterface::set_driver(boost::shared_ptr<DynamixelDriver> driver){
+ButtonHardwareInterface::ButtonHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver){
   _driver = driver;
 }
 
@@ -32,8 +30,7 @@ bool ButtonHardwareInterface::read(){
   return false;
 }
 
-
 // we dont write anything to the buttons
-void write(){}
+void ButtonHardwareInterface::write(){}
 
 }

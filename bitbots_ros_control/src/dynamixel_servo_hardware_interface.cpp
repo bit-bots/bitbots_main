@@ -5,15 +5,10 @@
 namespace bitbots_ros_control
 {
 
-DynamixelServoHardwareInterface::DynamixelServoHardwareInterface()
+DynamixelServoHardwareInterface::DynamixelServoHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver)
   : first_cycle_(true), _read_position(true), _read_velocity(false), _read_effort(true){
+    _driver = driver;
 }
-
-
-void DynamixelServoHardwareInterface::set_driver(boost::shared_ptr<DynamixelDriver> driver){
-  _driver = driver;
-}
-
 
 bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
   /*
