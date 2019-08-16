@@ -1,13 +1,13 @@
 #color_test_params:
 #field_color_detector:
-path: '/config/testfield_color01.yaml'
+pixel_list_path: '/config/testfield_color01.yaml'
 
-lower_values_h: 70
-lower_values_s: 90
-lower_values_v: 120
-upper_values_h: 100
-upper_values_s: 140
-upper_values_v: 255
+color_test_lower_values_h: 70
+color_test_lower_values_s: 90
+color_test_lower_values_v: 120
+color_test_upper_values_h: 100
+color_test_upper_values_s: 140
+color_test_upper_values_v: 255
 
 # Subscriber
 img_msg_topic: 'image_raw'

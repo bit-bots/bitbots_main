@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 from dynamic_reconfigure.server import Server
 from bitbots_vision_tools.cfg import ColorTestConfig
 from bitbots_vision.vision_modules import color
@@ -23,6 +23,11 @@ class ColorTest:
 
         self.config = {}
 
+        # Register publisher for 'color_tester_hsv_mask_image'-messages
+        self.pub_hsv_mask_image = rospy.Publisher(
+            'color_tester_hsv_mask',
+            Image)
+
         srv = Server(ColorTestConfig, self._dynamic_reconfigure_callback)
 
         rospy.spin()
@@ -34,22 +39,11 @@ class ColorTest:
         # converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
 
-        # mask image
-        mask_img = self.color_detector.mask_image(image)
-
-        self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask_img, '8UC1'))
+        # mask (and publish) image
+        self.color_detector.mask_image(image)
 
     def _dynamic_reconfigure_callback(self, config, level):
-
-        self.color_detector = color.HsvSpaceColorDetector(config, "test")
-
-        # Register publisher for 'color_tester_mask_image'-messages
-        if 'color_tester_mask_image' not in self.config or \
-                self.config['color_tester_mask_image'] != config['color_tester_mask_image']:
-            self.imagepublisher = rospy.Publisher(
-                'color_tester_mask_image',
-                Image,
-                queue_size=1)
+        self.color_detector = color.HsvSpaceColorDetector(config, "color_test", self.pub_hsv_mask_image)
 
         # subscriber of camera image:
         if 'img_msg_topic' not in self.config or \
@@ -67,7 +61,7 @@ class ColorTest:
                 buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
 
-            self.config = config
+        self.config = config
         return config
 
 if __name__ == "__main__":
