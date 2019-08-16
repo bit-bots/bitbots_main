@@ -6,15 +6,12 @@
 
 #include <std_msgs/Bool.h>  
 #include <humanoid_league_msgs/Speak.h>
-#include <bitbots_buttons/Buttons.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Int32MultiArray.h>
 #include <bitbots_msgs/JointTorque.h>
-#include <bitbots_msgs/FootPressure.h>
 
-#include <hardware_interface/imu_sensor_interface.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <bitbots_ros_control/posvelacccur_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
@@ -71,7 +68,7 @@ class DynamixelServoHardwareInterface : public hardware_interface::RobotHW
 {
 public:
   DynamixelServoHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver);
-  void reconf_callback(bitbots_ros_control::bitbots_ros_control_paramsConfig &config, uint32_t level);
+  void reconf_callback(bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig &config, uint32_t level);
 
   bool init(ros::NodeHandle& nh);
   bool read();

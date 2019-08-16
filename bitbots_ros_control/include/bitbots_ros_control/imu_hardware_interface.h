@@ -31,13 +31,13 @@ private:
   boost::shared_ptr<DynamixelDriver> _driver;
   hardware_interface::ImuSensorInterface _imu_interface;
 
-  uint32_t _last_seq_number;
-  double* _orientation; //quaternion (x,y,z,w)
-  double* _orientation_covariance;
-  double* _angular_velocity;
-  double* _angular_velocity_covariance;
-  double* _linear_acceleration;
-  double* _linear_acceleration_covariance;
+  uint32_t _last_seq_number{};
+  double* _orientation{}; //quaternion (x,y,z,w)
+  double* _orientation_covariance{};
+  double* _angular_velocity{};
+  double* _angular_velocity_covariance{};
+  double* _linear_acceleration{};
+  double* _linear_acceleration_covariance{};
 
   diagnostic_msgs::DiagnosticStatus _status_IMU;
 

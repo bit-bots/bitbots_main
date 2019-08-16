@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 set(HEADERS
-  include/${PROJECT_NAME}/dynamixel_hardware_interface.h
+  include/${PROJECT_NAME}/dynamixel_servo_hardware_interface.h
   include/${PROJECT_NAME}/imu_hardware_interface.h
   include/${PROJECT_NAME}/bitfoot_hardware_interface.h
   include/${PROJECT_NAME}/button_hardware_interface.h
@@ -27,12 +27,12 @@ set(HEADERS
         src/wolfgang_hardware_interface.cpp include/bitbots_ros_control/wolfgang_hardware_interface.h)
 
 set(SOURCES
-        src/dynamixel_servo_hardware_interface.cpp
+  src/dynamixel_servo_hardware_interface.cpp
   src/imu_hardware_interface.cpp
   src/bitfoot_hardware_interface.cpp
   src/button_hardware_interface.cpp
   src/dynamixel_controller.cpp
-        src/wolfgang_hardware_interface.cpp include/bitbots_ros_control/wolfgang_hardware_interface.h include/bitbots_ros_control/foot_pressure_sensor_interface.h include/bitbots_ros_control/bitfoot_controller.h src/bit_foot_controller.cpp)
+  src/wolfgang_hardware_interface.cpp include/bitbots_ros_control/wolfgang_hardware_interface.h)
 
 generate_dynamic_reconfigure_options(
         cfg/bitbots_ros_control_params.cfg
@@ -62,7 +62,7 @@ target_link_libraries(bitbots_ros_control
   ${catkin_LIBRARIES}
 )
 
-add_executable(dynamixel_controller_manager_node src/dynamixel_controller_manager_node.cpp)
+add_executable(dynamixel_controller_manager_node src/node.cpp)
 
 add_dependencies(dynamixel_controller_manager_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 target_link_libraries(dynamixel_controller_manager_node bitbots_ros_control)

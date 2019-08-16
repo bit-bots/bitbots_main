@@ -15,8 +15,8 @@ public:
     void write();
 
 private:
-    // in the future we will have servos on multiple buses
-    DynamixelServoHardwareInterface _servo_bus1;
+    // in the future we will have servos on multiple buses, but currently just one
+    DynamixelServoHardwareInterface _servos;
 
     ImuHardwareInterface _imu;
     BitFootHardwareInterface _left_foot;

@@ -12,15 +12,14 @@
 #include <hardware_interface/robot_hw.h>
 #include <dynamic_reconfigure/server.h>
 
-#include <bitbots_ros_control/bitbots_ros_control_paramsConfig.h>
-
 #include <dynamixel_workbench/dynamixel_driver.h>
+
 
 namespace bitbots_ros_control {
 
 class BitFootHardwareInterface : public hardware_interface::RobotHW {
 public:
-    BitFootHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver);
+    BitFootHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver, int id, std::string topic_name);
 
     bool init(ros::NodeHandle &nh);
 
@@ -30,7 +29,6 @@ public:
 
 private:
     ros::NodeHandle _nh;
-    FootPressureSensorInterface _pressure_interface;
 
     boost::shared_ptr<DynamixelDriver> _driver;
 
@@ -39,7 +37,7 @@ private:
     ros::Publisher _pressure_pub;
 
     int _id;
-
+    std::string topic_name;
 };
 }
 #endif

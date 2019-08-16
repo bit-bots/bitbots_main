@@ -7,11 +7,10 @@
 #include <humanoid_league_msgs/Speak.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
+#include <bitbots_buttons/Buttons.h>
 
 #include <hardware_interface/robot_hw.h>
 #include <dynamic_reconfigure/server.h>
-
-#include <bitbots_ros_control/bitbots_ros_control_paramsConfig.h>
 
 #include <dynamixel_workbench/dynamixel_driver.h>
 
@@ -30,7 +29,7 @@ public:
 private:
   ros::NodeHandle _nh;
   boost::shared_ptr<DynamixelDriver> _driver;
-
+  ros::Publisher _button_pub;
 };
 }
 
