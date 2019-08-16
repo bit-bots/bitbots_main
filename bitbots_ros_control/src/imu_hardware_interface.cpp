@@ -15,7 +15,6 @@ ImuHardwareInterface::ImuHardwareInterface(boost::shared_ptr<DynamixelDriver>& d
 bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   _nh = nh;
 
-  //TODO _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
   _status_IMU.name = "IMU";
   _status_IMU.hardware_id = std::to_string(1);
 

@@ -3,6 +3,8 @@
     <arg name="sim" default="false"/>
     <arg name="use_game_settings" default="false"/>
     <arg name="torquelessMode" default="false"/>
+    <arg name="onlyImu" default="false"/>
+    <arg name="onlyPressure" default="false"/>
 
     <rosparam file="$(find bitbots_ros_control)/config/wolfgang.yaml" command="load" />
 
@@ -13,7 +15,21 @@
         <rosparam param="torquelessMode" ns="/ros_control">false</rosparam>
     </group>
 
-    <node pkg="bitbots_ros_control" type="dynamixel_controller_manager_node" name="ros_control" output="screen"/> 
+    <group if="$(arg onlyImu)">
+        <rosparam param="onlyImu" ns="/ros_control">true</rosparam>
+    </group>
+    <group unless="$(arg onlyImu)">
+        <rosparam param="onlyImu" ns="/ros_control">false</rosparam>
+    </group>
+
+    <group if="$(arg onlyPressure)">
+        <rosparam param="onlyPressure" ns="/ros_control">true</rosparam>
+    </group>
+    <group unless="$(arg onlyPressure)">
+        <rosparam param="onlyPressure" ns="/ros_control">false</rosparam>
+    </group>
+
+    <node pkg="bitbots_ros_control" type="node" name="ros_control" output="screen"/>
 
     <rosparam file="$(find bitbots_ros_control)/config/controller.yaml" command="load" />
         <group if="$(arg use_game_settings)">

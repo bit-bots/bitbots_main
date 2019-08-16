@@ -15,7 +15,6 @@ BitFootHardwareInterface::BitFootHardwareInterface(boost::shared_ptr<DynamixelDr
 bool BitFootHardwareInterface::init(ros::NodeHandle &nh) {
   _nh = nh;
   _current_pressure.resize(4, 0);
-  //TODO _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
   _pressure_pub = nh.advertise<bitbots_msgs::FootPressure>(_topic_name, 1, this);
 }
 

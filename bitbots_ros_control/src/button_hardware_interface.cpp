@@ -10,7 +10,6 @@ ButtonHardwareInterface::ButtonHardwareInterface(boost::shared_ptr<DynamixelDriv
 
 bool ButtonHardwareInterface::init(ros::NodeHandle& nh){
   _nh = nh;
-  //TODO _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
   _button_pub = nh.advertise<bitbots_buttons::Buttons>("/buttons", 1, this);
 }
 

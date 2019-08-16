@@ -69,7 +69,7 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
   _goal_torque_individual.resize(_joint_count, 1);
 
   // write ROM and RAM values if wanted
-  if(nh.param("dynamixels/set_ROM_RAM", false)){
+  if(nh.param("servos/set_ROM_RAM", false)){
     if (!writeROMRAM(nh)){
         ROS_WARN("Couldn't write ROM and RAM values to all servos.");
     }
@@ -109,7 +109,7 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
     registerInterface(&_jnt_posvelacccur_interface);
   }
 
-  writeTorque(nh.param("dynamixels/auto_torque", false));
+  writeTorque(nh.param("servos/auto_torque", false));
 
   ROS_INFO("Hardware interface init finished.");
   return true;
@@ -129,7 +129,7 @@ bool DynamixelServoHardwareInterface::loadDynamixels(ros::NodeHandle& nh){
 
   // get control mode
   std::string control_mode;
-  nh.getParam("dynamixels/control_mode", control_mode);
+  nh.getParam("servos/control_mode", control_mode);
   ROS_INFO("Control mode: %s", control_mode.c_str() );
   if (!stringToControlMode(control_mode, _control_mode)) {
     ROS_ERROR_STREAM("Unknown control mode'" << control_mode << "'.");
@@ -144,7 +144,7 @@ bool DynamixelServoHardwareInterface::loadDynamixels(ros::NodeHandle& nh){
 
 
   XmlRpc::XmlRpcValue dxls_xml;
-  nh.getParam("dynamixels/device_info", dxls_xml);
+  nh.getParam("servos/device_info", dxls_xml);
   ROS_ASSERT(dxls_xml.getType() == XmlRpc::XmlRpcValue::TypeStruct);
 
   // Convert dxls to native type: a vector of tuples with name and id for sorting purposes
@@ -164,7 +164,7 @@ bool DynamixelServoHardwareInterface::loadDynamixels(ros::NodeHandle& nh){
   for(std::pair<std::string, int> &joint : dxls) {
     std::string dxl_name = joint.first;
     _joint_names.push_back(dxl_name);
-    ros::NodeHandle dxl_nh(nh, "dynamixels/device_info/" + dxl_name);
+    ros::NodeHandle dxl_nh(nh, "servos/device_info/" + dxl_name);
 
     _joint_mounting_offsets.push_back(dxl_nh.param("mounting_offset", 0.0));
     _joint_offsets.push_back(dxl_nh.param("offset", 0.0));
@@ -202,14 +202,14 @@ bool DynamixelServoHardwareInterface::writeROMRAM(ros::NodeHandle& nh){
    */
   ROS_INFO("Writing ROM and RAM values");
   XmlRpc::XmlRpcValue dxls;
-  nh.getParam("dynamixels/ROM_RAM", dxls);
+  nh.getParam("servos/ROM_RAM", dxls);
   ROS_ASSERT(dxls.getType() == XmlRpc::XmlRpcValue::TypeStruct);
   bool sucess = true;
   int i = 0;  
   for(XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = dxls.begin(); it != dxls.end(); ++it){
     std::string register_name = (std::string)(it->first);
     int register_value;
-    nh.getParam(("dynamixels/ROM_RAM/" + register_name).c_str(), register_value);
+    nh.getParam(("servos/ROM_RAM/" + register_name).c_str(), register_value);
     ROS_INFO("Setting %s on all servos to %d", register_name.c_str(), register_value);
 
     int* values = (int*)malloc(_joint_names.size() * sizeof(int));

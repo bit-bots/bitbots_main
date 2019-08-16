@@ -12,12 +12,18 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
 
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
 
-  // init bus driver
+  // load parameters
   ROS_INFO_STREAM("Loading parameters from namespace " << nh.getNamespace());
+  nh.getParam("onlyImu", _onlyImu);
+  if(_onlyImu) ROS_WARN("Starting in only IMU mode");
+  nh.getParam("onlyPressure", _onlyPressure);
+  if(_onlyPressure) ROS_WARN("starting in only pressure sensor mode");
+
+  // init bus driver
   std::string port_name;
-  nh.getParam("dynamixels/port_info/port_name", port_name);
+  nh.getParam("port_info/port_name", port_name);
   int baudrate;
-  nh.getParam("dynamixels/port_info/baudrate", baudrate);
+  nh.getParam("port_info/baudrate", baudrate);
   boost::shared_ptr<DynamixelDriver> driver;
   if(!driver->init(port_name.c_str(), uint32_t(baudrate))){
     ROS_ERROR("Error opening serial port %s", port_name.c_str());
@@ -26,7 +32,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
     exit(1);
   }
   float protocol_version;
-  nh.getParam("dynamixels/port_info/protocol_version", protocol_version);
+  nh.getParam("port_info/protocol_version", protocol_version);
   driver->setPacketHandler(protocol_version);
 
   _servos = DynamixelServoHardwareInterface(driver);
@@ -44,34 +50,49 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
 }
 
 bool WolfgangHardwareInterface::init(ros::NodeHandle& root_nh){
-  bool sucess = true;
-  sucess = sucess && _servos.init(root_nh);
-  sucess = sucess && _imu.init(root_nh);
-  sucess = sucess && _left_foot.init(root_nh);
-  sucess = sucess && _right_foot.init(root_nh);
-  sucess = sucess && _buttons.init(root_nh);
-  if(sucess) {
+  bool success = true;
+  if(_onlyImu) {
+    success = success && _imu.init(root_nh);
+  }else if(_onlyPressure){
+    success = success && _left_foot.init(root_nh);
+    success = success && _right_foot.init(root_nh);
+  }else {
+    success = success && _servos.init(root_nh);
+    success = success && _imu.init(root_nh);
+    success = success && _left_foot.init(root_nh);
+    success = success && _right_foot.init(root_nh);
+    success = success && _buttons.init(root_nh);
+  }
+  if(success) {
     speak_error(_speak_pub, "ros control startup successful");
   }else{
     speak_error(_speak_pub, "error starting ros control");
   }
-
 }
 
 
 bool WolfgangHardwareInterface::read()
 {
-  bool sucess = true;
-  sucess = sucess && _servos.read();
-  sucess = sucess && _imu.read();
-  sucess = sucess && _left_foot.read();
-  sucess = sucess && _right_foot.read();
-  sucess = sucess && _buttons.read();
-  return sucess;
+  bool success = true;
+  if(_onlyImu){
+    success = success && _imu.read();
+  }else if(_onlyPressure){
+    success = success && _left_foot.read();
+    success = success && _right_foot.read();
+  }else{
+    success = success && _servos.read();
+    success = success && _imu.read();
+    success = success && _left_foot.read();
+    success = success && _right_foot.read();
+    success = success && _buttons.read();
+  }
+  return success;
 }
 
 void WolfgangHardwareInterface::write()
 {
-  _servos.write();
+  if(!_onlyImu && !_onlyPressure) {
+    _servos.write();
+  }
 }
 }

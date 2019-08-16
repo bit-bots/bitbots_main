@@ -29,6 +29,9 @@ private:
     ButtonHardwareInterface _buttons;
 
     ros::Publisher _speak_pub;
+
+    bool _onlyImu;
+    bool _onlyPressure;
 };
 }
 
