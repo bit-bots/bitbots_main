@@ -850,13 +850,11 @@ bool DynamixelServoHardwareInterface::syncWritePWM() {
 
 }*/
 
-void DynamixelServoHardwareInterface::reconf_callback(bitbots_ros_control::bitbots_ros_control_paramsConfig &config, uint32_t level) {
+void DynamixelServoHardwareInterface::reconf_callback(bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig &config, uint32_t level) {
   _read_position = config.read_position;
   _read_velocity = config.read_velocity;
   _read_effort = config.read_effort;
-  _read_imu = config.read_imu;
   _read_volt_temp = config.read_volt_temp;
-  _read_pressure = config.read_pressure;
   _VT_update_rate = config.VT_update_rate;
   _warn_temp = config.warn_temp;
   _warn_volt = config.warn_volt;  

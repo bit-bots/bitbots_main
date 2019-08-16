@@ -20,6 +20,7 @@ namespace bitbots_ros_control
 
 class ImuHardwareInterface : public hardware_interface::RobotHW{
 public:
+  ImuHardwareInterface();
   ImuHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver);
 
   bool init(ros::NodeHandle& nh);

@@ -5,13 +5,28 @@
 #include <bitbots_ros_control/dynamixel_servo_hardware_interface.h>
 #include <bitbots_ros_control/bitfoot_hardware_interface.h>
 #include <bitbots_ros_control/button_hardware_interface.h>
+#include <hardware_interface/robot_hw.h>
 
 namespace bitbots_ros_control {
 
-class WolfgangHardwareInterface: public hardware_interface::RobotHW{
+void speak(const ros::Publisher& speak_pub, std::string text){
+  /**
+   *  Helper method to send a message for text-to-speech output
+   */
+  humanoid_league_msgs::Speak msg = humanoid_league_msgs::Speak();
+  msg.text = text;
+  msg.priority = humanoid_league_msgs::Speak::HIGH_PRIORITY;
+  speak_pub.publish(msg);
+}
+
+
+class WolfgangHardwareInterface : public hardware_interface::RobotHW {
 public:
-    bool init(ros::NodeHandle& nh);
+    WolfgangHardwareInterface(ros::NodeHandle& nh);
+    bool init(ros::NodeHandle &nh);
+
     bool read();
+
     void write();
 
 private:
@@ -22,6 +37,9 @@ private:
     BitFootHardwareInterface _left_foot;
     BitFootHardwareInterface _right_foot;
     ButtonHardwareInterface _buttons;
+
+    ros::Publisher _speak_pub;
 };
+}
 
 #endif //BITBOTS_ROS_CONTROL_WOLFGANG_HARDWARE_INTERFACE_H

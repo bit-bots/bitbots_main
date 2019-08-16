@@ -4,7 +4,7 @@
 
 namespace bitbots_ros_control {
 
-BitFootHardwareInterface::BitFootHardwareInterface(boost::shared_ptr<DynamixelDriver> &, int id, std::string topic_name) {
+BitFootHardwareInterface::BitFootHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver, int id, std::string topic_name) {
   _driver = driver;
   _id = id;
   _topic_name = topic_name;
@@ -33,7 +33,7 @@ bool BitFootHardwareInterface::read() {
       _current_pressure[i] = (double) pres_d;
     }
   } else {
-    ROS_ERROR_THROTTLE(3.0, "Could not read foot with ID %f", _id);
+    ROS_ERROR_THROTTLE(3.0, "Could not read foot sensor");
   }
 
   bitbots_msgs::FootPressure msg;

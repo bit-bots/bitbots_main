@@ -20,7 +20,7 @@
 #include <transmission_interface/transmission_interface.h>
 #include <dynamic_reconfigure/server.h>
 
-#include <bitbots_ros_control/bitbots_ros_control_paramsConfig.h>
+#include <bitbots_ros_control/dynamixel_servo_hardware_interface_paramsConfig.h>
 
 #include <dynamixel_workbench/dynamixel_driver.h>
 #include <bitset>
@@ -67,6 +67,7 @@ enum ControlMode {
 class DynamixelServoHardwareInterface : public hardware_interface::RobotHW
 {
 public:
+  DynamixelServoHardwareInterface();
   DynamixelServoHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver);
   void reconf_callback(bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig &config, uint32_t level);
 

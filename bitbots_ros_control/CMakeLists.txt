@@ -24,7 +24,7 @@ set(HEADERS
   include/${PROJECT_NAME}/button_hardware_interface.h
   include/${PROJECT_NAME}/dynamixel_controller.hpp
   include/${PROJECT_NAME}/posvelacccur_command_interface.h
-        src/wolfgang_hardware_interface.cpp include/bitbots_ros_control/wolfgang_hardware_interface.h)
+  include/${PROJECT_NAME}/wolfgang_hardware_interface.h)
 
 set(SOURCES
   src/dynamixel_servo_hardware_interface.cpp
@@ -32,10 +32,12 @@ set(SOURCES
   src/bitfoot_hardware_interface.cpp
   src/button_hardware_interface.cpp
   src/dynamixel_controller.cpp
-  src/wolfgang_hardware_interface.cpp include/bitbots_ros_control/wolfgang_hardware_interface.h)
+  src/wolfgang_hardware_interface.cpp
+)
 
 generate_dynamic_reconfigure_options(
         cfg/bitbots_ros_control_params.cfg
+        cfg/dynamixel_servo_hardware_interface_params.cfg
 )
 
 catkin_package(

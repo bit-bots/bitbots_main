@@ -19,6 +19,7 @@ namespace bitbots_ros_control {
 
 class BitFootHardwareInterface : public hardware_interface::RobotHW {
 public:
+    BitFootHardwareInterface();
     BitFootHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver, int id, std::string topic_name);
 
     bool init(ros::NodeHandle &nh);
@@ -37,7 +38,7 @@ private:
     ros::Publisher _pressure_pub;
 
     int _id;
-    std::string topic_name;
+    std::string _topic_name;
 };
 }
 #endif

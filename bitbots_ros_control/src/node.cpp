@@ -12,21 +12,13 @@ int main(int argc, char** argv)
   ros::NodeHandle pnh("~");
 
   // create hardware interfaces
-  bitbots_ros_control::WolfgangHardwareInterface hw = bitbots_ros_control::WolfgangHardwareInterface();
-
-  // set the dynamic reconfigure and load standard params for servo interface
-  dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_hardware_interface_paramsConfig> server;
-  dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_hardware_interface_paramsConfig>::CallbackType f;
-  f = boost::bind(&bitbots_ros_control::DynamixelServoHardwareInterface::reconf_callback,&hw, _1, _2);
-  server.setCallback(f);
+  bitbots_ros_control::WolfgangHardwareInterface hw = bitbots_ros_control::WolfgangHardwareInterface(pnh);
 
   if (!hw.init(pnh))
   {
     ROS_ERROR_STREAM("Failed to initialize hardware interface.");
     return 1;
   }
-
-  speak("ros control startup successful");
 
   // Create separate queue, because otherwise controller manager will freeze
   ros::NodeHandle nh;
@@ -46,7 +38,7 @@ int main(int argc, char** argv)
     bool read_sucessfull = hw.read();
     ros::Duration period = ros::Time::now() - current_time;
     current_time = ros::Time::now(); 
-    if(read_sucessfull){ 
+    if(read_sucessfull){ //TODO evaluate if this makes sense
       // only write something to hardware 
       if (first_update) {
         first_update = false;

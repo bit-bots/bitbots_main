@@ -20,6 +20,7 @@ namespace bitbots_ros_control
 class ButtonHardwareInterface : public hardware_interface::RobotHW
 {
 public:
+  ButtonHardwareInterface();
   ButtonHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver);
 
   bool init(ros::NodeHandle& nh);
