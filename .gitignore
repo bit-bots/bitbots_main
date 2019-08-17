@@ -49,6 +49,10 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
+# Visual Studio Code
+.vscode
+
 ### ROS template
 build/
 bin/
