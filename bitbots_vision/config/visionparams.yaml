@@ -93,8 +93,6 @@ ROS_debug_image_msg_topic: 'debug_image'
 ROS_debug_fcnn_image_msg_topic: 'fcnn_debug_image'
 ROS_field_mask_image_msg_topic: 'field_mask'
 ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'
-ROS_head_joint_msg_topic: 'joint_states'
-ROS_head_joint_state_queue_size: 1
 
 dynamic_color_space_active: true
 dynamic_color_space_publish_field_mask_image: false
