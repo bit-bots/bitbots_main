@@ -10,7 +10,7 @@ from .color import ColorDetector
 from operator import itemgetter
 
 
-class FieldBoundaryDetector:
+class FieldBoundaryDetector(object):
     def __init__(self, field_color_detector, config):
         # type: (ColorDetector, dict) -> None
         """
@@ -336,7 +336,7 @@ class IterationFieldBoundaryDetector(FieldBoundaryDetector):
         :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
         """
-        super().__init__(field_color_detector, config)
+        super(IterationFieldBoundaryDetector, self).__init__(field_color_detector, config)
 
     def _compute_field_boundary_points(self):
         """
@@ -362,7 +362,7 @@ class BinaryFieldBoundaryDetector(FieldBoundaryDetector):
         :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
         """
-        super().__init__(field_color_detector, config)
+        super(BinaryFieldBoundaryDetector, self).__init__(field_color_detector, config)
 
     def _compute_field_boundary_points(self):
         """
@@ -388,7 +388,7 @@ class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
         :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
         """
-        super().__init__(field_color_detector, config)
+        super(ReversedFieldBoundaryDetector, self).__init__(field_color_detector, config)
 
     def _compute_field_boundary_points(self):
         """
@@ -415,7 +415,7 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
         :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
         """
-        super().__init__(field_color_detector, config)
+        super(DynamicFieldBoundaryDetector, self).__init__(field_color_detector, config)
 
         self.over_horizon_algorithm = ReversedFieldBoundaryAlgorithm
         self.under_horizon_algorithm = IterationFieldBoundaryAlgorithm
