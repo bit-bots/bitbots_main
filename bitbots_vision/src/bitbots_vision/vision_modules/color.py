@@ -340,7 +340,11 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         # Initialization of parent PixelListColorDetector.
         super(DynamicPixelListColorDetector, self).__init__(config, package_path, pub_field_mask_image)
 
-        self.base_color_space = np.copy(self.color_space)
+        global dyn_color_space
+        dyn_color_space = np.copy(self.color_space)
+
+        global base_color_space
+        base_color_space = np.copy(self.color_space)
 
     def update_config(self, config):
         # type: (dict) -> None
@@ -368,10 +372,12 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         :param np.array image: image to mask
         :return np.array: masked image
         """
-        dyn_mask = VisionExtensions.maskImg(image, self.color_space)
+        global dyn_color_space
+        dyn_mask = VisionExtensions.maskImg(image, dyn_color_space)
 
         if self.publish_field_mask_img_msg:
-            static_mask = VisionExtensions.maskImg(image, self.base_color_space)
+            global base_color_space
+            static_mask = VisionExtensions.maskImg(image, base_color_space)
 
         # Toggle publishing of 'dynamic_field_mask'-messages
         if self.pub_dynamic_color_space_field_mask_image is not None and self.publish_dyn_field_mask_msg:
@@ -403,7 +409,8 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         """
         # Create temporary color space
         # Use the base color space as basis
-        color_space_temp = np.copy(self.base_color_space)
+        global base_color_space
+        color_space_temp = np.copy(base_color_space)
 
         # Adds new colors to that color space
         color_space_temp[
@@ -412,4 +419,5 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
             msg.red] = 1
 
         # Switches the reference to the new color space
-        self.color_space = color_space_temp
+        global dyn_color_space
+        dyn_color_space = color_space_temp
