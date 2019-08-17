@@ -25,7 +25,6 @@ class LineDetector:
         # Init config
         self._field_boundary_offset = config['line_detector_field_boundary_offset']
         self._linepoints_range = config['line_detector_linepoints_range']
-        self._blur_kernel_size = config['line_detector_blur_kernel_size']
 
     def set_image(self, image):
         # type: (np.matrix) -> None

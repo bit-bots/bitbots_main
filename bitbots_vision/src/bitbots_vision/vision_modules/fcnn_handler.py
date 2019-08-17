@@ -22,7 +22,6 @@ class FcnnHandler(BallDetector):
         threshold: .6  # minimal value for a candidate to be considered
         expand_stepsize: 4
         pointcloud_stepsize: 10
-        shuffle_candidate_list: false  # shuffles the list of possible candidate points
         min_ball_diameter: 15
         max_ball_diameter: 150
         publish_output: false
@@ -64,7 +63,6 @@ class FcnnHandler(BallDetector):
         self._threshold = config['threshold']  # minimal activation
         self._expand_stepsize = config['expand_stepsize']  #
         self._pointcloud_stepsize = config['pointcloud_stepsize']  #
-        self._shuffle_candidate_list = config['shuffle_candidate_list']
         self._min_candidate_diameter = config['min_candidate_diameter']
         self._max_candidate_diameter = config['max_candidate_diameter']
         self._candidate_refinement_iteration_count = \

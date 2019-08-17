@@ -202,7 +202,6 @@ class Vision:
             'threshold': config['ball_fcnn_threshold'],
             'expand_stepsize': config['ball_fcnn_expand_stepsize'],
             'pointcloud_stepsize': config['ball_fcnn_pointcloud_stepsize'],
-            'shuffle_candidate_list': config['ball_fcnn_shuffle_candidate_list'],
             'min_candidate_diameter': config['ball_fcnn_min_ball_diameter'],
             'max_candidate_diameter': config['ball_fcnn_max_ball_diameter'],
             'candidate_refinement_iteration_count': config['ball_fcnn_candidate_refinement_iteration_count'],

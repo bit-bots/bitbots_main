@@ -4,7 +4,6 @@ ball_fcnn_publish_debug_img: false  # toggles publishing of the fcnn heatmap ima
 ball_fcnn_threshold: .6  # minimal value for a candidate to be considered
 ball_fcnn_expand_stepsize: 4
 ball_fcnn_pointcloud_stepsize: 10
-ball_fcnn_shuffle_candidate_list: false  # shuffles the list of possible candidate points
 ball_fcnn_min_ball_diameter: 15
 ball_fcnn_max_ball_diameter: 150
 ball_fcnn_publish_output: false
@@ -64,7 +63,6 @@ vision_blind_threshold: 30
 
 line_detector_field_boundary_offset: 0
 line_detector_linepoints_range: 10000
-line_detector_blur_kernel_size: 9
 
 obstacle_finder_method: 'convex'  # distance, convex or step
 obstacle_color_threshold: 10
@@ -87,7 +85,6 @@ ROS_obstacle_msg_topic: 'obstacles_in_image'
 ROS_field_boundary_msg_topic: 'field_boundary_in_image'
 ROS_goal_msg_topic: 'goal_in_image'
 ROS_line_msg_topic: 'line_in_image'
-ROS_non_line_msg_topic: 'non_line_in_image'
 ROS_dynamic_color_space_msg_topic: 'dynamic_color_space'
 ROS_debug_image_msg_topic: 'debug_image'
 ROS_debug_fcnn_image_msg_topic: 'fcnn_debug_image'
