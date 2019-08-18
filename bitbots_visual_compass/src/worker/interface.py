@@ -47,4 +47,18 @@ class VisualCompass:
         """
         pass
 
+    def get_feature_map(self):
+        # type: () -> ([], [])
+        """
+        :return: returns the current feature map.
+        """
+        pass
+
+    def set_feature_map(self, feature_map):
+        # type: (([], [])) -> None
+        """
+        :return: sets a feature map.
+        """
+        pass
+
 
