@@ -28,7 +28,7 @@ class BinaryEvaluator(object):
 
         config['compass_type'] = 'multiple'
 
-        self.sample_count = 2 if config['compass_type'] == 'binary' else config['compass_multiple_feature_map_image_count']
+        self.sample_count = 2 if config['compass_type'] == 'binary' else config['compass_multiple_map_image_count']
         self.vc = VisualCompass(config)
 
     def show_img(self, image):

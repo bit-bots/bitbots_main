@@ -53,7 +53,7 @@ class VisualCompassDummyHandler():
             #TODO remove
             #self.debug_image_callback(image)
 
-            sides = config['compass_multiple_feature_map_image_count'] if config['compass_type'] == 'multiple' else 2
+            sides = config['compass_multiple_map_image_count'] if config['compass_type'] == 'multiple' else 2
             if side < sides:
                 self.debug_image_callback(image)
                 # Wurde SPACE gedrueckt

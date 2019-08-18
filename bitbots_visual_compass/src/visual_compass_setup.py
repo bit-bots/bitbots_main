@@ -106,15 +106,15 @@ class VisualCompassSetup():
 
         if self.changed_config_param(config, 'compass_type') or \
             self.changed_config_param(config, 'compass_matcher') or \
-            self.changed_config_param(config, 'compass_multiple_feature_map_image_count'):
+            self.changed_config_param(config, 'compass_multiple_map_image_count'):
 
             self.feature_map_images_count = 0
             self.processed_set_all_feature_map_images = False
 
-            rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | ground truth images: %(feature_map_count)d' % {
+            rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | map images: %(feature_map_count)d' % {
                     'type': config['compass_type'],
                     'matcher': config['compass_matcher'],
-                    'feature_map_count': config['compass_multiple_feature_map_image_count']})
+                    'feature_map_count': config['compass_multiple_map_image_count']})
 
         # Subscribe to Image-message
         if self.changed_config_param(config, 'img_msg_topic') or \
@@ -186,14 +186,14 @@ class VisualCompassSetup():
         """
         TODO docs
         """
-        config_feature_map_images_count = self.config['compass_multiple_feature_map_image_count']
+        config_feature_map_images_count = self.config['compass_multiple_map_image_count']
         if self.feature_map_images_count != config_feature_map_images_count:
-            rospy.loginfo('Visual compass: %(var)d of %(config)d ground truth images set. More images are needed.' %
+            rospy.loginfo('Visual compass: %(var)d of %(config)d map images set. More images are needed.' %
                             {'var': self.feature_map_images_count, 'config': config_feature_map_images_count})
             self.processed_set_all_feature_map_images = False
         else:
             if not(self.processed_set_all_feature_map_images):
-                rospy.loginfo('Visual compass: All ground truth images have been processed.')
+                rospy.loginfo('Visual compass: All map images have been processed.')
                 self.save_feature_map(self.config['feature_map_file_path'])
             self.processed_set_all_feature_map_images = True
 
@@ -219,7 +219,7 @@ class VisualCompassSetup():
             'device': self.hostname,
             'compass_type': self.config['compass_type'],
             'compass_matcher': self.config['compass_matcher'],
-            'compass_multiple_feature_map_image_count': self.config['compass_multiple_feature_map_image_count'],
+            'compass_multiple_map_image_count': self.config['compass_multiple_map_image_count'],
             'keypoint_count': len(keypoint_values),
             'descriptor_count': len(descriptors)}
 
@@ -232,13 +232,13 @@ class VisualCompassSetup():
         file_path = self.package_path + feature_map_file_path
         # warn, if file does exist allready
         if path.isfile(file_path):
-            rospy.logwarn('Ground truth file at: %(path)s does ALLREADY EXIST. This will be overwritten.' % {'path': file_path})
+            rospy.logwarn('Map file at: %(path)s does ALLREADY EXIST. This will be overwritten.' % {'path': file_path})
         # save keypoints in pickle file
         with open(file_path, 'wb') as f:
             pickle.dump(dump_features, f)
         info_str = "\n\t-----------------------------------------------------------------------------------------------------------------\n" + \
-        "\tSaved ground truth file at: %(path)s\n" % {'path': file_path} + \
-        "\tRUN the following command on your system (NOT THE ROBOT) to save the ground truth file in your current directory:\n" + \
+        "\tSaved map file at: %(path)s\n" % {'path': file_path} + \
+        "\tRUN the following command on your system (NOT THE ROBOT) to save the map file in your current directory:\n" + \
         "\n\tscp bitbots@%(host)s:%(path)s .\n" % {'path': file_path, 'host': self.hostname} + \
         "\t-----------------------------------------------------------------------------------------------------------------"
         rospy.loginfo(info_str)

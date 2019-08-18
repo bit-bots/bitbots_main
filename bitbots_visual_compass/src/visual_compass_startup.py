@@ -79,12 +79,12 @@ class VisualCompassStartup():
 
         if self.changed_config_param(config, 'compass_type') or \
             self.changed_config_param(config, 'compass_matcher') or \
-            self.changed_config_param(config, 'compass_multiple_feature_map_image_count'):
+            self.changed_config_param(config, 'compass_multiple_map_image_count'):
 
-            rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | ground truth images: %(feature_map_count)d' % {
+            rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | map images: %(feature_map_count)d' % {
                     'type': config['compass_type'],
                     'matcher': config['compass_matcher'],
-                    'feature_map_count': config['compass_multiple_feature_map_image_count']})
+                    'feature_map_count': config['compass_multiple_map_image_count']})
 
         # Subscribe to game state
         self.game_state_msg = rospy.Subscriber(
@@ -183,7 +183,7 @@ class VisualCompassStartup():
             # load keypoints of pickle file
             with open(file_path, 'rb') as f:
                 features = pickle.load(f)
-            rospy.loginfo('Loaded ground truth file at: %(path)s' % {'path': file_path})
+            rospy.loginfo('Loaded map file at: %(path)s' % {'path': file_path})
 
             keypoint_values = features['keypoint_values']
             descriptors = features['descriptors']
@@ -197,27 +197,27 @@ class VisualCompassStartup():
 
             return (keypoints, descriptors)
         else:
-            rospy.logerr('NO ground truth file found at: %(path)s' % {'path': file_path})
+            rospy.logerr('NO map file found at: %(path)s' % {'path': file_path})
 
     def check_meta_information(self, meta):
         # type: (dict) -> None
         """
         TODO docs
         """
-        rospy.loginfo('The ground truth file was recorded at field %(field)a at date %(date)s on device %(device)' % {
+        rospy.loginfo('The map file was recorded at field %(field)a at date %(date)s on device %(device)' % {
             'field': meta['field'], 'date': meta['date'], 'device': meta['device']})
 
         if meta['keypoint_count'] != meta['descriptor_count']:
-            rospy.logerr('Number of keypoints does not match number of descriptors in ground truth file.')
+            rospy.logerr('Number of keypoints does not match number of descriptors in map file.')
         elif meta['compass_type'] != self.config['compass_type']:
-            rospy.logwarn('Config parameter "compass_type" does not match ground truth:\n' + \
-                'config: %(config)s | ground truth: %(gt)a' % {'config': self.config['compass_type'], 'gt': meta['compass_type']})
+            rospy.logwarn('Config parameter "compass_type" does not match type in map:\n' + \
+                'config: %(config)s | map: %(map)a' % {'config': self.config['compass_type'], 'map': meta['compass_type']})
         elif meta['compass_matcher'] != self.config['compass_matcher']:
-            rospy.logwarn('Config parameter "compass_compass" does not match ground truth:\n' + \
-                'config: %(config)s | ground truth: %(gt)a' % {'config': self.config['compass_matcher'], 'gt': meta['compass_matcher']})
-        elif meta['compass_multiple_feature_map_image_count'] != self.config['compass_multiple_feature_map_image_count']:
-            rospy.logwarn('Config parameter "compass_multiple_feature_map_image_count" does not match ground truth:\n' + \
-                'config: %(config)s | ground truth: %(gt)a' % {'config': self.config['compass_multiple_feature_map_image_count'], 'gt': meta['compass_multiple_feature_map_image_count']})
+            rospy.logwarn('Config parameter "compass_compass" does not match parameter in map:\n' + \
+                'config: %(config)s | map: %(map)a' % {'config': self.config['compass_matcher'], 'map': meta['compass_matcher']})
+        elif meta['compass_multiple_map_image_count'] != self.config['compass_multiple_map_image_count']:
+            rospy.logwarn('Config parameter "compass_multiple_map_image_count" does not match parameter in map:\n' + \
+                'config: %(config)s | map: %(gt)a' % {'config': self.config['compass_multiple_map_image_count'], 'gt': meta['compass_multiple_map_image_count']})
 
     def changed_config_param(self, config, param_name):
         # type: (dict, str) -> bool

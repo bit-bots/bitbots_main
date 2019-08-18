@@ -113,7 +113,7 @@ class MultipleCompass(VisualCompassInterface):
 
     def set_config(self, config):
         self.config = config
-        self.sample_count = config['compass_multiple_feature_map_image_count']
+        self.sample_count = config['compass_multiple_map_image_count']
         self.feature_scalar_seed = float(config['compass_multiple_feature_scalar'])
         self.matcher.set_config(config)
 
