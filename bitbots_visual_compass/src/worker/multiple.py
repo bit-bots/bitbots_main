@@ -13,16 +13,16 @@ from .angle_tagger import AngleTagger
 
 
 """class ConfidenceModell:
-    
+
     def getCount(self, angle):
         pass
-    
+
     def addImage(self, angle, data):
         pass
-    
+
     def getOrdered(self):
-        
-    
+
+
     def getMax(self):
         pass # returns angle
    """
@@ -32,7 +32,7 @@ class MultipleCompass(VisualCompassInterface):
     def __init__(self, config):
 
         # ([keypoints], [descriptors])
-        self.ground_truth = ([], [])
+        self.feature_map = ([], [])
 
         # (angle, confidence, matching_count)
         self.state = (None, None)
@@ -58,19 +58,19 @@ class MultipleCompass(VisualCompassInterface):
         if 0 <= angle <= 2*math.pi:
             keypoints, descriptors = self.matcher.get_keypoints(image)
 
-            old_ground_truth_length = len(self.ground_truth[0])
-            self.ground_truth[0].extend(self.angle_tagger.tag_keypoints(angle, keypoints))
-            self.ground_truth[1].extend(descriptors)
+            old_feature_map_length = len(self.feature_map[0])
+            self.feature_map[0].extend(self.angle_tagger.tag_keypoints(angle, keypoints))
+            self.feature_map[1].extend(descriptors)
             if self.feature_scalar is None:
                 self.feature_scalar = len(descriptors) / self.feature_scalar_seed
             self.feature_scalar = statistics.mean([self.feature_scalar, len(descriptors) / self.feature_scalar_seed])
         print("feature_scalar " + str(self.feature_scalar))
 
-    def get_ground_truth_features(self):
-        return self.ground_truth
+    def get_feature_map(self):
+        return self.feature_map
 
-    def set_ground_truth_features(self, ground_truth):
-        self.ground_truth = ground_truth
+    def set_feature_map(self, feature_map):
+        self.feature_map = feature_map
 
     def _compute_state(self, matching_keypoints):
         angles = list(map(lambda x: x.angle, matching_keypoints))
@@ -86,11 +86,11 @@ class MultipleCompass(VisualCompassInterface):
         return median, confidence
 
     def process_image(self, image, resultCB=None, debugCB=None):
-        if not self.ground_truth[0]:
+        if not self.feature_map[0]:
             return
         curr_keypoints, curr_descriptors = self.matcher.get_keypoints(image)
 
-        angle_keypoints = self.matcher.match(self.ground_truth[0], np.array(self.ground_truth[1]), curr_descriptors)
+        angle_keypoints = self.matcher.match(self.feature_map[0], np.array(self.feature_map[1]), curr_descriptors)
 
         self.state = self._compute_state(angle_keypoints)
 
@@ -99,12 +99,12 @@ class MultipleCompass(VisualCompassInterface):
 
         if False:
         #if debugCB is not None:
-            matches = self.matcher.match(curr_keypoints, curr_descriptors, self.ground_truth[1])
+            matches = self.matcher.match(curr_keypoints, curr_descriptors, self.feature_map[1])
             image = self.matcher.debug_keypoints(image, curr_keypoints, (0,0,0))
 
             # TODO funktioniert nicht!!!
-            for value, _ in enumerate(self.ground_truth):
-                hue = value/float(len(self.ground_truth))
+            for value, _ in enumerate(self.feature_map):
+                hue = value/float(len(self.feature_map))
                 color = colorsys.hsv_to_rgb(hue,1,255)
                 image = self.matcher.debug_keypoints(image, matches[value][2], color)
             self.debug.print_debug_info(image, self.state, debugCB)
@@ -113,7 +113,7 @@ class MultipleCompass(VisualCompassInterface):
 
     def set_config(self, config):
         self.config = config
-        self.sample_count = config['compass_multiple_ground_truth_images_count']
+        self.sample_count = config['compass_multiple_feature_map_image_count']
         self.feature_scalar_seed = float(config['compass_multiple_feature_scalar'])
         self.matcher.set_config(config)
 

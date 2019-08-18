@@ -36,7 +36,7 @@ def initialize_evaluation(config_table_entry):
 
     config["compass_type"] = config_table_entry["compass"]
     config["compass_matcher"] = config_table_entry["matcher"]
-    config["compass_multiple_ground_truth_images_count"] = config_table_entry["samples"]
+    config["compass_multiple_feature_map_image_count"] = config_table_entry["samples"]
 
     compass = VisualCompass(config)
     print (config_table_entry["compass"] + " " + config_table_entry["matcher"] + " " + str(config_table_entry["samples"]))

@@ -30,9 +30,9 @@ class BinaryEvaluator(object):
 
         self.loader = DataLoader(self.data_path, self.dimensions, self.angle_steps)
 
-        self.sample_count = 2 if config['compass_type'] == 'binary' else config['compass_multiple_ground_truth_images_count']
+        self.sample_count = 2 if config['compass_type'] == 'binary' else config['compass_multiple_feature_map_image_count']
         self.vc = VisualCompass(config)
-    
+
     def show_img(self, image):
         cv2.imshow("Record", image)
         k = cv2.waitKey(1)
@@ -61,7 +61,7 @@ class BinaryEvaluator(object):
             print("done")
             filename = "" + str(i) + ".png"
             plt.savefig(os.path.join(self.visualization_path, filename))
-    
+
     def debug_image_callback(self, debug_image):
         return
         self.show_img(debug_image)

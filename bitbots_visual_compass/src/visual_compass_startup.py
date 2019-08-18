@@ -70,21 +70,21 @@ class VisualCompassStartup():
         TODO docs
         """
         self.compass = VisualCompass(config)
-        self.compass.set_ground_truth_features(self.load_ground_truth(config['ground_truth_file_path']))
+        self.compass.set_feature_map(self.load_feature_map(config['feature_map_file_path']))
 
         self.filter = VisualCompassFilter()
 
-        if self.changed_config_param(config, 'ground_truth_file_path'):
-            self.is_ground_truth_set = False
+        if self.changed_config_param(config, 'feature_map_file_path'):
+            self.is_feature_map_set = False
 
         if self.changed_config_param(config, 'compass_type') or \
             self.changed_config_param(config, 'compass_matcher') or \
-            self.changed_config_param(config, 'compass_multiple_ground_truth_images_count'):
+            self.changed_config_param(config, 'compass_multiple_feature_map_image_count'):
 
-            rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | ground truth images: %(ground_truth_count)d' % {
+            rospy.loginfo('Loaded configuration: compass type: %(type)s | matcher type: %(matcher)s | ground truth images: %(feature_map_count)d' % {
                     'type': config['compass_type'],
                     'matcher': config['compass_matcher'],
-                    'ground_truth_count': config['compass_multiple_ground_truth_images_count']})
+                    'feature_map_count': config['compass_multiple_feature_map_image_count']})
 
         # Subscribe to game state
         self.game_state_msg = rospy.Subscriber(
@@ -119,7 +119,7 @@ class VisualCompassStartup():
         """
         # Drops old images
         # TODO: fix
-        # image_age = rospy.get_rostime() - image_msg.header.stamp 
+        # image_age = rospy.get_rostime() - image_msg.header.stamp
         # if image_age.to_sec() > 0.1:
         #     print("Visual Compass: Dropped Image-message")  # TODO debug printer
         #     return
@@ -141,7 +141,7 @@ class VisualCompassStartup():
 
         # Filter results
         result = self.filter.filterMeasurement(compass_result_angle, compass_result_confidence, image_msg.header.stamp)
-        
+
         # Publishes the 'visual_compass'-message
         self.publish_rotation("base_footprint", image_msg.header.stamp, result[0], result[1])
 
@@ -170,13 +170,13 @@ class VisualCompassStartup():
 
 
 
-    def load_ground_truth(self, ground_truth_file_path):
+    def load_feature_map(self, feature_map_file_path):
         # type: (str) -> ([], [])
         """
         TODO docs
         """
         # generate file path
-        file_path = self.package_path + ground_truth_file_path
+        file_path = self.package_path + feature_map_file_path
         features = ([], [])
 
         if path.isfile(file_path):
@@ -215,9 +215,9 @@ class VisualCompassStartup():
         elif meta['compass_matcher'] != self.config['compass_matcher']:
             rospy.logwarn('Config parameter "compass_compass" does not match ground truth:\n' + \
                 'config: %(config)s | ground truth: %(gt)a' % {'config': self.config['compass_matcher'], 'gt': meta['compass_matcher']})
-        elif meta['compass_multiple_ground_truth_images_count'] != self.config['compass_multiple_ground_truth_images_count']:
-            rospy.logwarn('Config parameter "compass_multiple_ground_truth_images_count" does not match ground truth:\n' + \
-                'config: %(config)s | ground truth: %(gt)a' % {'config': self.config['compass_multiple_ground_truth_images_count'], 'gt': meta['compass_multiple_ground_truth_images_count']})
+        elif meta['compass_multiple_feature_map_image_count'] != self.config['compass_multiple_feature_map_image_count']:
+            rospy.logwarn('Config parameter "compass_multiple_feature_map_image_count" does not match ground truth:\n' + \
+                'config: %(config)s | ground truth: %(gt)a' % {'config': self.config['compass_multiple_feature_map_image_count'], 'gt': meta['compass_multiple_feature_map_image_count']})
 
     def changed_config_param(self, config, param_name):
         # type: (dict, str) -> bool

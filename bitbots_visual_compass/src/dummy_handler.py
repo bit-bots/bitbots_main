@@ -29,20 +29,20 @@ class VisualCompassDummyHandler():
         if isinstance(source, string):
             root_folder = os.curdir
             source = root_folder + source
-        
+
         self.video_getter = Videocv(source)
         self.video_getter.run()
 
         self.vc = VisualCompass(config)
 
         self.loop(config)
-    
+
     def debug_image_callback(self, debug_image):
         cv2.imshow("Video", debug_image)
 
     def data_callback(self, angle, confidence):
         print("Angle: {} | Confidence: {}".format(angle, confidence))
-    
+
     def loop(self, config):
         side = 0
         while True:
@@ -53,7 +53,7 @@ class VisualCompassDummyHandler():
             #TODO remove
             #self.debug_image_callback(image)
 
-            sides = config['compass_multiple_ground_truth_images_count'] if config['compass_type'] == 'multiple' else 2
+            sides = config['compass_multiple_feature_map_image_count'] if config['compass_type'] == 'multiple' else 2
             if side < sides:
                 self.debug_image_callback(image)
                 # Wurde SPACE gedrueckt
