@@ -11,7 +11,7 @@ from evaluation_data_loader import DataLoader
 from worker import VisualCompass
 
 
-class BinaryEvaluator(object):
+class MultipleEvaluator(object):
     def __init__(self, dimensions, angle_steps):
         self.dimensions = dimensions
         self.angle_steps = angle_steps

@@ -12,22 +12,6 @@ from .debug import Debug
 from .angle_tagger import AngleTagger
 
 
-"""class ConfidenceModell:
-
-    def getCount(self, angle):
-        pass
-
-    def addImage(self, angle, data):
-        pass
-
-    def getOrdered(self):
-
-
-    def getMax(self):
-        pass # returns angle
-   """
-
-
 class MultipleCompass(VisualCompassInterface):
     def __init__(self, config):
 
