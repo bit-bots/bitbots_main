@@ -28,11 +28,11 @@ class VisualCompassSetup():
     # type: () -> None
     """
     TODO docs
-    Subscribes to raw image
 
-    Trigger: 'trigger_visual_compass'-trigger
-        Gets triggered e.i. while looking at a goal side
-        Returns side
+    Subscribes to raw image
+    This sets the head behavior to a special head mode, where it scans for image features above the fieldboundary.
+    The head behavior sends a trigger message, if it reaches predefined points. If this node gets trigged the current image features are saved in our feature map.
+    Afterwards the map is saved on the robot and the robot handler can download it. Than hes is able to share it with the other robots.
     """
     def __init__(self):
         # type: () -> None

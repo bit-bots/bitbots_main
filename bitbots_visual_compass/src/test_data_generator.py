@@ -5,6 +5,9 @@ from evaluation_data_loader import DataLoader
 from worker import VisualCompass
 from pickle import dump
 
+"""
+Runs the compass in many configurations on a big dataset and saves the results in a pickle file.
+"""
 
 def generate_configs():
     config_table = []

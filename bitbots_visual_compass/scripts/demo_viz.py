@@ -10,12 +10,12 @@ from humanoid_league_msgs.msg import VisualCompassRotation
 class VisualCompassVisualization():
     # type: () -> None
     """
-    TODO docs 
+    A simple CV window that displays the current orientation messure by the visual compass.
     """
     def __init__(self):
         # type: () -> None
         """
-        TODO
+        Inits the helper
         """
         # Init ROS package
         rospack = rospkg.RosPack()
@@ -42,6 +42,9 @@ class VisualCompassVisualization():
         rospy.spin()
 
     def compass_callback(self, msg):
+        """
+        Processes the date from the visual compass and draws the graph
+        """
         canvas = np.zeros((300,300), dtype=np.uint8)
 
         angle = ((2 * math.pi - msg.orientation) - 0.5 * math.pi)
@@ -62,6 +65,6 @@ class VisualCompassVisualization():
 
         cv2.imshow("Visual Compass", img)
         cv2.waitKey(1)
-        
+
 if __name__ == '__main__':
     VisualCompassVisualization()

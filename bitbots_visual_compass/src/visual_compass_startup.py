@@ -19,15 +19,13 @@ from visual_compass_filter import VisualCompassFilter
 class VisualCompassStartup():
     # type: () -> None
     """
-    TODO docs
+    This node runs the visual compass in the game. It receives the current image and executes the visual compas worker.
+    In addition it loads the map describing the field background. In the end it executes some filters and publishes the results.
+
     Subscribes to raw image
 
-    Trigger: 'trigger_visual_compass'-trigger
-        Gets triggered e.i. while looking at a goal side
-        Returns side
-
     Publish: 'visual_compass'-messages
-        Returns side
+        Returns angle, confidence
     """
     def __init__(self):
         # type: () -> None
@@ -67,7 +65,7 @@ class VisualCompassStartup():
     def dynamic_reconfigure_callback(self, config, level):
         # type: (dict, TODO) -> None
         """
-        TODO docs
+        Dynamic reconfigure callback that sets a new configuration
         """
         self.compass = VisualCompass(config)
         self.compass.set_feature_map(self.load_feature_map(config['feature_map_file_path']))
@@ -115,7 +113,7 @@ class VisualCompassStartup():
     def image_callback(self, image_msg):
         # type: (Image) -> None
         """
-        TODO docs
+        Callback that receives the current image and runs the calculation.
         """
         # Drops old images
         # TODO: fix
@@ -131,7 +129,7 @@ class VisualCompassStartup():
     def handle_image(self, image_msg):
         # type: (Image) -> None
         """
-        TODO docs
+        Runs the visual compass worker and filter.
         """
 
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
@@ -146,6 +144,9 @@ class VisualCompassStartup():
         self.publish_rotation("base_footprint", image_msg.header.stamp, result[0], result[1])
 
     def gamestate_callback(self, msg):
+        """
+        Recives the game state to determin which side is ours.
+        """
         if msg.firstHalf:
             self.orientation_offset = 0
         else:
@@ -154,7 +155,7 @@ class VisualCompassStartup():
     def publish_rotation(self, header_frame_id, header_stamp, orientation, confidence):
         # type: (TODO, TODO, float, float) -> None
         """
-        TODO docs
+        Builds the ros message and publishes the result.
         """
         msg = VisualCompassRotation()
 
@@ -173,7 +174,7 @@ class VisualCompassStartup():
     def load_feature_map(self, feature_map_file_path):
         # type: (str) -> ([], [])
         """
-        TODO docs
+        Loads the map describing the surrounding field background
         """
         # generate file path
         file_path = self.package_path + feature_map_file_path
@@ -202,7 +203,8 @@ class VisualCompassStartup():
     def check_meta_information(self, meta):
         # type: (dict) -> None
         """
-        TODO docs
+        Ensures that the loaded map is compatible with the selected compass.
+        :param meta: meta information of the map
         """
         rospy.loginfo('The map file was recorded at field %(field)a at date %(date)s on device %(device)' % {
             'field': meta['field'], 'date': meta['date'], 'device': meta['device']})

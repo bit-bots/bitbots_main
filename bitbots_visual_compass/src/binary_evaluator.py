@@ -10,6 +10,9 @@ from worker import VisualCompass
 
 
 class BinaryEvaluator(object):
+    """
+    This is the binary evaluator. WARNING: Depriceted!!!
+    """
     def __init__(self, dimensions, angle_steps):
         self.dimensions = dimensions
         self.angle_steps = angle_steps
