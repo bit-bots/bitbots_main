@@ -204,8 +204,10 @@ class VisualCompassSetup():
         """
         converter = KeyPointConverter()
 
-        # get keypoints
+        # get keypoints and mean feature count per image
         features = self.compass.get_feature_map()
+
+        mean_feature_count = self.compass.get_mean_feature_count()
 
         # convert keypoints to basic values
         keypoints = features[0]
@@ -221,7 +223,9 @@ class VisualCompassSetup():
             'compass_matcher': self.config['compass_matcher'],
             'compass_multiple_map_image_count': self.config['compass_multiple_map_image_count'],
             'keypoint_count': len(keypoint_values),
-            'descriptor_count': len(descriptors)}
+            'descriptor_count': len(descriptors),
+            'mean_feature_count': mean_feature_count,
+        }
 
         dump_features = {
             'keypoint_values': keypoint_values,

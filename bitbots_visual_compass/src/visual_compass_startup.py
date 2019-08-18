@@ -68,7 +68,9 @@ class VisualCompassStartup():
         Dynamic reconfigure callback that sets a new configuration
         """
         self.compass = VisualCompass(config)
-        self.compass.set_feature_map(self.load_feature_map(config['feature_map_file_path']))
+        feature_map, meta_data = self.load_feature_map(config['feature_map_file_path'])
+        self.compass.set_feature_map(feature_map)
+        self.compass.set_mean_feature_count(meta_data['mean_feature_count'])
 
         self.filter = VisualCompassFilter()
 
@@ -196,7 +198,7 @@ class VisualCompassStartup():
             # convert keypoint values to cv2 Keypoints
             keypoints = [KeyPoint(kp[0], kp[1], kp[2], kp[3], kp[4], kp[5], kp[6]) for kp in keypoint_values]
 
-            return (keypoints, descriptors)
+            return ((keypoints, descriptors), meta)
         else:
             rospy.logerr('NO map file found at: %(path)s' % {'path': file_path})
 

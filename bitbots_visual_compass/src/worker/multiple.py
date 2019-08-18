@@ -27,9 +27,9 @@ class MultipleCompass(VisualCompassInterface):
 
         # config values
         self.sample_count = None
-        self.feature_scalar = None
-        self.feature_scalar_seed = None
-
+        self.mean_feature_count = None
+        self.mean_feature_count_list = []
+        self.mean_feature_count_seed = None
         self.init_matcher()
         self.set_config(config)
 
@@ -45,16 +45,21 @@ class MultipleCompass(VisualCompassInterface):
             old_feature_map_length = len(self.feature_map[0])
             self.feature_map[0].extend(self.angle_tagger.tag_keypoints(angle, keypoints))
             self.feature_map[1].extend(descriptors)
-            if self.feature_scalar is None:
-                self.feature_scalar = len(descriptors) / self.feature_scalar_seed
-            self.feature_scalar = statistics.mean([self.feature_scalar, len(descriptors) / self.feature_scalar_seed])
-        print("feature_scalar " + str(self.feature_scalar))
+            self.mean_feature_count_list.append(len(descriptors) / self.mean_feature_count_seed)
+            self.mean_feature_count = statistics.mean(self.mean_feature_count_list)
+        print("mean_feature_count " + str(self.mean_feature_count))
 
     def get_feature_map(self):
         return self.feature_map
 
+    def get_mean_feature_count(self):
+        return self.mean_feature_count
+
     def set_feature_map(self, feature_map):
         self.feature_map = feature_map
+
+    def set_mean_feature_count(self, mean_feature_count):
+        self.mean_feature_count = mean_feature_count
 
     def _compute_state(self, matching_keypoints):
         angles = list(map(lambda x: x.angle, matching_keypoints))
@@ -66,7 +71,7 @@ class MultipleCompass(VisualCompassInterface):
         z = sum(map(lambda angle: np.exp(1j * angle), angles))
         median = np.angle(z) % (math.pi * 2)
         confidence = (float(np.abs(z)) / length)
-        #confidence *= 1 - math.exp(-(1. / self.feature_scalar) * length)
+        confidence *= 1 - math.exp(-(1. / self.mean_feature_count) * length)
         return median, confidence
 
     def process_image(self, image, resultCB=None, debugCB=None):
@@ -98,7 +103,7 @@ class MultipleCompass(VisualCompassInterface):
     def set_config(self, config):
         self.config = config
         self.sample_count = config['compass_multiple_map_image_count']
-        self.feature_scalar_seed = float(config['compass_multiple_feature_scalar'])
+        self.mean_feature_count_seed = float(config['compass_multiple_mean_feature_count'])
         self.matcher.set_config(config)
 
     def get_side(self):
