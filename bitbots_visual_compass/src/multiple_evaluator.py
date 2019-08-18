@@ -93,5 +93,5 @@ class MultipleEvaluator(object):
 
 
 if __name__ == "__main__":
-    evaluator = BinaryEvaluator((10,7), 16)
+    evaluator = MultipleEvaluator((10,7), 16)
     evaluator.evaluate()
