@@ -1,6 +1,22 @@
+vision_parallelize: true
+vision_blind_threshold: 30
+
+ROS_img_msg_topic: 'image_raw'
+ROS_img_msg_queue_size: 1
+ROS_fcnn_img_msg_topic: 'fcnn_image'
+ROS_field_boundary_msg_topic: 'field_boundary_in_image'
+ROS_ball_msg_topic: 'ball_in_image'
+ROS_goal_msg_topic: 'goal_in_image'
+ROS_obstacle_msg_topic: 'obstacles_in_image'
+ROS_line_msg_topic: 'line_in_image'
+ROS_dynamic_color_space_msg_topic: 'dynamic_color_space'
+ROS_debug_image_msg_topic: 'debug_image'
+ROS_debug_fcnn_image_msg_topic: 'fcnn_debug_image'
+ROS_field_mask_image_msg_topic: 'field_mask'
+ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'
+
+fcnn_model_path: '2019_06_timon_basler'
 yolo_model_path: '2019_07_03_jonas_yolo'
-ball_fcnn_model_path: '2019_06_timon_basler'
-ball_fcnn_publish_debug_img: false  # toggles publishing of the fcnn heatmap image for debug purposes
 ball_fcnn_threshold: .6  # minimal value for a candidate to be considered
 ball_fcnn_expand_stepsize: 4
 ball_fcnn_pointcloud_stepsize: 10
@@ -9,16 +25,19 @@ ball_fcnn_max_ball_diameter: 150
 ball_fcnn_publish_output: false
 ball_fcnn_publish_field_boundary_offset: 5
 
+ball_detector_method: 'yolo_darknet'  # fcnn or yolo_opencv or yolo_darknet or dummy
+ball_candidate_field_boundary_y_offset: 0
+ball_candidate_rating_threshold: 0.5
 
+vision_use_sim_color: false
 field_color_detector_path: 'f031_basler.txt'
 field_color_detector_path_sim: 'simColor_interpolated.yaml'
-field_color_detector_use_hsv_green: false
-field_color_detector_hsv_lower_values_h: 46
-field_color_detector_hsv_lower_values_s: 101
-field_color_detector_hsv_lower_values_v: 12
-field_color_detector_hsv_upper_values_h: 98
-field_color_detector_hsv_upper_values_s: 255
-field_color_detector_hsv_upper_values_v: 255
+
+dynamic_color_space_active: true
+dynamic_color_space_queue_max_size: 20
+dynamic_color_space_threshold: 0.6
+dynamic_color_space_kernel_radius: 1
+dynamic_color_space_field_boundary_detector_search_method: 'reversed' # iteration, reversed, binary or dynamic
 
 white_color_detector_lower_values_h: 0
 white_color_detector_lower_values_s: 0
@@ -52,15 +71,6 @@ field_boundary_detector_precision_pix: 5
 field_boundary_detector_min_precision_pix: 3
 field_boundary_detector_head_tilt_threshold: 20
 
-vision_ball_detector: 'yolo_darknet'  # fcnn or yolo_opencv or yolo_darknet or dummy
-vision_publish_debug_image: false
-vision_publish_field_mask_image: false
-vision_parallelize: true
-vision_use_sim_color: false
-vision_ball_candidate_field_boundary_y_offset: 0
-vision_ball_candidate_rating_threshold: 0.5
-vision_blind_threshold: 30
-
 line_detector_field_boundary_offset: 0
 line_detector_linepoints_range: 10000
 
@@ -74,26 +84,8 @@ obstacle_candidate_max_width: 150
 obstacle_finder_step_length: 5
 obstacle_finder_value_increase: 2.0
 
-goalpost_expand_stepsize: 5
-goalpost_white_threshold: 100
-
-ROS_img_msg_topic: 'image_raw'
-ROS_img_queue_size: 1
-ROS_ball_msg_topic: 'ball_in_image'
-ROS_fcnn_img_msg_topic: 'fcnn_image'
-ROS_obstacle_msg_topic: 'obstacles_in_image'
-ROS_field_boundary_msg_topic: 'field_boundary_in_image'
-ROS_goal_msg_topic: 'goal_in_image'
-ROS_line_msg_topic: 'line_in_image'
-ROS_dynamic_color_space_msg_topic: 'dynamic_color_space'
-ROS_debug_image_msg_topic: 'debug_image'
-ROS_debug_fcnn_image_msg_topic: 'fcnn_debug_image'
-ROS_field_mask_image_msg_topic: 'field_mask'
-ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'
-
-dynamic_color_space_active: true
+vision_publish_debug_image: false
+ball_fcnn_publish_debug_img: false  # toggles publishing of the fcnn heatmap image for debug purposes
+vision_publish_field_mask_image: false
 dynamic_color_space_publish_field_mask_image: false
-dynamic_color_space_queue_max_size: 20
-dynamic_color_space_threshold: 0.6
-dynamic_color_space_kernel_radius: 1
-dynamic_color_space_field_boundary_detector_search_method: 'reversed' # iteration, reversed, binary or dynamic
+
