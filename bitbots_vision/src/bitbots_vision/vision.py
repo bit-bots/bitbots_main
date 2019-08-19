@@ -194,19 +194,6 @@ class Vision:
         self.blue_obstacle_detector = obstacle.BlueObstacleDetector(self.obstacle_detector)
         self.unknown_obstacle_detector = obstacle.UnknownObstacleDetector(self.obstacle_detector)
 
-        # Set up ball config for fcnn
-        # These config params have domain-specific names which could be problematic for fcnn handlers handling e.g. goal candidates
-        # This enables support for several FCNNs with different configs.
-        self.ball_fcnn_config = {
-            'debug': config['ball_fcnn_publish_debug_img'],
-            'threshold': config['ball_fcnn_threshold'],
-            'expand_stepsize': config['ball_fcnn_expand_stepsize'],
-            'pointcloud_stepsize': config['ball_fcnn_pointcloud_stepsize'],
-            'min_candidate_diameter': config['ball_fcnn_min_ball_diameter'],
-            'max_candidate_diameter': config['ball_fcnn_max_ball_diameter'],
-            'candidate_refinement_iteration_count': config['ball_fcnn_candidate_refinement_iteration_count'],
-        }
-
         # If dummy ball detection is activated, set the dummy ballfinder as ball detector
         if config['ball_detector_method'] == 'dummy':
             self.ball_detector = dummy_ballfinder.DummyBallDetector()
@@ -223,11 +210,11 @@ class Vision:
                 else:
                     self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
                     rospy.loginfo("FCNN vision is running now")
-            #Check if ball_fcnn or vision_ball config has changed
-            if ROS_Utils.config_param_change(self.config, config, r'^(ball_fcnn_)|(vision_ball_)'):
+            #Check if ball_fcnn config has changed
+            if ROS_Utils.config_param_change(self.config, config, r'^ball_fcnn_'):
                 self.ball_detector = fcnn_handler.FcnnHandler(
                     self.ball_fcnn,
-                    self.ball_fcnn_config)
+                    config)
 
         # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
         if config['ball_detector_method'] in ['yolo_opencv', 'yolo_darknet']:
