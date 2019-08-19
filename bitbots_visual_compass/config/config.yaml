@@ -9,18 +9,18 @@ img_msg_topic: 'image_raw'
 img_msg_queue_size: 1
 
 # Subscriber to a std_msgs Header message to trigger the visual compass setup
-# This will add features of the latest image to the ground truth
-ground_truth_trigger_topic: '/visual_compass_ground_truth_trigger'
-ground_truth_trigger_queue_size: 5
+# This will add features of the latest image to the map
+feature_map_trigger_topic: '/visual_compass_ground_truth_trigger'
+feature_map_trigger_queue_size: 5
 
 # Maximum number of frames per second in ROS
 max_fps: 1.0
 
-# Path to the ground truth file in the package
-ground_truth_file_path: '/config/ground_truth/dummy.pickle'
+# Path to the map file in the package
+feature_map_file_path: '/config/feature_map/dummy.pickle'
 
-# Field on which the ground truth was recorded
-ground_truth_field: 'unknown'
+# Field on which the map was recorded
+feature_map_field: 'unknown'
 
 
 # Compass type
@@ -35,11 +35,11 @@ compass_matcher: 'sift'
 # Compass type binary
 
 # Compass type multiple
-# Count of images to compute the ground truth
-compass_multiple_ground_truth_images_count: 23
+# Count of images to compute the map
+compass_multiple_map_image_count: 23
 
-# Big compass_multiple_feature_scalar -> small confidence for few found features
-compass_multiple_feature_scalar: 10
+# Big compass_multiple_mean_feature_count -> small confidence for few found features
+compass_multiple_mean_feature_count: 10
 
 # akaze
 # TODO

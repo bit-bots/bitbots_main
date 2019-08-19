@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
 import numpy as np
-from evaluation_data_loader import DataLoader
 
 
 class Comparer(object):

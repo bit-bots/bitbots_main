@@ -2,6 +2,9 @@ import yaml
 import os
 import math
 
+"""
+A script used to correct the angles in our test data.
+"""
 
 def correct():
     data_path = os.path.dirname(__file__)

@@ -10,6 +10,9 @@ from worker import VisualCompass
 
 
 class BinaryEvaluator(object):
+    """
+    This is the binary evaluator. WARNING: Depriceted!!!
+    """
     def __init__(self, dimensions, angle_steps):
         self.dimensions = dimensions
         self.angle_steps = angle_steps
@@ -23,14 +26,14 @@ class BinaryEvaluator(object):
 
         relative_data_path = config['evaluation_data']
         self.data_path = os.path.join(dirname, relative_data_path)
-        
+
         self.loader = DataLoader(self.data_path, self.dimensions, self.angle_steps)
 
         config['compass_type'] = 'multiple'
-        
-        self.sample_count = 2 if config['compass_type'] == 'binary' else config['compass_multiple_ground_truth_images_count']
+
+        self.sample_count = 2 if config['compass_type'] == 'binary' else config['compass_multiple_map_image_count']
         self.vc = VisualCompass(config)
-    
+
     def show_img(self, image):
         cv2.imshow("Record", image)
         k = cv2.waitKey(1)
@@ -47,7 +50,7 @@ class BinaryEvaluator(object):
             self.show_img(image)
             time.sleep(0.5)
         cv2.destroyAllWindows()
-    
+
     def debug_image_callback(self, debug_image):
         return
         self.show_img(debug_image)
@@ -66,16 +69,16 @@ class BinaryEvaluator(object):
                 for angle in [4,12]: #,12]:# range(self.angle_steps):
                     image = self.loader.get_image(row, checkpoint, float(angle) / 16 * 2 * math.pi)
                     # self.show_img(image)
-                    ground_truth = float(angle - 4)/16*2*math.pi
+                    feature_map = float(angle - 4)/16*2*math.pi
                     compass_result = self.vc.process_image(image, debugCB=self.debug_image_callback)
                     confidence = compass_result[1]
                     fail_val = 0.0
-                    if (abs(ground_truth - compass_result[0]) > 0.0001 and compass_result[1] > confidence_threshold):
-                        print("Bad detection", compass_result[0], ground_truth)
+                    if (abs(feature_map - compass_result[0]) > 0.0001 and compass_result[1] > confidence_threshold):
+                        print("Bad detection", compass_result[0], feature_map)
                         fail += 1
                         fail_val = 1.0
                     if compass_result[1] <= confidence_threshold:
-                        if abs(ground_truth - compass_result[0]) > 0.0001:
+                        if abs(feature_map - compass_result[0]) > 0.0001:
                             print("Filtered false positive")
                         # self.show_img(image)
                         unsave += 1

@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import math
-import colorsys 
+import colorsys
 from .matcher import Matcher
 from .interface import VisualCompass as VisualCompassInterface
 from .debug import Debug
@@ -48,11 +48,11 @@ class BinaryCompass(VisualCompassInterface):
         else:
             self.groundTruth[1] = self.matcher.get_keypoints(image)[1]
 
-    def get_ground_truth_features(self):
+    def get_feature_map(self):
         return self.groundTruth
 
-    def set_ground_truth_features(self, ground_truth):
-        self.groundTruth = ground_truth
+    def set_feature_map(self, feature_map):
+        self.groundTruth = feature_map
 
     def set_config(self, config):
         self.config = config
@@ -61,7 +61,7 @@ class BinaryCompass(VisualCompassInterface):
     def _compute_state(self, matches):
         angle = 0 if matches[0] > matches[1] else math.pi
 
-        confidence = (abs(matches[0] - matches[1])/(float(sum(matches) + 1)))**(1/float(3)) 
+        confidence = (abs(matches[0] - matches[1])/(float(sum(matches) + 1)))**(1/float(3))
         return angle, confidence
 
     def get_side(self):

@@ -11,7 +11,7 @@ from evaluation_data_loader import DataLoader
 from worker import VisualCompass
 
 
-class BinaryEvaluator(object):
+class MultipleEvaluator(object):
     def __init__(self, dimensions, angle_steps):
         self.dimensions = dimensions
         self.angle_steps = angle_steps
@@ -30,9 +30,9 @@ class BinaryEvaluator(object):
 
         self.loader = DataLoader(self.data_path, self.dimensions, self.angle_steps)
 
-        self.sample_count = 2 if config['compass_type'] == 'binary' else config['compass_multiple_ground_truth_images_count']
+        self.sample_count = 2 if config['compass_type'] == 'binary' else config['compass_multiple_map_image_count']
         self.vc = VisualCompass(config)
-    
+
     def show_img(self, image):
         cv2.imshow("Record", image)
         k = cv2.waitKey(1)
@@ -61,7 +61,7 @@ class BinaryEvaluator(object):
             print("done")
             filename = "" + str(i) + ".png"
             plt.savefig(os.path.join(self.visualization_path, filename))
-    
+
     def debug_image_callback(self, debug_image):
         return
         self.show_img(debug_image)
@@ -93,5 +93,5 @@ class BinaryEvaluator(object):
 
 
 if __name__ == "__main__":
-    evaluator = BinaryEvaluator((10,7), 16)
+    evaluator = MultipleEvaluator((10,7), 16)
     evaluator.evaluate()

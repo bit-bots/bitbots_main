@@ -8,6 +8,10 @@ from tf.transformations import euler_from_quaternion
 import numpy as np
 
 class VisualCompassFilter:
+    """
+    Some kind of complementary filter to filter the visual compass data.
+    This reduces noise and adds an interpolation if the confidences are too low.
+    """
     def __init__(self):
 
         # TODO config file
@@ -92,7 +96,7 @@ class VisualCompassFilter:
         # Correct by odom difference
         odomCorrectedVector = self._rotateVectorByAngle(vector, odomOffsetYawAngle)
         return odomCorrectedVector
-    
+
     def _angleToVector(self, angle, confidence):
         # Generate a vector from an angle and an confidence input
         return np.array([math.sin(angle) * confidence,
@@ -119,12 +123,12 @@ class VisualCompassFilter:
     def _getYawFromTf(self, frame1, frame2, stamp, timeout=0.5):
         # Make a tf and get the yaw angle
         orientation = self.tf_buffer.lookup_transform(frame1, frame2, stamp, timeout=rospy.Duration(timeout)).transform.rotation
-        yaw_angle = (euler_from_quaternion((orientation.x, 
-                                            orientation.y, 
-                                            orientation.z, 
+        yaw_angle = (euler_from_quaternion((orientation.x,
+                                            orientation.y,
+                                            orientation.z,
                                             orientation.w))[2]) % (2 * math.pi)
         return yaw_angle
-    
+
     def getFilteredValue(self):
         # Returns the filter value corrected by the newest odom offset (in development)
         now = rospy.Time.now()

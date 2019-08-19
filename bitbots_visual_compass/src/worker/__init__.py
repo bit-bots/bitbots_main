@@ -38,11 +38,19 @@ class VisualCompass(VisualCompassInterface):
     def set_truth(self, angle, image):
         return self.compass.set_truth(angle, image)
 
-    def get_ground_truth_features(self):
-        return self.compass.get_ground_truth_features()
+    def get_feature_map(self):
+        return self.compass.get_feature_map()
 
-    def set_ground_truth_features(self, ground_truth):
-        self.compass.set_ground_truth_features(ground_truth)
+    def set_feature_map(self, feature_map):
+        self.compass.set_feature_map(feature_map)
+
+    def get_mean_feature_count(self):
+        if self.compassType == "multiple":
+            return self.compass.get_mean_feature_count()
+
+    def set_mean_feature_count(self, mean_feature_count):
+        if self.compassType == "multiple":
+            return self.compass.set_mean_feature_count(mean_feature_count)
 
     def get_side(self):
         return self.compass.get_side()

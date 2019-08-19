@@ -5,6 +5,9 @@ from evaluation_data_loader import DataLoader
 from worker import VisualCompass
 from pickle import dump
 
+"""
+Runs the compass in many configurations on a big dataset and saves the results in a pickle file.
+"""
 
 def generate_configs():
     config_table = []
@@ -36,7 +39,7 @@ def initialize_evaluation(config_table_entry):
 
     config["compass_type"] = config_table_entry["compass"]
     config["compass_matcher"] = config_table_entry["matcher"]
-    config["compass_multiple_ground_truth_images_count"] = config_table_entry["samples"]
+    config["compass_multiple_map_image_count"] = config_table_entry["samples"]
 
     compass = VisualCompass(config)
     print (config_table_entry["compass"] + " " + config_table_entry["matcher"] + " " + str(config_table_entry["samples"]))

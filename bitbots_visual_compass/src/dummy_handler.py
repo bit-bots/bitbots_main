@@ -14,7 +14,7 @@ except NameError:
 
 class VisualCompassDummyHandler():
     """
-    Implements a Ros independent handler for a Visual Compass worker.
+    Implements a ROS independent handler for a Visual Compass worker.
     """
     def __init__(self):
         dirname = os.path.dirname(__file__)
@@ -29,21 +29,33 @@ class VisualCompassDummyHandler():
         if isinstance(source, string):
             root_folder = os.curdir
             source = root_folder + source
-        
+
         self.video_getter = Videocv(source)
         self.video_getter.run()
 
         self.vc = VisualCompass(config)
 
         self.loop(config)
-    
+
     def debug_image_callback(self, debug_image):
+        """
+        param debug_image: shows this debug image
+        """
         cv2.imshow("Video", debug_image)
 
     def data_callback(self, angle, confidence):
+        """
+        Get the data call back of the visual compass
+        param angle: angle calculated by the visual compass
+        param confidence: confidence of that angle
+        """
         print("Angle: {} | Confidence: {}".format(angle, confidence))
-    
+
     def loop(self, config):
+        """
+        Processes stuff, feeds the compass with images, and sets the map
+        param config: config dict
+        """
         side = 0
         while True:
             image = self.video_getter.frame
@@ -53,7 +65,7 @@ class VisualCompassDummyHandler():
             #TODO remove
             #self.debug_image_callback(image)
 
-            sides = config['compass_multiple_ground_truth_images_count'] if config['compass_type'] == 'multiple' else 2
+            sides = config['compass_multiple_map_image_count'] if config['compass_type'] == 'multiple' else 2
             if side < sides:
                 self.debug_image_callback(image)
                 # Wurde SPACE gedrueckt
