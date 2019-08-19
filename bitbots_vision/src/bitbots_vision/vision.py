@@ -168,23 +168,23 @@ class Vision:
 
         # Set the field boundary detector
         self.field_boundary_detector = field_boundary_detector_class(
-            self.field_color_detector,
-            config)
+            config,
+            self.field_color_detector)
 
         # Set the line detector
         self.line_detector = lines.LineDetector(
+            config,
             self.white_color_detector,
             self.field_color_detector,
-            self.field_boundary_detector,
-            config)
+            self.field_boundary_detector)
 
         # Set the obstacle detector
         self.obstacle_detector = obstacle.ObstacleDetector(
+            config,
             self.red_color_detector,
             self.blue_color_detector,
             self.white_color_detector,
-            self.field_boundary_detector,
-            config)
+            self.field_boundary_detector)
 
         # If we don't use YOLO set the conventional goalpost detector.
         if not config['ball_detector_method'] in ['yolo_opencv', 'yolo_darknet']:
@@ -213,8 +213,8 @@ class Vision:
             #Check if ball_fcnn config has changed
             if ROS_Utils.config_param_change(self.config, config, r'^ball_fcnn_'):
                 self.ball_detector = fcnn_handler.FcnnHandler(
-                    self.ball_fcnn,
-                    config)
+                    config,
+                    self.ball_fcnn)
 
         # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
         if config['ball_detector_method'] in ['yolo_opencv', 'yolo_darknet']:

@@ -11,12 +11,12 @@ from operator import itemgetter
 
 
 class FieldBoundaryDetector(object):
-    def __init__(self, field_color_detector, config):
-        # type: (ColorDetector, dict) -> None
+    def __init__(self, config, field_color_detector):
+        # type: (dict, ColorDetector) -> None
         """
         This is the abctract class for the field boundary detector.
-        :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
+        :param field_color_detector: checks whether a color is part of the field colors
         """
         # set variables:
         self._image = None
@@ -329,14 +329,14 @@ class FieldBoundaryDetector(object):
 
 
 class IterationFieldBoundaryDetector(FieldBoundaryDetector):
-    def __init__(self, field_color_detector, config):
+    def __init__(self, config, field_color_detector):
         """
         This is the iteration field boundary detector.
         It uses the iteration detection method and finds the field boundary via scan lines running down from top to bottom.
-        :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
+        :param field_color_detector: checks whether a color is part of the field colors
         """
-        super(IterationFieldBoundaryDetector, self).__init__(field_color_detector, config)
+        super(IterationFieldBoundaryDetector, self).__init__(config, field_color_detector)
 
     def _compute_field_boundary_points(self):
         """
@@ -355,14 +355,14 @@ class IterationFieldBoundaryDetector(FieldBoundaryDetector):
 
 
 class BinaryFieldBoundaryDetector(FieldBoundaryDetector):
-    def __init__(self, field_color_detector, config):
+    def __init__(self, config, field_color_detector):
         """
         This is the binary search field boundary detector.
         It uses the binary detection method and finds the field boundary via binary search.
-        :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
+        :param field_color_detector: checks whether a color is part of the field colors
         """
-        super(BinaryFieldBoundaryDetector, self).__init__(field_color_detector, config)
+        super(BinaryFieldBoundaryDetector, self).__init__(config, field_color_detector)
 
     def _compute_field_boundary_points(self):
         """
@@ -381,14 +381,14 @@ class BinaryFieldBoundaryDetector(FieldBoundaryDetector):
 
 
 class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
-    def __init__(self, field_color_detector, config):
+    def __init__(self, config, field_color_detector):
         """
         This is the reversed iteration field boundary detector.
         It uses the reversed detection method and finds the field boundary via scan lines running up from bottom to top.
-        :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
+        :param field_color_detector: checks whether a color is part of the field colors
         """
-        super(ReversedFieldBoundaryDetector, self).__init__(field_color_detector, config)
+        super(ReversedFieldBoundaryDetector, self).__init__(config, field_color_detector)
 
     def _compute_field_boundary_points(self):
         """
@@ -407,15 +407,15 @@ class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
 
 
 class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
-    def __init__(self, field_color_detector, config):
+    def __init__(self, config, field_color_detector):
         """
         This is the dynamic field boundary detector.
         It switches between the iteration and reversed iteration method. It depends on how much the robot head is tilted.
         This improves performance (iteration) and enables operation with two field next to each other (reversed).
-        :param field_color_detector: checks whether a color is part of the field colors
         :param config: the configuration contained in visionparams.yaml
+        :param field_color_detector: checks whether a color is part of the field colors
         """
-        super(DynamicFieldBoundaryDetector, self).__init__(field_color_detector, config)
+        super(DynamicFieldBoundaryDetector, self).__init__(config, field_color_detector)
 
         self.over_horizon_algorithm = ReversedFieldBoundaryAlgorithm
         self.under_horizon_algorithm = IterationFieldBoundaryAlgorithm

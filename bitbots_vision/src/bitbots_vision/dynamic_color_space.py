@@ -91,8 +91,8 @@ class DynamicColorSpace:
 
         # Set the field boundary detector
         self.field_boundary_detector = field_boundary_detector_class(
-            self.color_detector,
-            vision_config)
+            vision_config,
+            self.color_detector)
 
         # Set params
         self.queue_max_size = vision_config['dynamic_color_space_queue_max_size']

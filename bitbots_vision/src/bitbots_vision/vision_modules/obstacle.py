@@ -8,10 +8,10 @@ import rospy
 
 class ObstacleDetector(CandidateFinder):
     """
-    Obstacle detector that uses gabs in the field boundary
+    Obstacle detector that uses gaps in the field boundary
     """
-    def __init__(self, red_color_detector, blue_color_detector, white_color_detector, field_boundary_detector, config):
-        # type: (ColorDetector, ColorDetector, ColorDetector, FieldBoundaryDetector, dict) -> None
+    def __init__(self, config, red_color_detector, blue_color_detector, white_color_detector, field_boundary_detector):
+        # type: (dict, ColorDetector, ColorDetector, ColorDetector, FieldBoundaryDetector) -> None
         # Set used detectors
         self._red_color_detector = red_color_detector
         self._blue_color_detector = blue_color_detector

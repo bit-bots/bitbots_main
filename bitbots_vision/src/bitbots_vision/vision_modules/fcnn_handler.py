@@ -14,11 +14,11 @@ class FcnnHandler(BallDetector):
     This handles FCNNs, meaning it finds and rates candidates in their output.
     """
 
-    def __init__(self, fcnn, config):
+    def __init__(self, config, fcnn):
         """
         Inits the fcnn handler.
-        :param FCNN03 fcnn: a fcnn model
         :param dict config: dictionary of the vision node configuration parameters
+        :param FCNN03 fcnn: a fcnn model
         """
         self._image = None
         self._fcnn = fcnn

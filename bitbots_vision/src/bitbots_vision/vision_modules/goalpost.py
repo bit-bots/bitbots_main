@@ -10,8 +10,8 @@ class ObstaclePostDetector(CandidateFinder):
     searches goalposts based on the obstacle detector.
     """
 
-    def __init__(self, obstacle_detector, white_color_detector, config):
-        # type: (ObstacleDetector, ColorDetector, dict) -> None
+    def __init__(self, config, obstacle_detector, white_color_detector):
+        # type: (dict, ObstacleDetector, ColorDetector) -> None
         self._obstacle_detector = obstacle_detector
         self._white_color_detector = white_color_detector
         self._expand_stepsize = config['expand_stepsize']
@@ -55,4 +55,3 @@ class ObstaclePostDetector(CandidateFinder):
             if expanded_candidate:
                 goalposts.append(expanded_candidate)
         return goalposts
-
