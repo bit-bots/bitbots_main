@@ -180,7 +180,7 @@ class HardwareControlManager:
             out_msg.velocities = [-1] * len(out_msg.joint_names)
             out_msg.max_currents = [-1] * len(out_msg.joint_names)
             send_torque = False
-            if not msg.position.points[0].effort:
+            if msg.position.points[0].effort:
                 out_msg.max_currents = [-x for x in msg.position.points[0].effort]
             if self.blackboard.shut_down_request:
                 # there are sometimes transmittions errors during shutdown due to race conditions
