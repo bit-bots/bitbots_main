@@ -59,27 +59,29 @@ def state_update(state_msg):
     ball_pose_stamped.header.stamp = rospy.Time.now()
     ball_pose_stamped.header.frame_id = "map"
     ball_pose_stamped.pose = ball_pose
+    ball_in_camera_frame = tf_buffer.transform(ball_pose_stamped, "camera", timeout=rospy.Duration(0.5))
 
-    ball_pose_stamped = tf_buffer.transform(ball_pose_stamped, cam_info.header.frame_id, timeout=rospy.Duration(0.5))
-
-    p = [ball_pose_stamped.pose.position.x, ball_pose_stamped.pose.position.y, ball_pose_stamped.pose.position.z]
-    k = np.reshape(cam_info.K, (3,3))
-    p_pixel = np.matmul(k, p)
-    p_pixel = p_pixel * (1/p_pixel[2])
-
-    # make sure that the transformed pixel is inside the resolution and positive.
-    # also z has to be positive to make sure that the ball is in front of the camera and not in the back
-    if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height \
-            and ball_pose_stamped.pose.position.z > 0:
-        ball = BallRelative()
-        ball.header.stamp = ball_pose_stamped.header.stamp
-        ball.header.frame_id = "base_footprint"
-        ball_pose_stamped = tf_buffer.transform(ball_pose_stamped, "base_footprint",
+    # we only have to compute if the ball is inside the image, if the ball is in front of the camera
+    if ball_in_camera_frame.pose.position.z >= 0:
+        ball_pose_stamped = tf_buffer.transform(ball_pose_stamped, cam_info.header.frame_id,
                                                 timeout=rospy.Duration(0.5))
-        ball.header = ball_pose_stamped.header
-        ball.ball_relative = ball_pose_stamped.pose.position
-        ball.confidence = 1.0
-        ball_pub.publish(ball)
+        p = [ball_pose_stamped.pose.position.x, ball_pose_stamped.pose.position.y, ball_pose_stamped.pose.position.z]
+        k = np.reshape(cam_info.K, (3,3))
+        p_pixel = np.matmul(k, p)
+        p_pixel = p_pixel * (1/p_pixel[2])
+
+        # make sure that the transformed pixel is inside the resolution and positive.
+        # also z has to be positive to make sure that the ball is in front of the camera and not in the back
+        if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height:
+            ball = BallRelative()
+            ball.header.stamp = ball_pose_stamped.header.stamp
+            ball.header.frame_id = "base_footprint"
+            ball_pose_stamped = tf_buffer.transform(ball_pose_stamped, "base_footprint",
+                                                    timeout=rospy.Duration(0.5))
+            ball.header = ball_pose_stamped.header
+            ball.ball_relative = ball_pose_stamped.pose.position
+            ball.confidence = 1.0
+            ball_pub.publish(ball)
 
     for gp in (goal1_pose, goal2_pose):
         goal_pose_stamped = PoseStamped()
@@ -87,43 +89,45 @@ def state_update(state_msg):
         goal_pose_stamped.header.frame_id = "map"
         goal_pose_stamped.pose = gp
 
-        left_post = deepcopy(goal_pose_stamped)
-        left_post.pose.position.y += 1.35
-
-        left_post = tf_buffer.transform(left_post, cam_info.header.frame_id,
-                                                timeout=rospy.Duration(0.5))
-        right_post = goal_pose_stamped
-        right_post.pose.position.y -= 1.35
-
-        right_post = tf_buffer.transform(right_post, cam_info.header.frame_id,
-                                                timeout=rospy.Duration(0.5))
-
-
         goal = GoalRelative()
         goal.header.stamp = goal_pose_stamped.header.stamp
         goal.header.frame_id = "base_footprint"
-        p = [left_post.pose.position.x, left_post.pose.position.y, left_post.pose.position.z]
-        k = np.reshape(cam_info.K, (3, 3))
-        p_pixel = np.matmul(k, p)
-        p_pixel = p_pixel * (1 / p_pixel[2])
-        lp = False
-        if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height\
-                and left_post.pose.position.z > 0:
-            goal.left_post = tf_buffer.transform(left_post, "base_footprint",
-                                                timeout=rospy.Duration(0.5)).pose.position
-            lp = True
 
-        p = [right_post.pose.position.x, right_post.pose.position.y, right_post.pose.position.z]
-        k = np.reshape(cam_info.K, (3, 3))
-        p_pixel = np.matmul(k, p)
-        p_pixel = p_pixel * (1 / p_pixel[2])
+        left_post = deepcopy(goal_pose_stamped)
+        left_post.pose.position.y += 1.35
+        left_post_in_camera_frame = tf_buffer.transform(left_post, "camera", timeout=rospy.Duration(0.5))
 
-        rp = False
-        if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height\
-            and right_post.pose.position.z:
-            goal.right_post = tf_buffer.transform(right_post, "base_footprint",
-                                                timeout=rospy.Duration(0.5)).pose.position
-            rp = True
+        if left_post_in_camera_frame.pose.position.z >= 0:
+            left_post = tf_buffer.transform(left_post, cam_info.header.frame_id,
+                                                    timeout=rospy.Duration(0.5))
+            p = [left_post.pose.position.x, left_post.pose.position.y, left_post.pose.position.z]
+            k = np.reshape(cam_info.K, (3, 3))
+            p_pixel = np.matmul(k, p)
+            p_pixel = p_pixel * (1 / p_pixel[2])
+            lp = False
+            if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height\
+                    and left_post.pose.position.z > 0:
+                goal.left_post = tf_buffer.transform(left_post, "base_footprint",
+                                                    timeout=rospy.Duration(0.5)).pose.position
+                lp = True
+
+        right_post = goal_pose_stamped
+        right_post.pose.position.y -= 1.35
+        right_post_in_camera_frame = tf_buffer.transform(right_post, "camera", timeout=rospy.Duration(0.5))
+        if right_post_in_camera_frame.pose.position.z >= 0:
+            right_post = tf_buffer.transform(right_post, cam_info.header.frame_id,
+                                                    timeout=rospy.Duration(0.5))
+            p = [right_post.pose.position.x, right_post.pose.position.y, right_post.pose.position.z]
+            k = np.reshape(cam_info.K, (3, 3))
+            p_pixel = np.matmul(k, p)
+            p_pixel = p_pixel * (1 / p_pixel[2])
+
+            rp = False
+            if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height\
+                and right_post.pose.position.z:
+                goal.right_post = tf_buffer.transform(right_post, "base_footprint",
+                                                    timeout=rospy.Duration(0.5)).pose.position
+                rp = True
 
         if rp or lp:
             if not lp:
