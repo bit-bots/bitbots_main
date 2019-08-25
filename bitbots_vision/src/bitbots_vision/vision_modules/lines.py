@@ -13,8 +13,8 @@ class LineDetector:
     """
     Detecting field lines in the image.
     """
-    def __init__(self, white_detector, field_color_detector, field_boundary_detector, config):
-        # type: (ColorDetector, ColorDetector, FieldBoundaryDetector, dict) -> None
+    def __init__(self, config, white_detector, field_color_detector, field_boundary_detector):
+        # type: (dict, ColorDetector, ColorDetector, FieldBoundaryDetector) -> None
         self._image = None
         self._preprocessed_image = None
         self._linepoints = None

@@ -11,6 +11,6 @@ color_test_upper_values_v: 255
 
 # Subscriber
 img_msg_topic: 'image_raw'
-img_queue_size: 1
+img_msg_queue_size: 1
 
 color_tester_mask_image: 'color_tester_mask'

@@ -91,8 +91,8 @@ class DynamicColorSpace:
 
         # Set the field boundary detector
         self.field_boundary_detector = field_boundary_detector_class(
-            self.color_detector,
-            vision_config)
+            vision_config,
+            self.color_detector)
 
         # Set params
         self.queue_max_size = vision_config['dynamic_color_space_queue_max_size']
@@ -106,7 +106,7 @@ class DynamicColorSpace:
         self.heuristic = Heuristic()
 
         # Subscribe to Image-message
-        self.sub_image_msg = ros_utils.ROS_Utils.create_or_update_subscriber(self.vision_config, vision_config, self.sub_image_msg, 'ROS_img_msg_topic', Image, callback=self.image_callback, queue_size=vision_config['ROS_img_queue_size'], buff_size=60000000)
+        self.sub_image_msg = ros_utils.ROS_Utils.create_or_update_subscriber(self.vision_config, vision_config, self.sub_image_msg, 'ROS_img_msg_topic', Image, callback=self.image_callback, queue_size=vision_config['ROS_img_msg_queue_size'], buff_size=60000000)
 
         self.vision_config = vision_config
 

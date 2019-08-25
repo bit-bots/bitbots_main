@@ -12,27 +12,13 @@ from .live_fcnn_03 import FCNN03
 class FcnnHandler(BallDetector):
     """
     This handles FCNNs, meaning it finds and rates candidates in their output.
-
-    Example configuration (put these values into the config dictionary or just
-    copy them into the vision package config):
-
-    ball_fcnn: TODO fcnn config improvement
-        publish_debug_img: false  # toggles publishing of the fcnn heatmap image for debug purposes
-        model_path: '/models/2019_05_timon_basler'
-        threshold: .6  # minimal value for a candidate to be considered
-        expand_stepsize: 4
-        pointcloud_stepsize: 10
-        min_ball_diameter: 15
-        max_ball_diameter: 150
-        publish_output: false
-        publish_field_boundary_offset: 5
     """
 
-    def __init__(self, fcnn, config):
+    def __init__(self, config, fcnn):
         """
         Inits the fcnn handler.
-        :param fcnn: a fcnn model
-        :param config: TODO
+        :param dict config: dictionary of the vision node configuration parameters
+        :param FCNN03 fcnn: a fcnn model
         """
         self._image = None
         self._fcnn = fcnn
@@ -41,6 +27,7 @@ class FcnnHandler(BallDetector):
         self._top_candidate = None
         self._fcnn_output = None
         self.bridge = CvBridge()
+
         # init config
         self.set_config(config)
 
@@ -49,6 +36,7 @@ class FcnnHandler(BallDetector):
         """
         Set a image for the fcnn. This also resets the caches.
         :param image: current vision image
+        :return: None
         """
         self._image = image
         self._rated_candidates = None
@@ -58,15 +46,19 @@ class FcnnHandler(BallDetector):
 
 
     def set_config(self, config):
+        """
+        Set all configuration parameters for the fcnn.
+        :param dict config: dictionary of the vision node configuration parameters
+        :return: None
+        """
         # TODO new
-        self._debug = config['debug']
-        self._threshold = config['threshold']  # minimal activation
-        self._expand_stepsize = config['expand_stepsize']  #
-        self._pointcloud_stepsize = config['pointcloud_stepsize']  #
-        self._min_candidate_diameter = config['min_candidate_diameter']
-        self._max_candidate_diameter = config['max_candidate_diameter']
-        self._candidate_refinement_iteration_count = \
-            config['candidate_refinement_iteration_count']
+        self._debug = config['ball_fcnn_publish_debug_img']
+        self._threshold = config['ball_fcnn_threshold']
+        self._expand_stepsize = config['ball_fcnn_expand_stepsize']
+        self._pointcloud_stepsize = config['ball_fcnn_pointcloud_stepsize']
+        self._min_candidate_diameter = config['ball_fcnn_min_ball_diameter']
+        self._max_candidate_diameter = config['ball_fcnn_max_ball_diameter']
+        self._candidate_refinement_iteration_count = config['ball_fcnn_candidate_refinement_iteration_count']
 
 
     def get_candidates(self):

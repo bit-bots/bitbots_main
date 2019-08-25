@@ -48,7 +48,7 @@ class ColorTest:
         # subscriber of camera image:
         if 'img_msg_topic' not in self.config or \
             self.config['img_msg_topic'] != config['img_msg_topic'] or \
-            'ROS_img_queue_size' not in self.config or \
+            'img_queue_size' not in self.config or \
             self.config['img_queue_size'] != config['img_queue_size']:
             if hasattr(self, 'image_sub'):
                 self.image_sub.unregister()

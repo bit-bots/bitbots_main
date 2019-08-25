@@ -258,10 +258,10 @@ class YoloBallDetector(BallDetector):
     """
     A ball detector using the yolo neural network
     """
-    def __init__(self, yolo, config):
+    def __init__(self, config, yolo):
         """
-        :param yolo: An YoloHandler implementation that runs the yolo network
         :param config: The vision config
+        :param yolo: An YoloHandler implementation that runs the yolo network
         """
         # Set the yolo network
         self.yolo = yolo
