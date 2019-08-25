@@ -174,7 +174,7 @@ class ROS_Utils:
         # Get all files in this directory
         color_space_files = [file for file in color_spaces if os.path.isfile(os.path.join(color_spaces_path, file))]
         # Create list with a new enum item for each file
-        field_color_space_enum = [{'name': cs_file, 'value': cs_file, 'description': 'yolo {}'.format(cs_file)} for cs_file in color_space_files]
+        field_color_space_enum = [{'name': cs_file, 'value': cs_file, 'description': 'color space {}'.format(cs_file)} for cs_file in color_space_files]
 
         # Add enums to configuration
         ROS_Utils._change_enum_items(cfg_type, 'field_color_detector_path', field_color_space_enum)
