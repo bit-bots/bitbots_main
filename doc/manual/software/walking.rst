@@ -4,7 +4,33 @@
 Quintic Walking
 ===============
 
-This document describes how the bitbots_quintic_walking works.
+This document shows how walking parameters can be tuned and describes how the bitbots_quintic_walking works.
+
+
+Parameter Tuning Guide
+======================
+
+The Quintic Walk tries to rely on as few parameters as possible and most of them should be independent from each other, meaning changing one does not require a change in another parameter.
+When tuning parameters following things should be kept in mind:
+
+1. Make sure the robot has no hardware problems, e.g. loose screws. Otherwise your tuning is kind of senseless
+2. Use slow motion videos from smart phones to debug the walking. This way it is much easier to see what is happening.
+3. Test different walking directions and speeds. Parameters may work perfectly when moving forward but will fail catastrophically when walking sidewards.
+4. When tuning completly new, first do it in rviz. This lets you tune at least to the point where it looks like it works and prevents damage to the robot by colliding legs.
+
+Tune the parameters in the following order:
+
+1. footDistance: Set this so that the feet are under the hip or slightly outwards of them
+2. trunkHeight: This is a trade off between high (legs are completely straight) and low (knees are bend). The more the knees are bend the more torque is applied to the knees (this is bad) but the maximal step length gets longer since the kinematic chain allows more movement of the flying leg (this is good). Good values are normally slightly bend knees.
+3. trunkPitch: This should be set so that the robot is stable in pitch direction while standing still. Any pitch necessary from walking faster is coming from another parameter.
+4. footRise: This highly depends on the ground. For hard floors, just a centimeter should be enough. For artificial grass its around 5cm. Tune it so that the flying foot does not touch the ground while moving. Larger than necessary values are probably bad since they result in larger accelerations.
+5. freq: This determines how fast your steps are and thereby also how fast you can run since the maximum speed ist maximal step length times step frequency. Faster steps also mean a shorter absolute single support time which often results in a more stable walk. Since each step leads to a small odometry error, a higher frequency leads to more odometry errors. Typical values are between 0.5 and 1.5 steps/s.
+6. doubleSupportRatio: This determines how long per step both feet are on the ground. It should never be zero, since this will most likely not work because the accelerations for the body would get infinitive on step change (see "Introduction to Humanoid Robotics, Shuuji Kajita, 2015" for a detailed explaination). To large values will force the flying leg to move very fast during single support. This value can be fine tuned after setting the other values. Typical values are between 0.05 and 0.3.
+7. trunkSwing: This value determines how much the torso is moving sidewards during walking to put the center of pressure over the support foot. If the robot is falling to the inside of the support foot the value has to be increased, if it is falling to the outside it has to be decreased. The value of 1 means that it goes during maximal sidewards movement as far as the footDistance. Typical values are between 0.1 and 1.
+8. trunkPhase: This moves the trunk movement in relation to the leg movement in phase time. This is difficult to tune but often the value that you want to change when you don't know why the walking doesn't work. Typical values are between -0.1 and 0.1.
+9. trunkPitchPCoefForward: This gives more trunk pitch when running forwards and less when running backwards. Increase this when the robot is falling to the front or back when getting faster.
+
+The other values are mostly not that influential but can also be tried.
 
 
 General Structure
