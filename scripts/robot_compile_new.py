@@ -6,6 +6,8 @@ import os
 import yaml
 import subprocess
 
+from bitbots_bringup import game_settings
+
 
 BITBOTS_META = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -334,7 +336,9 @@ def main():
         elif args.compile_only:
             print_info("Not configuring {} due to compile-only mode".format(target.hostname))
         else:
-            pass
+            print_info("Running game-settings script for {}".format(target.hostname))
+            game_settings.main()
+            sync(target, "bitbots_bringup", verbose=False, pre_clean=False)
 
 
 if __name__ == "__main__":
