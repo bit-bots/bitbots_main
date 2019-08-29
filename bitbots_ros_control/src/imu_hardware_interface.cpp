@@ -1,4 +1,5 @@
 #include <bitbots_ros_control/imu_hardware_interface.h>
+#include <bitbots_ros_control/utils.h>
 
 #define gravity 9.80665
 
@@ -41,7 +42,8 @@ bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   hardware_interface::ImuSensorHandle imu_handle(imu_name, imu_frame, _orientation, _orientation_covariance, _angular_velocity, _angular_velocity_covariance, _linear_acceleration, _linear_acceleration_covariance);
   _imu_interface.registerHandle(imu_handle);
   registerInterface(&_imu_interface);
-
+  
+  return true;
 }
 
 bool ImuHardwareInterface::read(){
@@ -58,21 +60,21 @@ bool ImuHardwareInterface::read(){
         // imu gives us 2 values at the same time, lets see which one is the newest
         for(int i =0; i < 2; i++){
             //the sequence number are the bytes 12 to 15 for each of the two 16 Bytes
-            current_seq_number = DXL_MAKEDWORD(DXL_MAKEWORD(data[16*i+12], data[16*i+13]),
-                                             DXL_MAKEWORD(data[16*i+14], data[16*i+15]));
+            current_seq_number = dxl_makedword(dxl_makeword(data[16*i+12], data[16*i+13]),
+                                             dxl_makeword(data[16*i+14], data[16*i+15]));
           if(current_seq_number>highest_seq_number){
               highest_seq_number=current_seq_number;
               new_value_index=i;
             }
         }
       // linear acceleration are two signed bytes with 256 LSB per g
-      _linear_acceleration[0] = (((short) DXL_MAKEWORD(data[16*new_value_index], data[16*new_value_index+1])) / 256.0 ) * gravity * 1;
-      _linear_acceleration[1] = (((short) DXL_MAKEWORD(data[16*new_value_index+2], data[16*new_value_index+3])) / 256.0 ) * gravity * 1;
-      _linear_acceleration[2] = (((short)DXL_MAKEWORD(data[16*new_value_index+4], data[16*new_value_index+5])) / 256.0 ) * gravity * 1;
+      _linear_acceleration[0] = (((short) dxl_makeword(data[16*new_value_index], data[16*new_value_index+1])) / 256.0 ) * gravity * 1;
+      _linear_acceleration[1] = (((short) dxl_makeword(data[16*new_value_index+2], data[16*new_value_index+3])) / 256.0 ) * gravity * 1;
+      _linear_acceleration[2] = (((short)dxl_makeword(data[16*new_value_index+4], data[16*new_value_index+5])) / 256.0 ) * gravity * 1;
       // angular velocity are two signed bytes with 14.375 per deg/s
-      _angular_velocity[0] = (((short)DXL_MAKEWORD(data[16*new_value_index+6], data[16*new_value_index+7])) / 14.375) * M_PI/180 * 1;
-      _angular_velocity[1] = (((short)DXL_MAKEWORD(data[16*new_value_index+8], data[16*new_value_index+9])) / 14.375) * M_PI/180 * 1;
-      _angular_velocity[2] = (((short)DXL_MAKEWORD(data[16*new_value_index+10], data[16*new_value_index+11])) / 14.375) * M_PI/180 * -1;
+      _angular_velocity[0] = (((short)dxl_makeword(data[16*new_value_index+6], data[16*new_value_index+7])) / 14.375) * M_PI/180 * 1;
+      _angular_velocity[1] = (((short)dxl_makeword(data[16*new_value_index+8], data[16*new_value_index+9])) / 14.375) * M_PI/180 * 1;
+      _angular_velocity[2] = (((short)dxl_makeword(data[16*new_value_index+10], data[16*new_value_index+11])) / 14.375) * M_PI/180 * -1;
       return true;
     }else {
       ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");

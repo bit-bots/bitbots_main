@@ -9,7 +9,7 @@ int main (int argc, char *argv[]){
   ros::NodeHandle pnh("~");
 
   // create hardware interfaces
-  bitbots_ros_control::WolfgangHardwareInterface hw = bitbots_ros_control::WolfgangHardwareInterface(pnh);
+  bitbots_ros_control::WolfgangHardwareInterface hw(pnh);
 
   if (!hw.init(pnh)){
     ROS_ERROR_STREAM("Failed to initialize hardware interface.");

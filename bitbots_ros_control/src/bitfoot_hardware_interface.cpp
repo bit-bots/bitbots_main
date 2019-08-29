@@ -1,6 +1,5 @@
 #include <bitbots_ros_control/bitfoot_hardware_interface.h>
-#define DXL_MAKEWORD(a, b)  ((uint16_t)(((uint8_t)(((uint64_t)(a)) & 0xff)) | ((uint16_t)((uint8_t)(((uint64_t)(b)) & 0xff))) << 8))
-#define DXL_MAKEDWORD(a, b) ((uint32_t)(((uint16_t)(((uint64_t)(a)) & 0xffff)) | ((uint32_t)((uint16_t)(((uint64_t)(b)) & 0xffff))) << 16))
+#include <bitbots_ros_control/utils.h>
 
 namespace bitbots_ros_control {
 
@@ -15,7 +14,8 @@ BitFootHardwareInterface::BitFootHardwareInterface(boost::shared_ptr<DynamixelDr
 bool BitFootHardwareInterface::init(ros::NodeHandle &nh) {
   _nh = nh;
   _current_pressure.resize(4, 0);
-  _pressure_pub = nh.advertise<bitbots_msgs::FootPressure>(_topic_name, 1, this);
+  _pressure_pub = nh.advertise<bitbots_msgs::FootPressure>(_topic_name, 1);
+  return true;
 }
 
 bool BitFootHardwareInterface::read() {
@@ -24,11 +24,11 @@ bool BitFootHardwareInterface::read() {
    */
 
   uint8_t *data = (uint8_t *) malloc(16 * sizeof(uint8_t));
-  // read first foot
+  // read foot
   if (_driver->readMultipleRegisters(_id, 36, 16, data)) {
     for (int i = 0; i < 4; i++) {
-      int32_t pres = DXL_MAKEDWORD(DXL_MAKEWORD(data[i * 4], data[i * 4 + 1]),
-                                   DXL_MAKEWORD(data[i * 4 + 2], data[i * 4 + 3]));
+      int32_t pres = dxl_makedword(dxl_makeword(data[i * 4], data[i * 4 + 1]),
+                                   dxl_makeword(data[i * 4 + 2], data[i * 4 + 3]));
       float pres_d = (float) pres;
       // we directly provide raw data since the scaling has to be calibrated by another node for every robot anyway
       _current_pressure[i] = (double) pres_d;

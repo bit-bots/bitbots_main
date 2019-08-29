@@ -18,16 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
   bitbots_msgs
 )
 
-set(HEADERS
-  include/${PROJECT_NAME}/dynamixel_servo_hardware_interface.h
-  include/${PROJECT_NAME}/imu_hardware_interface.h
-  include/${PROJECT_NAME}/bitfoot_hardware_interface.h
-  include/${PROJECT_NAME}/button_hardware_interface.h
-  include/${PROJECT_NAME}/dynamixel_controller.hpp
-  include/${PROJECT_NAME}/posvelacccur_command_interface.h
-  include/${PROJECT_NAME}/wolfgang_hardware_interface.h
-  include/${PROJECT_NAME}/utils.h)
-
 set(SOURCES
   src/dynamixel_servo_hardware_interface.cpp
   src/imu_hardware_interface.cpp

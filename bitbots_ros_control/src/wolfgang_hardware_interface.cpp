@@ -1,5 +1,5 @@
-#include "bitbots_ros_control/wolfgang_hardware_interface.h"
-
+#include <bitbots_ros_control/wolfgang_hardware_interface.h>
+#include <bitbots_ros_control/utils.h>
 
 namespace bitbots_ros_control {
 
@@ -10,7 +10,7 @@ namespace bitbots_ros_control {
  */
 WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
 
-  _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
+  _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1);
 
   // load parameters
   ROS_INFO_STREAM("Loading parameters from namespace " << nh.getNamespace());
@@ -52,22 +52,23 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
 bool WolfgangHardwareInterface::init(ros::NodeHandle& root_nh){
   bool success = true;
   if(_onlyImu) {
-    success = success && _imu.init(root_nh);
+    success &= _imu.init(root_nh);
   }else if(_onlyPressure){
-    success = success && _left_foot.init(root_nh);
-    success = success && _right_foot.init(root_nh);
+    success &= _left_foot.init(root_nh);
+    success &= _right_foot.init(root_nh);
   }else {
-    success = success && _servos.init(root_nh);
-    success = success && _imu.init(root_nh);
-    success = success && _left_foot.init(root_nh);
-    success = success && _right_foot.init(root_nh);
-    success = success && _buttons.init(root_nh);
+    success &= _servos.init(root_nh);
+    success &= _imu.init(root_nh);
+    success &= _left_foot.init(root_nh);
+    success &= _right_foot.init(root_nh);
+    success &= _buttons.init(root_nh);
   }
   if(success) {
     speak_error(_speak_pub, "ros control startup successful");
   }else{
     speak_error(_speak_pub, "error starting ros control");
   }
+  return success;
 }
 
 
@@ -75,16 +76,16 @@ bool WolfgangHardwareInterface::read()
 {
   bool success = true;
   if(_onlyImu){
-    success = success && _imu.read();
+    success &= _imu.read();
   }else if(_onlyPressure){
-    success = success && _left_foot.read();
-    success = success && _right_foot.read();
+    success &= _left_foot.read();
+    success &= _right_foot.read();
   }else{
-    success = success && _servos.read();
-    success = success && _imu.read();
-    success = success && _left_foot.read();
-    success = success && _right_foot.read();
-    success = success && _buttons.read();
+    success &= _servos.read();
+    success &= _imu.read();
+    success &= _left_foot.read();
+    success &= _right_foot.read();
+    success &= _buttons.read();
   }
   return success;
 }

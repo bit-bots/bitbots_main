@@ -10,7 +10,8 @@ ButtonHardwareInterface::ButtonHardwareInterface(boost::shared_ptr<DynamixelDriv
 
 bool ButtonHardwareInterface::init(ros::NodeHandle& nh){
   _nh = nh;
-  _button_pub = nh.advertise<bitbots_buttons::Buttons>("/buttons", 1, this);
+  _button_pub = nh.advertise<bitbots_buttons::Buttons>("/buttons", 1);
+  return true;
 }
 
 bool ButtonHardwareInterface::read(){

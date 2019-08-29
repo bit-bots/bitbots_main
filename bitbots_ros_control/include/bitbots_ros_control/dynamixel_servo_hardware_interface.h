@@ -21,7 +21,6 @@
 #include <dynamic_reconfigure/server.h>
 
 #include <bitbots_ros_control/dynamixel_servo_hardware_interface_paramsConfig.h>
-#include <bitbots_ros_control/utils.h>
 
 #include <dynamixel_workbench/dynamixel_driver.h>
 #include <bitset>
@@ -79,12 +78,12 @@ public:
 private:
   ros::NodeHandle _nh;
 
-  bool syncWritePWM();
+  void syncWritePWM();
 
   bool loadDynamixels(ros::NodeHandle& nh);
   bool writeROMRAM(ros::NodeHandle& nh);
   bool stringToControlMode(std::string control_mode_str, ControlMode &control_mode);
-  bool switchDynamixelControlMode();
+  void switchDynamixelControlMode();
   diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map);
   void processVTE(bool success);
 
@@ -102,11 +101,11 @@ private:
   bool syncReadVoltageAndTemp();
   bool syncReadError();
 
-  bool syncWritePosition();
-  bool syncWriteVelocity();
-  bool syncWriteProfileVelocity();
-  bool syncWriteCurrent();
-  bool syncWriteProfileAcceleration();
+  void syncWritePosition();
+  void syncWriteVelocity();
+  void syncWriteProfileVelocity();
+  void syncWriteCurrent();
+  void syncWriteProfileAcceleration();
 
   bool first_cycle_;
   bool _lost_servo_connection;

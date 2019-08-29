@@ -1,7 +1,5 @@
 #include <bitbots_ros_control/dynamixel_servo_hardware_interface.h>
-
-#define DXL_MAKEWORD(a, b)  ((uint16_t)(((uint8_t)(((uint64_t)(a)) & 0xff)) | ((uint16_t)((uint8_t)(((uint64_t)(b)) & 0xff))) << 8))
-#define DXL_MAKEDWORD(a, b) ((uint32_t)(((uint16_t)(((uint64_t)(a)) & 0xffff)) | ((uint32_t)((uint16_t)(((uint64_t)(b)) & 0xffff))) << 16))
+#include <bitbots_ros_control/utils.h>
 
 namespace bitbots_ros_control
 {
@@ -26,7 +24,7 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelServoHardwareInterface::setTorque, this, ros::TransportHints().tcpNoDelay());
   _set_torque_indiv_sub = nh.subscribe<bitbots_msgs::JointTorque>("set_torque_individual", 1, &DynamixelServoHardwareInterface::individualTorqueCb, this, ros::TransportHints().tcpNoDelay());
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
-  _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, this);
+  _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1);
 
   _torquelessMode = nh.param("torquelessMode", false);
 
@@ -565,13 +563,13 @@ bool DynamixelServoHardwareInterface::stringToControlMode(std::string _control_m
   }
 }
 
-bool DynamixelServoHardwareInterface::switchDynamixelControlMode()
+void DynamixelServoHardwareInterface::switchDynamixelControlMode()
 {
   /**
    * This method switches the control mode of all servos
    */
   if(_onlySensors){
-    return true;
+    return;
   }
 
   // Torque on dynamixels has to be disabled to change operating mode
@@ -680,7 +678,7 @@ bool DynamixelServoHardwareInterface::syncReadVoltageAndTemp(){
     uint16_t volt;
     uint8_t temp;    
     for (int i = 0; i < _joint_count; i++) {
-      volt = DXL_MAKEWORD(data[i * 3], data[i * 3 + 1]);
+      volt = dxl_makeword(data[i * 3], data[i * 3 + 1]);
       temp = data[i * 3 + 2];
       // convert value to voltage
       _current_input_voltage[i] = volt * 0.1;
@@ -703,11 +701,11 @@ bool DynamixelServoHardwareInterface::syncReadAll() {
     uint32_t vel;
     uint32_t pos;
     for (int i = 0; i < _joint_count; i++) {
-      eff = DXL_MAKEWORD(data[i * 10], data[i * 10 + 1]);
-      vel = DXL_MAKEDWORD(DXL_MAKEWORD(data[i * 10 + 2], data[i * 10 + 3]),
-                          DXL_MAKEWORD(data[i * 10 + 4], data[i * 10 + 5]));
-      pos = DXL_MAKEDWORD(DXL_MAKEWORD(data[i * 10 + 6], data[i * 10 + 7]),
-                          DXL_MAKEWORD(data[i * 10 + 8], data[i * 10 + 9]));
+      eff = dxl_makeword(data[i * 10], data[i * 10 + 1]);
+      vel = dxl_makedword(dxl_makeword(data[i * 10 + 2], data[i * 10 + 3]),
+                          dxl_makeword(data[i * 10 + 4], data[i * 10 + 5]));
+      pos = dxl_makedword(dxl_makeword(data[i * 10 + 6], data[i * 10 + 7]),
+                          dxl_makeword(data[i * 10 + 8], data[i * 10 + 9]));
       _current_effort[i] = _driver->convertValue2Torque(_joint_ids[i], eff);
       _current_velocity[i] = _driver->convertValue2Velocity(_joint_ids[i], vel);
       double current_pos = _driver->convertValue2Radian(_joint_ids[i], pos);
@@ -722,7 +720,7 @@ bool DynamixelServoHardwareInterface::syncReadAll() {
   }
 }
 
-bool DynamixelServoHardwareInterface::syncWritePosition(){
+void DynamixelServoHardwareInterface::syncWritePosition(){
   /**
    * Writes all goal positions with a single sync write
    */
@@ -736,7 +734,7 @@ bool DynamixelServoHardwareInterface::syncWritePosition(){
   free(goal_position);
 }
 
-bool DynamixelServoHardwareInterface::syncWriteVelocity() {
+void DynamixelServoHardwareInterface::syncWriteVelocity() {
   /**
    * Writes all goal velocities with a single sync write
    */
@@ -748,7 +746,7 @@ bool DynamixelServoHardwareInterface::syncWriteVelocity() {
   free(goal_velocity);
 }
 
-bool DynamixelServoHardwareInterface::syncWriteProfileVelocity() {
+void DynamixelServoHardwareInterface::syncWriteProfileVelocity() {
   /**
    * Writes all profile velocities with a single sync write
    */
@@ -766,7 +764,7 @@ bool DynamixelServoHardwareInterface::syncWriteProfileVelocity() {
   free(goal_velocity);
 }
 
-bool DynamixelServoHardwareInterface::syncWriteProfileAcceleration() {
+void DynamixelServoHardwareInterface::syncWriteProfileAcceleration() {
   /**
    * Writes all profile accelerations with a single sync write
    */
@@ -784,7 +782,7 @@ bool DynamixelServoHardwareInterface::syncWriteProfileAcceleration() {
   free(goal_acceleration);
 }
 
-bool DynamixelServoHardwareInterface::syncWriteCurrent() {
+void DynamixelServoHardwareInterface::syncWriteCurrent() {
   /**
    * Writes all goal currents with a single sync write
    */
@@ -807,7 +805,7 @@ bool DynamixelServoHardwareInterface::syncWriteCurrent() {
   free(goal_current);
 }
 
-bool DynamixelServoHardwareInterface::syncWritePWM() {
+void DynamixelServoHardwareInterface::syncWritePWM() {
   int* goal_current = (int*)malloc(_joint_names.size() * sizeof(int));
   for (size_t num = 0; num < _joint_names.size(); num++) {
     if(_goal_effort[num] < 0){
