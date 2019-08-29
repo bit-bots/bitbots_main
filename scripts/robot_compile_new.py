@@ -308,6 +308,35 @@ def build(target, package='', verbose=True, pre_clean=False):
     print_success("Build on {} succeeded".format(target.hostname))
 
 
+def install_rosdeps(target, verbose=True):
+    """
+    Install missing dependencies on a target with rosdep
+
+    :type target: Target
+    :type verbose: bool
+    """
+
+    # construct command which will be executed on the target via ssh
+    cmd = [
+        "ssh",
+        "bitbots@{}".format(target.ssh_target),
+        "rosdep install -y -r {} --ignore-src --from-paths {}".format(
+            "" if verbose else "-q",
+            sys.path.append(target.workspace, "src")
+        ),
+    ]
+
+    if verbose:
+        print_info("Calling {}".format(" ".join(cmd)))
+
+    rosdep_result = subprocess.run(cmd)
+    if rosdep_result.returncode != 0:
+        print_err("Executing rosdep on {} failed with error code {}".format(target.hostname, rosdep_result.returncode))
+        sys.exit(rosdep_result.returncode)
+
+    print_success("Rosdeps on {} installed successfully".format(target.hostname))
+
+
 def main():
     args = parse_arguments()
     print_bit_bot()
@@ -328,6 +357,7 @@ def main():
         elif args.configure_only:
             print_info("Not compiling on {} due to configure-only mode".format(target.hostname))
         else:
+            install_rosdeps(target, verbose=not args.quiet)
             build(target, args.package, verbose=not args.quiet, pre_clean=args.clean_build)
 
         # configure
