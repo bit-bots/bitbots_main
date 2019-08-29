@@ -153,7 +153,7 @@ def parse_arguments():
                         help="Clean workspace before building. --package is given, clean only that package")
     parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
     parser.add_argument("--clean-built", action="store_true",
-                        help="Clean build directory befor compiling")
+                        help="Clean build directory before compiling")
     parser.add_argument("-q", "--quiet", action="store_true", help="Less output")
     return parser.parse_args()
 
