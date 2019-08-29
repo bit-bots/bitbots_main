@@ -56,6 +56,11 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle& root_nh){
     success &= _left_foot.init(root_nh);
     success &= _right_foot.init(root_nh);
   }else {
+    /* Hardware interfaces must be registered at the main RobotHW class.
+     * Therefore, a pointer to this class is passed down to the RobotHW classes
+     * registering further interfaces */
+    _servos.setParent(this);
+    _imu.setParent(this);
     success &= _servos.init(root_nh);
     success &= _imu.init(root_nh);
     success &= _left_foot.init(root_nh);

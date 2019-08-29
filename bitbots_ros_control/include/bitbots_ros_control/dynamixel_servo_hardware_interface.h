@@ -74,6 +74,7 @@ public:
   bool init(ros::NodeHandle& nh);
   bool read();
   void write();
+  void setParent(hardware_interface::RobotHW* parent);
 
 private:
   ros::NodeHandle _nh;
@@ -120,6 +121,8 @@ private:
   hardware_interface::VelocityJointInterface _jnt_vel_interface;
   hardware_interface::EffortJointInterface _jnt_eff_interface;
   hardware_interface::PosVelAccCurJointInterface _jnt_posvelacccur_interface;
+
+  hardware_interface::RobotHW* _parent;
 
   ControlMode _control_mode;
 

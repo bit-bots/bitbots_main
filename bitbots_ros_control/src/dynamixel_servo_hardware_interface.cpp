@@ -94,17 +94,17 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
     _jnt_posvelacccur_interface.registerHandle(posvelacccur_handle);
 
   }
-  registerInterface(&_jnt_state_interface);
+  _parent->registerInterface(&_jnt_state_interface);
   if (_control_mode == PositionControl){
     //registerInterface(&_jnt_pos_interface);
     //todo hack
-    registerInterface(&_jnt_posvelacccur_interface);
+    _parent->registerInterface(&_jnt_posvelacccur_interface);
   } else if (_control_mode == VelocityControl){
-    registerInterface(&_jnt_vel_interface);
+    _parent->registerInterface(&_jnt_vel_interface);
   } else if (_control_mode == EffortControl){
-    registerInterface(&_jnt_eff_interface);
+    _parent->registerInterface(&_jnt_eff_interface);
   } else if(_control_mode == CurrentBasedPositionControl ){
-    registerInterface(&_jnt_posvelacccur_interface);
+    _parent->registerInterface(&_jnt_posvelacccur_interface);
   }
 
   writeTorque(nh.param("servos/auto_torque", false));
@@ -538,6 +538,10 @@ void DynamixelServoHardwareInterface::write()
     }
 
   }
+}
+
+void DynamixelServoHardwareInterface::setParent(hardware_interface::RobotHW* parent) {
+  _parent = parent;
 }
 
 bool DynamixelServoHardwareInterface::stringToControlMode(std::string _control_modestr, ControlMode& control_mode)

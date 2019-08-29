@@ -26,11 +26,13 @@ public:
   bool init(ros::NodeHandle& nh);
   bool read();
   void write();
+  void setParent(hardware_interface::RobotHW* parent);
 
 private:
   ros::NodeHandle _nh;
   std::shared_ptr<DynamixelDriver> _driver;
   hardware_interface::ImuSensorInterface _imu_interface;
+  hardware_interface::RobotHW* _parent;
 
   uint32_t _last_seq_number{};
   double* _orientation{}; //quaternion (x,y,z,w)

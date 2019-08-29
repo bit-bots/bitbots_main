@@ -41,8 +41,8 @@ bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   nh.getParam("IMU/frame", imu_frame);
   hardware_interface::ImuSensorHandle imu_handle(imu_name, imu_frame, _orientation, _orientation_covariance, _angular_velocity, _angular_velocity_covariance, _linear_acceleration, _linear_acceleration_covariance);
   _imu_interface.registerHandle(imu_handle);
-  registerInterface(&_imu_interface);
-  
+  _parent->registerInterface(&_imu_interface);
+
   return true;
 }
 
@@ -83,7 +83,10 @@ bool ImuHardwareInterface::read(){
 }
 
 // we dont write anything to the IMU
-void write(){}
+void ImuHardwareInterface::write(){}
 
+void ImuHardwareInterface::setParent(hardware_interface::RobotHW* parent) {
+    _parent = parent;
+}
 
 }
