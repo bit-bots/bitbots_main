@@ -9,7 +9,6 @@ namespace bitbots_ros_control {
  * a common bus driver over multiple hardware interfaces possible.
  */
 WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
-
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1);
 
   // load parameters
@@ -24,7 +23,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
   nh.getParam("port_info/port_name", port_name);
   int baudrate;
   nh.getParam("port_info/baudrate", baudrate);
-  boost::shared_ptr<DynamixelDriver> driver;
+  auto driver = std::make_shared<DynamixelDriver>();
   if(!driver->init(port_name.c_str(), uint32_t(baudrate))){
     ROS_ERROR("Error opening serial port %s", port_name.c_str());
     speak_error(_speak_pub, "Error opening serial port");

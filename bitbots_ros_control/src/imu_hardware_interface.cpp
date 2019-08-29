@@ -8,7 +8,7 @@ namespace bitbots_ros_control
 ImuHardwareInterface::ImuHardwareInterface(){}
 
 
-ImuHardwareInterface::ImuHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver){
+ImuHardwareInterface::ImuHardwareInterface(std::shared_ptr<DynamixelDriver>& driver){
   _driver = driver;
 }
 

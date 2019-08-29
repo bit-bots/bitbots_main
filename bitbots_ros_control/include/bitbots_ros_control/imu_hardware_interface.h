@@ -21,7 +21,7 @@ namespace bitbots_ros_control
 class ImuHardwareInterface : public hardware_interface::RobotHW{
 public:
   ImuHardwareInterface();
-  ImuHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver);
+  ImuHardwareInterface(std::shared_ptr<DynamixelDriver>& driver);
 
   bool init(ros::NodeHandle& nh);
   bool read();
@@ -29,7 +29,7 @@ public:
 
 private:
   ros::NodeHandle _nh;
-  boost::shared_ptr<DynamixelDriver> _driver;
+  std::shared_ptr<DynamixelDriver> _driver;
   hardware_interface::ImuSensorInterface _imu_interface;
 
   uint32_t _last_seq_number{};

@@ -20,7 +20,7 @@ namespace bitbots_ros_control {
 class BitFootHardwareInterface : public hardware_interface::RobotHW {
 public:
     BitFootHardwareInterface();
-    BitFootHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver, int id, std::string topic_name);
+    BitFootHardwareInterface(std::shared_ptr<DynamixelDriver>& driver, int id, std::string topic_name);
 
     bool init(ros::NodeHandle &nh);
 
@@ -31,7 +31,7 @@ public:
 private:
     ros::NodeHandle _nh;
 
-    boost::shared_ptr<DynamixelDriver> _driver;
+    std::shared_ptr<DynamixelDriver> _driver;
 
     std::vector<double> _current_pressure;
 

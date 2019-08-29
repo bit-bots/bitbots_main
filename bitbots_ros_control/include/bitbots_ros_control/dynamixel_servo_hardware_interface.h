@@ -68,7 +68,7 @@ class DynamixelServoHardwareInterface : public hardware_interface::RobotHW
 {
 public:
   DynamixelServoHardwareInterface();
-  DynamixelServoHardwareInterface(boost::shared_ptr<DynamixelDriver>& driver);
+  DynamixelServoHardwareInterface(std::shared_ptr<DynamixelDriver>& driver);
   void reconf_callback(bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig &config, uint32_t level);
 
   bool init(ros::NodeHandle& nh);
@@ -113,7 +113,7 @@ private:
   bool _switch_individual_torque;
   std::vector<int32_t> _goal_torque_individual;
 
-  boost::shared_ptr<DynamixelDriver> _driver;
+  std::shared_ptr<DynamixelDriver> _driver;
 
   hardware_interface::JointStateInterface _jnt_state_interface;
   hardware_interface::PositionJointInterface _jnt_pos_interface;
