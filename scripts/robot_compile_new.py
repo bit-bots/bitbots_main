@@ -8,7 +8,6 @@ import subprocess
 
 from bitbots_bringup import game_settings
 
-
 BITBOTS_META = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -117,7 +116,7 @@ class Target:
         :type ssh_target: str
         """
         self.ip = ip  # type: str
-        self.ssh_target = ssh_target    # type: str
+        self.ssh_target = ssh_target  # type: str
 
         # figure out hostname
         for name, iip in self.IPs.__dict__.items():
@@ -135,7 +134,8 @@ class Target:
         if self.hostname == "davros":
             self.sync_includes_file = os.path.join(BITBOTS_META, "sync_includes_davros.yaml")
         else:
-            self.sync_includes_file = os.path.join(BITBOTS_META, "sync_includes_wolfgang_{}.yaml".format(self.hostname[:-1]))
+            self.sync_includes_file = os.path.join(BITBOTS_META,
+                                                   "sync_includes_wolfgang_{}.yaml".format(self.hostname[:-1]))
 
 
 def parse_arguments():
@@ -156,6 +156,9 @@ def parse_arguments():
     parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
     parser.add_argument("--clean-built", action="store_true",
                         help="Clean build directory before compiling")
+    parser.add_argument("--no-rosdeps", action="store_false", default=True, dest="install_rosdeps",
+                        help="Don't check and install rosdeps on the target."
+                             "Might be useful when no internet connection is available.")
     parser.add_argument("-q", "--quiet", action="store_true", help="Less output")
     return parser.parse_args()
 
@@ -283,15 +286,14 @@ def build(target, package='', verbose=True, pre_clean=False):
     cmd = [
         "ssh",
         "bitbots@{}".format(target.ssh_target),
-        '''
-        sync;
-        cd {workspace};
-        source devel/setup.zsh;
-        {cmd_clean}
-        catkin build --force-color {package} {quiet_option} || exit 1;
-        ./src/scripts/repair.sh {quiet_option};
-        sync;
-        '''.format(**{
+        ("sync;"
+         "cd {workspace};"
+         "source devel/setup.zsh;"
+         "{cmd_clean}"
+         "catkin build --force-color {package} {quiet_option} --continue-on-failure --no-status --summary || exit 1;"
+         "./src/scripts/repair.sh {quiet_option};"
+         "sync;"
+         ).format(**{
             "workspace": target.workspace,
             "cmd_clean": "cakin clean -y {};".format(package) if pre_clean else "",
             "quiet_option": "> /dev/null" if not verbose else "",
@@ -322,7 +324,7 @@ def install_rosdeps(target, verbose=True):
         "bitbots@{}".format(target.ssh_target),
         "rosdep install -y -r {} --ignore-src --from-paths {}".format(
             "" if verbose else "-q",
-            sys.path.append(target.workspace, "src")
+            os.path.join(target.workspace, "src")
         ),
     ]
 
@@ -357,7 +359,8 @@ def main():
         elif args.configure_only:
             print_info("Not compiling on {} due to configure-only mode".format(target.hostname))
         else:
-            install_rosdeps(target, verbose=not args.quiet)
+            if args.install_rosdeps:
+                install_rosdeps(target, verbose=not args.quiet)
             build(target, args.package, verbose=not args.quiet, pre_clean=args.clean_build)
 
         # configure
