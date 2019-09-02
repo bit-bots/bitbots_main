@@ -73,7 +73,8 @@ set(CODE_LIBRARIES
         urdfdom_model
 )
 
-
 add_executable(QuinticWalkingNode ${SOURCES})
+
 add_dependencies(QuinticWalkingNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
-target_link_libraries(QuinticWalkingNode ${catkin_LIBRARIES} ${PROJECT_NAME})
+
+target_link_libraries(QuinticWalkingNode ${catkin_LIBRARIES} ${CODE_LIBRARIES})

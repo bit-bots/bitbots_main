@@ -18,6 +18,8 @@ from tf.transformations import quaternion_from_euler
 showing_feedback = False
 
 if __name__ == "__main__":
+    print("Beware: this script may only work when calling it directly on the robot "
+          "and will maybe result in tf errors otherwise")
     print("[..] Initializing node", end='')
     rospy.init_node('dynamic_kick_dummy_client', anonymous=True)
     marker_pub = rospy.Publisher("/debug/dynamic_kick_ball_marker", Marker, queue_size=1)

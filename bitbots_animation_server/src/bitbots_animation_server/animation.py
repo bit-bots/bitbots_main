@@ -10,10 +10,11 @@ class Keyframe:
     A pose which the robot reaches at :attr:`duration` seconds in the future.
     '''
 
-    def __init__(self, goals, duration=1.0, pause=0.0, p={}):
+    def __init__(self, goals, torque={}, duration=1.0, pause=0.0, p={}):
         self.duration = float(duration)
         self.pause = float(pause)
         self.goals = goals
+        self.torque = torque
         self.p = p
 
 
@@ -26,6 +27,7 @@ class Animation:
     def __init__(self, name, keyframes, default_interpolator=None):
         self.name = name
         self.keyframes = keyframes
+        self.default_interpolator = default_interpolator
 
 
 def parse(info):
@@ -36,7 +38,7 @@ def parse(info):
     anim = Animation(info["name"], ())
 
     keyframes = info.get("keyframes", ())
-    anim.keyframes = [Keyframe(k.get('goals', {}), k.get('duration', 1), k.get('pause', 0), k.get('p', {})) for k in
+    anim.keyframes = [Keyframe(k.get('goals', {}), k.get('torque', {}), k.get('duration', 1), k.get('pause', 0), k.get('p', {})) for k in
                       keyframes]
 
     return anim
@@ -55,6 +57,7 @@ def as_dict(anim):
                           "duration": k.duration,
                           "pause": k.pause,
                           "goals": k.goals,
+                          "torque": k.torque,
                           "p": k.p
                       } for k in anim.keyframes]
     }

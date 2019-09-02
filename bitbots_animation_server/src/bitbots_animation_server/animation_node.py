@@ -10,7 +10,9 @@ import time
 from humanoid_league_msgs.msg import PlayAnimationResult, PlayAnimationFeedback
 from humanoid_league_msgs.msg import PlayAnimationAction as PlayAction
 from humanoid_league_msgs.msg import Animation as AnimationMsg
+from bitbots_animation_server.animation import Keyframe, Animation
 from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
+
 
 from bitbots_animation_server.animation import parse
 from sensor_msgs.msg import Imu, JointState
@@ -45,8 +47,12 @@ class PlayAnimationAction(object):
         self.hcm_state = 0
         self.current_animation = None
 
+        self.parsed_animation = {}
+
         # pre defiened messages for performance
         self.anim_msg = AnimationMsg()
+        # AnimationMsg takes a JointTrajectory message to also be able to process trajectorys. To keep this functionality, we use
+        # this message type, even though we only need a single joint goal in this case.
         self.traj_msg = JointTrajectory()
         self.traj_point = JointTrajectoryPoint()
 
@@ -72,7 +78,6 @@ class PlayAnimationAction(object):
             # but we send a request, so that we may can soon
             self.send_animation_request()
             rospy.loginfo("HCM not controlable. Only sended request to make it come controlable.")
-            #rospy.loginfo("Will now wait for HCM to get controlable.")
             self._as.set_aborted(text="HCM not controlable. Will now come controlable. Try again later.")
             return
 
@@ -123,7 +128,7 @@ class PlayAnimationAction(object):
     def get_animation_splines(self, animation_name):
         try:
             with open(find_animation(animation_name)) as fp:
-                parsed_animation = parse(json.load(fp))
+                self.parsed_animation = parse(json.load(fp))
         except IOError:
             rospy.logwarn("Animation '%s' not found" % animation_name)
             self._as.set_aborted(False, "Animation not found")
@@ -134,7 +139,7 @@ class PlayAnimationAction(object):
             traceback.print_exc()
             self._as.set_aborted(False, "Animation not found")
             return
-        return SplineAnimator(parsed_animation, self.current_joint_states)
+        return SplineAnimator(self.parsed_animation, self.current_joint_states)
 
     def check_for_new_goal(self):
         if self._as.is_new_goal_available():
@@ -172,16 +177,30 @@ class PlayAnimationAction(object):
         self.anim_msg.last = last
         self.anim_msg.hcm = hcm
         if pose is not None:
+            torque = self.get_torque()
             self.traj_msg.joint_names = []
             self.traj_msg.points = [JointTrajectoryPoint()]
+            # We are only using a single point in the trajectory message, since we don't want to send a trajectory, but a single joint goal
             self.traj_msg.points[0].positions = []
+            self.traj_msg.points[0].effort = []
             for joint in pose:
                 self.traj_msg.joint_names.append(joint)
                 self.traj_msg.points[0].positions.append(pose[joint])
+                for t in torque:
+                    if joint == t:
+                        self.traj_msg.points[0].effort.append(bool(torque[t]))
             self.anim_msg.position = self.traj_msg
         self.anim_msg.header.stamp = rospy.Time.now()
         self.hcm_publisher.publish(self.anim_msg)
 
+    def get_torque(self):
+        torque = {}
+        if not self.parsed_animation == {}:
+            for kf in self.parsed_animation.keyframes:
+                for t in kf.torque:
+                    torque[t] = kf.torque[t]
+        return torque
+        
 
 if __name__ == "__main__":
     rospy.logdebug("starting animation node")
