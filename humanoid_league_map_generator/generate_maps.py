@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 from scipy import ndimage
 import math
+import os
+import rospkg
 
 
 # Generates .png files for localization
@@ -25,6 +27,9 @@ penalty_mark_distance = 150
 center_circle_diameter = 150
 border_strip_width = 70
 line_width = 5
+
+# Path to store generated models
+path = os.path.join(rospkg.RosPack().get_path('humanoid_league_localization'), 'models')
 
 # Invert image image to get black on white background
 invert = True
@@ -141,7 +146,7 @@ if lines:
 	img_lines = cv2.rectangle(img_lines, goal_area_right_start, goal_area_right_end, color, line_width)
 
 	# blur and write
-	cv2.imwrite('/home/judith/robocup/bitbots_meta/humanoid_league_localization/models/lines.png', blurDistance(img_lines, 5))
+	cv2.imwrite(os.path.join(path, 'lines.png'), blurDistance(img_lines, 5))
 
 #############################################################################
 #goalposts
@@ -158,7 +163,7 @@ if posts:
 	img_posts = cv2.circle(img_posts, goalpost_right_2, line_width*2, color, -1)
 	
 	# blur and write
-	cv2.imwrite('/home/judith/robocup/bitbots_meta/humanoid_league_localization/models/posts.png', blurGaussian(img_posts))
+	cv2.imwrite(os.path.join(path, 'posts.png'), blurGaussian(img_posts))
 
 
 ############################################################################
@@ -269,7 +274,7 @@ if features:
 
 
 		# blur and write
-		cv2.imwrite('/home/judith/robocup/bitbots_meta/humanoid_league_localization/models/corners.png', blurDistance(img_corners))
+		cv2.imwrite(os.path.join(path, 'corners.png'), blurDistance(img_corners))
 
 
 	if corners_blobs:
@@ -290,7 +295,7 @@ if features:
 		img_corners = cv2.circle(img_corners, (goal_area_right_end[0], goal_area_right_start[1]), size, color, -1)
 		img_corners = cv2.circle(img_corners, goal_area_right_end, size, color, -1)
 
-		cv2.imwrite('/home/judith/robocup/bitbots_meta/humanoid_league_localization/models/corners.png', blurGaussian(img_corners))
+		cv2.imwrite(os.path.join(path, 'corners.png'), blurGaussian(img_corners))
 
 
 
@@ -320,8 +325,7 @@ if features:
 								  color, line_width)
 
 		# blur and write
-		cv2.imwrite('/home/judith/robocup/bitbots_meta/humanoid_league_localization/models/tcrossings.png',
-					img_tcrossings)
+		cv2.imwrite(os.path.join(path, 'tcrossings.png'), img_tcrossings)
 
 	if tcrossings_blobs:
 		# Create black image
@@ -338,8 +342,7 @@ if features:
 		img_tcrossings = cv2.circle(img_tcrossings, middle_line_end, size, color, -1)
 
 		# blur and write
-		cv2.imwrite('/home/judith/robocup/bitbots_meta/humanoid_league_localization/models/tcrossings.png',
-					blurGaussian(img_tcrossings))
+		cv2.imwrite(os.path.join(path, 'tcrossings.png'), blurGaussian(img_tcrossings))
 
 
 
@@ -361,11 +364,4 @@ if features:
 		img_crosses = cv2.circle(img_crosses, (middle_point[0], middle_point[1] + center_circle_diameter), size, color, -1)
 
 		# blur and write
-		cv2.imwrite('/home/judith/robocup/bitbots_meta/humanoid_league_localization/models/crosses.png',
-					blurGaussian(img_crosses))
-
-
-
-
-
-
+		cv2.imwrite(os.path.join(path, 'crosses.png'), blurGaussian(img_crosses))
