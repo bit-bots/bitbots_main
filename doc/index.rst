@@ -29,7 +29,8 @@ Welcome to bitbots_meta's documentation!
    manual/software/ai
    manual/software/vision
    manual/software/walking
-    manual/software/bitfoot
+   manual/software/bitfoot
+   manual/software/dsd
 
 Hardware:
 
