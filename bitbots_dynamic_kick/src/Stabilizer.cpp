@@ -46,7 +46,7 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
     ik_options.return_approximate_solution = true;
     double bio_ik_timeout = 0.01;
 
-    tf::Vector3 stabilizing_target;
+    tf2::Vector3 stabilizing_target;
     if (cop_support_point && m_use_cop) {
         /* calculate stabilizing target from center of pressure
          * the cop is in corresponding sole frame
@@ -73,7 +73,7 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
     }
     m_visualizer.display_stabilizing_point(stabilizing_target, is_left_kick ? "r_sole" : "l_sole");
 
-    tf::Transform flying_foot_goal;
+    tf2::Transform flying_foot_goal;
     flying_foot_goal.setOrigin({flying_foot_goal_pose.pose.position.x,
                                 flying_foot_goal_pose.pose.position.y,
                                 flying_foot_goal_pose.pose.position.z});
@@ -97,7 +97,7 @@ std::optional<JointGoals> Stabilizer::stabilize(bool is_left_kick, geometry_msgs
     bio_ik_flying_foot_goal->setWeight(m_flying_weight);
 
     auto *trunk_orientation_goal = new ReferenceOrientationGoal();
-    tf::Quaternion trunk_orientation;
+    tf2::Quaternion trunk_orientation;
     trunk_orientation.setRPY(0, 0.2, 0);
     trunk_orientation_goal->setOrientation(trunk_orientation);
     trunk_orientation_goal->setLinkName("base_link");

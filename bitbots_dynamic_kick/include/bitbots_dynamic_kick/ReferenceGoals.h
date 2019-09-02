@@ -30,17 +30,17 @@ public:
 };
 
 class ReferenceOrientationGoal : public ReferenceLinkGoalBase {
-    tf::Quaternion orientation_;
+    tf2::Quaternion orientation_;
 
 public:
     ReferenceOrientationGoal()
             : orientation_(0, 0, 0, 1)
             , ReferenceLinkGoalBase() {}
     ReferenceOrientationGoal(const std::string& link_name, const std::string& reference_link_name,
-                             const tf::Quaternion& orientation, double weight = 1.0)
+                             const tf2::Quaternion& orientation, double weight = 1.0)
             : ReferenceLinkGoalBase(link_name, reference_link_name, weight)
             , orientation_(orientation.normalized()) {}
-    inline void setOrientation(const tf::Quaternion& orientation) { orientation_ = orientation.normalized(); }
+    inline void setOrientation(const tf2::Quaternion& orientation) { orientation_ = orientation.normalized(); }
     double evaluate(const bio_ik::GoalContext& context) const override {
         bio_ik::Frame reference_to_goal = bio_ik::inverse(getReferenceLinkFrame(context) * getLinkFrame(context));
         return fmin((orientation_ - reference_to_goal.getOrientation()).length2(), (orientation_ + reference_to_goal.getOrientation()).length2());
@@ -53,12 +53,12 @@ class ReferencePoseGoal : public ReferenceLinkGoalBase {
 public:
     ReferencePoseGoal() : ReferenceLinkGoalBase() {}
     ReferencePoseGoal(const std::string &link_name, const std::string &reference_link_name,
-                      const tf::Vector3 &position, const tf::Quaternion &orientation,
+                      const tf2::Vector3 &position, const tf2::Quaternion &orientation,
                       double weight = 1.0)
             : ReferenceLinkGoalBase(link_name, reference_link_name, weight)
             , frame_(position, orientation) {}
-    inline void setPosition(tf::Vector3 position) { frame_.setPosition(position); }
-    inline void setOrientation(tf::Quaternion rotation) { frame_.setOrientation(rotation); }
+    inline void setPosition(tf2::Vector3 position) { frame_.setPosition(position); }
+    inline void setOrientation(tf2::Quaternion rotation) { frame_.setOrientation(rotation); }
     double evaluate(const bio_ik::GoalContext& context) const override {
         double e = 0.0;
 

@@ -159,16 +159,16 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
 
     /* Flying foot orientation */
     /* Construct a start_rotation as quaternion from Pose msg */
-    tf::Quaternion start_rotation(flying_foot_pose.orientation.x, flying_foot_pose.orientation.y,
+    tf2::Quaternion start_rotation(flying_foot_pose.orientation.x, flying_foot_pose.orientation.y,
                                   flying_foot_pose.orientation.z, flying_foot_pose.orientation.w);
     double start_r, start_p, start_y;
-    tf::Matrix3x3(start_rotation).getRPY(start_r, start_p, start_y);
+    tf2::Matrix3x3(start_rotation).getRPY(start_r, start_p, start_y);
 
     /* Also construct one for the target */
-    tf::Quaternion target_rotation(flying_foot_pose.orientation.x, flying_foot_pose.orientation.y,
+    tf2::Quaternion target_rotation(flying_foot_pose.orientation.x, flying_foot_pose.orientation.y,
                                    flying_foot_pose.orientation.z, flying_foot_pose.orientation.w);
     double target_r, target_p, target_y;
-    tf::Matrix3x3(target_rotation).getRPY(target_r, target_p, target_y);
+    tf2::Matrix3x3(target_rotation).getRPY(target_r, target_p, target_y);
 
     target_y = calc_kick_foot_yaw();
 
