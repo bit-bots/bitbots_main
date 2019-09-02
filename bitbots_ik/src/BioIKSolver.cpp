@@ -14,7 +14,7 @@ BioIKSolver::BioIKSolver(const robot_state::JointModelGroup &all_joints_group, c
     _rleg_joints_group = &rleg_joints_group;
 }
 
-bool BioIKSolver::solve(tf::Transform& trunk_to_support_foot, tf::Transform& trunk_to_flying_foot, bool is_left_support, robot_state::RobotStatePtr &robot_state_ptr){
+bool BioIKSolver::solve(tf2::Transform& trunk_to_support_foot, tf2::Transform& trunk_to_flying_foot, bool is_left_support, robot_state::RobotStatePtr &robot_state_ptr){
     bio_ik::BioIKKinematicsQueryOptions ik_options;
     //ik_options.goals.clear();
     ik_options.replace = true;
@@ -79,7 +79,7 @@ bool BioIKSolver::solve(tf::Transform& trunk_to_support_foot, tf::Transform& tru
 
     /*balancing*/
     if(false){
-        /*tf::Vector3 balance_target = new tf::Vector3();
+        /*tf2::Vector3 balance_target = new tf2::Vector3();
         //todo this should be CoM
         balance_target[0] =0;
         balance_target[1] =0;
