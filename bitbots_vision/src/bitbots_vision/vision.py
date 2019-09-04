@@ -306,6 +306,7 @@ class Vision:
             # Now this is not the first image callback anymore
             self._first_image_callback = False
         except (TypeError, cv2.error):
+            # Forward the exception if no dynamic reconfiguration is currently active.
             if not self.reconfigure_active:
                 raise
             else:
