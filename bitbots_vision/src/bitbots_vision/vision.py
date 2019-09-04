@@ -562,6 +562,7 @@ class Vision:
 
         # Notify if there is a camera cap detected
         if sum(mean) < self._blind_threshold:
+            rospy.logerr("Image is too dark! Camera cap not removed?")
             ROS_Utils.speak("Hey!   Remove my camera cap!", self.speak_publisher)
 
 
