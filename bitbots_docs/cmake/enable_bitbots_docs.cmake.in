@@ -15,7 +15,7 @@ function(enable_bitbots_docs)
 
         add_custom_target(Documentation
                     COMMENT "Building documentation from source"
-                    COMMAND sphinx-apidoc src -o docs/pyapi
+                    COMMAND sphinx-apidoc src/${PROJECT_NAME} -o docs/pyapi
                     COMMAND sphinx-build docs docs/_out
                     BYPRODUCTS docs/_out docs/cppapi docs/pyapi
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
