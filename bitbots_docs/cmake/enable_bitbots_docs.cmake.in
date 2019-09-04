@@ -13,7 +13,7 @@ function(enable_bitbots_docs)
     list(LENGTH files_py num_files_py)
     if (num_files_py)
 
-        add_custom_target(Documentation ALL
+        add_custom_target(Documentation
                     COMMENT "Building documentation from source"
                     COMMAND sphinx-apidoc src -o docs/pyapi
                     COMMAND sphinx-build docs docs/_out
@@ -21,7 +21,7 @@ function(enable_bitbots_docs)
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
     else()
-        add_custom_target(Documentation ALL
+        add_custom_target(Documentation
                     COMMENT "Building documentation from source"
                     COMMAND sphinx-build docs docs/_out
                     BYPRODUCTS docs/_out docs/cppapi docs/pyapi
