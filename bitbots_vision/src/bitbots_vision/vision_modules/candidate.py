@@ -203,7 +203,7 @@ class CandidateFinder(object):
     @abc.abstractmethod
     def compute(self):
         """
-        Runs the most intense calculation without returning any output.
+        Runs the most intense calculation without returning any output and caches the result.
         """
         raise NotImplementedError
 
