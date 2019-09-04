@@ -4,15 +4,17 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # auto-generated documentation
-**/doc/_build
-**/doc/_generated
-**/doc/manifest.yaml
-**/doc/html
+**/docs/_build
+**/docs/_out
+**/docs/index.rst
+**/docs/conf.py
+**/docs/manifest.yaml
 
 # User-specific stuff:
 .idea/workspace.xml
 .idea/tasks.xml
 .idea/*
+**/cmake-build-debug
 
 # Sensitive or high-churn files:
 .idea/dataSources/

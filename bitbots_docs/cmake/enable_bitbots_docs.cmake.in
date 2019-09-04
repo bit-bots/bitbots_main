@@ -1,0 +1,30 @@
+function(enable_bitbots_docs)
+    # create directories neccessary for sphinx
+    file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/docs)
+    file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/docs/_build/doxyoutput)
+    file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/docs/_static)
+
+    # copy default configuration files from bitbots_docs into target package
+    file(COPY @CMAKE_SOURCE_DIR@/files/index.rst DESTINATION ${CMAKE_SOURCE_DIR}/docs)
+    file(COPY @CMAKE_SOURCE_DIR@/files/conf.py DESTINATION ${CMAKE_SOURCE_DIR}/docs)
+
+    # figure out if we have python files in the current package and only do sphinx-apidoc if we do
+    file(GLOB_RECURSE files_py CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/*.py)
+    list(LENGTH files_py num_files_py)
+    if (num_files_py)
+
+        add_custom_target(Documentation ALL
+                    COMMENT "Building documentation from source"
+                    COMMAND sphinx-apidoc src -o docs/pyapi
+                    COMMAND sphinx-build docs docs/_out
+                    BYPRODUCTS docs/_out docs/cppapi docs/pyapi
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    else()
+        add_custom_target(Documentation ALL
+                    COMMENT "Building documentation from source"
+                    COMMAND sphinx-build docs docs/_out
+                    BYPRODUCTS docs/_out docs/cppapi docs/pyapi
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    endif()
+endfunction()
