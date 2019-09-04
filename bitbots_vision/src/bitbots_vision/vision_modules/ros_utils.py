@@ -186,10 +186,11 @@ class ROS_Utils:
     def create_or_update_publisher(old_config, new_config, publisher_object, topic_key, data_class, subscriber_listener=None, tcp_nodelay=False, latch=False, headers=None, queue_size=1):
         """
         Creates or updates a publisher
+
         :param old_config: Previous config dict
         :param new_config: Current config dict
         :param publisher_object: The python object, that represents the publisher
-        :param topic_key: The config key, where the topic name is stored
+        :param topic_key: The name of the topic variable in the config dict
         :param data_class: Data type class for ROS messages of the topic we want to subscribe
         :param subscriber_listener: Listener for subscription events
         :param tcp_nodelay: If True, this enables lower latency publishing at the cost of efficiency
@@ -219,10 +220,11 @@ class ROS_Utils:
     def create_or_update_subscriber(old_config, new_config, subscriber_object, topic_key, data_class, callback=None, callback_args=None, queue_size=1, buff_size=65536, tcp_nodelay=False):
         """
         Creates or updates a subscriber
+
         :param old_config: Previous config dict
         :param new_config: Current config dict
         :param subscriber_object: The python object, that represents the subscriber
-        :param topic_key: The config key, where the topic name is stored
+        :param topic_key: The name of the topic variable in the config dict
         :param data_class: Data type class for ROS messages of the topic we want to subscribe
         :param callback: The subscriber callback function
         :param callback_args: Additional arguments for the callback method
