@@ -18,10 +18,8 @@
   <depend>roscpp</depend>
   <depend>std_msgs</depend>
   <depend>rosconsole</depend>
-  <depend>eigen_conversions</depend>
-  <depend>tf</depend>
+  <depend>tf2</depend>
   <depend>bio_ik</depend>
-  <depend>tf_conversions</depend>
   <depend>moveit_core</depend>
   <depend>moveit_ros_move_group</depend>
   <depend>moveit_ros_planning</depend>

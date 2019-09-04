@@ -11,15 +11,15 @@ AnalyticIKSolver::AnalyticIKSolver(std::string robot_type, const robot_state::Jo
     _rleg_joints_group = &rleg_joints_group;
 }
 
-bool AnalyticIKSolver::solve(tf::Transform& trunk_to_support_foot, tf::Transform& trunk_to_flying_foot, bool is_left_support, robot_state::RobotStatePtr &robot_state_ptr) {
+bool AnalyticIKSolver::solve(tf2::Transform& trunk_to_support_foot, tf2::Transform& trunk_to_flying_foot, bool is_left_support, robot_state::RobotStatePtr &robot_state_ptr) {
     std::vector<double> support_joints;
     std::vector<double> fly_joints;
-    tf::Transform goal = tf::Transform();
-    tf::Quaternion tf_quat = tf::Quaternion();
-    tf::Vector3 tf_vec;
+    tf2::Transform goal;
+    tf2::Quaternion tf_quat;
+    tf2::Vector3 tf_vec;
 
-    tf::Vector3 trunk_to_LHipYaw;
-    tf::Vector3 trunk_to_RHipYaw;
+    tf2::Vector3 trunk_to_LHipYaw;
+    tf2::Vector3 trunk_to_RHipYaw;
     urdf::JointConstSharedPtr lHipYaw, rHipYaw;
     urdf::Model robot;
     //load URDF
@@ -78,7 +78,7 @@ bool AnalyticIKSolver::solve(tf::Transform& trunk_to_support_foot, tf::Transform
     return success;
 }
 
-bool AnalyticIKSolver::legIK(tf::Transform& goal, std::vector<double>& positions, bool isLeftLeg, urdf::Model robot){
+bool AnalyticIKSolver::legIK(tf2::Transform& goal, std::vector<double>& positions, bool isLeftLeg, urdf::Model robot){
     // this method works only for Darwin-OP like kinematics
     // the roll and pitch joints have to rotate around the same axis
     // the hip yaw has to be before the others
@@ -121,14 +121,14 @@ bool AnalyticIKSolver::legIK(tf::Transform& goal, std::vector<double>& positions
     //ROS_INFO("Foot goal length %f", goal.getOrigin().length());
     // get RPY values for foot
     double foot_roll, foot_pitch, foot_yaw;
-    tf::Matrix3x3(goal.getRotation()).getRPY(foot_roll, foot_pitch, foot_yaw);
+    tf2::Matrix3x3(goal.getRotation()).getRPY(foot_roll, foot_pitch, foot_yaw);
     // yaw can only be set with hip yaw. Compute it from goal    
     double hip_yaw = foot_yaw;
     //ROS_WARN("Goal from trunk  x:%f y:%f z:%f  OOO  r:%f, p:%f, y:%f", goal.getOrigin()[0], goal.getOrigin()[1], goal.getOrigin()[2], foot_roll, foot_pitch, foot_yaw);
     
     // translate the goal vector so that it starts at rotate point of hip_pitch and hip_roll    
-    tf::Vector3 hip_yaw_to_pitch {hipYawToPitchX, hipYawToPitchY, hipYawToPitchZ};
-    hip_yaw_to_pitch = hip_yaw_to_pitch.rotate(tf::Vector3{0.0, 0.0, 1.0}, foot_yaw);
+    tf2::Vector3 hip_yaw_to_pitch {hipYawToPitchX, hipYawToPitchY, hipYawToPitchZ};
+    hip_yaw_to_pitch = hip_yaw_to_pitch.rotate(tf2::Vector3{0.0, 0.0, 1.0}, foot_yaw);
     goal.setOrigin(goal.getOrigin() - hip_yaw_to_pitch);
     //ROS_WARN("Goal from hip  x:%f y:%f z:%f", goal.getOrigin()[0], goal.getOrigin()[1], goal.getOrigin()[2]);
 
@@ -136,10 +136,10 @@ bool AnalyticIKSolver::legIK(tf::Transform& goal, std::vector<double>& positions
 
     // we compute the goal vector to the ankle joint
     // transform from goal position to ankle is given by ankle_sole distance in z direction
-    tf::Transform goal_to_ankle;
-    goal_to_ankle.setOrigin(tf::Vector3{0.0, 0.0, -1* ankle_to_sole});
-    tf::Transform to_ankle = goal * goal_to_ankle;    
-    tf::Vector3 ankle_goal = to_ankle.getOrigin();
+    tf2::Transform goal_to_ankle;
+    goal_to_ankle.setOrigin(tf2::Vector3{0.0, 0.0, -1* ankle_to_sole});
+    tf2::Transform to_ankle = goal * goal_to_ankle;    
+    tf2::Vector3 ankle_goal = to_ankle.getOrigin();
     //ROS_WARN("Ankle Goal from hip  x:%f y:%f z:%f", ankle_goal[0], ankle_goal[1], ankle_goal[2]);
     //ROS_INFO("Ankle goal length %f", ankle_goal.length());
 

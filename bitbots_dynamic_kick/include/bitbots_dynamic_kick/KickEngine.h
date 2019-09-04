@@ -7,7 +7,6 @@
 #include <bitbots_splines/SplineContainer.hpp>
 #include <bitbots_msgs/KickGoal.h>
 #include <bitbots_msgs/KickFeedback.h>
-#include <tf/LinearMath/Transform.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/convert.h>
 #include <tf2/utils.h>

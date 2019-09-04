@@ -22,8 +22,9 @@
   <depend>std_msgs</depend>
   <depend>rosconsole</depend>
   <depend>dynamic_reconfigure</depend>
-  <depend>eigen_conversions</depend>
-  <depend>tf</depend>
+  <depend>tf2</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
   <depend>bio_ik</depend>
   <depend>tf_conversions</depend>
   <depend>moveit_core</depend>

@@ -5,7 +5,6 @@
 #include <optional>
 #include <bitbots_splines/SmoothSpline.hpp>
 #include <bitbots_splines/SplineContainer.hpp>
-#include <tf/LinearMath/Transform.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include "Stabilizer.h"
 #include <math.h>

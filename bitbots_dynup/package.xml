@@ -19,6 +19,9 @@
   <depend>bitbots_msgs</depend>
   <depend>bitbots_splines</depend>
   <depend>bio_ik</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

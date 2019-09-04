@@ -14,7 +14,7 @@ namespace bitbots_quintic_walk {
         _currentOrders[2] = 0.0;
 
         _marker_id = 1;
-        _odom_broadcaster = tf::TransformBroadcaster();
+        _odom_broadcaster = tf2_ros::TransformBroadcaster();
 
         // read config
         _nh.param<double>("engineFrequency", _engineFrequency, 100.0);
@@ -120,19 +120,19 @@ namespace bitbots_quintic_walk {
         _walkEngine.computeCartesianPosition(_trunkPos, _trunkAxis, _footPos, _footAxis, _isLeftSupport);
 
         // change goals from support foot based coordinate system to trunk based coordinate system
-        tf::Vector3 tf_vec;
-        tf::vectorEigenToTF(_trunkPos, tf_vec);
-        tf::Quaternion tf_quat = tf::Quaternion();
+        tf2::Vector3 tf_vec;
+        tf2::convert(_trunkPos, tf_vec);
+        tf2::Quaternion tf_quat;
         tf_quat.setRPY(_trunkAxis[0], _trunkAxis[1], _trunkAxis[2]);
         tf_quat.normalize();
-        tf::Transform support_foot_to_trunk(tf_quat, tf_vec);
-        tf::Transform trunk_to_support_foot_goal = support_foot_to_trunk.inverse();
+        tf2::Transform support_foot_to_trunk(tf_quat, tf_vec);
+        tf2::Transform trunk_to_support_foot_goal = support_foot_to_trunk.inverse();
 
-        tf::vectorEigenToTF(_footPos, tf_vec);
+        tf2::convert(_footPos, tf_vec);
         tf_quat.setRPY(_footAxis[0], _footAxis[1], _footAxis[2]);
         tf_quat.normalize();
-        tf::Transform support_to_flying_foot(tf_quat, tf_vec);
-        tf::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * support_to_flying_foot;
+        tf2::Transform support_to_flying_foot(tf_quat, tf_vec);
+        tf2::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * support_to_flying_foot;
 
         // call ik solver
         bool success = _bioIK_solver.solve(trunk_to_support_foot_goal, trunk_to_flying_foot_goal,
@@ -228,13 +228,13 @@ namespace bitbots_quintic_walk {
 
     void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
         if (_imuActive) {
-            // the incoming geometry_msgs::Quaternion is transformed to a tf::Quaterion
-            tf::Quaternion quat;
-            tf::quaternionMsgToTF(msg.orientation, quat);
+            // the incoming geometry_msgs::Quaternion is transformed to a tf2::Quaterion
+            tf2::Quaternion quat;
+            tf2::convert(msg.orientation, quat);
 
-            // the tf::Quaternion has a method to acess roll pitch and yaw
+            // the tf2::Quaternion has a method to acess roll pitch and yaw
             double roll, pitch, yaw;
-            tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+            tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
             // compute the pitch offset to the currently wanted pitch of the engine
             double wanted_pitch =
@@ -447,8 +447,8 @@ namespace bitbots_quintic_walk {
             trunk_to_support = _goal_state->getGlobalLinkTransform("r_sole");
         }
         Eigen::Isometry3d support_to_trunk = trunk_to_support.inverse();
-        tf::Transform tf_support_to_trunk;
-        tf::transformEigenToTF(support_to_trunk, tf_support_to_trunk);
+        tf2::Transform tf_support_to_trunk;
+        tf2::convert(support_to_trunk, tf_support_to_trunk);
 
         // odometry to trunk is transform to support foot * transform from support to trunk
         double x;
@@ -464,16 +464,16 @@ namespace bitbots_quintic_walk {
             yaw = _walkEngine.getFootstep().getRight()[2];
         }
 
-        tf::Transform supportFootTf;
-        supportFootTf.setOrigin(tf::Vector3{x, y, 0.0});
-        tf::Quaternion supportFootQuat = tf::Quaternion();
+        tf2::Transform supportFootTf;
+        supportFootTf.setOrigin(tf2::Vector3{x, y, 0.0});
+        tf2::Quaternion supportFootQuat;
         supportFootQuat.setRPY(0, 0, yaw);
         supportFootTf.setRotation(supportFootQuat);
-        tf::Transform odom_to_trunk = supportFootTf * tf_support_to_trunk;
-        tf::Vector3 pos = odom_to_trunk.getOrigin();
+        tf2::Transform odom_to_trunk = supportFootTf * tf_support_to_trunk;
+        tf2::Vector3 pos = odom_to_trunk.getOrigin();
         geometry_msgs::Quaternion quat_msg;
 
-        tf::quaternionTFToMsg(odom_to_trunk.getRotation().normalize(), quat_msg);
+        tf2::convert(odom_to_trunk.getRotation().normalize(), quat_msg);
 
         ros::Time current_time = ros::Time::now();
 
@@ -512,8 +512,8 @@ namespace bitbots_quintic_walk {
     }
 
     void
-    QuinticWalkingNode::publishDebug(tf::Transform &trunk_to_support_foot_goal,
-                                     tf::Transform &trunk_to_flying_foot_goal) {
+    QuinticWalkingNode::publishDebug(tf2::Transform &trunk_to_support_foot_goal,
+                                     tf2::Transform &trunk_to_flying_foot_goal) {
         /*
         This method publishes various debug / visualization information.
         */
@@ -570,8 +570,10 @@ namespace bitbots_quintic_walk {
 
         // engine output
         geometry_msgs::Pose pose_msg;
-        tf::pointEigenToMsg(_footPos, pose_msg.position);
-        pose_msg.orientation = tf::createQuaternionMsgFromRollPitchYaw(_footAxis[0], _footAxis[1], _footAxis[2]);
+        tf2::convert(_footPos, pose_msg.position);
+        tf2::Quaternion tf_quat;
+        tf_quat.setRPY(_footAxis[0], _footAxis[1], _footAxis[2]);
+        tf2::convert(tf_quat, pose_msg.orientation);
         msg.engine_fly_goal = pose_msg;
         publishMarker("engine_fly_goal", current_support_frame, pose_msg, 0, 0, 1, a);
 
@@ -580,8 +582,9 @@ namespace bitbots_quintic_walk {
         msg.engine_fly_axis.x = _footAxis[2];
 
 
-        tf::pointEigenToMsg(_trunkPos, pose_msg.position);
-        pose_msg.orientation = tf::createQuaternionMsgFromRollPitchYaw(_trunkAxis[0], _trunkAxis[1], _trunkAxis[2]);
+        tf2::convert(_trunkPos, pose_msg.position);
+        tf_quat.setRPY(_trunkAxis[0], _trunkAxis[1], _trunkAxis[2]);
+        tf2::convert(tf_quat, pose_msg.orientation);
         msg.engine_trunk_goal = pose_msg;
         publishMarker("engine_trunk_goal", current_support_frame, pose_msg, r, g, b, a);
 
@@ -590,7 +593,7 @@ namespace bitbots_quintic_walk {
         } else {
             _trunkPos[1] = _trunkPos[1] + _params.footDistance / 2;
         }
-        tf::pointEigenToMsg(_trunkPos, pose_msg.position);
+        tf2::convert(_trunkPos, pose_msg.position);
         msg.engine_trunk_goal_abs = pose_msg;
 
         msg.engine_trunk_axis.x = _trunkAxis[0];
@@ -608,12 +611,10 @@ namespace bitbots_quintic_walk {
 
         // goals
         geometry_msgs::Pose pose_support_foot_goal;
-        tf::pointTFToMsg(trunk_to_support_foot_goal.getOrigin(), pose_support_foot_goal.position);
-        tf::quaternionTFToMsg(trunk_to_support_foot_goal.getRotation(), pose_support_foot_goal.orientation);
+        tf2::toMsg(trunk_to_support_foot_goal, pose_support_foot_goal);
         msg.support_foot_goal = pose_support_foot_goal;
         geometry_msgs::Pose pose_fly_foot_goal;
-        tf::pointTFToMsg(trunk_to_flying_foot_goal.getOrigin(), pose_fly_foot_goal.position);
-        tf::quaternionTFToMsg(trunk_to_flying_foot_goal.getRotation(), pose_fly_foot_goal.orientation);
+        tf2::toMsg(trunk_to_flying_foot_goal, pose_fly_foot_goal);
         msg.fly_foot_goal = pose_fly_foot_goal;
         if (is_left_support) {
             msg.left_foot_goal = pose_support_foot_goal;
@@ -627,10 +628,10 @@ namespace bitbots_quintic_walk {
 
         // IK results
         geometry_msgs::Pose pose_left_result;
-        tf::poseEigenToMsg(_goal_state->getGlobalLinkTransform("l_sole"), pose_left_result);
+        tf2::convert(_goal_state->getGlobalLinkTransform("l_sole"), pose_left_result);
         msg.left_foot_ik_result = pose_left_result;
         geometry_msgs::Pose pose_right_result;
-        tf::poseEigenToMsg(_goal_state->getGlobalLinkTransform("r_sole"), pose_right_result);
+        tf2::convert(_goal_state->getGlobalLinkTransform("r_sole"), pose_right_result);
         msg.right_foot_ik_result = pose_right_result;
         if (is_left_support) {
             msg.support_foot_ik_result = pose_left_result;
@@ -643,39 +644,41 @@ namespace bitbots_quintic_walk {
         publishMarker("ik_right", "base_link", pose_right_result, 1, 0, 0, 1);
 
         // IK offsets
-        tf::Vector3 support_off;
-        tf::Vector3 fly_off;
-        tf::Vector3 tf_vec_left;
-        tf::Vector3 tf_vec_right;
-        tf::vectorEigenToTF(_goal_state->getGlobalLinkTransform("l_sole").translation(), tf_vec_left);
-        tf::vectorEigenToTF(_goal_state->getGlobalLinkTransform("r_sole").translation(), tf_vec_right);
+        tf2::Vector3 support_off;
+        tf2::Vector3 fly_off;
+        tf2::Vector3 tf_vec_left;
+        tf2::Vector3 tf_vec_right;
+        Eigen::Vector3d l_transform = _goal_state->getGlobalLinkTransform("l_sole").translation();
+        Eigen::Vector3d r_transform = _goal_state->getGlobalLinkTransform("r_sole").translation();
+        tf2::convert(l_transform, tf_vec_left);
+        tf2::convert(r_transform, tf_vec_right);
         geometry_msgs::Vector3 vect_msg;
         if (is_left_support) {
             support_off = trunk_to_support_foot_goal.getOrigin() - tf_vec_left;
             fly_off = trunk_to_flying_foot_goal.getOrigin() - tf_vec_right;
-            tf::vector3TFToMsg(support_off, vect_msg);
+            tf2::convert(support_off, vect_msg);
             msg.left_foot_ik_offset = vect_msg;
-            tf::vector3TFToMsg(fly_off, vect_msg);
+            tf2::convert(fly_off, vect_msg);
             msg.right_foot_ik_offset = vect_msg;
         } else {
             support_off = trunk_to_support_foot_goal.getOrigin() - tf_vec_right;
             fly_off = trunk_to_flying_foot_goal.getOrigin() - tf_vec_left;
-            tf::vector3TFToMsg(fly_off, vect_msg);
+            tf2::convert(fly_off, vect_msg);
             msg.left_foot_ik_offset = vect_msg;
-            tf::vector3TFToMsg(support_off, vect_msg);
+            tf2::convert(support_off, vect_msg);
             msg.right_foot_ik_offset = vect_msg;
         }
-        tf::vector3TFToMsg(support_off, vect_msg);
+        tf2::convert(support_off, vect_msg);
         msg.support_foot_ik_offset = vect_msg;
-        tf::vector3TFToMsg(fly_off, vect_msg);
+        tf2::convert(fly_off, vect_msg);
         msg.fly_foot_ik_offset = vect_msg;
 
         // actual positions
         geometry_msgs::Pose pose_left_actual;
-        tf::poseEigenToMsg(_current_state->getGlobalLinkTransform("l_sole"), pose_left_actual);
+        tf2::convert(_current_state->getGlobalLinkTransform("l_sole"), pose_left_actual);
         msg.left_foot_position = pose_left_actual;
         geometry_msgs::Pose pose_right_actual;
-        tf::poseEigenToMsg(_current_state->getGlobalLinkTransform("r_sole"), pose_right_actual);
+        tf2::convert(_current_state->getGlobalLinkTransform("r_sole"), pose_right_actual);
         msg.right_foot_position = pose_right_actual;
         if (is_left_support) {
             msg.support_foot_position = pose_left_actual;
@@ -686,26 +689,28 @@ namespace bitbots_quintic_walk {
         }
 
         // actual offsets
-        tf::vectorEigenToTF(_current_state->getGlobalLinkTransform("l_sole").translation(), tf_vec_left);
-        tf::vectorEigenToTF(_current_state->getGlobalLinkTransform("r_sole").translation(), tf_vec_right);
+        l_transform = _current_state->getGlobalLinkTransform("l_sole").translation();
+        r_transform = _current_state->getGlobalLinkTransform("r_sole").translation();
+        tf2::convert(l_transform, tf_vec_left);
+        tf2::convert(r_transform, tf_vec_right);
         if (is_left_support) {
             support_off = trunk_to_support_foot_goal.getOrigin() - tf_vec_left;
             fly_off = trunk_to_flying_foot_goal.getOrigin() - tf_vec_right;
-            tf::vector3TFToMsg(support_off, vect_msg);
+            tf2::convert(support_off, vect_msg);
             msg.left_foot_actual_offset = vect_msg;
-            tf::vector3TFToMsg(fly_off, vect_msg);
+            tf2::convert(fly_off, vect_msg);
             msg.right_foot_actual_offset = vect_msg;
         } else {
             support_off = trunk_to_support_foot_goal.getOrigin() - tf_vec_right;
             fly_off = trunk_to_flying_foot_goal.getOrigin() - tf_vec_left;
-            tf::vector3TFToMsg(fly_off, vect_msg);
+            tf2::convert(fly_off, vect_msg);
             msg.left_foot_actual_offset = vect_msg;
-            tf::vector3TFToMsg(support_off, vect_msg);
+            tf2::convert(support_off, vect_msg);
             msg.right_foot_actual_offset = vect_msg;
         }
-        tf::vector3TFToMsg(support_off, vect_msg);
+        tf2::convert(support_off, vect_msg);
         msg.support_foot_actual_offset = vect_msg;
-        tf::vector3TFToMsg(fly_off, vect_msg);
+        tf2::convert(fly_off, vect_msg);
         msg.fly_foot_actual_offset = vect_msg;
 
         _pubDebug.publish(msg);
@@ -776,7 +781,9 @@ namespace bitbots_quintic_walk {
         point.y = step_pos[1];
         point.z = 0;
         pose.position = point;
-        pose.orientation = tf::createQuaternionMsgFromYaw(step_pos[2]);
+        tf2::Quaternion q;
+        q.setRPY(0.0, 0.0, step_pos[2]);
+        tf2::convert(q, pose.orientation);
         marker_msg.pose = pose;
         _pubDebugMarker.publish(marker_msg);
 
@@ -805,7 +812,8 @@ namespace bitbots_quintic_walk {
         point.x = step_pos[0];
         point.y = step_pos[1];
         pose.position = point;
-        pose.orientation = tf::createQuaternionMsgFromYaw(step_pos[2]);
+        q.setRPY(0.0, 0.0, step_pos[2]);
+        tf2::convert(q, pose.orientation);
         marker_msg.pose = pose;
         _pubDebugMarker.publish(marker_msg);
 
