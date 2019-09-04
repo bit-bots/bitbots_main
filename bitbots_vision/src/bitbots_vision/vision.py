@@ -292,7 +292,7 @@ class Vision:
         # drops old images and cleans up queue. Still accepts very old images, that are most likely from ros bags.
         image_age = rospy.get_rostime() - image_msg.header.stamp
         if 1.0 < image_age.to_sec() < 1000.0:
-            rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message')
+            rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message, because its too old!')
             return
 
         # Do not process images if reconfiguration is in progress
