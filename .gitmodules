@@ -4,7 +4,7 @@
 	branch = lunar-devel
 [submodule "lib/bio_ik"]
 	path = lib/bio_ik
-	url = git@github.com:bit-bots/bio_ik.git
+	url = https://github.com/TAMS-Group/bio_ik.git
 [submodule "lib/DynamixelSDK"]
 	path = lib/DynamixelSDK
 	url = git@github.com:bit-bots/DynamixelSDK.git
@@ -16,7 +16,7 @@
 	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git
 [submodule "lib/bio_ik_service"]
 	path = lib/bio_ik_service
-	url = git@github.com:bit-bots/bio_ik_service.git
+	url = https://github.com/TAMS-Group/bio_ik_service.git
 [submodule "dynamic_stack_decider"]
 	path = dynamic_stack_decider
 	url = git@github.com:bit-bots/dynamic_stack_decider.git
@@ -70,7 +70,7 @@
 	url = git@github.com:bit-bots/udp_bridge.git
 [submodule "lib/dwa_local_planner"]
 	path = lib/dwa_local_planner
-	url = git@github.com:Bit-Bots/dwa_local_planner.git
+	url = git@github.com:bit-bots/dwa_local_planner.git
 [submodule "lib/vision_opencv"]
 	path = lib/vision_opencv
 	url = git@github.com:ros-perception/vision_opencv.git
