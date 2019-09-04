@@ -7,7 +7,7 @@ import cv2
 
 class BallFinder():
     def __init__(self, config, cascade):
-        # type: (dict, TODO) -> None
+        # type: (dict, cv2.CascadeClassifier) -> None
         self._candidates = None
         self._ball = None
         self._cascade = cascade
