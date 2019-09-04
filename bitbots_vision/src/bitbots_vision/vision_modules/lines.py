@@ -47,7 +47,7 @@ class LineDetector:
 
     def compute(self):
         """
-        Computes the linepoints
+        Computes the linepoints if necessary
         """
         # Check if points are allready cached
         if self._linepoints is None:
@@ -80,7 +80,7 @@ class LineDetector:
 
     def get_linepoints(self):
         """
-        Computes (cached) and returns the linepoints
+        Computes if necessary and returns the (cached) linepoints
         """
         # Compute line points
         self.compute()
