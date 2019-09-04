@@ -89,7 +89,7 @@ class LineDetector:
 
     def get_linesegments(self):
         """
-        Computes (not cached) and returns the line segments (Currently unused)
+        Computes if necessary and returns the (cached) line segments (Currently unused)
         """
         # Mask white parts of the image
         img = self._white_detector.mask_image(self._get_preprocessed_image())
