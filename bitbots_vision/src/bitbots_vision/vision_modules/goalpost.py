@@ -30,7 +30,8 @@ class ObstaclePostDetector(CandidateFinder):
         """
         Method to satisfy the interface
         """
-        pass
+        # Get candidates, so they get cached
+        self.get_candidates()
 
     def get_candidates(self):
         # type: () -> list[Candidate]
