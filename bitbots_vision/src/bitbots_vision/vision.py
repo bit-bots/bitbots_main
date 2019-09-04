@@ -187,7 +187,7 @@ class Vision:
             self.field_boundary_detector)
 
         # If we don't use YOLO set the conventional goalpost detector.
-        if not config['ball_detector_method'] in ['yolo_opencv', 'yolo_darknet']:
+        if not config['ball_detector'] in ['yolo_opencv', 'yolo_darknet']:
             self.goalpost_detector = obstacle.WhiteObstacleDetector(self.obstacle_detector)
         # Set the other obstacle detectors
         self.red_obstacle_detector = obstacle.RedObstacleDetector(self.obstacle_detector)
@@ -195,13 +195,13 @@ class Vision:
         self.unknown_obstacle_detector = obstacle.UnknownObstacleDetector(self.obstacle_detector)
 
         # If dummy ball detection is activated, set the dummy ballfinder as ball detector
-        if config['ball_detector_method'] == 'dummy':
+        if config['ball_detector'] == 'dummy':
             self.ball_detector = dummy_ballfinder.DummyBallDetector()
 
         # Check if the fcnn ball detector is activated
-        if config['ball_detector_method'] == 'fcnn':
+        if config['ball_detector'] == 'fcnn':
             # Check if its the first callback, the fcnn is newly activated or the model has changed
-            if ROS_Utils.config_param_change(self.config, config, ['fcnn_model_path', 'ball_detector_method']):
+            if ROS_Utils.config_param_change(self.config, config, ['fcnn_model_path', 'ball_detector']):
                 # Build absolute model path
                 ball_fcnn_path = os.path.join(self.package_path, 'models', config['fcnn_model_path'])
                 # Check if it exists
@@ -217,8 +217,8 @@ class Vision:
                     self.ball_fcnn)
 
         # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
-        if config['ball_detector_method'] in ['yolo_opencv', 'yolo_darknet']:
-            if ROS_Utils.config_param_change(self.config, config, ['yolo_model_path', 'ball_detector_method']):
+        if config['ball_detector'] in ['yolo_opencv', 'yolo_darknet']:
+            if ROS_Utils.config_param_change(self.config, config, ['yolo_model_path', 'ball_detector']):
                 # Build absolute model path
                 yolo_model_path = os.path.join(self.package_path, 'models', config['yolo_model_path'])
                 # Check if it exists
@@ -226,16 +226,16 @@ class Vision:
                     rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist! Maybe its an fcnn model?')
                 else:
                     # Decide which yolo implementation should be used
-                    if config['ball_detector_method'] == 'yolo_opencv':
+                    if config['ball_detector'] == 'yolo_opencv':
                         # Load OpenCV implementation (uses OpenCL)
                         self.yolo = yolo_handler.YoloHandlerOpenCV(config, yolo_model_path)
-                    elif config['ball_detector_method'] == 'yolo_darknet':
+                    elif config['ball_detector'] == 'yolo_darknet':
                         # Load Darknet implementation (uses CUDA)
                         self.yolo = yolo_handler.YoloHandlerDarknet(config, yolo_model_path)
                     # Set both ball and goalpost detector
                     self.ball_detector = yolo_handler.YoloBallDetector(self.yolo, config)
                     self.goalpost_detector = yolo_handler.YoloGoalpostDetector(self.yolo)
-                    rospy.loginfo(config['ball_detector_method'] + " vision is running now")
+                    rospy.loginfo(config['ball_detector'] + " vision is running now")
 
         self._register_or_update_all_subscribers(config)
 
@@ -436,7 +436,7 @@ class Vision:
         # Publish field boundary
         self.pub_convex_field_boundary.publish(convex_field_boundary_msg)
 
-        if self.config['ball_detector_method'] == 'fcnn':
+        if self.config['ball_detector'] == 'fcnn':
             # Publish fcnn output for the region of interest under the field boundary (for the world model)
             if self.ball_fcnn_publish_output:
                 roi_msg = ROS_Utils.build_fcnn_region_of_interest(
