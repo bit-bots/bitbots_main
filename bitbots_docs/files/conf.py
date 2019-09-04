@@ -170,5 +170,5 @@ todo_include_todos = True
 
 # -- RST Standard variables ---------------------------------------------------
 rst_prolog = ".. |project| replace:: {}\n".format(project)
-rst_prolog += ".. |description| replace:: {}\n".format(catkin_package.description)
-rst_prolog += ".. |modindex| replace:: {}".format(":ref:`modindex`" if num_files_py > 0 else "Python module index is not available")
+rst_prolog += ".. |description| replace:: {}\n".format(catkin_package.description.replace("\n\n", "\n"))
+rst_prolog += ".. |modindex| replace:: {}\n".format(":ref:`modindex`" if num_files_py > 0 else "Python module index is not available")
