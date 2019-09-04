@@ -62,13 +62,19 @@ class MotorVizHelper:
         rate = rospy.Rate(100)
         self.update_time = rospy.Time.now()
         while not rospy.is_shutdown():
-            self.update_joint_states(self.joint_command_msg)
-            self.joint_state_msg.header.stamp = rospy.Time.now()
-            if args.gazebo:
-                self.joint_publisher.publish(self.get_float_array())
-            else:
-                self.joint_publisher.publish(self.joint_state_msg)
-            rate.sleep()
+            try:
+                self.update_joint_states(self.joint_command_msg)
+                self.joint_state_msg.header.stamp = rospy.Time.now()
+                if args.gazebo:
+                    self.joint_publisher.publish(self.get_float_array())
+                else:
+                    self.joint_publisher.publish(self.joint_state_msg)
+                rate.sleep()
+            except rospy.exceptions.ROSTimeMovedBackwardsException:
+                pass
+            except rospy.exceptions.ROSInterruptException:
+                rospy.logwarn('motor_viz_helper: shutting down')
+                break
 
     def joint_command_cb(self, msg: JointCommand):
         self.joint_command_msg.header.stamp = rospy.Time.now()
