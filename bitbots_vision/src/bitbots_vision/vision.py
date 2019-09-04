@@ -322,6 +322,7 @@ class Vision:
 
         # Skip if image is None
         if image is None:
+            rospy.logdebug("Image content is None :(")
             return
 
         # Check if its the first image callback
