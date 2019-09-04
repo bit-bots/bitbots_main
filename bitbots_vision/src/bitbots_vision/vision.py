@@ -455,7 +455,7 @@ class Vision:
         # Check if we should draw debug image
         if self.publish_debug_image:
             # Draw debug image
-            debug_image = self._get_debug_image(image)
+            debug_image = self._create_debug_image(image)
             # publish debug image
             self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(debug_image, 'bgr8'))
 
@@ -470,7 +470,7 @@ class Vision:
             # Send image
             vision_object.set_image(image)
 
-    def _get_debug_image(self, image):
+    def _create_debug_image(self, image):
         """
         Draws a debug image
         :param image: untouched image
