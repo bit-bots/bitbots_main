@@ -316,7 +316,7 @@ class ObstacleDetector(CandidateFinder):
 
     def compute(self):
         """
-        Calculate all obstacles
+        Calculate all obstacles and sorts them by colors
         """
         # Calc blue mask (if not cached)
         if not self._blue_mask:
