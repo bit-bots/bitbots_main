@@ -6,8 +6,13 @@ function(enable_bitbots_docs)
     file(TOUCH ${CMAKE_SOURCE_DIR}/docs/_static/.gitkeep)
 
     # copy default configuration files from bitbots_docs into target package
-    file(COPY @CMAKE_SOURCE_DIR@/files/index.rst DESTINATION ${CMAKE_SOURCE_DIR}/docs)
-    file(COPY @CMAKE_SOURCE_DIR@/files/conf.py DESTINATION ${CMAKE_SOURCE_DIR}/docs)
+    # but only do so when the target does not yet exist because to prevent overriding of manual edits
+    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/docs/index.rst)
+        file(COPY @CMAKE_SOURCE_DIR@/files/index.rst DESTINATION ${CMAKE_SOURCE_DIR}/docs)
+    endif()
+    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/docs/conf.py)
+        file(COPY @CMAKE_SOURCE_DIR@/files/conf.py DESTINATION ${CMAKE_SOURCE_DIR}/docs)
+    endif()
 
     # figure out if we have python files in the current package and only do sphinx-apidoc if we do
     file(GLOB_RECURSE files_py CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/*.py)
