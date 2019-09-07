@@ -3,6 +3,7 @@ function(enable_bitbots_docs)
     file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/docs)
     file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/docs/_build/doxyoutput)
     file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/docs/_static)
+    file(TOUCH ${CMAKE_SOURCE_DIR}/docs/_static/.gitkeep)
 
     # copy default configuration files from bitbots_docs into target package
     file(COPY @CMAKE_SOURCE_DIR@/files/index.rst DESTINATION ${CMAKE_SOURCE_DIR}/docs)
