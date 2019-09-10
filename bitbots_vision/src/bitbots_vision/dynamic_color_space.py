@@ -41,7 +41,7 @@ class DynamicColorSpace:
         # Publisher placeholder
         self.pub_color_space = None
 
-        # Subsciber placeholder
+        # Subscriber placeholder
         self.sub_image_msg = None
 
         # Subscribe to 'vision_config'-message
