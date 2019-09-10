@@ -9,6 +9,12 @@ import time
 import math
 from multiprocessing import Process, Manager
 
+"""
+A small Tool for colospace enhancement.
+
+The Tool is able to find main clusters in the color space, interpolate defined distances,
+add brightness thresholds and convert a yaml encoded to an pickle encoded color space.
+"""
 
 def connect(ends):
     d = np.diff(ends, axis=0)[0]
