@@ -7,7 +7,7 @@ import yaml
 import rospy
 import rospkg
 import threading
-from profilehooks import profile, timecall
+from profilehooks import profile, timecall # Profilehooks profiles certain functions in you add the @profile or @timecall decorator.
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
