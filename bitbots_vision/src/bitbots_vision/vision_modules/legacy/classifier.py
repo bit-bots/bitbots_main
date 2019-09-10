@@ -40,9 +40,9 @@ class ClassifierHandler(CandidateFinder):
 
     def compute(self):
         """
-        Method to satisfy the interface
+        Computes the candidates
         """
-        pass
+        self.get_candidates()
 
     def get_top_candidates(self, count=1):
         if self._sorted_candidates is None:
