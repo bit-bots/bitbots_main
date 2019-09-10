@@ -51,7 +51,6 @@ class FcnnHandler(BallDetector):
         :param dict config: dictionary of the vision node configuration parameters
         :return: None
         """
-        # TODO new
         self._debug = config['ball_fcnn_publish_debug_img']
         self._threshold = config['ball_fcnn_threshold']
         self._expand_stepsize = config['ball_fcnn_expand_stepsize']

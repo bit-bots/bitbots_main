@@ -17,16 +17,9 @@ class ObstacleDetector(CandidateFinder):
         self._blue_color_detector = blue_color_detector
         self._white_color_detector = white_color_detector
         self._field_boundary_detector = field_boundary_detector
-        # Set own config parameters TODO redo
-        self._color_threshold = config['obstacle_color_threshold']
-        self._white_threshold = config['obstacle_white_threshold']
-        self._field_boundary_diff_threshold = config['obstacle_field_boundary_diff_threshold']
-        self._candidate_field_boundary_offset = config['obstacle_candidate_field_boundary_offset']
-        self._candidate_min_width = config['obstacle_candidate_min_width']
-        self._candidate_max_width = config['obstacle_candidate_max_width']
-        self._finder_step_length = config['obstacle_finder_step_length']
-        self._obstacle_finder_method = config['obstacle_finder_method']
-        self._distance_value_increase = config['obstacle_finder_value_increase']
+
+        # Set own config parameters
+        self.set_config(config)
 
         # Set values to None needed for caching
         self._image = None
@@ -40,6 +33,17 @@ class ObstacleDetector(CandidateFinder):
         self._red_obstacles = None
         self._white_obstacles = None
         self._other_obstacles = None
+
+    def set_config(self, config):
+        self._color_threshold = config['obstacle_color_threshold']
+        self._white_threshold = config['obstacle_white_threshold']
+        self._field_boundary_diff_threshold = config['obstacle_field_boundary_diff_threshold']
+        self._candidate_field_boundary_offset = config['obstacle_candidate_field_boundary_offset']
+        self._candidate_min_width = config['obstacle_candidate_min_width']
+        self._candidate_max_width = config['obstacle_candidate_max_width']
+        self._finder_step_length = config['obstacle_finder_step_length']
+        self._obstacle_finder_method = config['obstacle_finder_method']
+        self._distance_value_increase = config['obstacle_finder_value_increase']
 
     def set_image(self, image):
         """
