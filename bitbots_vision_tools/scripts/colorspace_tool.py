@@ -14,9 +14,13 @@ A small Tool for colospace enhancement.
 
 The Tool is able to find main clusters in the color space, interpolate defined distances,
 add brightness thresholds and convert a yaml encoded to an pickle encoded color space.
+It also visualizes the color space in a browser based 3d graph.
 """
 
 def connect(ends):
+    """
+    Interpolate two points saved in a matrix using numpy.
+    """
     d = np.diff(ends, axis=0)[0]
     j = np.argmax(np.abs(d))
     D = d[j]
@@ -24,15 +28,24 @@ def connect(ends):
     return ends[0] + (np.outer(np.arange(aD + 1), d) + (aD >> 1)) // aD
 
 def generate_interpolated_points(point1, point2):
+    """
+    Interpolates two given points and returns a set of tuples containing all interpolated points.
+    """
     points = connect(np.array([point2, point1]))
     return set(map(tuple, points))
 
 def get_value_tuple_outer_function(index, tuple_input):
+    """
+    Query method for two dimensional list/tuple struckture.
+    """
     return (tuple_input[0][index],
             tuple_input[1][index],
             tuple_input[2][index])
 
 def worker(start, stop, result_map, index, distances, interpolation_threshold, main_cluster, colorspace_points):
+    """
+    Parralel interpolation worker.
+    """
     interpolated_points = set()
     main_cluster_set = set(main_cluster)
     for main_cluster_index in range(start, stop):
@@ -62,6 +75,9 @@ class ColorspaceTool():
         self.to_bright = 255
 
     def load_colorspace_from_yaml(self, color_path):
+        """
+        Loads yaml color space.
+        """
         with open(color_path, 'r') as stream:
             print("Loading file...")
             try:
@@ -79,16 +95,25 @@ class ColorspaceTool():
                 self.colorspace_points = (x, y, z)
 
     def get_value_tuple(self, index):
+        """
+        Colorspace color getter.
+        """
         return (self.colorspace_points[0][index],
                 self.colorspace_points[1][index],
                 self.colorspace_points[2][index])
 
     def get_colorspace_points(self, pointlist):
+        """
+        Colorspace color getter with index list input.
+        """
         return ([self.colorspace_points[0][x] for x in pointlist],
                 [self.colorspace_points[1][x] for x in pointlist],
                 [self.colorspace_points[2][x] for x in pointlist])
 
     def all_distances(self):
+        """
+        Calculates all distance between all points in the color space.
+        """
         points = self.colorspace_points
 
         red = np.repeat(np.expand_dims(points[0], axis=0), points[0].size, axis=0)
@@ -101,6 +126,9 @@ class ColorspaceTool():
             + np.square(blue - blue.transpose()))
 
     def cluster(self):
+        """
+        Calculates the main clusters in the color space
+        """
         print("Calculating distances")
         self.all_distances()
 
@@ -130,6 +158,9 @@ class ColorspaceTool():
         self.clusters = clusters
 
     def interpolate(self):
+        """
+        Interpolates between points with a certain distance in the color space.
+        """
         print("Interpolating points...")
         interpolated_points = set()
         if os.cpu_count():
@@ -171,6 +202,9 @@ class ColorspaceTool():
         self.interpolated_points = list(interpolated_points)
 
     def lightness_correction(self):
+        """
+        Add upper/lower brightness bounds.
+        """
         points = self.colorspace_points
         lightness_max_value = math.sqrt(3 * (255**2))
         deadpool = list()
@@ -185,6 +219,9 @@ class ColorspaceTool():
         self.point_count = len(self.colorspace_points[0])
 
     def plot_values(self, filename):
+        """
+        Creates an interactive 3d plotly graph for the color space.
+        """
         point_colors = ['rgb({}, {}, {})'.format(*self.get_value_tuple(index)) for index in range(self.point_count)]
 
         if len(self.interpolated_points) > 0:
@@ -278,6 +315,9 @@ class ColorspaceTool():
         py.plot(fig, filename=filename, auto_open=True)
 
     def save(self, filename):
+        """
+        This saves the enhanced color space in a pickle encoded file.
+        """
         if len(self.interpolated_points) > 0:
             red, green, blue = zip(*self.interpolated_points)
             red = [np.asscalar(x) for x in red]
