@@ -93,6 +93,14 @@ class DebugImage:
     def draw(self, debug_image_description, image=None):
         """
         Draws a debug image description, that contains the style and the date for each object/class that we debug
+        E.g.:
+        {
+            'type': 'field_boundary',
+            'thickness': 1,
+            'color': (255,255,255),
+            'data': #Some data
+        }
+
         :param debug_image_description: List of dicts contains the style and the date for each object/class that we debug
         In the dict 'type' refers to the type that we want to draw. Some types are ['obstacle', 'field_boundary', 'ball', 'line_point', 'line_segment'].
         The key 'color' defines the color as BRG. For most types this is the border color.
