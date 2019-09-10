@@ -144,3 +144,17 @@ class LineDetector:
             # Only take parts that are under not green and the field boundary
             self._preprocessed_image = cv2.bitwise_and(image_under_fieldboundary, image_under_fieldboundary, mask=green_mask)
         return self._preprocessed_image
+
+    @staticmethod
+    def filter_points_with_candidates(linepoints, candidates):
+        """
+        Filters line points with candidates.
+
+        :param linepoints: Line Points
+        :param candidates: Detected candidates
+        :return: Filtered line points
+        """
+        filtered_linepoints = linepoints
+        for candidate in candidates:
+            filtered_linepoints = [linepoint for linepoint in linepoints if not candidate.point_in_candidate(linepoint)]
+        return filtered_linepoints
