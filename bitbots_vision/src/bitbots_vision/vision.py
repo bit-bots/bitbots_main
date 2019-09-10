@@ -56,7 +56,7 @@ class Vision:
         self.sub_image = None
         self.sub_dynamic_color_space_msg_topic = None
 
-        self.debug_image_drawer = debug.DebugImage()
+        self.debug_image_creator = debug.DebugImage()
 
         # Register static publishers
         # Register publisher of 'vision_config'-messages
@@ -339,7 +339,7 @@ class Vision:
             self.goalpost_detector,
             self.line_detector,
             self.ball_detector,
-            self.debug_image_drawer,
+            self.debug_image_creator,
         ]
 
         # distribute the image to the detectors
@@ -477,65 +477,65 @@ class Vision:
         :return: image with debug annotations
         """
         # Draw unknown obstacles
-        self.debug_image_drawer.draw_obstacle_candidates(
+        self.debug_image_creator.draw_obstacle_candidates(
             self.unknown_obstacle_detector.get_candidates(),
             (0, 0, 0),
             thickness=3
         )
         # Draw red obstacles
-        self.debug_image_drawer.draw_obstacle_candidates(
+        self.debug_image_creator.draw_obstacle_candidates(
             self.red_obstacle_detector.get_candidates(),
             (0, 0, 255),
             thickness=3
         )
         # Draw blue obstacles
-        self.debug_image_drawer.draw_obstacle_candidates(
+        self.debug_image_creator.draw_obstacle_candidates(
             self.blue_obstacle_detector.get_candidates(),
             (255, 0, 0),
             thickness=3
         )
         # Draw goal posts
-        self.debug_image_drawer.draw_obstacle_candidates(
+        self.debug_image_creator.draw_obstacle_candidates(
             self.goalpost_detector.get_candidates(),
             (255, 255, 255),
             thickness=3
         )
         # Draw field boundary
-        self.debug_image_drawer.draw_field_boundary(
+        self.debug_image_creator.draw_field_boundary(
             self.field_boundary_detector.get_field_boundary_points(),
             (0, 0, 255)
         )
         # Draw convex field boundary
-        self.debug_image_drawer.draw_field_boundary(
+        self.debug_image_creator.draw_field_boundary(
             self.field_boundary_detector.get_convex_field_boundary_points(),
             (0, 255, 255)
         )
         # Draw all ball candidates
-        self.debug_image_drawer.draw_ball_candidates(
+        self.debug_image_creator.draw_ball_candidates(
             self.ball_detector.get_candidates(),
             (0, 0, 255)
         )
         # Draw possible ball candidates under the field boundary
-        self.debug_image_drawer.draw_ball_candidates(
+        self.debug_image_creator.draw_ball_candidates(
             self.ball_detector.get_sorted_top_balls_under_convex_field_boundary(
                 self.field_boundary_detector,
                 self._ball_candidate_y_offset),
             (0, 255, 255)
         )
         # Draw top ball candidate
-        self.debug_image_drawer.draw_ball_candidates(
+        self.debug_image_creator.draw_ball_candidates(
             [self.ball_detector.get_top_ball_under_convex_field_boundary(
                 self.field_boundary_detector,
                 self._ball_candidate_y_offset)],
             (0, 255, 0)
         )
         # Draw line points
-        self.debug_image_drawer.draw_points(
+        self.debug_image_creator.draw_points(
             self.line_detector.get_linepoints(),
             (0, 0, 255)
         )
         # Return image from the debug image drawer
-        return self.debug_image_drawer.get_image()
+        return self.debug_image_creator.get_image()
 
     def _conventional_precalculation(self):
         """
