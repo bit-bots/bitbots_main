@@ -543,7 +543,7 @@ class Vision:
 
     def _conventional_precalculation(self):
         """
-        Kicks of the conventional calculations
+        Starts the conventional calculations
         """
         # Modules that should run their calculations
         modules = [
