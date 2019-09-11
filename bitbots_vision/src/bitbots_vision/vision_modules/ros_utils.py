@@ -401,9 +401,9 @@ class ROS_Utils:
     @staticmethod
     def build_field_boundary_msg(header, field_boundary):
         """
-        Builds a list of obstacles for a certain color
-        :param obstacle_color: color of the obstacles
-        :param detections: obstacle candidates
+        Builds a FieldBoundaryInImage ROS message.
+        :param header: ros header of the new message. Mostly the header of the image
+        :param field_boundary: List of tuples containing the field boundary points.
         :return: list of obstacle msgs
         """
         # Create message
