@@ -8,7 +8,7 @@ pipeline {
     stages {
     stage('Build') {
         steps {
-            sh 'docker build -t bitbots_builder --no-cache .'
+            sh 'docker build -t bitbots_builder --no-cache docker_builder'
         }
     }
 
