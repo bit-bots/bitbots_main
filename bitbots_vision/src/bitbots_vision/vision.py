@@ -98,7 +98,7 @@ class Vision:
         self._register_or_update_all_publishers(config)
 
         # Set some thresholds
-        # Brightness threshold which determins if the camera cap is on the camera.
+        # Brightness threshold which determines if the camera cap is on the camera.
         self._blind_threshold = config['vision_blind_threshold']
         # Threshold for ball candidates
         self._ball_candidate_threshold = config['ball_candidate_rating_threshold']
