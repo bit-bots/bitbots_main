@@ -22,7 +22,7 @@ RUN . /opt/ros/melodic/setup.sh && \
     chmod -R 740 /catkin_ws
 
 # Setup entrypoint
-USER $user:$group
+USER builder:builder
 COPY entrypoint.bash /entrypoint.bash
 ENTRYPOINT ["/entrypoint.bash"]
 CMD ["bash"]
