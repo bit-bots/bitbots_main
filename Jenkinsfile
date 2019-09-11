@@ -20,6 +20,8 @@ pipeline {
             agent { docker image: 'bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000'}
             steps {
                 linkCatkinWorkspace()
+                sh 'rosdep update'
+                sh 'rosdep install -iry --from-paths /catkin_ws/src'
                 catkinBuild()
             }
         }
