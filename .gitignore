@@ -5,7 +5,6 @@
 .vscode/* 
 
 ansible_robots/*
-docker-builder/*
 doc_internal/*
 doku/*
 basler_drivers/*

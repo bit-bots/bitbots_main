@@ -75,3 +75,6 @@
 	path = lib/vision_opencv
 	url = git@github.com:ros-perception/vision_opencv.git
     branch = melodic
+[submodule "bitbots_tools"]
+	path = bitbots_tools
+	url = git@github.com:bit-bots/bitbots_tools.git
