@@ -88,8 +88,9 @@ class Vision:
     def _dynamic_reconfigure_callback(self, config, level):
         """
         Callback for the dynamic reconfigure configuration. This callback also gets calles for the inertial configuration.
+
         :param config: New config
-        :param level: Custom defineable value
+        :param level: The level is a definable int in the Vision.cfg file. All changed params are or ed together by dynamic reconfigure.
         """
         # Deactivates Vision temporarally
         self.reconfigure_active = True
@@ -315,6 +316,7 @@ class Vision:
     def handle_image(self, image_msg):
         """
         Runs the vision pipeline
+
         :param image_msg: Image message provided by ROS
         """
         # converting the ROS image message to CV2-image
@@ -463,6 +465,7 @@ class Vision:
     def _distribute_images(image, internal_image_subscribers):
         """
         Set the image for each detector
+
         :param image: the current image
         """
         # Iterate over subscribers
@@ -473,6 +476,7 @@ class Vision:
     def _create_debug_image(self, image):
         """
         Draws a debug image
+        
         :param image: untouched image
         :return: image with debug annotations
         """
