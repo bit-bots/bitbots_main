@@ -2,7 +2,6 @@
 import sys
 
 import yaml
-import rospy
 import rospkg
 import os
 import roslaunch
@@ -23,7 +22,7 @@ def provide_config(path):
     if os.path.exists(path):
         try:
             with open(path, 'r') as f:
-                config = yaml.load(f)
+                config = yaml.load(f, Loader=yaml.UnsafeLoader)
         except yaml.YAMLError as exc:
             print("Error in configuration file:", exc)
     else:
@@ -124,7 +123,6 @@ def check_new_value(new_value: str, definition) -> bool:
 
 
 def main():
-    rospy.init_node("game_settings")
     config = provide_config(SETTING_PATH)
 
     # every option for a config-value is listed here
