@@ -126,7 +126,7 @@ class Candidate:
         """
         return self._y1 + self._height
 
-    def get_footpoint(self):
+    def get_lowest_point(self):
         # type: () -> (int, int)
         """
         returns...
