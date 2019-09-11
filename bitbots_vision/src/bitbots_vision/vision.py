@@ -98,7 +98,7 @@ class Vision:
         self._register_or_update_all_publishers(config)
 
         # Set some thresholds
-        # Brightness threshold which determins if the camera cap is on the camera.
+        # Brightness threshold which determines if the camera cap is on the camera.
         self._blind_threshold = config['vision_blind_threshold']
         # Threshold for ball candidates
         self._ball_candidate_threshold = config['ball_candidate_rating_threshold']
@@ -287,7 +287,7 @@ class Vision:
         This method is called by the Image-message subscriber.
         Old Image-messages were dropped.
 
-        Sometimes the queue gets to large, even when the size is limeted to 1.
+        Sometimes the queue gets to large, even when the size is limited to 1.
         That's, why we drop old images manually.
         """
         # drops old images and cleans up queue. Still accepts very old images, that are most likely from ros bags.
