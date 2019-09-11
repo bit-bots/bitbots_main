@@ -40,9 +40,12 @@ static PyObject* findSpots(PyObject *self, PyObject *args)
     // Build point grid
     std::vector< std::pair<int, int> > points;
     // Generate grid
-    int y = pointcloud_stepsize / 2 , x = pointcloud_stepsize / 2;
+    int y = pointcloud_stepsize / 2 , x;
+
     while (y < binary_image->dimensions[0])
     {
+        // Reset x
+        x = pointcloud_stepsize / 2;
         while (x < binary_image->dimensions[1])
         {
             // Add grid points to points
