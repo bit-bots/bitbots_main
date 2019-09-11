@@ -70,7 +70,7 @@ class DynamicColorSpace:
         # Load dict from string in yaml-format in msg.data
         vision_config = yaml.load(msg.data, Loader=yaml.FullLoader)
 
-        # Print status of dynamic color space after toggeling 'dynamic_color_space_active' parameter
+        # Print status of dynamic color space after toggling 'dynamic_color_space_active' parameter
         if ros_utils.ROS_Utils.config_param_change(self.vision_config, vision_config, 'dynamic_color_space_active'):
             if vision_config['dynamic_color_space_active']:
                 rospy.loginfo('Dynamic color space turned ON.')
