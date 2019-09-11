@@ -22,7 +22,7 @@ def provide_config(path):
     if os.path.exists(path):
         try:
             with open(path, 'r') as f:
-                config = yaml.load(f)
+                config = yaml.load(f, Loader=yaml.UnsafeLoader)
         except yaml.YAMLError as exc:
             print("Error in configuration file:", exc)
     else:
