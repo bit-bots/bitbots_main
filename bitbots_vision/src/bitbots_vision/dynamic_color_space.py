@@ -106,7 +106,15 @@ class DynamicColorSpace:
         self.heuristic = Heuristic()
 
         # Subscribe to Image-message
-        self.sub_image_msg = ros_utils.ROS_Utils.create_or_update_subscriber(self.vision_config, vision_config, self.sub_image_msg, 'ROS_img_msg_topic', Image, callback=self.image_callback, queue_size=vision_config['ROS_img_msg_queue_size'], buff_size=60000000)
+        self.sub_image_msg = ros_utils.ROS_Utils.create_or_update_subscriber(
+            self.vision_config,
+            vision_config,
+            self.sub_image_msg,
+            'ROS_img_msg_topic',
+            Image,
+            callback=self.image_callback,
+            queue_size=vision_config['ROS_img_msg_queue_size'],
+            buff_size=60000000) # https://github.com/ros/ros_comm/issues/536
 
         self.vision_config = vision_config
 
