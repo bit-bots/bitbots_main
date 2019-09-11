@@ -233,7 +233,7 @@ class Vision:
                         # Load Darknet implementation (uses CUDA)
                         self.yolo = yolo_handler.YoloHandlerDarknet(config, yolo_model_path)
                     # Set both ball and goalpost detector
-                    self.ball_detector = yolo_handler.YoloBallDetector(self.yolo, config)
+                    self.ball_detector = yolo_handler.YoloBallDetector(config, self.yolo)
                     self.goalpost_detector = yolo_handler.YoloGoalpostDetector(self.yolo)
                     rospy.loginfo(config['ball_detector'] + " vision is running now")
 
