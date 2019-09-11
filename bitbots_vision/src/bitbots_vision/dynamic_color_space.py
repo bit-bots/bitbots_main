@@ -71,14 +71,14 @@ class DynamicColorSpace:
         vision_config = yaml.load(msg.data, Loader=yaml.FullLoader)
 
         # Print status of dynamic color space after toggling 'dynamic_color_space_active' parameter
-        if ros_utils.ROS_Utils.config_param_change(self.vision_config, vision_config, 'dynamic_color_space_active'):
+        if ros_utils.config_param_change(self.vision_config, vision_config, 'dynamic_color_space_active'):
             if vision_config['dynamic_color_space_active']:
                 rospy.loginfo('Dynamic color space turned ON.')
             else:
                 rospy.logwarn('Dynamic color space turned OFF.')
 
         # Set publisher of ColorSpace-messages
-        self.pub_color_space = ros_utils.ROS_Utils.create_or_update_publisher(self.vision_config, vision_config, self.pub_color_space, 'ROS_dynamic_color_space_msg_topic', ColorSpace)
+        self.pub_color_space = ros_utils.create_or_update_publisher(self.vision_config, vision_config, self.pub_color_space, 'ROS_dynamic_color_space_msg_topic', ColorSpace)
 
         # Set Color- and FieldBoundaryDetector
         self.color_detector = color.DynamicPixelListColorDetector(
@@ -106,7 +106,7 @@ class DynamicColorSpace:
         self.heuristic = Heuristic()
 
         # Subscribe to Image-message
-        self.sub_image_msg = ros_utils.ROS_Utils.create_or_update_subscriber(
+        self.sub_image_msg = ros_utils.create_or_update_subscriber(
             self.vision_config,
             vision_config,
             self.sub_image_msg,

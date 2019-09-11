@@ -9,7 +9,7 @@ import numpy as np
 import os
 from collections import deque
 from cv_bridge import CvBridge
-from .ros_utils import ROS_Utils
+from bitbots_vision.vision_modules import ros_utils
 
 
 class ColorDetector(object):
@@ -43,7 +43,7 @@ class ColorDetector(object):
         :return: None
         """
         rospy.logdebug("(RE-)Configuring of ColorDetector")
-        self.config = config        
+        self.config = config
 
     @abc.abstractmethod
     def match_pixel(self, pixel):
@@ -186,7 +186,7 @@ class HsvSpaceColorDetector(ColorDetector):
 
         # Toggle publishing of 'hsv_mask'-messages
         if self.pub_hsv_mask_image is not None:
-            self.pub_hsv_mask_image.publish(self.cv_bridge.cv2_to_imgmsg(mask, '8UC1')) 
+            self.pub_hsv_mask_image.publish(self.cv_bridge.cv2_to_imgmsg(mask, '8UC1'))
 
         return mask
 
@@ -237,7 +237,7 @@ class PixelListColorDetector(ColorDetector):
         # Toggle publishing of 'field_mask'-messages
         self.publish_field_mask_img_msg = config['vision_publish_field_mask_image']
 
-        if ROS_Utils.config_param_change(tmp_config, config, [  'vision_use_sim_color',
+        if ros_utils.config_param_change(tmp_config, config, [  'vision_use_sim_color',
                                                                 'field_color_detector_path_sim',
                                                                 'field_color_detector_path']):
             # concatenate path to file containing the accepted colors of base color space
@@ -360,7 +360,7 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         super(DynamicPixelListColorDetector, self).update_config(config)
 
         # Toggle publishing of 'dynamic_field_mask'-messages
-        if ROS_Utils.config_param_change(tmp_config, config, 'dynamic_color_space_publish_field_mask_image'):
+        if ros_utils.config_param_change(tmp_config, config, 'dynamic_color_space_publish_field_mask_image'):
             self.publish_dyn_field_mask_msg = self.config['dynamic_color_space_publish_field_mask_image']
 
     def mask_image(self, image):
