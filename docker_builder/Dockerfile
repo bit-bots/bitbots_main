@@ -13,6 +13,9 @@ ADD sudoers /etc/sudoers
 # Add user
 RUN useradd -M -d /catkin_ws -s /bin/bash -u 1001 builder
 
+# Setup rosdep
+RUN rosdep update
+
 # Setup catkin workspace
 RUN . /opt/ros/melodic/setup.sh && \
     mkdir -p /catkin_ws/src; cd /catkin_ws && \
