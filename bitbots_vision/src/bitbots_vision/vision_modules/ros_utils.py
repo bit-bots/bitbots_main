@@ -404,7 +404,7 @@ class ROS_Utils:
         Builds a FieldBoundaryInImage ROS message.
         :param header: ros header of the new message. Mostly the header of the image
         :param field_boundary: List of tuples containing the field boundary points.
-        :return: list of obstacle msgs
+        :return: FieldBoundaryInImage message
         """
         # Create message
         field_boundary_msg = FieldBoundaryInImage()
