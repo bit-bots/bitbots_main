@@ -179,7 +179,6 @@ class YoloHandlerOpenCV(YoloHandler):
             return
         # Set image
         self.image = image
-        self.image = image
         self.width = image.shape[1]
         self.height = image.shape[0]
         # Create blob
