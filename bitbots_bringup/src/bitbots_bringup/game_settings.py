@@ -2,7 +2,6 @@
 import sys
 
 import yaml
-import rospy
 import rospkg
 import os
 import roslaunch
@@ -124,7 +123,6 @@ def check_new_value(new_value: str, definition) -> bool:
 
 
 def main():
-    rospy.init_node("game_settings")
     config = provide_config(SETTING_PATH)
 
     # every option for a config-value is listed here
