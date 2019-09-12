@@ -11,16 +11,16 @@ But on the one hand we need python 2 for tools like rqt, but on the other softwa
 
 :code:`mkdir ~/secondary_build_ws && cd ~/secondary_build_ws && catkin config -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so && catkin config --install`
 
-2. Now we clone OpenCv:
+2. Now we clone the OpenCv ros interface:
 
 :code:`mkdir src && cd src && git clone -b melodic https://github.com/ros-perception/vision_opencv.git`
 
 3. We build the cv_bridge by running : :code:`catkin build cv_bridge`. Dont worry about the failing tests.
 4. In the last step we source the workspace beside the old workspace using: :code:`--extend`.
     - For Bash users:
-        Best practice is to add the sourcing to the .bashrc by adding :code:`source ~/secondary_build_ws/devel/setup.sh --extend`
+        Best practice is to add the sourcing to the .bashrc by adding :code:`source ~/secondary_build_ws/devel/setup.sh --extend` after sourcing of the primary workspace.
     - For Zsh users:
-        Best practice is to add the sourcing to the .bashrc by adding :code:`source ~/secondary_build_ws/devel/setup.zsh --extend`
+        Best practice is to add the sourcing to the .bashrc by adding :code:`source ~/secondary_build_ws/devel/setup.zsh --extend` after sourcing of the primary workspace.
 
 The tf2 Issue
 =============
