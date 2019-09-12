@@ -153,6 +153,100 @@ class FcnnHandler(BallDetector):
         rospy.logdebug('Vision FCNN handler: Cluster:' + str((end - start) / cv2.getTickFrequency()))
         return candidates
 
+    def _get_raw_candidates(self):
+        """
+        The old candidate getter, that uses python only clustering. Use cpp version instead.
+
+        :return: a list of candidates [(Candidate), ...]
+        """
+        out = self.get_fcnn_output()
+        r, out_bin = cv2.threshold(out, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        candidates = list()
+        # creating points
+        # x shape
+        xshape = self._image.shape[1]
+        xlist = []
+        x = 0
+        while x < xshape:
+            xlist.append(x)
+            x += self._pointcloud_stepsize
+        # y shape
+        yshape = self._image.shape[0]
+        ylist = []
+        y = 0
+        while y < yshape:
+            ylist.append(y)
+            y += self._pointcloud_stepsize
+        # generate carthesian product of list
+        points = list(itertools.product(xlist, ylist))
+        if self._shuffle_candidate_list:
+            random.shuffle(points)
+        # expand points
+        while points:
+            point = points[-1]
+            lx, uy = point
+            rx, ly = point
+            # expand to the left
+            if not out_bin[point[1]][point[0]]:
+                points.remove(point)
+                continue
+            next_lx = max(lx - self._expand_stepsize, 0)
+            while next_lx > 0 and out_bin[point[1]][next_lx]:
+                lx = next_lx
+                next_lx = max(lx - self._expand_stepsize, 0)
+            # expand to the right
+            next_rx = min(rx + self._expand_stepsize, out_bin.shape[1] - 1)
+            while next_rx < out_bin.shape[1] - 1 and out_bin[point[1]][next_rx]:
+                rx = next_rx
+                next_rx = min(rx + self._expand_stepsize, out_bin.shape[1] - 1)
+            # expand upwards
+            next_uy = max(uy - self._expand_stepsize, 0)
+            while next_uy > 0 and out_bin[next_uy][point[0]]:
+                uy = next_uy
+                next_uy = max(uy - self._expand_stepsize, 0)
+            # expand downwards (the lowest y is the highest number for y)
+            next_ly = min(ly + self._expand_stepsize, out_bin.shape[0] - 1)
+            while next_ly < out_bin.shape[0] - 1 and out_bin[next_ly][point[0]]:
+                ly = next_ly
+                next_ly = min(ly + self._expand_stepsize, out_bin.shape[0] - 1)
+            for i in range(self._candidate_refinement_iteration_count):
+                # expand from the middle of the borders of the found candidate
+                width, height = rx - lx, ly - uy
+
+                buffer_x = lx + width // 2
+                buffer_y = uy + height // 2
+
+                # expand to the left
+                next_lx = max(lx - self._expand_stepsize, 0)
+                while next_lx > 0 and out_bin[buffer_y][next_lx]:
+                    lx = next_lx
+                    next_lx = max(lx - self._expand_stepsize, 0)
+
+                # expand to the right
+                next_rx = min(rx + self._expand_stepsize, out_bin.shape[1] - 1)
+                while next_rx < out_bin.shape[1] - 1 and out_bin[buffer_y][next_rx]:
+                    rx = next_rx
+                    next_rx = min(rx + self._expand_stepsize, out_bin.shape[1] - 1)
+
+                # expand upwards
+                next_uy = max(uy - self._expand_stepsize, 0)
+                while next_uy > 0 and out_bin[next_uy][buffer_x]:
+                    uy = next_uy
+                    next_uy = max(uy - self._expand_stepsize, 0)
+
+                # expand downwards
+                next_ly = min(ly + self._expand_stepsize, out_bin.shape[0] - 1)
+                while next_ly < out_bin.shape[0] - 1 and out_bin[next_ly][buffer_x]:
+                    ly = next_ly
+                    next_ly = min(ly + self._expand_stepsize, out_bin.shape[0] - 1)
+
+            # calculate final width and height
+            width, height = rx - lx, ly - uy
+            candidates.append(Candidate(lx, uy, width, height))
+            points.remove(point)
+            points = [other_point for other_point in points if not (lx <= other_point[0] <= rx and uy <= other_point[1] <= ly)]
+        return candidates
+
     def get_debug_image(self):
         """
         Returns the fcnn heatmap as ros image message if debug is enabled.
