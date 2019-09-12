@@ -3,7 +3,7 @@ from .candidate import CandidateFinder, BallDetector
 
 class DummyBallDetector(BallDetector):
     """
-    Dummy ball detector that we use if we want the run vision to without neural network e.g..
+    Dummy ball detector that we use if we want to run the vision without neural network to e.g. save computation time for debugging.
     """
     def __init__(self):
         self._detected_candidates = []
