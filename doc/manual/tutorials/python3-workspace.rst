@@ -7,7 +7,7 @@ The cv_bridge Issue
 In the default setting the workspace is only built using Python 2. Also usually ROS supports only one Python version at a time.
 On the one hand we need python 2 for tools like rqt, but on the other hand software like the vision needs Python 3. If we want to build the cv_bridge which is needed for the Vision also in Python 3 we need to follow the following steps.
 
-1. Execute the following commands, to add another workspace beside your main one:
+1. Execute the following commands to add another workspace beside your main one:
 
 :code:`mkdir ~/secondary_build_ws && cd ~/secondary_build_ws && catkin config -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so && catkin config --install`
 
