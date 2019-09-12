@@ -238,7 +238,7 @@ class FieldBoundaryDetector(object):
         :param y_offset: an offset in y-direction (higher offset allows points in a wider range over the field_boundary)
         :return: whether the candidate is under the field_boundary or not
         """
-        footpoint = candidate.get_lowest_point()
+        footpoint = candidate.get_lower_center_point()
         return self.point_under_field_boundary(footpoint)
 
     def candidate_under_convex_field_boundary(self, candidate, y_offset=0):
@@ -249,7 +249,7 @@ class FieldBoundaryDetector(object):
         :param y_offset: an offset in y-direction (higher offset allows points in a wider range over the field_boundary)
         :return: whether the candidate is under the convex field_boundary or not
         """
-        footpoint = candidate.get_lowest_point()
+        footpoint = candidate.get_lower_center_point()
         return self.point_under_convex_field_boundary(footpoint)
 
     def candidates_under_field_boundary(self, candidates, y_offset=0):
