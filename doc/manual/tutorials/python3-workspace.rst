@@ -4,8 +4,8 @@ Run Python 3 Packages in Python 2 Workspace
 
 The cv_bridge Issue
 ===================
-In the default setting the workspace is only built using Python 2. Also usually ROS sopports only one Python version at a time.
-But on the one hand we need python 2 for tools like rqt, but on the other software like the vision needs Python 3. If we want to build the cv_bridge which is needed for the Vision also in Python 3 we need to follow the following steps.
+In the default setting the workspace is only built using Python 2. Also usually ROS supports only one Python version at a time.
+On the one hand we need python 2 for tools like rqt, but on the other hand software like the vision needs Python 3. If we want to build the cv_bridge which is needed for the Vision also in Python 3 we need to follow the following steps.
 
 1. Execute the following commands, to add another workspace beside your main one:
 
