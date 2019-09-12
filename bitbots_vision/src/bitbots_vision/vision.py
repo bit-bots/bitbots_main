@@ -25,7 +25,6 @@ from bitbots_msgs.msg import Config, ColorSpace
 # TODO: _underscores for "private" methods
 # TODO: extentions: revert removing of expandPoints and evaluate
 # TODO: color mask publishing
-# TODO: color: flags for global
 # TODO: issue: thread-safety main worker in loop
 # TODO: dyn reconf: yolo, fcnn groups, "Field_Boundary", color zu main
 
