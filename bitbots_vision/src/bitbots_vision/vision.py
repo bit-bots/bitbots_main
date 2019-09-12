@@ -346,7 +346,7 @@ class Vision:
         # distribute the image to the detectors
         self._distribute_images(image, internal_image_subscribers)
 
-        # Check if the vision should run the conventional and neural net part parrall
+        # Check if the vision should run the conventional and neural net part parallel
         if self.config['vision_parallelize']:
             # Create and start threads for conventional calculation and neural net
             fcnn_thread = threading.Thread(target=self.ball_detector.compute)
@@ -541,7 +541,7 @@ class Vision:
 
     def _conventional_precalculation(self):
         """
-        Kicks of the conventional calculations
+        Starts the conventional calculations
         """
         # Modules that should run their calculations
         modules = [
