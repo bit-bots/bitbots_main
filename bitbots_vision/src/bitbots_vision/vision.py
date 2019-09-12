@@ -24,7 +24,6 @@ from bitbots_msgs.msg import Config, ColorSpace
 # TODO: _underscores for "private" methods
 # TODO: color mask publishing
 # TODO: issue: thread-safety main worker in loop
-# TODO: dyn reconf: yolo, fcnn groups, "Field_Boundary", color zu main
 
 class Vision:
     def __init__(self):
