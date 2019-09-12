@@ -247,6 +247,12 @@ class Vision:
 
         self._register_or_update_all_subscribers(config)
 
+        # Define Modules that should run their calculations (modules should exist, theirfore its located here)
+        self.conventional_modules = [
+            self.obstacle_detector,
+            self.line_detector,
+        ]
+
         # Publish Config-message (mainly for the dynamic color space node)
         ros_utils.publish_vision_config(config, self.pub_config)
 
@@ -351,15 +357,17 @@ class Vision:
             self.debug_image_creator,
         ]
 
-        # distribute the image to the detectors
-        # TODO: inline method
-        self._distribute_images(image, internal_image_subscribers)
+        # Distribute the image to the detectors
+        # Iterate over subscribers
+        for vision_object in internal_image_subscribers:
+            # Send image
+            vision_object.set_image(image)
 
         # Check if the vision should run the conventional and neural net part parallel
         if self.config['vision_parallelize']:
             # Create and start threads for conventional calculation and neural net
             fcnn_thread = threading.Thread(target=self.ball_detector.compute)
-            # TODO: Maybe rename conventional?
+
             conventional_thread = threading.Thread(target=self._conventional_precalculation())
 
             conventional_thread.start()
@@ -470,17 +478,6 @@ class Vision:
             # publish debug image
             self.pub_debug_image.publish(self.bridge.cv2_to_imgmsg(debug_image, 'bgr8'))
 
-    def _distribute_images(self, image, internal_image_subscribers):
-        """
-        Set the image for each detector
-
-        :param image: the current image
-        """
-        # Iterate over subscribers
-        for vision_object in internal_image_subscribers:
-            # Send image
-            vision_object.set_image(image)
-
     def _create_debug_image(self, image):
         """
         Draws a debug image
@@ -555,12 +552,12 @@ class Vision:
         """
         # Modules that should run their calculations
         # TODO: move this to DynReconf and add empty list to init
-        modules = [
+        self.conventional_modules = [
             self.obstacle_detector,
             self.line_detector,
         ]
         # Run all modules
-        for module in modules:
+        for module in self.conventional_modules:
             module.compute()
 
     def _handle_forgotten_camera_cap(self, image):
