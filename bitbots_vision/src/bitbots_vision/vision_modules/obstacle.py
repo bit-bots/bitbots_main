@@ -235,7 +235,7 @@ class ObstacleDetector(CandidateFinder):
         if obstacle_begin:
             # obstacle began but never ended (problematic edge-case):
             # candidate(x upper left point, y upper left point, width, height)
-            i = pic_width - step  # we have to reinitialise i because it was only usable in the for-loop
+            i = pic_width - step  # we have to reinitialize i because it was only usable in the for-loop
             self._build_and_save_obstacle_candidate(obstacle_begin,
                 i,
                 full_field_boundary,
@@ -256,6 +256,7 @@ class ObstacleDetector(CandidateFinder):
         :param start_max_width: max width
         :param distance_value_increase: distance value increase
         """
+        # TODO: rename i and method -> refactor (return candidate)
         x = obstacle_begin[0]
         # Calculating width of the object
         w = i - x

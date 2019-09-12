@@ -19,6 +19,19 @@ from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config, ColorSpace
 
+# TODO: init file in legacy
+# TODO: evaluator.py in mainfolder
+# TODO: Doku: how to run on py3 (doku.bb, readme(link))
+# TODO: issue: static as non class
+# TODO: issue: named logging
+# TODO: _underscores for "private" methods
+# TODO: def _get_raw_candidates revert
+# TODO: extentions: revert removing of expandPoints and evaluate
+# TODO: color mask publishing
+# TODO: candidate: rename get_footpoint
+# TODO: color: flags for global
+# TODO: issue: thread-safety main worker in loop
+# TODO: dyn reconf: yolo, fcnn groups, "Field_Boundary", color zu main
 
 class Vision:
     def __init__(self):
@@ -344,12 +357,14 @@ class Vision:
         ]
 
         # distribute the image to the detectors
+        # TODO: inline method
         self._distribute_images(image, internal_image_subscribers)
 
         # Check if the vision should run the conventional and neural net part parallel
         if self.config['vision_parallelize']:
             # Create and start threads for conventional calculation and neural net
             fcnn_thread = threading.Thread(target=self.ball_detector.compute)
+            # TODO: Maybe rename conventional?
             conventional_thread = threading.Thread(target=self._conventional_precalculation())
 
             conventional_thread.start()
@@ -544,6 +559,7 @@ class Vision:
         Starts the conventional calculations
         """
         # Modules that should run their calculations
+        # TODO: move this to DynReconf and add empty list to init
         modules = [
             self.obstacle_detector,
             self.line_detector,
