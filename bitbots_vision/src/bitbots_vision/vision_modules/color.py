@@ -340,9 +340,11 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         # Initialization of parent PixelListColorDetector.
         super(DynamicPixelListColorDetector, self).__init__(config, package_path, pub_field_mask_image)
 
+        # Annotate global variable. The global is needed due to threading issues
         global dyn_color_space
         dyn_color_space = np.copy(self.color_space)
 
+        # Annotate global variable. The global is needed due to threading issues
         global base_color_space
         base_color_space = np.copy(self.color_space)
 
