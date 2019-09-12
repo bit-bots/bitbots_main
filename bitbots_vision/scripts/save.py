@@ -9,6 +9,12 @@ from ruamel.yaml import YAML
 A script to save dynamic reconfigured params into the visionparams.yaml
 """
 
+# Compatibility
+try:
+    input = raw_input
+except:
+    pass
+
 # Set yaml stuff
 yaml = YAML()
 yaml.explicit_start = True
@@ -27,7 +33,7 @@ with open(config_path) as fp:
 changed_params = 0
 # Iterate over old keys
 for key in data.keys():
-    # Get the current key value form the parameter server
+    # Get the current key value from the parameter server
     new_value = rospy.get_param("/bitbots_vision/{}".format(str(key)))
     # Check if param changed
     if new_value != data[key]:
@@ -36,7 +42,7 @@ for key in data.keys():
         print("{}:{}".format(key, new_value))
 
 # Ask user if he wants to save it
-if raw_input("\n {} parameters changed. Do you want to save? (y/n)".format(changed_params)) == "y":
+if input("\n {} parameters changed. Do you want to save? (y/n)".format(changed_params)) == "y":
     # Save new file
     with open(config_path,"w") as fp:
         yaml.dump(data, fp)
