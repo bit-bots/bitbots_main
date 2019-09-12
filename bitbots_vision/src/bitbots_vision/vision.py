@@ -23,10 +23,8 @@ from bitbots_msgs.msg import Config, ColorSpace
 # TODO: issue: static as non class
 # TODO: issue: named logging
 # TODO: _underscores for "private" methods
-# TODO: def _get_raw_candidates revert
 # TODO: extentions: revert removing of expandPoints and evaluate
 # TODO: color mask publishing
-# TODO: candidate: rename get_footpoint
 # TODO: color: flags for global
 # TODO: issue: thread-safety main worker in loop
 # TODO: dyn reconf: yolo, fcnn groups, "Field_Boundary", color zu main
