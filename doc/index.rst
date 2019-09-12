@@ -20,6 +20,7 @@ Welcome to bitbots_meta's documentation!
    manual/tutorials/animation
    manual/tutorials/3d-Druck
    manual/tutorials/launch_files
+   manual/tutorials/python3-workspace
 
 
 .. toctree::
