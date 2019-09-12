@@ -25,7 +25,7 @@ ball_fcnn_max_ball_diameter: 150
 ball_fcnn_publish_output: false
 ball_fcnn_publish_field_boundary_offset: 5
 
-ball_detector: 'yolo_darknet'  # fcnn or yolo_opencv or yolo_darknet or dummy
+neural_network_type: 'yolo_darknet'  # fcnn or yolo_opencv or yolo_darknet or dummy
 ball_candidate_field_boundary_y_offset: 0
 ball_candidate_rating_threshold: 0.5
 

@@ -192,22 +192,21 @@ class Vision:
             self.white_color_detector,
             self.field_boundary_detector)
 
-        # If we don't use YOLO set the conventional goalpost detector.
-        if not config['ball_detector'] in ['yolo_opencv', 'yolo_darknet']:
-            self.goalpost_detector = obstacle.WhiteObstacleDetector(self.obstacle_detector)
         # Set the other obstacle detectors
         self.red_obstacle_detector = obstacle.RedObstacleDetector(self.obstacle_detector)
         self.blue_obstacle_detector = obstacle.BlueObstacleDetector(self.obstacle_detector)
         self.unknown_obstacle_detector = obstacle.UnknownObstacleDetector(self.obstacle_detector)
 
         # If dummy ball detection is activated, set the dummy ballfinder as ball detector
-        if config['ball_detector'] == 'dummy':
+        if config['neural_network_type'] == 'dummy':
             self.ball_detector = dummy_ballfinder.DummyBallDetector()
+            # If we don't use YOLO set the conventional goalpost detector.
+            self.goalpost_detector = obstacle.WhiteObstacleDetector(self.obstacle_detector)
 
-        # Check if the fcnn ball detector is activated
-        if config['ball_detector'] == 'fcnn':
+        # Check if the fcnn is activated
+        if config['neural_network_type'] == 'fcnn':
             # Check if its the first callback, the fcnn is newly activated or the model has changed
-            if ros_utils.config_param_change(self.config, config, ['fcnn_model_path', 'ball_detector']):
+            if ros_utils.config_param_change(self.config, config, ['fcnn_model_path', 'neural_network_type']):
                 # Build absolute model path
                 ball_fcnn_path = os.path.join(self.package_path, 'models', config['fcnn_model_path'])
                 # Check if it exists
@@ -216,15 +215,19 @@ class Vision:
                 else:
                     self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
                     rospy.loginfo("FCNN vision is running now")
-            #Check if ball_fcnn config has changed
-            if ros_utils.config_param_change(self.config, config, r'^ball_fcnn_'):
+            #Check if ball_fcnn config or the neural network type has changed
+            if ros_utils.config_param_change(self.config, config, r'^ball_fcnn_') or \
+                    ros_utils.config_param_change(self.config, config, 'neural_network_type'):
+                # Set fcnn handler
                 self.ball_detector = fcnn_handler.FcnnHandler(
                     config,
                     self.ball_fcnn)
+                # If we don't use YOLO set the conventional goalpost detector.
+                self.goalpost_detector = obstacle.WhiteObstacleDetector(self.obstacle_detector)
 
         # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
-        if config['ball_detector'] in ['yolo_opencv', 'yolo_darknet']:
-            if ros_utils.config_param_change(self.config, config, ['yolo_model_path', 'ball_detector']):
+        if config['neural_network_type'] in ['yolo_opencv', 'yolo_darknet']:
+            if ros_utils.config_param_change(self.config, config, ['yolo_model_path', 'neural_network_type']):
                 # Build absolute model path
                 yolo_model_path = os.path.join(self.package_path, 'models', config['yolo_model_path'])
                 # Check if it exists
@@ -232,16 +235,16 @@ class Vision:
                     rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist! Maybe its an fcnn model?')
                 else:
                     # Decide which yolo implementation should be used
-                    if config['ball_detector'] == 'yolo_opencv':
+                    if config['neural_network_type'] == 'yolo_opencv':
                         # Load OpenCV implementation (uses OpenCL)
                         self.yolo = yolo_handler.YoloHandlerOpenCV(config, yolo_model_path)
-                    elif config['ball_detector'] == 'yolo_darknet':
+                    elif config['neural_network_type'] == 'yolo_darknet':
                         # Load Darknet implementation (uses CUDA)
                         self.yolo = yolo_handler.YoloHandlerDarknet(config, yolo_model_path)
                     # Set both ball and goalpost detector
                     self.ball_detector = yolo_handler.YoloBallDetector(config, self.yolo)
                     self.goalpost_detector = yolo_handler.YoloGoalpostDetector(self.yolo)
-                    rospy.loginfo(config['ball_detector'] + " vision is running now")
+                    rospy.loginfo(config['neural_network_type'] + " vision is running now")
 
         self._register_or_update_all_subscribers(config)
 
@@ -447,7 +450,7 @@ class Vision:
         # Publish field boundary
         self.pub_convex_field_boundary.publish(convex_field_boundary_msg)
 
-        if self.config['ball_detector'] == 'fcnn':
+        if self.config['neural_network_type'] == 'fcnn':
             # Publish fcnn output for the region of interest under the field boundary (for the world model)
             if self.ball_fcnn_publish_output:
                 roi_msg = ros_utils.build_fcnn_region_of_interest(
