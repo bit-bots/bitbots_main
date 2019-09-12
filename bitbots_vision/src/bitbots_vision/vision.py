@@ -19,7 +19,6 @@ from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config, ColorSpace
 
-# TODO: Doku: how to run on py3 (doku.bb, readme(link))
 # TODO: issue: static as non class
 # TODO: issue: named logging
 # TODO: _underscores for "private" methods
