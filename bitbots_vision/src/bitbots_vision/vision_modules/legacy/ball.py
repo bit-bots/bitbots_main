@@ -1,7 +1,4 @@
-
 from .candidate import Candidate
-import rospy
-import numpy as np
 import cv2
 
 

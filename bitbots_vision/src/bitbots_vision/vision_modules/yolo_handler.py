@@ -2,13 +2,13 @@ import cv2
 import os
 import abc
 import rospy
-import time
 try:
     from pydarknet import Detector, Image
 except ImportError:
     rospy.logerr("Not able to run Darknet YOLO! Its only executable under python3 with yolo34py or yolo34py-gpu installed.")
 import numpy as np
 from .candidate import CandidateFinder, BallDetector, Candidate
+
 
 class YoloHandler():
     """

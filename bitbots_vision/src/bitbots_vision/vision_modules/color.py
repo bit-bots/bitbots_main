@@ -2,12 +2,10 @@ import abc
 import cv2
 import yaml
 import pickle
-import time
 import rospy
 import VisionExtensions
 import numpy as np
 import os
-from collections import deque
 from cv_bridge import CvBridge
 from bitbots_vision.vision_modules import ros_utils
 

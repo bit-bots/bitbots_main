@@ -1,8 +1,4 @@
-
-import sys
-from random import randint
 from .field_boundary import FieldBoundaryDetector
-from .candidate import Candidate
 from .color import ColorDetector
 import math
 import numpy as np

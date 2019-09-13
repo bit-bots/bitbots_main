@@ -11,6 +11,7 @@ from sensor_msgs.msg import Image
 from bitbots_msgs.msg import ColorSpace, Config
 from bitbots_vision.vision_modules import field_boundary, color, ros_utils
 
+
 class DynamicColorSpace:
     def __init__(self):
         # type: () -> None

@@ -1,9 +1,7 @@
 #! /usr/bin/env python3
 
 import os
-import sys
 import cv2
-import yaml
 import rospy
 import rospkg
 import threading

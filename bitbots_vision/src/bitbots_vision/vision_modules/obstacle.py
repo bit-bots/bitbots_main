@@ -1,7 +1,6 @@
 from .candidate import CandidateFinder, Candidate
 from .color import ColorDetector
 from .field_boundary import FieldBoundaryDetector
-import cv2
 import numpy as np
 import rospy
 

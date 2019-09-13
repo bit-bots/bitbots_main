@@ -1,7 +1,5 @@
 import tensorflow as tf
-import numpy as np
 import rospy
-import sys, os
 
 
 class LiveClassifier(object):

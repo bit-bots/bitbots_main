@@ -1,6 +1,4 @@
 import cv2
-import rospy
-from .candidate import Candidate
 
 
 class DebugImage:
