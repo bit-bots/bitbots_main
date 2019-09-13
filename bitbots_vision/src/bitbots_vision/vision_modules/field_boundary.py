@@ -137,7 +137,7 @@ class FieldBoundaryDetector(object):
 
         :param points:  list of points (a point is a 2D array (x,y)) with increasing x-coordinates,
                         including one point with x = 0 and one point with x = self._image.shape[1]-1
-        :return: list of points, see below for more detail
+        :return: list of points, see above for more detail
         '''
 
         if len(points) < 3:
