@@ -528,7 +528,7 @@ class Vision:
                 # Mask image
                 field_mask = self.field_color_detector.get_mask_image()
                 # Publish mask image
-                self.pub_field_mask_imag3e.publish(self.bridge.cv2_to_imgmsg(field_mask, '8UC1'))
+                self.pub_field_mask_image.publish(self.bridge.cv2_to_imgmsg(field_mask, '8UC1'))
 
         # Check if we should draw debug image
         if self._publish_debug_image:
