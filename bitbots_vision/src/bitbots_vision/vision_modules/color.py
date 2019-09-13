@@ -30,6 +30,9 @@ class ColorDetector(object):
         # Initial setup
         self.cv_bridge = CvBridge()
 
+        self._image = None
+        self._mask = None
+
         self.config = {}
         self.update_config(config)
 
@@ -55,16 +58,60 @@ class ColorDetector(object):
         :return bool: whether pixel is in color space or not
         """
 
-    @abc.abstractmethod
-    def mask_image(self, image):
+    def set_image(self, image):
+        # type: (np.array) -> None
+        """
+        Refreshes class variables after receiving an image
+
+        :param image: the current frame of the video feed
+        :return: None
+        """
+        self._image = image
+        self._mask = None
+
+    def get_mask_image(self, optional_image=None):
         # type: (np.array) -> np.array
         """
-        Creates a color mask
+        Returns the color mask of the cached (or optional given) image
         (0 for not in color range and 255 for in color range)
 
-        :param np.array image: image to mask
+        :param np.array optional_image: Optional input image
         :return np.array: masked image
         """
+        if optional_image is not None:
+            image = optional_image
+            cache = False
+        else:
+            image = self._image
+            cache = True
+
+        mask = self._mask_image(image)
+
+        if cache:
+            self._mask = mask
+
+        return mask
+
+    @abc.abstractmethod
+    def _mask_image(self, image):
+        # type: (np.array) -> np.array
+        """
+        Returns the color mask of the image
+        (0 for not in color range and 255 for in color range)
+
+        :param np.array image: input image
+        :return np.array: masked image
+        """
+
+    def mask_bitwise(self, mask):
+        # type: (np.array) -> np.array
+        """
+        Returns bitwise-and mask with current image
+
+        :param np.array mask: mask
+        :return np.array: bitwise-and mask with current image
+        """
+        return cv2.bitwise_and(self.get_mask_image(), self.get_mask_image(), mask=mask)
 
     def match_adjacent(self, image, point, offset=1, threshold=200):
         # type: (np.array, tuple[int, int], int, float) -> bool
@@ -95,7 +142,7 @@ class ColorDetector(object):
         :param float threshold: the mean needed to accept the area to match (0-255)
         :return bool: whether area is in color space or not
         """
-        return np.mean(self.mask_image(area)) > threshold
+        return np.mean(self.get_mask_image(area)) > threshold
 
     @staticmethod
     def pixel_bgr2hsv(pixel):
@@ -110,24 +157,31 @@ class ColorDetector(object):
         pic[0][0] = pixel
         return cv2.cvtColor(pic, cv2.COLOR_BGR2HSV)[0][0]
 
+    def compute(self):
+        # type: () -> None
+        """
+        Compute image masks.
+
+        :return: None
+        """
+        self.get_mask_image()
+
 
 class HsvSpaceColorDetector(ColorDetector):
     """
     HsvSpaceColorDetector is a ColorDetector, that is based on the HSV-color space.
     The HSV-color space is adjustable by setting min- and max-values for hue, saturation and value.
     """
-    def __init__(self, config, color_str, pub_hsv_mask_image=None):
-        # type: (dict, str, rospy.Publisher) -> None
+    def __init__(self, config, color_str):
+        # type: (dict, str) -> None
         """
         Initialization of HsvSpaceColorDetector.
 
         :param dict config: dictionary of the vision node configuration parameters
         :param str color_str: color (described in the config) that should be detected.
-        :param rospy.Publisher pub_hsv_mask_image: Publisher of hsv mask images (Default: None)
         :return: None
         """
         self.detector_name = "{}_color_detector".format(color_str)
-        self.pub_hsv_mask_image = pub_hsv_mask_image
 
         # Initialization of parent ColorDetector.
         super(HsvSpaceColorDetector, self).__init__(config)
@@ -172,23 +226,17 @@ class HsvSpaceColorDetector(ColorDetector):
                (self.max_vals[1] >= pixel[1] >= self.min_vals[1]) and \
                (self.max_vals[2] >= pixel[2] >= self.min_vals[2])
 
-    def mask_image(self, image):
+    def _mask_image(self, image):
         # type: (np.array) -> np.array
         """
-        Creates a color mask
+        Returns the color mask of the image
         (0 for not in color range and 255 for in color range)
 
-        :param np.array image: image to mask
+        :param np.array image: input image
         :return np.array: masked image
         """
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        mask = cv2.inRange(hsv_image, self.min_vals, self.max_vals)
-
-        # Toggle publishing of 'hsv_mask'-messages
-        if self.pub_hsv_mask_image is not None:
-            self.pub_hsv_mask_image.publish(self.cv_bridge.cv2_to_imgmsg(mask, '8UC1'))
-
-        return mask
+        return cv2.inRange(hsv_image, self.min_vals, self.max_vals)
 
 
 class PixelListColorDetector(ColorDetector):
@@ -197,26 +245,22 @@ class PixelListColorDetector(ColorDetector):
     The color space is loaded from color-space-file at color_path (in config).
     The color space is represented by boolean-values for RGB-color-values.
 
-    Publishes: 'ROS_field_mask_image_msg_topic'-messages
-
     The following parameters of the config dict are needed:
         'vision_use_sim_color',
         'field_color_detector_path_sim',
         'field_color_detector_path'
     """
 
-    def __init__(self, config, package_path, pub_field_mask_image=None):
-        # type:(dict, str, rospy.Publisher) -> None
+    def __init__(self, config, package_path):
+        # type:(dict, str) -> None
         """
         Initialization of PixelListColorDetector.
 
         :param dict config: dictionary of the vision node configuration parameters
         :param str package_path: path of package
-        :param rospy.Publisher pub_field_mask_image: Publisher of field mask images (Default: None)
         :return: None
         """
         self.package_path = package_path
-        self.pub_field_mask_image = pub_field_mask_image
 
         # Initialization of parent ColorDetector.
         super(PixelListColorDetector, self).__init__(config)
@@ -294,22 +338,16 @@ class PixelListColorDetector(ColorDetector):
         """
         return self.color_space[pixel[0], pixel[1], pixel[2]]
 
-    def mask_image(self, image):
+    def _mask_image(self, image):
         # type: (np.array) -> np.array
         """
-        Creates a color mask (0 for not in color range and 255 for in color range)
-        and publishes the field mask to 'ROS_field_mask_image_msg_topic'.
+        Returns the color mask of the image
+        (0 for not in color range and 255 for in color range)
 
-        :param np.array image: image to mask
+        :param np.array image: input image
         :return np.array: masked image
         """
-        mask = VisionExtensions.maskImg(image, self.color_space)
-
-        # Toggle publishing of 'field_mask'-messages
-        if self.pub_field_mask_image is not None and self.publish_field_mask_img_msg:
-            self.pub_field_mask_image.publish(self.cv_bridge.cv2_to_imgmsg(mask, '8UC1'))
-
-        return mask
+        return VisionExtensions.maskImg(image, self.color_space)
 
 
 class DynamicPixelListColorDetector(PixelListColorDetector):
@@ -318,27 +356,20 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
     The color space is initially loaded from color-space-file at color_path (in config)
     and optionally adjustable to changing color conditions (dynamic color space).
     The color space is represented by boolean-values for RGB-color-values.
-
-    Subscribes to: 'ROS_dynamic_color_space_msg_topic'
-    Publishes: 'ROS_field_mask_image_msg_topic' and
-        'ROS_dynamic_color_space_field_mask_image_msg_topic'-messages
     """
-
-    def __init__(self, config, package_path, pub_field_mask_image=None, pub_dynamic_color_space_field_mask_image=None):
-        # type:(dict, str, rospy.Publisher, rospy.Publisher) -> None
+    def __init__(self, config, package_path):
+        # type:(dict, str) -> None
         """
         Initialization of DynamicPixelListColorDetector.
 
         :param dict config: dictionary of the vision node configuration parameters
         :param str package_path: path of package
-        :param rospy.Publisher pub_field_mask_image: Publisher of field mask images (Default: None)
-        :param rospy.Publisher pub_dynamic_color_space_field_mask_image: Publisher of dynamic color space field mask images (Default: None)
         :return: None
         """
-        self.pub_dynamic_color_space_field_mask_image = pub_dynamic_color_space_field_mask_image
+        self._static_mask = None
 
         # Initialization of parent PixelListColorDetector.
-        super(DynamicPixelListColorDetector, self).__init__(config, package_path, pub_field_mask_image)
+        super(DynamicPixelListColorDetector, self).__init__(config, package_path)
 
         # Annotate global variable. The global is needed due to threading issues
         global dyn_color_space
@@ -348,48 +379,53 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         global base_color_space
         base_color_space = np.copy(self.color_space)
 
-    def update_config(self, config):
-        # type: (dict) -> None
+    def set_image(self, image):
+        # type: (np.array) -> None
         """
-        Update (or initiate) the color detector setup with the new config.
-        Always make a copy of self.config if a comparison between the old and new config is needed!
+        Refreshes class variables after receiving an image
 
-        :param dict config: dictionary of the vision node configuration parameters
+        :param image: the current frame of the video feed
         :return: None
         """
-        tmp_config = self.config.copy()
+        self._static_mask = None
 
-        super(DynamicPixelListColorDetector, self).update_config(config)
+        super(DynamicPixelListColorDetector, self).set_image(image)
 
-        # Toggle publishing of 'dynamic_field_mask'-messages
-        if ros_utils.config_param_change(tmp_config, config, 'dynamic_color_space_publish_field_mask_image'):
-            self.publish_dyn_field_mask_msg = self.config['dynamic_color_space_publish_field_mask_image']
-
-    def mask_image(self, image):
+    def get_static_mask_image(self, optional_image=None):
         # type: (np.array) -> np.array
         """
-        Creates a color mask (0 for not in color range and 255 for in color range)
-        and publishes static/dynamic field masks to 'ROS_field_mask_image_msg_topic' and 'ROS_dynamic_color_space_field_mask_image_msg_topic'.
+        Returns the color mask of the cached (or optional given) image based on the static color space
+        (0 for not in color range and 255 for in color range)
 
-        :param np.array image: image to mask
+        :param np.array optional_image: Optional input image
         :return np.array: masked image
         """
-        global dyn_color_space
-        dyn_mask = VisionExtensions.maskImg(image, dyn_color_space)
+        global base_color_space
 
-        if self.publish_field_mask_img_msg:
-            global base_color_space
-            static_mask = VisionExtensions.maskImg(image, base_color_space)
+        if optional_image is not None:
+            image = optional_image
+        else:
+            image = self._image
 
-        # Toggle publishing of 'dynamic_field_mask'-messages
-        if self.pub_dynamic_color_space_field_mask_image is not None and self.publish_dyn_field_mask_msg:
-            self.pub_dynamic_color_space_field_mask_image.publish(self.cv_bridge.cv2_to_imgmsg(dyn_mask, '8UC1'))
+        mask = self._mask_image(image, base_color_space)
 
-        # Toggle publishing of 'field_mask'-messages
-        if self.pub_field_mask_image is not None and self.publish_field_mask_img_msg:
-            self.pub_field_mask_image.publish(self.cv_bridge.cv2_to_imgmsg(static_mask, '8UC1'))
+        return mask
 
-        return dyn_mask
+    def _mask_image(self, image, color_space=None):
+        # type: (np.array) -> np.array
+        """
+        Returns the color mask of the image based on the dynamic color space unless other is specified
+        (0 for not in color range and 255 for in color range)
+
+        :param np.array image: input image
+        :param np.array color_space: Optional color space
+        :return np.array: masked image
+        """
+        if color_space is None:
+            global dyn_color_space
+            color_space = dyn_color_space
+
+        return VisionExtensions.maskImg(image, color_space)
 
     def color_space_callback(self, msg):
         # type: (ColorSpace) -> None

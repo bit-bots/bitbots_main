@@ -24,6 +24,8 @@ from bitbots_msgs.msg import Config, ColorSpace
 # TODO: _underscores for "private" methods
 # TODO: color mask publishing
 # TODO: issue: thread-safety main worker in loop
+# TODO: issue: image wrapper including hash function
+# TODO: documentation for colorspace files in readme/doku
 
 class Vision:
     def __init__(self):
@@ -53,6 +55,9 @@ class Vision:
         self.pub_debug_image = None
         self.pub_debug_fcnn_image = None
         self.pub_convex_field_boundary = None
+        self.pub_white_mask_image = None
+        self.pub_red_mask_image = None
+        self.pub_blue_mask_image = None
         self.pub_field_mask_image = None
         self.pub_dynamic_color_space_field_mask_image = None
 
@@ -109,31 +114,49 @@ class Vision:
         # Maximum offset for balls over the convex field boundary
         self._ball_candidate_y_offset = config['ball_candidate_field_boundary_y_offset']
 
+        self._use_dynamic_color_space = config['dynamic_color_space_active']
+
         # Should the debug image be published?
         if ros_utils.config_param_change(self.config, config, 'vision_publish_debug_image'):
-            self.publish_debug_image = config['vision_publish_debug_image']
-            if self.publish_debug_image:
+            self._publish_debug_image = config['vision_publish_debug_image']
+            if self._publish_debug_image:
                 rospy.logwarn('Debug images are enabled')
             else:
                 rospy.loginfo('Debug images are disabled')
 
         # Should the fcnn output (only under the field boundary) be published?
         if ros_utils.config_param_change(self.config, config, 'ball_fcnn_publish_output'):
-            self.ball_fcnn_publish_output = config['ball_fcnn_publish_output']
-            if self.ball_fcnn_publish_output:
+            self._ball_fcnn_publish_output = config['ball_fcnn_publish_output']
+            if self._ball_fcnn_publish_output:
                 rospy.logwarn('ball FCNN output publishing is enabled')
             else:
                 rospy.logwarn('ball FCNN output publishing is disabled')
 
         # Should the whole fcnn output be published?
         if ros_utils.config_param_change(self.config, config, 'ball_fcnn_publish_debug_img'):
-            self.publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
-            if self.ball_fcnn_publish_output:
+            self._publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
+            if self._publish_fcnn_debug_image:
                 rospy.logwarn('Ball FCNN debug image publishing is enabled')
             else:
                 rospy.loginfo('Ball FCNN debug image publishing is disabled')
 
-        # Print if the vision uses the sim color or not
+        # Should the HSV mask images be published?
+        if ros_utils.config_param_change(self.config, config, 'vision_publish_HSV_mask_image'):
+            self._publish_HSV_mask_image = config['vision_publish_HSV_mask_image']
+            if self._publish_HSV_mask_image:
+                rospy.logwarn('HSV mask image publishing is enabled')
+            else:
+                rospy.loginfo('HSV mask image publishing is disabled')
+
+        # Should the (dynamic color space-) field mask image be published?
+        if ros_utils.config_param_change(self.config, config, 'vision_publish_field_mask_image'):
+            self._publish_field_mask_image = config['vision_publish_field_mask_image']
+            if self._publish_field_mask_image:
+                rospy.logwarn('(Dynamic color space-) Field mask image publishing is enabled')
+            else:
+                rospy.loginfo('(Dynamic color space-) Field mask image publishing is disabled')
+
+        # Print, if the vision uses the sim color or not
         if ros_utils.config_param_change(self.config, config, 'vision_use_sim_color'):
             if config['vision_use_sim_color']:
                 rospy.logwarn('Loaded color space for SIMULATOR.')
@@ -153,19 +176,16 @@ class Vision:
             self.blue_color_detector = color.HsvSpaceColorDetector(config, "blue")
 
         # Check if the dynamic color space field color detector or the static field color detector should be used
-        if config['dynamic_color_space_active']:
+        if self._use_dynamic_color_space:
             # Set dynamic color space field color detector
             self.field_color_detector = color.DynamicPixelListColorDetector(
                 config,
-                self.package_path,
-                self.pub_field_mask_image,
-                self.pub_dynamic_color_space_field_mask_image)
+                self.package_path)
         else:
             # Set the static field color detector
             self.field_color_detector = color.PixelListColorDetector(
                 config,
-                self.package_path,
-                self.pub_field_mask_image)
+                self.package_path)
 
         # Get field boundary detector class by name from config
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
@@ -268,6 +288,7 @@ class Vision:
         # type: (dict) -> None
         """
         This method registers all publishers needed for the vision node.
+        Allways create a placeholder for each publisher in init
 
         :param dict config: new, incoming config
         :return: None
@@ -280,6 +301,9 @@ class Vision:
         self.pub_debug_image = ros_utils.create_or_update_publisher(self.config, config, self.pub_debug_image, 'ROS_debug_image_msg_topic', Image)
         self.pub_convex_field_boundary = ros_utils.create_or_update_publisher(self.config, config, self.pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundaryInImage)
         self.pub_debug_fcnn_image = ros_utils.create_or_update_publisher(self.config, config, self.pub_debug_fcnn_image, 'ROS_debug_fcnn_image_msg_topic', Image)
+        self.pub_white_mask_image = ros_utils.create_or_update_publisher(self.config, config, self.pub_white_mask_image, 'ROS_white_HSV_mask_image_msg_topic', Image)
+        self.pub_red_mask_image = ros_utils.create_or_update_publisher(self.config, config, self.pub_red_mask_image, 'ROS_red_HSV_mask_image_msg_topic', Image)
+        self.pub_blue_mask_image = ros_utils.create_or_update_publisher(self.config, config, self.pub_blue_mask_image, 'ROS_blue_HSV_mask_image_msg_topic', Image)
         self.pub_field_mask_image = ros_utils.create_or_update_publisher(self.config, config, self.pub_field_mask_image, 'ROS_field_mask_image_msg_topic', Image)
         self.pub_dynamic_color_space_field_mask_image = ros_utils.create_or_update_publisher(self.config, config, self.pub_dynamic_color_space_field_mask_image, 'ROS_dynamic_color_space_field_mask_image_msg_topic', Image)
 
@@ -347,6 +371,10 @@ class Vision:
 
         # Instances that should be notified with the new image
         internal_image_subscribers =[
+            self.field_color_detector,
+            self.white_color_detector,
+            self.red_color_detector,
+            self.blue_color_detector,
             self.field_boundary_detector,
             self.obstacle_detector,
             self.red_obstacle_detector,
@@ -457,9 +485,13 @@ class Vision:
         # Publish field boundary
         self.pub_convex_field_boundary.publish(convex_field_boundary_msg)
 
+        #########
+        # Debug #
+        #########
+
         if self.config['neural_network_type'] == 'fcnn':
             # Publish fcnn output for the region of interest under the field boundary (for the world model)
-            if self.ball_fcnn_publish_output:
+            if self._ball_fcnn_publish_output:
                 roi_msg = ros_utils.build_fcnn_region_of_interest(
                     self.ball_detector.get_fcnn_output(),
                     self.field_boundary_detector,
@@ -468,11 +500,38 @@ class Vision:
                 self.pub_ball_fcnn.publish(roi_msg)
 
             # Publish whole fcnn output for debug purposes
-            if self.publish_fcnn_debug_image:
+            if self._publish_fcnn_debug_image:
                 self.pub_debug_fcnn_image.publish(self.ball_detector.get_debug_image())
 
+        # Check, if HSV mask images should be published
+        if self._publish_HSV_mask_image:
+            # Mask images
+            white_mask = self.white_color_detector.get_mask_image()
+            red_mask = self.red_color_detector.get_mask_image()
+            blue_mask = self.blue_color_detector.get_mask_image()
+
+            # Publish mask images
+            self.pub_white_mask_image.publish(self.bridge.cv2_to_imgmsg(white_mask, '8UC1'))
+            self.pub_red_mask_image.publish(self.bridge.cv2_to_imgmsg(red_mask, '8UC1'))
+            self.pub_blue_mask_image.publish(self.bridge.cv2_to_imgmsg(blue_mask, '8UC1'))
+
+        # Check, if field mask image should be published
+        if self._publish_field_mask_image:
+            if self._use_dynamic_color_space:
+                # Mask image
+                dyn_field_mask = self.field_color_detector.get_mask_image()
+                static_field_mask = self.field_color_detector.get_static_mask_image()
+                # Publish mask image
+                self.pub_dynamic_color_space_field_mask_image.publish(self.bridge.cv2_to_imgmsg(dyn_field_mask, '8UC1'))
+                self.pub_field_mask_image.publish(self.bridge.cv2_to_imgmsg(static_field_mask, '8UC1'))
+            else:
+                # Mask image
+                field_mask = self.field_color_detector.get_mask_image()
+                # Publish mask image
+                self.pub_field_mask_imag3e.publish(self.bridge.cv2_to_imgmsg(field_mask, '8UC1'))
+
         # Check if we should draw debug image
-        if self.publish_debug_image:
+        if self._publish_debug_image:
             # Draw debug image
             debug_image = self._create_debug_image(image)
             # publish debug image
@@ -553,6 +612,10 @@ class Vision:
         # Modules that should run their calculations
         # TODO: move this to DynReconf and add empty list to init
         self.conventional_modules = [
+            self.field_color_detector,
+            self.white_color_detector,
+            self.red_color_detector,
+            self.blue_color_detector,
             self.obstacle_detector,
             self.line_detector,
         ]

@@ -56,9 +56,6 @@ class ObstacleDetector(CandidateFinder):
         # Set image
         self._image = image
         # Reset cached values
-        self._blue_mask = None
-        self._red_mask = None
-        self._white_mask = None
         self._obstacles = None
         self._blue_obstacles = None
         self._red_obstacles = None
@@ -323,15 +320,10 @@ class ObstacleDetector(CandidateFinder):
         """
         Calculate all obstacles and sorts them by colors
         """
-        # Calc blue mask (if not cached)
-        if not self._blue_mask:
-            self._blue_mask = self._blue_color_detector.mask_image(self._image)
-        # Calc red mask (if not cached)
-        if not self._red_mask:
-            self._red_mask = self._red_color_detector.mask_image(self._image)
-        # Calc red mask (if not cached)
-        if not self._white_mask:
-            self._white_mask = self._white_color_detector.mask_image(self._image)
+        # Calculate HSV masks
+        self._blue_mask = self._blue_color_detector.get_mask_image()
+        self._red_mask = self._red_color_detector.get_mask_image()
+        self._white_mask = self._white_color_detector.get_mask_image()
         # Reset the obstacles
         self._red_obstacles = list()
         self._blue_obstacles = list()

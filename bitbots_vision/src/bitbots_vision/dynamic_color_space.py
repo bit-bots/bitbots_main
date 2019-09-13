@@ -154,6 +154,8 @@ class DynamicColorSpace:
         """
         # Converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
+        # Propagate image to color detector
+        self.color_detector.set_image(image)
         # Get new dynamic colors from image
         colors = self.get_new_dynamic_colors(image)
         # Add new colors to the queue
@@ -189,7 +191,7 @@ class DynamicColorSpace:
         :return np.array: array of new dynamic color values
         """
         # Masks new image with current color space
-        mask_image = self.color_detector.mask_image(image)
+        mask_image = self.color_detector.get_mask_image()
         # Get mask from field_boundary detector
         self.field_boundary_detector.set_image(image)
         mask = self.field_boundary_detector.get_mask()
