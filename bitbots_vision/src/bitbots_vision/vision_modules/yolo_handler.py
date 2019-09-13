@@ -3,7 +3,6 @@ import os
 import abc
 import rospy
 import time
-from profilehooks import profile
 try:
     from pydarknet import Detector, Image
 except ImportError:
