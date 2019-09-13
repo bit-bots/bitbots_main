@@ -40,7 +40,7 @@ class ColorTest:
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
 
         # mask (and publish) image
-        self.color_detector.mask_image(image)
+        self.color_detector.get_mask_image(image)
 
     def _dynamic_reconfigure_callback(self, config, level):
         self.color_detector = color.HsvSpaceColorDetector(config, "color_test", self.pub_hsv_mask_image)

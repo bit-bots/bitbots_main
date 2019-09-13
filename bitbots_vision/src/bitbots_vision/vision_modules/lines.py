@@ -53,11 +53,10 @@ class LineDetector:
         if self._linepoints is None:
             # Empty line point list
             self._linepoints = list()
+            # Mask white parts of the image using a white color detector
+            white_masked_image = self._get_preprocessed_image()
             # Get image shape
             imgshape = self._get_preprocessed_image().shape
-            # Mask white parts of the image using a white color detector
-            white_masked_image = self._white_detector.mask_image(
-                self._get_preprocessed_image())
 
             # Get the maximum height of the field boundary
             max_field_boundary_heigth = self._field_boundary_detector.get_upper_bound(
@@ -92,7 +91,7 @@ class LineDetector:
         Computes if necessary and returns the (cached) line segments (Currently unused)
         """
         # Mask white parts of the image
-        img = self._white_detector.mask_image(self._get_preprocessed_image())
+        img = self._get_preprocessed_image()
         # Use hough lines algorithm to find lines in this mask
         lines = cv2.HoughLinesP(img,
                                 1,
@@ -131,18 +130,19 @@ class LineDetector:
         """
         # Check if it is cached
         if self._preprocessed_image is None:
-            # Get part under the field boundary as white mask
-            mask = self._field_boundary_detector.get_mask()
-            # And operation between the mask and the image. This blacks out the part above the field boundary
-            image_under_fieldboundary = cv2.bitwise_and(self._image, self._image, mask=mask)
+            # Only take parts that are under not green and the field boundary
             # Get green mask
-            green_mask = self._field_color_detector.mask_image(self._image)
+            green_mask = self._field_color_detector.get_mask_image()
             # Noise reduction on the green field mask
             green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_CLOSE, kernel=np.ones((3, 3)), iterations=1)
             # Invert and scale the field mask
             green_mask = np.ones_like(green_mask) - (np.floor_divide(green_mask, 255))
-            # Only take parts that are under not green and the field boundary
-            self._preprocessed_image = cv2.bitwise_and(image_under_fieldboundary, image_under_fieldboundary, mask=green_mask)
+            mask = self._white_detector.mask_bitwise(green_mask)
+
+            # Get part under the field boundary as white mask
+            field_boundary_mask = self._field_boundary_detector.get_mask()
+            # And operation between the mask and the image. This blacks out the part above the field boundary
+            self._preprocessed_image = cv2.bitwise_and(mask, mask, mask=field_boundary_mask)
         return self._preprocessed_image
 
     @staticmethod

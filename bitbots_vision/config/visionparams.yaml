@@ -12,6 +12,9 @@ ROS_line_msg_topic: 'line_in_image'
 ROS_dynamic_color_space_msg_topic: 'dynamic_color_space'
 ROS_debug_image_msg_topic: 'debug_image'
 ROS_debug_fcnn_image_msg_topic: 'fcnn_debug_image'
+ROS_white_HSV_mask_image_msg_topic: 'white_HSV_field_mask'
+ROS_red_HSV_mask_image_msg_topic: 'red_HSV_field_mask'
+ROS_blue_HSV_mask_image_msg_topic: 'blue_HSV_field_mask'
 ROS_field_mask_image_msg_topic: 'field_mask'
 ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'
 
@@ -86,6 +89,6 @@ obstacle_finder_value_increase: 2.0
 
 vision_publish_debug_image: false
 ball_fcnn_publish_debug_img: false  # toggles publishing of the fcnn heatmap image for debug purposes
+vision_publish_HSV_mask_image: false
 vision_publish_field_mask_image: false
-dynamic_color_space_publish_field_mask_image: false
 

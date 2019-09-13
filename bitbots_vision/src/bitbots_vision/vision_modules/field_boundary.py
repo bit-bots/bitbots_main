@@ -499,7 +499,7 @@ class IterationFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
 
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
         # index counting up from top to bottom and left to right
-        field_mask = _field_color_detector.mask_image(_image)
+        field_mask = _field_color_detector.get_mask_image()
         # noise reduction on the field_mask:
         field_mask = cv2.morphologyEx(
             field_mask,
@@ -541,7 +541,7 @@ class ReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
 
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
         # index counting up from top to bottom and left to right
-        field_mask = _field_color_detector.mask_image(_image)
+        field_mask = _field_color_detector.get_mask_image()
         # noise reduction on the field_mask:
         field_mask = cv2.morphologyEx(
             field_mask,
@@ -613,7 +613,7 @@ class BinaryFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         """
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
         # index counting up from top to bottom and left to right
-        field_mask = _field_color_detector.mask_image(_image)
+        field_mask = _field_color_detector.get_mask_image()
         # noise reduction on the field_mask:
         field_mask = cv2.morphologyEx(
             field_mask,
