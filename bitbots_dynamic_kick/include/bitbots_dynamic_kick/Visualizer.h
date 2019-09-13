@@ -14,8 +14,7 @@
 #include <bitbots_splines/SplineContainer.hpp>
 #include <geometry_msgs/PoseStamped.h>
 #include <tf2/LinearMath/Vector3.h>
-
-typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajectories;
+#include <bitbots_splines/AbstractVisualizer.h>
 
 
 namespace MarkerIDs {
@@ -31,7 +30,7 @@ public:
 };
 
 
-class Visualizer {
+class Visualizer : AbstractVisualizer {
 public:
 
     explicit Visualizer(std::string base_topic);
@@ -40,11 +39,11 @@ public:
 
     void display_received_goal(const bitbots_msgs::KickGoalConstPtr &goal);
 
-    void display_flying_splines(Trajectories &splines, std::string support_foot_frame);
+    void display_flying_splines(const Trajectories& splines, const std::string& support_foot_frame);
 
-    void display_windup_point(tf2::Vector3 kick_windup_point, std::string support_foot_frame);
+    void display_windup_point(const tf2::Vector3& kick_windup_point, const std::string& support_foot_frame);
 
-    void display_stabilizing_point(tf2::Vector3 kick_windup_point, std::string support_foot_frame);
+    void display_stabilizing_point(const tf2::Vector3& kick_windup_point, const std::string& support_foot_frame);
 
 private:
     ros::NodeHandle m_node_handle;

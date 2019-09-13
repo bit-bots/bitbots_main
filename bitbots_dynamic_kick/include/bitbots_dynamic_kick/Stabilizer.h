@@ -2,35 +2,28 @@
 #define BITBOTS_DYNAMIC_KICK_STABILIZER_H
 
 #include <optional>
-#include <moveit/robot_model_loader/robot_model_loader.h>
-#include <moveit/planning_scene/planning_scene.h>
 #include <bio_ik/bio_ik.h>
 #include <geometry_msgs/Pose.h>
 #include <tf2_ros/transform_listener.h>
+#include <bitbots_splines/AbstractStabilizer.h>
+#include "KickUtils.h"
 #include "Visualizer.h"
 
-typedef std::pair<std::vector<std::string>, std::vector<double>> JointGoals;
-
-/**
- * The stabilizer is basically a wrapper around bio_ik and moveit
- */
-class Stabilizer {
+class Stabilizer : public AbstractStabilizer<KickPositions> {
 public:
     Stabilizer();
 
-    Visualizer m_visualizer;
     geometry_msgs::Point m_cop_left;
     geometry_msgs::Point m_cop_right;
 
     /**
-     * Calculate required motor positions to reach foot_goal with a foot while keeping the robot as stable as possible.
-     * The stabilization itself is achieved by using moveit with bio_ik
-     * @param is_left_kick Is the given foot_goal a goal which the left foot should reach
-     * @param foot_goal Position which should be reached by the foot
-     * @return JointGoals which describe required motor positions
+     * Calculate required IK goals to reach foot_goal with a foot while keeping the robot as stable as possible.
+     * @param positions a description of the required positions
+     * @return BioIK Options that can be used by an instance of AbstractIK
      */
-    std::optional<JointGoals> stabilize(bool is_left_kick, geometry_msgs::Point support_point, geometry_msgs::PoseStamped flying_foot_goal_pose, bool cop_support_point);
-    void reset();
+
+    std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> stabilize(const KickPositions& positions) override;
+    void reset() override;
     void use_stabilizing(bool use);
     void use_minimal_displacement(bool use);
     void use_cop(bool use);
@@ -42,14 +35,11 @@ public:
     void set_p_factor(double factor_x, double factor_y);
     void set_i_factor(double factor_x, double factor_y);
     void set_d_factor(double factor_x, double factor_y);
+    const tf2::Vector3 get_stabilizing_target() const;
+    void set_robot_model(moveit::core::RobotModelPtr model);
 private:
-    robot_state::RobotStatePtr m_goal_state;
-    planning_scene::PlanningScenePtr m_planning_scene;
-
-    robot_model::RobotModelPtr m_kinematic_model;
-    moveit::core::JointModelGroup* m_all_joints_group;
-    moveit::core::JointModelGroup* m_legs_joints_group;
-
+    moveit::core::RobotModelPtr m_kinematic_model;
+    tf2::Vector3 m_stabilizing_target;
     double m_cop_x_error_sum;
     double m_cop_y_error_sum;
     double m_cop_x_error;

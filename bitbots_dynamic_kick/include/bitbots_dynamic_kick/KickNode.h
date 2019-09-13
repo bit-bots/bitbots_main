@@ -15,9 +15,10 @@
 #include <bitbots_msgs/KickAction.h>
 #include <bitbots_msgs/JointCommand.h>
 #include <bitbots_dynamic_kick/DynamicKickConfig.h>
-#include "bitbots_dynamic_kick/KickEngine.h"
 #include <std_msgs/Char.h>
+#include "bitbots_dynamic_kick/KickEngine.h"
 #include "bitbots_dynamic_kick/Visualizer.h"
+#include "bitbots_dynamic_kick/KickIK.h"
 
 typedef actionlib::SimpleActionServer<bitbots_msgs::KickAction> ActionServer;
 
@@ -51,6 +52,9 @@ private:
     ros::Subscriber m_cop_r_subscriber;
     ActionServer m_server;
     KickEngine m_engine;
+    Stabilizer m_stabilizer;
+    Visualizer m_visualizer;
+    KickIK m_ik;
     int m_engine_rate;
     tf2_ros::Buffer m_tf_buffer;
     tf2_ros::TransformListener m_listener;

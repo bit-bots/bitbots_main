@@ -3,7 +3,22 @@
 KickNode::KickNode() :
         m_server(m_node_handle, "dynamic_kick", boost::bind(&KickNode::execute_cb, this, _1), false),
         m_listener(m_tf_buffer),
-        m_engine() {
+        m_engine(),
+        m_visualizer("/debug/dynamic_kick") {
+
+    /* load MoveIt! model */
+    robot_model_loader::RobotModelLoader robot_model_loader("/robot_description", false);
+    robot_model_loader.loadKinematicsSolvers(
+            kinematics_plugin_loader::KinematicsPluginLoaderPtr(
+                    new kinematics_plugin_loader::KinematicsPluginLoader()));
+    robot_model::RobotModelPtr kinematic_model = robot_model_loader.getModel();
+    if (!kinematic_model) {
+        ROS_FATAL("No robot model loaded, killing dynamic kick.");
+        exit(1);
+    }
+    m_stabilizer.set_robot_model(kinematic_model);
+    m_ik.init(kinematic_model);
+
     m_joint_goal_publisher = m_node_handle.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
     m_support_foot_publisher = m_node_handle.advertise<std_msgs::Char>("dynamic_kick_support_state", 1);
     m_cop_l_subscriber = m_node_handle.subscribe("cop_l", 1, &KickNode::cop_l_callback, this);
@@ -15,14 +30,14 @@ inline void KickNode::cop_l_callback(const geometry_msgs::PointStamped cop) {
     if (cop.header.frame_id != "l_sole") {
         ROS_ERROR_STREAM("cop_l not in l_sole frame! Stabilizing will not work.");
     }
-    m_engine.m_stabilizer.m_cop_left = cop.point;
+    m_stabilizer.m_cop_left = cop.point;
 }
 
 inline void KickNode::cop_r_callback(const geometry_msgs::PointStamped cop) {
     if (cop.header.frame_id != "r_sole") {
         ROS_ERROR_STREAM("cop_r not in r_sole frame! Stabilizing will not work.");
     }
-    m_engine.m_stabilizer.m_cop_right = cop.point;
+    m_stabilizer.m_cop_right = cop.point;
 }
 
 void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t level) {
@@ -44,23 +59,22 @@ void KickNode::reconfigure_callback(bitbots_dynamic_kick::DynamicKickConfig &con
     params.choose_foot_corridor_width = config.choose_foot_corridor_width;
     m_engine.set_params(params);
 
-    m_engine.m_stabilizer.use_minimal_displacement(config.minimal_displacement);
-    m_engine.m_stabilizer.use_stabilizing(config.stabilizing);
-    m_engine.m_stabilizer.use_cop(config.use_center_of_pressure);
-    m_engine.m_stabilizer.set_trunk_height(config.trunk_height);
-    m_engine.m_stabilizer.set_stabilizing_weight(config.stabilizing_weight);
-    m_engine.m_stabilizer.set_flying_weight(config.flying_weight);
-    m_engine.m_stabilizer.set_trunk_orientation_weight(config.trunk_orientation_weight);
-	m_engine.m_stabilizer.set_trunk_height_weight(config.trunk_height_weight);
-	m_engine.m_stabilizer.set_p_factor(config.stabilizing_p_x, config.stabilizing_p_y);
-    m_engine.m_stabilizer.set_i_factor(config.stabilizing_i_x, config.stabilizing_i_y);
-    m_engine.m_stabilizer.set_d_factor(config.stabilizing_d_x, config.stabilizing_d_y);
+    m_stabilizer.use_minimal_displacement(config.minimal_displacement);
+    m_stabilizer.use_stabilizing(config.stabilizing);
+    m_stabilizer.use_cop(config.use_center_of_pressure);
+    m_stabilizer.set_trunk_height(config.trunk_height);
+    m_stabilizer.set_stabilizing_weight(config.stabilizing_weight);
+    m_stabilizer.set_flying_weight(config.flying_weight);
+    m_stabilizer.set_trunk_orientation_weight(config.trunk_orientation_weight);
+	m_stabilizer.set_trunk_height_weight(config.trunk_height_weight);
+	m_stabilizer.set_p_factor(config.stabilizing_p_x, config.stabilizing_p_y);
+    m_stabilizer.set_i_factor(config.stabilizing_i_x, config.stabilizing_i_y);
+    m_stabilizer.set_d_factor(config.stabilizing_d_x, config.stabilizing_d_y);
 
 	VisualizationParams viz_params = VisualizationParams();
     viz_params.force_enable = config.force_enable;
     viz_params.spline_smoothnes = config.spline_smoothnes;
-    m_engine.m_stabilizer.m_visualizer.set_params(viz_params);
-    
+    m_visualizer.set_params(viz_params);
 }
 
 void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
@@ -70,15 +84,21 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
 
     if (auto foot_poses = get_foot_poses()) {
 
-        m_engine.m_stabilizer.m_visualizer.display_received_goal(goal);
+        m_visualizer.display_received_goal(goal);
 
         /* Set engines goal and start calculating */
-        m_engine.set_goal(goal->header,
-                          goal->ball_position,
-                          goal->kick_direction,
-                          goal->kick_speed,
-                          foot_poses->first,
-                          foot_poses->second);
+        KickGoals goals;
+        goals.ball_position = goal->ball_position;
+        goals.header = goal->header;
+        goals.kick_direction = goal->kick_direction;
+        goals.kick_speed = goal->kick_speed;
+        goals.r_foot_pose = foot_poses->first;
+        goals.l_foot_pose = foot_poses->second;
+
+        m_engine.set_goals(goals);
+        m_stabilizer.reset();
+        m_visualizer.display_windup_point(m_engine.get_windup_point(), (m_engine.is_left_kick()) ? "r_sole" : "l_sole");
+        m_visualizer.display_flying_splines(m_engine.get_splines(), (m_engine.is_left_kick()) ? "r_sole" : "l_sole");
         loop_engine();
 
         /* Figure out the reason why loop_engine() returned and act accordingly */
@@ -129,20 +149,24 @@ std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> KickNode::get
 void KickNode::loop_engine() {
     /* Do the loop as long as nothing cancels it */
     while (m_server.isActive() && !m_server.isPreemptRequested()) {
-        if (std::optional<JointGoals> goals = m_engine.tick(1.0 / m_engine_rate)) {
-            // TODO: add counter for failed ticks
-            bitbots_msgs::KickFeedback feedback;
-            feedback.percent_done = m_engine.get_percent_done();
-            feedback.chosen_foot = m_engine.is_left_kick() ?
-                                   bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
-            m_server.publishFeedback(feedback);
-            publish_goals(goals.value());
+        KickPositions positions = m_engine.update(1.0 / m_engine_rate);
+        // TODO: should positions be an std::optional? how are errors represented?
+        std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = m_stabilizer.stabilize(positions);
+        m_visualizer.display_stabilizing_point(m_stabilizer.get_stabilizing_target(), positions.is_left_kick ? "r_sole" : "l_sole");
+        int x = 1;
+        JointGoals motor_goals = m_ik.calculate(std::move(ik_goals));
 
-            publish_support_foot(m_engine.is_left_kick());
+        bitbots_msgs::KickFeedback feedback;
+        feedback.percent_done = m_engine.get_percent_done();
+        feedback.chosen_foot = m_engine.is_left_kick() ?
+                               bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
+        m_server.publishFeedback(feedback);
+        publish_goals(motor_goals);
 
-            if (feedback.percent_done == 100) {
-                break;
-            }
+        publish_support_foot(m_engine.is_left_kick());
+
+        if (feedback.percent_done == 100) {
+            break;
         }
 
         /* Let ROS do some important work of its own and sleep afterwards */

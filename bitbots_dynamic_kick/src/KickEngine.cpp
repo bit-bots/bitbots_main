@@ -10,71 +10,54 @@ void KickEngine::reset() {
     m_flying_trajectories.reset();
 }
 
-bool KickEngine::set_goal(const std_msgs::Header &header,
-                          const geometry_msgs::Vector3 &ball_position,
-                          const geometry_msgs::Quaternion &kick_direction,
-                          const float kick_speed,
-                          const geometry_msgs::Pose &r_foot_pose,
-                          const geometry_msgs::Pose &l_foot_pose) {
-
-    m_is_left_kick = calc_is_left_foot_kicking(header, ball_position, kick_direction); // TODO Internal state is dirty when goal transformation fails
+void KickEngine::set_goals(const KickGoals& goals) {
+    m_is_left_kick = calc_is_left_foot_kicking(goals.header, goals.ball_position, goals.kick_direction); // TODO Internal state is dirty when goal transformation fails
 
     /* Save given goals because we reuse them later */
-    auto transformed_goal = transform_goal((m_is_left_kick) ? "r_sole" : "l_sole", header, ball_position,
-                                           kick_direction);
-    if (transformed_goal) {
-        m_stabilizer.reset();
-        tf2::convert(transformed_goal->first, m_ball_position);
-        tf2::convert(transformed_goal->second, m_kick_direction);
-        m_kick_direction.normalize();
-        m_kick_speed = kick_speed;
+    auto transformed_goal = transform_goal((m_is_left_kick) ? "r_sole" : "l_sole", goals.header, goals.ball_position,
+                                           goals.kick_direction);
+    // TODO: handle when goal was not transformed
+    tf2::convert(transformed_goal->first, m_ball_position);
+    tf2::convert(transformed_goal->second, m_kick_direction);
+    m_kick_direction.normalize();
+    m_kick_speed = goals.kick_speed;
 
-        m_time = 0;
+    m_time = 0;
 
-        /* Plan new splines according to new goal */
-        init_trajectories();
-        calc_splines(m_is_left_kick ? l_foot_pose : r_foot_pose);
-        m_stabilizer.m_visualizer.display_flying_splines(m_flying_trajectories.value(), (m_is_left_kick) ? "r_sole" : "l_sole");
-
-        return true;
-
-    } else {
-        return false;
-    }
+    /* Plan new splines according to new goal */
+    init_trajectories();
+    calc_splines(m_is_left_kick ? goals.l_foot_pose : goals.r_foot_pose);
 }
 
-std::optional<JointGoals> KickEngine::tick(double dt) {
-    /* Only do an actual tick when splines are present */
-    if (m_support_point_trajectories && m_flying_trajectories) {
-        /* Get should-be pose from planned splines (every axis) at current time */
-        geometry_msgs::Point support_point;
-        support_point.x = m_support_point_trajectories.value().get("pos_x").pos(m_time);
-        support_point.y = m_support_point_trajectories.value().get("pos_y").pos(m_time);
-        geometry_msgs::PoseStamped flying_foot_pose = get_current_pose(m_flying_trajectories.value());
+const KickPositions KickEngine::update(double dt) {
+    /* Only do an actual update when splines are present */
+    // if (m_support_point_trajectories && m_flying_trajectories) {
+    KickPositions positions;
+    /* Get should-be pose from planned splines (every axis) at current time */
+    positions.support_point.x = m_support_point_trajectories.value().get("pos_x").pos(m_time);
+    positions.support_point.y = m_support_point_trajectories.value().get("pos_y").pos(m_time);
+    positions.flying_foot_pose = get_current_pose(m_flying_trajectories.value());
+    positions.is_left_kick = m_is_left_kick;
 
-        /* calculate if we want to use center-of-pressure in the current phase */
-        bool cop_support_point;
-        /* use COP based support point only when the weight is on the support foot
-         * while raising/lowering the foot, the weight is not completely on the support foot (that's why /2.0)*/
-        if (m_time > m_params.move_trunk_time + m_params.raise_foot_time / 2.0 &&
-            m_time < m_phase_timings.move_back + m_params.lower_foot_time / 2.0) {
-            cop_support_point = true;
-        } else {
-            cop_support_point = false;
-        }
-
-        m_time += dt;
-
-        /* Stabilize and return result */
-        return m_stabilizer.stabilize(m_is_left_kick, support_point, flying_foot_pose, cop_support_point);
+    /* calculate if we want to use center-of-pressure in the current phase
+     * use COP based support point only when the weight is on the support foot
+     * while raising/lowering the foot, the weight is not completely on the support foot (that's why /2.0)*/
+    if (m_time > m_params.move_trunk_time + m_params.raise_foot_time / 2.0 &&
+        m_time < m_phase_timings.move_back + m_params.lower_foot_time / 2.0) {
+        positions.cop_support_point = true;
     } else {
-        return std::nullopt;
+        positions.cop_support_point = false;
     }
+
+    m_time += dt;
+
+    /* Stabilize and return result */
+    return positions;
 }
 
 geometry_msgs::PoseStamped KickEngine::get_current_pose(Trajectories spline_container) {
     geometry_msgs::PoseStamped foot_pose;
-    foot_pose.header.frame_id = "l_sole";
+    foot_pose.header.frame_id = "l_sole"; // TODO
     foot_pose.header.stamp = ros::Time::now();
     foot_pose.pose.position.x = spline_container.get("pos_x").pos(m_time);
     foot_pose.pose.position.y = spline_container.get("pos_y").pos(m_time);
@@ -122,7 +105,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
         kick_foot_sign = -1;
     }
 
-    tf2::Vector3 kick_windup_point = calc_kick_windup_point();
+    m_windup_point = calc_kick_windup_point();
 
     /* build vector of speeds in each direction */
     double speed_yaw = tf2::getYaw(m_kick_direction);
@@ -132,7 +115,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pos_x").addPoint(0, flying_foot_pose.position.x);
     m_flying_trajectories->get("pos_x").addPoint(m_phase_timings.move_trunk, 0);
     m_flying_trajectories->get("pos_x").addPoint(m_phase_timings.raise_foot, 0);
-    m_flying_trajectories->get("pos_x").addPoint(m_phase_timings.windup, kick_windup_point.x(), 0, 0);
+    m_flying_trajectories->get("pos_x").addPoint(m_phase_timings.windup, m_windup_point.x(), 0, 0);
     m_flying_trajectories->get("pos_x").addPoint(m_phase_timings.kick, m_ball_position.x(),
                                                  speed_vector.x() * m_kick_speed, 0);
     m_flying_trajectories->get("pos_x").addPoint(m_phase_timings.move_back, 0);
@@ -142,7 +125,7 @@ void KickEngine::calc_splines(const geometry_msgs::Pose &flying_foot_pose) {
     m_flying_trajectories->get("pos_y").addPoint(0, flying_foot_pose.position.y);
     m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.move_trunk, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.raise_foot, kick_foot_sign * m_params.foot_distance);
-    m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.windup, kick_windup_point.y(), 0, 0);
+    m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.windup, m_windup_point.y(), 0, 0);
     m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.kick, m_ball_position.y(), speed_vector.y() * m_kick_speed, 0);
     m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.move_back, kick_foot_sign * m_params.foot_distance);
     m_flying_trajectories->get("pos_y").addPoint(m_phase_timings.lower_foot, kick_foot_sign * m_params.foot_distance);
@@ -267,7 +250,6 @@ tf2::Vector3 KickEngine::calc_kick_windup_point() {
 
     vec.setZ(m_params.foot_rise);
 
-    m_stabilizer.m_visualizer.display_windup_point(vec, (m_is_left_kick) ? "r_sole" : "l_sole");
     return vec;
 }
 
@@ -335,7 +317,11 @@ int KickEngine::get_percent_done() const {
     return int(m_time / m_phase_timings.move_trunk_back * 100);
 }
 
-const KickPhase KickEngine::getPhase() {
+const Trajectories KickEngine::get_splines() const {
+    return m_flying_trajectories.value();
+}
+
+const KickPhase KickEngine::getPhase() const {
     if (m_time == 0)
         return KickPhase::Initial;
     else if (m_time <= m_phase_timings.move_trunk)
@@ -358,4 +344,8 @@ const KickPhase KickEngine::getPhase() {
 
 void KickEngine::set_params(KickParams params) {
     m_params = params;
+}
+
+const tf2::Vector3 KickEngine::get_windup_point() {
+    return m_windup_point;
 }
