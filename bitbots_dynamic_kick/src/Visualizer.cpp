@@ -28,7 +28,7 @@ void Visualizer::set_params(VisualizationParams params) {
 }
 
 
-void Visualizer::display_flying_splines(Trajectories &splines, std::string support_foot_frame) {
+void Visualizer::display_flying_splines(const Trajectories& splines, const std::string& support_foot_frame) {
     if (!is_enabled())
         return;
 
@@ -56,80 +56,42 @@ void Visualizer::display_received_goal(const bitbots_msgs::KickGoalConstPtr &goa
     if (!is_enabled())
         return;
 
-    visualization_msgs::Marker marker;
+    visualization_msgs::Marker marker = get_marker({goal->ball_position.x, goal->ball_position.y, goal->ball_position.z}, goal->header.frame_id);
 
     marker.ns = m_marker_ns;
     marker.id = MarkerIDs::received_goal;
-    marker.action = visualization_msgs::Marker::ADD;
     marker.type = visualization_msgs::Marker::ARROW;
-    marker.lifetime = ros::Duration(1000);
-    marker.frame_locked = false;
-    marker.header.frame_id = goal->header.frame_id;
     marker.header.stamp = goal->header.stamp;
-    marker.pose.position.x = goal->ball_position.x;
-    marker.pose.position.y = goal->ball_position.y;
-    marker.pose.position.z = goal->ball_position.z;
     marker.pose.orientation = goal->kick_direction;
     marker.scale.x = 0.08 + (goal->kick_speed / 3);
-    marker.scale.y = 0.03;
-    marker.scale.z = 0.03;
-    marker.color.a = 1;
     marker.color.r = 1;
 
     m_goal_publisher.publish(marker);
 }
 
 
-void Visualizer::display_windup_point(tf2::Vector3 kick_windup_point, std::string support_foot_frame) {
+void Visualizer::display_windup_point(const tf2::Vector3& kick_windup_point, const std::string& support_foot_frame) {
     if (!is_enabled())
         return;
 
-    visualization_msgs::Marker marker;
+    visualization_msgs::Marker marker = get_marker(kick_windup_point, support_foot_frame);
 
     marker.ns = m_marker_ns;
     marker.id = MarkerIDs::received_goal;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.lifetime = ros::Duration(1000);
-    marker.frame_locked = false;
-    marker.header.frame_id = support_foot_frame;
-    marker.header.stamp = ros::Time::now();
-    marker.pose.position.x = kick_windup_point.x();
-    marker.pose.position.y = kick_windup_point.y();
-    marker.pose.position.z = kick_windup_point.z();
-    marker.pose.orientation.w = 1;
-    marker.scale.x = 0.03;
-    marker.scale.y = 0.03;
-    marker.scale.z = 0.03;
-    marker.color.a = 1;
     marker.color.g = 1;
 
     m_windup_publisher.publish(marker);
 }
 
 
-void Visualizer::display_stabilizing_point(tf2::Vector3 kick_windup_point, std::string support_foot_frame) {
+void Visualizer::display_stabilizing_point(const tf2::Vector3& kick_windup_point, const std::string& support_foot_frame) {
     if (!is_enabled())
         return;
 
-    visualization_msgs::Marker marker;
+    visualization_msgs::Marker marker = get_marker(kick_windup_point, support_foot_frame);
 
     marker.ns = m_marker_ns;
     marker.id = MarkerIDs::kick_stabilizing_point;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.lifetime = ros::Duration(1000);
-    marker.frame_locked = false;
-    marker.header.frame_id = support_foot_frame;
-    marker.header.stamp = ros::Time::now();
-    marker.pose.position.x = kick_windup_point.x();
-    marker.pose.position.y = kick_windup_point.y();
-    marker.pose.position.z = kick_windup_point.z();
-    marker.pose.orientation.w = 1;
-    marker.scale.x = 0.03;
-    marker.scale.y = 0.03;
-    marker.scale.z = 0.03;
-    marker.color.a = 1;
     marker.color.g = 1;
 
     m_stabilizing_publisher.publish(marker);

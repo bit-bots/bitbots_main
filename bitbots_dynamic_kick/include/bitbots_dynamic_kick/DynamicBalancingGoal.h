@@ -57,6 +57,9 @@ public:
         weight_ = weight;
         reference_link_ = "base_link";
     }
+    ~DynamicBalancingGoal() {
+        delete balancing_context_;
+    }
     void setReferenceLink(std::string link) { reference_link_ = link; }
     virtual void describe(bio_ik::GoalContext &context) const {
         Goal::describe(context);

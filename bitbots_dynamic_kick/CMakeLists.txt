@@ -35,7 +35,8 @@ set(SOURCES
         src/KickNode.cpp
         src/KickEngine.cpp
         src/Stabilizer.cpp
-        src/Visualizer.cpp)
+        src/Visualizer.cpp
+        src/KickIK.cpp)
 
 add_executable(KickNode ${SOURCES})
 

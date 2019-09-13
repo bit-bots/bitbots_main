@@ -5,6 +5,7 @@
 #include <std_msgs/Header.h>
 #include <bitbots_splines/SmoothSpline.hpp>
 #include <bitbots_splines/SplineContainer.hpp>
+#include <bitbots_splines/AbstractEngine.h>
 #include <bitbots_msgs/KickGoal.h>
 #include <bitbots_msgs/KickFeedback.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -12,7 +13,6 @@
 #include <tf2/utils.h>
 #include "Stabilizer.h"
 #include "Visualizer.h"
-#include <math.h>
 
 typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajectories;
 
@@ -63,7 +63,6 @@ public:
     double move_trunk_back;
 };
 
-
 /**
  * The KickEngine takes care of choosing an optimal foot to reach a given goal,
  * planning that foots required movement (rotation and positioning)
@@ -74,7 +73,7 @@ public:
  *
  * The KickEngine utilizes a Stabilizer to balance the robot during foot movments.
  */
-class KickEngine {
+class KickEngine: public AbstractEngine<KickPositions, KickGoals> {
 public:
     explicit KickEngine();
 
@@ -87,54 +86,38 @@ public:
      * @param r_foot_pose Current pose of right foot in l_sole frame
      * @param l_foot_pose Current pose of left foot in r_sole frame
      */
-    bool set_goal(const std_msgs::Header &header,
-                  const geometry_msgs::Vector3 &ball_position,
-                  const geometry_msgs::Quaternion &kick_direction,
-                  const float kick_speed,
-                  const geometry_msgs::Pose &r_foot_pose,
-                  const geometry_msgs::Pose &l_foot_pose);
+    void set_goals(const KickGoals& goals) override;
 
     /**
      * Reset this KickEngine completely, removing the goal, all splines and thereby stopping all output
      */
-    void reset();
+    void reset() override;
 
     /**
-     * Do one iteration of spline-progress-updating. This means that whenever tick() is called,
+     * Do one iteration of spline-progress-updating. This means that whenever update() is called,
      *      new position goals are retrieved from previously calculated splines, stabilized and transformed into
      *      JointGoals
-     * @param dt Passed delta-time between last call to tick() and now. Measured in seconds
+     * @param dt Passed delta-time between last call to update() and now. Measured in seconds
      * @return New motor goals only if a goal is currently set, position extractions from splines was possible and
      *      bio_ik was able to compute valid motor positions
      */
-    std::optional<JointGoals> tick(double dt);
-
-    /**
-     * Transform then goal into our support_foots frame
-     * @param support_foot_frame Name of the support foots frame, meaning where to transform to
-     * @param header Frame and time in which the goals were published
-     * @param ball_position Position of the ball
-     * @param kick_direction Direction in which to kick the ball
-     * @return pair of (transformed_pose, transformed_direction)
-     */
-    std::optional<std::pair<geometry_msgs::Point, geometry_msgs::Quaternion>> transform_goal(
-            const std::string &support_foot_frame,
-            const std_msgs::Header &header,
-            const geometry_msgs::Vector3 &ball_position,
-            const geometry_msgs::Quaternion &kick_direction);
+    const KickPositions update(double dt) override;
 
     /**
      * Is the currently performed kick with the left foot or not
      */
     bool is_left_kick();
 
-    int get_percent_done() const;
+    int get_percent_done() const override;
+
+    const Trajectories get_splines() const override;
 
     void set_params(KickParams params);
 
-    const KickPhase getPhase();
+    const KickPhase getPhase() const;
 
-    Stabilizer m_stabilizer;
+    const tf2::Vector3 get_windup_point();
+
 private:
     double m_time;
     tf2::Vector3 m_ball_position;
@@ -144,6 +127,7 @@ private:
     std::optional<Trajectories> m_support_point_trajectories, m_flying_trajectories;
     KickParams m_params;
     PhaseTimings m_phase_timings;
+    tf2::Vector3 m_windup_point;
 
     tf2_ros::Buffer m_tf_buffer;
     tf2_ros::TransformListener m_listener;
@@ -189,6 +173,20 @@ private:
      * in the direction of the kick
      */
     double calc_kick_foot_yaw();
+
+    /**
+     * Transform then goal into our support_foots frame
+     * @param support_foot_frame Name of the support foots frame, meaning where to transform to
+     * @param header Frame and time in which the goals were published
+     * @param ball_position Position of the ball
+     * @param kick_direction Direction in which to kick the ball
+     * @return pair of (transformed_pose, transformed_direction)
+     */
+    std::optional<std::pair<geometry_msgs::Point, geometry_msgs::Quaternion>> transform_goal(
+            const std::string &support_foot_frame,
+            const std_msgs::Header &header,
+            const geometry_msgs::Vector3 &ball_position,
+            const geometry_msgs::Quaternion &kick_direction);
 };
 
 #endif  // BITBOTS_DYNAMIC_KICK_KICK_ENGINE_H
