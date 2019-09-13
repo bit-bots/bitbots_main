@@ -7,7 +7,6 @@ import yaml
 import rospy
 import rospkg
 import threading
-from profilehooks import profile, timecall # Profilehooks profiles certain functions in you add the @profile or @timecall decorator.
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
@@ -18,6 +17,10 @@ from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, yolo_handler, ros_utils
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config, ColorSpace
+try:
+    from profilehooks import profile, timecall # Profilehooks profiles certain functions in you add the @profile or @timecall decorator.
+except ImportError:
+    rospy.loginfo("No Profiling avalabile")
 
 # TODO: issue: static as non class
 # TODO: issue: named logging
