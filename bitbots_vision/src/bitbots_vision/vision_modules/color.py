@@ -79,16 +79,13 @@ class ColorDetector(object):
         :return np.array: masked image
         """
         if optional_image is not None:
-            image = optional_image
-            cache = False
+            # Mask of optional image
+            mask = self._mask_image(optional_image)
         else:
-            image = self._image
-            cache = True
-
-        mask = self._mask_image(image)
-
-        if cache:
-            self._mask = mask
+            # Mask of default cached image
+            if self._mask is None:
+                self._mask = self._mask_image(self._image)
+            mask = self._mask
 
         return mask
 
@@ -403,11 +400,11 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         global base_color_space
 
         if optional_image is not None:
-            image = optional_image
+            # Mask of optional image
+            mask = self._mask_image(optional_image, base_color_space)
         else:
-            image = self._image
-
-        mask = self._mask_image(image, base_color_space)
+            # Mask of default cached image
+            mask = self._mask = self._mask_image(self._image, base_color_space)
 
         return mask
 
