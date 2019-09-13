@@ -17,7 +17,6 @@ except:
 
 # Set yaml stuff
 yaml = YAML()
-yaml.explicit_start = True
 yaml.indent(mapping=3)
 yaml.preserve_quotes = True
 
