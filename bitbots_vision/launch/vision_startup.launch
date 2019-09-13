@@ -12,21 +12,21 @@
             <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml" />
             <param name="vision_use_sim_color" value="$(arg sim)" />
             <param name="vision_publish_debug_image" value="$(arg debug)" />
+            <param name="vision_publish_HSV_mask_image" value="$(arg debug)" />
             <param name="vision_publish_field_mask_image" value="$(arg debug)" />
-            <param name="dynamic_color_space_publish_field_mask_image" value="$(arg debug)" />
             <param name="ball_fcnn_publish_debug_img" value="$(arg debug)" />
         </node>
     </group>
 
-    <!-- start vision without balldetection-->
+    <!-- start vision without ball detection-->
     <group if="$(arg dummyball)">
         <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
             <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml" />
-            <param name="vision_ball_classifier" value="dummy" />
+            <param name="neural_network_type" value="dummy" />
             <param name="vision_use_sim_color" value="$(arg sim)" />
             <param name="vision_publish_debug_image" value="$(arg debug)" />
+            <param name="vision_publish_HSV_mask_image" value="$(arg debug)" />
             <param name="vision_publish_field_mask_image" value="$(arg debug)" />
-            <param name="dynamic_color_space_publish_field_mask_image" value="$(arg debug)" />
             <param name="ball_fcnn_publish_debug_img" value="$(arg debug)" />
         </node>
     </group>

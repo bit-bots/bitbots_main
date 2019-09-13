@@ -9,24 +9,43 @@ import time
 import math
 from multiprocessing import Process, Manager
 
+"""
+A small Tool for colospace enhancement.
 
-def connect(ends):             
-    d = np.diff(ends, axis=0)[0]  
+The Tool is able to find main clusters in the color space, interpolate defined distances,
+add brightness thresholds and convert a yaml encoded to an pickle encoded color space.
+It also visualizes the color space in a browser based 3d graph.
+"""
+
+def connect(ends):
+    """
+    Interpolate two points saved in a matrix using numpy.
+    """
+    d = np.diff(ends, axis=0)[0]
     j = np.argmax(np.abs(d))
-    D = d[j]     
+    D = d[j]
     aD = np.abs(D)
-    return ends[0] + (np.outer(np.arange(aD + 1), d) + (aD>>1)) // aD
+    return ends[0] + (np.outer(np.arange(aD + 1), d) + (aD >> 1)) // aD
 
 def generate_interpolated_points(point1, point2):
+    """
+    Interpolates two given points and returns a set of tuples containing all interpolated points.
+    """
     points = connect(np.array([point2, point1]))
     return set(map(tuple, points))
 
 def get_value_tuple_outer_function(index, tuple_input):
-        return (tuple_input[0][index],
-                tuple_input[1][index],
-                tuple_input[2][index])
+    """
+    Query method for two dimensional list/tuple struckture.
+    """
+    return (tuple_input[0][index],
+            tuple_input[1][index],
+            tuple_input[2][index])
 
 def worker(start, stop, result_map, index, distances, interpolation_threshold, main_cluster, colorspace_points):
+    """
+    Parralel interpolation worker.
+    """
     interpolated_points = set()
     main_cluster_set = set(main_cluster)
     for main_cluster_index in range(start, stop):
@@ -34,7 +53,7 @@ def worker(start, stop, result_map, index, distances, interpolation_threshold, m
         points = set(np.where(distances[point] < interpolation_threshold)[0].tolist())
         points = list(points.intersection(main_cluster_set))
         for point2 in points:
-            line = generate_interpolated_points(get_value_tuple_outer_function(point, colorspace_points), 
+            line = generate_interpolated_points(get_value_tuple_outer_function(point, colorspace_points),
                                                 get_value_tuple_outer_function(point2, colorspace_points))
             interpolated_points.update(line)
 
@@ -43,7 +62,7 @@ def worker(start, stop, result_map, index, distances, interpolation_threshold, m
 
 class ColorspaceTool():
     def __init__(self):
-        self.colorspace_points = (None,None,None)
+        self.colorspace_points = (None, None, None)
         self.point_count = 0
         self.distances = None
         self.distance_threshold = 3
@@ -56,11 +75,14 @@ class ColorspaceTool():
         self.to_bright = 255
 
     def load_colorspace_from_yaml(self, color_path):
+        """
+        Loads yaml color space.
+        """
         with open(color_path, 'r') as stream:
             print("Loading file...")
             try:
-                color_values = yaml.load(stream)
-            except:
+                color_values = yaml.load(stream, Loader=yaml.FullLoader)
+            except IOError:
                 print("Not able to read the File!!!")
             # Compatibility check
             if 'color_values' in color_values.keys():
@@ -70,30 +92,43 @@ class ColorspaceTool():
                 x = np.array(color_values['red'])
                 y = np.array(color_values['green'])
                 z = np.array(color_values['blue'])
-                self.colorspace_points = (x,y,z)
+                self.colorspace_points = (x, y, z)
 
     def get_value_tuple(self, index):
+        """
+        Colorspace color getter.
+        """
         return (self.colorspace_points[0][index],
                 self.colorspace_points[1][index],
                 self.colorspace_points[2][index])
 
     def get_colorspace_points(self, pointlist):
+        """
+        Colorspace color getter with index list input.
+        """
         return ([self.colorspace_points[0][x] for x in pointlist],
                 [self.colorspace_points[1][x] for x in pointlist],
                 [self.colorspace_points[2][x] for x in pointlist])
 
     def all_distances(self):
+        """
+        Calculates all distance between all points in the color space.
+        """
         points = self.colorspace_points
 
-        red = np.repeat(np.expand_dims(points[0], axis=0),points[0].size, axis=0)
-        green = np.repeat(np.expand_dims(points[1], axis=0),points[1].size, axis=0)
-        blue = np.repeat(np.expand_dims(points[2], axis=0),points[2].size, axis=0)
+        red = np.repeat(np.expand_dims(points[0], axis=0), points[0].size, axis=0)
+        green = np.repeat(np.expand_dims(points[1], axis=0), points[1].size, axis=0)
+        blue = np.repeat(np.expand_dims(points[2], axis=0), points[2].size, axis=0)
 
-        self.distances = np.sqrt(np.square(red - red.transpose()) \
-                        + np.square(green - green.transpose()) \
-                        + np.square(blue - blue.transpose()))
-    
+        self.distances = np.sqrt(
+            np.square(red - red.transpose())
+            + np.square(green - green.transpose())
+            + np.square(blue - blue.transpose()))
+
     def cluster(self):
+        """
+        Calculates the main clusters in the color space
+        """
         print("Calculating distances")
         self.all_distances()
 
@@ -102,7 +137,7 @@ class ColorspaceTool():
 
         # Generates a set with neighbours for each point
         for row in self.distances:
-                clusters.append(set(np.where(row < self.distance_threshold)[0].tolist()))
+            clusters.append(set(np.where(row < self.distance_threshold)[0].tolist()))
 
         print("Merging sets")
         for cluster1 in range(self.point_count):
@@ -118,12 +153,14 @@ class ColorspaceTool():
         # Builds main set
         for point_set in clusters[0:self.cluster_count_threshold]:
             self.main_cluster.update(point_set)
-    
+
         self.main_cluster = list(self.main_cluster)
         self.clusters = clusters
 
-
     def interpolate(self):
+        """
+        Interpolates between points with a certain distance in the color space.
+        """
         print("Interpolating points...")
         interpolated_points = set()
         if os.cpu_count():
@@ -132,7 +169,7 @@ class ColorspaceTool():
         else:
             processes = 1
         length = len(self.main_cluster)
-        delta = math.ceil(length/processes)
+        delta = math.ceil(length / processes)
         manager = Manager()
         result_map = manager.dict()
         jobs = []
@@ -141,12 +178,12 @@ class ColorspaceTool():
             stop = (index + 1) * delta
             if stop > length:
                 stop = length
-            p = Process(target=worker, args=(start, stop, 
-                                            result_map, index,
-                                            self.distances, 
-                                            self.interpolation_threshold, 
-                                            self.main_cluster, 
-                                            self.colorspace_points))
+            p = Process(target=worker, args=(start, stop,
+                                             result_map, index,
+                                             self.distances,
+                                             self.interpolation_threshold,
+                                             self.main_cluster,
+                                             self.colorspace_points))
             jobs.append(p)
             p.start()
 
@@ -165,8 +202,11 @@ class ColorspaceTool():
         self.interpolated_points = list(interpolated_points)
 
     def lightness_correction(self):
+        """
+        Add upper/lower brightness bounds.
+        """
         points = self.colorspace_points
-        lightness_max_value = math.sqrt(3*(255**2))
+        lightness_max_value = math.sqrt(3 * (255**2))
         deadpool = list()
         for index, point in enumerate(points[0]):
             point = self.get_value_tuple(index)
@@ -179,8 +219,11 @@ class ColorspaceTool():
         self.point_count = len(self.colorspace_points[0])
 
     def plot_values(self, filename):
+        """
+        Creates an interactive 3d plotly graph for the color space.
+        """
         point_colors = ['rgb({}, {}, {})'.format(*self.get_value_tuple(index)) for index in range(self.point_count)]
-        
+
         if len(self.interpolated_points) > 0:
             visible = 'legendonly'
         else:
@@ -199,7 +242,7 @@ class ColorspaceTool():
                 color=point_colors,
             )
         )
-        data = [trace1,]
+        data = [trace1, ]
         if len(self.clusters) > 0:
             points = self.get_colorspace_points(self.main_cluster)
             trace2 = go.Scatter3d(
@@ -208,7 +251,7 @@ class ColorspaceTool():
                 z=points[2],
                 name='Cluster',
                 mode='markers',
-                visible= 'legendonly',
+                visible='legendonly',
                 opacity=0.1,
                 marker=dict(
                     size=4,
@@ -235,7 +278,7 @@ class ColorspaceTool():
             data.append(trace3)
         layout = go.Layout(
             title='Colorspace {}'.format(filename[7:-5]),
-            scene = dict(
+            scene=dict(
                 xaxis=dict(
                     range=[0, 255],
                     dtick=20,
@@ -270,31 +313,40 @@ class ColorspaceTool():
         )
         fig = go.Figure(data=data, layout=layout)
         py.plot(fig, filename=filename, auto_open=True)
-    
+
     def save(self, filename):
+        """
+        This saves the enhanced color space in a pickle encoded file.
+        """
         if len(self.interpolated_points) > 0:
             red, green, blue = zip(*self.interpolated_points)
             red = [np.asscalar(x) for x in red]
             green = [np.asscalar(x) for x in green]
             blue = [np.asscalar(x) for x in blue]
             output_type = "interpolated"
-            print("Exporting interpolated points")            
-        else:
+            print("Exporting interpolated points")
+        elif len(self.main_cluster) > 0:
             red, green, blue = self.get_colorspace_points(self.main_cluster)
             output_type = "clustered"
             print("Exporting cluster points")
+        else:
+            red = self.colorspace_points[0]
+            green = self.colorspace_points[1]
+            blue = self.colorspace_points[2]
+            output_type = "resized"
+            print("Exporting resized points")
 
         data = dict(
-            red = red,
-            green = green,
-            blue = blue
+            red=red,
+            green=green,
+            blue=blue
         )
 
         filename = '{}_{}.txt'.format(filename, output_type)
         with open(filename, 'wb') as outfile:
             pickle.dump(data, outfile, protocol=2)
             # stores data of colorspace in file as pickle for efficient loading (yaml is too slow)
-        
+
         print("Output saved to '{}'.".format(filename))
 
 if __name__ == "__main__":

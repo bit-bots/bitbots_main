@@ -9,14 +9,15 @@ from cv_bridge import CvBridge
 from collections import deque
 from sensor_msgs.msg import Image
 from bitbots_msgs.msg import ColorSpace, Config
-from bitbots_vision.vision_modules import field_boundary, color, debug, evaluator
+from bitbots_vision.vision_modules import field_boundary, color, ros_utils
+
 
 class DynamicColorSpace:
     def __init__(self):
         # type: () -> None
         """
         DynamicColorSpace is a ROS node, that is used by the vision node to better recognize the field color.
-        DynamicColorSpace is able to calculate dynamically changing color spaces to accommodate e.g. 
+        DynamicColorSpace is able to calculate dynamically changing color spaces to accommodate e.g.
         changing lighting conditions or to compensate for not optimized base color space files.
 
         This node subscribes to an Image-message (default: image_raw) and to the 'vision_config'-message.
@@ -37,6 +38,12 @@ class DynamicColorSpace:
 
         # Init params
         self.vision_config = {}
+
+        # Publisher placeholder
+        self.pub_color_space = None
+
+        # Subscriber placeholder
+        self.sub_image_msg = None
 
         # Subscribe to 'vision_config'-message
         # The message topic name MUST be the same as in the config publisher in vision.py
@@ -62,71 +69,53 @@ class DynamicColorSpace:
         :return: None
         """
         # Load dict from string in yaml-format in msg.data
-        vision_config = yaml.load(msg.data)
+        vision_config = yaml.load(msg.data, Loader=yaml.FullLoader)
 
-        self.debug_printer = debug.DebugPrinter(
-            debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
-                vision_config['vision_debug_printer_classes']))
-        self.runtime_evaluator = evaluator.RuntimeEvaluator(None)
-
-        # Print status of dynamic color space after toggeling 'dynamic_color_space_active' parameter
-        if 'dynamic_color_space_active' not in self.vision_config or \
-            vision_config['dynamic_color_space_active'] != self.vision_config['dynamic_color_space_active']:
+        # Print status of dynamic color space after toggling 'dynamic_color_space_active' parameter
+        if ros_utils.config_param_change(self.vision_config, vision_config, 'dynamic_color_space_active'):
             if vision_config['dynamic_color_space_active']:
                 rospy.loginfo('Dynamic color space turned ON.')
             else:
                 rospy.logwarn('Dynamic color space turned OFF.')
 
         # Set publisher of ColorSpace-messages
-        if 'ROS_dynamic_color_space_msg_topic' not in self.vision_config or \
-                self.vision_config['ROS_dynamic_color_space_msg_topic'] != vision_config['ROS_dynamic_color_space_msg_topic']:
-            if hasattr(self, 'pub_color_space'):
-                self.pub_color_space.unregister()
-            self.pub_color_space = rospy.Publisher(
-                vision_config['ROS_dynamic_color_space_msg_topic'],
-                ColorSpace,
-                queue_size=1)
+        self.pub_color_space = ros_utils.create_or_update_publisher(self.vision_config, vision_config, self.pub_color_space, 'ROS_dynamic_color_space_msg_topic', ColorSpace)
 
         # Set Color- and FieldBoundaryDetector
         self.color_detector = color.DynamicPixelListColorDetector(
-            self.debug_printer,
-            self.package_path,
-            vision_config)
-
-        self.field_boundary_detector = field_boundary.FieldBoundaryDetector(
-            self.color_detector,
             vision_config,
-            self.debug_printer,
-            used_by_dyn_color_detector=True)
+            self.package_path)
 
-        # Reset queue
-        if hasattr(self, 'color_value_queue'):
-            self.color_value_queue.clear()
+        # Get field boundary detector class by name from config
+        field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
+            vision_config['dynamic_color_space_field_boundary_detector_search_method'])
+
+        # Set the field boundary detector
+        self.field_boundary_detector = field_boundary_detector_class(
+            vision_config,
+            self.color_detector)
 
         # Set params
         self.queue_max_size = vision_config['dynamic_color_space_queue_max_size']
         self.color_value_queue = deque(maxlen=self.queue_max_size)
 
         self.pointfinder = Pointfinder(
-            self.debug_printer,
             vision_config['dynamic_color_space_threshold'],
             vision_config['dynamic_color_space_kernel_radius'])
 
-        self.heuristic = Heuristic(self.debug_printer)
+        # Create a new heuristic instance
+        self.heuristic = Heuristic()
 
         # Subscribe to Image-message
-        if 'ROS_img_msg_topic' not in self.vision_config or \
-                self.vision_config['ROS_img_msg_topic'] != vision_config['ROS_img_msg_topic']:
-            if hasattr(self, 'sub_image_msg'):
-                self.sub_image_msg.unregister()
-            self.sub_image_msg = rospy.Subscriber(
-                vision_config['ROS_img_msg_topic'],
-                Image,
-                self.image_callback,
-                queue_size=vision_config['ROS_img_queue_size'],
-                tcp_nodelay=True,
-                buff_size=60000000)
-            # https://github.com/ros/ros_comm/issues/536
+        self.sub_image_msg = ros_utils.create_or_update_subscriber(
+            self.vision_config,
+            vision_config,
+            self.sub_image_msg,
+            'ROS_img_msg_topic',
+            Image,
+            callback=self.image_callback,
+            queue_size=vision_config['ROS_img_msg_queue_size'],
+            buff_size=60000000) # https://github.com/ros/ros_comm/issues/536
 
         self.vision_config = vision_config
 
@@ -136,7 +125,7 @@ class DynamicColorSpace:
         This method is called by the Image-message subscriber.
         Old Image-messages were dropped.
 
-        Sometimes the queue gets to large, even when the size is limeted to 1. 
+        Sometimes the queue gets to large, even when the size is limeted to 1.
         That's, why we drop old images manually.
 
         :param Image image_msg: new Image-message from Image-message subscriber
@@ -144,13 +133,13 @@ class DynamicColorSpace:
         """
         # Turn off dynamic color space, if parameter of config is false
         if 'dynamic_color_space_active' not in self.vision_config or \
-            not self.vision_config['dynamic_color_space_active']:
+                not self.vision_config['dynamic_color_space_active']:
             return
 
         # Drops old images
-        image_age = rospy.get_rostime() - image_msg.header.stamp 
-        if image_age.to_sec() > 0.1:
-            self.debug_printer.info('Dynamic color space: Dropped Image-message', 'image')
+        image_age = rospy.get_rostime() - image_msg.header.stamp
+        if 0.1 < image_age.to_sec() < 1000.0:
+            rospy.loginfo('Vision: Dropped incoming Image-message, because its too old!')
             return
 
         self.handle_image(image_msg)
@@ -166,6 +155,8 @@ class DynamicColorSpace:
         """
         # Converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
+        # Propagate image to color detector
+        self.color_detector.set_image(image)
         # Get new dynamic colors from image
         colors = self.get_new_dynamic_colors(image)
         # Add new colors to the queue
@@ -201,7 +192,7 @@ class DynamicColorSpace:
         :return np.array: array of new dynamic color values
         """
         # Masks new image with current color space
-        mask_image = self.color_detector.mask_image(image)
+        mask_image = self.color_detector.get_mask_image()
         # Get mask from field_boundary detector
         self.field_boundary_detector.set_image(image)
         mask = self.field_boundary_detector.get_mask()
@@ -224,10 +215,10 @@ class DynamicColorSpace:
         :return np.array: color space
         """
         # Initializes an empty color space
-        color_space = np.array([]).reshape(0,3)
+        color_space = np.array([], dtype=np.uint8).reshape(0, 3)
         # Stack every color space in the queue
         for new_color_value_list in queue:
-            color_space = np.append(color_space, new_color_value_list[:,:], axis=0)
+            color_space = np.append(color_space, new_color_value_list[:, :], axis=0)
         # Return a color space, which contains all colors from the queue
         return color_space
 
@@ -245,27 +236,24 @@ class DynamicColorSpace:
         color_space_msg = ColorSpace()
         color_space_msg.header.frame_id = image_msg.header.frame_id
         color_space_msg.header.stamp = image_msg.header.stamp
-        color_space_msg.blue  = color_space[:,0].tolist()
-        color_space_msg.green = color_space[:,1].tolist()
-        color_space_msg.red   = color_space[:,2].tolist()
+        color_space_msg.blue  = color_space[:, 0].tolist()
+        color_space_msg.green = color_space[:, 1].tolist()
+        color_space_msg.red   = color_space[:, 2].tolist()
         # Publish ColorSpace-message
         self.pub_color_space.publish(color_space_msg)
 
 
 class Pointfinder():
-    def __init__(self, debug_printer, threshold, kernel_radius):
-        # type: (DebugPrinter, float, int) -> None
+    def __init__(self, threshold, kernel_radius):
+        # type: (float, int) -> None
         """
         Pointfinder is used to find false-color pixels with higher true-color / false-color ratio as threshold in their surrounding in masked image.
 
-        :param DebugPrinter: debug-printer
         :param float threshold: necessary amount of previously detected color in percentage
         :param int kernel_radius: radius surrounding the center element of kernel matrix, defines relevant surrounding of pixel
         :return: None
         """
         # Init params
-        self.debug_printer = debug_printer
-
         self.threshold = threshold
 
         self.kernel_radius = kernel_radius
@@ -297,16 +285,14 @@ class Pointfinder():
         return np.array(np.where(sum_array > self.threshold * (self.kernel.size - 1)))
 
 class Heuristic:
-    def __init__(self, debug_printer):
-        # type: (DebugPrinter) -> None
+    def __init__(self):
+        # type: () -> None
         """
         Filters new color space colors according to their position relative to the field boundary.
         Only colors that occur under the field boundary and have no occurrences over the field boundary get picked.
 
-        :param DebugPrinter debug_printer: Debug-printer
         :return: None
         """
-        self.debug_printer = debug_printer
 
     def run(self, color_list, image, mask):
         # type: (np.array, np.array, np.array) -> np.array
@@ -324,7 +310,7 @@ class Heuristic:
         color_set = set(color_list)
         # Generates whitelist
         whitelist = self.recalculate(image, mask)
-        # Takes only whitelisted values 
+        # Takes only whitelisted values
         color_set = color_set.intersection(whitelist)
         # Restructures the color channels
         return self.deserialize(np.array(list(color_set)))
@@ -362,7 +348,7 @@ class Heuristic:
         Calculates unique color for an input image.
 
         :param np.array image: image
-        :return np.array: unique colors 
+        :return np.array: unique colors
         """
         # Simplifies the handling by merging the 3 color channels
         serialized_img = self.serialize(np.reshape(image, (1, int(image.size / 3), 3))[0])
@@ -378,8 +364,8 @@ class Heuristic:
         :return: list of serialized colors
         """
         return np.array(
-            np.multiply(input_matrix[:, 0], 256 ** 2) \
-            + np.multiply(input_matrix[:, 1], 256) \
+            np.multiply(input_matrix[:, 0], 256 ** 2)
+            + np.multiply(input_matrix[:, 1], 256)
             + input_matrix[:, 2], dtype=np.int32)
 
     def deserialize(self, input_matrix):

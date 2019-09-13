@@ -20,8 +20,7 @@ def init_color_space(color_path):
             try:
                 color_values = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
-                # TODO: what now??? Handle the error?
-                pass
+                print("Unable to open File!!!")
     # pickle-file is stored as '.txt'
     elif color_path.endswith('.txt'):
         try:
@@ -29,7 +28,7 @@ def init_color_space(color_path):
                 color_values = pickle.load(f)
         except pickle.PickleError as exc:
             pass
-        
+
     # compatibility with colorpicker
     if 'color_values' in color_values.keys():
         color_values = color_values['color_values']['greenField']
@@ -42,7 +41,7 @@ def init_color_space(color_path):
                         color_values['green'][x],
                         color_values['red'][x]] = 1
     print("Imported color space")
-    return color_space  
+    return color_space
 
 def compare(positive_color_space, negative_color_space):
     mask = np.invert(np.array(negative_color_space, dtype=np.bool))
@@ -56,7 +55,7 @@ def generate_color_lists(color_space):
                     color_space_positions[2].tolist())
     return color_lists
 
-def save(filename, color_space):           
+def save(filename, color_space):
     red, green, blue = generate_color_lists(color_space)
 
     output_type = "negative_filtered"
@@ -71,7 +70,7 @@ def save(filename, color_space):
     with open(filename, 'wb') as outfile:
         pickle.dump(data, outfile, protocol=2)
         # stores data of colorspace in file as pickle for efficient loading (yaml is too slow)
-    
+
     print("Output saved to '{}'.".format(filename))
 
 

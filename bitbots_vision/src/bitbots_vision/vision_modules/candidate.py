@@ -126,6 +126,15 @@ class Candidate:
         """
         return self._y1 + self._height
 
+    def get_lower_center_point(self):
+        # type: () -> (int, int)
+        """
+        returns...
+
+        :return tuple: returns the lowest point of the candidate. The point is horizontally centered inside the candidate.
+        """
+        return (self.get_center_x(), self.get_lower_right_y())
+
     def get_rating(self):
         # type: () -> float
         """
@@ -160,7 +169,7 @@ class Candidate:
         :param candidatelist:
         :return: sorted candidate list
         """
-        return sorted(candidatelist, key = lambda candidate: candidate.rating, reverse=True)
+        return sorted(candidatelist, key = lambda candidate: candidate.get_rating(), reverse=True)
 
 
     def __str__(self):
@@ -173,21 +182,28 @@ class Candidate:
 
 
 class CandidateFinder(object):
-
-    @abc.abstractmethod
     def get_top_candidates(self, count=1):
         """
         Returns the count best candidates.
         :param count: Number of top-candidates to return
         :return: the count top candidates
         """
-        raise NotImplementedError
+        ball_candidates = self.get_candidates()
+        ball_candidates = Candidate.sort_candidates(ball_candidates)
+        return ball_candidates[:count]
 
     @abc.abstractmethod
     def get_candidates(self):
         """
         Returns a list of all candidates. Their type is Candidate.
         :return: the count top candidates
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def compute(self):
+        """
+        Runs the most intense calculation without returning any output and caches the result.
         """
         raise NotImplementedError
 
@@ -198,3 +214,36 @@ class CandidateFinder(object):
         :return: the count top candidates
         """
         return self.get_top_candidates()[0] if self.get_top_candidates() else None
+
+
+class BallDetector(CandidateFinder):
+    def get_top_ball_under_convex_field_boundary(self, field_boundary_detector, y_offset=0):
+        """
+        Returns the best candidate under the convex field boundary.
+        :return: top candidate or None if no candidate exists
+        """
+        # Get all balls
+        balls = self.get_sorted_top_balls_under_convex_field_boundary(field_boundary_detector, y_offset)
+        # Check if there are any
+        if balls:
+            # Return the best
+            return balls[0]
+
+    def get_sorted_top_balls_under_convex_field_boundary(self, field_boundary_detector, y_offset=0):
+        """
+        Returns the best candidates under the convex field boundary.
+        :return: list of top candidates sorted by rating
+        """
+
+        # Get candidates
+        ball_candidates = self.get_candidates()
+        # Check if there are any ball candidates
+        if ball_candidates:
+            # Only take candidates under the convex field boundary
+            balls_under_field_boundary = field_boundary_detector.candidates_under_convex_field_boundary(ball_candidates, y_offset)
+            # Check if there are still candidates left
+            if balls_under_field_boundary:
+                # Sort candidates and take the one which has the biggest confidence
+                sorted_rated_candidates = sorted(balls_under_field_boundary, key=lambda x: x.get_rating())
+                return sorted_rated_candidates
+        return list()

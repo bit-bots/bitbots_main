@@ -1,19 +1,17 @@
 import numpy as np
 import cv2
 from .candidate import Candidate, CandidateFinder
-from .debug import DebugPrinter
 
 
 class ClassifierHandler(CandidateFinder):
-    def __init__(self, classifier, debug_printer):
-        # type: (LiveClassifier, DebugPrinter) -> None
+    def __init__(self, classifier):
+        # type: (LiveClassifier) -> None
         self._image = None
         self._input_candidates = None
         self._classifier = classifier
         self._classified_candidates = None
         self._sorted_candidates = None
         self._top_candidate = None
-        self._debug_printer = debug_printer
 
     def set_image(self, image, candidates):
         self._image = image
@@ -39,6 +37,12 @@ class ClassifierHandler(CandidateFinder):
             else:
                 self._classified_candidates = list()
         return self._classified_candidates
+
+    def compute(self):
+        """
+        Computes the candidates
+        """
+        self.get_candidates()
 
     def get_top_candidates(self, count=1):
         if self._sorted_candidates is None:

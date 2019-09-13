@@ -1,7 +1,7 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 from dynamic_reconfigure.server import Server
 from bitbots_vision_tools.cfg import ColorTestConfig
-from bitbots_vision.vision_modules import color, debug
+from bitbots_vision.vision_modules import color
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import rospy
@@ -23,6 +23,11 @@ class ColorTest:
 
         self.config = {}
 
+        # Register publisher for 'color_tester_hsv_mask_image'-messages
+        self.pub_hsv_mask_image = rospy.Publisher(
+            'color_tester_hsv_mask',
+            Image)
+
         srv = Server(ColorTestConfig, self._dynamic_reconfigure_callback)
 
         rospy.spin()
@@ -34,33 +39,16 @@ class ColorTest:
         # converting the ROS image message to CV2-image
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
 
-        # mask image
-        mask_img = self.color_detector.mask_image(image)
-
-        self.imagepublisher.publish(self.bridge.cv2_to_imgmsg(mask_img, '8UC1'))
+        # mask (and publish) image
+        self.color_detector.get_mask_image(image)
 
     def _dynamic_reconfigure_callback(self, config, level):
-        self.debug_printer = debug.DebugPrinter(
-            debug_classes=debug.DebugPrinter.generate_debug_class_list_from_string(
-                config['debug_printer_classes']))
-
-        self.color_detector = color.HsvSpaceColorDetector(
-            self.debug_printer,
-            (config['lower_values_h'], config['lower_values_s'], config['lower_values_v']),
-            (config['upper_values_h'], config['upper_values_s'], config['upper_values_v']))
-
-        # Register publisher for 'color_tester_mask_image'-messages
-        if 'color_tester_mask_image' not in self.config or \
-                self.config['color_tester_mask_image'] != config['color_tester_mask_image']:
-            self.imagepublisher = rospy.Publisher(
-                'color_tester_mask_image',
-                Image,
-                queue_size=1)
+        self.color_detector = color.HsvSpaceColorDetector(config, "color_test", self.pub_hsv_mask_image)
 
         # subscriber of camera image:
         if 'img_msg_topic' not in self.config or \
             self.config['img_msg_topic'] != config['img_msg_topic'] or \
-            'ROS_img_queue_size' not in self.config or \
+            'img_queue_size' not in self.config or \
             self.config['img_queue_size'] != config['img_queue_size']:
             if hasattr(self, 'image_sub'):
                 self.image_sub.unregister()
@@ -73,7 +61,7 @@ class ColorTest:
                 buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
 
-            self.config = config
+        self.config = config
         return config
 
 if __name__ == "__main__":

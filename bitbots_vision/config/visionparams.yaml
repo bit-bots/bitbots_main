@@ -1,29 +1,52 @@
-neural_network_model_path: '2019_07_03_jonas_yolo'
-ball_fcnn_publish_debug_img: false  # toggles publishing of the fcnn heatmap image for debug purposes
+vision_parallelize: true
+vision_blind_threshold: 30
+
+ROS_img_msg_topic: 'image_raw'
+ROS_img_msg_queue_size: 1
+ROS_fcnn_img_msg_topic: 'fcnn_image'
+ROS_field_boundary_msg_topic: 'field_boundary_in_image'
+ROS_ball_msg_topic: 'ball_in_image'
+ROS_goal_msg_topic: 'goal_in_image'
+ROS_obstacle_msg_topic: 'obstacles_in_image'
+ROS_line_msg_topic: 'line_in_image'
+ROS_dynamic_color_space_msg_topic: 'dynamic_color_space'
+ROS_debug_image_msg_topic: 'debug_image'
+ROS_debug_fcnn_image_msg_topic: 'fcnn_debug_image'
+ROS_white_HSV_mask_image_msg_topic: 'white_HSV_field_mask'
+ROS_red_HSV_mask_image_msg_topic: 'red_HSV_field_mask'
+ROS_blue_HSV_mask_image_msg_topic: 'blue_HSV_field_mask'
+ROS_field_mask_image_msg_topic: 'field_mask'
+ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'
+
+fcnn_model_path: '2019_06_timon_basler'
+yolo_model_path: '2019_07_03_jonas_yolo'
 ball_fcnn_threshold: .6  # minimal value for a candidate to be considered
 ball_fcnn_expand_stepsize: 4
 ball_fcnn_pointcloud_stepsize: 10
-ball_fcnn_shuffle_candidate_list: false  # shuffles the list of possible candidate points
 ball_fcnn_min_ball_diameter: 15
 ball_fcnn_max_ball_diameter: 150
 ball_fcnn_publish_output: false
 ball_fcnn_publish_field_boundary_offset: 5
 
-field_color_detector_path: 'sydney_2_7_2019_interpolated.txt'
-field_color_detector_path_sim: 'simColor_interpolated.yaml'
-field_color_detector_use_hsv_green: false
-field_color_detector_hsv_lower_values_h: 46
-field_color_detector_hsv_lower_values_s: 101
-field_color_detector_hsv_lower_values_v: 12
-field_color_detector_hsv_upper_values_h: 98
-field_color_detector_hsv_upper_values_s: 255
-field_color_detector_hsv_upper_values_v: 255
+neural_network_type: 'yolo_darknet'  # fcnn or yolo_opencv or yolo_darknet or dummy
+ball_candidate_field_boundary_y_offset: 0
+ball_candidate_rating_threshold: 0.5
 
-white_color_detector_lower_values_h: 70
-white_color_detector_lower_values_s: 90
-white_color_detector_lower_values_v: 120
-white_color_detector_upper_values_h: 100
-white_color_detector_upper_values_s: 140
+vision_use_sim_color: false
+field_color_detector_path: 'f031_basler.txt'
+field_color_detector_path_sim: 'simColor_interpolated.yaml'
+
+dynamic_color_space_active: true
+dynamic_color_space_queue_max_size: 20
+dynamic_color_space_threshold: 0.6
+dynamic_color_space_kernel_radius: 1
+dynamic_color_space_field_boundary_detector_search_method: 'reversed' # iteration, reversed, binary or dynamic
+
+white_color_detector_lower_values_h: 0
+white_color_detector_lower_values_s: 0
+white_color_detector_lower_values_v: 27
+white_color_detector_upper_values_h: 180
+white_color_detector_upper_values_s: 94
 white_color_detector_upper_values_v: 255
 
 red_color_detector_lower_values_h: 139
@@ -40,30 +63,19 @@ blue_color_detector_upper_values_h: 116
 blue_color_detector_upper_values_s: 255
 blue_color_detector_upper_values_v: 255
 
-field_boundary_finder_search_method: 'dynamic'  # iteration, reversed, binary or dynamic
-field_boundary_finder_vertical_steps: 30
-field_boundary_finder_horizontal_steps: 30
-field_boundary_finder_roi_height: 1
-field_boundary_finder_roi_width: 1
-field_boundary_finder_roi_increase: 0.08  # increase of kernel radius per pixel
-field_boundary_finder_green_threshold: 150
-field_boundary_finder_precision_pix: 5
-field_boundary_finder_min_precision_pix: 3
-field_boundary_finder_head_joint_threshold: -0.5
+field_boundary_detector_search_method: 'dynamic'  # iteration, reversed, binary or dynamic
+field_boundary_detector_vertical_steps: 30
+field_boundary_detector_horizontal_steps: 30
+field_boundary_detector_roi_height: 1
+field_boundary_detector_roi_width: 1
+field_boundary_detector_roi_increase: 0.1  # increase of kernel radius per pixel
+field_boundary_detector_green_threshold: 60
+field_boundary_detector_precision_pix: 5
+field_boundary_detector_min_precision_pix: 3
+field_boundary_detector_head_tilt_threshold: 20
 
-vision_ball_classifier: 'yolo'  # fcnn or yolo or dummy
-vision_publish_debug_image: false
-vision_publish_field_mask_image: false
-vision_parallelize: true
-vision_use_sim_color: false
-vision_ball_candidate_field_boundary_y_offset: 0
-vision_ball_candidate_rating_threshold: 0.5
-vision_debug_printer_classes: ''
-vision_blind_threshold: 30
-
-line_detector_field_boundary_offset: 15
-line_detector_linepoints_range: 0
-line_detector_blur_kernel_size: 9
+line_detector_field_boundary_offset: 0
+line_detector_linepoints_range: 10000
 
 obstacle_finder_method: 'convex'  # distance, convex or step
 obstacle_color_threshold: 10
@@ -75,34 +87,8 @@ obstacle_candidate_max_width: 150
 obstacle_finder_step_length: 5
 obstacle_finder_value_increase: 2.0
 
-goalpost_expand_stepsize: 5
-goalpost_white_threshold: 100
+vision_publish_debug_image: false
+ball_fcnn_publish_debug_img: false  # toggles publishing of the fcnn heatmap image for debug purposes
+vision_publish_HSV_mask_image: false
+vision_publish_field_mask_image: false
 
-ROS_img_msg_topic: 'image_raw'
-ROS_img_queue_size: 1
-ROS_ball_msg_topic: 'ball_in_image'
-ROS_fcnn_img_msg_topic: 'fcnn_image'
-ROS_obstacle_msg_topic: 'obstacles_in_image'
-ROS_field_boundary_msg_topic: 'field_boundary_in_image'
-ROS_goal_msg_topic: 'goal_in_image'
-ROS_line_msg_topic: 'line_in_image'
-ROS_non_line_msg_topic: 'non_line_in_image'
-ROS_dynamic_color_space_msg_topic: 'dynamic_color_space'
-ROS_debug_image_msg_topic: 'debug_image'
-ROS_debug_fcnn_image_msg_topic: 'fcnn_debug_image'
-ROS_field_mask_image_msg_topic: 'field_mask'
-ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'
-ROS_head_joint_msg_topic: 'joint_states'
-ROS_head_joint_state_queue_size: 1
-
-ball_finder_classify_threshold: 0.5
-ball_finder_scale_factor: 1.1
-ball_finder_min_neighbors: 1
-ball_finder_min_size: 10
-
-dynamic_color_space_active: true
-dynamic_color_space_publish_field_mask_image: false
-dynamic_color_space_queue_max_size: 10
-dynamic_color_space_threshold: 0.8
-dynamic_color_space_kernel_radius: 1
-dynamic_color_space_field_boundary_finder_search_method: 'reversed' # iteration, reversed, binary or dynamic

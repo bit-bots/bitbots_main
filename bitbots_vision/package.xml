@@ -52,6 +52,7 @@
   <depend>pylon_camera</depend>
   <depend>white_balancer</depend>
   <depend>bitbots_bringup</depend>
+  <depend>tf2</depend>
 
 
   <export>
