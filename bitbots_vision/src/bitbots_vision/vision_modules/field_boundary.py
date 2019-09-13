@@ -77,7 +77,7 @@ class FieldBoundaryDetector(object):
         """
         Calculates a mask that contains white pixels below the field-boundary
         """
-        # Check if fieldboundary is allready cached
+        # Check if field boundary is already cached
         if self._mask is None:
             shape = np.shape(self._image)
             img_size = (shape[0], shape[1])
