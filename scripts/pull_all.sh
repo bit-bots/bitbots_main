@@ -5,6 +5,8 @@ git submodule update --init lib/dwa_local_planner
 git -C lib/dwa_local_planner checkout master
 git submodule update --init lib/vision_opencv
 git -C lib/vision_opencv checkout melodic
+git submodule update --init lib/geometry2
+git -C lib/geometry2 checkout melodic-devel
 git submodule foreach git pull
 if [[ -d basler_drivers ]]; then
     git -C basler_drivers pull
