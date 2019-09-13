@@ -27,6 +27,7 @@ except:
 # Argument parsing
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--ignore-debug", help="Ignore debug params", action='store_true')
+parser.add_argument("--no-confirm", help="Do not ask for write permission", action='store_true')
 args = parser.parse_args()
 
 # Set yaml stuff
@@ -55,7 +56,7 @@ for key in data.keys():
         print("{}:{}".format(key, new_value))
 
 # Ask user if he wants to save it
-if input("\n {} parameters changed. Do you want to save? (y/n)".format(changed_params)) == "y":
+if args.no_confirm or input("\n {} parameters changed. Do you want to save? (y/n)".format(changed_params)) == "y":
     # Save new file
     with open(config_path,"w") as fp:
         yaml.dump(data, fp)
