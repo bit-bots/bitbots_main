@@ -182,6 +182,8 @@ class Vision:
                 config,
                 self.package_path)
         else:
+            if self.sub_dynamic_color_space_msg_topic is not None:
+                self.sub_dynamic_color_space_msg_topic.unregister()
             # Set the static field color detector
             self.field_color_detector = color.PixelListColorDetector(
                 config,
@@ -316,7 +318,9 @@ class Vision:
         :return: None
         """
         self.sub_image = ros_utils.create_or_update_subscriber(self.config, config, self.sub_image, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_msg_queue_size'], buff_size=60000000) # https://github.com/ros/ros_comm/issues/536
-        self.sub_dynamic_color_space_msg_topic = ros_utils.create_or_update_subscriber(self.config, config, self.sub_dynamic_color_space_msg_topic, 'ROS_dynamic_color_space_msg_topic', ColorSpace, callback=self.field_color_detector.color_space_callback, queue_size=1, buff_size=2**20)
+
+        if self._use_dynamic_color_space:
+            self.sub_dynamic_color_space_msg_topic = ros_utils.create_or_update_subscriber(self.config, config, self.sub_dynamic_color_space_msg_topic, 'ROS_dynamic_color_space_msg_topic', ColorSpace, callback=self.field_color_detector.color_space_callback, queue_size=1, buff_size=2**20)
 
     def _image_callback(self, image_msg):
         # type: (Image) -> None
