@@ -16,7 +16,7 @@ class LineDetector:
     def __init__(self, config, white_detector, field_color_detector, field_boundary_detector):
         # type: (dict, ColorDetector, ColorDetector, FieldBoundaryDetector) -> None
         self._image = None
-        self._preprocessed_image = None
+        self._white_mask = None
         self._linepoints = None
         self._linesegments = None
         self._white_detector = white_detector
@@ -33,7 +33,7 @@ class LineDetector:
         :param image: the current frame of the video feed
         """
         self._image = image
-        self._preprocessed_image = None
+        self._white_mask = None
         self._linepoints = None
         # self._nonlinepoints = None
         self._linesegments = None
@@ -49,14 +49,20 @@ class LineDetector:
         """
         Computes the linepoints if necessary
         """
+        self.get_linepoints()
+
+    def get_linepoints(self):
+        """
+        Computes if necessary and returns the (cached) linepoints
+        """
         # Check if points are allready cached
         if self._linepoints is None:
             # Empty line point list
             self._linepoints = list()
             # Mask white parts of the image using a white color detector
-            white_masked_image = self._get_preprocessed_image()
+            white_masked_image = self._get_white_mask()
             # Get image shape
-            imgshape = self._get_preprocessed_image().shape
+            imgshape = self._get_white_mask().shape
 
             # Get the maximum height of the field boundary
             max_field_boundary_heigth = self._field_boundary_detector.get_upper_bound(
@@ -77,12 +83,6 @@ class LineDetector:
                         # Append these points to our list
                         self._linepoints.append(p)
 
-    def get_linepoints(self):
-        """
-        Computes if necessary and returns the (cached) linepoints
-        """
-        # Compute line points
-        self.compute()
         # Return line points
         return self._linepoints
 
@@ -91,7 +91,7 @@ class LineDetector:
         Computes if necessary and returns the (cached) line segments (Currently unused)
         """
         # Mask white parts of the image
-        img = self._get_preprocessed_image()
+        img = self._get_white_mask()
         # Use hough lines algorithm to find lines in this mask
         lines = cv2.HoughLinesP(img,
                                 1,
@@ -124,26 +124,26 @@ class LineDetector:
                     self._linesegments.append((x1, y1, x2, y2))
         return self._linesegments
 
-    def _get_preprocessed_image(self):
+    def _get_white_mask(self):
         """
-        Preprocesses image
+        Generates a white mask that not contains pixels in the green field or above the field boundary
         """
         # Check if it is cached
-        if self._preprocessed_image is None:
+        if self._white_mask is None:
             # Only take parts that are under not green and the field boundary
             # Get green mask
             green_mask = self._field_color_detector.get_mask_image()
             # Noise reduction on the green field mask
             green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_CLOSE, kernel=np.ones((3, 3)), iterations=1)
             # Invert and scale the field mask
-            green_mask = np.ones_like(green_mask) - (np.floor_divide(green_mask, 255))
-            mask = self._white_detector.mask_bitwise(green_mask)
-
+            not_green_mask = np.ones_like(green_mask) - (np.floor_divide(green_mask, 255))
             # Get part under the field boundary as white mask
             field_boundary_mask = self._field_boundary_detector.get_mask()
-            # And operation between the mask and the image. This blacks out the part above the field boundary
-            self._preprocessed_image = cv2.bitwise_and(mask, mask, mask=field_boundary_mask)
-        return self._preprocessed_image
+            # Get not green points under field boundary
+            possible_line_locations = cv2.bitwise_and(not_green_mask, not_green_mask, mask=field_boundary_mask)
+            # Get white points that are not above the field boundary or in the green field
+            mask = self._white_detector.mask_bitwise(possible_line_locations)
+        return self._white_mask
 
     @staticmethod
     def filter_points_with_candidates(linepoints, candidates):
