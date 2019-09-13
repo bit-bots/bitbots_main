@@ -22,13 +22,6 @@ try:
 except ImportError:
     rospy.loginfo("No Profiling avalabile")
 
-# TODO: issue: static as non class
-# TODO: issue: named logging
-# TODO: _underscores for "private" methods
-# TODO: color mask publishing
-# TODO: issue: thread-safety main worker in loop
-# TODO: issue: image wrapper including hash function
-# TODO: documentation for colorspace files in readme/doku
 
 class Vision:
     def __init__(self):
