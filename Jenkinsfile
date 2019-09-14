@@ -1,4 +1,4 @@
-@Library('bitbots_jenkins_library@implement_first_version')_
+@Library('bitbots_jenkins_library')_
 
 pipeline {
     agent any
@@ -39,6 +39,7 @@ pipeline {
 
         stage('Deploy') {
             agent { label 'webserver' }
+            when { branch 'master' }
             steps {
                 unstash 'docs_output'
                 deployDocs('bitbots_docs')
