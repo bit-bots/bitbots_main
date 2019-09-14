@@ -31,7 +31,17 @@ pipeline {
             steps {
                 linkCatkinWorkspace()
                 catkinBuild("Documentation")
+
+                stash includes: '**/docs/_out/**', name: 'docs_output'
                 archiveArtifacts artifacts: '**/docs/_out/**', onlyIfSuccessful: true
+            }
+        }
+
+        stage('Deploy') {
+            agent { label 'webserver' }
+            steps {
+                unstash 'docs_output'
+                deployDocs('bitbots_docs')
             }
         }
     }
