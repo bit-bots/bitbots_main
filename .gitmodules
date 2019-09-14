@@ -75,3 +75,7 @@
 	path = lib/vision_opencv
 	url = git@github.com:ros-perception/vision_opencv.git
     branch = melodic
+[submodule "lib/geometry2"]
+	path = lib/geometry2
+	url = https://github.com/ros/geometry2
+    branch = melodic-devel

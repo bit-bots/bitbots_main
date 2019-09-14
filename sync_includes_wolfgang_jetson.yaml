@@ -10,6 +10,7 @@ include:
         - white_balancer
     - humanoid_league_msgs
     - lib:
+        - geometry2
         - vision_opencv
     - wolves_image_provider
     - scripts
