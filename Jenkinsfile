@@ -17,7 +17,7 @@ pipeline {
         }
 
         stage('Build packages') {
-            agent { docker image: 'bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000'}
+            agent { docker image: 'bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000', alwaysPull: true }
             steps {
                 linkCatkinWorkspace()
                 sh 'rosdep update'
@@ -27,7 +27,7 @@ pipeline {
         }
 
         stage('Document') {
-            agent { docker image: 'bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000' }
+            agent { docker image: 'bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000', alwaysPull: true }
             steps {
                 linkCatkinWorkspace()
                 catkinBuild("Documentation")
