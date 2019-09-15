@@ -276,6 +276,30 @@ def sync(target, package='', verbose=True, pre_clean=False):
     print_success("Synchronization of {} successful".format(target.hostname))
 
 
+def sync_gamesettings(target, verbose=True):
+    """
+    :type target: Target
+    :type verbose: bool
+    """
+    cmd = [
+        "rsync",
+        "--checksum",
+        "--archive",
+        "-v" if verbose else "",
+        os.path.join(BITBOTS_META, "bitbots_misc", "bitbots_bringup", "config", "game_settings.yaml"),
+        "bitbots@{}:{}/src/bitbots_misc/config/game_settings.yaml".format(target.ssh_target, target.workspace)
+    ]
+
+    print_info("Calling {}".format(" ".join(cmd)))
+    sync_result = subprocess.run(cmd)
+    if sync_result.returncode != 0:
+        print_err("Synchronizing game settings with {} failed with error code {}"
+                  .format(target.hostname, sync_result.returncode))
+        sys.exit(sync_result.returncode)
+
+    print_success("Synchronizing game settings with {} succeeded".format(target.hostname))
+
+
 def build(target, package='', verbose=True, pre_clean=False):
     """
     :type target: Target
@@ -371,7 +395,7 @@ def main():
         else:
             print_info("Running game-settings script for {}".format(target.hostname))
             game_settings.main()
-            sync(target, "bitbots_bringup", verbose=False, pre_clean=False)
+            sync_gamesettings(target, False)
 
 
 if __name__ == "__main__":
