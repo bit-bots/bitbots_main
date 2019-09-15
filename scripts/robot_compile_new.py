@@ -92,7 +92,7 @@ class Target:
         rory = [c + "2" for c in ["nuc", "odroid", "jetson"]]
         jack = [c + "3" for c in ["nuc", "odroid", "jetson"]]
         donna = [c + "4" for c in ["nuc", "odroid", "jetson"]]
-        davros = ["odroid5"]
+        davros = ["davros"]
 
     class IPs:
         __prefix__ = "192.168.1."
