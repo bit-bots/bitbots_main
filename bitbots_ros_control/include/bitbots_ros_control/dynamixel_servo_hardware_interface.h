@@ -171,6 +171,8 @@ private:
   ros::Publisher _speak_pub;
   ros::Subscriber _set_torque_indiv_sub;
 
+  dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig> *_dyn_reconf_server;
+
 };
 }
 

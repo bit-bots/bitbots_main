@@ -109,6 +109,12 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
 
   writeTorque(nh.param("servos/auto_torque", false));
 
+  // init dynamic reconfigure
+  _dyn_reconf_server = new dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig>(ros::NodeHandle("~/servos"));
+  dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig>::CallbackType f;
+  f = boost::bind(&bitbots_ros_control::DynamixelServoHardwareInterface::reconf_callback,this, _1, _2);
+  _dyn_reconf_server->setCallback(f);
+
   ROS_INFO("Hardware interface init finished.");
   return true;
 }

@@ -9,9 +9,6 @@
 
 #include <hardware_interface/imu_sensor_interface.h>
 #include <hardware_interface/robot_hw.h>
-#include <dynamic_reconfigure/server.h>
-
-#include <bitbots_ros_control/bitbots_ros_control_paramsConfig.h>
 
 #include <dynamixel_workbench/dynamixel_driver.h>
 
