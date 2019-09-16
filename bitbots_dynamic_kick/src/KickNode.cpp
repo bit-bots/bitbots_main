@@ -97,6 +97,7 @@ void KickNode::execute_cb(const bitbots_msgs::KickGoalConstPtr &goal) {
 
         m_engine.set_goals(goals);
         m_stabilizer.reset();
+        m_ik.reset();
         m_visualizer.display_windup_point(m_engine.get_windup_point(), (m_engine.is_left_kick()) ? "r_sole" : "l_sole");
         m_visualizer.display_flying_splines(m_engine.get_splines(), (m_engine.is_left_kick()) ? "r_sole" : "l_sole");
         loop_engine();
