@@ -5,6 +5,8 @@ import cv2
 import rospy
 import rospkg
 import threading
+import time
+from copy import deepcopy
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
@@ -76,8 +78,13 @@ class Vision:
         # Needed for operations that should only be executed on the first image
         self._first_image_callback = True
 
-        # Needed to determine whether reconfiguration is currently in progress or not
-        self.reconfigure_active = False
+        # Reconfigure dict transfer variable
+        self.transfer_reconfigure_data = None
+        self.transfer_reconfigure_data_read_flag = False
+
+        # Image transfer variable
+        self.transfer_image_msg = None
+        self.transfer_image_msg_read_flag = False
 
         # Add model enums to config
         ros_utils.add_model_enums(VisionConfig, self.package_path)
@@ -86,17 +93,50 @@ class Vision:
         # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
 
-        rospy.spin()
+        # Run the vision main loop
+        self.main_loop()
+
+    def main_loop(self):
+        """
+        Main loop that processed the images and configuration changes
+        """
+        while not rospy.is_shutdown():
+            # Lookup if theres another configuration avalabile
+            if self.transfer_reconfigure_data is not None:
+                # Copy config from shard memory
+                self.transfer_reconfigure_data_read_flag = True
+                reconfigure_data = deepcopy(self.transfer_reconfigure_data)
+                self.transfer_reconfigure_data_read_flag = False
+                self.transfer_reconfigure_data = None
+                # Run vision reconfiguration
+                self.configure_vision(*reconfigure_data)
+            # Check if a new image is avalabile
+            elif self.transfer_image_msg is not None:
+                # Copy image from shard memory
+                image_msg = deepcopy(self.transfer_image_msg)
+                self.transfer_image_msg = None
+                # Run the vision pipeline
+                self.handle_image(image_msg)
+                # Now the first image has been processed
+                self._first_image_callback = False
 
     def _dynamic_reconfigure_callback(self, config, level):
         """
-        Callback for the dynamic reconfigure configuration. This callback also gets calles for the inertial configuration.
+        Callback for the dynamic reconfigure configuration.
 
         :param config: New config
         :param level: The level is a definable int in the Vision.cfg file. All changed params are or ed together by dynamic reconfigure.
         """
-        # Deactivates Vision temporarally
-        self.reconfigure_active = True
+        # Check flag
+        while self.transfer_reconfigure_data_read_flag and not rospy.is_shutdown():
+            time.sleep(0.01)
+        # Set data
+        self.transfer_reconfigure_data = (config, level)
+
+        return config
+
+
+    def configure_vision(self, config, level):
 
         self._register_or_update_all_publishers(config)
 
@@ -280,11 +320,6 @@ class Vision:
         # The old config gets replaced with the new config
         self.config = config
 
-        # Activate Vision again
-        self.reconfigure_active = False
-
-        return config
-
     def _register_or_update_all_publishers(self, config):
         # type: (dict) -> None
         """
@@ -336,22 +371,12 @@ class Vision:
             rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message, because its too old! ({} sec)'.format(image_age.to_sec()))
             return
 
-        # Do not process images if reconfiguration is in progress
-        if self.reconfigure_active:
-            rospy.loginfo("Dropped image due to dynamic reconfigure callback!")
+        # Check flag
+        if self.transfer_image_msg_read_flag:
             return
 
-        # Catch type errors that occur during reconfiguration :(
-        try:
-            self.handle_image(image_msg)
-            # Now this is not the first image callback anymore
-            self._first_image_callback = False
-        except (TypeError, cv2.error):
-            # Forward the exception if no dynamic reconfiguration is currently active.
-            if not self.reconfigure_active:
-                raise
-            else:
-                rospy.loginfo("Dropped image due to dynamic reconfigure callback!")
+        # Transfer the image to the main thread
+        self.transfer_image_msg = image_msg
 
     def handle_image(self, image_msg):
         """
