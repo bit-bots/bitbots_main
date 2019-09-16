@@ -138,8 +138,8 @@ class DynamicColorSpace:
 
         # Drops old images
         image_age = rospy.get_rostime() - image_msg.header.stamp
-        if 0.1 < image_age.to_sec() < 1000.0:
-            rospy.loginfo('Vision: Dropped incoming Image-message, because its too old!')
+        if 1.0 < image_age.to_sec() < 1000.0:
+            rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message, because its too old! ({} sec)'.format(image_age.to_sec()))
             return
 
         self.handle_image(image_msg)
