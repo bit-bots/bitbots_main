@@ -46,7 +46,7 @@ class TransformBall(object):
                          ObstaclesInImage, self._callback_obstacles, queue_size=1)
 
         rospy.Subscriber(rospy.get_param("~field_boundary/field_boundary_topic", "/field_boundary_in_image"),
-                         ObstaclesInImage, self._callback_field_boundary, queue_size=1)
+                         FieldBoundaryInImage, self._callback_field_boundary, queue_size=1)
 
         rospy.Subscriber(rospy.get_param("~camera_info/camera_info_topic", "/camera_info"),
                          CameraInfo,
@@ -312,7 +312,7 @@ class TransformBall(object):
 
     def transform(self, point, field, stamp):
         K = self.camera_info.K
-        
+
         x = (point.x - K[2]) / K[0]
         y = (point.y - K[5]) / K[4]
         z = 1.0
