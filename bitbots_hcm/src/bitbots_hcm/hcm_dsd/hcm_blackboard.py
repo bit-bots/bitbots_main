@@ -8,6 +8,7 @@ from std_srvs.srv import Empty
 from bitbots_hcm.fall_checker import FallChecker
 from geometry_msgs.msg import Twist
 from bitbots_msgs.msg import KickActionFeedback
+
 from humanoid_league_msgs.msg import RobotControlState
 
 
@@ -63,6 +64,7 @@ class HcmBlackboard():
         # Animation
         self.animation_action_client = None
         self.dynup_action_client = None
+        self.dynamic_kick_client = None
         self.last_animation_goal_time = rospy.Time()
         self.external_animation_running = False
         self.animation_requested = False
