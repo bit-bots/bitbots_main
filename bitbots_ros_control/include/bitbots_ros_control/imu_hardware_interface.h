@@ -47,5 +47,4 @@ private:
 
 };
 }
-
 #endif

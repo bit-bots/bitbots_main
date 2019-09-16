@@ -8,26 +8,9 @@
 
     <rosparam file="$(find bitbots_ros_control)/config/wolfgang.yaml" command="load" />
 
-    <group if="$(arg torquelessMode)">
-        <rosparam param="torquelessMode" ns="/ros_control">true</rosparam>
-    </group>
-    <group unless="$(arg torquelessMode)">
-        <rosparam param="torquelessMode" ns="/ros_control">false</rosparam>
-    </group>
-
-    <group if="$(arg onlyImu)">
-        <rosparam param="onlyImu" ns="/ros_control">true</rosparam>
-    </group>
-    <group unless="$(arg onlyImu)">
-        <rosparam param="onlyImu" ns="/ros_control">false</rosparam>
-    </group>
-
-    <group if="$(arg onlyPressure)">
-        <rosparam param="onlyPressure" ns="/ros_control">true</rosparam>
-    </group>
-    <group unless="$(arg onlyPressure)">
-        <rosparam param="onlyPressure" ns="/ros_control">false</rosparam>
-    </group>
+    <rosparam param="torquelessMode" ns="/ros_control">$(arg torquelessMode)</rosparam>
+    <rosparam param="onlyImu" ns="/ros_control">$(arg onlyImu)</rosparam>
+    <rosparam param="onlyPressure" ns="/ros_control">$(arg onlyPressure)</rosparam>
 
     <node pkg="bitbots_ros_control" type="node" name="ros_control" output="screen"/>
 

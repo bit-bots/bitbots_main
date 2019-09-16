@@ -1,8 +1,5 @@
 ros_control:
 
-  read_pressure: true
-  read_imu: true
-  readButtons: true
   control_loop_hz: 1000
 
   port_info:
