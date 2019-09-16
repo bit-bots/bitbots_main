@@ -136,9 +136,9 @@ bool DynamixelServoHardwareInterface::loadDynamixels(ros::NodeHandle& nh){
   }
 
   // get values to read
-  nh.param("read_position", _read_position, true);
-  nh.param("read_velocity", _read_velocity, false);
-  nh.param("read_effort", _read_effort, false);
+  nh.param("servos/read_position", _read_position, true);
+  nh.param("servos/read_velocity", _read_velocity, false);
+  nh.param("servos/read_effort", _read_effort, false);
 
 
   XmlRpc::XmlRpcValue dxls_xml;
