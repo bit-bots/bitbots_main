@@ -101,7 +101,7 @@ class Vision:
         Main loop that processed the images and configuration changes
         """
         while not rospy.is_shutdown():
-            # Lookup if theres another configuration avalabile
+            # Lookup if there is another configuration available
             if self.transfer_reconfigure_data is not None:
                 # Copy config from shard memory
                 self.transfer_reconfigure_data_read_flag = True
