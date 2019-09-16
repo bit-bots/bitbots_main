@@ -38,7 +38,6 @@ set(SOURCES
     src/Spline/Polynom.cpp
     src/Spline/SmoothSpline.cpp
     src/Spline/Spline.cpp
-    src/Utils/TrajectoryUtils.cpp
     src/Utils/NewtonBinomial.cpp
     src/Utils/Combination.cpp
 )

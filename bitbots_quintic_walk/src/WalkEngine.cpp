@@ -26,7 +26,7 @@ QuinticWalk::QuinticWalk() :
     _timePaused(0.0)
 {   
     // make sure to call the reset method after having the parameters
-    _trajs = bitbots_splines::TrajectoriesInit();
+    _trajs = TrajectoriesInit();
 }
 
 
@@ -321,7 +321,7 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d& orders, bool startMov
     }
 
     //Reset the trajectories
-    _trajs = bitbots_splines::TrajectoriesInit();
+    _trajs = TrajectoriesInit();
     //Set up the trajectories for the half cycle (single step)
     double halfPeriod = 1.0 / (2.0 * _params.freq);
     // full period (double step) is needed for trunk splines
@@ -566,7 +566,7 @@ void QuinticWalk::buildWalkDisableTrajectories(const Eigen::Vector3d& orders, bo
     _footstep.stepFromOrders(orders);
 
     //Reset the trajectories
-    _trajs = bitbots_splines::TrajectoriesInit();
+    _trajs = TrajectoriesInit();
 
     //Set up the trajectories 
     //for the half cycle
@@ -762,7 +762,7 @@ bool QuinticWalk::isDoubleSupport(){
     return _trajs.get("is_double_support").pos(getTrajsTime()) >= 0.5;
 }
 
-void QuinticWalk::setParameters(const WalkingParameter& params)
+void QuinticWalk::reconf_callback(const bitbots_quintic_walk_paramsConfig &params)
 {
     _params = params;
     _footstep.setFootDistance(_params.footDistance);

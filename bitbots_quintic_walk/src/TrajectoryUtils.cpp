@@ -3,14 +3,14 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#include "bitbots_splines/TrajectoryUtils.h"
+#include "bitbots_quintic_walk/TrajectoryUtils.h"
 #include "bitbots_splines/AxisAngle.h"
 
-namespace bitbots_splines {
+namespace bitbots_quintic_walk {
 
 Trajectories TrajectoriesInit()
 {
-    SplineContainer<SmoothSpline> traj;
+    Trajectories traj;
     traj.add("is_double_support");
     traj.add("is_left_support_foot");
     traj.add("trunk_pos_x");

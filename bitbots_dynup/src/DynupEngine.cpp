@@ -75,10 +75,10 @@ void DynupEngine::calc_front_splines(){
     m_hand_trajectories->get("pos_z").addPoint(time_start, hand_pose.position.z);
 
     /* Construct a start_rotation as quaternion from Pose msg */
-    tf::Quaternion hand_start_rotation(hand_pose.orientation.x, hand_pose.orientation.y,
+    tf2::Quaternion hand_start_rotation(hand_pose.orientation.x, hand_pose.orientation.y,
                                   hand_pose.orientation.z, hand_pose.orientation.w);
     double hand_start_r, hand_start_p, hand_start_y;
-    tf::Matrix3x3(hand_start_rotation).getRPY(hand_start_r, hand_start_p, hand_start_y);
+    tf2::Matrix3x3(hand_start_rotation).getRPY(hand_start_r, hand_start_p, hand_start_y);
     m_hand_trajectories->get("roll").addPoint(time_start, hand_start_r);
     m_hand_trajectories->get("pitch").addPoint(time_start, hand_start_p);
     m_hand_trajectories->get("yaw").addPoint(time_start, hand_start_y);
@@ -90,10 +90,10 @@ void DynupEngine::calc_front_splines(){
     m_foot_trajectories->get("pos_z").addPoint(time_start, foot_pose.position.z);
 
     /* Construct a start_rotation as quaternion from Pose msg */
-    tf::Quaternion foot_start_rotation(foot_pose.orientation.x, foot_pose.orientation.y,
+    tf2::Quaternion foot_start_rotation(foot_pose.orientation.x, foot_pose.orientation.y,
                                   foot_pose.orientation.z, foot_pose.orientation.w);
     double foot_start_r, foot_start_p, foot_start_y;
-    tf::Matrix3x3(foot_start_rotation).getRPY(foot_start_r, foot_start_p, foot_start_y);
+    tf2::Matrix3x3(foot_start_rotation).getRPY(foot_start_r, foot_start_p, foot_start_y);
     m_foot_trajectories->get("roll").addPoint(time_start, foot_start_r);
     m_foot_trajectories->get("pitch").addPoint(time_start, foot_start_p);
     m_foot_trajectories->get("yaw").addPoint(time_start, foot_start_y);

@@ -42,9 +42,9 @@ std::optional<JointGoals> Stabilizer::stabilize(geometry_msgs::Point support_poi
     ik_options.return_approximate_solution = true;
     double bio_ik_timeout = 0.01;
 
-    tf::Stamped<tf::Pose> tf_l_foot, tf_trunk;
-    tf::poseStampedMsgToTF(l_foot_goal_pose, tf_l_foot);
-    tf::poseStampedMsgToTF(trunk_goal_pose, tf_trunk);
+    tf2::Stamped<tf2::Transform> tf_l_foot, tf_trunk;
+    tf2::convert(l_foot_goal_pose, tf_l_foot);
+    tf2::convert(trunk_goal_pose, tf_trunk);
 
     /* construct the bio_ik Pose object which tells bio_ik what we want to achieve */
     auto *bio_ik_l_foot_goal = new ReferencePoseGoal();
@@ -61,7 +61,7 @@ std::optional<JointGoals> Stabilizer::stabilize(geometry_msgs::Point support_poi
     bio_ik_trunk_goal->setWeight(1.0);
     bio_ik_trunk_goal->setReferenceLinkName("r_sole");
 
-    tf::Vector3 stabilizing_target = {support_point.x, support_point.y, support_point.z};
+    tf2::Vector3 stabilizing_target = {support_point.x, support_point.y, support_point.z};
     DynamicBalancingContext bio_ik_balancing_context(m_kinematic_model);
     auto *bio_ik_balance_goal = new DynamicBalancingGoal(&bio_ik_balancing_context, stabilizing_target, m_stabilizing_weight);
     bio_ik_balance_goal->setReferenceLink("base_link");

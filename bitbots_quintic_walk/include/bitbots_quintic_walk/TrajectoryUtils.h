@@ -6,17 +6,17 @@ https://github.com/Rhoban/model/
 #ifndef TRAJECTORYUTILS_H
 #define TRAJECTORYUTILS_H
 
-#include "SmoothSpline.hpp"
-#include "SplineContainer.hpp"
+#include "bitbots_splines/SmoothSpline.hpp"
+#include "bitbots_splines/SplineContainer.hpp"
 #include <Eigen/Dense>
 
 
-namespace bitbots_splines {
+namespace bitbots_quintic_walk {
 
 /**
  * Simple typedef for trajectories container
  */
-typedef SplineContainer<SmoothSpline> Trajectories;
+typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajectories;
 
 /**
  * Return initialized trajectories for

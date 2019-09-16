@@ -14,7 +14,6 @@
 #include <bitbots_splines/SplineContainer.hpp>
 #include <geometry_msgs/PoseStamped.h>
 #include <tf2/LinearMath/Vector3.h>
-#include <tf/LinearMath/Vector3.h>
 
 typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajectories;
 
@@ -45,7 +44,7 @@ public:
 
     void display_windup_point(tf2::Vector3 kick_windup_point, std::string support_foot_frame);
 
-    void display_stabilizing_point(tf::Vector3 kick_windup_point, std::string support_foot_frame);
+    void display_stabilizing_point(tf2::Vector3 kick_windup_point, std::string support_foot_frame);
 
 private:
     ros::NodeHandle m_node_handle;

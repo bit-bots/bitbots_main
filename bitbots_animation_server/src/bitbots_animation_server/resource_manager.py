@@ -20,18 +20,19 @@ from os import walk
 import rospkg as rospkg
 import rospy
 
-if not rospy.has_param("robot_type_name"):
-    rospy.logwarn("Robot type name parameter was not set. I assume that you want to use Wolfgang")
-anim_package = rospy.get_param("robot_type_name", "wolfgang").lower() + "_animations"
-
-rospack = rospkg.RosPack()
-path = rospack.get_path(anim_package)
-BASEPATH = abspath(path + "/animations")
 
 
 class ResourceManager(object):
 
     def __init__(self):
+        if not rospy.has_param("robot_type_name"):
+            rospy.logwarn("Robot type name parameter was not set. I assume that you want to use Wolfgang")
+        anim_package = rospy.get_param("robot_type_name", "wolfgang").lower() + "_animations"
+
+        rospack = rospkg.RosPack()
+        path = rospack.get_path(anim_package)
+        self.basepath = abspath(path + "/animations")
+
         self.cache = {}
         self.files = []  # Animations cached for find_all_animations
         self.names = []  # Plain animation names, without filename-extension
@@ -103,13 +104,13 @@ class ResourceManager(object):
         folders = name and filename = filename, and saves the result to
         reuse it the next time the same resource is requested.
 
-        The BASEPATH to the animation folder will be used as search path.
+        self.basepath will be used as search path.
 
         An IOError is raised when the file has not been found.
         """
         cache_name = str(name) + filename
         if cache_name not in self.cache:
-            result = self.search(BASEPATH, name, filename)
+            result = self.search(self.basepath, name, filename)
             self.cache[cache_name] = result
 
         else:
@@ -142,7 +143,7 @@ class ResourceManager(object):
         return self.find(self.animpath, "%s.json" % name)
 
     def find_resource(self, name):
-        """ Finds a resource relative to BASEPATH """
+        """ Finds a resource relative to self.basepath """
         return self.find(name)
 
     def _get_animpath(self):
@@ -190,15 +191,10 @@ class ResourceManager(object):
             self.find_all_animations(force_reload=True)
         return name in self.names
 
-
-# global instance of the resource manager
-__RM = ResourceManager()
-
-# Shortcuts to search for animations and resources
-find_animation = __RM.find_animation  # pylint: disable=C0103
-find_resource = __RM.find_resource  # pylint: disable=C0103
-find = __RM.find  # pylint: disable=C0103
-generate_find = __RM.generate_find  # pylint: disable=C0103
-find_all_animations = __RM.find_all_animations
-is_animation_name = __RM.is_animation_name
-find_all_animation_names = __RM.find_all_animation_names
+_RM = None  # type: ResourceManager
+# Shortcut to search for animations
+def find_animation(*args, **kwargs):
+    global _RM
+    if not _RM:
+        _RM = ResourceManager()
+    return _RM.find_animation(*args, **kwargs)

@@ -108,7 +108,7 @@ void Visualizer::display_windup_point(tf2::Vector3 kick_windup_point, std::strin
 }
 
 
-void Visualizer::display_stabilizing_point(tf::Vector3 kick_windup_point, std::string support_foot_frame) {
+void Visualizer::display_stabilizing_point(tf2::Vector3 kick_windup_point, std::string support_foot_frame) {
     if (!is_enabled())
         return;
 
