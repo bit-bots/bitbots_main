@@ -18,13 +18,14 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
   */
   _nh = nh;
   _lost_servo_connection = false;
+  _read_VT_counter = 0;
 
   // Init subscriber / publisher
   _switch_individual_torque = false;
   _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelServoHardwareInterface::setTorque, this, ros::TransportHints().tcpNoDelay());
   _set_torque_indiv_sub = nh.subscribe<bitbots_msgs::JointTorque>("set_torque_individual", 1, &DynamixelServoHardwareInterface::individualTorqueCb, this, ros::TransportHints().tcpNoDelay());
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
-  _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1);
+  _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, true);
 
   _torquelessMode = nh.param("torquelessMode", false);
 
