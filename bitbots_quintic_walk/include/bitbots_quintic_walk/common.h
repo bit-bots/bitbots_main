@@ -19,56 +19,54 @@
 #include <urdf/model.h>
 #include <urdf_model/model.h>
 
-
 inline double mix(double a, double b, double f) {
-  return a * (1.0 - f) + b * f;
+  return a*(1.0 - f) + b*f;
 }
 
 inline tf2::Vector3 mix(const tf2::Vector3 &a, const tf2::Vector3 &b, double f) {
-  return a * (1.0 - f) + b * f;
+  return a*(1.0 - f) + b*f;
 }
 
 inline Eigen::Vector3d mix(const Eigen::Vector3d &a, const Eigen::Vector3d &b,
                            double f) {
-  return a * (1.0 - f) + b * f;
+  return a*(1.0 - f) + b*f;
 }
 
 inline Eigen::Isometry3d mix(const Eigen::Isometry3d &a, const Eigen::Isometry3d &b,
-                           double f) {
+                             double f) {
   Eigen::Isometry3d ret = Eigen::Isometry3d::Identity();
   ret.rotate(Eigen::Quaterniond(a.rotation())
                  .slerp(f, Eigen::Quaterniond(b.rotation())));
-  ret.translation() = a.translation() * (1.0 - f) + b.translation() * f;
+  ret.translation() = a.translation()*(1.0 - f) + b.translation()*f;
   return ret;
 }
 
 inline tf2::Quaternion mix(const tf2::Quaternion &a, const tf2::Quaternion &b,
-                          double f) {
+                           double f) {
   return a.slerp(b, f);
 }
 
-
 class RobotStatePublisher {
-  std::string prefix;
-  tf2_ros::TransformBroadcaster tf_broadcaster;
-  std::vector<geometry_msgs::TransformStamped> msgs;
+  std::string prefix_;
+  tf2_ros::TransformBroadcaster tf_broadcaster_;
+  std::vector<geometry_msgs::TransformStamped> msgs_;
 
-public:
-  RobotStatePublisher(const std::string &prefix) : prefix(prefix) {}
+ public:
+  RobotStatePublisher(const std::string &prefix) : prefix_(prefix) {}
   void publish(const robot_state::RobotState &robot_state) {
-    if (prefix.empty())
+    if (prefix_.empty())
       return;
     auto robot_model = robot_state.getRobotModel();
     auto time = ros::Time::now();
-    msgs.clear();
+    msgs_.clear();
     for (auto &link_name : robot_model->getLinkModelNames()) {
       auto f = robot_state.getFrameTransform(link_name);
       Eigen::Quaterniond q(f.rotation());
-      msgs.emplace_back();
-      auto &msg = msgs.back();
+      msgs_.emplace_back();
+      auto &msg = msgs_.back();
       msg.header.stamp = time;
       msg.header.frame_id = "world";
-      msg.child_frame_id = prefix + "/" + link_name;
+      msg.child_frame_id = prefix_ + "/" + link_name;
       msg.transform.translation.x = f.translation().x();
       msg.transform.translation.y = f.translation().y();
       msg.transform.translation.z = f.translation().z();
@@ -77,6 +75,6 @@ public:
       msg.transform.rotation.z = q.z();
       msg.transform.rotation.w = q.w();
     }
-    tf_broadcaster.sendTransform(msgs);
+    tf_broadcaster_.sendTransform(msgs_);
   }
 };

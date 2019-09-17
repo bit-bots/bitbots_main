@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>bitbots_quintic_walk</name>
+  <name>bitbotsQuinticWalk</name>
   <version>1.0.0</version>
   <description>This is a simple open-loop walking engine which uses quintic splines to define the trajectories of both feet in cartesian space. An inverse kinematic is used to translate these into joint space. The parameters of the walking can be adjusted using dynamic_reconfigure.</description>
 

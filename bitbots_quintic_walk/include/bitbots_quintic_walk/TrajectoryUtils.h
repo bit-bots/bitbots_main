@@ -10,7 +10,6 @@ https://github.com/Rhoban/model/
 #include "bitbots_splines/SplineContainer.hpp"
 #include <Eigen/Dense>
 
-
 namespace bitbots_quintic_walk {
 
 /**
@@ -22,7 +21,7 @@ typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajecto
  * Return initialized trajectories for
  * trunk/foot ik cartesian with empty splines
  */
-Trajectories TrajectoriesInit();
+Trajectories trajectoriesInit();
 
 /**
  * Compute from given spline container 
@@ -30,29 +29,28 @@ Trajectories TrajectoriesInit();
  * position/velocity/acceleration 
  * and assign it to given vector
  */
-void TrajectoriesTrunkFootPos(
-    double t, const Trajectories& traj,
-    Eigen::Vector3d& trunkPos,
-    Eigen::Vector3d& trunkAxis,
-    Eigen::Vector3d& footPos,
-    Eigen::Vector3d& footAxis);
-void TrajectoriesTrunkFootVel(
-    double t, const Trajectories& traj,
-    Eigen::Vector3d& trunkPosVel,
-    Eigen::Vector3d& trunkAxisVel,
-    Eigen::Vector3d& footPosVel,
-    Eigen::Vector3d& footAxisVel);
-void TrajectoriesTrunkFootAcc(
-    double t, const Trajectories& traj,
-    Eigen::Vector3d& trunkPosAcc,
-    Eigen::Vector3d& trunkAxisAcc,
-    Eigen::Vector3d& footPosAcc,
-    Eigen::Vector3d& footAxisAcc);
-void TrajectoriesSupportFootState(
-    double t, const Trajectories& traj,
-    bool& isDoubleSupport, 
-    bool& isLeftsupportFoot);
-
+void trajectoriesTrunkFootPos(
+    double t, const Trajectories &traj,
+    Eigen::Vector3d &trunk_pos,
+    Eigen::Vector3d &trunk_axis,
+    Eigen::Vector3d &foot_pos,
+    Eigen::Vector3d &foot_axis);
+void trajectoriesTrunkFootVel(
+    double t, const Trajectories &traj,
+    Eigen::Vector3d &trunk_pos_vel,
+    Eigen::Vector3d &trunk_axis_vel,
+    Eigen::Vector3d &foot_pos_vel,
+    Eigen::Vector3d &foot_axis_vel);
+void trajectoriesTrunkFootAcc(
+    double t, const Trajectories &traj,
+    Eigen::Vector3d &trunk_pos_acc,
+    Eigen::Vector3d &trunk_axis_acc,
+    Eigen::Vector3d &foot_pos_acc,
+    Eigen::Vector3d &foot_axis_acc);
+void trajectoriesSupportFootState(
+    double t, const Trajectories &traj,
+    bool &isDoubleSupport,
+    bool &isLeftsupportFoot);
 
 /**
  * Default Cartesian state check function.
@@ -61,13 +59,12 @@ void TrajectoriesSupportFootState(
  * standard valid range
  */
 double DefaultCheckState(
-    const Eigen::VectorXd& params,
+    const Eigen::VectorXd &params,
     double t,
-    const Eigen::Vector3d& trunkPos,
-    const Eigen::Vector3d& trunkAxis,
-    const Eigen::Vector3d& footPos,
-    const Eigen::Vector3d& footAxis);
-
+    const Eigen::Vector3d &trunkPos,
+    const Eigen::Vector3d &trunkAxis,
+    const Eigen::Vector3d &footPos,
+    const Eigen::Vector3d &footAxis);
 
 }
 
