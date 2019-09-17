@@ -119,6 +119,8 @@ class Vision:
                 self.handle_image(image_msg)
                 # Now the first image has been processed
                 self._first_image_callback = False
+            else:
+                time.sleep(0.01)
 
     def _dynamic_reconfigure_callback(self, config, level):
         """
