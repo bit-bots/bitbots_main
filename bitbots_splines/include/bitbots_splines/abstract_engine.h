@@ -18,10 +18,10 @@ class AbstractEngine {
    * @param dt Passed time delta between last call to update() and now. Measured in seconds
    * @return New spline positions
    */
-  virtual const Positions update(double dt) = 0;
+  virtual Positions update(double dt) = 0;
   virtual void setGoals(const Goals &goals) = 0;
   virtual void reset() = 0;
-  virtual const Trajectories getSplines() const = 0;
+  virtual Trajectories getSplines() const = 0;
   /**
    * Returns the percentage of the spline that has already been returned.
    */
