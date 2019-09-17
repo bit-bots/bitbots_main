@@ -1,4 +1,4 @@
-#include "bitbots_quintic_walk/QuinticWalkingNode.hpp"
+#include "bitbots_quintic_walk/quintic_walking_node.h"
 
 namespace bitbots_quintic_walk {
 

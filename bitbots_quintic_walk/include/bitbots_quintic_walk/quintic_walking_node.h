@@ -3,8 +3,8 @@ This code is based on the original code by Quentin "Leph" Rouxel and Team Rhoban
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_QUINTICWALKINGNODE_HPP_
-#define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_QUINTICWALKINGNODE_HPP_
+#ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_QUINTIC_WALKING_NODE_H_
+#define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_QUINTIC_WALKING_NODE_H_
 
 #include <iostream>
 #include <string>
@@ -44,7 +44,7 @@ https://github.com/Rhoban/model/
 #include <bitbots_quintic_walk/bitbots_quintic_walk_paramsConfig.h>
 #include "bitbots_ik/AnalyticIKSolver.hpp"
 #include "bitbots_ik/BioIKSolver.hpp"
-#include "bitbots_quintic_walk/WalkEngine.hpp"
+#include "bitbots_quintic_walk/walk_engine.h"
 #include <std_msgs/Bool.h>
 #include <unistd.h>
 

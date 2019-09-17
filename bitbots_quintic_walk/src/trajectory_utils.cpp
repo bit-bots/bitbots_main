@@ -3,7 +3,7 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#include "bitbots_quintic_walk/TrajectoryUtils.h"
+#include "bitbots_quintic_walk/trajectory_utils.h"
 #include "bitbots_splines/AxisAngle.h"
 
 namespace bitbots_quintic_walk {

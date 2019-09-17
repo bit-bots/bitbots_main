@@ -3,7 +3,7 @@ This code is based on the original code by Quentin "Leph" Rouxel and Team Rhoban
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#include "bitbots_quintic_walk/Footstep.hpp"
+#include "bitbots_quintic_walk/footstep.h"
 
 namespace bitbots_quintic_walk {
 

@@ -6,10 +6,10 @@ set(CMAKE_CXX_STANDARD 11)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 set(SOURCES
-        src/Footstep.cpp
-        src/WalkEngine.cpp
-        src/QuinticWalkingNode.cpp
-        src/TrajectoryUtils.cpp
+        src/footstep.cpp
+        src/walk_engine.cpp
+        src/quintic_walking_node.cpp
+        src/trajectory_utils.cpp
         )
 
 find_package(catkin REQUIRED COMPONENTS

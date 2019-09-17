@@ -3,8 +3,8 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_TRAJECTORYUTILS_H_
-#define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_TRAJECTORYUTILS_H_
+#ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_TRAJECTORY_UTILS_H_
+#define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_TRAJECTORY_UTILS_H_
 
 #include "bitbots_splines/SmoothSpline.hpp"
 #include "bitbots_splines/SplineContainer.hpp"

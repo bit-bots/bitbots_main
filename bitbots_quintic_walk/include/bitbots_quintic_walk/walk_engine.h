@@ -3,14 +3,14 @@ This code is based on the original code by Quentin "Leph" Rouxel and Team Rhoban
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALKENGINE_HPP_
-#define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALKENGINE_HPP_
+#ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_ENGINE_H_
+#define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_ENGINE_H_
 
 #include <algorithm>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include "Footstep.hpp"
-#include "bitbots_quintic_walk/TrajectoryUtils.h"
+#include "footstep.h"
+#include "bitbots_quintic_walk/trajectory_utils.h"
 #include <eigen_conversions/eigen_msg.h>
 #include "bitbots_splines/SplineContainer.hpp"
 #include "bitbots_splines/AxisAngle.h"
