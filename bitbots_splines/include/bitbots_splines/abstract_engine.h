@@ -9,7 +9,7 @@ namespace bitbots_splines {
 
 typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajectories;
 
-template<typename Positions, typename Goals>
+template<typename RequestType, typename ResultType>
 class AbstractEngine {
  public:
   /**
@@ -18,8 +18,8 @@ class AbstractEngine {
    * @param dt Passed time delta between last call to update() and now. Measured in seconds
    * @return New spline positions
    */
-  virtual Positions update(double dt) = 0;
-  virtual void setGoals(const Goals &goals) = 0;
+  virtual ResultType update(double dt) = 0;
+  virtual void setGoals(const RequestType &goals) = 0;
   virtual void reset() = 0;
   virtual Trajectories getSplines() const = 0;
   /**
