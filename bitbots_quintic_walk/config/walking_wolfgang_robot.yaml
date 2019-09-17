@@ -4,98 +4,98 @@ walking:
   freq: 1.3
   # Length of double support phase in half cycle
   # (ratio, [0:1])
-  doubleSupportRatio: 0.05
+  double_support_ratio: 0.05
   # Lateral distance between the feet center
   # (in m, >= 0)
-  footDistance: 0.2
+  foot_distance: 0.2
   # Maximum flying foot height
   # (in m, >= 0)
-  footRise: 0.06
+  foot_rise: 0.06
   # Pause of Z movement on highest point
   # (single support cycle ratio, [0,1])
-  footZPause: 0.0
+  foot_z_pause: 0.0
   # Phase of flying foot apex
   # (single support cycle phase, [0:1])
-  footApexPhase: 0.5
+  foot_apex_phase: 0.5
   # Let the foot's downward trajectory end above the ground
   # this is helpful if the support leg bends
   # (in m, >= 0)
-  footPutDownZOffset: 0.0
+  foot_put_down_z_offset: 0.0
   #Phase time for moving the foot from Z offset to ground
   #(in half cycle ratio [0:1])
-  footPutDownPhase: 1.0
+  foot_put_down_phase: 1.0
   # Foot X/Y overshoot in ratio of step length
   # (ratio, >= 0)
-  footOvershootRatio: 0.1
+  foot_overshoot_ratio: 0.1
   # Foot X/Y overshoot phase
-  # (single support cycle phase, [footApexPhase:1]
-  footOvershootPhase: 0.85
+  # (single support cycle phase, [foot_apex_phase:1]
+  foot_overshoot_phase: 0.85
   # Height of the trunk from ground
   # (in m, > 0)
-  trunkHeight: 0.40
+  trunk_height: 0.40
   # Trunk pitch orientation
   # (in rad)
-  trunkPitch: 0.18
+  trunk_pitch: 0.18
   # Phase offset of trunk oscillation
   # (half cycle phase, [-1:1])
-  trunkPhase: -0.1
+  trunk_phase: -0.1
   # Trunk forward offset
   # (in m)
-  trunkXOffset: 0.0
+  trunk_x_offset: 0.0
   # Trunk lateral offset
   # (in m)
-  trunkYOffset: 0.0
+  trunk_y_offset: 0.0
   # Trunk lateral oscillation amplitude ratio
   # (ratio, >= 0)
   trunkSwing: 0.2
   # Trunk swing pause length in phase at apex
   # (half cycle ratio, [0:1])
-  trunkPause: 0.0
+  trunk_pause: 0.0
   # Trunk forward offset proportional to forward step
   # (in 1)
-  trunkXOffsetPCoefForward: 0.0
+  trunk_x_offset_p_coef_forward: 0.0
   # Trunk forward offset proportional to rotation step
   # (in m/rad)
-  trunkXOffsetPCoefTurn: 0.0
+  trunk_x_offset_p_coef_turn: 0.0
   # Trunk pitch orientation proportional to forward step
   # (in rad/m)
-  trunkPitchPCoefForward: 1.2
+  trunk_pitch_p_coef_forward: 1.2
   # Trunk pitch orientation proportional to rotation step
   # (in 1)
-  trunkPitchPCoefTurn: -0.05
+  trunk_pitch_p_coef_turn: -0.05
 
   # update frequency of the engine
-  engineFreq: 200.0
+  engine_freq: 200.0
   
   # parameters for bioIK
-  bioIKTime: 0.01
+  bio_ik_time: 0.01
 
-  debugActive: True
+  debug_active: True
 
-  kickLength: 0.09
-  kickVel: 0.2
-  kickPhase: 0.75
+  kick_length: 0.09
+  kick_vel: 0.2
+  kick_phase: 0.75
 
 
   trunkYOnlyInDoubleSupport: False
 
-  maxStepX: 0.06
-  maxStepY: 0.05
-  maxStepXY: 0.09
-  maxStepZ: 0.45
+  max_step_x: 0.06
+  max_step_y: 0.05
+  max_step_xy: 0.09
+  max_step_z: 0.45
 
   vel: -1
   acc: -1
   pwm: -1
 
-  imuActive: False
-  imuPitchThreshold: 0.19
-  imuRollThreshold: 0.4
-  imuPitchVelThreshold: 1.3
-  imuRollVelThreshold: 5.7
-  pauseDuration: 3.0
+  imu_active: False
+  imu_pitch_threshold: 0.19
+  imu_roll_threshold: 0.4
+  imu_pitch_vel_threshold: 1.3
+  imu_roll_vel_threshold: 5.7
+  pause_duration: 3.0
 
   publishOdomTF: True
 
-  firstStepSwingFactor: 1.0
+  first_step_swing_factor: 1.0
   startMovements: 1

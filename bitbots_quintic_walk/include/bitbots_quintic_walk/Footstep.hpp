@@ -39,8 +39,8 @@ class Footstep {
    * Set the lateral foot
    * distance parameters
    */
-  void setFootDistance(double foot_distance);
-  double getFootDistance();
+  void setfoot_distance(double foot_distance);
+  double getfoot_distance();
 
   /**
    * Reset to neutral position the current

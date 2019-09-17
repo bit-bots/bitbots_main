@@ -31,7 +31,7 @@ namespace bitbots_quintic_walk {
  * Expressed all target state in cartesian
  * space with respect to current cupport foot
  */
-class QuinticWalk : public AbstractEngine<WalkPositions, WalkGoals> {
+class QuinticWalk{
  public:
 
   /**

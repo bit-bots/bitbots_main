@@ -27,11 +27,11 @@ Footstep::Footstep(
   reset(is_left_support_foot_);
 }
 
-void Footstep::setFootDistance(double foot_distance) {
+void Footstep::setfoot_distance(double foot_distance) {
   foot_distance_ = foot_distance;
 }
 
-double Footstep::getFootDistance() {
+double Footstep::getfoot_distance() {
   return foot_distance_;
 }
 

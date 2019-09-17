@@ -16,7 +16,7 @@ QuinticWalkingNode::QuinticWalkingNode() :
   odom_broadcaster_ = tf2_ros::TransformBroadcaster();
 
   // read config
-  nh_.param<double>("engineFrequency", engine_frequency_, 100.0);
+  nh_.param<double>("engine_frequency", engine_frequency_, 100.0);
   nh_.param<bool>("/simulation_active", simulation_active_, false);
   nh_.param<bool>("/walking/publishOdomTF", publish_odom_tf_, false);
 
@@ -236,8 +236,8 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
 
     // compute the pitch offset to the currently wanted pitch of the engine
     double wanted_pitch =
-        params_.trunkPitch + params_.trunkPitchPCoefForward*walk_engine_.getFootstep().getNext().x()
-            + params_.trunkPitchPCoefTurn*fabs(walk_engine_.getFootstep().getNext().z());
+        params_.trunk_pitch + params_.trunk_pitch_p_coef_forward*walk_engine_.getFootstep().getNext().x()
+            + params_.trunk_pitch_p_coef_turn*fabs(walk_engine_.getFootstep().getNext().z());
     pitch = pitch + wanted_pitch;
 
     // get angular velocities
@@ -387,33 +387,33 @@ QuinticWalkingNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_pa
   params_ = config;
 
   walk_engine_.reconfCallback(params_);
-  bio_ik_solver_.set_bioIK_timeout(config.bioIKTime);
+  bio_ik_solver_.set_bioIK_timeout(config.bio_ik_time);
 
-  debug_active_ = config.debugActive;
-  engine_frequency_ = config.engineFreq;
-  odom_pub_factor_ = config.odomPubFactor;
+  debug_active_ = config.debug_active;
+  engine_frequency_ = config.engine_freq;
+  odom_pub_factor_ = config.odom_pub_factor;
 
-  max_step_[0] = config.maxStepX;
-  max_step_[1] = config.maxStepY;
-  max_step_[2] = config.maxStepZ;
-  max_step_xy_ = config.maxStepXY;
+  max_step_[0] = config.max_step_x;
+  max_step_[1] = config.max_step_y;
+  max_step_[2] = config.max_step_z;
+  max_step_xy_ = config.max_step_xy;
 
-  imu_active_ = config.imuActive;
-  imu_pitch_threshold_ = config.imuPitchThreshold;
-  imu_roll_threshold_ = config.imuRollThreshold;
-  imu_pitch_vel_threshold_ = config.imuPitchVelThreshold;
-  imu_roll_vel_threshold_ = config.imuRollVelThreshold;
+  imu_active_ = config.imu_active;
+  imu_pitch_threshold_ = config.imu_pitch_threshold;
+  imu_roll_threshold_ = config.imu_roll_threshold;
+  imu_pitch_vel_threshold_ = config.imu_pitch_vel_threshold;
+  imu_roll_vel_threshold_ = config.imu_roll_vel_threshold;
 
-  phase_reset_active_ = config.phaseResetActive;
-  phase_reset_phase_ = config.phaseResetPhase;
-  ground_min_pressure_ = config.groundMinPressure;
-  cop_stop_active_ = config.copStopActive;
-  cop_x_threshold_ = config.copXThreshold;
-  cop_y_threshold_ = config.copYThreshold;
-  pressure_stop_active_ = config.pressureStopActive;
-  io_pressure_threshold_ = config.ioPressureThreshold;
-  fb_pressure_threshold_ = config.fbPressureThreshold;
-  params_.pauseDuration = config.pauseDuration;
+  phase_reset_active_ = config.phase_reset_active;
+  phase_reset_phase_ = config.phase_reset_phase;
+  ground_min_pressure_ = config.ground_min_pressure;
+  cop_stop_active_ = config.cop_stop_active;
+  cop_x_threshold_ = config.cop_x_threshold;
+  cop_y_threshold_ = config.cop_y_threshold;
+  pressure_stop_active_ = config.pressure_stop_active;
+  io_pressure_threshold_ = config.io_pressure_threshold;
+  fb_pressure_threshold_ = config.fb_pressure_threshold;
+  params_.pause_duration = config.pause_duration;
 }
 
 void
@@ -451,11 +451,11 @@ void QuinticWalkingNode::publishOdometry() {
   double yaw;
   if (walk_engine_.getFootstep().isLeftSupport()) {
     x = walk_engine_.getFootstep().getLeft()[0];
-    y = walk_engine_.getFootstep().getLeft()[1] + params_.footDistance/2;
+    y = walk_engine_.getFootstep().getLeft()[1] + params_.foot_distance/2;
     yaw = walk_engine_.getFootstep().getLeft()[2];
   } else {
     x = walk_engine_.getFootstep().getRight()[0];
-    y = walk_engine_.getFootstep().getRight()[1] + params_.footDistance/2;
+    y = walk_engine_.getFootstep().getRight()[1] + params_.foot_distance/2;
     yaw = walk_engine_.getFootstep().getRight()[2];
   }
 
@@ -583,9 +583,9 @@ QuinticWalkingNode::publishDebug(tf2::Transform &trunk_to_support_foot_goal,
   publishMarker("engine_trunk_goal", current_support_frame, pose_msg, r, g, b, a);
 
   if (trunk_pos_[1] > 0) {
-    trunk_pos_[1] = trunk_pos_[1] - params_.footDistance/2;
+    trunk_pos_[1] = trunk_pos_[1] - params_.foot_distance/2;
   } else {
-    trunk_pos_[1] = trunk_pos_[1] + params_.footDistance/2;
+    trunk_pos_[1] = trunk_pos_[1] + params_.foot_distance/2;
   }
   tf2::convert(trunk_pos_, pose_msg.position);
   msg.engine_trunk_goal_abs = pose_msg;

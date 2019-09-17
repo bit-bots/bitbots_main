@@ -1,6 +1,6 @@
 <launch>
-    <include file="$(find bitbotsQuinticWalk)/launch/quintic_walk_standalone.launch"/>
+    <include file="$(find bitbots_quintic_walk)/launch/quintic_walk_standalone.launch"/>
 
-    <node name="hcm_bypass" pkg="bitbotsQuinticWalk" type="hcm_bypass.py" respawn="false" output="screen" args=""/>
+    <node name="hcm_bypass" pkg="bitbots_quintic_walk" type="hcm_bypass.py" respawn="false" output="screen" args=""/>
 
 </launch>
