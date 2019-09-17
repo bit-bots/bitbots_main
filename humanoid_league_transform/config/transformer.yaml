@@ -12,6 +12,10 @@ lines:
 goals:
   goals_topic: '/goal_in_image'
 
+goal_parts:
+  goal_parts_topic: '/goal_parts_in_image'
+  bar_height: 2.0
+
 obstacles:
   obstacles_topic: '/obstacles_in_image'
 
