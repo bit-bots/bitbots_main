@@ -8,51 +8,51 @@ https://github.com/Rhoban/model/
 namespace bitbots_quintic_walk {
 
 QuinticWalk::QuinticWalk() :
-    _footstep(0.14, true),
-    _phase(0.0),
-    _lastPhase(0.0),
-    _pauseRequested(false),
-    _leftKickRequested(false),
-    _rightKickRequested(false),
-    _params(),
-    _trunkPosAtLast(),
-    _trunkVelAtLast(),
-    _trunkAccAtLast(),
-    _trunkAxisPosAtLast(),
-    _trunkAxisVelAtLast(),
-    _trunkAxisAccAtLast(),
-    _trajs(),
-    _timePaused(0.0) {
+    footstep_(0.14, true),
+    phase_(0.0),
+    last_phase_(0.0),
+    pause_requested_(false),
+    left_kick_requested_(false),
+    right_kick_requested_(false),
+    params_(),
+    trunk_pos_at_last_(),
+    trunk_vel_at_last_(),
+    trunk_acc_at_last_(),
+    trunk_axis_pos_at_last_(),
+    trunk_axis_vel_at_last_(),
+    trunk_axis_acc_at_last_(),
+    trajs_(),
+    time_paused_(0.0) {
   // make sure to call the reset method after having the parameters
-  _trajs = trajectoriesInit();
+  trajs_ = trajectoriesInit();
 }
 
 bool QuinticWalk::updateState(double dt, const Eigen::Vector3d &orders, bool walkable_state) {
   bool orders_zero = orders[0]==0.0 && orders[1]==0.0 && orders[2]==0.0;
 
   // First check if we are currently in pause state or idle, since we don't want to update the phase in this case
-  if (_engineState=="paused") {
-    if (_timePaused > _params.pauseDuration) {
+  if (engine_state_=="paused") {
+    if (time_paused_ > params_.pauseDuration) {
       // our pause is finished, see if we can continue walking
-      if (_pauseRequested) {
+      if (pause_requested_) {
         // not yet, wait another pause duration
-        _pauseRequested = false;
-        _timePaused = 0.0;
+        pause_requested_ = false;
+        time_paused_ = 0.0;
         return false;
       } else {
         // we can continue
-        _engineState = "walking";
-        _timePaused = 0.0;
+        engine_state_ = "walking";
+        time_paused_ = 0.0;
         /*buildNormalTrajectories(orders);
         updatePhase(dt);
         return true;*/
       }
     } else {
-      _timePaused += dt;
+      time_paused_ += dt;
       return false;
     }
     // we don't have to update anything more
-  } else if (_engineState=="idle") {
+  } else if (engine_state_=="idle") {
     if (orders_zero || !walkable_state) {
       // we are in idle and are not supposed to walk. current state is fine, just do nothing
       return false;
@@ -63,83 +63,83 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d &orders, bool wal
   updatePhase(dt);
 
   // check if we will finish a half step with this update
-  bool half_step_finished = (_lastPhase < 0.5 && _phase >= 0.5) || (_lastPhase > 0.5 && _phase < 0.5);
+  bool half_step_finished = (last_phase_ < 0.5 && phase_ >= 0.5) || (last_phase_ > 0.5 && phase_ < 0.5);
 
   // small state machine
-  if (_engineState=="idle") {
+  if (engine_state_=="idle") {
     // state is idle and orders are not zero, we can start walking
     buildStartTrajectories(orders);
-    _engineState = "startMovement";
-  } else if (_engineState=="startMovement") {
+    engine_state_ = "startMovement";
+  } else if (engine_state_=="startMovement") {
     // in this state we do a single "step" where we only move the trunk
     if (half_step_finished) {
       if (orders_zero) {
-        _engineState = "stopMovement";
+        engine_state_ = "stopMovement";
         buildStopMovementTrajectories(orders);
       } else {
         //start step is finished, go to next state
         buildTrajectories(orders, false, true, false);
-        _engineState = "startStep";
+        engine_state_ = "startStep";
       }
     }
-  } else if (_engineState=="startStep") {
+  } else if (engine_state_=="startStep") {
     if (half_step_finished) {
       if (orders_zero) {
         // we have zero command vel -> we should stop
-        _engineState = "stopStep";
-        //_phase = 0.0;
+        engine_state_ = "stopStep";
+        //phase_ = 0.0;
         buildStopStepTrajectories(orders);
       } else {
         //start step is finished, go to next state
         buildNormalTrajectories(orders);
-        _engineState = "walking";
+        engine_state_ = "walking";
       }
     }
-  } else if (_engineState=="walking") {
+  } else if (engine_state_=="walking") {
     // check if a half step was finished and we are unstable
-    if (half_step_finished && _pauseRequested) {
+    if (half_step_finished && pause_requested_) {
       // go into pause
-      _engineState = "paused";
-      _pauseRequested = false;
+      engine_state_ = "paused";
+      pause_requested_ = false;
       return false;
     } else if (half_step_finished &&
-        ((_leftKickRequested && !_footstep.isLeftSupport()) || (_rightKickRequested && _footstep.isLeftSupport()))) {
+        ((left_kick_requested_ && !footstep_.isLeftSupport()) || (right_kick_requested_ && footstep_.isLeftSupport()))) {
       // lets do a kick
       buildKickTrajectories(orders);
-      _engineState = "kick";
-      _leftKickRequested = false;
-      _rightKickRequested = false;
+      engine_state_ = "kick";
+      left_kick_requested_ = false;
+      right_kick_requested_ = false;
     } else if (half_step_finished) {
       // current step is finished, lets see if we have to change state
       if (orders_zero) {
         // we have zero command vel -> we should stop
-        _engineState = "stopStep";
-        //_phase = 0.0;
+        engine_state_ = "stopStep";
+        //phase_ = 0.0;
         buildStopStepTrajectories(orders);
       } else {
         // we can keep on walking
         buildNormalTrajectories(orders);
       }
     }
-  } else if (_engineState=="kick") {
+  } else if (engine_state_=="kick") {
     // in this state we do a kick while doing a step
     if (half_step_finished) {
       //kick step is finished, go on walking
-      _engineState = "walking";
+      engine_state_ = "walking";
       buildNormalTrajectories(orders);
     }
-  } else if (_engineState=="stopStep") {
+  } else if (engine_state_=="stopStep") {
     // in this state we do a step back to get feet into idle pose
     if (half_step_finished) {
       //stop step is finished, go to stop movement state
-      _engineState = "stopMovement";
+      engine_state_ = "stopMovement";
       buildStopMovementTrajectories(orders);
     }
-  } else if (_engineState=="stopMovement") {
+  } else if (engine_state_=="stopMovement") {
     // in this state we do a "step" where we move the trunk back to idle position
     if (half_step_finished) {
       //stop movement is finished, go to idle state
-      _engineState = "idle";
+      engine_state_ = "idle";
       return false;
     }
   } else {
@@ -147,16 +147,16 @@ bool QuinticWalk::updateState(double dt, const Eigen::Vector3d &orders, bool wal
   }
 
   //Sanity check support foot state
-  if ((_phase < 0.5 && !_footstep.isLeftSupport()) ||
-      (_phase >= 0.5 && _footstep.isLeftSupport())) {
+  if ((phase_ < 0.5 && !footstep_.isLeftSupport()) ||
+      (phase_ >= 0.5 && footstep_.isLeftSupport())) {
     ROS_ERROR_THROTTLE(1,
                        "QuinticWalk exception invalid state phase= %f support= %d dt= %f",
-                       _phase,
-                       _footstep.isLeftSupport(),
+                       phase_,
+                       footstep_.isLeftSupport(),
                        dt);
     return false;
   }
-  _lastPhase = _phase;
+  last_phase_ = phase_;
 
   return true;
 }
@@ -167,42 +167,42 @@ void QuinticWalk::updatePhase(double dt) {
     if (dt==0.0) { //sometimes happens due to rounding
       dt = 0.0001;
     } else {
-      ROS_ERROR_THROTTLE(1, "QuinticWalk exception negative dt phase= %f dt= %f", _phase, dt);
+      ROS_ERROR_THROTTLE(1, "QuinticWalk exception negative dt phase= %f dt= %f", phase_, dt);
       return;
     }
   }
   //Check for too long dt
-  if (dt > 0.25/_params.freq) {
-    ROS_ERROR_THROTTLE(1, "QuinticWalk error too long dt phase= %f dt= %f", _phase, dt);
+  if (dt > 0.25/params_.freq) {
+    ROS_ERROR_THROTTLE(1, "QuinticWalk error too long dt phase= %f dt= %f", phase_, dt);
     return;
   }
 
   //Update the phase
-  _phase += dt*_params.freq;
+  phase_ += dt*params_.freq;
 
   // reset to 0 if step complete
-  if (_phase > 1.0) {
-    _phase = 0.0;
+  if (phase_ > 1.0) {
+    phase_ = 0.0;
   }
 }
 
 void QuinticWalk::endStep() {
   // ends the step earlier, e.g. when foot has already contact to ground
-  if (_phase < 0.5) {
-    _phase = 0.5;
+  if (phase_ < 0.5) {
+    phase_ = 0.5;
   } else {
-    _phase = 0.0;
+    phase_ = 0.0;
   }
 }
 
 void QuinticWalk::reset() {
-  _engineState = "idle";
-  _phase = 0.0;
-  _timePaused = 0.0;
+  engine_state_ = "idle";
+  phase_ = 0.0;
+  time_paused_ = 0.0;
 
   //Initialize the footstep
-  _footstep.setFootDistance(_params.footDistance);
-  _footstep.reset(false);
+  footstep_.setFootDistance(params_.footDistance);
+  footstep_.reset(false);
   //Reset the trunk saved state
   resetTrunkLastState();
 }
@@ -214,71 +214,71 @@ void QuinticWalk::saveCurrentTrunkState() {
 
   // compute current point in time to save state
   // by multiplying the half_period time with the advancement of period time
-  double half_period = 1.0/(2.0*_params.freq);
+  double half_period = 1.0/(2.0*params_.freq);
   double factor;
-  if (_lastPhase < 0.5) {
-    factor = _lastPhase/0.5;
+  if (last_phase_ < 0.5) {
+    factor = last_phase_/0.5;
   } else {
-    factor = _lastPhase;
+    factor = last_phase_;
   }
   double period_time = half_period*factor;
 
   Eigen::Vector2d trunk_pos(
-      _trajs.get("trunk_pos_x").pos(period_time),
-      _trajs.get("trunk_pos_y").pos(period_time));
+      trajs_.get("trunk_pos_x").pos(period_time),
+      trajs_.get("trunk_pos_y").pos(period_time));
   Eigen::Vector2d trunk_vel(
-      _trajs.get("trunk_pos_x").vel(period_time),
-      _trajs.get("trunk_pos_y").vel(period_time));
+      trajs_.get("trunk_pos_x").vel(period_time),
+      trajs_.get("trunk_pos_y").vel(period_time));
   Eigen::Vector2d trunk_acc(
-      _trajs.get("trunk_pos_x").acc(period_time),
-      _trajs.get("trunk_pos_y").acc(period_time));
+      trajs_.get("trunk_pos_x").acc(period_time),
+      trajs_.get("trunk_pos_y").acc(period_time));
   //Convert in next support foot frame
-  trunk_pos.x() -= _footstep.getNext().x();
-  trunk_pos.y() -= _footstep.getNext().y();
+  trunk_pos.x() -= footstep_.getNext().x();
+  trunk_pos.y() -= footstep_.getNext().y();
   trunk_pos = Eigen::Rotation2Dd(
-      -_footstep.getNext().z()).toRotationMatrix()
+      -footstep_.getNext().z()).toRotationMatrix()
       *trunk_pos;
   trunk_vel = Eigen::Rotation2Dd(
-      -_footstep.getNext().z()).toRotationMatrix()
+      -footstep_.getNext().z()).toRotationMatrix()
       *trunk_vel;
   trunk_acc = Eigen::Rotation2Dd(
-      -_footstep.getNext().z()).toRotationMatrix()
+      -footstep_.getNext().z()).toRotationMatrix()
       *trunk_acc;
   //Save state
-  _trunkPosAtLast.x() = trunk_pos.x();
-  _trunkPosAtLast.y() = trunk_pos.y();
-  _trunkVelAtLast.x() = trunk_vel.x();
-  _trunkVelAtLast.y() = trunk_vel.y();
-  _trunkAccAtLast.x() = trunk_acc.x();
-  _trunkAccAtLast.y() = trunk_acc.y();
+  trunk_pos_at_last_.x() = trunk_pos.x();
+  trunk_pos_at_last_.y() = trunk_pos.y();
+  trunk_vel_at_last_.x() = trunk_vel.x();
+  trunk_vel_at_last_.y() = trunk_vel.y();
+  trunk_acc_at_last_.x() = trunk_acc.x();
+  trunk_acc_at_last_.y() = trunk_acc.y();
   //No transformation for height
-  _trunkPosAtLast.z() = _trajs.get("trunk_pos_z").pos(period_time);
-  _trunkVelAtLast.z() = _trajs.get("trunk_pos_z").vel(period_time);
-  _trunkAccAtLast.z() = _trajs.get("trunk_pos_z").acc(period_time);
+  trunk_pos_at_last_.z() = trajs_.get("trunk_pos_z").pos(period_time);
+  trunk_vel_at_last_.z() = trajs_.get("trunk_pos_z").vel(period_time);
+  trunk_acc_at_last_.z() = trajs_.get("trunk_pos_z").acc(period_time);
   //Evaluate and save trunk orientation
   //in next support foot frame
   Eigen::Vector3d trunk_axis(
-      _trajs.get("trunk_axis_x").pos(period_time),
-      _trajs.get("trunk_axis_y").pos(period_time),
-      _trajs.get("trunk_axis_z").pos(period_time));
+      trajs_.get("trunk_axis_x").pos(period_time),
+      trajs_.get("trunk_axis_y").pos(period_time),
+      trajs_.get("trunk_axis_z").pos(period_time));
   //Convert in intrinsic euler angle
   Eigen::Matrix3d trunk_mat = bitbots_splines::AxisToMatrix(trunk_axis);
   Eigen::Vector3d trunk_euler = bitbots_splines::MatrixToEulerIntrinsic(trunk_mat);
   //Transform to next support foot
-  trunk_euler.z() -= _footstep.getNext().z();
+  trunk_euler.z() -= footstep_.getNext().z();
   //Reconvert to axis and save it
   trunk_mat = bitbots_splines::EulerIntrinsicToMatrix(trunk_euler);
   trunk_axis = bitbots_splines::MatrixToAxis(trunk_mat);
-  _trunkAxisPosAtLast = trunk_axis;
+  trunk_axis_pos_at_last_ = trunk_axis;
   //Evaluate trunk orientation velocity
   //and acceleration without frame
   //transformation
-  _trunkAxisVelAtLast.x() = _trajs.get("trunk_axis_x").vel(period_time);
-  _trunkAxisVelAtLast.y() = _trajs.get("trunk_axis_y").vel(period_time);
-  _trunkAxisVelAtLast.z() = _trajs.get("trunk_axis_z").vel(period_time);
-  _trunkAxisAccAtLast.x() = _trajs.get("trunk_axis_x").acc(period_time);
-  _trunkAxisAccAtLast.y() = _trajs.get("trunk_axis_y").acc(period_time);
-  _trunkAxisAccAtLast.z() = _trajs.get("trunk_axis_z").acc(period_time);
+  trunk_axis_vel_at_last_.x() = trajs_.get("trunk_axis_x").vel(period_time);
+  trunk_axis_vel_at_last_.y() = trajs_.get("trunk_axis_y").vel(period_time);
+  trunk_axis_vel_at_last_.z() = trajs_.get("trunk_axis_z").vel(period_time);
+  trunk_axis_acc_at_last_.x() = trajs_.get("trunk_axis_x").acc(period_time);
+  trunk_axis_acc_at_last_.y() = trajs_.get("trunk_axis_y").acc(period_time);
+  trunk_axis_acc_at_last_.z() = trajs_.get("trunk_axis_z").acc(period_time);
 }
 
 void QuinticWalk::buildNormalTrajectories(const Eigen::Vector3d &orders) {
@@ -306,37 +306,37 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d &orders, bool start_mo
   if (!start_movement) {
     saveCurrentTrunkState();
   } else {
-    _trunkPosAtLast.y() -= _footstep.getNext().y();
+    trunk_pos_at_last_.y() -= footstep_.getNext().y();
     //trunkPos = Eigen::Rotation2Dd(-_footstep.getNext().z()).toRotationMatrix() * trunkPos;
   }
 
   if (start_movement) {
     // update support foot and compute odometry
-    _footstep.stepFromOrders(Eigen::Vector3d::Zero());
+    footstep_.stepFromOrders(Eigen::Vector3d::Zero());
   } else {
-    _footstep.stepFromOrders(orders);
+    footstep_.stepFromOrders(orders);
   }
 
   //Reset the trajectories
-  _trajs = trajectoriesInit();
+  trajs_ = trajectoriesInit();
   //Set up the trajectories for the half cycle (single step)
-  double half_period = 1.0/(2.0*_params.freq);
+  double half_period = 1.0/(2.0*params_.freq);
   // full period (double step) is needed for trunk splines
   double period = 2.0*half_period;
 
   //Time length of double and single support phase during the half cycle
-  double double_support_length = _params.doubleSupportRatio*half_period;
+  double double_support_length = params_.doubleSupportRatio*half_period;
   double single_support_length = half_period - double_support_length;
 
   //Sign of support foot with respect to lateral
-  double support_sign = (_footstep.isLeftSupport() ? 1.0 : -1.0);
+  double support_sign = (footstep_.isLeftSupport() ? 1.0 : -1.0);
 
   //The trunk trajectory is defined for a
   //complete cycle to handle trunk phase shift
   //Trunk phase shift is done due to the length of the double
   //support phase and can be adjusted optionally by a parameter
   // 0.5halfPeriod to be acyclic to the feet, 0.5doubleSupportLength to keep the double support phase centered between feet
-  double time_shift = -0.5*half_period + 0.5*double_support_length + _params.trunkPhase*half_period;
+  double time_shift = -0.5*half_period + 0.5*double_support_length + params_.trunkPhase*half_period;
 
 
   //Only move the trunk on the first half cycle after a walk enable
@@ -351,99 +351,99 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d &orders, bool start_mo
   point("is_double_support", half_period, 0.0);
 
   //Set support foot
-  point("is_left_support_foot", 0.0, _footstep.isLeftSupport());
-  point("is_left_support_foot", half_period, _footstep.isLeftSupport());
+  point("is_left_support_foot", 0.0, footstep_.isLeftSupport());
+  point("is_left_support_foot", half_period, footstep_.isLeftSupport());
 
   //Flying foot position
-  point("foot_pos_x", 0.0, _footstep.getLast().x());
-  point("foot_pos_x", double_support_length, _footstep.getLast().x());
+  point("foot_pos_x", 0.0, footstep_.getLast().x());
+  point("foot_pos_x", double_support_length, footstep_.getLast().x());
   if (kick_step) {
-    point("foot_pos_x", double_support_length + single_support_length*_params.kickPhase,
-          _footstep.getNext().x() + _params.kickLength,
-          _params.kickVel);
+    point("foot_pos_x", double_support_length + single_support_length*params_.kickPhase,
+          footstep_.getNext().x() + params_.kickLength,
+          params_.kickVel);
   } else {
     point("foot_pos_x",
-          double_support_length + single_support_length*_params.footPutDownPhase*_params.footOvershootPhase,
-          _footstep.getNext().x() +
-              _footstep.getNext().x()*_params.footOvershootRatio);
+          double_support_length + single_support_length*params_.footPutDownPhase*params_.footOvershootPhase,
+          footstep_.getNext().x() +
+              footstep_.getNext().x()*params_.footOvershootRatio);
   }
-  point("foot_pos_x", double_support_length + single_support_length*_params.footPutDownPhase,
-        _footstep.getNext().x());
-  point("foot_pos_x", half_period, _footstep.getNext().x());
+  point("foot_pos_x", double_support_length + single_support_length*params_.footPutDownPhase,
+        footstep_.getNext().x());
+  point("foot_pos_x", half_period, footstep_.getNext().x());
 
-  point("foot_pos_y", 0.0, _footstep.getLast().y());
-  point("foot_pos_y", double_support_length, _footstep.getLast().y());
-  point("foot_pos_y", double_support_length + single_support_length*_params.footPutDownPhase*_params.footOvershootPhase,
-        _footstep.getNext().y() + (_footstep.getNext().y() - _footstep.getLast().y())*_params.footOvershootRatio);
-  point("foot_pos_y", double_support_length + single_support_length*_params.footPutDownPhase,
-        _footstep.getNext().y());
-  point("foot_pos_y", half_period, _footstep.getNext().y());
+  point("foot_pos_y", 0.0, footstep_.getLast().y());
+  point("foot_pos_y", double_support_length, footstep_.getLast().y());
+  point("foot_pos_y", double_support_length + single_support_length*params_.footPutDownPhase*params_.footOvershootPhase,
+        footstep_.getNext().y() + (footstep_.getNext().y() - footstep_.getLast().y())*params_.footOvershootRatio);
+  point("foot_pos_y", double_support_length + single_support_length*params_.footPutDownPhase,
+        footstep_.getNext().y());
+  point("foot_pos_y", half_period, footstep_.getNext().y());
 
   point("foot_pos_z", 0.0, 0.0);
   point("foot_pos_z", double_support_length, 0.0);
   point("foot_pos_z",
-        double_support_length + single_support_length*_params.footApexPhase - 0.5*_params.footZPause*single_support_length,
-        _params.footRise);
+        double_support_length + single_support_length*params_.footApexPhase - 0.5*params_.footZPause*single_support_length,
+        params_.footRise);
   point("foot_pos_z",
-        double_support_length + single_support_length*_params.footApexPhase + 0.5*_params.footZPause*single_support_length,
-        _params.footRise);
-  point("foot_pos_z", double_support_length + single_support_length*_params.footPutDownPhase,
-        _params.footPutDownZOffset);
+        double_support_length + single_support_length*params_.footApexPhase + 0.5*params_.footZPause*single_support_length,
+        params_.footRise);
+  point("foot_pos_z", double_support_length + single_support_length*params_.footPutDownPhase,
+        params_.footPutDownZOffset);
   point("foot_pos_z", half_period, 0.0);
 
   //Flying foot orientation
   point("foot_axis_x", 0.0, 0.0);
   point("foot_axis_x", double_support_length + 0.1*single_support_length,
         0.0);
-  point("foot_axis_x", double_support_length + single_support_length*_params.footPutDownPhase,
-        _params.footPutDownRollOffset*support_sign);
+  point("foot_axis_x", double_support_length + single_support_length*params_.footPutDownPhase,
+        params_.footPutDownRollOffset*support_sign);
   point("foot_axis_x", half_period, 0.0);
 
   point("foot_axis_y", 0.0, 0.0);
   point("foot_axis_y", half_period, 0.0);
 
-  point("foot_axis_z", 0.0, _footstep.getLast().z());
-  point("foot_axis_z", double_support_length, _footstep.getLast().z());
-  point("foot_axis_z", double_support_length + single_support_length*_params.footPutDownPhase,
-        _footstep.getNext().z());
-  point("foot_axis_z", half_period, _footstep.getNext().z());
+  point("foot_axis_z", 0.0, footstep_.getLast().z());
+  point("foot_axis_z", double_support_length, footstep_.getLast().z());
+  point("foot_axis_z", double_support_length + single_support_length*params_.footPutDownPhase,
+        footstep_.getNext().z());
+  point("foot_axis_z", half_period, footstep_.getNext().z());
 
 
   //Half pause length of trunk swing
   //lateral oscillation
-  double pauseLength = 0.5*_params.trunkPause*half_period;
+  double pause_length = 0.5*params_.trunkPause*half_period;
 
   //Trunk support foot and next
   //support foot external
   //oscillating position
-  Eigen::Vector2d trunkPointSupport(
-      _params.trunkXOffset
-          + _params.trunkXOffsetPCoefForward*_footstep.getNext().x()
-          + _params.trunkXOffsetPCoefTurn*fabs(_footstep.getNext().z()),
-      _params.trunkYOffset);
-  Eigen::Vector2d trunkPointNext(
-      _footstep.getNext().x() + _params.trunkXOffset
-          + _params.trunkXOffsetPCoefForward*_footstep.getNext().x()
-          + _params.trunkXOffsetPCoefTurn*fabs(_footstep.getNext().z()),
-      _footstep.getNext().y() + _params.trunkYOffset);
+  Eigen::Vector2d trunk_point_support(
+      params_.trunkXOffset
+          + params_.trunkXOffsetPCoefForward*footstep_.getNext().x()
+          + params_.trunkXOffsetPCoefTurn*fabs(footstep_.getNext().z()),
+      params_.trunkYOffset);
+  Eigen::Vector2d trunk_point_next(
+      footstep_.getNext().x() + params_.trunkXOffset
+          + params_.trunkXOffsetPCoefForward*footstep_.getNext().x()
+          + params_.trunkXOffsetPCoefTurn*fabs(footstep_.getNext().z()),
+      footstep_.getNext().y() + params_.trunkYOffset);
   //Trunk middle neutral (no swing) position
-  Eigen::Vector2d trunkPointMiddle =
-      0.5*trunkPointSupport + 0.5*trunkPointNext;
+  Eigen::Vector2d trunk_point_middle =
+      0.5*trunk_point_support + 0.5*trunk_point_next;
   //Trunk vector from middle to support apex
-  Eigen::Vector2d trunkVect =
-      trunkPointSupport - trunkPointMiddle;
+  Eigen::Vector2d trunk_vect =
+      trunk_point_support - trunk_point_middle;
   //Apply swing amplitude ratio
-  trunkVect.y() *= _params.trunkSwing;
+  trunk_vect.y() *= params_.trunkSwing;
   //Trunk support and next apex position
-  Eigen::Vector2d trunkApexSupport =
-      trunkPointMiddle + trunkVect;
-  Eigen::Vector2d trunkApexNext =
-      trunkPointMiddle - trunkVect;
+  Eigen::Vector2d trunk_apex_support =
+      trunk_point_middle + trunk_vect;
+  Eigen::Vector2d trunk_apex_next =
+      trunk_point_middle - trunk_vect;
   //Trunk forward velocity
-  double trunkVelSupport =
-      (_footstep.getNext().x() - _footstep.getLast().x())/period;
-  double trunkVelNext =
-      _footstep.getNext().x()/half_period;
+  double trunk_vel_support =
+      (footstep_.getNext().x() - footstep_.getLast().x())/period;
+  double trunk_vel_next =
+      footstep_.getNext().x()/half_period;
 
   //Trunk position
   if (start_step) {
@@ -453,337 +453,337 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d &orders, bool start_mo
           0.0);
   } else {
     point("trunk_pos_x", 0.0,
-          _trunkPosAtLast.x(),
-          _trunkVelAtLast.x(),
-          _trunkAccAtLast.x());
+          trunk_pos_at_last_.x(),
+          trunk_vel_at_last_.x(),
+          trunk_acc_at_last_.x());
     point("trunk_pos_x", half_period + time_shift,
-          trunkApexSupport.x(),
-          trunkVelSupport);
+          trunk_apex_support.x(),
+          trunk_vel_support);
   }
   point("trunk_pos_x", period + time_shift,
-        trunkApexNext.x(),
-        trunkVelNext);
+        trunk_apex_next.x(),
+        trunk_vel_next);
 
   point("trunk_pos_y", 0.0,
-        _trunkPosAtLast.y(),
-        _trunkVelAtLast.y(),
-        _trunkAccAtLast.y());
+        trunk_pos_at_last_.y(),
+        trunk_vel_at_last_.y(),
+        trunk_acc_at_last_.y());
   if (start_step || start_movement) {
-    point("trunk_pos_y", half_period + time_shift - pauseLength,
-          trunkPointMiddle.y() + trunkVect.y()*_params.firstStepSwingFactor);
-    point("trunk_pos_y", half_period + time_shift + pauseLength,
-          trunkPointMiddle.y() + trunkVect.y()*_params.firstStepSwingFactor);
-    point("trunk_pos_y", period + time_shift - pauseLength,
-          trunkPointMiddle.y() - trunkVect.y()*_params.firstStepSwingFactor);
-    point("trunk_pos_y", period + time_shift + pauseLength,
-          trunkPointMiddle.y() - trunkVect.y()*_params.firstStepSwingFactor);
+    point("trunk_pos_y", half_period + time_shift - pause_length,
+          trunk_point_middle.y() + trunk_vect.y()*params_.firstStepSwingFactor);
+    point("trunk_pos_y", half_period + time_shift + pause_length,
+          trunk_point_middle.y() + trunk_vect.y()*params_.firstStepSwingFactor);
+    point("trunk_pos_y", period + time_shift - pause_length,
+          trunk_point_middle.y() - trunk_vect.y()*params_.firstStepSwingFactor);
+    point("trunk_pos_y", period + time_shift + pause_length,
+          trunk_point_middle.y() - trunk_vect.y()*params_.firstStepSwingFactor);
   } else {
-    point("trunk_pos_y", half_period + time_shift - pauseLength,
-          trunkApexSupport.y());
-    point("trunk_pos_y", half_period + time_shift + pauseLength,
-          trunkApexSupport.y());
-    point("trunk_pos_y", period + time_shift - pauseLength,
-          trunkApexNext.y());
-    point("trunk_pos_y", period + time_shift + pauseLength,
-          trunkApexNext.y());
+    point("trunk_pos_y", half_period + time_shift - pause_length,
+          trunk_apex_support.y());
+    point("trunk_pos_y", half_period + time_shift + pause_length,
+          trunk_apex_support.y());
+    point("trunk_pos_y", period + time_shift - pause_length,
+          trunk_apex_next.y());
+    point("trunk_pos_y", period + time_shift + pause_length,
+          trunk_apex_next.y());
   }
 
   point("trunk_pos_z", 0.0,
-        _trunkPosAtLast.z(),
-        _trunkVelAtLast.z(),
-        _trunkAccAtLast.z());
+        trunk_pos_at_last_.z(),
+        trunk_vel_at_last_.z(),
+        trunk_acc_at_last_.z());
   point("trunk_pos_z", half_period + time_shift,
-        _params.trunkHeight);
+        params_.trunkHeight);
   point("trunk_pos_z", period + time_shift,
-        _params.trunkHeight);
+        params_.trunkHeight);
 
   //Define trunk yaw target
   //orientation position and velocity
   //in euler angle and convertion
   //to axis vector
-  Eigen::Vector3d eulerAtSuport(
+  Eigen::Vector3d euler_at_suport(
       0.0,
-      _params.trunkPitch
-          + _params.trunkPitchPCoefForward*_footstep.getNext().x()
-          + _params.trunkPitchPCoefTurn*fabs(_footstep.getNext().z()),
-      0.5*_footstep.getLast().z() + 0.5*_footstep.getNext().z());
-  Eigen::Vector3d eulerAtNext(
+      params_.trunkPitch
+          + params_.trunkPitchPCoefForward*footstep_.getNext().x()
+          + params_.trunkPitchPCoefTurn*fabs(footstep_.getNext().z()),
+      0.5*footstep_.getLast().z() + 0.5*footstep_.getNext().z());
+  Eigen::Vector3d euler_at_next(
       0.0,
-      _params.trunkPitch
-          + _params.trunkPitchPCoefForward*_footstep.getNext().x()
-          + _params.trunkPitchPCoefTurn*fabs(_footstep.getNext().z()),
-      _footstep.getNext().z());
-  Eigen::Matrix3d matAtSupport = bitbots_splines::EulerIntrinsicToMatrix(eulerAtSuport);
-  Eigen::Matrix3d matAtNext = bitbots_splines::EulerIntrinsicToMatrix(eulerAtNext);
-  Eigen::Vector3d axisAtSupport = bitbots_splines::MatrixToAxis(matAtSupport);
-  Eigen::Vector3d axisAtNext = bitbots_splines::MatrixToAxis(matAtNext);
-  Eigen::Vector3d axisVel(
+      params_.trunkPitch
+          + params_.trunkPitchPCoefForward*footstep_.getNext().x()
+          + params_.trunkPitchPCoefTurn*fabs(footstep_.getNext().z()),
+      footstep_.getNext().z());
+  Eigen::Matrix3d mat_at_support = bitbots_splines::EulerIntrinsicToMatrix(euler_at_suport);
+  Eigen::Matrix3d mat_at_next = bitbots_splines::EulerIntrinsicToMatrix(euler_at_next);
+  Eigen::Vector3d axis_at_support = bitbots_splines::MatrixToAxis(mat_at_support);
+  Eigen::Vector3d axis_at_next = bitbots_splines::MatrixToAxis(mat_at_next);
+  Eigen::Vector3d axis_vel(
       0.0, 0.0,
       bitbots_splines::AngleDistance(
-          _footstep.getLast().z(),
-          _footstep.getNext().z())/period);
+          footstep_.getLast().z(),
+          footstep_.getNext().z())/period);
 
   //Trunk orientation
   point("trunk_axis_x", 0.0,
-        _trunkAxisPosAtLast.x(),
-        _trunkAxisVelAtLast.x(),
-        _trunkAxisAccAtLast.x());
+        trunk_axis_pos_at_last_.x(),
+        trunk_axis_vel_at_last_.x(),
+        trunk_axis_acc_at_last_.x());
   point("trunk_axis_x", half_period + time_shift,
-        axisAtSupport.x(),
-        axisVel.x());
+        axis_at_support.x(),
+        axis_vel.x());
   point("trunk_axis_x", period + time_shift,
-        axisAtNext.x(),
-        axisVel.x());
+        axis_at_next.x(),
+        axis_vel.x());
 
   point("trunk_axis_y", 0.0,
-        _trunkAxisPosAtLast.y(),
-        _trunkAxisVelAtLast.y(),
-        _trunkAxisAccAtLast.y());
+        trunk_axis_pos_at_last_.y(),
+        trunk_axis_vel_at_last_.y(),
+        trunk_axis_acc_at_last_.y());
   point("trunk_axis_y", half_period + time_shift,
-        axisAtSupport.y(),
-        axisVel.y());
+        axis_at_support.y(),
+        axis_vel.y());
   point("trunk_axis_y", period + time_shift,
-        axisAtNext.y(),
-        axisVel.y());
+        axis_at_next.y(),
+        axis_vel.y());
 
   point("trunk_axis_z", 0.0,
-        _trunkAxisPosAtLast.z(),
-        _trunkAxisVelAtLast.z(),
-        _trunkAxisAccAtLast.z());
+        trunk_axis_pos_at_last_.z(),
+        trunk_axis_vel_at_last_.z(),
+        trunk_axis_acc_at_last_.z());
   point("trunk_axis_z", half_period + time_shift,
-        axisAtSupport.z(),
-        axisVel.z());
+        axis_at_support.z(),
+        axis_vel.z());
   point("trunk_axis_z", period + time_shift,
-        axisAtNext.z(),
-        axisVel.z());
+        axis_at_next.z(),
+        axis_vel.z());
 }
 
-void QuinticWalk::buildWalkDisableTrajectories(const Eigen::Vector3d &orders, bool footInIdlePosition) {
+void QuinticWalk::buildWalkDisableTrajectories(const Eigen::Vector3d &orders, bool foot_in_idle_position) {
   // save the current trunk state to use it later
   saveCurrentTrunkState();
   // update support foot and compute odometry
-  _footstep.stepFromOrders(orders);
+  footstep_.stepFromOrders(orders);
 
   //Reset the trajectories
-  _trajs = trajectoriesInit();
+  trajs_ = trajectoriesInit();
 
   //Set up the trajectories
   //for the half cycle
-  double halfPeriod = 1.0/(2.0*_params.freq);
+  double half_period = 1.0/(2.0*params_.freq);
 
   //Time length of double and single
   //support phase during the half cycle
-  double doubleSupportLength = _params.doubleSupportRatio*halfPeriod;
-  double singleSupportLength = halfPeriod - doubleSupportLength;
+  double double_support_length = params_.doubleSupportRatio*half_period;
+  double single_support_length = half_period - double_support_length;
 
   //Sign of support foot with
   //respect to lateral
-  double supportSign = (_footstep.isLeftSupport() ? 1.0 : -1.0);
+  double support_sign = (footstep_.isLeftSupport() ? 1.0 : -1.0);
 
   //Set double support phase
-  double isDoubleSupport = (footInIdlePosition ? 1.0 : 0.0);
-  point("is_double_support", 0.0, isDoubleSupport);
-  point("is_double_support", halfPeriod, isDoubleSupport);
+  double is_double_support = (foot_in_idle_position ? 1.0 : 0.0);
+  point("is_double_support", 0.0, is_double_support);
+  point("is_double_support", half_period, is_double_support);
 
   //Set support foot
-  point("is_left_support_foot", 0.0, _footstep.isLeftSupport());
-  point("is_left_support_foot", halfPeriod, _footstep.isLeftSupport());
+  point("is_left_support_foot", 0.0, footstep_.isLeftSupport());
+  point("is_left_support_foot", half_period, footstep_.isLeftSupport());
 
   //Flying foot position
   point("foot_pos_x", 0.0,
-        _footstep.getLast().x());
-  point("foot_pos_x", doubleSupportLength,
-        _footstep.getLast().x());
-  point("foot_pos_x", doubleSupportLength + singleSupportLength*_params.footPutDownPhase*_params.footOvershootPhase,
-        0.0 + (0.0 - _footstep.getLast().x())*_params.footOvershootRatio);
-  point("foot_pos_x", doubleSupportLength + singleSupportLength*_params.footPutDownPhase,
+        footstep_.getLast().x());
+  point("foot_pos_x", double_support_length,
+        footstep_.getLast().x());
+  point("foot_pos_x", double_support_length + single_support_length*params_.footPutDownPhase*params_.footOvershootPhase,
+        0.0 + (0.0 - footstep_.getLast().x())*params_.footOvershootRatio);
+  point("foot_pos_x", double_support_length + single_support_length*params_.footPutDownPhase,
         0.0);
-  point("foot_pos_x", halfPeriod,
+  point("foot_pos_x", half_period,
         0.0);
 
   point("foot_pos_y", 0.0,
-        _footstep.getLast().y());
-  point("foot_pos_y", doubleSupportLength,
-        _footstep.getLast().y());
-  point("foot_pos_y", doubleSupportLength + singleSupportLength*_params.footPutDownPhase*_params.footOvershootPhase,
-        -supportSign*_params.footDistance
-            + (-supportSign*_params.footDistance - _footstep.getLast().y())*_params.footOvershootRatio);
-  point("foot_pos_x", doubleSupportLength + singleSupportLength*_params.footPutDownPhase,
-        -supportSign*_params.footDistance);
-  point("foot_pos_y", halfPeriod,
-        -supportSign*_params.footDistance);
+        footstep_.getLast().y());
+  point("foot_pos_y", double_support_length,
+        footstep_.getLast().y());
+  point("foot_pos_y", double_support_length + single_support_length*params_.footPutDownPhase*params_.footOvershootPhase,
+        -support_sign*params_.footDistance
+            + (-support_sign*params_.footDistance - footstep_.getLast().y())*params_.footOvershootRatio);
+  point("foot_pos_x", double_support_length + single_support_length*params_.footPutDownPhase,
+        -support_sign*params_.footDistance);
+  point("foot_pos_y", half_period,
+        -support_sign*params_.footDistance);
 
   //If the walk has just been disabled,
   //make one single step to neutral pose
-  if (!footInIdlePosition) {
+  if (!foot_in_idle_position) {
     point("foot_pos_z", 0.0, 0.0);
-    point("foot_pos_z", doubleSupportLength, 0.0);
+    point("foot_pos_z", double_support_length, 0.0);
     point("foot_pos_z",
-          doubleSupportLength + singleSupportLength*_params.footApexPhase - 0.5*_params.footZPause*singleSupportLength,
-          _params.footRise);
+          double_support_length + single_support_length*params_.footApexPhase - 0.5*params_.footZPause*single_support_length,
+          params_.footRise);
     point("foot_pos_z",
-          doubleSupportLength + singleSupportLength*_params.footApexPhase + 0.5*_params.footZPause*singleSupportLength,
-          _params.footRise);
-    point("foot_pos_z", doubleSupportLength + singleSupportLength*_params.footPutDownPhase,
-          _params.footPutDownZOffset);
-    point("foot_pos_z", halfPeriod,
+          double_support_length + single_support_length*params_.footApexPhase + 0.5*params_.footZPause*single_support_length,
+          params_.footRise);
+    point("foot_pos_z", double_support_length + single_support_length*params_.footPutDownPhase,
+          params_.footPutDownZOffset);
+    point("foot_pos_z", half_period,
           0.0);
   } else {
     //dont move the foot in last single step before stop since we only move the trunk back to the center
     point("foot_pos_z", 0.0, 0.0);
-    point("foot_pos_z", halfPeriod, 0.0);
+    point("foot_pos_z", half_period, 0.0);
   }
   //Flying foot orientation
   point("foot_axis_x", 0.0, 0.0);
-  point("foot_axis_x", halfPeriod, 0.0);
+  point("foot_axis_x", half_period, 0.0);
 
   point("foot_axis_y", 0.0, 0.0);
-  point("foot_axis_y", halfPeriod, 0.0);
+  point("foot_axis_y", half_period, 0.0);
 
-  point("foot_axis_z", 0.0, _footstep.getLast().z());
-  point("foot_axis_z", doubleSupportLength,
-        _footstep.getLast().z());
-  point("foot_axis_z", doubleSupportLength + singleSupportLength*_params.footPutDownPhase,
+  point("foot_axis_z", 0.0, footstep_.getLast().z());
+  point("foot_axis_z", double_support_length,
+        footstep_.getLast().z());
+  point("foot_axis_z", double_support_length + single_support_length*params_.footPutDownPhase,
         0.0);
-  point("foot_axis_z", halfPeriod, 0.0);
+  point("foot_axis_z", half_period, 0.0);
 
   //Trunk position
   point("trunk_pos_x", 0.0,
-        _trunkPosAtLast.x(),
-        _trunkVelAtLast.x(),
-        _trunkAccAtLast.x());
-  point("trunk_pos_x", halfPeriod,
-        _params.trunkXOffset);
+        trunk_pos_at_last_.x(),
+        trunk_vel_at_last_.x(),
+        trunk_acc_at_last_.x());
+  point("trunk_pos_x", half_period,
+        params_.trunkXOffset);
 
   point("trunk_pos_y", 0.0,
-        _trunkPosAtLast.y(),
-        _trunkVelAtLast.y(),
-        _trunkAccAtLast.y());
-  point("trunk_pos_y", halfPeriod,
-        -supportSign*0.5*_params.footDistance + _params.trunkYOffset);
+        trunk_pos_at_last_.y(),
+        trunk_vel_at_last_.y(),
+        trunk_acc_at_last_.y());
+  point("trunk_pos_y", half_period,
+        -support_sign*0.5*params_.footDistance + params_.trunkYOffset);
 
   point("trunk_pos_z", 0.0,
-        _trunkPosAtLast.z(),
-        _trunkVelAtLast.z(),
-        _trunkAccAtLast.z());
-  point("trunk_pos_z", halfPeriod,
-        _params.trunkHeight);
+        trunk_pos_at_last_.z(),
+        trunk_vel_at_last_.z(),
+        trunk_acc_at_last_.z());
+  point("trunk_pos_z", half_period,
+        params_.trunkHeight);
   //Trunk orientation
   point("trunk_axis_x", 0.0,
-        _trunkAxisPosAtLast.x(),
-        _trunkAxisVelAtLast.x(),
-        _trunkAxisAccAtLast.x());
-  point("trunk_axis_x", halfPeriod, 0.0);
+        trunk_axis_pos_at_last_.x(),
+        trunk_axis_vel_at_last_.x(),
+        trunk_axis_acc_at_last_.x());
+  point("trunk_axis_x", half_period, 0.0);
   point("trunk_axis_y", 0.0,
-        _trunkAxisPosAtLast.y(),
-        _trunkAxisVelAtLast.y(),
-        _trunkAxisAccAtLast.y());
-  point("trunk_axis_y", halfPeriod,
-        _params.trunkPitch);
+        trunk_axis_pos_at_last_.y(),
+        trunk_axis_vel_at_last_.y(),
+        trunk_axis_acc_at_last_.y());
+  point("trunk_axis_y", half_period,
+        params_.trunkPitch);
   point("trunk_axis_z", 0.0,
-        _trunkAxisPosAtLast.z(),
-        _trunkAxisVelAtLast.z(),
-        _trunkAxisAccAtLast.z());
-  point("trunk_axis_z", halfPeriod,
+        trunk_axis_pos_at_last_.z(),
+        trunk_axis_vel_at_last_.z(),
+        trunk_axis_acc_at_last_.z());
+  point("trunk_axis_z", half_period,
         0.0);
 }
 
 void QuinticWalk::resetTrunkLastState() {
-  if (_footstep.isLeftSupport()) {
-    _trunkPosAtLast <<
-                    _params.trunkXOffset,
-        -_params.footDistance/2.0 + _params.trunkYOffset,
-        _params.trunkHeight;
+  if (footstep_.isLeftSupport()) {
+    trunk_pos_at_last_ <<
+                       params_.trunkXOffset,
+        -params_.footDistance/2.0 + params_.trunkYOffset,
+        params_.trunkHeight;
   } else {
-    _trunkPosAtLast <<
-                    _params.trunkXOffset,
-        _params.footDistance/2.0 + _params.trunkYOffset,
-        _params.trunkHeight;
+    trunk_pos_at_last_ <<
+                       params_.trunkXOffset,
+        params_.footDistance/2.0 + params_.trunkYOffset,
+        params_.trunkHeight;
   }
-  _trunkVelAtLast.setZero();
-  _trunkAccAtLast.setZero();
-  _trunkAxisPosAtLast << 0.0, _params.trunkPitch, 0.0;
-  _trunkAxisVelAtLast.setZero();
-  _trunkAxisAccAtLast.setZero();
+  trunk_vel_at_last_.setZero();
+  trunk_acc_at_last_.setZero();
+  trunk_axis_pos_at_last_ << 0.0, params_.trunkPitch, 0.0;
+  trunk_axis_vel_at_last_.setZero();
+  trunk_axis_acc_at_last_.setZero();
 }
 
-void QuinticWalk::computeCartesianPosition(Eigen::Vector3d &trunkPos,
-                                           Eigen::Vector3d &trunkAxis,
-                                           Eigen::Vector3d &footPos,
-                                           Eigen::Vector3d &footAxis,
-                                           bool &isLeftsupportFoot) {
+void QuinticWalk::computeCartesianPosition(Eigen::Vector3d &trunk_pos,
+                                           Eigen::Vector3d &trunk_axis,
+                                           Eigen::Vector3d &foot_pos,
+                                           Eigen::Vector3d &foot_axis,
+                                           bool &is_leftsupport_foot) {
   //Compute trajectories time
   double time = getTrajsTime();
 
-  computeCartesianPositionAtTime(trunkPos, trunkAxis, footPos, footAxis, isLeftsupportFoot, time);
+  computeCartesianPositionAtTime(trunk_pos, trunk_axis, foot_pos, foot_axis, is_leftsupport_foot, time);
 
 }
 
-void QuinticWalk::computeCartesianPositionAtTime(Eigen::Vector3d &trunkPos,
-                                                 Eigen::Vector3d &trunkAxis,
-                                                 Eigen::Vector3d &footPos,
-                                                 Eigen::Vector3d &footAxis,
-                                                 bool &isLeftsupportFoot,
+void QuinticWalk::computeCartesianPositionAtTime(Eigen::Vector3d &trunk_pos,
+                                                 Eigen::Vector3d &trunk_axis,
+                                                 Eigen::Vector3d &foot_pos,
+                                                 Eigen::Vector3d &foot_axis,
+                                                 bool &is_leftsupport_foot,
                                                  double time) {
   //Evaluate target cartesian
   //state from trajectories
-  bool isDoubleSupport;
-  trajectoriesTrunkFootPos(time, _trajs, trunkPos, trunkAxis, footPos, footAxis);
-  trajectoriesSupportFootState(time, _trajs, isDoubleSupport, isLeftsupportFoot);
+  bool is_double_support;
+  trajectoriesTrunkFootPos(time, trajs_, trunk_pos, trunk_axis, foot_pos, foot_axis);
+  trajectoriesSupportFootState(time, trajs_, is_double_support, is_leftsupport_foot);
 }
 
 void QuinticWalk::point(std::string spline, double t, double pos, double vel, double acc) {
-  _trajs.get(spline).addPoint(t, pos, vel, acc);
+  trajs_.get(spline).addPoint(t, pos, vel, acc);
 }
 
 double QuinticWalk::getPhase() const {
-  return _phase;
+  return phase_;
 }
 
 double QuinticWalk::getTrajsTime() const {
   double t;
-  if (_phase < 0.5) {
-    t = _phase/_params.freq;
+  if (phase_ < 0.5) {
+    t = phase_/params_.freq;
   } else {
-    t = (_phase - 0.5)/_params.freq;
+    t = (phase_ - 0.5)/params_.freq;
   }
 
   return t;
 }
 
 Footstep QuinticWalk::getFootstep() {
-  return _footstep;
+  return footstep_;
 }
 
 bool QuinticWalk::isLeftSupport() {
-  return _footstep.isLeftSupport();
+  return footstep_.isLeftSupport();
 }
 
 bool QuinticWalk::isDoubleSupport() {
   // returns true if the value of the "is_double_support" spline is currently higher than 0.5
   // the spline should only have values of 0 or 1
-  return _trajs.get("is_double_support").pos(getTrajsTime()) >= 0.5;
+  return trajs_.get("is_double_support").pos(getTrajsTime()) >= 0.5;
 }
 
-void QuinticWalk::reconf_callback(const bitbots_quintic_walk_paramsConfig &params) {
-  _params = params;
-  _footstep.setFootDistance(_params.footDistance);
+void QuinticWalk::reconfCallback(const bitbots_quintic_walk_paramsConfig &params) {
+  params_ = params;
+  footstep_.setFootDistance(params_.footDistance);
 }
 
 void QuinticWalk::requestKick(bool left) {
   if (left) {
-    _leftKickRequested = true;
+    left_kick_requested_ = true;
   } else {
-    _rightKickRequested = true;
+    right_kick_requested_ = true;
   }
 }
 
 void QuinticWalk::requestPause() {
-  _pauseRequested = true;
+  pause_requested_ = true;
 }
 
 std::string QuinticWalk::getState() {
-  return _engineState;
+  return engine_state_;
 }
 
 }

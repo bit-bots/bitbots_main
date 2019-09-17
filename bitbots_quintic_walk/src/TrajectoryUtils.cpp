@@ -102,44 +102,44 @@ void trajectoriesTrunkFootAcc(
 }
 void trajectoriesSupportFootState(
     double t, const Trajectories &traj,
-    bool &isDoubleSupport,
-    bool &isLeftsupportFoot) {
+    bool &is_double_support,
+    bool &is_leftsupport_foot) {
   //Compute support foot state
-  isDoubleSupport = (
+  is_double_support = (
       traj.get("is_double_support").pos(t) >= 0.5 ?
       true : false);
-  isLeftsupportFoot = (
+  is_leftsupport_foot = (
       traj.get("is_left_support_foot").pos(t) >= 0.5 ?
       true : false);
 }
 
-double DefaultCheckState(
+double defaultCheckState(
     const Eigen::VectorXd &params,
     double t,
-    const Eigen::Vector3d &trunkPos,
-    const Eigen::Vector3d &trunkAxis,
-    const Eigen::Vector3d &footPos,
-    const Eigen::Vector3d &footAxis) {
+    const Eigen::Vector3d &trunk_pos,
+    const Eigen::Vector3d &trunk_axis,
+    const Eigen::Vector3d &foot_pos,
+    const Eigen::Vector3d &foot_axis) {
   (void) params;
   (void) t;
   double cost = 0.0;
-  if (trunkPos.z() < 0.0) {
-    cost += 1000.0 - 1000.0*trunkPos.z();
+  if (trunk_pos.z() < 0.0) {
+    cost += 1000.0 - 1000.0*trunk_pos.z();
   }
-  if (trunkAxis.norm() >= M_PI/2.0) {
-    cost += 1000.0 + 1000.0*(trunkAxis.norm() - M_PI/2.0);
+  if (trunk_axis.norm() >= M_PI/2.0) {
+    cost += 1000.0 + 1000.0*(trunk_axis.norm() - M_PI/2.0);
   }
-  if (fabs(footPos.y()) < 2.0*0.037) {
-    cost += 1000.0 + 1000.0*(2.0*0.037 - fabs(footPos.y()));
+  if (fabs(foot_pos.y()) < 2.0*0.037) {
+    cost += 1000.0 + 1000.0*(2.0*0.037 - fabs(foot_pos.y()));
   }
-  if (footPos.z() < -1e6) {
-    cost += 1000.0 - 1000.0*footPos.z();
+  if (foot_pos.z() < -1e6) {
+    cost += 1000.0 - 1000.0*foot_pos.z();
   }
-  if (trunkPos.z() - footPos.z() < 0.20) {
-    cost += 1000.0 - 1000.0*(trunkPos.z() - footPos.z() - 0.20);
+  if (trunk_pos.z() - foot_pos.z() < 0.20) {
+    cost += 1000.0 - 1000.0*(trunk_pos.z() - foot_pos.z() - 0.20);
   }
-  if (footAxis.norm() >= M_PI/2.0) {
-    cost += 1000.0 + 1000.0*(footAxis.norm() - M_PI/2.0);
+  if (foot_axis.norm() >= M_PI/2.0) {
+    cost += 1000.0 + 1000.0*(foot_axis.norm() - M_PI/2.0);
   }
 
   return cost;

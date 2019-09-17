@@ -103,13 +103,13 @@ class Footstep {
    * Static lateral distance
    * between the feet
    */
-  double _footDistance;
+  double foot_distance_;
 
   /**
    * Current support foot
    * (left or right)
    */
-  bool _isLeftSupportFoot;
+  bool is_left_support_foot_;
 
   /**
    * Pose diff [dx, dy, dtheta]

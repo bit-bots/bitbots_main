@@ -3,8 +3,8 @@ This code is based on the original code by Quentin "Leph" Rouxel and Team Rhoban
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef QUINTICWALKNODE_HPP
-#define QUINTICWALKNODE_HPP
+#ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_QUINTICWALKINGNODE_HPP_
+#define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_QUINTICWALKINGNODE_HPP_
 
 #include <iostream>
 #include <string>
@@ -116,101 +116,101 @@ class QuinticWalkingNode {
 
   double getTimeDelta();
 
-  bool _debugActive;
-  bool _simulation_active;
+  bool debug_active_;
+  bool simulation_active_;
 
-  bool _first_run;
+  bool first_run_;
 
-  double _engineFrequency;
+  double engine_frequency_;
 
-  bool _phaseResetActive;
-  double _phaseResetPhase;
-  double _groundMinPressure;
-  bool _copStopActive;
-  double _copXThreshold;
-  double _copYThreshold;
-  bool _pressureStopActive;
-  double _ioPressureThreshold;
-  double _fbPressureThreshold;
+  bool phase_reset_active_;
+  double phase_reset_phase_;
+  double ground_min_pressure_;
+  bool cop_stop_active_;
+  double cop_x_threshold_;
+  double cop_y_threshold_;
+  bool pressure_stop_active_;
+  double io_pressure_threshold_;
+  double fb_pressure_threshold_;
 
-  bool _imuActive;
-  double _imu_pitch_threshold;
-  double _imu_roll_threshold;
-  double _imu_pitch_vel_threshold;
-  double _imu_roll_vel_threshold;
+  bool imu_active_;
+  double imu_pitch_threshold_;
+  double imu_roll_threshold_;
+  double imu_pitch_vel_threshold_;
+  double imu_roll_vel_threshold_;
 
-  bool _publishOdomTF;
-  int _odomPubFactor;
-  std::chrono::time_point<std::chrono::steady_clock> _last_update_time;
-  double _last_ros_update_time;
+  bool publish_odom_tf_;
+  int odom_pub_factor_;
+  std::chrono::time_point<std::chrono::steady_clock> last_update_time_;
+  double last_ros_update_time_;
 
-  int _robotState;
-  int _marker_id;
+  int robot_state_;
+  int marker_id_;
 
-  bitbots_quintic_walk_paramsConfig _params;
+  bitbots_quintic_walk_paramsConfig params_;
 
-  Eigen::Vector3d _trunkPos;
-  Eigen::Vector3d _trunkAxis;
-  Eigen::Vector3d _footPos;
-  Eigen::Vector3d _footAxis;
-  bool _isLeftSupport;
+  Eigen::Vector3d trunk_pos_;
+  Eigen::Vector3d trunk_axis_;
+  Eigen::Vector3d foot_pos_;
+  Eigen::Vector3d foot_axis_;
+  bool is_left_support_;
 
   /**
    * Saves current orders as [x-direction, y-direction, z-rotation]
    */
-  Eigen::Vector3d _currentOrders;
+  Eigen::Vector3d current_orders_;
 
   /**
    * Saves max values we can move in a single step as [x-direction, y-direction, z-rotation].
    * Is used to limit _currentOrders to sane values
    */
-  Eigen::Vector3d _max_step;
+  Eigen::Vector3d max_step_;
 
   /**
    * Measures how much distance we can traverse in X and Y direction combined
    */
-  double _max_step_xy;
-  bitbots_quintic_walk::QuinticWalk _walkEngine;
+  double max_step_xy_;
+  bitbots_quintic_walk::QuinticWalk walk_engine_;
 
-  bitbots_msgs::JointCommand _command_msg;
-  nav_msgs::Odometry _odom_msg;
-  geometry_msgs::TransformStamped _odom_trans;
+  bitbots_msgs::JointCommand command_msg_;
+  nav_msgs::Odometry odom_msg_;
+  geometry_msgs::TransformStamped odom_trans_;
 
-  ros::NodeHandle _nh;
+  ros::NodeHandle nh_;
 
-  ros::Publisher _pubControllerCommand;
-  ros::Publisher _pubOdometry;
-  ros::Publisher _pubSupport;
-  tf2_ros::TransformBroadcaster _odom_broadcaster;
-  ros::Publisher _pubDebug;
-  ros::Publisher _pubDebugMarker;
+  ros::Publisher pub_controller_command_;
+  ros::Publisher pub_odometry_;
+  ros::Publisher pub_support_;
+  tf2_ros::TransformBroadcaster odom_broadcaster_;
+  ros::Publisher pub_debug_;
+  ros::Publisher pub_debug_marker_;
 
-  ros::Subscriber _subCmdVel;
-  ros::Subscriber _subRobState;
-  ros::Subscriber _subJointStates;
-  ros::Subscriber _subKick;
-  ros::Subscriber _subImu;
-  ros::Subscriber _subPressure;
-  ros::Subscriber _subCopL;
-  ros::Subscriber _subCopR;
+  ros::Subscriber sub_cmd_vel_;
+  ros::Subscriber sub_rob_state_;
+  ros::Subscriber sub_joint_states_;
+  ros::Subscriber sub_kick_;
+  ros::Subscriber sub_imu_;
+  ros::Subscriber sub_pressure_;
+  ros::Subscriber sub_cop_l_;
+  ros::Subscriber sub_cop_r_;
 
-  dynamic_reconfigure::Server<bitbots_quintic_walk_paramsConfig> _server;
+  dynamic_reconfigure::Server<bitbots_quintic_walk_paramsConfig> server_;
 
-  geometry_msgs::PointStamped _cop_l;
-  geometry_msgs::PointStamped _cop_r;
+  geometry_msgs::PointStamped cop_l_;
+  geometry_msgs::PointStamped cop_r_;
 
   // MoveIt!
-  robot_model_loader::RobotModelLoader _robot_model_loader;
-  robot_model::RobotModelPtr _kinematic_model;
-  robot_state::RobotStatePtr _goal_state;
-  robot_state::RobotStatePtr _current_state;
-  const robot_state::JointModelGroup *_all_joints_group;
-  const robot_state::JointModelGroup *_legs_joints_group;
-  const robot_state::JointModelGroup *_lleg_joints_group;
-  const robot_state::JointModelGroup *_rleg_joints_group;
+  robot_model_loader::RobotModelLoader robot_model_loader_;
+  robot_model::RobotModelPtr kinematic_model_;
+  robot_state::RobotStatePtr goal_state_;
+  robot_state::RobotStatePtr current_state_;
+  const robot_state::JointModelGroup *all_joints_group_;
+  const robot_state::JointModelGroup *legs_joints_group_;
+  const robot_state::JointModelGroup *lleg_joints_group_;
+  const robot_state::JointModelGroup *rleg_joints_group_;
 
   // IK solver
-  bitbots_ik::BioIKSolver _bioIK_solver;
+  bitbots_ik::BioIKSolver bio_ik_solver_;
 
 };
 

@@ -3,8 +3,8 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef TRAJECTORYUTILS_H
-#define TRAJECTORYUTILS_H
+#ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_TRAJECTORYUTILS_H_
+#define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_TRAJECTORYUTILS_H_
 
 #include "bitbots_splines/SmoothSpline.hpp"
 #include "bitbots_splines/SplineContainer.hpp"
@@ -49,8 +49,8 @@ void trajectoriesTrunkFootAcc(
     Eigen::Vector3d &foot_axis_acc);
 void trajectoriesSupportFootState(
     double t, const Trajectories &traj,
-    bool &isDoubleSupport,
-    bool &isLeftsupportFoot);
+    bool &is_double_support,
+    bool &is_leftsupport_foot);
 
 /**
  * Default Cartesian state check function.
@@ -58,13 +58,13 @@ void trajectoriesSupportFootState(
  * if given time and Cartesian state are outside
  * standard valid range
  */
-double DefaultCheckState(
+double defaultCheckState(
     const Eigen::VectorXd &params,
     double t,
-    const Eigen::Vector3d &trunkPos,
-    const Eigen::Vector3d &trunkAxis,
-    const Eigen::Vector3d &footPos,
-    const Eigen::Vector3d &footAxis);
+    const Eigen::Vector3d &trunk_pos,
+    const Eigen::Vector3d &trunk_axis,
+    const Eigen::Vector3d &foot_pos,
+    const Eigen::Vector3d &foot_axis);
 
 }
 

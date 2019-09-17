@@ -3,108 +3,108 @@
 namespace bitbots_quintic_walk {
 
 QuinticWalkingNode::QuinticWalkingNode() :
-    _robot_model_loader("/robot_description", false) {
+    robot_model_loader_("/robot_description", false) {
   // init variables
-  _robotState = humanoid_league_msgs::RobotControlState::CONTROLABLE;
-  _walkEngine = bitbots_quintic_walk::QuinticWalk();
-  _isLeftSupport = true;
-  _currentOrders[0] = 0.0;
-  _currentOrders[1] = 0.0;
-  _currentOrders[2] = 0.0;
+  robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLABLE;
+  walk_engine_ = bitbots_quintic_walk::QuinticWalk();
+  is_left_support_ = true;
+  current_orders_[0] = 0.0;
+  current_orders_[1] = 0.0;
+  current_orders_[2] = 0.0;
 
-  _marker_id = 1;
-  _odom_broadcaster = tf2_ros::TransformBroadcaster();
+  marker_id_ = 1;
+  odom_broadcaster_ = tf2_ros::TransformBroadcaster();
 
   // read config
-  _nh.param<double>("engineFrequency", _engineFrequency, 100.0);
-  _nh.param<bool>("/simulation_active", _simulation_active, false);
-  _nh.param<bool>("/walking/publishOdomTF", _publishOdomTF, false);
+  nh_.param<double>("engineFrequency", engine_frequency_, 100.0);
+  nh_.param<bool>("/simulation_active", simulation_active_, false);
+  nh_.param<bool>("/walking/publishOdomTF", publish_odom_tf_, false);
 
   /* init publisher and subscriber */
-  _command_msg = bitbots_msgs::JointCommand();
-  _pubControllerCommand = _nh.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
-  _odom_msg = nav_msgs::Odometry();
-  _pubOdometry = _nh.advertise<nav_msgs::Odometry>("walk_odometry", 1);
-  _pubSupport = _nh.advertise<std_msgs::Char>("walk_support_state", 1);
-  _subCmdVel = _nh.subscribe("cmd_vel", 1, &QuinticWalkingNode::cmdVelCb, this,
-                             ros::TransportHints().tcpNoDelay());
-  _subRobState = _nh.subscribe("robot_state", 1, &QuinticWalkingNode::robStateCb, this,
+  command_msg_ = bitbots_msgs::JointCommand();
+  pub_controller_command_ = nh_.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
+  odom_msg_ = nav_msgs::Odometry();
+  pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("walk_odometry", 1);
+  pub_support_ = nh_.advertise<std_msgs::Char>("walk_support_state", 1);
+  sub_cmd_vel_ = nh_.subscribe("cmd_vel", 1, &QuinticWalkingNode::cmdVelCb, this,
                                ros::TransportHints().tcpNoDelay());
+  sub_rob_state_ = nh_.subscribe("robot_state", 1, &QuinticWalkingNode::robStateCb, this,
+                                 ros::TransportHints().tcpNoDelay());
   //todo not really needed
-  //_subJointStates = _nh.subscribe("joint_states", 1, &QuinticWalkingNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
-  _subKick = _nh.subscribe("kick", 1, &QuinticWalkingNode::kickCb, this, ros::TransportHints().tcpNoDelay());
-  _subImu = _nh.subscribe("imu/data", 1, &QuinticWalkingNode::imuCb, this, ros::TransportHints().tcpNoDelay());
-  _subPressure = _nh.subscribe("foot_pressure_filtered", 1, &QuinticWalkingNode::pressureCb, this,
-                               ros::TransportHints().tcpNoDelay());
-  _subCopL = _nh.subscribe("cop_l", 1, &QuinticWalkingNode::copLCb, this, ros::TransportHints().tcpNoDelay());
-  _subCopR = _nh.subscribe("cop_r", 1, &QuinticWalkingNode::copRCb, this, ros::TransportHints().tcpNoDelay());
+  //_subJointStates = nh_.subscribe("joint_states", 1, &QuinticWalkingNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
+  sub_kick_ = nh_.subscribe("kick", 1, &QuinticWalkingNode::kickCb, this, ros::TransportHints().tcpNoDelay());
+  sub_imu_ = nh_.subscribe("imu/data", 1, &QuinticWalkingNode::imuCb, this, ros::TransportHints().tcpNoDelay());
+  sub_pressure_ = nh_.subscribe("foot_pressure_filtered", 1, &QuinticWalkingNode::pressureCb, this,
+                                ros::TransportHints().tcpNoDelay());
+  sub_cop_l_ = nh_.subscribe("cop_l", 1, &QuinticWalkingNode::copLCb, this, ros::TransportHints().tcpNoDelay());
+  sub_cop_r_ = nh_.subscribe("cop_r", 1, &QuinticWalkingNode::copRCb, this, ros::TransportHints().tcpNoDelay());
 
 
   /* debug publisher */
-  _pubDebug = _nh.advertise<bitbots_quintic_walk::WalkingDebug>("walk_debug", 1);
-  _pubDebugMarker = _nh.advertise<visualization_msgs::Marker>("walk_debug_marker", 1);
+  pub_debug_ = nh_.advertise<bitbots_quintic_walk::WalkingDebug>("walk_debug", 1);
+  pub_debug_marker_ = nh_.advertise<visualization_msgs::Marker>("walk_debug_marker", 1);
 
   //load MoveIt! model
-  _robot_model_loader.loadKinematicsSolvers(
+  robot_model_loader_.loadKinematicsSolvers(
       kinematics_plugin_loader::KinematicsPluginLoaderPtr(
           new kinematics_plugin_loader::KinematicsPluginLoader()));
-  _kinematic_model = _robot_model_loader.getModel();
-  _all_joints_group = _kinematic_model->getJointModelGroup("All");
-  _legs_joints_group = _kinematic_model->getJointModelGroup("Legs");
-  _lleg_joints_group = _kinematic_model->getJointModelGroup("LeftLeg");
-  _rleg_joints_group = _kinematic_model->getJointModelGroup("RightLeg");
-  _goal_state.reset(new robot_state::RobotState(_kinematic_model));
-  _goal_state->setToDefaultValues();
+  kinematic_model_ = robot_model_loader_.getModel();
+  all_joints_group_ = kinematic_model_->getJointModelGroup("All");
+  legs_joints_group_ = kinematic_model_->getJointModelGroup("Legs");
+  lleg_joints_group_ = kinematic_model_->getJointModelGroup("LeftLeg");
+  rleg_joints_group_ = kinematic_model_->getJointModelGroup("RightLeg");
+  goal_state_.reset(new robot_state::RobotState(kinematic_model_));
+  goal_state_->setToDefaultValues();
   // we have to set some good initial position in the goal state, since we are using a gradient
   // based method. Otherwise, the first step will be not correct
   std::vector<std::string> names_vec = {"LHipPitch", "LKnee", "LAnklePitch", "RHipPitch", "RKnee", "RAnklePitch"};
   std::vector<double> pos_vec = {0.7, -1.0, -0.4, -0.7, 1.0, 0.4};
   for (int i = 0; i < names_vec.size(); i++) {
     // besides its name, this method only changes a single joint position...
-    _goal_state->setJointPositions(names_vec[i], &pos_vec[i]);
+    goal_state_->setJointPositions(names_vec[i], &pos_vec[i]);
   }
 
-  _current_state.reset(new robot_state::RobotState(_kinematic_model));
-  _current_state->setToDefaultValues();
+  current_state_.reset(new robot_state::RobotState(kinematic_model_));
+  current_state_->setToDefaultValues();
 
   // initilize IK solver
-  _bioIK_solver = bitbots_ik::BioIKSolver(*_all_joints_group, *_lleg_joints_group, *_rleg_joints_group);
-  _bioIK_solver.set_use_approximate(true);
+  bio_ik_solver_ = bitbots_ik::BioIKSolver(*all_joints_group_, *lleg_joints_group_, *rleg_joints_group_);
+  bio_ik_solver_.set_use_approximate(true);
 
-  _first_run = true;
+  first_run_ = true;
 
   // initialize dynamic-reconfigure
-  _server.setCallback(boost::bind(&QuinticWalkingNode::reconfCallback, this, _1, _2));
+  server_.setCallback(boost::bind(&QuinticWalkingNode::reconfCallback, this, _1, _2));
 }
 
 void QuinticWalkingNode::run() {
   int odom_counter = 0;
 
   while (ros::ok()) {
-    ros::Rate loop_rate(_engineFrequency);
+    ros::Rate loop_rate(engine_frequency_);
     double dt = getTimeDelta();
 
-    if (_robotState==humanoid_league_msgs::RobotControlState::FALLING) {
+    if (robot_state_==humanoid_league_msgs::RobotControlState::FALLING) {
       // the robot fell, we have to reset everything and do nothing else
-      _walkEngine.reset();
+      walk_engine_.reset();
     } else {
       // we don't want to walk, even if we have orders, if we are not in the right state
       /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
        * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
       // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
-      bool walkable_state = _robotState==humanoid_league_msgs::RobotControlState::CONTROLABLE ||
-          _robotState==humanoid_league_msgs::RobotControlState::WALKING
-          || _robotState==humanoid_league_msgs::RobotControlState::MOTOR_OFF;
+      bool walkable_state = robot_state_==humanoid_league_msgs::RobotControlState::CONTROLABLE ||
+          robot_state_==humanoid_league_msgs::RobotControlState::WALKING
+          || robot_state_==humanoid_league_msgs::RobotControlState::MOTOR_OFF;
       // see if the walk engine has new goals for us
-      bool new_goals = _walkEngine.updateState(dt, _currentOrders, walkable_state);
-      if (_walkEngine.getState()!="idle") { //todo
+      bool new_goals = walk_engine_.updateState(dt, current_orders_, walkable_state);
+      if (walk_engine_.getState()!="idle") { //todo
         calculateJointGoals();
       }
     }
 
     // publish odometry
     odom_counter++;
-    if (odom_counter > _odomPubFactor) {
+    if (odom_counter > odom_pub_factor_) {
       publishOdometry();
       odom_counter = 0;
     }
@@ -115,48 +115,48 @@ void QuinticWalkingNode::run() {
 
 void QuinticWalkingNode::calculateJointGoals() {
   // read the cartesian positions and orientations for trunk and fly foot
-  _walkEngine.computeCartesianPosition(_trunkPos, _trunkAxis, _footPos, _footAxis, _isLeftSupport);
+  walk_engine_.computeCartesianPosition(trunk_pos_, trunk_axis_, foot_pos_, foot_axis_, is_left_support_);
 
   // change goals from support foot based coordinate system to trunk based coordinate system
   tf2::Vector3 tf_vec;
-  tf2::convert(_trunkPos, tf_vec);
+  tf2::convert(trunk_pos_, tf_vec);
   tf2::Quaternion tf_quat;
-  tf_quat.setRPY(_trunkAxis[0], _trunkAxis[1], _trunkAxis[2]);
+  tf_quat.setRPY(trunk_axis_[0], trunk_axis_[1], trunk_axis_[2]);
   tf_quat.normalize();
   tf2::Transform support_foot_to_trunk(tf_quat, tf_vec);
   tf2::Transform trunk_to_support_foot_goal = support_foot_to_trunk.inverse();
 
-  tf2::convert(_footPos, tf_vec);
-  tf_quat.setRPY(_footAxis[0], _footAxis[1], _footAxis[2]);
+  tf2::convert(foot_pos_, tf_vec);
+  tf_quat.setRPY(foot_axis_[0], foot_axis_[1], foot_axis_[2]);
   tf_quat.normalize();
   tf2::Transform support_to_flying_foot(tf_quat, tf_vec);
   tf2::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal*support_to_flying_foot;
 
   // call ik solver
-  bool success = _bioIK_solver.solve(trunk_to_support_foot_goal, trunk_to_flying_foot_goal,
-                                     _walkEngine.getFootstep().isLeftSupport(), _goal_state);
+  bool success = bio_ik_solver_.solve(trunk_to_support_foot_goal, trunk_to_flying_foot_goal,
+                                      walk_engine_.getFootstep().isLeftSupport(), goal_state_);
 
   // publish goals if sucessfull
   if (success) {
-    std::vector<std::string> joint_names = _legs_joints_group->getActiveJointModelNames();
+    std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
     std::vector<double> joint_goals;
-    _goal_state->copyJointGroupPositions(_legs_joints_group, joint_goals);
+    goal_state_->copyJointGroupPositions(legs_joints_group_, joint_goals);
     publishControllerCommands(joint_names, joint_goals);
   }
 
   // publish current support state
   std_msgs::Char support_state;
-  if (_walkEngine.isDoubleSupport()) {
+  if (walk_engine_.isDoubleSupport()) {
     support_state.data = 'd';
-  } else if (_walkEngine.isLeftSupport()) {
+  } else if (walk_engine_.isLeftSupport()) {
     support_state.data = 'l';
   } else {
     support_state.data = 'r';
   }
-  _pubSupport.publish(support_state);
+  pub_support_.publish(support_state);
 
   // publish debug information
-  if (_debugActive) {
+  if (debug_active_) {
     publishDebug(trunk_to_support_foot_goal, trunk_to_flying_foot_goal);
     publishMarkers();
   }
@@ -166,27 +166,27 @@ void QuinticWalkingNode::calculateJointGoals() {
 double QuinticWalkingNode::getTimeDelta() {
   // compute time delta depended if we are currently in simulation or reality
   double dt;
-  if (!_simulation_active) {
+  if (!simulation_active_) {
     std::chrono::time_point<std::chrono::steady_clock> current_time = std::chrono::steady_clock::now();
     // only take real time difference if walking was not stopped before
     // using c++ time since it is more performant than ros time. We only need a local difference, so it doesnt matter as long as we are not simulating
-    auto time_diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - _last_update_time);
+    auto time_diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - last_update_time_);
     dt = time_diff_ms.count()/1000.0;
     if (dt==0) {
       ROS_WARN("dt was 0");
       dt = 0.001;
     }
-    _last_update_time = current_time;
+    last_update_time_ = current_time;
   } else {
     ROS_WARN_ONCE("Simulation active, using ROS time");
     // use ros time for simulation
     double current_ros_time = ros::Time::now().toSec();
-    dt = current_ros_time - _last_ros_update_time;
-    _last_ros_update_time = current_ros_time;
+    dt = current_ros_time - last_ros_update_time_;
+    last_ros_update_time_ = current_ros_time;
   }
   // time is wrong when we run it for the first time
-  if (_first_run) {
-    _first_run = false;
+  if (first_run_) {
+    first_run_ = false;
     dt = 0.0001;
   }
   return dt;
@@ -198,34 +198,34 @@ void QuinticWalkingNode::cmdVelCb(const geometry_msgs::Twist msg) {
 
   // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
   // factor 2 since the order distance is only for a single step, not double step
-  double factor = (1.0/(_params.freq))/2.0;
-  _currentOrders = {msg.linear.x*factor, msg.linear.y*factor, msg.angular.z*factor};
+  double factor = (1.0/(params_.freq))/2.0;
+  current_orders_ = {msg.linear.x*factor, msg.linear.y*factor, msg.angular.z*factor};
 
   // the orders should not extend beyond a maximal step size
   for (int i = 0; i < 3; i++) {
-    _currentOrders[i] = std::max(std::min(_currentOrders[i], _max_step[i]), _max_step[i]*-1);
+    current_orders_[i] = std::max(std::min(current_orders_[i], max_step_[i]), max_step_[i]*-1);
   }
   // translational orders (x+y) should not exceed combined limit. scale if necessary
-  if (_max_step_xy!=0) {
-    double scaling_factor = (_currentOrders[0] + _currentOrders[1])/_max_step_xy;
+  if (max_step_xy_!=0) {
+    double scaling_factor = (current_orders_[0] + current_orders_[1])/max_step_xy_;
     for (int i = 0; i < 2; i++) {
-      _currentOrders[i] = _currentOrders[i]/std::max(scaling_factor, 1.0);
+      current_orders_[i] = current_orders_[i]/std::max(scaling_factor, 1.0);
     }
   }
 
   // warn user that speed was limited
-  if (msg.linear.x*factor!=_currentOrders[0] ||
-      msg.linear.y*factor!=_currentOrders[1] ||
-      msg.angular.z*factor!=_currentOrders[2]) {
+  if (msg.linear.x*factor!=current_orders_[0] ||
+      msg.linear.y*factor!=current_orders_[1] ||
+      msg.angular.z*factor!=current_orders_[2]) {
     ROS_WARN(
         "Speed command was x: %.2f y: %.2f z: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f xy: %.2f",
-        msg.linear.x, msg.linear.y, msg.angular.z, msg.linear.x + msg.linear.y, _max_step[0]/factor,
-        _max_step[1]/factor, _max_step[2]/factor, _max_step_xy/factor);
+        msg.linear.x, msg.linear.y, msg.angular.z, msg.linear.x + msg.linear.y, max_step_[0]/factor,
+        max_step_[1]/factor, max_step_[2]/factor, max_step_xy_/factor);
   }
 }
 
 void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
-  if (_imuActive) {
+  if (imu_active_) {
     // the incoming geometry_msgs::Quaternion is transformed to a tf2::Quaterion
     tf2::Quaternion quat;
     tf2::convert(msg.orientation, quat);
@@ -236,21 +236,21 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
 
     // compute the pitch offset to the currently wanted pitch of the engine
     double wanted_pitch =
-        _params.trunkPitch + _params.trunkPitchPCoefForward*_walkEngine.getFootstep().getNext().x()
-            + _params.trunkPitchPCoefTurn*fabs(_walkEngine.getFootstep().getNext().z());
+        params_.trunkPitch + params_.trunkPitchPCoefForward*walk_engine_.getFootstep().getNext().x()
+            + params_.trunkPitchPCoefTurn*fabs(walk_engine_.getFootstep().getNext().z());
     pitch = pitch + wanted_pitch;
 
     // get angular velocities
     double roll_vel = msg.angular_velocity.x;
     double pitch_vel = msg.angular_velocity.y;
-    if (abs(roll) > _imu_roll_threshold || abs(pitch) > _imu_pitch_threshold ||
-        abs(pitch_vel) > _imu_pitch_vel_threshold || abs(roll_vel) > _imu_roll_vel_threshold) {
-      _walkEngine.requestPause();
-      if (abs(roll) > _imu_roll_threshold) {
+    if (abs(roll) > imu_roll_threshold_ || abs(pitch) > imu_pitch_threshold_ ||
+        abs(pitch_vel) > imu_pitch_vel_threshold_ || abs(roll_vel) > imu_roll_vel_threshold_) {
+      walk_engine_.requestPause();
+      if (abs(roll) > imu_roll_threshold_) {
         ROS_WARN("imu roll angle stop");
-      } else if (abs(pitch) > _imu_pitch_threshold) {
+      } else if (abs(pitch) > imu_pitch_threshold_) {
         ROS_WARN("imu pitch angle stop");
-      } else if (abs(pitch_vel) > _imu_pitch_vel_threshold) {
+      } else if (abs(pitch_vel) > imu_pitch_vel_threshold_) {
         ROS_WARN("imu roll vel stop");
       } else {
         ROS_WARN("imu pitch vel stop");
@@ -273,7 +273,7 @@ void QuinticWalkingNode::pressureCb(
   double nif;
   double nib;
 
-  if (_walkEngine.isLeftSupport()) {
+  if (walk_engine_.isLeftSupport()) {
     sob = msg.l_l_b;
     sof = msg.l_l_f;
     sif = msg.l_r_f;
@@ -318,21 +318,21 @@ void QuinticWalkingNode::pressureCb(
   // check for early step end
   // phase has to be far enough (almost at end of step) to have right foot lifted
   // foot has to have ground contact
-  double phase = _walkEngine.getPhase();
-  if (_phaseResetActive && ((phase > 0.5 - _phaseResetPhase && phase < 0.5) || (phase > 1 - _phaseResetPhase)) &&
-      n_sum > _groundMinPressure) {
+  double phase = walk_engine_.getPhase();
+  if (phase_reset_active_ && ((phase > 0.5 - phase_reset_phase_ && phase < 0.5) || (phase > 1 - phase_reset_phase_)) &&
+      n_sum > ground_min_pressure_) {
     ROS_WARN("Phase resetted!");
-    _walkEngine.endStep();
+    walk_engine_.endStep();
   }
 
   // check if robot is unstable and should pause
   // this is true if the robot is falling to the outside or to front or back
-  if (_pressureStopActive && (s_io_ratio > _ioPressureThreshold || 1/s_io_ratio > _ioPressureThreshold ||
-      1/s_fb_ratio > _fbPressureThreshold || s_fb_ratio > _fbPressureThreshold)) {
-    _walkEngine.requestPause();
+  if (pressure_stop_active_ && (s_io_ratio > io_pressure_threshold_ || 1/s_io_ratio > io_pressure_threshold_ ||
+      1/s_fb_ratio > fb_pressure_threshold_ || s_fb_ratio > fb_pressure_threshold_)) {
+    walk_engine_.requestPause();
 
     //TODO this is debug
-    if (s_io_ratio > _ioPressureThreshold || 1/s_io_ratio > _ioPressureThreshold) {
+    if (s_io_ratio > io_pressure_threshold_ || 1/s_io_ratio > io_pressure_threshold_) {
       ROS_WARN("CoP io stop!");
     } else {
       ROS_WARN("CoP fb stop!");
@@ -341,15 +341,15 @@ void QuinticWalkingNode::pressureCb(
 
   // decide which CoP
   geometry_msgs::PointStamped cop;
-  if (_walkEngine.isLeftSupport()) {
-    cop = _cop_l;
+  if (walk_engine_.isLeftSupport()) {
+    cop = cop_l_;
   } else {
-    cop = _cop_r;
+    cop = cop_r_;
   }
 
-  if (_copStopActive && (abs(cop.point.x) > _copXThreshold || abs(cop.point.y) > _copYThreshold)) {
-    _walkEngine.requestPause();
-    if (abs(cop.point.x) > _copXThreshold) {
+  if (cop_stop_active_ && (abs(cop.point.x) > cop_x_threshold_ || abs(cop.point.y) > cop_y_threshold_)) {
+    walk_engine_.requestPause();
+    if (abs(cop.point.x) > cop_x_threshold_) {
       ROS_WARN("cop x stop");
     } else {
       ROS_WARN("cop y stop");
@@ -359,87 +359,87 @@ void QuinticWalkingNode::pressureCb(
 }
 
 void QuinticWalkingNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {
-  _robotState = msg.state;
+  robot_state_ = msg.state;
 }
 
 void QuinticWalkingNode::jointStateCb(const sensor_msgs::JointState msg) {
   std::vector<std::string> names_vec = msg.name;
   std::string *names = names_vec.data();
 
-  _current_state->setJointPositions(*names, msg.position.data());
+  current_state_->setJointPositions(*names, msg.position.data());
 }
 
 void QuinticWalkingNode::kickCb(const std_msgs::BoolConstPtr msg) {
-  _walkEngine.requestKick(msg->data);
+  walk_engine_.requestKick(msg->data);
 }
 
 void QuinticWalkingNode::copLCb(const geometry_msgs::PointStamped msg) {
-  _cop_l = msg;
+  cop_l_ = msg;
 }
 
 void QuinticWalkingNode::copRCb(const geometry_msgs::PointStamped msg) {
-  _cop_r = msg;
+  cop_r_ = msg;
 }
 
 void
 QuinticWalkingNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config,
                                    uint32_t level) {
-  _params = config;
+  params_ = config;
 
-  _walkEngine.reconf_callback(_params);
-  _bioIK_solver.set_bioIK_timeout(config.bioIKTime);
+  walk_engine_.reconfCallback(params_);
+  bio_ik_solver_.set_bioIK_timeout(config.bioIKTime);
 
-  _debugActive = config.debugActive;
-  _engineFrequency = config.engineFreq;
-  _odomPubFactor = config.odomPubFactor;
+  debug_active_ = config.debugActive;
+  engine_frequency_ = config.engineFreq;
+  odom_pub_factor_ = config.odomPubFactor;
 
-  _max_step[0] = config.maxStepX;
-  _max_step[1] = config.maxStepY;
-  _max_step[2] = config.maxStepZ;
-  _max_step_xy = config.maxStepXY;
+  max_step_[0] = config.maxStepX;
+  max_step_[1] = config.maxStepY;
+  max_step_[2] = config.maxStepZ;
+  max_step_xy_ = config.maxStepXY;
 
-  _imuActive = config.imuActive;
-  _imu_pitch_threshold = config.imuPitchThreshold;
-  _imu_roll_threshold = config.imuRollThreshold;
-  _imu_pitch_vel_threshold = config.imuPitchVelThreshold;
-  _imu_roll_vel_threshold = config.imuRollVelThreshold;
+  imu_active_ = config.imuActive;
+  imu_pitch_threshold_ = config.imuPitchThreshold;
+  imu_roll_threshold_ = config.imuRollThreshold;
+  imu_pitch_vel_threshold_ = config.imuPitchVelThreshold;
+  imu_roll_vel_threshold_ = config.imuRollVelThreshold;
 
-  _phaseResetActive = config.phaseResetActive;
-  _phaseResetPhase = config.phaseResetPhase;
-  _groundMinPressure = config.groundMinPressure;
-  _copStopActive = config.copStopActive;
-  _copXThreshold = config.copXThreshold;
-  _copYThreshold = config.copYThreshold;
-  _pressureStopActive = config.pressureStopActive;
-  _ioPressureThreshold = config.ioPressureThreshold;
-  _fbPressureThreshold = config.fbPressureThreshold;
-  _params.pauseDuration = config.pauseDuration;
+  phase_reset_active_ = config.phaseResetActive;
+  phase_reset_phase_ = config.phaseResetPhase;
+  ground_min_pressure_ = config.groundMinPressure;
+  cop_stop_active_ = config.copStopActive;
+  cop_x_threshold_ = config.copXThreshold;
+  cop_y_threshold_ = config.copYThreshold;
+  pressure_stop_active_ = config.pressureStopActive;
+  io_pressure_threshold_ = config.ioPressureThreshold;
+  fb_pressure_threshold_ = config.fbPressureThreshold;
+  params_.pauseDuration = config.pauseDuration;
 }
 
 void
 QuinticWalkingNode::publishControllerCommands(std::vector<std::string> joint_names, std::vector<double> positions) {
   // publishes the commands to the GroupedPositionController
-  _command_msg.header.stamp = ros::Time::now();
-  _command_msg.joint_names = joint_names;
-  _command_msg.positions = positions;
+  command_msg_.header.stamp = ros::Time::now();
+  command_msg_.joint_names = joint_names;
+  command_msg_.positions = positions;
   std::vector<double> ones(joint_names.size(), -1.0);
   std::vector<double> vels(joint_names.size(), -1.0);
   std::vector<double> accs(joint_names.size(), -1.0);
   std::vector<double> pwms(joint_names.size(), -1.0);
-  _command_msg.velocities = vels;
-  _command_msg.accelerations = accs;
-  _command_msg.max_currents = pwms;
+  command_msg_.velocities = vels;
+  command_msg_.accelerations = accs;
+  command_msg_.max_currents = pwms;
 
-  _pubControllerCommand.publish(_command_msg);
+  pub_controller_command_.publish(command_msg_);
 }
 
 void QuinticWalkingNode::publishOdometry() {
   // transformation from support leg to trunk
   Eigen::Isometry3d trunk_to_support;
-  if (_walkEngine.getFootstep().isLeftSupport()) {
-    trunk_to_support = _goal_state->getGlobalLinkTransform("l_sole");
+  if (walk_engine_.getFootstep().isLeftSupport()) {
+    trunk_to_support = goal_state_->getGlobalLinkTransform("l_sole");
   } else {
-    trunk_to_support = _goal_state->getGlobalLinkTransform("r_sole");
+    trunk_to_support = goal_state_->getGlobalLinkTransform("r_sole");
   }
   Eigen::Isometry3d support_to_trunk = trunk_to_support.inverse();
   tf2::Transform tf_support_to_trunk;
@@ -449,14 +449,14 @@ void QuinticWalkingNode::publishOdometry() {
   double x;
   double y;
   double yaw;
-  if (_walkEngine.getFootstep().isLeftSupport()) {
-    x = _walkEngine.getFootstep().getLeft()[0];
-    y = _walkEngine.getFootstep().getLeft()[1] + _params.footDistance/2;
-    yaw = _walkEngine.getFootstep().getLeft()[2];
+  if (walk_engine_.getFootstep().isLeftSupport()) {
+    x = walk_engine_.getFootstep().getLeft()[0];
+    y = walk_engine_.getFootstep().getLeft()[1] + params_.footDistance/2;
+    yaw = walk_engine_.getFootstep().getLeft()[2];
   } else {
-    x = _walkEngine.getFootstep().getRight()[0];
-    y = _walkEngine.getFootstep().getRight()[1] + _params.footDistance/2;
-    yaw = _walkEngine.getFootstep().getRight()[2];
+    x = walk_engine_.getFootstep().getRight()[0];
+    y = walk_engine_.getFootstep().getRight()[1] + params_.footDistance/2;
+    yaw = walk_engine_.getFootstep().getRight()[2];
   }
 
   tf2::Transform support_foot_tf;
@@ -472,38 +472,38 @@ void QuinticWalkingNode::publishOdometry() {
 
   ros::Time current_time = ros::Time::now();
 
-  if (_publishOdomTF) {
-    _odom_trans = geometry_msgs::TransformStamped();
-    _odom_trans.header.stamp = current_time;
-    _odom_trans.header.frame_id = "odom";
-    _odom_trans.child_frame_id = "base_link";
+  if (publish_odom_tf_) {
+    odom_trans_ = geometry_msgs::TransformStamped();
+    odom_trans_.header.stamp = current_time;
+    odom_trans_.header.frame_id = "odom";
+    odom_trans_.child_frame_id = "base_link";
 
-    _odom_trans.transform.translation.x = pos[0];
-    _odom_trans.transform.translation.y = pos[1];
-    _odom_trans.transform.translation.z = pos[2];
-    _odom_trans.transform.rotation = quat_msg;
+    odom_trans_.transform.translation.x = pos[0];
+    odom_trans_.transform.translation.y = pos[1];
+    odom_trans_.transform.translation.z = pos[2];
+    odom_trans_.transform.rotation = quat_msg;
 
     //send the transform
-    _odom_broadcaster.sendTransform(_odom_trans);
+    odom_broadcaster_.sendTransform(odom_trans_);
   }
 
   // send the odometry also as message
-  _odom_msg.header.stamp = current_time;
-  _odom_msg.header.frame_id = "odom";
-  _odom_msg.child_frame_id = "base_link";
-  _odom_msg.pose.pose.position.x = pos[0];
-  _odom_msg.pose.pose.position.y = pos[1];
-  _odom_msg.pose.pose.position.z = pos[2];
+  odom_msg_.header.stamp = current_time;
+  odom_msg_.header.frame_id = "odom";
+  odom_msg_.child_frame_id = "base_link";
+  odom_msg_.pose.pose.position.x = pos[0];
+  odom_msg_.pose.pose.position.y = pos[1];
+  odom_msg_.pose.pose.position.z = pos[2];
 
-  _odom_msg.pose.pose.orientation = quat_msg;
+  odom_msg_.pose.pose.orientation = quat_msg;
   geometry_msgs::Twist twist;
 
-  twist.linear.x = _currentOrders[0]*_params.freq*2;
-  twist.linear.y = _currentOrders[1]*_params.freq*2;
-  twist.angular.z = _currentOrders[2]*_params.freq*2;
+  twist.linear.x = current_orders_[0]*params_.freq*2;
+  twist.linear.y = current_orders_[1]*params_.freq*2;
+  twist.angular.z = current_orders_[2]*params_.freq*2;
 
-  _odom_msg.twist.twist = twist;
-  _pubOdometry.publish(_odom_msg);
+  odom_msg_.twist.twist = twist;
+  pub_odometry_.publish(odom_msg_);
 }
 
 void
@@ -513,9 +513,9 @@ QuinticWalkingNode::publishDebug(tf2::Transform &trunk_to_support_foot_goal,
   This method publishes various debug / visualization information.
   */
   bitbots_quintic_walk::WalkingDebug msg;
-  bool is_left_support = _walkEngine.isLeftSupport();
+  bool is_left_support = walk_engine_.isLeftSupport();
   msg.is_left_support = is_left_support;
-  msg.is_double_support = _walkEngine.isDoubleSupport();
+  msg.is_double_support = walk_engine_.isDoubleSupport();
   msg.header.stamp = ros::Time::now();
 
   // define current support frame
@@ -528,12 +528,12 @@ QuinticWalkingNode::publishDebug(tf2::Transform &trunk_to_support_foot_goal,
 
   // define colors based on current support state
   float r, g, b, a;
-  if (_walkEngine.isDoubleSupport()) {
+  if (walk_engine_.isDoubleSupport()) {
     r = 0;
     g = 0;
     b = 1;
     a = 1;
-  } else if (_walkEngine.isLeftSupport()) {
+  } else if (walk_engine_.isLeftSupport()) {
     r = 1;
     g = 0;
     b = 0;
@@ -547,52 +547,52 @@ QuinticWalkingNode::publishDebug(tf2::Transform &trunk_to_support_foot_goal,
 
 
   // times
-  msg.phase_time = _walkEngine.getPhase();
-  msg.traj_time = _walkEngine.getTrajsTime();
+  msg.phase_time = walk_engine_.getPhase();
+  msg.traj_time = walk_engine_.getTrajsTime();
 
-  msg.engine_state.data = _walkEngine.getState();
+  msg.engine_state.data = walk_engine_.getState();
 
   // footsteps
-  msg.footstep_last.x = _walkEngine.getFootstep().getLast()[0];
-  msg.footstep_last.y = _walkEngine.getFootstep().getLast()[1];
-  msg.footstep_last.z = _walkEngine.getFootstep().getLast()[2];
+  msg.footstep_last.x = walk_engine_.getFootstep().getLast()[0];
+  msg.footstep_last.y = walk_engine_.getFootstep().getLast()[1];
+  msg.footstep_last.z = walk_engine_.getFootstep().getLast()[2];
 
-  msg.footstep_next.x = _walkEngine.getFootstep().getNext()[0];
-  msg.footstep_next.y = _walkEngine.getFootstep().getNext()[1];
-  msg.footstep_next.z = _walkEngine.getFootstep().getNext()[2];
+  msg.footstep_next.x = walk_engine_.getFootstep().getNext()[0];
+  msg.footstep_next.y = walk_engine_.getFootstep().getNext()[1];
+  msg.footstep_next.z = walk_engine_.getFootstep().getNext()[2];
 
 
 
   // engine output
   geometry_msgs::Pose pose_msg;
-  tf2::convert(_footPos, pose_msg.position);
+  tf2::convert(foot_pos_, pose_msg.position);
   tf2::Quaternion tf_quat;
-  tf_quat.setRPY(_footAxis[0], _footAxis[1], _footAxis[2]);
+  tf_quat.setRPY(foot_axis_[0], foot_axis_[1], foot_axis_[2]);
   tf2::convert(tf_quat, pose_msg.orientation);
   msg.engine_fly_goal = pose_msg;
   publishMarker("engine_fly_goal", current_support_frame, pose_msg, 0, 0, 1, a);
 
-  msg.engine_fly_axis.x = _footAxis[0];
-  msg.engine_fly_axis.x = _footAxis[1];
-  msg.engine_fly_axis.x = _footAxis[2];
+  msg.engine_fly_axis.x = foot_axis_[0];
+  msg.engine_fly_axis.x = foot_axis_[1];
+  msg.engine_fly_axis.x = foot_axis_[2];
 
-  tf2::convert(_trunkPos, pose_msg.position);
-  tf_quat.setRPY(_trunkAxis[0], _trunkAxis[1], _trunkAxis[2]);
+  tf2::convert(trunk_pos_, pose_msg.position);
+  tf_quat.setRPY(trunk_axis_[0], trunk_axis_[1], trunk_axis_[2]);
   tf2::convert(tf_quat, pose_msg.orientation);
   msg.engine_trunk_goal = pose_msg;
   publishMarker("engine_trunk_goal", current_support_frame, pose_msg, r, g, b, a);
 
-  if (_trunkPos[1] > 0) {
-    _trunkPos[1] = _trunkPos[1] - _params.footDistance/2;
+  if (trunk_pos_[1] > 0) {
+    trunk_pos_[1] = trunk_pos_[1] - params_.footDistance/2;
   } else {
-    _trunkPos[1] = _trunkPos[1] + _params.footDistance/2;
+    trunk_pos_[1] = trunk_pos_[1] + params_.footDistance/2;
   }
-  tf2::convert(_trunkPos, pose_msg.position);
+  tf2::convert(trunk_pos_, pose_msg.position);
   msg.engine_trunk_goal_abs = pose_msg;
 
-  msg.engine_trunk_axis.x = _trunkAxis[0];
-  msg.engine_trunk_axis.y = _trunkAxis[1];
-  msg.engine_trunk_axis.z = _trunkAxis[2];
+  msg.engine_trunk_axis.x = trunk_axis_[0];
+  msg.engine_trunk_axis.y = trunk_axis_[1];
+  msg.engine_trunk_axis.z = trunk_axis_[2];
 
   // resulting trunk pose
   geometry_msgs::Pose pose;
@@ -622,10 +622,10 @@ QuinticWalkingNode::publishDebug(tf2::Transform &trunk_to_support_foot_goal,
 
   // IK results
   geometry_msgs::Pose pose_left_result;
-  tf2::convert(_goal_state->getGlobalLinkTransform("l_sole"), pose_left_result);
+  tf2::convert(goal_state_->getGlobalLinkTransform("l_sole"), pose_left_result);
   msg.left_foot_ik_result = pose_left_result;
   geometry_msgs::Pose pose_right_result;
-  tf2::convert(_goal_state->getGlobalLinkTransform("r_sole"), pose_right_result);
+  tf2::convert(goal_state_->getGlobalLinkTransform("r_sole"), pose_right_result);
   msg.right_foot_ik_result = pose_right_result;
   if (is_left_support) {
     msg.support_foot_ik_result = pose_left_result;
@@ -642,8 +642,8 @@ QuinticWalkingNode::publishDebug(tf2::Transform &trunk_to_support_foot_goal,
   tf2::Vector3 fly_off;
   tf2::Vector3 tf_vec_left;
   tf2::Vector3 tf_vec_right;
-  Eigen::Vector3d l_transform = _goal_state->getGlobalLinkTransform("l_sole").translation();
-  Eigen::Vector3d r_transform = _goal_state->getGlobalLinkTransform("r_sole").translation();
+  Eigen::Vector3d l_transform = goal_state_->getGlobalLinkTransform("l_sole").translation();
+  Eigen::Vector3d r_transform = goal_state_->getGlobalLinkTransform("r_sole").translation();
   tf2::convert(l_transform, tf_vec_left);
   tf2::convert(r_transform, tf_vec_right);
   geometry_msgs::Vector3 vect_msg;
@@ -669,10 +669,10 @@ QuinticWalkingNode::publishDebug(tf2::Transform &trunk_to_support_foot_goal,
 
   // actual positions
   geometry_msgs::Pose pose_left_actual;
-  tf2::convert(_current_state->getGlobalLinkTransform("l_sole"), pose_left_actual);
+  tf2::convert(current_state_->getGlobalLinkTransform("l_sole"), pose_left_actual);
   msg.left_foot_position = pose_left_actual;
   geometry_msgs::Pose pose_right_actual;
-  tf2::convert(_current_state->getGlobalLinkTransform("r_sole"), pose_right_actual);
+  tf2::convert(current_state_->getGlobalLinkTransform("r_sole"), pose_right_actual);
   msg.right_foot_position = pose_right_actual;
   if (is_left_support) {
     msg.support_foot_position = pose_left_actual;
@@ -683,8 +683,8 @@ QuinticWalkingNode::publishDebug(tf2::Transform &trunk_to_support_foot_goal,
   }
 
   // actual offsets
-  l_transform = _current_state->getGlobalLinkTransform("l_sole").translation();
-  r_transform = _current_state->getGlobalLinkTransform("r_sole").translation();
+  l_transform = current_state_->getGlobalLinkTransform("l_sole").translation();
+  r_transform = current_state_->getGlobalLinkTransform("r_sole").translation();
   tf2::convert(l_transform, tf_vec_left);
   tf2::convert(r_transform, tf_vec_right);
   if (is_left_support) {
@@ -707,7 +707,7 @@ QuinticWalkingNode::publishDebug(tf2::Transform &trunk_to_support_foot_goal,
   tf2::convert(fly_off, vect_msg);
   msg.fly_foot_actual_offset = vect_msg;
 
-  _pubDebug.publish(msg);
+  pub_debug_.publish(msg);
 }
 
 void QuinticWalkingNode::publishMarker(std::string name_space,
@@ -735,17 +735,17 @@ void QuinticWalkingNode::publishMarker(std::string name_space,
   scale.z = 0.003;
   marker_msg.scale = scale;
 
-  marker_msg.id = _marker_id;
-  _marker_id++;
+  marker_msg.id = marker_id_;
+  marker_id_++;
 
-  _pubDebugMarker.publish(marker_msg);
+  pub_debug_marker_.publish(marker_msg);
 }
 
 void QuinticWalkingNode::publishMarkers() {
   //publish markers
   visualization_msgs::Marker marker_msg;
   marker_msg.header.stamp = ros::Time::now();
-  if (_walkEngine.getFootstep().isLeftSupport()) {
+  if (walk_engine_.getFootstep().isLeftSupport()) {
     marker_msg.header.frame_id = "l_sole";
   } else {
     marker_msg.header.frame_id = "r_sole";
@@ -768,7 +768,7 @@ void QuinticWalkingNode::publishMarkers() {
   color.a = 1;
   marker_msg.color = color;
   geometry_msgs::Pose pose;
-  Eigen::Vector3d step_pos = _walkEngine.getFootstep().getLast();
+  Eigen::Vector3d step_pos = walk_engine_.getFootstep().getLast();
   geometry_msgs::Point point;
   point.x = step_pos[0];
   point.y = step_pos[1];
@@ -778,19 +778,19 @@ void QuinticWalkingNode::publishMarkers() {
   q.setRPY(0.0, 0.0, step_pos[2]);
   tf2::convert(q, pose.orientation);
   marker_msg.pose = pose;
-  _pubDebugMarker.publish(marker_msg);
+  pub_debug_marker_.publish(marker_msg);
 
   //last step center
   marker_msg.ns = "step_center";
-  marker_msg.id = _marker_id;
+  marker_msg.id = marker_id_;
   scale.x = 0.01;
   scale.y = 0.01;
   scale.z = 0.01;
   marker_msg.scale = scale;
-  _pubDebugMarker.publish(marker_msg);
+  pub_debug_marker_.publish(marker_msg);
 
   // next step
-  marker_msg.id = _marker_id;
+  marker_msg.id = marker_id_;
   marker_msg.ns = "next_step";
   scale.x = 0.20;
   scale.y = 0.10;
@@ -801,20 +801,20 @@ void QuinticWalkingNode::publishMarkers() {
   color.b = 1;
   color.a = 0.5;
   marker_msg.color = color;
-  step_pos = _walkEngine.getFootstep().getNext();
+  step_pos = walk_engine_.getFootstep().getNext();
   point.x = step_pos[0];
   point.y = step_pos[1];
   pose.position = point;
   q.setRPY(0.0, 0.0, step_pos[2]);
   tf2::convert(q, pose.orientation);
   marker_msg.pose = pose;
-  _pubDebugMarker.publish(marker_msg);
+  pub_debug_marker_.publish(marker_msg);
 
-  _marker_id++;
+  marker_id_++;
 }
 
 void QuinticWalkingNode::initializeEngine() {
-  _walkEngine.reset();
+  walk_engine_.reset();
 }
 
 }

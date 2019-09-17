@@ -3,8 +3,8 @@ This code is based on the original code by Quentin "Leph" Rouxel and Team Rhoban
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef QUINTICWALK_HPP
-#define QUINTICWALK_HPP
+#ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALKENGINE_HPP_
+#define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALKENGINE_HPP_
 
 #include <algorithm>
 #include <Eigen/Dense>
@@ -70,7 +70,7 @@ class QuinticWalk : public AbstractEngine<WalkPositions, WalkGoals> {
   /**
    * Assign given parameters vector
    */
-  void reconf_callback(const bitbots_quintic_walk_paramsConfig &params);
+  void reconfCallback(const bitbots_quintic_walk_paramsConfig &params);
 
   /**
    * Update the internal walk state
@@ -87,12 +87,12 @@ class QuinticWalk : public AbstractEngine<WalkPositions, WalkGoals> {
    * Return false is the target is
    * unreachable.
    */
-  void computeCartesianPosition(Eigen::Vector3d &trunkPos, Eigen::Vector3d &trunkAxis,
-                                Eigen::Vector3d &footPos, Eigen::Vector3d &footAxis, bool &isLeftsupportFoot);
+  void computeCartesianPosition(Eigen::Vector3d &trunk_pos, Eigen::Vector3d &trunk_axis,
+                                Eigen::Vector3d &foot_pos, Eigen::Vector3d &foot_axis, bool &is_leftsupport_foot);
 
   void
-  computeCartesianPositionAtTime(Eigen::Vector3d &trunkPos, Eigen::Vector3d &trunkAxis, Eigen::Vector3d &footPos,
-                                 Eigen::Vector3d &footAxis, bool &isLeftsupportFoot, double time);
+  computeCartesianPositionAtTime(Eigen::Vector3d &trunk_pos, Eigen::Vector3d &trunk_axis, Eigen::Vector3d &foot_pos,
+                                 Eigen::Vector3d &foot_axis, bool &is_leftsupport_foot, double time);
 
   void requestKick(bool left);
 
@@ -112,48 +112,48 @@ class QuinticWalk : public AbstractEngine<WalkPositions, WalkGoals> {
 
  private:
 
-  std::string _engineState;
+  std::string engine_state_;
 
   /**
    * Current footstep support
    * and flying last and next pose
    */
-  Footstep _footstep;
+  Footstep footstep_;
 
   /**
    * Movement phase between 0 and 1
    */
-  double _phase;
-  double _lastPhase;
+  double phase_;
+  double last_phase_;
 
-  double _timePaused;
+  double time_paused_;
 
   /**
    * Currently used parameters
    */
-  bitbots_quintic_walk_paramsConfig _params;
+  bitbots_quintic_walk_paramsConfig params_;
 
-  bool _leftKickRequested;
-  bool _rightKickRequested;
-  bool _pauseRequested;
+  bool left_kick_requested_;
+  bool right_kick_requested_;
+  bool pause_requested_;
 
   /**
    * Trunk pose and orientation
    * position, velocity and acceleration
    * at half cycle start
    */
-  Eigen::Vector3d _trunkPosAtLast;
-  Eigen::Vector3d _trunkVelAtLast;
-  Eigen::Vector3d _trunkAccAtLast;
-  Eigen::Vector3d _trunkAxisPosAtLast;
-  Eigen::Vector3d _trunkAxisVelAtLast;
-  Eigen::Vector3d _trunkAxisAccAtLast;
+  Eigen::Vector3d trunk_pos_at_last_;
+  Eigen::Vector3d trunk_vel_at_last_;
+  Eigen::Vector3d trunk_acc_at_last_;
+  Eigen::Vector3d trunk_axis_pos_at_last_;
+  Eigen::Vector3d trunk_axis_vel_at_last_;
+  Eigen::Vector3d trunk_axis_acc_at_last_;
 
   /**
    * Generated half walk
    * cycle trajectory
    */
-  Trajectories _trajs;
+  Trajectories trajs_;
 
   void updatePhase(double dt);
 
@@ -169,7 +169,7 @@ class QuinticWalk : public AbstractEngine<WalkPositions, WalkGoals> {
 
   void buildTrajectories(const Eigen::Vector3d &orders, bool start_movement, bool start_step, bool kick_step);
 
-  void buildWalkDisableTrajectories(const Eigen::Vector3d &orders, bool footInIdlePosition);
+  void buildWalkDisableTrajectories(const Eigen::Vector3d &orders, bool foot_in_idle_position);
 
   void saveCurrentTrunkState();
 

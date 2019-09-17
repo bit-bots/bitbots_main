@@ -10,8 +10,8 @@ namespace bitbots_quintic_walk {
 Footstep::Footstep(
     double foot_distance,
     bool is_left_support_foot) :
-    _footDistance(foot_distance),
-    _isLeftSupportFoot(is_left_support_foot),
+    foot_distance_(foot_distance),
+    is_left_support_foot_(is_left_support_foot),
     support_to_last_(),
     support_to_next_(),
     left_in_world_(),
@@ -24,39 +24,39 @@ Footstep::Footstep(
   //State initialization
   left_in_world_.setZero();
   right_in_world_.setZero();
-  reset(_isLeftSupportFoot);
+  reset(is_left_support_foot_);
 }
 
 void Footstep::setFootDistance(double foot_distance) {
-  _footDistance = foot_distance;
+  foot_distance_ = foot_distance;
 }
 
 double Footstep::getFootDistance() {
-  return _footDistance;
+  return foot_distance_;
 }
 
 void Footstep::reset(bool is_left_support_foot) {
-  _isLeftSupportFoot = is_left_support_foot;
+  is_left_support_foot_ = is_left_support_foot;
   support_to_last_.x() = 0.0;
-  if (_isLeftSupportFoot) {
-    support_to_last_.y() = -_footDistance;
+  if (is_left_support_foot_) {
+    support_to_last_.y() = -foot_distance_;
   } else {
-    support_to_last_.y() = _footDistance;
+    support_to_last_.y() = foot_distance_;
   }
   support_to_last_.z() = 0.0;
   support_to_next_ = support_to_last_;
 }
 
 void Footstep::resetInWorld(bool is_left_support_foot) {
-  if (_isLeftSupportFoot) {
-    right_in_world_.y() = -_footDistance;
+  if (is_left_support_foot_) {
+    right_in_world_.y() = -foot_distance_;
   } else {
-    left_in_world_.y() = _footDistance;
+    left_in_world_.y() = foot_distance_;
   }
 }
 
 bool Footstep::isLeftSupport() const {
-  return _isLeftSupportFoot;
+  return is_left_support_foot_;
 }
 const Eigen::Vector3d &Footstep::getLast() const {
   return support_to_last_;
@@ -76,13 +76,13 @@ void Footstep::stepFromSupport(const Eigen::Vector3d &diff) {
   support_to_last_ = diffInv(support_to_next_);
   support_to_next_ = diff;
   //Update world integrated position
-  if (_isLeftSupportFoot) {
+  if (is_left_support_foot_) {
     left_in_world_ = poseAdd(right_in_world_, diff);
   } else {
     right_in_world_ = poseAdd(left_in_world_, diff);
   }
   //Update current support foot
-  _isLeftSupportFoot = !_isLeftSupportFoot;
+  is_left_support_foot_ = !is_left_support_foot_;
 }
 
 void Footstep::stepFromOrders(const Eigen::Vector3d &diff) {
@@ -91,16 +91,16 @@ void Footstep::stepFromOrders(const Eigen::Vector3d &diff) {
   //No change in forward step
   tmp_diff.x() = diff.x();
   //Add lateral foot offset
-  if (_isLeftSupportFoot) {
-    tmp_diff.y() += _footDistance;
+  if (is_left_support_foot_) {
+    tmp_diff.y() += foot_distance_;
   } else {
-    tmp_diff.y() -= _footDistance;
+    tmp_diff.y() -= foot_distance_;
   }
   //Allow lateral step only on external foot
   //(internal foot will return to zero pose)
   if (
-      (_isLeftSupportFoot && diff.y() > 0.0) ||
-          (!_isLeftSupportFoot && diff.y() < 0.0)
+      (is_left_support_foot_ && diff.y() > 0.0) ||
+          (!is_left_support_foot_ && diff.y() < 0.0)
       ) {
     tmp_diff.y() += diff.y();
   }
