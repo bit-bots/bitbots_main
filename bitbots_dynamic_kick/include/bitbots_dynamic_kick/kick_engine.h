@@ -73,7 +73,7 @@ class PhaseTimings {
  *
  * The KickEngine utilizes a Stabilizer to balance the robot during foot movments.
  */
-class KickEngine : public bitbots_splines::AbstractEngine<KickPositions, KickGoals> {
+class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositions> {
  public:
   KickEngine();
 
