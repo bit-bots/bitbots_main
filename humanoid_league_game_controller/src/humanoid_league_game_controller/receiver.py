@@ -4,9 +4,7 @@
 from __future__ import unicode_literals, print_function
 
 """
-This module shows how the GameController Communication protocol can be used
-in python and also allows to be changed such that every team using python to
-interface with the GC can utilize the new protocol.
+This code provides a gamecontroller client fo the RoboCup Humanoid League.
 
 .. moduleauthor:: Nils Rokita <0rokita@informatik.uni-hamburg.de>
 .. moduleauthor:: Robert Kessler <8kessler@informatik.uni-hamburg.de>
@@ -131,8 +129,8 @@ class GameStateReceiver(object):
             rospy.logerr("Network Error: %s" % str(e))
 
     def on_new_gamestate(self, state):
-        """ Is called with the new game state after receiving a package
-            Needs to be implemented or set
+        """ Is called with the new game state after receiving a package.
+            The information are processed and published as a standard message to a ROS topic.
             :param state: Game State
         """
         if state.teams[0].team_number == self.team:
