@@ -95,8 +95,8 @@ void QuinticWalkingNode::run() {
       bool walkable_state = robot_state_==humanoid_league_msgs::RobotControlState::CONTROLABLE ||
           robot_state_==humanoid_league_msgs::RobotControlState::WALKING
           || robot_state_==humanoid_league_msgs::RobotControlState::MOTOR_OFF;
-      // see if the walk engine has new goals for us
-      bool new_goals = walk_engine_.updateState(dt, current_orders_, walkable_state);
+      // see if the walk engine has new goals for us currently not used
+      //bool new_goals = walk_engine_.updateState(dt, current_orders_, walkable_state);
       if (walk_engine_.getState()!="idle") { //todo
         calculateJointGoals();
       }
@@ -295,8 +295,7 @@ void QuinticWalkingNode::pressureCb(
     nib = msg.l_r_b;
   }
 
-  // sum to get overall pressure on foot
-  double s_sum = sob + sof + sif + sib;
+  // sum to get overall pressure on not support foot
   double n_sum = nob + nof + nif + nib;
 
   // ratios between pressures to get relative position of CoP

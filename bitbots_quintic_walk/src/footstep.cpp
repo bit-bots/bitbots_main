@@ -27,11 +27,11 @@ Footstep::Footstep(
   reset(is_left_support_foot_);
 }
 
-void Footstep::setfoot_distance(double foot_distance) {
+void Footstep::setFootDistance(double foot_distance) {
   foot_distance_ = foot_distance;
 }
 
-double Footstep::getfoot_distance() {
+double Footstep::getFootDistance() {
   return foot_distance_;
 }
 
@@ -105,7 +105,7 @@ void Footstep::stepFromOrders(const Eigen::Vector3d &diff) {
     tmp_diff.y() += diff.y();
   }
   //No change in turn (in order to
-  //rotate arroud trunk center)
+  //rotate around trunk center)
   tmp_diff.z() = diff.z();
 
   //Make the step

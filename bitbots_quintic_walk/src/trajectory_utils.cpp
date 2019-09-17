@@ -105,12 +105,8 @@ void trajectoriesSupportFootState(
     bool &is_double_support,
     bool &is_leftsupport_foot) {
   //Compute support foot state
-  is_double_support = (
-      traj.get("is_double_support").pos(t) >= 0.5 ?
-      true : false);
-  is_leftsupport_foot = (
-      traj.get("is_left_support_foot").pos(t) >= 0.5 ?
-      true : false);
+  is_double_support = traj.get("is_double_support").pos(t) >= 0.5;
+  is_leftsupport_foot = traj.get("is_left_support_foot").pos(t) >= 0.5;
 }
 
 double defaultCheckState(

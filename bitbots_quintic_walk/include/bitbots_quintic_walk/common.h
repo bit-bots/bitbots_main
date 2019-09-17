@@ -16,6 +16,7 @@
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <thread>
+#include <utility>
 #include <urdf/model.h>
 #include <urdf_model/model.h>
 
@@ -52,11 +53,11 @@ class RobotStatePublisher {
   std::vector<geometry_msgs::TransformStamped> msgs_;
 
  public:
-  RobotStatePublisher(const std::string &prefix) : prefix_(prefix) {}
+  explicit RobotStatePublisher(std::string prefix) : prefix_(std::move(prefix)) {}
   void publish(const robot_state::RobotState &robot_state) {
     if (prefix_.empty())
       return;
-    auto robot_model = robot_state.getRobotModel();
+    const auto& robot_model = robot_state.getRobotModel();
     auto time = ros::Time::now();
     msgs_.clear();
     for (auto &link_name : robot_model->getLinkModelNames()) {

@@ -74,7 +74,7 @@ class QuinticWalk{
 
   /**
    * Update the internal walk state
-   * (pĥase, trajectories) from given
+   * (phase, trajectories) from given
    * elapsed time since last update() call
    */
   bool updateState(double dt, const Eigen::Vector3d &orders, bool walkable_state);
@@ -173,9 +173,7 @@ class QuinticWalk{
 
   void saveCurrentTrunkState();
 
-  void useCurrentTrunkState();
-
-  void point(std::string spline, double t, double pos, double vel = 0, double acc = 0);
+  void point(const std::string& spline, double t, double pos, double vel = 0, double acc = 0);
 
   /**
    * Reset the trunk position and

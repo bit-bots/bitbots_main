@@ -1,6 +1,5 @@
 <launch>
   <arg name="sim" default="false"/>
-  <arg name="minibot" default="false"/>
   <arg name="wolfgang" default="false"/>
   <arg name="use_game_settings" default="false"/>
 

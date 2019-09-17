@@ -31,7 +31,7 @@ class Footstep {
    * Initialization with lateral
    * foot distance and support foot
    */
-  Footstep(
+  explicit Footstep(
       double foot_distance,
       bool is_left_support_foot = true);
 
@@ -39,8 +39,8 @@ class Footstep {
    * Set the lateral foot
    * distance parameters
    */
-  void setfoot_distance(double foot_distance);
-  double getfoot_distance();
+  void setFootDistance(double foot_distance);
+  double getFootDistance();
 
   /**
    * Reset to neutral position the current
@@ -67,11 +67,6 @@ class Footstep {
    * foot in support foot frame
    */
   const Eigen::Vector3d &getNext() const;
-
-  /**
-   * Returns the odometry change of the current step.
-   */
-  const Eigen::Vector3d &getOdom() const;
 
   /**
    * Left and right, current or next pose

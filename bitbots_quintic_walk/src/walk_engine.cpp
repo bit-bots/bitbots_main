@@ -201,7 +201,7 @@ void QuinticWalk::reset() {
   time_paused_ = 0.0;
 
   //Initialize the footstep
-  footstep_.setfoot_distance(params_.foot_distance);
+  footstep_.setFootDistance(params_.foot_distance);
   footstep_.reset(false);
   //Reset the trunk saved state
   resetTrunkLastState();
@@ -499,9 +499,9 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d &orders, bool start_mo
 
   //Define trunk yaw target
   //orientation position and velocity
-  //in euler angle and convertion
+  //in euler angle and conversion
   //to axis vector
-  Eigen::Vector3d euler_at_suport(
+  Eigen::Vector3d euler_at_support(
       0.0,
       params_.trunk_pitch
           + params_.trunk_pitch_p_coef_forward*footstep_.getNext().x()
@@ -513,7 +513,7 @@ void QuinticWalk::buildTrajectories(const Eigen::Vector3d &orders, bool start_mo
           + params_.trunk_pitch_p_coef_forward*footstep_.getNext().x()
           + params_.trunk_pitch_p_coef_turn*fabs(footstep_.getNext().z()),
       footstep_.getNext().z());
-  Eigen::Matrix3d mat_at_support = bitbots_splines::EulerIntrinsicToMatrix(euler_at_suport);
+  Eigen::Matrix3d mat_at_support = bitbots_splines::EulerIntrinsicToMatrix(euler_at_support);
   Eigen::Matrix3d mat_at_next = bitbots_splines::EulerIntrinsicToMatrix(euler_at_next);
   Eigen::Vector3d axis_at_support = bitbots_splines::MatrixToAxis(mat_at_support);
   Eigen::Vector3d axis_at_next = bitbots_splines::MatrixToAxis(mat_at_next);
@@ -732,7 +732,7 @@ void QuinticWalk::computeCartesianPositionAtTime(Eigen::Vector3d &trunk_pos,
   trajectoriesSupportFootState(time, trajs_, is_double_support, is_leftsupport_foot);
 }
 
-void QuinticWalk::point(std::string spline, double t, double pos, double vel, double acc) {
+void QuinticWalk::point(const std::string& spline, double t, double pos, double vel, double acc) {
   trajs_.get(spline).addPoint(t, pos, vel, acc);
 }
 
@@ -767,7 +767,7 @@ bool QuinticWalk::isDoubleSupport() {
 
 void QuinticWalk::reconfCallback(const bitbots_quintic_walk_paramsConfig &params) {
   params_ = params;
-  footstep_.setfoot_distance(params_.foot_distance);
+  footstep_.setFootDistance(params_.foot_distance);
 }
 
 void QuinticWalk::requestKick(bool left) {
