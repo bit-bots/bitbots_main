@@ -22,6 +22,7 @@ The main repository is `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`
    manual/tutorials/animation
    manual/tutorials/3d-Druck
    manual/tutorials/launch_files
+   manual/tutorials/python3-workspace
 
 
 .. toctree::
@@ -32,6 +33,7 @@ The main repository is `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`
    manual/software/vision
    manual/software/walking
    manual/software/bitfoot
+   manual/software/dsd
 
 .. toctree::
     :maxdepth: 1
