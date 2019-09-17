@@ -31,7 +31,7 @@ namespace bitbots_quintic_walk {
  * Expressed all target state in cartesian
  * space with respect to current cupport foot
  */
-class QuinticWalk{
+class QuinticWalk : public bitbots_splines::AbstractEngine<WalkPositions, WalkGoals> {
  public:
 
   /**
@@ -173,7 +173,7 @@ class QuinticWalk{
 
   void saveCurrentTrunkState();
 
-  void point(const std::string& spline, double t, double pos, double vel = 0, double acc = 0);
+  void point(const std::string &spline, double t, double pos, double vel = 0, double acc = 0);
 
   /**
    * Reset the trunk position and
