@@ -20,6 +20,7 @@ Welcome to bitbots_meta's documentation!
    manual/tutorials/animation
    manual/tutorials/3d-Druck
    manual/tutorials/launch_files
+   manual/tutorials/python3-workspace
 
 
 .. toctree::
@@ -29,7 +30,8 @@ Welcome to bitbots_meta's documentation!
    manual/software/ai
    manual/software/vision
    manual/software/walking
-    manual/software/bitfoot
+   manual/software/bitfoot
+   manual/software/dsd
 
 Hardware:
 

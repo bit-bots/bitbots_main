@@ -9,6 +9,7 @@ include:
         - bitbots_ros_control
     - bitbots_misc:
         - bitbots_bringup
+        - bitbots_docs
         - bitbots_teleop
     - bitbots_motion:
         - bitbots_animation_server

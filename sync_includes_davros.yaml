@@ -7,6 +7,7 @@ include:
         - bitbots_cm730 #?
     - bitbots_misc:
         - bitbots_bringup
+        - bitbots_docs
     - bitbots_vision:
         - bitbots_imageloader
         - bitbots_vision

@@ -2,6 +2,7 @@ include:
     - basler_drivers
     - bitbots_misc:
         - bitbots_bringup
+        - bitbots_docs
     - bitbots_msgs
     - bitbots_vision:
         - bitbots_vision
@@ -9,6 +10,7 @@ include:
         - white_balancer
     - humanoid_league_msgs
     - lib:
+        - geometry2
         - vision_opencv
     - wolves_image_provider
     - scripts
