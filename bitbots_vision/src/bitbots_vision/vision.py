@@ -98,7 +98,7 @@ class Vision:
 
     def main_loop(self):
         """
-        Main loop that processed the images and configuration changes
+        Main loop that processes the images and configuration changes
         """
         while not rospy.is_shutdown():
             # Lookup if there is another configuration available
