@@ -34,5 +34,5 @@ team_communication:
   goal: 'goal_relative'
   world_model_node: '/local_world_model'
   position: 'position'
-  ball: '/ball_relative'
+  ball: '/balls_relative'
   obstacles: '/obstacle_relative'

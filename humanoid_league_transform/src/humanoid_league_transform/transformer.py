@@ -26,7 +26,7 @@ class TransformBall(object):
 
         # time 0 takes the most current transform available
         self.tf_buffer.can_transform("base_footprint", "camera_optical_frame", rospy.Time(0), timeout=rospy.Duration(30))
-        rospy.Subscriber(rospy.get_param("~ball/ball_topic", "/ball_in_image"),
+        rospy.Subscriber(rospy.get_param("~ball/ball_topic", "/balls_in_image"),
                          BallsInImage,
                          self._callback_ball,
                          queue_size=1)
@@ -54,7 +54,7 @@ class TransformBall(object):
                          queue_size=1)
 
         self.marker_pub = rospy.Publisher("ballpoint", Marker, queue_size=1)
-        self.ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=1)
+        self.ball_relative_pub = rospy.Publisher("balls_relative", BallRelative, queue_size=1)
         if rospy.get_param("~lines/lines_relative", True):
             self.line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=1)
         if rospy.get_param("~lines/pointcloud", True):
