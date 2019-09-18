@@ -83,7 +83,7 @@ class RuntimeEvaluator:
         Calculates the average of all measurements in the queue once enough measurements are collected and prints the result.
         """
         # the results are only printed out after we collected enough measurements:
-        rospy.loginfo("Vision runtime evaluator: {} Progress:".format(self.name)+str(self.count+1)+"/"+str(self.queue_size))
+        rospy.loginfo("Vision runtime evaluator: {} Progress:".format(self.name)+str(self.count+1)+"/"+str(self.queue_size), logger_name="vision_evaluator")
         if self.count == self.queue_size - 1:
             avg = np.array(self.queue).mean()  # calculates the average of our measurements
-            rospy.loginfo("Vision runtime evaluator: {} timer: {}".format(self.name, avg))
+            rospy.loginfo("Vision runtime evaluator: {} timer: {}".format(self.name, avg), logger_name="vision_evaluator")

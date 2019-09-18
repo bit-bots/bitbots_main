@@ -280,7 +280,7 @@ class FieldBoundaryDetector(object):
         :return a boolean if point is under field_boundary:
         """
         if not 0 <= point[0] < len(self.get_full_field_boundary()):
-            rospy.logwarn('point_under_field_boundary got called with an out of bounds field_boundary point')
+            rospy.logwarn('point_under_field_boundary got called with an out of bounds field_boundary point', logger_name="vision_field_boundary")
             return False
         return point[1] + offset > self.get_full_field_boundary()[point[0]]
 
@@ -293,7 +293,7 @@ class FieldBoundaryDetector(object):
         :return a boolean if point is under the convex field_boundary:
         """
         if not 0 <= point[0] < len(self.get_full_convex_field_boundary()):
-            rospy.logwarn('point_under_field_boundary got called with an out of bounds field_boundary point')
+            rospy.logwarn('point_under_field_boundary got called with an out of bounds field_boundary point', logger_name="vision_field_boundary")
             return False
         return point[1] + offset > self.get_full_convex_field_boundary()[point[0]]
 
@@ -447,11 +447,13 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
                 return False
         # Switch to reversed iteration detector
         except tf2.LookupException:
-            rospy.logwarn_throttle(2, "TF for dynamic field boundary algorithm selection not active. Maybe TF becomes avalabile in a few seconds. Using reversed iteration method instead")
+            rospy.logwarn_throttle(2, "TF for dynamic field boundary algorithm selection not active. Maybe TF becomes avalabile in a few seconds. Using reversed iteration method instead",
+                logger_name="vision_field_boundary")
             return False
         except tf2.ExtrapolationException as ecp:
             # Warn user
-            rospy.logwarn_throttle(2, "Extrapolation exception! Not able to use tf for dynamic field boundary algorithm selection. Using reversed iteration method instead")
+            rospy.logwarn_throttle(2, "Extrapolation exception! Not able to use tf for dynamic field boundary algorithm selection. Using reversed iteration method instead",
+                logger_name="vision_field_boundary")
             return False
 
     def _compute_field_boundary_points(self):

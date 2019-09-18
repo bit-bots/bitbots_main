@@ -5,7 +5,7 @@ import rospy
 try:
     from pydarknet import Detector, Image
 except ImportError:
-    rospy.logerr("Not able to run Darknet YOLO! Its only executable under python3 with yolo34py or yolo34py-gpu installed.")
+    rospy.logerr("Not able to run Darknet YOLO! Its only executable under python3 with yolo34py or yolo34py-gpu installed.", logger_name="vision_yolo")
 import numpy as np
 from .candidate import CandidateFinder, BallDetector, Candidate
 

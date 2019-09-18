@@ -8,7 +8,7 @@ class FCNN03:
     Defines the FCNN neural network
     """
     def __init__(self, load_path):
-        rospy.loginfo("Setting up ball detection: FCNN03")
+        rospy.loginfo("Setting up ball detection: FCNN03", logger_name="vision_fcnn")
         # Make fcnn load path
         self._load_path = os.path.join(load_path, "model_final")
         # Define input and output shape of the fcnn
@@ -57,10 +57,9 @@ class FCNN03:
         self.init = tf.global_variables_initializer()
         self.session.run(self.init)
         self.saver = tf.train.Saver()
-        rospy.loginfo(" ")
-        rospy.loginfo("loading weights from '{}'...".format(self._load_path))
+        rospy.loginfo("loading weights from '{}'...".format(self._load_path), logger_name="vision_fcnn")
         self.saver.restore(self.session, self._load_path)
-        rospy.loginfo("loaded successfully.")
+        rospy.loginfo("loaded successfully.", logger_name="vision_fcnn")
 
     def _fcnn_model(self):
         """
