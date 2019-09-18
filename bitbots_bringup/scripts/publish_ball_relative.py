@@ -14,7 +14,7 @@ min_y = -10
 
 if __name__ == "__main__":
     rospy.init_node("ball_relative_publisher")
-    ball_relative_publisher = rospy.Publisher("ball_relative", BallRelative, queue_size=10, tcp_nodelay=True)
+    ball_relative_publisher = rospy.Publisher("balls_relative", BallRelative, queue_size=10, tcp_nodelay=True)
     ball_msg = BallRelative()
     x = random.uniform(min_x, max_x) / 4
     y = random.uniform(min_y, max_y) / 4

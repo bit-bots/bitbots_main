@@ -139,7 +139,7 @@ if __name__ == "__main__":
     tf_buffer.can_transform("base_footprint", "camera_optical_frame", rospy.Time(0), timeout=rospy.Duration(30))
     tf_buffer.can_transform("map", "camera_optical_frame", rospy.Time(0), timeout=rospy.Duration(30))
 
-    ball_pub = rospy.Publisher("/ball_relative", BallRelative, queue_size=1)
+    ball_pub = rospy.Publisher("/balls_relative", BallRelative, queue_size=1)
     goal_pub = rospy.Publisher("/goal_relative", GoalRelative, queue_size=1)
     model_subscriber = rospy.Subscriber("/gazebo/model_states", ModelStates, state_update, tcp_nodelay=True, queue_size=1)
     cam_info_sub = rospy.Subscriber("/camera_info", CameraInfo, cam_info_cb)
