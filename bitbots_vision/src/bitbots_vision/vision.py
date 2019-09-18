@@ -103,7 +103,7 @@ class Vision:
         while not rospy.is_shutdown():
             # Lookup if there is another configuration available
             if self.transfer_reconfigure_data is not None:
-                # Copy config from shard memory
+                # Copy config from shared memory
                 self.transfer_reconfigure_data_read_flag = True
                 reconfigure_data = deepcopy(self.transfer_reconfigure_data)
                 self.transfer_reconfigure_data_read_flag = False
