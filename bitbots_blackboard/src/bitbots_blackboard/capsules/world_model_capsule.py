@@ -173,6 +173,11 @@ class WorldModelCapsule:
 
         goal_left_buffer = PointStamped(goal_parts.header, left_post.foot_point)
         goal_right_buffer = PointStamped(goal_parts.header, right_post.foot_point)
+        
+        self.goal.header = goal_parts.header
+        self.goal.left_post = goal_left_buffer
+        self.goal.right_post = goal_right_buffer
+
         self.goal_odom.header = goal_parts.header
         if goal_left_buffer.header.frame_id != 'odom':
             try:
