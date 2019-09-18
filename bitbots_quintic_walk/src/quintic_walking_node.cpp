@@ -166,24 +166,14 @@ void QuinticWalkingNode::calculateJointGoals() {
 double QuinticWalkingNode::getTimeDelta() {
   // compute time delta depended if we are currently in simulation or reality
   double dt;
-  if (!simulation_active_) {
-    std::chrono::time_point<std::chrono::steady_clock> current_time = std::chrono::steady_clock::now();
-    // only take real time difference if walking was not stopped before
-    // using c++ time since it is more performant than ros time. We only need a local difference, so it doesnt matter as long as we are not simulating
-    auto time_diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - last_update_time_);
-    dt = time_diff_ms.count()/1000.0;
-    if (dt==0) {
-      ROS_WARN("dt was 0");
-      dt = 0.001;
-    }
-    last_update_time_ = current_time;
-  } else {
-    ROS_WARN_ONCE("Simulation active, using ROS time");
-    // use ros time for simulation
-    double current_ros_time = ros::Time::now().toSec();
-    dt = current_ros_time - last_ros_update_time_;
-    last_ros_update_time_ = current_ros_time;
+  double current_ros_time = ros::Time::now().toSec();
+  dt = current_ros_time - last_ros_update_time_;
+  if (dt==0) {
+    ROS_WARN("dt was 0");
+    dt = 0.001;
   }
+  last_ros_update_time_ = current_ros_time;
+
   // time is wrong when we run it for the first time
   if (first_run_) {
     first_run_ = false;
