@@ -112,7 +112,7 @@ class Vision:
                 self.configure_vision(*reconfigure_data)
             # Check if a new image is avalabile
             elif self.transfer_image_msg is not None:
-                # Copy image from shard memory
+                # Copy image from shared memory
                 image_msg = deepcopy(self.transfer_image_msg)
                 self.transfer_image_msg = None
                 # Run the vision pipeline
