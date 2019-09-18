@@ -23,8 +23,8 @@ class ButtonNode(object):
         # --- Params ---
         self.speaking_active = rospy.get_param("/buttons/speak_active", False)
         self.short_time = rospy.get_param("/buttons/short_time", 2)
-        self.manual_penality_mode = rospy.get_param("/buttons/manual_penalty", False)
-        self.foot_zero_mode = rospy.get_param("/buttons/foot_zero", True)
+        self.manual_penality_mode = rospy.get_param("/buttons/manual_penalty", True)
+        self.in_game_mode = rospy.get_param("/buttons/in_game", True)
         self.debounce_time = rospy.get_param("/buttons/debounce_time", 0)
 
         # --- Class variables ---
@@ -39,14 +39,14 @@ class ButtonNode(object):
         self.shoot_publisher = rospy.Publisher('/shoot_button', Bool, queue_size=1)
 
         if self.manual_penality_mode:
-            rospy.loginfo("Waiting of manual penalize service.")
+            rospy.loginfo("Waiting for manual penalize service.")
             try:
                 rospy.wait_for_service("manual_penalize", 0.5)
             except rospy.exceptions.ROSException as exc:
                 rospy.logerr("service 'manual_penalize' not available. Please start HCM")
             self.manual_penalize_method = rospy.ServiceProxy("manual_penalize", ManualPenalize)
 
-        if self.foot_zero_mode:
+        if not self.in_game_mode:
             rospy.loginfo("Waiting for foot zeroing service")
             try:
                 rospy.wait_for_service("set_foot_zero", 5.0)
@@ -72,7 +72,7 @@ class ButtonNode(object):
             self.button1 = False
             current_time = rospy.get_time() 
             if current_time - self.button1_time > self.debounce_time:
-                if current_time - self.button1_time < self.short_time:
+                if current_time - self.button1_time < self.short_time or self.in_game_mode:
                     self.button1_short()
                 else:
                     self.button1_long()
@@ -82,13 +82,16 @@ class ButtonNode(object):
             self.button2 = False
             current_time = rospy.get_time() 
             if current_time - self.button2_time > self.debounce_time:
-                if current_time - self.button2_time < self.short_time:
+                if current_time - self.button2_time < self.short_time or self.in_game_mode:
                     self.button2_short()
                 else:
                     self.button2_long()
             self.button2_time = 0
 
     def button1_short(self):
+        """
+        Unpenalizes the robot, if it is penalized and manual penalty mode is true.
+        """
         rospy.logwarn('Unpause button (1) pressed short')
         speak("1 short", self.speak_publisher, speaking_active=self.speaking_active)
         self.shoot_publisher.publish(Bool(True))
@@ -99,18 +102,25 @@ class ButtonNode(object):
             try:
                 response = self.manual_penalize_method(0)  # unpenalize
             except rospy.ServiceException as exc:
+                speak("Unpause failed", self.speak_publisher, speaking_active=self.speaking_active)
                 print("Penalize service did not process request: " + str(exc))
 
     def button1_long(self):
+        """
+        Zeroes foot sensors, if foot zero mode is true.
+        """
         rospy.logwarn('Unpause button (1) pressed long')
         speak("1 long", self.speak_publisher, speaking_active=self.speaking_active)
-        if self.foot_zero_mode:
-            try:
-                response = self.foot_zero_method()
-            except rospy.ServiceException as exc:
-                print("foot zeroing service did not process request: " + str(exc))
+        try:
+            response = self.foot_zero_method()
+        except rospy.ServiceException as exc:
+            speak("Foot zeroing failed", self.speak_publisher, speaking_active=self.speaking_active)
+            print("foot zeroing service did not process request: " + str(exc))
 
     def button2_short(self):
+        """
+        Penalizes the robot, if it is not penalized and manual penalty mode is true.
+        """
         rospy.logwarn('Pause button (2) pressed short')
         speak("2 short", self.speak_publisher, speaking_active=self.speaking_active)
         if self.manual_penality_mode:
@@ -119,9 +129,13 @@ class ButtonNode(object):
             try:
                 response = self.manual_penalize_method(1)  # penalize
             except rospy.ServiceException as exc:
+                speak("Pause failed", self.speak_publisher, speaking_active=self.speaking_active)
                 print("Penalize service did not process request: " + str(exc))
 
     def button2_long(self):
+        """
+        Logs that button 2 has been pressed long.
+        """
         rospy.logwarn('Pause button (2) pressed long')
         speak("2 long", self.speak_publisher, speaking_active=self.speaking_active)
 
