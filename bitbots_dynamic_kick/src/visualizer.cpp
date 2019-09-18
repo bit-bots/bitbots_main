@@ -2,7 +2,7 @@
 
 namespace bitbots_dynamic_kick {
 
-Visualizer::Visualizer(const std::string& base_topic) :
+Visualizer::Visualizer(const std::string &base_topic) :
     base_topic_(base_topic),
     params_() {
   /* make sure base_topic_ has consistent scheme */
@@ -27,7 +27,8 @@ void Visualizer::setParams(VisualizationParams params) {
   params_ = params;
 }
 
-void Visualizer::displayFlyingSplines(const bitbots_splines::Trajectories &splines, const std::string &support_foot_frame) {
+void Visualizer::displayFlyingSplines(const bitbots_splines::Trajectories &splines,
+                                      const std::string &support_foot_frame) {
   if (!isEnabled())
     return;
 
@@ -35,7 +36,7 @@ void Visualizer::displayFlyingSplines(const bitbots_splines::Trajectories &splin
   path.header.stamp = ros::Time::now();
   path.header.frame_id = support_foot_frame;
 
-  for (int i = 0; i < splines.size() * params_.spline_smoothness; i++) {
+  for (int i = 0; i < splines.size()*params_.spline_smoothness; i++) {
     geometry_msgs::PoseStamped pose;
     pose.header.stamp = path.header.stamp;
     pose.header.frame_id = support_foot_frame;

@@ -1,6 +1,5 @@
 #include <utility>
 
-
 #include "bitbots_dynamic_kick/stabilizer.h"
 #include "bitbots_dynamic_kick/dynamic_balancing_goal.h"
 #include "bitbots_dynamic_kick/reference_goals.h"

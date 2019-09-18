@@ -32,7 +32,7 @@ struct VisualizationParams {
 class Visualizer : bitbots_splines::AbstractVisualizer {
  public:
 
-  explicit Visualizer(const std::string& base_topic);
+  explicit Visualizer(const std::string &base_topic);
 
   void setParams(VisualizationParams params);
 

@@ -110,7 +110,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
 
   int getPercentDone() const override;
 
-  Trajectories getSplines() const override ;
+  Trajectories getSplines() const override;
 
   void setParams(KickParams params);
 
