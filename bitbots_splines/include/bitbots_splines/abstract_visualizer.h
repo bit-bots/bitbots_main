@@ -8,7 +8,13 @@
 namespace bitbots_splines {
 
 class AbstractVisualizer {
- public:
+ protected:
+  /**
+   * Utility function to create a visualization marker with default properties, i.e. spheric, 3cm wide, white.
+   * @param position The position of the marker
+   * @param frame The frame in which the position is given
+   * @return The visualization marker
+   */
   visualization_msgs::Marker getMarker(const tf2::Vector3 &position, const std::string &frame) {
     visualization_msgs::Marker marker;
 
