@@ -4,12 +4,12 @@ project(bitbots_splines)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rosconsole
-  std_msgs
-  eigen_conversions
-  bio_ik
-)
+        roscpp
+        rosconsole
+        std_msgs
+        eigen_conversions
+        bio_ik
+        )
 find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 
@@ -17,15 +17,15 @@ catkin_python_setup()
 
 
 catkin_package(
-    INCLUDE_DIRS include
-    LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS
+        INCLUDE_DIRS include
+        LIBRARIES ${PROJECT_NAME}
+        CATKIN_DEPENDS
         roscpp
-    DEPENDS EIGEN3
+        DEPENDS EIGEN3
 )
 
 include_directories(
-        include 
+        include
         ${EIGEN3_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
 )
@@ -36,18 +36,20 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 
 set(SOURCES
-    src/Spline/Polynom.cpp
-    src/Spline/SmoothSpline.cpp
-    src/Spline/Spline.cpp
-    src/Utils/NewtonBinomial.cpp
-    src/Utils/Combination.cpp
-    include/bitbots_splines/abstract_engine.h
-    include/bitbots_splines/abstract_stabilizer.h
-    include/bitbots_splines/abstract_ik.h
-    include/bitbots_splines/abstract_visualizer.h
-)
+        src/Spline/Polynom.cpp
+        src/Spline/SmoothSpline.cpp
+        src/Spline/Spline.cpp
+        src/Spline/pose_spline.cpp
+        src/Spline/position_spline.cpp
+        src/Utils/NewtonBinomial.cpp
+        src/Utils/Combination.cpp
+        include/bitbots_splines/abstract_engine.h
+        include/bitbots_splines/abstract_stabilizer.h
+        include/bitbots_splines/abstract_ik.h
+        include/bitbots_splines/abstract_visualizer.h
+        )
 
-set(CODE_LIBRARIES )
+set(CODE_LIBRARIES)
 
 add_library(${PROJECT_NAME} ${SOURCES})
 
