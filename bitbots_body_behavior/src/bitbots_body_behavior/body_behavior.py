@@ -14,7 +14,7 @@ import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf2_geometry_msgs import PoseStamped
 from humanoid_league_msgs.msg import BallRelative, GameState, HeadMode, Strategy, TeamData,\
-    PlayAnimationAction, GoalRelative, RobotControlState
+    PlayAnimationAction, GoalPartsRelative, RobotControlState
 
 from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider import dsd
@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     # TODO: callbacks away from the blackboard!
     rospy.Subscriber("ball_relative", BallRelative, D.blackboard.world_model.ball_callback)
-    rospy.Subscriber("goal_relative", GoalRelative, D.blackboard.world_model.goal_callback)
+    rospy.Subscriber("goal_parts_relative", GoalPartsRelative, D.blackboard.world_model.goal_parts_relative)
     rospy.Subscriber("gamestate", GameState, D.blackboard.gamestate.gamestate_callback)
     rospy.Subscriber("team_data", TeamData, D.blackboard.team_data.team_data_callback)
     rospy.Subscriber("amcl_pose", PoseWithCovarianceStamped, D.blackboard.world_model.position_callback)
