@@ -171,17 +171,22 @@ class Vision:
 
         # Check if the dynamic color space field color detector or the static field color detector should be used
         if self._use_dynamic_color_space:
-            # Set dynamic color space field color detector
-            self.field_color_detector = color.DynamicPixelListColorDetector(
-                config,
-                self.package_path)
+            # Check if params changed
+            if ros_utils.config_param_change(self.config, config, r'^field_color_detector_|vision_use_sim_color'):
+                # Set dynamic color space field color detector
+                self.field_color_detector = color.DynamicPixelListColorDetector(
+                    config,
+                    self.package_path)
         else:
             if self.sub_dynamic_color_space_msg_topic is not None:
                 self.sub_dynamic_color_space_msg_topic.unregister()
-            # Set the static field color detector
-            self.field_color_detector = color.PixelListColorDetector(
-                config,
-                self.package_path)
+            # Check if params changed
+            if ros_utils.config_param_change(self.config, config,
+                    r'^field_color_detector_|dynamic_color_space_|vision_use_sim_color'):
+                # Set the static field color detector
+                self.field_color_detector = color.PixelListColorDetector(
+                    config,
+                    self.package_path)
 
         # Get field boundary detector class by name from config
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
@@ -328,7 +333,7 @@ class Vision:
         # drops old images and cleans up queue. Still accepts very old images, that are most likely from ros bags.
         image_age = rospy.get_rostime() - image_msg.header.stamp
         if 1.0 < image_age.to_sec() < 1000.0:
-            rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message, because its too old!', logger_name="vision")
+            rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message, because its too old! ({} sec)'.format(image_age.to_sec()), logger_name="vision")
             return
 
         # Do not process images if reconfiguration is in progress

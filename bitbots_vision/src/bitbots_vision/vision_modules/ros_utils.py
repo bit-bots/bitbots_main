@@ -270,7 +270,8 @@ def build_goalpost_msgs(goalposts):
         # Create a empty post message
         post_msg = PostInImage()
         post_msg.width = goalpost.get_width()
-        post_msg.confidence = goalpost.get_rating()
+        if goalpost.get_rating() is not None:
+            post_msg.confidence = goalpost.get_rating()
         post_msg.foot_point.x = goalpost.get_center_x()
         post_msg.foot_point.y = goalpost.get_lower_right_y()
         post_msg.top_point = post_msg.foot_point
@@ -382,7 +383,8 @@ def build_obstacle_msgs(obstacle_color, detections):
         obstacle_msg.top_left.y = detected_obstacle.get_upper_left_y()
         obstacle_msg.height = int(detected_obstacle.get_height())
         obstacle_msg.width = int(detected_obstacle.get_width())
-        obstacle_msg.confidence = detected_obstacle.get_rating()
+        if detected_obstacle.get_rating() is not None:
+            obstacle_msg.confidence = detected_obstacle.get_rating()
         obstacle_msg.playerNumber = 42
         message_list.append(obstacle_msg)
     return message_list

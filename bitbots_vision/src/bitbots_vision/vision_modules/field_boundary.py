@@ -238,7 +238,8 @@ class FieldBoundaryDetector(object):
         :return: whether the candidate is under the field_boundary or not
         """
         footpoint = candidate.get_lower_center_point()
-        return self.point_under_field_boundary(footpoint)
+        footpoint_with_offset = (footpoint[0], footpoint[1] + y_offset)
+        return self.point_under_field_boundary(footpoint_with_offset)
 
     def candidate_under_convex_field_boundary(self, candidate, y_offset=0):
         # type: (tuple, int) -> bool
@@ -249,7 +250,8 @@ class FieldBoundaryDetector(object):
         :return: whether the candidate is under the convex field_boundary or not
         """
         footpoint = candidate.get_lower_center_point()
-        return self.point_under_convex_field_boundary(footpoint)
+        footpoint_with_offset = (footpoint[0], footpoint[1] + y_offset)
+        return self.point_under_convex_field_boundary(footpoint_with_offset)
 
     def candidates_under_field_boundary(self, candidates, y_offset=0):
         # type: (list, int) -> list
