@@ -114,7 +114,7 @@ class Vision:
         if ros_utils.config_param_change(self.config, config, 'vision_publish_debug_image'):
             self._publish_debug_image = config['vision_publish_debug_image']
             if self._publish_debug_image:
-                rospy.logwarn('Debug images are enabled')
+                rospy.loginfo('Debug images are enabled')
             else:
                 rospy.loginfo('Debug images are disabled')
 
@@ -122,15 +122,15 @@ class Vision:
         if ros_utils.config_param_change(self.config, config, 'ball_fcnn_publish_output'):
             self._ball_fcnn_publish_output = config['ball_fcnn_publish_output']
             if self._ball_fcnn_publish_output:
-                rospy.logwarn('ball FCNN output publishing is enabled')
+                rospy.loginfo('ball FCNN output publishing is enabled')
             else:
-                rospy.logwarn('ball FCNN output publishing is disabled')
+                rospy.loginfo('ball FCNN output publishing is disabled')
 
         # Should the whole fcnn output be published?
         if ros_utils.config_param_change(self.config, config, 'ball_fcnn_publish_debug_img'):
             self._publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
             if self._publish_fcnn_debug_image:
-                rospy.logwarn('Ball FCNN debug image publishing is enabled')
+                rospy.loginfo('Ball FCNN debug image publishing is enabled')
             else:
                 rospy.loginfo('Ball FCNN debug image publishing is disabled')
 
@@ -138,7 +138,7 @@ class Vision:
         if ros_utils.config_param_change(self.config, config, 'vision_publish_HSV_mask_image'):
             self._publish_HSV_mask_image = config['vision_publish_HSV_mask_image']
             if self._publish_HSV_mask_image:
-                rospy.logwarn('HSV mask image publishing is enabled')
+                rospy.loginfo('HSV mask image publishing is enabled')
             else:
                 rospy.loginfo('HSV mask image publishing is disabled')
 
@@ -146,14 +146,14 @@ class Vision:
         if ros_utils.config_param_change(self.config, config, 'vision_publish_field_mask_image'):
             self._publish_field_mask_image = config['vision_publish_field_mask_image']
             if self._publish_field_mask_image:
-                rospy.logwarn('(Dynamic color space-) Field mask image publishing is enabled')
+                rospy.loginfo('(Dynamic color space-) Field mask image publishing is enabled')
             else:
                 rospy.loginfo('(Dynamic color space-) Field mask image publishing is disabled')
 
         # Print, if the vision uses the sim color or not
         if ros_utils.config_param_change(self.config, config, 'vision_use_sim_color'):
             if config['vision_use_sim_color']:
-                rospy.logwarn('Loaded color space for SIMULATOR.')
+                rospy.loginfo('Loaded color space for SIMULATOR.')
             else:
                 rospy.loginfo('Loaded color space for REAL WORLD.')
 
