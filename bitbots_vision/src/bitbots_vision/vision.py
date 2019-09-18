@@ -613,7 +613,6 @@ class Vision:
         Starts the conventional calculations
         """
         # Modules that should run their calculations
-        # TODO: move this to DynReconf and add empty list to init
         self.conventional_modules = [
             self.field_color_detector,
             self.white_color_detector,

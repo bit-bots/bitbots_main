@@ -152,7 +152,6 @@ class LineDetector:
         """
         filtered_linepoints = []
         for linepoint in linepoints:
-            # TODO: use list comprehension instead of map
             linepoint_not_in_candidate = [not candidate.point_in_candidate(linepoint) for candidate in candidates]
             if all(linepoint_not_in_candidate):
                 filtered_linepoints.append(linepoint)
