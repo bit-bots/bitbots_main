@@ -16,7 +16,6 @@ https://github.com/Rhoban/model/
 #include "bitbots_splines/AxisAngle.h"
 #include "bitbots_splines/Angle.h"
 #include "bitbots_splines/Euler.h"
-#include "bitbots_quintic_walk/common.h"
 #include <bitbots_quintic_walk/bitbots_quintic_walk_paramsConfig.h>
 #include <math.h>
 #include <tf2/LinearMath/Transform.h>
