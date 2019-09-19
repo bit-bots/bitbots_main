@@ -153,7 +153,7 @@ class Vision:
         # Print, if the vision uses the sim color or not
         if ros_utils.config_param_change(self.config, config, 'vision_use_sim_color'):
             if config['vision_use_sim_color']:
-                rospy.loginfo('Loaded color space for SIMULATOR.')
+                rospy.logwarn('Loaded color space for SIMULATOR.')
             else:
                 rospy.loginfo('Loaded color space for REAL WORLD.')
 
