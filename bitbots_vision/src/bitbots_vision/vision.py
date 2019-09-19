@@ -20,7 +20,7 @@ from bitbots_msgs.msg import Config, ColorSpace
 try:
     from profilehooks import profile, timecall # Profilehooks profiles certain functions in you add the @profile or @timecall decorator.
 except ImportError:
-    rospy.loginfo("No Profiling avalabile")
+    rospy.loginfo("No Profiling avalabile", logger_name="vision")
 
 
 class Vision:
@@ -36,7 +36,7 @@ class Vision:
         self.package_path = rospack.get_path('bitbots_vision')
 
         rospy.init_node('bitbots_vision')
-        rospy.loginfo('Initializing vision...')
+        rospy.loginfo('Initializing vision...', logger_name="vision")
 
         self.bridge = CvBridge()
 
@@ -156,48 +156,48 @@ class Vision:
         if ros_utils.config_param_change(self.config, config, 'vision_publish_debug_image'):
             self._publish_debug_image = config['vision_publish_debug_image']
             if self._publish_debug_image:
-                rospy.loginfo('Debug images are enabled')
+                rospy.loginfo('Debug images are enabled', logger_name="vision")
             else:
-                rospy.loginfo('Debug images are disabled')
+                rospy.loginfo('Debug images are disabled', logger_name="vision")
 
         # Should the fcnn output (only under the field boundary) be published?
         if ros_utils.config_param_change(self.config, config, 'ball_fcnn_publish_output'):
             self._ball_fcnn_publish_output = config['ball_fcnn_publish_output']
             if self._ball_fcnn_publish_output:
-                rospy.loginfo('ball FCNN output publishing is enabled')
+                rospy.loginfo('ball FCNN output publishing is enabled', logger_name="vision")
             else:
-                rospy.loginfo('ball FCNN output publishing is disabled')
+                rospy.loginfo('ball FCNN output publishing is disabled', logger_name="vision")
 
         # Should the whole fcnn output be published?
         if ros_utils.config_param_change(self.config, config, 'ball_fcnn_publish_debug_img'):
             self._publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
             if self._publish_fcnn_debug_image:
-                rospy.loginfo('Ball FCNN debug image publishing is enabled')
+                rospy.loginfo('Ball FCNN debug image publishing is enabled', logger_name="vision_fcnn")
             else:
-                rospy.loginfo('Ball FCNN debug image publishing is disabled')
+                rospy.loginfo('Ball FCNN debug image publishing is disabled', logger_name="vision_fcnn")
 
         # Should the HSV mask images be published?
         if ros_utils.config_param_change(self.config, config, 'vision_publish_HSV_mask_image'):
             self._publish_HSV_mask_image = config['vision_publish_HSV_mask_image']
             if self._publish_HSV_mask_image:
-                rospy.loginfo('HSV mask image publishing is enabled')
+                rospy.loginfo('HSV mask image publishing is enabled', logger_name="vision_hsv_color_detector")
             else:
-                rospy.loginfo('HSV mask image publishing is disabled')
+                rospy.loginfo('HSV mask image publishing is disabled', logger_name="vision_hsv_color_detector")
 
         # Should the (dynamic color space-) field mask image be published?
         if ros_utils.config_param_change(self.config, config, 'vision_publish_field_mask_image'):
             self._publish_field_mask_image = config['vision_publish_field_mask_image']
             if self._publish_field_mask_image:
-                rospy.loginfo('(Dynamic color space-) Field mask image publishing is enabled')
+                rospy.loginfo('(Dynamic color space-) Field mask image publishing is enabled', logger_name="dynamic_color_space")
             else:
-                rospy.loginfo('(Dynamic color space-) Field mask image publishing is disabled')
+                rospy.loginfo('(Dynamic color space-) Field mask image publishing is disabled', logger_name="dynamic_color_space")
 
         # Print, if the vision uses the sim color or not
         if ros_utils.config_param_change(self.config, config, 'vision_use_sim_color'):
             if config['vision_use_sim_color']:
-                rospy.logwarn('Loaded color space for SIMULATOR.')
+                rospy.logwarn('Loaded color space for SIMULATOR.', logger_name="vision")
             else:
-                rospy.loginfo('Loaded color space for REAL WORLD.')
+                rospy.loginfo('Loaded color space for REAL WORLD.', logger_name="vision")
 
         # Set the white color detector
         if ros_utils.config_param_change(self.config, config, r'^white_color_detector_'):
@@ -272,10 +272,10 @@ class Vision:
                 ball_fcnn_path = os.path.join(self.package_path, 'models', config['fcnn_model_path'])
                 # Check if it exists
                 if not os.path.exists(os.path.join(ball_fcnn_path, "model_final.index")):
-                    rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist! Maybe its a YOLO model? Look twice.')
+                    rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist! Maybe its a YOLO model? Look twice.', logger_name="vision_fcnn")
                 else:
                     self.ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
-                    rospy.loginfo("FCNN vision is running now")
+                    rospy.loginfo("FCNN vision is running now", logger_name="vision_fcnn")
             #Check if ball_fcnn config or the neural network type has changed
             if ros_utils.config_param_change(self.config, config, r'^ball_fcnn_') or \
                     ros_utils.config_param_change(self.config, config, 'neural_network_type'):
@@ -293,7 +293,7 @@ class Vision:
                 yolo_model_path = os.path.join(self.package_path, 'models', config['yolo_model_path'])
                 # Check if it exists
                 if not os.path.exists(os.path.join(yolo_model_path, "yolo_weights.weights")):
-                    rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist! Maybe its an fcnn model?')
+                    rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist! Maybe its an fcnn model?', logger_name="vision_yolo")
                 else:
                     # Decide which yolo implementation should be used
                     if config['neural_network_type'] == 'yolo_opencv':
@@ -305,7 +305,7 @@ class Vision:
                     # Set both ball and goalpost detector
                     self.ball_detector = yolo_handler.YoloBallDetector(config, self.yolo)
                     self.goalpost_detector = yolo_handler.YoloGoalpostDetector(self.yolo)
-                    rospy.loginfo(config['neural_network_type'] + " vision is running now")
+                    rospy.loginfo(config['neural_network_type'] + " vision is running now", logger_name="vision_yolo")
 
         self._register_or_update_all_subscribers(config)
 
@@ -369,7 +369,7 @@ class Vision:
         # drops old images and cleans up queue. Still accepts very old images, that are most likely from ros bags.
         image_age = rospy.get_rostime() - image_msg.header.stamp
         if 1.0 < image_age.to_sec() < 1000.0:
-            rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message, because its too old! ({} sec)'.format(image_age.to_sec()))
+            rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message, because its too old! ({} sec)'.format(image_age.to_sec()), logger_name="vision")
             return
 
         # Check flag
@@ -390,7 +390,7 @@ class Vision:
 
         # Skip if image is None
         if image is None:
-            rospy.logdebug("Image content is None :(")
+            rospy.logdebug("Image content is None :(", logger_name="vision")
             return
 
         # Check if its the first image callback
@@ -664,7 +664,7 @@ class Vision:
 
         # Notify if there is a camera cap detected
         if sum(mean) < self._blind_threshold:
-            rospy.logerr("Image is too dark! Camera cap not removed?")
+            rospy.logerr("Image is too dark! Camera cap not removed?", logger_name="vision")
             ros_utils.speak("Hey!   Remove my camera cap!", self.speak_publisher)
 
 

@@ -146,7 +146,7 @@ def add_model_enums(cfg_type, package_path):
                 'value': folder,
                 'description': 'yolo {}'.format(folder)})
         else:
-            rospy.logwarn("Directory '{}' contains unknown model type. Please remove all non model directories from the 'models' directory!".format(folder))
+            rospy.logwarn("Directory '{}' contains unknown model type. Please remove all non model directories from the 'models' directory!".format(folder), logger_name="vision_ros_utils")
     # Add enums to configuration
     _change_enum_items(cfg_type, 'fcnn_model_path', fcnn_paths)
     _change_enum_items(cfg_type, 'yolo_model_path', yolo_paths)
@@ -203,7 +203,7 @@ def create_or_update_publisher(old_config, new_config, publisher_object, topic_k
             latch=latch,
             headers=headers,
             queue_size=queue_size)
-        rospy.logdebug("Registered new publisher to " + str(new_config[topic_key]))
+        rospy.logdebug("Registered new publisher to " + str(new_config[topic_key]), logger_name="vision_ros_utils")
     return publisher_object
 
 def create_or_update_subscriber(old_config, new_config, subscriber_object, topic_key, data_class, callback=None, callback_args=None, queue_size=1, buff_size=65536, tcp_nodelay=False):
@@ -236,7 +236,7 @@ def create_or_update_subscriber(old_config, new_config, subscriber_object, topic
             queue_size=queue_size,
             buff_size=buff_size,
             tcp_nodelay=tcp_nodelay)
-        rospy.logdebug("Registered new subscriber at " + str(new_config[topic_key]))
+        rospy.logdebug("Registered new subscriber at " + str(new_config[topic_key]), logger_name="vision_ros_utils")
     return subscriber_object
 
 def build_goal_parts_msg(header, goal_parts):
