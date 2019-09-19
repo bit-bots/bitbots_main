@@ -157,14 +157,13 @@ class YoloHandlerOpenCV(YoloHandler):
         self.ball_candidates = None
         self.results = None
 
-    @staticmethod
-    def get_output_layers(net):
+    def get_output_layers(self):
         """
         Library stuff
         """
-        layer_names = net.getLayerNames()
+        layer_names = self.net.getLayerNames()
 
-        output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+        output_layers = [layer_names[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
 
         return output_layers
 
@@ -196,7 +195,7 @@ class YoloHandlerOpenCV(YoloHandler):
             # Set image
             self.net.setInput(self.blob)
             # Run net
-            self.outs = self.net.forward(YoloHandlerOpenCV.get_output_layers(self.net))
+            self.outs = self.net.forward(self.get_output_layers())
             # Create lists
             class_ids = []
             confidences = []

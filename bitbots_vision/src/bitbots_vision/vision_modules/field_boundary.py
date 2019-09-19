@@ -457,6 +457,10 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
             rospy.logwarn_throttle(2, "Extrapolation exception! Not able to use tf for dynamic field boundary algorithm selection. Using reversed iteration method instead",
                 logger_name="vision_field_boundary")
             return False
+        except tf2.ConnectivityException as ecp:
+            # Warn user
+            rospy.logwarn_throttle(2, "Connectivity exception! Not able to use tf for dynamic field boundary algorithm selection. Using reversed iteration method instead. \n" + ecp)
+            return False
 
     def _compute_field_boundary_points(self):
         """

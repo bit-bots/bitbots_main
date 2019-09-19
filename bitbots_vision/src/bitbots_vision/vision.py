@@ -5,6 +5,8 @@ import cv2
 import rospy
 import rospkg
 import threading
+import time
+from copy import deepcopy
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
@@ -76,8 +78,13 @@ class Vision:
         # Needed for operations that should only be executed on the first image
         self._first_image_callback = True
 
-        # Needed to determine whether reconfiguration is currently in progress or not
-        self.reconfigure_active = False
+        # Reconfigure dict transfer variable
+        self.transfer_reconfigure_data = None
+        self.transfer_reconfigure_data_read_flag = False
+
+        # Image transfer variable
+        self.transfer_image_msg = None
+        self.transfer_image_msg_read_flag = False
 
         # Add model enums to config
         ros_utils.add_model_enums(VisionConfig, self.package_path)
@@ -86,17 +93,52 @@ class Vision:
         # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
 
-        rospy.spin()
+        # Run the vision main loop
+        self.main_loop()
+
+    def main_loop(self):
+        """
+        Main loop that processes the images and configuration changes
+        """
+        while not rospy.is_shutdown():
+            # Lookup if there is another configuration available
+            if self.transfer_reconfigure_data is not None:
+                # Copy config from shared memory
+                self.transfer_reconfigure_data_read_flag = True
+                reconfigure_data = deepcopy(self.transfer_reconfigure_data)
+                self.transfer_reconfigure_data_read_flag = False
+                self.transfer_reconfigure_data = None
+                # Run vision reconfiguration
+                self.configure_vision(*reconfigure_data)
+            # Check if a new image is avalabile
+            elif self.transfer_image_msg is not None:
+                # Copy image from shared memory
+                image_msg = deepcopy(self.transfer_image_msg)
+                self.transfer_image_msg = None
+                # Run the vision pipeline
+                self.handle_image(image_msg)
+                # Now the first image has been processed
+                self._first_image_callback = False
+            else:
+                time.sleep(0.01)
 
     def _dynamic_reconfigure_callback(self, config, level):
         """
-        Callback for the dynamic reconfigure configuration. This callback also gets calles for the inertial configuration.
+        Callback for the dynamic reconfigure configuration.
 
         :param config: New config
         :param level: The level is a definable int in the Vision.cfg file. All changed params are or ed together by dynamic reconfigure.
         """
-        # Deactivates Vision temporarally
-        self.reconfigure_active = True
+        # Check flag
+        while self.transfer_reconfigure_data_read_flag and not rospy.is_shutdown():
+            time.sleep(0.01)
+        # Set data
+        self.transfer_reconfigure_data = (config, level)
+
+        return config
+
+
+    def configure_vision(self, config, level):
 
         self._register_or_update_all_publishers(config)
 
@@ -114,7 +156,7 @@ class Vision:
         if ros_utils.config_param_change(self.config, config, 'vision_publish_debug_image'):
             self._publish_debug_image = config['vision_publish_debug_image']
             if self._publish_debug_image:
-                rospy.logwarn('Debug images are enabled', logger_name="vision")
+                rospy.loginfo('Debug images are enabled', logger_name="vision")
             else:
                 rospy.loginfo('Debug images are disabled', logger_name="vision")
 
@@ -122,15 +164,15 @@ class Vision:
         if ros_utils.config_param_change(self.config, config, 'ball_fcnn_publish_output'):
             self._ball_fcnn_publish_output = config['ball_fcnn_publish_output']
             if self._ball_fcnn_publish_output:
-                rospy.logwarn('ball FCNN output publishing is enabled', logger_name="vision")
+                rospy.loginfo('ball FCNN output publishing is enabled', logger_name="vision")
             else:
-                rospy.logwarn('ball FCNN output publishing is disabled', logger_name="vision")
+                rospy.loginfo('ball FCNN output publishing is disabled', logger_name="vision")
 
         # Should the whole fcnn output be published?
         if ros_utils.config_param_change(self.config, config, 'ball_fcnn_publish_debug_img'):
             self._publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
             if self._publish_fcnn_debug_image:
-                rospy.logwarn('Ball FCNN debug image publishing is enabled', logger_name="vision_fcnn")
+                rospy.loginfo('Ball FCNN debug image publishing is enabled', logger_name="vision_fcnn")
             else:
                 rospy.loginfo('Ball FCNN debug image publishing is disabled', logger_name="vision_fcnn")
 
@@ -138,7 +180,7 @@ class Vision:
         if ros_utils.config_param_change(self.config, config, 'vision_publish_HSV_mask_image'):
             self._publish_HSV_mask_image = config['vision_publish_HSV_mask_image']
             if self._publish_HSV_mask_image:
-                rospy.logwarn('HSV mask image publishing is enabled', logger_name="vision_hsv_color_detector")
+                rospy.loginfo('HSV mask image publishing is enabled', logger_name="vision_hsv_color_detector")
             else:
                 rospy.loginfo('HSV mask image publishing is disabled', logger_name="vision_hsv_color_detector")
 
@@ -146,7 +188,7 @@ class Vision:
         if ros_utils.config_param_change(self.config, config, 'vision_publish_field_mask_image'):
             self._publish_field_mask_image = config['vision_publish_field_mask_image']
             if self._publish_field_mask_image:
-                rospy.logwarn('(Dynamic color space-) Field mask image publishing is enabled', logger_name="dynamic_color_space")
+                rospy.loginfo('(Dynamic color space-) Field mask image publishing is enabled', logger_name="dynamic_color_space")
             else:
                 rospy.loginfo('(Dynamic color space-) Field mask image publishing is disabled', logger_name="dynamic_color_space")
 
@@ -169,20 +211,19 @@ class Vision:
         if ros_utils.config_param_change(self.config, config, r'^blue_color_detector_'):
             self.blue_color_detector = color.HsvSpaceColorDetector(config, "blue")
 
-        # Check if the dynamic color space field color detector or the static field color detector should be used
-        if self._use_dynamic_color_space:
-            # Check if params changed
-            if ros_utils.config_param_change(self.config, config, r'^field_color_detector_|vision_use_sim_color'):
+        # Check if params changed
+        if ros_utils.config_param_change(self.config, config,
+                r'^field_color_detector_|dynamic_color_space_|vision_use_sim_color'):
+            # Check if the dynamic color space field color detector or the static field color detector should be used
+            if self._use_dynamic_color_space:
                 # Set dynamic color space field color detector
                 self.field_color_detector = color.DynamicPixelListColorDetector(
                     config,
                     self.package_path)
-        else:
-            if self.sub_dynamic_color_space_msg_topic is not None:
-                self.sub_dynamic_color_space_msg_topic.unregister()
-            # Check if params changed
-            if ros_utils.config_param_change(self.config, config,
-                    r'^field_color_detector_|dynamic_color_space_|vision_use_sim_color'):
+            else:
+                # Unregister old subscriber
+                if self.sub_dynamic_color_space_msg_topic is not None:
+                    self.sub_dynamic_color_space_msg_topic.unregister()
                 # Set the static field color detector
                 self.field_color_detector = color.PixelListColorDetector(
                     config,
@@ -280,11 +321,6 @@ class Vision:
         # The old config gets replaced with the new config
         self.config = config
 
-        # Activate Vision again
-        self.reconfigure_active = False
-
-        return config
-
     def _register_or_update_all_publishers(self, config):
         # type: (dict) -> None
         """
@@ -336,22 +372,12 @@ class Vision:
             rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message, because its too old! ({} sec)'.format(image_age.to_sec()), logger_name="vision")
             return
 
-        # Do not process images if reconfiguration is in progress
-        if self.reconfigure_active:
-            rospy.loginfo("Dropped image due to dynamic reconfigure callback!")
+        # Check flag
+        if self.transfer_image_msg_read_flag:
             return
 
-        # Catch type errors that occur during reconfiguration :(
-        try:
-            self.handle_image(image_msg)
-            # Now this is not the first image callback anymore
-            self._first_image_callback = False
-        except (TypeError, cv2.error):
-            # Forward the exception if no dynamic reconfiguration is currently active.
-            if not self.reconfigure_active:
-                raise
-            else:
-                rospy.loginfo("Dropped image due to dynamic reconfigure callback!")
+        # Transfer the image to the main thread
+        self.transfer_image_msg = image_msg
 
     def handle_image(self, image_msg):
         """
