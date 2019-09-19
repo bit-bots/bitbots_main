@@ -89,7 +89,7 @@ class LiveToolSender():
         rospy.init_node('udp_listener', anonymous=False)
 
         # Subscriptions
-        rospy.Subscriber("/balls_relative", BallRelative, self.callback_ball_location)
+        rospy.Subscriber("/ball_relative", BallRelative, self.callback_ball_location)
         rospy.Subscriber("/amcl_pose", PoseWithCovarianceStamped, self.callback_amcl_pose)
         rospy.Subscriber("/obstacles_relative", ObstaclesRelative, self.callback_obstacles_relative)
         #rospy.Subscriber("/goal_relative", GoalRelative, callback_goal_relative)

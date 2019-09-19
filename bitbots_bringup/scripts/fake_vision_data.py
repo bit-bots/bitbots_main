@@ -20,7 +20,7 @@ class FakeDataGenerator():
         self.obstacle_image_pub = rospy.Publisher("/obstacles_in_image", ObstaclesInImage, queue_size=1, tcp_nodelay=True)
 
         # relative
-        self.ball_rel_pub = rospy.Publisher("/balls_relative", BallRelative, queue_size=1, tcp_nodelay=True)
+        self.ball_rel_pub = rospy.Publisher("/ball_relative", BallRelative, queue_size=1, tcp_nodelay=True)
         self.goal_rel_pub = rospy.Publisher("/goal_relative", GoalRelative, queue_size=1, tcp_nodelay=True)
         self.obstacle_rel_pub = rospy.Publisher("/obstacles_relative", ObstaclesRelative, queue_size=1, tcp_nodelay=True)
         self.line_rel_pub = rospy.Publisher("/lines_relative", LineInformationRelative, queue_size=1, tcp_nodelay=True)
