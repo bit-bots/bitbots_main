@@ -268,8 +268,12 @@ class Vision:
 
         self._register_or_update_all_subscribers(config)
 
-        # Define Modules that should run their calculations (modules should exist, theirfore its located here)
+        # Define Modules that should run their calculations (modules should exist, therefore its located here)
         self.conventional_modules = [
+            self.field_color_detector,
+            self.white_color_detector,
+            self.red_color_detector,
+            self.blue_color_detector,
             self.obstacle_detector,
             self.line_detector,
         ]
@@ -612,15 +616,6 @@ class Vision:
         """
         Starts the conventional calculations
         """
-        # Modules that should run their calculations
-        self.conventional_modules = [
-            self.field_color_detector,
-            self.white_color_detector,
-            self.red_color_detector,
-            self.blue_color_detector,
-            self.obstacle_detector,
-            self.line_detector,
-        ]
         # Run all modules
         for module in self.conventional_modules:
             module.compute()
