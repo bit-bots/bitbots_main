@@ -54,7 +54,7 @@ class TransformBall(object):
                          queue_size=1)
 
         self.marker_pub = rospy.Publisher("ballpoint", Marker, queue_size=1)
-        self.ball_relative_pub = rospy.Publisher("balls_relative", BallRelative, queue_size=1)
+        self.ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=1)
         if rospy.get_param("~lines/lines_relative", True):
             self.line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=1)
         if rospy.get_param("~lines/pointcloud", True):
