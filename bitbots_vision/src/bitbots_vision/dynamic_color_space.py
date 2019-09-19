@@ -220,7 +220,7 @@ class DynamicColorSpace:
         for new_color_value_list in queue:
             color_space = np.append(color_space, new_color_value_list[:, :], axis=0)
         # Return a color space, which contains all colors from the queue
-        return color_space
+        return color_space.astype(int)
 
     def publish(self, image_msg):
         # type: (Image) -> None
