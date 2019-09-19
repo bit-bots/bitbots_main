@@ -169,20 +169,19 @@ class Vision:
         if ros_utils.config_param_change(self.config, config, r'^blue_color_detector_'):
             self.blue_color_detector = color.HsvSpaceColorDetector(config, "blue")
 
-        # Check if the dynamic color space field color detector or the static field color detector should be used
-        if self._use_dynamic_color_space:
-            # Check if params changed
-            if ros_utils.config_param_change(self.config, config, r'^field_color_detector_|vision_use_sim_color'):
+        # Check if params changed
+        if ros_utils.config_param_change(self.config, config,
+                r'^field_color_detector_|dynamic_color_space_|vision_use_sim_color'):
+            # Check if the dynamic color space field color detector or the static field color detector should be used
+            if self._use_dynamic_color_space:
                 # Set dynamic color space field color detector
                 self.field_color_detector = color.DynamicPixelListColorDetector(
                     config,
                     self.package_path)
-        else:
-            if self.sub_dynamic_color_space_msg_topic is not None:
-                self.sub_dynamic_color_space_msg_topic.unregister()
-            # Check if params changed
-            if ros_utils.config_param_change(self.config, config,
-                    r'^field_color_detector_|dynamic_color_space_|vision_use_sim_color'):
+            else:
+                # Unregister old subscriber
+                if self.sub_dynamic_color_space_msg_topic is not None:
+                    self.sub_dynamic_color_space_msg_topic.unregister()
                 # Set the static field color detector
                 self.field_color_detector = color.PixelListColorDetector(
                     config,
