@@ -112,9 +112,11 @@ class QuinticWalkingNode {
   /**
    * This method computes the next motor goals and publishes them.
    */
-  void calculateJointGoals();
+  void calculateAndPublishJointGoals(WalkResponse response);
 
   double getTimeDelta();
+
+  WalkRequest current_request_;
 
   bool debug_active_;
   bool simulation_active_;
@@ -154,11 +156,6 @@ class QuinticWalkingNode {
   Eigen::Vector3d foot_pos_;
   Eigen::Vector3d foot_axis_;
   bool is_left_support_;
-
-  /**
-   * Saves current orders as [x-direction, y-direction, z-rotation]
-   */
-  Eigen::Vector3d current_orders_;
 
   /**
    * Saves max values we can move in a single step as [x-direction, y-direction, z-rotation].

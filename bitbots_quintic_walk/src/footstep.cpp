@@ -22,8 +22,8 @@ Footstep::Footstep(
   }
 
   //State initialization
-  left_in_world_.setZero();
-  right_in_world_.setZero();
+  left_in_world_.setIdentity();
+  right_in_world_.setIdentity();
   reset(is_left_support_foot_);
 }
 
@@ -37,102 +37,96 @@ double Footstep::getFootDistance() {
 
 void Footstep::reset(bool is_left_support_foot) {
   is_left_support_foot_ = is_left_support_foot;
-  support_to_last_.x() = 0.0;
+  support_to_last_.setIdentity();
   if (is_left_support_foot_) {
-    support_to_last_.y() = -foot_distance_;
+    support_to_last_.getOrigin()[1] = -foot_distance_;
   } else {
-    support_to_last_.y() = foot_distance_;
+    support_to_last_.getOrigin()[1] = foot_distance_;
   }
-  support_to_last_.z() = 0.0;
   support_to_next_ = support_to_last_;
 }
 
 void Footstep::resetInWorld(bool is_left_support_foot) {
   if (is_left_support_foot_) {
-    right_in_world_.y() = -foot_distance_;
+    right_in_world_.getOrigin()[1] = -foot_distance_;
   } else {
-    left_in_world_.y() = foot_distance_;
+    left_in_world_.getOrigin()[1] = foot_distance_;
   }
 }
 
 bool Footstep::isLeftSupport() const {
   return is_left_support_foot_;
 }
-const Eigen::Vector3d &Footstep::getLast() const {
+const tf2::Transform &Footstep::getLast() const {
   return support_to_last_;
 }
-const Eigen::Vector3d &Footstep::getNext() const {
+const tf2::Vector3 &Footstep::getLastPos() const{
+  return support_to_last_.getOrigin();
+}
+tf2::Vector3 Footstep::getLastEuler(){
+  double roll, pitch, yaw;
+  tf2::Matrix3x3(support_to_last_.getRotation()).getRPY(roll, pitch, yaw);
+  return tf2::Vector3(roll, pitch, yaw);
+}
+
+const tf2::Transform &Footstep::getNext() const {
   return support_to_next_;
 }
-const Eigen::Vector3d &Footstep::getLeft() const {
+const tf2::Vector3 &Footstep::getNextPos() const{
+  return support_to_next_.getOrigin();
+}
+tf2::Vector3 Footstep::getNextEuler(){
+  double roll, pitch, yaw;
+  tf2::Matrix3x3(support_to_next_.getRotation()).getRPY(roll, pitch, yaw);
+  return tf2::Vector3(roll, pitch, yaw);
+}
+
+const tf2::Transform &Footstep::getLeft() const {
   return left_in_world_;
 }
-const Eigen::Vector3d &Footstep::getRight() const {
+const tf2::Transform &Footstep::getRight() const {
   return right_in_world_;
 }
 
-void Footstep::stepFromSupport(const Eigen::Vector3d &diff) {
+void Footstep::stepFromSupport(const tf2::Transform &diff) {
   //Update relative diff from support foot
-  support_to_last_ = diffInv(support_to_next_);
+  support_to_last_ = support_to_next_.inverse();
   support_to_next_ = diff;
   //Update world integrated position
   if (is_left_support_foot_) {
-    left_in_world_ = poseAdd(right_in_world_, diff);
+    left_in_world_ = right_in_world_ * diff;
   } else {
-    right_in_world_ = poseAdd(left_in_world_, diff);
+    right_in_world_ = left_in_world_ * diff;
   }
   //Update current support foot
   is_left_support_foot_ = !is_left_support_foot_;
 }
 
-void Footstep::stepFromOrders(const Eigen::Vector3d &diff) {
+void Footstep::stepFromOrders(const tf2::Transform &diff) {
   //Compute step diff in next support foot frame
-  Eigen::Vector3d tmp_diff = Eigen::Vector3d::Zero();
+  tf2::Transform tmp_diff = tf2::Transform();
   //No change in forward step
-  tmp_diff.x() = diff.x();
+  tmp_diff.getOrigin()[0] = diff.getOrigin().x();
   //Add lateral foot offset
   if (is_left_support_foot_) {
-    tmp_diff.y() += foot_distance_;
+    tmp_diff.getOrigin()[1] += foot_distance_;
   } else {
-    tmp_diff.y() -= foot_distance_;
+    tmp_diff.getOrigin()[1] -= foot_distance_;
   }
   //Allow lateral step only on external foot
   //(internal foot will return to zero pose)
   if (
-      (is_left_support_foot_ && diff.y() > 0.0) ||
-          (!is_left_support_foot_ && diff.y() < 0.0)
+      (is_left_support_foot_ && diff.getOrigin()[1] > 0.0) ||
+          (!is_left_support_foot_ && diff.getOrigin()[1] < 0.0)
       ) {
-    tmp_diff.y() += diff.y();
+    tmp_diff.getOrigin()[1] += diff.getOrigin().y();
   }
   //No change in turn (in order to
   //rotate around trunk center)
-  tmp_diff.z() = diff.z();
+  tmp_diff.setRotation(diff.getRotation());
 
   //Make the step
   stepFromSupport(tmp_diff);
-}
-
-Eigen::Vector3d Footstep::poseAdd(
-    const Eigen::Vector3d &pose,
-    const Eigen::Vector3d &diff) const {
-  Eigen::Vector3d tmp_pose = pose;
-  double aa = pose.z();
-  tmp_pose.x() += diff.x()*std::cos(aa) - diff.y()*std::sin(aa);
-  tmp_pose.y() += diff.x()*std::sin(aa) + diff.y()*std::cos(aa);
-  tmp_pose.z() = bitbots_splines::AngleBound(tmp_pose.z() + diff.z());
-
-  return tmp_pose;
-}
-
-Eigen::Vector3d Footstep::diffInv(
-    const Eigen::Vector3d &diff) const {
-  Eigen::Vector3d tmp_diff;
-  double aa = -diff.z();
-  tmp_diff.x() = -diff.x()*std::cos(aa) + diff.y()*std::sin(aa);
-  tmp_diff.y() = -diff.x()*std::sin(aa) - diff.y()*std::cos(aa);
-  tmp_diff.z() = -diff.z();
-
-  return tmp_diff;
 }
 
 }

@@ -19,6 +19,13 @@ https://github.com/Rhoban/model/
 #include "bitbots_quintic_walk/common.h"
 #include <bitbots_quintic_walk/bitbots_quintic_walk_paramsConfig.h>
 #include <math.h>
+#include <tf2/LinearMath/Transform.h>
+#include <tf2/LinearMath/Vector3.h>
+#include "bitbots_splines/SmoothSpline.hpp"
+#include "bitbots_splines/pose_spline.h"
+#include "bitbots_splines/position_spline.h"
+#include "bitbots_quintic_walk/walk_utils.h"
+#include "bitbots_splines/abstract_engine.h"
 
 namespace bitbots_quintic_walk {
 
@@ -31,13 +38,19 @@ namespace bitbots_quintic_walk {
  * Expressed all target state in cartesian
  * space with respect to current cupport foot
  */
-class QuinticWalk : public bitbots_splines::AbstractEngine<WalkPositions, WalkGoals> {
+class QuinticWalk : public bitbots_splines::AbstractEngine<WalkRequest, WalkResponse> {
  public:
 
   /**
    * Initialization
    */
   QuinticWalk();
+
+  WalkResponse update(double dt) override;
+  void setGoals(const WalkRequest &goals) override;
+  void reset() override;
+  Trajectories getSplines() const;
+  int getPercentDone() const;
 
   /**
    * Return current walk phase
@@ -72,12 +85,6 @@ class QuinticWalk : public bitbots_splines::AbstractEngine<WalkPositions, WalkGo
    */
   void reconfCallback(const bitbots_quintic_walk_paramsConfig &params);
 
-  /**
-   * Update the internal walk state
-   * (phase, trajectories) from given
-   * elapsed time since last update() call
-   */
-  bool updateState(double dt, const Eigen::Vector3d &orders, bool walkable_state);
 
   /**
    * Compute current cartesian
@@ -87,12 +94,7 @@ class QuinticWalk : public bitbots_splines::AbstractEngine<WalkPositions, WalkGo
    * Return false is the target is
    * unreachable.
    */
-  void computeCartesianPosition(Eigen::Vector3d &trunk_pos, Eigen::Vector3d &trunk_axis,
-                                Eigen::Vector3d &foot_pos, Eigen::Vector3d &foot_axis, bool &is_leftsupport_foot);
-
-  void
-  computeCartesianPositionAtTime(Eigen::Vector3d &trunk_pos, Eigen::Vector3d &trunk_axis, Eigen::Vector3d &foot_pos,
-                                 Eigen::Vector3d &foot_axis, bool &is_leftsupport_foot, double time);
+  WalkResponse computeCartesianPositionAtTime(double time);
 
   void requestKick(bool left);
 
@@ -103,16 +105,19 @@ class QuinticWalk : public bitbots_splines::AbstractEngine<WalkPositions, WalkGo
    */
   void endStep();
 
-  /**
-   * Completely reset the engine, e.g. when robot fell down
-   */
-  void reset();
-
   std::string getState();
 
  private:
 
+  WalkRequest request_;
+
   std::string engine_state_;
+
+  //splines
+  bitbots_splines::SmoothSpline is_double_support_;
+  bitbots_splines::SmoothSpline is_left_support_foot_;
+  bitbots_splines::PoseSpline trunk_;
+  bitbots_splines::PoseSpline foot_;
 
   /**
    * Current footstep support
@@ -142,38 +147,37 @@ class QuinticWalk : public bitbots_splines::AbstractEngine<WalkPositions, WalkGo
    * position, velocity and acceleration
    * at half cycle start
    */
-  Eigen::Vector3d trunk_pos_at_last_;
-  Eigen::Vector3d trunk_vel_at_last_;
-  Eigen::Vector3d trunk_acc_at_last_;
-  Eigen::Vector3d trunk_axis_pos_at_last_;
-  Eigen::Vector3d trunk_axis_vel_at_last_;
-  Eigen::Vector3d trunk_axis_acc_at_last_;
+  tf2::Vector3 trunk_pos_at_last_;
+  tf2::Vector3 trunk_pos_vel_at_last_;
+  tf2::Vector3 trunk_pos_acc_at_last_;
+  tf2::Vector3 trunk_axis_pos_at_last_;
+  tf2::Vector3 trunk_axis_vel_at_last_;
+  tf2::Vector3 trunk_axis_acc_at_last_;
 
   /**
    * Generated half walk
    * cycle trajectory
    */
-  Trajectories trajs_;
 
   void updatePhase(double dt);
 
-  void buildNormalTrajectories(const Eigen::Vector3d &orders);
+  void buildNormalTrajectories();
 
-  void buildKickTrajectories(const Eigen::Vector3d &orders);
+  void buildKickTrajectories();
 
-  void buildStartTrajectories(const Eigen::Vector3d &orders);
+  void buildStartTrajectories();
 
-  void buildStopStepTrajectories(const Eigen::Vector3d &orders);
+  void buildStopStepTrajectories();
 
-  void buildStopMovementTrajectories(const Eigen::Vector3d &orders);
+  void buildStopMovementTrajectories();
 
-  void buildTrajectories(const Eigen::Vector3d &orders, bool start_movement, bool start_step, bool kick_step);
+  void buildTrajectories(bool start_movement, bool start_step, bool kick_step);
 
-  void buildWalkDisableTrajectories(const Eigen::Vector3d &orders, bool foot_in_idle_position);
+  void buildWalkDisableTrajectories(bool foot_in_idle_position);
 
   void saveCurrentTrunkState();
 
-  void point(const std::string &spline, double t, double pos, double vel = 0, double acc = 0);
+  void point(bitbots_splines::SmoothSpline spline, double t, double pos, double vel = 0, double acc = 0);
 
   /**
    * Reset the trunk position and

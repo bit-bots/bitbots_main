@@ -10,6 +10,9 @@ https://github.com/Rhoban/model/
 #include <cmath>
 #include <stdexcept>
 #include "bitbots_splines/Angle.h"
+#include <tf2/LinearMath/Vector3.h>
+#include <tf2/LinearMath/Transform.h>
+
 
 namespace bitbots_quintic_walk {
 
@@ -60,20 +63,24 @@ class Footstep {
    * Starting position of current flying
    * foot in support foot frame
    */
-  const Eigen::Vector3d &getLast() const;
+  const tf2::Transform &getLast() const;
+  const tf2::Vector3 &getLastPos() const;
+  tf2::Vector3 getLastEuler();
 
   /**
    * Target pose of current flying
    * foot in support foot frame
    */
-  const Eigen::Vector3d &getNext() const;
+  const tf2::Transform &getNext() const;
+  const tf2::Vector3 &getNextPos() const;
+  tf2::Vector3 getNextEuler();
 
   /**
    * Left and right, current or next pose
    * of foot in world initial frame
    */
-  const Eigen::Vector3d &getLeft() const;
-  const Eigen::Vector3d &getRight() const;
+  const tf2::Transform &getLeft() const;
+  const tf2::Transform &getRight() const;
 
   /**
    * Set the target pose of current support foot
@@ -81,7 +88,7 @@ class Footstep {
    * The target foot pose diff is given with respect to
    * next support foot pose (current flying foot target).
    */
-  void stepFromSupport(const Eigen::Vector3d &diff);
+  void stepFromSupport(const tf2::Transform &diff);
 
   /**
    * Set target pose of current support foot
@@ -90,7 +97,7 @@ class Footstep {
    * Special handle of lateral and turn step
    * to avoid foot collision.
    */
-  void stepFromOrders(const Eigen::Vector3d &diff);
+  void stepFromOrders(const tf2::Transform &diff);
 
  private:
 
@@ -111,8 +118,8 @@ class Footstep {
    * from support foot to flying foot
    * last and next position
    */
-  Eigen::Vector3d support_to_last_;
-  Eigen::Vector3d support_to_next_;
+  tf2::Transform support_to_last_;
+  tf2::Transform support_to_next_;
 
   /**
    * Pose integration of left
@@ -120,26 +127,8 @@ class Footstep {
    * Set at "future" state taking into account
    * next expected fot pose.
    */
-  Eigen::Vector3d left_in_world_;
-  Eigen::Vector3d right_in_world_;
-
-  /**
-   * Add to given pose the given diff
-   * expressed in pose frame and
-   * return the integrated added pose
-   */
-  Eigen::Vector3d poseAdd(
-      const Eigen::Vector3d &pose,
-      const Eigen::Vector3d &diff) const;
-
-  /**
-   * Compute and return the delta from
-   * (zero+diff) to (zero) in
-   * (zero+diff) frame.
-   */
-  Eigen::Vector3d diffInv(
-      const Eigen::Vector3d &diff) const;
+  tf2::Transform left_in_world_;
+  tf2::Transform right_in_world_;
 };
-
 }
 #endif
