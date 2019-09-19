@@ -10,7 +10,6 @@ https://github.com/Rhoban/model/
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include "footstep.h"
-#include "bitbots_quintic_walk/trajectory_utils.h"
 #include <eigen_conversions/eigen_msg.h>
 #include "bitbots_splines/SplineContainer.hpp"
 #include "bitbots_splines/AxisAngle.h"
