@@ -1,8 +1,8 @@
-#include "bitbots_quintic_walk/quintic_walking_node.h"
+#include "bitbots_quintic_walk/walk_node.h"
 
 namespace bitbots_quintic_walk {
 
-QuinticWalkingNode::QuinticWalkingNode() :
+WalkNode::WalkNode() :
     robot_model_loader_("/robot_description", false),
     walk_engine_() {
   // init variables
@@ -21,18 +21,18 @@ QuinticWalkingNode::QuinticWalkingNode() :
   odom_msg_ = nav_msgs::Odometry();
   pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("walk_odometry", 1);
   pub_support_ = nh_.advertise<std_msgs::Char>("walk_support_state", 1);
-  sub_cmd_vel_ = nh_.subscribe("cmd_vel", 1, &QuinticWalkingNode::cmdVelCb, this,
+  sub_cmd_vel_ = nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
                                ros::TransportHints().tcpNoDelay());
-  sub_rob_state_ = nh_.subscribe("robot_state", 1, &QuinticWalkingNode::robStateCb, this,
+  sub_rob_state_ = nh_.subscribe("robot_state", 1, &WalkNode::robStateCb, this,
                                  ros::TransportHints().tcpNoDelay());
   sub_joint_states_ =
-      nh_.subscribe("joint_states", 1, &QuinticWalkingNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
-  sub_kick_ = nh_.subscribe("kick", 1, &QuinticWalkingNode::kickCb, this, ros::TransportHints().tcpNoDelay());
-  sub_imu_ = nh_.subscribe("imu/data", 1, &QuinticWalkingNode::imuCb, this, ros::TransportHints().tcpNoDelay());
-  sub_pressure_ = nh_.subscribe("foot_pressure_filtered", 1, &QuinticWalkingNode::pressureCb, this,
+      nh_.subscribe("joint_states", 1, &WalkNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
+  sub_kick_ = nh_.subscribe("kick", 1, &WalkNode::kickCb, this, ros::TransportHints().tcpNoDelay());
+  sub_imu_ = nh_.subscribe("imu/data", 1, &WalkNode::imuCb, this, ros::TransportHints().tcpNoDelay());
+  sub_pressure_ = nh_.subscribe("foot_pressure_filtered", 1, &WalkNode::pressureCb, this,
                                 ros::TransportHints().tcpNoDelay());
-  sub_cop_l_ = nh_.subscribe("cop_l", 1, &QuinticWalkingNode::copLCb, this, ros::TransportHints().tcpNoDelay());
-  sub_cop_r_ = nh_.subscribe("cop_r", 1, &QuinticWalkingNode::copRCb, this, ros::TransportHints().tcpNoDelay());
+  sub_cop_l_ = nh_.subscribe("cop_l", 1, &WalkNode::copLCb, this, ros::TransportHints().tcpNoDelay());
+  sub_cop_r_ = nh_.subscribe("cop_r", 1, &WalkNode::copRCb, this, ros::TransportHints().tcpNoDelay());
 
 
   //load MoveIt! model
@@ -56,11 +56,11 @@ QuinticWalkingNode::QuinticWalkingNode() :
   visualizer_ = WalkVisualizer(shared_nh);
 
   // initialize dynamic-reconfigure
-  server_.setCallback(boost::bind(&QuinticWalkingNode::reconfCallback, this, _1, _2));
+  server_.setCallback(boost::bind(&WalkNode::reconfCallback, this, _1, _2));
 
 }
 
-void QuinticWalkingNode::run() {
+void WalkNode::run() {
   int odom_counter = 0;
 
   while (ros::ok()) {
@@ -98,7 +98,7 @@ void QuinticWalkingNode::run() {
   }
 }
 
-void QuinticWalkingNode::calculateAndPublishJointGoals(WalkResponse response) {
+void WalkNode::calculateAndPublishJointGoals(WalkResponse response) {
   // get bioIk goals from stabilizer
   std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response);
 
@@ -128,7 +128,7 @@ void QuinticWalkingNode::calculateAndPublishJointGoals(WalkResponse response) {
   }
 }
 
-double QuinticWalkingNode::getTimeDelta() {
+double WalkNode::getTimeDelta() {
   // compute time delta depended if we are currently in simulation or reality
   double dt;
   double current_ros_time = ros::Time::now().toSec();
@@ -147,7 +147,7 @@ double QuinticWalkingNode::getTimeDelta() {
   return dt;
 }
 
-void QuinticWalkingNode::cmdVelCb(const geometry_msgs::Twist msg) {
+void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
   // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
   // other axis.
 
@@ -185,7 +185,7 @@ void QuinticWalkingNode::cmdVelCb(const geometry_msgs::Twist msg) {
   current_request_.orders.setRotation(quat);
 }
 
-void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
+void WalkNode::imuCb(const sensor_msgs::Imu msg) {
   if (imu_active_) {
     // the incoming geometry_msgs::Quaternion is transformed to a tf2::Quaterion
     tf2::Quaternion quat;
@@ -219,7 +219,7 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
   }
 }
 
-void QuinticWalkingNode::pressureCb(
+void WalkNode::pressureCb(
     const bitbots_msgs::FootPressure msg) { // TODO Remove this method since cop_cb is now used
   // we just want to look at the support foot. choose the 4 values from the message accordingly
   // s = support, n = not support, i = inside, o = outside, f = front, b = back
@@ -317,32 +317,32 @@ void QuinticWalkingNode::pressureCb(
 
 }
 
-void QuinticWalkingNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {
+void WalkNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {
   robot_state_ = msg.state;
 }
 
-void QuinticWalkingNode::jointStateCb(const sensor_msgs::JointState msg) {
+void WalkNode::jointStateCb(const sensor_msgs::JointState msg) {
   std::vector<std::string> names_vec = msg.name;
   std::string *names = names_vec.data();
 
   current_state_->setJointPositions(*names, msg.position.data());
 }
 
-void QuinticWalkingNode::kickCb(const std_msgs::BoolConstPtr msg) {
+void WalkNode::kickCb(const std_msgs::BoolConstPtr msg) {
   walk_engine_.requestKick(msg->data);
 }
 
-void QuinticWalkingNode::copLCb(const geometry_msgs::PointStamped msg) {
+void WalkNode::copLCb(const geometry_msgs::PointStamped msg) {
   cop_l_ = msg;
 }
 
-void QuinticWalkingNode::copRCb(const geometry_msgs::PointStamped msg) {
+void WalkNode::copRCb(const geometry_msgs::PointStamped msg) {
   cop_r_ = msg;
 }
 
 void
-QuinticWalkingNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config,
-                                   uint32_t level) {
+WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config,
+                         uint32_t level) {
   params_ = config;
 
   // todo
@@ -377,7 +377,7 @@ QuinticWalkingNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_pa
 }
 
 //todo this is the same method as in kick, maybe put it into a utility class
-void QuinticWalkingNode::publishGoals(const bitbots_splines::JointGoals &goals) {
+void WalkNode::publishGoals(const bitbots_splines::JointGoals &goals) {
   /* Construct JointCommand message */
   bitbots_msgs::JointCommand command;
   command.header.stamp = ros::Time::now();
@@ -402,7 +402,7 @@ void QuinticWalkingNode::publishGoals(const bitbots_splines::JointGoals &goals) 
   pub_controller_command_.publish(command);
 }
 
-void QuinticWalkingNode::publishOdometry() {
+void WalkNode::publishOdometry() {
   // transformation from support leg to trunk
   //todo
   /*
@@ -469,7 +469,7 @@ void QuinticWalkingNode::publishOdometry() {
    */
 }
 
-void QuinticWalkingNode::initializeEngine() {
+void WalkNode::initializeEngine() {
   walk_engine_.reset();
 }
 
@@ -478,7 +478,7 @@ void QuinticWalkingNode::initializeEngine() {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "quintic_walking");
   // init node
-  bitbots_quintic_walk::QuinticWalkingNode node;
+  bitbots_quintic_walk::WalkNode node;
 
   // run the node
   node.initializeEngine();

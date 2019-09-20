@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(SOURCES
         src/footstep.cpp
         src/walk_engine.cpp
-        src/quintic_walking_node.cpp
+        src/walk_node.cpp
         src/walk_visualizer.cpp
         src/walk_ik.cpp
         src/walk_stabilizer.cpp

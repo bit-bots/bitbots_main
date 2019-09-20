@@ -3,8 +3,8 @@ This code is based on the original code by Quentin "Leph" Rouxel and Team Rhoban
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_QUINTIC_WALKING_NODE_H_
-#define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_QUINTIC_WALKING_NODE_H_
+#ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_NODE_H_
+#define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_NODE_H_
 
 #include <iostream>
 #include <string>
@@ -50,9 +50,9 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
-class QuinticWalkingNode {
+class WalkNode {
  public:
-  QuinticWalkingNode();
+  WalkNode();
 
   /**
    * This is the main loop which takes care of stopping and starting of the walking.
