@@ -41,13 +41,13 @@ namespace bitbots_quintic_walk {
  * Expressed all target state in cartesian
  * space with respect to current cupport foot
  */
-class QuinticWalk : public bitbots_splines::AbstractEngine<WalkRequest, WalkResponse> {
+class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkResponse> {
  public:
 
   /**
    * Initialization
    */
-  QuinticWalk();
+  WalkEngine();
 
   WalkResponse update(double dt) override;
   void setGoals(const WalkRequest &goals) override;

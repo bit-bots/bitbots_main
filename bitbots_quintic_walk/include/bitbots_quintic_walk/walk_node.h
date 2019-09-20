@@ -152,7 +152,7 @@ class WalkNode {
    * Measures how much distance we can traverse in X and Y direction combined
    */
   double max_step_xy_;
-  bitbots_quintic_walk::QuinticWalk walk_engine_;
+  bitbots_quintic_walk::WalkEngine walk_engine_;
 
   bitbots_msgs::JointCommand command_msg_;
   nav_msgs::Odometry odom_msg_;

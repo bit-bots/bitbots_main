@@ -7,7 +7,7 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
-QuinticWalk::QuinticWalk() :
+WalkEngine::WalkEngine() :
     footstep_(0.14, true),
     phase_(0.0),
     last_phase_(0.0),
@@ -31,16 +31,16 @@ QuinticWalk::QuinticWalk() :
   // init dynamic reconfigure
   dyn_reconf_server_ = new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>(ros::NodeHandle("~/engine"));
   dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>::CallbackType f;
-  f = boost::bind(&bitbots_quintic_walk::QuinticWalk::reconfCallback,this, _1, _2);
+  f = boost::bind(&bitbots_quintic_walk::WalkEngine::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
 
 }
 
-void QuinticWalk::setGoals(const WalkRequest &goals) {
+void WalkEngine::setGoals(const WalkRequest &goals) {
   request_ = goals;
 }
 
-WalkResponse QuinticWalk::update(double dt) {
+WalkResponse WalkEngine::update(double dt) {
   bool orders_zero = request_.orders==tf2::Transform();
 
   // First check if we are currently in pause state or idle, since we don't want to update the phase in this case
@@ -161,7 +161,7 @@ WalkResponse QuinticWalk::update(double dt) {
   if ((phase_ < 0.5 && !footstep_.isLeftSupport()) ||
       (phase_ >= 0.5 && footstep_.isLeftSupport())) {
     ROS_ERROR_THROTTLE(1,
-                       "QuinticWalk exception invalid state phase= %f support= %d dt= %f",
+                       "WalkEngine exception invalid state phase= %f support= %d dt= %f",
                        phase_,
                        footstep_.isLeftSupport(),
                        dt);
@@ -172,19 +172,19 @@ WalkResponse QuinticWalk::update(double dt) {
   return computeCartesianPositionAtTime(getTrajsTime());
 }
 
-void QuinticWalk::updatePhase(double dt) {
+void WalkEngine::updatePhase(double dt) {
   //Check for negative time step
   if (dt <= 0.0) {
     if (dt==0.0) { //sometimes happens due to rounding
       dt = 0.0001;
     } else {
-      ROS_ERROR_THROTTLE(1, "QuinticWalk exception negative dt phase= %f dt= %f", phase_, dt);
+      ROS_ERROR_THROTTLE(1, "WalkEngine exception negative dt phase= %f dt= %f", phase_, dt);
       return;
     }
   }
   //Check for too long dt
   if (dt > 0.25/params_.freq) {
-    ROS_ERROR_THROTTLE(1, "QuinticWalk error too long dt phase= %f dt= %f", phase_, dt);
+    ROS_ERROR_THROTTLE(1, "WalkEngine error too long dt phase= %f dt= %f", phase_, dt);
     return;
   }
 
@@ -197,7 +197,7 @@ void QuinticWalk::updatePhase(double dt) {
   }
 }
 
-void QuinticWalk::endStep() {
+void WalkEngine::endStep() {
   // ends the step earlier, e.g. when foot has already contact to ground
   if (phase_ < 0.5) {
     phase_ = 0.5;
@@ -206,7 +206,7 @@ void QuinticWalk::endStep() {
   }
 }
 
-void QuinticWalk::reset() {
+void WalkEngine::reset() {
   engine_state_ = "idle";
   phase_ = 0.0;
   time_paused_ = 0.0;
@@ -218,7 +218,7 @@ void QuinticWalk::reset() {
   resetTrunkLastState();
 }
 
-void QuinticWalk::saveCurrentTrunkState() {
+void WalkEngine::saveCurrentTrunkState() {
   //Evaluate current trunk state
   //(position, velocity, acceleration)
   //in next support foot frame
@@ -254,27 +254,27 @@ void QuinticWalk::saveCurrentTrunkState() {
   trunk_axis_acc_at_last_ = next_support*trunk_axis_acc;
 }
 
-void QuinticWalk::buildNormalTrajectories() {
+void WalkEngine::buildNormalTrajectories() {
   buildTrajectories(false, false, false);
 }
 
-void QuinticWalk::buildKickTrajectories() {
+void WalkEngine::buildKickTrajectories() {
   buildTrajectories(false, false, true);
 }
 
-void QuinticWalk::buildStartTrajectories() {
+void WalkEngine::buildStartTrajectories() {
   buildTrajectories(true, false, false);
 }
 
-void QuinticWalk::buildStopStepTrajectories() {
+void WalkEngine::buildStopStepTrajectories() {
   buildWalkDisableTrajectories(false);
 }
 
-void QuinticWalk::buildStopMovementTrajectories() {
+void WalkEngine::buildStopMovementTrajectories() {
   buildWalkDisableTrajectories(true);
 }
 
-void QuinticWalk::buildTrajectories(bool start_movement, bool start_step, bool kick_step) {
+void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool kick_step) {
   // save the current trunk state to use it later
   if (!start_movement) {
     saveCurrentTrunkState();
@@ -537,7 +537,7 @@ void QuinticWalk::buildTrajectories(bool start_movement, bool start_step, bool k
         axis_vel.z());
 }
 
-void QuinticWalk::buildWalkDisableTrajectories(bool foot_in_idle_position) {
+void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
   // save the current trunk state to use it later
   saveCurrentTrunkState();
   // update support foot and compute odometry
@@ -674,7 +674,7 @@ void QuinticWalk::buildWalkDisableTrajectories(bool foot_in_idle_position) {
         0.0);
 }
 
-void QuinticWalk::resetTrunkLastState() {
+void WalkEngine::resetTrunkLastState() {
   if (footstep_.isLeftSupport()) {
     trunk_pos_at_last_ = tf2::Vector3(
         params_.trunk_x_offset,
@@ -693,7 +693,7 @@ void QuinticWalk::resetTrunkLastState() {
   trunk_axis_acc_at_last_.setZero();
 }
 
-WalkResponse QuinticWalk::computeCartesianPositionAtTime(double time) {
+WalkResponse WalkEngine::computeCartesianPositionAtTime(double time) {
   //Evaluate target cartesian
   //state from trajectories
   WalkResponse response;
@@ -704,15 +704,15 @@ WalkResponse QuinticWalk::computeCartesianPositionAtTime(double time) {
   return response;
 }
 
-void QuinticWalk::point(bitbots_splines::SmoothSpline spline, double t, double pos, double vel, double acc) {
+void WalkEngine::point(bitbots_splines::SmoothSpline spline, double t, double pos, double vel, double acc) {
   spline.addPoint(t, pos, vel, acc);
 }
 
-double QuinticWalk::getPhase() const {
+double WalkEngine::getPhase() const {
   return phase_;
 }
 
-double QuinticWalk::getTrajsTime() const {
+double WalkEngine::getTrajsTime() const {
   double t;
   if (phase_ < 0.5) {
     t = phase_/params_.freq;
@@ -723,26 +723,26 @@ double QuinticWalk::getTrajsTime() const {
   return t;
 }
 
-Footstep QuinticWalk::getFootstep() {
+Footstep WalkEngine::getFootstep() {
   return footstep_;
 }
 
-bool QuinticWalk::isLeftSupport() {
+bool WalkEngine::isLeftSupport() {
   return footstep_.isLeftSupport();
 }
 
-bool QuinticWalk::isDoubleSupport() {
+bool WalkEngine::isDoubleSupport() {
   // returns true if the value of the "is_double_support" spline is currently higher than 0.5
   // the spline should only have values of 0 or 1
   return is_double_support_.pos(getTrajsTime()) >= 0.5;
 }
 
-void QuinticWalk::reconfCallback(bitbots_quintic_walk_engine_paramsConfig &params, uint32_t level) {
+void WalkEngine::reconfCallback(bitbots_quintic_walk_engine_paramsConfig &params, uint32_t level) {
   params_ = params;
   footstep_.setFootDistance(params_.foot_distance);
 }
 
-void QuinticWalk::requestKick(bool left) {
+void WalkEngine::requestKick(bool left) {
   if (left) {
     left_kick_requested_ = true;
   } else {
@@ -750,34 +750,34 @@ void QuinticWalk::requestKick(bool left) {
   }
 }
 
-void QuinticWalk::requestPause() {
+void WalkEngine::requestPause() {
   pause_requested_ = true;
 }
 
-std::string QuinticWalk::getState() {
+std::string WalkEngine::getState() {
   return engine_state_;
 }
 
-bitbots_splines::Trajectories QuinticWalk::getSplines() const{
+bitbots_splines::Trajectories WalkEngine::getSplines() const{
   bitbots_splines::Trajectories trajs;
   ROS_ERROR("Method getSplines not implemented");
   //TODO splines missing since they do not fit into spline container
   return trajs;
 };
 
-int QuinticWalk::getPercentDone() const{
+int WalkEngine::getPercentDone() const{
   return (int) getTrajsTime()*100;
 }
 
-void QuinticWalk::setPauseDuration(double duration){
+void WalkEngine::setPauseDuration(double duration){
   pause_duration_ = duration;
 }
 
-double QuinticWalk::getFreq(){
+double WalkEngine::getFreq(){
   return params_.freq;
 }
 
-double QuinticWalk::getWantedTrunkPitch(){
+double WalkEngine::getWantedTrunkPitch(){
   return params_.trunk_pitch + params_.trunk_pitch_p_coef_forward*footstep_.getNextPos().x()
       + params_.trunk_pitch_p_coef_turn*fabs(footstep_.getNextPos().z());
 }
