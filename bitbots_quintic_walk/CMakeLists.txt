@@ -48,6 +48,7 @@ add_message_files(
 
 generate_dynamic_reconfigure_options(
         cfg/bitbots_quintic_walk_params.cfg
+        cfg/bitbots_quintic_walk_engine_params.cfg
 )
 
 generate_messages(

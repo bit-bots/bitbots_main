@@ -15,7 +15,7 @@ https://github.com/Rhoban/model/
 #include "bitbots_splines/AxisAngle.h"
 #include "bitbots_splines/Angle.h"
 #include "bitbots_splines/Euler.h"
-#include <bitbots_quintic_walk/bitbots_quintic_walk_paramsConfig.h>
+#include <bitbots_quintic_walk/bitbots_quintic_walk_engine_paramsConfig.h>
 #include <math.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Vector3.h>
@@ -25,6 +25,10 @@ https://github.com/Rhoban/model/
 #include "bitbots_quintic_walk/walk_utils.h"
 #include "bitbots_splines/abstract_engine.h"
 #include "bitbots_splines/SplineContainer.hpp"
+#include <dynamic_reconfigure/server.h>
+#include <ros/ros.h>
+
+
 
 namespace bitbots_quintic_walk {
 
@@ -82,7 +86,7 @@ class QuinticWalk : public bitbots_splines::AbstractEngine<WalkRequest, WalkResp
   /**
    * Assign given parameters vector
    */
-  void reconfCallback(const bitbots_quintic_walk_paramsConfig &params);
+  void reconfCallback(bitbots_quintic_walk_engine_paramsConfig &params, uint32_t level);
 
 
   /**
@@ -105,6 +109,12 @@ class QuinticWalk : public bitbots_splines::AbstractEngine<WalkRequest, WalkResp
   void endStep();
 
   std::string getState();
+
+  double getFreq();
+  double getWantedTrunkPitch();
+
+  void setPauseDuration(double duration);
+
 
  private:
 
@@ -131,11 +141,12 @@ class QuinticWalk : public bitbots_splines::AbstractEngine<WalkRequest, WalkResp
   double last_phase_;
 
   double time_paused_;
+  double pause_duration_;
 
   /**
    * Currently used parameters
    */
-  bitbots_quintic_walk_paramsConfig params_;
+  bitbots_quintic_walk_engine_paramsConfig params_;
 
   bool left_kick_requested_;
   bool right_kick_requested_;
@@ -152,6 +163,8 @@ class QuinticWalk : public bitbots_splines::AbstractEngine<WalkRequest, WalkResp
   tf2::Vector3 trunk_axis_pos_at_last_;
   tf2::Vector3 trunk_axis_vel_at_last_;
   tf2::Vector3 trunk_axis_acc_at_last_;
+
+  dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig> *dyn_reconf_server_;
 
   /**
    * Generated half walk
@@ -184,6 +197,7 @@ class QuinticWalk : public bitbots_splines::AbstractEngine<WalkRequest, WalkResp
    * half cycle as stopped pose
    */
   void resetTrunkLastState();
+
 };
 
 }

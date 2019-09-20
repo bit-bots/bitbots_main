@@ -27,6 +27,13 @@ QuinticWalk::QuinticWalk() :
   is_left_support_foot_ = bitbots_splines::SmoothSpline();
   trunk_ = bitbots_splines::PoseSpline();
   foot_ = bitbots_splines::PoseSpline();
+
+  // init dynamic reconfigure
+  dyn_reconf_server_ = new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>(ros::NodeHandle("~/engine"));
+  dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>::CallbackType f;
+  f = boost::bind(&bitbots_quintic_walk::QuinticWalk::reconfCallback,this, _1, _2);
+  dyn_reconf_server_->setCallback(f);
+
 }
 
 void QuinticWalk::setGoals(const WalkRequest &goals) {
@@ -38,7 +45,7 @@ WalkResponse QuinticWalk::update(double dt) {
 
   // First check if we are currently in pause state or idle, since we don't want to update the phase in this case
   if (engine_state_=="paused") {
-    if (time_paused_ > params_.pause_duration) {
+    if (time_paused_ > pause_duration_) {
       // our pause is finished, see if we can continue walking
       if (pause_requested_) {
         // not yet, wait another pause duration
@@ -730,7 +737,7 @@ bool QuinticWalk::isDoubleSupport() {
   return is_double_support_.pos(getTrajsTime()) >= 0.5;
 }
 
-void QuinticWalk::reconfCallback(const bitbots_quintic_walk_paramsConfig &params) {
+void QuinticWalk::reconfCallback(bitbots_quintic_walk_engine_paramsConfig &params, uint32_t level) {
   params_ = params;
   footstep_.setFootDistance(params_.foot_distance);
 }
@@ -762,7 +769,18 @@ int QuinticWalk::getPercentDone() const{
   return (int) getTrajsTime()*100;
 }
 
+void QuinticWalk::setPauseDuration(double duration){
+  pause_duration_ = duration;
+}
 
+double QuinticWalk::getFreq(){
+  return params_.freq;
+}
+
+double QuinticWalk::getWantedTrunkPitch(){
+  return params_.trunk_pitch + params_.trunk_pitch_p_coef_forward*footstep_.getNextPos().x()
+      + params_.trunk_pitch_p_coef_turn*fabs(footstep_.getNextPos().z());
+}
 
 }
 

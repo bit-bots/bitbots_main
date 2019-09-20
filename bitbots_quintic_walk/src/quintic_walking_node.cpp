@@ -57,6 +57,7 @@ QuinticWalkingNode::QuinticWalkingNode() :
 
   // initialize dynamic-reconfigure
   server_.setCallback(boost::bind(&QuinticWalkingNode::reconfCallback, this, _1, _2));
+
 }
 
 void QuinticWalkingNode::run() {
@@ -152,7 +153,7 @@ void QuinticWalkingNode::cmdVelCb(const geometry_msgs::Twist msg) {
 
   // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
   // factor 2 since the order distance is only for a single step, not double step
-  double factor = (1.0/(params_.freq))/2.0;
+  double factor = (1.0/(walk_engine_.getFreq()))/2.0;
   tf2::Vector3 orders = {msg.linear.x*factor, msg.linear.y*factor, msg.angular.z*factor};
 
   // the orders should not extend beyond a maximal step size
@@ -195,9 +196,8 @@ void QuinticWalkingNode::imuCb(const sensor_msgs::Imu msg) {
     tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
     // compute the pitch offset to the currently wanted pitch of the engine
-    double wanted_pitch =
-        params_.trunk_pitch + params_.trunk_pitch_p_coef_forward*walk_engine_.getFootstep().getNextPos().x()
-            + params_.trunk_pitch_p_coef_turn*fabs(walk_engine_.getFootstep().getNextPos().z());
+    double wanted_pitch = walk_engine_.getWantedTrunkPitch();
+
     pitch = pitch + wanted_pitch;
 
     // get angular velocities
@@ -345,7 +345,6 @@ QuinticWalkingNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_pa
                                    uint32_t level) {
   params_ = config;
 
-  walk_engine_.reconfCallback(params_);
   // todo
   // bio_ik_solver_.set_bioIK_timeout(config.bio_ik_time);
 
@@ -374,6 +373,7 @@ QuinticWalkingNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_pa
   io_pressure_threshold_ = config.io_pressure_threshold;
   fb_pressure_threshold_ = config.fb_pressure_threshold;
   params_.pause_duration = config.pause_duration;
+  walk_engine_.setPauseDuration(params_.pause_duration);
 }
 
 //todo this is the same method as in kick, maybe put it into a utility class
