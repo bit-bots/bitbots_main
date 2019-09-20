@@ -14,6 +14,7 @@ https://github.com/Rhoban/model/
 #include <set>
 #include <algorithm>
 #include <vector>
+#include <bitbots_splines/SmoothSpline.hpp>
 
 namespace bitbots_splines {
 

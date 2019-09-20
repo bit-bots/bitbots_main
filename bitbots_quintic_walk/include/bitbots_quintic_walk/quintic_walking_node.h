@@ -25,12 +25,10 @@ https://github.com/Rhoban/model/
 #include <nav_msgs/Odometry.h>
 #include <moveit_msgs/RobotState.h>
 #include <humanoid_league_msgs/RobotControlState.h>
-#include <bitbots_quintic_walk/WalkingDebug.h>
 #include <bitbots_msgs/JointCommand.h>
 #include <bitbots_msgs/FootPressure.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -42,11 +40,13 @@ https://github.com/Rhoban/model/
 #include <moveit/move_group_interface/move_group_interface.h>
 
 #include <bitbots_quintic_walk/bitbots_quintic_walk_paramsConfig.h>
-#include "bitbots_ik/AnalyticIKSolver.hpp"
-#include "bitbots_ik/BioIKSolver.hpp"
 #include "bitbots_quintic_walk/walk_engine.h"
 #include <std_msgs/Bool.h>
 #include <unistd.h>
+#include "bitbots_quintic_walk/walk_stabilizer.h"
+#include "bitbots_quintic_walk/walk_ik.h"
+#include "bitbots_splines/abstract_ik.h"
+#include "bitbots_quintic_walk/walk_visualizer.h"
 
 namespace bitbots_quintic_walk {
 
@@ -75,14 +75,7 @@ class QuinticWalkingNode {
   void initializeEngine();
 
  private:
-  /**
-   * Publish bitbots_msgs/JointCommand message to the correct topic
-   * @param joint_names Names of joints which should be set to new positions
-   * @param positions Target positions of the previously mentioned joints
-   */
-  void publishControllerCommands(std::vector<std::string> joint_names, std::vector<double> positions);
-
-  void publishDebug(tf2::Transform &trunk_to_support_foot, tf2::Transform &trunk_to_flying_foot);
+  void publishGoals(const bitbots_splines::JointGoals &goals);
 
   void publishMarker(std::string name_space,
                      std::string frame,
@@ -143,19 +136,11 @@ class QuinticWalkingNode {
 
   bool publish_odom_tf_;
   int odom_pub_factor_;
-  std::chrono::time_point<std::chrono::steady_clock> last_update_time_;
   double last_ros_update_time_;
 
   int robot_state_;
-  int marker_id_;
 
   bitbots_quintic_walk_paramsConfig params_;
-
-  Eigen::Vector3d trunk_pos_;
-  Eigen::Vector3d trunk_axis_;
-  Eigen::Vector3d foot_pos_;
-  Eigen::Vector3d foot_axis_;
-  bool is_left_support_;
 
   /**
    * Saves max values we can move in a single step as [x-direction, y-direction, z-rotation].
@@ -179,8 +164,6 @@ class QuinticWalkingNode {
   ros::Publisher pub_odometry_;
   ros::Publisher pub_support_;
   tf2_ros::TransformBroadcaster odom_broadcaster_;
-  ros::Publisher pub_debug_;
-  ros::Publisher pub_debug_marker_;
 
   ros::Subscriber sub_cmd_vel_;
   ros::Subscriber sub_rob_state_;
@@ -199,15 +182,11 @@ class QuinticWalkingNode {
   // MoveIt!
   robot_model_loader::RobotModelLoader robot_model_loader_;
   robot_model::RobotModelPtr kinematic_model_;
-  robot_state::RobotStatePtr goal_state_;
   robot_state::RobotStatePtr current_state_;
-  const robot_state::JointModelGroup *all_joints_group_;
-  const robot_state::JointModelGroup *legs_joints_group_;
-  const robot_state::JointModelGroup *lleg_joints_group_;
-  const robot_state::JointModelGroup *rleg_joints_group_;
 
-  // IK solver
-  bitbots_ik::BioIKSolver bio_ik_solver_;
+  WalkStabilizer stabilizer_;
+  WalkIK ik_;
+  WalkVisualizer visualizer_;
 
 };
 

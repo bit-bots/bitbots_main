@@ -19,8 +19,18 @@ struct WalkResponse {
   tf2::Transform support_foot_to_trunk;
   bool is_double_support;
   bool is_left_support_foot;
-};
 
+  double phase;
+  double traj_time;
+  double foot_distance;
+
+  std::string state;
+
+  tf2::Transform support_to_last_;
+  tf2::Transform support_to_next_;
+  tf2::Transform left_in_world_;
+  tf2::Transform right_in_world_;
+};
 }
 
 #endif //BITBOTS_MOTION_BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_UTILS_H_

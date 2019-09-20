@@ -751,8 +751,8 @@ std::string QuinticWalk::getState() {
   return engine_state_;
 }
 
-Trajectories QuinticWalk::getSplines() const{
-  Trajectories trajs;
+bitbots_splines::Trajectories QuinticWalk::getSplines() const{
+  bitbots_splines::Trajectories trajs;
   ROS_ERROR("Method getSplines not implemented");
   //TODO splines missing since they do not fit into spline container
   return trajs;

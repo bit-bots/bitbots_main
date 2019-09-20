@@ -24,6 +24,7 @@ https://github.com/Rhoban/model/
 #include "bitbots_splines/position_spline.h"
 #include "bitbots_quintic_walk/walk_utils.h"
 #include "bitbots_splines/abstract_engine.h"
+#include "bitbots_splines/SplineContainer.hpp"
 
 namespace bitbots_quintic_walk {
 
@@ -47,7 +48,7 @@ class QuinticWalk : public bitbots_splines::AbstractEngine<WalkRequest, WalkResp
   WalkResponse update(double dt) override;
   void setGoals(const WalkRequest &goals) override;
   void reset() override;
-  Trajectories getSplines() const;
+  bitbots_splines::Trajectories getSplines() const;
   int getPercentDone() const;
 
   /**
