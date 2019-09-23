@@ -861,7 +861,7 @@
     <joint name="torso_to_imu" type="fixed">
         <parent link="torso" />
         <child link="imu_frame" />
-        <origin rpy="0.0 0 0" xyz="-0.045 0.025 0.023" />
+        <origin rpy="0.0 0 0" xyz="-0.050 0.023 0.018" />
     </joint>
 
     <joint name="RShoulderPitch" type="revolute">
