@@ -12,7 +12,6 @@
 #include <bitbots_quintic_walk/WalkEngineDebug.h>
 #include <moveit_msgs/RobotState.h>
 #include <bitbots_quintic_walk/walk_utils.h>
-#include <bitbots_quintic_walk/footstep.h>
 #include <moveit/robot_state/robot_state.h>
 //#include "tf2/transform_datatypes.h"
 //#include <tf2/convert.h>

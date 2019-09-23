@@ -9,7 +9,6 @@ https://github.com/Rhoban/model/
 #include <algorithm>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include "footstep.h"
 #include <eigen_conversions/eigen_msg.h>
 #include "bitbots_splines/SplineContainer.hpp"
 #include "bitbots_splines/AxisAngle.h"
@@ -69,11 +68,6 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   double getTrajsTime() const;
 
   /**
-   * Get the footstep object.
-   */
-  Footstep getFootstep();
-
-  /**
    * Return if true if left is current support foot
    */
   bool isLeftSupport();
@@ -123,16 +117,11 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   std::string engine_state_;
 
   //splines
-  bitbots_splines::SmoothSpline is_double_support_;
-  bitbots_splines::SmoothSpline is_left_support_foot_;
-  bitbots_splines::PoseSpline trunk_;
-  bitbots_splines::PoseSpline foot_;
+  bitbots_splines::SmoothSpline is_double_support_spline_;
+  bitbots_splines::SmoothSpline is_left_support_foot_spline_;
+  bitbots_splines::PoseSpline trunk_spline_;
+  bitbots_splines::PoseSpline foot_spline_;
 
-  /**
-   * Current footstep support
-   * and flying last and next pose
-   */
-  Footstep footstep_;
 
   /**
    * Movement phase between 0 and 1
@@ -197,6 +186,50 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
    * half cycle as stopped pose
    */
   void resetTrunkLastState();
+
+  /**
+   * Current support foot
+   * (left or right)
+   */
+  bool is_left_support_foot_;
+
+  /**
+   * Pose diff [dx, dy, dtheta]
+   * from support foot to flying foot
+   * last and next position
+   */
+  tf2::Transform support_to_last_;
+  tf2::Transform support_to_next_;
+
+
+  /**
+   * Pose integration of left
+   * and right foot in initial frame.
+   * Set at "future" state taking into account
+   * next expected fot pose.
+   */
+  tf2::Transform left_in_world_;
+  tf2::Transform right_in_world_;
+
+  /**
+   * Set the target pose of current support foot
+   * during next support phase and update support foot.
+   * The target foot pose diff is given with respect to
+   * next support foot pose (current flying foot target).
+   */
+  void stepFromSupport(const tf2::Transform &diff);
+
+  /**
+   * Set target pose of current support foot
+   * using diff orders.
+   * Zero vector means in place walking.
+   * Special handle of lateral and turn step
+   * to avoid foot collision.
+   */
+  void stepFromOrders(const tf2::Transform &diff);
+
+  tf2::Vector3 getLastEuler();
+  tf2::Vector3 getNextEuler();
 
 };
 

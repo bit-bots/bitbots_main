@@ -6,12 +6,11 @@ set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 set(SOURCES
-        src/footstep.cpp
-        src/walk_engine.cpp
-        src/walk_node.cpp
         src/walk_visualizer.cpp
-        src/walk_ik.cpp
+        src/walk_engine.cpp
         src/walk_stabilizer.cpp
+        src/walk_ik.cpp
+        src/walk_node.cpp
         )
 
 find_package(catkin REQUIRED COMPONENTS
