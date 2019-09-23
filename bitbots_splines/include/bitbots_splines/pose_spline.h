@@ -31,12 +31,14 @@ class PoseSpline {
 
   tf2::Quaternion getOrientation(double time);
 
-  SmoothSpline x();
-  SmoothSpline y();
-  SmoothSpline z();
-  SmoothSpline roll();
-  SmoothSpline pitch();
-  SmoothSpline yaw();
+  std::string getDebugString();
+
+  SmoothSpline *x();
+  SmoothSpline *y();
+  SmoothSpline *z();
+  SmoothSpline *roll();
+  SmoothSpline *pitch();
+  SmoothSpline *yaw();
 
  private:
   SmoothSpline x_;
