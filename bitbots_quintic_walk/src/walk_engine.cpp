@@ -720,8 +720,6 @@ WalkResponse WalkEngine::computeCartesianPositionAtTime(double time) {
   response.state = engine_state_;
   response.support_to_last_ = support_to_last_;
   response.support_to_next_ = support_to_next_;
-  ROS_WARN("x: %f, y: %f", response.support_foot_to_flying_foot.getOrigin().x(), response.support_foot_to_flying_foot.getOrigin().y());
-
 
   return response;
 }
