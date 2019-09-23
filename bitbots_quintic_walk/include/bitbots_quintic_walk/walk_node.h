@@ -10,6 +10,7 @@ https://github.com/Rhoban/model/
 #include <string>
 #include <Eigen/Dense>
 #include <chrono>
+#include <unistd.h>
 
 #include <ros/ros.h>
 
@@ -20,6 +21,7 @@ https://github.com/Rhoban/model/
 #include <std_msgs/String.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Char.h>
+#include <std_msgs/Bool.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
@@ -29,6 +31,8 @@ https://github.com/Rhoban/model/
 #include <bitbots_msgs/FootPressure.h>
 
 #include <dynamic_reconfigure/server.h>
+#include <bitbots_quintic_walk/bitbots_quintic_walk_paramsConfig.h>
+
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -39,10 +43,7 @@ https://github.com/Rhoban/model/
 #include <moveit/kinematics_base/kinematics_base.h>
 #include <moveit/move_group_interface/move_group_interface.h>
 
-#include <bitbots_quintic_walk/bitbots_quintic_walk_paramsConfig.h>
 #include "bitbots_quintic_walk/walk_engine.h"
-#include <std_msgs/Bool.h>
-#include <unistd.h>
 #include "bitbots_quintic_walk/walk_stabilizer.h"
 #include "bitbots_quintic_walk/walk_ik.h"
 #include "bitbots_splines/abstract_ik.h"

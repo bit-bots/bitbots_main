@@ -21,18 +21,17 @@ WalkNode::WalkNode() :
   odom_msg_ = nav_msgs::Odometry();
   pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("walk_odometry", 1);
   pub_support_ = nh_.advertise<std_msgs::Char>("walk_support_state", 1);
-  sub_cmd_vel_ = nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
-                               ros::TransportHints().tcpNoDelay());
-  sub_rob_state_ = nh_.subscribe("robot_state", 1, &WalkNode::robStateCb, this,
-                                 ros::TransportHints().tcpNoDelay());
-  sub_joint_states_ =
-      nh_.subscribe("joint_states", 1, &WalkNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
-  sub_kick_ = nh_.subscribe("kick", 1, &WalkNode::kickCb, this, ros::TransportHints().tcpNoDelay());
-  sub_imu_ = nh_.subscribe("imu/data", 1, &WalkNode::imuCb, this, ros::TransportHints().tcpNoDelay());
-  sub_pressure_ = nh_.subscribe("foot_pressure_filtered", 1, &WalkNode::pressureCb, this,
-                                ros::TransportHints().tcpNoDelay());
-  sub_cop_l_ = nh_.subscribe("cop_l", 1, &WalkNode::copLCb, this, ros::TransportHints().tcpNoDelay());
-  sub_cop_r_ = nh_.subscribe("cop_r", 1, &WalkNode::copRCb, this, ros::TransportHints().tcpNoDelay());
+  nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
+                ros::TransportHints().tcpNoDelay());
+  nh_.subscribe("robot_state", 1, &WalkNode::robStateCb, this,
+                ros::TransportHints().tcpNoDelay());
+  nh_.subscribe("joint_states", 1, &WalkNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
+  nh_.subscribe("kick", 1, &WalkNode::kickCb, this, ros::TransportHints().tcpNoDelay());
+  nh_.subscribe("imu/data", 1, &WalkNode::imuCb, this, ros::TransportHints().tcpNoDelay());
+  nh_.subscribe("foot_pressure_filtered", 1, &WalkNode::pressureCb, this,
+                ros::TransportHints().tcpNoDelay());
+  nh_.subscribe("cop_l", 1, &WalkNode::copLCb, this, ros::TransportHints().tcpNoDelay());
+  nh_.subscribe("cop_r", 1, &WalkNode::copRCb, this, ros::TransportHints().tcpNoDelay());
 
 
   //load MoveIt! model
