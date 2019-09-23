@@ -78,13 +78,6 @@ class WalkNode {
  private:
   void publishGoals(const bitbots_splines::JointGoals &goals);
 
-  void publishMarker(std::string name_space,
-                     std::string frame,
-                     geometry_msgs::Pose pose,
-                     float r, float g, float b, float a);
-
-  void publishMarkers();
-
   void publishOdometry();
 
   void cmdVelCb(geometry_msgs::Twist msg);
@@ -165,15 +158,6 @@ class WalkNode {
   ros::Publisher pub_odometry_;
   ros::Publisher pub_support_;
   tf2_ros::TransformBroadcaster odom_broadcaster_;
-
-  ros::Subscriber sub_cmd_vel_;
-  ros::Subscriber sub_rob_state_;
-  ros::Subscriber sub_joint_states_;
-  ros::Subscriber sub_kick_;
-  ros::Subscriber sub_imu_;
-  ros::Subscriber sub_pressure_;
-  ros::Subscriber sub_cop_l_;
-  ros::Subscriber sub_cop_r_;
 
   dynamic_reconfigure::Server<bitbots_quintic_walk_paramsConfig> server_;
 
