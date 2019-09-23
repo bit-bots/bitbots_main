@@ -21,7 +21,7 @@ enum WalkState {
 };
 
 struct WalkRequest {
-  tf2::Transform orders;
+  tf2::Vector3 orders;
   bool walkable_state;
 };
 
@@ -39,8 +39,6 @@ struct WalkResponse {
 
   tf2::Transform support_to_last_;
   tf2::Transform support_to_next_;
-  tf2::Transform left_in_world_;
-  tf2::Transform right_in_world_;
 };
 }
 

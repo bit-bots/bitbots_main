@@ -27,13 +27,14 @@ WalkEngine::WalkEngine() :
   trunk_spline_ = bitbots_splines::PoseSpline();
   foot_spline_ = bitbots_splines::PoseSpline();
 
-
   left_in_world_.setIdentity();
   right_in_world_.setIdentity();
   reset();
 
   // init dynamic reconfigure
-  dyn_reconf_server_ = new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>(ros::NodeHandle("~/engine"));
+  dyn_reconf_server_ =
+      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>(ros::NodeHandle(
+          "~/engine"));
   dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_quintic_walk::WalkEngine::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
@@ -45,10 +46,11 @@ void WalkEngine::setGoals(const WalkRequest &goals) {
 }
 
 WalkResponse WalkEngine::update(double dt) {
-  bool orders_zero = request_.orders==tf2::Transform();
+  // check if orders are zero, since we don't want to walk on the spot
+  bool orders_zero = request_.orders.x() == 0 && request_.orders.y() == 0 && request_.orders.z() == 0;
 
   // First check if we are currently in pause state or idle, since we don't want to update the phase in this case
-  if (engine_state_== WalkState::PAUSED) {
+  if (engine_state_==WalkState::PAUSED) {
     if (time_paused_ > pause_duration_) {
       // our pause is finished, see if we can continue walking
       if (pause_requested_) {
@@ -211,6 +213,8 @@ void WalkEngine::endStep() {
 }
 
 void WalkEngine::reset() {
+  request_.orders = {0,0,0};
+  request_.walkable_state = false;
   engine_state_ = WalkState::IDLE;
   phase_ = 0.0;
   time_paused_ = 0.0;
@@ -218,7 +222,7 @@ void WalkEngine::reset() {
   is_left_support_foot_ = false;
   support_to_last_.setIdentity();
   if (is_left_support_foot_) {
-    support_to_last_.getOrigin()[1] = - params_.foot_distance;
+    support_to_last_.getOrigin()[1] = -params_.foot_distance;
   } else {
     support_to_last_.getOrigin()[1] = params_.foot_distance;
   }
@@ -292,7 +296,7 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
 
   if (start_movement) {
     // update support foot and compute odometry
-    stepFromOrders(tf2::Transform());
+    stepFromOrders({0,0,0});
   } else {
     stepFromOrders(request_.orders);
   }
@@ -708,6 +712,17 @@ WalkResponse WalkEngine::computeCartesianPositionAtTime(double time) {
   response.is_left_support_foot = is_left_support_foot_spline_.pos(time) >= 0.5;
   response.support_foot_to_flying_foot = foot_spline_.getTfTransform(time);
   response.support_foot_to_trunk = trunk_spline_.getTfTransform(time);
+
+  //add additional information to response
+  response.phase = phase_;
+  response.traj_time = getTrajsTime();
+  response.foot_distance = params_.foot_distance;
+  response.state = engine_state_;
+  response.support_to_last_ = support_to_last_;
+  response.support_to_next_ = support_to_next_;
+  ROS_WARN("x: %f, y: %f", response.support_foot_to_flying_foot.getOrigin().x(), response.support_foot_to_flying_foot.getOrigin().y());
+
+
   return response;
 }
 
@@ -760,26 +775,26 @@ WalkState WalkEngine::getState() {
   return engine_state_;
 }
 
-bitbots_splines::Trajectories WalkEngine::getSplines() const{
+bitbots_splines::Trajectories WalkEngine::getSplines() const {
   bitbots_splines::Trajectories trajs;
   ROS_ERROR("Method getSplines not implemented");
   //TODO splines missing since they do not fit into spline container
   return trajs;
 };
 
-int WalkEngine::getPercentDone() const{
+int WalkEngine::getPercentDone() const {
   return (int) getTrajsTime()*100;
 }
 
-void WalkEngine::setPauseDuration(double duration){
+void WalkEngine::setPauseDuration(double duration) {
   pause_duration_ = duration;
 }
 
-double WalkEngine::getFreq(){
+double WalkEngine::getFreq() {
   return params_.freq;
 }
 
-double WalkEngine::getWantedTrunkPitch(){
+double WalkEngine::getWantedTrunkPitch() {
   return params_.trunk_pitch + params_.trunk_pitch_p_coef_forward*support_to_next_.getOrigin().x()
       + params_.trunk_pitch_p_coef_turn*fabs(support_to_next_.getOrigin().z());
 }
@@ -790,19 +805,20 @@ void WalkEngine::stepFromSupport(const tf2::Transform &diff) {
   support_to_next_ = diff;
   //Update world integrated position
   if (is_left_support_foot_) {
-    left_in_world_ = right_in_world_ * diff;
+    left_in_world_ = right_in_world_*diff;
   } else {
-    right_in_world_ = left_in_world_ * diff;
+    right_in_world_ = left_in_world_*diff;
   }
   //Update current support foot
   is_left_support_foot_ = !is_left_support_foot_;
 }
 
-void WalkEngine::stepFromOrders(const tf2::Transform &diff) {
+void WalkEngine::stepFromOrders(const tf2::Vector3 &orders) {
   //Compute step diff in next support foot frame
   tf2::Transform tmp_diff = tf2::Transform();
+  tmp_diff.setIdentity();
   //No change in forward step
-  tmp_diff.getOrigin()[0] = diff.getOrigin().x();
+  tmp_diff.getOrigin()[0] = orders.x();
   //Add lateral foot offset
   if (is_left_support_foot_) {
     tmp_diff.getOrigin()[1] += params_.foot_distance;
@@ -812,31 +828,32 @@ void WalkEngine::stepFromOrders(const tf2::Transform &diff) {
   //Allow lateral step only on external foot
   //(internal foot will return to zero pose)
   if (
-      (is_left_support_foot_ && diff.getOrigin()[1] > 0.0) ||
-          (!is_left_support_foot_ && diff.getOrigin()[1] < 0.0)
+      (is_left_support_foot_ && orders.y() > 0.0) ||
+          (!is_left_support_foot_ && orders.y() < 0.0)
       ) {
-    tmp_diff.getOrigin()[1] += diff.getOrigin().y();
+    tmp_diff.getOrigin()[1] += orders.y();
   }
   //No change in turn (in order to
   //rotate around trunk center)
-  tmp_diff.setRotation(diff.getRotation());
+  tf2::Quaternion quat;
+  quat.setRPY(0, 0, orders.z());
+  tmp_diff.setRotation(quat);
 
   //Make the step
   stepFromSupport(tmp_diff);
 }
 
-tf2::Vector3 WalkEngine::getNextEuler(){
+tf2::Vector3 WalkEngine::getNextEuler() {
   double roll, pitch, yaw;
   tf2::Matrix3x3(support_to_next_.getRotation()).getRPY(roll, pitch, yaw);
   return tf2::Vector3(roll, pitch, yaw);
 }
 
-tf2::Vector3 WalkEngine::getLastEuler(){
+tf2::Vector3 WalkEngine::getLastEuler() {
   double roll, pitch, yaw;
   tf2::Matrix3x3(support_to_last_.getRotation()).getRPY(roll, pitch, yaw);
   return tf2::Vector3(roll, pitch, yaw);
 }
-
 
 }
 

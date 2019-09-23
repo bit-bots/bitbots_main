@@ -2,18 +2,22 @@
 #include "bitbots_quintic_walk/walk_visualizer.h"
 
 namespace bitbots_quintic_walk {
-WalkVisualizer::WalkVisualizer() {}
-
-WalkVisualizer::WalkVisualizer(std::shared_ptr<ros::NodeHandle> nh) {
+WalkVisualizer::WalkVisualizer() {
   marker_id_ = 1;
   /* debug publisher */
-  pub_debug_ = nh->advertise<bitbots_quintic_walk::WalkDebug>("walk_debug", 1);
-  pub_engine_debug_ = nh->advertise<bitbots_quintic_walk::WalkEngineDebug>("walk_engine_debug", 1);
-  pub_debug_marker_ = nh->advertise<visualization_msgs::Marker>("walk_debug_marker", 1);
+  ros::NodeHandle nh;
+  pub_debug_ = nh.advertise<bitbots_quintic_walk::WalkDebug>("walk_debug", 1);
+  pub_engine_debug_ = nh.advertise<bitbots_quintic_walk::WalkEngineDebug>("walk_engine_debug", 1);
+  pub_debug_marker_ = nh.advertise<visualization_msgs::Marker>("walk_debug_marker", 1);
 
 }
 
 void WalkVisualizer::publishEngineDebug(WalkResponse response) {
+  //only do something if someone is listing
+  if(pub_engine_debug_.getNumSubscribers() == 0){
+    return;
+  }
+
   /*
   This method publishes various debug / visualization information.
   */
@@ -138,6 +142,10 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
                                     robot_state::RobotStatePtr current_state,
                                     tf2::Transform trunk_to_support_foot_goal,
                                     tf2::Transform trunk_to_flying_foot_goal) {
+  //only do something if someone is listing
+  if(pub_debug_.getNumSubscribers() == 0){
+    return;
+  }
   bitbots_quintic_walk::WalkDebug msg;
 
   // goals

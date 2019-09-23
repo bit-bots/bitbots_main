@@ -7,7 +7,7 @@ WalkNode::WalkNode() :
     walk_engine_() {
   // init variables
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLABLE;
-  current_request_.orders = tf2::Transform();
+  current_request_.orders = {0,0,0};
   odom_broadcaster_ = tf2_ros::TransformBroadcaster();
 
   // read config
@@ -21,17 +21,17 @@ WalkNode::WalkNode() :
   odom_msg_ = nav_msgs::Odometry();
   pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("walk_odometry", 1);
   pub_support_ = nh_.advertise<std_msgs::Char>("walk_support_state", 1);
-  nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
+  cmd_vel_sub_ = nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
                 ros::TransportHints().tcpNoDelay());
-  nh_.subscribe("robot_state", 1, &WalkNode::robStateCb, this,
+  robot_state_sub_ = nh_.subscribe("robot_state", 1, &WalkNode::robStateCb, this,
                 ros::TransportHints().tcpNoDelay());
-  nh_.subscribe("joint_states", 1, &WalkNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
-  nh_.subscribe("kick", 1, &WalkNode::kickCb, this, ros::TransportHints().tcpNoDelay());
-  nh_.subscribe("imu/data", 1, &WalkNode::imuCb, this, ros::TransportHints().tcpNoDelay());
-  nh_.subscribe("foot_pressure_filtered", 1, &WalkNode::pressureCb, this,
+  joint_state_sub_ = nh_.subscribe("joint_states", 1, &WalkNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
+  kick_sub_ = nh_.subscribe("kick", 1, &WalkNode::kickCb, this, ros::TransportHints().tcpNoDelay());
+  imu_sub_ = nh_.subscribe("imu/data", 1, &WalkNode::imuCb, this, ros::TransportHints().tcpNoDelay());
+  pressure_sub_ = nh_.subscribe("foot_pressure_filtered", 1, &WalkNode::pressureCb, this,
                 ros::TransportHints().tcpNoDelay());
-  nh_.subscribe("cop_l", 1, &WalkNode::copLCb, this, ros::TransportHints().tcpNoDelay());
-  nh_.subscribe("cop_r", 1, &WalkNode::copRCb, this, ros::TransportHints().tcpNoDelay());
+  cop_l_sub_ = nh_.subscribe("cop_l", 1, &WalkNode::copLCb, this, ros::TransportHints().tcpNoDelay());
+  cop_r_sub_ = nh_.subscribe("cop_r", 1, &WalkNode::copRCb, this, ros::TransportHints().tcpNoDelay());
 
 
   //load MoveIt! model
@@ -51,8 +51,7 @@ WalkNode::WalkNode() :
 
   first_run_ = true;
 
-  std::shared_ptr<ros::NodeHandle> shared_nh(&nh_);
-  visualizer_ = WalkVisualizer(shared_nh);
+  visualizer_ = WalkVisualizer();
 
   // initialize dynamic-reconfigure
   server_.setCallback(boost::bind(&WalkNode::reconfCallback, this, _1, _2));
@@ -80,6 +79,8 @@ void WalkNode::run() {
       // update walk engine response
       walk_engine_.setGoals(current_request_);
       WalkResponse response = walk_engine_.update(dt);
+      visualizer_.publishEngineDebug(response);
+
       // only calculate joint goals from this if the engine is not idle
       if (walk_engine_.getState()!=WalkState::IDLE) { //todo
         calculateAndPublishJointGoals(response);
@@ -120,7 +121,6 @@ void WalkNode::calculateAndPublishJointGoals(WalkResponse response) {
 
   // publish debug information
   if (debug_active_) {
-    visualizer_.publishEngineDebug(response);
     //todo
     //visualizer_.publishIKDebug(response, current_state_, goal_state_, trunk_to_support_foot_goal, trunk_to_flying_foot_goal);
     visualizer_.publishWalkMarkers(response);
@@ -153,35 +153,29 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
   // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
   // factor 2 since the order distance is only for a single step, not double step
   double factor = (1.0/(walk_engine_.getFreq()))/2.0;
-  tf2::Vector3 orders = {msg.linear.x*factor, msg.linear.y*factor, msg.angular.z*factor};
+  current_request_.orders = {msg.linear.x*factor, msg.linear.y*factor, msg.angular.z*factor};
 
   // the orders should not extend beyond a maximal step size
   for (int i = 0; i < 3; i++) {
-    orders[i] = std::max(std::min(orders[i], max_step_[i]), max_step_[i]*-1);
+    current_request_.orders[i] = std::max(std::min(current_request_.orders[i], max_step_[i]), max_step_[i]*-1);
   }
   // translational orders (x+y) should not exceed combined limit. scale if necessary
   if (max_step_xy_!=0) {
-    double scaling_factor = (orders[0] + orders[1])/max_step_xy_;
+    double scaling_factor = (current_request_.orders[0] + current_request_.orders[1])/max_step_xy_;
     for (int i = 0; i < 2; i++) {
-      orders[i] = orders[i]/std::max(scaling_factor, 1.0);
+      current_request_.orders[i] = current_request_.orders[i]/std::max(scaling_factor, 1.0);
     }
   }
 
   // warn user that speed was limited
-  if (msg.linear.x*factor!=orders[0] ||
-      msg.linear.y*factor!=orders[1] ||
-      msg.angular.z*factor!=orders[2]) {
+  if (msg.linear.x*factor!=current_request_.orders[0] ||
+      msg.linear.y*factor!=current_request_.orders[1] ||
+      msg.angular.z*factor!=current_request_.orders[2]) {
     ROS_WARN(
         "Speed command was x: %.2f y: %.2f z: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f xy: %.2f",
         msg.linear.x, msg.linear.y, msg.angular.z, msg.linear.x + msg.linear.y, max_step_[0]/factor,
         max_step_[1]/factor, max_step_[2]/factor, max_step_xy_/factor);
   }
-
-  // The result is the transform where the engine should place it next foot, we only use x,y and yaw
-  current_request_.orders.setOrigin({orders[0], orders[1], 0});
-  tf2::Quaternion quat;
-  quat.setRPY(0, 0, orders[2]);
-  current_request_.orders.setRotation(quat);
 }
 
 void WalkNode::imuCb(const sensor_msgs::Imu msg) {

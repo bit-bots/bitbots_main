@@ -159,6 +159,15 @@ class WalkNode {
   ros::Publisher pub_support_;
   tf2_ros::TransformBroadcaster odom_broadcaster_;
 
+  ros::Subscriber cmd_vel_sub_;
+  ros::Subscriber robot_state_sub_;
+  ros::Subscriber joint_state_sub_;
+  ros::Subscriber kick_sub_;
+  ros::Subscriber imu_sub_;
+  ros::Subscriber pressure_sub_;
+  ros::Subscriber cop_l_sub_;
+  ros::Subscriber cop_r_sub_;
+
   dynamic_reconfigure::Server<bitbots_quintic_walk_paramsConfig> server_;
 
   geometry_msgs::PointStamped cop_l_;

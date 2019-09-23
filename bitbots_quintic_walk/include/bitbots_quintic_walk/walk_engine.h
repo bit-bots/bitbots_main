@@ -172,7 +172,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
    * Zero vector means in place walking.
    * Special handle of lateral and turn step to avoid foot collision.
    */
-  void stepFromOrders(const tf2::Transform &diff);
+  void stepFromOrders(const tf2::Vector3 &diff);
 
   /**
    * Small helper method to get euler angle instead of quaternion.

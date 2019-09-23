@@ -21,7 +21,6 @@ namespace bitbots_quintic_walk {
 class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
  public:
   explicit WalkVisualizer();
-  explicit WalkVisualizer(std::shared_ptr<ros::NodeHandle> nh);
 
   void publishArrowMarker(std::string name_space,
                           std::string frame,
