@@ -69,32 +69,33 @@ walking:
     kick_vel: 0.2
     kick_phase: 0.75
 
-  # update frequency of the engine
-  engine_freq: 200.0
-  
-  # parameters for bioIK
-  bio_ik_time: 0.01
+  node:
+    # update frequency of the engine
+    engine_freq: 200.0
 
-  debug_active: True
+    # parameters for bioIK
+    bio_ik_time: 0.01
 
-  trunkYOnlyInDoubleSupport: False
+    debug_active: True
 
-  max_step_x: 0.06
-  max_step_y: 0.05
-  max_step_xy: 0.09
-  max_step_z: 0.45
+    trunkYOnlyInDoubleSupport: False
 
-  vel: -1
-  acc: -1
-  pwm: -1
+    max_step_x: 0.06
+    max_step_y: 0.05
+    max_step_xy: 0.09
+    max_step_z: 0.45
 
-  imu_active: True
-  imu_pitch_threshold: 0.5
-  imu_roll_threshold: 0.4
-  imu_pitch_vel_threshold: 1.1
-  imu_roll_vel_threshold: 1.0
-  pause_duration: 0.5
+    vel: -1
+    acc: -1
+    pwm: -1
 
-  publishOdomTF: False
+    imu_active: True
+    imu_pitch_threshold: 0.5
+    imu_roll_threshold: 0.4
+    imu_pitch_vel_threshold: 1.1
+    imu_roll_vel_threshold: 1.0
+    pause_duration: 0.5
 
-  first_step_swing_factor: 1.0
+    publishOdomTF: False
+
+    first_step_swing_factor: 1.0

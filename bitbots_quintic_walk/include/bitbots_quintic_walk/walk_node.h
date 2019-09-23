@@ -168,7 +168,7 @@ class WalkNode {
   ros::Subscriber cop_l_sub_;
   ros::Subscriber cop_r_sub_;
 
-  dynamic_reconfigure::Server<bitbots_quintic_walk_paramsConfig> server_;
+  dynamic_reconfigure::Server<bitbots_quintic_walk_paramsConfig> *dyn_reconf_server_;
 
   geometry_msgs::PointStamped cop_l_;
   geometry_msgs::PointStamped cop_r_;

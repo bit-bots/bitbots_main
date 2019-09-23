@@ -32,6 +32,7 @@ WalkEngine::WalkEngine() :
   reset();
 
   // init dynamic reconfigure
+  ROS_WARN("init");
   dyn_reconf_server_ =
       new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>(ros::NodeHandle(
           "~/engine"));

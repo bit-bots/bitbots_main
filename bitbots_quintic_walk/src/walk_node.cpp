@@ -54,7 +54,12 @@ WalkNode::WalkNode() :
   visualizer_ = WalkVisualizer();
 
   // initialize dynamic-reconfigure
-  server_.setCallback(boost::bind(&WalkNode::reconfCallback, this, _1, _2));
+  dyn_reconf_server_ =
+      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>(ros::NodeHandle(
+          "~/node"));
+  dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>::CallbackType f;
+  f = boost::bind(&bitbots_quintic_walk::WalkNode::reconfCallback, this, _1, _2);
+  dyn_reconf_server_->setCallback(f);
 
 }
 
@@ -334,8 +339,7 @@ void WalkNode::copRCb(const geometry_msgs::PointStamped msg) {
 }
 
 void
-WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config,
-                         uint32_t level) {
+WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level) {
   params_ = config;
 
   // todo

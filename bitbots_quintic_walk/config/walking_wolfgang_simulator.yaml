@@ -65,28 +65,29 @@ walking:
     # (in 1)
     trunk_pitch_p_coef_turn: 0.0
 
-  # update frequency of the engine
-  engine_freq: 100.0
-  
-  # parameters for bioIK
-  bio_ik_time: 0.01
-  bioIKApprox: True
+  node:
+    # update frequency of the engine
+    engine_freq: 100.0
 
-  debug_active: False
-  pubModelJointStates: False
+    # parameters for bioIK
+    bio_ik_time: 0.01
+    bioIKApprox: True
 
-  trunkYOnlyInDoubleSupport: False
+    debug_active: False
+    pubModelJointStates: False
 
-  max_step_x: 1.0
-  max_step_y: 1.0
-  max_step_z: 1.5
+    trunkYOnlyInDoubleSupport: False
 
-  vel: -1
-  acc: -1
-  pwm: -1
+    max_step_x: 1.0
+    max_step_y: 1.0
+    max_step_z: 1.5
 
-  imu_active: False
-  imu_pitch_threshold: 1
-  imu_roll_threshold: 1
+    vel: -1
+    acc: -1
+    pwm: -1
 
-  publishOdomTF: True
+    imu_active: False
+    imu_pitch_threshold: 1
+    imu_roll_threshold: 1
+
+    publishOdomTF: True

@@ -69,27 +69,27 @@ walking:
     kick_vel: 0.0
     kick_phase: 0.75
 
+  node:
+    # update frequency of the engine
+    engine_freq: 200.0
 
-  # update frequency of the engine
-  engine_freq: 200.0
-  
-  # parameters for bioIK
-  bio_ik_time: 0.01
+    # parameters for bioIK
+    bio_ik_time: 0.01
 
-  debug_active: True
+    debug_active: True
 
-  trunkYOnlyInDoubleSupport: False
+    trunkYOnlyInDoubleSupport: False
 
-  max_step_x: 0.06
-  max_step_y: 0.05
-  max_step_xy: 0.05
-  max_step_z: 0.4
+    max_step_x: 0.06
+    max_step_y: 0.05
+    max_step_xy: 0.05
+    max_step_z: 0.4
 
-  vel: -1
-  acc: -1
-  pwm: -1
+    vel: -1
+    acc: -1
+    pwm: -1
 
-  imu_active: False
-  imu_pitch_threshold: 1.0
-  imu_roll_threshold: 1.0
-  pause_duration: 1.0
+    imu_active: False
+    imu_pitch_threshold: 1.0
+    imu_roll_threshold: 1.0
+    pause_duration: 1.0
