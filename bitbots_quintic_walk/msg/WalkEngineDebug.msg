@@ -12,6 +12,7 @@ float64 traj_time
 uint8 is_left_support
 uint8 is_double_support
 std_msgs/String engine_state
+int32 engine_state_number # same as engine_state only as number to use it in plottjuggler
 
 
 # footstep

@@ -81,7 +81,7 @@ void WalkNode::run() {
       walk_engine_.setGoals(current_request_);
       WalkResponse response = walk_engine_.update(dt);
       // only calculate joint goals from this if the engine is not idle
-      if (walk_engine_.getState()!="idle") { //todo
+      if (walk_engine_.getState()!=WalkState::IDLE) { //todo
         calculateAndPublishJointGoals(response);
       }
     }

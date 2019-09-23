@@ -9,6 +9,17 @@
 
 namespace bitbots_quintic_walk {
 
+enum WalkState {
+  PAUSED,
+  WALKING,
+  IDLE,
+  START_MOVEMENT,
+  STOP_MOVEMENT,
+  START_STEP,
+  STOP_STEP,
+  KICK
+};
+
 struct WalkRequest {
   tf2::Transform orders;
   bool walkable_state;
@@ -24,7 +35,7 @@ struct WalkResponse {
   double traj_time;
   double foot_distance;
 
-  std::string state;
+  WalkState state;
 
   tf2::Transform support_to_last_;
   tf2::Transform support_to_next_;

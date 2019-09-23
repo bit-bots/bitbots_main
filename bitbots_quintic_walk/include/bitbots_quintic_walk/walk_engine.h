@@ -73,7 +73,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
    */
   void endStep();
 
-  std::string getState();
+  WalkState getState();
 
   double getFreq();
 
@@ -83,7 +83,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
  private:
 
-  std::string engine_state_;
+  WalkState engine_state_;
 
   WalkRequest request_;
 

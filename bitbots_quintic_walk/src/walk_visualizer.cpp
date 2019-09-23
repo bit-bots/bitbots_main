@@ -1,9 +1,10 @@
+#include <bitbots_quintic_walk/walk_engine.h>
 #include "bitbots_quintic_walk/walk_visualizer.h"
 
 namespace bitbots_quintic_walk {
 WalkVisualizer::WalkVisualizer() {}
 
-WalkVisualizer::WalkVisualizer(std::shared_ptr<ros::NodeHandle> nh){
+WalkVisualizer::WalkVisualizer(std::shared_ptr<ros::NodeHandle> nh) {
   marker_id_ = 1;
   /* debug publisher */
   pub_debug_ = nh->advertise<bitbots_quintic_walk::WalkDebug>("walk_debug", 1);
@@ -54,7 +55,31 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   msg.phase_time = response.phase; //.getPhase();
   msg.traj_time = response.traj_time; //.getTrajsTime();
 
-  msg.engine_state.data = response.state; //getState();
+  if (response.state==WalkState::IDLE) {
+    msg.engine_state_number = 0;
+    msg.engine_state.data = "idle";
+  } else if (response.state==WalkState::START_MOVEMENT) {
+    msg.engine_state_number = 1;
+    msg.engine_state.data = "start_movement";
+  } else if (response.state==WalkState::START_STEP) {
+    msg.engine_state_number = 2;
+    msg.engine_state.data = "start_step";
+  } else if (response.state==WalkState::WALKING) {
+    msg.engine_state_number = 3;
+    msg.engine_state.data = "walking";
+  } else if (response.state==WalkState::PAUSED) {
+    msg.engine_state_number = 4;
+    msg.engine_state.data = "paused";
+  } else if (response.state==WalkState::KICK) {
+    msg.engine_state_number = 5;
+    msg.engine_state.data = "kick";
+  } else if (response.state==WalkState::STOP_STEP) {
+    msg.engine_state_number = 6;
+    msg.engine_state.data = "stop_step";
+  } else if (response.state==WalkState::STOP_MOVEMENT) {
+    msg.engine_state_number = 7;
+    msg.engine_state.data = "stop_movement";
+  }
 
   // footsteps
   double roll, pitch, yaw;

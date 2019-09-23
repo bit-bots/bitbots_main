@@ -48,7 +48,7 @@ WalkResponse WalkEngine::update(double dt) {
   bool orders_zero = request_.orders==tf2::Transform();
 
   // First check if we are currently in pause state or idle, since we don't want to update the phase in this case
-  if (engine_state_=="paused") {
+  if (engine_state_== WalkState::PAUSED) {
     if (time_paused_ > pause_duration_) {
       // our pause is finished, see if we can continue walking
       if (pause_requested_) {
@@ -58,7 +58,7 @@ WalkResponse WalkEngine::update(double dt) {
         return computeCartesianPositionAtTime(getTrajsTime());
       } else {
         // we can continue
-        engine_state_ = "walking";
+        engine_state_ = WalkState::WALKING;
         time_paused_ = 0.0;
       }
     } else {
@@ -66,7 +66,7 @@ WalkResponse WalkEngine::update(double dt) {
       return computeCartesianPositionAtTime(getTrajsTime());
     }
     // we don't have to update anything more
-  } else if (engine_state_=="idle") {
+  } else if (engine_state_==WalkState::IDLE) {
     if (orders_zero || !request_.walkable_state) {
       // we are in idle and are not supposed to walk. current state is fine, just do nothing
       return computeCartesianPositionAtTime(getTrajsTime());
@@ -80,40 +80,40 @@ WalkResponse WalkEngine::update(double dt) {
   bool half_step_finished = (last_phase_ < 0.5 && phase_ >= 0.5) || (last_phase_ > 0.5 && phase_ < 0.5);
 
   // small state machine
-  if (engine_state_=="idle") {
+  if (engine_state_==WalkState::IDLE) {
     // state is idle and orders are not zero, we can start walking
     buildStartTrajectories();
-    engine_state_ = "startMovement";
-  } else if (engine_state_=="startMovement") {
+    engine_state_ = WalkState::START_MOVEMENT;
+  } else if (engine_state_==WalkState::START_MOVEMENT) {
     // in this state we do a single "step" where we only move the trunk
     if (half_step_finished) {
       if (orders_zero) {
-        engine_state_ = "stopMovement";
+        engine_state_ = WalkState::STOP_MOVEMENT;
         buildStopMovementTrajectories();
       } else {
         //start step is finished, go to next state
         buildTrajectories(false, true, false);
-        engine_state_ = "startStep";
+        engine_state_ = WalkState::START_STEP;
       }
     }
-  } else if (engine_state_=="startStep") {
+  } else if (engine_state_==WalkState::START_STEP) {
     if (half_step_finished) {
       if (orders_zero) {
         // we have zero command vel -> we should stop
-        engine_state_ = "stopStep";
+        engine_state_ = WalkState::STOP_STEP;
         //phase_ = 0.0;
         buildStopStepTrajectories();
       } else {
         //start step is finished, go to next state
         buildNormalTrajectories();
-        engine_state_ = "walking";
+        engine_state_ = WalkState::WALKING;
       }
     }
-  } else if (engine_state_=="walking") {
+  } else if (engine_state_==WalkState::WALKING) {
     // check if a half step was finished and we are unstable
     if (half_step_finished && pause_requested_) {
       // go into pause
-      engine_state_ = "paused";
+      engine_state_ = WalkState::PAUSED;
       pause_requested_ = false;
       return computeCartesianPositionAtTime(getTrajsTime());
     } else if (half_step_finished &&
@@ -121,14 +121,14 @@ WalkResponse WalkEngine::update(double dt) {
             || (right_kick_requested_ && is_left_support_foot_))) {
       // lets do a kick
       buildKickTrajectories();
-      engine_state_ = "kick";
+      engine_state_ = WalkState::KICK;
       left_kick_requested_ = false;
       right_kick_requested_ = false;
     } else if (half_step_finished) {
       // current step is finished, lets see if we have to change state
       if (orders_zero) {
         // we have zero command vel -> we should stop
-        engine_state_ = "stopStep";
+        engine_state_ = WalkState::STOP_STEP;
         //phase_ = 0.0;
         buildStopStepTrajectories();
       } else {
@@ -136,25 +136,25 @@ WalkResponse WalkEngine::update(double dt) {
         buildNormalTrajectories();
       }
     }
-  } else if (engine_state_=="kick") {
+  } else if (engine_state_==WalkState::KICK) {
     // in this state we do a kick while doing a step
     if (half_step_finished) {
       //kick step is finished, go on walking
-      engine_state_ = "walking";
+      engine_state_ = WalkState::WALKING;
       buildNormalTrajectories();
     }
-  } else if (engine_state_=="stopStep") {
+  } else if (engine_state_==WalkState::STOP_STEP) {
     // in this state we do a step back to get feet into idle pose
     if (half_step_finished) {
       //stop step is finished, go to stop movement state
-      engine_state_ = "stopMovement";
+      engine_state_ = WalkState::STOP_MOVEMENT;
       buildStopMovementTrajectories();
     }
-  } else if (engine_state_=="stopMovement") {
+  } else if (engine_state_==WalkState::STOP_MOVEMENT) {
     // in this state we do a "step" where we move the trunk back to idle position
     if (half_step_finished) {
       //stop movement is finished, go to idle state
-      engine_state_ = "idle";
+      engine_state_ = WalkState::IDLE;
       return computeCartesianPositionAtTime(getTrajsTime());
     }
   } else {
@@ -211,7 +211,7 @@ void WalkEngine::endStep() {
 }
 
 void WalkEngine::reset() {
-  engine_state_ = "idle";
+  engine_state_ = WalkState::IDLE;
   phase_ = 0.0;
   time_paused_ = 0.0;
 
@@ -756,7 +756,7 @@ void WalkEngine::requestPause() {
   pause_requested_ = true;
 }
 
-std::string WalkEngine::getState() {
+WalkState WalkEngine::getState() {
   return engine_state_;
 }
 
