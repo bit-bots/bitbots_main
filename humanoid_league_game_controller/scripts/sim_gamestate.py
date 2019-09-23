@@ -2,7 +2,7 @@
 
 # This script was based on the teleop_twist_keyboard package
 # original code can be found at https://github.com/ros-teleop/teleop_twist_keyboard
-# The script provides a simple mechanism to test robot behaviour to different gamestates,
+# The script provides a simple mechanism to test robot behaviour in different gamestates,
 # when no gamecontroller is running
 
 import rospy
