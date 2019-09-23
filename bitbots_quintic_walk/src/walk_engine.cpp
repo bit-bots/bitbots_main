@@ -724,9 +724,14 @@ WalkResponse WalkEngine::computeCartesianPositionAtTime(double time) {
   return response;
 }
 
+void WalkEngine::point(bitbots_splines::SmoothSpline *spline, double t, double pos, double vel, double acc) {
+  spline->addPoint(t, pos, vel, acc);
+}
+
 void WalkEngine::point(bitbots_splines::SmoothSpline spline, double t, double pos, double vel, double acc) {
   spline.addPoint(t, pos, vel, acc);
 }
+
 
 double WalkEngine::getPhase() const {
   return phase_;
