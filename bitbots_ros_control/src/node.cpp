@@ -32,16 +32,17 @@ int main (int argc, char *argv[]){
   while (ros::ok()){
     bool read_sucessfull = hw.read();
     ros::Duration period = ros::Time::now() - current_time;
-    current_time = ros::Time::now(); 
-    if(read_sucessfull){ //TODO evaluate if this makes sense
-      // only write something to hardware 
-      if (first_update) {
-        first_update = false;
-      } else {
-        cm.update(current_time, period);
-      }
-      hw.write();
+    current_time = ros::Time::now();
+
+    // period only makes sense after the first update
+    // therefore, the controller manager is only updated starting with the second iteration
+    if (first_update) {
+      first_update = false;
+    } else {
+      cm.update(current_time, period);
     }
+    hw.write();
+
     rate.sleep();
     ros::spinOnce();
   }
