@@ -58,7 +58,7 @@ WalkResponse WalkEngine::update(double dt) {
         // not yet, wait another pause duration
         pause_requested_ = false;
         time_paused_ = 0.0;
-        return computeCartesianPositionAtTime(getTrajsTime());
+        return createResponse();
       } else {
         // we can continue
         engine_state_ = WalkState::WALKING;
@@ -66,13 +66,13 @@ WalkResponse WalkEngine::update(double dt) {
       }
     } else {
       time_paused_ += dt;
-      return computeCartesianPositionAtTime(getTrajsTime());
+      return createResponse();
     }
     // we don't have to update anything more
   } else if (engine_state_==WalkState::IDLE) {
     if (orders_zero || !request_.walkable_state) {
       // we are in idle and are not supposed to walk. current state is fine, just do nothing
-      return computeCartesianPositionAtTime(getTrajsTime());
+      return createResponse();
     }
   }
 
@@ -118,7 +118,7 @@ WalkResponse WalkEngine::update(double dt) {
       // go into pause
       engine_state_ = WalkState::PAUSED;
       pause_requested_ = false;
-      return computeCartesianPositionAtTime(getTrajsTime());
+      return createResponse();
     } else if (half_step_finished &&
         ((left_kick_requested_ && !is_left_support_foot_)
             || (right_kick_requested_ && is_left_support_foot_))) {
@@ -158,7 +158,7 @@ WalkResponse WalkEngine::update(double dt) {
     if (half_step_finished) {
       //stop movement is finished, go to idle state
       engine_state_ = WalkState::IDLE;
-      return computeCartesianPositionAtTime(getTrajsTime());
+      return createResponse();
     }
   } else {
     ROS_ERROR("Somethings wrong with the walking engine state");
@@ -172,11 +172,11 @@ WalkResponse WalkEngine::update(double dt) {
                        phase_,
                        is_left_support_foot_,
                        dt);
-    return computeCartesianPositionAtTime(getTrajsTime());
+    return createResponse();
   }
   last_phase_ = phase_;
 
-  return computeCartesianPositionAtTime(getTrajsTime());
+  return createResponse();
 }
 
 void WalkEngine::updatePhase(double dt) {
@@ -705,16 +705,16 @@ void WalkEngine::resetTrunkLastState() {
   trunk_axis_acc_at_last_.setZero();
 }
 
-WalkResponse WalkEngine::computeCartesianPositionAtTime(double time) {
-  //Evaluate target cartesian
-  //state from trajectories
+WalkResponse WalkEngine::createResponse() {
+  //Evaluate target cartesian state from trajectories at current trajectory time
+  double time = getTrajsTime();
   WalkResponse response;
   response.is_double_support = is_double_support_spline_.pos(time);
   response.is_left_support_foot = is_left_support_foot_spline_.pos(time);
   response.support_foot_to_flying_foot = foot_spline_.getTfTransform(time);
   response.support_foot_to_trunk = trunk_spline_.getTfTransform(time);
 
-  //add additional information to response
+  //add additional information to response, maily for debug purposes
   response.phase = phase_;
   response.traj_time = getTrajsTime();
   response.foot_distance = params_.foot_distance;

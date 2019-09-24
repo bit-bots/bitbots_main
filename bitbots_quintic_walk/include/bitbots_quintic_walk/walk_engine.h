@@ -155,7 +155,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
    * Compute current cartesian target from trajectories and assign it to given model through inverse kinematics.
    * Return false is the target is unreachable.
    */
-  WalkResponse computeCartesianPositionAtTime(double time);
+  WalkResponse createResponse();
 
   /**
    * Reset the trunk position and orientation state vectors at last half cycle as stopped pose.
