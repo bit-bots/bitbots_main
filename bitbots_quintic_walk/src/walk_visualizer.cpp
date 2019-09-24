@@ -56,33 +56,33 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
 
 
   // times
-  msg.phase_time = response.phase; //.getPhase();
-  msg.traj_time = response.traj_time; //.getTrajsTime();
+  msg.phase_time = response.phase;
+  msg.traj_time = response.traj_time;
 
   if (response.state==WalkState::IDLE) {
-    msg.engine_state_number = 0;
-    msg.engine_state.data = "idle";
+    msg.state_number = 0;
+    msg.state.data = "idle";
   } else if (response.state==WalkState::START_MOVEMENT) {
-    msg.engine_state_number = 1;
-    msg.engine_state.data = "start_movement";
+    msg.state_number = 1;
+    msg.state.data = "start_movement";
   } else if (response.state==WalkState::START_STEP) {
-    msg.engine_state_number = 2;
-    msg.engine_state.data = "start_step";
+    msg.state_number = 2;
+    msg.state.data = "start_step";
   } else if (response.state==WalkState::WALKING) {
-    msg.engine_state_number = 3;
-    msg.engine_state.data = "walking";
+    msg.state_number = 3;
+    msg.state.data = "walking";
   } else if (response.state==WalkState::PAUSED) {
-    msg.engine_state_number = 4;
-    msg.engine_state.data = "paused";
+    msg.state_number = 4;
+    msg.state.data = "paused";
   } else if (response.state==WalkState::KICK) {
-    msg.engine_state_number = 5;
-    msg.engine_state.data = "kick";
+    msg.state_number = 5;
+    msg.state.data = "kick";
   } else if (response.state==WalkState::STOP_STEP) {
-    msg.engine_state_number = 6;
-    msg.engine_state.data = "stop_step";
+    msg.state_number = 6;
+    msg.state.data = "stop_step";
   } else if (response.state==WalkState::STOP_MOVEMENT) {
-    msg.engine_state_number = 7;
-    msg.engine_state.data = "stop_movement";
+    msg.state_number = 7;
+    msg.state.data = "stop_movement";
   }
 
   // footsteps
@@ -101,29 +101,29 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   // engine output
   geometry_msgs::Pose pose_msg;
   tf2::toMsg(response.support_foot_to_flying_foot, pose_msg);
-  msg.engine_fly_goal = pose_msg;
+  msg.fly_goal = pose_msg;
   publishArrowMarker("engine_fly_goal", current_support_frame, pose_msg, 0, 0, 1, a);
 
   tf2::Matrix3x3(response.support_foot_to_flying_foot.getRotation()).getRPY(roll, pitch, yaw);
-  msg.engine_fly_axis.x = roll;
-  msg.engine_fly_axis.y = pitch;
-  msg.engine_fly_axis.z = yaw;
+  msg.fly_euler.x = roll;
+  msg.fly_euler.y = pitch;
+  msg.fly_euler.z = yaw;
 
   tf2::toMsg(response.support_foot_to_trunk, pose_msg);
-  msg.engine_trunk_goal = pose_msg;
+  msg.trunk_goal = pose_msg;
   publishArrowMarker("engine_trunk_goal", current_support_frame, pose_msg, r, g, b, a);
 
-  msg.engine_trunk_goal_abs = pose_msg;
-  if (msg.engine_trunk_goal_abs.position.y > 0) {
-    msg.engine_trunk_goal_abs.position.y -= response.foot_distance/2;
+  msg.trunk_goal_abs = pose_msg;
+  if (msg.trunk_goal_abs.position.y > 0) {
+    msg.trunk_goal_abs.position.y -= response.foot_distance/2;
   } else {
-    msg.engine_trunk_goal_abs.position.y += response.foot_distance/2;
+    msg.trunk_goal_abs.position.y += response.foot_distance/2;
   }
 
   tf2::Matrix3x3(response.support_foot_to_flying_foot.getRotation()).getRPY(roll, pitch, yaw);
-  msg.engine_trunk_axis.x = roll;
-  msg.engine_trunk_axis.y = pitch;
-  msg.engine_trunk_axis.z = yaw;
+  msg.trunk_euler.x = roll;
+  msg.trunk_euler.y = pitch;
+  msg.trunk_euler.z = yaw;
 
   // resulting trunk pose
   geometry_msgs::Pose pose;
