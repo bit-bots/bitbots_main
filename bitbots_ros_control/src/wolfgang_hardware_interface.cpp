@@ -36,8 +36,8 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
 
   _servos = DynamixelServoHardwareInterface(driver);
   _imu = ImuHardwareInterface(driver);
-  _left_foot = BitFootHardwareInterface(driver, 101, "/foot_pressure/left");
-  _right_foot = BitFootHardwareInterface(driver, 102, "/foot_pressure/right");
+  _left_foot = BitFootHardwareInterface(driver, 101, "/foot_pressure_left/raw");
+  _right_foot = BitFootHardwareInterface(driver, 102, "/foot_pressure_right/raw");
   _buttons = ButtonHardwareInterface(driver);
 
   // set the dynamic reconfigure and load standard params for servo interface
