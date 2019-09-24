@@ -334,14 +334,14 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
     single_support_length = 0.0;
   }
   //Set double support phase
-  point(is_double_support_spline_, 0.0, 1.0);
-  point(is_double_support_spline_, double_support_length, 1.0);
-  point(is_double_support_spline_, double_support_length, 0.0);
-  point(is_double_support_spline_, half_period, 0.0);
+  point(&is_double_support_spline_, 0.0, 1.0);
+  point(&is_double_support_spline_, double_support_length, 1.0);
+  point(&is_double_support_spline_, double_support_length, 0.0);
+  point(&is_double_support_spline_, half_period, 0.0);
 
   //Set support foot
-  point(is_left_support_foot_spline_, 0.0, is_left_support_foot_);
-  point(is_left_support_foot_spline_, half_period, is_left_support_foot_);
+  point(&is_left_support_foot_spline_, 0.0, is_left_support_foot_);
+  point(&is_left_support_foot_spline_, half_period, is_left_support_foot_);
 
   //Flying foot position
   point(foot_spline_.x(), 0.0, support_to_last_.getOrigin().x());
@@ -576,12 +576,12 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
 
   //Set double support phase
   double is_double_support = (foot_in_idle_position ? 1.0 : 0.0);
-  point(is_double_support_spline_, 0.0, is_double_support);
-  point(is_double_support_spline_, half_period, is_double_support);
+  point(&is_double_support_spline_, 0.0, is_double_support);
+  point(&is_double_support_spline_, half_period, is_double_support);
 
   //Set support foot
-  point(is_left_support_foot_spline_, 0.0, is_left_support_foot_);
-  point(is_left_support_foot_spline_, half_period, is_left_support_foot_);
+  point(&is_left_support_foot_spline_, 0.0, is_left_support_foot_);
+  point(&is_left_support_foot_spline_, half_period, is_left_support_foot_);
 
   //Flying foot position
   point(foot_spline_.x(), 0.0,
@@ -709,8 +709,8 @@ WalkResponse WalkEngine::computeCartesianPositionAtTime(double time) {
   //Evaluate target cartesian
   //state from trajectories
   WalkResponse response;
-  response.is_double_support = is_double_support_spline_.pos(time) >= 0.5;
-  response.is_left_support_foot = is_left_support_foot_spline_.pos(time) >= 0.5;
+  response.is_double_support = is_double_support_spline_.pos(time);
+  response.is_left_support_foot = is_left_support_foot_spline_.pos(time);
   response.support_foot_to_flying_foot = foot_spline_.getTfTransform(time);
   response.support_foot_to_trunk = trunk_spline_.getTfTransform(time);
 
@@ -727,10 +727,6 @@ WalkResponse WalkEngine::computeCartesianPositionAtTime(double time) {
 
 void WalkEngine::point(bitbots_splines::SmoothSpline *spline, double t, double pos, double vel, double acc) {
   spline->addPoint(t, pos, vel, acc);
-}
-
-void WalkEngine::point(bitbots_splines::SmoothSpline spline, double t, double pos, double vel, double acc) {
-  spline.addPoint(t, pos, vel, acc);
 }
 
 

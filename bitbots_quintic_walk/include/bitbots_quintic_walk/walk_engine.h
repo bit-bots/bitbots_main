@@ -149,7 +149,6 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   void saveCurrentTrunkState();
 
   void point(bitbots_splines::SmoothSpline *spline, double t, double pos, double vel = 0, double acc = 0);
-  void point(bitbots_splines::SmoothSpline spline, double t, double pos, double vel = 0, double acc = 0);
 
 
   /**
