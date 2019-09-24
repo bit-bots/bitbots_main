@@ -166,13 +166,12 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   publishArrowMarker("engine_right_goal", "base_link", msg.right_foot_goal, 1, 0, 0, 1);
 
   // IK results
-  //todo
-  /*
+
   geometry_msgs::Pose pose_left_result;
-  tf2::toMsg(goal_state->getGlobalLinkTransform("l_sole"), pose_left_result);
+  tf2::convert(goal_state->getGlobalLinkTransform("l_sole"), pose_left_result);
   msg.left_foot_ik_result = pose_left_result;
   geometry_msgs::Pose pose_right_result;
-  tf2::toMsg(goal_state->getGlobalLinkTransform("r_sole"), pose_right_result);
+  tf2::convert(goal_state->getGlobalLinkTransform("r_sole"), pose_right_result);
   msg.right_foot_ik_result = pose_right_result;
   if (response.is_left_support_foot) {
     msg.support_foot_ik_result = pose_left_result;
@@ -255,7 +254,6 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   tf2::convert(fly_off, vect_msg);
   msg.fly_foot_actual_offset = vect_msg;
 
-   */
   pub_debug_.publish(msg);
 }
 

@@ -56,6 +56,12 @@ generate_messages(
         geometry_msgs
 )
 
+include_directories(
+        include
+        ${catkin_INCLUDE_DIRS}
+        ${EIGEN3_INCLUDE_DIRS}
+)
+
 
 catkin_package(
         INCLUDE_DIRS include
@@ -64,11 +70,6 @@ catkin_package(
         DEPENDS EIGEN3
 )
 
-include_directories(
-        include
-        ${catkin_INCLUDE_DIRS}
-        ${EIGEN3_INCLUDE_DIRS}
-)
 
 
 set(CODE_LIBRARIES

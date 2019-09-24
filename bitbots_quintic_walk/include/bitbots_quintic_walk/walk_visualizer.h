@@ -13,8 +13,7 @@
 #include <moveit_msgs/RobotState.h>
 #include <bitbots_quintic_walk/walk_utils.h>
 #include <moveit/robot_state/robot_state.h>
-//#include "tf2/transform_datatypes.h"
-//#include <tf2/convert.h>
+#include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 namespace bitbots_quintic_walk {
