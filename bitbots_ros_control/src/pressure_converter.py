@@ -57,23 +57,17 @@ class PressureConverter:
         rospy.Service("/set_foot_zero", Empty, self.zero_cb)
         rospy.Service("/reset_foot_calibration", Empty, self.reset_cb)
 
-        self.threshold = 0.0
-        self.dyn_reconf = Server(bitbots_ros_control_paramsConfig, self.reconfigure)
+        self.threshold = 0.5
 
         rospy.Subscriber("/foot_pressure_left/raw", FootPressure, self.pressure_cb_left)
         rospy.Subscriber("/foot_pressure_right/raw", FootPressure, self.pressure_cb_right)
 
         rospy.spin()
 
-    def reconfigure(self, config, level):
-        """ Dynamic reconfigure """
-        # just pass on to the StandupHandler, as all the variables are located there
-        self.threshold = config.cop_threshold
-        return config
 
     def pressure_cb_left(self, msg):
         if self.save_msgs:
-            self.last_msgs.append(copy.copy(msg))
+            self.last_msgs[0].append(copy.copy(msg))
 
         self.values[0][self.current_index_left] = (msg.left_front  - self.zero[0]) * self.scale[0]
         self.values[1][self.current_index_left] = (msg.left_back   - self.zero[1]) * self.scale[1]
@@ -124,6 +118,9 @@ class PressureConverter:
         self.wrench_pubs[8].publish(self.wrenches[8])
 
     def pressure_cb_right(self, msg):
+        if self.save_msgs:
+            self.last_msgs[1].append(copy.copy(msg))
+
         self.values[4][self.current_index_right] = (msg.left_front  - self.zero[4]) * self.scale[4]
         self.values[5][self.current_index_right] = (msg.left_back   - self.zero[5]) * self.scale[5]
         self.values[6][self.current_index_right] = (msg.right_front - self.zero[6]) * self.scale[6]
@@ -150,6 +147,7 @@ class PressureConverter:
         cop_r.header.frame_id = "r_sole"
         cop_r.header.stamp = msg.header.stamp
         sum_of_forces_r = msg.left_front + msg.left_back + msg.right_back + msg.right_front
+        rospy.logerr("sum: " + str(sum_of_forces_r) + "  threshold:" + str(self.threshold))
         if sum_of_forces_r > self.threshold:
             cop_r.point.x = (msg.left_front * pos[0] - msg.left_back * pos[0] + msg.right_front * pos[0] - msg.right_back * pos[0]) / sum_of_forces_r
             cop_r.point.y = (msg.left_front * pos[1] + msg.left_back * pos[1] - msg.right_front * pos[1] - msg.right_back * pos[1]) / sum_of_forces_r
