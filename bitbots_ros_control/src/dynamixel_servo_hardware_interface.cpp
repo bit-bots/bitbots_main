@@ -234,7 +234,7 @@ diagnostic_msgs::DiagnosticStatus DynamixelServoHardwareInterface::createServoDi
     servo_status.level = level;
     servo_status.name = "Servo " + std::to_string(id);
     servo_status.message = message;
-    servo_status.hardware_id = "" + std::to_string(100 + id);
+    servo_status.hardware_id = std::to_string(100 + id);
     std::vector<diagnostic_msgs::KeyValue> keyValues = std::vector<diagnostic_msgs::KeyValue>();
     // itarate through map and save it into values
     for(auto const &ent1 : map) {
@@ -335,8 +335,11 @@ void DynamixelServoHardwareInterface::writeTorqueForServos(std::vector<int32_t> 
   /**
    * This writes the torque off all servos individually depended on the give vector.
    */
+
   //only set values if we're not in torqueless mode
   if(!_torquelessMode){
+    // this actually writes each value in the torque vector
+    // but the dynamixel_toolbox requires a reference to the first element
     int32_t* t = &torque[0];
     _driver->syncWrite("Torque_Enable", t);
   }
@@ -448,7 +451,9 @@ bool DynamixelServoHardwareInterface::read(){
   }
 
   if (first_cycle_){
-    // prevent jerky motions on startup
+    // when the servos have a goal position which is not the current position on startup
+    // they will rapidly move to this position, possibly damaging the robot
+    // therefore the goal position is set to the current position of the motors
     _goal_position = _current_position;
     first_cycle_ = false;
   }
@@ -549,6 +554,10 @@ void DynamixelServoHardwareInterface::write()
 }
 
 void DynamixelServoHardwareInterface::setParent(hardware_interface::RobotHW* parent) {
+  /**
+   * We need the parent to be able to register the controller interface.
+   */
+
   _parent = parent;
 }
 
@@ -580,9 +589,6 @@ void DynamixelServoHardwareInterface::switchDynamixelControlMode()
   /**
    * This method switches the control mode of all servos
    */
-  if(_onlySensors){
-    return;
-  }
 
   // Torque on dynamixels has to be disabled to change operating mode
   // save last torque state for later
@@ -621,9 +627,11 @@ bool DynamixelServoHardwareInterface::syncReadPositions(){
   int32_t *data = (int32_t *) malloc(_joint_count * sizeof(int32_t));
   success = _driver->syncRead("Present_Position", data);
   for(int i = 0; i < _joint_count; i++){
+    // TODO test if this is required
     if (data[i] == 0){
-      // this is most propably an reading error
-      // TODO better solution for this hack
+      // a value of 0 is often a reading error, therefore we discard it
+      // this should not cause issues when a motor is actually close to 0
+      // since 1 bit only corresponds to + or - 0.1 deg
       continue;
     }
     double current_pos = _driver->convertValue2Radian(_joint_ids[i], data[i]);
@@ -656,7 +664,7 @@ bool DynamixelServoHardwareInterface::syncReadEfforts() {
   /**
    * Reads all effort information with a single sync read
    */
-  bool success; //todo maybe 16bit has to be used in stead, like in the readAll method
+  bool success;
   int32_t *data = (int32_t *) malloc(_joint_count * sizeof(int32_t));
   success = _driver->syncRead("Present_Current", data);
   for (int i = 0; i < _joint_count; i++) {
@@ -830,28 +838,6 @@ void DynamixelServoHardwareInterface::syncWritePWM() {
   _driver->syncWrite("Goal_PWM", goal_current);
   free(goal_current);
 }
-
-
-/*bool DynamixelHardwareInterface::syncWriteAll(){
-  int goal_position;
-  int goal_velocity;
-  int goal_acceleration;
-  int goal_current;
-  float radian;
-  std::vector<uint8_t*> data;
-
-  for (size_t num = 0; num < _joint_names.size(); num++) {
-    unit8_t * d;
-    radian = _goal_position[num] - _joint_mounting_offsets[num] - _joint_offsets[num];
-    goal_position = _driver->convertRadian2Value(_joint_ids[num], radian);
-    goal_velocity = _driver->convertRadian2Value(_joint_ids[num], _goal_velocity[num]);
-    goal_acceleration = _goal_acceleration[num] / 60 / 60 / (2*M_PI) / 214.577; //214.577 rev/min^2 per LSB
-    goal_current = _driver->convertRadian2Value(_joint_ids[num], _goal_effort[num]);
-    //todo fill data
-  }
-  _driver->syncReadMultipleRegisters(102, 18, data);
-
-}*/
 
 void DynamixelServoHardwareInterface::reconf_callback(bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig &config, uint32_t level) {
   _read_position = config.read_position;
