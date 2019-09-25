@@ -432,7 +432,7 @@ bool DynamixelServoHardwareInterface::read(){
   }
 
   if (_read_volt_temp){
-    if (_read_VT_counter > _VT_update_rate){
+    if (_read_VT_counter == _VT_update_rate){
       bool success = true;
       if(!syncReadVoltageAndTemp()){
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current input volatage and temperature!");
@@ -444,10 +444,8 @@ bool DynamixelServoHardwareInterface::read(){
         _driver->reinitSyncReadHandler("Hardware_Error_Status");
       }
       processVTE(success);
-      _read_VT_counter = 0;
-    }else{
-      _read_VT_counter++;
     }
+    _read_VT_counter = (_read_VT_counter + 1) % _VT_update_rate;
   }
 
   if (first_cycle_){
@@ -466,7 +464,8 @@ bool DynamixelServoHardwareInterface::read(){
     _reading_successes += 1;
   }
 
-  if(_reading_errors + _reading_successes > 200 && _reading_errors / _reading_successes > 0.05){
+  if(_reading_errors + _reading_successes > 200 &&
+     (float) _reading_errors / (float) (_reading_successes + _reading_errors) > 0.05f){
     speak_error(_speak_pub, "Multiple servo reading errors!");
     _reading_errors = 0;
     _reading_successes = 0;
