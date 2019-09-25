@@ -15,7 +15,7 @@ class TFWorld(object):
     def __init__(self):
         rospy.init_node("world_transformer")
         rospy.Subscriber("/gazebo/model_states", ModelStates, self._callback, queue_size=1, tcp_nodelay=True)
-        
+
         self.robot_pub = rospy.Publisher("amcl_pose", PoseWithCovarianceStamped, queue_size=1, tcp_nodelay=True)
         self.robo_msg = PoseWithCovarianceStamped()
 

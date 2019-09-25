@@ -1,5 +1,5 @@
 ball:
-  ball_topic: '/ball_in_image'
+  ball_topic: '/balls_in_image'
   # ballradius in meter
   ball_radius: 0.075
 

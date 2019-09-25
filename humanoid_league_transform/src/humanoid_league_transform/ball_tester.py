@@ -19,7 +19,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, _signal_term_handler)
 
     rospy.init_node("ball_tester")
-    pub = rospy.Publisher("ball_in_image", BallsInImage,queue_size=10)
+    pub = rospy.Publisher("balls_in_image", BallsInImage,queue_size=10)
 
     while True:
         x_str = raw_input("x:")

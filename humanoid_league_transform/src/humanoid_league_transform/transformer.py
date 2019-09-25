@@ -26,7 +26,7 @@ class TransformBall(object):
 
         # time 0 takes the most current transform available
         self.tf_buffer.can_transform("base_footprint", "camera_optical_frame", rospy.Time(0), timeout=rospy.Duration(30))
-        rospy.Subscriber(rospy.get_param("~ball/ball_topic", "/ball_in_image"),
+        rospy.Subscriber(rospy.get_param("~ball/ball_topic", "/balls_in_image"),
                          BallsInImage,
                          self._callback_ball,
                          queue_size=1)
