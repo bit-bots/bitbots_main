@@ -53,7 +53,6 @@ bool ImuHardwareInterface::read(){
   uint8_t *data = (uint8_t *) malloc(110 * sizeof(uint8_t));
 
     if(_driver->readMultipleRegisters(241, 36, 32, data)){
-      //todo we have to check if we jumped one sequence number
         uint32_t highest_seq_number = 0;
         uint32_t new_value_index=0;
         uint32_t current_seq_number= 0;
