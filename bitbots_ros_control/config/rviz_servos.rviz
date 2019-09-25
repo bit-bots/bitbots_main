@@ -1,0 +1,504 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Status1
+      Splitter Ratio: 0.4941176474094391
+    Tree Height: 706
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Nav Goal1
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.5886790156364441
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: ""
+Preferences:
+  PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        imu_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_ankle:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_cleat_l_back:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_cleat_l_front:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_cleat_r_back:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_cleat_r_front:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_foot:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_hip_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_hip_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_lower_arm:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_lower_leg:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_shoulder:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_sole:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_toe:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_upper_arm:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_upper_leg:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_wrist:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        neck:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_ankle:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_cleat_l_back:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_cleat_l_front:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_cleat_r_back:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_cleat_r_front:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_foot:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_hip_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_hip_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_lower_arm:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_lower_leg:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_shoulder:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_sole:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_toe:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_upper_arm:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_upper_leg:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_wrist:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        torso:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        base_footprint:
+          Value: true
+        base_link:
+          Value: true
+        camera:
+          Value: true
+        camera_optical_frame:
+          Value: true
+        cop_l:
+          Value: true
+        cop_r:
+          Value: true
+        head:
+          Value: true
+        imu_frame:
+          Value: true
+        l_ankle:
+          Value: true
+        l_cleat_l_back:
+          Value: true
+        l_cleat_l_front:
+          Value: true
+        l_cleat_r_back:
+          Value: true
+        l_cleat_r_front:
+          Value: true
+        l_foot:
+          Value: true
+        l_hip_1:
+          Value: true
+        l_hip_2:
+          Value: true
+        l_lower_arm:
+          Value: true
+        l_lower_leg:
+          Value: true
+        l_shoulder:
+          Value: true
+        l_sole:
+          Value: true
+        l_toe:
+          Value: true
+        l_upper_arm:
+          Value: true
+        l_upper_leg:
+          Value: true
+        l_wrist:
+          Value: true
+        neck:
+          Value: true
+        r_ankle:
+          Value: true
+        r_cleat_l_back:
+          Value: true
+        r_cleat_l_front:
+          Value: true
+        r_cleat_r_back:
+          Value: true
+        r_cleat_r_front:
+          Value: true
+        r_foot:
+          Value: true
+        r_hip_1:
+          Value: true
+        r_hip_2:
+          Value: true
+        r_lower_arm:
+          Value: true
+        r_lower_leg:
+          Value: true
+        r_shoulder:
+          Value: true
+        r_sole:
+          Value: true
+        r_toe:
+          Value: true
+        r_upper_arm:
+          Value: true
+        r_upper_leg:
+          Value: true
+        r_wrist:
+          Value: true
+        torso:
+          Value: true
+      Marker Scale: 0.20000000298023224
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        base_link:
+          base_footprint:
+            {}
+          l_hip_1:
+            l_hip_2:
+              l_upper_leg:
+                l_lower_leg:
+                  l_ankle:
+                    l_foot:
+                      l_sole:
+                        cop_l:
+                          {}
+                        l_cleat_l_back:
+                          {}
+                        l_cleat_l_front:
+                          {}
+                        l_cleat_r_back:
+                          {}
+                        l_cleat_r_front:
+                          {}
+                        l_toe:
+                          {}
+          r_hip_1:
+            r_hip_2:
+              r_upper_leg:
+                r_lower_leg:
+                  r_ankle:
+                    r_foot:
+                      r_sole:
+                        cop_r:
+                          {}
+                        r_cleat_l_back:
+                          {}
+                        r_cleat_l_front:
+                          {}
+                        r_cleat_r_back:
+                          {}
+                        r_cleat_r_front:
+                          {}
+                        r_toe:
+                          {}
+          torso:
+            imu_frame:
+              {}
+            l_shoulder:
+              l_upper_arm:
+                l_lower_arm:
+                  l_wrist:
+                    {}
+            neck:
+              head:
+                camera:
+                  camera_optical_frame:
+                    {}
+            r_shoulder:
+              r_upper_arm:
+                r_lower_arm:
+                  r_wrist:
+                    {}
+      Update Interval: 0
+      Value: true
+    - Alpha: 1
+      Class: rviz/Effort
+      Enabled: true
+      History Length: 1
+      Joints:
+        HeadPan:
+          Value: true
+        HeadTilt:
+          Value: true
+        LAnklePitch:
+          Value: true
+        LAnkleRoll:
+          Value: true
+        LElbow:
+          Value: true
+        LHipPitch:
+          Value: true
+        LHipRoll:
+          Value: true
+        LHipYaw:
+          Value: true
+        LKnee:
+          Value: true
+        LShoulderPitch:
+          Value: true
+        LShoulderRoll:
+          Value: true
+        RAnklePitch:
+          Value: true
+        RAnkleRoll:
+          Value: true
+        RElbow:
+          Value: true
+        RHipPitch:
+          Value: true
+        RHipRoll:
+          Value: true
+        RHipYaw:
+          Value: true
+        RKnee:
+          Value: true
+        RShoulderPitch:
+          Value: true
+        RShoulderRoll:
+          Value: true
+      Name: Effort
+      Robot Description: robot_description
+      Scale: 0.004999999888241291
+      TF Prefix: ""
+      Topic: /joint_states
+      Unreliable: false
+      Value: true
+      Width: 0.004999999888241291
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Default Light: true
+    Fixed Frame: base_link
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Theta std deviation: 0.2617993950843811
+      Topic: /initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 1.6300349235534668
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: -0.5318779945373535
+        Y: -0.14196018874645233
+        Z: -0.4228386878967285
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.6653980016708374
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz)
+      Yaw: 0.26039713621139526
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 1016
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd00000004000000000000015600000352fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005e00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000004000000352000000ce00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f00000352fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000004000000352000000ac00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000078000000040fc0100000002fb0000000800540069006d00650100000000000007800000025700fffffffb0000000800540069006d006501000000000000045000000000000000000000050f0000035200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 1920
+  X: 0
+  Y: 27
