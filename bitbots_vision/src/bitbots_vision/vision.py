@@ -12,7 +12,7 @@ from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
 from humanoid_league_msgs.msg import BallsInImage, LineInformationInImage, \
     ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, \
-    GoalInImage, FieldBoundaryInImage, Speak
+    GoalPartsInImage, FieldBoundaryInImage, Speak
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, yolo_handler, ros_utils
 from bitbots_vision.cfg import VisionConfig
@@ -338,7 +338,7 @@ class Vision:
         self._pub_balls = ros_utils.create_or_update_publisher(self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallsInImage)
         self._pub_lines = ros_utils.create_or_update_publisher(self._config, config, self._pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
         self._pub_obstacle = ros_utils.create_or_update_publisher(self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstaclesInImage, queue_size=3)
-        self._pub_goal_parts = ros_utils.create_or_update_publisher(self._config, config, self._pub_goal_parts, 'ROS_goal_parts_msg_topic', GoalInImage, queue_size=3)
+        self._pub_goal_parts = ros_utils.create_or_update_publisher(self._config, config, self._pub_goal_parts, 'ROS_goal_parts_msg_topic', GoalPartsInImage, queue_size=3)
         self._pub_ball_fcnn = ros_utils.create_or_update_publisher(self._config, config, self._pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
         self._pub_debug_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_debug_image, 'ROS_debug_image_msg_topic', Image)
         self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundaryInImage)
@@ -374,7 +374,8 @@ class Vision:
         # drops old images and cleans up queue. Still accepts very old images, that are most likely from ros bags.
         image_age = rospy.get_rostime() - image_msg.header.stamp
         if 1.0 < image_age.to_sec() < 1000.0:
-            rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message, because its too old! ({} sec)'.format(image_age.to_sec()), logger_name="vision")
+            rospy.logwarn('Vision: Dropped incoming Image-message, because its too old! ({} sec)'.format(image_age.to_sec()),
+                          logger_throttle=2, logger_name="")
             return
 
         # Check flag
