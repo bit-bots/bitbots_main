@@ -279,7 +279,7 @@ Visualization Manager:
           Enabled: true
           Force Arrow Scale: 0.20000000298023224
           Force Color: 204; 51; 51
-          Hide Small Values: true
+          Hide Small Values: false
           History Length: 1
           Name: WrenchStamped
           Topic: /wrenchcop_l
@@ -293,7 +293,7 @@ Visualization Manager:
           Enabled: true
           Force Arrow Scale: 0.20000000298023224
           Force Color: 204; 51; 51
-          Hide Small Values: true
+          Hide Small Values: false
           History Length: 1
           Name: WrenchStamped
           Topic: /wrenchl_cleat_l_front
@@ -307,7 +307,7 @@ Visualization Manager:
           Enabled: true
           Force Arrow Scale: 0.20000000298023224
           Force Color: 204; 51; 51
-          Hide Small Values: true
+          Hide Small Values: false
           History Length: 1
           Name: WrenchStamped
           Topic: /wrenchl_cleat_l_back
@@ -321,7 +321,7 @@ Visualization Manager:
           Enabled: true
           Force Arrow Scale: 0.20000000298023224
           Force Color: 204; 51; 51
-          Hide Small Values: true
+          Hide Small Values: false
           History Length: 1
           Name: WrenchStamped
           Topic: /wrenchl_cleat_r_back
@@ -335,7 +335,7 @@ Visualization Manager:
           Enabled: true
           Force Arrow Scale: 0.20000000298023224
           Force Color: 204; 51; 51
-          Hide Small Values: true
+          Hide Small Values: false
           History Length: 1
           Name: WrenchStamped
           Topic: /wrenchl_cleat_r_front
@@ -363,7 +363,7 @@ Visualization Manager:
           Enabled: true
           Force Arrow Scale: 0.20000000298023224
           Force Color: 204; 51; 51
-          Hide Small Values: true
+          Hide Small Values: false
           History Length: 1
           Name: WrenchStamped
           Topic: /wrenchcop_r
@@ -377,7 +377,7 @@ Visualization Manager:
           Enabled: true
           Force Arrow Scale: 0.20000000298023224
           Force Color: 204; 51; 51
-          Hide Small Values: true
+          Hide Small Values: false
           History Length: 1
           Name: WrenchStamped
           Topic: /wrenchr_cleat_l_back
@@ -391,7 +391,7 @@ Visualization Manager:
           Enabled: true
           Force Arrow Scale: 0.20000000298023224
           Force Color: 204; 51; 51
-          Hide Small Values: true
+          Hide Small Values: false
           History Length: 1
           Name: WrenchStamped
           Topic: /wrenchr_cleat_l_front
@@ -405,7 +405,7 @@ Visualization Manager:
           Enabled: true
           Force Arrow Scale: 0.20000000298023224
           Force Color: 204; 51; 51
-          Hide Small Values: true
+          Hide Small Values: false
           History Length: 1
           Name: WrenchStamped
           Topic: /wrenchr_cleat_r_back
@@ -419,7 +419,7 @@ Visualization Manager:
           Enabled: true
           Force Arrow Scale: 0.20000000298023224
           Force Color: 204; 51; 51
-          Hide Small Values: true
+          Hide Small Values: false
           History Length: 1
           Name: WrenchStamped
           Topic: /wrenchr_cleat_r_front
@@ -472,10 +472,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.49039867520332336
+      Pitch: 0.5353980660438538
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.20541255176067352
+      Yaw: 5.973594665527344
     Saved: ~
 Window Geometry:
   Displays:

@@ -1,5 +1,9 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="only_pressure" default="true"/>
     <node pkg="rviz" type="rviz" args="-d $(find bitbots_ros_control)/config/rviz_pressure.rviz" name="imu_rviz"/>
-    <node type="static_transform_publisher" pkg="tf" name="foot_to_foot" args="0 0.25 0 0 0 0 r_foot l_foot 50"/>
+
+    <group if="$(arg only_pressure)">
+        <node type="static_transform_publisher" pkg="tf" name="foot_to_foot" args="0 0.25 0 0 0 0 r_foot l_foot 50"/>
+    </group>
 </launch>
