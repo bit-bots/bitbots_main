@@ -139,15 +139,46 @@ class WorldModelCapsule:
 
 
 
-    def goal_callback(self, msg):
+    def goal_parts_callback(self, msg):
         # type: (GoalRelative) -> None
-        self.goal = msg
+        goal_parts = msg
         # todo: transform to base_footprint too!
         # adding a minor delay to timestamp to ease transformations.
-        self.goal.header.stamp = self.goal.header.stamp + rospy.Duration.from_sec(0.01)
-        goal_left_buffer = PointStamped(self.goal.header, self.goal.left_post)
-        goal_right_buffer = PointStamped(self.goal.header, self.goal.right_post)
-        self.goal_odom.header = self.goal.header
+        goal_parts.header.stamp = goal_parts.header.stamp + rospy.Duration.from_sec(0.01)
+
+        # Tuple(First Post, Second Post, Distance)
+        goal_combination = (-1,-1,-1)
+        # Enumerate all goalpost combinations, this also combines each post with itself,
+        # to get the special case that only one post was detected and the maximum distance is 0.
+        for first_post_id, first_post in enumerate(goal_parts.posts):
+            for second_post_id, second_post in enumerate(goal_parts.posts):
+                # Get the minimal angular difference between the two posts
+                angular_distance = abs((math.atan2(*first_post.foot_point) - math.atan2(*second_post.foot_point) + math.pi) % (2*math.pi) - math.pi)
+                # Set a new pair of posts if the distance is bigger than the previous ones
+                if angular_distance > goal_combination[2]:
+                    goal_combination = (first_post_id, second_post_id, angular_distance)
+        # Catch the case, that no posts are detected
+        if goal_combination[2] == -1:
+            return
+        # Define right and left post
+        first_post = goal_parts.posts[goal_combination[0]]
+        second_post = goal_parts.posts[goal_combination[1]]
+        if math.atan2(first_post.foot_point[1], first_post.foot_point[0]) > \
+                math.atan2(first_post.foot_point[1], first_post.foot_point[0]):
+            left_post = first_post
+            right_post = second_post
+        else:
+            left_post = second_post
+            right_post = first_post
+
+        goal_left_buffer = PointStamped(goal_parts.header, left_post.foot_point)
+        goal_right_buffer = PointStamped(goal_parts.header, right_post.foot_point)
+        
+        self.goal.header = goal_parts.header
+        self.goal.left_post = goal_left_buffer
+        self.goal.right_post = goal_right_buffer
+
+        self.goal_odom.header = goal_parts.header
         if goal_left_buffer.header.frame_id != 'odom':
             try:
                 self.goal_odom.left_post = self.tf_buffer.transform(goal_left_buffer, 'odom', timeout=rospy.Duration(0.2)).point
