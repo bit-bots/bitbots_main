@@ -46,7 +46,7 @@ class Vision:
         self.pub_balls = None
         self.pub_lines = None
         self.pub_obstacle = None
-        self.pub_goal = None
+        self.pub_goal_parts = None
         self.pub_ball_fcnn = None
         self.pub_debug_image = None
         self.pub_debug_fcnn_image = None
@@ -333,7 +333,7 @@ class Vision:
         self.pub_balls = ros_utils.create_or_update_publisher(self.config, config, self.pub_balls, 'ROS_ball_msg_topic', BallsInImage)
         self.pub_lines = ros_utils.create_or_update_publisher(self.config, config, self.pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
         self.pub_obstacle = ros_utils.create_or_update_publisher(self.config, config, self.pub_obstacle, 'ROS_obstacle_msg_topic', ObstaclesInImage, queue_size=3)
-        self.pub_goal = ros_utils.create_or_update_publisher(self.config, config, self.pub_goal, 'ROS_goal_msg_topic', GoalInImage, queue_size=3)
+        self.pub_goal_parts = ros_utils.create_or_update_publisher(self.config, config, self.pub_goal_parts, 'ROS_goal_parts_msg_topic', GoalInImage, queue_size=3)
         self.pub_ball_fcnn = ros_utils.create_or_update_publisher(self.config, config, self.pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
         self.pub_debug_image = ros_utils.create_or_update_publisher(self.config, config, self.pub_debug_image, 'ROS_debug_image_msg_topic', Image)
         self.pub_convex_field_boundary = ros_utils.create_or_update_publisher(self.config, config, self.pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundaryInImage)
@@ -483,12 +483,10 @@ class Vision:
         goal_parts = ros_utils.build_goalpost_msgs(self.goalpost_detector.get_candidates())
         # Create goalparts msg
         goal_parts_msg = ros_utils.build_goal_parts_msg(image_msg.header, goal_parts)
-        # Build goal message out of goal parts
-        goal_msg = ros_utils.build_goal_msg(goal_parts_msg)
         # Check if there is a goal
-        if goal_msg:
+        if goal_parts_msg:
             # If we have a goal, lets publish it
-            self.pub_goal.publish(goal_msg)
+            self.pub_goal_parts.publish(goal_parts_msg)
 
         #########
         # Lines #

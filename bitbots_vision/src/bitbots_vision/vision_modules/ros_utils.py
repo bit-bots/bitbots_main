@@ -6,7 +6,7 @@ from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, \
-    ObstacleInImage, GoalPartsInImage, PostInImage, GoalInImage, FieldBoundaryInImage, Speak, ImageWithRegionOfInterest
+    ObstacleInImage, GoalPartsInImage, GoalPostInImage, GoalInImage, FieldBoundaryInImage, Speak, ImageWithRegionOfInterest
 from bitbots_msgs.msg import Config
 
 """
@@ -241,10 +241,10 @@ def create_or_update_subscriber(old_config, new_config, subscriber_object, topic
 
 def build_goal_parts_msg(header, goal_parts):
     """
-    Builds a GoalPartsInImage message out of a list of PostInImage messages
+    Builds a GoalPartsInImage message out of a list of GoalPostInImage messages
 
     :param header: ros header of the new message. Mostly the header of the image
-    :param goal_parts: a list of goal part messages, e.g. PostInImage
+    :param goal_parts: a list of goal part messages, e.g. GoalPostInImage
     :return: GoalPartsInImage message
     """
     # Create goalparts msg
@@ -268,7 +268,7 @@ def build_goalpost_msgs(goalposts):
     # Iterate over all goalpost candidates
     for goalpost in goalposts:
         # Create a empty post message
-        post_msg = PostInImage()
+        post_msg = GoalPostInImage()
         post_msg.width = goalpost.get_width()
         if goalpost.get_rating() is not None:
             post_msg.confidence = goalpost.get_rating()
@@ -291,10 +291,10 @@ def build_goal_msg(goal_parts_msg):
     # Add header of the goal parts
     goal_msg.header = goal_parts_msg.header
     # Create goal posts at unrealistic high/low values
-    left_post = PostInImage()
+    left_post = GoalPostInImage()
     left_post.foot_point.x = 9999999999
     left_post.confidence = 1.0
-    right_post = PostInImage()
+    right_post = GoalPostInImage()
     right_post.foot_point.x = -9999999999
     right_post.confidence = 1.0
 
