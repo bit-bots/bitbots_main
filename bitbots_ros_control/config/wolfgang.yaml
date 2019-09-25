@@ -1,26 +1,31 @@
 ros_control:
-  # specifies which information should be read
-  read_position: true
-  read_velocity: false
-  read_effort: false
-  read_volt_temp: true # this also corresponds for the error byte
-  read_pressure: true
-  VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
-  warn_temp: 60
-  warn_volt: 12
-  read_imu: true
-  onlySensors: false
-  readButtons: true
+
   control_loop_hz: 1000
 
+  port_info:
+    port_name: /dev/ttyDXLBOARD
+    baudrate: 2000000
+    protocol_version: 2
+
+  IMU:
+    name: imu/data_raw
+    frame: imu_frame
+
   # specification of the connected dynamixel servos
-  dynamixels:
-    port_info:
-      port_name: /dev/ttyDXLBOARD
-      baudrate: 2000000
-      protocol_version: 2
+  servos:
+    # specifies which information should be read
+    read_position: true
+    read_velocity: false
+    read_effort: false
+    read_volt_temp: true # this also corresponds for the error byte
+
+    VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
+    warn_temp: 60
+    warn_volt: 12
+
     control_mode: position
     auto_torque: true
+
     set_ROM_RAM: true # set the following values on startup to all motors
     ROM_RAM:
       # all names of parameters have to be the same as on the dynamixel table (see dynamixel_workbench_toolbox/src/dynamixel_item.cpp )
@@ -108,8 +113,4 @@ ros_control:
       HeadTilt:
         id: 20
         model_number: 311
-      
 
-  IMU:
-    name: imu/data_raw
-    frame: imu_frame

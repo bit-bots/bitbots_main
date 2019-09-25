@@ -2,32 +2,44 @@
 <launch>
     <arg name="sim" default="false"/>
     <arg name="use_game_settings" default="false"/>
-    <arg name="torquelessMode" default="false"/>
+    <arg name="torqueless_mode" default="false"/>
+    <arg name="only_imu" default="false"/>
+    <arg name="only_pressure" default="false"/>
 
     <rosparam file="$(find bitbots_ros_control)/config/wolfgang.yaml" command="load" />
-
-    <group if="$(arg torquelessMode)">
-        <rosparam param="torquelessMode" ns="/ros_control">true</rosparam>
-    </group>
-    <group unless="$(arg torquelessMode)">
-        <rosparam param="torquelessMode" ns="/ros_control">false</rosparam>
-    </group>
-
-    <node pkg="bitbots_ros_control" type="dynamixel_controller_manager_node" name="ros_control" output="screen"/> 
-
     <rosparam file="$(find bitbots_ros_control)/config/controller.yaml" command="load" />
-        <group if="$(arg use_game_settings)">
-            <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
+
+
+    <param name="/ros_control/torqueless_mode" value="$(arg torqueless_mode)"/>
+    <param name="/ros_control/only_imu" value="$(arg only_imu)"/>
+    <param name="/ros_control/only_pressure" value="$(arg only_pressure)"/>
+
+    <node pkg="bitbots_ros_control" type="node" name="ros_control" output="screen"/>
+
+    <group if="$(arg use_game_settings)">
+        <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
+    </group>
+
+    <group if="$(arg only_imu)">
+        <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+              output="screen" args="--timeout 20  imu_sensor_controller">
+        </node>
+    </group>
+
+    <group unless="$(arg only_imu)">
+        <group unless="$(arg only_pressure)">
+            <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
+                  args="--timeout 20 joint_state_controller imu_sensor_controller DynamixelController">
+            </node>
         </group>
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-          output="screen" args="--timeout 20 joint_state_controller imu_sensor_controller DynamixelController ">
-    </node>
+    </group>
+
 
     <node pkg="diagnostic_aggregator" type="aggregator_node" name="diagnostic_aggregator" >    
         <rosparam command="load" file="$(find bitbots_ros_control)/config/analyzers.yaml" />
     </node>
 
-    <include file="$(find bitbots_ros_control)/launch/imu.launch">
+    <include file="$(find bitbots_ros_control)/launch/imu_filter.launch">
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
 

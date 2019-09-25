@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="rviz" type="rviz" args="-d $(find bitbots_ros_control)/config/rviz_imu.rviz" name="imu_rviz"/>
+</launch>

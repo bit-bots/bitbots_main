@@ -1,12 +1,16 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="sim" default="false"/>
-    <arg name="torquelessMode" default="false"/>
+    <arg name="torqueless_mode" default="false"/>
+    <arg name="only_imu" default="false"/>
+    <arg name="only_pressure" default="false"/>
 
     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch"/>
 
     <include file="$(find bitbots_ros_control)/launch/ros_control.launch">
         <arg name="sim" value="$(arg sim)"/>
-        <arg name="torquelessMode" value="$(arg torquelessMode)"/>
+        <arg name="torqueless_mode" value="$(arg torqueless_mode)"/>
+        <arg name="only_imu" value="$(arg only_imu)"/>
+        <arg name="only_pressure" value="$(arg only_pressure)"/>
     </include>
 </launch>
