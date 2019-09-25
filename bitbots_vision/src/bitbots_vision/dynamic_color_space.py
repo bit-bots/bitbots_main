@@ -32,7 +32,7 @@ class DynamicColorSpace:
         self.package_path = rospack.get_path('bitbots_vision')
 
         rospy.init_node('bitbots_dynamic_color_space')
-        rospy.loginfo('Initializing dynamic color-space...')
+        rospy.loginfo('Initializing dynamic color-space...', logger_name="dynamic_color_space")
 
         self.bridge = CvBridge()
 
@@ -74,9 +74,9 @@ class DynamicColorSpace:
         # Print status of dynamic color space after toggling 'dynamic_color_space_active' parameter
         if ros_utils.config_param_change(self.vision_config, vision_config, 'dynamic_color_space_active'):
             if vision_config['dynamic_color_space_active']:
-                rospy.loginfo('Dynamic color space turned ON.')
+                rospy.loginfo('Dynamic color space turned ON.', logger_name="dynamic_color_space")
             else:
-                rospy.logwarn('Dynamic color space turned OFF.')
+                rospy.logwarn('Dynamic color space turned OFF.', logger_name="dynamic_color_space")
 
         # Set publisher of ColorSpace-messages
         self.pub_color_space = ros_utils.create_or_update_publisher(self.vision_config, vision_config, self.pub_color_space, 'ROS_dynamic_color_space_msg_topic', ColorSpace)
@@ -138,8 +138,8 @@ class DynamicColorSpace:
 
         # Drops old images
         image_age = rospy.get_rostime() - image_msg.header.stamp
-        if 0.1 < image_age.to_sec() < 1000.0:
-            rospy.loginfo('Vision: Dropped incoming Image-message, because its too old!')
+        if 1.0 < image_age.to_sec() < 1000.0:
+            rospy.logwarn_throttle(2, 'Vision: Dropped incoming Image-message, because its too old! ({} sec)'.format(image_age.to_sec()), logger_name="dynamic_color_space")
             return
 
         self.handle_image(image_msg)
@@ -220,7 +220,7 @@ class DynamicColorSpace:
         for new_color_value_list in queue:
             color_space = np.append(color_space, new_color_value_list[:, :], axis=0)
         # Return a color space, which contains all colors from the queue
-        return color_space
+        return color_space.astype(int)
 
     def publish(self, image_msg):
         # type: (Image) -> None

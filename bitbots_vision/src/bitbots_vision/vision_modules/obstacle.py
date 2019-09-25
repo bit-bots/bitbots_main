@@ -173,7 +173,7 @@ class ObstacleDetector(CandidateFinder):
                             y = max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)
                             h = np.round(np.max(full_field_boundary[x:i]) - y)
                             if h < 0:
-                                rospy.logerr('Vision obstacle detection: Negative obstacle height')
+                                rospy.logerr('Negative obstacle height', logger_name="vision_obstacle_detector")
                             self._obstacles.append(Candidate(x, y, w, h))
                         obstacle_begin = None
             if obstacle_begin:
@@ -186,7 +186,7 @@ class ObstacleDetector(CandidateFinder):
                     y = max(0, obstacle_begin[1] - self._candidate_field_boundary_offset)  # top
                     h = np.round(np.max(full_field_boundary[x:i]) - y)
                     if h < 0:
-                        rospy.logerr('Vision obstacle detection: Negative obstacle height')
+                        rospy.logerr('Negative obstacle height', logger_name="vision_obstacle_detector")
                     self._obstacles.append(Candidate(x, y, w, h))
         return self._obstacles
 
@@ -263,7 +263,7 @@ class ObstacleDetector(CandidateFinder):
         # Check if obstacle is not too small and not too big
         if current_min_width < w < current_max_width:
             if h < 0:
-                rospy.logerr('Vision obstacle detection: Negative obstacle height')
+                rospy.logerr('Negative obstacle height', logger_name="vision_obstacle_detector")
             # Append with new candidate
             self._obstacles.append(Candidate(x, y, w, h))
 

@@ -5,7 +5,7 @@ ROS_img_msg_topic: 'image_raw'
 ROS_img_msg_queue_size: 1
 ROS_fcnn_img_msg_topic: 'fcnn_image'
 ROS_field_boundary_msg_topic: 'field_boundary_in_image'
-ROS_ball_msg_topic: 'ball_in_image'
+ROS_ball_msg_topic: 'balls_in_image'
 ROS_goal_parts_msg_topic: 'goal_parts_in_image'
 ROS_obstacle_msg_topic: 'obstacles_in_image'
 ROS_line_msg_topic: 'line_in_image'
@@ -42,11 +42,11 @@ dynamic_color_space_threshold: 0.6
 dynamic_color_space_kernel_radius: 1
 dynamic_color_space_field_boundary_detector_search_method: 'reversed' # iteration, reversed, binary or dynamic
 
-white_color_detector_lower_values_h: 0
+white_color_detector_lower_values_h: 101
 white_color_detector_lower_values_s: 0
-white_color_detector_lower_values_v: 27
+white_color_detector_lower_values_v: 158
 white_color_detector_upper_values_h: 180
-white_color_detector_upper_values_s: 94
+white_color_detector_upper_values_s: 255
 white_color_detector_upper_values_v: 255
 
 red_color_detector_lower_values_h: 139
@@ -63,13 +63,13 @@ blue_color_detector_upper_values_h: 116
 blue_color_detector_upper_values_s: 255
 blue_color_detector_upper_values_v: 255
 
-field_boundary_detector_search_method: 'dynamic'  # iteration, reversed, binary or dynamic
+field_boundary_detector_search_method: 'reversed'  # iteration, reversed, binary or dynamic
 field_boundary_detector_vertical_steps: 30
 field_boundary_detector_horizontal_steps: 30
 field_boundary_detector_roi_height: 1
 field_boundary_detector_roi_width: 1
 field_boundary_detector_roi_increase: 0.1  # increase of kernel radius per pixel
-field_boundary_detector_green_threshold: 60
+field_boundary_detector_green_threshold: 136
 field_boundary_detector_precision_pix: 5
 field_boundary_detector_min_precision_pix: 3
 field_boundary_detector_head_tilt_threshold: 20
