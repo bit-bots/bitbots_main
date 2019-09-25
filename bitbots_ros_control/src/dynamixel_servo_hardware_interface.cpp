@@ -27,7 +27,7 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, true);
 
-  _torquelessMode = nh.param("torquelessMode", false);
+  _torquelessMode = nh.param("torqueless_mode", false);
 
   // Load dynamixel config from parameter server
   if (!loadDynamixels(nh)){
