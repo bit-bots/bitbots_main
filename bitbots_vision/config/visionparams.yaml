@@ -5,7 +5,7 @@ ROS_img_msg_topic: 'image_raw'
 ROS_img_msg_queue_size: 1
 ROS_fcnn_img_msg_topic: 'fcnn_image'
 ROS_field_boundary_msg_topic: 'field_boundary_in_image'
-ROS_ball_msg_topic: 'ball_in_image'
+ROS_ball_msg_topic: 'balls_in_image'
 ROS_goal_msg_topic: 'goal_in_image'
 ROS_obstacle_msg_topic: 'obstacles_in_image'
 ROS_line_msg_topic: 'line_in_image'
