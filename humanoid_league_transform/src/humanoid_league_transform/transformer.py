@@ -5,7 +5,7 @@ from humanoid_league_msgs.msg import BallRelative, BallsInImage, \
 LineInformationInImage, LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative, \
 ObstaclesInImage, ObstaclesRelative, ObstacleRelative, \
 GoalInImage, GoalRelative, FieldBoundaryInImage, PixelsRelative, \
-PixelRelative, GoalPartsInImage, GoalPartsRelative, PostRelative, BarRelative
+PixelRelative, GoalPartsInImage, GoalPartsRelative, GoalPostRelative, GoalBarRelative
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import CameraInfo, PointCloud2
 import sensor_msgs.point_cloud2 as pc2
@@ -256,7 +256,7 @@ class TransformBall(object):
                         goal_post_in_image.foot_point.y,
                     ))
             else:
-                post_relative = PostRelative()
+                post_relative = GoalPostRelative()
                 post_relative.foot_point = relative_foot_point
                 post_relative.confidence = goal_post_in_image.confidence
                 goal_parts_relative_msg.posts.append(post_relative)
@@ -275,7 +275,7 @@ class TransformBall(object):
                         goal_bar_in_image.right_point.y,
                     ))
             else:
-                bar_relative = BarRelative()
+                bar_relative = GoalBarRelative()
                 bar_relative.left_point = relative_left_point
                 bar_relative.right_point = relative_right_point
                 bar_relative.confidence = goal_bar_in_image.confidence
