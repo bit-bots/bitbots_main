@@ -1278,7 +1278,7 @@
 
 
    <!-- IMU sensor -->
-   <gazebo reference="L_IMU">
+  <gazebo reference="imu_frame">
     <gravity>true</gravity>
     <sensor name="imu_sensor" type="imu">
       <always_on>true</always_on>
@@ -1287,12 +1287,12 @@
       <topic>__default_topic__</topic>
       <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
         <topicName>imu</topicName>
-        <bodyName>torso</bodyName>
+        <bodyName>imu_frame</bodyName>
         <updateRateHZ>100.0</updateRateHZ>
         <gaussianNoise>0.0</gaussianNoise>
         <xyzOffset>0 0 0</xyzOffset>
         <rpyOffset>0 0 0</rpyOffset>
-        <frameName>imu</frameName>
+        <frameName>imu_frame</frameName>
       </plugin>
       <pose>0 0 0 0 0 0</pose>
     </sensor>
