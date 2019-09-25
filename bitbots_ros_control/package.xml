@@ -35,6 +35,8 @@
   <exec_depend>joint_state_controller</exec_depend>
   <exec_depend>effort_controllers</exec_depend>
 
+  <test_depend>rviz</test_depend>
+  <test_depend>rviz_imu_plugin</test_depend>
 
   <export>
     <controller_interface plugin="${prefix}/dynamixel_controllers_plugin.xml"/>
