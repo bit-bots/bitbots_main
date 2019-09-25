@@ -13,10 +13,15 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
 
   // load parameters
   ROS_INFO_STREAM("Loading parameters from namespace " << nh.getNamespace());
-  nh.getParam("onlyImu", _onlyImu);
+  nh.getParam("only_imu", _onlyImu);
   if(_onlyImu) ROS_WARN("Starting in only IMU mode");
-  nh.getParam("onlyPressure", _onlyPressure);
+  nh.getParam("only_pressure", _onlyPressure);
   if(_onlyPressure) ROS_WARN("starting in only pressure sensor mode");
+
+  if(_onlyPressure && _onlyImu) {
+    ROS_ERROR("only_imu AND only_pressure was set to true");
+    exit(1);
+  }
 
   // init bus driver
   std::string port_name;
