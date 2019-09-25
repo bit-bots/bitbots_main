@@ -23,6 +23,7 @@ class FallChecker(object):
 
         if not rospy.has_param("ZMPConfig/" + robot_type_name + "/HipPitch"):
             rospy.logwarn("HipPitch offset from walking was not found on parameter server, will use 0.")
+
         self.falling_threshold_front = rospy.get_param("hcm/threshold_gyro_y_front")
         # rospy.set_param("hcm/threshold_gyro_y_front", self.falling_threshold_front)
         self.falling_threshold_side = rospy.get_param("hcm/threshold_gyro_x_side")
@@ -41,7 +42,7 @@ class FallChecker(object):
         self.LEFT = "LEFT"
         self.RIGHT = "RIGHT"
         self.SIDE = "SIDE"
-        
+
 
     def update_reconfigurable_values(self, config, level):
         # Dynamic Reconfigure
@@ -59,15 +60,27 @@ class FallChecker(object):
 
         # converting the Quaternion into Euler angles for better understanding
         euler = tf.transformations.euler_from_quaternion(quaternion)
-        if self.falling_threshold_front == 0 or self.falling_threshold_side == 0 or self.falling_threshold_orientation_front_back == 0 or self.falling_threshold_orientation_left_right == 0: 
+        if self.falling_threshold_front == 0 or \
+                self.falling_threshold_side == 0 or \
+                self.falling_threshold_orientation_front_back == 0 or \
+                self.falling_threshold_orientation_left_right == 0:
             return
         # setting the fall quantification function
-        x_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_left_right, self.falling_threshold_front, euler[0], not_much_smoothed_gyro[0])
-        y_fall_quantification = self.calc_fall_quantification(self.falling_threshold_orientation_front_back, self.falling_threshold_side, euler[1], not_much_smoothed_gyro[1])
+        x_fall_quantification = self.calc_fall_quantification(
+            self.falling_threshold_orientation_left_right,
+            self.falling_threshold_front,
+            euler[0],
+            not_much_smoothed_gyro[0])
+
+        y_fall_quantification = self.calc_fall_quantification(
+            self.falling_threshold_orientation_front_back,
+            self.falling_threshold_side,
+            euler[1],
+            not_much_smoothed_gyro[1])
 
         if x_fall_quantification + y_fall_quantification == 0:
             return None
-        
+
         # compare quantification functions
         if y_fall_quantification > x_fall_quantification:
             # detect the falling direction
@@ -94,7 +107,7 @@ class FallChecker(object):
         if numpy.sign(current_axis_euler) == numpy.sign(current_axis__gyro):
             # calculatiung the orentation skalar for the threshold
             skalar = max((falling_threshold_orientation - abs(current_axis_euler))/falling_threshold_orientation,0)
-            # checking if the rotation velocity is lower than the thethreshold
+            # checking if the rotation velocity is lower than the the threshold
             if falling_threshold_gyro * skalar < abs(current_axis__gyro):
                 # returning the fall quantification function
                 return abs(current_axis__gyro) * (1-skalar)
@@ -107,19 +120,19 @@ class FallChecker(object):
             return None
 
         # Decides which side is facing downwards.
-        if smooth_accel[0] > 7:
+        if smooth_accel[0] < -7:
             rospy.loginfo("FALLEN TO THE FRONT")
             return self.FRONT
 
-        if smooth_accel[0] < -7:
+        if smooth_accel[0] > 7:
             rospy.loginfo("FALLEN TO THE BACK")
             return self.BACK
 
-        if smooth_accel[1] < -7:
+        if smooth_accel[1] > 7:
             rospy.loginfo("FALLEN TO THE RIGHT")
             return self.RIGHT
 
-        if smooth_accel[1] > 7:
+        if smooth_accel[1] < -7:
             rospy.loginfo("FALLEN TO THE LEFT")
             return self.LEFT
 
