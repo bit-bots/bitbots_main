@@ -97,9 +97,7 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
   }
   _parent->registerInterface(&_jnt_state_interface);
   if (_control_mode == PositionControl){
-    //registerInterface(&_jnt_pos_interface);
-    //todo hack
-    _parent->registerInterface(&_jnt_posvelacccur_interface);
+    _parent->registerInterface(&_jnt_pos_interface);
   } else if (_control_mode == VelocityControl){
     _parent->registerInterface(&_jnt_vel_interface);
   } else if (_control_mode == EffortControl){
