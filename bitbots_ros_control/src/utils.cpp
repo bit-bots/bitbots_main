@@ -2,7 +2,7 @@
 
 namespace bitbots_ros_control {
 
-    void speak_error(const ros::Publisher &speak_pub, std::string text) {
+    void speakError(const ros::Publisher &speak_pub, std::string text) {
       /**
         *  Helper method to send a message for text-to-speech output
         */
@@ -12,11 +12,11 @@ namespace bitbots_ros_control {
       speak_pub.publish(msg);
     }
 
-    uint16_t dxl_makeword(uint64_t a, uint64_t b) {
+    uint16_t dxlMakeword(uint64_t a, uint64_t b) {
       return uint16_t(uint8_t(a & 0xff) | uint16_t(uint8_t(b & 0xff)) << 8);
     }
     
-    uint32_t dxl_makedword(uint64_t a, uint64_t b) {
+    uint32_t dxlMakedword(uint64_t a, uint64_t b) {
       return uint32_t(uint16_t(a & 0xffff) | uint32_t(uint16_t(b & 0xffff) << 16));
     }
 }

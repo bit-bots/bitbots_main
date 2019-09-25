@@ -1,5 +1,5 @@
-#ifndef DYNAMIXEL_CONTROLLER_H
-#define DYNAMIXEL_CONTROLLER_H
+#ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_DYNAMIXEL_CONTROLLER_HPP_
+#define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_DYNAMIXEL_CONTROLLER_HPP_
 
 #include <ros/node_handle.h>
 #include <hardware_interface/joint_command_interface.h>
@@ -23,23 +23,23 @@ struct JointCommandData
 class DynamixelController: public controller_interface::Controller<hardware_interface::PosVelAccCurJointInterface>
 {
 public:
-  DynamixelController() {}
-  ~DynamixelController() {sub_command_.shutdown();}
+  DynamixelController() = default;
+  ~DynamixelController() override {sub_command_.shutdown();}
 
-  void starting(const ros::Time& time);
-  void update(const ros::Time& /*time*/, const ros::Duration& /*period*/);
-  bool init(hardware_interface::PosVelAccCurJointInterface* hw, ros::NodeHandle &n);
+  void starting(const ros::Time& time) override;
+  void update(const ros::Time& /*time*/, const ros::Duration& /*period*/) override;
+  bool init(hardware_interface::PosVelAccCurJointInterface* hw, ros::NodeHandle &n) override;
 
 
-  std::vector< std::string > joint_names_;
-  std::vector< hardware_interface::PosVelAccCurJointHandle > joints_;
-  realtime_tools::RealtimeBuffer<std::vector<JointCommandData>> commands_buffer_;
-  unsigned int n_joints_;
+  std::vector< std::string > joint_names;
+  std::vector< hardware_interface::PosVelAccCurJointHandle > joints;
+  realtime_tools::RealtimeBuffer<std::vector<JointCommandData>> commands_buffer;
+  unsigned int n_joints;
 
 private:
   ros::Subscriber sub_command_;
-  std::map<std::string, int> _joint_map;
-  void commandCB(const bitbots_msgs::JointCommand& command_msg) {
+  std::map<std::string, int> joint_map_;
+  void commandCb(const bitbots_msgs::JointCommand& command_msg) {
     if(!(command_msg.joint_names.size() == command_msg.positions.size() && 
          command_msg.joint_names.size() == command_msg.velocities.size() &&
          command_msg.joint_names.size() == command_msg.accelerations.size() &&
@@ -50,14 +50,14 @@ private:
     std::vector<JointCommandData> buf_data;
     for(unsigned int i = 0; i < command_msg.joint_names.size(); i++){
       JointCommandData strct;
-      strct.id = _joint_map[command_msg.joint_names[i]];
+      strct.id = joint_map_[command_msg.joint_names[i]];
       strct.pos = command_msg.positions[i];
       strct.vel = command_msg.velocities[i];
       strct.acc = command_msg.accelerations[i];
       strct.cur = command_msg.max_currents[i];
       buf_data.push_back(strct);   
     }
-    commands_buffer_.writeFromNonRT(buf_data);
+    commands_buffer.writeFromNonRT(buf_data);
   }
 };
 

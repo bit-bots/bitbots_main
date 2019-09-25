@@ -1,5 +1,5 @@
-#ifndef DYNAMIXEL_HARWARE_INTERFACE_H
-#define DYNAMIXEL_HARWARE_INTERFACE_H
+#ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_DYNAMIXEL_SERVO_HARDWARE_INTERFACE_H_
+#define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_DYNAMIXEL_SERVO_HARDWARE_INTERFACE_H_
 
 #include <ros/ros.h>
 #include <string> 
@@ -58,18 +58,18 @@ struct Joint
 };
 
 enum ControlMode {
-  PositionControl,
-  VelocityControl,
-  EffortControl,
-  CurrentBasedPositionControl
+  POSITION_CONTROL,
+  VELOCITY_CONTROL,
+  EFFORT_CONTROL,
+  CURRENT_BASED_POSITION_CONTROL
 };
 
 class DynamixelServoHardwareInterface : public hardware_interface::RobotHW
 {
 public:
   DynamixelServoHardwareInterface();
-  DynamixelServoHardwareInterface(std::shared_ptr<DynamixelDriver>& driver);
-  void reconf_callback(bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig &config, uint32_t level);
+  explicit DynamixelServoHardwareInterface(std::shared_ptr<DynamixelDriver>& driver);
+  void reconfCallback(bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig &config, uint32_t level);
 
   bool init(ros::NodeHandle& nh);
   bool read();
@@ -77,16 +77,16 @@ public:
   void setParent(hardware_interface::RobotHW* parent);
 
 private:
-  ros::NodeHandle _nh;
+  ros::NodeHandle nh_;
 
-  void syncWritePWM();
+  void syncWritePwm();
 
   bool loadDynamixels(ros::NodeHandle& nh);
-  bool writeROMRAM(ros::NodeHandle& nh);
+  bool writeRomram(ros::NodeHandle& nh);
   bool stringToControlMode(std::string control_mode_str, ControlMode &control_mode);
   void switchDynamixelControlMode();
   diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map);
-  void processVTE(bool success);
+  void processVte(bool success);
 
   bool goal_torque_;
   bool current_torque_;
@@ -109,68 +109,68 @@ private:
   void syncWriteProfileAcceleration();
 
   bool first_cycle_;
-  bool _lost_servo_connection;
+  bool lost_servo_connection_;
   
-  bool _switch_individual_torque;
-  std::vector<int32_t> _goal_torque_individual;
+  bool switch_individual_torque_;
+  std::vector<int32_t> goal_torque_individual_;
 
-  std::shared_ptr<DynamixelDriver> _driver;
+  std::shared_ptr<DynamixelDriver> driver_;
 
-  hardware_interface::JointStateInterface _jnt_state_interface;
-  hardware_interface::PositionJointInterface _jnt_pos_interface;
-  hardware_interface::VelocityJointInterface _jnt_vel_interface;
-  hardware_interface::EffortJointInterface _jnt_eff_interface;
-  hardware_interface::PosVelAccCurJointInterface _jnt_posvelacccur_interface;
+  hardware_interface::JointStateInterface jnt_state_interface_;
+  hardware_interface::PositionJointInterface jnt_pos_interface_;
+  hardware_interface::VelocityJointInterface jnt_vel_interface_;
+  hardware_interface::EffortJointInterface jnt_eff_interface_;
+  hardware_interface::PosVelAccCurJointInterface jnt_posvelacccur_interface_;
 
-  hardware_interface::RobotHW* _parent;
+  hardware_interface::RobotHW* parent_;
 
-  ControlMode _control_mode;
+  ControlMode control_mode_;
 
-  int _joint_count;
+  int joint_count_;
 
-  std::vector<std::string> _joint_names;
-  std::vector<uint8_t> _joint_ids;
-  std::vector<double> _joint_mounting_offsets;
-  std::vector<double> _joint_offsets;
+  std::vector<std::string> joint_names_;
+  std::vector<uint8_t> joint_ids_;
+  std::vector<double> joint_mounting_offsets_;
+  std::vector<double> joint_offsets_;
 
-  std::vector<double> _goal_position;
-  std::vector<double> _goal_effort;
-  std::vector<double> _goal_velocity;
-  std::vector<double> _goal_acceleration;
+  std::vector<double> goal_position_;
+  std::vector<double> goal_effort_;
+  std::vector<double> goal_velocity_;
+  std::vector<double> goal_acceleration_;
 
-  std::vector<double> _last_goal_position;
-  std::vector<double> _last_goal_effort;
-  std::vector<double> _last_goal_velocity;
-  std::vector<double> _last_goal_acceleration;
+  std::vector<double> last_goal_position_;
+  std::vector<double> last_goal_effort_;
+  std::vector<double> last_goal_velocity_;
+  std::vector<double> last_goal_acceleration_;
 
-  bool _read_position;
-  bool _read_velocity;
-  bool _read_effort;
-  bool _read_volt_temp;
-  std::vector<double> _current_position;
-  std::vector<double> _current_velocity;
-  std::vector<double> _current_effort;
-  std::vector<double> _current_input_voltage;
-  std::vector<double> _current_temperature;
-  std::vector<uint8_t> _current_error;
+  bool read_position_;
+  bool read_velocity_;
+  bool read_effort_;
+  bool read_volt_temp_;
+  std::vector<double> current_position_;
+  std::vector<double> current_velocity_;
+  std::vector<double> current_effort_;
+  std::vector<double> current_input_voltage_;
+  std::vector<double> current_temperature_;
+  std::vector<uint8_t> current_error_;
 
-  int _read_VT_counter;
-  int _VT_update_rate;
-  double _warn_temp;
-  double _warn_volt;
+  int read_vt_counter_;
+  int vt_update_rate_;
+  double warn_temp_;
+  double warn_volt_;
 
-  bool _torquelessMode;
+  bool torqueless_mode_;
 
-  int _reading_errors;
-  int _reading_successes;
+  int reading_errors_;
+  int reading_successes_;
 
   // subscriber / publisher
-  ros::Subscriber _set_torque_sub;
-  ros::Publisher _diagnostic_pub;
-  ros::Publisher _speak_pub;
-  ros::Subscriber _set_torque_indiv_sub;
+  ros::Subscriber set_torque_sub_;
+  ros::Publisher diagnostic_pub_;
+  ros::Publisher speak_pub_;
+  ros::Subscriber set_torque_indiv_sub_;
 
-  dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig> *_dyn_reconf_server;
+  dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig> *dyn_reconf_server_;
 
 };
 }

@@ -1,5 +1,5 @@
-#ifndef IMU_HARWARE_INTERFACE_H
-#define IMU_HARWARE_INTERFACE_H
+#ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_IMU_HARDWARE_INTERFACE_H_
+#define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_IMU_HARDWARE_INTERFACE_H_
 
 #include <ros/ros.h>
 #include <string>
@@ -18,7 +18,7 @@ namespace bitbots_ros_control
 class ImuHardwareInterface : public hardware_interface::RobotHW{
 public:
   ImuHardwareInterface();
-  ImuHardwareInterface(std::shared_ptr<DynamixelDriver>& driver);
+  explicit ImuHardwareInterface(std::shared_ptr<DynamixelDriver>& driver);
 
   bool init(ros::NodeHandle& nh);
   bool read();
@@ -26,20 +26,20 @@ public:
   void setParent(hardware_interface::RobotHW* parent);
 
 private:
-  ros::NodeHandle _nh;
-  std::shared_ptr<DynamixelDriver> _driver;
-  hardware_interface::ImuSensorInterface _imu_interface;
-  hardware_interface::RobotHW* _parent;
+  ros::NodeHandle nh_;
+  std::shared_ptr<DynamixelDriver> driver_;
+  hardware_interface::ImuSensorInterface imu_interface_;
+  hardware_interface::RobotHW* parent_;
 
-  uint32_t _last_seq_number{};
-  double* _orientation{}; //quaternion (x,y,z,w)
-  double* _orientation_covariance{};
-  double* _angular_velocity{};
-  double* _angular_velocity_covariance{};
-  double* _linear_acceleration{};
-  double* _linear_acceleration_covariance{};
+  uint32_t last_seq_number_{};
+  double* orientation_{}; //quaternion (x,y,z,w)
+  double* orientation_covariance_{};
+  double* angular_velocity_{};
+  double* angular_velocity_covariance_{};
+  double* linear_acceleration_{};
+  double* linear_acceleration_covariance_{};
 
-  diagnostic_msgs::DiagnosticStatus _status_IMU;
+  diagnostic_msgs::DiagnosticStatus status_imu_;
 
 
 };

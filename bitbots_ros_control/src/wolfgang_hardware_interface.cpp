@@ -9,16 +9,16 @@ namespace bitbots_ros_control {
  * a common bus driver over multiple hardware interfaces possible.
  */
 WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
-  _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1);
+  speak_pub_ = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1);
 
   // load parameters
   ROS_INFO_STREAM("Loading parameters from namespace " << nh.getNamespace());
-  nh.getParam("only_imu", _onlyImu);
-  if(_onlyImu) ROS_WARN("Starting in only IMU mode");
-  nh.getParam("only_pressure", _onlyPressure);
-  if(_onlyPressure) ROS_WARN("starting in only pressure sensor mode");
+  nh.getParam("only_imu", only_imu_);
+  if(only_imu_) ROS_WARN("Starting in only IMU mode");
+  nh.getParam("only_pressure", only_pressure_);
+  if(only_pressure_) ROS_WARN("starting in only pressure sensor mode");
 
-  if(_onlyPressure && _onlyImu) {
+  if(only_pressure_ && only_imu_) {
     ROS_ERROR("only_imu AND only_pressure was set to true");
     exit(1);
   }
@@ -31,7 +31,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
   auto driver = std::make_shared<DynamixelDriver>();
   if(!driver->init(port_name.c_str(), uint32_t(baudrate))){
     ROS_ERROR("Error opening serial port %s", port_name.c_str());
-    speak_error(_speak_pub, "Error opening serial port");
+    speakError(speak_pub_, "Error opening serial port");
     sleep(1);
     exit(1);
   }
@@ -39,44 +39,44 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
   nh.getParam("port_info/protocol_version", protocol_version);
   driver->setPacketHandler(protocol_version);
 
-  _servos = DynamixelServoHardwareInterface(driver);
-  _imu = ImuHardwareInterface(driver);
-  _left_foot = BitFootHardwareInterface(driver, 102, "/foot_pressure_left/raw");
-  _right_foot = BitFootHardwareInterface(driver, 101, "/foot_pressure_right/raw");
-  _buttons = ButtonHardwareInterface(driver);
+  servos_ = DynamixelServoHardwareInterface(driver);
+  imu_ = ImuHardwareInterface(driver);
+  left_foot_ = BitFootHardwareInterface(driver, 102, "/foot_pressure_left/raw");
+  right_foot_ = BitFootHardwareInterface(driver, 101, "/foot_pressure_right/raw");
+  buttons_ = ButtonHardwareInterface(driver);
 
   // set the dynamic reconfigure and load standard params for servo interface
   dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig> server;
   dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig>::CallbackType f;
-  f = boost::bind(&bitbots_ros_control::DynamixelServoHardwareInterface::reconf_callback,&_servos, _1, _2);
+  f = boost::bind(&bitbots_ros_control::DynamixelServoHardwareInterface::reconfCallback, &servos_, _1, _2);
   server.setCallback(f);
 
 }
 
 bool WolfgangHardwareInterface::init(ros::NodeHandle& root_nh){
   bool success = true;
-  if(_onlyImu) {
-    _imu.setParent(this);
-    success &= _imu.init(root_nh);
-  }else if(_onlyPressure){
-    success &= _left_foot.init(root_nh);
-    success &= _right_foot.init(root_nh);
+  if(only_imu_) {
+    imu_.setParent(this);
+    success &= imu_.init(root_nh);
+  }else if(only_pressure_){
+    success &= left_foot_.init(root_nh);
+    success &= right_foot_.init(root_nh);
   }else {
     /* Hardware interfaces must be registered at the main RobotHW class.
      * Therefore, a pointer to this class is passed down to the RobotHW classes
      * registering further interfaces */
-    _servos.setParent(this);
-    _imu.setParent(this);
-    success &= _servos.init(root_nh);
-    success &= _imu.init(root_nh);
-    success &= _left_foot.init(root_nh);
-    success &= _right_foot.init(root_nh);
-    success &= _buttons.init(root_nh);
+    servos_.setParent(this);
+    imu_.setParent(this);
+    success &= servos_.init(root_nh);
+    success &= imu_.init(root_nh);
+    success &= left_foot_.init(root_nh);
+    success &= right_foot_.init(root_nh);
+    success &= buttons_.init(root_nh);
   }
   if(success) {
-    speak_error(_speak_pub, "ros control startup successful");
+    speakError(speak_pub_, "ros control startup successful");
   }else{
-    speak_error(_speak_pub, "error starting ros control");
+    speakError(speak_pub_, "error starting ros control");
   }
   return success;
 }
@@ -85,25 +85,25 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle& root_nh){
 bool WolfgangHardwareInterface::read()
 {
   bool success = true;
-  if(_onlyImu){
-    success &= _imu.read();
-  }else if(_onlyPressure){
-    success &= _left_foot.read();
-    success &= _right_foot.read();
+  if(only_imu_){
+    success &= imu_.read();
+  }else if(only_pressure_){
+    success &= left_foot_.read();
+    success &= right_foot_.read();
   }else{
-    success &= _servos.read();
-    success &= _imu.read();
-    success &= _left_foot.read();
-    success &= _right_foot.read();
-    success &= _buttons.read();
+    success &= servos_.read();
+    success &= imu_.read();
+    success &= left_foot_.read();
+    success &= right_foot_.read();
+    success &= buttons_.read();
   }
   return success;
 }
 
 void WolfgangHardwareInterface::write()
 {
-  if(!_onlyImu && !_onlyPressure) {
-    _servos.write();
+  if(!only_imu_ && !only_pressure_) {
+    servos_.write();
   }
 }
 }
