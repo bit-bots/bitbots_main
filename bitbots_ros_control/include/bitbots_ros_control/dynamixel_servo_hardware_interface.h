@@ -160,7 +160,6 @@ private:
   double _warn_volt;
 
   bool _torquelessMode;
-  bool _onlySensors;
 
   int _reading_errors;
   int _reading_successes;
