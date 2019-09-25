@@ -4,8 +4,8 @@ from bitbots_quintic_walk.msg import WalkingDebug
 from humanoid_league_msgs.msg import BallRelative, BallsInImage, \
 LineInformationInImage, LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative, \
 ObstaclesInImage, ObstaclesRelative, ObstacleRelative, \
-GoalInImage, GoalRelative, \
-FieldBoundaryInImage, PixelsRelative, PixelRelative
+GoalInImage, GoalRelative, FieldBoundaryInImage, PixelsRelative, \
+PixelRelative, GoalPartsInImage, GoalPartsRelative, GoalPostRelative, GoalBarRelative
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import CameraInfo, PointCloud2
 import sensor_msgs.point_cloud2 as pc2
@@ -42,6 +42,9 @@ class TransformBall(object):
         rospy.Subscriber(rospy.get_param("~goals/goals_topic", "/goal_in_image"),
                          GoalInImage, self._callback_goal, queue_size=1)
 
+        rospy.Subscriber(rospy.get_param("~goal_parts/goal_parts_topic", "/goal_parts_in_image"),
+                         GoalPartsInImage, self._callback_goal_parts, queue_size=1)
+
         rospy.Subscriber(rospy.get_param("~obstacles/obstacles_topic", "/obstacles_in_image"),
                          ObstaclesInImage, self._callback_obstacles, queue_size=1)
 
@@ -60,12 +63,14 @@ class TransformBall(object):
         if rospy.get_param("~lines/pointcloud", True):
             self.line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=1)
         self.goal_relative_pub = rospy.Publisher("goal_relative", GoalRelative, queue_size=1)
+        self.goal_parts_relative = rospy.Publisher("goal_parts_relative", GoalPartsRelative, queue_size=1)
         self.obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=1)
         self.field_boundary_pub = rospy.Publisher("field_boundary_relative", PixelsRelative, queue_size=1)
 
         self.camera_info = None
 
         self.ball_height = rospy.get_param("~ball/ball_radius", 0.075)
+        self.bar_height = rospy.get_param("~goal_parts/bar_height", 2.0)
         self.publish_frame = "base_footprint"
 
         rospy.spin()
@@ -219,6 +224,64 @@ class TransformBall(object):
         goal.confidence = msg.confidence
 
         self.goal_relative_pub.publish(goal)
+
+
+    def _callback_goal_parts(self, msg):
+        if self.camera_info is None:
+            self.warn_camera_info()
+            return
+
+        field = self.get_plane(msg.header.stamp, 0.0, "base_footprint")
+        if field is None:
+            return
+
+        bar_plane = self.get_plane(msg.header.stamp, self.bar_height, "base_footprint")
+        if bar_plane is None:
+            return
+
+        # Create new message
+
+        goal_parts_relative_msg = GoalPartsRelative()
+        goal_parts_relative_msg.header.stamp = msg.header.stamp
+        goal_parts_relative_msg.header.frame_id = self.publish_frame
+
+        # Transform goal posts
+
+        for goal_post_in_image in msg.posts:
+            relative_foot_point = self.transform(goal_post_in_image.foot_point, field, msg.header.stamp)
+            if relative_foot_point is None:
+                rospy.logwarn_throttle(5.0,
+                    "Got a post with foot point ({},{}) I could not transform.".format(
+                        goal_post_in_image.foot_point.x,
+                        goal_post_in_image.foot_point.y,
+                    ))
+            else:
+                post_relative = GoalPostRelative()
+                post_relative.foot_point = relative_foot_point
+                post_relative.confidence = goal_post_in_image.confidence
+                goal_parts_relative_msg.posts.append(post_relative)
+
+        # Transform goal bars
+
+        for goal_bar_in_image in msg.bars:
+            relative_left_point = self.transform(goal_bar_in_image.left_point, bar_plane, msg.header.stamp)
+            relative_right_point = self.transform(goal_bar_in_image.right_point, bar_plane, msg.header.stamp)
+            if relative_right_point is None or relative_left_point is None:
+                rospy.logwarn_throttle(5.0,
+                    "Got a bar with end points ({},{}) and ({},{}) I could not transform.".format(
+                        goal_bar_in_image.left_point.x,
+                        goal_bar_in_image.left_point.y,
+                        goal_bar_in_image.right_point.x,
+                        goal_bar_in_image.right_point.y,
+                    ))
+            else:
+                bar_relative = GoalBarRelative()
+                bar_relative.left_point = relative_left_point
+                bar_relative.right_point = relative_right_point
+                bar_relative.confidence = goal_bar_in_image.confidence
+                goal_parts_relative_msg.bars.append(bar_relative)
+
+        self.goal_parts_relative.publish(goal_parts_relative_msg)
 
     def _callback_obstacles(self, msg):
         if self.camera_info is None:

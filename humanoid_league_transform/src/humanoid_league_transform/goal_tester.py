@@ -3,7 +3,7 @@
 Command line tool to publish balls on the /goal_in_image topic
 """
 import rospy
-from humanoid_league_msgs.msg import GoalInImage, GoalPartsInImage, PostInImage
+from humanoid_league_msgs.msg import GoalInImage, GoalPartsInImage, GoalPostInImage
 import sys
 import signal
 from geometry_msgs.msg import Point, PointStamped
@@ -18,7 +18,7 @@ def point_cb(msg):
     global pub
     gi = GoalInImage()
     gi.header.stamp = rospy.get_rostime() - rospy.Duration(0.2)
-    post = PostInImage()
+    post = GoalPostInImage()
     post.foot_point = Point(msg.point.x, msg.point.y, 0)
     post.confidence = 1
     gi.left_post = post
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
         gi = GoalInImage()
         gi.header.stamp = rospy.get_rostime() - rospy.Duration(0.2)
-        post = PostInImage()
+        post = GoalPostInImage()
         post.foot_point = Point(x, y, 0)
         post.confidence = 1
         gi.left_post = post
@@ -69,7 +69,7 @@ if __name__ == "__main__":
             print("try again")
             continue
 
-        post2 = PostInImage()
+        post2 = GoalPostInImage()
         post2.foot_point = Point(x, y, 0)
         gi.right_post = post2
 
