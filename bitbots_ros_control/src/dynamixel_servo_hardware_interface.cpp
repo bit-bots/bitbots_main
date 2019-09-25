@@ -22,7 +22,7 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
 
   // Init subscriber / publisher
   _switch_individual_torque = false;
-  _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelServoHardwareInterface::setTorque, this, ros::TransportHints().tcpNoDelay());
+  _set_torque_sub = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelServoHardwareInterface::setTorqueCb, this, ros::TransportHints().tcpNoDelay());
   _set_torque_indiv_sub = nh.subscribe<bitbots_msgs::JointTorque>("set_torque_individual", 1, &DynamixelServoHardwareInterface::individualTorqueCb, this, ros::TransportHints().tcpNoDelay());
   _diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
   _speak_pub = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, true);
@@ -374,11 +374,14 @@ void DynamixelServoHardwareInterface::individualTorqueCb(bitbots_msgs::JointTorq
   _switch_individual_torque = true;
 }
 
-void DynamixelServoHardwareInterface::setTorque(std_msgs::BoolConstPtr enabled){
+void DynamixelServoHardwareInterface::setTorqueCb(std_msgs::BoolConstPtr enabled){
   /**
    * This saves the given required value, so that it can be written to the servos in the write method
    */
   goal_torque_ = enabled->data;
+  for(int j = 0; j < _joint_names.size(); j++) {
+    _goal_torque_individual[j] = enabled->data;
+  }
 }
 
 bool DynamixelServoHardwareInterface::read(){

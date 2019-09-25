@@ -91,7 +91,7 @@ private:
   bool goal_torque_;
   bool current_torque_;
   void writeTorque(bool enabled);
-  void setTorque(std_msgs::BoolConstPtr enabled);
+  void setTorqueCb(std_msgs::BoolConstPtr enabled);
   void writeTorqueForServos(std::vector<int32_t> torque);
   void individualTorqueCb(bitbots_msgs::JointTorque msg);
 
