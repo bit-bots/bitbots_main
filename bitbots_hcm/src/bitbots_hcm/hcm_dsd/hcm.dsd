@@ -39,7 +39,6 @@ $Penalty
 -->HCM
 $StartHCM
     SHUTDOWN --> @PlayAnimationSitDown, @StayShutDown
-    SIMULATION --> #Penalty
     ROBOT --> $CheckIMU
         IMU_NOT_STARTED --> @WaitForIMU
         PROBLEM --> @WaitForIMU
