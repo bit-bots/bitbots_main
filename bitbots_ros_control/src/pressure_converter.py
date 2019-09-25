@@ -147,7 +147,7 @@ class PressureConverter:
         cop_r.header.frame_id = "r_sole"
         cop_r.header.stamp = msg.header.stamp
         sum_of_forces_r = msg.left_front + msg.left_back + msg.right_back + msg.right_front
-        rospy.logerr("sum: " + str(sum_of_forces_r) + "  threshold:" + str(self.threshold))
+        #rospy.logerr("sum: " + str(sum_of_forces_r) + "  threshold:" + str(self.threshold))
         if sum_of_forces_r > self.threshold:
             cop_r.point.x = (msg.left_front * pos[0] - msg.left_back * pos[0] + msg.right_front * pos[0] - msg.right_back * pos[0]) / sum_of_forces_r
             cop_r.point.y = (msg.left_front * pos[1] + msg.left_back * pos[1] - msg.right_front * pos[1] - msg.right_back * pos[1]) / sum_of_forces_r

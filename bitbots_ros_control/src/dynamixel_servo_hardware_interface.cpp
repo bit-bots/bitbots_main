@@ -97,7 +97,9 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
   }
   _parent->registerInterface(&_jnt_state_interface);
   if (_control_mode == PositionControl){
-    _parent->registerInterface(&_jnt_pos_interface);
+    // we use the posvelacccur interface to be compatible to the rest of our software
+    // normally this should be a position interface
+    _parent->registerInterface(&_jnt_posvelacccur_interface);
   } else if (_control_mode == VelocityControl){
     _parent->registerInterface(&_jnt_vel_interface);
   } else if (_control_mode == EffortControl){
@@ -432,7 +434,7 @@ bool DynamixelServoHardwareInterface::read(){
   }
 
   if (_read_volt_temp){
-    if (_read_VT_counter == _VT_update_rate){
+    if (_read_VT_counter + 1 == _VT_update_rate){
       bool success = true;
       if(!syncReadVoltageAndTemp()){
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current input volatage and temperature!");
