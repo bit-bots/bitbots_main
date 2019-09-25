@@ -23,6 +23,7 @@ The main repository is `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`
    manual/tutorials/3d-Druck
    manual/tutorials/launch_files
    manual/tutorials/python3-workspace
+   manual/tutorials/test_robot_and_motion
 
 
 .. toctree::
