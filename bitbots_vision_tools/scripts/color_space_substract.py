@@ -9,7 +9,7 @@ import argparse
 def init_color_space(color_path):
     # type: (str) -> None
     """
-    Initialization of color space from yaml or pickle.txt file
+    Initialization of color space from .yaml or .pickle file
 
     :param str color_path: path to file containing the accepted colors
     :return: None
@@ -21,8 +21,8 @@ def init_color_space(color_path):
                 color_values = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
                 print("Unable to open File!!!")
-    # pickle-file is stored as '.txt'
-    elif color_path.endswith('.txt'):
+    # pickle-file is stored as '.pickle'
+    elif color_path.endswith('.pickle'):
         try:
             with open(color_path, 'rb') as f:
                 color_values = pickle.load(f)
@@ -66,7 +66,7 @@ def save(filename, color_space):
         blue = blue
     )
 
-    filename = '{}_{}.txt'.format(filename, output_type)
+    filename = '{}_{}.pickle'.format(filename, output_type)
     with open(filename, 'wb') as outfile:
         pickle.dump(data, outfile, protocol=2)
         # stores data of colorspace in file as pickle for efficient loading (yaml is too slow)

@@ -342,7 +342,7 @@ class ColorspaceTool():
             blue=blue
         )
 
-        filename = '{}_{}.txt'.format(filename, output_type)
+        filename = '{}_{}.pickle'.format(filename, output_type)
         with open(filename, 'wb') as outfile:
             pickle.dump(data, outfile, protocol=2)
             # stores data of colorspace in file as pickle for efficient loading (yaml is too slow)
