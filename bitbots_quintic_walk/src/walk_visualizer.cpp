@@ -14,7 +14,7 @@ WalkVisualizer::WalkVisualizer() {
 
 void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   //only do something if someone is listing
-  if(pub_engine_debug_.getNumSubscribers() == 0){
+  if (pub_engine_debug_.getNumSubscribers() == 0) {
     return;
   }
 
@@ -59,42 +59,42 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   msg.phase_time = response.phase;
   msg.traj_time = response.traj_time;
 
-  if (response.state==WalkState::IDLE) {
+  if (response.state == WalkState::IDLE) {
     msg.state_number = 0;
     msg.state.data = "idle";
-  } else if (response.state==WalkState::START_MOVEMENT) {
+  } else if (response.state == WalkState::START_MOVEMENT) {
     msg.state_number = 1;
     msg.state.data = "start_movement";
-  } else if (response.state==WalkState::START_STEP) {
+  } else if (response.state == WalkState::START_STEP) {
     msg.state_number = 2;
     msg.state.data = "start_step";
-  } else if (response.state==WalkState::WALKING) {
+  } else if (response.state == WalkState::WALKING) {
     msg.state_number = 3;
     msg.state.data = "walking";
-  } else if (response.state==WalkState::PAUSED) {
+  } else if (response.state == WalkState::PAUSED) {
     msg.state_number = 4;
     msg.state.data = "paused";
-  } else if (response.state==WalkState::KICK) {
+  } else if (response.state == WalkState::KICK) {
     msg.state_number = 5;
     msg.state.data = "kick";
-  } else if (response.state==WalkState::STOP_STEP) {
+  } else if (response.state == WalkState::STOP_STEP) {
     msg.state_number = 6;
     msg.state.data = "stop_step";
-  } else if (response.state==WalkState::STOP_MOVEMENT) {
+  } else if (response.state == WalkState::STOP_MOVEMENT) {
     msg.state_number = 7;
     msg.state.data = "stop_movement";
   }
 
   // footsteps
   double roll, pitch, yaw;
-  msg.footstep_last.x = response.support_to_last_.getOrigin()[0];
-  msg.footstep_last.y = response.support_to_last_.getOrigin()[1];
-  tf2::Matrix3x3(response.support_to_last_.getRotation()).getRPY(roll, pitch, yaw);
+  msg.footstep_last.x = response.support_to_last.getOrigin()[0];
+  msg.footstep_last.y = response.support_to_last.getOrigin()[1];
+  tf2::Matrix3x3(response.support_to_last.getRotation()).getRPY(roll, pitch, yaw);
   msg.footstep_last.z = yaw;
 
-  msg.footstep_next.x = response.support_to_next_.getOrigin()[0];
-  msg.footstep_next.y = response.support_to_last_.getOrigin()[1];
-  tf2::Matrix3x3(response.support_to_next_.getRotation()).getRPY(roll, pitch, yaw);
+  msg.footstep_next.x = response.support_to_next.getOrigin()[0];
+  msg.footstep_next.y = response.support_to_last.getOrigin()[1];
+  tf2::Matrix3x3(response.support_to_next.getRotation()).getRPY(roll, pitch, yaw);
   msg.footstep_next.z = yaw;
 
 
@@ -115,9 +115,9 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
 
   msg.trunk_goal_abs = pose_msg;
   if (msg.trunk_goal_abs.position.y > 0) {
-    msg.trunk_goal_abs.position.y -= response.foot_distance/2;
+    msg.trunk_goal_abs.position.y -= response.foot_distance / 2;
   } else {
-    msg.trunk_goal_abs.position.y += response.foot_distance/2;
+    msg.trunk_goal_abs.position.y += response.foot_distance / 2;
   }
 
   tf2::Matrix3x3(response.support_foot_to_flying_foot.getRotation()).getRPY(roll, pitch, yaw);
@@ -138,22 +138,23 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
 }
 
 void WalkVisualizer::publishIKDebug(WalkResponse response,
-                                    robot_state::RobotStatePtr goal_state,
                                     robot_state::RobotStatePtr current_state,
-                                    tf2::Transform trunk_to_support_foot_goal,
-                                    tf2::Transform trunk_to_flying_foot_goal) {
+                                    bitbots_splines::JointGoals joint_goals) {
   //only do something if someone is listing
-  if(pub_debug_.getNumSubscribers() == 0){
+  if (pub_debug_.getNumSubscribers() == 0) {
     return;
   }
   bitbots_quintic_walk::WalkDebug msg;
 
+  tf2::Transform trunk_to_support_foot = response.support_foot_to_trunk.inverse();
+  tf2::Transform trunk_to_flying_foot = trunk_to_support_foot * response.support_foot_to_flying_foot;
+
   // goals
   geometry_msgs::Pose pose_support_foot_goal;
-  tf2::toMsg(trunk_to_support_foot_goal, pose_support_foot_goal);
+  tf2::toMsg(trunk_to_support_foot, pose_support_foot_goal);
   msg.support_foot_goal = pose_support_foot_goal;
   geometry_msgs::Pose pose_fly_foot_goal;
-  tf2::toMsg(trunk_to_flying_foot_goal, pose_fly_foot_goal);
+  tf2::toMsg(trunk_to_flying_foot, pose_fly_foot_goal);
   msg.fly_foot_goal = pose_fly_foot_goal;
   if (response.is_left_support_foot) {
     msg.left_foot_goal = pose_support_foot_goal;
@@ -167,6 +168,9 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
 
   // IK results
 
+  robot_state::RobotStatePtr goal_state;
+  std::string *names = joint_goals.first.data();
+  goal_state->setJointPositions(*names, joint_goals.second.data());
   geometry_msgs::Pose pose_left_result;
   tf2::convert(goal_state->getGlobalLinkTransform("l_sole"), pose_left_result);
   msg.left_foot_ik_result = pose_left_result;
@@ -195,15 +199,15 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   tf2::convert(r_transform, tf_vec_right);
   geometry_msgs::Vector3 vect_msg;
   if (response.is_left_support_foot) {
-    support_off = trunk_to_support_foot_goal.getOrigin() - tf_vec_left;
-    fly_off = trunk_to_flying_foot_goal.getOrigin() - tf_vec_right;
+    support_off = trunk_to_support_foot.getOrigin() - tf_vec_left;
+    fly_off = trunk_to_flying_foot.getOrigin() - tf_vec_right;
     tf2::convert(support_off, vect_msg);
     msg.left_foot_ik_offset = vect_msg;
     tf2::convert(fly_off, vect_msg);
     msg.right_foot_ik_offset = vect_msg;
   } else {
-    support_off = trunk_to_support_foot_goal.getOrigin() - tf_vec_right;
-    fly_off = trunk_to_flying_foot_goal.getOrigin() - tf_vec_left;
+    support_off = trunk_to_support_foot.getOrigin() - tf_vec_right;
+    fly_off = trunk_to_flying_foot.getOrigin() - tf_vec_left;
     tf2::convert(fly_off, vect_msg);
     msg.left_foot_ik_offset = vect_msg;
     tf2::convert(support_off, vect_msg);
@@ -235,15 +239,15 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   tf2::convert(l_transform, tf_vec_left);
   tf2::convert(r_transform, tf_vec_right);
   if (response.is_left_support_foot) {
-    support_off = trunk_to_support_foot_goal.getOrigin() - tf_vec_left;
-    fly_off = trunk_to_flying_foot_goal.getOrigin() - tf_vec_right;
+    support_off = trunk_to_support_foot.getOrigin() - tf_vec_left;
+    fly_off = trunk_to_flying_foot.getOrigin() - tf_vec_right;
     tf2::convert(support_off, vect_msg);
     msg.left_foot_actual_offset = vect_msg;
     tf2::convert(fly_off, vect_msg);
     msg.right_foot_actual_offset = vect_msg;
   } else {
-    support_off = trunk_to_support_foot_goal.getOrigin() - tf_vec_right;
-    fly_off = trunk_to_flying_foot_goal.getOrigin() - tf_vec_left;
+    support_off = trunk_to_support_foot.getOrigin() - tf_vec_right;
+    fly_off = trunk_to_flying_foot.getOrigin() - tf_vec_left;
     tf2::convert(fly_off, vect_msg);
     msg.left_foot_actual_offset = vect_msg;
     tf2::convert(support_off, vect_msg);
@@ -315,7 +319,7 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   color.a = 1;
   marker_msg.color = color;
   geometry_msgs::Pose pose;
-  tf2::Vector3 step_pos = response.support_to_last_.getOrigin();
+  tf2::Vector3 step_pos = response.support_to_last.getOrigin();
   geometry_msgs::Point point;
   point.x = step_pos[0];
   point.y = step_pos[1];
@@ -348,7 +352,7 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   color.b = 1;
   color.a = 0.5;
   marker_msg.color = color;
-  step_pos = response.support_to_next_.getOrigin();
+  step_pos = response.support_to_next.getOrigin();
   point.x = step_pos[0];
   point.y = step_pos[1];
   pose.position = point;

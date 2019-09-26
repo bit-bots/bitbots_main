@@ -128,8 +128,8 @@ void WalkNode::calculateAndPublishJointGoals(WalkResponse response) {
 
   // publish debug information
   if (debug_active_) {
-    //todo
-    //visualizer_.publishIKDebug(response, current_state_, goal_state_, trunk_to_support_foot_goal, trunk_to_flying_foot_goal);
+    visualizer_
+        .publishIKDebug(response, current_state_, motor_goals);
     visualizer_.publishWalkMarkers(response);
   }
 }
