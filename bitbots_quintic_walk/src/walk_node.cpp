@@ -84,7 +84,7 @@ void WalkNode::run() {
       visualizer_.publishEngineDebug(response);
 
       // only calculate joint goals from this if the engine is not idle
-      if (walk_engine_.getState()!=WalkState::IDLE) { //todo
+      if (walk_engine_.getState() != WalkState::IDLE) {
         calculateAndPublishJointGoals(response);
       }
     }

@@ -2,11 +2,10 @@
 
 namespace bitbots_quintic_walk {
 
-WalkIK::WalkIK() {}
+WalkIK::WalkIK() : bio_ik_timeout_(0.01) {}
 
-void WalkIK::init(moveit::core::RobotModelPtr kinematic_model){
+void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   legs_joints_group_.reset(kinematic_model->getJointModelGroup("Legs"));
-
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
   goal_state_->setToDefaultValues();
 
@@ -47,5 +46,9 @@ void WalkIK::reset() {
     goal_state_->setJointPositions(names_vec[i], &pos_vec[i]);
   }
 }
+
+void WalkIK::setBioIKTimeout(double timeout){
+  bio_ik_timeout_ = timeout;
+};
 
 }
