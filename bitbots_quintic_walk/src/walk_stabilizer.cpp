@@ -14,30 +14,32 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> WalkStabilizer::stabilize(c
   ik_options->replace = true;
   ik_options->return_approximate_solution = true;
 
-  // change goals from support foot based coordinate system to trunk based coordinate system
-  tf2::Transform trunk_to_support_foot = response.support_foot_to_trunk.inverse();
-  tf2::Transform trunk_to_flying_foot = trunk_to_support_foot*response.support_foot_to_flying_foot;
-
+  // TODO use reference goal instead of inverting the transform
   // trunk goal
-  auto* support_goal = new bio_ik::PoseGoal();
-  support_goal->setPosition(trunk_to_support_foot.getOrigin());
-  support_goal->setOrientation(trunk_to_support_foot.getRotation());
-  if(response.is_left_support_foot) {
-    support_goal->setLinkName("l_sole");
-  }else{
-    support_goal->setLinkName("r_sole");
+  auto *trunk_goal = new ReferencePoseGoal();
+  trunk_goal->setPosition(response.support_foot_to_trunk.getOrigin());
+  trunk_goal->setOrientation(response.support_foot_to_trunk.getRotation());
+  trunk_goal->setLinkName("base_link");
+  if (response.is_left_support_foot) {
+    trunk_goal->setReferenceLinkName("l_sole");
+  } else {
+    trunk_goal->setReferenceLinkName("r_sole");
   }
-  ik_options->goals.emplace_back(support_goal);
+  trunk_goal->setWeight(1);
+  ik_options->goals.emplace_back(trunk_goal);
 
   // flying foot goal
-  auto* fly_goal = new bio_ik::PoseGoal();
-  fly_goal->setPosition(trunk_to_flying_foot.getOrigin());
-  fly_goal->setOrientation(trunk_to_flying_foot.getRotation());
-  if(!response.is_left_support_foot) {
-    fly_goal->setLinkName("l_sole");
-  }else{
+  auto *fly_goal = new ReferencePoseGoal();
+  fly_goal->setPosition(response.support_foot_to_flying_foot.getOrigin());
+  fly_goal->setOrientation(response.support_foot_to_flying_foot.getRotation());
+  if (!response.is_left_support_foot) {
     fly_goal->setLinkName("r_sole");
+    fly_goal->setReferenceLinkName("l_sole");
+  } else {
+    fly_goal->setLinkName("l_sole");
+    fly_goal->setReferenceLinkName("r_sole");
   }
+  fly_goal->setWeight(1);
   ik_options->goals.emplace_back(fly_goal);
 
   return std::move(ik_options);

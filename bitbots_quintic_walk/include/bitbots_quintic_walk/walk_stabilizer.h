@@ -7,6 +7,8 @@
 #include <bio_ik/bio_ik.h>
 #include <bitbots_splines/abstract_stabilizer.h>
 #include "bitbots_quintic_walk/walk_utils.h"
+#include "bitbots_splines/dynamic_balancing_goal.h"
+#include "bitbots_splines/reference_goals.h"
 
 namespace bitbots_quintic_walk {
 
