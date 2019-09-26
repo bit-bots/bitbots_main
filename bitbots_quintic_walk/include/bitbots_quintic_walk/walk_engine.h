@@ -13,8 +13,6 @@ https://github.com/Rhoban/model/
 #include <bitbots_quintic_walk/bitbots_quintic_walk_engine_paramsConfig.h>
 
 #include "bitbots_splines/abstract_engine.h"
-#include "bitbots_splines/AxisAngle.h" //TODO check if used somewhere else than walking. if not put into walk utils
-#include "bitbots_splines/Angle.h" //TODO check if used somewhere else than walking. if not put into walk utils
 #include "bitbots_splines/SmoothSpline.hpp"
 #include "bitbots_splines/pose_spline.h"
 
