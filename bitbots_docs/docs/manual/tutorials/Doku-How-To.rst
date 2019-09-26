@@ -63,3 +63,7 @@ Fertige Dokumentation kann unter ``docs/_out/index.html`` lokal abgerufen werden
 
 .. todo:: Genauer beschreiben. Vor allem, welche Dateien wie wiederhergestellt werden
 
+Doku selbster bauen
+-------------------
+
+catkin build bitbots_docs --no-deps --make-args Documentation
