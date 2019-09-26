@@ -34,7 +34,6 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   WalkResponse update(double dt) override;
   void setGoals(const WalkRequest &goals) override;
   void reset() override;
-  bitbots_splines::Trajectories getSplines() const override;
   int getPercentDone() const override;
 
   /**
@@ -137,7 +136,9 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   void buildKickTrajectories();
 
-  void buildStartTrajectories();
+  void buildStartMovementTrajectories();
+
+  void buildStartStepTrajectories();
 
   void buildStopStepTrajectories();
 
@@ -157,11 +158,6 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
    * Return false is the target is unreachable.
    */
   WalkResponse createResponse();
-
-  /**
-   * Reset the trunk position and orientation state vectors at last half cycle as stopped pose.
-   */
-  void resetTrunkLastState();
 
   /**
    * Set the target pose of current support foot during next support phase and update support foot.

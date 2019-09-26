@@ -70,7 +70,7 @@ WalkResponse WalkEngine::update(double dt) {
   // small state machine
   if (engine_state_ == WalkState::IDLE) {
     // state is idle and orders are not zero, we can start walking
-    buildStartTrajectories();
+    buildStartMovementTrajectories();
     engine_state_ = WalkState::START_MOVEMENT;
   } else if (engine_state_ == WalkState::START_MOVEMENT) {
     // in this state we do a single "step" where we only move the trunk
@@ -79,8 +79,8 @@ WalkResponse WalkEngine::update(double dt) {
         engine_state_ = WalkState::STOP_MOVEMENT;
         buildStopMovementTrajectories();
       } else {
-        //start step is finished, go to next state
-        buildTrajectories(false, true, false);
+        //start movement is finished, go to next state
+        buildStartStepTrajectories();
         engine_state_ = WalkState::START_STEP;
       }
     }
@@ -215,7 +215,22 @@ void WalkEngine::reset() {
   support_to_next_ = support_to_last_;
 
   //Reset the trunk saved state
-  resetTrunkLastState();
+  if (is_left_support_foot_) {
+    trunk_pos_at_last_ = tf2::Vector3(
+        params_.trunk_x_offset,
+        -params_.foot_distance / 2.0 + params_.trunk_y_offset,
+        params_.trunk_height);
+  } else {
+    trunk_pos_at_last_ = tf2::Vector3(
+        params_.trunk_x_offset,
+        params_.foot_distance / 2.0 + params_.trunk_y_offset,
+        params_.trunk_height);
+  }
+  trunk_pos_vel_at_last_.setZero();
+  trunk_pos_acc_at_last_.setZero();
+  trunk_axis_pos_at_last_ = tf2::Vector3(0.0, params_.trunk_pitch, 0.0);
+  trunk_axis_vel_at_last_.setZero();
+  trunk_axis_acc_at_last_.setZero();
 }
 
 void WalkEngine::saveCurrentTrunkState() {
@@ -257,8 +272,12 @@ void WalkEngine::buildKickTrajectories() {
   buildTrajectories(false, false, true);
 }
 
-void WalkEngine::buildStartTrajectories() {
+void WalkEngine::buildStartMovementTrajectories() {
   buildTrajectories(true, false, false);
+}
+
+void WalkEngine::buildStartStepTrajectories() {
+  buildTrajectories(false, true, false);
 }
 
 void WalkEngine::buildStopStepTrajectories() {
@@ -270,19 +289,14 @@ void WalkEngine::buildStopMovementTrajectories() {
 }
 
 void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool kick_step) {
-  // save the current trunk state to use it later
+  // save the current trunk state to use it later and compute the next step position
   if (!start_movement) {
     saveCurrentTrunkState();
+    stepFromOrders(request_.orders);
   } else {
     // when we do start step, only transform the y coordinate since we stand still and only move trunk sideward
     trunk_pos_at_last_[1] = trunk_pos_at_last_.y() - support_to_next_.getOrigin().y();
-  }
-
-  if (start_movement) {
-    // update support foot and compute odometry
     stepFromOrders({0, 0, 0});
-  } else {
-    stepFromOrders(request_.orders);
   }
 
   //Reset the trajectories
@@ -668,25 +682,6 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
         0.0);
 }
 
-void WalkEngine::resetTrunkLastState() {
-  if (is_left_support_foot_) {
-    trunk_pos_at_last_ = tf2::Vector3(
-        params_.trunk_x_offset,
-        -params_.foot_distance / 2.0 + params_.trunk_y_offset,
-        params_.trunk_height);
-  } else {
-    trunk_pos_at_last_ = tf2::Vector3(
-        params_.trunk_x_offset,
-        params_.foot_distance / 2.0 + params_.trunk_y_offset,
-        params_.trunk_height);
-  }
-  trunk_pos_vel_at_last_.setZero();
-  trunk_pos_acc_at_last_.setZero();
-  trunk_axis_pos_at_last_ = tf2::Vector3(0.0, params_.trunk_pitch, 0.0);
-  trunk_axis_vel_at_last_.setZero();
-  trunk_axis_acc_at_last_.setZero();
-}
-
 WalkResponse WalkEngine::createResponse() {
   //Evaluate target cartesian state from trajectories at current trajectory time
   double time = getTrajsTime();
@@ -710,7 +705,6 @@ WalkResponse WalkEngine::createResponse() {
 void WalkEngine::point(bitbots_splines::SmoothSpline *spline, double t, double pos, double vel, double acc) {
   spline->addPoint(t, pos, vel, acc);
 }
-
 
 double WalkEngine::getPhase() const {
   return phase_;
@@ -757,15 +751,8 @@ WalkState WalkEngine::getState() {
   return engine_state_;
 }
 
-bitbots_splines::Trajectories WalkEngine::getSplines() const {
-  bitbots_splines::Trajectories trajs;
-  ROS_ERROR("Method getSplines not implemented");
-  //TODO splines missing since they do not fit into spline container
-  return trajs;
-};
-
 int WalkEngine::getPercentDone() const {
-  return (int) getTrajsTime()*100;
+  return (int) (getTrajsTime() * 100);
 }
 
 void WalkEngine::setPauseDuration(double duration) {
@@ -777,8 +764,8 @@ double WalkEngine::getFreq() {
 }
 
 double WalkEngine::getWantedTrunkPitch() {
-  return params_.trunk_pitch + params_.trunk_pitch_p_coef_forward*support_to_next_.getOrigin().x()
-      + params_.trunk_pitch_p_coef_turn*fabs(support_to_next_.getOrigin().z());
+  return params_.trunk_pitch + params_.trunk_pitch_p_coef_forward * support_to_next_.getOrigin().x()
+      + params_.trunk_pitch_p_coef_turn * fabs(support_to_next_.getOrigin().z());
 }
 
 void WalkEngine::stepFromSupport(const tf2::Transform &diff) {
