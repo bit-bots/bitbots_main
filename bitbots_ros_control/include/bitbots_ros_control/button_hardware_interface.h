@@ -1,5 +1,5 @@
-#ifndef BUTTON_HARWARE_INTERFACE_H
-#define BUTTON_HARWARE_INTERFACE_H
+#ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_BUTTON_HARDWARE_INTERFACE_H_
+#define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_BUTTON_HARDWARE_INTERFACE_H_
 
 #include <ros/ros.h>
 #include <string>
@@ -21,16 +21,16 @@ class ButtonHardwareInterface : public hardware_interface::RobotHW
 {
 public:
   ButtonHardwareInterface();
-  ButtonHardwareInterface(std::shared_ptr<DynamixelDriver>& driver);
+  explicit ButtonHardwareInterface(std::shared_ptr<DynamixelDriver>& driver);
 
   bool init(ros::NodeHandle& nh);
   bool read();
   void write();
 
 private:
-  ros::NodeHandle _nh;
-  std::shared_ptr<DynamixelDriver> _driver;
-  ros::Publisher _button_pub;
+  ros::NodeHandle nh_;
+  std::shared_ptr<DynamixelDriver> driver_;
+  ros::Publisher button_pub_;
 };
 }
 

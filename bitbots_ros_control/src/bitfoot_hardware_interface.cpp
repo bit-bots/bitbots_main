@@ -6,15 +6,15 @@ namespace bitbots_ros_control {
 BitFootHardwareInterface::BitFootHardwareInterface() {}
 
 BitFootHardwareInterface::BitFootHardwareInterface(std::shared_ptr<DynamixelDriver>& driver, int id, std::string topic_name) {
-  _driver = driver;
-  _id = id;
-  _topic_name = topic_name;
+  driver_ = driver;
+  id_ = id;
+  topic_name_ = topic_name;
 }
 
 bool BitFootHardwareInterface::init(ros::NodeHandle &nh) {
-  _nh = nh;
-  _current_pressure.resize(4, 0);
-  _pressure_pub = nh.advertise<bitbots_msgs::FootPressure>(_topic_name, 1);
+  nh_ = nh;
+  current_pressure_.resize(4, 0);
+  pressure_pub_ = nh.advertise<bitbots_msgs::FootPressure>(topic_name_, 1);
   return true;
 }
 
@@ -25,13 +25,13 @@ bool BitFootHardwareInterface::read() {
 
   uint8_t *data = (uint8_t *) malloc(16 * sizeof(uint8_t));
   // read foot
-  if (_driver->readMultipleRegisters(_id, 36, 16, data)) {
+  if (driver_->readMultipleRegisters(id_, 36, 16, data)) {
     for (int i = 0; i < 4; i++) {
-      int32_t pres = dxl_makedword(dxl_makeword(data[i * 4], data[i * 4 + 1]),
-                                   dxl_makeword(data[i * 4 + 2], data[i * 4 + 3]));
+      int32_t pres = dxlMakedword(dxlMakeword(data[i*4], data[i*4 + 1]),
+                                  dxlMakeword(data[i*4 + 2], data[i*4 + 3]));
       float pres_d = (float) pres;
       // we directly provide raw data since the scaling has to be calibrated by another node for every robot anyway
-      _current_pressure[i] = (double) pres_d;
+      current_pressure_[i] = (double) pres_d;
     }
   } else {
     ROS_ERROR_THROTTLE(3.0, "Could not read foot sensor");
@@ -39,11 +39,11 @@ bool BitFootHardwareInterface::read() {
 
   bitbots_msgs::FootPressure msg;
   msg.header.stamp = ros::Time::now();
-  msg.left_front = _current_pressure[0];
-  msg.right_front = _current_pressure[1];
-  msg.left_back = _current_pressure[2];
-  msg.right_back= _current_pressure[3];
-  _pressure_pub.publish(msg);
+  msg.left_front = current_pressure_[0];
+  msg.right_front = current_pressure_[1];
+  msg.left_back = current_pressure_[2];
+  msg.right_back= current_pressure_[3];
+  pressure_pub_.publish(msg);
   return true;
 }
 
