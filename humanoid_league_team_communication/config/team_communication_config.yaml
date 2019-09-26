@@ -30,7 +30,7 @@ team_communication:
   # ROS Topics
   team_data: '/team_data'
   strategy: 'role'
-  motion_state: 'motion_state'
+  robot_state: 'robot_state'
   goal: 'goal_relative'
   world_model_node: '/local_world_model'
   position: 'position'

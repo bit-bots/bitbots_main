@@ -21,7 +21,7 @@ TeamCommunication::TeamCommunication() : _nh() {
 
     _nh.getParam("team_communication/team_data", teamdata_topic);
     _nh.getParam("team_communication/strategy", strategy_topic);
-    _nh.getParam("team_communication/motion_state", motion_state_topic);
+    _nh.getParam("team_communication/robot_state", robot_state_topic);
     _nh.getParam("team_communication/goal", goal_topic);
     _nh.getParam("team_communication/world_model_node", world_model_topic);
     _nh.getParam("team_communication/position", position_topic);
@@ -38,7 +38,7 @@ TeamCommunication::TeamCommunication() : _nh() {
 
     sub_role = _nh.subscribe(strategy_topic, 1, &TeamCommunication::strategy_callback, this,
             ros::TransportHints().tcpNoDelay());
-    sub_motion_state = _nh.subscribe(motion_state_topic, 1, &TeamCommunication::motion_state_callback,
+    sub_robot_state = _nh.subscribe(robot_state_topic, 1, &TeamCommunication::robot_state_callback,
             this, ros::TransportHints().tcpNoDelay());
     sub_goal = _nh.subscribe(goal_topic, 1, &TeamCommunication::goal_callback, this,
             ros::TransportHints().tcpNoDelay());
@@ -336,7 +336,7 @@ void TeamCommunication::strategy_callback(const humanoid_league_msgs::Strategy m
     offensive_side_set = true;
 }
 
-void TeamCommunication::motion_state_callback(const humanoid_league_msgs::RobotControlState msg) {
+void TeamCommunication::robot_state_callback(const humanoid_league_msgs::RobotControlState msg) {
     state = msg.state;
     if (state == humanoid_league_msgs::RobotControlState::PENALTY ||
         state == humanoid_league_msgs::RobotControlState::PENALTY_ANIMANTION ||
