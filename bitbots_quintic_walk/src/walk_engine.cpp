@@ -329,72 +329,68 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
     single_support_length = 0.0;
   }
   //Set double support phase
-  point(&is_double_support_spline_, 0.0, 1.0);
-  point(&is_double_support_spline_, double_support_length, 1.0);
-  point(&is_double_support_spline_, double_support_length, 0.0);
-  point(&is_double_support_spline_, half_period, 0.0);
+  is_double_support_spline_.addPoint(0.0, 1.0);
+  is_double_support_spline_.addPoint(double_support_length, 1.0);
+  is_double_support_spline_.addPoint(double_support_length, 0.0);
+  is_double_support_spline_.addPoint(half_period, 0.0);
 
   //Set support foot
-  point(&is_left_support_foot_spline_, 0.0, is_left_support_foot_);
-  point(&is_left_support_foot_spline_, half_period, is_left_support_foot_);
+  is_left_support_foot_spline_.addPoint(0.0, is_left_support_foot_);
+  is_left_support_foot_spline_.addPoint(half_period, is_left_support_foot_);
 
   //Flying foot position
-  point(foot_spline_.x(), 0.0, support_to_last_.getOrigin().x());
-  point(foot_spline_.x(), double_support_length, support_to_last_.getOrigin().x());
+  foot_spline_.x()->addPoint(0.0, support_to_last_.getOrigin().x());
+  foot_spline_.x()->addPoint(double_support_length, support_to_last_.getOrigin().x());
   if (kick_step) {
-    point(foot_spline_.x(), double_support_length + single_support_length * params_.kick_phase,
-          support_to_next_.getOrigin().x() + params_.kick_length,
-          params_.kick_vel);
+    foot_spline_.x()->addPoint(double_support_length + single_support_length * params_.kick_phase,
+                               support_to_next_.getOrigin().x() + params_.kick_length,
+                               params_.kick_vel);
   } else {
-    point(foot_spline_.x(),
-          double_support_length + single_support_length * params_.foot_put_down_phase * params_.foot_overshoot_phase,
-          support_to_next_.getOrigin().x() +
-              support_to_next_.getOrigin().x() * params_.foot_overshoot_ratio);
-  }
-  point(foot_spline_.x(), double_support_length + single_support_length * params_.foot_put_down_phase,
-        support_to_next_.getOrigin().x());
-  point(foot_spline_.x(), half_period, support_to_next_.getOrigin().x());
-
-  point(foot_spline_.y(), 0.0, support_to_last_.getOrigin().y());
-  point(foot_spline_.y(), double_support_length, support_to_last_.getOrigin().y());
-  point(foot_spline_.y(),
+    foot_spline_.x()->addPoint(
         double_support_length + single_support_length * params_.foot_put_down_phase * params_.foot_overshoot_phase,
-        support_to_next_.getOrigin().y()
-            + (support_to_next_.getOrigin().y() - support_to_last_.getOrigin().y()) * params_.foot_overshoot_ratio);
-  point(foot_spline_.y(), double_support_length + single_support_length * params_.foot_put_down_phase,
-        support_to_next_.getOrigin().y());
-  point(foot_spline_.y(), half_period, support_to_next_.getOrigin().y());
+        support_to_next_.getOrigin().x() + support_to_next_.getOrigin().x() * params_.foot_overshoot_ratio);
+  }
+  foot_spline_.x()->addPoint(double_support_length + single_support_length * params_.foot_put_down_phase,
+                             support_to_next_.getOrigin().x());
+  foot_spline_.x()->addPoint(half_period, support_to_next_.getOrigin().x());
 
-  point(foot_spline_.z(), 0.0, 0.0);
-  point(foot_spline_.z(), double_support_length, 0.0);
-  point(foot_spline_.z(),
-        double_support_length + single_support_length * params_.foot_apex_phase
-            - 0.5 * params_.foot_z_pause * single_support_length,
-        params_.foot_rise);
-  point(foot_spline_.z(),
-        double_support_length + single_support_length * params_.foot_apex_phase
-            + 0.5 * params_.foot_z_pause * single_support_length,
-        params_.foot_rise);
-  point(foot_spline_.z(), double_support_length + single_support_length * params_.foot_put_down_phase,
-        params_.foot_put_down_z_offset);
-  point(foot_spline_.z(), half_period, 0.0);
+  foot_spline_.y()->addPoint(0.0, support_to_last_.getOrigin().y());
+  foot_spline_.y()->addPoint(double_support_length, support_to_last_.getOrigin().y());
+  foot_spline_.y()->addPoint(
+      double_support_length + single_support_length * params_.foot_put_down_phase * params_.foot_overshoot_phase,
+      support_to_next_.getOrigin().y()
+          + (support_to_next_.getOrigin().y() - support_to_last_.getOrigin().y()) * params_.foot_overshoot_ratio);
+  foot_spline_.y()->addPoint(double_support_length + single_support_length * params_.foot_put_down_phase,
+                             support_to_next_.getOrigin().y());
+  foot_spline_.y()->addPoint(half_period, support_to_next_.getOrigin().y());
+
+  foot_spline_.z()->addPoint(0.0, 0.0);
+  foot_spline_.z()->addPoint(double_support_length, 0.0);
+  foot_spline_.z()->addPoint(double_support_length + single_support_length * params_.foot_apex_phase
+                                 - 0.5 * params_.foot_z_pause * single_support_length,
+                             params_.foot_rise);
+  foot_spline_.z()->addPoint(double_support_length + single_support_length * params_.foot_apex_phase
+                                 + 0.5 * params_.foot_z_pause * single_support_length,
+                             params_.foot_rise);
+  foot_spline_.z()->addPoint(double_support_length + single_support_length * params_.foot_put_down_phase,
+                             params_.foot_put_down_z_offset);
+  foot_spline_.z()->addPoint(half_period, 0.0);
 
   //Flying foot orientation
-  point(foot_spline_.roll(), 0.0, 0.0);
-  point(foot_spline_.roll(), double_support_length + 0.1 * single_support_length,
-        0.0);
-  point(foot_spline_.roll(), double_support_length + single_support_length * params_.foot_put_down_phase,
-        params_.foot_put_down_roll_offset * support_sign);
-  point(foot_spline_.roll(), half_period, 0.0);
+  foot_spline_.roll()->addPoint(0.0, 0.0);
+  foot_spline_.roll()->addPoint(double_support_length + 0.1 * single_support_length, 0.0);
+  foot_spline_.roll()->addPoint(double_support_length + single_support_length * params_.foot_put_down_phase,
+                                params_.foot_put_down_roll_offset * support_sign);
+  foot_spline_.roll()->addPoint(half_period, 0.0);
 
-  point(foot_spline_.pitch(), 0.0, 0.0);
-  point(foot_spline_.pitch(), half_period, 0.0);
+  foot_spline_.pitch()->addPoint(0.0, 0.0);
+  foot_spline_.pitch()->addPoint(half_period, 0.0);
 
-  point(foot_spline_.yaw(), 0.0, getLastEuler().z());
-  point(foot_spline_.yaw(), double_support_length, getLastEuler().z());
-  point(foot_spline_.yaw(), double_support_length + single_support_length * params_.foot_put_down_phase,
-        getNextEuler().z());
-  point(foot_spline_.yaw(), half_period, getNextEuler().z());
+  foot_spline_.yaw()->addPoint(0.0, getLastEuler().z());
+  foot_spline_.yaw()->addPoint(double_support_length, getLastEuler().z());
+  foot_spline_.yaw()->addPoint(double_support_length + single_support_length * params_.foot_put_down_phase,
+                               getNextEuler().z());
+  foot_spline_.yaw()->addPoint(half_period, getNextEuler().z());
 
 
   //Half pause length of trunk swing
@@ -437,55 +433,52 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
 
   //Trunk position
   if (start_step) {
-    point(trunk_spline_.x(), 0.0,
-          0.0,
-          0.0,
-          0.0);
+    trunk_spline_.x()->addPoint(0.0, 0.0, 0.0, 0.0);
   } else {
-    point(trunk_spline_.x(), 0.0,
-          trunk_pos_at_last_.x(),
-          trunk_pos_vel_at_last_.x(),
-          trunk_pos_acc_at_last_.x());
-    point(trunk_spline_.x(), half_period + time_shift,
-          trunk_apex_support.x(),
-          trunk_vel_support);
+    trunk_spline_.x()->addPoint(0.0,
+                                trunk_pos_at_last_.x(),
+                                trunk_pos_vel_at_last_.x(),
+                                trunk_pos_acc_at_last_.x());
+    trunk_spline_.x()->addPoint(half_period + time_shift,
+                                trunk_apex_support.x(),
+                                trunk_vel_support);
   }
-  point(trunk_spline_.x(), period + time_shift,
-        trunk_apex_next.x(),
-        trunk_vel_next);
+  trunk_spline_.x()->addPoint(period + time_shift,
+                              trunk_apex_next.x(),
+                              trunk_vel_next);
 
-  point(trunk_spline_.y(), 0.0,
-        trunk_pos_at_last_.y(),
-        trunk_pos_vel_at_last_.y(),
-        trunk_pos_acc_at_last_.y());
+  trunk_spline_.y()->addPoint(0.0,
+                              trunk_pos_at_last_.y(),
+                              trunk_pos_vel_at_last_.y(),
+                              trunk_pos_acc_at_last_.y());
   if (start_step || start_movement) {
-    point(trunk_spline_.y(), half_period + time_shift - pause_length,
-          trunk_point_middle.y() + trunk_vect.y() * params_.first_step_swing_factor);
-    point(trunk_spline_.y(), half_period + time_shift + pause_length,
-          trunk_point_middle.y() + trunk_vect.y() * params_.first_step_swing_factor);
-    point(trunk_spline_.y(), period + time_shift - pause_length,
-          trunk_point_middle.y() - trunk_vect.y() * params_.first_step_swing_factor);
-    point(trunk_spline_.y(), period + time_shift + pause_length,
-          trunk_point_middle.y() - trunk_vect.y() * params_.first_step_swing_factor);
+    trunk_spline_.y()->addPoint(half_period + time_shift - pause_length,
+                                trunk_point_middle.y() + trunk_vect.y() * params_.first_step_swing_factor);
+    trunk_spline_.y()->addPoint(half_period + time_shift + pause_length,
+                                trunk_point_middle.y() + trunk_vect.y() * params_.first_step_swing_factor);
+    trunk_spline_.y()->addPoint(period + time_shift - pause_length,
+                                trunk_point_middle.y() - trunk_vect.y() * params_.first_step_swing_factor);
+    trunk_spline_.y()->addPoint(period + time_shift + pause_length,
+                                trunk_point_middle.y() - trunk_vect.y() * params_.first_step_swing_factor);
   } else {
-    point(trunk_spline_.y(), half_period + time_shift - pause_length,
-          trunk_apex_support.y());
-    point(trunk_spline_.y(), half_period + time_shift + pause_length,
-          trunk_apex_support.y());
-    point(trunk_spline_.y(), period + time_shift - pause_length,
-          trunk_apex_next.y());
-    point(trunk_spline_.y(), period + time_shift + pause_length,
-          trunk_apex_next.y());
+    trunk_spline_.y()->addPoint(half_period + time_shift - pause_length,
+                                trunk_apex_support.y());
+    trunk_spline_.y()->addPoint(half_period + time_shift + pause_length,
+                                trunk_apex_support.y());
+    trunk_spline_.y()->addPoint(period + time_shift - pause_length,
+                                trunk_apex_next.y());
+    trunk_spline_.y()->addPoint(period + time_shift + pause_length,
+                                trunk_apex_next.y());
   }
 
-  point(trunk_spline_.z(), 0.0,
-        trunk_pos_at_last_.z(),
-        trunk_pos_vel_at_last_.z(),
-        trunk_pos_acc_at_last_.z());
-  point(trunk_spline_.z(), half_period + time_shift,
-        params_.trunk_height);
-  point(trunk_spline_.z(), period + time_shift,
-        params_.trunk_height);
+  trunk_spline_.z()->addPoint(0.0,
+                              trunk_pos_at_last_.z(),
+                              trunk_pos_vel_at_last_.z(),
+                              trunk_pos_acc_at_last_.z());
+  trunk_spline_.z()->addPoint(half_period + time_shift,
+                              params_.trunk_height);
+  trunk_spline_.z()->addPoint(period + time_shift,
+                              params_.trunk_height);
 
   //Define trunk rotation as rool pitch yaw
   tf2::Vector3 euler_at_support = tf2::Vector3(
@@ -510,38 +503,38 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
           getNextEuler().z()) / period);
 
   //Trunk orientation
-  point(trunk_spline_.roll(), 0.0,
-        trunk_axis_pos_at_last_.x(),
-        trunk_axis_vel_at_last_.x(),
-        trunk_axis_acc_at_last_.x());
-  point(trunk_spline_.roll(), half_period + time_shift,
-        euler_at_support.x(),
-        axis_vel.x());
-  point(trunk_spline_.roll(), period + time_shift,
-        euler_at_next.x(),
-        axis_vel.x());
+  trunk_spline_.roll()->addPoint(0.0,
+                                 trunk_axis_pos_at_last_.x(),
+                                 trunk_axis_vel_at_last_.x(),
+                                 trunk_axis_acc_at_last_.x());
+  trunk_spline_.roll()->addPoint(half_period + time_shift,
+                                 euler_at_support.x(),
+                                 axis_vel.x());
+  trunk_spline_.roll()->addPoint(period + time_shift,
+                                 euler_at_next.x(),
+                                 axis_vel.x());
 
-  point(trunk_spline_.pitch(), 0.0,
-        trunk_axis_pos_at_last_.y(),
-        trunk_axis_vel_at_last_.y(),
-        trunk_axis_acc_at_last_.y());
-  point(trunk_spline_.pitch(), half_period + time_shift,
-        euler_at_support.y(),
-        axis_vel.y());
-  point(trunk_spline_.pitch(), period + time_shift,
-        euler_at_next.y(),
-        axis_vel.y());
+  trunk_spline_.pitch()->addPoint(0.0,
+                                  trunk_axis_pos_at_last_.y(),
+                                  trunk_axis_vel_at_last_.y(),
+                                  trunk_axis_acc_at_last_.y());
+  trunk_spline_.pitch()->addPoint(half_period + time_shift,
+                                  euler_at_support.y(),
+                                  axis_vel.y());
+  trunk_spline_.pitch()->addPoint(period + time_shift,
+                                  euler_at_next.y(),
+                                  axis_vel.y());
 
-  point(trunk_spline_.yaw(), 0.0,
-        trunk_axis_pos_at_last_.z(),
-        trunk_axis_vel_at_last_.z(),
-        trunk_axis_acc_at_last_.z());
-  point(trunk_spline_.yaw(), half_period + time_shift,
-        euler_at_support.z(),
-        axis_vel.z());
-  point(trunk_spline_.yaw(), period + time_shift,
-        euler_at_next.z(),
-        axis_vel.z());
+  trunk_spline_.yaw()->addPoint(0.0,
+                                trunk_axis_pos_at_last_.z(),
+                                trunk_axis_vel_at_last_.z(),
+                                trunk_axis_acc_at_last_.z());
+  trunk_spline_.yaw()->addPoint(half_period + time_shift,
+                                euler_at_support.z(),
+                                axis_vel.z());
+  trunk_spline_.yaw()->addPoint(period + time_shift,
+                                euler_at_next.z(),
+                                axis_vel.z());
 }
 
 void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
@@ -571,115 +564,116 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
 
   //Set double support phase
   double is_double_support = (foot_in_idle_position ? 1.0 : 0.0);
-  point(&is_double_support_spline_, 0.0, is_double_support);
-  point(&is_double_support_spline_, half_period, is_double_support);
+  is_double_support_spline_.addPoint(0.0, is_double_support);
+  is_double_support_spline_.addPoint(half_period, is_double_support);
 
   //Set support foot
-  point(&is_left_support_foot_spline_, 0.0, is_left_support_foot_);
-  point(&is_left_support_foot_spline_, half_period, is_left_support_foot_);
+  is_left_support_foot_spline_.addPoint(0.0, is_left_support_foot_);
+  is_left_support_foot_spline_.addPoint(half_period, is_left_support_foot_);
 
   //Flying foot position
-  point(foot_spline_.x(), 0.0,
-        support_to_last_.getOrigin().x());
-  point(foot_spline_.x(), double_support_length,
-        support_to_last_.getOrigin().x());
-  point(foot_spline_.x(),
-        double_support_length + single_support_length * params_.foot_put_down_phase * params_.foot_overshoot_phase,
-        0.0 + (0.0 - support_to_last_.getOrigin().x()) * params_.foot_overshoot_ratio);
-  point(foot_spline_.x(), double_support_length + single_support_length * params_.foot_put_down_phase,
-        0.0);
-  point(foot_spline_.x(), half_period,
-        0.0);
+  foot_spline_.x()->addPoint(0.0,
+                             support_to_last_.getOrigin().x());
+  foot_spline_.x()->addPoint(double_support_length,
+                             support_to_last_.getOrigin().x());
+  foot_spline_.x()->addPoint(
+      double_support_length + single_support_length * params_.foot_put_down_phase * params_.foot_overshoot_phase,
+      0.0 + (0.0 - support_to_last_.getOrigin().x()) * params_.foot_overshoot_ratio);
+  foot_spline_.x()->addPoint(double_support_length + single_support_length * params_.foot_put_down_phase,
+                             0.0);
+  foot_spline_.x()->addPoint(half_period,
+                             0.0);
 
-  point(foot_spline_.y(), 0.0,
-        support_to_last_.getOrigin().y());
-  point(foot_spline_.y(), double_support_length,
-        support_to_last_.getOrigin().y());
-  point(foot_spline_.y(),
-        double_support_length + single_support_length * params_.foot_put_down_phase * params_.foot_overshoot_phase,
-        -support_sign * params_.foot_distance
-            + (-support_sign * params_.foot_distance - support_to_last_.getOrigin().y())
-                * params_.foot_overshoot_ratio);
-  point(foot_spline_.x(), double_support_length + single_support_length * params_.foot_put_down_phase,
-        -support_sign * params_.foot_distance);
-  point(foot_spline_.y(), half_period,
-        -support_sign * params_.foot_distance);
+  foot_spline_.y()->addPoint(0.0,
+                             support_to_last_.getOrigin().y());
+  foot_spline_.y()->addPoint(double_support_length,
+                             support_to_last_.getOrigin().y());
+  foot_spline_.y()->addPoint(
+      double_support_length + single_support_length * params_.foot_put_down_phase * params_.foot_overshoot_phase,
+      -support_sign * params_.foot_distance
+          + (-support_sign * params_.foot_distance - support_to_last_.getOrigin().y())
+              * params_.foot_overshoot_ratio);
+  foot_spline_.y()->addPoint(double_support_length + single_support_length * params_.foot_put_down_phase,
+                             -support_sign * params_.foot_distance);
+  foot_spline_.y()->addPoint(half_period,
+                             -support_sign * params_.foot_distance);
 
   //If the walk has just been disabled,
   //make one single step to neutral pose
   if (!foot_in_idle_position) {
-    point(foot_spline_.z(), 0.0, 0.0);
-    point(foot_spline_.z(), double_support_length, 0.0);
-    point(foot_spline_.z(),
-          double_support_length + single_support_length * params_.foot_apex_phase
-              - 0.5 * params_.foot_z_pause * single_support_length,
-          params_.foot_rise);
-    point(foot_spline_.z(),
-          double_support_length + single_support_length * params_.foot_apex_phase
-              + 0.5 * params_.foot_z_pause * single_support_length,
-          params_.foot_rise);
-    point(foot_spline_.z(), double_support_length + single_support_length * params_.foot_put_down_phase,
-          params_.foot_put_down_z_offset);
-    point(foot_spline_.z(), half_period,
-          0.0);
+    foot_spline_.z()->addPoint(0.0, 0.0);
+    foot_spline_.z()->addPoint(double_support_length, 0.0);
+    foot_spline_.z()->addPoint(
+        double_support_length + single_support_length * params_.foot_apex_phase
+            - 0.5 * params_.foot_z_pause * single_support_length,
+        params_.foot_rise);
+    foot_spline_.z()->addPoint(
+        double_support_length + single_support_length * params_.foot_apex_phase
+            + 0.5 * params_.foot_z_pause * single_support_length,
+        params_.foot_rise);
+    foot_spline_.z()->addPoint(double_support_length + single_support_length * params_.foot_put_down_phase,
+                               params_.foot_put_down_z_offset);
+    foot_spline_.z()->addPoint(half_period,
+                               0.0);
   } else {
     //dont move the foot in last single step before stop since we only move the trunk back to the center
-    point(foot_spline_.z(), 0.0, 0.0);
-    point(foot_spline_.z(), half_period, 0.0);
+    foot_spline_.z()->addPoint(0.0, 0.0);
+    foot_spline_.z()->addPoint(half_period, 0.0);
   }
   //Flying foot orientation
-  point(foot_spline_.roll(), 0.0, 0.0);
-  point(foot_spline_.roll(), half_period, 0.0);
+  foot_spline_.roll()->addPoint(0.0, 0.0);
+  foot_spline_.roll()->addPoint(half_period, 0.0);
 
-  point(foot_spline_.pitch(), 0.0, 0.0);
-  point(foot_spline_.pitch(), half_period, 0.0);
+  foot_spline_.pitch()->addPoint(0.0, 0.0);
+  foot_spline_.pitch()->addPoint(half_period, 0.0);
 
-  point(foot_spline_.yaw(), 0.0, getLastEuler().z());
-  point(foot_spline_.yaw(), double_support_length,
-        getLastEuler().z());
-  point(foot_spline_.yaw(), double_support_length + single_support_length * params_.foot_put_down_phase,
-        0.0);
-  point(foot_spline_.yaw(), half_period, 0.0);
+  foot_spline_.yaw()->addPoint(0.0, getLastEuler().z());
+  foot_spline_.yaw()->addPoint(double_support_length,
+                               getLastEuler().z());
+  foot_spline_.yaw()->addPoint(double_support_length + single_support_length * params_.foot_put_down_phase,
+                               0.0);
+  foot_spline_.yaw()->addPoint(half_period, 0.0);
 
   //Trunk position
-  point(trunk_spline_.x(), 0.0,
-        trunk_pos_at_last_.x(),
-        trunk_pos_vel_at_last_.x(),
-        trunk_pos_acc_at_last_.x());
-  point(trunk_spline_.x(), half_period,
-        params_.trunk_x_offset);
+  trunk_spline_.x()->addPoint(0.0,
+                              trunk_pos_at_last_.x(),
+                              trunk_pos_vel_at_last_.x(),
+                              trunk_pos_acc_at_last_.x());
+  trunk_spline_.x()->addPoint(half_period,
+                              params_.trunk_x_offset);
 
-  point(trunk_spline_.y(), 0.0,
-        trunk_pos_at_last_.y(),
-        trunk_pos_vel_at_last_.y(),
-        trunk_pos_acc_at_last_.y());
-  point(trunk_spline_.y(), half_period,
-        -support_sign * 0.5 * params_.foot_distance + params_.trunk_y_offset);
+  trunk_spline_.y()->addPoint(0.0,
+                              trunk_pos_at_last_.y(),
+                              trunk_pos_vel_at_last_.y(),
+                              trunk_pos_acc_at_last_.y());
+  trunk_spline_.y()->addPoint(half_period,
+                              -support_sign * 0.5 * params_.foot_distance + params_.trunk_y_offset);
 
-  point(trunk_spline_.z(), 0.0,
-        trunk_pos_at_last_.z(),
-        trunk_pos_vel_at_last_.z(),
-        trunk_pos_acc_at_last_.z());
-  point(trunk_spline_.z(), half_period,
-        params_.trunk_height);
+  trunk_spline_.z()->addPoint(0.0,
+                              trunk_pos_at_last_.z(),
+                              trunk_pos_vel_at_last_.z(),
+                              trunk_pos_acc_at_last_.z());
+  trunk_spline_.z()->addPoint(half_period,
+                              params_.trunk_height);
+
   //Trunk orientation
-  point(trunk_spline_.roll(), 0.0,
-        trunk_axis_pos_at_last_.x(),
-        trunk_axis_vel_at_last_.x(),
-        trunk_axis_acc_at_last_.x());
-  point(trunk_spline_.roll(), half_period, 0.0);
-  point(trunk_spline_.pitch(), 0.0,
-        trunk_axis_pos_at_last_.y(),
-        trunk_axis_vel_at_last_.y(),
-        trunk_axis_acc_at_last_.y());
-  point(trunk_spline_.pitch(), half_period,
-        params_.trunk_pitch);
-  point(trunk_spline_.yaw(), 0.0,
-        trunk_axis_pos_at_last_.z(),
-        trunk_axis_vel_at_last_.z(),
-        trunk_axis_acc_at_last_.z());
-  point(trunk_spline_.yaw(), half_period,
-        0.0);
+  trunk_spline_.roll()->addPoint(0.0,
+                                 trunk_axis_pos_at_last_.x(),
+                                 trunk_axis_vel_at_last_.x(),
+                                 trunk_axis_acc_at_last_.x());
+  trunk_spline_.roll()->addPoint(half_period, 0.0);
+  trunk_spline_.pitch()->addPoint(0.0,
+                                  trunk_axis_pos_at_last_.y(),
+                                  trunk_axis_vel_at_last_.y(),
+                                  trunk_axis_acc_at_last_.y());
+  trunk_spline_.pitch()->addPoint(half_period,
+                                  params_.trunk_pitch);
+  trunk_spline_.yaw()->addPoint(0.0,
+                                trunk_axis_pos_at_last_.z(),
+                                trunk_axis_vel_at_last_.z(),
+                                trunk_axis_acc_at_last_.z());
+  trunk_spline_.yaw()->addPoint(half_period,
+                                0.0);
 }
 
 WalkResponse WalkEngine::createResponse() {
@@ -700,10 +694,6 @@ WalkResponse WalkEngine::createResponse() {
   response.support_to_next = support_to_next_;
 
   return response;
-}
-
-void WalkEngine::point(bitbots_splines::SmoothSpline *spline, double t, double pos, double vel, double acc) {
-  spline->addPoint(t, pos, vel, acc);
 }
 
 double WalkEngine::getPhase() const {
@@ -824,11 +814,11 @@ tf2::Vector3 WalkEngine::getLastEuler() {
   return tf2::Vector3(roll, pitch, yaw);
 }
 
-tf2::Transform WalkEngine::getLeft(){
+tf2::Transform WalkEngine::getLeft() {
   return left_in_world_;
 }
 
-tf2::Transform WalkEngine::getRight(){
+tf2::Transform WalkEngine::getRight() {
   return right_in_world_;
 }
 
