@@ -9,40 +9,26 @@ If you want to take a look at the code, our Github Organisation is also named `B
 The main repository is `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`_ and everything is linked from there.
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Einstieg und Tutorials:
+    :maxdepth: 1
+    :glob:
+    :caption: Einstieg und Tutorials:
 
-   manual/tutorials/software-overview
-   manual/tutorials/software-schnelleinstieg
-   manual/tutorials/Doku-How-To
-   manual/tutorials/colorpicker
-   manual/tutorials/pycharm-ros
-   manual/tutorials/motion
-   manual/tutorials/hcm
-   manual/tutorials/animation
-   manual/tutorials/3d-Druck
-   manual/tutorials/launch_files
-   manual/tutorials/python3-workspace
+    manual/tutorials/*
 
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Software
-
-   manual/software/ai
-   manual/software/vision
-   manual/software/walking
-   manual/software/bitfoot
-   manual/software/dsd
 
 .. toctree::
     :maxdepth: 1
+    :glob:
+    :caption: Software
+
+    manual/software/*
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
     :caption: Hardware:
 
-    manual/hardware/elektronik
-    manual/hardware/motorkabel
-    manual/hardware/schrauben
-    manual/hardware/motornummern
+    manual/hardware/*
 
 `Internal Documentation <http://doku.bit-bots.de/private/>`_
 
