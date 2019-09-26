@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_dynup)
-set (CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
@@ -30,9 +30,9 @@ include_directories(
 )
 
 set(SOURCES
-    src/DynupNode.cpp
-    src/DynupEngine.cpp
-    src/Stabilizer.cpp
+    src/dynup_node.cpp
+    src/dynup_engine.cpp
+    src/stabilizer.cpp
 )
 
 add_executable(DynupNode ${SOURCES})
