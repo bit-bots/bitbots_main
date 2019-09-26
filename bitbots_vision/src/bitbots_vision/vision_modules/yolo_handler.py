@@ -64,8 +64,6 @@ class YoloHandlerDarknet(YoloHandler):
 
         # Setup detector
         self._net = Detector(bytes(configpath, encoding="utf-8"), bytes(weightpath, encoding="utf-8"), 0.5, bytes(datapath, encoding="utf-8"))
-        # Set classes
-        self._classes = ["ball", "goalpost"]  # TODO Jan: this has no usages?! Why? Remove?
         # Set cached stuff
         self._image = None
         self._results = None
@@ -108,9 +106,6 @@ class YoloHandlerDarknet(YoloHandler):
             # Run neural network
             self._results = self._net.detect(Image(self._image))
             # Init lists
-            class_ids = []
-            confidences = []
-            boxes = []
             self._ball_candidates = []
             self._goalpost_candidates = []
             # Go through results
@@ -142,8 +137,6 @@ class YoloHandlerOpenCV(YoloHandler):
         configpath = os.path.join(model_path, "config.cfg")
         # Set config
         self._config = config
-        # Define classes
-        self._classes = ["ball", "goalpost"]  # TODO Jan: this has no usages?! Why? Remove?
         # Settings
         self._nms_threshold = 0.4
         self._confidence_threshold = 0.5
