@@ -6,14 +6,14 @@ class DebugImage:
     Draws the debug image for the Vision
     """
     def __init__(self):
-        self.debug_image = None
+        self._debug_image = None
 
     def set_image(self, image):
         """
         Sets a new image on which the debug image is mapped
         :param image: image the vision is currently processing
         """
-        self.debug_image = image.copy()
+        self._debug_image = image.copy()
 
     def draw_field_boundary(self, field_boundary_points, color, thickness=1):
         """
@@ -23,7 +23,7 @@ class DebugImage:
         :param thickness: thickness of the line
         """
         for i in range(len(field_boundary_points) - 1):
-            cv2.line(self.debug_image,
+            cv2.line(self._debug_image,
                      field_boundary_points[i],
                      field_boundary_points[i+1], color, thickness=1)
 
@@ -36,7 +36,7 @@ class DebugImage:
         """
         for candidate in ball_candidates:
             if candidate:
-                cv2.circle(self.debug_image,
+                cv2.circle(self._debug_image,
                            (candidate.get_center_x(), candidate.get_center_y()),
                            candidate.get_radius(),
                            color,
@@ -51,7 +51,7 @@ class DebugImage:
         """
         for candidate in obstacle_candidates:
             if candidate:
-                cv2.rectangle(self.debug_image,
+                cv2.rectangle(self._debug_image,
                               candidate.get_upper_left_point(),
                               candidate.get_lower_right_point(),
                               color,
@@ -66,7 +66,7 @@ class DebugImage:
         :param rad: radius of the point
         """
         for point in points:
-            cv2.circle(self.debug_image, point, rad, color, thickness=thickness)
+            cv2.circle(self._debug_image, point, rad, color, thickness=thickness)
 
     def draw_line_segments(self, segments, color, thickness=2):
         """
@@ -76,7 +76,7 @@ class DebugImage:
         :param thickness: thickness of the line
         """
         for segment in segments:
-            cv2.line(self.debug_image,
+            cv2.line(self._debug_image,
                      (segment[0], segment[1]),
                      (segment[2], segment[3]),
                      color, thickness=2)
@@ -86,7 +86,7 @@ class DebugImage:
         Get the image with the debug drawing in it
         :return: image with debug stuff
         """
-        return self.debug_image
+        return self._debug_image
 
     def draw(self, debug_image_description, image=None):
         """
