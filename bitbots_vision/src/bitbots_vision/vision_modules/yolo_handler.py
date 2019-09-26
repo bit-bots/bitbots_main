@@ -281,10 +281,12 @@ class YoloGoalpostDetector(CandidateFinder):
     """
     A goalpost detector using the yolo neural network
     """
-    def __init__(self, yolo):  # TODO Jan: Why does this class have no config param? See YoloBallDetector...
+    def __init__(self, config, yolo):
         """
+        :param config: The vision config
         :param yolo: An YoloHandler implementation that runs the yolo network
         """
+        self._config = config
         self._yolo = yolo
 
     def set_image(self, image):

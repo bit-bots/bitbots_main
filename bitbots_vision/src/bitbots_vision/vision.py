@@ -309,7 +309,7 @@ class Vision:
                         self._yolo = yolo_handler.YoloHandlerDarknet(config, yolo_model_path)
                     # Set both ball and goalpost detector
                     self._ball_detector = yolo_handler.YoloBallDetector(config, self._yolo)
-                    self._goalpost_detector = yolo_handler.YoloGoalpostDetector(self._yolo)
+                    self._goalpost_detector = yolo_handler.YoloGoalpostDetector(config, self._yolo)
                     rospy.loginfo(config['neural_network_type'] + " vision is running now", logger_name="vision_yolo")
 
         self._register_or_update_all_subscribers(config)
