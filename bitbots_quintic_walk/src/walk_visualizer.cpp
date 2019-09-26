@@ -167,7 +167,6 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   publishArrowMarker("engine_right_goal", "base_link", msg.right_foot_goal, 1, 0, 0, 1);
 
   // IK results
-
   robot_state::RobotStatePtr goal_state;
   std::string *names = joint_goals.first.data();
   goal_state->setJointPositions(*names, joint_goals.second.data());

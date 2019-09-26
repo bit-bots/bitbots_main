@@ -13,7 +13,8 @@ WalkEngine::WalkEngine() :
     pause_requested_(false),
     left_kick_requested_(false),
     right_kick_requested_(false),
-    time_paused_(0.0) {
+    time_paused_(0.0),
+    engine_state_(WalkState::IDLE) {
   left_in_world_.setIdentity();
   right_in_world_.setIdentity();
   reset();
@@ -498,7 +499,7 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   // in roll and pitch, no velocity is set since changes are only minor when speed changes
   tf2::Vector3 axis_vel(
       0.0, 0.0,
-      bitbots_quintic_walk::AngleDistance(
+      bitbots_quintic_walk::angleDistance(
           getLastEuler().z(),
           getNextEuler().z()) / period);
 

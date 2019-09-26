@@ -21,7 +21,6 @@ class AbstractEngine {
   virtual ResultType update(double dt) = 0;
   virtual void setGoals(const RequestType &goals) = 0;
   virtual void reset() = 0;
-  virtual Trajectories getSplines() const = 0;
   /**
    * Returns the percentage of the spline that has already been returned.
    */

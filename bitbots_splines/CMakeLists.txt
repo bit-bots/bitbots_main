@@ -47,6 +47,8 @@ set(SOURCES
         include/bitbots_splines/abstract_stabilizer.h
         include/bitbots_splines/abstract_ik.h
         include/bitbots_splines/abstract_visualizer.h
+	include/bitbots_splines/reference_goals.h
+	include/bitbots_splines/dynamic_balancing_goal.h
         )
 
 set(CODE_LIBRARIES)

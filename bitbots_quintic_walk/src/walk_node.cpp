@@ -390,7 +390,6 @@ void WalkNode::publishOdometry() {
   odom_msg_.pose.pose.orientation = quat_msg;
   geometry_msgs::Twist twist;
 
-  //TODO why the *2 ? is this a bug?
   twist.linear.x = current_request_.orders.x() * walk_engine_.getFreq() * 2;
   twist.linear.y = current_request_.orders.y() * walk_engine_.getFreq() * 2;
   twist.angular.z = current_request_.orders.z() * walk_engine_.getFreq() * 2;

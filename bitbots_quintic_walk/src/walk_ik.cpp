@@ -47,7 +47,7 @@ void WalkIK::reset() {
   }
 }
 
-void WalkIK::setBioIKTimeout(double timeout){
+void WalkIK::setBioIKTimeout(double timeout) {
   bio_ik_timeout_ = timeout;
 };
 

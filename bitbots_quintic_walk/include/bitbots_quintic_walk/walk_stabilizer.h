@@ -12,7 +12,7 @@
 
 namespace bitbots_quintic_walk {
 
-class WalkStabilizer: public bitbots_splines::AbstractStabilizer<WalkResponse> {
+class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> {
  public:
   WalkStabilizer();
   virtual void reset();

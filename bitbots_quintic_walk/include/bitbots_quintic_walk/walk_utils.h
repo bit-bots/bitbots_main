@@ -1,5 +1,5 @@
-#ifndef BITBOTS_MOTION_BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_UTILS_H_
-#define BITBOTS_MOTION_BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_UTILS_H_
+#ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_UTILS_H_
+#define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_UTILS_H_
 
 #include <cmath>
 #include <geometry_msgs/Point.h>
@@ -48,11 +48,10 @@ struct WalkResponse {
  * Return the given angle in radian
  * bounded between -PI and PI
  */
-inline double AngleBound(double angle)
-{
+inline double angleBound(double angle) {
   return
       angle
-          - 2.0*M_PI*std::floor((angle + M_PI)/(2.0*M_PI));
+          - 2.0 * M_PI * std::floor((angle + M_PI) / (2.0 * M_PI));
 }
 
 /**
@@ -60,37 +59,36 @@ inline double AngleBound(double angle)
  * in the range -PI/2:PI/2 radian from angleSrc to angleDst
  * (Better than doing angleDst-angleSrc)
  */
-inline double AngleDistance(double angleSrc, double angleDst)
-{
-  angleSrc = AngleBound(angleSrc);
-  angleDst = AngleBound(angleDst);
+inline double angleDistance(double angle_src, double angle_dst) {
+  angle_src = angleBound(angle_src);
+  angle_dst = angleBound(angle_dst);
 
   double max, min;
-  if (angleSrc > angleDst) {
-    max = angleSrc;
-    min = angleDst;
+  if (angle_src > angle_dst) {
+    max = angle_src;
+    min = angle_dst;
   } else {
-    max = angleDst;
-    min = angleSrc;
+    max = angle_dst;
+    min = angle_src;
   }
 
-  double dist1 = max-min;
-  double dist2 = 2.0*M_PI - max + min;
+  double dist_1 = max - min;
+  double dist_2 = 2.0 * M_PI - max + min;
 
-  if (dist1 < dist2) {
-    if (angleSrc > angleDst) {
-      return -dist1;
+  if (dist_1 < dist_2) {
+    if (angle_src > angle_dst) {
+      return -dist_1;
     } else {
-      return dist1;
+      return dist_1;
     }
   } else {
-    if (angleSrc > angleDst) {
-      return dist2;
+    if (angle_src > angle_dst) {
+      return dist_2;
     } else {
-      return -dist2;
+      return -dist_2;
     }
   }
 }
 }
 
-#endif //BITBOTS_MOTION_BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_UTILS_H_
+#endif //BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_UTILS_H_

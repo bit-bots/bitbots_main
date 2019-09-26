@@ -14,7 +14,6 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> WalkStabilizer::stabilize(c
   ik_options->replace = true;
   ik_options->return_approximate_solution = true;
 
-  // TODO use reference goal instead of inverting the transform
   // trunk goal
   auto *trunk_goal = new ReferencePoseGoal();
   trunk_goal->setPosition(response.support_foot_to_trunk.getOrigin());
