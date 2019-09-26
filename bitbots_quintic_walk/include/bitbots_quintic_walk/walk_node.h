@@ -84,7 +84,9 @@ class WalkNode {
 
   void imuCb(sensor_msgs::Imu msg);
 
-  void pressureCb(bitbots_msgs::FootPressure msg);
+  void checkPhaseReset(bitbots_msgs::FootPressure msg);
+  void pressureRightCb(const bitbots_msgs::FootPressure msg);
+  void pressureLeftCb(const bitbots_msgs::FootPressure msg);
 
   void robStateCb(humanoid_league_msgs::RobotControlState msg);
 
@@ -92,9 +94,9 @@ class WalkNode {
 
   void kickCb(std_msgs::BoolConstPtr msg);
 
-  void copLCb(const geometry_msgs::PointStamped msg);
+  void copLeftCb(const geometry_msgs::PointStamped &msg);
 
-  void copRCb(const geometry_msgs::PointStamped msg);
+  void copRrightCb(const geometry_msgs::PointStamped &msg);
 
   /**
    * This method computes the next motor goals and publishes them.
@@ -164,7 +166,8 @@ class WalkNode {
   ros::Subscriber joint_state_sub_;
   ros::Subscriber kick_sub_;
   ros::Subscriber imu_sub_;
-  ros::Subscriber pressure_sub_;
+  ros::Subscriber pressure_sub_left_;
+  ros::Subscriber pressure_sub_right_;
   ros::Subscriber cop_l_sub_;
   ros::Subscriber cop_r_sub_;
 

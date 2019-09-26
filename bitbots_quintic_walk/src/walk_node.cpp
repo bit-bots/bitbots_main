@@ -28,10 +28,12 @@ WalkNode::WalkNode() :
   joint_state_sub_ = nh_.subscribe("joint_states", 1, &WalkNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
   kick_sub_ = nh_.subscribe("kick", 1, &WalkNode::kickCb, this, ros::TransportHints().tcpNoDelay());
   imu_sub_ = nh_.subscribe("imu/data", 1, &WalkNode::imuCb, this, ros::TransportHints().tcpNoDelay());
-  pressure_sub_ = nh_.subscribe("foot_pressure_filtered", 1, &WalkNode::pressureCb, this,
-                ros::TransportHints().tcpNoDelay());
-  cop_l_sub_ = nh_.subscribe("cop_l", 1, &WalkNode::copLCb, this, ros::TransportHints().tcpNoDelay());
-  cop_r_sub_ = nh_.subscribe("cop_r", 1, &WalkNode::copRCb, this, ros::TransportHints().tcpNoDelay());
+  pressure_sub_left_ = nh_.subscribe("foot_pressure_left/filtered", 1, &WalkNode::pressureLeftCb, this,
+                                     ros::TransportHints().tcpNoDelay());
+  pressure_sub_right_ = nh_.subscribe("foot_pressure_right/filtered", 1, &WalkNode::pressureRightCb, this,
+                                      ros::TransportHints().tcpNoDelay());
+  cop_l_sub_ = nh_.subscribe("cop_l", 1, &WalkNode::copLeftCb, this, ros::TransportHints().tcpNoDelay());
+  cop_r_sub_ = nh_.subscribe("cop_r", 1, &WalkNode::copRrightCb, this, ros::TransportHints().tcpNoDelay());
 
 
   //load MoveIt! model
@@ -217,102 +219,53 @@ void WalkNode::imuCb(const sensor_msgs::Imu msg) {
   }
 }
 
-void WalkNode::pressureCb(
-    const bitbots_msgs::FootPressure msg) { // TODO Remove this method since cop_cb is now used
-  // we just want to look at the support foot. choose the 4 values from the message accordingly
-  // s = support, n = not support, i = inside, o = outside, f = front, b = back
-  double sob;
-  double sof;
-  double sif;
-  double sib;
+void WalkNode::pressureLeftCb(const bitbots_msgs::FootPressure msg) {
+  // only check if this foot is not the current support foot
+  if (!walk_engine_.isLeftSupport()) {
+    checkPhaseReset(msg);
+  }
+}
 
-  double nob;
-  double nof;
-  double nif;
-  double nib;
-
+void WalkNode::pressureRightCb(const bitbots_msgs::FootPressure msg) {
+  // only check if this foot is not the current support foot
   if (walk_engine_.isLeftSupport()) {
-    sob = msg.l_l_b;
-    sof = msg.l_l_f;
-    sif = msg.l_r_f;
-    sib = msg.l_r_b;
-
-    nib = msg.r_l_b;
-    nif = msg.r_l_f;
-    nof = msg.r_r_f;
-    nob = msg.r_r_b;
-  } else {
-    sib = msg.r_l_b;
-    sif = msg.r_l_f;
-    sof = msg.r_r_f;
-    sob = msg.r_r_b;
-
-    nob = msg.l_l_b;
-    nof = msg.l_l_f;
-    nif = msg.l_r_f;
-    nib = msg.l_r_b;
+    checkPhaseReset(msg);
   }
+}
 
-  // sum to get overall pressure on not support foot
-  double n_sum = nob + nof + nif + nib;
+void WalkNode::checkPhaseReset(bitbots_msgs::FootPressure msg) {
+  /**
+   * This method checks, if the foot made contact to the ground and ends step earlier, by resetting the phase.
+   */
+  double pressure_sum = msg.left_back + msg.left_front + msg.right_back + msg.right_front;
 
-  // ratios between pressures to get relative position of CoP
-  double s_io_ratio = 100;
-  if (sof + sob!=0) {
-    s_io_ratio = (sif + sib)/(sof + sob);
-    if (s_io_ratio==0) {
-      s_io_ratio = 100;
-    }
-  }
-  double s_fb_ratio = 100;
-  if (sib + sob!=0) {
-    s_fb_ratio = (sif + sof)/(sib + sob);
-    if (s_fb_ratio==0) {
-      s_fb_ratio = 100;
-    }
-  }
-
-  // check for early step end
-  // phase has to be far enough (almost at end of step) to have right foot lifted
-  // foot has to have ground contact
+  // phase has to be far enough (almost at end of step) to have right foot lifted foot has to have ground contact
   double phase = walk_engine_.getPhase();
   if (phase_reset_active_ && ((phase > 0.5 - phase_reset_phase_ && phase < 0.5) || (phase > 1 - phase_reset_phase_)) &&
-      n_sum > ground_min_pressure_) {
+      pressure_sum > ground_min_pressure_) {
     ROS_WARN("Phase resetted!");
     walk_engine_.endStep();
   }
+}
 
-  // check if robot is unstable and should pause
-  // this is true if the robot is falling to the outside or to front or back
-  if (pressure_stop_active_ && (s_io_ratio > io_pressure_threshold_ || 1/s_io_ratio > io_pressure_threshold_ ||
-      1/s_fb_ratio > fb_pressure_threshold_ || s_fb_ratio > fb_pressure_threshold_)) {
+void WalkNode::copLeftCb(geometry_msgs::PointStamped msg) {
+  // Since CoP is only published as something else than 0 if the foot is on the ground, we don't have to check
+  // if this is the current support foot, or if it is double support.
+  // The CoP should not go to the outside edge of the foot. This is the left side for the left foot (y is positive).
+  // The inside edge is okay, since it is necessary to shift the CoM dynamically between feet.
+  // To prevent falling to the front and back, the x position of the CoP is also taken into account.
+  if (cop_stop_active_ &&
+      (msg.point.y < -1 * cop_y_threshold_ || abs(msg.point.x) > cop_x_threshold_)) {
     walk_engine_.requestPause();
-
-    //TODO this is debug
-    if (s_io_ratio > io_pressure_threshold_ || 1/s_io_ratio > io_pressure_threshold_) {
-      ROS_WARN("CoP io stop!");
-    } else {
-      ROS_WARN("CoP fb stop!");
-    }
   }
+}
 
-  // decide which CoP
-  geometry_msgs::PointStamped cop;
-  if (walk_engine_.isLeftSupport()) {
-    cop = cop_l_;
-  } else {
-    cop = cop_r_;
-  }
-
-  if (cop_stop_active_ && (abs(cop.point.x) > cop_x_threshold_ || abs(cop.point.y) > cop_y_threshold_)) {
+void WalkNode::copRightCb(geometry_msgs::PointStamped msg) {
+  // The CoP should not go to the outside edge of the foot. This is the right side for the right foot (y is negative).
+  if (cop_stop_active_ &&
+      (msg.point.y < -1 * cop_y_threshold_ || abs(msg.point.x) > cop_x_threshold_)) {
     walk_engine_.requestPause();
-    if (abs(cop.point.x) > cop_x_threshold_) {
-      ROS_WARN("cop x stop");
-    } else {
-      ROS_WARN("cop y stop");
-    }
   }
-
 }
 
 void WalkNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {
