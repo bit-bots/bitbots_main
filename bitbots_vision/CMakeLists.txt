@@ -50,6 +50,7 @@ add_custom_target(
 add_custom_command(
     TARGET extensions
     COMMAND python3 ${CMAKE_SOURCE_DIR}/../python_extensions/setup.py ARGS build install "--user"
+    COMMAND python2 ${CMAKE_SOURCE_DIR}/../python_extensions/setup.py ARGS build install "--user"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../python_extensions/
 )
 
