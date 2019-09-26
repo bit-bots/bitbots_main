@@ -44,6 +44,7 @@ WalkNode::WalkNode() :
   }
   //stabilizer_.setRobotModel(kinematic_model_);
   ik_.init(kinematic_model_);
+  visualizer_.init(kinematic_model_);
 
   current_state_.reset(new robot_state::RobotState(kinematic_model_));
   current_state_->setToDefaultValues();

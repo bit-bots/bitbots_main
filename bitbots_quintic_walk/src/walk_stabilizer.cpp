@@ -31,7 +31,7 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> WalkStabilizer::stabilize(c
   auto *fly_goal = new ReferencePoseGoal();
   fly_goal->setPosition(response.support_foot_to_flying_foot.getOrigin());
   fly_goal->setOrientation(response.support_foot_to_flying_foot.getRotation());
-  if (!response.is_left_support_foot) {
+  if (response.is_left_support_foot) {
     fly_goal->setLinkName("r_sole");
     fly_goal->setReferenceLinkName("l_sole");
   } else {

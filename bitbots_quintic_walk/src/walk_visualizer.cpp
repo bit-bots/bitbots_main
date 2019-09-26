@@ -12,6 +12,10 @@ WalkVisualizer::WalkVisualizer() {
 
 }
 
+void WalkVisualizer::init(robot_model::RobotModelPtr kinematic_model){
+  kinematic_model_ = kinematic_model;
+}
+
 void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   //only do something if someone is listing
   if (pub_engine_debug_.getNumSubscribers() == 0) {
@@ -168,6 +172,7 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
 
   // IK results
   robot_state::RobotStatePtr goal_state;
+  goal_state.reset(new robot_state::RobotState(kinematic_model_));
   std::string *names = joint_goals.first.data();
   goal_state->setJointPositions(*names, joint_goals.second.data());
   geometry_msgs::Pose pose_left_result;

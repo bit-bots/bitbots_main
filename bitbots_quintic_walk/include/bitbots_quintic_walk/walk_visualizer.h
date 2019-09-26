@@ -36,13 +36,16 @@ class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
                       bitbots_splines::JointGoals joint_goals);
   void publishWalkMarkers(WalkResponse response);
 
- private:
+  void init(robot_model::RobotModelPtr kinematic_model);
+
+    private:
 
   int marker_id_;
 
   ros::Publisher pub_debug_;
   ros::Publisher pub_engine_debug_;
   ros::Publisher pub_debug_marker_;
+  robot_model::RobotModelPtr kinematic_model_;
 };
 }
 
