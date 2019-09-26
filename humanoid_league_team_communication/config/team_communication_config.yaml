@@ -29,10 +29,10 @@ team_communication:
 
   # ROS Topics
   team_data: '/team_data'
-  strategy: 'role'
-  robot_state: 'robot_state'
-  goal: 'goal_relative'
+  strategy: '/strategy'
+  robot_state: '/robot_state'
+  goal: '/goal_relative'
   world_model_node: '/local_world_model'
-  position: 'position'
-  ball: '/balls_relative'
+  position: '/position'
+  ball: '/ball_relative'
   obstacles: '/obstacle_relative'
