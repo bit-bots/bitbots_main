@@ -104,7 +104,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   // pause handling
   double time_paused_;
-  double pause_duration_;
+  double pause_duration_{};
   bool pause_requested_;
 
   // kick handling
@@ -112,7 +112,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   bool right_kick_requested_;
 
   // Current support foot (left or right).
-  bool is_left_support_foot_;
+  bool is_left_support_foot_{};
 
   // Pose diff [dx, dy, dtheta] from support foot to flying foot last and next position.
   tf2::Transform support_to_last_;

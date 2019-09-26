@@ -29,6 +29,8 @@ struct WalkRequest {
 struct WalkResponse {
   tf2::Transform support_foot_to_flying_foot;
   tf2::Transform support_foot_to_trunk;
+
+  // additional information for visualization
   bool is_double_support;
   bool is_left_support_foot;
 
@@ -38,8 +40,8 @@ struct WalkResponse {
 
   WalkState state;
 
-  tf2::Transform support_to_last_;
-  tf2::Transform support_to_next_;
+  tf2::Transform support_to_last;
+  tf2::Transform support_to_next;
 };
 
 /**

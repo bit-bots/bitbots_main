@@ -13,33 +13,18 @@ WalkEngine::WalkEngine() :
     pause_requested_(false),
     left_kick_requested_(false),
     right_kick_requested_(false),
-    params_(),
-    trunk_pos_at_last_(),
-    trunk_pos_vel_at_last_(),
-    trunk_pos_acc_at_last_(),
-    trunk_axis_pos_at_last_(),
-    trunk_axis_vel_at_last_(),
-    trunk_axis_acc_at_last_(),
     time_paused_(0.0) {
-  // make sure to call the reset method after having the parameters
-  is_double_support_spline_ = bitbots_splines::SmoothSpline();
-  is_left_support_foot_spline_ = bitbots_splines::SmoothSpline();
-  trunk_spline_ = bitbots_splines::PoseSpline();
-  foot_spline_ = bitbots_splines::PoseSpline();
-
   left_in_world_.setIdentity();
   right_in_world_.setIdentity();
   reset();
 
   // init dynamic reconfigure
-  ROS_WARN("init");
   dyn_reconf_server_ =
       new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>(ros::NodeHandle(
           "~/engine"));
   dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_quintic_walk::WalkEngine::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
-
 }
 
 void WalkEngine::setGoals(const WalkRequest &goals) {
@@ -51,7 +36,7 @@ WalkResponse WalkEngine::update(double dt) {
   bool orders_zero = request_.orders.x() == 0 && request_.orders.y() == 0 && request_.orders.z() == 0;
 
   // First check if we are currently in pause state or idle, since we don't want to update the phase in this case
-  if (engine_state_==WalkState::PAUSED) {
+  if (engine_state_ == WalkState::PAUSED) {
     if (time_paused_ > pause_duration_) {
       // our pause is finished, see if we can continue walking
       if (pause_requested_) {
@@ -69,7 +54,7 @@ WalkResponse WalkEngine::update(double dt) {
       return createResponse();
     }
     // we don't have to update anything more
-  } else if (engine_state_==WalkState::IDLE) {
+  } else if (engine_state_ == WalkState::IDLE) {
     if (orders_zero || !request_.walkable_state) {
       // we are in idle and are not supposed to walk. current state is fine, just do nothing
       return createResponse();
@@ -83,11 +68,11 @@ WalkResponse WalkEngine::update(double dt) {
   bool half_step_finished = (last_phase_ < 0.5 && phase_ >= 0.5) || (last_phase_ > 0.5 && phase_ < 0.5);
 
   // small state machine
-  if (engine_state_==WalkState::IDLE) {
+  if (engine_state_ == WalkState::IDLE) {
     // state is idle and orders are not zero, we can start walking
     buildStartTrajectories();
     engine_state_ = WalkState::START_MOVEMENT;
-  } else if (engine_state_==WalkState::START_MOVEMENT) {
+  } else if (engine_state_ == WalkState::START_MOVEMENT) {
     // in this state we do a single "step" where we only move the trunk
     if (half_step_finished) {
       if (orders_zero) {
@@ -99,7 +84,7 @@ WalkResponse WalkEngine::update(double dt) {
         engine_state_ = WalkState::START_STEP;
       }
     }
-  } else if (engine_state_==WalkState::START_STEP) {
+  } else if (engine_state_ == WalkState::START_STEP) {
     if (half_step_finished) {
       if (orders_zero) {
         // we have zero command vel -> we should stop
@@ -112,7 +97,7 @@ WalkResponse WalkEngine::update(double dt) {
         engine_state_ = WalkState::WALKING;
       }
     }
-  } else if (engine_state_==WalkState::WALKING) {
+  } else if (engine_state_ == WalkState::WALKING) {
     // check if a half step was finished and we are unstable
     if (half_step_finished && pause_requested_) {
       // go into pause
@@ -139,21 +124,21 @@ WalkResponse WalkEngine::update(double dt) {
         buildNormalTrajectories();
       }
     }
-  } else if (engine_state_==WalkState::KICK) {
+  } else if (engine_state_ == WalkState::KICK) {
     // in this state we do a kick while doing a step
     if (half_step_finished) {
       //kick step is finished, go on walking
       engine_state_ = WalkState::WALKING;
       buildNormalTrajectories();
     }
-  } else if (engine_state_==WalkState::STOP_STEP) {
+  } else if (engine_state_ == WalkState::STOP_STEP) {
     // in this state we do a step back to get feet into idle pose
     if (half_step_finished) {
       //stop step is finished, go to stop movement state
       engine_state_ = WalkState::STOP_MOVEMENT;
       buildStopMovementTrajectories();
     }
-  } else if (engine_state_==WalkState::STOP_MOVEMENT) {
+  } else if (engine_state_ == WalkState::STOP_MOVEMENT) {
     // in this state we do a "step" where we move the trunk back to idle position
     if (half_step_finished) {
       //stop movement is finished, go to idle state
@@ -161,7 +146,7 @@ WalkResponse WalkEngine::update(double dt) {
       return createResponse();
     }
   } else {
-    ROS_ERROR("Somethings wrong with the walking engine state");
+    ROS_ERROR("Something is wrong with the walking engine state");
   }
 
   //Sanity check support foot state
@@ -182,7 +167,7 @@ WalkResponse WalkEngine::update(double dt) {
 void WalkEngine::updatePhase(double dt) {
   //Check for negative time step
   if (dt <= 0.0) {
-    if (dt==0.0) { //sometimes happens due to rounding
+    if (dt == 0.0) { //sometimes happens due to rounding
       dt = 0.0001;
     } else {
       ROS_ERROR_THROTTLE(1, "WalkEngine exception negative dt phase= %f dt= %f", phase_, dt);
@@ -190,13 +175,13 @@ void WalkEngine::updatePhase(double dt) {
     }
   }
   //Check for too long dt
-  if (dt > 0.25/params_.freq) {
+  if (dt > 0.25 / params_.freq) {
     ROS_ERROR_THROTTLE(1, "WalkEngine error too long dt phase= %f dt= %f", phase_, dt);
     return;
   }
 
   //Update the phase
-  phase_ += dt*params_.freq;
+  phase_ += dt * params_.freq;
 
   // reset to 0 if step complete
   if (phase_ > 1.0) {
@@ -214,7 +199,7 @@ void WalkEngine::endStep() {
 }
 
 void WalkEngine::reset() {
-  request_.orders = {0,0,0};
+  request_.orders = {0, 0, 0};
   request_.walkable_state = false;
   engine_state_ = WalkState::IDLE;
   phase_ = 0.0;
@@ -234,20 +219,18 @@ void WalkEngine::reset() {
 }
 
 void WalkEngine::saveCurrentTrunkState() {
-  //Evaluate current trunk state
-  //(position, velocity, acceleration)
-  //in next support foot frame
+  //Evaluate current trunk state (position, velocity, acceleration) in next support foot frame
 
   // compute current point in time to save state
   // by multiplying the half_period time with the advancement of period time
-  double half_period = 1.0/(2.0*params_.freq);
+  double half_period = 1.0 / (2.0 * params_.freq);
   double factor;
   if (last_phase_ < 0.5) {
-    factor = last_phase_/0.5;
+    factor = last_phase_ / 0.5;
   } else {
     factor = last_phase_;
   }
-  double period_time = half_period*factor;
+  double period_time = half_period * factor;
 
   // get last values of trunk pose and its velocities and accelerations
   tf2::Vector3 trunk_pos = trunk_spline_.getPositionPos(period_time);
@@ -258,12 +241,12 @@ void WalkEngine::saveCurrentTrunkState() {
   tf2::Vector3 trunk_axis_acc = trunk_spline_.getEulerAcc(period_time);
 
   //Convert in next support foot frame and save
-  trunk_pos_at_last_ = support_to_next_*trunk_pos;
-  trunk_pos_vel_at_last_ = support_to_next_*trunk_pos_vel;
-  trunk_pos_acc_at_last_ = support_to_next_*trunk_pos_acc;
-  trunk_axis_pos_at_last_ = support_to_next_*trunk_axis_pos;
-  trunk_axis_vel_at_last_ = support_to_next_*trunk_axis_vel;
-  trunk_axis_acc_at_last_ = support_to_next_*trunk_axis_acc;
+  trunk_pos_at_last_ = support_to_next_ * trunk_pos;
+  trunk_pos_vel_at_last_ = support_to_next_ * trunk_pos_vel;
+  trunk_pos_acc_at_last_ = support_to_next_ * trunk_pos_acc;
+  trunk_axis_pos_at_last_ = support_to_next_ * trunk_axis_pos;
+  trunk_axis_vel_at_last_ = support_to_next_ * trunk_axis_vel;
+  trunk_axis_acc_at_last_ = support_to_next_ * trunk_axis_acc;
 }
 
 void WalkEngine::buildNormalTrajectories() {
@@ -297,7 +280,7 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
 
   if (start_movement) {
     // update support foot and compute odometry
-    stepFromOrders({0,0,0});
+    stepFromOrders({0, 0, 0});
   } else {
     stepFromOrders(request_.orders);
   }
@@ -309,23 +292,21 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   foot_spline_ = bitbots_splines::PoseSpline();
 
   //Set up the trajectories for the half cycle (single step)
-  double half_period = 1.0/(2.0*params_.freq);
+  double half_period = 1.0 / (2.0 * params_.freq);
   // full period (double step) is needed for trunk splines
-  double period = 2.0*half_period;
+  double period = 2.0 * half_period;
 
-  //Time length of double and single support phase during the half cycle
-  double double_support_length = params_.double_support_ratio*half_period;
+  // Time length of double and single support phase during the half cycle
+  double double_support_length = params_.double_support_ratio * half_period;
   double single_support_length = half_period - double_support_length;
 
-  //Sign of support foot with respect to lateral
+  // Sign of support foot with respect to lateral
   double support_sign = (is_left_support_foot_ ? 1.0 : -1.0);
 
-  //The trunk trajectory is defined for a
-  //complete cycle to handle trunk phase shift
-  //Trunk phase shift is done due to the length of the double
-  //support phase and can be adjusted optionally by a parameter
-  // 0.5halfPeriod to be acyclic to the feet, 0.5doubleSupportLength to keep the double support phase centered between feet
-  double time_shift = -0.5*half_period + 0.5*double_support_length + params_.trunk_phase*half_period;
+  // The trunk trajectory is defined for a complete cycle to handle trunk phase shift Trunk phase shift is done due to
+  // the length of the double support phase and can be adjusted optionally by a parameter 0.5 * half_period to be
+  // acyclic to the feet, 0.5 * double_support_length to keep the double support phase centered between feet
+  double time_shift = -0.5 * half_period + 0.5 * double_support_length + params_.trunk_phase * half_period;
 
 
   //Only move the trunk on the first half cycle after a walk enable
@@ -347,49 +328,49 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   point(foot_spline_.x(), 0.0, support_to_last_.getOrigin().x());
   point(foot_spline_.x(), double_support_length, support_to_last_.getOrigin().x());
   if (kick_step) {
-    point(foot_spline_.x(), double_support_length + single_support_length*params_.kick_phase,
+    point(foot_spline_.x(), double_support_length + single_support_length * params_.kick_phase,
           support_to_next_.getOrigin().x() + params_.kick_length,
           params_.kick_vel);
   } else {
     point(foot_spline_.x(),
-          double_support_length + single_support_length*params_.foot_put_down_phase*params_.foot_overshoot_phase,
+          double_support_length + single_support_length * params_.foot_put_down_phase * params_.foot_overshoot_phase,
           support_to_next_.getOrigin().x() +
-              support_to_next_.getOrigin().x()*params_.foot_overshoot_ratio);
+              support_to_next_.getOrigin().x() * params_.foot_overshoot_ratio);
   }
-  point(foot_spline_.x(), double_support_length + single_support_length*params_.foot_put_down_phase,
+  point(foot_spline_.x(), double_support_length + single_support_length * params_.foot_put_down_phase,
         support_to_next_.getOrigin().x());
   point(foot_spline_.x(), half_period, support_to_next_.getOrigin().x());
 
   point(foot_spline_.y(), 0.0, support_to_last_.getOrigin().y());
   point(foot_spline_.y(), double_support_length, support_to_last_.getOrigin().y());
   point(foot_spline_.y(),
-        double_support_length + single_support_length*params_.foot_put_down_phase*params_.foot_overshoot_phase,
+        double_support_length + single_support_length * params_.foot_put_down_phase * params_.foot_overshoot_phase,
         support_to_next_.getOrigin().y()
-            + (support_to_next_.getOrigin().y() - support_to_last_.getOrigin().y())*params_.foot_overshoot_ratio);
-  point(foot_spline_.y(), double_support_length + single_support_length*params_.foot_put_down_phase,
+            + (support_to_next_.getOrigin().y() - support_to_last_.getOrigin().y()) * params_.foot_overshoot_ratio);
+  point(foot_spline_.y(), double_support_length + single_support_length * params_.foot_put_down_phase,
         support_to_next_.getOrigin().y());
   point(foot_spline_.y(), half_period, support_to_next_.getOrigin().y());
 
   point(foot_spline_.z(), 0.0, 0.0);
   point(foot_spline_.z(), double_support_length, 0.0);
   point(foot_spline_.z(),
-        double_support_length + single_support_length*params_.foot_apex_phase
-            - 0.5*params_.foot_z_pause*single_support_length,
+        double_support_length + single_support_length * params_.foot_apex_phase
+            - 0.5 * params_.foot_z_pause * single_support_length,
         params_.foot_rise);
   point(foot_spline_.z(),
-        double_support_length + single_support_length*params_.foot_apex_phase
-            + 0.5*params_.foot_z_pause*single_support_length,
+        double_support_length + single_support_length * params_.foot_apex_phase
+            + 0.5 * params_.foot_z_pause * single_support_length,
         params_.foot_rise);
-  point(foot_spline_.z(), double_support_length + single_support_length*params_.foot_put_down_phase,
+  point(foot_spline_.z(), double_support_length + single_support_length * params_.foot_put_down_phase,
         params_.foot_put_down_z_offset);
   point(foot_spline_.z(), half_period, 0.0);
 
   //Flying foot orientation
   point(foot_spline_.roll(), 0.0, 0.0);
-  point(foot_spline_.roll(), double_support_length + 0.1*single_support_length,
+  point(foot_spline_.roll(), double_support_length + 0.1 * single_support_length,
         0.0);
-  point(foot_spline_.roll(), double_support_length + single_support_length*params_.foot_put_down_phase,
-        params_.foot_put_down_roll_offset*support_sign);
+  point(foot_spline_.roll(), double_support_length + single_support_length * params_.foot_put_down_phase,
+        params_.foot_put_down_roll_offset * support_sign);
   point(foot_spline_.roll(), half_period, 0.0);
 
   point(foot_spline_.pitch(), 0.0, 0.0);
@@ -397,33 +378,33 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
 
   point(foot_spline_.yaw(), 0.0, getLastEuler().z());
   point(foot_spline_.yaw(), double_support_length, getLastEuler().z());
-  point(foot_spline_.yaw(), double_support_length + single_support_length*params_.foot_put_down_phase,
+  point(foot_spline_.yaw(), double_support_length + single_support_length * params_.foot_put_down_phase,
         getNextEuler().z());
   point(foot_spline_.yaw(), half_period, getNextEuler().z());
 
 
   //Half pause length of trunk swing
   //lateral oscillation
-  double pause_length = 0.5*params_.trunk_pause*half_period;
+  double pause_length = 0.5 * params_.trunk_pause * half_period;
 
   //Trunk support foot and next
   //support foot external
   //oscillating position
   tf2::Vector3 trunk_point_support(
       params_.trunk_x_offset
-          + params_.trunk_x_offset_p_coef_forward*support_to_next_.getOrigin().x()
-          + params_.trunk_x_offset_p_coef_turn*fabs(support_to_next_.getOrigin().z()),
+          + params_.trunk_x_offset_p_coef_forward * support_to_next_.getOrigin().x()
+          + params_.trunk_x_offset_p_coef_turn * fabs(support_to_next_.getOrigin().z()),
       params_.trunk_y_offset,
       0);
   tf2::Vector3 trunk_point_next(
       support_to_next_.getOrigin().x() + params_.trunk_x_offset
-          + params_.trunk_x_offset_p_coef_forward*support_to_next_.getOrigin().x()
-          + params_.trunk_x_offset_p_coef_turn*fabs(getNextEuler().z()),
+          + params_.trunk_x_offset_p_coef_forward * support_to_next_.getOrigin().x()
+          + params_.trunk_x_offset_p_coef_turn * fabs(getNextEuler().z()),
       support_to_next_.getOrigin().y() + params_.trunk_y_offset,
       0);
   //Trunk middle neutral (no swing) position
   tf2::Vector3 trunk_point_middle =
-      0.5*trunk_point_support + 0.5*trunk_point_next;
+      0.5 * trunk_point_support + 0.5 * trunk_point_next;
   //Trunk vector from middle to support apex
   tf2::Vector3 trunk_vect =
       trunk_point_support - trunk_point_middle;
@@ -436,9 +417,9 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
       trunk_point_middle - trunk_vect;
   //Trunk forward velocity
   double trunk_vel_support =
-      (support_to_next_.getOrigin().x() - support_to_last_.getOrigin().x())/period;
+      (support_to_next_.getOrigin().x() - support_to_last_.getOrigin().x()) / period;
   double trunk_vel_next =
-      support_to_next_.getOrigin().x()/half_period;
+      support_to_next_.getOrigin().x() / half_period;
 
   //Trunk position
   if (start_step) {
@@ -465,13 +446,13 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
         trunk_pos_acc_at_last_.y());
   if (start_step || start_movement) {
     point(trunk_spline_.y(), half_period + time_shift - pause_length,
-          trunk_point_middle.y() + trunk_vect.y()*params_.first_step_swing_factor);
+          trunk_point_middle.y() + trunk_vect.y() * params_.first_step_swing_factor);
     point(trunk_spline_.y(), half_period + time_shift + pause_length,
-          trunk_point_middle.y() + trunk_vect.y()*params_.first_step_swing_factor);
+          trunk_point_middle.y() + trunk_vect.y() * params_.first_step_swing_factor);
     point(trunk_spline_.y(), period + time_shift - pause_length,
-          trunk_point_middle.y() - trunk_vect.y()*params_.first_step_swing_factor);
+          trunk_point_middle.y() - trunk_vect.y() * params_.first_step_swing_factor);
     point(trunk_spline_.y(), period + time_shift + pause_length,
-          trunk_point_middle.y() - trunk_vect.y()*params_.first_step_swing_factor);
+          trunk_point_middle.y() - trunk_vect.y() * params_.first_step_swing_factor);
   } else {
     point(trunk_spline_.y(), half_period + time_shift - pause_length,
           trunk_apex_support.y());
@@ -496,23 +477,23 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   tf2::Vector3 euler_at_support = tf2::Vector3(
       0.0,
       params_.trunk_pitch
-          + params_.trunk_pitch_p_coef_forward*support_to_next_.getOrigin().x()
-          + params_.trunk_pitch_p_coef_turn*fabs(getNextEuler().z()),
-      0.5*getLastEuler().z() + 0.5*getNextEuler().z());
+          + params_.trunk_pitch_p_coef_forward * support_to_next_.getOrigin().x()
+          + params_.trunk_pitch_p_coef_turn * fabs(getNextEuler().z()),
+      0.5 * getLastEuler().z() + 0.5 * getNextEuler().z());
   tf2::Vector3 euler_at_next = tf2::Vector3(
       0.0,
       params_.trunk_pitch
-          + params_.trunk_pitch_p_coef_forward*support_to_next_.getOrigin().x()
-          + params_.trunk_pitch_p_coef_turn*fabs(getNextEuler().z()),
+          + params_.trunk_pitch_p_coef_forward * support_to_next_.getOrigin().x()
+          + params_.trunk_pitch_p_coef_turn * fabs(getNextEuler().z()),
       getNextEuler().z());
 
   // we set a velocity for the points in yaw since we want to keep the speed in turning direction for next step
   // in roll and pitch, no velocity is set since changes are only minor when speed changes
   tf2::Vector3 axis_vel(
       0.0, 0.0,
-      bitbots_splines::AngleDistance(
+      bitbots_quintic_walk::AngleDistance(
           getLastEuler().z(),
-          getNextEuler().z())/period);
+          getNextEuler().z()) / period);
 
   //Trunk orientation
   point(trunk_spline_.roll(), 0.0,
@@ -563,11 +544,11 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
 
   //Set up the trajectories
   //for the half cycle
-  double half_period = 1.0/(2.0*params_.freq);
+  double half_period = 1.0 / (2.0 * params_.freq);
 
   //Time length of double and single
   //support phase during the half cycle
-  double double_support_length = params_.double_support_ratio*half_period;
+  double double_support_length = params_.double_support_ratio * half_period;
   double single_support_length = half_period - double_support_length;
 
   //Sign of support foot with
@@ -589,9 +570,9 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
   point(foot_spline_.x(), double_support_length,
         support_to_last_.getOrigin().x());
   point(foot_spline_.x(),
-        double_support_length + single_support_length*params_.foot_put_down_phase*params_.foot_overshoot_phase,
-        0.0 + (0.0 - support_to_last_.getOrigin().x())*params_.foot_overshoot_ratio);
-  point(foot_spline_.x(), double_support_length + single_support_length*params_.foot_put_down_phase,
+        double_support_length + single_support_length * params_.foot_put_down_phase * params_.foot_overshoot_phase,
+        0.0 + (0.0 - support_to_last_.getOrigin().x()) * params_.foot_overshoot_ratio);
+  point(foot_spline_.x(), double_support_length + single_support_length * params_.foot_put_down_phase,
         0.0);
   point(foot_spline_.x(), half_period,
         0.0);
@@ -601,13 +582,14 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
   point(foot_spline_.y(), double_support_length,
         support_to_last_.getOrigin().y());
   point(foot_spline_.y(),
-        double_support_length + single_support_length*params_.foot_put_down_phase*params_.foot_overshoot_phase,
-        -support_sign*params_.foot_distance
-            + (-support_sign*params_.foot_distance - support_to_last_.getOrigin().y())*params_.foot_overshoot_ratio);
-  point(foot_spline_.x(), double_support_length + single_support_length*params_.foot_put_down_phase,
-        -support_sign*params_.foot_distance);
+        double_support_length + single_support_length * params_.foot_put_down_phase * params_.foot_overshoot_phase,
+        -support_sign * params_.foot_distance
+            + (-support_sign * params_.foot_distance - support_to_last_.getOrigin().y())
+                * params_.foot_overshoot_ratio);
+  point(foot_spline_.x(), double_support_length + single_support_length * params_.foot_put_down_phase,
+        -support_sign * params_.foot_distance);
   point(foot_spline_.y(), half_period,
-        -support_sign*params_.foot_distance);
+        -support_sign * params_.foot_distance);
 
   //If the walk has just been disabled,
   //make one single step to neutral pose
@@ -615,14 +597,14 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
     point(foot_spline_.z(), 0.0, 0.0);
     point(foot_spline_.z(), double_support_length, 0.0);
     point(foot_spline_.z(),
-          double_support_length + single_support_length*params_.foot_apex_phase
-              - 0.5*params_.foot_z_pause*single_support_length,
+          double_support_length + single_support_length * params_.foot_apex_phase
+              - 0.5 * params_.foot_z_pause * single_support_length,
           params_.foot_rise);
     point(foot_spline_.z(),
-          double_support_length + single_support_length*params_.foot_apex_phase
-              + 0.5*params_.foot_z_pause*single_support_length,
+          double_support_length + single_support_length * params_.foot_apex_phase
+              + 0.5 * params_.foot_z_pause * single_support_length,
           params_.foot_rise);
-    point(foot_spline_.z(), double_support_length + single_support_length*params_.foot_put_down_phase,
+    point(foot_spline_.z(), double_support_length + single_support_length * params_.foot_put_down_phase,
           params_.foot_put_down_z_offset);
     point(foot_spline_.z(), half_period,
           0.0);
@@ -641,7 +623,7 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
   point(foot_spline_.yaw(), 0.0, getLastEuler().z());
   point(foot_spline_.yaw(), double_support_length,
         getLastEuler().z());
-  point(foot_spline_.yaw(), double_support_length + single_support_length*params_.foot_put_down_phase,
+  point(foot_spline_.yaw(), double_support_length + single_support_length * params_.foot_put_down_phase,
         0.0);
   point(foot_spline_.yaw(), half_period, 0.0);
 
@@ -658,7 +640,7 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
         trunk_pos_vel_at_last_.y(),
         trunk_pos_acc_at_last_.y());
   point(trunk_spline_.y(), half_period,
-        -support_sign*0.5*params_.foot_distance + params_.trunk_y_offset);
+        -support_sign * 0.5 * params_.foot_distance + params_.trunk_y_offset);
 
   point(trunk_spline_.z(), 0.0,
         trunk_pos_at_last_.z(),
@@ -690,12 +672,12 @@ void WalkEngine::resetTrunkLastState() {
   if (is_left_support_foot_) {
     trunk_pos_at_last_ = tf2::Vector3(
         params_.trunk_x_offset,
-        -params_.foot_distance/2.0 + params_.trunk_y_offset,
+        -params_.foot_distance / 2.0 + params_.trunk_y_offset,
         params_.trunk_height);
   } else {
     trunk_pos_at_last_ = tf2::Vector3(
         params_.trunk_x_offset,
-        params_.foot_distance/2.0 + params_.trunk_y_offset,
+        params_.foot_distance / 2.0 + params_.trunk_y_offset,
         params_.trunk_height);
   }
   trunk_pos_vel_at_last_.setZero();
@@ -709,18 +691,18 @@ WalkResponse WalkEngine::createResponse() {
   //Evaluate target cartesian state from trajectories at current trajectory time
   double time = getTrajsTime();
   WalkResponse response;
-  response.is_double_support = is_double_support_spline_.pos(time);
-  response.is_left_support_foot = is_left_support_foot_spline_.pos(time);
+  response.is_double_support = is_double_support_spline_.pos(time) >= 0.5;
+  response.is_left_support_foot = is_left_support_foot_spline_.pos(time) >= 0.5;
   response.support_foot_to_flying_foot = foot_spline_.getTfTransform(time);
   response.support_foot_to_trunk = trunk_spline_.getTfTransform(time);
 
-  //add additional information to response, maily for debug purposes
+  //add additional information to response, mainly for debug purposes
   response.phase = phase_;
   response.traj_time = getTrajsTime();
   response.foot_distance = params_.foot_distance;
   response.state = engine_state_;
-  response.support_to_last_ = support_to_last_;
-  response.support_to_next_ = support_to_next_;
+  response.support_to_last = support_to_last_;
+  response.support_to_next = support_to_next_;
 
   return response;
 }
@@ -737,9 +719,9 @@ double WalkEngine::getPhase() const {
 double WalkEngine::getTrajsTime() const {
   double t;
   if (phase_ < 0.5) {
-    t = phase_/params_.freq;
+    t = phase_ / params_.freq;
   } else {
-    t = (phase_ - 0.5)/params_.freq;
+    t = (phase_ - 0.5) / params_.freq;
   }
 
   return t;
@@ -805,9 +787,9 @@ void WalkEngine::stepFromSupport(const tf2::Transform &diff) {
   support_to_next_ = diff;
   //Update world integrated position
   if (is_left_support_foot_) {
-    left_in_world_ = right_in_world_*diff;
+    left_in_world_ = right_in_world_ * diff;
   } else {
-    right_in_world_ = left_in_world_*diff;
+    right_in_world_ = left_in_world_ * diff;
   }
   //Update current support foot
   is_left_support_foot_ = !is_left_support_foot_;
@@ -853,6 +835,14 @@ tf2::Vector3 WalkEngine::getLastEuler() {
   double roll, pitch, yaw;
   tf2::Matrix3x3(support_to_last_.getRotation()).getRPY(roll, pitch, yaw);
   return tf2::Vector3(roll, pitch, yaw);
+}
+
+tf2::Transform WalkEngine::getLeft(){
+  return left_in_world_;
+}
+
+tf2::Transform WalkEngine::getRight(){
+  return right_in_world_;
 }
 
 }

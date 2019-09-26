@@ -82,26 +82,26 @@ class WalkNode {
 
   void cmdVelCb(geometry_msgs::Twist msg);
 
-  void imuCb(sensor_msgs::Imu msg);
+  void imuCb(const sensor_msgs::Imu &msg);
 
   void checkPhaseReset(bitbots_msgs::FootPressure msg);
-  void pressureRightCb(const bitbots_msgs::FootPressure msg);
-  void pressureLeftCb(const bitbots_msgs::FootPressure msg);
+  void pressureRightCb(bitbots_msgs::FootPressure msg);
+  void pressureLeftCb(bitbots_msgs::FootPressure msg);
 
   void robStateCb(humanoid_league_msgs::RobotControlState msg);
 
-  void jointStateCb(sensor_msgs::JointState msg);
+  void jointStateCb(const sensor_msgs::JointState &msg);
 
-  void kickCb(std_msgs::BoolConstPtr msg);
+  void kickCb(const std_msgs::BoolConstPtr &msg);
 
-  void copLeftCb(const geometry_msgs::PointStamped &msg);
+  void copLeftCb(geometry_msgs::PointStamped msg);
 
-  void copRrightCb(const geometry_msgs::PointStamped &msg);
+  void copRightCb(geometry_msgs::PointStamped msg);
 
   /**
    * This method computes the next motor goals and publishes them.
    */
-  void calculateAndPublishJointGoals(WalkResponse response);
+  void calculateAndPublishJointGoals(const WalkResponse &response);
 
   double getTimeDelta();
 

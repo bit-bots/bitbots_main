@@ -1,14 +1,14 @@
 #include "bitbots_quintic_walk/walk_node.h"
 
+#include <memory>
+
 namespace bitbots_quintic_walk {
 
 WalkNode::WalkNode() :
-    robot_model_loader_("/robot_description", false),
-    walk_engine_() {
+    robot_model_loader_("/robot_description", false) {
   // init variables
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLABLE;
-  current_request_.orders = {0,0,0};
-  odom_broadcaster_ = tf2_ros::TransformBroadcaster();
+  current_request_.orders = {0, 0, 0};
 
   // read config
   nh_.param<double>("engine_frequency", engine_frequency_, 100.0);
@@ -16,16 +16,15 @@ WalkNode::WalkNode() :
   nh_.param<bool>("/walking/publishOdomTF", publish_odom_tf_, false);
 
   /* init publisher and subscriber */
-  command_msg_ = bitbots_msgs::JointCommand();
   pub_controller_command_ = nh_.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
-  odom_msg_ = nav_msgs::Odometry();
   pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("walk_odometry", 1);
   pub_support_ = nh_.advertise<std_msgs::Char>("walk_support_state", 1);
   cmd_vel_sub_ = nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
-                ros::TransportHints().tcpNoDelay());
+                               ros::TransportHints().tcpNoDelay());
   robot_state_sub_ = nh_.subscribe("robot_state", 1, &WalkNode::robStateCb, this,
-                ros::TransportHints().tcpNoDelay());
-  joint_state_sub_ = nh_.subscribe("joint_states", 1, &WalkNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
+                                   ros::TransportHints().tcpNoDelay());
+  joint_state_sub_ =
+      nh_.subscribe("joint_states", 1, &WalkNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
   kick_sub_ = nh_.subscribe("kick", 1, &WalkNode::kickCb, this, ros::TransportHints().tcpNoDelay());
   imu_sub_ = nh_.subscribe("imu/data", 1, &WalkNode::imuCb, this, ros::TransportHints().tcpNoDelay());
   pressure_sub_left_ = nh_.subscribe("foot_pressure_left/filtered", 1, &WalkNode::pressureLeftCb, this,
@@ -33,13 +32,11 @@ WalkNode::WalkNode() :
   pressure_sub_right_ = nh_.subscribe("foot_pressure_right/filtered", 1, &WalkNode::pressureRightCb, this,
                                       ros::TransportHints().tcpNoDelay());
   cop_l_sub_ = nh_.subscribe("cop_l", 1, &WalkNode::copLeftCb, this, ros::TransportHints().tcpNoDelay());
-  cop_r_sub_ = nh_.subscribe("cop_r", 1, &WalkNode::copRrightCb, this, ros::TransportHints().tcpNoDelay());
+  cop_r_sub_ = nh_.subscribe("cop_r", 1, &WalkNode::copRightCb, this, ros::TransportHints().tcpNoDelay());
 
 
   //load MoveIt! model
-  robot_model_loader_.loadKinematicsSolvers(
-      kinematics_plugin_loader::KinematicsPluginLoaderPtr(
-          new kinematics_plugin_loader::KinematicsPluginLoader()));
+  robot_model_loader_.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
   kinematic_model_ = robot_model_loader_.getModel();
   if (!kinematic_model_) {
     ROS_FATAL("No robot model loaded, killing quintic walk.");
@@ -52,8 +49,6 @@ WalkNode::WalkNode() :
   current_state_->setToDefaultValues();
 
   first_run_ = true;
-
-  visualizer_ = WalkVisualizer();
 
   // initialize dynamic-reconfigure
   dyn_reconf_server_ =
@@ -72,7 +67,7 @@ void WalkNode::run() {
     ros::Rate loop_rate(engine_frequency_);
     double dt = getTimeDelta();
 
-    if (robot_state_==humanoid_league_msgs::RobotControlState::FALLING) {
+    if (robot_state_ == humanoid_league_msgs::RobotControlState::FALLING) {
       // the robot fell, we have to reset everything and do nothing else
       walk_engine_.reset();
     } else {
@@ -80,9 +75,9 @@ void WalkNode::run() {
       /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
        * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
       // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
-      current_request_.walkable_state = robot_state_==humanoid_league_msgs::RobotControlState::CONTROLABLE ||
-          robot_state_==humanoid_league_msgs::RobotControlState::WALKING
-          || robot_state_==humanoid_league_msgs::RobotControlState::MOTOR_OFF;
+      current_request_.walkable_state = robot_state_ == humanoid_league_msgs::RobotControlState::CONTROLABLE ||
+          robot_state_ == humanoid_league_msgs::RobotControlState::WALKING ||
+          robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
       // update walk engine response
       walk_engine_.setGoals(current_request_);
       WalkResponse response = walk_engine_.update(dt);
@@ -105,7 +100,7 @@ void WalkNode::run() {
   }
 }
 
-void WalkNode::calculateAndPublishJointGoals(WalkResponse response) {
+void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
   // get bioIk goals from stabilizer
   std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response);
 
@@ -139,7 +134,7 @@ double WalkNode::getTimeDelta() {
   double dt;
   double current_ros_time = ros::Time::now().toSec();
   dt = current_ros_time - last_ros_update_time_;
-  if (dt==0) {
+  if (dt == 0) {
     ROS_WARN("dt was 0");
     dt = 0.001;
   }
@@ -159,35 +154,35 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
 
   // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
   // factor 2 since the order distance is only for a single step, not double step
-  double factor = (1.0/(walk_engine_.getFreq()))/2.0;
-  current_request_.orders = {msg.linear.x*factor, msg.linear.y*factor, msg.angular.z*factor};
+  double factor = (1.0 / (walk_engine_.getFreq())) / 2.0;
+  current_request_.orders = {msg.linear.x * factor, msg.linear.y * factor, msg.angular.z * factor};
 
   // the orders should not extend beyond a maximal step size
   for (int i = 0; i < 3; i++) {
-    current_request_.orders[i] = std::max(std::min(current_request_.orders[i], max_step_[i]), max_step_[i]*-1);
+    current_request_.orders[i] = std::max(std::min(current_request_.orders[i], max_step_[i]), max_step_[i] * -1);
   }
   // translational orders (x+y) should not exceed combined limit. scale if necessary
-  if (max_step_xy_!=0) {
-    double scaling_factor = (current_request_.orders[0] + current_request_.orders[1])/max_step_xy_;
+  if (max_step_xy_ != 0) {
+    double scaling_factor = (current_request_.orders[0] + current_request_.orders[1]) / max_step_xy_;
     for (int i = 0; i < 2; i++) {
-      current_request_.orders[i] = current_request_.orders[i]/std::max(scaling_factor, 1.0);
+      current_request_.orders[i] = current_request_.orders[i] / std::max(scaling_factor, 1.0);
     }
   }
 
   // warn user that speed was limited
-  if (msg.linear.x*factor!=current_request_.orders[0] ||
-      msg.linear.y*factor!=current_request_.orders[1] ||
-      msg.angular.z*factor!=current_request_.orders[2]) {
+  if (msg.linear.x * factor != current_request_.orders[0] ||
+      msg.linear.y * factor != current_request_.orders[1] ||
+      msg.angular.z * factor != current_request_.orders[2]) {
     ROS_WARN(
         "Speed command was x: %.2f y: %.2f z: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f xy: %.2f",
-        msg.linear.x, msg.linear.y, msg.angular.z, msg.linear.x + msg.linear.y, max_step_[0]/factor,
-        max_step_[1]/factor, max_step_[2]/factor, max_step_xy_/factor);
+        msg.linear.x, msg.linear.y, msg.angular.z, msg.linear.x + msg.linear.y, max_step_[0] / factor,
+        max_step_[1] / factor, max_step_[2] / factor, max_step_xy_ / factor);
   }
 }
 
-void WalkNode::imuCb(const sensor_msgs::Imu msg) {
+void WalkNode::imuCb(const sensor_msgs::Imu &msg) {
   if (imu_active_) {
-    // the incoming geometry_msgs::Quaternion is transformed to a tf2::Quaterion
+    // the incoming geometry_msgs::Quaternion is transformed to a tf2::Quaternion
     tf2::Quaternion quat;
     tf2::convert(msg.orientation, quat);
 
@@ -198,17 +193,17 @@ void WalkNode::imuCb(const sensor_msgs::Imu msg) {
     // compute the pitch offset to the currently wanted pitch of the engine
     double wanted_pitch = walk_engine_.getWantedTrunkPitch();
 
-    pitch = pitch + wanted_pitch;
+    double pitch_delta = pitch - wanted_pitch;
 
     // get angular velocities
     double roll_vel = msg.angular_velocity.x;
     double pitch_vel = msg.angular_velocity.y;
-    if (abs(roll) > imu_roll_threshold_ || abs(pitch) > imu_pitch_threshold_ ||
+    if (abs(roll) > imu_roll_threshold_ || abs(pitch_delta) > imu_pitch_threshold_ ||
         abs(pitch_vel) > imu_pitch_vel_threshold_ || abs(roll_vel) > imu_roll_vel_threshold_) {
       walk_engine_.requestPause();
       if (abs(roll) > imu_roll_threshold_) {
         ROS_WARN("imu roll angle stop");
-      } else if (abs(pitch) > imu_pitch_threshold_) {
+      } else if (abs(pitch_delta) > imu_pitch_threshold_) {
         ROS_WARN("imu pitch angle stop");
       } else if (abs(pitch_vel) > imu_pitch_vel_threshold_) {
         ROS_WARN("imu roll vel stop");
@@ -272,31 +267,21 @@ void WalkNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {
   robot_state_ = msg.state;
 }
 
-void WalkNode::jointStateCb(const sensor_msgs::JointState msg) {
+void WalkNode::jointStateCb(const sensor_msgs::JointState &msg) {
   std::vector<std::string> names_vec = msg.name;
   std::string *names = names_vec.data();
 
   current_state_->setJointPositions(*names, msg.position.data());
 }
 
-void WalkNode::kickCb(const std_msgs::BoolConstPtr msg) {
+void WalkNode::kickCb(const std_msgs::BoolConstPtr &msg) {
   walk_engine_.requestKick(msg->data);
 }
 
-void WalkNode::copLCb(const geometry_msgs::PointStamped msg) {
-  cop_l_ = msg;
-}
-
-void WalkNode::copRCb(const geometry_msgs::PointStamped msg) {
-  cop_r_ = msg;
-}
-
-void
-WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level) {
+void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level) {
   params_ = config;
 
-  // todo
-  // bio_ik_solver_.set_bioIK_timeout(config.bio_ik_time);
+  ik_.setBioIKTimeout(config.bio_ik_time);
 
   debug_active_ = config.debug_active;
   engine_frequency_ = config.engine_freq;
@@ -319,14 +304,12 @@ WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig
   cop_stop_active_ = config.cop_stop_active;
   cop_x_threshold_ = config.cop_x_threshold;
   cop_y_threshold_ = config.cop_y_threshold;
-  pressure_stop_active_ = config.pressure_stop_active;
-  io_pressure_threshold_ = config.io_pressure_threshold;
-  fb_pressure_threshold_ = config.fb_pressure_threshold;
   params_.pause_duration = config.pause_duration;
   walk_engine_.setPauseDuration(params_.pause_duration);
 }
 
-//todo this is the same method as in kick, maybe put it into a utility class
+// todo this is the same method as in kick, maybe put it into a utility class - Yes - still needs to be discussed
+// currently the spline package is quiet ros agnostic, this would not work with this method
 void WalkNode::publishGoals(const bitbots_splines::JointGoals &goals) {
   /* Construct JointCommand message */
   bitbots_msgs::JointCommand command;
