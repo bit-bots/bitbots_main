@@ -20,6 +20,7 @@
   <depend>std_msgs</depend>
   <depend>rosconsole</depend>
   <depend>eigen_conversions</depend>
+  <depend>bio_ik</depend>
 
   <export>
     <bitbots_documentation>

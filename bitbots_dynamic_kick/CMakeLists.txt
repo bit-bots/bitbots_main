@@ -32,10 +32,11 @@ include_directories(
 )
 
 set(SOURCES
-        src/KickNode.cpp
-        src/KickEngine.cpp
-        src/Stabilizer.cpp
-        src/Visualizer.cpp)
+        src/kick_node.cpp
+        src/kick_engine.cpp
+        src/stabilizer.cpp
+        src/visualizer.cpp
+        src/kick_ik.cpp)
 
 add_executable(KickNode ${SOURCES})
 
