@@ -79,6 +79,9 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   void setPauseDuration(double duration);
 
+  tf2::Transform getLeft();
+  tf2::Transform getRight();
+
  private:
 
   WalkState engine_state_;

@@ -354,13 +354,12 @@ void WalkNode::publishGoals(const bitbots_splines::JointGoals &goals) {
 
 void WalkNode::publishOdometry() {
   // transformation from support leg to trunk
-  //todo
-  /*
+
   Eigen::Isometry3d trunk_to_support;
-  if (walk_engine_.getFootstep().isLeftSupport()) {
-    trunk_to_support = goal_state_->getGlobalLinkTransform("l_sole");
+  if (walk_engine_.isLeftSupport()) {
+    trunk_to_support = current_state_->getGlobalLinkTransform("l_sole");
   } else {
-    trunk_to_support = goal_state_->getGlobalLinkTransform("r_sole");
+    trunk_to_support = current_state_->getGlobalLinkTransform("r_sole");
   }
   Eigen::Isometry3d support_to_trunk = trunk_to_support.inverse();
   tf2::Transform tf_support_to_trunk;
@@ -368,13 +367,13 @@ void WalkNode::publishOdometry() {
 
   // odometry to trunk is transform to support foot * transform from support to trunk
   tf2::Transform support_foot_tf;
-  if (walk_engine_.getFootstep().isLeftSupport()) {
-    support_foot_tf = walk_engine_.getFootstep().getLeft();
+  if (walk_engine_.isLeftSupport()) {
+    support_foot_tf = walk_engine_.getLeft();
   } else {
-    support_foot_tf = walk_engine_.getFootstep().getRight();
+    support_foot_tf = walk_engine_.getRight();
   }
 
-  tf2::Transform odom_to_trunk = support_foot_tf*tf_support_to_trunk;
+  tf2::Transform odom_to_trunk = support_foot_tf * tf_support_to_trunk;
   tf2::Vector3 pos = odom_to_trunk.getOrigin();
   geometry_msgs::Quaternion quat_msg;
 
@@ -408,15 +407,13 @@ void WalkNode::publishOdometry() {
   odom_msg_.pose.pose.orientation = quat_msg;
   geometry_msgs::Twist twist;
 
-  twist.linear.x = current_request_.orders.getOrigin()[0]*params_.freq*2;
-  twist.linear.y = current_request_.orders.getOrigin()[1]*params_.freq*2;
-  double roll, pitch, yaw;
-  tf2::Matrix3x3(current_request_.orders.getRotation()).getRPY(roll, pitch, yaw);
-  twist.angular.z = yaw*params_.freq*2;
+  //TODO why the *2 ? is this a bug?
+  twist.linear.x = current_request_.orders.x() * walk_engine_.getFreq() * 2;
+  twist.linear.y = current_request_.orders.y() * walk_engine_.getFreq() * 2;
+  twist.angular.z = current_request_.orders.z() * walk_engine_.getFreq() * 2;
 
   odom_msg_.twist.twist = twist;
   pub_odometry_.publish(odom_msg_);
-   */
 }
 
 void WalkNode::initializeEngine() {
