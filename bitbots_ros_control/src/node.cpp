@@ -30,6 +30,7 @@ int main (int argc, char *argv[]){
   ros::Rate rate(pnh.param("control_loop_hz", 200));
 
   while (ros::ok()){
+    hw.read();
     ros::Duration period = ros::Time::now() - current_time;
     current_time = ros::Time::now();
 

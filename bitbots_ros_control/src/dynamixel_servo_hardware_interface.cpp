@@ -69,7 +69,7 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
 
   // write ROM and RAM values if wanted
   if(nh.param("servos/set_ROM_RAM", false)){
-    if (!writeRomram(nh)){
+    if (!writeROMRAM(nh)){
         ROS_WARN("Couldn't write ROM and RAM values to all servos.");
     }
     // magic sleep preventing problems after setting ROM values
@@ -201,7 +201,7 @@ bool DynamixelServoHardwareInterface::loadDynamixels(ros::NodeHandle& nh){
   return success;
 }
 
-bool DynamixelServoHardwareInterface::writeRomram(ros::NodeHandle& nh){
+bool DynamixelServoHardwareInterface::writeROMRAM(ros::NodeHandle& nh){
   /**
    * This method writes the ROM and RAM values specified in the config to all servos.
    */
@@ -507,7 +507,7 @@ void DynamixelServoHardwareInterface::write()
 
   if (control_mode_ == POSITION_CONTROL){
     if(goal_effort_ != last_goal_effort_){
-      syncWritePwm();
+      syncWritePWM();
       last_goal_effort_ = goal_effort_;
     }
 
@@ -826,7 +826,7 @@ void DynamixelServoHardwareInterface::syncWriteCurrent() {
   free(goal_current);
 }
 
-void DynamixelServoHardwareInterface::syncWritePwm() {
+void DynamixelServoHardwareInterface::syncWritePWM() {
   int* goal_current = (int*)malloc(joint_names_.size() * sizeof(int));
   for (size_t num = 0; num < joint_names_.size(); num++) {
     if(goal_effort_[num] < 0){

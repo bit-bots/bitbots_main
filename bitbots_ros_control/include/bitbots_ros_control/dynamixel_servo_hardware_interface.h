@@ -79,10 +79,10 @@ public:
 private:
   ros::NodeHandle nh_;
 
-  void syncWritePwm();
+  void syncWritePWM();
 
   bool loadDynamixels(ros::NodeHandle& nh);
-  bool writeRomram(ros::NodeHandle& nh);
+  bool writeROMRAM(ros::NodeHandle& nh);
   bool stringToControlMode(std::string control_mode_str, ControlMode &control_mode);
   void switchDynamixelControlMode();
   diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map);
