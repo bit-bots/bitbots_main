@@ -13,7 +13,7 @@ Visualizer::Visualizer(const std::string &base_topic) :
   /* create necessary publishers */
   goal_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "received_goal",
       /* queue_size */ 5, /* latch */ true);
-  spline_publisher_ = node_handle_.advertise<nav_msgs::Path>(base_topic_ + "flying_foot_spline",
+  spline_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "flying_foot_spline",
       /* queue_size */ 5, /* latch */ true);
   windup_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "kick_windup_point",
       /* queue_size */ 5, /* latch */ true);
@@ -32,21 +32,9 @@ void Visualizer::displayFlyingSplines(const bitbots_splines::Trajectories &splin
   if (!isEnabled())
     return;
 
-  nav_msgs::Path path;
-  path.header.stamp = ros::Time::now();
-  path.header.frame_id = support_foot_frame;
-
-  for (int i = 0; i < splines.size()*params_.spline_smoothness; i++) {
-    geometry_msgs::PoseStamped pose;
-    pose.header.stamp = path.header.stamp;
-    pose.header.frame_id = support_foot_frame;
-    pose.pose.position.x = splines.get("pos_x").pos((float) i/(float) params_.spline_smoothness);
-    pose.pose.position.y = splines.get("pos_y").pos((float) i/(float) params_.spline_smoothness);
-    pose.pose.position.z = splines.get("pos_z").pos((float) i/(float) params_.spline_smoothness);
-    pose.pose.orientation.w = 1;
-
-    path.poses.push_back(pose);
-  }
+  visualization_msgs::Marker
+      path = getPath(splines, support_foot_frame, "pos_x", "pos_y", "pos_z", params_.spline_smoothness);
+  path.color.g = 1;
 
   spline_publisher_.publish(path);
 }
