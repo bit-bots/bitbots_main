@@ -33,8 +33,8 @@ ball_candidate_field_boundary_y_offset: 0
 ball_candidate_rating_threshold: 0.5
 
 vision_use_sim_color: false
-field_color_detector_path: 'f031_basler.pickle'
-field_color_detector_path_sim: 'simColor.pickle'
+field_color_detector_path: 'basler_f031.pickle'
+field_color_detector_path_sim: 'sim.pickle'
 
 dynamic_color_space_active: true
 dynamic_color_space_queue_max_size: 20
