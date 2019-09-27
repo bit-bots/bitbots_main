@@ -25,3 +25,4 @@ field_boundary:
 camera_info:
   camera_info_topic: '/camera_info'
 
+publish_frame: 'base_footprint'
