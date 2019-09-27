@@ -14,12 +14,26 @@ adaptions:
 * **3.8.2** - Since we have a _LICENSE_ file in every repository we refrain from including license boilerplate in every file.
 * as a docstring format we use `reST <https://www.python.org/dev/peps/pep-0287/>`_.
 
+PyCharm Integration
+~~~~~~~~~~~~~~~~~~~
+
+* Go to File > Settings > Editor > Code Style. Click the gear icon and select Import Scheme > IntelliJ Idea code style XML.
+  Download :download:`our python style</_static/bitbots_python_style.xml>` and select it. Choose a name to store it.
+* Make sure to select all python code inspections in Editor > Inspections > Python.
+
 
 C++
 ---
 
 Our C++ guide is based on the `ROS C++ Style Guide <http://wiki.ros.org/CppStyleGuide>`_ except that our ``{`` are not
 on a new line.
+
+CLion Integration
+~~~~~~~~~~~~~~~~~~~
+
+* Go to File > Settings > Editor > Code Style. Click the gear icon and select Import Scheme > IntelliJ Idea code style XML.
+  Download :download:`our cpp style</_static/bitbots_cpp_style.xml>` and select it. Choose a name to store it.
+* Make sure to select all python code inspections in Editor > Inspections > C/C++.
 
 
 Git
