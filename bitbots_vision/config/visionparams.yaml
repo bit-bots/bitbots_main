@@ -1,3 +1,5 @@
+# Defining the default vision parameters
+
 vision_parallelize: true
 vision_blind_threshold: 30
 
@@ -32,9 +34,7 @@ neural_network_type: 'yolo_darknet'  # fcnn or yolo_opencv or yolo_darknet or du
 ball_candidate_field_boundary_y_offset: 0
 ball_candidate_rating_threshold: 0.5
 
-vision_use_sim_color: false
 field_color_detector_path: 'basler_f031.pickle'
-field_color_detector_path_sim: 'sim.pickle'
 
 dynamic_color_space_active: true
 dynamic_color_space_queue_max_size: 20
