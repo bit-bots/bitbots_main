@@ -2,17 +2,15 @@
 import rospy
 from bitbots_quintic_walk.msg import WalkingDebug
 from humanoid_league_msgs.msg import BallRelative, BallsInImage, \
-LineInformationInImage, LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative, \
-ObstaclesInImage, ObstaclesRelative, ObstacleRelative, \
-GoalInImage, GoalRelative, FieldBoundaryInImage, PixelsRelative, \
-PixelRelative, GoalPartsInImage, GoalPartsRelative, GoalPostRelative, GoalBarRelative
+    LineInformationInImage, LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative, \
+    ObstaclesInImage, ObstaclesRelative, ObstacleRelative, \
+    GoalInImage, GoalRelative, GoalPartsInImage, GoalPartsRelative, GoalPostRelative, GoalBarRelative, \
+    FieldBoundaryInImage, PixelsRelative
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import CameraInfo, PointCloud2
 import sensor_msgs.point_cloud2 as pc2
 import tf2_ros
-import math
 from tf2_geometry_msgs import PointStamped
-from visualization_msgs.msg import Marker
 import numpy as np
 
 
