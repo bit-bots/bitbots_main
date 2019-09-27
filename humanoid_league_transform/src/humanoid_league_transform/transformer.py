@@ -1,8 +1,8 @@
 #!/usr/bin/env python2.7
 import rospy
-from bitbots_quintic_walk.msg import WalkingDebug
 from humanoid_league_msgs.msg import BallRelative, BallsInImage, \
-    LineInformationInImage, LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative, \
+    LineInformationInImage, \
+    LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative, \
     ObstaclesInImage, ObstaclesRelative, ObstacleRelative, \
     GoalInImage, GoalRelative, GoalPartsInImage, GoalPartsRelative, GoalPostRelative, GoalBarRelative, \
     FieldBoundaryInImage, PixelsRelative
@@ -32,7 +32,8 @@ class TransformBall(object):
         goal_in_image_topic = rospy.get_param("~goals/goals_topic", "/goal_in_image")
         goal_parts_in_image_topic = rospy.get_param("~goal_parts/goal_parts_topic", "/goal_parts_in_image")
         obstacles_in_image_topic = rospy.get_param("~obstacles/obstacles_topic", "/obstacles_in_image")
-        field_boundary_in_image_topic = rospy.get_param("~field_boundary/field_boundary_topic", "/field_boundary_in_image")
+        field_boundary_in_image_topic = rospy.get_param("~field_boundary/field_boundary_topic",
+                                                        "/field_boundary_in_image")
 
         publish_lines_as_lines_relative = rospy.get_param("~lines/lines_relative", True)
         publish_lines_as_pointcloud = rospy.get_param("~lines/pointcloud", False)
@@ -85,7 +86,8 @@ class TransformBall(object):
         rospy.Subscriber(goal_in_image_topic, GoalInImage, self._callback_goal, queue_size=1)
         rospy.Subscriber(goal_parts_in_image_topic,  GoalPartsInImage, self._callback_goal_parts, queue_size=1)
         rospy.Subscriber(obstacles_in_image_topic, ObstaclesInImage, self._callback_obstacles, queue_size=1)
-        rospy.Subscriber(field_boundary_in_image_topic, FieldBoundaryInImage, self._callback_field_boundary, queue_size=1)
+        rospy.Subscriber(field_boundary_in_image_topic, FieldBoundaryInImage,
+                         self._callback_field_boundary, queue_size=1)
 
         rospy.spin()
 
