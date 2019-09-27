@@ -197,13 +197,6 @@ class Vision:
             else:
                 rospy.loginfo('(Dynamic color space-) Field mask image publishing is disabled', logger_name="dynamic_color_space")
 
-        # Print, if the vision uses the sim color or not
-        if ros_utils.config_param_change(self._config, config, 'vision_use_sim_color'):
-            if config['vision_use_sim_color']:
-                rospy.logwarn('Loaded color space for SIMULATOR.', logger_name="vision")
-            else:
-                rospy.loginfo('Loaded color space for REAL WORLD.', logger_name="vision")
-
         # Set the white color detector
         if ros_utils.config_param_change(self._config, config, r'^white_color_detector_'):
             self._white_color_detector = color.HsvSpaceColorDetector(config, "white")
@@ -218,7 +211,7 @@ class Vision:
 
         # Check if params changed
         if ros_utils.config_param_change(self._config, config,
-                r'^field_color_detector_|dynamic_color_space_|vision_use_sim_color'):
+                r'^field_color_detector_|dynamic_color_space_'):
             # Check if the dynamic color space field color detector or the static field color detector should be used
             if self._use_dynamic_color_space:
                 # Set dynamic color space field color detector

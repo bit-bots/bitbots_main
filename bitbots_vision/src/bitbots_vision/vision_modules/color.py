@@ -241,8 +241,6 @@ class PixelListColorDetector(ColorDetector):
     The color space is represented by boolean-values for RGB-color-values.
 
     The following parameters of the config dict are needed:
-        'vision_use_sim_color',
-        'field_color_detector_path_sim',
         'field_color_detector_path'
     """
 
@@ -273,16 +271,10 @@ class PixelListColorDetector(ColorDetector):
 
         super(PixelListColorDetector, self).update_config(config)
 
-        if ros_utils.config_param_change(tmp_config, config, [  'vision_use_sim_color',
-                                                                'field_color_detector_path_sim',
-                                                                'field_color_detector_path']):
+        if ros_utils.config_param_change(tmp_config, config, 'field_color_detector_path'):
             # concatenate path to file containing the accepted colors of base color space
             path = os.path.join(self._package_path, 'config/color_spaces')
-            if config['vision_use_sim_color']:
-                color_space_path = os.path.join(path, config['field_color_detector_path_sim'])
-            else:
-                color_space_path = os.path.join(path, config['field_color_detector_path'])
-
+            color_space_path = os.path.join(path, config['field_color_detector_path'])
             self._color_space = self._init_color_space(color_space_path)
 
     def _init_color_space(self, color_path):
