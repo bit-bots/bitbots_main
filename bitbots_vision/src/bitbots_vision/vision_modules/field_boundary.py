@@ -191,7 +191,7 @@ class FieldBoundaryDetector(object):
         '''
         return (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0])
 
-    def compute_full_field_boundary(self):
+    def _compute_full_field_boundary(self):
         if self._field_boundary_full is None:
             xp, fp = zip(*self.get_field_boundary_points())
             x = list(range(self._image.shape[1]))
@@ -204,10 +204,10 @@ class FieldBoundaryDetector(object):
         the index of the y value is the x coordinate on the picture
         :return list of y coordinates where the field_boundary is. Index of y value is the x coordinate:
         """
-        self.compute_full_field_boundary()
+        self._compute_full_field_boundary()
         return self._field_boundary_full
 
-    def compute_full_convex_field_boundary(self):
+    def _compute_full_convex_field_boundary(self):
         # type: () -> list
         """
         calculates an interpolated list of y coordinates where the convex field_boundary is for the picture
@@ -226,7 +226,7 @@ class FieldBoundaryDetector(object):
         the index of the y value is the x coordinate on the picture
         :return list of y coordinates where the convex field_boundary is. Index of y value is the x coordinate:
         """
-        self.compute_full_convex_field_boundary()
+        self._compute_full_convex_field_boundary()
         return self._convex_field_boundary_full
 
     def candidate_under_field_boundary(self, candidate, y_offset=0):
@@ -344,7 +344,7 @@ class IterationFieldBoundaryDetector(FieldBoundaryDetector):
         Calls the method to compute the field boundary via the iteration method and saves it in the class variable _field_boundary_points
         """
         # Calc field boundary
-        self._field_boundary_points = IterationFieldBoundaryAlgorithm.calculate_field_boundary(
+        self._field_boundary_points = IterationFieldBoundaryAlgorithm._calculate_field_boundary(
             self._image,
             self._field_color_detector,
             self._x_steps,
@@ -370,7 +370,7 @@ class BinaryFieldBoundaryDetector(FieldBoundaryDetector):
         Calls the method to compute the field boundary via the binary search and saves it in the class variable _field_boundary_points
         """
         # Calc field boundary
-        self._field_boundary_points = BinaryFieldBoundaryAlgorithm.calculate_field_boundary(
+        self._field_boundary_points = BinaryFieldBoundaryAlgorithm._calculate_field_boundary(
             self._image,
             self._field_color_detector,
             self._x_steps,
@@ -396,7 +396,7 @@ class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
         Calls the method to compute the field boundary via the reversed iteration method and saves it in the class variable _field_boundary_points
         """
         # Calc field boundary
-        self._field_boundary_points = ReversedFieldBoundaryAlgorithm.calculate_field_boundary(
+        self._field_boundary_points = ReversedFieldBoundaryAlgorithm._calculate_field_boundary(
             self._image,
             self._field_color_detector,
             self._x_steps,
@@ -418,15 +418,15 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
         """
         super(DynamicFieldBoundaryDetector, self).__init__(config, field_color_detector)
 
-        self.over_horizon_algorithm = ReversedFieldBoundaryAlgorithm
-        self.under_horizon_algorithm = IterationFieldBoundaryAlgorithm
-        self.base_frame = "camera_optical_frame"
-        self.camera_frame = "base_footprint"
-        self.tilt_threshold = math.radians(config['field_boundary_detector_head_tilt_threshold'])
+        self._over_horizon_algorithm = ReversedFieldBoundaryAlgorithm
+        self._under_horizon_algorithm = IterationFieldBoundaryAlgorithm
+        self._base_frame = "camera_optical_frame"
+        self._camera_frame = "base_footprint"
+        self._tilt_threshold = math.radians(config['field_boundary_detector_head_tilt_threshold'])
 
         # TF stuff
-        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5))
-        self.listener = tf2.TransformListener(self.tf_buffer)
+        self._tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5))
+        self._tf_listener = tf2.TransformListener(self._tf_buffer)
 
     def _only_field_visible(self):
         """
@@ -435,7 +435,7 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
         # Check if we can use tf. Otherwise switch to reversed iteration detector
         try:
             # Get quaternion from newest tf
-            orientation = self.tf_buffer.lookup_transform(self.camera_frame, self.base_frame, rospy.Time(0)).transform.rotation
+            orientation = self._tf_buffer.lookup_transform(self._camera_frame, self._base_frame, rospy.Time(0)).transform.rotation
             # Convert into an usable tilt angle
             tilt_angle =  (1.5 * math.pi - euler_from_quaternion((
                 orientation.x,
@@ -443,7 +443,7 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
                 orientation.z,
                 orientation.w))[0]) % (2 * math.pi)
             # Check if it satisfied the threshold
-            if tilt_angle > self.tilt_threshold and tilt_angle < math.pi:
+            if tilt_angle > self._tilt_threshold and tilt_angle < math.pi:
                 return True
             else:
                 return False
@@ -467,11 +467,11 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
         Calls the method to compute the field boundary and saves it in the class variable _field_boundary_points
         """
         if self._only_field_visible():
-            selected_algorithm = self.under_horizon_algorithm
+            selected_algorithm = self._under_horizon_algorithm
         else:
-            selected_algorithm = self.over_horizon_algorithm
+            selected_algorithm = self._over_horizon_algorithm
         # Calc field boundary
-        self._field_boundary_points = selected_algorithm.calculate_field_boundary(
+        self._field_boundary_points = selected_algorithm._calculate_field_boundary(
             self._image,
             self._field_color_detector,
             self._x_steps,
@@ -486,7 +486,7 @@ class FieldBoundaryAlgorithm():
     Definition of the interface for an field boundary algorithm
     """
     @abc.abstractmethod
-    def calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
+    def _calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
         """
         Calculates (if implemented) the field boundary
         :returns: list of field boundary points
@@ -496,7 +496,7 @@ class FieldBoundaryAlgorithm():
 
 class IterationFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
     @staticmethod
-    def calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
+    def _calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
         # type: () -> list
         """
         Finds the points of the field boundary visible in the image. Uses the standard method iterating from top to
@@ -538,7 +538,7 @@ class IterationFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
 
 class ReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
     @staticmethod
-    def calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
+    def _calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
         # type: () -> list
         """
         Finds the points of the field boundary visible in the image. Uses the reversed method iterating from bottom to
@@ -612,7 +612,7 @@ class ReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
 
 class BinaryFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
     @staticmethod
-    def calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
+    def _calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
         """
         Finds the points of the field edge visible in the image. Uses a faster binary search method, that unfortunately
         finds these points below field lines sometimes

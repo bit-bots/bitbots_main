@@ -26,7 +26,7 @@ class FcnnHandler(BallDetector):
         self._sorted_rated_candidates = None
         self._top_candidate = None
         self._fcnn_output = None
-        self.bridge = CvBridge()
+        self._cv_bridge = CvBridge()
 
         # init config
         self.set_config(config)
@@ -82,12 +82,12 @@ class FcnnHandler(BallDetector):
                         candidate.get_upper_left_x() + candidate.get_width()]
                 ) / 255.0
                 # Check if candidate is in rating threshold and size bounds
-                if self.inspect_candidate(candidate):
+                if self._inspect_candidate(candidate):
                     # Add candidate to list
                     self._rated_candidates.append(candidate)
         return self._rated_candidates
 
-    def inspect_candidate(self, candidate):
+    def _inspect_candidate(self, candidate):
         """
         Checks if candidates is in threshold. And in min/max diameter bounds.
         :param candidate: a Ball candidate
@@ -114,13 +114,13 @@ class FcnnHandler(BallDetector):
         # Check if a cached one exists
         if self._fcnn_output is None:
             # Resize image for fcnn
-            in_img = cv2.resize(self._image, (self._fcnn.input_shape[1], self._fcnn.input_shape[0]))
+            in_img = cv2.resize(self._image, (self._fcnn._input_shape[1], self._fcnn._input_shape[0]))
             # Convert image to floats
             in_img = cv2.cvtColor(in_img, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
             # Predict
             out = self._fcnn.predict(list([in_img]))
             # Reshape fcnn output
-            out = out.reshape(self._fcnn.output_shape[0], self._fcnn.output_shape[1])
+            out = out.reshape(self._fcnn._output_shape[0], self._fcnn._output_shape[1])
             # Convert back to uint8 dtype
             out = (out * 255).astype(np.uint8)
             # Resize the heatmap to match the resolution of the in comming image
@@ -254,4 +254,4 @@ class FcnnHandler(BallDetector):
         """
         if self._debug:
             # Create image message with fcnn heatmap
-            return self.bridge.cv2_to_imgmsg(self.get_fcnn_output(), "mono8")
+            return self._cv_bridge.cv2_to_imgmsg(self.get_fcnn_output(), "mono8")

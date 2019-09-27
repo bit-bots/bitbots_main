@@ -376,7 +376,7 @@ class RedObstacleDetector(CandidateFinder):
         Init red obstacle detector
         :param obstacle_detector: obstacle_detector instance held by the vision
         """
-        self.obstacle_detector = obstacle_detector
+        self._obstacle_detector = obstacle_detector
 
     def set_image(self, image):
         # type: (np.ndarray) -> None
@@ -384,21 +384,21 @@ class RedObstacleDetector(CandidateFinder):
         Set the current vision image
         :param image: image the current image vision
         """
-        self.obstacle_detector.set_image(image)
+        self._obstacle_detector.set_image(image)
 
     def get_candidates(self):
         # type: () -> list(Candidate)
         """
         :return: list with all red obstacles
         """
-        return self.obstacle_detector.get_red_obstacles()
+        return self._obstacle_detector.get_red_obstacles()
 
     def compute(self):
         # type: () -> None
         """
         Starts computation of the obstacles (cached).
         """
-        self.obstacle_detector.compute()
+        self._obstacle_detector.compute()
 
 
 class BlueObstacleDetector(CandidateFinder):
@@ -411,7 +411,7 @@ class BlueObstacleDetector(CandidateFinder):
         Init blue obstacle detector
         :param obstacle_detector: obstacle_detector instance held by the vision
         """
-        self.obstacle_detector = obstacle_detector
+        self._obstacle_detector = obstacle_detector
 
     def set_image(self, image):
         # type: (np.ndarray) -> None
@@ -419,21 +419,21 @@ class BlueObstacleDetector(CandidateFinder):
         Set the current vision image
         :param image: image the current image vision
         """
-        self.obstacle_detector.set_image(image)
+        self._obstacle_detector.set_image(image)
 
     def get_candidates(self):
         # type: () -> list(Candidate)
         """
         :return: list with all blue obstacles
         """
-        return self.obstacle_detector.get_blue_obstacles()
+        return self._obstacle_detector.get_blue_obstacles()
 
     def compute(self):
         # type: () -> None
         """
         Starts computation of the obstacles (cached).
         """
-        self.obstacle_detector.compute()
+        self._obstacle_detector.compute()
 
 
 class WhiteObstacleDetector(CandidateFinder):
@@ -446,7 +446,7 @@ class WhiteObstacleDetector(CandidateFinder):
         Init white obstacle detector
         :param obstacle_detector: obstacle_detector instance held by the vision
         """
-        self.obstacle_detector = obstacle_detector
+        self._obstacle_detector = obstacle_detector
 
     def set_image(self, image):
         # type: (np.ndarray) -> None
@@ -454,21 +454,21 @@ class WhiteObstacleDetector(CandidateFinder):
         Set the current vision image
         :param image: image the current image vision
         """
-        self.obstacle_detector.set_image(image)
+        self._obstacle_detector.set_image(image)
 
     def get_candidates(self):
         # type: () -> list(Candidate)
         """
         :return: list with all white obstacles
         """
-        return self.obstacle_detector.get_white_obstacles()
+        return self._obstacle_detector.get_white_obstacles()
 
     def compute(self):
         # type: () -> None
         """
         Starts computation of the obstacles (cached).
         """
-        self.obstacle_detector.compute()
+        self._obstacle_detector.compute()
 
 
 class UnknownObstacleDetector(CandidateFinder):
@@ -481,7 +481,7 @@ class UnknownObstacleDetector(CandidateFinder):
         Init unknown obstacle detector
         :param obstacle_detector: obstacle_detector instance held by the vision
         """
-        self.obstacle_detector = obstacle_detector
+        self._obstacle_detector = obstacle_detector
 
     def set_image(self, image):
         # type: (np.ndarray) -> None
@@ -489,18 +489,18 @@ class UnknownObstacleDetector(CandidateFinder):
         Set the current vision image
         :param image: image the current image vision
         """
-        self.obstacle_detector.set_image(image)
+        self._obstacle_detector.set_image(image)
 
     def get_candidates(self):
         # type: () -> list(Candidate)
         """
         :return: list with all unidentified obstacles
         """
-        return self.obstacle_detector.get_other_obstacles()
+        return self._obstacle_detector.get_other_obstacles()
 
     def compute(self):
         # type: () -> None
         """
         Starts computation of the obstacles (cached).
         """
-        self.obstacle_detector.compute()
+        self._obstacle_detector.compute()

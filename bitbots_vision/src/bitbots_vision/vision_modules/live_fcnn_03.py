@@ -12,8 +12,8 @@ class FCNN03:
         # Make fcnn load path
         self._load_path = os.path.join(load_path, "model_final")
         # Define input and output shape of the fcnn
-        self.input_shape = (150, 200, 3)  # y, x, z
-        self.output_shape = (150, 200, 1)  # y, x, z
+        self._input_shape = (150, 200, 3)  # y, x, z
+        self._output_shape = (150, 200, 1)  # y, x, z
 
         # Define tensorflow placeholders
         with tf.variable_scope("placeholders"):
@@ -22,17 +22,17 @@ class FCNN03:
                 tf.float32,
                 shape=[
                     None,
-                    self.input_shape[0],
-                    self.input_shape[1],
-                    self.input_shape[2]],
+                    self._input_shape[0],
+                    self._input_shape[1],
+                    self._input_shape[2]],
                 name="X")
             self.Y = tf.placeholder(
                 tf.float32,
                 shape=[
                     None,
-                    self.output_shape[0],
-                    self.output_shape[1],
-                    self.output_shape[2]],
+                    self._output_shape[0],
+                    self._output_shape[1],
+                    self._output_shape[2]],
                 name="Y")
 
         # Create network
@@ -45,7 +45,7 @@ class FCNN03:
         """
         Runs the fcnn neural network
         """
-        return self.session.run(self._fcnn_out, feed_dict={self.X: batch, self._keep_prob: 1.0})
+        return self._session.run(self._fcnn_out, feed_dict={self.X: batch, self._keep_prob: 1.0})
 
     def _initialize_network(self):
         """
@@ -53,12 +53,12 @@ class FCNN03:
         """
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
-        self.session = tf.Session(config=config)
-        self.init = tf.global_variables_initializer()
-        self.session.run(self.init)
-        self.saver = tf.train.Saver()
+        self._session = tf.Session(config=config)
+        self._init = tf.global_variables_initializer()
+        self._session.run(self._init)
+        self._saver = tf.train.Saver()
         rospy.logdebug("loading weights from '{}'...".format(self._load_path), logger_name="vision_fcnn")
-        self.saver.restore(self.session, self._load_path)
+        self._saver.restore(self._session, self._load_path)
         rospy.logdebug("loaded successfully.", logger_name="vision_fcnn")
 
     def _fcnn_model(self):
@@ -197,5 +197,3 @@ class FCNN03:
                 # 150x200x1
 
         return out, logits
-
-

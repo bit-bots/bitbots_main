@@ -29,34 +29,34 @@ class DynamicColorSpace:
         """
         # Init package
         rospack = rospkg.RosPack()
-        self.package_path = rospack.get_path('bitbots_vision')
+        self._package_path = rospack.get_path('bitbots_vision')
 
         rospy.init_node('bitbots_dynamic_color_space')
         rospy.loginfo('Initializing dynamic color-space...', logger_name="dynamic_color_space")
 
-        self.bridge = CvBridge()
+        self._cv_bridge = CvBridge()
 
         # Init params
-        self.vision_config = {}
+        self._vision_config = {}
 
         # Publisher placeholder
-        self.pub_color_space = None
+        self._pub_color_space = None
 
         # Subscriber placeholder
-        self.sub_image_msg = None
+        self._sub_image_msg = None
 
         # Subscribe to 'vision_config'-message
         # The message topic name MUST be the same as in the config publisher in vision.py
-        self.sub_vision_config_msg = rospy.Subscriber(
+        self._sub_vision_config_msg = rospy.Subscriber(
             'vision_config',
             Config,
-            self.vision_config_callback,
+            self._vision_config_callback,
             queue_size=1,
             tcp_nodelay=True)
 
         rospy.spin()
 
-    def vision_config_callback(self, msg):
+    def _vision_config_callback(self, msg):
         # type: (Config) -> None
         """
         This method is called by the 'vision_config'-message subscriber.
@@ -72,54 +72,54 @@ class DynamicColorSpace:
         vision_config = yaml.load(msg.data, Loader=yaml.FullLoader)
 
         # Print status of dynamic color space after toggling 'dynamic_color_space_active' parameter
-        if ros_utils.config_param_change(self.vision_config, vision_config, 'dynamic_color_space_active'):
+        if ros_utils.config_param_change(self._vision_config, vision_config, 'dynamic_color_space_active'):
             if vision_config['dynamic_color_space_active']:
                 rospy.loginfo('Dynamic color space turned ON.', logger_name="dynamic_color_space")
             else:
                 rospy.logwarn('Dynamic color space turned OFF.', logger_name="dynamic_color_space")
 
         # Set publisher of ColorSpace-messages
-        self.pub_color_space = ros_utils.create_or_update_publisher(self.vision_config, vision_config, self.pub_color_space, 'ROS_dynamic_color_space_msg_topic', ColorSpace)
+        self._pub_color_space = ros_utils.create_or_update_publisher(self._vision_config, vision_config, self._pub_color_space, 'ROS_dynamic_color_space_msg_topic', ColorSpace)
 
         # Set Color- and FieldBoundaryDetector
-        self.color_detector = color.DynamicPixelListColorDetector(
+        self._color_detector = color.DynamicPixelListColorDetector(
             vision_config,
-            self.package_path)
+            self._package_path)
 
         # Get field boundary detector class by name from config
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
             vision_config['dynamic_color_space_field_boundary_detector_search_method'])
 
         # Set the field boundary detector
-        self.field_boundary_detector = field_boundary_detector_class(
+        self._field_boundary_detector = field_boundary_detector_class(
             vision_config,
-            self.color_detector)
+            self._color_detector)
 
         # Set params
-        self.queue_max_size = vision_config['dynamic_color_space_queue_max_size']
-        self.color_value_queue = deque(maxlen=self.queue_max_size)
+        self._queue_max_size = vision_config['dynamic_color_space_queue_max_size']
+        self._color_value_queue = deque(maxlen=self._queue_max_size)
 
-        self.pointfinder = Pointfinder(
+        self._pointfinder = Pointfinder(
             vision_config['dynamic_color_space_threshold'],
             vision_config['dynamic_color_space_kernel_radius'])
 
         # Create a new heuristic instance
-        self.heuristic = Heuristic()
+        self._heuristic = Heuristic()
 
         # Subscribe to Image-message
-        self.sub_image_msg = ros_utils.create_or_update_subscriber(
-            self.vision_config,
+        self._sub_image_msg = ros_utils.create_or_update_subscriber(
+            self._vision_config,
             vision_config,
-            self.sub_image_msg,
+            self._sub_image_msg,
             'ROS_img_msg_topic',
             Image,
-            callback=self.image_callback,
+            callback=self._image_callback,
             queue_size=vision_config['ROS_img_msg_queue_size'],
             buff_size=60000000) # https://github.com/ros/ros_comm/issues/536
 
-        self.vision_config = vision_config
+        self._vision_config = vision_config
 
-    def image_callback(self, image_msg):
+    def _image_callback(self, image_msg):
         # type: (Image) -> None
         """
         This method is called by the Image-message subscriber.
@@ -132,8 +132,8 @@ class DynamicColorSpace:
         :return: None
         """
         # Turn off dynamic color space, if parameter of config is false
-        if 'dynamic_color_space_active' not in self.vision_config or \
-                not self.vision_config['dynamic_color_space_active']:
+        if 'dynamic_color_space_active' not in self._vision_config or \
+                not self._vision_config['dynamic_color_space_active']:
             return
 
         # Drops old images
@@ -143,9 +143,9 @@ class DynamicColorSpace:
                           logger_throttle=2, logger_name="dynamic_color_space")
             return
 
-        self.handle_image(image_msg)
+        self._handle_image(image_msg)
 
-    def handle_image(self, image_msg):
+    def _handle_image(self, image_msg):
         # type: (Image) -> None
         """
         This method handles the processing of an Image-message.
@@ -155,17 +155,17 @@ class DynamicColorSpace:
         :return: None
         """
         # Converting the ROS image message to CV2-image
-        image = self.bridge.imgmsg_to_cv2(image_msg, 'bgr8')
+        image = self._cv_bridge.imgmsg_to_cv2(image_msg, 'bgr8')
         # Propagate image to color detector
-        self.color_detector.set_image(image)
+        self._color_detector.set_image(image)
         # Get new dynamic colors from image
-        colors = self.get_new_dynamic_colors(image)
+        colors = self._get_new_dynamic_colors(image)
         # Add new colors to the queue
-        self.color_value_queue.append(colors)
+        self._color_value_queue.append(colors)
         # Publishes to 'ROS_dynamic_color_space_msg_topic'
-        self.publish(image_msg)
+        self._publish(image_msg)
 
-    def get_unique_color_values(self, image, coordinate_list):
+    def _get_unique_color_values(self, image, coordinate_list):
         # type: (np.array, np.array) -> np.array
         """
         Returns array of unique colors values from a given image at pixel coordinates from given list.
@@ -183,7 +183,7 @@ class DynamicColorSpace:
             unique_colors = colors
         return unique_colors
 
-    def get_new_dynamic_colors(self, image):
+    def _get_new_dynamic_colors(self, image):
         # type: (np.array) -> np.array
         """
         Returns array of new dynamically calculated color values.
@@ -193,21 +193,21 @@ class DynamicColorSpace:
         :return np.array: array of new dynamic color values
         """
         # Masks new image with current color space
-        mask_image = self.color_detector.get_mask_image()
+        mask_image = self._color_detector.get_mask_image()
         # Get mask from field_boundary detector
-        self.field_boundary_detector.set_image(image)
-        mask = self.field_boundary_detector.get_mask()
+        self._field_boundary_detector.set_image(image)
+        mask = self._field_boundary_detector.get_mask()
         if mask is not None:
             # Get array of pixel coordinates of color candidates
-            pixel_coordinates = self.pointfinder.get_coordinates_of_color_candidates(mask_image)
+            pixel_coordinates = self._pointfinder.get_coordinates_of_color_candidates(mask_image)
             # Get unique color values from the candidate pixels
-            color_candidates = self.get_unique_color_values(image, pixel_coordinates)
+            color_candidates = self._get_unique_color_values(image, pixel_coordinates)
             # Filters the colors using the heuristic.
-            colors = np.array(self.heuristic.run(color_candidates, image, mask), dtype=np.int32)
+            colors = np.array(self._heuristic.run(color_candidates, image, mask), dtype=np.int32)
             return colors
         return np.array([[]])
 
-    def queue_to_color_space(self, queue):
+    def _queue_to_color_space(self, queue):
         # type: (deque) -> np.array
         """
         Returns color space as array of all queue elements stacked, which contains all colors from the queue.
@@ -223,7 +223,7 @@ class DynamicColorSpace:
         # Return a color space, which contains all colors from the queue
         return color_space.astype(int)
 
-    def publish(self, image_msg):
+    def _publish(self, image_msg):
         # type: (Image) -> None
         """
         Publishes the current color space via ColorSpace-message.
@@ -232,7 +232,7 @@ class DynamicColorSpace:
         :return: None
         """
         # Get color space from queue
-        color_space = self.queue_to_color_space(self.color_value_queue)
+        color_space = self._queue_to_color_space(self._color_value_queue)
         # Create ColorSpace-message
         color_space_msg = ColorSpace()
         color_space_msg.header.frame_id = image_msg.header.frame_id
@@ -241,7 +241,7 @@ class DynamicColorSpace:
         color_space_msg.green = color_space[:, 1].tolist()
         color_space_msg.red   = color_space[:, 2].tolist()
         # Publish ColorSpace-message
-        self.pub_color_space.publish(color_space_msg)
+        self._pub_color_space.publish(color_space_msg)
 
 
 class Pointfinder():
@@ -255,18 +255,18 @@ class Pointfinder():
         :return: None
         """
         # Init params
-        self.threshold = threshold
+        self._threshold = threshold
 
-        self.kernel_radius = kernel_radius
-        self.kernel_edge_size = 2 * self.kernel_radius + 1
+        self._kernel_radius = kernel_radius
+        self._kernel_edge_size = 2 * self._kernel_radius + 1
 
         # Defines kernel
         # Init kernel as M x M matrix of ONEs
-        self.kernel = None
-        self.kernel = np.ones((self.kernel_edge_size, self.kernel_edge_size))
+        self._kernel = None
+        self._kernel = np.ones((self._kernel_edge_size, self._kernel_edge_size))
         # Set value of the center element of the matrix to the negative of the count of the matrix elements
         # In case the value of this pixel is 1, it's value in the sum_array would be 0
-        self.kernel[int(np.size(self.kernel, 0) / 2), int(np.size(self.kernel, 1) / 2)] = - self.kernel.size
+        self._kernel[int(np.size(self._kernel, 0) / 2), int(np.size(self._kernel, 1) / 2)] = - self._kernel.size
 
     def get_coordinates_of_color_candidates(self, masked_image):
         # type (np.array) -> np.array
@@ -281,9 +281,9 @@ class Pointfinder():
         normalized_image = np.floor_divide(masked_image, 255, dtype=np.int16)
 
         # Calculates the count of neighbors for each pixel
-        sum_array = cv2.filter2D(normalized_image, -1, self.kernel, borderType=0)
+        sum_array = cv2.filter2D(normalized_image, -1, self._kernel, borderType=0)
         # Returns all pixels with a higher true-color / false-color ratio than the threshold
-        return np.array(np.where(sum_array > self.threshold * (self.kernel.size - 1)))
+        return np.array(np.where(sum_array > self._threshold * (self._kernel.size - 1)))
 
 class Heuristic:
     def __init__(self):
@@ -306,17 +306,17 @@ class Heuristic:
         :return np.array: filtered list of colors
         """
         # Simplifies the handling by merging the three color channels
-        color_list = self.serialize(color_list)
+        color_list = self._serialize(color_list)
         # Making a set and removing duplicated colors
         color_set = set(color_list)
         # Generates whitelist
-        whitelist = self.recalculate(image, mask)
+        whitelist = self._recalculate(image, mask)
         # Takes only whitelisted values
         color_set = color_set.intersection(whitelist)
         # Restructures the color channels
-        return self.deserialize(np.array(list(color_set)))
+        return self._deserialize(np.array(list(color_set)))
 
-    def recalculate(self, image, mask):
+    def _recalculate(self, image, mask):
         # type: (np.array, np.array) -> set
         """
         Generates a whitelist of allowed colors using the original image and the field-boundary-mask.
@@ -326,10 +326,10 @@ class Heuristic:
         :return set: whitelist
         """
         # Generates whitelist
-        colors_over_field_boundary, colors_under_field_boundary = self.unique_colors_for_partitions(image, mask)
+        colors_over_field_boundary, colors_under_field_boundary = self._unique_colors_for_partitions(image, mask)
         return set(colors_under_field_boundary) - set(colors_over_field_boundary)
 
-    def unique_colors_for_partitions(self, image, mask):
+    def _unique_colors_for_partitions(self, image, mask):
         # type: (np.array, np.array) -> (np.array, np.array)
         """
         Masks picture and returns the unique colors that occurs in both mask partitions.
@@ -340,10 +340,10 @@ class Heuristic:
         :return np.array: colors under the field boundary
         """
         # Calls a function to calculate the number of occurrences of all colors in the image
-        return (self.get_unique_colors(cv2.bitwise_and(image, image, mask=255 - mask)),
-                self.get_unique_colors(cv2.bitwise_and(image, image, mask=mask)))
+        return (self._get_unique_colors(cv2.bitwise_and(image, image, mask=255 - mask)),
+                self._get_unique_colors(cv2.bitwise_and(image, image, mask=mask)))
 
-    def get_unique_colors(self, image):
+    def _get_unique_colors(self, image):
         # type: (np.array) -> np.array
         """
         Calculates unique color for an input image.
@@ -352,11 +352,11 @@ class Heuristic:
         :return np.array: unique colors
         """
         # Simplifies the handling by merging the 3 color channels
-        serialized_img = self.serialize(np.reshape(image, (1, int(image.size / 3), 3))[0])
+        serialized_img = self._serialize(np.reshape(image, (1, int(image.size / 3), 3))[0])
         # Returns unique colors in the image
         return np.unique(serialized_img, axis=0)
 
-    def serialize(self, input_matrix):
+    def _serialize(self, input_matrix):
         # type: (np.array) -> np.array
         """
         Serializes the different color channels of a list of colors in an single channel. (Like a HTML color code)
@@ -369,7 +369,7 @@ class Heuristic:
             + np.multiply(input_matrix[:, 1], 256)
             + input_matrix[:, 2], dtype=np.int32)
 
-    def deserialize(self, input_matrix):
+    def _deserialize(self, input_matrix):
         # type: (np.array) -> np.array
         """
         Resolves the serialization of colors into different channels. (Like a HTML color code)
