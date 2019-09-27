@@ -12,7 +12,7 @@ from sensor_msgs.msg import Imu, JointState
 
 from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAction, RobotControlState, Speak
 from humanoid_league_speaker.speaker import speak
-from bitbots_msgs.msg import FootPressure, DynUpAction
+from bitbots_msgs.msg import FootPressure, DynUpAction, KickAction
 
 from bitbots_msgs.msg import JointCommand
 from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_CONTROLABLE, STATE_WALKING, STATE_ANIMATION_RUNNING, \
@@ -40,6 +40,7 @@ class HardwareControlManager:
         self.blackboard = HcmBlackboard()
         self.blackboard.animation_action_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
         self.blackboard.dynup_action_client = actionlib.SimpleActionClient('dynup', DynUpAction)
+        self.blackboard.dynamic_kick_client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
         dirname = os.path.dirname(os.path.realpath(__file__)) + "/hcm_dsd"
         self.dsd = DSD(self.blackboard, "/debug/dsd/hcm")
         self.dsd.register_actions(os.path.join(dirname, 'actions'))

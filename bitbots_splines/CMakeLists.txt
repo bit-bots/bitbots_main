@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   rosconsole
   std_msgs
   eigen_conversions
+  bio_ik
 )
 find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -40,6 +41,10 @@ set(SOURCES
     src/Spline/Spline.cpp
     src/Utils/NewtonBinomial.cpp
     src/Utils/Combination.cpp
+    include/bitbots_splines/abstract_engine.h
+    include/bitbots_splines/abstract_stabilizer.h
+    include/bitbots_splines/abstract_ik.h
+    include/bitbots_splines/abstract_visualizer.h
 )
 
 set(CODE_LIBRARIES )
