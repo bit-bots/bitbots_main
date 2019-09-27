@@ -18,7 +18,7 @@ void WalkVisualizer::init(robot_model::RobotModelPtr kinematic_model){
 
 void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   //only do something if someone is listing
-  if (pub_engine_debug_.getNumSubscribers() == 0) {
+  if (pub_engine_debug_.getNumSubscribers() == 0 && pub_debug_marker_.getNumSubscribers() == 0) {
     return;
   }
 
@@ -145,7 +145,7 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
                                     robot_state::RobotStatePtr current_state,
                                     bitbots_splines::JointGoals joint_goals) {
   //only do something if someone is listing
-  if (pub_debug_.getNumSubscribers() == 0) {
+  if (pub_debug_.getNumSubscribers() == 0 && pub_debug_marker_.getNumSubscribers() == 0) {
     return;
   }
   bitbots_quintic_walk::WalkDebug msg;
