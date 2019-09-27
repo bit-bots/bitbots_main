@@ -249,20 +249,27 @@ void WalkEngine::saveCurrentTrunkState() {
   double period_time = half_period * factor;
 
   // get last values of trunk pose and its velocities and accelerations
-  tf2::Vector3 trunk_pos = trunk_spline_.getPositionPos(period_time);
+  tf2::Transform trunk_pose = trunk_spline_.getTfTransform(period_time);
   tf2::Vector3 trunk_pos_vel = trunk_spline_.getPositionVel(period_time);
   tf2::Vector3 trunk_pos_acc = trunk_spline_.getPositionAcc(period_time);
-  tf2::Vector3 trunk_axis_pos = trunk_spline_.getEulerAngles(period_time);
   tf2::Vector3 trunk_axis_vel = trunk_spline_.getEulerVel(period_time);
   tf2::Vector3 trunk_axis_acc = trunk_spline_.getEulerAcc(period_time);
 
-  //Convert in next support foot frame and save
-  trunk_pos_at_last_ = support_to_next_ * trunk_pos;
-  trunk_pos_vel_at_last_ = support_to_next_ * trunk_pos_vel;
-  trunk_pos_acc_at_last_ = support_to_next_ * trunk_pos_acc;
-  trunk_axis_pos_at_last_ = support_to_next_ * trunk_axis_pos;
-  trunk_axis_vel_at_last_ = support_to_next_ * trunk_axis_vel;
-  trunk_axis_acc_at_last_ = support_to_next_ * trunk_axis_acc;
+  // Convert the pose in next support foot frame and save
+  tf2::Transform trunk_pose_at_last = support_to_next_.inverse() * trunk_pose;
+  trunk_pos_at_last_ = trunk_pose_at_last.getOrigin();
+  double roll, pitch, yaw;
+  tf2::Matrix3x3(trunk_pose_at_last.getRotation()).getRPY(roll, pitch, yaw);
+  trunk_axis_pos_at_last_ = tf2::Vector3(roll, pitch, yaw);
+
+  // convert the velocities and accelerations in next support foot frame and save
+  // we use a transformation with a 0 origin, since we only want to do rotation
+  tf2::Transform rotation_to_next(support_to_next_);
+  rotation_to_next.setOrigin({0,0,0});
+  trunk_pos_vel_at_last_  = rotation_to_next * trunk_pos_vel;
+  trunk_pos_acc_at_last_  = rotation_to_next * trunk_pos_acc;
+  trunk_axis_vel_at_last_ = rotation_to_next * trunk_axis_vel;
+  trunk_axis_acc_at_last_ = rotation_to_next * trunk_axis_acc;
 }
 
 void WalkEngine::buildNormalTrajectories() {
