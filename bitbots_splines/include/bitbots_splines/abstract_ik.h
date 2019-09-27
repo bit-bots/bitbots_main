@@ -10,8 +10,20 @@ namespace bitbots_splines {
 typedef std::pair<std::vector<std::string>, std::vector<double>> JointGoals;
 
 class AbstractIK {
-  virtual JointGoals calculate(std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) = 0;
+  /**
+   * Initializes the class. This must be called before calculate() is called.
+   * @param kinematic_model The MoveIt! kinematic model of the robot
+   */
   virtual void init(moveit::core::RobotModelPtr kinematic_model) = 0;
+  /**
+   * Calculate motor joint goals from IK goals, i.e. solve the presented inverse kinematics problem
+   * @param ik_goals
+   * @return
+   */
+  virtual JointGoals calculate(std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) = 0;
+  /**
+   * Reset the IK to its initial state.
+   */
   virtual void reset() = 0;
 };
 }

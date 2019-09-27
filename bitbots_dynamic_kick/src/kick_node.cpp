@@ -28,14 +28,14 @@ KickNode::KickNode() :
   server_.start();
 }
 
-void KickNode::copLCallback(const geometry_msgs::PointStamped& cop) {
+void KickNode::copLCallback(const geometry_msgs::PointStamped &cop) {
   if (cop.header.frame_id!="l_sole") {
     ROS_ERROR_STREAM("cop_l not in l_sole frame! Stabilizing will not work.");
   }
   stabilizer_.m_cop_left = cop.point;
 }
 
-void KickNode::copRCallback(const geometry_msgs::PointStamped& cop) {
+void KickNode::copRCallback(const geometry_msgs::PointStamped &cop) {
   if (cop.header.frame_id!="r_sole") {
     ROS_ERROR_STREAM("cop_r not in r_sole frame! Stabilizing will not work.");
   }

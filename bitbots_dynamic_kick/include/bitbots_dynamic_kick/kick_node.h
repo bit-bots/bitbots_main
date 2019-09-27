@@ -84,8 +84,8 @@ class KickNode {
    * Publish goals to ROS
    */
   void publishGoals(const bitbots_splines::JointGoals &goals);
-  void copLCallback(const geometry_msgs::PointStamped& cop);
-  void copRCallback(const geometry_msgs::PointStamped& cop);
+  void copLCallback(const geometry_msgs::PointStamped &cop);
+  void copRCallback(const geometry_msgs::PointStamped &cop);
 };
 }
 

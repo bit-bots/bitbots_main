@@ -15,8 +15,8 @@ void KickEngine::reset() {
 void KickEngine::setGoals(const KickGoals &goals) {
   is_left_kick_ = calcIsLeftFootKicking(goals.header,
                                         goals.ball_position,
-                                        goals
-                                             .kick_direction); // TODO Internal state is dirty when goal transformation fails
+                                        goals.kick_direction);
+  // TODO Internal state is dirty when goal transformation fails
 
   /* Save given goals because we reuse them later */
   auto transformed_goal = transformGoal((is_left_kick_) ? "r_sole" : "l_sole", goals.header, goals.ball_position,

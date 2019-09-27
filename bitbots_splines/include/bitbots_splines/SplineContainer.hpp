@@ -97,13 +97,13 @@ class SplineContainer
         /**
          * Returns all time points where a point in any spline exists.
          */
-        std::vector<double> getTimes(){
+        std::vector<double> getTimes() const {
             std::set<double> times;
             std::vector<double> times_sorted;
             // go trough all splines
             for (const auto& sp : _container){
                 // go trough all points of the spline
-                for(SmoothSpline::Point point : sp.second.points()) {
+                for(const SmoothSpline::Point& point : sp.second.points()) {
                     times.insert(point.time);
                 }
             }

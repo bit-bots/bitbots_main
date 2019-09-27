@@ -19,7 +19,14 @@ class AbstractEngine {
    * @return New spline positions
    */
   virtual ResultType update(double dt) = 0;
+  /**
+   * Set new goals for the engine to calculate splines from.
+   * @param goals An instance of RequestType that describes the goals that the spline should fulfill
+   */
   virtual void setGoals(const RequestType &goals) = 0;
+  /**
+   * Reset the engine to its initial state.
+   */
   virtual void reset() = 0;
   /**
    * Returns the percentage of the spline that has already been returned.

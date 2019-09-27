@@ -9,7 +9,6 @@
 #include <string>
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
-#include <nav_msgs/Path.h>
 #include <bitbots_splines/SmoothSpline.hpp>
 #include <bitbots_splines/SplineContainer.hpp>
 #include <geometry_msgs/PoseStamped.h>
@@ -32,7 +31,7 @@ struct VisualizationParams {
 class Visualizer : bitbots_splines::AbstractVisualizer {
  public:
 
-  explicit Visualizer(const std::string& base_topic);
+  explicit Visualizer(const std::string &base_topic);
 
   void setParams(VisualizationParams params);
 
