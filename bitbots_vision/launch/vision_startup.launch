@@ -8,27 +8,25 @@
     <arg name="use_game_settings" default="false" doc="true: loads additional game settings" />
 
 
-    <!-- Set vision config-->
-    <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml" />
-
-    <!-- load special sim parameters-->
-    <group if="$(arg sim)">
-        <rosparam command="load" file="$(find bitbots_vision)/config/simparams.yaml" />
-    </group>
-
-    <!-- Set debug params-->
-    <param name="vision_publish_debug_image" value="$(arg debug)" />
-    <param name="vision_publish_HSV_mask_image" value="$(arg debug)" />
-    <param name="vision_publish_field_mask_image" value="$(arg debug)" />
-    <param name="ball_fcnn_publish_debug_img" value="$(arg debug)" />
-
-    <!-- Start vision without ball detection-->
-    <group if="$(arg dummyball)">
-        <param name="neural_network_type" value="dummy" />
-    </group>
 
     <!-- Start the vision-->
-    <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen"></node>
+    <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
+        <!-- Set vision config-->
+        <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml" />
+
+        <!-- Set debug params-->
+        <param name="vision_publish_debug_image" value="$(arg debug)" />
+        <param name="vision_publish_HSV_mask_image" value="$(arg debug)" />
+        <param name="vision_publish_field_mask_image" value="$(arg debug)" />
+        <param name="ball_fcnn_publish_debug_img" value="$(arg debug)" />
+
+        <!-- Start vision without ball detection-->
+        <param name="neural_network_type" value="dummy" if="$(arg dummyball)"/>
+
+        <!-- load special sim parameters-->
+        <rosparam command="load" file="$(find bitbots_vision)/config/simparams.yaml" if="$(arg sim)"/>
+
+    </node>
 
     <!-- Load game settings -->
     <group if="$(arg use_game_settings)">
