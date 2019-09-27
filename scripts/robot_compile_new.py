@@ -277,6 +277,7 @@ def sync(target, package='', pre_clean=False):
     :type pre_clean: bool
     """
     if pre_clean:
+        print_info("Pre-cleaning on {}".format(target.hostname))
         cmd = [
             "ssh bitbots@{}".format(target.hostname),
             "rm -rf {}/src/*".format(target.workspace)
@@ -286,6 +287,7 @@ def sync(target, package='', pre_clean=False):
         if clean_result.returncode != 0:
             print_warn("Cleaning of source directory on {} failed. Continuing anyways".format(target.hostname))
 
+    print_info("Synchronizing {}".format(target.hostname))
     cmd = [
         "rsync",
         "--checksum",
@@ -312,6 +314,7 @@ def sync_gamesettings(target):
     """
     :type target: Target
     """
+    print_info("Synchronizing gamesettings to {}".format(target.hostname))
     cmd = [
         "rsync",
         "--checksum",
@@ -337,6 +340,8 @@ def build(target, package='', pre_clean=False):
     :type package: str
     :type pre_clean: bool
     """
+    print_info("Building on {}".format(target.hostname))
+
     cmd = [
         "ssh",
         "bitbots@{}".format(target.ssh_target),
@@ -370,8 +375,8 @@ def install_rosdeps(target):
 
     :type target: Target
     """
+    print_info("Installing rosdeps on {}".format(target))
 
-    # construct command which will be executed on the target via ssh
     cmd = [
         "ssh",
         "bitbots@{}".format(target.ssh_target),
