@@ -88,7 +88,7 @@ class Vision:
 
         # Add model enums to _config
         ros_utils.add_model_enums(VisionConfig, self._package_path)
-        ros_utils.add_color_space_enums(VisionConfig, self._package_path)
+        ros_utils.add_color_space_enum(VisionConfig, self._package_path)
 
         # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)

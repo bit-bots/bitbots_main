@@ -151,7 +151,7 @@ def add_model_enums(cfg_type, package_path):
     _change_enum_items(cfg_type, 'fcnn_model_path', fcnn_paths)
     _change_enum_items(cfg_type, 'yolo_model_path', yolo_paths)
 
-def add_color_space_enums(cfg_type, package_path):
+def add_color_space_enum(cfg_type, package_path):
     """
     Add models to dynamic reconfigure enums.
 
