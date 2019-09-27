@@ -168,7 +168,7 @@ class TransformBall(object):
 
             if not broken:
                 line.intersections.append(rel_inter)
-        if len(line.segments) > 0 or len(line.circles) > 0 or len(line.intersections) > 0:
+        if line.segments or line.circles or line.intersections:
             self._line_relative_pub.publish(line)
         else:
             rospy.logwarn_throttle(5.0, rospy.get_name() +
