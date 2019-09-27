@@ -123,12 +123,12 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   tf2::Transform right_in_world_;
 
   //Trunk pose and orientation position, velocity and acceleration at half cycle start.
-  tf2::Vector3 trunk_pos_at_last_;
-  tf2::Vector3 trunk_pos_vel_at_last_;
-  tf2::Vector3 trunk_pos_acc_at_last_;
-  tf2::Vector3 trunk_axis_pos_at_last_;
-  tf2::Vector3 trunk_axis_vel_at_last_;
-  tf2::Vector3 trunk_axis_acc_at_last_;
+  tf2::Vector3 trunk_pos_at_foot_change_;
+  tf2::Vector3 trunk_pos_vel_at_foot_change_;
+  tf2::Vector3 trunk_pos_acc_at_foot_change_;
+  tf2::Vector3 trunk_orientation_pos_at_last_foot_change_;
+  tf2::Vector3 trunk_orientation_vel_at_last_foot_change_;
+  tf2::Vector3 trunk_orientation_acc_at_foot_change_;
 
   void updatePhase(double dt);
 
