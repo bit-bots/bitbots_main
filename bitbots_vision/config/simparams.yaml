@@ -1,0 +1,3 @@
+# Defining the vision sim parameter overrides
+
+field_color_detector_path: 'sim.pickle'
