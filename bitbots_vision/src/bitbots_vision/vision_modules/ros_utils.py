@@ -171,7 +171,6 @@ def add_color_space_enums(cfg_type, package_path):
 
     # Add enums to configuration
     _change_enum_items(cfg_type, 'field_color_detector_path', field_color_space_enum)
-    _change_enum_items(cfg_type, 'field_color_detector_path_sim', field_color_space_enum)
 
 def create_or_update_publisher(old_config, new_config, publisher_object, topic_key, data_class, subscriber_listener=None, tcp_nodelay=False, latch=False, headers=None, queue_size=1):
     """
