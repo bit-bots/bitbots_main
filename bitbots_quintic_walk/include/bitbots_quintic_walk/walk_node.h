@@ -78,7 +78,7 @@ class WalkNode {
  private:
   void publishGoals(const bitbots_splines::JointGoals &goals);
 
-  void publishOdometry();
+  void publishOdometry(WalkResponse response);
 
   void cmdVelCb(geometry_msgs::Twist msg);
 

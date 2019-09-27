@@ -63,6 +63,7 @@ WalkNode::WalkNode() :
 
 void WalkNode::run() {
   int odom_counter = 0;
+  WalkResponse response;
 
   while (ros::ok()) {
     ros::Rate loop_rate(engine_frequency_);
@@ -81,7 +82,7 @@ void WalkNode::run() {
           robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
       // update walk engine response
       walk_engine_.setGoals(current_request_);
-      WalkResponse response = walk_engine_.update(dt);
+      response = walk_engine_.update(dt);
       visualizer_.publishEngineDebug(response);
 
       // only calculate joint goals from this if the engine is not idle
@@ -93,7 +94,7 @@ void WalkNode::run() {
     // publish odometry
     odom_counter++;
     if (odom_counter > odom_pub_factor_) {
-      publishOdometry();
+      publishOdometry(response);
       odom_counter = 0;
     }
     ros::spinOnce();
@@ -336,19 +337,7 @@ void WalkNode::publishGoals(const bitbots_splines::JointGoals &goals) {
   pub_controller_command_.publish(command);
 }
 
-void WalkNode::publishOdometry() {
-  // transformation from support leg to trunk
-
-  Eigen::Isometry3d trunk_to_support;
-  if (walk_engine_.isLeftSupport()) {
-    trunk_to_support = current_state_->getGlobalLinkTransform("l_sole");
-  } else {
-    trunk_to_support = current_state_->getGlobalLinkTransform("r_sole");
-  }
-  Eigen::Isometry3d support_to_trunk = trunk_to_support.inverse();
-  tf2::Transform tf_support_to_trunk;
-  tf2::convert(support_to_trunk, tf_support_to_trunk);
-
+void WalkNode::publishOdometry(WalkResponse response) {
   // odometry to trunk is transform to support foot * transform from support to trunk
   tf2::Transform support_foot_tf;
   if (walk_engine_.isLeftSupport()) {
@@ -357,30 +346,14 @@ void WalkNode::publishOdometry() {
     support_foot_tf = walk_engine_.getRight();
   }
 
-  tf2::Transform odom_to_trunk = support_foot_tf * tf_support_to_trunk;
+  tf2::Transform odom_to_trunk = support_foot_tf * response.support_foot_to_trunk;
   tf2::Vector3 pos = odom_to_trunk.getOrigin();
   geometry_msgs::Quaternion quat_msg;
-
   tf2::convert(odom_to_trunk.getRotation().normalize(), quat_msg);
 
   ros::Time current_time = ros::Time::now();
 
-  if (publish_odom_tf_) {
-    odom_trans_ = geometry_msgs::TransformStamped();
-    odom_trans_.header.stamp = current_time;
-    odom_trans_.header.frame_id = "odom";
-    odom_trans_.child_frame_id = "base_link";
-
-    odom_trans_.transform.translation.x = pos[0];
-    odom_trans_.transform.translation.y = pos[1];
-    odom_trans_.transform.translation.z = pos[2];
-    odom_trans_.transform.rotation = quat_msg;
-
-    //send the transform
-    odom_broadcaster_.sendTransform(odom_trans_);
-  }
-
-  // send the odometry also as message
+  // send the odometry as message
   odom_msg_.header.stamp = current_time;
   odom_msg_.header.frame_id = "odom";
   odom_msg_.child_frame_id = "base_link";
@@ -397,6 +370,21 @@ void WalkNode::publishOdometry() {
 
   odom_msg_.twist.twist = twist;
   pub_odometry_.publish(odom_msg_);
+
+  if (publish_odom_tf_) {
+    odom_trans_ = geometry_msgs::TransformStamped();
+    odom_trans_.header.stamp = current_time;
+    odom_trans_.header.frame_id = "odom";
+    odom_trans_.child_frame_id = "base_link";
+
+    odom_trans_.transform.translation.x = pos[0];
+    odom_trans_.transform.translation.y = pos[1];
+    odom_trans_.transform.translation.z = pos[2];
+    odom_trans_.transform.rotation = quat_msg;
+
+    //send the transform
+    odom_broadcaster_.sendTransform(odom_trans_);
+  }
 }
 
 void WalkNode::initializeEngine() {
