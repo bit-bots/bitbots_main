@@ -97,7 +97,7 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   msg.footstep_last.z = yaw;
 
   msg.footstep_next.x = response.support_to_next.getOrigin()[0];
-  msg.footstep_next.y = response.support_to_last.getOrigin()[1];
+  msg.footstep_next.y = response.support_to_next.getOrigin()[1];
   tf2::Matrix3x3(response.support_to_next.getRotation()).getRPY(roll, pitch, yaw);
   msg.footstep_next.z = yaw;
 

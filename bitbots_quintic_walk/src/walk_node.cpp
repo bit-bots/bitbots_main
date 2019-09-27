@@ -125,8 +125,7 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
 
   // publish debug information
   if (debug_active_) {
-    visualizer_
-        .publishIKDebug(response, current_state_, motor_goals);
+    visualizer_.publishIKDebug(response, current_state_, motor_goals);
     visualizer_.publishWalkMarkers(response);
   }
 }
@@ -252,7 +251,7 @@ void WalkNode::copLeftCb(geometry_msgs::PointStamped msg) {
   // The inside edge is okay, since it is necessary to shift the CoM dynamically between feet.
   // To prevent falling to the front and back, the x position of the CoP is also taken into account.
   if (cop_stop_active_ &&
-      (msg.point.y < -1 * cop_y_threshold_ || abs(msg.point.x) > cop_x_threshold_)) {
+      (msg.point.y > cop_y_threshold_ || abs(msg.point.x) > cop_x_threshold_)) {
     walk_engine_.requestPause();
   }
 }
