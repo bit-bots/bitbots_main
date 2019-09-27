@@ -1,7 +1,0 @@
-<launch>
-    <arg name="use_game_settings" default="false"/>
-    <group if="$(arg use_game_settings)">
-            <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
-    </group>
-    <node name="bezier_pathfinding" pkg="bitbots_bezier_pathfinding" type="pathfinding.py" />
-</launch>
