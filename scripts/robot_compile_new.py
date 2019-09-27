@@ -9,35 +9,52 @@ import ipaddress
 
 from bitbots_bringup import game_settings
 
+class LOGLEVEL:
+    current = 2
+    DEBUG = 3
+    INFO = 2
+    WARN = 1
+    ERR_SUCCESS = 0
+
 BITBOTS_META = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def print_err(msg):
-    print("\033[91m\033[1m##" + "".join(["#"] * len(str(msg))) + "##\033[0m")
-    print("\033[91m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
-    print('\033[91m\033[1m# ' + str(msg) + ' #\033[0m')
-    print("\033[91m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
-    print("\033[91m\033[1m##" + "".join(["#"] * len(str(msg))) + "##\033[0m")
+    if LOGLEVEL.current >= LOGLEVEL.ERR_SUCCESS:
+        print("\033[91m\033[1m##" + "".join(["#"] * len(str(msg))) + "##\033[0m")
+        print("\033[91m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
+        print('\033[91m\033[1m# ' + str(msg) + ' #\033[0m')
+        print("\033[91m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
+        print("\033[91m\033[1m##" + "".join(["#"] * len(str(msg))) + "##\033[0m")
 
 
 def print_warn(msg):
-    print("\033[93m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
-    print('\033[93m\033[1m# ' + str(msg) + ' #\033[0m')
-    print("\033[93m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
+    if LOGLEVEL.current >= LOGLEVEL.WARN:
+        print("\033[93m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
+        print('\033[93m\033[1m# ' + str(msg) + ' #\033[0m')
+        print("\033[93m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
 
 
 def print_success(msg):
-    print("\033[92m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
-    print('\033[92m\033[1m# ' + str(msg) + ' #\033[0m')
-    print("\033[92m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
+    if LOGLEVEL.current >= LOGLEVEL.ERR_SUCCESS:
+        print("\033[92m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
+        print('\033[92m\033[1m# ' + str(msg) + ' #\033[0m')
+        print("\033[92m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
 
 
 def print_info(msg):
-    print('\033[96m' + str(msg) + '\033[0m')
+    if LOGLEVEL.current >= LOGLEVEL.INFO:
+        print('\033[96m' + str(msg) + '\033[0m')
+
+
+def print_debug(msg):
+    if LOGLEVEL.current >= LOGLEVEL.DEBUG:
+        print(msg)
 
 
 def print_bit_bot():
-    print("""\033[1m
+    if LOGLEVEL.current >= LOGLEVEL.INFO:
+        print("""\033[1m
                 `/shNMoyymmmmmmmmmmys+NmNs/`                
               `+mmdddmmmddddddddddddmmmdddmm/               
               ymdddddddmmmmmmmmmmmmmmdddddddms              
@@ -160,7 +177,8 @@ def parse_arguments():
     parser.add_argument("--no-rosdeps", action="store_false", default=True, dest="install_rosdeps",
                         help="Don't check and install rosdeps on the target."
                              "Might be useful when no internet connection is available.")
-    parser.add_argument("-q", "--quiet", action="store_true", help="Less output")
+    parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
+    parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output")
     return parser.parse_args()
 
 
@@ -252,11 +270,10 @@ def get_includes_from_file(file_path, package=''):
     return includes
 
 
-def sync(target, package='', verbose=True, pre_clean=False):
+def sync(target, package='', pre_clean=False):
     """
     :type target: Target
     :type package: str
-    :type verbose: bool
     :type pre_clean: bool
     """
     if pre_clean:
@@ -264,7 +281,7 @@ def sync(target, package='', verbose=True, pre_clean=False):
             "ssh bitbots@{}".format(target.hostname),
             "rm -rf {}/src/*".format(target.workspace)
         ]
-        print_info("Calling {}".format(" ".join(cmd)))
+        print_debug("Calling {}".format(" ".join(cmd)))
         clean_result = subprocess.run(cmd)
         if clean_result.returncode != 0:
             print_warn("Cleaning of source directory on {} failed. Continuing anyways".format(target.hostname))
@@ -273,7 +290,7 @@ def sync(target, package='', verbose=True, pre_clean=False):
         "rsync",
         "--checksum",
         "--archive",
-        "-v" if verbose else "",
+        "-v" if LOGLEVEL.current >= LOGLEVEL.DEBUG else "",
         "--delete",
     ]
     cmd.extend(get_includes_from_file(target.sync_includes_file, package))
@@ -282,7 +299,7 @@ def sync(target, package='', verbose=True, pre_clean=False):
         "bitbots@{}:{}/src/".format(target.ssh_target, target.workspace)
     ])
 
-    print_info("Calling {}".format(" ".join(cmd)))
+    print_debug("Calling {}".format(" ".join(cmd)))
     sync_result = subprocess.run(cmd)
     if sync_result.returncode != 0:
         print_err("Synchronizing {} failed with error code {}".format(target.hostname, sync_result.returncode))
@@ -291,21 +308,20 @@ def sync(target, package='', verbose=True, pre_clean=False):
     print_success("Synchronization of {} successful".format(target.hostname))
 
 
-def sync_gamesettings(target, verbose=True):
+def sync_gamesettings(target):
     """
     :type target: Target
-    :type verbose: bool
     """
     cmd = [
         "rsync",
         "--checksum",
         "--archive",
-        "-v" if verbose else "",
+        "-v" if LOGLEVEL.current >= LOGLEVEL.DEBUG else "",
         os.path.join(BITBOTS_META, "bitbots_misc", "bitbots_bringup", "config", "game_settings.yaml"),
         "bitbots@{}:{}/src/bitbots_misc/config/game_settings.yaml".format(target.ssh_target, target.workspace)
     ]
 
-    print_info("Calling {}".format(" ".join(cmd)))
+    print_debug("Calling {}".format(" ".join(cmd)))
     sync_result = subprocess.run(cmd)
     if sync_result.returncode != 0:
         print_err("Synchronizing game settings with {} failed with error code {}"
@@ -315,12 +331,11 @@ def sync_gamesettings(target, verbose=True):
     print_success("Synchronizing game settings with {} succeeded".format(target.hostname))
 
 
-def build(target, package='', verbose=True, pre_clean=False):
+def build(target, package='', pre_clean=False):
     """
     :type target: Target
     :type package: str
     :type pre_clean: bool
-    :type verbose: bool
     """
     cmd = [
         "ssh",
@@ -335,12 +350,12 @@ def build(target, package='', verbose=True, pre_clean=False):
          ).format(**{
             "workspace": target.workspace,
             "cmd_clean": "cakin clean -y {};".format(package) if pre_clean else "",
-            "quiet_option": "> /dev/null" if not verbose else "",
+            "quiet_option": "> /dev/null" if LOGLEVEL.current < LOGLEVEL.INFO else "",
             "package": package
         })
     ]
 
-    print_info("Calling {}".format(" ".join(cmd)))
+    print_debug("Calling {}".format(" ".join(cmd)))
     build_result = subprocess.run(cmd)
     if build_result.returncode != 0:
         print_err("Build on {} failed".format(target.hostname))
@@ -349,12 +364,11 @@ def build(target, package='', verbose=True, pre_clean=False):
     print_success("Build on {} succeeded".format(target.hostname))
 
 
-def install_rosdeps(target, verbose=True):
+def install_rosdeps(target):
     """
     Install missing dependencies on a target with rosdep
 
     :type target: Target
-    :type verbose: bool
     """
 
     # construct command which will be executed on the target via ssh
@@ -362,13 +376,12 @@ def install_rosdeps(target, verbose=True):
         "ssh",
         "bitbots@{}".format(target.ssh_target),
         "rosdep install -y -r {} --ignore-src --from-paths {}".format(
-            "" if verbose else "-q",
+            "" if LOGLEVEL.current >= LOGLEVEL.INFO else "-q",
             os.path.join(target.workspace, "src")
         ),
     ]
 
-    if verbose:
-        print_info("Calling {}".format(" ".join(cmd)))
+    print_debug("Calling {}".format(" ".join(cmd)))
 
     rosdep_result = subprocess.run(cmd)
     if rosdep_result.returncode != 0:
@@ -380,7 +393,10 @@ def install_rosdeps(target, verbose=True):
 
 def main():
     args = parse_arguments()
+
+    LOGLEVEL.current = LOGLEVEL.current + args.verbose - args.quiet
     print_bit_bot()
+
     targets = parse_targets(args.target)
 
     for target in targets:
@@ -390,7 +406,7 @@ def main():
         elif args.configure_only:
             print_info("Not syncing to {} due to configure-only mode".format(target.hostname))
         else:
-            sync(target, args.package, verbose=not args.quiet, pre_clean=args.clean_src)
+            sync(target, args.package, pre_clean=args.clean_src)
 
         # build
         if args.sync_only:
@@ -399,8 +415,8 @@ def main():
             print_info("Not compiling on {} due to configure-only mode".format(target.hostname))
         else:
             if args.install_rosdeps:
-                install_rosdeps(target, verbose=not args.quiet)
-            build(target, args.package, verbose=not args.quiet, pre_clean=args.clean_build)
+                install_rosdeps(target)
+            build(target, args.package, pre_clean=args.clean_build)
 
         # configure
         if args.sync_only:
@@ -410,7 +426,7 @@ def main():
         else:
             print_info("Running game-settings script for {}".format(target.hostname))
             game_settings.main()
-            sync_gamesettings(target, False)
+            sync_gamesettings(target)
 
 
 if __name__ == "__main__":
