@@ -653,7 +653,7 @@ class Vision:
             self._line_detector,
         ]
         # Run all modules
-        for module in self._conventional_modules:  # TODO: Check if the change to _underscore has been merged correctly
+        for module in self._conventional_modules:
             module.compute()
 
     def _handle_forgotten_camera_cap(self, image):
