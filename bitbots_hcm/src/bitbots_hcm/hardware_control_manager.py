@@ -55,7 +55,8 @@ class HardwareControlManager:
         speak("Starting hcm", self.blackboard.speak_publisher, priority=Speak.HIGH_PRIORITY)
 
         rospy.Subscriber("imu/data", Imu, self.update_imu, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("foot_pressure", FootPressure, self.update_pressure, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("foot_pressure_left/filtered", FootPressure, self.update_pressure_left, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("foot_pressure_right/filtered", FootPressure, self.update_pressure_right, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("walking_motor_goals", JointCommand, self.walking_goal_callback, queue_size=1,
                          tcp_nodelay=True)
         rospy.Subscriber("animation", AnimationMsg, self.animation_callback, queue_size=1, tcp_nodelay=True)
@@ -91,11 +92,21 @@ class HardwareControlManager:
         self.blackboard.not_much_smoothed_gyro = numpy.multiply(self.blackboard.not_much_smoothed_gyro,
                                                                 0.5) + numpy.multiply(self.blackboard.gyro, 0.5)
 
-    def update_pressure(self, msg):
+    def update_pressure_left(self, msg):
         """Gets new pressure values and writes them to the blackboard"""
         self.blackboard.last_pressure_update_time = msg.header.stamp
-        self.blackboard.pressures = [msg.l_l_b, msg.l_l_f, msg.l_r_f, msg.l_r_b, msg.r_l_b, msg.r_l_f, msg.r_r_f,
-                                     msg.r_r_b]
+        self.blackboard.pressures[0] = msg.left_front
+        self.blackboard.pressures[1] = msg.left_back
+        self.blackboard.pressures[2] = msg.right_front
+        self.blackboard.pressures[3] = msg.right_back
+
+    def update_pressure_right(self, msg):
+        """Gets new pressure values and writes them to the blackboard"""
+        self.blackboard.last_pressure_update_time = msg.header.stamp
+        self.blackboard.pressures[4] = msg.left_front
+        self.blackboard.pressures[5] = msg.left_back
+        self.blackboard.pressures[6] = msg.right_front
+        self.blackboard.pressures[7] = msg.right_back
 
     def reconfigure(self, config, level):
         """ Dynamic reconfigure of the fall checker values."""

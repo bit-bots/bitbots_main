@@ -66,7 +66,7 @@ class CheckPressureSensor(AbstractDecisionElement):
 
         if self.blackboard.pressure_sensors_installed and not self.blackboard.simulation_active:
             if not self.blackboard.last_pressure_update_time:
-                # wait for the IMU to start
+                # wait for the pressure sensors to start
                 self.blackboard.current_state = STATE_STARTUP
                 return "PRESSURE_NOT_STARTED"
             elif self.blackboard.current_time.to_sec() - self.blackboard.last_pressure_update_time.to_sec() > self.blackboard.pressure_timeout_duration:

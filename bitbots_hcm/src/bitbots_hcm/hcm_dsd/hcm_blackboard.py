@@ -56,7 +56,7 @@ class HcmBlackboard():
         self.pressure_sensors_installed = rospy.get_param("hcm/pressure_sensors_installed", False)
         self.pressure_timeout_duration = rospy.get_param("hcm/pressure_timeout_duration")
         self.last_pressure_update_time = None
-        self.pressure = []
+        self.pressure = [0]*8
         foot_zero_service_name = rospy.get_param("hcm/foot_zero_service")
         self.foot_zero_service = rospy.ServiceProxy(foot_zero_service_name, Empty)
 
