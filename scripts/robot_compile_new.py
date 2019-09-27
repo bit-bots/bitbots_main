@@ -5,6 +5,7 @@ import sys
 import os
 import yaml
 import subprocess
+import ipaddress
 
 from bitbots_bringup import game_settings
 
@@ -187,15 +188,29 @@ def parse_targets(targets):
             print_info("Using robot={} hostname={} ip={} for target {}".format(
                 res[-1].robot_name, res[-1].hostname, res[-1].ip, target))
 
-        # this means an IP address was specified
+        # this means a known IP address was specified
         elif target in Target.IPs.__dict__.values():
             res.append(Target(target, target))
             print_info("Using robot={} hostname={} ip={} for target {}".format(
                 res[-1].robot_name, res[-1].hostname, res[-1].ip, target))
 
+        # this means an arbitrary target (likely an IP) was specified
         else:
-            print_err("Could not find a robot, hostname or IP address matching {}".format(target))
-            sys.exit(1)
+            try:
+                ipaddress.ip_address(target)
+            except ValueError:
+                print_err("{} is neither a known target nor a valid ip address".format(target))
+                sys.exit(1)
+
+            cmd = ["ssh", "bitbots@{}".format(target), "cat /etc/hostname"]
+            host_inspect_result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="utf-8")
+            
+            if host_inspect_result.returncode != 0:
+                print_err("Unable to connect to {}".format(target))
+                sys.exit(1)
+
+            print_info("Reparsing {}'s hostname ({})".format(target, host_inspect_result.stdout.replace("\n", "")))
+            res.extend(parse_targets(host_inspect_result.stdout.replace("\n", "")))
 
     return res
 
