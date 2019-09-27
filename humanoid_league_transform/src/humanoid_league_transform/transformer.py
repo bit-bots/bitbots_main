@@ -16,60 +16,76 @@ import numpy as np
 
 class TransformBall(object):
     def __init__(self):
-        rospy.init_node("bitbots_transformer")
+        rospy.init_node("humanoid_league_transformer")
 
+        self._tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(10.0))
+        self._tf_listener = tf2_ros.TransformListener(self._tf_buffer)
 
-        self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(10.0))
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
+        # Parameters
+        self._ball_height = rospy.get_param("~ball/ball_radius", 0.075)
+        self._bar_height = rospy.get_param("~goal_parts/bar_height", 2.0)
+        self._publish_frame = rospy.get_param("~publish_frame", "base_footprint")
 
-        # time 0 takes the most current transform available
-        self.tf_buffer.can_transform("base_footprint", "camera_optical_frame", rospy.Time(0), timeout=rospy.Duration(30))
-        rospy.Subscriber(rospy.get_param("~ball/ball_topic", "/balls_in_image"),
-                         BallsInImage,
-                         self._callback_ball,
-                         queue_size=1)
-        if rospy.get_param("~lines/lines_relative", True):
-            rospy.Subscriber(rospy.get_param("~lines/lines_topic", "/line_in_image"),
-                             LineInformationInImage,
-                             self._callback_lines, queue_size=1)
-        if rospy.get_param("~lines/pointcloud", False):
-            rospy.Subscriber(rospy.get_param("~lines/lines_topic", "/line_in_image"),
-                             LineInformationInImage,
-                             self._callback_lines_pc, queue_size=1)
+        camera_info_topic = rospy.get_param("~camera_info/camera_info_topic", "/camera_info")
+        balls_in_image_topic = rospy.get_param("~ball/ball_topic", "/balls_in_image")
+        lines_in_image_topic = rospy.get_param("~lines/lines_topic", "/line_in_image")
+        goal_in_image_topic = rospy.get_param("~goals/goals_topic", "/goal_in_image")
+        goal_parts_in_image_topic = rospy.get_param("~goal_parts/goal_parts_topic", "/goal_parts_in_image")
+        obstacles_in_image_topic = rospy.get_param("~obstacles/obstacles_topic", "/obstacles_in_image")
+        field_boundary_in_image_topic = rospy.get_param("~field_boundary/field_boundary_topic", "/field_boundary_in_image")
 
-        rospy.Subscriber(rospy.get_param("~goals/goals_topic", "/goal_in_image"),
-                         GoalInImage, self._callback_goal, queue_size=1)
+        publish_lines_as_lines_relative = rospy.get_param("~lines/lines_relative", True)
+        publish_lines_as_pointcloud = rospy.get_param("~lines/pointcloud", False)
 
-        rospy.Subscriber(rospy.get_param("~goal_parts/goal_parts_topic", "/goal_parts_in_image"),
-                         GoalPartsInImage, self._callback_goal_parts, queue_size=1)
+        self._camera_info = None
+        rospy.Subscriber(camera_info_topic, CameraInfo, self._callback_camera_info, queue_size=1)
 
-        rospy.Subscriber(rospy.get_param("~obstacles/obstacles_topic", "/obstacles_in_image"),
-                         ObstaclesInImage, self._callback_obstacles, queue_size=1)
+        # Wait for Camera info
+        cam_info_counter = 0
+        while self._camera_info is None:
+            rospy.sleep(0.1)
+            if cam_info_counter > 50:
+                rospy.logerr_throttle(5, rospy.get_name() + ": Camera Info not received on topic '" +
+                                      camera_info_topic + "'")
 
-        rospy.Subscriber(rospy.get_param("~field_boundary/field_boundary_topic", "/field_boundary_in_image"),
-                         FieldBoundaryInImage, self._callback_field_boundary, queue_size=1)
+        # Wait up to 5 seconds for transforms to become available, then print an error and try again
+        # rospy.Time(0) gets the most recent transform
+        while not self._tf_buffer.can_transform(self._publish_frame,
+                                                self._camera_info.header.frame_id,
+                                                rospy.Time(0),
+                                                timeout=rospy.Duration(5)):
+            rospy.logerr(rospy.get_name() + ": Could not get transformation from " + self._publish_frame +
+                         "to " + self._camera_info.header.frame_id)
 
-        rospy.Subscriber(rospy.get_param("~camera_info/camera_info_topic", "/camera_info"),
-                         CameraInfo,
-                         self._callback_camera_info,
-                         queue_size=1)
+        # Also check if we can transform from optical frame to base_footprint
+        while not self._tf_buffer.can_transform("base_footprint",
+                                                self._camera_info.header.frame_id,
+                                                rospy.Time(0),
+                                                timeout=rospy.Duration(5)):
+            rospy.logerr(rospy.get_name() + ": Could not get transformation from 'base_footprint' to " +
+                         self._camera_info.header.frame_id)
 
-        self.marker_pub = rospy.Publisher("ballpoint", Marker, queue_size=1)
-        self.ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=1)
-        if rospy.get_param("~lines/lines_relative", True):
-            self.line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=1)
-        if rospy.get_param("~lines/pointcloud", True):
-            self.line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=1)
-        self.goal_relative_pub = rospy.Publisher("goal_relative", GoalRelative, queue_size=1)
-        self.goal_parts_relative = rospy.Publisher("goal_parts_relative", GoalPartsRelative, queue_size=1)
-        self.obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=1)
-        self.field_boundary_pub = rospy.Publisher("field_boundary_relative", PixelsRelative, queue_size=1)
+        # Publishers TODO make topics configurable
+        self._ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=1)
+        if publish_lines_as_lines_relative:
+            self._line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=1)
+        if publish_lines_as_pointcloud:
+            self._line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=1)
+        self._goal_relative_pub = rospy.Publisher("goal_relative", GoalRelative, queue_size=1)
+        self._goal_parts_relative = rospy.Publisher("goal_parts_relative", GoalPartsRelative, queue_size=1)
+        self._obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=1)
+        self._field_boundary_pub = rospy.Publisher("field_boundary_relative", PixelsRelative, queue_size=1)
 
-        self.camera_info = None
-
-        self.ball_height = rospy.get_param("~ball/ball_radius", 0.075)
-        self.bar_height = rospy.get_param("~goal_parts/bar_height", 2.0)
-        self.publish_frame = "base_footprint"
+        # Subscribers
+        rospy.Subscriber(balls_in_image_topic, BallsInImage, self._callback_ball, queue_size=1)
+        if publish_lines_as_lines_relative:
+            rospy.Subscriber(lines_in_image_topic, LineInformationInImage, self._callback_lines, queue_size=1)
+        if publish_lines_as_pointcloud:
+            rospy.Subscriber(lines_in_image_topic, LineInformationInImage, self._callback_lines_pc, queue_size=1)
+        rospy.Subscriber(goal_in_image_topic, GoalInImage, self._callback_goal, queue_size=1)
+        rospy.Subscriber(goal_parts_in_image_topic,  GoalPartsInImage, self._callback_goal_parts, queue_size=1)
+        rospy.Subscriber(obstacles_in_image_topic, ObstaclesInImage, self._callback_obstacles, queue_size=1)
+        rospy.Subscriber(field_boundary_in_image_topic, FieldBoundaryInImage, self._callback_field_boundary, queue_size=1)
 
         rospy.spin()
 
