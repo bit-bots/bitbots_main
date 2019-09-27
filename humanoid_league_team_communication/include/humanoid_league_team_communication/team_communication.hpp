@@ -36,7 +36,7 @@ private:
     void recv_thread(void);
     void publish_data(MiTeCom::TeamRobotData);
     void strategy_callback(const humanoid_league_msgs::Strategy);
-    void motion_state_callback(const humanoid_league_msgs::RobotControlState);
+    void robot_state_callback(const humanoid_league_msgs::RobotControlState);
     void position_callback(const humanoid_league_msgs::Position2D);
     void ball_callback(const humanoid_league_msgs::BallRelative);
     void goal_callback(const humanoid_league_msgs::GoalRelative);
@@ -82,7 +82,7 @@ private:
     ros::Timer timer;
 
     ros::Subscriber sub_role;
-    ros::Subscriber sub_motion_state;
+    ros::Subscriber sub_robot_state;
     ros::Subscriber sub_goal;
     ros::Subscriber sub_world;
     ros::Subscriber sub_position;
@@ -97,7 +97,7 @@ private:
 
     std::string teamdata_topic;
     std::string strategy_topic;
-    std::string motion_state_topic;
+    std::string robot_state_topic;
     std::string goal_topic;
     std::string world_model_topic;
     std::string position_topic;
