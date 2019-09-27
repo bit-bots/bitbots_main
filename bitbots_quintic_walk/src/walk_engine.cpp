@@ -26,6 +26,10 @@ WalkEngine::WalkEngine() :
   dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_quintic_walk::WalkEngine::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
+
+  // move left and right in world by foot distance for correct initilization
+  left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance /2, 0});
+  right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance /2, 0});
 }
 
 void WalkEngine::setGoals(const WalkRequest &goals) {
