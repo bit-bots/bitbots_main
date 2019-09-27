@@ -47,5 +47,5 @@ We also have some conventions about how we want to use git. They are as follows:
     * the heading should start with a prefix like ``ci:``, ``walking:``, etc to show which part of the repository is affected.
     * the description should not elaborate further on what was done but rather explain why something was done.
 * Any change should be done in a branch and then PRed to master.
-    * branch names should be prefixed with ``feature/``, ``fix/`` or none if not applicable.
+    * branch names should be prefixed with ``feature/``, ``fix/``, ``refactor/`` or none if not applicable.
     * merged branches can be deleted to keep the repo clean of any clutter.
