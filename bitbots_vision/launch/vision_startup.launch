@@ -1,4 +1,5 @@
 <launch>
+    <!-- Get launch params-->
     <arg name="sim" default="false" doc="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
     <arg name="camera" default="true" doc="true: launches an image provider to get images from a camera (unless sim:=true)" />
     <arg name="basler" default="true" doc="true: launches the basler camera driver instead of the wolves image provider" />
@@ -6,41 +7,37 @@
     <arg name="debug" default="false" doc="true: activates publishing of several debug images" />
     <arg name="use_game_settings" default="false" doc="true: loads additional game settings" />
 
-    <!-- start vision for wolfgang (fcnn)-->
-    <group unless="$(arg dummyball)">
-        <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
-            <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml" />
-            <param name="vision_use_sim_color" value="$(arg sim)" />
-            <param name="vision_publish_debug_image" value="$(arg debug)" />
-            <param name="vision_publish_HSV_mask_image" value="$(arg debug)" />
-            <param name="vision_publish_field_mask_image" value="$(arg debug)" />
-            <param name="ball_fcnn_publish_debug_img" value="$(arg debug)" />
-        </node>
-    </group>
 
-    <!-- start vision without ball detection-->
-    <group if="$(arg dummyball)">
-        <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
-            <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml" />
-            <param name="neural_network_type" value="dummy" />
-            <param name="vision_use_sim_color" value="$(arg sim)" />
-            <param name="vision_publish_debug_image" value="$(arg debug)" />
-            <param name="vision_publish_HSV_mask_image" value="$(arg debug)" />
-            <param name="vision_publish_field_mask_image" value="$(arg debug)" />
-            <param name="ball_fcnn_publish_debug_img" value="$(arg debug)" />
-        </node>
-    </group>
 
-    <!-- load game settings -->
+    <!-- Start the vision-->
+    <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
+        <!-- Set vision config-->
+        <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml" />
+
+        <!-- Set debug params-->
+        <param name="vision_publish_debug_image" value="$(arg debug)" />
+        <param name="vision_publish_HSV_mask_image" value="$(arg debug)" />
+        <param name="vision_publish_field_mask_image" value="$(arg debug)" />
+        <param name="ball_fcnn_publish_debug_img" value="$(arg debug)" />
+
+        <!-- Start vision without ball detection-->
+        <param name="neural_network_type" value="dummy" if="$(arg dummyball)"/>
+
+        <!-- load special sim parameters-->
+        <rosparam command="load" file="$(find bitbots_vision)/config/simparams.yaml" if="$(arg sim)"/>
+
+    </node>
+
+    <!-- Load game settings -->
     <group if="$(arg use_game_settings)">
         <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
     </group>
 
-    <!-- start dynamic-color-space node -->
+    <!-- Start dynamic-color-space node -->
     <node pkg="bitbots_vision" type="dynamic_color_space.py" name="bitbots_dynamic_color_space" output="screen">
     </node>
 
-    <!-- start the camera only when necessary -->
+    <!-- Start the camera only when necessary -->
     <group if="$(arg camera)">
         <group unless="$(arg sim)">
             <include unless="$(arg basler)" file="$(find wolves_image_provider)/launch/image_provider.launch" />
@@ -48,7 +45,7 @@
         </group>
     </group>
 
-    <!-- set use simulation time -->
+    <!-- Set use simulation time -->
     <group if="$(arg sim)">
         <param name="use_sim_time" value="true" />
     </group>
