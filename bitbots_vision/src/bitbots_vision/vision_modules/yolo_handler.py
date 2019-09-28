@@ -261,6 +261,7 @@ class YoloBallDetector(BallDetector):
     def set_image(self, image):
         """
         Set a image for yolo. This is cached.
+
         :param image: current vision image
         """
         self._yolo.set_image(image)
@@ -292,6 +293,7 @@ class YoloGoalpostDetector(CandidateFinder):
     def set_image(self, image):
         """
         Set a image for yolo. This is cached.
+
         :param image: current vision image
         """
         self._yolo.set_image(image)
