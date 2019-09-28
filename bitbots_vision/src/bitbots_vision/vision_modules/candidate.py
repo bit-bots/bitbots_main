@@ -12,8 +12,6 @@ class Candidate:
     def get_width(self):
         # type: () -> int
         """
-        returns...
-
         :return int: width
         """
         return self._width
@@ -21,8 +19,6 @@ class Candidate:
     def get_height(self):
         # type: () -> int
         """
-        returns...
-
         :return int: height
         """
         return self._height
@@ -30,8 +26,6 @@ class Candidate:
     def get_center_x(self):
         # type: () -> int
         """
-        returns...
-
         :return int: center x
         """
         return self._x1 + int(self._width // 2)
@@ -39,8 +33,6 @@ class Candidate:
     def get_center_y(self):
         # type: () -> int
         """
-        returns...
-
         :return int: center y
         """
         return self._y1 + int(self._height // 2)
@@ -48,8 +40,6 @@ class Candidate:
     def get_center_point(self):
         # type: () -> tuple[int, int]
         """
-        returns...
-
         :return tuple[int,int]: center point
         """
         return self.get_center_x(), self.get_center_y()
@@ -57,8 +47,6 @@ class Candidate:
     def get_diameter(self):
         # type: () -> int
         """
-        returns...
-
         :return int: diameter
         """
         return int((self._height + self._width) // 2)
@@ -66,8 +54,6 @@ class Candidate:
     def get_radius(self):
         # type: () -> int
         """
-        returns...
-
         :return int: radius
         """
         return int(self.get_diameter() // 2)
@@ -75,8 +61,6 @@ class Candidate:
     def get_upper_left_point(self):
         # type: () -> tuple[int, int]
         """
-        returns...
-
         :return tuple[int,int]: upper left point
         """
         return self._x1, self._y1
@@ -84,8 +68,6 @@ class Candidate:
     def get_upper_left_x(self):
         # type: () -> int
         """
-        returns...
-
         :return int: upper left x
         """
         return self._x1
@@ -93,8 +75,6 @@ class Candidate:
     def get_upper_left_y(self):
         # type: () -> int
         """
-        returns...
-
         :return int: upper left y
         """
         return self._y1
@@ -102,8 +82,6 @@ class Candidate:
     def get_lower_right_point(self):
         # type: () -> tuple[int, int]
         """
-        returns...
-
         :return tuple[int,int]: lower right point
         """
         return self._x1 + self._width, self._y1 + self._height
@@ -111,8 +89,6 @@ class Candidate:
     def get_lower_right_x(self):
         # type: () -> int
         """
-        returns...
-
         :return int: lower right x
         """
         return self._x1 + self._width
@@ -120,8 +96,6 @@ class Candidate:
     def get_lower_right_y(self):
         # type: () -> int
         """
-        returns...
-
         :return int: lower right y
         """
         return self._y1 + self._height
@@ -129,8 +103,6 @@ class Candidate:
     def get_lower_center_point(self):
         # type: () -> (int, int)
         """
-        returns...
-
         :return tuple: returns the lowest point of the candidate. The point is horizontally centered inside the candidate.
         """
         return (self.get_center_x(), self.get_lower_right_y())
@@ -138,9 +110,8 @@ class Candidate:
     def get_rating(self):
         # type: () -> float
         """
-        returns rating of the candidate
 
-        :return float: rating
+        :return float: rating of the candidate
         """
         return self._rating
 
@@ -149,6 +120,7 @@ class Candidate:
         """
         Returns whether the point is in the candidate or not.
         In the process, the candidate gets treated as a rectangle.
+
         :param point: an x- y-int-tuple defining thhe point to inspect
         :return: whether the point is in the candidate or not
         """
@@ -166,6 +138,7 @@ class Candidate:
         """
         Returns a sorted list of the candidates.
         The first list element is the highest rated candidate.
+
         :param candidatelist:
         :return: sorted candidate list
         """
@@ -182,9 +155,13 @@ class Candidate:
 
 
 class CandidateFinder(object):
+    """
+    Abstract definition of a CandidateFinder.
+    """
     def get_top_candidates(self, count=1):
         """
         Returns the count best candidates.
+
         :param count: Number of top-candidates to return
         :return: the count top candidates
         """
@@ -196,6 +173,7 @@ class CandidateFinder(object):
     def get_candidates(self):
         """
         Returns a list of all candidates. Their type is Candidate.
+
         :return: the count top candidates
         """
         raise NotImplementedError
@@ -210,6 +188,7 @@ class CandidateFinder(object):
     def get_top_candidate(self):
         """
         Returns the best candidate.
+
         :param count: Number of top-candidates to return
         :return: the count top candidates
         """
@@ -220,6 +199,7 @@ class BallDetector(CandidateFinder):
     def get_top_ball_under_convex_field_boundary(self, field_boundary_detector, y_offset=0):
         """
         Returns the best candidate under the convex field boundary.
+
         :return: top candidate or None if no candidate exists
         """
         # Get all balls
@@ -232,6 +212,7 @@ class BallDetector(CandidateFinder):
     def get_sorted_top_balls_under_convex_field_boundary(self, field_boundary_detector, y_offset=0):
         """
         Returns the best candidates under the convex field boundary.
+
         :return: list of top candidates sorted by rating
         """
 
