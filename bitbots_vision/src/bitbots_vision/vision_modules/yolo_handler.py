@@ -12,7 +12,7 @@ from .candidate import CandidateFinder, BallDetector, Candidate
 
 class YoloHandler():
     """
-    Defines a YoloHandler
+    Defines an abstract YoloHandler
     """
     def __init__(self, config, model_path):
         """
