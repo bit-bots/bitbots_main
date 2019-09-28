@@ -55,8 +55,7 @@ def print_debug(msg):
 
 
 def print_bit_bot():
-    if LOGLEVEL.current >= LOGLEVEL.INFO:
-        print("""\033[1m
+    print("""\033[1m
                 `/shNMoyymmmmmmmmmmys+NmNs/`                
               `+mmdddmmmddddddddddddmmmdddmm/               
               ymdddddddmmmmmmmmmmmmmmdddddddms              
@@ -179,6 +178,7 @@ def parse_arguments():
     parser.add_argument("--no-rosdeps", action="store_false", default=True, dest="check_rosdeps",
                         help="Don't installed check rosdeps on the target."
                              "Might be useful when no internet connection is available.")
+    parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
     parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
     parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output")
     return parser.parse_args()
@@ -224,7 +224,7 @@ def parse_targets(targets):
 
             cmd = ["ssh", "bitbots@{}".format(target), "cat /etc/hostname"]
             host_inspect_result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="utf-8")
-            
+
             if host_inspect_result.returncode != 0:
                 print_err("Unable to connect to {}".format(target))
                 sys.exit(1)
@@ -402,7 +402,9 @@ def main():
     args = parse_arguments()
 
     LOGLEVEL.current = LOGLEVEL.current + args.verbose - args.quiet
-    print_bit_bot()
+
+    if args.print_bit_bot:
+        print_bit_bot()
 
     targets = parse_targets(args.target)
 
