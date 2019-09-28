@@ -121,7 +121,7 @@ class Candidate:
         Returns whether the point is in the candidate or not.
         In the process, the candidate gets treated as a rectangle.
 
-        :param point: an x- y-int-tuple defining thhe point to inspect
+        :param point: an x- y-int-tuple defining the point to inspect
         :return: whether the point is in the candidate or not
         """
         return (
