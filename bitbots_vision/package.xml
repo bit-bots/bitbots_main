@@ -11,13 +11,13 @@
     able to run on many devices including the Nvidia Jetson TX2 in our Wolfgang robots.
     In the context of the Hamburg Bit-Bots, the Images are provided by a Basler industry grade ethernet camera.
     The camera drivers are not included in this package but can be auto launched.
-    If you want the vision to run without starting a camera driver simply set the cli launch parameter `camera:=false`.
-    Every image source, that publishes sensor_msgs/Image messages is supported.
-    The ROS topics and many other parameters are defined in the visioparams.yaml config file.
+    If you want the vision to run without starting a camera driver simply set the cli launch parameter ``camera:=false``.
+    Every image source, that publishes ``sensor_msgs/Image messages`` is supported.
+    The ROS topics and many other parameters are defined in the ``visioparams.yaml`` config file.
     All used parameters are also changeable during run-time using ros dynamic reconfigure.
-    For simulation usage, different parameters can be defined in the simparam.yaml which overrides the normal params.
-    The debug mode with special debug output can be activated using debug:=true.
-    In bitbots_vision/models the neural network models are stored. These models are not part of this repository.
+    For simulation usage, different parameters can be defined in the ``simparam.yaml`` which overrides the normal params.
+    The debug mode with special debug output can be activated using ``debug:=true``.
+    In ``bitbots_vision/models`` the neural network models are stored. These models are not part of this repository.
     Bit-Bots use the pull_data script in bitbots_meta.
     For the field detection which is needed for the field boundary and
     obstacle detection the vision uses RGB lookup table color spaces provided by the wolves_color_picker.
