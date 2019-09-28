@@ -9,12 +9,14 @@ import ipaddress
 
 from bitbots_bringup import game_settings
 
+
 class LOGLEVEL:
     current = 2
     DEBUG = 3
     INFO = 2
     WARN = 1
     ERR_SUCCESS = 0
+
 
 BITBOTS_META = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -174,8 +176,8 @@ def parse_arguments():
     parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
     parser.add_argument("--clean-built", action="store_true",
                         help="Clean build directory before compiling")
-    parser.add_argument("--no-rosdeps", action="store_false", default=True, dest="install_rosdeps",
-                        help="Don't check and install rosdeps on the target."
+    parser.add_argument("--no-rosdeps", action="store_false", default=True, dest="check_rosdeps",
+                        help="Don't installed check rosdeps on the target."
                              "Might be useful when no internet connection is available.")
     parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
     parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output")
@@ -369,18 +371,18 @@ def build(target, package='', pre_clean=False):
     print_success("Build on {} succeeded".format(target.hostname))
 
 
-def install_rosdeps(target):
+def check_rosdeps(target):
     """
-    Install missing dependencies on a target with rosdep
+    Check installed dependencies on a target with rosdep
 
     :type target: Target
     """
-    print_info("Installing rosdeps on {}".format(target))
+    print_info("Checking installed rosdeps on {}".format(target))
 
     cmd = [
         "ssh",
         "bitbots@{}".format(target.ssh_target),
-        "rosdep install -y -r {} --ignore-src --from-paths {}".format(
+        "rosdep check {} --ignore-src --from-paths {}".format(
             "" if LOGLEVEL.current >= LOGLEVEL.INFO else "-q",
             os.path.join(target.workspace, "src")
         ),
@@ -390,8 +392,8 @@ def install_rosdeps(target):
 
     rosdep_result = subprocess.run(cmd)
     if rosdep_result.returncode != 0:
-        print_err("Executing rosdep on {} failed with error code {}".format(target.hostname, rosdep_result.returncode))
-        sys.exit(rosdep_result.returncode)
+        print_warn("rosdep check on {} had non-zero exit code. Check it's output for more info"
+                   .format(target.hostname))
 
     print_success("Rosdeps on {} installed successfully".format(target.hostname))
 
@@ -419,8 +421,8 @@ def main():
         elif args.configure_only:
             print_info("Not compiling on {} due to configure-only mode".format(target.hostname))
         else:
-            if args.install_rosdeps:
-                install_rosdeps(target)
+            if args.check_rosdeps:
+                check_rosdeps(target)
             build(target, args.package, pre_clean=args.clean_build)
 
         # configure
