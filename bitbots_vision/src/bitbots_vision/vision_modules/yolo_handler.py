@@ -5,7 +5,7 @@ import rospy
 try:
     from pydarknet import Detector, Image
 except ImportError:
-    rospy.logerr("Not able to run Darknet YOLO! Its only executable under python3 with yolo34py or yolo34py-gpu installed.")
+    rospy.logerr("Not able to run Darknet YOLO! Its only executable under python3 with yolo34py or yolo34py-gpu installed.", logger_name="vision_yolo")
 import numpy as np
 from .candidate import CandidateFinder, BallDetector, Candidate
 
@@ -60,17 +60,15 @@ class YoloHandlerDarknet(YoloHandler):
         # Generates a dummy file for the library
         self._generate_dummy_obj_data_file(namepath)
 
-        self.config = config
+        self._config = config
 
         # Setup detector
-        self.net = Detector(bytes(configpath, encoding="utf-8"), bytes(weightpath, encoding="utf-8"), 0.5, bytes(datapath, encoding="utf-8"))
-        # Set classes
-        self.classes = ["ball", "goalpost"]
+        self._net = Detector(bytes(configpath, encoding="utf-8"), bytes(weightpath, encoding="utf-8"), 0.5, bytes(datapath, encoding="utf-8"))
         # Set cached stuff
-        self.image = None
-        self.results = None
-        self.goalpost_candidates = None
-        self.ball_candidates = None
+        self._image = None
+        self._results = None
+        self._goalpost_candidates = None
+        self._ball_candidates = None
 
     def _generate_dummy_obj_data_file(self, obj_name_path):
         """
@@ -90,31 +88,28 @@ class YoloHandlerDarknet(YoloHandler):
         :param image: current vision image
         """
         # Check if image has been processed
-        if np.array_equal(image, self.image):
+        if np.array_equal(image, self._image):
             return
         # Set image
-        self.image = image
+        self._image = image
         # Reset cached stuff
-        self.results = None
-        self.goalpost_candidates = None
-        self.ball_candidates = None
+        self._results = None
+        self._goalpost_candidates = None
+        self._ball_candidates = None
 
     def predict(self):
         """
         Runs the neural network
         """
         # Check if cached
-        if self.results is None:
+        if self._results is None:
             # Run neural network
-            self.results = self.net.detect(Image(self.image))
+            self._results = self._net.detect(Image(self._image))
             # Init lists
-            class_ids = []
-            confidences = []
-            boxes = []
-            self.ball_candidates = []
-            self.goalpost_candidates = []
+            self._ball_candidates = []
+            self._goalpost_candidates = []
             # Go through results
-            for out in self.results:
+            for out in self._results:
                 # Get class id
                 class_id = out[0]
                 # Get confidence
@@ -127,9 +122,9 @@ class YoloHandlerDarknet(YoloHandler):
                 c = Candidate(int(x), int(y), int(w), int(h), confidence)
                 # Append candidate to the right list depending on the class
                 if class_id == b"ball":
-                    self.ball_candidates.append(c)
+                    self._ball_candidates.append(c)
                 if class_id == b"goalpost":
-                    self.goalpost_candidates.append(c)
+                    self._goalpost_candidates.append(c)
 
 
 class YoloHandlerOpenCV(YoloHandler):
@@ -141,30 +136,27 @@ class YoloHandlerOpenCV(YoloHandler):
         weightpath = os.path.join(model_path, "yolo_weights.weights")
         configpath = os.path.join(model_path, "config.cfg")
         # Set config
-        self.config = config
-        # Define classes
-        self.classes = ["ball", "goalpost"]
+        self._config = config
         # Settings
-        self.nms_threshold = 0.4
-        self.confidence_threshold = 0.5
+        self._nms_threshold = 0.4
+        self._confidence_threshold = 0.5
         # Setup neural network
-        self.net = cv2.dnn.readNet(weightpath, configpath)
+        self._net = cv2.dnn.readNet(weightpath, configpath)
         # Set default state to all cached values
-        self.image = None
-        self.blob = None
-        self.outs = None
-        self.goalpost_candidates = None
-        self.ball_candidates = None
-        self.results = None
+        self._image = None
+        self._blob = None
+        self._outs = None
+        self._goalpost_candidates = None
+        self._ball_candidates = None
+        self._results = None
 
-    @staticmethod
-    def get_output_layers(net):
+    def _get_output_layers(self):
         """
         Library stuff
         """
-        layer_names = net.getLayerNames()
+        layer_names = self._net.getLayerNames()
 
-        output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+        output_layers = [layer_names[i[0] - 1] for i in self._net.getUnconnectedOutLayers()]
 
         return output_layers
 
@@ -174,37 +166,37 @@ class YoloHandlerOpenCV(YoloHandler):
         :param image: current vision image
         """
         # Check if image has been processed
-        if np.array_equal(image, self.image):
+        if np.array_equal(image, self._image):
             return
         # Set image
-        self.image = image
-        self.width = image.shape[1]
-        self.height = image.shape[0]
+        self._image = image
+        self._width = image.shape[1]
+        self._height = image.shape[0]
         # Create blob
-        self.blob = cv2.dnn.blobFromImage(image, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
+        self._blob = cv2.dnn.blobFromImage(image, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
         # Reset cached stuff
-        self.outs = None
-        self.goalpost_candidates = None
-        self.ball_candidates = None
+        self._outs = None
+        self._goalpost_candidates = None
+        self._ball_candidates = None
 
     def predict(self):
         """
         Runs the neural network
         """
         # Check if cached
-        if self.outs is None:
+        if self._outs is None:
             # Set image
-            self.net.setInput(self.blob)
+            self._net.setInput(self._blob)
             # Run net
-            self.outs = self.net.forward(YoloHandlerOpenCV.get_output_layers(self.net))
+            self._outs = self._net.forward(self._get_output_layers())
             # Create lists
             class_ids = []
             confidences = []
             boxes = []
-            self.ball_candidates = []
-            self.goalpost_candidates = []
+            self._ball_candidates = []
+            self._goalpost_candidates = []
             # Iterate over output/detections
-            for out in self.outs:
+            for out in self._outs:
                 for detection in out:
                     # Get score
                     scores = detection[5:]
@@ -215,11 +207,11 @@ class YoloHandlerOpenCV(YoloHandler):
                     # Static threshold
                     if confidence > 0.5:
                         # Get center point of the candidate
-                        center_x = int(detection[0] * self.width)
-                        center_y = int(detection[1] * self.height)
+                        center_x = int(detection[0] * self._width)
+                        center_y = int(detection[1] * self._height)
                         # Get the heigh/width
-                        w = int(detection[2] * self.width)
-                        h = int(detection[3] * self.height)
+                        w = int(detection[2] * self._width)
+                        h = int(detection[3] * self._height)
                         # Calc the upper left point
                         x = center_x - w / 2
                         y = center_y - h / 2
@@ -229,7 +221,7 @@ class YoloHandlerOpenCV(YoloHandler):
                         boxes.append([x, y, w, h])
 
             # Merge boxes
-            indices = cv2.dnn.NMSBoxes(boxes, confidences, self.confidence_threshold, self.nms_threshold)
+            indices = cv2.dnn.NMSBoxes(boxes, confidences, self._confidence_threshold, self._nms_threshold)
 
             # Iterate over filtered boxes
             for i in indices:
@@ -247,9 +239,9 @@ class YoloHandlerOpenCV(YoloHandler):
                 # Append candidate to the right list depending on the class
                 class_id = class_ids[i]
                 if class_id == 0:
-                    self.ball_candidates.append(c)
+                    self._ball_candidates.append(c)
                 if class_id == 1:
-                    self.goalpost_candidates.append(c)
+                    self._goalpost_candidates.append(c)
 
 
 class YoloBallDetector(BallDetector):
@@ -262,55 +254,57 @@ class YoloBallDetector(BallDetector):
         :param yolo: An YoloHandler implementation that runs the yolo network
         """
         # Set the yolo network
-        self.yolo = yolo
+        self._yolo = yolo
         # Set the config. Not needed at the moment
-        self.config = config
+        self._config = config
 
     def set_image(self, image):
         """
         Set a image for yolo. This is cached.
         :param image: current vision image
         """
-        self.yolo.set_image(image)
+        self._yolo.set_image(image)
 
     def get_candidates(self):
         """
         :return: all found ball candidates
         """
-        return self.yolo.get_candidates()[0]
+        return self._yolo.get_candidates()[0]
 
     def compute(self):
         """
         Runs the yolo network
         """
-        self.yolo.predict()
+        self._yolo.predict()
 
 class YoloGoalpostDetector(CandidateFinder):
     """
     A goalpost detector using the yolo neural network
     """
-    def __init__(self, yolo):
+    def __init__(self, config, yolo):
         """
+        :param config: The vision config
         :param yolo: An YoloHandler implementation that runs the yolo network
         """
-        self.yolo = yolo
+        self._config = config
+        self._yolo = yolo
 
     def set_image(self, image):
         """
         Set a image for yolo. This is cached.
         :param image: current vision image
         """
-        self.yolo.set_image(image)
+        self._yolo.set_image(image)
 
     def get_candidates(self):
         """
         :return: all found goalpost candidates
         """
-        return self.yolo.get_candidates()[1]
+        return self._yolo.get_candidates()[1]
 
     def compute(self):
         """
         Runs the yolo network
         """
-        self.yolo.predict()
+        self._yolo.predict()
 

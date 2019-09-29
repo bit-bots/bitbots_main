@@ -6,7 +6,7 @@ from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, \
-    ObstacleInImage, GoalPartsInImage, PostInImage, GoalInImage, FieldBoundaryInImage, Speak, ImageWithRegionOfInterest
+    ObstacleInImage, GoalPartsInImage, GoalPostInImage, GoalInImage, FieldBoundaryInImage, Speak, ImageWithRegionOfInterest
 from bitbots_msgs.msg import Config
 
 """
@@ -146,12 +146,12 @@ def add_model_enums(cfg_type, package_path):
                 'value': folder,
                 'description': 'yolo {}'.format(folder)})
         else:
-            rospy.logwarn("Directory '{}' contains unknown model type. Please remove all non model directories from the 'models' directory!".format(folder))
+            rospy.logwarn("Directory '{}' contains unknown model type. Please remove all non model directories from the 'models' directory!".format(folder), logger_name="vision_ros_utils")
     # Add enums to configuration
     _change_enum_items(cfg_type, 'fcnn_model_path', fcnn_paths)
     _change_enum_items(cfg_type, 'yolo_model_path', yolo_paths)
 
-def add_color_space_enums(cfg_type, package_path):
+def add_color_space_enum(cfg_type, package_path):
     """
     Add models to dynamic reconfigure enums.
 
@@ -171,7 +171,6 @@ def add_color_space_enums(cfg_type, package_path):
 
     # Add enums to configuration
     _change_enum_items(cfg_type, 'field_color_detector_path', field_color_space_enum)
-    _change_enum_items(cfg_type, 'field_color_detector_path_sim', field_color_space_enum)
 
 def create_or_update_publisher(old_config, new_config, publisher_object, topic_key, data_class, subscriber_listener=None, tcp_nodelay=False, latch=False, headers=None, queue_size=1):
     """
@@ -203,7 +202,7 @@ def create_or_update_publisher(old_config, new_config, publisher_object, topic_k
             latch=latch,
             headers=headers,
             queue_size=queue_size)
-        rospy.logdebug("Registered new publisher to " + str(new_config[topic_key]))
+        rospy.logdebug("Registered new publisher to " + str(new_config[topic_key]), logger_name="vision_ros_utils")
     return publisher_object
 
 def create_or_update_subscriber(old_config, new_config, subscriber_object, topic_key, data_class, callback=None, callback_args=None, queue_size=1, buff_size=65536, tcp_nodelay=False):
@@ -236,15 +235,15 @@ def create_or_update_subscriber(old_config, new_config, subscriber_object, topic
             queue_size=queue_size,
             buff_size=buff_size,
             tcp_nodelay=tcp_nodelay)
-        rospy.logdebug("Registered new subscriber at " + str(new_config[topic_key]))
+        rospy.logdebug("Registered new subscriber at " + str(new_config[topic_key]), logger_name="vision_ros_utils")
     return subscriber_object
 
 def build_goal_parts_msg(header, goal_parts):
     """
-    Builds a GoalPartsInImage message out of a list of PostInImage messages
+    Builds a GoalPartsInImage message out of a list of GoalPostInImage messages
 
     :param header: ros header of the new message. Mostly the header of the image
-    :param goal_parts: a list of goal part messages, e.g. PostInImage
+    :param goal_parts: a list of goal part messages, e.g. GoalPostInImage
     :return: GoalPartsInImage message
     """
     # Create goalparts msg
@@ -268,7 +267,7 @@ def build_goalpost_msgs(goalposts):
     # Iterate over all goalpost candidates
     for goalpost in goalposts:
         # Create a empty post message
-        post_msg = PostInImage()
+        post_msg = GoalPostInImage()
         post_msg.width = goalpost.get_width()
         if goalpost.get_rating() is not None:
             post_msg.confidence = goalpost.get_rating()
@@ -291,10 +290,10 @@ def build_goal_msg(goal_parts_msg):
     # Add header of the goal parts
     goal_msg.header = goal_parts_msg.header
     # Create goal posts at unrealistic high/low values
-    left_post = PostInImage()
+    left_post = GoalPostInImage()
     left_post.foot_point.x = 9999999999
     left_post.confidence = 1.0
-    right_post = PostInImage()
+    right_post = GoalPostInImage()
     right_post.foot_point.x = -9999999999
     right_post.confidence = 1.0
 

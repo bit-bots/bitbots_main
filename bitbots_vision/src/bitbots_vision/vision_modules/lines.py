@@ -140,19 +140,19 @@ class LineDetector:
             # Get white points that are not above the field boundary or in the green field
             self._white_mask = self._white_detector.mask_bitwise(possible_line_locations)
         return self._white_mask
+        
 
-    @staticmethod
-    def filter_points_with_candidates(linepoints, candidates):
-        """
-        Filters line points with candidates.
+def filter_points_with_candidates(linepoints, candidates):
+    """
+    Filters line points with candidates.
 
-        :param linepoints: Line Points
-        :param candidates: Detected candidates
-        :return: Filtered line points
-        """
-        filtered_linepoints = []
-        for linepoint in linepoints:
-            linepoint_not_in_candidate = [not candidate.point_in_candidate(linepoint) for candidate in candidates]
-            if all(linepoint_not_in_candidate):
-                filtered_linepoints.append(linepoint)
-        return filtered_linepoints
+    :param linepoints: Line Points
+    :param candidates: Detected candidates
+    :return: Filtered line points
+    """
+    filtered_linepoints = []
+    for linepoint in linepoints:
+        linepoint_not_in_candidate = [not candidate.point_in_candidate(linepoint) for candidate in candidates]
+        if all(linepoint_not_in_candidate):
+            filtered_linepoints.append(linepoint)
+    return filtered_linepoints

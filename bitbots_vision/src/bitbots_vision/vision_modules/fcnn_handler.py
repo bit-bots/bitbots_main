@@ -26,7 +26,7 @@ class FcnnHandler(BallDetector):
         self._sorted_rated_candidates = None
         self._top_candidate = None
         self._fcnn_output = None
-        self.bridge = CvBridge()
+        self._cv_bridge = CvBridge()
 
         # init config
         self.set_config(config)
@@ -82,12 +82,12 @@ class FcnnHandler(BallDetector):
                         candidate.get_upper_left_x() + candidate.get_width()]
                 ) / 255.0
                 # Check if candidate is in rating threshold and size bounds
-                if self.inspect_candidate(candidate):
+                if self._inspect_candidate(candidate):
                     # Add candidate to list
                     self._rated_candidates.append(candidate)
         return self._rated_candidates
 
-    def inspect_candidate(self, candidate):
+    def _inspect_candidate(self, candidate):
         """
         Checks if candidates is in threshold. And in min/max diameter bounds.
         :param candidate: a Ball candidate
@@ -114,13 +114,13 @@ class FcnnHandler(BallDetector):
         # Check if a cached one exists
         if self._fcnn_output is None:
             # Resize image for fcnn
-            in_img = cv2.resize(self._image, (self._fcnn.input_shape[1], self._fcnn.input_shape[0]))
+            in_img = cv2.resize(self._image, (self._fcnn._input_shape[1], self._fcnn._input_shape[0]))
             # Convert image to floats
             in_img = cv2.cvtColor(in_img, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
             # Predict
             out = self._fcnn.predict(list([in_img]))
             # Reshape fcnn output
-            out = out.reshape(self._fcnn.output_shape[0], self._fcnn.output_shape[1])
+            out = out.reshape(self._fcnn._output_shape[0], self._fcnn._output_shape[1])
             # Convert back to uint8 dtype
             out = (out * 255).astype(np.uint8)
             # Resize the heatmap to match the resolution of the in comming image
@@ -136,21 +136,21 @@ class FcnnHandler(BallDetector):
         # Get fcnn output
         out = self.get_fcnn_output()
         end = cv2.getTickCount()
-        rospy.logdebug('Vision FCNN handler: Net:' + str((end - start) / cv2.getTickFrequency()))
+        rospy.logdebug(str((end - start) / cv2.getTickFrequency()), logger_name="vision_fcnn_handler")
         start = cv2.getTickCount()
         # Mask the heatmap with a threshold
         r, out_bin = cv2.threshold(out, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         # Run cpp vision extention to find clusters in the heatmap
         tuple_candidates = VisionExtensions.findSpots(out_bin, self._pointcloud_stepsize, self._expand_stepsize, self._candidate_refinement_iteration_count)
         candidates = list()
-        rospy.logdebug('Vision FCNN handler: ' + str(len(tuple_candidates)))
+        rospy.logdebug(str(len(tuple_candidates)), logger_name="vision_fcnn_handler")
         # Convert output tuples to candidates
         for candidate in tuple_candidates:
             # Calculate final width and height
             width, height = candidate[0] - candidate[1], candidate[3] - candidate[2]
             candidates.append(Candidate(candidate[1], candidate[2], width, height))
         end = cv2.getTickCount()
-        rospy.logdebug('Vision FCNN handler: Cluster:' + str((end - start) / cv2.getTickFrequency()))
+        rospy.logdebug('Cluster:' + str((end - start) / cv2.getTickFrequency()), logger_name="vision_fcnn_handler")
         return candidates
 
     def _get_raw_candidates(self):
@@ -254,4 +254,4 @@ class FcnnHandler(BallDetector):
         """
         if self._debug:
             # Create image message with fcnn heatmap
-            return self.bridge.cv2_to_imgmsg(self.get_fcnn_output(), "mono8")
+            return self._cv_bridge.cv2_to_imgmsg(self.get_fcnn_output(), "mono8")

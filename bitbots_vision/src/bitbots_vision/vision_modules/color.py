@@ -26,12 +26,12 @@ class ColorDetector(object):
         :return: None
         """
         # Initial setup
-        self.cv_bridge = CvBridge()
+        self._cv_bridge = CvBridge()
 
         self._image = None
         self._mask = None
 
-        self.config = {}
+        self._config = {}
         self.update_config(config)
 
     def update_config(self, config):
@@ -43,8 +43,8 @@ class ColorDetector(object):
         :param dict config: dictionary of the vision node configuration parameters
         :return: None
         """
-        rospy.logdebug("(RE-)Configuring of ColorDetector")
-        self.config = config
+        rospy.logdebug("(RE-)Configuring of ColorDetector", logger_name="vision_color_detector")
+        self._config = config
 
     @abc.abstractmethod
     def match_pixel(self, pixel):
@@ -176,7 +176,7 @@ class HsvSpaceColorDetector(ColorDetector):
         :param str color_str: color (described in the config) that should be detected.
         :return: None
         """
-        self.detector_name = "{}_color_detector".format(color_str)
+        self._detector_name = "{}_color_detector".format(color_str)
 
         # Initialization of parent ColorDetector.
         super(HsvSpaceColorDetector, self).__init__(config)
@@ -193,19 +193,19 @@ class HsvSpaceColorDetector(ColorDetector):
         super(HsvSpaceColorDetector, self).update_config(config)
 
         try:
-            self.min_vals = np.array([
-                        config[self.detector_name + '_lower_values_h'],
-                        config[self.detector_name + '_lower_values_s'],
-                        config[self.detector_name + '_lower_values_v']
+            self._min_vals = np.array([
+                        config[self._detector_name + '_lower_values_h'],
+                        config[self._detector_name + '_lower_values_s'],
+                        config[self._detector_name + '_lower_values_v']
                 ])
 
-            self.max_vals = np.array([
-                        config[self.detector_name + '_upper_values_h'],
-                        config[self.detector_name + '_upper_values_s'],
-                        config[self.detector_name + '_upper_values_v']
+            self._max_vals = np.array([
+                        config[self._detector_name + '_upper_values_h'],
+                        config[self._detector_name + '_upper_values_s'],
+                        config[self._detector_name + '_upper_values_v']
                 ])
         except KeyError:
-            rospy.logerr("Undefined hsv color values for '{}'. Check config values.".format(self.detector_name))
+            rospy.logerr("Undefined hsv color values for '{}'. Check config values.".format(self._detector_name), logger_name="vision_hsv_color_detector")
             raise
 
     def match_pixel(self, pixel):
@@ -217,9 +217,9 @@ class HsvSpaceColorDetector(ColorDetector):
         :return bool: whether pixel is in color space or not
         """
         pixel = self.pixel_bgr2hsv(pixel)
-        return (self.max_vals[0] >= pixel[0] >= self.min_vals[0]) and \
-               (self.max_vals[1] >= pixel[1] >= self.min_vals[1]) and \
-               (self.max_vals[2] >= pixel[2] >= self.min_vals[2])
+        return (self._max_vals[0] >= pixel[0] >= self._min_vals[0]) and \
+               (self._max_vals[1] >= pixel[1] >= self._min_vals[1]) and \
+               (self._max_vals[2] >= pixel[2] >= self._min_vals[2])
 
     def _mask_image(self, image):
         # type: (np.array) -> np.array
@@ -231,7 +231,7 @@ class HsvSpaceColorDetector(ColorDetector):
         :return np.array: masked image
         """
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        return cv2.inRange(hsv_image, self.min_vals, self.max_vals)
+        return cv2.inRange(hsv_image, self._min_vals, self._max_vals)
 
 
 class PixelListColorDetector(ColorDetector):
@@ -241,8 +241,6 @@ class PixelListColorDetector(ColorDetector):
     The color space is represented by boolean-values for RGB-color-values.
 
     The following parameters of the config dict are needed:
-        'vision_use_sim_color',
-        'field_color_detector_path_sim',
         'field_color_detector_path'
     """
 
@@ -255,7 +253,7 @@ class PixelListColorDetector(ColorDetector):
         :param str package_path: path of package
         :return: None
         """
-        self.package_path = package_path
+        self._package_path = package_path
 
         # Initialization of parent ColorDetector.
         super(PixelListColorDetector, self).__init__(config)
@@ -269,29 +267,20 @@ class PixelListColorDetector(ColorDetector):
         :param dict config: dictionary of the vision node configuration parameters
         :return: None
         """
-        tmp_config = self.config.copy()
+        tmp_config = self._config.copy()
 
         super(PixelListColorDetector, self).update_config(config)
 
-        # Toggle publishing of 'field_mask'-messages
-        self.publish_field_mask_img_msg = config['vision_publish_field_mask_image']
-
-        if ros_utils.config_param_change(tmp_config, config, [  'vision_use_sim_color',
-                                                                'field_color_detector_path_sim',
-                                                                'field_color_detector_path']):
+        if ros_utils.config_param_change(tmp_config, config, 'field_color_detector_path'):
             # concatenate path to file containing the accepted colors of base color space
-            path = os.path.join(self.package_path, 'config/color_spaces')
-            if config['vision_use_sim_color']:
-                color_space_path = os.path.join(path, config['field_color_detector_path_sim'])
-            else:
-                color_space_path = os.path.join(path, config['field_color_detector_path'])
-
-            self.color_space = self._init_color_space(color_space_path)
+            path = os.path.join(self._package_path, 'config/color_spaces')
+            color_space_path = os.path.join(path, config['field_color_detector_path'])
+            self._color_space = self._init_color_space(color_space_path)
 
     def _init_color_space(self, color_path):
         # type: (str) -> None
         """
-        Initialization of color space from yaml or pickle.txt file
+        Initialization of color space from .yaml or .pickle file
 
         :param str color_path: path to file containing the accepted colors
         :return: None
@@ -302,15 +291,15 @@ class PixelListColorDetector(ColorDetector):
                 try:
                     color_values = yaml.safe_load(stream)
                 except yaml.YAMLError as exc:
-                    rospy.logerr('Vision color detector: ' + exc)
+                    rospy.logerr(exc, logger_name="vision_pixellist_color_detector")
 
-        # pickle-file is stored as '.txt'
-        elif color_path.endswith('.txt'):
+        # pickle-file is stored as '.pickle'
+        elif color_path.endswith('.pickle'):
             try:
                 with open(color_path, 'rb') as f:
                     color_values = pickle.load(f)
             except pickle.PickleError as exc:
-                rospy.logerr('Vision color detector: ' + exc)
+                rospy.logerr(exc, logger_name="vision_pixellist_color_detector")
 
         # compatibility with colorpicker
         if 'color_values' in color_values.keys():
@@ -331,7 +320,7 @@ class PixelListColorDetector(ColorDetector):
         :param np.array pixel: bgr-pixel
         :return bool: whether pixel is in color space or not
         """
-        return self.color_space[pixel[0], pixel[1], pixel[2]]
+        return self._color_space[pixel[0], pixel[1], pixel[2]]
 
     def _mask_image(self, image):
         # type: (np.array) -> np.array
@@ -342,7 +331,7 @@ class PixelListColorDetector(ColorDetector):
         :param np.array image: input image
         :return np.array: masked image
         """
-        return VisionExtensions.maskImg(image, self.color_space)
+        return VisionExtensions.maskImg(image, self._color_space)
 
 
 class DynamicPixelListColorDetector(PixelListColorDetector):
@@ -367,12 +356,12 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         super(DynamicPixelListColorDetector, self).__init__(config, package_path)
 
         # Annotate global variable. The global is needed due to threading issues
-        global dyn_color_space
-        dyn_color_space = np.copy(self.color_space)
+        global _dyn_color_space
+        _dyn_color_space = np.copy(self._color_space)
 
         # Annotate global variable. The global is needed due to threading issues
-        global base_color_space
-        base_color_space = np.copy(self.color_space)
+        global _base_color_space
+        _base_color_space = np.copy(self._color_space)
 
     def set_image(self, image):
         # type: (np.array) -> None
@@ -395,14 +384,14 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         :param np.array optional_image: Optional input image
         :return np.array: masked image
         """
-        global base_color_space
+        global _base_color_space
 
         if optional_image is not None:
             # Mask of optional image
-            mask = self._mask_image(optional_image, base_color_space)
+            mask = self._mask_image(optional_image, _base_color_space)
         else:
             # Mask of default cached image
-            mask = self._mask = self._mask_image(self._image, base_color_space)
+            mask = self._mask = self._mask_image(self._image, _base_color_space)
 
         return mask
 
@@ -417,8 +406,8 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         :return np.array: masked image
         """
         if color_space is None:
-            global dyn_color_space
-            color_space = dyn_color_space
+            global _dyn_color_space
+            color_space = _dyn_color_space
 
         return VisionExtensions.maskImg(image, color_space)
 
@@ -430,9 +419,9 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         :param ColorSpaceMessage msg: ColorSpaceMessage
         :return: None
         """
-        self.decode_color_space(msg)
+        self._decode_color_space(msg)
 
-    def decode_color_space(self, msg):
+    def _decode_color_space(self, msg):
         # type: (ColorSpaceMessage) -> None
         """
         Imports new color space from ros msg. This is used to communicate with the DynamicColorSpace-Node.
@@ -442,8 +431,8 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         """
         # Create temporary color space
         # Use the base color space as basis
-        global base_color_space
-        color_space_temp = np.copy(base_color_space)
+        global _base_color_space
+        color_space_temp = np.copy(_base_color_space)
 
         # Adds new colors to that color space
         color_space_temp[
@@ -452,5 +441,5 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
             msg.red] = 1
 
         # Switches the reference to the new color space
-        global dyn_color_space
-        dyn_color_space = color_space_temp
+        global _dyn_color_space
+        _dyn_color_space = color_space_temp

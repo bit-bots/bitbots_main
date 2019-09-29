@@ -7,7 +7,7 @@ class Candidate:
         self._y1 = y1
         self._width = width
         self._height = height
-        self.rating = rating
+        self._rating = rating
 
     def get_width(self):
         # type: () -> int
@@ -142,7 +142,7 @@ class Candidate:
 
         :return float: rating
         """
-        return self.rating
+        return self._rating
 
     def point_in_candidate(self, point):
         # type: (tuple) -> bool
@@ -178,7 +178,7 @@ class Candidate:
             self.get_upper_left_y(),
             self.get_width(),
             self.get_height(),
-            self.rating)
+            self._rating)
 
 
 class CandidateFinder(object):
