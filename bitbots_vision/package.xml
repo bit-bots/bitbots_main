@@ -12,7 +12,7 @@
     In the context of the Hamburg Bit-Bots, the Images are provided by a Basler industry grade ethernet camera.
     The camera drivers are not included in this package but can be auto launched.
     If you want the vision to run without starting a camera driver simply set the cli launch parameter ``camera:=false``.
-    Every image source, that publishes ``sensor_msgs/Image messages`` is supported.
+    Every image source, that publishes a ``sensor_msgs/Image messages`` message is also supported.
     The ROS topics and many other parameters are defined in the ``visioparams.yaml`` config file.
     All used parameters are also changeable during run-time using ros dynamic reconfigure.
     For simulation usage, different parameters can be defined in the ``simparam.yaml`` which overrides the normal params.
