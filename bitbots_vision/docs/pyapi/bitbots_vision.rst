@@ -1,6 +1,9 @@
 bitbots\_vision package
 =======================
 
+This package contains the vision pipeline definition in the ``vision.py``.
+And also the definition of the dynamic color space node in the ``dynamic_color_space.py``.
+
 Subpackages
 -----------
 
