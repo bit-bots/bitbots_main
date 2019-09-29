@@ -12,98 +12,98 @@ class Candidate:
     def get_width(self):
         # type: () -> int
         """
-        :return int: width
+        :return int: Width of the candidate bounding box.
         """
         return self._width
 
     def get_height(self):
         # type: () -> int
         """
-        :return int: height
+        :return int: Height of the candidate bounding box.
         """
         return self._height
 
     def get_center_x(self):
         # type: () -> int
         """
-        :return int: center x
+        :return int: Center x coordinate of the candidate bounding box.
         """
         return self._x1 + int(self._width // 2)
 
     def get_center_y(self):
         # type: () -> int
         """
-        :return int: center y
+        :return int: Center y coordinate of the candidate bounding box.
         """
         return self._y1 + int(self._height // 2)
 
     def get_center_point(self):
         # type: () -> tuple[int, int]
         """
-        :return tuple[int,int]: center point
+        :return tuple[int,int]: Center point of the bounding box.
         """
         return self.get_center_x(), self.get_center_y()
 
     def get_diameter(self):
         # type: () -> int
         """
-        :return int: diameter
+        :return int: Mean diameter of the candidate.
         """
         return int((self._height + self._width) // 2)
 
     def get_radius(self):
         # type: () -> int
         """
-        :return int: radius
+        :return int: Mean radius of the candidate.
         """
         return int(self.get_diameter() // 2)
 
     def get_upper_left_point(self):
         # type: () -> tuple[int, int]
         """
-        :return tuple[int,int]: upper left point
+        :return tuple[int,int]: Upper left point of the candidate.
         """
         return self._x1, self._y1
 
     def get_upper_left_x(self):
         # type: () -> int
         """
-        :return int: upper left x
+        :return int: Upper left x coordinate of the candidate.
         """
         return self._x1
 
     def get_upper_left_y(self):
         # type: () -> int
         """
-        :return int: upper left y
+        :return int: Upper left y coordinate of the candidate.
         """
         return self._y1
 
     def get_lower_right_point(self):
         # type: () -> tuple[int, int]
         """
-        :return tuple[int,int]: lower right point
+        :return tuple[int,int]: Lower right point of the candidate.
         """
         return self._x1 + self._width, self._y1 + self._height
 
     def get_lower_right_x(self):
         # type: () -> int
         """
-        :return int: lower right x
+        :return int: Lower right x coordinate of the candidate.
         """
         return self._x1 + self._width
 
     def get_lower_right_y(self):
         # type: () -> int
         """
-        :return int: lower right y
+        :return int: Lower right y coordinate of the candidate.
         """
         return self._y1 + self._height
 
     def get_lower_center_point(self):
         # type: () -> (int, int)
         """
-        :return tuple: returns the lowest point of the candidate. The point is horizontally centered inside the candidate.
+        :return tuple: Returns the lowest point of the candidate. The point is horizontally centered inside the candidate.
         """
         return (self.get_center_x(), self.get_lower_right_y())
 
@@ -111,7 +111,7 @@ class Candidate:
         # type: () -> float
         """
 
-        :return float: rating of the candidate
+        :return float: Rating of the candidate
         """
         return self._rating
 
@@ -121,8 +121,8 @@ class Candidate:
         Returns whether the point is in the candidate or not.
         In the process, the candidate gets treated as a rectangle.
 
-        :param point: an x- y-int-tuple defining the point to inspect
-        :return: whether the point is in the candidate or not
+        :param point: An x-y-int-tuple defining the point to inspect.
+        :return bool: Whether the point is in the candidate or not.
         """
         return (
                 self.get_upper_left_x()
@@ -139,8 +139,8 @@ class Candidate:
         Returns a sorted list of the candidates.
         The first list element is the highest rated candidate.
 
-        :param candidatelist:
-        :return: sorted candidate list
+        :param candidatelist: List of candidate objects.
+        :return: Sorted list of candidate objects.
         """
         return sorted(candidatelist, key = lambda candidate: candidate.get_rating(), reverse=True)
 
