@@ -10,6 +10,7 @@ class RuntimeEvaluator:
         """
         Calculates the average time a method (e.g. get_candidates) takes to work on an image.
         Allows improved evaluation and comparison of different methods.
+
         :param name: name of the evaluator, allow the identification of the printed results
         :param queue_size: amount of measurements used to calculate the average
         """
@@ -29,6 +30,7 @@ class RuntimeEvaluator:
         # type: (None) -> None
         """
         Resets all variable once the time should be measured for a new picture.
+        
         :param image: we don't use this, but every set_image method of other classes has this parameter
         """
         self._timer_running = False

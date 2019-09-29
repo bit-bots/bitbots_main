@@ -14,6 +14,7 @@ class FieldBoundaryDetector(object):
         # type: (dict, ColorDetector) -> None
         """
         This is the abctract class for the field boundary detector.
+
         :param config: the configuration contained in visionparams.yaml
         :param field_color_detector: checks whether a color is part of the field colors
         """
@@ -39,7 +40,8 @@ class FieldBoundaryDetector(object):
     def get_by_name(search_method):
         # type: (String) -> FieldBoundaryDetector
         """
-        Returns the matching field boundary detector for an String
+        Returns the matching field boundary detector for an String.
+
         :param image: the current frame of the video feed
         """
         detectors = {
@@ -53,7 +55,8 @@ class FieldBoundaryDetector(object):
     def set_image(self, image):
         # type: (np.matrix) -> None
         """
-        refreshes the variables after receiving an image
+        Refreshes the variables after receiving an image.
+
         :param image: the current frame of the video feed
         """
         self._image = image
@@ -93,6 +96,7 @@ class FieldBoundaryDetector(object):
         calculates the field-boundary if not calculated yet and returns a list
         containing coordinates on the picture where the field-boundary is.
         the offset works UPWARDS!
+
         :return list of x,y tuples of the field_boundary:
         """
         if self._field_boundary_points is None:
@@ -200,8 +204,9 @@ class FieldBoundaryDetector(object):
     def get_full_field_boundary(self):
         # type: () -> list
         """
-        calculates an interpolated list of y coordinates where the field_boundary is for the picture
-        the index of the y value is the x coordinate on the picture
+        Calculates an interpolated list of y coordinates where the field_boundary is for the picture
+        the index of the y value is the x coordinate on the picture.
+
         :return list of y coordinates where the field_boundary is. Index of y value is the x coordinate:
         """
         self._compute_full_field_boundary()
@@ -210,8 +215,9 @@ class FieldBoundaryDetector(object):
     def _compute_full_convex_field_boundary(self):
         # type: () -> list
         """
-        calculates an interpolated list of y coordinates where the convex field_boundary is for the picture
-        the index of the y value is the x coordinate on the picture
+        Calculates an interpolated list of y coordinates where the convex field_boundary is for the picture
+        the index of the y value is the x coordinate on the picture.
+
         :return list of y coordinates where the convex field_boundary is. Index of y value is the x coordinate:
         """
         if self._convex_field_boundary_full is None:
@@ -222,8 +228,9 @@ class FieldBoundaryDetector(object):
     def get_full_convex_field_boundary(self):
         # type: () -> list
         """
-        calculates an interpolated list of y coordinates where the convex field_boundary is for the picture
-        the index of the y value is the x coordinate on the picture
+        Calculates an interpolated list of y coordinates where the convex field_boundary is for the picture
+        the index of the y value is the x coordinate on the picture.
+
         :return list of y coordinates where the convex field_boundary is. Index of y value is the x coordinate:
         """
         self._compute_full_convex_field_boundary()
@@ -232,7 +239,8 @@ class FieldBoundaryDetector(object):
     def candidate_under_field_boundary(self, candidate, y_offset=0):
         # type: (tuple, int) -> bool
         """
-        returns whether the candidate is under the field_boundary or not
+        Returns whether the candidate is under the field_boundary or not.
+
         :param candidate: the candidate
         :param y_offset: an offset in y-direction (higher offset allows points in a wider range over the field_boundary)
         :return: whether the candidate is under the field_boundary or not
@@ -244,7 +252,8 @@ class FieldBoundaryDetector(object):
     def candidate_under_convex_field_boundary(self, candidate, y_offset=0):
         # type: (tuple, int) -> bool
         """
-        returns whether the candidate is under the convex field_boundary or not
+        Returns whether the candidate is under the convex field_boundary or not.
+
         :param candidate: the candidate
         :param y_offset: an offset in y-direction (higher offset allows points in a wider range over the field_boundary)
         :return: whether the candidate is under the convex field_boundary or not
@@ -256,7 +265,8 @@ class FieldBoundaryDetector(object):
     def candidates_under_field_boundary(self, candidates, y_offset=0):
         # type: (list, int) -> list
         """
-        Removes candidates that are not under the field boundary from list
+        Removes candidates that are not under the field boundary from list.
+
         :param balls: list of all candidates
         :param y_offset: If the ball is within this offset over the field boundary its still accepted.
         :return: list of candidates under the field boundary
@@ -266,7 +276,8 @@ class FieldBoundaryDetector(object):
     def candidates_under_convex_field_boundary(self, candidates, y_offset=0):
         # type: (list, int) -> list
         """
-        Removes candidates that are not under the convex field boundary from list
+        Removes candidates that are not under the convex field boundary from list.
+
         :param balls: list of all candidates
         :param y_offset: If the ball is within this offset over the field boundary its still accepted.
         :return: list of candidates under convex the field boundary
@@ -276,7 +287,8 @@ class FieldBoundaryDetector(object):
     def point_under_field_boundary(self, point, offset=0):
         # type: (tuple, int) -> bool
         """
-        returns if given coordinate is a point under field_boundary
+        Returns if given coordinate is a point under field_boundary.
+
         :param point: coordinate (x, y) to test
         :param offset: offset of pixels to still be accepted as under the field_boundary. Default is 0.
         :return a boolean if point is under field_boundary:
@@ -289,7 +301,8 @@ class FieldBoundaryDetector(object):
     def point_under_convex_field_boundary(self, point, offset=0):
         # type: (tuple, int) -> bool
         """
-        returns if given coordinate is a point under the convex field_boundary
+        Returns if given coordinate is a point under the convex field_boundary.
+
         :param point: coordinate (x, y) to test
         :param offset: offset of pixels to still be accepted as under the field_boundary. Default is 0.
         :return a boolean if point is under the convex field_boundary:
@@ -302,7 +315,8 @@ class FieldBoundaryDetector(object):
     def get_upper_bound(self, y_offset=0):
         # type: () -> int
         """
-        returns the y-value of highest point of the field_boundary (lowest y-value)
+        Returns the y-value of highest point of the field_boundary (lowest y-value).
+
         :return: int(), y-value of highest point of the field_boundary (lowest y-value)
         """
         return max(0, int(min(self.get_field_boundary_points(), key=itemgetter(1))[1] - y_offset))
@@ -310,9 +324,10 @@ class FieldBoundaryDetector(object):
     def _equalize_points(self, points):
         # type: (list) -> list
         """
-        returns a list of the input points with smoothed y-coordinates to reduce
+        Returns a list of the input points with smoothed y-coordinates to reduce
         the impact of outlier points in the field_boundary, which are caused by
-        detection errors
+        detection errors.
+
         :param points: list of input points consisting of tuples (x, y)
         :return: list of input points with smoothed y-coordinates consisting of tuples (x, y)
         """
@@ -334,6 +349,7 @@ class IterationFieldBoundaryDetector(FieldBoundaryDetector):
         """
         This is the iteration field boundary detector.
         It uses the iteration detection method and finds the field boundary via scan lines running down from top to bottom.
+
         :param config: the configuration contained in visionparams.yaml
         :param field_color_detector: checks whether a color is part of the field colors
         """
@@ -360,6 +376,7 @@ class BinaryFieldBoundaryDetector(FieldBoundaryDetector):
         """
         This is the binary search field boundary detector.
         It uses the binary detection method and finds the field boundary via binary search.
+
         :param config: the configuration contained in visionparams.yaml
         :param field_color_detector: checks whether a color is part of the field colors
         """
@@ -386,6 +403,7 @@ class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
         """
         This is the reversed iteration field boundary detector.
         It uses the reversed detection method and finds the field boundary via scan lines running up from bottom to top.
+
         :param config: the configuration contained in visionparams.yaml
         :param field_color_detector: checks whether a color is part of the field colors
         """
@@ -413,6 +431,7 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
         This is the dynamic field boundary detector.
         It switches between the iteration and reversed iteration method. It depends on how much the robot head is tilted.
         This improves performance (iteration) and enables operation with two field next to each other (reversed).
+
         :param config: the configuration contained in visionparams.yaml
         :param field_color_detector: checks whether a color is part of the field colors
         """
@@ -501,6 +520,7 @@ class IterationFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         """
         Finds the points of the field boundary visible in the image. Uses the standard method iterating from top to
         bottom until it finds enough green points.
+
         :returns: list of field boundary points
         """
 
@@ -543,6 +563,7 @@ class ReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         """
         Finds the points of the field boundary visible in the image. Uses the reversed method iterating from bottom to
         top until it finds enough non green points. Useful for when two fields are adjacent to each other.
+
         :returns: list of field boundary points
         """
 
@@ -615,7 +636,8 @@ class BinaryFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
     def _calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
         """
         Finds the points of the field edge visible in the image. Uses a faster binary search method, that unfortunately
-        finds these points below field lines sometimes
+        finds these points below field lines sometimes.
+        
         :returns: list of field boundary points
         """
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image

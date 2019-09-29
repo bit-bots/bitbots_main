@@ -24,6 +24,7 @@ class YoloHandler():
     def set_image(self, img):
         """
         Image setter abstact method. (Cached)
+        
         :param img: Image
         """
         raise NotImplementedError
@@ -49,7 +50,7 @@ class YoloHandlerDarknet(YoloHandler):
     def __init__(self, config, model_path):
         """
         Yolo constructor
-        
+
         :param config: vision config dict
         :param model_path: path to the yolo model
         """

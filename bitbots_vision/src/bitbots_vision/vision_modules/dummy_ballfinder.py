@@ -14,6 +14,7 @@ class DummyBallDetector(BallDetector):
         """
         Method to satisfy the interface.
         Actually does nothing.
+
         :param image: current vision image
         """
         pass
@@ -29,6 +30,7 @@ class DummyBallDetector(BallDetector):
         """
         Method to satisfy the interface.
         Actually does something. It returns an empty list.
+
         :return: a empty list
         """
         return self._detected_candidates
@@ -37,6 +39,7 @@ class DummyBallDetector(BallDetector):
         """
         Method to satisfy the interface.
         It returns an empty list.
+        
         :param count: how many of zero top candidates do you want?
         :return: a empty list
         """
