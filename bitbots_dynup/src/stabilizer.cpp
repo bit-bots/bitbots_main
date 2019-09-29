@@ -1,25 +1,20 @@
 #include "bitbots_dynup/stabilizer.h"
 
 #include <memory>
-#include "bitbots_dynup/dynamic_balancing_goal.h"
-#include "bitbots_dynup/reference_goals.h"
+#include <utility>
+#include <bitbots_splines/dynamic_balancing_goal.h>
+#include <bitbots_splines/reference_goals.h>
 
 namespace bitbots_dynup {
 
-Stabilizer::Stabilizer() {
-  /* load MoveIt! model */
-  robot_model_loader::RobotModelLoader robot_model_loader("/robot_description", false);
-  robot_model_loader.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
+void Stabilizer::init(moveit::core::RobotModelPtr kinematic_model) {
+  kinematic_model_ = std::move(kinematic_model);
 
-  /* Extract joint groups from loaded model */
-  kinematic_model_ = robot_model_loader.getModel();
   legs_joints_group_ = kinematic_model_->getJointModelGroup("Legs");
 
   /* Reset kinematic goal to default */
   goal_state_.reset(new robot_state::RobotState(kinematic_model_));
   goal_state_->setToDefaultValues();
-
-  reset();
 }
 
 void Stabilizer::reset() {
@@ -39,18 +34,15 @@ void Stabilizer::reset() {
   }
 }
 
-std::optional<JointGoals> Stabilizer::stabilize(geometry_msgs::Point support_point,
-                                                geometry_msgs::PoseStamped &l_foot_goal_pose,
-                                                geometry_msgs::PoseStamped &trunk_goal_pose) {
+std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const DynupResponse &response) {
   /* ik options is basicaly the command which we send to bio_ik and which describes what we want to do */
-  bio_ik::BioIKKinematicsQueryOptions ik_options;
-  ik_options.replace = true;
-  ik_options.return_approximate_solution = true;
-  double bio_ik_timeout = 0.01;
+  auto ik_options = std::make_unique<bio_ik::BioIKKinematicsQueryOptions>();
+  ik_options->replace = true;
+  ik_options->return_approximate_solution = true;
 
   tf2::Stamped<tf2::Transform> tf_l_foot, tf_trunk;
-  tf2::convert(l_foot_goal_pose, tf_l_foot);
-  tf2::convert(trunk_goal_pose, tf_trunk);
+  tf2::convert(response.l_foot_goal_pose, tf_l_foot);
+  tf2::convert(response.trunk_goal_pose, tf_trunk);
 
   /* construct the bio_ik Pose object which tells bio_ik what we want to achieve */
   auto *bio_ik_l_foot_goal = new ReferencePoseGoal();
@@ -67,43 +59,22 @@ std::optional<JointGoals> Stabilizer::stabilize(geometry_msgs::Point support_poi
   bio_ik_trunk_goal->setWeight(1.0);
   bio_ik_trunk_goal->setReferenceLinkName("r_sole");
 
-  tf2::Vector3 stabilizing_target = {support_point.x, support_point.y, support_point.z};
+  tf2::Vector3 stabilizing_target = {response.support_point.x, response.support_point.y, response.support_point.z};
   DynamicBalancingContext bio_ik_balancing_context(kinematic_model_);
   auto *bio_ik_balance_goal =
       new DynamicBalancingGoal(&bio_ik_balancing_context, stabilizing_target, stabilizing_weight_);
   bio_ik_balance_goal->setReferenceLink("base_link");
 
-  ik_options.goals.emplace_back(bio_ik_l_foot_goal);
-  ik_options.goals.emplace_back(bio_ik_trunk_goal);
+  ik_options->goals.emplace_back(bio_ik_l_foot_goal);
+  ik_options->goals.emplace_back(bio_ik_trunk_goal);
 
   if (use_stabilizing_ && false) {
-    ik_options.goals.emplace_back(bio_ik_balance_goal);
+    ik_options->goals.emplace_back(bio_ik_balance_goal);
   }
   if (use_minimal_displacement_ && false) {
-    ik_options.goals.emplace_back(new bio_ik::MinimalDisplacementGoal());
+    ik_options->goals.emplace_back(new bio_ik::MinimalDisplacementGoal());
   }
-
-  bool success = goal_state_->setFromIK(legs_joints_group_,
-                                        EigenSTL::vector_Isometry3d(),
-                                        std::vector<std::string>(),
-                                        bio_ik_timeout,
-                                        moveit::core::GroupStateValidityCallbackFn(),
-                                        ik_options);
-
-  if (success) {
-    /* retrieve joint names and associated positions from  */
-    std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
-    std::vector<double> joint_goals;
-    goal_state_->copyJointGroupPositions(legs_joints_group_, joint_goals);
-
-    /* construct result object */
-    JointGoals result;
-    result.first = joint_names;
-    result.second = joint_goals;
-    return result;
-  } else {
-    return std::nullopt;
-  }
+  return std::move(ik_options);
 }
 
 void Stabilizer::useStabilizing(bool use) {

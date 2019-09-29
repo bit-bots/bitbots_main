@@ -15,6 +15,8 @@
 #include <bitbots_msgs/JointCommand.h>
 #include <bitbots_dynup/DynUpConfig.h>
 #include "bitbots_dynup/dynup_engine.h"
+#include "bitbots_dynup/dynup_ik.h"
+#include "bitbots_dynup/stabilizer.h"
 #include <std_msgs/Char.h>
 
 namespace bitbots_dynup {
@@ -49,9 +51,12 @@ class DynUpNode {
   ros::Publisher support_foot_publisher_;
   ActionServer server_;
   DynupEngine engine_;
+  Stabilizer stabilizer_;
+  DynupIK ik_;
   int engine_rate_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
+  robot_model_loader::RobotModelLoader robot_model_loader_;
 
   /**
    * Do main loop in which DynUpEngine::tick() gets called repeatedly.
@@ -75,7 +80,7 @@ class DynUpNode {
   /**
    * Publish goals to ROS
    */
-  void publishGoals(const JointGoals &goals);
+  void publishGoals(const bitbots_splines::JointGoals &goals);
 
 };
 

@@ -4,7 +4,18 @@ namespace bitbots_dynup {
 
 DynUpNode::DynUpNode() :
     server_(node_handle_, "dynup", boost::bind(&DynUpNode::executeCb, this, _1), false),
+    robot_model_loader_("/robot_description", false),
     listener_(tf_buffer_) {
+  /* load MoveIt! model */
+  robot_model_loader_.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
+  robot_model::RobotModelPtr kinematic_model = robot_model_loader_.getModel();
+  if (!kinematic_model) {
+    ROS_FATAL("No robot model loaded, killing dynup.");
+    exit(1);
+  }
+  stabilizer_.init(kinematic_model);
+  ik_.init(kinematic_model);
+
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("animation_motor_goals", 1);
   server_.start();
 }
@@ -23,9 +34,9 @@ void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t
 
   engine_.setParams(params);
 
-  engine_.stabilizer.useMinimalDisplacement(config.minimal_displacement);
-  engine_.stabilizer.useStabilizing(config.stabilizing);
-  engine_.stabilizer.setStabilizingWeight(config.stabilizing_weight);
+  stabilizer_.useMinimalDisplacement(config.minimal_displacement);
+  stabilizer_.useStabilizing(config.stabilizing);
+  stabilizer_.setStabilizingWeight(config.stabilizing_weight);
 }
 
 void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
@@ -34,7 +45,12 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   engine_.reset();
 
   if (std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> poses = getCurrentPoses()) {
-    engine_.start(true, poses->first, poses->second); //todo we are currently only getting up from squad
+    DynupRequest request;
+    request.l_foot_pose = poses->first;
+    request.front = true;
+    request.trunk_pose = poses->second;
+    engine_.setGoals(request); //todo we are currently only getting up from squad
+    stabilizer_.reset();
     loopEngine();
     bitbots_msgs::DynUpResult r;
     r.successful = true;
@@ -50,16 +66,17 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
 void DynUpNode::loopEngine() {
   /* Do the loop as long as nothing cancels it */
   while (server_.isActive() && !server_.isPreemptRequested()) {
-    if (std::optional<JointGoals> goals = engine_.tick(1.0 / engine_rate_)) {
-      // TODO: add counter for failed ticks
-      bitbots_msgs::DynUpFeedback feedback;
-      feedback.percent_done = engine_.getPercentDone();
-      server_.publishFeedback(feedback);
-      publishGoals(goals.value());
+    DynupResponse response = engine_.update(1.0 / engine_rate_);
+    std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_options = stabilizer_.stabilize(response);
+    bitbots_splines::JointGoals goals = ik_.calculate(std::move(ik_options));
+    // TODO: add counter for failed ticks
+    bitbots_msgs::DynUpFeedback feedback;
+    feedback.percent_done = engine_.getPercentDone();
+    server_.publishFeedback(feedback);
+    publishGoals(goals);
 
-      if (feedback.percent_done == 100) {
-        break;
-      }
+    if (feedback.percent_done == 100) {
+      break;
     }
 
     /* Let ROS do some important work of its own and sleep afterwards */
@@ -87,16 +104,16 @@ std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> DynUpNode::ge
   geometry_msgs::PoseStamped l_foot_transformed, trunk_transformed;
   try {
     tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole",
-                         ros::Duration(0.2)); // TODO lookup thrown exceptions in internet and catch
+                         ros::Duration(0.2));
     tf_buffer_.transform(trunk_origin, trunk_transformed, "r_sole", ros::Duration(0.2));
     return std::pair(l_foot_transformed.pose, trunk_transformed.pose);
-  } catch (tf2::TransformException&) {
+  } catch (tf2::TransformException &) {
     return std::nullopt;
   }
 
 }
 
-void DynUpNode::publishGoals(const JointGoals &goals) {
+void DynUpNode::publishGoals(const bitbots_splines::JointGoals &goals) {
   /* Construct JointCommand message */
   bitbots_msgs::JointCommand command;
   command.header.stamp = ros::Time::now();
@@ -140,4 +157,3 @@ int main(int argc, char *argv[]) {
   ROS_INFO("Initialized DynUp and waiting for actions");
   ros::spin();
 }
-

@@ -10,27 +10,27 @@ void DynupEngine::reset() {
   foot_trajectories_.reset();
 }
 
-std::optional<JointGoals> DynupEngine::tick(double dt) {
-  /* Only do an actual tick when splines are present */
-  if (hand_trajectories_ && foot_trajectories_) {
-    /* Get should-be pose from planned splines (every axis) at current time */
-    geometry_msgs::PoseStamped l_foot_pose = getCurrentPose(foot_trajectories_.value(), true);
-    geometry_msgs::PoseStamped trunk_pose = getCurrentPose(trunk_trajectories_.value(), false);
-    //geometry_msgs::PoseStamped l_hand_pose = get_current_pose(foot_trajectories_.value(), "l_hand");
-    //geometry_msgs::PoseStamped r_hand_pose = get_current_pose(foot_trajectories_.value(), "r_hand");
+DynupResponse DynupEngine::update(double dt) {
+  // TODO what happens when splines for foot and trunk are not present?
+  /* Get should-be pose from planned splines (every axis) at current time */
+  geometry_msgs::PoseStamped l_foot_pose = getCurrentPose(foot_trajectories_.value(), true);
+  geometry_msgs::PoseStamped trunk_pose = getCurrentPose(trunk_trajectories_.value(), false);
+  //geometry_msgs::PoseStamped l_hand_pose = get_current_pose(foot_trajectories_.value(), "l_hand");
+  //geometry_msgs::PoseStamped r_hand_pose = get_current_pose(foot_trajectories_.value(), "r_hand");
 
 
-    time_ += dt;
-    //TODO support point between feet
-    geometry_msgs::Point support_point;
-    /* Stabilize and return result */
-    return stabilizer.stabilize(support_point, l_foot_pose, trunk_pose);
-  } else {
-    return std::nullopt;
-  }
+  time_ += dt;
+  //TODO support point between feet
+  geometry_msgs::Point support_point;
+  /* Stabilize and return result */
+  DynupResponse goals;
+  goals.support_point = support_point;
+  goals.l_foot_goal_pose = l_foot_pose;
+  goals.trunk_goal_pose = trunk_pose;
+  return goals;
 }
 
-geometry_msgs::PoseStamped DynupEngine::getCurrentPose(Trajectories spline_container, bool foot) {
+geometry_msgs::PoseStamped DynupEngine::getCurrentPose(bitbots_splines::Trajectories spline_container, bool foot) {
   geometry_msgs::PoseStamped pose;
   if (foot) {
     pose.header.frame_id = "l_sole";
@@ -207,7 +207,7 @@ void DynupEngine::calcSquatSplines(geometry_msgs::Pose l_foot_pose, geometry_msg
   trunk_trajectories_->get("yaw").addPoint(params_.rise_time, 0);
 }
 
-void DynupEngine::start(bool front, geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose trunk_pose) {
+void DynupEngine::setGoals(const DynupRequest &goals) {
   /*
    * Add current position, target position and current position to splines so that they describe a smooth
    * curve to the ball and back
@@ -224,7 +224,6 @@ void DynupEngine::start(bool front, geometry_msgs::Pose l_foot_pose, geometry_ms
    *    - move arms in finish position
    */
 
-  stabilizer.reset();
   initTrajectories();
 
   /*if(front){
@@ -233,11 +232,11 @@ void DynupEngine::start(bool front, geometry_msgs::Pose l_foot_pose, geometry_ms
   }else{
      calcBackSplines();
   }*/
-  calcSquatSplines(l_foot_pose, trunk_pose);
+  calcSquatSplines(goals.l_foot_pose, goals.trunk_pose);
 }
 
 void DynupEngine::initTrajectories() {
-  foot_trajectories_ = Trajectories();
+  foot_trajectories_ = bitbots_splines::Trajectories();
 
   foot_trajectories_->add("pos_x");
   foot_trajectories_->add("pos_y");
@@ -247,7 +246,7 @@ void DynupEngine::initTrajectories() {
   foot_trajectories_->add("pitch");
   foot_trajectories_->add("yaw");
 
-  trunk_trajectories_ = Trajectories();
+  trunk_trajectories_ = bitbots_splines::Trajectories();
 
   trunk_trajectories_->add("pos_x");
   trunk_trajectories_->add("pos_y");
@@ -257,7 +256,7 @@ void DynupEngine::initTrajectories() {
   trunk_trajectories_->add("pitch");
   trunk_trajectories_->add("yaw");
 
-  hand_trajectories_ = Trajectories();
+  hand_trajectories_ = bitbots_splines::Trajectories();
 
   hand_trajectories_->add("pos_x");
   hand_trajectories_->add("pos_y");

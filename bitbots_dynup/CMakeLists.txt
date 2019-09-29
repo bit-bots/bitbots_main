@@ -33,6 +33,7 @@ set(SOURCES
     src/dynup_node.cpp
     src/dynup_engine.cpp
     src/stabilizer.cpp
+    src/dynup_ik.cpp
 )
 
 add_executable(DynupNode ${SOURCES})

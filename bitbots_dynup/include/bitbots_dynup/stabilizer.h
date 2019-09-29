@@ -6,32 +6,22 @@
 #include <bio_ik/bio_ik.h>
 #include <geometry_msgs/Pose.h>
 #include <tf2_ros/transform_listener.h>
+#include <bitbots_splines/abstract_stabilizer.h>
+#include "dynup_utils.h"
 
 namespace bitbots_dynup {
-
-typedef std::pair<std::vector<std::string>, std::vector<double>> JointGoals;
 
 /**
  * The stabilizer is basically a wrapper around bio_ik and moveit
  */
-class Stabilizer {
+class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
  public:
-  Stabilizer();
-
-  /**
-   * Calculate required motor positions to reach foot_goal with a foot while keeping the robot as stable as possible.
-   * The stabilization itself is achieved by using moveit with bio_ik
-   * @param is_left_kick Is the given foot_goal a goal which the left foot should reach
-   * @param foot_goal Position which should be reached by the foot
-   * @return JointGoals which describe required motor positions
-   */
-  std::optional<JointGoals> stabilize(geometry_msgs::Point support_point,
-                                      geometry_msgs::PoseStamped &l_foot_goal_pose,
-                                      geometry_msgs::PoseStamped &trunk_goal_pose);
+  void init(moveit::core::RobotModelPtr kinematic_model);
+  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> stabilize(const DynupResponse &response) override;
   void useStabilizing(bool use);
   void useMinimalDisplacement(bool use);
   void setStabilizingWeight(double weight);
-  void reset();
+  void reset() override;
  private:
   robot_state::RobotStatePtr goal_state_;
 
