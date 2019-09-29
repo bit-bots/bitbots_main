@@ -40,7 +40,7 @@ class YoloHandler():
         Runs neural network and returns results for all classes. (Cached)
         """
         self.predict()
-        return [self.ball_candidates, self.goalpost_candidates]
+        return [self._ball_candidates, self._goalpost_candidates]
 
 class YoloHandlerDarknet(YoloHandler):
     """
@@ -125,7 +125,6 @@ class YoloHandlerDarknet(YoloHandler):
                     self._ball_candidates.append(c)
                 if class_id == b"goalpost":
                     self._goalpost_candidates.append(c)
-
 
 class YoloHandlerOpenCV(YoloHandler):
     """
