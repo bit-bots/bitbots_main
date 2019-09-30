@@ -176,7 +176,7 @@ def parse_arguments():
     parser.add_argument("--clean-built", action="store_true",
                         help="Clean build directory before compiling")
     parser.add_argument("--no-rosdeps", action="store_false", default=True, dest="check_rosdeps",
-                        help="Don't installed check rosdeps on the target."
+                        help="Don't check installed rosdeps on the target."
                              "Might be useful when no internet connection is available.")
     parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
     parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
@@ -392,7 +392,7 @@ def check_rosdeps(target):
 
     rosdep_result = subprocess.run(cmd)
     if rosdep_result.returncode != 0:
-        print_warn("rosdep check on {} had non-zero exit code. Check it's output for more info"
+        print_warn("rosdep check on {} had non-zero exit code. Check its output for more info"
                    .format(target.hostname))
 
     print_success("Rosdeps on {} installed successfully".format(target.hostname))
