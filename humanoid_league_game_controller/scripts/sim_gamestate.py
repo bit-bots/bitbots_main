@@ -19,6 +19,9 @@ Setting the GameState by entering a number:
 3: GAMESTATE_PLAYING=3
 4: GAMESTATE_FINISHED=4
 
+p:     toggle penalized
+space: toggle allowed_to_move
+
 CTRL-C to quit
 
 """
