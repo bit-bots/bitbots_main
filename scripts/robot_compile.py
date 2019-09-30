@@ -7,8 +7,6 @@ import yaml
 import subprocess
 import ipaddress
 
-from bitbots_bringup import game_settings
-
 
 class LOGLEVEL:
     current = 2
@@ -52,6 +50,12 @@ def print_info(msg):
 def print_debug(msg):
     if LOGLEVEL.current >= LOGLEVEL.DEBUG:
         print(msg)
+
+
+try:
+    from bitbots_bringup import game_settings
+except ImportError:
+    print_warn("Cannot run game settings without a ROS environment")
 
 
 def print_bit_bot():
