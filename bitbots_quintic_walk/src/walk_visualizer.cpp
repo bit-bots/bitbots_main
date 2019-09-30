@@ -1,4 +1,3 @@
-#include <bitbots_quintic_walk/walk_engine.h>
 #include "bitbots_quintic_walk/walk_visualizer.h"
 
 namespace bitbots_quintic_walk {

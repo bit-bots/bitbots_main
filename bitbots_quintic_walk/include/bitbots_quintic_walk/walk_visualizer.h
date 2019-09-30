@@ -3,6 +3,7 @@
 
 #include <ros/ros.h>
 
+#include <tf2_eigen/tf2_eigen.h>
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
@@ -13,8 +14,8 @@
 #include <bitbots_quintic_walk/WalkEngineDebug.h>
 #include <moveit_msgs/RobotState.h>
 #include <bitbots_quintic_walk/walk_utils.h>
+#include <bitbots_quintic_walk/walk_engine.h>
 #include <moveit/robot_state/robot_state.h>
-#include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 namespace bitbots_quintic_walk {
