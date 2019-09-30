@@ -30,7 +30,7 @@ Test hardware and ros_control
     motor power on and ``roslaunch bitbots_ros_control ros_control_standalone.launch torqueless_mode:=true``
         - it should start without any errors
         - servos should be torqueless (not stiff)
-        - start on your laptop "roslaunch bitbots_ros_control pressure_viz.launch" you should see the the robot, the TF tree and the efforts
+        - start on your laptop ``roslaunch bitbots_ros_control pressure_viz.launch`` you should see the the robot, the TF tree and the efforts
             - move the robot around to see if it behaves correctly (ignore efforts for now, since we are torqueless)
             - start rqt diagnostic monitor, you should see all servos on green and get voltage, temperature and error status
             - maybe use plotjuggler to see the values in more detail
