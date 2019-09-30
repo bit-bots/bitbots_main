@@ -19,7 +19,7 @@ Test hardware and ros_control
 
 #. Test pressure sensors
     ``roslaunch bitbots_ros_control ros_control_standalone.launch only_pressure:=true``
-        - start on your laptop "roslaunch bitbots_ros_control pressure_viz.launch"
+        - start on your laptop ``roslaunch bitbots_ros_control pressure_viz.launch``
             - you should see the pressure values as arrows in rviz as well as the center of pressures
             - press on the sensors to see if they behave correctly
         - maybe use plottjuggler to get more details and see eventual drift
