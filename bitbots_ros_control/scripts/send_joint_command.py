@@ -41,6 +41,34 @@ class PredefinedCommands:
         max_currents=[__max_currents__] * len(__ids__),
         positions=[0.0] * len(__ids__))
 
+    Walkready = JointCommand(
+        joint_names=__ids__,
+        velocities=[__velocity__] * len(__ids__),
+        accelerations=[__accelerations__] * len(__ids__),
+        max_currents=[__max_currents__] * len(__ids__),
+        positions=[
+            0.0,  # HeadPan
+            0.0,  # HeadTilt
+            0.0,  # LShoulderPitch
+            0.0,  # LShoulderRoll
+            0.79,  # LElbow
+            0.0,  # RShoulderPitch
+            0.0,  # RShoulderRoll
+            -0.79,  # RElbow
+            -0.0112,  # LHipYaw
+            0.0615,  # LHipRoll
+            0.4732,  # LHipPitch
+            -1.0058,  # LKnee
+            -0.4512,  # LAnklePitch
+            0.0625,  # LAnkleRoll
+            0.0112,  # RHipYaw
+            -0.0615,  # RHipRoll
+            -0.4732,  # RHipPitch
+            1.0059,  # RKnee
+            0.4512,  # RAnklePitch
+            -0.0625,  # RAnkleRoll
+        ])
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Send a bitbots_msgs/JointCommand to our ros-control node in a loop")
@@ -75,7 +103,7 @@ def main():
         rospy.sleep(0.5)
 
         if args.once:
-            break
+            return
 
 
 if __name__ == "__main__":
