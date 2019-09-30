@@ -33,8 +33,9 @@ pipeline {
                 linkCatkinWorkspace()
                 catkinBuild("Documentation")
 
-                stash includes: '**/docs/_out/**', name: 'docs_output'
-                archiveArtifacts artifacts: '**/docs/_out/**', onlyIfSuccessful: true
+                stash includes: 'bitbots_docs/docs/_out/**', name: 'docs_output'
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'bitbots_docs/docs/_out/',
+                            reportFiles: 'index.html', reportName: 'Built Documentation', reportTitles: ''])
             }
         }
 
