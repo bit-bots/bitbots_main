@@ -1,5 +1,5 @@
 <launch>
-     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
     </include>
 
     <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_viz.yaml" command="load"/>
@@ -8,5 +8,6 @@
 
     <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" respawn="true" output="screen"/>
     <node name="joint_goal_viz" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" respawn="false" output="screen" args="--walking"/>
+    <node pkg="rviz" type="rviz" args="-d $(find bitbots_quintic_walk)/config/walk.rviz" name="walk_rviz"/>
 
 </launch>
