@@ -379,7 +379,7 @@ def check_rosdeps(target):
 
     :type target: Target
     """
-    print_info("Checking installed rosdeps on {}".format(target))
+    print_info("Checking installed rosdeps on {}".format(target.hostname))
 
     cmd = [
         "ssh",
