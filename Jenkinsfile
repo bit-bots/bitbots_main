@@ -31,6 +31,8 @@ pipeline {
             agent { docker image: 'bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000', alwaysPull: true }
             steps {
                 linkCatkinWorkspace()
+                // 'sometimes' the pipeline fails because sphinx is installed via python2
+                sh 'sudo apt remove -y python-sphinx || true'
                 catkinBuild("Documentation")
 
                 stash includes: 'bitbots_docs/docs/_out/**', name: 'docs_output'
