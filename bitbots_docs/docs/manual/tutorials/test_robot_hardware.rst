@@ -2,13 +2,14 @@
 Testing the robot hardware and lowlevel software
 ================================================
 
+Do the test in the provided order, to find out which part is faulty.
+
 Preliminaries
 -------------
 
 #. Use robot compile to flash correct version on robot
 #. Put robot in a safe spot, on a rope hanging from the ceiling
 #. Check if all cables are correctly connected
-#. Do the test in the provided order, to find out which part is faulty
 	
 Test hardware and ros_control
 -----------------------------
