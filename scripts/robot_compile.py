@@ -286,7 +286,8 @@ def sync(target, package='', pre_clean=False):
     if pre_clean:
         print_info("Pre-cleaning on {}".format(target.hostname))
         cmd = [
-            "ssh bitbots@{}".format(target.hostname),
+            "ssh",
+            "bitbots@{}".format(target.hostname),
             "rm -rf {}/src/*".format(target.workspace)
         ]
         print_debug("Calling {}".format(" ".join(cmd)))
