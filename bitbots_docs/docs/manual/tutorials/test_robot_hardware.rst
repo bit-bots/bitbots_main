@@ -14,7 +14,7 @@ Test hardware and ros_control
 -----------------------------
 #. Test IMU
     ``roslaunch bitbots_ros_control ros_control_standalone.launch only_imu:=true``
-        - start on your laptop "roslaunch bitbots_ros_control viz_imu.launch" you should see the filtered orientation and an arrow showing the sum of acceleration forces
+        - start on your laptop ``roslaunch bitbots_ros_control viz_imu.launch`` you should see the filtered orientation and an arrow showing the sum of acceleration forces
         - maybe use plotjuggler to verify raw values
 
 #. Test pressure sensors
