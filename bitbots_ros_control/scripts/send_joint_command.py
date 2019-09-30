@@ -7,6 +7,9 @@ import rospy
 from bitbots_msgs.msg import JointCommand
 
 
+DYNAMIXEL_CMD_TOPIC = "/DynamixelController/command"
+
+
 class PredefinedCommands:
     __ids__ = [
         "HeadPan",
@@ -86,16 +89,18 @@ def main():
     joint_command = PredefinedCommands.__dict__[args.command]
 
     rospy.init_node("send_joint_command")
-    pub = rospy.Publisher("/DynamixelController/command", JointCommand, queue_size=1)
-    print(joint_command)
+    pub = rospy.Publisher(DYNAMIXEL_CMD_TOPIC, JointCommand, queue_size=1)
 
     while pub.get_num_connections() < 1:
-        rospy.loginfo_once("Waiting until subscribers connect to /DynamixelController/command")
-        rospy.sleep(0.1)
+        pub.unregister()
+        pub = rospy.Publisher(DYNAMIXEL_CMD_TOPIC, JointCommand, queue_size=10)
+        rospy.loginfo_once("Waiting until subscribers connect to {}".format(DYNAMIXEL_CMD_TOPIC))
+        rospy.sleep(0.5)
     # just to make sure
     rospy.sleep(1)
 
-    rospy.loginfo("Sending controller commands of type {} now".format(args.command))
+    rospy.loginfo("Sending controller commands of type {} now.".format(args.command))
+    print(joint_command)
 
     while not rospy.is_shutdown():
         joint_command.header.stamp = rospy.Time.now()
