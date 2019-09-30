@@ -96,6 +96,6 @@ walking:
     imu_roll_vel_threshold: 1.0
     pause_duration: 0.5
 
-    publishOdomTF: False
+    publish_odom_tf: True
 
     first_step_swing_factor: 1.0

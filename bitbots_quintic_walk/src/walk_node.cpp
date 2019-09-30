@@ -13,7 +13,7 @@ WalkNode::WalkNode() :
   // read config
   nh_.param<double>("engine_frequency", engine_frequency_, 100.0);
   nh_.param<bool>("/simulation_active", simulation_active_, false);
-  nh_.param<bool>("/walking/publishOdomTF", publish_odom_tf_, false);
+  nh_.param<bool>("/walking/node/publish_odom_tf", publish_odom_tf_, false);
 
   /* init publisher and subscriber */
   pub_controller_command_ = nh_.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);

@@ -90,4 +90,4 @@ walking:
     imu_pitch_threshold: 1
     imu_roll_threshold: 1
 
-    publishOdomTF: True
+    publish_odom_tf: False
