@@ -42,19 +42,3 @@ Test hardware and ros_control
             - run "rosrun bitbots_ros_control send_joint_command.py", the robot should go into init pose and be completly stiff
             - apply some force on a servo, the effort visualization should show it (if not maybe set read_effort via dynamic reconfigure to active)
 
-Test motion
------------
-#. Test Animation
-    roslaunch bitbots_bringup motion_standalone.launch
-        - robot should go in walkready and motors should be stiff
-        - there should be no error message
-        - start record ui
-            - load and play animations (make sure the robot is safe)
-
-#. Test Fallen
-
-#. Test Falling
-
-#. Test Kick
-
-#. Test Walk
