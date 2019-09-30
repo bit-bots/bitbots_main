@@ -1,49 +1,261 @@
 #!/usr/bin/env python3
 
 import argparse
-import time
-from pathlib import Path
-import os
 import sys
-import subprocess
+import os
 import yaml
-import re
+import subprocess
+import ipaddress
 
-cwd = str(Path(os.path.abspath(__file__)).parents[1])
+from bitbots_bringup import game_settings
 
-workspaces = {
-    'wolfgang': '/home/bitbots/wolfgang_ws',
-    'davros': '/home/bitbots/davros_ws'
-}
+
+class LOGLEVEL:
+    current = 2
+    DEBUG = 3
+    INFO = 2
+    WARN = 1
+    ERR_SUCCESS = 0
+
+
+BITBOTS_META = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def print_err(msg):
-    print('\033[91m\033[1m#################   ' + msg + '   #################\033[0m')
+    if LOGLEVEL.current >= LOGLEVEL.ERR_SUCCESS:
+        print("\033[91m\033[1m##" + "".join(["#"] * len(str(msg))) + "##\033[0m")
+        print("\033[91m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
+        print('\033[91m\033[1m# ' + str(msg) + ' #\033[0m')
+        print("\033[91m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
+        print("\033[91m\033[1m##" + "".join(["#"] * len(str(msg))) + "##\033[0m")
 
 
 def print_warn(msg):
-    print('\033[93m\033[1m#################   ' + msg + '   #################\033[0m')
+    if LOGLEVEL.current >= LOGLEVEL.WARN:
+        print("\033[93m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
+        print('\033[93m\033[1m# ' + str(msg) + ' #\033[0m')
+        print("\033[93m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
 
 
 def print_success(msg):
-    print('\033[92m\033[1m' + msg + '\033[0m')
+    if LOGLEVEL.current >= LOGLEVEL.ERR_SUCCESS:
+        print("\033[92m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
+        print('\033[92m\033[1m# ' + str(msg) + ' #\033[0m')
+        print("\033[92m\033[1m# " + "".join([" "] * len(str(msg))) + " #\033[0m")
 
 
 def print_info(msg):
-    print('\033[1m' + msg + '\033[0m')
+    if LOGLEVEL.current >= LOGLEVEL.INFO:
+        print('\033[96m' + str(msg) + '\033[0m')
 
 
-def get_includes_from_file(file, package=None):
+def print_debug(msg):
+    if LOGLEVEL.current >= LOGLEVEL.DEBUG:
+        print(msg)
+
+
+def print_bit_bot():
+    print("""\033[1m
+                `/shNMoyymmmmmmmmmmys+NmNs/`                
+              `+mmdddmmmddddddddddddmmmdddmm/               
+              ymdddddddmmmmmmmmmmmmmmdddddddms              
+            .dmdddddddddddmddddddmmddddddddddmy`            
+           .mmdddddddddddmyoooooosddddddddddddms`           
+       .ssshmdddddddddddddmhsooshddddddddddddddmhsss.       
+    -+shysshddddmddddmdddddddddddddddmdhhhhdmdddhssyhs+-    
+   :ddyyyyydddy+/////+shddddddddddddy+//////+sdddyyyyydd:   
+  `mmh/+hdddh///////////sdddddddddd+///++++////hdddh+/hmm`  
+  omdddddmmy///sdNNNmy///omddddddd+//odNMMNmo///hdmdddddmo  
+ `dddddddmm+//yMMMMMMMh///hdddmddh//oNMMMMMMNo//smmddddddd` 
+ .Nddddddmm+//hMMMMMMMd///hdhNNddh//+NMMMMMMNo//ymmddddddN. 
+ .mNNNNNNNdh///yNMMMNd+//sdddddddds//+hmNNmho//oddmmNNNNNm. 
+-ydddmmmmNmdh+///+++////yddddddddddy//////////sddmNmmmmdddy-
+:sddddddymNdddyo+////oyddddddddddddddys++++oyddddddydddddds:
+/hddddddh::Nddddmdddmdddddddddddddddddddmmdddddmm.:hdddddhh/
+:dhhhhyhh. :dmddddddddddddddddddddddddddddddddmy. .hhyhhhhd:
+/mhhhhyo/   `omdddddddddddddddddddddddddddddmmo`   /oyhhhhm/
+/hhhhd`       `ommddddddddddddddddddddddddmmo`       `dhhhh/
+/hhhhd+         `+ymdddddddddddddddddddddy:`         +dhhhh/
+mhhhhds          +:mhhdhmmmmmddmmmmNmhhhs/:          sdhhhhm
+mhhhhm.         .mNhsshmN.-//:///-hNdyoydMm          .mhhhhm
+mhhhhs          oNNy//ymN`        yNho:omNd           shhhhm
+dhhss`          +NMNsyNNN`        yNNm+dNNd           `sshhd
+dhdh/.          +NNdyyNNm`        yNNdyhNNd           ./hdhd
+mhssy+          +dddddddm`        ydddddddd           +ysshm
+hy-             +dddddddm`        ydddddddd              -yh
+               `hmmmmmmmm+       -dmmmmmmmm:                
+               `Nddddddddy       :mdddddddm+                
+               `Nddddddddy       :mdddddddm+                
+               `Ndddddddmy       :mdddddddm+                
+               `mddddddddy       :mdddddddd+                
+               `mddddddddy       :mdddddddd+                
+               `mmNmohNNdy       :mmNmohmNm+                
+               `NNmdhdmNmh       /NmmdhddNms                
+              `/mms+-/ymm:        ymho-:odmh/.              
+              yo+hsoooshs         -hsooosys+y:              
+              h+++++++oo+         `ho+++++++s:              
+              dysssssssy+         `dsssssssyh:              
+\033[0m""")
+
+
+class Target:
+    class Workspaces:
+        amy = "wolfgang_ws"
+        rory = "wolfgang_ws"
+        jack = "wolfgang_ws"
+        donna = "wolfgang_ws"
+        davros = "davros_ws"
+
+    class RobotComputers:
+        amy = [c + "1" for c in ["nuc", "odroid", "jetson"]]
+        rory = [c + "2" for c in ["nuc", "odroid", "jetson"]]
+        jack = [c + "3" for c in ["nuc", "odroid", "jetson"]]
+        donna = [c + "4" for c in ["nuc", "odroid", "jetson"]]
+        davros = ["davros"]
+
+    class IPs:
+        __prefix__ = "192.168.1."
+        nuc1 = __prefix__ + "11"
+        odroid1 = __prefix__ + "21"
+        jetson1 = __prefix__ + "31"
+        nuc2 = __prefix__ + "12"
+        odroid2 = __prefix__ + "22"
+        jetson2 = __prefix__ + "32"
+        nuc3 = __prefix__ + "13"
+        odroid3 = __prefix__ + "23"
+        jetson3 = __prefix__ + "33"
+        nuc4 = __prefix__ + "13"
+        odroid4 = __prefix__ + "23"
+        jetson4 = __prefix__ + "33"
+        davros = __prefix__ + "25"
+
+    def __init__(self, ip, ssh_target):
+        """
+        :type ip: str
+        :type ssh_target: str
+        """
+        self.ip = ip  # type: str
+        self.ssh_target = ssh_target  # type: str
+
+        # figure out hostname
+        for name, iip in self.IPs.__dict__.items():
+            if isinstance(ip, str) and iip == ip:
+                self.hostname = name
+
+        # figure out robot_name
+        for name, computers in self.RobotComputers.__dict__.items():
+            if isinstance(computers, list) and self.hostname in computers:
+                self.robot_name = name
+
+        self.workspace = getattr(self.Workspaces, self.robot_name)  # type: str
+
+        # figure out sync_includes
+        if self.hostname == "davros":
+            self.sync_includes_file = os.path.join(BITBOTS_META, "sync_includes_davros.yaml")
+        else:
+            self.sync_includes_file = os.path.join(BITBOTS_META,
+                                                   "sync_includes_wolfgang_{}.yaml".format(self.hostname[:-1]))
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Compile and configure software for the Wolfgang humanoid robot "
+                                                 "platform")
+    parser.add_argument("target", type=str, help="The target robot or computer you want to compile for. Multiple "
+                                                 "targets can be specified seperated by ,")
+
+    mode = parser.add_mutually_exclusive_group(required=False)
+    mode.add_argument("-s", "--sync-only", action="store_true", help="Only sync file from you to the target")
+    mode.add_argument("-c", "--compile-only", action="store_true", help="Only build on the target")
+    mode.add_argument("-k", "--configure-only", action="store_true", help="Only configure the target")
+
+    parser.add_argument("-p", "--package", default='', help="Sync/Compile only the given ROS package")
+    parser.add_argument("-y", "--yes-to-all", action="store_true", help="Answer yes to all questions")
+    parser.add_argument("--clean-build", action="store_true",
+                        help="Clean workspace before building. --package is given, clean only that package")
+    parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
+    parser.add_argument("--clean-built", action="store_true",
+                        help="Clean build directory before compiling")
+    parser.add_argument("--no-rosdeps", action="store_false", default=True, dest="check_rosdeps",
+                        help="Don't check installed rosdeps on the target."
+                             "Might be useful when no internet connection is available.")
+    parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
+    parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
+    parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output")
+    return parser.parse_args()
+
+
+def parse_targets(targets):
+    """
+    Parse target argument into usable Targets
+
+    :type targets: str
+    :rtype: list
+    """
+    res = []
+
+    for target in targets.split(","):
+
+        # this means, a whole robot is meant
+        if hasattr(Target.RobotComputers, target):
+            for computer in getattr(Target.RobotComputers, target):
+                res.append(Target(getattr(Target.IPs, computer), getattr(Target.IPs, computer)))
+                print_info("Using robot={} hostname={} ip={} for target {}".format(
+                    res[-1].robot_name, res[-1].hostname, res[-1].ip, target))
+
+        # this mean, a hostname was specified
+        elif hasattr(Target.IPs, target):
+            res.append(Target(getattr(Target.IPs, target), target))
+            print_info("Using robot={} hostname={} ip={} for target {}".format(
+                res[-1].robot_name, res[-1].hostname, res[-1].ip, target))
+
+        # this means a known IP address was specified
+        elif target in Target.IPs.__dict__.values():
+            res.append(Target(target, target))
+            print_info("Using robot={} hostname={} ip={} for target {}".format(
+                res[-1].robot_name, res[-1].hostname, res[-1].ip, target))
+
+        # this means an arbitrary target (likely an IP) was specified
+        else:
+            try:
+                ipaddress.ip_address(target)
+            except ValueError:
+                print_err("{} is neither a known target nor a valid ip address".format(target))
+                sys.exit(1)
+
+            cmd = ["ssh", "bitbots@{}".format(target), "cat /etc/hostname"]
+            host_inspect_result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="utf-8")
+
+            if host_inspect_result.returncode != 0:
+                print_err("Unable to connect to {}".format(target))
+                sys.exit(1)
+
+            print_info("Reparsing {}'s hostname ({})".format(target, host_inspect_result.stdout.replace("\n", "")))
+            res.extend(parse_targets(host_inspect_result.stdout.replace("\n", "")))
+
+    return res
+
+
+def get_includes_from_file(file_path, package=''):
+    """
+    Retrieve a list of file to sync from and includes-file
+
+    :param file_path: Path of the includes-file
+    :type file_path: str
+    :param package: Limit to file from this package
+    :type package: str
+    :returns: (a list of included files, a list of excluded files)
+    :rtype: tuple[list, list]
+    """
     includes = list()
-    with open(file) as f:
-        data = yaml.safe_load(f)
+    with open(file_path) as file:
+        data = yaml.safe_load(file)
         for entry in data['exclude']:
             # --include is right here. No worries.
             includes.append('--include=- {}'.format(entry))
         for entry in data['include']:
-            if type(entry) == dict:
+            if isinstance(entry, dict):
                 for folder, subfolders in entry.items():
-                    if package is None:
+                    if package == '':
                         includes.append('--include=+ {}'.format(folder))
                         for subfolder in subfolders:
                             includes.append('--include=+ {}/{}'.format(folder, subfolder))
@@ -52,7 +264,7 @@ def get_includes_from_file(file, package=None):
                         includes.append('--include=+ {}'.format(folder))
                         includes.append('--include=+ {}/{}'.format(folder, package))
                         includes.append('--include=+ {}/{}/**'.format(folder, package))
-            elif type(entry) == str:
+            elif isinstance(entry, str):
                 if package is None or entry == package:
                     includes.append('--include=+ {}'.format(entry))
                     includes.append('--include=+ {}/**'.format(entry))
@@ -60,284 +272,171 @@ def get_includes_from_file(file, package=None):
     return includes
 
 
-def add_game_controller_config(bot_id, workspace, host):
-    team_id = 18
-    config_path = workspace + '/src/humanoid_league_misc/humanoid_league_game_controller/config/game_controller.yaml'
-    r = subprocess.run([
-        'ssh',
-        'bitbots@{}'.format(host[0]),
-        'echo -e "team_id: {}\nbot_id: {}" > {}'.format(team_id, bot_id, config_path)
-    ])
-    if r.returncode != 0:
-        print_err('Adding a game controller config failed!')
-        sys.exit(r.returncode)
-    print_info('A game controller config with team_id {} and bot_id {} was added.'.format(team_id, bot_id))
+def sync(target, package='', pre_clean=False):
+    """
+    :type target: Target
+    :type package: str
+    :type pre_clean: bool
+    """
+    if pre_clean:
+        print_info("Pre-cleaning on {}".format(target.hostname))
+        cmd = [
+            "ssh bitbots@{}".format(target.hostname),
+            "rm -rf {}/src/*".format(target.workspace)
+        ]
+        print_debug("Calling {}".format(" ".join(cmd)))
+        clean_result = subprocess.run(cmd)
+        if clean_result.returncode != 0:
+            print_warn("Cleaning of source directory on {} failed. Continuing anyways".format(target.hostname))
 
-
-def clean_src_dir(host, workspace):
-    print_info('Cleaning source directory on {}...'.format(host[1]))
-    call = [
-        'ssh',
-        'bitbots@{}'.format(host[0]),
-        'rm -rf {}/src'.format(workspace)
+    print_info("Synchronizing {}".format(target.hostname))
+    cmd = [
+        "rsync",
+        "--checksum",
+        "--archive",
+        "-v" if LOGLEVEL.current >= LOGLEVEL.DEBUG else "",
+        "--delete",
     ]
-    clean_result = subprocess.run(call)
-    if clean_result.returncode != 0:
-        print_err('Cleaning the source directory failed!')
-        sys.exit(clean_result.returncode)
+    cmd.extend(get_includes_from_file(target.sync_includes_file, package))
+    cmd.extend([
+        BITBOTS_META + "/",
+        "bitbots@{}:{}/src/".format(target.ssh_target, target.workspace)
+    ])
 
-
-def synchronize(sync_includes_file, host, workspace, package=None):
-    call = [
-        'rsync',
-        '-ca',
-        '' if args.quiet else '-v',
-        '--delete']
-    call.extend(get_includes_from_file(os.path.join(cwd, sync_includes_file), package))
-    call.extend([
-        cwd + '/',
-        'bitbots@{}:{}/src/'.format(host[0], workspace)])
-    sync_result = subprocess.run(call)
+    print_debug("Calling {}".format(" ".join(cmd)))
+    sync_result = subprocess.run(cmd)
     if sync_result.returncode != 0:
-        print_err('Synchronizing the workspace failed!')
+        print_err("Synchronizing {} failed with error code {}".format(target.hostname, sync_result.returncode))
         sys.exit(sync_result.returncode)
 
-    if host[1].startswith('jetson'):
-        call = ['ssh',
-                'bitbots@{}'.format(host[0]),
-                'test -d ~/wolfgang_ws/src/wolves_image_provider && sed -i "/camera_name/s/ROBOT/{}/" ~/wolfgang_ws/src/wolves_image_provider/config/camera_settings.yaml || exit 0'.format(robot_name_name)]
-        camera_result = subprocess.run(call)
-        if camera_result.returncode != 0:
-            print_err('Configuring the camera calibration failed!')
-            sys.exit(camera_result.returncode)
+    print_success("Synchronization of {} successful".format(target.hostname))
 
 
-# noinspection PyUnboundLocalVariable
-def configure(args):
-    start_motion = args.yes_to_all or input('Start motion on boot? (y/N) ').lower() == 'y'
-    start_behaviour = args.yes_to_all or input('Start behaviour on boot? (y/N) ').lower() == 'y'
-    start_vision = args.yes_to_all or input('Start vision on boot? (Y/n) ').lower() != 'n'
-    start_roscore = args.yes_to_all or input('Start roscore on boot? (Y/n) ').lower() != 'n'
+def sync_gamesettings(target):
+    """
+    :type target: Target
+    """
+    print_info("Synchronizing gamesettings to {}".format(target.hostname))
+    cmd = [
+        "rsync",
+        "--checksum",
+        "--archive",
+        "-v" if LOGLEVEL.current >= LOGLEVEL.DEBUG else "",
+        os.path.join(BITBOTS_META, "bitbots_misc", "bitbots_bringup", "config", "game_settings.yaml"),
+        "bitbots@{}:{}/src/bitbots_misc/config/game_settings.yaml".format(target.ssh_target, target.workspace)
+    ]
 
-    for host in hosts:
-        if host[1].startswith('odroid') or host[1].startswith('nuc'):
-            add_game_controller_config(host[1][-1:], workspace, host)
+    print_debug("Calling {}".format(" ".join(cmd)))
+    sync_result = subprocess.run(cmd)
+    if sync_result.returncode != 0:
+        print_err("Synchronizing game settings with {} failed with error code {}"
+                  .format(target.hostname, sync_result.returncode))
+        sys.exit(sync_result.returncode)
 
-        data = {
-            'roscore': '',
-            'motion': '',
-            'behavior': '',
-            'vision': ''
-        }
-        
-        if host[1].startswith('nuc'):
-            data['motion'] = 'sudo /bin/systemctl enable --now bitbots_motion.service; ' \
-                if start_motion else \
-                'sudo /bin/systemctl disable --now bitbots_motion.service; '
-
-            data['behavior'] = 'sudo /bin/systemctl enable --now bitbots_highlevel.service; ' \
-                if start_behaviour else \
-                'sudo /bin/systemctl disable --now bitbots_highlevel.service; '
-
-            data['roscore'] = 'sudo /bin/systemctl enable --now roscore.service; ' \
-                if start_roscore else \
-                'sudo /bin/systemctl disable --now roscore.service; '
-
-        elif host[0].startswith('jetson'):
-            data['vision'] = 'sudo /bin/systemctl stop bitbots_vision.service; sudo /bin/systemctl enable --now bitbots_vision.service; ' \
-                if start_vision else \
-                'sudo /bin/systemctl disable --now bitbots_vision.service; '
-
-        print_info('Configuring boot for {}...'.format(host[1]))
-        r = subprocess.run([
-            'ssh',
-            'bitbots@{}'.format(host[0]),
-            'bash -c \'{roscore}{motion}{behavior}{vision}\''.format(**data)
-        ])
-        if r.returncode != 0:
-            print_err('Configuring {} failed!'.format(host[1]))
-            exit(r.returncode)
-
-        if host[0].startswith('nuc'):
-            # Game settings script is only necessary on nuc because ros parameters
-            # are set and that is only necessary once
-            print_info('Calling game_settings on host {}'.format(host[1]))
-            with subprocess.Popen([
-                'ssh', 'bitbots@{}'.format(host[0]),
-                'bash -c \'source wolfgang_ws/devel/setup.bash && rosrun bitbots_bringup game_settings.py --no-teamplayer\''
-            ], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.DEVNULL,
-            universal_newlines=True) as proc:
-                akk = ''
-                skipInput = False
-                while proc.returncode is None:
-                    out = proc.stdout.read(1)
-                    print(out, end='', flush=True)
-
-                    if out == '\n':
-                        akk = ''
-                        skipInput = False
-                    else:
-                        akk += out
-
-                    if not skipInput and re.search(r'Value.*:', akk) is not None:
-                        proc.stdin.write(input() + '\n')
-                        proc.stdin.flush()
-                        skipInput = True
-                        time.sleep(1)
-                        proc.poll()
-
-    print_success('Successfully configured all robots')
+    print_success("Synchronizing game settings with {} succeeded".format(target.hostname))
 
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(description='Copy the workspace to the robot and compile it.')
-    parser.add_argument('hostname', metavar='hostname', type=str, help='The hostname of the robot (or its name)')
-    robot = parser.add_mutually_exclusive_group()
-    robot.add_argument('-w', '--wolfgang', action='store_const', help='Compile for wolfgang', const='wolfgang',
-                       dest='robot')
-    robot.add_argument('-d', '--davros', action='store_const', help='Compile for davros', const='davros', dest='robot')
-    mode = parser.add_mutually_exclusive_group(required=False)
-    mode.add_argument('-s', '--sync-only', action='store_true', help='Sync files only, don\'t build')
-    mode.add_argument('-c', '--compile-only', action='store_true', help='Build only, don\'t copy any files')
-    mode.add_argument('-k', '--configure', action='store_true', help='Configure only, don\'t deploy anything new')
-    parser.add_argument('-p', '--package', help='Sync/Compile only the given ROS package')
-    parser.add_argument('-y', '--yes-to-all', action='store_true', help='Answer yes to all questions')
-    parser.add_argument('-j', '--jobs', metavar='N', default=6, type=int, help='Compile using N jobs (default 6)')
-    parser.add_argument('--clean-build', action='store_true', help='Clean workspace before building')
-    parser.add_argument('--clean-src', action='store_true', help='Clean source directory before building')
-    parser.add_argument('--clean-all', action='store_true', help='Clean workspace and source directory before building')
-    parser.add_argument('-q', '--quiet', action='store_true', help='Less output')
-    parser.set_defaults(robot='wolfgang')
-    return parser.parse_args()
+def build(target, package='', pre_clean=False):
+    """
+    :type target: Target
+    :type package: str
+    :type pre_clean: bool
+    """
+    print_info("Building on {}".format(target.hostname))
+
+    cmd = [
+        "ssh",
+        "bitbots@{}".format(target.ssh_target),
+        ("sync;"
+         "cd {workspace};"
+         "source devel/setup.zsh;"
+         "{cmd_clean}"
+         "catkin build --force-color {package} {quiet_option} --continue-on-failure --no-status --summary || exit 1;"
+         "./src/scripts/repair.sh {quiet_option};"
+         "sync;"
+         ).format(**{
+            "workspace": target.workspace,
+            "cmd_clean": "cakin clean -y {};".format(package) if pre_clean else "",
+            "quiet_option": "> /dev/null" if LOGLEVEL.current < LOGLEVEL.INFO else "",
+            "package": package
+        })
+    ]
+
+    print_debug("Calling {}".format(" ".join(cmd)))
+    build_result = subprocess.run(cmd)
+    if build_result.returncode != 0:
+        print_err("Build on {} failed".format(target.hostname))
+        sys.exit(build_result.returncode)
+
+    print_success("Build on {} succeeded".format(target.hostname))
 
 
-if __name__ == '__main__':
+def check_rosdeps(target):
+    """
+    Check installed dependencies on a target with rosdep
+
+    :type target: Target
+    """
+    print_info("Checking installed rosdeps on {}".format(target))
+
+    cmd = [
+        "ssh",
+        "bitbots@{}".format(target.ssh_target),
+        "rosdep check {} --ignore-src --from-paths {}".format(
+            "" if LOGLEVEL.current >= LOGLEVEL.INFO else "-q",
+            os.path.join(target.workspace, "src")
+        ),
+    ]
+
+    print_debug("Calling {}".format(" ".join(cmd)))
+
+    rosdep_result = subprocess.run(cmd)
+    if rosdep_result.returncode != 0:
+        print_warn("rosdep check on {} had non-zero exit code. Check its output for more info"
+                   .format(target.hostname))
+
+    print_success("Rosdeps on {} installed successfully".format(target.hostname))
+
+
+def main():
     args = parse_arguments()
-    hostname = args.hostname
 
-    # Convert names to numbers
-    names = {'amy': 1,
-             'rory': 2,
-             'jack': 3,
-             'donna': 4,
-             'davros': 5}
-    if hostname in names.keys():
-        number = names[hostname]
-        if args.robot == 'davros':
-            hosts = ['odroid{}'.format(number)]
+    LOGLEVEL.current = LOGLEVEL.current + args.verbose - args.quiet
+
+    if args.print_bit_bot:
+        print_bit_bot()
+
+    targets = parse_targets(args.target)
+
+    for target in targets:
+        # sync
+        if args.compile_only:
+            print_info("Not syncing to {} due to compile-only mode".format(target.hostname))
+        elif args.configure_only:
+            print_info("Not syncing to {} due to configure-only mode".format(target.hostname))
         else:
-            hosts = ['{}{}'.format(host, number) for host in ['nuc', 'jetson', 'odroid']]
-        robot_name_name = hostname
-    else:
-        hosts = [hostname]
-        robot_name_name = 'ROBOT'
-        for name, number in names.items():
-            if number == int(hostname[-1]):
-                robot_name_name = name
-                break
+            sync(target, args.package, pre_clean=args.clean_src)
 
-    hosts_tmp = hosts
-    # New host array consisting of reachable address (hostname or ip) and hostname
-    hosts = []
-    for h in hosts_tmp:
-        host_result = subprocess.run(['ssh', 'bitbots@{}'.format(h), 'echo $HOST'], stdout=subprocess.PIPE)
-        if host_result.returncode != 0:
-            print_err('Unable to connect to {}!'.format(h))
+        # build
+        if args.sync_only:
+            print_info("Not compiling on {} due to sync-only mode".format(target.hostname))
+        elif args.configure_only:
+            print_info("Not compiling on {} due to configure-only mode".format(target.hostname))
         else:
-            hosts.append((h, host_result.stdout.decode().strip()))
-    if len(hosts) == 0:
-        print_err('No hosts available!')
-        exit(1)
-    if robot_name_name == 'ROBOT':
-        # The robot name could not be determined yet
-        print(hosts)
-        for name, number in names.items():
-            if number == int(hosts[0][-1][-1]):
-                robot_name_name = name
-                break
+            if args.check_rosdeps:
+                check_rosdeps(target)
+            build(target, args.package, pre_clean=args.clean_build)
 
-    if args.robot == 'wolfgang':
-        workspace = workspaces['wolfgang']
-    elif args.robot == 'davros':
-        workspace = workspaces['davros']
+        # configure
+        if args.sync_only:
+            print_info("Not configuring {} due to sync-only mode".format(target.hostname))
+        elif args.compile_only:
+            print_info("Not configuring {} due to compile-only mode".format(target.hostname))
+        else:
+            print_info("Running game-settings script for {}".format(target.hostname))
+            game_settings.main()
+            sync_gamesettings(target)
 
-    if len(hosts) == 1:
-        print_info('Host: ' + hosts[0][1])
-    else:
-        print_info('Hosts: ' + ', '.join([h[1] for h in hosts]))
 
-    print_info('Workspace: ' + workspace)
-    print()
-
-    if not args.compile_only:
-        for host in hosts:
-            if args.clean_all or args.clean_src:
-                clean_src_dir(host, workspace)
-
-            print_info('Synchronizing files on {}...'.format(host[1]))
-            if args.robot == 'wolfgang':
-                # Filename is hostname without number (like sync_includes_wolfgang_odroid.yaml)
-                sync_includes_file = 'sync_includes_wolfgang_{}.yaml'.format(host[1][:-1])
-            elif args.robot == 'davros':
-                sync_includes_file = 'sync_includes_davros.yaml'
-            if args.package:
-                synchronize(sync_includes_file, host, workspace, args.package)
-            else:
-                synchronize(sync_includes_file, host, workspace)
-
-            if host[1].startswith('odroid') or host[1].startswith('nuc'):
-                add_game_controller_config(host[1][-1:], workspace, host)
-
-            if host[1].startswith('jetson'):
-                vision_extension_result = subprocess.run([
-                    'ssh',
-                    'bitbots@{}'.format(host[0]),
-                    '{}/src/scripts/install_py_extensions.bash'.format(workspace),
-                ])
-                if vision_extension_result.returncode != 0:
-                    print_err('Installing the vision extensions failed!')
-                    exit(vision_extension_result.returncode)
-
-        print_success('Sync succeeded!')
-
-    if not args.sync_only:
-        for host in hosts:
-            print_info('Compiling on {}...'.format(host[1]))
-            data = dict()
-            data['workspace'] = workspace
-            data['jobs'] = args.jobs
-            data['clean_option'] = 'catkin clean -y' if args.clean_build or args.clean_all else ''
-            data['quiet_option'] = '> /dev/null' if args.quiet else ''
-            data['package'] = args.package if args.package else ''
-
-            build_result = subprocess.run([
-                'ssh',
-                'bitbots@{}'.format(host[0]),
-                '''sync;
-                cd {workspace};
-                {clean_option}
-                if [[ -f devel/setup.zsh ]]; then
-                source /opt/ros/*/setup.zsh;
-                source devel/setup.zsh;
-                catkin build --force-color -j {jobs} {package} {quiet_option} || exit 1;
-                else;
-                source /opt/ros/*/setup.zsh;
-                catkin build --force-color -j {jobs} {package} {quiet_option} || exit 1;
-                source devel/setup.zsh;
-                fi;
-                src/scripts/repair.sh {quiet_option};
-                sync;'''.format(**data)
-            ])
-
-            if build_result.returncode != 0:
-                if not args.package:
-                    print_err('Build failed!')
-                    exit(build_result.returncode)
-                else:
-                    print_warn('Build failed (or package {} does not exist on {}). Please check the build output!'.format(args.package, host[1]))
-        print_success('Build succeeded!')
-
-    if not args.compile_only and not args.sync_only and args.configure:
-        configure(args)
-    else:
-        print_warn('Not configuring robot. Call with -k to change boot-config and game-settings')
+if __name__ == "__main__":
+    main()
