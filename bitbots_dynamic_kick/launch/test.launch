@@ -1,4 +1,5 @@
 <launch>
+  <include file="$(find bitbots_ros_control)/launch/ros_control.launch" />
   <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" />
   <node name="dynamic_kick" pkg="bitbots_dynamic_kick" type="KickNode" output="screen">
         <remap from="/kick_motor_goals" to="/DynamixelController/command"/>
