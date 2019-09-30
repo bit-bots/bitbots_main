@@ -26,7 +26,7 @@ Test hardware and ros_control
         - maybe use plottjuggler to get more details and see eventual drift
 
 #. Test servos
-    motor power off and roslaunch bitbots_ros_control ros_control_standalone.launch torqueless_mode:=true
+    motor power off and ``roslaunch bitbots_ros_control ros_control_standalone.launch torqueless_mode:=true``
         - it should give you errors for not being able to ping servos
     motor power on and ``roslaunch bitbots_ros_control ros_control_standalone.launch torqueless_mode:=true``
         - it should start without any errors
