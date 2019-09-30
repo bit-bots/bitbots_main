@@ -2,8 +2,9 @@ include:
     - basler_drivers
     - bitbots_misc:
         - bitbots_bringup
-        - bitbots_docs
     - bitbots_msgs
+    - bitbots_tools:
+        - bitbots_docs
     - bitbots_vision:
         - bitbots_vision
         - python_extensions
