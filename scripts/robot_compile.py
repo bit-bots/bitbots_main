@@ -7,8 +7,6 @@ import yaml
 import subprocess
 import ipaddress
 
-from bitbots_bringup import game_settings
-
 
 class LOGLEVEL:
     current = 2
@@ -52,6 +50,12 @@ def print_info(msg):
 def print_debug(msg):
     if LOGLEVEL.current >= LOGLEVEL.DEBUG:
         print(msg)
+
+
+try:
+    from bitbots_bringup import game_settings
+except ImportError:
+    print_warn("Cannot run game settings without a ROS environment")
 
 
 def print_bit_bot():
@@ -124,9 +128,9 @@ class Target:
         nuc3 = __prefix__ + "13"
         odroid3 = __prefix__ + "23"
         jetson3 = __prefix__ + "33"
-        nuc4 = __prefix__ + "13"
-        odroid4 = __prefix__ + "23"
-        jetson4 = __prefix__ + "33"
+        nuc4 = __prefix__ + "14"
+        odroid4 = __prefix__ + "24"
+        jetson4 = __prefix__ + "34"
         davros = __prefix__ + "25"
 
     def __init__(self, ip, ssh_target):
@@ -166,15 +170,13 @@ def parse_arguments():
     mode = parser.add_mutually_exclusive_group(required=False)
     mode.add_argument("-s", "--sync-only", action="store_true", help="Only sync file from you to the target")
     mode.add_argument("-c", "--compile-only", action="store_true", help="Only build on the target")
-    mode.add_argument("-k", "--configure-only", action="store_true", help="Only configure the target")
+    mode.add_argument("-k", "--configure", action="store_true", help="Configure the target as well as everything else")
 
     parser.add_argument("-p", "--package", default='', help="Sync/Compile only the given ROS package")
     parser.add_argument("-y", "--yes-to-all", action="store_true", help="Answer yes to all questions")
     parser.add_argument("--clean-build", action="store_true",
-                        help="Clean workspace before building. --package is given, clean only that package")
+                        help="Clean workspace before building. If --package is given, clean only that package")
     parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
-    parser.add_argument("--clean-built", action="store_true",
-                        help="Clean build directory before compiling")
     parser.add_argument("--no-rosdeps", action="store_false", default=True, dest="check_rosdeps",
                         help="Don't check installed rosdeps on the target."
                              "Might be useful when no internet connection is available.")
@@ -351,7 +353,7 @@ def build(target, package='', pre_clean=False):
          "cd {workspace};"
          "source devel/setup.zsh;"
          "{cmd_clean}"
-         "catkin build --force-color {package} {quiet_option} --continue-on-failure --no-status --summary || exit 1;"
+         "catkin build --force-color {package} {quiet_option} --continue-on-failure --summary || exit 1;"
          "./src/scripts/repair.sh {quiet_option};"
          "sync;"
          ).format(**{
@@ -377,7 +379,7 @@ def check_rosdeps(target):
 
     :type target: Target
     """
-    print_info("Checking installed rosdeps on {}".format(target))
+    print_info("Checking installed rosdeps on {}".format(target.hostname))
 
     cmd = [
         "ssh",
@@ -412,16 +414,12 @@ def main():
         # sync
         if args.compile_only:
             print_info("Not syncing to {} due to compile-only mode".format(target.hostname))
-        elif args.configure_only:
-            print_info("Not syncing to {} due to configure-only mode".format(target.hostname))
         else:
             sync(target, args.package, pre_clean=args.clean_src)
 
         # build
         if args.sync_only:
             print_info("Not compiling on {} due to sync-only mode".format(target.hostname))
-        elif args.configure_only:
-            print_info("Not compiling on {} due to configure-only mode".format(target.hostname))
         else:
             if args.check_rosdeps:
                 check_rosdeps(target)
@@ -432,6 +430,8 @@ def main():
             print_info("Not configuring {} due to sync-only mode".format(target.hostname))
         elif args.compile_only:
             print_info("Not configuring {} due to compile-only mode".format(target.hostname))
+        elif not args.configure:
+            print_info("Not configuring {} due to mossing --configure".format(target.hostname))
         else:
             print_info("Running game-settings script for {}".format(target.hostname))
             game_settings.main()
