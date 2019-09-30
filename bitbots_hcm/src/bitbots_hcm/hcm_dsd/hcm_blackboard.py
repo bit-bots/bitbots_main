@@ -38,6 +38,7 @@ class HcmBlackboard():
         self.penalized = False
         self.shut_down_request = False
         self.simulation_active = rospy.get_param("/simulation_active", False)
+        self.visualization_active = rospy.get_param("/visualization_active", False)
 
         # this is used to prevent calling rospy.Time a lot, which takes some time
         # we assume that the time does not change during one update cycle
