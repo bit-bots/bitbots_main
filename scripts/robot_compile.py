@@ -128,9 +128,9 @@ class Target:
         nuc3 = __prefix__ + "13"
         odroid3 = __prefix__ + "23"
         jetson3 = __prefix__ + "33"
-        nuc4 = __prefix__ + "13"
-        odroid4 = __prefix__ + "23"
-        jetson4 = __prefix__ + "33"
+        nuc4 = __prefix__ + "14"
+        odroid4 = __prefix__ + "24"
+        jetson4 = __prefix__ + "34"
         davros = __prefix__ + "25"
 
     def __init__(self, ip, ssh_target):
