@@ -66,4 +66,8 @@ Fertige Dokumentation kann unter ``docs/_out/index.html`` lokal abgerufen werden
 Doku selbster bauen
 -------------------
 
-catkin build bitbots_docs --no-deps --make-args Documentation
+Diese allgemeine Dokumentation kann mit dem Command ``catkin build bitbots_docs
+--no-deps --make-args Documentation`` gebaut werden.
+
+Für ein anderes Paket, bei dem die Doku wie oben beschrieben aktiviert wurde, kann sie mit
+``catkin build <package> --no-deps --make-args Documentation`` gebaut werden.
