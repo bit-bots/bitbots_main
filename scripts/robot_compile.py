@@ -170,7 +170,7 @@ def parse_arguments():
     mode = parser.add_mutually_exclusive_group(required=False)
     mode.add_argument("-s", "--sync-only", action="store_true", help="Only sync file from you to the target")
     mode.add_argument("-c", "--compile-only", action="store_true", help="Only build on the target")
-    mode.add_argument("-k", "--configure-only", action="store_true", help="Only configure the target")
+    mode.add_argument("-k", "--configure", action="store_true", help="Configure the target as well as everything else")
 
     parser.add_argument("-p", "--package", default='', help="Sync/Compile only the given ROS package")
     parser.add_argument("-y", "--yes-to-all", action="store_true", help="Answer yes to all questions")
@@ -414,16 +414,12 @@ def main():
         # sync
         if args.compile_only:
             print_info("Not syncing to {} due to compile-only mode".format(target.hostname))
-        elif args.configure_only:
-            print_info("Not syncing to {} due to configure-only mode".format(target.hostname))
         else:
             sync(target, args.package, pre_clean=args.clean_src)
 
         # build
         if args.sync_only:
             print_info("Not compiling on {} due to sync-only mode".format(target.hostname))
-        elif args.configure_only:
-            print_info("Not compiling on {} due to configure-only mode".format(target.hostname))
         else:
             if args.check_rosdeps:
                 check_rosdeps(target)
@@ -434,6 +430,8 @@ def main():
             print_info("Not configuring {} due to sync-only mode".format(target.hostname))
         elif args.compile_only:
             print_info("Not configuring {} due to compile-only mode".format(target.hostname))
+        elif not args.configure:
+            print_info("Not configuring {} due to mossing --configure".format(target.hostname))
         else:
             print_info("Running game-settings script for {}".format(target.hostname))
             game_settings.main()
