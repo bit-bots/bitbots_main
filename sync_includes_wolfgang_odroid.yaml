@@ -9,7 +9,6 @@ include:
         - bitbots_ros_control
     - bitbots_misc:
         - bitbots_bringup
-        - bitbots_docs
         - bitbots_teleop
     - bitbots_motion:
         - bitbots_animation_server
@@ -22,6 +21,8 @@ include:
         - bitbots_localization
         - bitbots_move_base
         - bitbots_bezier_pathfinding
+    - bitbots_tools:
+        - bitbots_docs
     - center_of_mass
     - dynamic_stack_decider
     - humanoid_base_footprint
