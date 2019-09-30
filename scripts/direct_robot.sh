@@ -7,7 +7,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
    exit 1
 fi
 
-_IP=$(ip a | grep 'inet 192\.168\.[123]\.' | awk '{print $2}' | cut -d '/' -f 1)
+_IP=$(ip a | grep 'inet 192\.168\.[0123]\.' | awk '{print $2}' | cut -d '/' -f 1)
 
 if [[ -z $_IP ]]; then
     echo "No network available"
