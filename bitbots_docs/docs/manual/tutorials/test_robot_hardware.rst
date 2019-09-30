@@ -27,7 +27,7 @@ Test hardware and ros_control
 #. Test servos
     motor power off and roslaunch bitbots_ros_control ros_control_standalone.launch torqueless_mode:=true
         - it should give you errors for not being able to ping servos
-    motor power on and roslaunch bitbots_ros_control ros_control_standalone.launch torqueless_mode:=true
+    motor power on and ``roslaunch bitbots_ros_control ros_control_standalone.launch torqueless_mode:=true``
         - it should start without any errors
         - servos should be torqueless (not stiff)
         - start on your laptop "roslaunch bitbots_ros_control pressure_viz.launch" you should see the the robot, the TF tree and the efforts
