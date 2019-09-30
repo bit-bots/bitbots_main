@@ -1,6 +1,5 @@
 <launch>
-    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
-    </include>
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch"/>
 
     <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_viz.yaml" command="load"/>
 
