@@ -55,7 +55,10 @@ def print_debug(msg):
 try:
     from bitbots_bringup import game_settings
 except ImportError:
-    print_warn("Cannot run game settings without a ROS environment")
+    bringup_dir = os.path.join(BITBOTS_META, "bitbots_misc", "bitbots_bringup", "src")
+    print_info("Manually adding {} to PATH to import bitbots_bringup. If this fails please source ros".format(bringup_dir))
+    sys.path.append(bringup_dir)
+    from bitbots_bringup import game_settings
 
 
 def print_bit_bot():
