@@ -10,7 +10,8 @@ class DebugImage:
 
     def set_image(self, image):
         """
-        Sets a new image on which the debug image is mapped
+        Sets a new image on which the debug image is mapped.
+
         :param image: image the vision is currently processing
         """
         self._debug_image = image.copy()
@@ -18,6 +19,7 @@ class DebugImage:
     def draw_field_boundary(self, field_boundary_points, color, thickness=1):
         """
         Draws a line a line that represents the given field_boundary.
+
         :param field_boundary_points: list of coordinates of the field_boundary
         :param color: color of the line
         :param thickness: thickness of the line
@@ -29,7 +31,8 @@ class DebugImage:
 
     def draw_ball_candidates(self, ball_candidates, color, thickness=1):
         """
-        draws a circle around every coordinate where a ball candidate was found
+        Draws a circle around every coordinate where a ball candidate was found.
+
         :param ball_candidates: list of ball candidates with the type Candidate
         :param color: color of the circle to draw
         :param thickness: thickness of the outline
@@ -44,7 +47,8 @@ class DebugImage:
 
     def draw_obstacle_candidates(self, obstacle_candidates, color, thickness=1):
         """
-        Draws a bounding box for every given obstacle
+        Draws a bounding box for every given obstacle.
+
         :param obstacle_candidates: list of list of obstacle candidates with the type Candidate
         :param color: color of the outline
         :param thickness: thickness of the outline
@@ -59,7 +63,8 @@ class DebugImage:
 
     def draw_points(self, points, color, thickness=-1, rad=2):
         """
-        Draws a (line)point for every given point
+        Draws a (line)point for every given point.
+
         :param points: list points
         :param color: color of the point
         :param thickness: thickness of the outline
@@ -70,7 +75,8 @@ class DebugImage:
 
     def draw_line_segments(self, segments, color, thickness=2):
         """
-        Draws a line segment
+        Draws a line segment.
+
         :param segments: list line segments in the form (x1,y1,x2,y2)
         :param color: color of the line
         :param thickness: thickness of the line
@@ -83,7 +89,8 @@ class DebugImage:
 
     def get_image(self):
         """
-        Get the image with the debug drawing in it
+        Get the image with the debug drawing in it.
+        
         :return: image with debug stuff
         """
         return self._debug_image

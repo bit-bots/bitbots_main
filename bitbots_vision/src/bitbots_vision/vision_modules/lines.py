@@ -25,7 +25,8 @@ class LineDetector:
     def set_image(self, image):
         # type: (np.matrix) -> None
         """
-        refreshes the variables after receiving an image
+        Refreshes the variables after receiving an image.
+        
         :param image: the current frame of the video feed
         """
         self._image = image

@@ -194,4 +194,10 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# Neural Network Model Path
 models/
+
+# auto-generated documentation
+**/docs/_build
+**/docs/_out
+**/docs/conf.py

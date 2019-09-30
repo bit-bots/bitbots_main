@@ -19,6 +19,8 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
 )
 
+find_package(catkin COMPONENTS bitbots_docs)
+
 catkin_python_setup()
 
 FIND_PACKAGE (OpenCV REQUIRED)
@@ -29,6 +31,7 @@ generate_dynamic_reconfigure_options(
   cfg/Vision.cfg
   #...
 )
+
 
 catkin_package(
   CATKIN_DEPENDS geometry_msgs humanoid_league_msgs image_transport message_runtime rospy sensor_msgs std_msgs
@@ -53,4 +56,6 @@ add_custom_command(
     COMMAND python2 ${CMAKE_SOURCE_DIR}/../python_extensions/setup.py ARGS build install "--user"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../python_extensions/
 )
+
+enable_bitbots_docs()
 

@@ -12,7 +12,7 @@ from .candidate import CandidateFinder, BallDetector, Candidate
 
 class YoloHandler():
     """
-    Defines a YoloHandler
+    Defines an abstract YoloHandler
     """
     def __init__(self, config, model_path):
         """
@@ -24,6 +24,7 @@ class YoloHandler():
     def set_image(self, img):
         """
         Image setter abstact method. (Cached)
+        
         :param img: Image
         """
         raise NotImplementedError
@@ -49,6 +50,7 @@ class YoloHandlerDarknet(YoloHandler):
     def __init__(self, config, model_path):
         """
         Yolo constructor
+
         :param config: vision config dict
         :param model_path: path to the yolo model
         """
@@ -74,6 +76,7 @@ class YoloHandlerDarknet(YoloHandler):
         """
         Generates a dummy object data file.
         In which some meta information for the library is stored.
+
         :param obj_name_path: path to the class name file
         """
         # Generate file content
@@ -85,6 +88,7 @@ class YoloHandlerDarknet(YoloHandler):
     def set_image(self, image):
         """
         Set a image for yolo. This also resets the caches.
+
         :param image: current vision image
         """
         # Check if image has been processed
@@ -162,6 +166,7 @@ class YoloHandlerOpenCV(YoloHandler):
     def set_image(self, image):
         """
         Set a image for yolo. This also resets the caches.
+
         :param image: current vision image
         """
         # Check if image has been processed
@@ -260,6 +265,7 @@ class YoloBallDetector(BallDetector):
     def set_image(self, image):
         """
         Set a image for yolo. This is cached.
+
         :param image: current vision image
         """
         self._yolo.set_image(image)
@@ -291,6 +297,7 @@ class YoloGoalpostDetector(CandidateFinder):
     def set_image(self, image):
         """
         Set a image for yolo. This is cached.
+
         :param image: current vision image
         """
         self._yolo.set_image(image)
