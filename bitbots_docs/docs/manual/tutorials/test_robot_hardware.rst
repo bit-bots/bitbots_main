@@ -39,6 +39,6 @@ Test hardware and ros_control
         - it should start whitout any errors
         - servos should be half stiff, but still moveable
         - start on your laptop ``roslaunch bitbots_ros_control pressure_viz.launch`` you should see the the robot, the TF tree and the efforts
-            - run "rosrun bitbots_ros_control send_joint_command.py", the robot should go into init pose and be completly stiff
+            - run ``rosrun bitbots_ros_control send_joint_command.py``, the robot should go into init pose and be completly stiff
             - apply some force on a servo, the effort visualization should show it (if not maybe set read_effort via dynamic reconfigure to active)
 
