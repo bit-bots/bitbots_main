@@ -1,0 +1,7 @@
+<launch>
+  <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" />
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" required="true"
+    args="-d $(find wolfgang_description)/config/wolfgang.rviz" />
+  <node name="motor_goals_viz_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" args="--kick" />
+  <node name="dynamic_kick" pkg="bitbots_dynamic_kick" type="KickNode" output="screen" />
+</launch>

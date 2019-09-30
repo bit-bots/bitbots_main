@@ -1,11 +1,6 @@
 <launch>
   <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" />
-  <node name="rviz" pkg="rviz" type="rviz" output="screen" required="true"
-    args="-d $(find wolfgang_description)/config/wolfgang.rviz" />
-  <node name="motor_goals_viz_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" />
-  <include file="$(find bitbots_hcm)/launch/hcm.launch">
-    <arg name="sim" value="true"/>
-  </include>
-  <include file="$(find bitbots_animation_server)/launch/animation.launch" />
-  <node name="DynupNode" pkg="bitbots_dynup" type="DynupNode" output="screen" />
+  <node name="DynupNode" pkg="bitbots_dynup" type="DynupNode" output="screen" >
+    <remap from="/animation_motor_goals" to="/DynamixelController/command"/>
+  </node>
 </launch>
