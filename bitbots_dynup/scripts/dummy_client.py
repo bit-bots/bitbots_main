@@ -12,6 +12,7 @@ from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Vector3
 from bitbots_msgs.msg import DynUpGoal, DynUpAction, DynUpFeedback
 from visualization_msgs.msg import Marker
+import humanoid_league_msgs.msg
 
 showing_feedback = False
 
@@ -20,6 +21,23 @@ if __name__ == "__main__":
     rospy.init_node('dynup_dummy_client', anonymous=True)
     print("\r[OK] Initializing node")
 
+    anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
+    first_try = anim_client.wait_for_server(
+        rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 10)))
+    if len(sys.argv) > 1:
+        if sys.argv[1] == 'front':
+            anim = 'stand_up_front'
+        elif sys.argv[1] == 'back':
+            anim = 'stand_up_back'
+        else:
+            print('Use \'front\', \'back\' or nothing as parameter!')
+            sys.exit(0)
+        goal = humanoid_league_msgs.msg.PlayAnimationGoal()
+        goal.animation = anim
+        goal.hcm = False
+        print('starting animation...')
+        state = anim_client.send_goal_and_wait(goal)
+        print('animation done.')
 
     def done_cb(state, result):
         print('Action completed: ', end='')
@@ -53,7 +71,7 @@ if __name__ == "__main__":
 
 
     def feedback_cb(feedback):
-        if len(sys.argv) > 1 and sys.argv[1] == '--feedback':
+        if len(sys.argv) > 1 and '--feedback' in sys.argv:
             print('Feedback')
             print(feedback)
             print()
