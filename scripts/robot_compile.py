@@ -175,10 +175,8 @@ def parse_arguments():
     parser.add_argument("-p", "--package", default='', help="Sync/Compile only the given ROS package")
     parser.add_argument("-y", "--yes-to-all", action="store_true", help="Answer yes to all questions")
     parser.add_argument("--clean-build", action="store_true",
-                        help="Clean workspace before building. --package is given, clean only that package")
+                        help="Clean workspace before building. If --package is given, clean only that package")
     parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
-    parser.add_argument("--clean-built", action="store_true",
-                        help="Clean build directory before compiling")
     parser.add_argument("--no-rosdeps", action="store_false", default=True, dest="check_rosdeps",
                         help="Don't check installed rosdeps on the target."
                              "Might be useful when no internet connection is available.")
