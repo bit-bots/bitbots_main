@@ -35,7 +35,7 @@ Test hardware and ros_control
             - start rqt diagnostic monitor, you should see all servos on green and get voltage, temperature and error status
             - maybe use plotjuggler to see the values in more detail
 
-    turn motor power on and start "roslaunch bitbots_ros_control ros_control_standalone.launch"
+    turn motor power on and start ``roslaunch bitbots_ros_control ros_control_standalone.launch``
         - it should start whitout any errors
         - servos should be half stiff, but still moveable
         - start on your laptop "roslaunch bitbots_ros_control pressure_viz.launch" you should see the the robot, the TF tree and the efforts
