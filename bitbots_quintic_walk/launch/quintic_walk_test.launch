@@ -1,6 +1,12 @@
+<?xml version="1.0"?>
 <launch>
-    <include file="$(find bitbots_quintic_walk)/launch/quintic_walk_standalone.launch"/>
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" />
 
-    <node name="hcm_bypass" pkg="bitbots_quintic_walk" type="hcm_bypass.py" respawn="false" output="screen" args=""/>
+    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
+
+    <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" respawn="true" output="screen">
+        <remap from="/walking_motor_goals" to="/DynamixelController/command"/>
+    </node>
+
 
 </launch>

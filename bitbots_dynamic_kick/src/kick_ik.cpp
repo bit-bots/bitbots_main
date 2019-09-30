@@ -1,5 +1,5 @@
 #include "bitbots_dynamic_kick/kick_ik.h"
-#include <bitbots_dynamic_kick/dynamic_balancing_goal.h>
+#include <bitbots_splines/dynamic_balancing_goal.h>
 
 namespace bitbots_dynamic_kick {
 

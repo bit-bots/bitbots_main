@@ -47,6 +47,12 @@ class SmoothSpline : public Spline
          * Recompute splines interpolation model
          */
         void computeSplines();
+
+        /**
+         * Returns a string representation of the Spline to get inside while debugging.
+         * @return
+         */
+        std::string getDebugString();
     
     protected:
 

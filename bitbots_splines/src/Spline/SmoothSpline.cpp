@@ -127,5 +127,19 @@ Polynom SmoothSpline::polynomFit(double t,
     return p;
 }
 
+std::string SmoothSpline::getDebugString(){
+  std::string output;
+  int i = 0;
+  for(auto &p : _points){
+    output += "Point:" + std::to_string(i) + "\n";
+    output += "  Time: " + std::to_string(p.time) + "\n";
+    output += "  Pos: " + std::to_string(p.position) + "\n";
+    output += "  Vel: " + std::to_string(p.velocity) + "\n";
+    output += "  Acc: " + std::to_string(p.acceleration) + "\n";
+    i++;
+  }
+  return output;
+}
+
 }
 

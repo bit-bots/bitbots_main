@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="rviz" type="rviz" args="-d $(find bitbots_quintic_walk)/config/walk.rviz" name="walk_rviz"/>
+</launch>

@@ -29,10 +29,6 @@ class AbstractEngine {
    */
   virtual void reset() = 0;
   /**
-   * Returns the splines, e.g. for visualization purposes.
-   */
-  virtual Trajectories getSplines() const = 0;
-  /**
    * Returns the percentage of the spline that has already been returned.
    */
   virtual int getPercentDone() const = 0;

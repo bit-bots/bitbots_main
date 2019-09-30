@@ -2,14 +2,15 @@ cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_quintic_walk)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 set(SOURCES
-        src/Footstep.cpp
-        src/WalkEngine.cpp
-        src/QuinticWalkingNode.cpp
-        src/TrajectoryUtils.cpp
+        src/walk_visualizer.cpp
+        src/walk_engine.cpp
+        src/walk_stabilizer.cpp
+        src/walk_ik.cpp
+        src/walk_node.cpp
         )
 
 find_package(catkin REQUIRED COMPONENTS
@@ -40,11 +41,13 @@ catkin_python_setup()
 
 add_message_files(
         FILES
-        WalkingDebug.msg
+        WalkDebug.msg
+        WalkEngineDebug.msg
 )
 
 generate_dynamic_reconfigure_options(
         cfg/bitbots_quintic_walk_params.cfg
+        cfg/bitbots_quintic_walk_engine_params.cfg
 )
 
 generate_messages(
@@ -53,19 +56,20 @@ generate_messages(
         geometry_msgs
 )
 
+include_directories(
+        include
+        ${catkin_INCLUDE_DIRS}
+        ${EIGEN3_INCLUDE_DIRS}
+)
+
 
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES ${PROJECT_NAME}
-        CATKIN_DEPENDS humanoid_league_msgs std_msgs geometry_msgs bitbots_ik bitbots_splines message_runtime bitbots_msgs tf2_eigen tf2_geometry_msgs
+        CATKIN_DEPENDS humanoid_league_msgs std_msgs geometry_msgs bitbots_ik bitbots_splines message_runtime bitbots_msgs tf2 tf2_eigen tf2_geometry_msgs
         DEPENDS EIGEN3
 )
 
-include_directories(
-        include
-        ${EIGEN3_INCLUDE_DIRS}
-        ${catkin_INCLUDE_DIRS}
-)
 
 
 set(CODE_LIBRARIES
@@ -73,8 +77,8 @@ set(CODE_LIBRARIES
         urdfdom_model
 )
 
-add_executable(QuinticWalkingNode ${SOURCES})
+add_executable(WalkNode ${SOURCES})
 
-add_dependencies(QuinticWalkingNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
+add_dependencies(WalkNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 
-target_link_libraries(QuinticWalkingNode ${catkin_LIBRARIES} ${CODE_LIBRARIES})
+target_link_libraries(WalkNode ${catkin_LIBRARIES} ${CODE_LIBRARIES})

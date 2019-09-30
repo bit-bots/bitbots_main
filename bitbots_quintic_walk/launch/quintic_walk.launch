@@ -1,6 +1,5 @@
 <launch>
   <arg name="sim" default="false"/>
-  <arg name="minibot" default="false"/>
   <arg name="wolfgang" default="false"/>
   <arg name="use_game_settings" default="false"/>
 
@@ -17,7 +16,7 @@
         </group>
   </group>   
     
-  <node name="walking" pkg="bitbots_quintic_walk" type="QuinticWalkingNode" respawn="true" output="screen"/>
+  <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" respawn="true" output="screen"/>
 
 
 </launch>
