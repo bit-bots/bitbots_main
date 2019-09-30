@@ -34,6 +34,9 @@ class CheckIMU(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         self.clear_debug_data()
 
+        if self.blackboard.visualization_active:
+            # In visualization, we do not have an IMU. Therefore, return CONNECTION to ignore that.
+            return "CONNECTION"
         if not self.blackboard.last_imu_update_time:
             # wait for the IMU to start
             self.blackboard.current_state = STATE_STARTUP
