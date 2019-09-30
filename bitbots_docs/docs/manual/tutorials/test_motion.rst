@@ -1,10 +1,16 @@
 Test motion
 -----------
 #. Test Kick in Visualization
-	?
+	roslaunch bitbots_dynamic_kick viz.launch
+        rosrun bitbots_dynamic_kick dummy_client.py
+        the visualization should do a kick
 
 #. Test Kick on Robot
 	roslaunch bitbots_dynamic_kick test.launch
+
+#. Test Dynup in Visualization
+
+#. Test Dynup on Robot
 
 #. Test Walk in Visualization
 	roslaunch bitbots_quitic_walk quintic_walk_viz.launch
@@ -37,6 +43,9 @@ Test motion
 
 #. Test Record UI
     roslaunch bitbots_bringup motion_standalone.launch
+        start rqt record ui
+        load and play some animations
+        test other functions
 
 #. Test Fallen
     roslaunch bitbots_bringup motion_standalone.launch
