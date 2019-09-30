@@ -2,15 +2,14 @@
 import sys
 
 import yaml
-import rospkg
 import os
-import roslaunch
 
-rospack = rospkg.RosPack()
 
 # every parameter has its own SETTING_PATH
-SETTING_PATH = rospack.get_path("bitbots_bringup") + "/config/game_settings.yaml"
-TO_BE_SET_PATH = rospack.get_path("bitbots_bringup") + "/config/to_be_set_game_settings.yaml"
+SETTING_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                            "config", "game_settings.yaml")
+TO_BE_SET_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                              "config", "to_be_set_game_settings.yaml")
 
 
 def provide_config(path):
@@ -149,15 +148,6 @@ def main():
 
     with open(SETTING_PATH, 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
-
-    if len(sys.argv) == 1 or sys.argv[1] != '--no-teamplayer':
-        start_teamplayer = input("Do you want to launch 'teamplayer.launch'? (y/N)")
-        if start_teamplayer.lower() == "y":
-            uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-            roslaunch.configure_logging(uuid)
-            launch = roslaunch.parent.ROSLaunchParent(uuid, [
-                rospack.get_path("bitbots_bringup") + "/launch/teamplayer.launch"])
-            launch.start()
 
 
 if __name__ == '__main__':
