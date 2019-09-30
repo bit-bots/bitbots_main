@@ -270,7 +270,7 @@ def get_includes_from_file(file_path, package=''):
                         includes.append('--include=+ {}/{}'.format(folder, package))
                         includes.append('--include=+ {}/{}/**'.format(folder, package))
             elif isinstance(entry, str):
-                if package is None or entry == package:
+                if package == '' or package == entry:
                     includes.append('--include=+ {}'.format(entry))
                     includes.append('--include=+ {}/**'.format(entry))
     includes.append('--include=- *')
