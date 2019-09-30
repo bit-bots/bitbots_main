@@ -353,7 +353,7 @@ def build(target, package='', pre_clean=False):
          "cd {workspace};"
          "source devel/setup.zsh;"
          "{cmd_clean}"
-         "catkin build --force-color {package} {quiet_option} --continue-on-failure --no-status --summary || exit 1;"
+         "catkin build --force-color {package} {quiet_option} --continue-on-failure --summary || exit 1;"
          "./src/scripts/repair.sh {quiet_option};"
          "sync;"
          ).format(**{
