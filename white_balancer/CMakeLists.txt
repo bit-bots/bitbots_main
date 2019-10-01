@@ -25,6 +25,8 @@ generate_dynamic_reconfigure_options(
     cfg/white_balancer.cfg
 )
 
+catkin_package()
+
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
