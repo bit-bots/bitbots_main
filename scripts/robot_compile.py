@@ -329,7 +329,8 @@ def sync_gamesettings(target):
         "--archive",
         "-v" if LOGLEVEL.current >= LOGLEVEL.DEBUG else "",
         os.path.join(BITBOTS_META, "bitbots_misc", "bitbots_bringup", "config", "game_settings.yaml"),
-        "bitbots@{}:{}/src/bitbots_misc/config/game_settings.yaml".format(target.ssh_target, target.workspace)
+        "bitbots@{}:{}/src/bitbots_misc/bitbots_bringup/config/game_settings.yaml"
+            .format(target.ssh_target, target.workspace)
     ]
 
     print_debug("Calling {}".format(" ".join(cmd)))
