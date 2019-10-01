@@ -1,4 +1,0 @@
-<launch>
-  <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch" />
-
-</launch>
