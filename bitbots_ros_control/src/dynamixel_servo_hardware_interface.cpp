@@ -627,21 +627,22 @@ bool DynamixelServoHardwareInterface::syncReadPositions(){
   bool success;
   int32_t *data = (int32_t *) malloc(joint_count_ * sizeof(int32_t));
   success = driver_->syncRead("Present_Position", data);
-  for(int i = 0; i < joint_count_; i++){
-    // TODO test if this is required
-    if (data[i] == 0){
-      // a value of 0 is often a reading error, therefore we discard it
-      // this should not cause issues when a motor is actually close to 0
-      // since 1 bit only corresponds to + or - 0.1 deg
-      continue;
-    }
-    double current_pos = driver_->convertValue2Radian(joint_ids_[i], data[i]);
-    if(current_pos < 3.15 && current_pos > -3.15){
-      //only write values which are possible
-      current_position_[i] = current_pos;
+  if(success){
+    for(int i = 0; i < joint_count_; i++){
+      // TODO test if this is required
+      if (data[i] == 0){
+        // a value of 0 is often a reading error, therefore we discard it
+        // this should not cause issues when a motor is actually close to 0
+        // since 1 bit only corresponds to + or - 0.1 deg
+        continue;
+      }
+      double current_pos = driver_->convertValue2Radian(joint_ids_[i], data[i]);
+      if(current_pos < 3.15 && current_pos > -3.15){
+        //only write values which are possible
+        current_position_[i] = current_pos;
+      }
     }
   }
-
   free(data);
   return success;
 }
@@ -653,8 +654,10 @@ bool DynamixelServoHardwareInterface::syncReadVelocities(){
   bool success;
   int32_t *data = (int32_t *) malloc(joint_count_ * sizeof(int32_t));
   success = driver_->syncRead("Present_Velocity", data);
-  for(int i = 0; i < joint_count_; i++){
-    current_velocity_[i] = driver_->convertValue2Velocity(joint_ids_[i], data[i]);
+  if(success){
+    for(int i = 0; i < joint_count_; i++){
+      current_velocity_[i] = driver_->convertValue2Velocity(joint_ids_[i], data[i]);
+    }
   }
   free(data);
 
@@ -668,8 +671,10 @@ bool DynamixelServoHardwareInterface::syncReadEfforts() {
   bool success;
   int32_t *data = (int32_t *) malloc(joint_count_ * sizeof(int32_t));
   success = driver_->syncRead("Present_Current", data);
-  for (int i = 0; i < joint_count_; i++) {
-    current_effort_[i] = driver_->convertValue2Torque(joint_ids_[i], data[i]);
+  if(success){
+    for (int i = 0; i < joint_count_; i++) {
+      current_effort_[i] = driver_->convertValue2Torque(joint_ids_[i], data[i]);
+    }
   }
   free(data);
 
@@ -683,8 +688,10 @@ bool DynamixelServoHardwareInterface::syncReadError(){
   bool success; 
   int32_t *data = (int32_t *) malloc(joint_count_ * sizeof(int32_t));
   success = driver_->syncRead("Hardware_Error_Status", data);
-  for (int i = 0; i < joint_count_; i++) {
-    current_error_[i] = data[i];
+  if(success){
+    for (int i = 0; i < joint_count_; i++) {
+      current_error_[i] = data[i];
+    }
   }
   free(data);
   return success;
