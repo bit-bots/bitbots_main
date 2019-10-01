@@ -1,5 +1,8 @@
 #!/bin/bash
 
+##########
+# Params #
+##########
 # 1 param is the remote device
 # 2 param is the ros master
 # 3 param is the ros_package
