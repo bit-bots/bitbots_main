@@ -9,4 +9,4 @@
 # 4 param is the launch file
 # Following params are the roslaunch arguments
 
-ssh -t -t $1 'export ROS_MASTER_URI=http://'$2':11311/; zsh -o HUP -c "roslaunch '${@:3}'"'
+ssh -t -t $1 'source ~/.zshrc; export ROS_MASTER_URI=http://'$2':11311/; zsh -o HUP -c "echo '${@:3}'"'
