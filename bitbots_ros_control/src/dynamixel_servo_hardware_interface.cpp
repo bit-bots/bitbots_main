@@ -454,7 +454,7 @@ bool DynamixelServoHardwareInterface::read(){
     // when the servos have a goal position which is not the current position on startup
     // they will rapidly move to this position, possibly damaging the robot
     // therefore the goal position is set to the current position of the motors
-    goal_position_ = current_position_;
+    goal_position_ = std::vector<double> (current_position_);
     first_cycle_ = false;
   }
 
