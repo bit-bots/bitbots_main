@@ -84,7 +84,7 @@ class FallChecker(object):
         # compare quantification functions
         if y_fall_quantification > x_fall_quantification:
             # detect the falling direction
-            if not_much_smoothed_gyro[1] > 0:
+            if not_much_smoothed_gyro[1] < 0:
                 rospy.loginfo("FALLING TO THE BACK")
                 return self.BACK
             # detect the falling direction
@@ -93,7 +93,7 @@ class FallChecker(object):
                 return self.FRONT
         else:
             # detect the falling direction
-            if not_much_smoothed_gyro[0] > 0:
+            if not_much_smoothed_gyro[0] < 0:
                 rospy.loginfo("FALLING TO THE LEFT")
                 return self.LEFT
             # detect the falling direction
