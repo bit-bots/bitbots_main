@@ -187,7 +187,7 @@ class TransformBall(object):
         for i in range(len(msg.segments)):
             transformed = self._transform(msg.segments[i].start, field, msg.header.stamp)
             if transformed is not None:
-                points[i]([transformed.x, transformed.y, transformed.z])
+                points[i] = np.array([transformed.x, transformed.y, transformed.z])
                 num_transformed_correctly += 1
 
         if num_transformed_correctly == 0:
@@ -295,7 +295,7 @@ class TransformBall(object):
             point.x = o.top_left.x + o.height
             point.y = o.top_left.y + o.width/2
             position = self._transform(point, field, msg.header.stamp)
-            if obstacles.position is not None:
+            if position is not None:
                 obstacle.position = position
                 obstacles.obstacles.append(obstacle)
             else:
