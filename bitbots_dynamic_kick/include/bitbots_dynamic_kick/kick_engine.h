@@ -21,6 +21,7 @@ struct KickParams {
   double foot_rise;
   double foot_distance;
   double kick_windup_distance;
+  double trunk_height;
 
   double move_trunk_time = 1;
   double raise_foot_time = 1;
@@ -111,7 +112,8 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
 
   int getPercentDone() const override;
 
-  bitbots_splines::PoseSpline getSplines() const ;
+  bitbots_splines::PoseSpline getFlyingSplines() const ;
+  bitbots_splines::PoseSpline getTrunkSplines() const ;
 
   void setParams(KickParams params);
 
@@ -125,8 +127,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   tf2::Quaternion kick_direction_;
   float kick_speed_;
   bool is_left_kick_;
-  bitbots_splines::PositionSpline support_point_spline_;
-  bitbots_splines::PoseSpline flying_foot_spline_;
+  bitbots_splines::PoseSpline flying_foot_spline_, trunk_spline_;
   KickParams params_;
   PhaseTimings phase_timings_;
   tf2::Vector3 windup_point_;
@@ -139,7 +140,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    *
    *  @param flying_foot_pose Current pose of the foot which is supposed to be the flying/kicking one
    */
-  void calcSplines(const geometry_msgs::Pose &flying_foot_pose);
+  void calcSplines(const geometry_msgs::Pose &flying_foot_pose, const geometry_msgs::Transform &trunk_pose);
 
   /**
    *  Calculate the point from which to perform the final kicking movement
@@ -164,7 +165,8 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
                              const geometry_msgs::Vector3 &ball_position,
                              const geometry_msgs::Quaternion &kick_direction);
 
-  geometry_msgs::PoseStamped getCurrentPose(bitbots_splines::PoseSpline spline);
+  geometry_msgs::Transform getTrunkPose();
+
 
   /**
    * Calculate the yaw of the kicking foot, so that it is turned

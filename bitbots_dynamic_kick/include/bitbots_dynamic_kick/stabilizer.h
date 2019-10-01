@@ -29,35 +29,23 @@ class Stabilizer :
   override;
   void reset()
   override;
-  void useStabilizing(bool use);
-  void useMinimalDisplacement(bool use);
   void useCop(bool use);
-  void setTrunkHeight(double height);
-  void setStabilizingWeight(double weight);
   void setFlyingWeight(double weight);
-  void setTrunkOrientationWeight(double weight);
-  void setTrunkHeightWeight(double weight);
+  void setTrunkWeight(double weight);
   void setPFactor(double factor_x, double factor_y);
   void setIFactor(double factor_x, double factor_y);
   void setDFactor(double factor_x, double factor_y);
-  tf2::Vector3 getStabilizingTarget() const;
   void setRobotModel(moveit::core::RobotModelPtr model);
  private:
   moveit::core::RobotModelPtr kinematic_model_;
-  tf2::Vector3 stabilizing_target_;
   double cop_x_error_sum_;
   double cop_y_error_sum_;
   double cop_x_error_;
   double cop_y_error_;
 
-  bool use_stabilizing_;
-  bool use_minimal_displacement_;
   bool use_cop_;
-  double trunk_height_;
-  double stabilizing_weight_;
   double flying_weight_;
-  double trunk_orientation_weight_;
-  double trunk_height_weight_;
+  double trunk_weight_;
   double p_x_factor_;
   double p_y_factor_;
   double i_x_factor_;
