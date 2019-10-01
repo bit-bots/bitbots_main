@@ -1,0 +1,5 @@
+<launch>
+    <include file="$(find bitbots_ros_control)/launch/ros_control.launch" />
+    <node name="animation" pkg="bitbots_animation_server" type="animation_node.py" respawn="true" output="screen"/>
+    <node name="animation_hcm_bridge" pkg="bitbots_animation_server" type="animation_hcm_bridge.py" respawn="true" output="screen"/>
+</launch>
