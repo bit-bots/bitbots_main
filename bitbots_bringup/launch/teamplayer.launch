@@ -9,6 +9,7 @@
     <arg name="gazebo" default="false"/>
     <!-- defines camera type -->
     <arg name="basler" default="true" doc="Defines the robot camera type"/>
+    <arg name="gamecontroller" default="true" doc="Sets whether the Gamecontroller should be started"/>
 
     <arg name="use_game_settings" default="true"/>
     
@@ -29,6 +30,7 @@
         <arg name="teamcom" value="$(arg teamcom)" />
         <arg name="localization" value="$(arg localization)" />
         <arg name="simple" value="$(arg simple)" />
+        <arg name="gamecontroller" value="$(arg gamecontroller)" />
     </include>
 
     <include file="$(find bitbots_bringup)/launch/tools.launch" />
