@@ -16,9 +16,10 @@ class YoloHandler():
     """
     def __init__(self, config, model_path):
         """
-        Dummy constructor
+        Init YoloHandler.
         """
-        raise NotImplementedError
+        self._ball_candidates = None
+        self._goalpost_candidates = None
 
     @abc.abstractmethod
     def set_image(self, img):
@@ -40,8 +41,21 @@ class YoloHandler():
         """
         Runs neural network and returns results for all classes. (Cached)
         """
+        return [self.get_ball_candidates(), self.get_goalpost_candidates()]
+
+    def get_ball_candidates(self):
+        """
+        Runs neural network and returns results for ball class. (Cached)
+        """
         self.predict()
-        return [self.ball_candidates, self.goalpost_candidates]
+        return self._ball_candidates
+
+    def get_goalpost_candidates(self):
+        """
+        Runs neural network and returns results for goalpost class. (Cached)
+        """
+        self.predict()
+        return self._goalpost_candidates
 
 class YoloHandlerDarknet(YoloHandler):
     """
@@ -69,8 +83,7 @@ class YoloHandlerDarknet(YoloHandler):
         # Set cached stuff
         self._image = None
         self._results = None
-        self.goalpost_candidates = None
-        self.ball_candidates = None
+        super(YoloHandlerDarknet, self).__init__(config, model_path)
 
     def _generate_dummy_obj_data_file(self, obj_name_path):
         """
@@ -98,8 +111,8 @@ class YoloHandlerDarknet(YoloHandler):
         self._image = image
         # Reset cached stuff
         self._results = None
-        self.goalpost_candidates = None
-        self.ball_candidates = None
+        self._goalpost_candidates = None
+        self._ball_candidates = None
 
     def predict(self):
         """
@@ -110,8 +123,8 @@ class YoloHandlerDarknet(YoloHandler):
             # Run neural network
             self._results = self._net.detect(Image(self._image))
             # Init lists
-            self.ball_candidates = []
-            self.goalpost_candidates = []
+            self._ball_candidates = []
+            self._goalpost_candidates = []
             # Go through results
             for out in self._results:
                 # Get class id
@@ -126,9 +139,9 @@ class YoloHandlerDarknet(YoloHandler):
                 c = Candidate(int(x), int(y), int(w), int(h), confidence)
                 # Append candidate to the right list depending on the class
                 if class_id == b"ball":
-                    self.ball_candidates.append(c)
+                    self._ball_candidates.append(c)
                 if class_id == b"goalpost":
-                    self.goalpost_candidates.append(c)
+                    self._goalpost_candidates.append(c)
 
 class YoloHandlerOpenCV(YoloHandler):
     """
@@ -149,9 +162,8 @@ class YoloHandlerOpenCV(YoloHandler):
         self._image = None
         self._blob = None
         self._outs = None
-        self.goalpost_candidates = None
-        self.ball_candidates = None
         self._results = None
+        super(YoloHandlerOpenCV, self).__init__(config, model_path)
 
     def _get_output_layers(self):
         """
@@ -180,8 +192,8 @@ class YoloHandlerOpenCV(YoloHandler):
         self._blob = cv2.dnn.blobFromImage(image, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
         # Reset cached stuff
         self._outs = None
-        self.goalpost_candidates = None
-        self.ball_candidates = None
+        self._goalpost_candidates = None
+        self._ball_candidates = None
 
     def predict(self):
         """
@@ -197,8 +209,8 @@ class YoloHandlerOpenCV(YoloHandler):
             class_ids = []
             confidences = []
             boxes = []
-            self.ball_candidates = []
-            self.goalpost_candidates = []
+            self._ball_candidates = []
+            self._goalpost_candidates = []
             # Iterate over output/detections
             for out in self._outs:
                 for detection in out:
@@ -243,9 +255,9 @@ class YoloHandlerOpenCV(YoloHandler):
                 # Append candidate to the right list depending on the class
                 class_id = class_ids[i]
                 if class_id == 0:
-                    self.ball_candidates.append(c)
+                    self._ball_candidates.append(c)
                 if class_id == 1:
-                    self.goalpost_candidates.append(c)
+                    self._goalpost_candidates.append(c)
 
 
 class YoloBallDetector(BallDetector):
@@ -274,7 +286,7 @@ class YoloBallDetector(BallDetector):
         """
         :return: all found ball candidates
         """
-        return self._yolo.get_candidates()[0]
+        return self._yolo.get_ball_candidates()
 
     def compute(self):
         """
@@ -306,7 +318,7 @@ class YoloGoalpostDetector(CandidateFinder):
         """
         :return: all found goalpost candidates
         """
-        return self._yolo.get_candidates()[1]
+        return self._yolo.get_goalpost_candidates()
 
     def compute(self):
         """
