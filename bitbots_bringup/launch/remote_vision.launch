@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="bitbots_bringup" type="launch_on_remote.sh"
+    <!-- args: PACKAGE_NAME LAUNCHFILE LAUNCHHARGS-->
+    args=""
+    name="vision_jetson_launch" output="screen">
+  </node>
+</launch>
