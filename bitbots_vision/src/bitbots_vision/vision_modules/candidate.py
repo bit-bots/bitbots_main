@@ -115,6 +115,7 @@ class Candidate:
         """
         if self._rating is not None:
             rospy.logwarn('Candidate rating has already been set.', logger_name='Candidate')
+            return
         self._rating = rating
 
     def get_rating(self):
