@@ -16,7 +16,7 @@ class YoloHandler():
     """
     def __init__(self, config, model_path):
         """
-        Init YoloHandler.
+        Init abstract YoloHandler.
         """
         self._ball_candidates = None
         self._goalpost_candidates = None
