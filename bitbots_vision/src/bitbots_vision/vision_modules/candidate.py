@@ -1,4 +1,5 @@
 import abc
+import rospy
 
 
 class Candidate:
@@ -106,6 +107,15 @@ class Candidate:
         :return tuple: Returns the lowest point of the candidate. The point is horizontally centered inside the candidate.
         """
         return (self.get_center_x(), self.get_lower_right_y())
+
+    def set_rating(self, rating):
+        # type: (float) -> None
+        """
+        :param float rating: Rating to set.
+        """
+        if self._rating is not None:
+            rospy.logwarn('Candidate rating has already been set.', logger_name='Candidate')
+        self._rating = rating
 
     def get_rating(self):
         # type: () -> float

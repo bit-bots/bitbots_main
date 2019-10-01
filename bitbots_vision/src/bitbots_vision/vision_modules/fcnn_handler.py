@@ -78,13 +78,14 @@ class FcnnHandler(BallDetector):
                 # Get the fcnn heatmap
                 out = self.get_fcnn_output()
                 # Calculate the mean in the ROI in the heatmap
-                candidate.rating = np.mean(
+                rating = np.mean(
                     out[
                         candidate.get_upper_left_y():
                         candidate.get_upper_left_y() + candidate.get_height(),
                         candidate.get_upper_left_x():
                         candidate.get_upper_left_x() + candidate.get_width()]
                 ) / 255.0
+                candidate.set_rating(rating)
                 # Check if candidate is in rating threshold and size bounds
                 if self._inspect_candidate(candidate):
                     # Add candidate to list
@@ -99,7 +100,7 @@ class FcnnHandler(BallDetector):
         :return: a boolean if the candidate satisfies these conditions
         """
         # type: (Candidate) -> bool
-        return candidate.rating >= self._threshold \
+        return candidate.get_rating() >= self._threshold \
                and self._min_candidate_diameter \
                <= candidate.get_diameter() \
                <= self._max_candidate_diameter
