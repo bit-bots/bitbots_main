@@ -140,7 +140,7 @@ class WorldModelCapsule:
 
 
     def goal_parts_callback(self, msg):
-        # type: (GoalRelative) -> None
+        # type: (GoalPartsRelative) -> None
         goal_parts = msg
         # todo: transform to base_footprint too!
         # adding a minor delay to timestamp to ease transformations.
@@ -153,7 +153,7 @@ class WorldModelCapsule:
         for first_post_id, first_post in enumerate(goal_parts.posts):
             for second_post_id, second_post in enumerate(goal_parts.posts):
                 # Get the minimal angular difference between the two posts
-                angular_distance = abs((math.atan2(*first_post.foot_point) - math.atan2(*second_post.foot_point) + math.pi) % (2*math.pi) - math.pi)
+                angular_distance = abs((math.atan2(first_post.foot_point.x, first_post.foot_point.y) - math.atan2(second_post.foot_point.x, second_post.foot_point.y) + math.pi) % (2*math.pi) - math.pi)
                 # Set a new pair of posts if the distance is bigger than the previous ones
                 if angular_distance > goal_combination[2]:
                     goal_combination = (first_post_id, second_post_id, angular_distance)
@@ -163,8 +163,8 @@ class WorldModelCapsule:
         # Define right and left post
         first_post = goal_parts.posts[goal_combination[0]]
         second_post = goal_parts.posts[goal_combination[1]]
-        if math.atan2(first_post.foot_point[1], first_post.foot_point[0]) > \
-                math.atan2(first_post.foot_point[1], first_post.foot_point[0]):
+        if math.atan2(first_post.foot_point.y, first_post.foot_point.x) > \
+                math.atan2(first_post.foot_point.y, first_post.foot_point.x):
             left_post = first_post
             right_post = second_post
         else:
