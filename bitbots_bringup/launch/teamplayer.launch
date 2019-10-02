@@ -2,7 +2,7 @@
     <arg name="sim" default="false"/>
     <arg name="motion" default="true"/>
     <arg name="behave" default="true"/>
-    <arg name="vision" default="false"/>
+    <arg name="vision" default="true"/>
     <arg name="teamcom" default="false"/>
     <arg name="localization" default="false"/>
     <arg name="simple" default="false"/>  <!-- whether to use the simple behavior -->
@@ -12,7 +12,7 @@
     <arg name="gamecontroller" default="true" doc="Sets whether the Gamecontroller should be started"/>
 
     <arg name="use_game_settings" default="true"/>
-    
+
     <arg name="sim_ns" default="/" />
 
     <group unless="$(arg gazebo)">
