@@ -45,6 +45,7 @@ class Vision:
         # Publisher placeholder
         self._pub_balls = None
         self._pub_lines = None
+        self._pub_line_mask = None
         self._pub_obstacle = None
         self._pub_goal_parts = None
         self._pub_ball_fcnn = None
@@ -156,6 +157,10 @@ class Vision:
         self._ball_candidate_y_offset = config['ball_candidate_field_boundary_y_offset']
 
         self._use_dynamic_color_space = config['dynamic_color_space_active']
+
+        # Which line type should we publish?
+        self._use_line_points = config['line_detector_use_line_points']
+        self._use_line_mask = config['line_detector_use_line_mask']
 
         # Should the debug image be published?
         if ros_utils.config_param_change(self._config, config, 'vision_publish_debug_image'):
@@ -330,6 +335,7 @@ class Vision:
         """
         self._pub_balls = ros_utils.create_or_update_publisher(self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallsInImage)
         self._pub_lines = ros_utils.create_or_update_publisher(self._config, config, self._pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
+        self._pub_line_mask = ros_utils.create_or_update_publisher(self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
         self._pub_obstacle = ros_utils.create_or_update_publisher(self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstaclesInImage, queue_size=3)
         self._pub_goal_parts = ros_utils.create_or_update_publisher(self._config, config, self._pub_goal_parts, 'ROS_goal_parts_msg_topic', GoalPartsInImage, queue_size=3)
         self._pub_ball_fcnn = ros_utils.create_or_update_publisher(self._config, config, self._pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
@@ -490,15 +496,23 @@ class Vision:
         #########
         # Lines #
         #########
+        if self._use_line_points:
+            # Build a LineSegmentInImage message for each linepoint
+            line_points = self._line_detector.get_linepoints()
+            # Create line segments
+            line_segments = ros_utils.convert_line_points_to_line_segment_msgs(line_points)
+            # Create line msg
+            line_msg = ros_utils.build_line_information_in_image_msg(image_msg.header, line_segments)
+            # Publish lines
+            self._pub_lines.publish(line_msg)
 
-        # Build a LineSegmentInImage message for each linepoint
-        line_points = self._line_detector.get_linepoints()
-        # Create line segments
-        line_segments = ros_utils.convert_line_points_to_line_segment_msgs(line_points)
-        # Create line msg
-        line_msg = ros_utils.build_line_information_in_image_msg(image_msg.header, line_segments)
-        # Publish lines
-        self._pub_lines.publish(line_msg)
+        if self._use_line_mask:
+            # Get line pixel mask
+            line_mask = self._line_detector.get_line_mask()
+            # Create line mask message
+            line_mask_message = self._cv_bridge.cv2_to_imgmsg(line_mask, '8UC1')
+            # Publish line mask
+            self._pub_line_mask.publish(line_mask_message)
 
         ##################
         # Field boundary #
