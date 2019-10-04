@@ -637,11 +637,19 @@ class Vision:
                 self._ball_candidate_y_offset)],
             (0, 255, 0)
         )
-        # Draw line points
-        self._debug_image_creator.draw_points(
-            self._line_detector.get_linepoints(),
-            (0, 0, 255)
-        )
+        if self._use_line_points:
+            # Draw line points
+            self._debug_image_creator.draw_points(
+                self._line_detector.get_linepoints(),
+                (0, 0, 255)
+            )
+        if self._use_line_mask: 
+            # Draw line mask
+            self._debug_image_creator.draw_mask(
+                self._line_detector.get_line_mask(),
+                color=(255, 0, 0),
+                operacity=0.5
+            )
         # Return image from the debug image drawer
         return self._debug_image_creator.get_image()
 

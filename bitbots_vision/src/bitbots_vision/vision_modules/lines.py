@@ -32,7 +32,6 @@ class LineDetector:
         self._image = image
         self._white_mask = None
         self._linepoints = None
-        # self._nonlinepoints = None
         self._linesegments = None
 
     def set_candidates(self, candidates):
