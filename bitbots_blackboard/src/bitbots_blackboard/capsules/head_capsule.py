@@ -26,7 +26,8 @@ class HeadCapsule:
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
 
         self.current_head_position = [0, 0]
-        self.pattern_index = 0
+        self.ball_specific_pattern_index = (0,0)
+        self.recent_ball_pattern_index = 0
 
     def head_mode_callback(self, msg):
         """
@@ -92,24 +93,24 @@ class HeadCapsule:
         """
         if is_right:
             return angle_right
-        else: 
+        else:
             return angle_left
 
     def _interpolatedSteps(self, steps, tilt, min_pan, max_pan):
         """
         Splits a scanline in a number of dedicated steps
         """
-        if steps == 0: 
-           return [] 
-        steps += 1 
-        delta = abs(min_pan - max_pan) 
-        step_size = delta / float(steps) 
-        output_points = list() 
-        for i in range(1, steps): 
-            value = int(i * step_size + min_pan) 
-            point = (value, tilt)     
-            output_points.append(point) 
-        return output_points 
+        if steps == 0:
+           return []
+        steps += 1
+        delta = abs(min_pan - max_pan)
+        step_size = delta / float(steps)
+        output_points = list()
+        for i in range(1, steps):
+            value = int(i * step_size + min_pan)
+            point = (value, tilt)
+            output_points.append(point)
+        return output_points
 
     def generate_pattern(self, lineCount, maxHorizontalAngleLeft, maxHorizontalAngleRight, maxVerticalAngleUp, maxVerticalAngleDown, interpolation_steps=0):
         """
@@ -118,7 +119,7 @@ class HeadCapsule:
         :param maxHorizontalAngleRight: maximum look right angle
         :param maxVerticalAngleUp: maximum upwards angle
         :param maxVerticalAngleDown: maximum downwards angle
-        :param interpolation_steps: number of interpolation steps for each line 
+        :param interpolation_steps: number of interpolation steps for each line
         :return: List of angles (Pan, Tilt)
         """
         keyframes = []
@@ -132,7 +133,7 @@ class HeadCapsule:
 
         for i in range(iterations):
             # Create keyframe
-            currentPoint = (self._calculateHorizontalAngle(rightSide, maxHorizontalAngleRight, maxHorizontalAngleLeft), 
+            currentPoint = (self._calculateHorizontalAngle(rightSide, maxHorizontalAngleRight, maxHorizontalAngleLeft),
                             self._lineAngle(line, lineCount, maxVerticalAngleDown, maxVerticalAngleUp))
             # Add keyframe
             keyframes.append(currentPoint)
