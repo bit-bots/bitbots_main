@@ -27,7 +27,7 @@ class AbstractSearchPattern(AbstractActionElement):
                                                                      min(pattern_config['pan_max']),
                                                                      max(pattern_config['tilt_max']),
                                                                      min(pattern_config['tilt_max']))
-        
+
         self.threshold = self.blackboard.config['position_reached_threshold']
 
     @abc.abstractmethod
@@ -42,6 +42,23 @@ class AbstractSearchPattern(AbstractActionElement):
         """
         index = self.blackboard.head_capsule.pattern_index % len(self.pattern)
 
+        current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
+
+        min_distance_point = (10000, -1, -1, -1)
+        for i, point in enumerate(self.pattern):
+            point_pan = math.radians(point[0])
+            point_tilt = math.radians(point[1])
+            distance = math.sqrt((current_head_pan - math.radians(point_pan)) ** 2 + (current_head_tilt - math.radians(point_tilt)) ** 2)
+
+            if distance < min_distance_point[0]:
+                min_distance_point = (distance, point_pan, point_tilt, i)
+
+        if not (self.pattern[int(index)][0] == min_distance_point[1] and \
+                self.pattern[int(index)][1] == min_distance_point[2]) or not \
+                (self.pattern[(int(index) - 1) % len(self.pattern)][0] == min_distance_point[1] and \
+                 self.pattern[(int(index) - 1) % len(self.pattern)][1] == min_distance_point[2]):
+            index = min_distance_point[3]
+
         head_pan, head_tilt = self.pattern[int(index)]
 
         # Convert to radians
@@ -51,7 +68,6 @@ class AbstractSearchPattern(AbstractActionElement):
 
         self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, pan_speed=self.pan_speed, tilt_speed=self.tilt_speed)
 
-        current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
         distance = math.sqrt((current_head_pan - head_pan) ** 2 + (current_head_tilt - head_tilt) ** 2)
 
         # Increment index when position is reached
