@@ -1,3 +1,11 @@
 # Defining the vision sim parameter overrides
 
 field_color_detector_path: 'sim.pickle'
+
+# Improve line detection in sim
+white_color_detector_lower_values_h: 0
+white_color_detector_lower_values_s: 0
+white_color_detector_lower_values_v: 158
+white_color_detector_upper_values_h: 180
+white_color_detector_upper_values_s: 255
+white_color_detector_upper_values_v: 255
