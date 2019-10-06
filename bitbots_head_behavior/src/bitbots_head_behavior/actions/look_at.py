@@ -35,7 +35,7 @@ class AbstractLookAt(AbstractActionElement):
         states = response.solution.joint_state
         return states.position[states.name.index('HeadPan')], states.position[states.name.index('HeadTilt')]
 
-    def _look_at(self, point, min_pan_delta=0, min_tilt_delta=0):
+    def look_at(self, point, min_pan_delta=0, min_tilt_delta=0):
         """
         Look at a point which is relative to the robot.
 
