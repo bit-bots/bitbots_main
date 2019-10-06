@@ -36,7 +36,7 @@ class WorldModelCapsule:
         return self.position.pose.x, self.position.pose.y, self.position.pose.theta
 
     ############
-    # ## Ball ##
+    ### Ball ###
     ############
 
     def ball_last_seen(self):
@@ -173,7 +173,7 @@ class WorldModelCapsule:
 
         goal_left_buffer = PointStamped(goal_parts.header, left_post.foot_point)
         goal_right_buffer = PointStamped(goal_parts.header, right_post.foot_point)
-        
+
         self.goal.header = goal_parts.header
         self.goal.left_post = goal_left_buffer
         self.goal.right_post = goal_right_buffer
