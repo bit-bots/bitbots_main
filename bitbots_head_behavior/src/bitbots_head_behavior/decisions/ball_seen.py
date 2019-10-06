@@ -12,6 +12,7 @@ class BallSeen(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallSeen, self).__init__(blackboard, dsd, parameters)
         self.ball_lost_time = rospy.Duration.from_sec(self.blackboard.config['ball_lost_time'])
+        self.ball_search_time = rospy.Duration.from_sec(self.blackboard.config['search_recent_ball']['ball_search_time'])
 
     def perform(self, reevaluate=False):
         """
@@ -24,6 +25,8 @@ class BallSeen(AbstractDecisionElement):
         ball_last_seen = self.blackboard.world_model.ball_last_seen()
         if ball_last_seen != rospy.Time(0) and rospy.Time.now() - ball_last_seen < self.ball_lost_time:
             return 'YES'
+        if ball_last_seen != rospy.Time(0) and rospy.Time.now() - ball_last_seen < self.ball_lost_time + self.ball_search_time:
+            return 'RECENT'
         return 'NO'
 
     def get_reevaluate(self):
