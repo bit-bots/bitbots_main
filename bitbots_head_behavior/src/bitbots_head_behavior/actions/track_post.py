@@ -27,4 +27,4 @@ class TrackPost(AbstractLookAt):
         post_point = self.blackboard.world_model.get_detection_based_goal_position_uv()
 
         # Call internal look-at to turn head to this point (when necessary)
-        self._look_at(post_point, self.ball_tracking_min_pan_delta, self.ball_tracking_min_tilt_delta)
+        self.look_at(post_point, self.ball_tracking_min_pan_delta, self.ball_tracking_min_tilt_delta)
