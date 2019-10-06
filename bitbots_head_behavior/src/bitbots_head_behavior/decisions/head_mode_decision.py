@@ -10,6 +10,9 @@ class HeadModeDecision(AbstractDecisionElement):
     Meaning what should be searched for or^ if any searching should be done at all.
     """
 
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(HeadModeDecision, self).__init__(blackboard, dsd, parameters)
+
     @staticmethod
     def _register():
         return ['BALL_MODE', 'POST_MODE', 'BALL_GOAL_TRACKING', 'FIELD_FEATURES',
