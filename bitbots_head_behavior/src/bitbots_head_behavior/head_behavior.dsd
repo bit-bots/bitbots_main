@@ -2,6 +2,7 @@
 $HeadModeDecision
     BALL_MODE --> $BallSeen
         YES --> @TrackBall
+        RECENT --> @SearchRecentBall
         NO --> @BallSearchPattern
     BALL_MODE_PENALTY --> $BallSeen
         YES --> @TrackBall
