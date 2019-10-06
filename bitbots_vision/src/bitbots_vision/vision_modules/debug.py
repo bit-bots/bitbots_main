@@ -91,13 +91,12 @@ class DebugImage:
     def draw_mask(self, mask, color, operacity=0.5):
         # Make a colored image
         colored_image = np.zeros_like(self._debug_image)
-        colored_image[:, :] = color
+        colored_image[:, :] = tuple(np.multiply(color, operacity).astype(np.uint8))
 
         # Compose debug image with lines
         self._debug_image = cv2.add(cv2.bitwise_and(
             self._debug_image,  self._debug_image, mask=255-mask),
-            cv2.add(colored_image*operacity,
-                    self._debug_image*(1-operacity), mask=mask,).astype(np.uint8))
+            cv2.add(colored_image*operacity, self._debug_image*(1-operacity), mask=mask).astype(np.uint8))
 
     def get_image(self):
         """
