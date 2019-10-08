@@ -1,25 +1,29 @@
 <package format="2">
   <name>bitbots_vision</name>
   <description>
-    This is the cascade vision package of the Hamburg Bit-Bots.
-    The ball detection is realized with a cascade classifier, which makes it
-    compatible with Odroids.
-    It heavily relies on modules provided by the bitbots_vision_common
-    package.
-    For standardized camers such as USB-webcams we use the wolves_image_provider package as image provider.
-    Alternatively every image source, that publishes sensor_msgs/Image messages
-    (i.e. basler driver for basler cameras) is supported.
-    Settings considering the vision are set in the visionparams.yaml
-    (bitbots_vision_cascade/config/visionparams.yaml). To be able to test
-    new parameters, the debug_visionparams.yaml are provided. These are used
-    when the vision is started with debug:=true as launchscript parameter.
-    You do NOT want to enable DEBUG on the robot.
-    The color calibration files are created with the wolves colorpicker and
-    a rosbag. The vision.py is located in the /src/bitbots_vision folder. It
-    defines, how the modules are used. In bitbots_vision/models the tensorflow classifier models are
-    stored. Due to their size, these are not part of this repository.
+    This is the vision package of the Hamburg Bit-Bots.
+    The vision is able to detect lines, the field itself, the field boundary, goal posts, teammates, enemies and other obstacles.
+    Its architecture is modular allowing easy implementation of new approaches resulting in a high grade of customizability.
+    For ball detection, you can choose between an fcnn or multiple yolo implementations.
+    The goalpost detection also runs via yolo or a conventional detection method,
+    which is also used for obstacle and robot detection.
+    The whole system is embedded in the ROS environment and
+    able to run on many devices including the Nvidia Jetson TX2 in our Wolfgang robots.
+    In the context of the Hamburg Bit-Bots, the Images are provided by a Basler industry grade ethernet camera.
+    The camera drivers are not included in this package but can be auto launched.
+    If you want the vision to run without starting a camera driver simply set the cli launch parameter ``camera:=false``.
+    Every image source, that publishes a ``sensor_msgs/Image messages`` message is also supported.
+    The ROS topics and many other parameters are defined in the ``visioparams.yaml`` config file.
+    All used parameters are also changeable during run-time using ros dynamic reconfigure.
+    For simulation usage, different parameters can be defined in the ``simparam.yaml`` which overrides the normal params.
+    The debug mode with special debug output can be activated using ``debug:=true``.
+    In ``bitbots_vision/models`` the neural network models are stored. These models are not part of this repository.
     Bit-Bots use the pull_data script in bitbots_meta.
-    To tweak the camera image, use the settings in the image provider.
+    For the field detection which is needed for the field boundary and
+    obstacle detection the vision uses RGB lookup table color spaces provided by the wolves_color_picker.
+    These color spaces can be improved and converted to a pickle file for faster loading times using the colorspace_tool in the vision tools.
+    The field color space itself can be dynamically adapted in real-time using the dynamic color space heuristic.
+    Therefore the vision gets more resistant in natural light conditions.
   </description>
   <version>1.1.0</version>
 
@@ -52,6 +56,7 @@
   <depend>pylon_camera</depend>
   <depend>white_balancer</depend>
   <depend>bitbots_bringup</depend>
+  <depend>bitbots_docs</depend>
   <depend>tf2</depend>
 
 

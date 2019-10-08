@@ -1,23 +1,37 @@
-README
-======
+Bit-Bots Vision
+===============
 
 This is the vision package of the Hamburg Bit-Bots.
-For standardized cameras such as USB-webcams we use the wolves_image_provider package as image provider.
-Alternatively every image source, that publishes sensor_msgs/Image messages (i.e. basler driver for basler cameras) is supported.
-Settings considering the vision are set in the visionparams.yaml (bitbots_vision/config/visionparams.yaml).
-You do NOT want to enable DEBUG on the robot.
-The color calibration files are created with the wolves colorpicker and a rosbag.
-The source code of the vision is located in bitbots_vision/src.
-In bitbots_vision/models the fcnn models are stored. Due to their size, these are not part of this repository.
-After changes in the models or config/color_spaces directory, rebuilding the vision node is required to see these changes in dynamic reconfigure.
-To tweak the camera image, use the settings in the image provider.
 
-Neural Network Models
----------------------
+The vision is able to detect lines, the field itself, the field boundary, goal posts, teammates, enemies and other obstacles.
 
-Currently, the models of our neural networks are not available publicly.
-Due to their size, they are not included in the repository.
-Bit-Bots find them in the Mafiasi NextCloud `robocup-ai/log/`
+Its architecture is modular allowing easy implementation of new approaches resulting in a high grade of customizability.
+
+For ball detection, you can choose between an fcnn or multiple yolo implementations.
+The goalpost detection also runs via yolo or a conventional detection method,
+which is also used for obstacle and robot detection.
+
+The whole system is embedded in the ROS environment and
+able to run on many devices including the Nvidia Jetson TX2 in our Wolfgang robots.
+
+In the context of the Hamburg Bit-Bots, the Images are provided by a Basler industry grade ethernet camera.
+The camera drivers are not included in this package but can be auto launched.
+
+If you want the vision to run without starting a camera driver simply set the cli launch parameter `camera:=false`.
+Every image source, that publishes a `sensor_msgs/Image messages` message is also supported.
+The ROS topics and many other parameters are defined in the `visioparams.yaml` config file.
+All used parameters are also changeable during run-time using ros dynamic reconfigure.
+For simulation usage, different parameters can be defined in the ``simparam.yaml`` which overrides the normal params.
+The debug mode with special debug output can be activated using ``debug:=true``.
+
+In ``bitbots_vision/models`` the neural network models are stored. These models are not part of this repository.
+Bit-Bots use the `pull_data` script in bitbots_meta.
+
+For the field detection which is needed for the field boundary and
+obstacle detection the vision uses RGB lookup table color spaces provided by the wolves_color_picker.
+These color spaces can be improved and converted to a pickle file for faster loading times using the colorspace_tool in the vision tools.
+The field color space itself can be dynamically adapted in real-time using the dynamic color space heuristic.
+Therefore the vision gets more resistant in natural light conditions.
 
 
 Vision Tools
@@ -25,11 +39,17 @@ Vision Tools
 
 In the bitbots_vision_tools directory, special tools for debugging/introspection purposes are provided.
 
+White Balancer
+--------------
+
+This repository also includes the `white_balancer`.
+Its a ROS node that color-corrects incoming images with a predefined light temperature.
+
 
 Launchscripts
 -------------
 
-To start the vision, use 
+To start the vision, use
 ```
 roslaunch bitbots_vision vision_startup.launch
 ```
@@ -40,10 +60,10 @@ roslaunch bitbots_vision vision_startup.launch
 ```dummyball:=true``` does not start the ball detection to save resources
 ```debug:=true``` does activate publishing of several debug images which can be inspected in the rqt image view
 ```use_game_settings:=true``` does load additional game settings
- 
+
 **bitbots_vision**
 - *vision_startup*: starts the vision and a camera image provider
-    - Params: 
+    - Params:
         - sim [true/FALSE],
         - camera [TRUE/false],
         - basler [TRUE/false],

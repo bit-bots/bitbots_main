@@ -47,6 +47,7 @@ class ObstacleDetector(CandidateFinder):
     def set_image(self, image):
         """
         Set a image for the obstacle detector. This also resets the caches.
+
         :param image: current vision image
         """
         # Check if image has been set
@@ -63,7 +64,8 @@ class ObstacleDetector(CandidateFinder):
 
     def get_top_candidates(self, count=1):
         """
-        This is bullshit for the abstract class
+        This is bullshit for the abstract class.
+
         :param count: number of candidates
         """
         return self.get_candidates()[0:count]
@@ -88,7 +90,8 @@ class ObstacleDetector(CandidateFinder):
         # type: () -> list[Candidate]
         """
         Finds candidates by comparing the height of adjacent field_boundary points
-        faster, less accurate alternative to get_candidates_convex
+        faster, less accurate alternative to get_candidates_convex.
+
         :return: candidate(int: x upper left point, int: y upper left point, int: width, int: height)
         """
         if self._obstacles is None:
@@ -135,7 +138,8 @@ class ObstacleDetector(CandidateFinder):
         # type: () -> list[Candidate]
         """
         Finds candidates using the difference of the convex field_boundary and the normal field_boundary.
-        Alternative to get_candidates (more accurate, about 0.0015 seconds slower)
+        Alternative to get_candidates (more accurate, about 0.0015 seconds slower).
+
         :return: candidate(int: x upper left point, int: y upper left point, int: width, int: height)
         """
         # TODO: fix rarely finding not existent obstacles at the edge (vectors + orthogonal distance?)
@@ -195,6 +199,7 @@ class ObstacleDetector(CandidateFinder):
         """
         Finds candidates using the difference of the convex field_boundary and the normal field_boundary.
         Detection of obstacles depends on their height in image and therefore their distance.
+
         :return: candidate(int: x upper left point, int: y upper left point, int: width, int: height)
         """
         self._obstacles = list()
@@ -244,6 +249,7 @@ class ObstacleDetector(CandidateFinder):
     def _build_and_save_obstacle_candidate(self, obstacle_begin, i, full_field_boundary, full_convex_field_boundary, start_min_width, start_max_width, distance_value_increase):
         """
         Creates a candidate.
+
         :param obstacle_begin: X position of the obstacle begining
         :param i: X position of the obstacle ending
         :param full_field_boundary: Mapping a field boundary y value to every x value
@@ -270,7 +276,8 @@ class ObstacleDetector(CandidateFinder):
     def get_all_obstacles(self):
         # type: () -> list[Candidate]
         """
-        Get all obstale candidates
+        Get all obstale candidates.
+
         :return: list of obstacles candidates
         """
         return self.get_candidates()
@@ -278,7 +285,8 @@ class ObstacleDetector(CandidateFinder):
     def get_red_obstacles(self):
         # type: () -> list[Candidate]
         """
-        Get red obstale candidates
+        Get red obstale candidates.
+
         :return: list of red obstacles candidates
         """
         if self._red_obstacles is None:
@@ -288,7 +296,8 @@ class ObstacleDetector(CandidateFinder):
     def get_blue_obstacles(self):
         # type: () -> list[Candidate]
         """
-        Get blue obstale candidates
+        Get blue obstale candidates.
+
         :return: list of blue obstacles candidates
         """
         if self._blue_obstacles is None:
@@ -298,7 +307,8 @@ class ObstacleDetector(CandidateFinder):
     def get_white_obstacles(self):
         # type: () -> list[Candidate]
         """
-        Get white obstale candidates
+        Get white obstale candidates.
+
         :return: list of white obstacles candidates
         """
         if self._white_obstacles is None:
@@ -308,7 +318,8 @@ class ObstacleDetector(CandidateFinder):
     def get_other_obstacles(self):
         # type: () -> list[Candidate]
         """
-        Get other obstale candidates
+        Get other obstale candidates.
+
         :return: list of other obstacles candidates
         """
         if self._other_obstacles is None:
@@ -317,7 +328,7 @@ class ObstacleDetector(CandidateFinder):
 
     def compute(self):
         """
-        Calculate all obstacles and sorts them by colors
+        Calculate all obstacles and sorts them by colors.
         """
         # Calculate HSV masks
         self._blue_mask = self._blue_color_detector.get_mask_image()
@@ -373,7 +384,8 @@ class RedObstacleDetector(CandidateFinder):
     def __init__(self, obstacle_detector):
         # type: (ObstacleDetector) -> None
         """
-        Init red obstacle detector
+        Init red obstacle detector.
+
         :param obstacle_detector: obstacle_detector instance held by the vision
         """
         self._obstacle_detector = obstacle_detector
@@ -381,7 +393,8 @@ class RedObstacleDetector(CandidateFinder):
     def set_image(self, image):
         # type: (np.ndarray) -> None
         """
-        Set the current vision image
+        Set the current vision image.
+
         :param image: image the current image vision
         """
         self._obstacle_detector.set_image(image)
@@ -408,7 +421,8 @@ class BlueObstacleDetector(CandidateFinder):
     def __init__(self, obstacle_detector):
         # type: (ObstacleDetector) -> None
         """
-        Init blue obstacle detector
+        Init blue obstacle detector.
+
         :param obstacle_detector: obstacle_detector instance held by the vision
         """
         self._obstacle_detector = obstacle_detector
@@ -416,7 +430,8 @@ class BlueObstacleDetector(CandidateFinder):
     def set_image(self, image):
         # type: (np.ndarray) -> None
         """
-        Set the current vision image
+        Set the current vision image.
+
         :param image: image the current image vision
         """
         self._obstacle_detector.set_image(image)
@@ -443,7 +458,8 @@ class WhiteObstacleDetector(CandidateFinder):
     def __init__(self, obstacle_detector):
         # type: (ObstacleDetector) -> None
         """
-        Init white obstacle detector
+        Init white obstacle detector.
+
         :param obstacle_detector: obstacle_detector instance held by the vision
         """
         self._obstacle_detector = obstacle_detector
@@ -451,7 +467,8 @@ class WhiteObstacleDetector(CandidateFinder):
     def set_image(self, image):
         # type: (np.ndarray) -> None
         """
-        Set the current vision image
+        Set the current vision image.
+
         :param image: image the current image vision
         """
         self._obstacle_detector.set_image(image)
@@ -478,7 +495,8 @@ class UnknownObstacleDetector(CandidateFinder):
     def __init__(self, obstacle_detector):
         # type: (ObstacleDetector) -> None
         """
-        Init unknown obstacle detector
+        Init unknown obstacle detector.
+
         :param obstacle_detector: obstacle_detector instance held by the vision
         """
         self._obstacle_detector = obstacle_detector
@@ -486,7 +504,8 @@ class UnknownObstacleDetector(CandidateFinder):
     def set_image(self, image):
         # type: (np.ndarray) -> None
         """
-        Set the current vision image
+        Set the current vision image.
+        
         :param image: image the current image vision
         """
         self._obstacle_detector.set_image(image)

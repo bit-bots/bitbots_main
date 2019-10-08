@@ -12,18 +12,20 @@ from .candidate import CandidateFinder, BallDetector, Candidate
 
 class YoloHandler():
     """
-    Defines a YoloHandler
+    Defines an abstract YoloHandler
     """
     def __init__(self, config, model_path):
         """
-        Dummy constructor
+        Init abstract YoloHandler.
         """
-        raise NotImplementedError
+        self._ball_candidates = None
+        self._goalpost_candidates = None
 
     @abc.abstractmethod
     def set_image(self, img):
         """
         Image setter abstact method. (Cached)
+        
         :param img: Image
         """
         raise NotImplementedError
@@ -39,8 +41,21 @@ class YoloHandler():
         """
         Runs neural network and returns results for all classes. (Cached)
         """
+        return [self.get_ball_candidates(), self.get_goalpost_candidates()]
+
+    def get_ball_candidates(self):
+        """
+        Runs neural network and returns results for ball class. (Cached)
+        """
         self.predict()
-        return [self.ball_candidates, self.goalpost_candidates]
+        return self._ball_candidates
+
+    def get_goalpost_candidates(self):
+        """
+        Runs neural network and returns results for goalpost class. (Cached)
+        """
+        self.predict()
+        return self._goalpost_candidates
 
 class YoloHandlerDarknet(YoloHandler):
     """
@@ -49,6 +64,7 @@ class YoloHandlerDarknet(YoloHandler):
     def __init__(self, config, model_path):
         """
         Yolo constructor
+
         :param config: vision config dict
         :param model_path: path to the yolo model
         """
@@ -67,13 +83,13 @@ class YoloHandlerDarknet(YoloHandler):
         # Set cached stuff
         self._image = None
         self._results = None
-        self._goalpost_candidates = None
-        self._ball_candidates = None
+        super(YoloHandlerDarknet, self).__init__(config, model_path)
 
     def _generate_dummy_obj_data_file(self, obj_name_path):
         """
         Generates a dummy object data file.
         In which some meta information for the library is stored.
+
         :param obj_name_path: path to the class name file
         """
         # Generate file content
@@ -85,6 +101,7 @@ class YoloHandlerDarknet(YoloHandler):
     def set_image(self, image):
         """
         Set a image for yolo. This also resets the caches.
+
         :param image: current vision image
         """
         # Check if image has been processed
@@ -126,7 +143,6 @@ class YoloHandlerDarknet(YoloHandler):
                 if class_id == b"goalpost":
                     self._goalpost_candidates.append(c)
 
-
 class YoloHandlerOpenCV(YoloHandler):
     """
     Opencv library implementation of our yolo model
@@ -146,9 +162,8 @@ class YoloHandlerOpenCV(YoloHandler):
         self._image = None
         self._blob = None
         self._outs = None
-        self._goalpost_candidates = None
-        self._ball_candidates = None
         self._results = None
+        super(YoloHandlerOpenCV, self).__init__(config, model_path)
 
     def _get_output_layers(self):
         """
@@ -163,6 +178,7 @@ class YoloHandlerOpenCV(YoloHandler):
     def set_image(self, image):
         """
         Set a image for yolo. This also resets the caches.
+
         :param image: current vision image
         """
         # Check if image has been processed
@@ -261,6 +277,7 @@ class YoloBallDetector(BallDetector):
     def set_image(self, image):
         """
         Set a image for yolo. This is cached.
+
         :param image: current vision image
         """
         self._yolo.set_image(image)
@@ -269,7 +286,7 @@ class YoloBallDetector(BallDetector):
         """
         :return: all found ball candidates
         """
-        return self._yolo.get_candidates()[0]
+        return self._yolo.get_ball_candidates()
 
     def compute(self):
         """
@@ -292,6 +309,7 @@ class YoloGoalpostDetector(CandidateFinder):
     def set_image(self, image):
         """
         Set a image for yolo. This is cached.
+
         :param image: current vision image
         """
         self._yolo.set_image(image)
@@ -300,7 +318,7 @@ class YoloGoalpostDetector(CandidateFinder):
         """
         :return: all found goalpost candidates
         """
-        return self._yolo.get_candidates()[1]
+        return self._yolo.get_goalpost_candidates()
 
     def compute(self):
         """

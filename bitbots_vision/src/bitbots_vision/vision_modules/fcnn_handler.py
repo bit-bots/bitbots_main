@@ -17,6 +17,7 @@ class FcnnHandler(BallDetector):
     def __init__(self, config, fcnn):
         """
         Inits the fcnn handler.
+
         :param dict config: dictionary of the vision node configuration parameters
         :param FCNN03 fcnn: a fcnn model
         """
@@ -35,6 +36,7 @@ class FcnnHandler(BallDetector):
     def set_image(self, image):
         """
         Set a image for the fcnn. This also resets the caches.
+
         :param image: current vision image
         :return: None
         """
@@ -48,6 +50,7 @@ class FcnnHandler(BallDetector):
     def set_config(self, config):
         """
         Set all configuration parameters for the fcnn.
+
         :param dict config: dictionary of the vision node configuration parameters
         :return: None
         """
@@ -63,6 +66,7 @@ class FcnnHandler(BallDetector):
     def get_candidates(self):
         """
         Returns all ball candidates. This method is cached.
+
         :return: all ball candidates
         """
         # Check if a cached value exists
@@ -74,13 +78,14 @@ class FcnnHandler(BallDetector):
                 # Get the fcnn heatmap
                 out = self.get_fcnn_output()
                 # Calculate the mean in the ROI in the heatmap
-                candidate.rating = np.mean(
+                rating = np.mean(
                     out[
                         candidate.get_upper_left_y():
                         candidate.get_upper_left_y() + candidate.get_height(),
                         candidate.get_upper_left_x():
                         candidate.get_upper_left_x() + candidate.get_width()]
                 ) / 255.0
+                candidate.set_rating(rating)
                 # Check if candidate is in rating threshold and size bounds
                 if self._inspect_candidate(candidate):
                     # Add candidate to list
@@ -90,11 +95,12 @@ class FcnnHandler(BallDetector):
     def _inspect_candidate(self, candidate):
         """
         Checks if candidates is in threshold. And in min/max diameter bounds.
+
         :param candidate: a Ball candidate
         :return: a boolean if the candidate satisfies these conditions
         """
         # type: (Candidate) -> bool
-        return candidate.rating >= self._threshold \
+        return candidate.get_rating() >= self._threshold \
                and self._min_candidate_diameter \
                <= candidate.get_diameter() \
                <= self._max_candidate_diameter
@@ -109,6 +115,7 @@ class FcnnHandler(BallDetector):
     def get_fcnn_output(self):
         """
         Calculates the fcnn heatmap. The output gets cached.
+
         :return: fcnn output
         """
         # Check if a cached one exists
@@ -130,6 +137,7 @@ class FcnnHandler(BallDetector):
     def _get_raw_candidates_cpp(self):
         """
         Runs the fcnn heatmap clustering candidate detection.
+
         :return: ball candidates
         """
         start = cv2.getTickCount()
@@ -250,6 +258,7 @@ class FcnnHandler(BallDetector):
     def get_debug_image(self):
         """
         Returns the fcnn heatmap as ros image message if debug is enabled.
+        
         :return: fcnn heatmap
         """
         if self._debug:
