@@ -60,6 +60,7 @@ class KickNode {
   int engine_rate_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
+  robot_model_loader::RobotModelLoader robot_model_loader_;
 
   /**
    * Do main loop in which KickEngine::update() gets called repeatedly.

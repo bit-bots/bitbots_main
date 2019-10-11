@@ -8,12 +8,12 @@ KickNode::KickNode() :
     server_(node_handle_, "dynamic_kick", boost::bind(&KickNode::executeCb, this, _1), false),
     listener_(tf_buffer_),
     engine_(),
-    visualizer_("/debug/dynamic_kick") {
+    visualizer_("/debug/dynamic_kick"),
+    robot_model_loader_("/robot_description", false) {
 
   /* load MoveIt! model */
-  robot_model_loader::RobotModelLoader robot_model_loader("/robot_description", false);
-  robot_model_loader.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
-  robot_model::RobotModelPtr kinematic_model = robot_model_loader.getModel();
+  robot_model_loader_.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
+  robot_model::RobotModelPtr kinematic_model = robot_model_loader_.getModel();
   if (!kinematic_model) {
     ROS_FATAL("No robot model loaded, killing dynamic kick.");
     exit(1);
