@@ -34,6 +34,8 @@ include_directories(
 ## Declare a C++ executable
 add_executable(white_balancer src/white_balancer.cpp)
 
+add_dependencies(white_balancer ${PROJECT_NAME}_gencfg)
+
 ## Specify libraries to link a library or executable target against
 target_link_libraries(white_balancer
     ${catkin_LIBRARIES}
