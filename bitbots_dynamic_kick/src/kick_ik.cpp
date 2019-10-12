@@ -5,7 +5,7 @@ namespace bitbots_dynamic_kick {
 
 void KickIK::init(moveit::core::RobotModelPtr kinematic_model) {
   /* Extract joint groups from kinematics model */
-  m_legs_joints_group_.reset(kinematic_model->getJointModelGroup("Legs"));
+  m_legs_joints_group_ = kinematic_model->getJointModelGroup("Legs");
 
   /* Reset kinematic goal to default */
   m_goal_state_.reset(new robot_state::RobotState(kinematic_model));
@@ -28,7 +28,7 @@ void KickIK::reset() {
 
 bitbots_splines::JointGoals KickIK::calculate(const std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
   double bio_ik_timeout = 0.01;
-  bool success = m_goal_state_->setFromIK(m_legs_joints_group_.get(),
+  bool success = m_goal_state_->setFromIK(m_legs_joints_group_,
                                           EigenSTL::vector_Isometry3d(),
                                           std::vector<std::string>(),
                                           bio_ik_timeout,
@@ -48,7 +48,7 @@ bitbots_splines::JointGoals KickIK::calculate(const std::unique_ptr<bio_ik::BioI
     /* retrieve joint names and associated positions from  */
     std::vector<std::string> joint_names = m_legs_joints_group_->getActiveJointModelNames();
     std::vector<double> joint_goals;
-    m_goal_state_->copyJointGroupPositions(m_legs_joints_group_.get(), joint_goals);
+    m_goal_state_->copyJointGroupPositions(m_legs_joints_group_, joint_goals);
 
     /* construct result object */
     bitbots_splines::JointGoals result;

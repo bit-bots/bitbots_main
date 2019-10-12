@@ -5,7 +5,7 @@ namespace bitbots_quintic_walk {
 WalkIK::WalkIK() : bio_ik_timeout_(0.01) {}
 
 void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
-  legs_joints_group_.reset(kinematic_model->getJointModelGroup("Legs"));
+  legs_joints_group_ = kinematic_model->getJointModelGroup("Legs");
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
   goal_state_->setToDefaultValues();
 
@@ -13,7 +13,7 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
 }
 
 bitbots_splines::JointGoals WalkIK::calculate(const std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
-  bool success = goal_state_->setFromIK(legs_joints_group_.get(),
+  bool success = goal_state_->setFromIK(legs_joints_group_,
                                         EigenSTL::vector_Isometry3d(),
                                         std::vector<std::string>(),
                                         bio_ik_timeout_,
@@ -23,7 +23,7 @@ bitbots_splines::JointGoals WalkIK::calculate(const std::unique_ptr<bio_ik::BioI
     /* retrieve joint names and associated positions from  */
     std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
     std::vector<double> joint_goals;
-    goal_state_->copyJointGroupPositions(legs_joints_group_.get(), joint_goals);
+    goal_state_->copyJointGroupPositions(legs_joints_group_, joint_goals);
 
     /* construct result object */
     bitbots_splines::JointGoals result;

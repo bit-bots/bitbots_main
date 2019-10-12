@@ -16,7 +16,7 @@ class WalkIK : public bitbots_splines::AbstractIK {
 
  private:
   robot_state::RobotStatePtr goal_state_;
-  moveit::core::JointModelGroupPtr legs_joints_group_;
+  const moveit::core::JointModelGroup *legs_joints_group_;
 
   // IK solver
   bitbots_ik::BioIKSolver bio_ik_solver_;
