@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(white_balancer)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
 
-set(CMAKE_BUILD_TYPE Debug)
-
-FIND_PACKAGE (OpenCV REQUIRED)
+find_package(OpenCV REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
   image_transport
@@ -16,9 +17,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   cv_bridge
 )
-
-set (CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall")
 
 # dynamic reconfigure
 generate_dynamic_reconfigure_options(
