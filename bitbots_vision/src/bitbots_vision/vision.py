@@ -510,7 +510,7 @@ class Vision:
             # Get line pixel mask
             line_mask = self._line_detector.get_line_mask()
             # Create line mask message
-            line_mask_message = self._cv_bridge.cv2_to_imgmsg(line_mask, '8UC1')
+            line_mask_message = ros_utils.build_image_msg(image_msg.header, line_mask, '8UC1')
             # Publish line mask
             self._pub_line_mask.publish(line_mask_message)
 
@@ -551,9 +551,12 @@ class Vision:
             blue_mask = self._blue_color_detector.get_mask_image()
 
             # Publish mask images
-            self._pub_white_mask_image.publish(self._cv_bridge.cv2_to_imgmsg(white_mask, '8UC1'))
-            self._pub_red_mask_image.publish(self._cv_bridge.cv2_to_imgmsg(red_mask, '8UC1'))
-            self._pub_blue_mask_image.publish(self._cv_bridge.cv2_to_imgmsg(blue_mask, '8UC1'))
+            self._pub_white_mask_image.publish(
+                ros_utils.build_image_msg(image_msg.header, white_mask, '8UC1'))
+            self._pub_red_mask_image.publish(
+                ros_utils.build_image_msg(image_msg.header, red_mask, '8UC1'))
+            self._pub_blue_mask_image.publish(
+                ros_utils.build_image_msg(image_msg.header, blue_mask, '8UC1'))
 
         # Check, if field mask image should be published
         if self._publish_field_mask_image:
@@ -562,20 +565,24 @@ class Vision:
                 dyn_field_mask = self._field_color_detector.get_mask_image()
                 static_field_mask = self._field_color_detector.get_static_mask_image()
                 # Publish mask image
-                self._pub_dynamic_color_space_field_mask_image.publish(self._cv_bridge.cv2_to_imgmsg(dyn_field_mask, '8UC1'))
-                self._pub_field_mask_image.publish(self._cv_bridge.cv2_to_imgmsg(static_field_mask, '8UC1'))
+                self._pub_dynamic_color_space_field_mask_image.publish(
+                    ros_utils.build_image_msg(image_msg.header, dyn_field_mask, '8UC1'))
+                self._pub_field_mask_image.publish(
+                    ros_utils.build_image_msg(image_msg.header, static_field_mask, '8UC1'))
             else:
                 # Mask image
                 field_mask = self._field_color_detector.get_mask_image()
                 # Publish mask image
-                self._pub_field_mask_image.publish(self._cv_bridge.cv2_to_imgmsg(field_mask, '8UC1'))
+                self._pub_field_mask_image.publish(
+                    ros_utils.build_image_msg(image_msg.header, field_mask, '8UC1'))
 
         # Check if we should draw debug image
         if self._publish_debug_image:
             # Draw debug image
             debug_image = self._create_debug_image(image)
             # publish debug image
-            self._pub_debug_image.publish(self._cv_bridge.cv2_to_imgmsg(debug_image, 'bgr8'))
+            self._pub_debug_image.publish(
+                ros_utils.build_image_msg(image_msg.header, debug_image, 'bgr8'))
 
     def _create_debug_image(self, image):
         """
