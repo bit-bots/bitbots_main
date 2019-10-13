@@ -428,7 +428,7 @@ def build_image_msg(header, image, desired_encoding="passthrough"):
     """
     Builds a Image message
 
-    :param header: ros header of the new message. Mostly the header of the incoming image
+    :param header: ROS header of the new message. Mostly the header of the incoming image.
     :param image: A 2d NumPy UInt8 array
     :param desired_encoding: The Image type. E.g. 8UC[1-4], 8SC[1-4], 16UC[1-4], 16SC[1-4], 32SC[1-4], 32FC[1-4], 64FC[1-4]
     :return: The Image message
