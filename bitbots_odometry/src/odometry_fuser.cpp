@@ -34,7 +34,7 @@ private:
 };
 
 OdometryFuser::OdometryFuser()
-{    
+{
     ros::NodeHandle n("~");
 
     tf2::Quaternion dummy_orientation;
@@ -58,7 +58,7 @@ OdometryFuser::OdometryFuser()
     while(ros::ok())
     {
         ros::spinOnce();
-        
+
         imu_delta_t = ros::Time::now() - _imu_update_time;
 
         bool imu_active = true;
@@ -77,7 +77,7 @@ OdometryFuser::OdometryFuser()
             ROS_WARN_THROTTLE(msg_rate, "Odom message outdated!");
             odom_active = false;
         }
-        
+
 
         if (imu_active || odom_active)
         {
@@ -97,7 +97,7 @@ OdometryFuser::OdometryFuser()
 
             // combine orientations to new quaternion
             tf2::Quaternion new_orientation;
-            new_orientation.setRPY(-imu_roll, -imu_pitch, walking_yaw);
+            new_orientation.setRPY(imu_roll, imu_pitch, walking_yaw);
 
             // combine it all into a tf
             tf.header.stamp = _imu_data.header.stamp;
