@@ -26,13 +26,12 @@ class LineDetector:
         # type: (np.matrix) -> None
         """
         Refreshes the variables after receiving an image.
-        
+
         :param image: the current frame of the video feed
         """
         self._image = image
         self._white_mask = None
         self._linepoints = None
-        # self._nonlinepoints = None
         self._linesegments = None
 
     def set_candidates(self, candidates):
@@ -57,9 +56,9 @@ class LineDetector:
             # Empty line point list
             self._linepoints = list()
             # Mask white parts of the image using a white color detector
-            white_masked_image = self._get_white_mask()
+            white_masked_image = self.get_line_mask()
             # Get image shape
-            imgshape = self._get_white_mask().shape
+            imgshape = self.get_line_mask().shape
 
             # Get the maximum height of the field boundary
             max_field_boundary_heigth = self._field_boundary_detector.get_upper_bound(
@@ -88,7 +87,7 @@ class LineDetector:
         Computes if necessary and returns the (cached) line segments (Currently unused)
         """
         # Mask white parts of the image
-        img = self._get_white_mask()
+        img = self.get_line_mask()
         # Use hough lines algorithm to find lines in this mask
         lines = cv2.HoughLinesP(img,
                                 1,
@@ -121,9 +120,11 @@ class LineDetector:
                     self._linesegments.append((x1, y1, x2, y2))
         return self._linesegments
 
-    def _get_white_mask(self):
+    def get_line_mask(self):
         """
         Generates a white mask that not contains pixels in the green field or above the field boundary
+
+        :returns: Returns mask
         """
         # Check if it is cached
         if self._white_mask is None:
