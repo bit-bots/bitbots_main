@@ -1,4 +1,4 @@
-#include "humanoid_league_team_communication/team_communication.hpp"
+#include "humanoid_league_team_communication/team_communication.h"
 
 TeamCommunication::TeamCommunication() : _nh() {
     //--- Params ---
