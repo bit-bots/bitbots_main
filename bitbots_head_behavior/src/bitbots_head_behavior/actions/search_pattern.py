@@ -32,7 +32,17 @@ class AbstractSearchPattern(AbstractActionElement):
 
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
 
-        self.index = self._get_near_pattern_position(self.pattern, current_head_pan, current_head_tilt)
+        # Init index
+        self.index = 0
+
+        # Define classes that should start at the nearest position
+        near_start_classes = [
+            BallSearchPattern,
+        ]
+
+        # Set to the nearest position if wanted
+        if self.__class__ in near_start_classes:
+            self.index = self._get_near_pattern_position(self.pattern, current_head_pan, current_head_tilt)
 
     def _get_near_pattern_position(self, pattern, pan, tilt):
         """
