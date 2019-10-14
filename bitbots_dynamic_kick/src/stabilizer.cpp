@@ -28,11 +28,11 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const
      * optimal stabilizing would be centered above sole center */
     double cop_x, cop_y, cop_x_error, cop_y_error;
     if (positions.is_left_kick) {
-      cop_x = m_cop_right.x;
-      cop_y = m_cop_right.y;
+      cop_x = cop_right.x;
+      cop_y = cop_right.y;
     } else {
-      cop_x = m_cop_left.x;
-      cop_y = m_cop_left.y;
+      cop_x = cop_left.x;
+      cop_y = cop_left.y;
     }
     cop_x_error = cop_x - positions.support_point.x;
     cop_y_error = cop_y - positions.support_point.y;

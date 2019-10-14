@@ -41,7 +41,7 @@ class KickNode {
   void reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t level);
 
   /**
-   * Callback that gets executed whenever #m_server receives a new goal.
+   * Callback that gets executed whenever #server_ receives a new goal.
    * @param goal New goal to process
    */
   void executeCb(const bitbots_msgs::KickGoalConstPtr &goal);

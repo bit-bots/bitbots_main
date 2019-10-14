@@ -133,12 +133,12 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   tf2_ros::TransformListener listener_;
 
   /**
-   * Construct m_trajectories and add all required splines with their respective keys
+   * Construct trajectories and add all required splines with their respective keys
    */
   void initTrajectories();
 
   /**
-   *  Calculate splines for a complete kick whereby m_is_left_kick should already be set correctly
+   *  Calculate splines for a complete kick whereby is_left_kick_ should already be set correctly
    *
    *  @param flying_foot_pose Current pose of the foot which is supposed to be the flying/kicking one
    */

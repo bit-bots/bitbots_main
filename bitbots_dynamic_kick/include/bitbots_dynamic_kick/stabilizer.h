@@ -16,8 +16,8 @@ class Stabilizer :
  public:
   Stabilizer();
 
-  geometry_msgs::Point m_cop_left;
-  geometry_msgs::Point m_cop_right;
+  geometry_msgs::Point cop_left;
+  geometry_msgs::Point cop_right;
 
   /**
    * Calculate required IK goals to reach foot_goal with a foot while keeping the robot as stable as possible.

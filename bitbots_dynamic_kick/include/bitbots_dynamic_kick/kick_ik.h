@@ -15,9 +15,9 @@ class KickIK : public bitbots_splines::AbstractIK {
   void reset() override;
 
  private:
-  robot_state::RobotStatePtr m_goal_state_;
-  planning_scene::PlanningScenePtr m_planning_scene_;
-  robot_model::JointModelGroup *m_legs_joints_group_;
+  robot_state::RobotStatePtr goal_state_;
+  planning_scene::PlanningScenePtr planning_scene_;
+  robot_model::JointModelGroup *legs_joints_group_;
 };
 }
 
