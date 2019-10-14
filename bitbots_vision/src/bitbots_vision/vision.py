@@ -656,7 +656,7 @@ class Vision:
             self._debug_image_creator.draw_mask(
                 self._line_detector.get_line_mask(),
                 color=(255, 0, 0),
-                operacity=0.8
+                opacity=0.8
             )
         # Return image from the debug image drawer
         return self._debug_image_creator.get_image()
