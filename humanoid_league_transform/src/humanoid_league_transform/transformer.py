@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 import rospy
 from humanoid_league_msgs.msg import BallRelative, BallsInImage, \
     LineInformationInImage, \

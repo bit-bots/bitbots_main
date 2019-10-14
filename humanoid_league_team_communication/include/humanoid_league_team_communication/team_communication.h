@@ -1,7 +1,6 @@
 #ifndef TEAMCOMMUNICATION_HPP
 #define TEAMCOMMUNICATION_HPP
 
-#include <math.h>
 #include <pthread.h>
 #include <vector>
 #include "humanoid_league_msgs/BallRelative.h"
@@ -29,80 +28,80 @@ class TeamCommunication{
 public:
     TeamCommunication();
     void run();
-    void send_thread(const ros::TimerEvent&);
+    void sendThread(const ros::TimerEvent&);
 
 private:
-    static void* start_recv_thread(void*);
-    void recv_thread(void);
-    void publish_data(MiTeCom::TeamRobotData);
-    void strategy_callback(const humanoid_league_msgs::Strategy);
-    void robot_state_callback(const humanoid_league_msgs::RobotControlState);
-    void position_callback(const humanoid_league_msgs::Position2D);
-    void ball_callback(const humanoid_league_msgs::BallRelative);
-    void goal_callback(const humanoid_league_msgs::GoalRelative);
-    void obstacles_callback(const humanoid_league_msgs::ObstaclesRelative);
-    void world_callback(const humanoid_league_msgs::Model);
+    static void* startRecvThread(void* context);
+    void recvThread();
+    void publishData(const MiTeCom::TeamRobotData& team_data);
+    void strategyCallback(humanoid_league_msgs::Strategy msg);
+    void robotStateCallback(humanoid_league_msgs::RobotControlState msg);
+    void positionCallback(const humanoid_league_msgs::Position2D& msg);
+    void ballCallback(const humanoid_league_msgs::BallRelative& msg);
+    void goalCallback(const humanoid_league_msgs::GoalRelative& msg);
+    void obstaclesCallback(const humanoid_league_msgs::ObstaclesRelative& msg);
+    void worldCallback(const humanoid_league_msgs::Model& msg);
 
-    int avg_walking_speed;
-    int max_kicking_distance;
-    uint8_t team_color;
+    int avg_walking_speed_ = 0;
+    int max_kicking_distance_ = 0;
+    uint8_t team_color_ = humanoid_league_msgs::ObstacleRelative::ROBOT_UNDEFINED;
 
-    uint8_t role = humanoid_league_msgs::Strategy::ROLE_IDLING;
-    uint8_t action = humanoid_league_msgs::Strategy::ACTION_UNDEFINED;
-    uint8_t state = STATE_INACTIVE;
+    uint8_t role_ = humanoid_league_msgs::Strategy::ROLE_IDLING;
+    uint8_t action_ = humanoid_league_msgs::Strategy::ACTION_UNDEFINED;
+    uint8_t state_ = STATE_INACTIVE;
 
-    uint64_t position_x;
-    uint64_t position_y;
-    uint64_t position_orientation;
-    uint64_t position_belief = 0;
+    uint64_t position_x_ = 0;
+    uint64_t position_y_ = 0;
+    uint64_t position_orientation_ = 0;
+    uint64_t position_belief_ = 0;
 
-    uint64_t ball_relative_x;
-    uint64_t ball_relative_y;
-    uint64_t ball_belief = 0;
+    uint64_t ball_relative_x_ = 0;
+    uint64_t ball_relative_y_ = 0;
+    uint64_t ball_belief_ = 0;
 
-    /*uint64_t oppgoal_relative_x;
-    uint64_t oppgoal_relative_y;
-    uint64_t oppgoal_belief = 0;*/
+    /*uint64_t oppgoal_relative_x_;
+    uint64_t oppgoal_relative_y_;
+    uint64_t oppgoal_belief_ = 0;*/
 
-    using tuple3 = std::array<uint64_t, 3>;
-    std::vector<tuple3> opponent_robots;
-    std::vector<tuple3> team_robots;
+    using Tuple3 = std::array<uint64_t, 3>;
+    std::vector<Tuple3> opponent_robots_;
+    std::vector<Tuple3> team_robots_;
 
-    uint64_t time_to_position_at_ball;
-    bool time_to_position_at_ball_set = false;
-    uint64_t offensive_side;
-    bool offensive_side_set = false;
+    uint64_t time_to_position_at_ball_ = 0;
+    bool time_to_position_at_ball_set_ = false;
+    uint64_t offensive_side_ = 0;
+    bool offensive_side_set_ = false;
 
-    MiTeCom::mitecom _mitecom;
-    double frequency = 0.0;
-    ros::Publisher publisher;
-    bool world_model;
+    MiTeCom::mitecom mitecom_;
+    double frequency_ = 0.0;
+    ros::Publisher publisher_;
+    bool world_model_ = false;
 
-    ros::NodeHandle _nh;
-    ros::Timer timer;
+    ros::NodeHandle nh_;
+    ros::Timer timer_;
 
-    ros::Subscriber sub_role;
-    ros::Subscriber sub_robot_state;
-    ros::Subscriber sub_goal;
-    ros::Subscriber sub_world;
-    ros::Subscriber sub_position;
-    ros::Subscriber sub_ball;
-    ros::Subscriber sub_obstacles;
+    ros::Subscriber sub_role_;
+    ros::Subscriber sub_robot_state_;
+    ros::Subscriber sub_goal_;
+    ros::Subscriber sub_world_;
+    ros::Subscriber sub_position_;
+    ros::Subscriber sub_ball_;
+    ros::Subscriber sub_obstacles_;
 
-    int lifetime;
-    int ball_exists = 0;
-    int position_exists = 0;
-    int obstacles_exists = 0;
-    double belief_threshold;
+    int lifetime_ = 0;
+    int ball_exists_ = 0;
+    int position_exists_ = 0;
+    int obstacles_exists_ = 0;
+    double belief_threshold_ = 0;
 
-    std::string teamdata_topic;
-    std::string strategy_topic;
-    std::string robot_state_topic;
-    std::string goal_topic;
-    std::string world_model_topic;
-    std::string position_topic;
-    std::string ball_topic;
-    std::string obstacles_topic;
+    std::string teamdata_topic_;
+    std::string strategy_topic_;
+    std::string robot_state_topic_;
+    std::string goal_topic_;
+    std::string world_model_topic_;
+    std::string position_topic_;
+    std::string ball_topic_;
+    std::string obstacles_topic_;
 };
 
 #endif
