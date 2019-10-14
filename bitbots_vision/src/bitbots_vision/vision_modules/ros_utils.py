@@ -14,7 +14,7 @@ This module provides some methods needed for the ros environment,
 e.g. methods to convert candidates to ros msgs or methods to modify the dynamic reconfigure objects.
 """
 
-_bridge = CvBridge()
+_cv_bridge = CvBridge()
 
 def _change_enum_items(cfg_type, parameter_name, new_items, default=None):
     """
@@ -433,7 +433,7 @@ def build_image_msg(header, image, desired_encoding="passthrough"):
     :param desired_encoding: The Image type. E.g. 8UC[1-4], 8SC[1-4], 16UC[1-4], 16SC[1-4], 32SC[1-4], 32FC[1-4], 64FC[1-4]
     :return: The Image message
     """
-    image_msg = _bridge.cv2_to_imgmsg(image, desired_encoding)
+    image_msg = _cv_bridge.cv2_to_imgmsg(image, desired_encoding)
     image_msg.header = header
     return image_msg
 
@@ -531,7 +531,7 @@ def build_fcnn_region_of_interest(fcnn_output, field_boundary_detector, header, 
     msg.header.stamp = header.stamp
     field_boundary_top = field_boundary_detector.get_upper_bound(y_offset=offset)
     image_cropped = fcnn_output[field_boundary_top:]  # cut off at field_boundary
-    msg.image = _bridge.cv2_to_imgmsg(image_cropped, "mono8")
+    msg.image = _cv_bridge.cv2_to_imgmsg(image_cropped, "mono8")
     msg.regionOfInterest.x_offset = 0
     msg.regionOfInterest.y_offset = field_boundary_top
     msg.regionOfInterest.height = fcnn_output.shape[0] - 1 - field_boundary_top
