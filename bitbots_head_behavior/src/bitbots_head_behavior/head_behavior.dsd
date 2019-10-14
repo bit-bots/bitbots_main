@@ -3,18 +3,18 @@ $HeadModeDecision
     BALL_MODE --> $BallSeen
         YES --> @TrackBall
         RECENT --> @SearchRecentBall
-        NO --> @BallSearchPattern
+        NO --> @BallSearchPattern + init:NEAREST
     BALL_MODE_PENALTY --> $BallSeen
         YES --> @TrackBall
-        NO --> @PenaltySearchPattern
+        NO --> @PenaltySearchPattern + init:NEAREST
     POST_MODE --> $PostSeen
         YES --> @TrackPost
-        NO --> @GoalSearchPattern
+        NO --> @GoalSearchPattern + init:NEAREST
     BALL_GOAL_TRACKING --> @Wait + time:1
-    FIELD_FEATURES --> @FieldFeaturesSearchPattern
+    FIELD_FEATURES --> @FieldFeaturesSearchPattern + init:NEAREST
     LOOK_DOWN --> @LookDirection + direction:DOWN
     LOOK_FORWARD --> @LookDirection + direction:FORWARD
     LOOK_UP --> @LookDirection + direction:UP
     DONT_MOVE --> @Wait + time:1
-    RECORD_VISUAL_COMPASS --> @VisualCompassRecord
-    VISUAL_COMPASS_FEATURES --> @VisualCompassSearchPattern
+    RECORD_VISUAL_COMPASS --> @VisualCompassRecord + init:ZERO
+    VISUAL_COMPASS_FEATURES --> @VisualCompassSearchPattern + init:NEAREST

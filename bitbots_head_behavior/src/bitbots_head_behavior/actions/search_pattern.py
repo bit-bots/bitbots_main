@@ -13,7 +13,16 @@ class AbstractSearchPattern(AbstractActionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
+        """
+        Executes a defined head pattern.
+
+        :param parameters['init']: Set if the pattern starts at 'ZERO' or the 'NEAREST' position
+        """
         super(AbstractSearchPattern, self).__init__(blackboard, dsd, parameters)
+
+        # Assert that a valid direction was supplied
+        assert parameters is not None, 'No init specified parameter in parameters (key="init")'
+        assert 'init' in parameters, 'No init parameter specified in parameters (key="init")'
 
         pattern_config = self.get_search_pattern()
 
@@ -33,15 +42,11 @@ class AbstractSearchPattern(AbstractActionElement):
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
 
         # Init index
-        self.index = 0
-
-        # Define classes that should start at the nearest position
-        near_start_classes = [
-            BallSearchPattern,
-        ]
+        if parameters['init'] == "NEAREST":
+            self.index = 0
 
         # Set to the nearest position if wanted
-        if self.__class__ in near_start_classes:
+        if parameters['init'] == "ZERO":
             self.index = self._get_near_pattern_position(self.pattern, current_head_pan, current_head_tilt)
 
     def _get_near_pattern_position(self, pattern, pan, tilt):
