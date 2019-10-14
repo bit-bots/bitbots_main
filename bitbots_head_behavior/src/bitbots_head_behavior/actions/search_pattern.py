@@ -30,6 +30,31 @@ class AbstractSearchPattern(AbstractActionElement):
 
         self.threshold = self.blackboard.config['position_reached_threshold']
 
+        current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
+
+    def _get_near_pattern_position(self, pattern, pan, tilt):
+        """
+        Calculates the nearest position in the head pattern form the current head position.
+
+        :param pattern: The generated head pattern
+        :param pan: The current head pan
+        :param tilt: The current head tilt
+        :return: The index of the nearest pattern position
+        """
+        # Init the temp distance
+        min_distance_point = (10000, -1, -1, -1)
+        # Find the smallest distance
+        for i, point in enumerate(pattern):
+            point_pan = math.radians(point[0])
+            point_tilt = math.radians(point[1])
+            # Calc the distance
+            distance = math.sqrt((pan - math.radians(point_pan)) ** 2 + (tilt - math.radians(point_tilt)) ** 2)
+            # Check if distance is smaller than the previous distance
+            if distance < min_distance_point[0]:
+                # Reset the distance
+                min_distance_point = (distance, point_pan, point_tilt, i)
+        return min_distance_point[3]
+
     @abc.abstractmethod
     def get_search_pattern(self):
         """Get the respective search pattern from the child class"""
@@ -44,14 +69,6 @@ class AbstractSearchPattern(AbstractActionElement):
 
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
 
-        min_distance_point = (10000, -1, -1, -1)
-        for i, point in enumerate(self.pattern):
-            point_pan = math.radians(point[0])
-            point_tilt = math.radians(point[1])
-            distance = math.sqrt((current_head_pan - math.radians(point_pan)) ** 2 + (current_head_tilt - math.radians(point_tilt)) ** 2)
-
-            if distance < min_distance_point[0]:
-                min_distance_point = (distance, point_pan, point_tilt, i)
 
         if not (self.pattern[int(index)][0] == min_distance_point[1] and \
                 self.pattern[int(index)][1] == min_distance_point[2]) or not \
