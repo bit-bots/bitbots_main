@@ -32,6 +32,8 @@ class AbstractSearchPattern(AbstractActionElement):
 
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
 
+        self.index = self._get_near_pattern_position(self.pattern, current_head_pan, current_head_tilt)
+
     def _get_near_pattern_position(self, pattern, pan, tilt):
         """
         Calculates the nearest position in the head pattern form the current head position.
@@ -65,18 +67,11 @@ class AbstractSearchPattern(AbstractActionElement):
 
         :param reevaluate:  No effect here
         """
-        index = self.blackboard.head_capsule.pattern_index % len(self.pattern)
+        self.index = self.index % len(self.pattern)
 
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
 
-
-        if not (self.pattern[int(index)][0] == min_distance_point[1] and \
-                self.pattern[int(index)][1] == min_distance_point[2]) or not \
-                (self.pattern[(int(index) - 1) % len(self.pattern)][0] == min_distance_point[1] and \
-                 self.pattern[(int(index) - 1) % len(self.pattern)][1] == min_distance_point[2]):
-            index = min_distance_point[3]
-
-        head_pan, head_tilt = self.pattern[int(index)]
+        head_pan, head_tilt = self.pattern[int(self.index)]
 
         # Convert to radians
         head_pan = math.radians(head_pan)
@@ -89,7 +84,7 @@ class AbstractSearchPattern(AbstractActionElement):
 
         # Increment index when position is reached
         if distance < math.radians(self.threshold):
-            self.blackboard.head_capsule.pattern_index = index + 1
+            self.blackboard.head_capsule.pattern_index = self.index + 1
 
 
 class BallSearchPattern(AbstractSearchPattern):
