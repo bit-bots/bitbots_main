@@ -28,12 +28,12 @@ void KickIK::reset() {
 
 bitbots_splines::JointGoals KickIK::calculate(const std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
   double bio_ik_timeout = 0.01;
-  bool success = m_goal_state_->setFromIK(legs_joints_group_,
-                                          EigenSTL::vector_Isometry3d(),
-                                          std::vector<std::string>(),
-                                          bio_ik_timeout,
-                                          moveit::core::GroupStateValidityCallbackFn(),
-                                          *ik_goals);
+  bool success = goal_state_->setFromIK(legs_joints_group_,
+                                        EigenSTL::vector_Isometry3d(),
+                                        std::vector<std::string>(),
+                                        bio_ik_timeout,
+                                        moveit::core::GroupStateValidityCallbackFn(),
+                                        *ik_goals);
 
   collision_detection::CollisionRequest req;
   collision_detection::CollisionResult res;
@@ -48,7 +48,7 @@ bitbots_splines::JointGoals KickIK::calculate(const std::unique_ptr<bio_ik::BioI
     /* retrieve joint names and associated positions from  */
     std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
     std::vector<double> joint_goals;
-    m_goal_state_->copyJointGroupPositions(legs_joints_group_, joint_goals);
+    goal_state_->copyJointGroupPositions(legs_joints_group_, joint_goals);
 
     /* construct result object */
     bitbots_splines::JointGoals result;
