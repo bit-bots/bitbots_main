@@ -25,7 +25,6 @@ find_package(catkin REQUIRED COMPONENTS
         bio_ik
         moveit_core
         moveit_ros_move_group
-        bitbots_ik
         bitbots_splines
         message_generation
         message_runtime
