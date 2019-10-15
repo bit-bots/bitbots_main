@@ -25,8 +25,6 @@ class BallSeen(AbstractDecisionElement):
         ball_last_seen = self.blackboard.world_model.ball_last_seen()
         if ball_last_seen != rospy.Time(0) and rospy.Time.now() - ball_last_seen < self.ball_lost_time:
             return 'YES'
-        if ball_last_seen != rospy.Time(0) and rospy.Time.now() - ball_last_seen < self.ball_lost_time + self.ball_search_time:
-            return 'RECENT'
         return 'NO'
 
     def get_reevaluate(self):
