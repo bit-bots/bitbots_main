@@ -29,6 +29,7 @@ class WorldModelCapsule:
         self.counter = 0
         self.ball_seen_time = rospy.Time(0)
         self.goal_seen_time = rospy.Time(0)
+        self.ball_seen = False
         self.field_length = field_length
         self.field_width = field_width
 
@@ -72,6 +73,7 @@ class WorldModelCapsule:
             try:
                 self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
                 self.ball_seen_time = rospy.Time.now()
+                self.ball_seen = True
 
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 rospy.logwarn(e)
