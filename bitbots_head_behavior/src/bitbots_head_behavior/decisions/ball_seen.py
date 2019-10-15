@@ -12,7 +12,6 @@ class BallSeen(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallSeen, self).__init__(blackboard, dsd, parameters)
         self.ball_lost_time = rospy.Duration.from_sec(self.blackboard.config['ball_lost_time'])
-        self.ball_search_time = rospy.Duration.from_sec(self.blackboard.config['search_recent_ball']['ball_search_time'])
 
     def perform(self, reevaluate=False):
         """
