@@ -80,6 +80,7 @@ class WorldModelCapsule:
         else:
             self.ball = ball_buffer
             self.ball_seen_time = rospy.Time.now()
+            self.ball_seen = True
 
 
     ###########
