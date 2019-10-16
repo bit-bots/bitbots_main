@@ -66,6 +66,8 @@ behavior:
         tilt_speed: 2
         pan_speed: 2
         offset_pattern: [
+            [ 0, 0],
+            [ 0, 20],
             [ 0, -20],
             [ 20,-20],
             [ 20, 20],
