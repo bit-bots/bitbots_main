@@ -1,5 +1,7 @@
-Bit-Bots Vision
-===============
+Bit-Bots Vision  
+=============== 
+
+[![CodeFactor](https://www.codefactor.io/repository/github/bit-bots/bitbots_vision/badge)](https://www.codefactor.io/repository/github/bit-bots/bitbots_vision)
 
 This is the vision package of the Hamburg Bit-Bots.
 
