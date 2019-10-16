@@ -45,7 +45,7 @@ du lokal auf deinem Rechner oder auf einer der hosting Seiten wie github oder de
 gogs anlegen. Wenn bereits ein repository besteht, dann kannst du dieses einfach herunterladen. In
 der git-Welt nennt man das clonen.
 
-::
+.. code-block:: bash
 
     $ git clone <repository> [directory]
 
@@ -62,7 +62,7 @@ diese Änderungen dem git hinzufügen. Dies machst du mit git add. Was ich pers�
 hilfreich empfinde, ist es, wenn die konkreten Änderungen nochmal aufgeteilt und angezeigt werden,
 bevor du sie hinzufügst. Dadurch bekommst du einen besseren Überblick. Das machst du mit
 
-::
+.. code-block:: bash
 
     $ git add -p
 
@@ -71,7 +71,7 @@ weil wenn du sie nicht committest werden sie überschrieben, wenn du das nächst
 weist dich git aber vorher hin. Mit git status kannst du auch sehen, welche Änderungen du bereits
 hinzugefügt hast (grün) und welche noch nicht (rot).
 
-::
+.. code-block:: bash
 
     $ git status
 
@@ -79,7 +79,7 @@ Wenn du die Änderungen, dann committest musst du eine Nachricht angeben, in der
 Änderungen beschreibst. Wenn du einfach nur git commit als Kommando nutzt, dann gelangst du in ein
 editor, den wenige wirklich zu bedienen wissen. Daher mein Tipp:
 
-::
+.. code-block:: bash
 
     $ git commit -m 'Gib in Anfuehrungszeichen die Nachricht an'
 
@@ -102,7 +102,7 @@ Als kleines Extra: Man kann sich die Struktur als Baum vorstellen. Der Baum hat 
 git-Welt branch. Es gibt per default immer einen Hauptast, den master. Wenn man jetzt neue features
 hinzufügen will oder eine alternative Version gestalten will, dann erstellt man einen neuen branch.
 
-::
+.. code-block:: bash
 
     $ git branch -b name-des-neuen-astes
 
@@ -111,7 +111,7 @@ welchem branch man sich grad befindet, kann es da schnell zu Fehlern führen. Da
 hilfreich. Mit einfach nur git branch wird dir angezeigt, auf welchem branch du dich gerade
 befindest.
 
-::
+.. code-block:: bash
 
     $ git checkout ast-auf-den-du-wechseln-willst
 
@@ -135,7 +135,7 @@ Du kennst das vielleicht schon von LaTeX, Photoshop oder anderen Programmen.
 Wenn du die bash öffnest, dann siehst du vermutlich nicht viel mehr als den Prompt. Der Prompt
 heißt auch Eingabeauforderung und sieht in etwa so aus:
 
-::
+.. code-block:: bash
 
     benutzername@geraetename: ~/verzeichnis$ echo "hier könnte dein kommando stehen"
 
@@ -223,7 +223,7 @@ Viel praktischer ist es allerdings über ein Skript, das in `bitbots_meta`_ lieg
 
 Um alles notwendige zu installieren wechselst du ins Verzeichnis bitbots_meta und führst dort **make install** aus:
 
-.. 
+.. code-block:: bash
 
 	nutzer@geraet:~/verzeichnis$ make install
 
@@ -254,18 +254,21 @@ solltest du recht schnell merken, ob du den richtigen Namen verwendest)
 
 Um einzelne Nodes zu starten nutzt man rosrun (alles in Großbuchstaben sind Platzhalter).
 
-::
+.. code-block:: bash
+
 	$ rosrun PAKETNAME NODE.py/.cpp PARAMETER:="VALUE"
 
 Um ein Launchfile zu starten nutzt man roslaunch
 
-::
+.. code-block:: bash
+
 	$ roslaunch PAKETNAME LAUNCHFILE.launch PARAMETER:="VALUE"
 
 Um Informationen zu einem Topic zu bekommen, nutzt man rostopic; meistens echo (um die Inhalte der Messages auf diesem Topic sehen zu können), hz (um zu sehen in welcher Rate die msgs gesendet werden), pub (um selber eigene Messages zu publishen) und list (um zu sehen auf welchen topics was gepublisht wird).
 Dieses Kommando (rostopic) ist vor allem zum Debuggen sehr praktisch und kann mehr Einblicke in das Geschehen liefern. 
 
-::
+.. code-block:: bash
+
 	$ rostopic echo/list/pub/hz TOPICNAME ...
 
 
@@ -369,6 +372,6 @@ Vielen Dank fürs Lesen und viel Spaß bei den BitBots!
 .. _Quellen kompilieren: https://wiki.ros.org/melodic/Installation/Source
 .. _Catkin: http://docs.ros.org/api/catkin/html/
 .. _Python Doku: https://docs.python.org/3/tutorial/index.html
-.. _codecadeny: https://www.codecademy.com/
+.. _codecademy: https://www.codecademy.com/
 .. _PyCharm: https://www.jetbrains.com/pycharm/
 .. _Bitbots-Karma: https://karma.bit-bots.de/
