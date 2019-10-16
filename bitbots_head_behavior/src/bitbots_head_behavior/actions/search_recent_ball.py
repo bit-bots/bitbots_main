@@ -29,19 +29,7 @@ class SearchRecentBall(AbstractLookAt):
         # Get the coresponding motor goals for the ball position
         self._recent_ball_motor_goals = self._get_head_goals_for_recent_ball()
 
-        self.pop_flag = False
-
-        # Check if a ball exists
-        if self._recent_ball_motor_goals is None:
-            rospy.loginfo("No ball seen. So we are not able to seaarch for it.", logger_name="search_recent_ball")
-            self.pop_flag = True
-            return
-
-        # Check if the ball is too old
-        if rospy.Time.now() - self.blackboard.world_model.ball_last_seen() > self._ball_time_out:
-            rospy.loginfo("Ball is too old to search for it. Let's forget it.", logger_name="search_recent_ball")
-            self.pop_flag = True
-            return
+        self.first_perform = True
 
         # Init pattern index
         self.index = 0
@@ -82,11 +70,18 @@ class SearchRecentBall(AbstractLookAt):
         :param reevaluate: No effect here
         """
 
-        if self.pop_flag:
-            return self.pop()
-
         # Exit action if pattern is finished
         if self.index >= len(self._offset_pattern):
+            return self.pop()
+
+        # Check if a ball exists
+        if self._recent_ball_motor_goals is None:
+            rospy.loginfo("No ball seen. So we are not able to search for it.", logger_name="search_recent_ball")
+            return self.pop()
+
+        # Check if the ball is too old
+        if rospy.Time.now() - self.blackboard.world_model.ball_last_seen() > self._ball_time_out and self.first_perform:
+            rospy.loginfo("Ball is too old to search for it. Let's forget it.", logger_name="search_recent_ball")
             return self.pop()
 
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
@@ -114,3 +109,5 @@ class SearchRecentBall(AbstractLookAt):
         # Increment index when position is reached
         if distance < math.radians(self._threshold):
             self.index += 1
+
+        self.first_perform = False
