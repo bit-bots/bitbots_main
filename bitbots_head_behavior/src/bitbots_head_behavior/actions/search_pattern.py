@@ -43,11 +43,11 @@ class AbstractSearchPattern(AbstractActionElement):
 
         # Init index
         if parameters['init'] == "NEAREST":
-            self.index = 0
+            self.index = self._get_near_pattern_position(self.pattern, current_head_pan, current_head_tilt)
 
         # Set to the nearest position if wanted
         if parameters['init'] == "ZERO":
-            self.index = self._get_near_pattern_position(self.pattern, current_head_pan, current_head_tilt)
+            self.index = 0
 
     def _get_near_pattern_position(self, pattern, pan, tilt):
         """
@@ -99,7 +99,7 @@ class AbstractSearchPattern(AbstractActionElement):
 
         # Increment index when position is reached
         if distance < math.radians(self.threshold):
-            self.blackboard.head_capsule.pattern_index = self.index + 1
+            self.index = self.index + 1
 
 
 class BallSearchPattern(AbstractSearchPattern):
