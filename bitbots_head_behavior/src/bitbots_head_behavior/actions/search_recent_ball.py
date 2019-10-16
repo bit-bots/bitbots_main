@@ -80,8 +80,8 @@ class SearchRecentBall(AbstractLookAt):
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
 
         # Add offset pattern to last ball position
-        head_motor_goal_pan = self._recent_ball_motor_goals + self._offset_pattern[self.index][0]
-        head_motor_goal_tilt = self._recent_ball_motor_goals + self._offset_pattern[self.index][1]
+        head_motor_goal_pan = self._recent_ball_motor_goals[0] + math.radians(self._offset_pattern[self.index][0])
+        head_motor_goal_tilt = self._recent_ball_motor_goals[1] + math.radians(self._offset_pattern[self.index][1])
 
         #TODO add clipping otherwise the robot gets stuck at max positions
 
