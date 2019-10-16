@@ -99,10 +99,16 @@ class SearchRecentBall(AbstractLookAt):
         head_motor_goal_pan, head_motor_goal_tilt = \
             self.blackboard.head_capsule.pre_clip(head_motor_goal_pan, head_motor_goal_tilt)
 
-        self.blackboard.head_capsule.send_motor_goals(head_motor_goal_pan, head_motor_goal_tilt, pan_speed=self._pan_speed, tilt_speed=self._tilt_speed)
+        self.blackboard.head_capsule.send_motor_goals(
+            head_motor_goal_pan,
+            head_motor_goal_tilt,
+            pan_speed=self._pan_speed,
+            tilt_speed=self._tilt_speed)
 
         # Distance between the current and the goal position
-        distance = math.sqrt((current_head_pan - head_motor_goal_pan) ** 2 + (current_head_tilt - head_motor_goal_tilt) ** 2)
+        distance = math.sqrt(
+            (current_head_pan - head_motor_goal_pan) ** 2 +
+            (current_head_tilt - head_motor_goal_tilt) ** 2)
 
 
         # Increment index when position is reached
