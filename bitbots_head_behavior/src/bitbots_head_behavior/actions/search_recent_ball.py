@@ -85,6 +85,10 @@ class SearchRecentBall(AbstractLookAt):
         if self.pop_flag:
             return self.pop()
 
+        # Exit action if pattern is finished
+        if self.index >= len(self._offset_pattern):
+            return self.pop()
+
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
 
         # Add offset pattern to last ball position
@@ -98,9 +102,6 @@ class SearchRecentBall(AbstractLookAt):
         # Distance between the current and the goal position
         distance = math.sqrt((current_head_pan - head_motor_goal_pan) ** 2 + (current_head_tilt - head_motor_goal_tilt) ** 2)
 
-        # Exit action if pattern is finished
-        if self.index >= len(self._offset_pattern):
-            return self.pop()
 
         # Increment index when position is reached
         if distance < math.radians(self._threshold):
