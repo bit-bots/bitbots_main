@@ -95,7 +95,9 @@ class SearchRecentBall(AbstractLookAt):
         head_motor_goal_pan = self._recent_ball_motor_goals[0] + math.radians(self._offset_pattern[self.index][0])
         head_motor_goal_tilt = self._recent_ball_motor_goals[1] + math.radians(self._offset_pattern[self.index][1])
 
-        #TODO add clipping otherwise the robot gets stuck at max positions
+        # Clip the motor goal. So if the goal command clips, the position still can be reached
+        head_motor_goal_pan, head_motor_goal_tilt = \
+            self.blackboard.head_capsule.pre_clip(head_motor_goal_pan, head_motor_goal_tilt)
 
         self.blackboard.head_capsule.send_motor_goals(head_motor_goal_pan, head_motor_goal_tilt, pan_speed=self._pan_speed, tilt_speed=self._tilt_speed)
 
