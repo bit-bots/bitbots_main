@@ -5,7 +5,7 @@ Einführung
 ===========================
 
 Wenn du diesen Text liest, hast du dich entschieden der wohl besten AG des Fachbereichs
-beizutreten - den bitbots. Vielleicht hast du schon mit einigen AG-Mitgliedern gesprochen
+beizutreten - den Bit-Bots. Vielleicht hast du schon mit einigen AG-Mitgliedern gesprochen
 und hast jetzt eine ungefähre Vorstellung, was es in der AG alles so zu tun gibt.
 Vielleicht hast du auch schon mal mit ROS gearbeitet und die Strukturen sind dir alle
 bereits bekannt. Falls jedoch nicht, dann hilft dir diese Einführung hoffentlich weiter.
@@ -24,6 +24,8 @@ Python, ROS, Git, Shell/Terminal, Ubuntu, C++, RoboCup-Federation, Nodes, Messag
 (Wenn dir das alles schon was sagt, reicht es vermutlich dieses Dokument einfach zu überfliegen.
 Wenn dir nichts davon was sagt: dann wirst du hoffentlich viel lernen beim Lesen.)
 
+Falls doch einmal ein Begriff nicht erklärt wird, findest du ihn vermutlich im `Glossar`_.
+
 Git
 ===
 Je nachdem wie vertraut du mit Softwareentwicklung bist, kennst du dich auch mit verschiedenen
@@ -41,8 +43,8 @@ Vorteile der grafischen Schnittstellen sind allerdings, dass man die Struktur be
 Repository
 ----------
 Ein Repository ist die größte Einheit an Software in der "git-Welt". Ein git-repository kannst
-du lokal auf deinem Rechner oder auf einer der hosting Seiten wie github oder dem fachschaftseigenen
-gogs anlegen. Wenn bereits ein repository besteht, dann kannst du dieses einfach herunterladen. In
+du lokal auf deinem Rechner oder auf einer der Hostingseiten wie GitHub oder dem fachschaftseigenen
+Gogs anlegen. Wenn bereits ein Repository besteht, dann kannst du dieses einfach herunterladen. In
 der git-Welt nennt man das clonen.
 
 .. code-block:: bash
@@ -51,8 +53,8 @@ der git-Welt nennt man das clonen.
 
 .. ssh erklären ?
 
-Den Befehl führst du in dem Ordner aus, in dem du das repository haben willst. Oder du gibst
-das directory hinter dem repository-link an.
+Den Befehl führst du in dem Ordner aus, in dem du das Repository haben willst. Oder du gibst
+das Verzeichnis hinter dem Repository an.
 
 Commits
 -------
@@ -75,13 +77,15 @@ hinzugefügt hast (grün) und welche noch nicht (rot).
 
     $ git status
 
-Wenn du die Änderungen, dann committest musst du eine Nachricht angeben, in der du die gemachten
-Änderungen beschreibst. Wenn du einfach nur git commit als Kommando nutzt, dann gelangst du in ein
+Wenn du die Änderungen dann committest musst du eine Nachricht angeben, in der du die gemachten
+Änderungen beschreibst. Wenn du einfach nur ``git commit`` als Kommando nutzt, dann gelangst du in ein
 editor, den wenige wirklich zu bedienen wissen. Daher mein Tipp:
 
 .. code-block:: bash
 
     $ git commit -m 'Gib in Anfuehrungszeichen die Nachricht an'
+
+Bitte beachte für die Commit Message Commit-Richtlinien (:doc:`Coding Style<../software/coding_style>`, Abschnitt Git).
 
 Wenn man aufhört an dem git zu arbeiten oder einfach mal so "speichern" will, was man getan hat,
 dann pusht man seine committs. Dies führt dazu, dass sie nicht mehr nur lokal verfügbar sind,
@@ -91,7 +95,7 @@ Workflow
 --------
 
 Der normale Workflow mit git ist so, dass man zuerst die neueste Version herunterlädt mit
-git pull. Dann arbeitet man an dem Projekt und erstellt am Besten nach jeder Änderung oder Bearbeitung
+``git pull``. Dann arbeitet man an dem Projekt und erstellt am Besten nach jeder Änderung oder Bearbeitung
 einen Commit (davor adden). Wenn man fertig ist oder die Änderungen für die anderen verfügbar machen
 will, dann pusht man.
 
@@ -99,27 +103,29 @@ Branches
 --------
 
 Als kleines Extra: Man kann sich die Struktur als Baum vorstellen. Der Baum hat mehrere Äste, in der
-git-Welt branch. Es gibt per default immer einen Hauptast, den master. Wenn man jetzt neue features
+git-Welt branch. Es gibt per default immer einen Hauptast, den ``master``. Wenn man jetzt neue features
 hinzufügen will oder eine alternative Version gestalten will, dann erstellt man einen neuen branch.
 
 .. code-block:: bash
 
-    $ git branch -b name-des-neuen-astes
+    $ git branch -b name-des-neuen-branches
 
-Wenn du den branch wechseln willst, dann kannst du das machen. Achtung: da man nicht sofort sieht, auf
-welchem branch man sich grad befindet, kann es da schnell zu Fehlern führen. Da ist eine GUI z.B.
-hilfreich. Mit einfach nur git branch wird dir angezeigt, auf welchem branch du dich gerade
+Auch für das Benennen von Branches haben wir :doc:`Richtlinien <../software/coding_style>` (Abschnitt Git).
+
+Wenn du den Branch wechseln willst, dann kannst du das machen. Achtung: da man nicht sofort sieht, auf
+welchem Branch man sich grad befindet, kann es da schnell zu Fehlern führen. Da ist eine GUI z.B.
+hilfreich. Mit einfach nur ``git branch`` wird dir angezeigt, auf welchem Branch du dich gerade
 befindest.
 
 .. code-block:: bash
 
-    $ git checkout ast-auf-den-du-wechseln-willst
+    $ git checkout branch-auf-den-du-wechseln-willst
 
 
 Shell
 =========
 Die Shell, eigentlich Unix-Shell genannt ist die Schnittstelle zu unixoiden Systemen wie Linux oder MacOs.
-Da du hier deine Befehle eintippst, die dann gleich ausgeführt werden, heißt sie auch KOmmandozeileninterpreter.
+Da du hier deine Befehle eintippst, die dann gleich ausgeführt werden, heißt sie auch Kommandozeileninterpreter.
 Es gibt unterschiedliche Arten von Shells. Wenn du dich noch nie damit auseinander gesetzt hast, dann benutzt du
 vermutlich die Bourne-Again-Shell, kurz bash.
 Wenn du bereits Ubuntu installiert hast, dann kannst du über Strg + Alt + T eine Shell öffnen. Ansonsten kannst
@@ -147,18 +153,17 @@ Kommandos
 ---------
 Die wichtigsten Kommandos, die du immer wieder brauchen wirst, werden dir hier kurz erklärt.
 
-man : steht für "manual" und gibt Informationen zur Benutzung eines Kommandos oder einer Anwendung
-cd : steht für "change directory" und sorgt dafür, dass du in einen anderen Ordner wechseln kannst
-mkdir : erstellt ein neues Verzeichnis, also einen neuen Ordner
-touch : erstellt eine neue Datei
-cp : kopiert Dateien und mit -r (für rekursiv) auch Verzeichnisse
-rm : löscht Dateien und mit -r auch Verzeichnisse (ACHTUNG: die gelöschten Objekte werden von der Festplatte
-(meist unwiderruflich) gelöscht und landen NICHT im Papierkorb
-echo : zeigt einen Text an
-exit : beendet die Sitzung und schließt das Interface
-ls : listet alle Dateien und Verzeichnisse auf
-sudo : gibt dir Root-Rechte
-ln : erstellt einen Link zu einer Datei oder einem Verzeichnis
+:man: steht für "manual" und gibt Informationen zur Benutzung eines Kommandos oder einer Anwendung
+:cd: steht für "change directory" und sorgt dafür, dass du in einen anderen Ordner wechseln kannst
+:mkdir: erstellt ein neues Verzeichnis, also einen neuen Ordner
+:touch: erstellt eine neue Datei
+:cp: kopiert Dateien und mit -r (für rekursiv) auch Verzeichnisse
+:rm: löscht Dateien und mit -r auch Verzeichnisse (ACHTUNG: die gelöschten Objekte werden von der Festplatte (meist unwiderruflich) gelöscht und landen NICHT im Papierkorb
+:echo: zeigt einen Text an
+:exit: beendet die Sitzung und schließt das Interface
+:ls: listet alle Dateien und Verzeichnisse auf
+:sudo: gibt dir Root-Rechte
+:ln: erstellt einen Link zu einer Datei oder einem Verzeichnis
 
 ROS (Theorie)
 =============
@@ -171,11 +176,11 @@ Node
 Eine Node ist ein Programm, das eine bestimmte Aufgabe erfüllt. Sie kann Informationen von anderen Nodes über
 Messages erhalten, in dem sie sich bei diesen als Subscriber meldet und sie kann auch selbst Nachrichten
 veröffentlichen (publishen), die von anderen Nodes abonniert werden können. Eine Node in der Vision kann zum
-Beispiel für die Ballerkennung verantwortlich sein und auf dem Topic der /ball_candidates publishen.
+Beispiel für die Ballerkennung verantwortlich sein und auf dem Topic **/ball_candidates** publishen.
 
 Master
 ------
-Damit die einzelnen Nodes miteinander kommunizieren können, stellt der master eine Verbindung zwischen den Subscribern und Publishern her. Dafür muss jede Node mit dem master kommunizieren können und daher irgendeine Art von Verbindung zu ihm aufbauen können. 
+Damit die einzelnen Nodes miteinander kommunizieren können, stellt der master eine Verbindung zwischen den Subscribern und Publishern her. Dafür muss jede Node mit dem Master kommunizieren können und daher irgendeine Art von Verbindung zu ihm aufbauen können. 
 
 Message & Topics
 -----------------
@@ -209,7 +214,7 @@ Installation
 Um ROS benutzten zu können, muss es installiert werden. Es gibt mehrere Versionen von ROS, wir arbeiten mit `ROS Melodic`_ , im Folgenden
 oft als ROS M bezeichnet.
 ROS läuft leider nicht unter jedem Betriebssytem ohne Probleme, daher ist auf den Laborrechnern `Ubuntu 18.04`_ installiert. Wenn du es also
-unter Ubuntu installierst wählst du den einfachsten Weg, allerdings kannst du es auch in anderen Linuxdistributionen (und vielleicht sogar
+unter Ubuntu installierst, wählst du den einfachsten Weg, allerdings kannst du es auch in anderen Linuxdistributionen (und vielleicht sogar
 unter MacOS) über `rosdocked`_ laufen lassen oder aus den `Quellen kompilieren`_.
 
 Wenn du nicht gleich das Betriebssystem wechseln willst, kannst du auch eine VM oder über ein Dualboot-Setup Ubuntu installieren ohne auf dein altes Betriebssystem verzichten zu müssen. 
@@ -221,24 +226,24 @@ Wenn du nicht weißt, wie man die Kommandozeile benutzt, dann geh nochmal nach o
 Wenn du jetzt Ubuntu installiert hast, kannst und musst du ROS installieren. Dies kannst du zum einen "händisch" selber machen, dafür findest du eine gute Anleitung im ROS-Wiki, die dir sagt, welche Kommandos du ausführen musst. 
 Viel praktischer ist es allerdings über ein Skript, das in `bitbots_meta`_ liegt. Um dieses nutzen zu können musst du allerdings das repository clonen. Falls du nicht weißt, wie das geht, dann kannst du es oben nachlesen.
 
-Um alles notwendige zu installieren wechselst du ins Verzeichnis bitbots_meta und führst dort **make install** aus:
+Um alles notwendige zu installieren wechselst du ins Verzeichnis bitbots_meta und führst dort ``make install`` aus:
 
 .. code-block:: bash
 
-	nutzer@geraet:~/verzeichnis$ make install
+	nutzer@geraet:~/bitbots_meta$ make install
 
-Jetzt hast du nicht nur ROS mit allen Dependencies installiert, sondern auch das repository mit allen Submodules aktualisiert. Außerdem wurde dir ein catkin Workspace unter eingerichtet.
+Jetzt hast du nicht nur ROS mit allen Dependencies installiert, sondern auch das repository mit allen Submodules aktualisiert. Außerdem wurde dir ein catkin Workspace unter ``~/catkin_ws`` eingerichtet.
 
 Bauen
 -----
 
-Bevor du die Software ausführen kannst, musst du sie zuerst bauen. Dazu gibt es den Befehl **catkin build**. 
+Bevor du die Software ausführen kannst, musst du sie bauen. Dazu gibt es den Befehl **catkin build**. 
 `Catkin`_ ist von ROS bereit gestellt und hilft beim bauen von C++ (und anderem) über die CMake-Files. Um Bauen zu können, musst du in dein Workspace wechseln.
 Wenn du make install ausgeführt hast, dann wurde dir bereits ein Workspace nach dem Standard (~/catkin_ws) erstellt. In diesen musst du wechseln, um den Befehl ausführen zu können.
 Bevor du catkin build auführen kannst, musst du zu erst nochmal deine shell sourcen. Das machst du mit `source ./devel/setup.<insert your shell here>` (z.B. bash).
 Dies ist der manuelle Weg um zu bauen.
 Alternativ kannst du auch **make build** in bitbots_meta ausführen.
-Dabei werden aber immer alle Packages gebaut, das kann teilweise sehr viel Zeit in Anspruch nehmen. Wenn du nur einzelne Pakete bauen willst, dann musst du mit catkin build arbeiten. 
+Dabei werden aber immer alle Packages gebaut, das kann teilweise sehr viel Zeit in Anspruch nehmen. Wenn du nur einzelne Pakete bauen willst, dann musst du mit ``catkin build package_name`` verwenden. 
 
 
 
@@ -256,7 +261,7 @@ Um einzelne Nodes zu starten nutzt man rosrun (alles in Großbuchstaben sind Pla
 
 .. code-block:: bash
 
-	$ rosrun PAKETNAME NODE.py/.cpp PARAMETER:="VALUE"
+	$ rosrun PAKETNAME NODE(.py) PARAMETER:="VALUE"
 
 Um ein Launchfile zu starten nutzt man roslaunch
 
@@ -294,17 +299,19 @@ In den einzelnen Paketen gibt es mehrere verschiedene Unterordner. Die meisten P
 und dann gibt es noch in dem übergeordneten Packageordner die CMakeLists.txt, package.xml, rosdoc.yaml und ein setup.py. Diese Dateien lassen wir erstmal außen vor. Die anderen Ordner schauen wir uns kurz näher an.
 
 *config*
-Im config Ordner liegen YAML-Dateien. In diesen werden bestimmte Werte/Parameter spezifiziert. Diese Parameter dienen der Konfiguration (daher der Name config). Da alle zu setztenden parameter dort gemeinsam an einem Ort liegen, findet man schnell was man sucht und muss sich nicht in den Tiefen der Ordnerstrukturen verlieren. Diese Konfigdateien können innerhalb des Codes geladen werden und werden so verfügbar.
+Im config Ordner liegen YAML-Dateien. In diesen werden bestimmte Werte/Parameter spezifiziert. Diese Parameter dienen der Konfiguration (daher der Name config). Da alle zu setztenden Parameter dort gemeinsam an einem Ort liegen, findet man schnell was man sucht und muss sich nicht in den Tiefen der Ordnerstrukturen verlieren. Diese Konfigdateien können innerhalb des Codes geladen werden und werden so verfügbar.
 In den Launchfiles kann auch spezifiziert werden, welche config-Dateien wann geladen werden sollen. Zum Beispiel kann man, wenn man ein Spiel vor sich hat, die game_settings.yaml laden. Standardmäßig wird dies nicht getan.
 
 *doc*
-    **TODO**
+In diesem Ordner befindet sich die Dokumentation für das Paket. Diese wird auch automatisch über
+Catkin gebaut. Meistens musst du dich mit dem Bauen der Dokumentation aber nicht auseinandersetzen,
+sondern kannst sie online lesen. Wie man Dokumentation schreibt, ist unter :doc:`Hot to Doku
+<Doku-How-To>` dokumentiert.
 
 *launch*
 Launch-Dateien starten eine oder mehrere Nodes. Das ist sehr praktisch, denn ansonsten müsste man jede einzelne Node mit ihren spezifischen Konfigurationen einzeln über das Terminal mit rosrun starten. 
 Launch-Files sind im Markup-Style gehalten und sehen meist recht ähnlich aus, sie haben die Dateiendung '.launch'. Normalerweise "deklariert" man am Anfang der Datei ein paar Argumente
 und gibt ihnen einen Defaultwert. Diese Parameter können beim Aufrufen der Datei mit roslaunch gesetzt werden. 
-Eine typische Launchdatei sieht so aus:
 
 In den <group>-Klammern kann man Fallunterscheidungen einbinden und über das $-Zeichen gibt man an, dass hier der Name des arg nacher durch den tatsächlichen Wert des Parameters ersetzt wird.
 Über Include kann man andere Launchdateien einbinden. So entsteht bei uns zum Beispiel eine genestete Struktur, in der ein Launchfile ein anderes aufruft, welches ein anderes aufruft, welches en anderes aufruft...
@@ -319,30 +326,32 @@ und das *URDF* geladen wird.
 In diesem Ordner liegen alle wichtigen Programme, die sogenannten Nodes. Die meisten Nodes sind in Python, also mit '.py' geschrieben. Der Effizienz wegen, wirst du aber auch ein paar mit der Endung '.cpp' finden. Was die einzelnen Programme tun, kann sehr unterschiedlich sein. Manche sind sehr mächtig und erfüllen eher übergeordnete Funktionen, andere sind sehr speziell und erfüllen genau eine Funktionalität.
 Wenn du mehr zu den einzelnen Programmen wissen willst, dann frag am besten den Maintainer des Paketes. Diesen findest du in der 'package.xml' - eines der Dokumente, die in jedem Paket vorhanden sind. Der oder die Maintainer ist dein Ansprechpartner für dieses Paket und hilft gerne weiter, wenn du Fragen hast.
 
+Falls du diese Informationen einmal brauchen wirst, ist hier auch die Dokumentation zu
+`CMakeLists`_ und `package.xml`_ verlinkt.
 
-Allgemeines zu den bitbots
---------------------------
-Wir treffen uns einmal die Woche und besprechen den wer was gemacht hat, welche Termine anstehen, wichtige Deadlines und anderes wichtiges Zeugs. Man kann sehr viel in den weeklys lernen, komm als vorbei wenn du Zeit hast. Momentan finden die weeklies immer *Mittwoch, 18 Uhr* statt.
-Wann immer du etwas für die bitbots tust, trägst du dir (wie auf Arbeit) die Zeit ein. Das hört sich erstmal komsich an, ist aber wichtig, wenn du mit auf die Wettbewerbe fahren willst.
-Dafür brauchst du einen Account auf der `Bitbots-Karma`_ Website. Den kannst du dir leicht selber erstellen. Jede Minute ist dabei ein Karma-Punkt.
+Allgemeines zu den Bit-Bots
+---------------------------
+Wir treffen uns einmal die Woche und besprechen den wer was gemacht hat, welche Termine anstehen, wichtige Deadlines und anderes wichtiges Zeugs. Man kann sehr viel in den Weeklys lernen, komm als vorbei wenn du Zeit hast. Momentan finden die Weeklies immer *Mittwoch, 18 Uhr* statt.
+Wann immer du etwas für die Bit-Bots tust, trägst du dir (wie auf Arbeit) die Zeit ein. Das hört sich erstmal komisch an, ist aber wichtig, wenn du mit auf die Wettbewerbe fahren willst.
+Dafür brauchst du einen Account auf der `Bit-Bots-Karma`_ Website. Den kannst du dir leicht selber erstellen. Jede Minute ist dabei ein Karma-Punkt.
 Die Regeln für Wettbewerbe und Karma findest du im Detail im Mitgliedsvertrag.
 
-Wenn du nach einiger Zeit in der AG entschieden hast ein Mitglied zu werden, musst du diesen Vertrag unterschreiben. Er gibt dir die Rechte abzustimmen und vieles anderes. Les ihn dir sorgsam durch 
+Wenn du nach einiger Zeit in der AG entschieden hast ein Mitglied zu werden, musst du diesen Vertrag unterschreiben. Er gibt dir die Rechte abzustimmen und vieles anderes. Lies ihn dir sorgsam durch 
 und bei Fragen gilt wie immer, einfach stellen.
 
 Programmiererfahrung
 ====================
 
 In dieser AG ist jeder willkommen. Es gibt sehr viele Aufgaben, die erledigt werden wollen und in diesem Team findet sich für jeden einen Platz.
-Wenn du schon einiges an Vorerfahrung mitbringst und vielleicht sogar schon mal mit Robotern gearbeitet hast, dann wird dir einiges hier leichter fallen. Das wichtigste ist aber nicht, 
+Wenn du schon einiges an Vorerfahrung mitbringst und vielleicht sogar schon mal mit Robotern gearbeitet hast, dann wird dir einiges hier leichter fallen. Das Wichtigste ist aber nicht, 
 was du schon weißt, sondern dass du interessiert daran bist, neues zu lernen. 
 
-Es kann am Anfang alles sehr viel sein. Die Software, die wir schreiben, verbessern und neu entwickeln, setzt sich aus vielen kleinen Einzelteilen zusammen und oft reicht es nur die grobe Funktionsweise und die genaue Schnittstelle zu kennen, um sie benutzten zu können. Manche AG-Mitglieder haben sich innerhalb von ein paar Monaten eingearbeitet (und sehr, sehr viel Zeit investiert), andere haben dafür ein ganzes Jahr gebraucht. Lass dich auf jeden Fall nicht abschrecken, denk daran dass jeder mal klein angefangen hat.
+Es kann am Anfang alles sehr viel sein. Die Software, die wir schreiben, verbessern und neu entwickeln, setzt sich aus vielen kleinen Einzelteilen zusammen und oft reicht es nur die grobe Funktionsweise und die genaue Schnittstelle zu kennen, um sie benutzen zu können. Manche AG-Mitglieder haben sich innerhalb von ein paar Monaten eingearbeitet (und sehr, sehr viel Zeit investiert), andere haben dafür ein ganzes Jahr gebraucht. Lass dich auf jeden Fall nicht abschrecken, denk daran dass jeder mal klein angefangen hat.
 
 Python (und C++)
 ----------------
 
-Wir verwenden hauptsächlich Python als Sprache. Wenn du nur SE1 (und eventuell SE2) als Vorkenntniss hast, dann ist das erst mal eine ungewöhnte Umstellung, aber du wirst schnell merken, 
+Wir verwenden hauptsächlich Python als Sprache. Wenn du nur SE1 (und eventuell SE2) als Vorkenntnis hast, dann ist das erst mal eine ungewöhnte Umstellung, aber du wirst schnell merken, 
 dass Python sehr anfängerfreundlich ist.
 Am besten du machst dich zuerst mit der Syntax vertraut. Dazu kannst du online ein paar Tutorials (zum Beispiel das auf `codecademy`_) oder die offizielle `Python Doku`_ lesen.
 Python ist eine recht Einsteiger-freundliche Sprache, das einzige, das manchmal zu Fehlern führen kann, sind die Einrückungen. Denn anders als in Java werden in Python keine geschweiften Klammern zur Strukturierung genutzt. Aber auch daran gewöhnt man sich schnell.
@@ -352,14 +361,14 @@ Die meisten Mitlgieder benutzen als Entwicklungsgebung `PyCharm`_ (Professional 
 
 Getting started
 ===============
-Am besten liest zu zusätzlich zu diesem Dokument noch die Neulingsdoku. Dort werden kurz alle groben Themen beschrieben. Wenn dich eines (oder mehrere) davon interessieren, dann wende dich an den Zuständigen und mach dein Interesse kund. Dir wird dann eine kleine Einführung gegeben und du kannst mal jemandem über die Schulter schauen und ein bisschen mehr darüber lernen.
+Am besten liest zu zusätzlich zu diesem Dokument noch die `Neulingsdoku`_. Dort werden kurz alle groben Themen beschrieben. Wenn dich eines (oder mehrere) davon interessieren, dann wende dich an den Zuständigen und mach dein Interesse kund. Dir wird dann eine kleine Einführung gegeben und du kannst mal jemandem über die Schulter schauen und ein bisschen mehr darüber lernen.
 
-Falls du auf Begriffe stößt, die du noch nicht kennst, dann kannst du diese im Glossar nachlesen. Wir bemühen uns dieses aktuell zu halten und alle wichtigen Begriffe dort zu erklären.
+Falls du auf Begriffe stößt, die du noch nicht kennst, dann kannst du diese im `Glossar`_ nachlesen. Wir bemühen uns dieses aktuell zu halten und alle wichtigen Begriffe dort zu erklären.
 
 Am besten du suchst dir am Anfang eine (oder mehrere - wir sind alle sehr nett ;) ) Person deines Vertrauens und stellst deine Fragen sobald sie aufkommen. Jeder fängt mal klein an, also nur Mut und ran an den Code!
 
 
-Vielen Dank fürs Lesen und viel Spaß bei den BitBots!
+Vielen Dank fürs Lesen und viel Spaß bei den Bit-Bots!
 
 
 .. _ROS Melodic: https://wiki.ros.org/melodic
@@ -374,4 +383,9 @@ Vielen Dank fürs Lesen und viel Spaß bei den BitBots!
 .. _Python Doku: https://docs.python.org/3/tutorial/index.html
 .. _codecademy: https://www.codecademy.com/
 .. _PyCharm: https://www.jetbrains.com/pycharm/
-.. _Bitbots-Karma: https://karma.bit-bots.de/
+.. _Bit-Bots-Karma: https://karma.bit-bots.de/
+.. _Coding Style: <../software/coding_style>
+.. _Glossar: http://doku.bit-bots.de/private/manual/glossar.html
+.. _CMakeLists: https://wiki.ros.org/catkin/CMakeLists.txt
+.. _package.xml: https://wiki.ros.org/catkin/package.xml
+.. _Neulingsdoku: http://doku.bit-bots.de/private/manual/neulingsdoku.html
