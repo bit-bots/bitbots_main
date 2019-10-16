@@ -49,15 +49,27 @@ class HeadCapsule:
         """
         rospy.logdebug("target pan/tilt: {}/{}".format(pan_position, tilt_position))
 
-        # 3 is slower than maximum, maybe it is good
         if clip:
-            pan_position = min(max(pan_position, -2.35), 2.35)
-            tilt_position = min(max(tilt_position, -1.2), 0.2)
+            pan_position, tilt_position = self.pre_clip(pan_position, tilt_position)
         self.pos_msg.positions = pan_position, tilt_position
         self.pos_msg.velocities = [pan_speed, tilt_speed]
         self.pos_msg.header.stamp = rospy.Time.now()
 
         self.position_publisher.publish(self.pos_msg)
+
+    def pre_clip(self, pan, tilt):
+        """
+        Return clipped motor goals for each axis
+
+        :param pan: The goal pan position
+        :param tilt: The goal tilt position
+        :return (new_pan, new_tilt): Clipped motor goals
+        """
+        max_pan = self.blackboard.config['max_pan']
+        max_tilt = self.blackboard.config['max_tilt']
+        new_pan = min(max(pan, min(max_pan)), max(max_pan))
+        new_tilt = min(max(tilt, min(max_tilt)), max(max_tilt))
+        return new_pan, new_tilt
 
     ##################
     # Head positions #
