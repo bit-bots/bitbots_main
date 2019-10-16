@@ -7,6 +7,10 @@ behavior:
     defaults:
       head_mode: 0    # Ball mode
 
+    # Max values for the head position
+    max_pan: [-2.35, 2.35]
+    max_tilt: [-1.2, 0.2]
+
     # TODO maybe keep this instead of the generated lines
     # Search pattern for penalty
     #search_pattern_penalty:
