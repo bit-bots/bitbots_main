@@ -101,5 +101,5 @@ behavior:
     position_reached_threshold: 5
 
     # After `ball_lost_time` seconds, the ball is considered lost and will be searched
-    ball_lost_time: 2
+    ball_lost_time: 0.5
     post_lost_time: 1
