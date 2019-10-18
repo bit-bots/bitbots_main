@@ -20,7 +20,7 @@ Für absolute Newbies gibt es am Anfang einen kurzen Überblick über git und di
 shell commands.
 
 Begriffe, die dir im Laufe dieser Einführung über den Weg laufen:
-Python, ROS, Git, Shell/Terminal, Ubuntu, C++, RoboCup-Federation, Nodes, Messages, Submodules
+Python, ROS, Git, Shell/Terminal, Ubuntu, C++, ROS-Nodes, ROS-Messages, Git-Submodules
 (Wenn dir das alles schon was sagt, reicht es vermutlich dieses Dokument einfach zu überfliegen.
 Wenn dir nichts davon was sagt: dann wirst du hoffentlich viel lernen beim Lesen.)
 
@@ -40,6 +40,9 @@ Viele der Befehle sind sehr einfach und lassen sich leicht merken und sobald du 
 Situationen oder Problemen gegenüberstehst, ist es einfacher diese in der Kommandozeile zu lösen.
 Vorteile der grafischen Schnittstellen sind allerdings, dass man die Struktur besser sieht.
 
+Wenn du noch nicht mit Git gearbeitet hast, werden dir hier ein paar Konzepte und ihre jeweilige
+Benutzung erklärt.
+
 Repository
 ----------
 Ein Repository ist die größte Einheit an Software in der "git-Welt". Ein git-repository kannst
@@ -54,7 +57,9 @@ der git-Welt nennt man das clonen.
 .. ssh erklären ?
 
 Den Befehl führst du in dem Ordner aus, in dem du das Repository haben willst. Oder du gibst
-das Verzeichnis hinter dem Repository an.
+das Verzeichnis hinter dem Repository an. Was hier einfach als <repository> bezeichnet wird ist
+nicht nur der Name, sondern eine URL, also die Adresse des Repositories im Internet. Diese bekommst
+du sowohl bei GitHub als auch bei Gogs auf der Übersichtsseite des Repositories.
 
 Commits
 -------
@@ -108,7 +113,7 @@ hinzufügen will oder eine alternative Version gestalten will, dann erstellt man
 
 .. code-block:: bash
 
-    $ git branch -b name-des-neuen-branches
+    $ git branch <name-des-neuen-branches>
 
 Auch für das Benennen von Branches haben wir :doc:`Richtlinien <../software/coding_style>` (Abschnitt Git).
 
@@ -124,7 +129,7 @@ befindest.
 
 Shell
 =========
-Die Shell, eigentlich Unix-Shell genannt ist die Schnittstelle zu unixoiden Systemen wie Linux oder MacOs.
+Die Shell, eigentlich Unix-Shell genannt ist die Schnittstelle zu unixoiden Systemen wie GNU/Linux oder MacOs. Windows hat zwar auch eine Kommandozeile, die ist aber nicht wirklich vergleichbar.
 Da du hier deine Befehle eintippst, die dann gleich ausgeführt werden, heißt sie auch Kommandozeileninterpreter.
 Es gibt unterschiedliche Arten von Shells. Wenn du dich noch nie damit auseinander gesetzt hast, dann benutzt du
 vermutlich die Bourne-Again-Shell, kurz bash.
@@ -153,10 +158,10 @@ Kommandos
 ---------
 Die wichtigsten Kommandos, die du immer wieder brauchen wirst, werden dir hier kurz erklärt.
 
-:man: steht für "manual" und gibt Informationen zur Benutzung eines Kommandos oder einer Anwendung
+:man: steht für "manual" und gibt Informationen zur Benutzung eines Kommandos oder einer Anwendung. Mit ``man man`` wird zum Beispiel das Manual für den Command ``man`` geöffnet.
 :cd: steht für "change directory" und sorgt dafür, dass du in einen anderen Ordner wechseln kannst
 :mkdir: erstellt ein neues Verzeichnis, also einen neuen Ordner
-:touch: erstellt eine neue Datei
+:touch: erstellt eine neue, leere Datei, falls sie noch nicht existiert
 :cp: kopiert Dateien und mit -r (für rekursiv) auch Verzeichnisse
 :rm: löscht Dateien und mit -r auch Verzeichnisse (ACHTUNG: die gelöschten Objekte werden von der Festplatte (meist unwiderruflich) gelöscht und landen NICHT im Papierkorb
 :echo: zeigt einen Text an
@@ -187,6 +192,7 @@ Message & Topics
 Die Kommunikation bei ROS läuft über Messages asynchron, das heißt, dass die Nodes, die Nachrichten senden, nicht wissen,
 wer diese empfängt, sondern einfach ihre Daten veröffentlichen. Nachrichten sind dabei recht einfach gehaltene
 Datenstrukturen, die aus (primitiven) Datentypen und Arrays bestehen können oder aus geschachtelten Strukturen.
+
 Topics dienen einem unidirektionalen Streaming und stellen die Busse dar, über die die Kommunikation mit den Messages läuft.
 Ein Topic hat immer einen Namen und auf diesem Topic können Nachrichten gepublisht werden und/oder subscribed. Die
 Kommunikation läuft dabei anonym ab, d.h. wie grade schon erwähnt, wissen die einzelnen Nodes nicht, wer die Nachrichten empfängt
@@ -215,7 +221,8 @@ Um ROS benutzten zu können, muss es installiert werden. Es gibt mehrere Version
 oft als ROS M bezeichnet.
 ROS läuft leider nicht unter jedem Betriebssytem ohne Probleme, daher ist auf den Laborrechnern `Ubuntu 18.04`_ installiert. Wenn du es also
 unter Ubuntu installierst, wählst du den einfachsten Weg, allerdings kannst du es auch in anderen Linuxdistributionen (und vielleicht sogar
-unter MacOS) über `rosdocked`_ laufen lassen oder aus den `Quellen kompilieren`_.
+unter MacOS) über `rosdocked`_ laufen lassen oder aus den `Quellen kompilieren`_. Finn und Timon
+haben das schon gemacht und können dir in dem Fall bestimmt helfen.
 
 Wenn du nicht gleich das Betriebssystem wechseln willst, kannst du auch eine VM oder über ein Dualboot-Setup Ubuntu installieren ohne auf dein altes Betriebssystem verzichten zu müssen. 
 
@@ -261,7 +268,7 @@ Um einzelne Nodes zu starten nutzt man rosrun (alles in Großbuchstaben sind Pla
 
 .. code-block:: bash
 
-	$ rosrun PAKETNAME NODE(.py) PARAMETER:="VALUE"
+	$ rosrun PAKETNAME NODE(.py)
 
 Um ein Launchfile zu starten nutzt man roslaunch
 
@@ -280,7 +287,7 @@ Dieses Kommando (rostopic) ist vor allem zum Debuggen sehr praktisch und kann me
 Unsere Verwendung von Git
 -------------------------
 
-Wir verwenden zum einen den Fachschaftseigenen Dienst `Gogs`_, den man über mafiasi erreicht und zum anderen `Github`_. Tatsächlich nutzen wir gerade eigentlich hauptsächlich Github, allerdings liegen im gogs noch ein paar hilfreiche Dokumente.
+Wir verwenden zum einen den Fachschaftseigenen Dienst `Gogs`_, den man über mafiasi erreicht und zum anderen `Github`_. Tatsächlich nutzen wir gerade eigentlich hauptsächlich Github, allerdings liegen im Gogs noch ein paar nicht-öffentliche Gits.
 
 Die Software ist so aufgebaut, dass das Repository `bitbots_meta`_ nochmals in einzelne *Git-Submodules* unterteilt, welche jeweils eine übergeordnete Aufgabe abdecken. Die Vision oder das Behaviour sind zum Beispiel eigene Submodules. Diese Submodules sind im Prinzip einfach weitere Unterordner, die jeweils von einem eigenem Git verwaltet werden.
 In jedem Submodule gibt es nochmals (Catkin-)Pakete für die einzelnen konkreten Aufgaben innerhalb des großen Aufgabenbereichs.
@@ -292,7 +299,7 @@ In den einzelnen Paketen
 In den einzelnen Paketen gibt es mehrere verschiedene Unterordner. Die meisten Pakete haben diese Ordnerstruktur:
 
 - config
-- doc
+- docs
 - launch
 - src
 
@@ -302,7 +309,7 @@ und dann gibt es noch in dem übergeordneten Packageordner die CMakeLists.txt, p
 Im config Ordner liegen YAML-Dateien. In diesen werden bestimmte Werte/Parameter spezifiziert. Diese Parameter dienen der Konfiguration (daher der Name config). Da alle zu setztenden Parameter dort gemeinsam an einem Ort liegen, findet man schnell was man sucht und muss sich nicht in den Tiefen der Ordnerstrukturen verlieren. Diese Konfigdateien können innerhalb des Codes geladen werden und werden so verfügbar.
 In den Launchfiles kann auch spezifiziert werden, welche config-Dateien wann geladen werden sollen. Zum Beispiel kann man, wenn man ein Spiel vor sich hat, die game_settings.yaml laden. Standardmäßig wird dies nicht getan.
 
-*doc*
+*docs*
 In diesem Ordner befindet sich die Dokumentation für das Paket. Diese wird auch automatisch über
 Catkin gebaut. Meistens musst du dich mit dem Bauen der Dokumentation aber nicht auseinandersetzen,
 sondern kannst sie online lesen. Wie man Dokumentation schreibt, ist unter :doc:`Hot to Doku
@@ -310,7 +317,7 @@ sondern kannst sie online lesen. Wie man Dokumentation schreibt, ist unter :doc:
 
 *launch*
 Launch-Dateien starten eine oder mehrere Nodes. Das ist sehr praktisch, denn ansonsten müsste man jede einzelne Node mit ihren spezifischen Konfigurationen einzeln über das Terminal mit rosrun starten. 
-Launch-Files sind im Markup-Style gehalten und sehen meist recht ähnlich aus, sie haben die Dateiendung '.launch'. Normalerweise "deklariert" man am Anfang der Datei ein paar Argumente
+Launch-Files sind im XML-Style gehalten und sehen meist recht ähnlich aus, sie haben die Dateiendung '.launch'. Normalerweise "deklariert" man am Anfang der Datei ein paar Argumente
 und gibt ihnen einen Defaultwert. Diese Parameter können beim Aufrufen der Datei mit roslaunch gesetzt werden. 
 
 In den <group>-Klammern kann man Fallunterscheidungen einbinden und über das $-Zeichen gibt man an, dass hier der Name des arg nacher durch den tatsächlichen Wert des Parameters ersetzt wird.
@@ -331,7 +338,7 @@ Falls du diese Informationen einmal brauchen wirst, ist hier auch die Dokumentat
 
 Allgemeines zu den Bit-Bots
 ---------------------------
-Wir treffen uns einmal die Woche und besprechen den wer was gemacht hat, welche Termine anstehen, wichtige Deadlines und anderes wichtiges Zeugs. Man kann sehr viel in den Weeklys lernen, komm als vorbei wenn du Zeit hast. Momentan finden die Weeklies immer *Mittwoch, 18 Uhr* statt.
+Wir treffen uns einmal die Woche und besprechen wer was gemacht hat, welche Termine anstehen, wichtige Deadlines und anderes wichtiges Zeugs. Man kann sehr viel in den Weeklys lernen, komm also vorbei wenn du Zeit hast. Momentan finden die Weeklies immer *Mittwoch, 18 Uhr* statt.
 Wann immer du etwas für die Bit-Bots tust, trägst du dir (wie auf Arbeit) die Zeit ein. Das hört sich erstmal komisch an, ist aber wichtig, wenn du mit auf die Wettbewerbe fahren willst.
 Dafür brauchst du einen Account auf der `Bit-Bots-Karma`_ Website. Den kannst du dir leicht selber erstellen. Jede Minute ist dabei ein Karma-Punkt.
 Die Regeln für Wettbewerbe und Karma findest du im Detail im Mitgliedsvertrag.
