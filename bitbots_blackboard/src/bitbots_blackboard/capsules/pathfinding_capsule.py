@@ -3,6 +3,7 @@ import math
 
 import tf2_ros
 from geometry_msgs.msg import PoseStamped
+from actionlib_msgs.msg import GoalID
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 
@@ -14,6 +15,7 @@ class PathfindingCapsule:
         self.position_threshold = 0.3
         self.orientation_threshold = 10
         self.pathfinding_pub = None  # type: rospy.Publisher
+        self.pathfinding_cancel_pub = None  # type: rospy.Publisher
         self.goal = None  # type: PoseStamped
         self.current_pose = None # type: PoseStamped
 
@@ -82,3 +84,6 @@ class PathfindingCapsule:
 
     def get_current_pose(self):
         return self.current_pose
+
+    def cancel_goal(self):
+        self.pathfinding_cancel_pub.publish(GoalID())
