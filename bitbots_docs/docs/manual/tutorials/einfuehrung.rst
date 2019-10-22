@@ -306,7 +306,7 @@ In den einzelnen Paketen gibt es mehrere verschiedene Unterordner. Die meisten P
 und dann gibt es noch in dem übergeordneten Packageordner die CMakeLists.txt, package.xml, rosdoc.yaml und ein setup.py. Diese Dateien lassen wir erstmal außen vor. Die anderen Ordner schauen wir uns kurz näher an.
 
 *config*
-Im config Ordner liegen YAML-Dateien. In diesen werden bestimmte Werte/Parameter spezifiziert. Diese Parameter dienen der Konfiguration (daher der Name config). Da alle zu setztenden Parameter dort gemeinsam an einem Ort liegen, findet man schnell was man sucht und muss sich nicht in den Tiefen der Ordnerstrukturen verlieren. Diese Konfigdateien können innerhalb des Codes geladen werden und werden so verfügbar.
+Im config Ordner liegen YAML-Dateien. In diesen werden bestimmte Werte/Parameter spezifiziert. Diese Parameter dienen der Konfiguration (daher der Name config). Da alle zu setztenden Parameter dort gemeinsam an einem Ort liegen, findet man schnell, was man sucht und muss sich nicht in den Tiefen der Ordnerstrukturen verlieren. Diese Konfigdateien können innerhalb des Codes geladen werden und werden so verfügbar.
 In den Launchfiles kann auch spezifiziert werden, welche config-Dateien wann geladen werden sollen. Zum Beispiel kann man, wenn man ein Spiel vor sich hat, die game_settings.yaml laden. Standardmäßig wird dies nicht getan.
 
 *docs*
@@ -338,12 +338,12 @@ Falls du diese Informationen einmal brauchen wirst, ist hier auch die Dokumentat
 
 Allgemeines zu den Bit-Bots
 ---------------------------
-Wir treffen uns einmal die Woche und besprechen wer was gemacht hat, welche Termine anstehen, wichtige Deadlines und anderes wichtiges Zeugs. Man kann sehr viel in den Weeklys lernen, komm also vorbei wenn du Zeit hast. Momentan finden die Weeklies immer *Mittwoch, 18 Uhr* statt.
+Wir treffen uns einmal die Woche und besprechen wer was gemacht hat, welche Termine anstehen, wichtige Deadlines und anderes wichtiges Zeugs. Man kann sehr viel in den Weeklys lernen, komm also vorbei, wenn du Zeit hast. Momentan finden die Weeklies immer *Mittwoch, 18:30 Uhr* statt.
 Wann immer du etwas für die Bit-Bots tust, trägst du dir (wie auf Arbeit) die Zeit ein. Das hört sich erstmal komisch an, ist aber wichtig, wenn du mit auf die Wettbewerbe fahren willst.
 Dafür brauchst du einen Account auf der `Bit-Bots-Karma`_ Website. Den kannst du dir leicht selber erstellen. Jede Minute ist dabei ein Karma-Punkt.
 Die Regeln für Wettbewerbe und Karma findest du im Detail im Mitgliedsvertrag.
 
-Wenn du nach einiger Zeit in der AG entschieden hast ein Mitglied zu werden, musst du diesen Vertrag unterschreiben. Er gibt dir die Rechte abzustimmen und vieles anderes. Lies ihn dir sorgsam durch 
+Wenn du dich nach einiger Zeit in der AG dazu entschieden hast ein Mitglied zu werden, musst du diesen Vertrag unterschreiben. Er gibt dir die Rechte abzustimmen und vieles anderes. Lies ihn dir sorgsam durch 
 und bei Fragen gilt wie immer, einfach stellen.
 
 Programmiererfahrung
@@ -363,12 +363,12 @@ dass Python sehr anfängerfreundlich ist.
 Am besten du machst dich zuerst mit der Syntax vertraut. Dazu kannst du online ein paar Tutorials (zum Beispiel das auf `codecademy`_) oder die offizielle `Python Doku`_ lesen.
 Python ist eine recht Einsteiger-freundliche Sprache, das einzige, das manchmal zu Fehlern führen kann, sind die Einrückungen. Denn anders als in Java werden in Python keine geschweiften Klammern zur Strukturierung genutzt. Aber auch daran gewöhnt man sich schnell.
 
-Die meisten Mitlgieder benutzen als Entwicklungsgebung `PyCharm`_ (Professional Edition), eine IDE, die für dich als Student kostenlos zur Verfügung steht und viele Vorteile bietet, die weit über Autocompletion hinaus geht. Allerdings kannst du auch jeden anderen Editor deiner Wahl benutzen. Ob Vim, Sublime, Atom oder ein beliebig anderer ist letztendlich egal.
+Die meisten Mitlgieder benutzen als Entwicklungsgebung `PyCharm`_ (Professional Edition), eine IDE, die für dich als Student kostenlos zur Verfügung steht und viele Vorteile bietet, die weit über Autocompletion hinaus geht. Allerdings kannst du auch jeden anderen Editor deiner Wahl benutzen. Ob Vim, Sublime, Atom, Visual Studio Code oder ein beliebig anderer ist letztendlich egal.
 
 
 Getting started
 ===============
-Am besten liest zu zusätzlich zu diesem Dokument noch die `Neulingsdoku`_. Dort werden kurz alle groben Themen beschrieben. Wenn dich eines (oder mehrere) davon interessieren, dann wende dich an den Zuständigen und mach dein Interesse kund. Dir wird dann eine kleine Einführung gegeben und du kannst mal jemandem über die Schulter schauen und ein bisschen mehr darüber lernen.
+Am besten liest du zusätzlich zu diesem Dokument noch die `Neulingsdoku`_. Dort werden kurz alle groben Themen beschrieben. Wenn dich eines (oder mehrere) davon interessieren, dann wende dich an den Zuständigen und mach dein Interesse kund. Dir wird dann eine kleine Einführung gegeben und du kannst mal jemandem über die Schulter schauen und ein bisschen mehr darüber lernen.
 
 Falls du auf Begriffe stößt, die du noch nicht kennst, dann kannst du diese im `Glossar`_ nachlesen. Wir bemühen uns dieses aktuell zu halten und alle wichtigen Begriffe dort zu erklären.
 
