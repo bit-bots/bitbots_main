@@ -1,0 +1,22 @@
+<launch>
+
+    <node name="rviz" pkg="rviz" type="rviz" output="screen" required="true"
+        args="-d $(find wolfgang_description)/config/wolfgang.rviz" >
+
+    </node>
+
+  <!-- We do not have a robot connected, so publish fake joint states -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="/use_gui" value="true"/>
+    <rosparam param="/source_list">[/config/fake_controller_joint_states]</rosparam>
+  </node>
+
+    <!--<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+            <remap from="/joint_states" to="joint_states" />
+        </node>
+        <param name="/simulation_active" value="true"/>
+    <include file="$(find tams_pr2_description)/launch/upload_pr2.launch"/>-->
+
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch"/>
+
+</launch>
