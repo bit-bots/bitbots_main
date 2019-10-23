@@ -5,6 +5,7 @@
 #include <optional>
 #include <bitbots_splines/SmoothSpline.hpp>
 #include <bitbots_splines/SplineContainer.hpp>
+#include <bitbots_splines/pose_spline.h>
 #include <bitbots_splines/abstract_engine.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include "stabilizer.h"
@@ -42,21 +43,21 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
  private:
   double time_;
 
-  std::optional<bitbots_splines::Trajectories> foot_trajectories_, hand_trajectories_, trunk_trajectories_;
+  bitbots_splines::PoseSpline foot_spline_;
+  bitbots_splines::PoseSpline hand_spline_;
+  bitbots_splines::PoseSpline trunk_spline_;
   DynUpParams params_;
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
 
-  geometry_msgs::PoseStamped getCurrentPose(bitbots_splines::Trajectories spline_container, bool foot);
+  geometry_msgs::PoseStamped getCurrentPose(bitbots_splines::PoseSpline spline, bool foot);
 
   void calcFrontSplines();
 
   void calcBackSplines();
 
   void calcSquatSplines(geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose trunk_pose);
-
-  void initTrajectories();
 
 };
 
