@@ -19,7 +19,6 @@ class SearchRecentBall(AbstractLookAt):
         self._pan_speed = self._config['pan_speed']
         self._tilt_speed = self._config['tilt_speed']
 
-        # TODO param
         self._ball_time_out = rospy.Duration.from_sec(self._config['ball_search_time'])
 
         self._offset_pattern = self._config['offset_pattern']
