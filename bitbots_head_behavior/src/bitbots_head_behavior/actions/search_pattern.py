@@ -59,7 +59,7 @@ class AbstractSearchPattern(AbstractActionElement):
         :return: The index of the nearest pattern position
         """
         # Init the temp distance
-        min_distance_point = (10000, -1, -1, -1)
+        min_distance_point = (10000, -1)
         # Find the smallest distance
         for i, point in enumerate(pattern):
             point_pan = math.radians(point[0])
@@ -69,8 +69,8 @@ class AbstractSearchPattern(AbstractActionElement):
             # Check if distance is smaller than the previous distance
             if distance < min_distance_point[0]:
                 # Reset the distance
-                min_distance_point = (distance, point_pan, point_tilt, i)
-        return min_distance_point[3]
+                min_distance_point = (distance, i)
+        return min_distance_point[1]
 
     @abc.abstractmethod
     def get_search_pattern(self):
@@ -86,7 +86,7 @@ class AbstractSearchPattern(AbstractActionElement):
 
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
 
-        head_pan, head_tilt = self.pattern[int(self.index)]
+        head_pan, head_tilt = self.pattern[self.index]
 
         # Convert to radians
         head_pan = math.radians(head_pan)
