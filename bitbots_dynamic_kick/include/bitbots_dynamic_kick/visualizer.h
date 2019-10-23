@@ -37,7 +37,7 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
 
   void displayReceivedGoal(const bitbots_msgs::KickGoalConstPtr &goal);
 
-  void displayFlyingSplines(const bitbots_splines::Trajectories &splines, const std::string &support_foot_frame);
+  void displayFlyingSplines(bitbots_splines::PoseSpline splines, const std::string &support_foot_frame);
 
   void displayWindupPoint(const tf2::Vector3 &kick_windup_point, const std::string &support_foot_frame);
 

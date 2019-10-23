@@ -2,12 +2,8 @@
 #define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_ABSTRACTENGINE_H_
 
 #include <vector>
-#include <bitbots_splines/SplineContainer.hpp>
-#include <bitbots_splines/SmoothSpline.hpp>
 
 namespace bitbots_splines {
-
-typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajectories;
 
 template<typename RequestType, typename ResultType>
 class AbstractEngine {

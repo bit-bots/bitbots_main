@@ -3,8 +3,8 @@
 
 #include <optional>
 #include <std_msgs/Header.h>
-#include <bitbots_splines/SmoothSpline.hpp>
-#include <bitbots_splines/SplineContainer.hpp>
+#include <bitbots_splines/pose_spline.h>
+#include <bitbots_splines/position_spline.h>
 #include <bitbots_splines/abstract_engine.h>
 #include <bitbots_msgs/KickGoal.h>
 #include <bitbots_msgs/KickFeedback.h>
@@ -15,8 +15,6 @@
 #include "visualizer.h"
 
 namespace bitbots_dynamic_kick {
-
-typedef bitbots_splines::SplineContainer<bitbots_splines::SmoothSpline> Trajectories;
 
 struct KickParams {
   double foot_rise;
@@ -110,7 +108,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
 
   int getPercentDone() const override;
 
-  Trajectories getSplines() const ;
+  bitbots_splines::PoseSpline getSplines() const ;
 
   void setParams(KickParams params);
 
@@ -124,18 +122,14 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   tf2::Quaternion kick_direction_;
   float kick_speed_;
   bool is_left_kick_;
-  std::optional<Trajectories> support_point_trajectories_, flying_trajectories_;
+  bitbots_splines::PositionSpline support_point_spline_;
+  bitbots_splines::PoseSpline flying_foot_spline_;
   KickParams params_;
   PhaseTimings phase_timings_;
   tf2::Vector3 windup_point_;
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
-
-  /**
-   * Construct trajectories and add all required splines with their respective keys
-   */
-  void initTrajectories();
 
   /**
    *  Calculate splines for a complete kick whereby is_left_kick_ should already be set correctly
@@ -165,7 +159,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
                              const geometry_msgs::Vector3 &ball_position,
                              const geometry_msgs::Quaternion &kick_direction);
 
-  geometry_msgs::PoseStamped getCurrentPose(Trajectories spline_container);
+  geometry_msgs::PoseStamped getCurrentPose(bitbots_splines::PoseSpline spline);
 
   /**
    * Calculate the yaw of the kicking foot, so that it is turned

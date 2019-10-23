@@ -1,3 +1,4 @@
+#include <bitbots_splines/pose_spline.h>
 #include "bitbots_dynamic_kick/visualizer.h"
 
 namespace bitbots_dynamic_kick {
@@ -27,13 +28,13 @@ void Visualizer::setParams(VisualizationParams params) {
   params_ = params;
 }
 
-void Visualizer::displayFlyingSplines(const bitbots_splines::Trajectories &splines,
+void Visualizer::displayFlyingSplines(bitbots_splines::PoseSpline splines,
                                       const std::string &support_foot_frame) {
   if (!isEnabled())
     return;
 
   visualization_msgs::Marker
-      path = getPath(splines, support_foot_frame, "pos_x", "pos_y", "pos_z", params_.spline_smoothness);
+      path = getPath(splines, support_foot_frame, params_.spline_smoothness);
   path.color.g = 1;
 
   spline_publisher_.publish(path);
