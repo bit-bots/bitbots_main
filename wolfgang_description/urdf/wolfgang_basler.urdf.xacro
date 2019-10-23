@@ -696,19 +696,19 @@
             </xacro:if>             
             <inertia ixx="0.000216591" ixy="0.000001444" ixz="-0.000024793" iyy="0.000169162" iyz="0.000000772" izz="0.000081113" />
         </inertial>
-        <!-- <visual>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+        <visual>
+            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/head.stl" />
             </geometry>
             <material name="black" />
-        </visual> -->
-        <collision>
+        </visual> 
+        <!--<collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://wolfgang_description/mesh/collision/head.stl" />
             </geometry>
-        </collision>
+        </collision>-->
     </link>
 
 
@@ -948,7 +948,7 @@
     </joint>
     
     <joint name="head_to_camera" type="fixed">
-        <origin xyz="-0.00443 0 0.11475" rpy="0 0 0" />
+        <origin xyz="0.01 0 0.0795" rpy="0 0 0" />
         <parent link="head" />
         <child link="camera" />
         <axis xyz="0 0 0" />
