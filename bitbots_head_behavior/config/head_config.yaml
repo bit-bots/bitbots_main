@@ -75,7 +75,7 @@ behavior:
             [-20,-20],
             [ 40,-20],
         ]
-        ball_search_time: 10
+        ball_search_time: 20
 
     # Values for the visual compass record pattern
     record_pattern_scan_lines: 2
