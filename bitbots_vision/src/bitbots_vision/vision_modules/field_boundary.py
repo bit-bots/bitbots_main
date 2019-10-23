@@ -33,8 +33,6 @@ class FieldBoundaryDetector(object):
         self._roi_width = config['field_boundary_detector_roi_width']
         self._roi_increase = config['field_boundary_detector_roi_increase']
         self._green_threshold = config['field_boundary_detector_green_threshold']
-        self._precise_pixel = config['field_boundary_detector_precision_pix']
-        self._min_precise_pixel = config['field_boundary_detector_min_precision_pix']
 
     @staticmethod
     def get_by_name(search_method):
