@@ -142,7 +142,7 @@ class LineDetector:
             # Get white points that are not above the field boundary or in the green field
             self._white_mask = self._white_detector.mask_bitwise(possible_line_locations)
         return self._white_mask
-
+        
 
 def filter_points_with_candidates(linepoints, candidates):
     """

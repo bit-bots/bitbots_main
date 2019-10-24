@@ -312,8 +312,12 @@ class Vision:
 
         self._register_or_update_all_subscribers(config)
 
-        # Define Modules that should run their calculations (modules should exist, theirfore its located here)
+        # Define Modules that should run their calculations (modules should exist, therefore its located here)
         self._conventional_modules = [
+            self._field_color_detector,
+            self._white_color_detector,
+            self._red_color_detector,
+            self._blue_color_detector,
             self._obstacle_detector,
             self._line_detector,
         ]
@@ -665,16 +669,6 @@ class Vision:
         """
         Starts the conventional calculations
         """
-        # Modules that should run their calculations
-        # TODO: move this to DynReconf and add empty list to init
-        self._conventional_modules = [
-            self._field_color_detector,
-            self._white_color_detector,
-            self._red_color_detector,
-            self._blue_color_detector,
-            self._obstacle_detector,
-            self._line_detector,
-        ]
         # Run all modules
         for module in self._conventional_modules:
             module.compute()
