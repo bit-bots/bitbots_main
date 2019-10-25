@@ -210,6 +210,20 @@ Wenn man eine Node geschrieben hat, dann sollte man diese auch testen. Dazu brau
 Hardware. Weil man aber nicht immer alles sofort auf dem Roboter testen möchte und sollte, gibt es Bags. ROS Bags sind bestimmte
 Formate, um ROS Messages zu speichern. Sie lassen sich sehr einfach aufzeichnen und auch abspielen.
 
+Catkin
+------
+`Catkin <http://wiki.ros.org/catkin>`_ is the build tool used for building ROS packages.
+It is quite easy to use, well documented and makes our lifes a lot easier.
+The place where catkin operates is called a *catkin workspace*. It is the place your source code is stored,
+where build and log files are generated and where the built package is made available.
+
+Its most important directory is ``src`` which is where your source code has to be placed.
+
+If you are somewhere in the directory tree deeper than ``src`` you can simply call the following to build your package:
+
+.. code-block:: bash
+
+    $ catkin build [<package-name>]
 
 Was du tun musst, um anzufangen 
 ================================
