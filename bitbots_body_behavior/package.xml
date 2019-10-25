@@ -8,7 +8,7 @@
         /navigation_goal or directly via /cmd_vel and the head behavior
         via /head_duty.</description>
 
-  <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
+  <maintainer email="5fiedler@informatik.uni-hamburg.de">Niklas Fiedler</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
