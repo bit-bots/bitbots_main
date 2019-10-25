@@ -4,7 +4,8 @@
   <version>1.0.0</version>
   <description>This is a simple open-loop walking engine which uses quintic splines to define the trajectories of both feet in cartesian space. An inverse kinematic is used to translate these into joint space. The parameters of the walking can be adjusted using dynamic_reconfigure.</description>
 
-  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
+  <maintainer email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>

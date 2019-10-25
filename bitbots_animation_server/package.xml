@@ -5,7 +5,7 @@
   <description>The bitbots_animation_server package provides an action server which interpolates keyframe animations and
   sends the next motor values to the hardware control manager.</description>
 
-  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <maintainer email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
