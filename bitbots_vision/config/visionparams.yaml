@@ -91,6 +91,6 @@ obstacle_finder_value_increase: 2.0  # Factor of the impact of the height of the
 
 vision_publish_debug_image: false  # Publish debug image message
 ball_fcnn_publish_debug_img: false  # Publish the fcnn heatmap image for debug purposes
-vision_publish_HSV_mask_image: false  # Publish all three HSV color detector mask image messages for debug purposes 
+vision_publish_HSV_mask_image: false  # Publish all three HSV color detector mask image messages for debug purposes
 vision_publish_field_mask_image: false  # Publish field mask image message for debug purposes
 
