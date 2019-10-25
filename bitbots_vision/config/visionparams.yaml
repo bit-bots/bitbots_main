@@ -1,97 +1,96 @@
 # Defining the default vision parameters
 
-vision_parallelize: true
-vision_blind_threshold: 30
+vision_parallelize: true  # Run the neural net and the conventional part in parallel
+vision_blind_threshold: 30  # Brightness threshold under which the vision thinks, that someone forgot the camera cap
 
-ROS_img_msg_topic: 'image_raw'
-ROS_img_msg_queue_size: 1
-ROS_fcnn_img_msg_topic: 'fcnn_image'
-ROS_field_boundary_msg_topic: 'field_boundary_in_image'
-ROS_ball_msg_topic: 'balls_in_image'
-ROS_goal_parts_msg_topic: 'goal_parts_in_image'
-ROS_obstacle_msg_topic: 'obstacles_in_image'
-ROS_line_msg_topic: 'line_in_image'
-ROS_line_mask_msg_topic: 'line_mask_in_image'
-ROS_dynamic_color_space_msg_topic: 'dynamic_color_space'
-ROS_debug_image_msg_topic: 'debug_image'
-ROS_debug_fcnn_image_msg_topic: 'fcnn_debug_image'
-ROS_white_HSV_mask_image_msg_topic: 'white_HSV_field_mask'
-ROS_red_HSV_mask_image_msg_topic: 'red_HSV_field_mask'
-ROS_blue_HSV_mask_image_msg_topic: 'blue_HSV_field_mask'
-ROS_field_mask_image_msg_topic: 'field_mask'
-ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'
+ROS_img_msg_topic: 'image_raw'  # ROS topic of the image message
+ROS_img_msg_queue_size: 1  # ROS queue size for the image message
+ROS_fcnn_img_msg_topic: 'fcnn_image'  # ROS topic of the fcnn output message
+ROS_field_boundary_msg_topic: 'field_boundary_in_image'  # ROS topic of the field boundary message
+ROS_ball_msg_topic: 'balls_in_image'  # ROS topic of the ball message
+ROS_goal_parts_msg_topic: 'goal_parts_in_image'  # ROS topic of the goal parts message
+ROS_obstacle_msg_topic: 'obstacles_in_image'  # ROS topic of the obstacles message
+ROS_line_msg_topic: 'line_in_image'  # ROS topic of the line message
+ROS_line_mask_msg_topic: 'line_mask_in_image'  # ROS topic of the line mask message
+ROS_dynamic_color_space_msg_topic: 'dynamic_color_space'  # ROS topic of the dynamic color space message
+ROS_debug_image_msg_topic: 'debug_image'  # ROS topic of the debug image message
+ROS_debug_fcnn_image_msg_topic: 'fcnn_debug_image'  # ROS topic of the FCNN debug image message
+ROS_white_HSV_mask_image_msg_topic: 'white_HSV_field_mask'  # ROS topic of the white HSV color detector mask debug image message
+ROS_red_HSV_mask_image_msg_topic: 'red_HSV_field_mask'  # ROS topic of the red HSV color detector mask debug image message
+ROS_blue_HSV_mask_image_msg_topic: 'blue_HSV_field_mask'  # ROS topic of the blue HSV color detector mask debug image message
+ROS_field_mask_image_msg_topic: 'field_mask'  # ROS topic of the field mask debug image message
+ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'  # ROS topic of the dynamic color space field mask debug image message
 
-fcnn_model_path: '2019_06_timon_basler'
-yolo_model_path: '2019_07_03_jonas_yolo'
-ball_fcnn_threshold: .6  # minimal value for a candidate to be considered
-ball_fcnn_expand_stepsize: 4
-ball_fcnn_pointcloud_stepsize: 10
-ball_fcnn_min_ball_diameter: 15
-ball_fcnn_max_ball_diameter: 150
-ball_fcnn_publish_output: false
-ball_fcnn_publish_field_boundary_offset: 5
+fcnn_model_path: '2019_06_timon_basler'  # Name of the ball fcnn model
+yolo_model_path: '2019_07_03_jonas_yolo'  # Name of the yolo model
+ball_fcnn_threshold: .6  # Minimal activation for a pixel in the fcnn heatmap to be considered
+ball_fcnn_expand_stepsize: 4  # Expand stepsize for the ball fcnn clustering
+ball_fcnn_pointcloud_stepsize: 10  # Pointcloud stepsize for the ball fcnn clustering
+ball_fcnn_min_ball_diameter: 15  # Minimum diameter of a ball
+ball_fcnn_max_ball_diameter: 150  # Maximum diameter of a ball
+ball_fcnn_candidate_refinement_iteration_count: 1  # Number of iterations of refinement of ball candidates
+ball_fcnn_publish_output: false  # Publish the output of the ball fcnn as ImageWithRegionOfInterest
+ball_fcnn_publish_field_boundary_offset: 5  # The offset added to the field_boundary when cropping the fcnn output for publication in pixels
 
-neural_network_type: 'yolo_darknet'  # fcnn or yolo_opencv or yolo_darknet or dummy
-ball_candidate_field_boundary_y_offset: 0
-ball_candidate_rating_threshold: 0.5
+neural_network_type: 'yolo_darknet'  # The neural network type that should be used
+ball_candidate_field_boundary_y_offset: 0  # Threshold in which ball candidates over the field boundary are allowed.
+ball_candidate_rating_threshold: 0.5  # A threshold for the minimum candidate rating
 
-field_color_detector_path: 'basler_f031.pickle'
+field_color_detector_path: 'basler_f031.pickle'  # Color space for the field color detector
 
-dynamic_color_space_active: true
-dynamic_color_space_queue_max_size: 20
-dynamic_color_space_threshold: 0.6
-dynamic_color_space_kernel_radius: 1
-dynamic_color_space_field_boundary_detector_search_method: 'reversed' # iteration, reversed, binary or dynamic
+dynamic_color_space_active: true  # Turn dynamic color space ON or OFF
+dynamic_color_space_queue_max_size: 20  # Maximum size of queue that holds the latest added colors
+dynamic_color_space_threshold: 0.6  # Necessary amount of previously detected color inside the kernel in percentage
+dynamic_color_space_kernel_radius: 1  # Radius surrounding the center-element of kernel-matrix, defines relevant surrounding of pixel
+dynamic_color_space_field_boundary_detector_search_method: 'reversed'  # Search method for FieldBoundaryFinder used by DynamicColorSpace
 
-white_color_detector_lower_values_h: 101
-white_color_detector_lower_values_s: 0
-white_color_detector_lower_values_v: 158
-white_color_detector_upper_values_h: 180
-white_color_detector_upper_values_s: 255
-white_color_detector_upper_values_v: 255
+white_color_detector_lower_values_h: 101  # Lower bound for the white color detector hue
+white_color_detector_lower_values_s: 0  # Lower bound for the white color detector saturation
+white_color_detector_lower_values_v: 158  # Lower bound for the white color detector value/brightness
+white_color_detector_upper_values_h: 180  # Upper bound for the white color detector hue
+white_color_detector_upper_values_s: 255  # Upper bound for the white color detector saturation
+white_color_detector_upper_values_v: 255  # Upper bound for the white color detector value/brightness
 
-red_color_detector_lower_values_h: 139
-red_color_detector_lower_values_s: 50
-red_color_detector_lower_values_v: 0
-red_color_detector_upper_values_h: 255
-red_color_detector_upper_values_s: 255
-red_color_detector_upper_values_v: 255
+red_color_detector_lower_values_h: 139  # Lower bound for the red color detector hue
+red_color_detector_lower_values_s: 50  # Lower bound for the red color detector saturation
+red_color_detector_lower_values_v: 0  # Lower bound for the red color detector value/brightness
+red_color_detector_upper_values_h: 255  # Upper bound for the red color detector hue
+red_color_detector_upper_values_s: 255  # Upper bound for the red color detector saturation
+red_color_detector_upper_values_v: 255  # Upper bound for the red color detector value/brightness
 
-blue_color_detector_lower_values_h: 90
-blue_color_detector_lower_values_s: 197
-blue_color_detector_lower_values_v: 134
-blue_color_detector_upper_values_h: 116
-blue_color_detector_upper_values_s: 255
-blue_color_detector_upper_values_v: 255
+blue_color_detector_lower_values_h: 90  # Lower bound for the blue color detector hue
+blue_color_detector_lower_values_s: 197  # Lower bound for the blue color detector saturation
+blue_color_detector_lower_values_v: 134  # Lower bound for the blue color detector value/brightness
+blue_color_detector_upper_values_h: 116  # Upper bound for the blue color detector hue
+blue_color_detector_upper_values_s: 255  # Upper bound for the blue color detector saturation
+blue_color_detector_upper_values_v: 255  # Upper bound for the blue color detector value/brightness
 
-field_boundary_detector_search_method: 'reversed'  # iteration, reversed, binary or dynamic
-field_boundary_detector_vertical_steps: 30
-field_boundary_detector_horizontal_steps: 30
-field_boundary_detector_roi_height: 1
-field_boundary_detector_roi_width: 1
-field_boundary_detector_roi_increase: 0.1  # increase of kernel radius per pixel
-field_boundary_detector_green_threshold: 136
-field_boundary_detector_precision_pix: 5
-field_boundary_detector_min_precision_pix: 3
-field_boundary_detector_head_tilt_threshold: 20
+field_boundary_detector_search_method: 'reversed'  # Method for finding the field boundary. E.g with scanlines from the bottom or the top.
+field_boundary_detector_vertical_steps: 30  # Number of steps on each scanline
+field_boundary_detector_horizontal_steps: 30  # Number of scanlines
+field_boundary_detector_roi_height: 1  # Region Of Interest height in which we are looking for green
+field_boundary_detector_roi_width: 1  # Region Of Interest width in which we are looking for green
+field_boundary_detector_roi_increase: 0.1  # Value that increases the region of interest if it is located lower in the image
+field_boundary_detector_green_threshold: 136  # Threshold of green in the area covered by the kernel
+field_boundary_detector_head_tilt_threshold: 20  # Threshold for the dynamic search method, that describes the head angle at which we are switching between the iteration and the reversed search method.
 
-line_detector_field_boundary_offset: 0
-line_detector_use_line_points: true
-line_detector_use_line_mask: true
-line_detector_linepoints_range: 10000
+line_detector_field_boundary_offset: 0  # Threshold in which we are also searching for lines over the field boundary
+line_detector_use_line_points: true  # Calculate and publish the line points
+line_detector_use_line_mask: true  # Calculate and publish the line mask
+line_detector_linepoints_range: 10000  # Number of line points
 
-obstacle_finder_method: 'convex'  # distance, convex or step
-obstacle_color_threshold: 10
-obstacle_white_threshold: 12
-obstacle_field_boundary_diff_threshold: 20
-obstacle_candidate_field_boundary_offset: 30
-obstacle_candidate_min_width: 15
-obstacle_candidate_max_width: 150
-obstacle_finder_step_length: 5
-obstacle_finder_value_increase: 2.0
+obstacle_finder_method: 'convex'  # Method for the obstacle finder
+obstacle_color_threshold: 10  # An obstacle is defined as blue/red if it contains more blue or red than this threshold
+obstacle_white_threshold: 12  # An obstacle that contains more white than this threshold and is not colored, is an goalpost in the conventional approach
+obstacle_field_boundary_diff_threshold: 20  # Minimal distance between detected and convex field boundary to accept it as obstacle
+obstacle_candidate_field_boundary_offset: 30  # Fixed height of obstacles above the field boundary
+obstacle_candidate_min_width: 15  # Minimum width of an obstacle
+obstacle_candidate_max_width: 150  # Maximum width of an obstacle
+obstacle_finder_step_length: 5  # Length of an object detection step along the field boundary
+obstacle_finder_value_increase: 2.0  # Factor of the impact of the height of the field boundary on the distance threshold
 
-vision_publish_debug_image: false
-ball_fcnn_publish_debug_img: false  # toggles publishing of the fcnn heatmap image for debug purposes
-vision_publish_HSV_mask_image: false
-vision_publish_field_mask_image: false
+vision_publish_debug_image: false  # Publish debug image message
+ball_fcnn_publish_debug_img: false  # Publish the fcnn heatmap image for debug purposes
+vision_publish_HSV_mask_image: false  # Publish all three HSV color detector mask image messages for debug purposes 
+vision_publish_field_mask_image: false  # Publish field mask image message for debug purposes
 
