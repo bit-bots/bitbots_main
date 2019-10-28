@@ -6,7 +6,7 @@
       The head searches for balls, goals and lines and tracks them. The head behavior can be
       controlled by the /head_duty topic and publishes the head motion in the /head_motor_goals topic.
   </description>
-  <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
+  <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
   <license>MIT</license>
