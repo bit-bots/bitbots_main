@@ -4,7 +4,7 @@
     "hostname": "Skynet", 
     "keyframes": [
         {
-            "duration": 1.0, 
+            "duration": 0.01, 
             "goals": {
                 "HeadPan": 0, 
                 "HeadTilt": 0, 
