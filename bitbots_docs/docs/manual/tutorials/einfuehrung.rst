@@ -212,18 +212,26 @@ Formate, um ROS Messages zu speichern. Sie lassen sich sehr einfach aufzeichnen 
 
 Catkin
 ------
-`Catkin <http://wiki.ros.org/catkin>`_ is the build tool used for building ROS packages.
-It is quite easy to use, well documented and makes our lifes a lot easier.
-The place where catkin operates is called a *catkin workspace*. It is the place your source code is stored,
-where build and log files are generated and where the built package is made available.
+`Catkin <http://wiki.ros.org/catkin>`_ ist das Build Tool zum Bauen von ROS Paketen.
+Es ist sehr einfach zu benutzen, gut dokumentiert und macht unser Leben sehr viel leichter.
+Catkin operiert in einem sogenannten *Catkin Workspace*. Das ist der Ort an dem der Quelltext
+gespeichert und die gebauten Binaries sowie Logdateien erzeugt werden. Von dort werden die gebauten
+Pakete auch für andere nutzbar gemacht.
 
-Its most important directory is ``src`` which is where your source code has to be placed.
+Das wichtigste Verzeichnis im Workspace ist ``src``, dort befindet sich der Quelltext, der gebaut
+werden soll.
 
-If you are somewhere in the directory tree deeper than ``src`` you can simply call the following to build your package:
+Überall aus dem Workspace können Pakete wie folgt gebaut werden:
 
 .. code-block:: bash
 
-    $ catkin build [<package-name>]
+    $ catkin build [<Paketname>]
+
+Um die gebauten Pakete zu nutzen, muss der Workspace gesourct werden. Das geht mit
+
+.. code-block:: bash
+
+    $ source /path/to/catkin_ws/devel/setup.bash
 
 Was du tun musst, um anzufangen 
 ================================
