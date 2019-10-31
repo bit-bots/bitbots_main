@@ -183,4 +183,5 @@
     <disable_collisions link1="r_shoulder" link2="torso" reason="Adjacent" />
     <disable_collisions link1="r_upper_arm" link2="r_upper_leg" reason="Never" />
     <disable_collisions link1="head" link2="neck" reason="Adjacent" />
+    <disable_collisions link1="head" link2="torso" reason="Adjacent" />
 </robot>
