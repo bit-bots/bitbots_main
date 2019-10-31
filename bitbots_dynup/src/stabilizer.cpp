@@ -68,10 +68,10 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const
   ik_options->goals.emplace_back(bio_ik_l_foot_goal);
   ik_options->goals.emplace_back(bio_ik_trunk_goal);
 
-  if (use_stabilizing_ && false) {
+  if (use_stabilizing_) {
     ik_options->goals.emplace_back(bio_ik_balance_goal);
   }
-  if (use_minimal_displacement_ && false) {
+  if (use_minimal_displacement_) {
     ik_options->goals.emplace_back(new bio_ik::MinimalDisplacementGoal());
   }
   return std::move(ik_options);
