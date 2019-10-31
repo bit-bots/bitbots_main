@@ -2,7 +2,6 @@
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_IK_H_
 
 #include "bitbots_splines/abstract_ik.h"
-#include "bitbots_ik/BioIKSolver.hpp"
 namespace bitbots_quintic_walk {
 
 class WalkIK : public bitbots_splines::AbstractIK {
@@ -17,9 +16,6 @@ class WalkIK : public bitbots_splines::AbstractIK {
  private:
   robot_state::RobotStatePtr goal_state_;
   const moveit::core::JointModelGroup *legs_joints_group_;
-
-  // IK solver
-  bitbots_ik::BioIKSolver bio_ik_solver_;
 
   double bio_ik_timeout_;
 

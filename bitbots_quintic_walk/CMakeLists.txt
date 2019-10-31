@@ -65,7 +65,7 @@ include_directories(
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES ${PROJECT_NAME}
-        CATKIN_DEPENDS humanoid_league_msgs std_msgs geometry_msgs bitbots_ik bitbots_splines message_runtime bitbots_msgs tf2 tf2_eigen tf2_geometry_msgs
+        CATKIN_DEPENDS humanoid_league_msgs std_msgs geometry_msgs bitbots_splines message_runtime bitbots_msgs tf2 tf2_eigen tf2_geometry_msgs
         DEPENDS EIGEN3
 )
 
