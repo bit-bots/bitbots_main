@@ -198,22 +198,6 @@ void DynupEngine::calcSquatSplines(geometry_msgs::Pose l_foot_pose, geometry_msg
 }
 
 void DynupEngine::setGoals(const DynupRequest &goals) {
-  /*
-   * Add current position, target position and current position to splines so that they describe a smooth
-   * curve to the ball and back
-   */
-  /* Splines:
-   * - if front:
-   *   - move arms to frint and pull legs
-   *   - get torso into 45°, pull foot under legs
-   *   - get into crouch position
-   * - if back:
-   *
-   * - after both:
-   *    - slowly stand up with stabilization
-   *    - move arms in finish position
-   */
-
   /*if(front){
   //TODO decide on which side we are lying on
      calcFrontSplines();

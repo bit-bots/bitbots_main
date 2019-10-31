@@ -87,7 +87,6 @@ void DynUpNode::loopEngine() {
 }
 
 std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> DynUpNode::getCurrentPoses() {
-  // return left foot pose and trunk pose relative to right foot
   ros::Time time = ros::Time::now();
 
   /* Construct zero-positions for both poses in their respective local frames */

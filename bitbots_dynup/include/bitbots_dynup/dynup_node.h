@@ -65,7 +65,7 @@ class DynUpNode {
   void loopEngine();
 
   /**
-   * Retrieve current feet_positions in base_link frame
+   * Retrieve current positions of left foot and trunk relative to right foot
    *
    * @return The pair of (right foot, left foot) poses if transformation was successfull
    */
