@@ -60,9 +60,9 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const
   bio_ik_trunk_goal->setReferenceLinkName("r_sole");
 
   tf2::Vector3 stabilizing_target = {response.support_point.x, response.support_point.y, response.support_point.z};
-  DynamicBalancingContext bio_ik_balancing_context(kinematic_model_);
+  auto *bio_ik_balancing_context = new DynamicBalancingContext(kinematic_model_);
   auto *bio_ik_balance_goal =
-      new DynamicBalancingGoal(&bio_ik_balancing_context, stabilizing_target, stabilizing_weight_);
+      new DynamicBalancingGoal(bio_ik_balancing_context, stabilizing_target, stabilizing_weight_);
   bio_ik_balance_goal->setReferenceLink("base_link");
 
   ik_options->goals.emplace_back(bio_ik_l_foot_goal);
