@@ -16,7 +16,7 @@
 #include <bitbots_dynup/DynUpConfig.h>
 #include "bitbots_dynup/dynup_engine.h"
 #include "bitbots_dynup/dynup_ik.h"
-#include "bitbots_dynup/stabilizer.h"
+#include "bitbots_dynup/dynup_stabilizer.h"
 #include <std_msgs/Char.h>
 
 namespace bitbots_dynup {

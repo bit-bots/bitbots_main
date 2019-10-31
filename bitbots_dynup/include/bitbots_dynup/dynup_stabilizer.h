@@ -1,5 +1,5 @@
-#ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_STABILIZER_H_
-#define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_STABILIZER_H_
+#ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_STABILIZER_H_
+#define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_STABILIZER_H_
 
 #include <optional>
 #include <moveit/robot_model_loader/robot_model_loader.h>
@@ -35,4 +35,4 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
 
 }
 
-#endif  //BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_STABILIZER_H_
+#endif  //BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_STABILIZER_H_

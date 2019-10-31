@@ -32,7 +32,7 @@ include_directories(
 set(SOURCES
     src/dynup_node.cpp
     src/dynup_engine.cpp
-    src/stabilizer.cpp
+    src/dynup_stabilizer.cpp
     src/dynup_ik.cpp
 )
 
