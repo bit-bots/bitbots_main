@@ -3,9 +3,7 @@
   <version>0.0.0</version>
   <description>The visual_compass package</description>
 
-  <maintainer email="7baumann@informatik.uni-hamburg.de">Patrick Baumann</maintainer>
   <maintainer email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</maintainer>
-  <maintainer email="7ostendo@informatik.uni-hamburg.de">Benedikt Ostendorf</maintainer>
   <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
 
   <author email="7baumann@informatik.uni-hamburg.de">Patrick Baumann</author>
