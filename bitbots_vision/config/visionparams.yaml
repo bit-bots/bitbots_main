@@ -94,4 +94,5 @@ vision_publish_debug_image: false
 ball_fcnn_publish_debug_img: false  # toggles publishing of the fcnn heatmap image for debug purposes
 vision_publish_HSV_mask_image: false
 vision_publish_field_mask_image: false
+caching: true  # DO NOT TOUCH! Used to deactivate caching for profiling reasons
 
