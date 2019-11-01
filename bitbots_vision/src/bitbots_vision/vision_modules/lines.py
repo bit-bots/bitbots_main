@@ -21,6 +21,8 @@ class LineDetector:
         # Init config
         self._field_boundary_offset = config['line_detector_field_boundary_offset']
         self._linepoints_range = config['line_detector_linepoints_range']
+        self._use_line_points = config['line_detector_use_line_points']
+        self._use_line_mask = config['line_detector_use_line_mask']
 
     def set_image(self, image):
         # type: (np.matrix) -> None
@@ -45,7 +47,11 @@ class LineDetector:
         """
         Computes the linepoints if necessary
         """
-        self.get_linepoints()
+        if self._use_line_points:
+            self.get_linepoints()
+
+        if self._use_line_mask:
+            self.get_line_mask()
 
     def get_linepoints(self):
         """
@@ -142,7 +148,7 @@ class LineDetector:
             # Get white points that are not above the field boundary or in the green field
             self._white_mask = self._white_detector.mask_bitwise(possible_line_locations)
         return self._white_mask
-        
+
 
 def filter_points_with_candidates(linepoints, candidates):
     """
