@@ -34,6 +34,9 @@ class ColorDetector(object):
         self._config = {}
         self.update_config(config)
 
+        # Set if values should be cached
+        self._caching = config['caching']
+
     def update_config(self, config):
         # type: (dict) -> None
         """
@@ -81,7 +84,7 @@ class ColorDetector(object):
             mask = self._mask_image(optional_image)
         else:
             # Mask of default cached image
-            if self._mask is None:
+            if self._mask is None or not self._caching:
                 self._mask = self._mask_image(self._image)
             mask = self._mask
 

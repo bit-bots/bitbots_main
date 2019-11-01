@@ -22,6 +22,9 @@ class LineDetector:
         self._field_boundary_offset = config['line_detector_field_boundary_offset']
         self._linepoints_range = config['line_detector_linepoints_range']
 
+        # Set if values should be cached
+        self._caching = config['caching']
+
     def set_image(self, image):
         # type: (np.matrix) -> None
         """
@@ -52,7 +55,7 @@ class LineDetector:
         Computes if necessary and returns the (cached) linepoints
         """
         # Check if points are allready cached
-        if self._linepoints is None:
+        if self._linepoints is None or not self._caching:
             # Empty line point list
             self._linepoints = list()
             # Mask white parts of the image using a white color detector
@@ -96,7 +99,7 @@ class LineDetector:
                                 30,
                                 minLineLength=10)
         self._linesegments = []
-        if lines is None:
+        if lines is None or not self._caching:
             return self._linesegments
         # Iterate over hough lines
         for l in lines:
@@ -127,7 +130,7 @@ class LineDetector:
         :returns: Returns mask
         """
         # Check if it is cached
-        if self._white_mask is None:
+        if self._white_mask is None or not self._caching:
             # Only take parts that are under not green and the field boundary
             # Get green mask
             green_mask = self._field_color_detector.get_mask_image()
@@ -142,7 +145,7 @@ class LineDetector:
             # Get white points that are not above the field boundary or in the green field
             self._white_mask = self._white_detector.mask_bitwise(possible_line_locations)
         return self._white_mask
-        
+
 
 def filter_points_with_candidates(linepoints, candidates):
     """

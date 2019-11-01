@@ -34,6 +34,9 @@ class FieldBoundaryDetector(object):
         self._roi_increase = config['field_boundary_detector_roi_increase']
         self._green_threshold = config['field_boundary_detector_green_threshold']
 
+        # Set if values should be cached
+        self._caching = config['caching']
+
     @staticmethod
     def get_by_name(search_method):
         # type: (String) -> FieldBoundaryDetector
@@ -79,7 +82,7 @@ class FieldBoundaryDetector(object):
         Calculates a mask that contains white pixels below the field-boundary
         """
         # Check if field boundary is already cached
-        if self._mask is None:
+        if self._mask is None or not self._caching:
             shape = np.shape(self._image)
             img_size = (shape[0], shape[1])
             # Generates a white canvas
@@ -97,7 +100,7 @@ class FieldBoundaryDetector(object):
 
         :return list of x,y tuples of the field_boundary:
         """
-        if self._field_boundary_points is None:
+        if self._field_boundary_points is None or not self._caching:
             self._compute_field_boundary_points()
         # applying the offset
         if offset != 0:
@@ -116,7 +119,7 @@ class FieldBoundaryDetector(object):
         returns a set of field_boundary points that form a convex hull of the
         field
         '''
-        if self._convex_field_boundary_points is None:
+        if self._convex_field_boundary_points is None or not self._caching:
             self._compute_convex_field_boundary_points()
         return self._convex_field_boundary_points
 
@@ -194,7 +197,7 @@ class FieldBoundaryDetector(object):
         return (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0])
 
     def _compute_full_field_boundary(self):
-        if self._field_boundary_full is None:
+        if self._field_boundary_full is None or not self._caching:
             xp, fp = zip(*self.get_field_boundary_points())
             x = list(range(self._image.shape[1]))
             self._field_boundary_full = np.interp(x, list(xp), list(fp))
@@ -218,7 +221,7 @@ class FieldBoundaryDetector(object):
 
         :return list of y coordinates where the convex field_boundary is. Index of y value is the x coordinate:
         """
-        if self._convex_field_boundary_full is None:
+        if self._convex_field_boundary_full is None or not self._caching:
             xp, fp = zip(*self.get_convex_field_boundary_points())
             x = list(range(self._image.shape[1]))
             self._convex_field_boundary_full = np.interp(x, list(xp), list(fp))
@@ -569,11 +572,6 @@ class ReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         # index counting up from top to bottom and left to right
         field_mask = _field_color_detector.get_mask_image()
         # noise reduction on the field_mask:
-        field_mask = cv2.morphologyEx(
-            field_mask,
-            cv2.MORPH_CLOSE,
-            np.ones((5, 5), dtype=np.uint8),
-            iterations=2)
 
         # the stepsize is the number of pixels traversed in the image by going one step
         y_stepsize = (_image.shape[0] - 1) / float(_y_steps - 1)
@@ -635,7 +633,7 @@ class BinaryFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         """
         Finds the points of the field edge visible in the image. Uses a faster binary search method, that unfortunately
         finds these points below field lines sometimes.
-        
+
         :returns: list of field boundary points
         """
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image

@@ -258,7 +258,7 @@ class FcnnHandler(BallDetector):
     def get_debug_image(self):
         """
         Returns the fcnn heatmap as ros image message if debug is enabled.
-        
+
         :return: fcnn heatmap
         """
         if self._debug:
