@@ -690,7 +690,7 @@ class CVReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
                     max_y += 1
                     break
 
-            # Scale the stuff for the original image
+            # Scale the stuff for the original image + black magic
             field_boundary_points.append(
                 (int((x_position+0.5)*(field_mask.shape[1]/x_steps)),
                 (int(max_y*(field_mask.shape[0]/y_steps)))))
