@@ -75,6 +75,7 @@ class ObstacleDetector(CandidateFinder):
         Calculate and return obstacles.
         The methods are selected depending on the config.
         """
+        return [] # Remove to reactivate obstacles <--------------------------- REMOVE
         # Check if allready cached
         if self._obstacles is None:
             # Select calculation method
@@ -505,7 +506,7 @@ class UnknownObstacleDetector(CandidateFinder):
         # type: (np.ndarray) -> None
         """
         Set the current vision image.
-        
+
         :param image: image the current image vision
         """
         self._obstacle_detector.set_image(image)
