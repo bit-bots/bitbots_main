@@ -76,8 +76,8 @@ field_boundary_detector_min_precision_pix: 3
 field_boundary_detector_head_tilt_threshold: 20
 
 line_detector_field_boundary_offset: 0
-line_detector_use_line_points: true
-line_detector_use_line_mask: true
+line_detector_use_line_points: false
+line_detector_use_line_mask: false
 line_detector_linepoints_range: 10000
 
 obstacle_finder_method: 'convex'  # distance, convex or step
