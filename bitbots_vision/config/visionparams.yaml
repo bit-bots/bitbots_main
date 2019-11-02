@@ -64,7 +64,7 @@ blue_color_detector_upper_values_h: 116
 blue_color_detector_upper_values_s: 255
 blue_color_detector_upper_values_v: 255
 
-field_boundary_detector_search_method: 'reversed'  # iteration, reversed, binary or dynamic
+field_boundary_detector_search_method: 'cvreversed'  # iteration, reversed, cvreversed, binary or dynamic
 field_boundary_detector_vertical_steps: 30
 field_boundary_detector_horizontal_steps: 30
 field_boundary_detector_roi_height: 1
