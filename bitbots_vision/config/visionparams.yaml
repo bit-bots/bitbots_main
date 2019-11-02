@@ -36,6 +36,7 @@ ball_candidate_field_boundary_y_offset: 0
 ball_candidate_rating_threshold: 0.5
 
 field_color_detector_path: 'basler_f031.pickle'
+field_color_detector_use_hsv: false
 
 dynamic_color_space_active: true
 dynamic_color_space_queue_max_size: 20
@@ -63,6 +64,13 @@ blue_color_detector_lower_values_v: 134
 blue_color_detector_upper_values_h: 116
 blue_color_detector_upper_values_s: 255
 blue_color_detector_upper_values_v: 255
+
+green_color_detector_lower_values_h: 25
+green_color_detector_lower_values_s: 8
+green_color_detector_lower_values_v: 20
+green_color_detector_upper_values_h: 45
+green_color_detector_upper_values_s: 255
+green_color_detector_upper_values_v: 255
 
 field_boundary_detector_search_method: 'reversed'  # iteration, reversed, binary or dynamic
 field_boundary_detector_vertical_steps: 30
