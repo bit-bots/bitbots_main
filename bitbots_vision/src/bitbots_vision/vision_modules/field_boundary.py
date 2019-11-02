@@ -673,8 +673,10 @@ class CVReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
 
         # Scale the image down
         subsampled_mask = cv2.resize(field_mask,(x_steps,y_steps), interpolation=cv2.INTER_AREA)
+        # Define the blur kernel
+        kernel = (2 * roi_height + 1, 2 * roi_width + 1)
         # Blur the downscaled image to fill holes in the field mask
-        subsampled_mask = cv2.GaussianBlur(subsampled_mask,(3,3),0)
+        subsampled_mask = cv2.GaussianBlur(subsampled_mask, kernel, 0)
 
         field_boundary_points = []
 
