@@ -43,6 +43,7 @@ class ObstacleDetector(CandidateFinder):
         self._finder_step_length = config['obstacle_finder_step_length']
         self._obstacle_finder_method = config['obstacle_finder_method']
         self._distance_value_increase = config['obstacle_finder_value_increase']
+        self.active = config['obstacle_active']
 
     def set_image(self, image):
         """
@@ -75,7 +76,9 @@ class ObstacleDetector(CandidateFinder):
         Calculate and return obstacles.
         The methods are selected depending on the config.
         """
-        return [] # Remove to reactivate obstacles <--------------------------- REMOVE
+        # Exit if detector is not active
+        if not self.active:
+            return []
         # Check if allready cached
         if self._obstacles is None:
             # Select calculation method
@@ -331,15 +334,18 @@ class ObstacleDetector(CandidateFinder):
         """
         Calculate all obstacles and sorts them by colors.
         """
-        # Calculate HSV masks
-        self._blue_mask = self._blue_color_detector.get_mask_image()
-        self._red_mask = self._red_color_detector.get_mask_image()
-        self._white_mask = self._white_color_detector.get_mask_image()
         # Reset the obstacles
         self._red_obstacles = list()
         self._blue_obstacles = list()
         self._white_obstacles = list()
         self._other_obstacles = list()
+
+        # Check if detector is active
+        if self.active:
+            # Calculate HSV masks
+            self._blue_mask = self._blue_color_detector.get_mask_image()
+            self._red_mask = self._red_color_detector.get_mask_image()
+            self._white_mask = self._white_color_detector.get_mask_image()
         # Iterate over all found obstacles
         for obstacle in self.get_candidates():
             # Calc the blueness of the candidate

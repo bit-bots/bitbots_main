@@ -80,6 +80,7 @@ line_detector_use_line_points: false
 line_detector_use_line_mask: false
 line_detector_linepoints_range: 10000
 
+obstacle_active: false
 obstacle_finder_method: 'convex'  # distance, convex or step
 obstacle_color_threshold: 10
 obstacle_white_threshold: 12
