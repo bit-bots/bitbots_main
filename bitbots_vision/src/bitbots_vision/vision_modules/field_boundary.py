@@ -685,15 +685,15 @@ class CVReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
                 # Invert the current vertical value
                 max_y = (subsampled_mask.shape[0] - 1) - y_position
                 # Check if we found a pixel under the threshold
-                if subsampled_mask[max_y, x_position] < int(green_threshold/1000 * 255):
+                if subsampled_mask[max_y, x_position] < int(green_threshold / 1000 * 255):
                     # Reset to last step
                     max_y += 1
                     break
 
             # Scale the stuff for the original image + black magic
             field_boundary_points.append(
-                (int((x_position+0.5)*(field_mask.shape[1]/x_steps)),
-                (int(max_y*(field_mask.shape[0]/y_steps)))))
+                (int((x_position + 0.5) * (field_mask.shape[1] / x_steps)),
+                 int(max_y * (field_mask.shape[0] / y_steps))))
         # Fix tuff at the image edges
         field_boundary_points[0] = (0, field_boundary_points[0][1])
         field_boundary_points[-1] = (field_mask.shape[1]-1, field_boundary_points[0][1])
