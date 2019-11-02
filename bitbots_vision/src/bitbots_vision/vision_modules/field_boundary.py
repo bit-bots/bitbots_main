@@ -682,8 +682,7 @@ class CVReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         for x_position in range(subsampled_mask.shape[1]):
             # Iterate vertical over the downscaled mask
             for y_position in range(subsampled_mask.shape[0]):
-                # Clip and invert the current vertical value
-                max_y = min(max(subsampled_mask.shape[0] - y_position ,0), subsampled_mask.shape[0] - 1)
+                max_y = (subsampled_mask.shape[0] - 1) - y_position
                 # Check if we found a pixel under the threshold
                 if subsampled_mask[max_y, x_position] < int(green_threshold/1000 * 255):
                     max_y += 1
