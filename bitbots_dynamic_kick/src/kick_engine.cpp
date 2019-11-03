@@ -19,9 +19,8 @@ void KickEngine::setGoals(const KickGoals &goals) {
   // TODO Internal state is dirty when goal transformation fails
 
   /* Save given goals because we reuse them later */
-  auto transformed_goal = transformGoal((is_left_kick_) ? "r_sole" : "l_sole", goals.header, goals.ball_position,
-                                        goals.kick_direction);
-  // TODO: handle when goal was not transformed
+  auto transformed_goal = transformGoal((is_left_kick_) ? "r_sole" : "l_sole",
+                                        goals.header, goals.ball_position, goals.kick_direction);
   tf2::convert(transformed_goal->first, ball_position_);
   tf2::convert(transformed_goal->second, kick_direction_);
   kick_direction_.normalize();

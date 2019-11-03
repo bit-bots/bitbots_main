@@ -97,7 +97,17 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
     goals.r_foot_pose = foot_poses->first;
     goals.l_foot_pose = foot_poses->second;
 
-    engine_.setGoals(goals);
+    try {
+      engine_.setGoals(goals);
+    }
+    catch (tf2::TransformException &e) {
+      ROS_ERROR_STREAM("Could not transform goal to needed tf frames: " << e.what());
+      bitbots_msgs::KickResult result;
+      result.result = bitbots_msgs::KickResult::REJECTED;
+      server_.setAborted(result, "Could not transform goal to needed tf frames");
+      return;
+    }
+
     stabilizer_.reset();
     ik_.reset();
     visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
@@ -120,7 +130,7 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
     }
 
   } else {
-    /* Feet positions were not successfully retrieved */
+    ROS_ERROR("Could not process goal because current feet positions could not be transformed into base_link");
     bitbots_msgs::KickResult result;
     result.result = bitbots_msgs::KickResult::REJECTED;
     server_.setAborted(result, "Transformation of feet into base_link not possible");
@@ -142,9 +152,13 @@ std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> KickNode::get
 
   /* Transform both feet poses into the other foot's frame */
   geometry_msgs::PoseStamped r_foot_transformed, l_foot_transformed;
-  tf_buffer_.transform(r_foot_origin, r_foot_transformed, "l_sole",
-                       ros::Duration(0.2)); // TODO lookup thrown exceptions in internet and catch
-  tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole", ros::Duration(0.2));
+  try {
+    tf_buffer_.transform(r_foot_origin, r_foot_transformed, "l_sole",
+                         ros::Duration(0.2)); // TODO lookup thrown exceptions in internet and catch
+    tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole", ros::Duration(0.2));
+  } catch (tf2::TransformException &e) {
+    return std::nullopt;
+  }
 
   return std::pair(r_foot_transformed.pose, l_foot_transformed.pose);
 }

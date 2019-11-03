@@ -11,6 +11,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/convert.h>
 #include <tf2/utils.h>
+#include <tf2/exceptions.h>
 #include "stabilizer.h"
 #include "visualizer.h"
 
@@ -85,6 +86,8 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    * @param kick_speed Speed with which to kick the ball
    * @param r_foot_pose Current pose of right foot in l_sole frame
    * @param l_foot_pose Current pose of left foot in r_sole frame
+   *
+   * @throws tf2::TransformException when goal cannot be converted into needed tf frames
    */
   void setGoals(const KickGoals &goals) override;
 
@@ -158,8 +161,10 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    *
    * @param header Definition of frame and time in which the goals were published
    * @param ball_position Position where the ball is currently located
-   * @param kick_movement Direction into which the ball should be kicked
+   * @param kick_direction Direction into which the ball should be kicked
    * @return Whether the resulting kick should be performed with the left foot
+   *
+   * @throws tf2::TransformException when ball_position and kick_direction cannot be converted into base_footprint frame
    */
   bool calcIsLeftFootKicking(const std_msgs::Header &header,
                              const geometry_msgs::Vector3 &ball_position,
@@ -180,6 +185,8 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    * @param ball_position Position of the ball
    * @param kick_direction Direction in which to kick the ball
    * @return pair of (transformed_pose, transformed_direction)
+   *
+   * @throws tf2::TransformException when goal cannot be transformed into support_foot_frame
    */
   std::optional<std::pair<geometry_msgs::Point, geometry_msgs::Quaternion>> transformGoal(
       const std::string &support_foot_frame,
