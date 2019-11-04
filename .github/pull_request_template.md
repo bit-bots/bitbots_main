@@ -6,7 +6,7 @@
 ## Related issues
 <!--- Mention (link) related issues. -->
 <!--- If you suggest a new feature, please discuss it in an issue first. -->
-<!--- If fixing a bug, there should be an issue describing it with steps to reprouce -->
+<!--- If fixing a bug, there should be an issue describing it with steps to reproduce -->
 
 ## Necessary checks
 - [ ] Update package version
