@@ -32,7 +32,7 @@ ball_fcnn_candidate_refinement_iteration_count: 1  # Number of iterations of ref
 ball_fcnn_publish_output: false  # Publish the output of the ball fcnn as ImageWithRegionOfInterest
 ball_fcnn_publish_field_boundary_offset: 5  # The offset added to the field_boundary when cropping the fcnn output for publication in pixels
 
-neural_network_type: 'yolo_darknet'  # The neural network type that should be used
+neural_network_type: 'yolo_darknet'  # The neural network type that should be used (fcnn, yolo_opencv, yolo_darknet or dummy)
 ball_candidate_field_boundary_y_offset: 0  # Threshold in which ball candidates over the field boundary are allowed.
 ball_candidate_rating_threshold: 0.5  # A threshold for the minimum candidate rating
 
@@ -42,7 +42,7 @@ dynamic_color_space_active: true  # Turn dynamic color space ON or OFF
 dynamic_color_space_queue_max_size: 20  # Maximum size of queue that holds the latest added colors
 dynamic_color_space_threshold: 0.6  # Necessary amount of previously detected color inside the kernel in percentage
 dynamic_color_space_kernel_radius: 1  # Radius surrounding the center-element of kernel-matrix, defines relevant surrounding of pixel
-dynamic_color_space_field_boundary_detector_search_method: 'reversed'  # Search method for FieldBoundaryFinder used by DynamicColorSpace
+dynamic_color_space_field_boundary_detector_search_method: 'reversed'  # Search method for FieldBoundaryFinder used by DynamicColorSpace (iteration, reversed, binary or dynamic)
 
 white_color_detector_lower_values_h: 101  # Lower bound for the white color detector hue
 white_color_detector_lower_values_s: 0  # Lower bound for the white color detector saturation
@@ -79,7 +79,7 @@ line_detector_use_line_points: true  # Calculate and publish the line points
 line_detector_use_line_mask: true  # Calculate and publish the line mask
 line_detector_linepoints_range: 10000  # Number of line points
 
-obstacle_finder_method: 'convex'  # Method for the obstacle finder
+obstacle_finder_method: 'convex'  # Method for the obstacle finder (distance, convex or step)
 obstacle_color_threshold: 10  # An obstacle is defined as blue/red if it contains more blue or red than this threshold
 obstacle_white_threshold: 12  # An obstacle that contains more white than this threshold and is not colored, is an goalpost in the conventional approach
 obstacle_field_boundary_diff_threshold: 20  # Minimal distance between detected and convex field boundary to accept it as obstacle
