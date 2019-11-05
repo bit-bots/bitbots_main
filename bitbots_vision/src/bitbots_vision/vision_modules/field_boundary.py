@@ -46,7 +46,7 @@ class FieldBoundaryDetector(object):
             'dynamic': DynamicFieldBoundaryDetector,
             'binary': BinaryFieldBoundaryDetector,
             'reversed': ReversedFieldBoundaryDetector,
-            'cvreversed': CVReversedFieldBoundaryDetector,
+            'downsampling_reversed': CVReversedFieldBoundaryDetector,
             'iteration': IterationFieldBoundaryDetector,
         }
         return detectors[search_method]
