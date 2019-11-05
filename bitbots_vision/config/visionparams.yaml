@@ -67,8 +67,8 @@ blue_color_detector_upper_values_v: 255
 field_boundary_detector_search_method: 'downsampling_reversed'  # iteration, reversed, downsampling_reversed, binary or dynamic
 field_boundary_detector_vertical_steps: 30
 field_boundary_detector_horizontal_steps: 30
-field_boundary_detector_roi_height: 1
-field_boundary_detector_roi_width: 1
+field_boundary_detector_roi_height: 2
+field_boundary_detector_roi_width: 2
 field_boundary_detector_roi_increase: 0.1  # increase of kernel radius per pixel
 field_boundary_detector_green_threshold: 136
 field_boundary_detector_precision_pix: 5
