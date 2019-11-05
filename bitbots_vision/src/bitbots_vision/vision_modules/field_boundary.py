@@ -46,7 +46,7 @@ class FieldBoundaryDetector(object):
             'dynamic': DynamicFieldBoundaryDetector,
             'binary': BinaryFieldBoundaryDetector,
             'reversed': ReversedFieldBoundaryDetector,
-            'downsampling_reversed': CVReversedFieldBoundaryDetector,
+            'downsampling_reversed': DownsamplingReversedFieldBoundaryDetector,
             'iteration': IterationFieldBoundaryDetector,
         }
         return detectors[search_method]
@@ -424,7 +424,7 @@ class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
             self._green_threshold)
 
 
-class CVReversedFieldBoundaryDetector(FieldBoundaryDetector):
+class DownsamplingReversedFieldBoundaryDetector(FieldBoundaryDetector):
     def __init__(self, config, field_color_detector):
         """
         This is the reversed iteration field boundary detector implemented in OpenCV.
@@ -433,14 +433,14 @@ class CVReversedFieldBoundaryDetector(FieldBoundaryDetector):
         :param config: the configuration contained in visionparams.yaml
         :param field_color_detector: checks whether a color is part of the field colors
         """
-        super(CVReversedFieldBoundaryDetector, self).__init__(config, field_color_detector)
+        super(DownsamplingReversedFieldBoundaryDetector, self).__init__(config, field_color_detector)
 
     def _compute_field_boundary_points(self):
         """
         Calls the method to compute the field boundary via the reversed iteration method and saves it in the class variable _field_boundary_points
         """
         # Calc field boundary
-        self._field_boundary_points = CVReversedFieldBoundaryAlgorithm._calculate_field_boundary(
+        self._field_boundary_points = DownsamplingReversedFieldBoundaryAlgorithm._calculate_field_boundary(
             self._image,
             self._field_color_detector,
             self._x_steps,
@@ -657,7 +657,7 @@ class ReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         return _field_boundary_points
 
 
-class CVReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
+class DownsamplingReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
     @staticmethod
     def _calculate_field_boundary(image, field_color_detector, x_steps, y_steps, roi_height, roi_width, roi_increase, green_threshold):
         # type: () -> list
