@@ -696,9 +696,9 @@ class DownsamplingReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
             field_boundary_points.append(
                 (int((x_position + 0.5) * (field_mask.shape[1] / x_steps)),
                  int(max_y * (field_mask.shape[0] / y_steps))))
-        # Fix suff at the image edges
+        # Fix stuff at the image edges
         field_boundary_points[0] = (0, field_boundary_points[0][1])
-        field_boundary_points[-1] = (field_mask.shape[1]-1, field_boundary_points[0][1])
+        field_boundary_points[-1] = (field_mask.shape[1]-1, field_boundary_points[-1][1])
         return field_boundary_points
 
 
