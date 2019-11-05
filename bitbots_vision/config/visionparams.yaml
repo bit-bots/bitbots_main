@@ -75,10 +75,11 @@ field_boundary_detector_green_threshold: 136  # Threshold of green in the area c
 field_boundary_detector_head_tilt_threshold: 20  # Threshold for the dynamic search method, that describes the head angle at which we are switching between the iteration and the reversed search method.
 
 line_detector_field_boundary_offset: 0  # Threshold in which we are also searching for lines over the field boundary
-line_detector_use_line_points: true  # Calculate and publish the line points
-line_detector_use_line_mask: true  # Calculate and publish the line mask
+line_detector_use_line_points: false  # Calculate and publish the line points
+line_detector_use_line_mask: false  # Calculate and publish the line mask
 line_detector_linepoints_range: 10000  # Number of line points
 
+obstacle_active: false  # Enables the obstacle detection
 obstacle_finder_method: 'convex'  # Method for the obstacle finder (distance, convex or step)
 obstacle_color_threshold: 10  # An obstacle is defined as blue/red if it contains more blue or red than this threshold
 obstacle_white_threshold: 12  # An obstacle that contains more white than this threshold and is not colored, is an goalpost in the conventional approach
