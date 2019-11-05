@@ -680,9 +680,9 @@ class DownsamplingReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
 
         field_boundary_points = []
 
-        # Iterate horizontal over the image
+        # Iterate horizontally over the image
         for x_position in range(subsampled_mask.shape[1]):
-            # Iterate vertical over the downscaled mask
+            # Iterate vertically over the downscaled mask
             for y_position in range(subsampled_mask.shape[0]):
                 # Invert the current vertical value
                 max_y = (subsampled_mask.shape[0] - 1) - y_position
