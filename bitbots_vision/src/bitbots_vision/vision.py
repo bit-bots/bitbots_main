@@ -234,7 +234,9 @@ class Vision:
 
         # Check if params changed
         if ros_utils.config_param_change(self._config, config,
-                r'^green_color_detector_|field_color_detector_use_hsv'):
+                r'^field_color_detector_|field_color_detector_use_hsv') and config['field_color_detector_use_hsv']:
+            # Override field color hsv detector
+            self._field_color_detector = color.HsvSpaceColorDetector(config, "field")
             # Deactivate dynamic color space
             self._use_dynamic_color_space = False
             # Unregister old subscriber
