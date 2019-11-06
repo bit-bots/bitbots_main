@@ -224,6 +224,7 @@ class Vision:
                     config,
                     self._package_path)
             else:
+                self._use_dynamic_color_space = False
                 # Unregister old subscriber
                 if self._sub_dynamic_color_space_msg_topic is not None:
                     self._sub_dynamic_color_space_msg_topic.unregister()
@@ -237,13 +238,14 @@ class Vision:
                 r'^field_color_detector_|field_color_detector_use_hsv') and config['field_color_detector_use_hsv']:
             # Override field color hsv detector
             self._field_color_detector = color.HsvSpaceColorDetector(config, "field")
+
+        if config['field_color_detector_use_hsv']:
             # Deactivate dynamic color space
             self._use_dynamic_color_space = False
             # Unregister old subscriber
             if self._sub_dynamic_color_space_msg_topic is not None:
                 self._sub_dynamic_color_space_msg_topic.unregister()
-            # Override field color hsv detector
-            self._field_color_detector = color.HsvSpaceColorDetector(config, "green")
+                self._sub_dynamic_color_space_msg_topic = None
 
         # Get field boundary detector class by name from _config
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
