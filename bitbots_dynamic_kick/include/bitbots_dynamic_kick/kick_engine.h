@@ -188,7 +188,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    *
    * @throws tf2::TransformException when goal cannot be transformed into support_foot_frame
    */
-  std::optional<std::pair<geometry_msgs::Point, geometry_msgs::Quaternion>> transformGoal(
+  std::pair<geometry_msgs::Point, geometry_msgs::Quaternion> transformGoal(
       const std::string &support_foot_frame,
       const std_msgs::Header &header,
       const geometry_msgs::Vector3 &ball_position,

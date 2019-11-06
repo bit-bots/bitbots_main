@@ -21,8 +21,8 @@ void KickEngine::setGoals(const KickGoals &goals) {
   /* Save given goals because we reuse them later */
   auto transformed_goal = transformGoal((is_left_kick_) ? "r_sole" : "l_sole",
                                         goals.header, goals.ball_position, goals.kick_direction);
-  tf2::convert(transformed_goal->first, ball_position_);
-  tf2::convert(transformed_goal->second, kick_direction_);
+  tf2::convert(transformed_goal.first, ball_position_);
+  tf2::convert(transformed_goal.second, kick_direction_);
   kick_direction_.normalize();
   kick_speed_ = goals.kick_speed;
 
@@ -218,7 +218,7 @@ void KickEngine::initTrajectories() {
   flying_trajectories_->add("yaw");
 }
 
-std::optional<std::pair<geometry_msgs::Point, geometry_msgs::Quaternion>> KickEngine::transformGoal(
+std::pair<geometry_msgs::Point, geometry_msgs::Quaternion> KickEngine::transformGoal(
     const std::string &support_foot_frame,
     const std_msgs::Header &header,
     const geometry_msgs::Vector3 &ball_position,
