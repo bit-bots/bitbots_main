@@ -59,29 +59,28 @@ def state_update(state_msg):
     ball_pose_stamped.header.stamp = rospy.Time.now()
     ball_pose_stamped.header.frame_id = "map"
     ball_pose_stamped.pose = ball_pose
-    ball_in_camera_frame = tf_buffer.transform(ball_pose_stamped, "camera", timeout=rospy.Duration(0.5))
+    ball_in_camera_optical_frame = tf_buffer.transform(ball_pose_stamped, cam_info.header.frame_id, timeout=rospy.Duration(0.5))
 
     # we only have to compute if the ball is inside the image, if the ball is in front of the camera
-    if ball_in_camera_frame.pose.position.z >= 0:
-        ball_pose_stamped = tf_buffer.transform(ball_pose_stamped, cam_info.header.frame_id,
-                                                timeout=rospy.Duration(0.5))
-        p = [ball_pose_stamped.pose.position.x, ball_pose_stamped.pose.position.y, ball_pose_stamped.pose.position.z]
+    if ball_in_camera_optical_frame.pose.position.z >= 0:
+        p = [ball_in_camera_optical_frame.pose.position.x, ball_in_camera_optical_frame.pose.position.y, ball_in_camera_optical_frame.pose.position.z]
         k = np.reshape(cam_info.K, (3,3))
         p_pixel = np.matmul(k, p)
         p_pixel = p_pixel * (1/p_pixel[2])
 
         # make sure that the transformed pixel is inside the resolution and positive.
         # also z has to be positive to make sure that the ball is in front of the camera and not in the back
-        if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height:
-            ball = BallRelative()
-            ball.header.stamp = ball_pose_stamped.header.stamp
-            ball.header.frame_id = "base_footprint"
-            ball_pose_stamped = tf_buffer.transform(ball_pose_stamped, "base_footprint",
+        if 0 < p_pixel[0] <= cam_info.width and 0 < p_pixel[1] <= cam_info.height:
+            ball_relative = BallRelative()
+            ball_relative.header.stamp = ball_in_camera_optical_frame.header.stamp
+            ball_relative.header.frame_id = "base_footprint"
+            ball_in_footprint_frame = tf_buffer.transform(ball_in_camera_optical_frame, "base_footprint",
                                                     timeout=rospy.Duration(0.5))
-            ball.header = ball_pose_stamped.header
-            ball.ball_relative = ball_pose_stamped.pose.position
-            ball.confidence = 1.0
-            ball_pub.publish(ball)
+            ball_relative.header = ball_in_footprint_frame.header
+            ball_relative.ball_relative = ball_in_footprint_frame.pose.position
+            ball_relative.confidence = 1.0
+            ball_pub.publish(ball_relative)
+    # todo make this also listen to interactive markers
 
     for gp in (goal1_pose, goal2_pose):
         goal_pose_stamped = PoseStamped()
@@ -95,44 +94,40 @@ def state_update(state_msg):
 
         left_post = deepcopy(goal_pose_stamped)
         left_post.pose.position.y += 1.35
-        left_post_in_camera_frame = tf_buffer.transform(left_post, "camera", timeout=rospy.Duration(0.5))
+        left_post_in_camera_optical_frame = tf_buffer.transform(left_post, cam_info.header.frame_id, timeout=rospy.Duration(0.5))
 
-        if left_post_in_camera_frame.pose.position.z >= 0:
-            left_post = tf_buffer.transform(left_post, cam_info.header.frame_id,
-                                                    timeout=rospy.Duration(0.5))
-            p = [left_post.pose.position.x, left_post.pose.position.y, left_post.pose.position.z]
+        lpost_visible = False
+        rpost_visible = False
+
+        if left_post_in_camera_optical_frame.pose.position.z >= 0:
+            p = [left_post_in_camera_optical_frame.pose.position.x, left_post_in_camera_optical_frame.pose.position.y, left_post_in_camera_optical_frame.pose.position.z]
             k = np.reshape(cam_info.K, (3, 3))
             p_pixel = np.matmul(k, p)
             p_pixel = p_pixel * (1 / p_pixel[2])
-            lp = False
-            if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height\
-                    and left_post.pose.position.z > 0:
+
+            if 0 < p_pixel[0] <= cam_info.width and 0 < p_pixel[1] <= cam_info.height:
                 goal.left_post = tf_buffer.transform(left_post, "base_footprint",
                                                     timeout=rospy.Duration(0.5)).pose.position
-                lp = True
+                lpost_visible = True
 
         right_post = goal_pose_stamped
         right_post.pose.position.y -= 1.35
-        right_post_in_camera_frame = tf_buffer.transform(right_post, "camera", timeout=rospy.Duration(0.5))
-        if right_post_in_camera_frame.pose.position.z >= 0:
-            right_post = tf_buffer.transform(right_post, cam_info.header.frame_id,
-                                                    timeout=rospy.Duration(0.5))
+        right_post_in_camera_optical_frame = tf_buffer.transform(right_post, cam_info.header.frame_id, timeout=rospy.Duration(0.5))
+        if right_post_in_camera_optical_frame.pose.position.z >= 0:
             p = [right_post.pose.position.x, right_post.pose.position.y, right_post.pose.position.z]
             k = np.reshape(cam_info.K, (3, 3))
             p_pixel = np.matmul(k, p)
             p_pixel = p_pixel * (1 / p_pixel[2])
 
-            rp = False
-            if p_pixel[0] > 0 and p_pixel[0] <= cam_info.width and p_pixel[1] > 0 and p_pixel[1] <= cam_info.height\
-                and right_post.pose.position.z:
-                goal.right_post = tf_buffer.transform(right_post, "base_footprint",
+            if 0 < p_pixel[0] <= cam_info.width and 0 < p_pixel[1] <= cam_info.height:
+                goal.right_post = tf_buffer.transform(right_post_in_camera_optical_frame, "base_footprint",
                                                     timeout=rospy.Duration(0.5)).pose.position
-                rp = True
+                rpost_visible = True
 
-        if rp or lp:
-            if not lp:
+        if rpost_visible or lpost_visible:
+            if not lpost_visible:
                 goal.left_post = goal.right_post
-            elif not rp:
+            elif not rpost_visible:
                 goal.right_post = goal.left_post
             goal.confidence = 1
             goal_pub.publish(goal)
