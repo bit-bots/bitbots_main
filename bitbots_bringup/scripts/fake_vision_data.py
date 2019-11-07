@@ -12,7 +12,7 @@ class FakeDataGenerator():
         rospy.init_node("fake_data_generator")
 
         # image space
-        self.ball_image_pub = rospy.Publisher("/ball_in_image", BallInImage, queue_size=1, tcp_nodelay=True)
+        self.ball_image_pub = rospy.Publisher("/balls_in_image", BallInImage, queue_size=1, tcp_nodelay=True)
         self.ball_can_image_pub = rospy.Publisher("/ball_candidates", BallsInImage, queue_size=1, tcp_nodelay=True)
         self.goal_part_image_pub = rospy.Publisher("/goal_part_candidates", GoalPartsInImage, queue_size=1, tcp_nodelay=True)
         self.goal_image_pub = rospy.Publisher("/goal_in_image", GoalInImage, queue_size=1, tcp_nodelay=True)

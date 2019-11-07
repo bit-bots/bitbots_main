@@ -25,6 +25,7 @@ class MotorVizHelper:
         parser.add_argument("--animation", "-a", help="Directly get animation motor goals", action="store_true")
         parser.add_argument("--head", help="Directly get head motor goals", action="store_true")
         parser.add_argument("--kick", help="Directly get kick motor goals", action="store_true")
+        parser.add_argument("--dynup", help="Directly get Dynup motor goals", action="store_true")
         parser.add_argument("--all", help="Directly get all motor goals", action="store_true")
         parser.add_argument("--gazebo", help="Publish for Gazebo instead of rviz", action="store_true")
         args = parser.parse_args(args0[1:])
@@ -43,6 +44,8 @@ class MotorVizHelper:
             rospy.Subscriber("head_motor_goals", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
         if args.kick or args.all:
             rospy.Subscriber("kick_motor_goals", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
+        if args.dynup or args.all:
+            rospy.Subscriber("animation_motor_goals", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
         rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
 
         self.joint_state_msg = JointState()
@@ -62,13 +65,19 @@ class MotorVizHelper:
         rate = rospy.Rate(100)
         self.update_time = rospy.Time.now()
         while not rospy.is_shutdown():
-            self.update_joint_states(self.joint_command_msg)
-            self.joint_state_msg.header.stamp = rospy.Time.now()
-            if args.gazebo:
-                self.joint_publisher.publish(self.get_float_array())
-            else:
-                self.joint_publisher.publish(self.joint_state_msg)
-            rate.sleep()
+            try:
+                self.update_joint_states(self.joint_command_msg)
+                self.joint_state_msg.header.stamp = rospy.Time.now()
+                if args.gazebo:
+                    self.joint_publisher.publish(self.get_float_array())
+                else:
+                    self.joint_publisher.publish(self.joint_state_msg)
+                rate.sleep()
+            except rospy.exceptions.ROSTimeMovedBackwardsException:
+                pass
+            except rospy.exceptions.ROSInterruptException:
+                rospy.logwarn('motor_viz_helper: shutting down')
+                break
 
     def joint_command_cb(self, msg: JointCommand):
         self.joint_command_msg.header.stamp = rospy.Time.now()
