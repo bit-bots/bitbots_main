@@ -114,7 +114,7 @@ def state_update(state_msg):
         right_post.pose.position.y -= 1.35
         right_post_in_camera_optical_frame = tf_buffer.transform(right_post, cam_info.header.frame_id, timeout=rospy.Duration(0.5))
         if right_post_in_camera_optical_frame.pose.position.z >= 0:
-            p = [right_post.pose.position.x, right_post.pose.position.y, right_post.pose.position.z]
+            p = [right_post_in_camera_optical_frame.pose.position.x, right_post_in_camera_optical_frame.pose.position.y, right_post_in_camera_optical_frame.pose.position.z]
             k = np.reshape(cam_info.K, (3, 3))
             p_pixel = np.matmul(k, p)
             p_pixel = p_pixel * (1 / p_pixel[2])
