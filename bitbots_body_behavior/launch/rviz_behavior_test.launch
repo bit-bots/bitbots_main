@@ -14,11 +14,8 @@
         <arg name="sim" value="true"/>
     </include>
 
-    <node name="rviz" pkg="rviz" type="rviz" output="screen" required="true"
-          args="-d $(find humanoid_league_interactive_marker)/config/behavior_test.rviz">
-    </node>
+    <include file="$(find humanoid_league_interactive_marker)/launch/interactive_marker.launch" />
 
-    <node name="interactive_marker" pkg="humanoid_league_interactive_marker" type="rviz_behavior_test.py"/>
     <node name="motor_goals_viz_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py"/>
     <!-- TODO: replace this with the launch file when one exists -->
     <node name="dynamic_kick" pkg="bitbots_dynamic_kick" type="KickNode" output="screen" />
