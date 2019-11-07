@@ -7,6 +7,19 @@ This is the vision package of the Hamburg Bit-Bots.
 
 The vision is able to detect lines, the field itself, the field boundary, goal posts, teammates, enemies and other obstacles.
 
+An earlier version of this pipeline is presented in our paper [An Open Source Vision Pipeline Approach for RoboCup Humanoid Soccer](https://robocup.informatik.uni-hamburg.de/wp-content/uploads/2019/06/vision_paper.pdf). 
+When you use this pipeline or parts of it, please cite it.
+```
+@inproceedings{vision2019,
+author={Fiedler, Niklas and Brandt, Hendrik and Gutsche, Jan and Vahl, Florian and Hagge, Jonas and Bestmann, Marc},
+year={2019},
+title={An Open Source Vision Pipeline Approach for RoboCup Humanoid Soccer},
+booktitle={RoboCup 2019: Robot World Cup XXIII},
+note = {Accepted},
+organization={Springer}
+}
+```
+
 Its architecture is modular allowing easy implementation of new approaches resulting in a high grade of customizability.
 
 For ball detection, you can choose between an fcnn or multiple yolo implementations.
