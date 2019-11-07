@@ -9,20 +9,12 @@ pipeline {
 
     stages {
         stage('Build docker container') {
+            when { branch 'master' }
             steps {
-                sh 'docker build -t bitbots_builder --no-cache docker_builder'
-                sh 'docker tag bitbots_builder registry.bit-bots.de:5000/bitbots_builder'
+                sh 'docker build -t registry.bit-bots.de:5000/bitbots_builder --no-cache docker_builder'
                 sh 'docker push registry.bit-bots.de:5000/bitbots_builder'
-            }
-        }
-
-        stage('Build packages') {
-            agent { docker image: 'bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000', alwaysPull: true }
-            steps {
-                linkCatkinWorkspace()
-                sh 'rosdep update'
-                sh 'rosdep install -iry --from-paths /catkin_ws/src'
-                catkinBuild()
+                sh 'docker image prune -f'
+                sh 'docker container prune -f'
             }
         }
 
@@ -32,8 +24,9 @@ pipeline {
                 linkCatkinWorkspace()
                 catkinBuild("Documentation")
 
-                stash includes: '**/docs/_out/**', name: 'docs_output'
-                archiveArtifacts artifacts: '**/docs/_out/**', onlyIfSuccessful: true
+                stash includes: 'bitbots_docs/docs/_out/**', name: 'docs_output'
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'bitbots_docs/docs/_out/',
+                            reportFiles: 'index.html', reportName: 'Built Documentation', reportTitles: ''])
             }
         }
 
