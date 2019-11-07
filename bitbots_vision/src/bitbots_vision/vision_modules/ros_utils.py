@@ -16,7 +16,7 @@ e.g. methods to convert candidates to ros msgs or methods to modify the dynamic 
 
 _cv_bridge = CvBridge()
 
-global_params = []
+general_parameters = []
 
 def _change_enum_items(cfg_type, parameter_name, new_items, default=None):
     """
@@ -467,15 +467,15 @@ def speak(string, speech_publisher):
     speak_message.text = string
     speech_publisher.publish(speak_message)
 
-def set_global_params(params):
+def set_general_parameters(params):
     """
     Sets params, that should trigger every `config_param_change` call.
 
     :params list of global params
     """
-    global_params.extend(params)
+    general_parameters.extend(params)
 
-def config_param_change(old_config, new_config, params, check_globals=True):
+def config_param_change(old_config, new_config, params, check_generals=True):
     # type: (dict, dict, [str]) -> bool
     """
     Checks whether some of the specified config params have changed.
@@ -483,7 +483,7 @@ def config_param_change(old_config, new_config, params, check_globals=True):
     :param dict old_config: old config dict
     :param dict new_config: new config dict
     :param list of str or str params: regex discribing parameter name or list of parameter names
-    :param bool check_globals: Also check for global params (Default True)
+    :param bool check_generals: Also check for general params (Default True)
     :return bool: True if parameter has changed
     """
     # Make regex instead of list possible
@@ -496,9 +496,9 @@ def config_param_change(old_config, new_config, params, check_globals=True):
         if len(params) == 0:
             raise KeyError('Regex \'{}\' has no matches in dict.'.format(params))
 
-    # Add global params to parameters
-    if check_globals:
-        params.extend(global_params)
+    # Add general params to parameters
+    if check_generals:
+        params.extend(general_parameters)
 
     # Iterate over params
     for param in params:
