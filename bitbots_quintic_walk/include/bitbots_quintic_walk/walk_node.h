@@ -101,7 +101,7 @@ class WalkNode {
   /**
    * This method computes the next motor goals and publishes them.
    */
-  void calculateAndPublishJointGoals(const WalkResponse &response);
+  void calculateAndPublishJointGoals(const WalkResponse &response, double dt);
 
   double getTimeDelta();
 
@@ -184,6 +184,8 @@ class WalkNode {
   WalkStabilizer stabilizer_;
   WalkIK ik_;
   WalkVisualizer visualizer_;
+
+  double current_trunk_pitch_;
 
 };
 

@@ -9,6 +9,7 @@ WalkNode::WalkNode() :
   // init variables
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLABLE;
   current_request_.orders = {0, 0, 0};
+  current_trunk_pitch_ = 0;
 
   // read config
   nh_.param<double>("engine_frequency", engine_frequency_, 100.0);
@@ -87,7 +88,7 @@ void WalkNode::run() {
 
       // only calculate joint goals from this if the engine is not idle
       if (walk_engine_.getState() != WalkState::IDLE) {
-        calculateAndPublishJointGoals(response);
+        calculateAndPublishJointGoals(response, dt);
       }
     }
 
@@ -102,9 +103,9 @@ void WalkNode::run() {
   }
 }
 
-void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
+void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, double dt) {
   // get bioIk goals from stabilizer
-  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response);
+  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response, current_trunk_pitch_, ros::Duration(dt));
 
   // compute motor goals from IK
   bitbots_splines::JointGoals motor_goals = ik_.calculate(std::move(ik_goals));
@@ -190,6 +191,7 @@ void WalkNode::imuCb(const sensor_msgs::Imu &msg) {
     // the tf2::Quaternion has a method to access roll pitch and yaw
     double roll, pitch, yaw;
     tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+    current_trunk_pitch_ = pitch;
 
     // compute the pitch offset to the currently wanted pitch of the engine
     double wanted_pitch = walk_engine_.getWantedTrunkPitch();
