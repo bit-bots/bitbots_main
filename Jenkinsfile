@@ -19,7 +19,7 @@ pipeline {
         }
 
         stage('Document') {
-            agent { docker image: 'bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000', alwaysPull: true }
+            agent { docker image: 'registry.bit-bots.de:5000/bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000', alwaysPull: true }
             steps {
                 linkCatkinWorkspace()
                 catkinBuild("Documentation")
