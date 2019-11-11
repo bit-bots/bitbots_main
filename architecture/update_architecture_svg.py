@@ -263,7 +263,11 @@ def do_documentation_for(robotname):
             "./{http://www.w3.org/2000/svg}g/{http://www.w3.org/2000/svg}g[{http://www.w3.org/2000/svg}ellipse]"):
         ellipses = group.findall("./{http://www.w3.org/2000/svg}ellipse")
         name = group.findall("./{http://www.w3.org/2000/svg}text/{http://www.w3.org/2000/svg}tspan")[0].text
-        path = rospack.get_path(name) + "/package.xml"
+        try:
+            path = rospack.get_path(name) + "/package.xml"
+        except rospkg.common.ResourceNotFound:
+            package_names.add(name)
+            continue
         # change color of the node, by using the white filled background ellipse
         for ellipse in ellipses:
             if "fill: #ffffff" in ellipse.attrib["style"]:
