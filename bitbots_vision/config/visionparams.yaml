@@ -37,6 +37,7 @@ ball_candidate_field_boundary_y_offset: 0  # Threshold in which ball candidates 
 ball_candidate_rating_threshold: 0.5  # A threshold for the minimum candidate rating
 
 field_color_detector_path: 'basler_f031.pickle'  # Color space for the field color detector
+field_color_detector_use_hsv: false
 
 dynamic_color_space_active: true  # Turn dynamic color space ON or OFF
 dynamic_color_space_queue_max_size: 20  # Maximum size of queue that holds the latest added colors
@@ -58,12 +59,20 @@ red_color_detector_upper_values_h: 255  # Upper bound for the red color detector
 red_color_detector_upper_values_s: 255  # Upper bound for the red color detector saturation
 red_color_detector_upper_values_v: 255  # Upper bound for the red color detector value/brightness
 
-blue_color_detector_lower_values_h: 90  # Lower bound for the blue color detector hue
+blue_color_detector_lower_values_h: 90   # Lower bound for the blue color detector hue
 blue_color_detector_lower_values_s: 197  # Lower bound for the blue color detector saturation
 blue_color_detector_lower_values_v: 134  # Lower bound for the blue color detector value/brightness
 blue_color_detector_upper_values_h: 116  # Upper bound for the blue color detector hue
 blue_color_detector_upper_values_s: 255  # Upper bound for the blue color detector saturation
 blue_color_detector_upper_values_v: 255  # Upper bound for the blue color detector value/brightness
+
+
+field_color_detector_lower_values_h: 25  # Lower bound for the field color detector hue
+field_color_detector_lower_values_s: 8  # Lower bound for the field color detector saturation
+field_color_detector_lower_values_v: 20  # Lower bound for the field color detector value/brightness
+field_color_detector_upper_values_h: 45  # Upper bound for the field color detector hue
+field_color_detector_upper_values_s: 255  # Upper bound for the field color detector saturation
+field_color_detector_upper_values_v: 255  # Upper bound for the field color detector value/brightness
 
 field_boundary_detector_search_method: 'downsampling_reversed'  # Method for finding the field boundary (iteration, reversed, downsampling_reversed, binary, dynamic)
 field_boundary_detector_vertical_steps: 30  # Number of steps on each scanline
@@ -94,4 +103,5 @@ vision_publish_debug_image: false  # Publish debug image message
 ball_fcnn_publish_debug_img: false  # Publish the fcnn heatmap image for debug purposes
 vision_publish_HSV_mask_image: false  # Publish all three HSV color detector mask image messages for debug purposes
 vision_publish_field_mask_image: false  # Publish field mask image message for debug purposes
+caching: true  # Used to deactivate caching for profiling reasons
 

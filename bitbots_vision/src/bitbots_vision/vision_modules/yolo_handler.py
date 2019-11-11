@@ -21,11 +21,14 @@ class YoloHandler():
         self._ball_candidates = None
         self._goalpost_candidates = None
 
+        # Set if values should be cached
+        self._caching = config['caching']
+
     @abc.abstractmethod
     def set_image(self, img):
         """
         Image setter abstact method. (Cached)
-        
+
         :param img: Image
         """
         raise NotImplementedError
@@ -119,7 +122,7 @@ class YoloHandlerDarknet(YoloHandler):
         Runs the neural network
         """
         # Check if cached
-        if self._results is None:
+        if self._results is None or not self._caching:
             # Run neural network
             self._results = self._net.detect(Image(self._image))
             # Init lists
@@ -200,7 +203,7 @@ class YoloHandlerOpenCV(YoloHandler):
         Runs the neural network
         """
         # Check if cached
-        if self._outs is None:
+        if self._outs is None or not self._caching:
             # Set image
             self._net.setInput(self._blob)
             # Run net

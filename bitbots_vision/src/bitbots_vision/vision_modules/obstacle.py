@@ -33,6 +33,9 @@ class ObstacleDetector(CandidateFinder):
         self._white_obstacles = None
         self._other_obstacles = None
 
+        # Set if values should be cached
+        self._caching = config['caching']
+
     def set_config(self, config):
         self._color_threshold = config['obstacle_color_threshold']
         self._white_threshold = config['obstacle_white_threshold']
@@ -80,7 +83,7 @@ class ObstacleDetector(CandidateFinder):
         if not self.active:
             return []
         # Check if allready cached
-        if self._obstacles is None:
+        if self._obstacles is None or not self._caching:
             # Select calculation method
             if self._obstacle_finder_method == 'distance':
                 self._obstacles = self._obstacle_detector_distance()
@@ -98,7 +101,7 @@ class ObstacleDetector(CandidateFinder):
 
         :return: candidate(int: x upper left point, int: y upper left point, int: width, int: height)
         """
-        if self._obstacles is None:
+        if self._obstacles is None or not self._caching:
             self._obstacles = list()
             obstacle_begin = None
             field_boundary_points = self._field_boundary_detector.get_field_boundary_points()
@@ -149,7 +152,7 @@ class ObstacleDetector(CandidateFinder):
         # TODO: fix rarely finding not existent obstacles at the edge (vectors + orthogonal distance?)
         # TODO: increase step length before beginning of obstacle has been found, decrease it afterwards
         # TODO: interpolate individual points instead of the whole list (see get_full_field_boundary)
-        if self._obstacles is None:
+        if self._obstacles is None or not self._caching:
             self._obstacles = list()
             obstacle_begin = None
             # the ordinary field_boundary and convex_field_boundary consist out of a limited amount of points (usually 30).
@@ -293,7 +296,7 @@ class ObstacleDetector(CandidateFinder):
 
         :return: list of red obstacles candidates
         """
-        if self._red_obstacles is None:
+        if self._red_obstacles is None or not self._caching:
             self.compute()
         return self._red_obstacles
 
@@ -304,7 +307,7 @@ class ObstacleDetector(CandidateFinder):
 
         :return: list of blue obstacles candidates
         """
-        if self._blue_obstacles is None:
+        if self._blue_obstacles is None or not self._caching:
             self.compute()
         return self._blue_obstacles
 
@@ -315,7 +318,7 @@ class ObstacleDetector(CandidateFinder):
 
         :return: list of white obstacles candidates
         """
-        if self._white_obstacles is None:
+        if self._white_obstacles is None or not self._caching:
             self.compute()
         return self._white_obstacles
 
@@ -326,7 +329,7 @@ class ObstacleDetector(CandidateFinder):
 
         :return: list of other obstacles candidates
         """
-        if self._other_obstacles is None:
+        if self._other_obstacles is None or not self._caching:
             self.compute()
         return self._other_obstacles
 
