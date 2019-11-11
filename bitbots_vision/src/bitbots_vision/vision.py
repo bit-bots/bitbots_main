@@ -94,6 +94,9 @@ class Vision:
         # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
 
+        # Add general params
+        ros_utils.set_check_generals(["caching"])
+
         # Run the vision main loop
         self._main_loop()
 
