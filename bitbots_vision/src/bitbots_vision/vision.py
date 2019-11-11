@@ -219,7 +219,7 @@ class Vision:
 
         # Check if params changed
         if ros_utils.config_param_change(self._config, config,
-                r'^field_color_detector_|dynamic_color_space_'):
+                r'^field_color_detector_|dynamic_color_space_') and not config['field_color_detector_use_hsv']:
             # Check if the dynamic color space field color detector or the static field color detector should be used
             if self._use_dynamic_color_space:
                 # Set dynamic color space field color detector
@@ -227,6 +227,7 @@ class Vision:
                     config,
                     self._package_path)
             else:
+                self._use_dynamic_color_space = False
                 # Unregister old subscriber
                 if self._sub_dynamic_color_space_msg_topic is not None:
                     self._sub_dynamic_color_space_msg_topic.unregister()
@@ -234,6 +235,20 @@ class Vision:
                 self._field_color_detector = color.PixelListColorDetector(
                     config,
                     self._package_path)
+
+        # Check if params changed
+        if ros_utils.config_param_change(self._config, config,
+                r'^field_color_detector_|field_color_detector_use_hsv') and config['field_color_detector_use_hsv']:
+            # Override field color hsv detector
+            self._field_color_detector = color.HsvSpaceColorDetector(config, "field")
+
+        if config['field_color_detector_use_hsv']:
+            # Deactivate dynamic color space
+            self._use_dynamic_color_space = False
+            # Unregister old subscriber
+            if self._sub_dynamic_color_space_msg_topic is not None:
+                self._sub_dynamic_color_space_msg_topic.unregister()
+                self._sub_dynamic_color_space_msg_topic = None
 
         # Get field boundary detector class by name from _config
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
