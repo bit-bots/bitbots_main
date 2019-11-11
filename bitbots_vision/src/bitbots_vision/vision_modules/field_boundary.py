@@ -49,6 +49,7 @@ class FieldBoundaryDetector(object):
             'dynamic': DynamicFieldBoundaryDetector,
             'binary': BinaryFieldBoundaryDetector,
             'reversed': ReversedFieldBoundaryDetector,
+            'downsampling_reversed': DownsamplingReversedFieldBoundaryDetector,
             'iteration': IterationFieldBoundaryDetector,
         }
         return detectors[search_method]
@@ -426,6 +427,33 @@ class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
             self._green_threshold)
 
 
+class DownsamplingReversedFieldBoundaryDetector(FieldBoundaryDetector):
+    def __init__(self, config, field_color_detector):
+        """
+        This is the reversed iteration field boundary detector implemented in OpenCV.
+        It uses the reversed detection method and finds the field boundary via scan lines running up from bottom to top.
+
+        :param config: the configuration contained in visionparams.yaml
+        :param field_color_detector: checks whether a color is part of the field colors
+        """
+        super(DownsamplingReversedFieldBoundaryDetector, self).__init__(config, field_color_detector)
+
+    def _compute_field_boundary_points(self):
+        """
+        Calls the method to compute the field boundary via the reversed iteration method and saves it in the class variable _field_boundary_points
+        """
+        # Calc field boundary
+        self._field_boundary_points = DownsamplingReversedFieldBoundaryAlgorithm._calculate_field_boundary(
+            self._image,
+            self._field_color_detector,
+            self._x_steps,
+            self._y_steps,
+            self._roi_height,
+            self._roi_width,
+            self._roi_increase,
+            self._green_threshold)
+
+
 class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
     def __init__(self, config, field_color_detector):
         """
@@ -517,7 +545,6 @@ class FieldBoundaryAlgorithm():
 class IterationFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
     @staticmethod
     def _calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
-        # type: () -> list
         """
         Finds the points of the field boundary visible in the image. Uses the standard method iterating from top to
         bottom until it finds enough green points.
@@ -526,7 +553,6 @@ class IterationFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         """
 
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
-        # index counting up from top to bottom and left to right
         field_mask = _field_color_detector.get_mask_image()
         # noise reduction on the field_mask:
         field_mask = cv2.morphologyEx(
@@ -560,16 +586,13 @@ class IterationFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
 class ReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
     @staticmethod
     def _calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
-        # type: () -> list
         """
         Finds the points of the field boundary visible in the image. Uses the reversed method iterating from bottom to
         top until it finds enough non green points. Useful for when two fields are adjacent to each other.
 
         :returns: list of field boundary points
         """
-
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
-        # index counting up from top to bottom and left to right
         field_mask = _field_color_detector.get_mask_image()
         # noise reduction on the field_mask:
 
@@ -627,6 +650,49 @@ class ReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         return _field_boundary_points
 
 
+class DownsamplingReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
+    @staticmethod
+    def _calculate_field_boundary(image, field_color_detector, x_steps, y_steps, roi_height, roi_width, roi_increase, green_threshold):
+        """
+        Finds the points of the field boundary visible in the image. Uses the reversed method iterating from bottom to
+        top until it finds enough non green points. Useful for when two fields are adjacent to each other.
+
+        :returns: list of field boundary points
+        """
+        # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
+        field_mask = field_color_detector.get_mask_image()
+
+        # Scale the image down
+        subsampled_mask = cv2.resize(field_mask,(x_steps,y_steps), interpolation=cv2.INTER_AREA)
+        # Define the blur kernel
+        kernel = (2 * (roi_height // 2) + 1, 2 * (roi_width // 2) + 1)
+        # Blur the downscaled image to fill holes in the field mask
+        subsampled_mask = cv2.GaussianBlur(subsampled_mask, kernel, 0)
+
+        field_boundary_points = []
+
+        # Iterate horizontally over the image
+        for x_position in range(subsampled_mask.shape[1]):
+            # Iterate vertically over the downscaled mask
+            for y_position in range(subsampled_mask.shape[0]):
+                # Invert the current vertical value
+                max_y = (subsampled_mask.shape[0] - 1) - y_position
+                # Check if we found a pixel under the threshold
+                if subsampled_mask[max_y, x_position] < int(green_threshold / 1000 * 255):
+                    # Reset to last step
+                    max_y += 1
+                    break
+            # Scale the field boundary points back to the original image
+            field_boundary_points.append(
+                (int((x_position + 0.5) * (field_mask.shape[1] / x_steps)),
+                 int(max_y * (field_mask.shape[0] / y_steps))))
+        # Fix a little offset at the image edges on the right and left
+        field_boundary_points[0] = (0, field_boundary_points[0][1])
+        field_boundary_points[-1] = (field_mask.shape[1]-1, field_boundary_points[-1][1])
+        return field_boundary_points
+
+
+
 class BinaryFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
     @staticmethod
     def _calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
@@ -637,7 +703,6 @@ class BinaryFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         :returns: list of field boundary points
         """
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
-        # index counting up from top to bottom and left to right
         field_mask = _field_color_detector.get_mask_image()
         # noise reduction on the field_mask:
         field_mask = cv2.morphologyEx(
