@@ -35,8 +35,11 @@ class GoToBall(AbstractActionElement):
                      self.blackboard.world_model.get_ball_position_uv()[1]
             angle = math.atan2(y_dist, x_dist)
             ball_point = (ball_u, ball_v, angle)
-        elif 'none' == self.target:
+        elif 'none' == self.target or 'current_orientation' == self.target:
             ball_point = (ball_u, ball_v, 0)
+        elif 'close' == self.target:
+            angle = math.atan2(ball_v, ball_u)
+            ball_point = (ball_u, ball_v, angle)
         else:
             rospy.logerr("Target %s for go_to_ball action not specified.", self.target)
             return
