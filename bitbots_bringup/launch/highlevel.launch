@@ -2,7 +2,7 @@
     <arg name="sim" default="false"/>
     <arg name="motion" default="true"/>
     <arg name="behave" default="true"/>
-    <arg name="vision" default="false"/>
+    <arg name="vision" default="true"/>
     <arg name="teamcom" default="false"/>
     <arg name="localization" default="false"/>
     <arg name="simple" default="false" doc="Whether to use the simple behavior" />
