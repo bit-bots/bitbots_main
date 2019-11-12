@@ -5,7 +5,6 @@ include:
         - bitbots_head_behavior
     - bitbots_lowlevel:
         - bitbots_buttons
-        - bitbots_dynamixel_debug
         - bitbots_ros_control
     - bitbots_misc:
         - bitbots_bringup
