@@ -72,8 +72,10 @@ class KickNode {
    * Retrieve current feet_positions in base_link frame
    *
    * @return The pair of (right foot, left foot) poses if transformation was successfull
+   *
+   * @throws tf2::TransformException if feet positions cannot be retrieved
    */
-  std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> getFootPoses();
+  std::pair<geometry_msgs::Pose, geometry_msgs::Pose> getFootPoses();
 
   /**
    * Publish the current support_foot so that a correct base_footprint can be calculated

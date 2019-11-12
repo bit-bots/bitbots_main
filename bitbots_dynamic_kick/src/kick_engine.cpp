@@ -19,11 +19,10 @@ void KickEngine::setGoals(const KickGoals &goals) {
   // TODO Internal state is dirty when goal transformation fails
 
   /* Save given goals because we reuse them later */
-  auto transformed_goal = transformGoal((is_left_kick_) ? "r_sole" : "l_sole", goals.header, goals.ball_position,
-                                        goals.kick_direction);
-  // TODO: handle when goal was not transformed
-  tf2::convert(transformed_goal->first, ball_position_);
-  tf2::convert(transformed_goal->second, kick_direction_);
+  auto transformed_goal = transformGoal((is_left_kick_) ? "r_sole" : "l_sole",
+                                        goals.header, goals.ball_position, goals.kick_direction);
+  tf2::convert(transformed_goal.first, ball_position_);
+  tf2::convert(transformed_goal.second, kick_direction_);
   kick_direction_.normalize();
   kick_speed_ = goals.kick_speed;
 
@@ -190,7 +189,7 @@ void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose) {
       ->addPoint(phase_timings_.move_trunk_back, kick_foot_sign*(params_.foot_distance/2.0));
 }
 
-std::optional<std::pair<geometry_msgs::Point, geometry_msgs::Quaternion>> KickEngine::transformGoal(
+std::pair<geometry_msgs::Point, geometry_msgs::Quaternion> KickEngine::transformGoal(
     const std::string &support_foot_frame,
     const std_msgs::Header &header,
     const geometry_msgs::Vector3 &ball_position,
