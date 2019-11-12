@@ -170,11 +170,8 @@ Motorprobleme
 
 Das erste, was im Falle eines Problems (ausfallende Motoren, „no status from id ...”) geprüft werden
 sollte, ist ob die Kabel richtig in den Motoren stecken. Manchmal rutschen Kabel, die nur lose im
-Stecker sitzen, beim Bewegen raus. Um die Erreichbarkeit der Motoren zu prüfen, gibt es im Paket
-bitbots_dynamixel_debug viele praktische Skripte wie ping, ping_loop oder ping_all, um die
-Erreichbarkeit von Motoren zu testen, led_disco um Motoren zu identifizieren oder read, um die
-Motorposition auszulesen. Wenn der Ping erfolgreich war, heißt das schonmal, dass die
-Kabelverbindung zum Motor funktioniert.
+Stecker sitzen, beim Bewegen raus. Um die Erreichbarkeit der Motoren zu prüfen, gibt es eine linux software
+von Robotis http://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_wizard2/.
 
 Falls so alle Motoren erreichbar sind, sollte überprüft werden, ob sich im DXL-Board eine IMU
 befindet. Aufgrund eines Softwarefehlers sind in diesem Fall keine Motoren erreichbar.
