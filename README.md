@@ -2,6 +2,8 @@ Bit-Bots Vision
 =============== 
 
 [![CodeFactor](https://www.codefactor.io/repository/github/bit-bots/bitbots_vision/badge)](https://www.codefactor.io/repository/github/bit-bots/bitbots_vision)
+&nbsp;&nbsp;
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 This is the vision package of the Hamburg Bit-Bots.
 
