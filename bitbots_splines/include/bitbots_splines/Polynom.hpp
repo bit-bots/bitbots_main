@@ -3,8 +3,8 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef POLYNOM_HPP
-#define POLYNOM_HPP
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POLYNOM_HPP_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POLYNOM_HPP_
 
 #include <cstdlib>
 #include <vector>
@@ -76,7 +76,7 @@ class Polynom
         /**
          * Polynom coeficients
          */
-        std::vector<double> _coefs;
+        std::vector<double> coefs_;
 };
 
 /**

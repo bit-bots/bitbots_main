@@ -45,18 +45,18 @@ double Spline::jerkMod(double t) const
         
 double Spline::min() const
 {
-    if (_splines.empty()) {
+    if (splines_.empty()) {
         return 0.0;
     } else {
-        return _splines.front().min;
+        return splines_.front().min;
     }
 }
 double Spline::max() const
 {
-    if (_splines.empty()) {
+    if (splines_.empty()) {
         return 0.0;
     } else {
-        return _splines.back().max;
+        return splines_.back().max;
     }
 }
         
@@ -64,23 +64,23 @@ double Spline::max() const
         
 void Spline::exportData(std::ostream& os) const
 {
-    for (const auto & _spline : _splines) {
-        os << std::setprecision(17) << _spline.min << " ";
-        os << std::setprecision(17) << _spline.max << " ";
-        os << std::setprecision(17) << 
-            _spline.polynom.getCoefs().size() << " ";
-        for (size_t j=0;j<_spline.polynom.getCoefs().size();j++) {
-            os << std::setprecision(17) << 
-                _spline.polynom.getCoefs()[j] << " ";
+    for (const auto & spline : splines_) {
+        os << std::setprecision(17) << spline.min << " ";
+        os << std::setprecision(17) << spline.max << " ";
+        os << std::setprecision(17) <<
+           spline.polynom.getCoefs().size() << " ";
+        for (size_t j=0; j<spline.polynom.getCoefs().size(); j++) {
+            os << std::setprecision(17) <<
+               spline.polynom.getCoefs()[j] << " ";
         }
     }
     os << std::endl;
 }
 void Spline::importData(std::istream& is)
 {
-    bool isFormatError;
+    bool is_format_error;
     while (is.good()) {
-        isFormatError = true;
+      is_format_error = true;
         double min;
         double max;
         size_t size;
@@ -98,8 +98,8 @@ void Spline::importData(std::istream& is)
             is >> p.getCoefs()[i];
         }
         //Save spline part
-        isFormatError = false;
-        _splines.push_back({p, min, max});
+        is_format_error = false;
+        splines_.push_back({p, min, max});
         //Exit on line break
         while (is.peek() == ' ') {
             if (!is.good()) break;
@@ -109,7 +109,7 @@ void Spline::importData(std::istream& is)
             break;
         }
     }
-    if (isFormatError) {
+    if (is_format_error) {
         throw std::logic_error(
             "Spline import format invalid");
     }
@@ -119,23 +119,23 @@ void Spline::importData(std::istream& is)
         
 size_t Spline::size() const
 {
-    return _splines.size();
+    return splines_.size();
 }
         
-const Spline::Spline_t& Spline::part(size_t index) const
+const Spline::SplineT& Spline::part(size_t index) const
 {
-    return _splines.at(index);
+    return splines_.at(index);
 }
         
 void Spline::addPart(const Polynom& poly, 
     double min, double max)
 {
-    _splines.push_back({poly, min, max});
+    splines_.push_back({poly, min, max});
 }
         
 void Spline::copyData(const Spline& sp)
 {
-    _splines = sp._splines;
+  splines_ = sp.splines_;
     //Call possible post import
     importCallBack();
 }
@@ -148,33 +148,33 @@ double Spline::interpolation(double x,
     double(Polynom::*func)(double) const) const
 {
     //Empty case
-    if (_splines.empty()) {
+    if (splines_.empty()) {
         return 0.0;
     }
     //Bound asked abscisse into spline range
-    if (x <= _splines.front().min) {
-        x = _splines.front().min;
+    if (x <= splines_.front().min) {
+        x = splines_.front().min;
     }
-    if (x >= _splines.back().max) {
-        x = _splines.back().max;
+    if (x >= splines_.back().max) {
+        x = splines_.back().max;
     }
     //Bijection spline search
-    size_t indexLow = 0;
-    size_t indexUp = _splines.size()-1;
-    while (indexLow != indexUp) {
-        size_t index = (indexUp+indexLow)/2;
-        if (x < _splines[index].min) {
-            indexUp = index-1;
-        } else if (x > _splines[index].max) {
-            indexLow = index+1;
+    size_t index_low = 0;
+    size_t index_up = splines_.size()-1;
+    while (index_low != index_up) {
+        size_t index = (index_up+index_low)/2;
+        if (x < splines_[index].min) {
+          index_up = index-1;
+        } else if (x > splines_[index].max) {
+          index_low = index+1;
         } else {
-            indexUp = index;
-            indexLow = index;
+          index_up = index;
+          index_low = index;
         }
     }
     //Compute and return spline value
-    return (_splines[indexUp].polynom.*func)
-        (x-_splines[indexUp].min);
+    return (splines_[index_up].polynom.*func)
+        (x-splines_[index_up].min);
 }
 
 double Spline::interpolationMod(double x, 

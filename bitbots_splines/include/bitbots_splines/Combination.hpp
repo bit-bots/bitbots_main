@@ -3,8 +3,8 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef COMBINATION_HPP
-#define COMBINATION_HPP
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_COMBINATION_HPP_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_COMBINATION_HPP_
 
 #include <map>
 #include <vector>
@@ -55,15 +55,15 @@ class Combination
          * Hold (n choose k) number of possible 
          * combinations for dynamic programming
          */
-        std::map<Pair, unsigned long> _pascalTriangle;
+        std::map<Pair, unsigned long> pascal_triangle_;
 
         /**
          * Current indexes container and
          * iteration n and k parameter
          */
-        std::vector<size_t> _indexes;
-        size_t _n;
-        size_t _k;
+        std::vector<size_t> indexes_;
+        size_t n_;
+        size_t k_;
 
         /**
          * Increment by one the _indexes container

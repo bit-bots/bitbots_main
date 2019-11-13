@@ -3,8 +3,8 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef SPLINE_HPP
-#define SPLINE_HPP
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINE_HPP_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINE_HPP_
 
 #include <vector>
 #include <iostream>
@@ -26,7 +26,7 @@ class Spline
          * Internal spline part structure
          * with a polynom valid on an interval
          */
-        struct Spline_t {
+        struct SplineT {
             Polynom polynom;
             double min;
             double max;
@@ -75,7 +75,7 @@ class Spline
         /**
          * Access to given by its index
          */
-        const Spline_t& part(size_t index) const;
+        const SplineT& part(size_t index) const;
 
         /**
          * Add a part with given polynom 
@@ -95,7 +95,7 @@ class Spline
         /**
          * Spline part container
          */
-        std::vector<Spline_t> _splines;
+        std::vector<SplineT> splines_;
 
         /**
          * Possible override callback

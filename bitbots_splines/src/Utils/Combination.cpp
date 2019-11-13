@@ -27,20 +27,20 @@ unsigned long Combination::binomialCoefficient(
     }
 
     Pair pair(k, n);
-    if (_pascalTriangle.count(pair) == 0) {
-        unsigned long val1 = binomialCoefficient(k-1, n-1);
-        unsigned long val2 = binomialCoefficient(k, n-1);
+    if (pascal_triangle_.count(pair) == 0) {
+        unsigned long val_1 = binomialCoefficient(k-1, n-1);
+        unsigned long val_2 = binomialCoefficient(k, n-1);
         unsigned long test = 
             std::numeric_limits<unsigned long>::max()
-            - val1;
-        if (val2 < test) {
-            _pascalTriangle[pair] = val1 + val2;
+            - val_1;
+        if (val_2 < test) {
+          pascal_triangle_[pair] = val_1 + val_2;
         } else {
             throw std::runtime_error("Combination overflow");
         }
     }
 
-    return _pascalTriangle[pair];
+    return pascal_triangle_[pair];
 }
         
 void Combination::startCombination(size_t k, size_t n)
@@ -51,23 +51,23 @@ void Combination::startCombination(size_t k, size_t n)
     if (k > n) {
         throw std::logic_error("Combination not valid k>n");
     }
-    
-    _indexes = std::vector<size_t>();
-    _k = k;
-    _n = n;
+
+  indexes_ = std::vector<size_t>();
+  k_ = k;
+  n_ = n;
     for (size_t i=0;i<k;i++) {
-        _indexes.push_back(i);
+        indexes_.push_back(i);
     }
 }
         
 std::vector<size_t> Combination::nextCombination()
 {
-    std::vector<size_t> result = _indexes;
+    std::vector<size_t> result = indexes_;
         
-    if (!_indexes.empty()) {
-        bool isEnd = incrIndexes(_k-1);
-        if (isEnd) {
-            _indexes.clear();
+    if (!indexes_.empty()) {
+        bool is_end = incrIndexes(k_-1);
+        if (is_end) {
+            indexes_.clear();
         }
     }
 
@@ -76,20 +76,20 @@ std::vector<size_t> Combination::nextCombination()
 
 bool Combination::incrIndexes(size_t i)
 {
-    if (_indexes[i] == _n-(_k-i)) {
+    if (indexes_[i] == n_-(k_-i)) {
         if (i == 0) {
             return true;
         } else {
-            bool isEnd = incrIndexes(i-1);
-            if (isEnd) {
+            bool is_end = incrIndexes(i-1);
+            if (is_end) {
                 return true;
             } else {
-                _indexes[i] = _indexes[i-1] + 1;
+              indexes_[i] = indexes_[i-1] + 1;
                 return false;
             }
         }
     } else {
-        _indexes[i]++;
+        indexes_[i]++;
         return false;
     }
 }

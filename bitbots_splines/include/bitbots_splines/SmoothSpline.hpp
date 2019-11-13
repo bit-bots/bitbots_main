@@ -3,8 +3,8 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef SMOOTHSPLINE_HPP
-#define SMOOTHSPLINE_HPP
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SMOOTHSPLINE_HPP_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SMOOTHSPLINE_HPP_
 
 #include "Spline.hpp"
 
@@ -67,15 +67,15 @@ class SmoothSpline : public Spline
         /**
          * Points container
          */
-        std::vector<Point> _points;
+        std::vector<Point> points_;
         
         /**
          * Fit a polynom between 0 and t with given
          * pos, vel and acc initial and final conditions
          */
-        Polynom polynomFit(double t, 
-            double pos1, double vel1, double acc1,
-            double pos2, double vel2, double acc2) const;
+        Polynom polynomFit(double t,
+                           double pos_1, double vel_1, double acc_1,
+                           double pos_2, double vel_2, double acc_2) const;
 };
 
 }

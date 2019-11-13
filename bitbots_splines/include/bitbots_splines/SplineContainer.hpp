@@ -3,8 +3,8 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef SPLINECONTAINER_HPP
-#define SPLINECONTAINER_HPP
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINECONTAINER_HPP_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINECONTAINER_HPP_
 
 #include <string>
 #include <map>
@@ -35,7 +35,7 @@ class SplineContainer
          */
         inline size_t size() const
         {
-            return _container.size();
+            return container_.size();
         }
 
         /**
@@ -46,11 +46,11 @@ class SplineContainer
         template <typename ... Args>
         inline void add(const std::string& name, Args... args)
         {
-            if (_container.count(name) != 0) {
+            if (container_.count(name) != 0) {
                 throw std::logic_error(
                     "SplineContainer spline already added");
             }
-            _container[name] = T(args...);
+          container_[name] = T(args...);
         }
 
         /**
@@ -59,7 +59,7 @@ class SplineContainer
          */
         inline bool exist(const std::string& name) const
         {
-            return _container.count(name) > 0;
+            return container_.count(name) > 0;
         }
 
         /**
@@ -67,19 +67,19 @@ class SplineContainer
          */
         inline const T& get(const std::string& name) const
         {
-            if (_container.count(name) == 0) {
+            if (container_.count(name) == 0) {
                 throw std::logic_error(
                     "SplineContainer invalid name: " + name);
             }
-            return _container.at(name);
+            return container_.at(name);
         }
         inline T& get(const std::string& name)
         {
-            if (_container.count(name) == 0) {
+            if (container_.count(name) == 0) {
                 throw std::logic_error(
                     "SplineContainer invalid name: " + name);
             }
-            return _container.at(name);
+            return container_.at(name);
         }
 
         /**
@@ -87,11 +87,11 @@ class SplineContainer
          */
         const std::map<std::string, T>& get() const
         {
-            return _container;
+            return container_;
         }
         std::map<std::string, T>& get()
         {
-            return _container;
+            return container_;
         }
 
         /**
@@ -101,7 +101,7 @@ class SplineContainer
             std::set<double> times;
             std::vector<double> times_sorted;
             // go trough all splines
-            for (const auto& sp : _container){
+            for (const auto& sp : container_){
                 // go trough all points of the spline
                 for(const SmoothSpline::Point& point : sp.second.points()) {
                     times.insert(point.time);
@@ -119,30 +119,30 @@ class SplineContainer
          */
         double min() const
         {
-            if (_container.size() == 0) {
+            if (container_.size() == 0) {
                 return 0.0;
             }
-            bool isFirst = true;
+            bool is_first = true;
             double m = 0.0;
-            for (const auto& sp : _container) {
-                if (isFirst || m > sp.second.min()) {
+            for (const auto& sp : container_) {
+                if (is_first || m > sp.second.min()) {
                     m = sp.second.min();
-                    isFirst = false;
+                  is_first = false;
                 }
             }
             return m;
         }
         double max() const
         {
-            if (_container.size() == 0) {
+            if (container_.size() == 0) {
                 return 0.0;
             }
-            bool isFirst = true;
+            bool is_first = true;
             double m = 0.0;
-            for (const auto& sp : _container) {
-                if (isFirst || m < sp.second.max()) {
+            for (const auto& sp : container_) {
+                if (is_first || m < sp.second.max()) {
                     m = sp.second.max();
-                    isFirst = false;
+                  is_first = false;
                 }
             }
             return m;
@@ -153,38 +153,38 @@ class SplineContainer
          * Export to and Import from given file name
          * in "spline" CSV format prefixed with spline name
          */
-        void exportData(const std::string& fileName) const
+        void exportData(const std::string& file_name) const
         {
-            if (_container.size() == 0) {
+            if (container_.size() == 0) {
                 throw std::logic_error("SplineContainer empty");
             }
 
-            std::ofstream file(fileName);
+            std::ofstream file(file_name);
             if (!file.is_open()) {
                 throw std::runtime_error(
                     "SplineContainer unable to write file: " 
-                    + fileName);
+                    + file_name);
             }
 
-            for(const auto& sp : _container) {
+            for(const auto& sp : container_) {
                 file << "'" << sp.first << "' ";
                 sp.second.exportData(file);
             }
 
             file.close();
         }
-        void importData(const std::string& fileName)
+        void importData(const std::string& file_name)
         {
-            std::ifstream file(fileName);
+            std::ifstream file(file_name);
             if (!file.is_open()) {
                 throw std::runtime_error(
                     "SplineContainer unable to read file: " 
-                    + fileName);
+                    + file_name);
             }
 
-            bool isParseError;
+            bool is_parse_error;
             while (file.good()) {
-                isParseError = true;
+              is_parse_error = true;
                 //Skip name delimitor
                 if (file.peek() != '\'') break;
                 file.ignore();
@@ -195,15 +195,15 @@ class SplineContainer
                 //Import founded spline
                 add(std::string(name));
                 if (!file.good()) break;
-                _container.at(std::string(name)).importData(file);
-                isParseError = false;
+                container_.at(std::string(name)).importData(file);
+              is_parse_error = false;
                 //Skip end line
                 while (file.peek() == ' ' || file.peek() == '\n') {
                     if (!file.good()) break;
                     file.ignore();
                 }
             }
-            if (isParseError) {
+            if (is_parse_error) {
                 throw std::logic_error(
                     "SplineContainer invalid input format");
             }
@@ -217,7 +217,7 @@ class SplineContainer
          * Spline container indexed 
          * by their name
          */
-        std::map<std::string, T> _container;
+        std::map<std::string, T> container_;
 };
 
 }

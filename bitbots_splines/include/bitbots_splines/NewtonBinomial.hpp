@@ -3,8 +3,8 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef NEWTONBINOMIAL_HPP
-#define NEWTONBINOMIAL_HPP
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_NEWTONBINOMIAL_HPP_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_NEWTONBINOMIAL_HPP_
 
 #include "Combination.hpp"
 #include "Polynom.hpp"

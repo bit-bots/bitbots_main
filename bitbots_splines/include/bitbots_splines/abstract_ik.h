@@ -1,5 +1,5 @@
-#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_ABSTRACTIK_H_
-#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_ABSTRACTIK_H_
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_ABSTRACT_IK_H_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_ABSTRACT_IK_H_
 
 #include <vector>
 #include <string>
@@ -9,7 +9,7 @@ namespace bitbots_splines {
 
 typedef std::pair<std::vector<std::string>, std::vector<double>> JointGoals;
 
-class AbstractIK {
+class AbstractIk {
   /**
    * Initializes the class. This must be called before calculate() is called.
    * @param kinematic_model The MoveIt! kinematic model of the robot
@@ -28,4 +28,4 @@ class AbstractIK {
 };
 }
 
-#endif //BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_ABSTRACTIK_H_
+#endif //BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_ABSTRACT_IK_H_
