@@ -43,10 +43,10 @@ geometry_msgs::PoseStamped DynupEngine::getCurrentPose(bitbots_splines::PoseSpli
   return pose;
 }
 
-void DynupEngine::calcFrontSplines() {
+void DynupEngine::calcFrontSplines(geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose hand_pose) {
 
   //
-  // TODO THIS IS CURRENTLY NOT USEEEEEEED
+  // TODO is this correct?
   //
 
   /*
@@ -60,7 +60,7 @@ void DynupEngine::calcFrontSplines() {
   double time_start = 0;
 
   // hand
-  geometry_msgs::Pose hand_pose; //TODO read actual pose
+  //geometry_msgs::Pose hand_pose; //TODO read actual pose
 
   hand_spline_.x()->addPoint(time_start, hand_pose.position.x);
   hand_spline_.y()->addPoint(time_start, hand_pose.position.y);
@@ -90,8 +90,16 @@ void DynupEngine::calcFrontSplines() {
   foot_spline_.pitch()->addPoint(time_start, foot_start_p);
   foot_spline_.yaw()->addPoint(time_start, foot_start_y);
 
-
-  //TODO spline in between to enable the hands to go to the front
+  /*
+   * hands to the side
+   */
+  double time_hands_side = params_.time_hands_side; //TODO parameter
+  hand_spline_.x()->addPoint(time_hands_side, 0);
+  hand_spline_.y()->addPoint(time_hands_side, params_.arm_max_length);
+  hand_spline_.z()->addPoint(time_hands_side, 0);
+  hand_spline_.roll()->addPoint(time_hands_side, 0);
+  hand_spline_.pitch()->addPoint(time_hands_side, 3.14/2); //todo pi
+  hand_spline_.yaw()->addPoint(time_hands_side, 0);
 
   /*
    * pull legs to body
@@ -198,12 +206,12 @@ void DynupEngine::calcSquatSplines(geometry_msgs::Pose l_foot_pose, geometry_msg
 }
 
 void DynupEngine::setGoals(const DynupRequest &goals) {
-  /*if(front){
+  if(goals.front){
   //TODO decide on which side we are lying on
-     calcFrontSplines();
+     calcFrontSplines(goals.l_foot_pose, goals.l_hand_pose);
   }else{
      calcBackSplines();
-  }*/
+  }
   calcSquatSplines(goals.l_foot_pose, goals.trunk_pose);
 }
 

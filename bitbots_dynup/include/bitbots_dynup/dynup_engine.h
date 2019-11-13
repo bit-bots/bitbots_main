@@ -17,6 +17,7 @@ struct DynUpParams {
   double arm_max_length;
   double time_foot_close;
   double time_hands_front;
+  double time_hands_side;
   double time_foot_ground;
   double time_torso_45;
 
@@ -68,7 +69,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
    * - get torso into 45°, pull foot under legs
    * - get into crouch position
    */
-  void calcFrontSplines();
+  void calcFrontSplines(geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose l_hand_pose);
 
   /*
    * Calculate the splines to get from lying on the back to squatting
