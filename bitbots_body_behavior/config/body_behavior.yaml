@@ -38,6 +38,9 @@ behavior:
     # The distance we try to keep from the ball when preparing a kick
     ball_approach_distance: 0.25
 
+    # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
+    goal_alignment_orientation_threshold: 20
+
     # When the goal has not been seen for `goal_lost_time` seconds,
     # it is considered lost and will be searched
     goal_lost_time: 30
