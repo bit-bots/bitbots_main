@@ -6,6 +6,7 @@
 
 #include <std_msgs/Bool.h>  
 #include <humanoid_league_msgs/Speak.h>
+#include <sensor_msgs/JointState.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
 #include <std_msgs/Bool.h>
@@ -98,6 +99,7 @@ private:
   bool syncReadPositions();
   bool syncReadVelocities();
   bool syncReadEfforts();
+  bool syncReadPWMs();
   bool syncReadAll();
   bool syncReadVoltageAndTemp();
   bool syncReadError();
@@ -146,10 +148,12 @@ private:
   bool read_position_;
   bool read_velocity_;
   bool read_effort_;
+  bool read_PWM_;
   bool read_volt_temp_;
   std::vector<double> current_position_;
   std::vector<double> current_velocity_;
   std::vector<double> current_effort_;
+  std::vector<double> current_pwm_;
   std::vector<double> current_input_voltage_;
   std::vector<double> current_temperature_;
   std::vector<uint8_t> current_error_;
@@ -166,6 +170,7 @@ private:
 
   // subscriber / publisher
   ros::Subscriber set_torque_sub_;
+  ros::Publisher pwm_pub_;
   ros::Publisher diagnostic_pub_;
   ros::Publisher speak_pub_;
   ros::Subscriber set_torque_indiv_sub_;

@@ -24,6 +24,7 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
   switch_individual_torque_ = false;
   set_torque_sub_ = nh.subscribe<std_msgs::BoolConstPtr>("set_torque", 1, &DynamixelServoHardwareInterface::setTorqueCb, this, ros::TransportHints().tcpNoDelay());
   set_torque_indiv_sub_ = nh.subscribe<bitbots_msgs::JointTorque>("set_torque_individual", 1, &DynamixelServoHardwareInterface::individualTorqueCb, this, ros::TransportHints().tcpNoDelay());
+  pwm_pub_ = nh.advertise<sensor_msgs::JointState>("/servo_PID_status", 10, true);
   diagnostic_pub_ = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
   speak_pub_ = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, true);
 
@@ -34,7 +35,7 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
     ROS_ERROR_STREAM("Failed to ping all motors.");
     speakError(speak_pub_, "Failed to ping all motors.");
     return false;
-  }  
+  }
 
   // init the different sync write and read commands that will maybe necessary
   driver_->addSyncWrite("Torque_Enable");
@@ -48,6 +49,7 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
   driver_->addSyncRead("Present_Current");
   driver_->addSyncRead("Present_Velocity");
   driver_->addSyncRead("Present_Position");
+  driver_->addSyncRead("Present_PWM");
   driver_->addSyncRead("Hardware_Error_Status");
 
   // Switch dynamixels to correct control mode (position, velocity, effort)
@@ -58,6 +60,7 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
   current_position_.resize(joint_count_, 0);
   current_velocity_.resize(joint_count_, 0);
   current_effort_.resize(joint_count_, 0);
+  current_pwm_.resize(joint_count_, 0);
   current_input_voltage_.resize(joint_count_, 0);
   current_temperature_.resize(joint_count_, 0);
   current_error_.resize(joint_count_, 0);
@@ -180,7 +183,7 @@ bool DynamixelServoHardwareInterface::loadDynamixels(ros::NodeHandle& nh){
     dxl_nh.getParam("model_number", model_number);
     uint16_t model_number_16 = uint16_t(model_number);
     uint16_t* model_number_16p = &model_number_16;
-    
+
     std::map<std::string, std::string> map;
     map.insert(std::make_pair("Joint Name", dxl_name));
 
@@ -210,7 +213,7 @@ bool DynamixelServoHardwareInterface::writeROMRAM(ros::NodeHandle& nh){
   nh.getParam("servos/ROM_RAM", dxls);
   ROS_ASSERT(dxls.getType() == XmlRpc::XmlRpcValue::TypeStruct);
   bool sucess = true;
-  int i = 0;  
+  int i = 0;
   for(XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = dxls.begin(); it != dxls.end(); ++it){
     std::string register_name = (std::string)(it->first);
     int register_value;
@@ -219,7 +222,7 @@ bool DynamixelServoHardwareInterface::writeROMRAM(ros::NodeHandle& nh){
 
     int* values = (int*)malloc(joint_names_.size() * sizeof(int));
     for (size_t num = 0; num < joint_names_.size(); num++) {
-      values[num] = register_value;      
+      values[num] = register_value;
     }
     driver_->addSyncWrite(register_name.c_str());
     sucess = sucess && driver_->syncWrite(register_name.c_str(), values);
@@ -293,16 +296,16 @@ void DynamixelServoHardwareInterface::processVte(bool success){
       char shock_error = 0x10;
       char overload_error = 0x20;
       if((current_error_[i] & voltage_error) != 0){
-        message = message + "Voltage ";        
+        message = message + "Voltage ";
       }
       if((current_error_[i] & overheat_error) != 0){
-        message = message + "Overheat ";        
+        message = message + "Overheat ";
       }
       if((current_error_[i] & encoder_error) != 0){
-        message = message + "Encoder ";        
+        message = message + "Encoder ";
       }
       if((current_error_[i] & shock_error) != 0){
-        message = message + "Shock ";        
+        message = message + "Shock ";
       }
       if((current_error_[i] & overload_error) != 0){
         message = message + "Overload";
@@ -313,7 +316,7 @@ void DynamixelServoHardwareInterface::processVte(bool success){
         speakError(speak_pub_, "Overload Error!");
       }
     }
-    
+
     array.push_back(createServoDiagMsg(joint_ids_[i], level, message, map));
   }
   array_msg.status = array;
@@ -431,7 +434,21 @@ bool DynamixelServoHardwareInterface::read(){
         read_successful = false;
       }
     }
-  }
+
+    if (read_PWM_) {
+      if (!syncReadPWMs()) {
+        ROS_ERROR_THROTTLE(1.0, "Couldn't read current PWM!");
+        driver_->reinitSyncReadHandler("Present_PWM");
+      }else{
+        sensor_msgs::JointState pwm_state = sensor_msgs::JointState();
+        pwm_state.header.stamp = ros::Time::now();
+        pwm_state.name = joint_names_;
+        pwm_state.effort = current_pwm_;
+        pwm_pub_.publish(pwm_state);
+      }
+    }
+    }
+
 
   if (read_volt_temp_){
     if (read_vt_counter_ + 1 == vt_update_rate_){
@@ -441,7 +458,7 @@ bool DynamixelServoHardwareInterface::read(){
         success = false;
       }
       if(!syncReadError()){
-        ROS_ERROR_THROTTLE(1.0, "Couldn't read current error bytes!");  
+        ROS_ERROR_THROTTLE(1.0, "Couldn't read current error bytes!");
         success = false;
         driver_->reinitSyncReadHandler("Hardware_Error_Status");
       }
@@ -460,7 +477,7 @@ bool DynamixelServoHardwareInterface::read(){
     first_cycle_ = false;
   }
 
-  // remember 
+  // remember
   if (!read_successful) {
     lost_servo_connection_ = true;
     reading_errors_ += 1;
@@ -517,7 +534,7 @@ void DynamixelServoHardwareInterface::write()
       syncWriteProfileVelocity();
       last_goal_velocity_ = goal_velocity_;
     }
-    
+
     if(goal_acceleration_ != last_goal_acceleration_){
       syncWriteProfileAcceleration();
       last_goal_acceleration_ = goal_acceleration_;
@@ -542,7 +559,7 @@ void DynamixelServoHardwareInterface::write()
       syncWriteProfileVelocity();
       last_goal_velocity_ = goal_velocity_;
     }
-    
+
     if(goal_acceleration_ != last_goal_acceleration_){
       syncWriteProfileAcceleration();
       last_goal_acceleration_ = goal_acceleration_;
@@ -683,11 +700,28 @@ bool DynamixelServoHardwareInterface::syncReadEfforts() {
   return success;
 }
 
+bool DynamixelServoHardwareInterface::syncReadPWMs() {
+    /**
+     * Reads all PWM information with a single sync read
+     */
+    bool success;
+    int32_t *data = (int32_t *) malloc(joint_count_ * sizeof(int32_t));
+    success = driver_->syncRead("Present_PWM", data);
+    if(success){
+      for (int i = 0; i < joint_count_; i++) {
+        current_pwm_[i] = data[i];
+      }
+    }
+    free(data);
+
+    return success;
+  }
+
 bool DynamixelServoHardwareInterface::syncReadError(){
   /**
    * Reads all error bytes with a single sync read
    */
-  bool success; 
+  bool success;
   int32_t *data = (int32_t *) malloc(joint_count_ * sizeof(int32_t));
   success = driver_->syncRead("Hardware_Error_Status", data);
   if(success){
@@ -706,7 +740,7 @@ bool DynamixelServoHardwareInterface::syncReadVoltageAndTemp(){
   std::vector<uint8_t> data;
   if(driver_->syncReadMultipleRegisters(144, 3, &data)) {
     uint16_t volt;
-    uint8_t temp;    
+    uint8_t temp;
     for (int i = 0; i < joint_count_; i++) {
       volt = dxlMakeword(data[i*3], data[i*3 + 1]);
       temp = data[i * 3 + 2];
@@ -784,7 +818,7 @@ void DynamixelServoHardwareInterface::syncWriteProfileVelocity() {
   for (size_t num = 0; num < joint_names_.size(); num++) {
     if(goal_velocity_[num] < 0){
       // we want to set to maximum, which is 0
-      goal_velocity[num] = 0;  
+      goal_velocity[num] = 0;
     }else{
       // use max to prevent accidentially setting 0
       goal_velocity[num] = std::max(driver_->convertVelocity2Value(joint_ids_[num], goal_velocity_[num]), 1);
@@ -802,7 +836,7 @@ void DynamixelServoHardwareInterface::syncWriteProfileAcceleration() {
   for (size_t num = 0; num < joint_names_.size(); num++) {
     if(goal_acceleration_[num] < 0){
       // we want to set to maximum, which is 0
-      goal_acceleration[num] = 0;  
+      goal_acceleration[num] = 0;
     }else{
       //572.9577952 for change of units, 214.577 rev/min^2 per LSB
       goal_acceleration[num] = std::max(static_cast<int>(goal_acceleration_[num] * 572.9577952 / 214.577), 1);
@@ -819,17 +853,17 @@ void DynamixelServoHardwareInterface::syncWriteCurrent() {
   int* goal_current = (int*)malloc(joint_names_.size() * sizeof(int));
   for (size_t num = 0; num < joint_names_.size(); num++) {
     if(goal_effort_[num] < 0){
-      // we want to set to maximum, which is different for MX-64 and MX-106      
+      // we want to set to maximum, which is different for MX-64 and MX-106
       if(driver_->getModelNum(joint_ids_[num]) == 311){
         goal_current[num] = 1941;
       }else if (driver_->getModelNum(joint_ids_[num]) == 321){
         goal_current[num] = 2047;
       }else{
         ROS_WARN("Maximal current for this dynamixel model is not defined");
-      }      
+      }
     }else{
       goal_current[num] = driver_->convertTorque2Value(joint_ids_[num], goal_effort_[num]);
-    }    
+    }
   }
   driver_->syncWrite("Goal_Current", goal_current);
   free(goal_current);
@@ -839,11 +873,11 @@ void DynamixelServoHardwareInterface::syncWritePWM() {
   int* goal_current = (int*)malloc(joint_names_.size() * sizeof(int));
   for (size_t num = 0; num < joint_names_.size(); num++) {
     if(goal_effort_[num] < 0){
-      // we want to set to maximum    
+      // we want to set to maximum
       goal_current[num] = 855;
     }else{
       goal_current[num] = goal_effort_[num] / 100.0 * 855.0;
-    }    
+    }
   }
   driver_->syncWrite("Goal_PWM", goal_current);
   free(goal_current);
@@ -853,6 +887,7 @@ void DynamixelServoHardwareInterface::reconfCallback(bitbots_ros_control::dynami
   read_position_ = config.read_position;
   read_velocity_ = config.read_velocity;
   read_effort_ = config.read_effort;
+  read_PWM_ = config.read_pwm;
   read_volt_temp_ = config.read_volt_temp;
   vt_update_rate_ = config.VT_update_rate;
   warn_temp_ = config.warn_temp;
