@@ -45,7 +45,7 @@ double Spline::jerkMod(double t) const
         
 double Spline::min() const
 {
-    if (_splines.size() == 0) {
+    if (_splines.empty()) {
         return 0.0;
     } else {
         return _splines.front().min;
@@ -53,7 +53,7 @@ double Spline::min() const
 }
 double Spline::max() const
 {
-    if (_splines.size() == 0) {
+    if (_splines.empty()) {
         return 0.0;
     } else {
         return _splines.back().max;
@@ -64,14 +64,14 @@ double Spline::max() const
         
 void Spline::exportData(std::ostream& os) const
 {
-    for (size_t i=0;i<_splines.size();i++) {
-        os << std::setprecision(17) << _splines[i].min << " ";
-        os << std::setprecision(17) << _splines[i].max << " ";
+    for (const auto & _spline : _splines) {
+        os << std::setprecision(17) << _spline.min << " ";
+        os << std::setprecision(17) << _spline.max << " ";
         os << std::setprecision(17) << 
-            _splines[i].polynom.getCoefs().size() << " ";
-        for (size_t j=0;j<_splines[i].polynom.getCoefs().size();j++) {
+            _spline.polynom.getCoefs().size() << " ";
+        for (size_t j=0;j<_spline.polynom.getCoefs().size();j++) {
             os << std::setprecision(17) << 
-                _splines[i].polynom.getCoefs()[j] << " ";
+                _spline.polynom.getCoefs()[j] << " ";
         }
     }
     os << std::endl;
@@ -148,7 +148,7 @@ double Spline::interpolation(double x,
     double(Polynom::*func)(double) const) const
 {
     //Empty case
-    if (_splines.size() == 0) {
+    if (_splines.empty()) {
         return 0.0;
     }
     //Bound asked abscisse into spline range

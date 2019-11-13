@@ -47,8 +47,8 @@ double Polynom::pos(double x) const
 {
     double xx = 1.0;
     double val = 0.0;
-    for (size_t i=0;i<_coefs.size();i++) {
-        val += xx*_coefs[i];
+    for (double _coef : _coefs) {
+        val += xx*_coef;
         xx *= x;
     }
     return val;
@@ -86,8 +86,8 @@ double Polynom::jerk(double x) const
 
 void Polynom::operator*=(double coef)
 {
-    for (size_t i=0;i<_coefs.size();i++) {
-        _coefs[i] *= coef;
+    for (double & _coef : _coefs) {
+        _coef *= coef;
     }
 }
 void Polynom::operator+=(const Polynom& p)

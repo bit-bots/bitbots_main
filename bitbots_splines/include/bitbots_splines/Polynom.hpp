@@ -27,7 +27,7 @@ class Polynom
          * Default and inital degree initialization
          */
         Polynom();
-        Polynom(unsigned int degree);
+        explicit Polynom(unsigned int degree);
 
         /**
          * Access to coefficient

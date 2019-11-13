@@ -64,7 +64,7 @@ std::vector<size_t> Combination::nextCombination()
 {
     std::vector<size_t> result = _indexes;
         
-    if (_indexes.size() > 0) {
+    if (!_indexes.empty()) {
         bool isEnd = incrIndexes(_k-1);
         if (isEnd) {
             _indexes.clear();

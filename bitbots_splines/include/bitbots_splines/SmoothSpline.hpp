@@ -60,7 +60,7 @@ class SmoothSpline : public Spline
          * Inherit
          * Load Points
          */
-        virtual void importCallBack() override;    
+        void importCallBack() override;
         
     private:
 
