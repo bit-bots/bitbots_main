@@ -133,9 +133,19 @@ class WorldModelCapsule:
         """
         left = PointStamped(self.goal_odom.header, self.goal_odom.left_post)
         right = PointStamped(self.goal_odom.header, self.goal_odom.right_post)
-
-        left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
-        right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2)).point
+        try:
+            left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
+            right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2)).point
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
+            try:
+                left.header.stamp = rospy.Time(0)
+                left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
+                right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2)).point
+            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                rospy.logwarn(e)
+                rospy.logerr('Severe transformation problem concerning the goal!')
+                return None
 
         return (left_bfp.x + right_bfp.x / 2.0), \
                (left_bfp.y + right_bfp.y / 2.0)
