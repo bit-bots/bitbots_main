@@ -364,7 +364,7 @@ def build(target, package='', pre_clean=False):
          "sync;"
          ).format(**{
             "workspace": target.workspace,
-            "cmd_clean": "cakin clean -y {};".format(package) if pre_clean else "",
+            "cmd_clean": "catkin clean -y {};".format(package) if pre_clean else "",
             "quiet_option": "> /dev/null" if LOGLEVEL.current < LOGLEVEL.INFO else "",
             "package": package
         })
