@@ -136,13 +136,13 @@ class WorldModelCapsule:
         try:
             left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
             right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2)).point
-        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+        except (tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
             try:
                 left.header.stamp = rospy.Time(0)
                 left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
                 right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2)).point
-            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            except (tf2.ExtrapolationException) as e:
                 rospy.logwarn(e)
                 rospy.logerr('Severe transformation problem concerning the goal!')
                 return None
