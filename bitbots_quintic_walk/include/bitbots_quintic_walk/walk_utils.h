@@ -42,6 +42,8 @@ struct WalkResponse {
 
   tf2::Transform support_to_last;
   tf2::Transform support_to_next;
+
+  double current_pitch;
 };
 
 /**

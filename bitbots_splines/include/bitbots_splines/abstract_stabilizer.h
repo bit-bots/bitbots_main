@@ -18,7 +18,8 @@ class AbstractStabilizer {
    * @param positions An instance of Positions that contains the results of the engine's calculations.
    * @return A pointer to BioIK Goals that can be passed to the AbstractIK.
    */
-  virtual std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> stabilize(const Positions &positions) = 0;
+  virtual std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> stabilize(const Positions &positions,
+                                                                         const ros::Duration &dt) = 0;
 
 };
 }

@@ -88,6 +88,8 @@ void WalkNode::run() {
 
       // only calculate joint goals from this if the engine is not idle
       if (walk_engine_.getState() != WalkState::IDLE) {
+        // add IMU pitch information
+        response.current_pitch = current_trunk_pitch_;
         calculateAndPublishJointGoals(response, dt);
       }
     }
@@ -105,7 +107,7 @@ void WalkNode::run() {
 
 void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, double dt) {
   // get bioIk goals from stabilizer
-  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response, current_trunk_pitch_, ros::Duration(dt));
+  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response, ros::Duration(dt));
 
   // compute motor goals from IK
   bitbots_splines::JointGoals motor_goals = ik_.calculate(std::move(ik_goals));

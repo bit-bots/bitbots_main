@@ -17,7 +17,7 @@ class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> 
  public:
   WalkStabilizer();
   virtual void reset();
-  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> stabilize(const WalkResponse &response, double current_pitch, const ros::Duration &dt);
+  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> stabilize(const WalkResponse &response, const ros::Duration &dt) override;
 
  private:
    control_toolbox::Pid pid_trunk_pitch_;
