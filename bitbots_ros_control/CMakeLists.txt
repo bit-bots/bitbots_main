@@ -30,7 +30,6 @@ set(SOURCES
 )
 
 generate_dynamic_reconfigure_options(
-        cfg/bitbots_ros_control_params.cfg
         cfg/dynamixel_servo_hardware_interface_params.cfg
 )
 
