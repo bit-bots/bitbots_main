@@ -15,7 +15,6 @@ class WalkOdometry {
 
   void supportCallback(std_msgs::Char msg);
   void jointStateCb(const sensor_msgs::JointState &msg);
-
 };
 
 WalkOdometry::WalkOdometry() {
