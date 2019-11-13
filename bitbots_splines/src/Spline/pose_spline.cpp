@@ -83,27 +83,27 @@ tf2::Quaternion PoseSpline::getOrientation(double time) {
   return quat;
 }
 
-SmoothSpline *PoseSpline::x() {
+smooth_spline *PoseSpline::x() {
   return &x_;
 }
 
-SmoothSpline *PoseSpline::y() {
+smooth_spline *PoseSpline::y() {
   return &y_;
 }
 
-SmoothSpline *PoseSpline::z() {
+smooth_spline *PoseSpline::z() {
   return &z_;
 }
 
-SmoothSpline *PoseSpline::roll() {
+smooth_spline *PoseSpline::roll() {
   return &roll_;
 }
 
-SmoothSpline *PoseSpline::pitch() {
+smooth_spline *PoseSpline::pitch() {
   return &pitch_;
 }
 
-SmoothSpline *PoseSpline::yaw() {
+smooth_spline *PoseSpline::yaw() {
   return &yaw_;
 }
 

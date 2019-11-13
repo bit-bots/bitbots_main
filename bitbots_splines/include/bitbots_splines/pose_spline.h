@@ -1,8 +1,8 @@
 #ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POSE_SPLINE_H_
 #define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POSE_SPLINE_H_
 
-#include <bitbots_splines/SmoothSpline.hpp>
-#include <bitbots_splines/SplineContainer.hpp>
+#include <bitbots_splines/smooth_spline.hpp>
+#include <bitbots_splines/spline_container.hpp>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -33,20 +33,20 @@ class PoseSpline {
 
   std::string getDebugString();
 
-  SmoothSpline *x();
-  SmoothSpline *y();
-  SmoothSpline *z();
-  SmoothSpline *roll();
-  SmoothSpline *pitch();
-  SmoothSpline *yaw();
+  smooth_spline *x();
+  smooth_spline *y();
+  smooth_spline *z();
+  smooth_spline *roll();
+  smooth_spline *pitch();
+  smooth_spline *yaw();
 
  private:
-  SmoothSpline x_;
-  SmoothSpline y_;
-  SmoothSpline z_;
-  SmoothSpline roll_;
-  SmoothSpline pitch_;
-  SmoothSpline yaw_;
+  smooth_spline x_;
+  smooth_spline y_;
+  smooth_spline z_;
+  smooth_spline roll_;
+  smooth_spline pitch_;
+  smooth_spline yaw_;
 
 };
 }

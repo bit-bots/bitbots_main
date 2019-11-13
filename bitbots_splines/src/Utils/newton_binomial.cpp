@@ -4,7 +4,7 @@ The original files can be found at:
 https://github.com/Rhoban/model/
 */
 #include <cmath>
-#include "bitbots_splines/NewtonBinomial.hpp"
+#include "bitbots_splines/newton_binomial.hpp"
 
 namespace bitbots_splines {
 

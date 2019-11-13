@@ -3,10 +3,10 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SMOOTHSPLINE_HPP_
-#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SMOOTHSPLINE_HPP_
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SMOOTH_SPLINE_HPP_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SMOOTH_SPLINE_HPP_
 
-#include "Spline.hpp"
+#include "spline.hpp"
 
 namespace bitbots_splines {
 
@@ -16,7 +16,7 @@ namespace bitbots_splines {
  * Implementation of 5th order polynomial
  * splines trajectory known to minimize jerk
  */
-class SmoothSpline : public Spline {
+class smooth_spline : public Spline {
  public:
 
   /**

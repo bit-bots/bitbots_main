@@ -1,8 +1,8 @@
 #ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POSITION_SPLINE_H_
 #define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POSITION_SPLINE_H_
 
-#include <bitbots_splines/SmoothSpline.hpp>
-#include <bitbots_splines/SplineContainer.hpp>
+#include <bitbots_splines/smooth_spline.hpp>
+#include <bitbots_splines/spline_container.hpp>
 #include <tf2/LinearMath/Vector3.h>
 #include <geometry_msgs/Point.h>
 
@@ -16,14 +16,14 @@ class PositionSpline {
   tf2::Vector3 getVel(double time);
   tf2::Vector3 getAcc(double time);
 
-  SmoothSpline *x();
-  SmoothSpline *y();
-  SmoothSpline *z();
+  smooth_spline *x();
+  smooth_spline *y();
+  smooth_spline *z();
 
  private:
-  SmoothSpline x_;
-  SmoothSpline y_;
-  SmoothSpline z_;
+  smooth_spline x_;
+  smooth_spline y_;
+  smooth_spline z_;
 
 };
 }

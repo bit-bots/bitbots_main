@@ -3,18 +3,18 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINECONTAINER_HPP_
-#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINECONTAINER_HPP_
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINE_CONTAINER_HPP_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINE_CONTAINER_HPP_
 
 #include <string>
 #include <map>
 #include <stdexcept>
 #include <fstream>
-#include "Spline.hpp"
+#include "spline.hpp"
 #include <set>
 #include <algorithm>
 #include <vector>
-#include <bitbots_splines/SmoothSpline.hpp>
+#include <bitbots_splines/smooth_spline.hpp>
 
 namespace bitbots_splines {
 
@@ -26,7 +26,7 @@ namespace bitbots_splines {
  * Implementation of implort/export from files
  */
 template<class T>
-class SplineContainer {
+class spline_container {
  public:
 
   /**
@@ -95,7 +95,7 @@ class SplineContainer {
     // go trough all splines
     for (const auto &sp : container_) {
       // go trough all points of the spline
-      for (const SmoothSpline::Point &point : sp.second.points()) {
+      for (const smooth_spline::Point &point : sp.second.points()) {
         times.insert(point.time);
       }
     }

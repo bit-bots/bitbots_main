@@ -6,25 +6,25 @@ https://github.com/Rhoban/model/
 #include <stdexcept>
 #include <algorithm>
 #include <math.h>
-#include "bitbots_splines/SmoothSpline.hpp"
+#include "bitbots_splines/smooth_spline.hpp"
 
 namespace bitbots_splines {
 
-void SmoothSpline::addPoint(double time, double position,
-                            double velocity, double acceleration) {
+void smooth_spline::addPoint(double time, double position,
+                             double velocity, double acceleration) {
   points_.push_back({time, position,
                      velocity, acceleration});
   computeSplines();
 }
 
-const std::vector<SmoothSpline::Point> &SmoothSpline::points() const {
+const std::vector<smooth_spline::Point> &smooth_spline::points() const {
   return points_;
 }
-std::vector<SmoothSpline::Point> &SmoothSpline::points() {
+std::vector<smooth_spline::Point> &smooth_spline::points() {
   return points_;
 }
 
-void SmoothSpline::computeSplines() {
+void smooth_spline::computeSplines() {
   Spline::splines_.clear();
   if (points_.size() < 2) {
     return;
@@ -55,7 +55,7 @@ void SmoothSpline::computeSplines() {
   }
 }
 
-void SmoothSpline::importCallBack() {
+void smooth_spline::importCallBack() {
   size_t size = Spline::splines_.size();
   if (size == 0) {
     return;
@@ -101,9 +101,9 @@ void SmoothSpline::importCallBack() {
                     });
 }
 
-Polynom SmoothSpline::polynomFit(double t,
-                                 double pos_1, double vel_1, double acc_1,
-                                 double pos_2, double vel_2, double acc_2) const {
+Polynom smooth_spline::polynomFit(double t,
+                                  double pos_1, double vel_1, double acc_1,
+                                  double pos_2, double vel_2, double acc_2) const {
   if (t <= 0.00001) {
     throw std::logic_error(
         "SmoothSpline invalid spline interval");
@@ -126,7 +126,7 @@ Polynom SmoothSpline::polynomFit(double t,
   return p;
 }
 
-std::string SmoothSpline::getDebugString() {
+std::string smooth_spline::getDebugString() {
   std::string output;
   int i = 0;
   for (auto &p : points_) {
