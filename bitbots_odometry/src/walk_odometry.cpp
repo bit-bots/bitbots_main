@@ -28,7 +28,15 @@ WalkOdometry::WalkOdometry() {
       n.subscribe("/walk_support_state", 1, &WalkOdometry::supportCallback, this, ros::TransportHints().tcpNoDelay());
   ros::Subscriber joint_state_sub =
       n.subscribe("/joint_states", 1, &WalkOdometry::jointStateCb, this, ros::TransportHints().tcpNoDelay());
-  tf2::Transform odometry_to_support_foot;
+  tf2::Transform odometry_to_support_foot = tf2::Transform();
+  odometry_to_support_foot.setOrigin({0,0,0});
+  odometry_to_support_foot.setRotation(tf2::Quaternion(0,0,0,1));
+
+
+  ROS_WARN("odom->sup x: %f y: %f z: %f",
+           odometry_to_support_foot.getOrigin().x(),
+           odometry_to_support_foot.getOrigin().y(),
+           odometry_to_support_foot.getOrigin().z());
 
   static tf2_ros::TransformBroadcaster br;
   tf2_ros::Buffer tf_buffer;
@@ -42,41 +50,58 @@ WalkOdometry::WalkOdometry() {
   while (ros::ok()) {
     ros::spinOnce();
     // only do something, if we received a support state
-    if (current_support_state_ != 'n') {
+    if (current_support_state_ == 'n') {
+      ROS_WARN_THROTTLE(10, "No walking support state received yet. Will not provide odometry.");
+    } else {
       //check if first support state was received
-
       ros::Duration joints_delta_t = ros::Time::now() - joint_update_time_;
       if (joints_delta_t.toSec() > 0.05) {
         ROS_WARN_THROTTLE(10, "No joint states received. Will not provide odometry.");
       } else {
         // check if step was finished
-        if (previous_support_state != current_support_state_ && current_support_state_ == 'd') {
+        //ROS_WARN("prev %c  cur %c", previous_support_state, current_support_state_);
+        if (previous_support_state != current_support_state_) {
 
-          if (previous_support_state == 'l') {
-            current_support_link = "left_sole";
-            next_support_link = "right_sole";
-          } else {
-            current_support_link = "right_sole";
-            next_support_link = "left_sole";
-          }
+          if (current_support_state_ == 'd') {
 
-          try {
-            // add the transform between current and next support link to the odometry transform
-            geometry_msgs::TransformStamped current_to_next_support_msg =
-                tf_buffer.lookupTransform(current_support_link, next_support_link, ros::Time(0));
-            tf2::Transform current_to_next_support;
-            tf2::fromMsg(current_to_next_support_msg.transform, current_to_next_support);
-            odometry_to_support_foot = odometry_to_support_foot * current_to_next_support;
-          } catch (tf2::TransformException &ex) {
-            ROS_WARN("%s", ex.what());
-            ros::Duration(1.0).sleep();
-            continue;
+            if (previous_support_state == 'l') {
+              current_support_link = "l_sole";
+              next_support_link = "r_sole";
+            } else {
+              current_support_link = "r_sole";
+              next_support_link = "l_sole";
+            }
+
+            try {
+              // add the transform between current and next support link to the odometry transform
+              ROS_WARN("Transform from %s to %s", current_support_link.c_str(), next_support_link.c_str());
+              geometry_msgs::TransformStamped current_to_next_support_msg =
+                  tf_buffer.lookupTransform(current_support_link, next_support_link, ros::Time(0));
+              ROS_WARN("msg x: %f y: %f z: %f",
+                       current_to_next_support_msg.transform.translation.x,
+                       current_to_next_support_msg.transform.translation.y,
+                       current_to_next_support_msg.transform.translation.z);
+              tf2::Transform current_to_next_support = tf2::Transform();
+              tf2::fromMsg(current_to_next_support_msg.transform, current_to_next_support);
+              odometry_to_support_foot = odometry_to_support_foot * current_to_next_support;
+              ROS_WARN("cur->nex x: %f y: %f z: %f",
+                       current_to_next_support.getOrigin().x(),
+                       current_to_next_support.getOrigin().y(),
+                       current_to_next_support.getOrigin().z());
+              ROS_WARN("odom->sup x: %f y: %f z: %f",
+                       odometry_to_support_foot.getOrigin().x(),
+                       odometry_to_support_foot.getOrigin().y(),
+                       odometry_to_support_foot.getOrigin().z());
+            } catch (tf2::TransformException &ex) {
+              ROS_WARN("%s", ex.what());
+              ros::Duration(1.0).sleep();
+              continue;
+            }
           }
 
           // remember the support state change
           previous_support_state = current_support_state_;
         }
-
         //publish transform to baselink
         try {
           geometry_msgs::TransformStamped
@@ -95,13 +120,9 @@ WalkOdometry::WalkOdometry() {
           ros::Duration(1.0).sleep();
           continue;
         }
-
       }
-    } else {
-      ROS_WARN_THROTTLE(10, "No walking support state received yet. Will not provide odometry.");
     }
   }
-
 }
 
 void WalkOdometry::supportCallback(const std_msgs::Char msg) {
