@@ -77,14 +77,14 @@ class DynamicBalancingGoal : public bio_ik::Goal {
     for (size_t i = 0; i < balancing_context_->getLinkCount(); i++) {
       tf2::Vector3 center = balancing_context_->getLinkCenter(i); // m
       double mass = balancing_context_->getLinkMass(i);   // kg
-      const bio_ik::Frame &frame = reference_link*context.getLinkFrame(i);
+      const bio_ik::Frame &frame = reference_link * context.getLinkFrame(i);
       bio_ik::quat_mul_vec(frame.rot, center, center);
       center += frame.pos;
-      torque_g += (center - target_).cross(gravity_*mass); // m * N
+      torque_g += (center - target_).cross(gravity_ * mass); // m * N
     }
 
     double m = balancing_context_->getTotalMass();
-    return torque_g.length2()/(m*m*gravity_.length2());
+    return torque_g.length2() / (m * m * gravity_.length2());
   }
 };
 

@@ -19,58 +19,57 @@ namespace bitbots_splines {
  * and iterate thought all (n choose k)
  * combinations
  */
-class Combination
-{
-    public:
+class Combination {
+ public:
 
-        /**
-         * Compute the number of possible 
-         * combinations for (n choose k)
-         * (using dynamic progamming)
-         */
-        unsigned long binomialCoefficient(size_t k, size_t n);
+  /**
+   * Compute the number of possible
+   * combinations for (n choose k)
+   * (using dynamic progamming)
+   */
+  unsigned long binomialCoefficient(size_t k, size_t n);
 
-        /**
-         * Start combination iteration 
-         * for given (n choose k)
-         */
-        void startCombination(size_t k, size_t n);
+  /**
+   * Start combination iteration
+   * for given (n choose k)
+   */
+  void startCombination(size_t k, size_t n);
 
-        /**
-         * Return the next combination.
-         * Return empty sdt::vector when
-         * iteration is finished
-         */
-        std::vector<size_t> nextCombination();
+  /**
+   * Return the next combination.
+   * Return empty sdt::vector when
+   * iteration is finished
+   */
+  std::vector<size_t> nextCombination();
 
-    private:
-        
-        /**
-         * Typedefs
-         */
-        typedef std::pair<unsigned long, unsigned long> Pair;
-        typedef std::vector<size_t> Comb;
+ private:
 
-        /**
-         * Hold (n choose k) number of possible 
-         * combinations for dynamic programming
-         */
-        std::map<Pair, unsigned long> pascal_triangle_;
+  /**
+   * Typedefs
+   */
+  typedef std::pair<unsigned long, unsigned long> Pair;
+  typedef std::vector<size_t> Comb;
 
-        /**
-         * Current indexes container and
-         * iteration n and k parameter
-         */
-        std::vector<size_t> indexes_;
-        size_t n_;
-        size_t k_;
+  /**
+   * Hold (n choose k) number of possible
+   * combinations for dynamic programming
+   */
+  std::map<Pair, unsigned long> pascal_triangle_;
 
-        /**
-         * Increment by one the _indexes container
-         * at digit i (recursively).
-         * Return true on iteration end
-         */
-        bool incrIndexes(size_t i);
+  /**
+   * Current indexes container and
+   * iteration n and k parameter
+   */
+  std::vector<size_t> indexes_;
+  size_t n_;
+  size_t k_;
+
+  /**
+   * Increment by one the _indexes container
+   * at digit i (recursively).
+   * Return true on iteration end
+   */
+  bool incrIndexes(size_t i);
 };
 
 }

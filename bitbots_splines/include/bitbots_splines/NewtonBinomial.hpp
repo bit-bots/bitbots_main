@@ -18,19 +18,18 @@ namespace bitbots_splines {
  * simple formulae and binding
  * with polynom structure
  */
-class NewtonBinomial
-{
-    public:
+class NewtonBinomial {
+ public:
 
-        /**
-         * Expand the given formula (x + y)^degree
-         * and return the polynom in x whose coefficient
-         * are computed using binomial coefficient
-         */
-        static Polynom expandPolynom(
-            double y, unsigned int degree);
+  /**
+   * Expand the given formula (x + y)^degree
+   * and return the polynom in x whose coefficient
+   * are computed using binomial coefficient
+   */
+  static Polynom expandPolynom(
+      double y, unsigned int degree);
 
-    private:
+ private:
 };
 
 }
