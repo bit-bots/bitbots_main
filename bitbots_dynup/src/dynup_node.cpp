@@ -44,11 +44,12 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   ROS_INFO("Accepted new goal");
   engine_.reset();
 
-  if (std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> poses = getCurrentPoses()) {
+  if (std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose>> poses = getCurrentPoses()) {
     DynupRequest request;
-    request.l_foot_pose = poses->first;
+    request.l_foot_pose = std::get<0>(poses.value());
     request.front = true;
-    request.trunk_pose = poses->second;
+    request.trunk_pose = std::get<1>(poses.value());
+    request.l_hand_pose = std::get<2>(poses.value());
     engine_.setGoals(request); //todo we are currently only getting up from squad
     stabilizer_.reset();
     loopEngine();
@@ -86,11 +87,11 @@ void DynUpNode::loopEngine() {
   }
 }
 
-std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> DynUpNode::getCurrentPoses() {
+std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose>> DynUpNode::getCurrentPoses() {
   ros::Time time = ros::Time::now();
 
   /* Construct zero-positions for both poses in their respective local frames */
-  geometry_msgs::PoseStamped l_foot_origin, trunk_origin;
+  geometry_msgs::PoseStamped l_foot_origin, trunk_origin, l_hand_origin;
   l_foot_origin.header.frame_id = "l_sole";
   l_foot_origin.pose.orientation.w = 1;
   l_foot_origin.header.stamp = time;
@@ -99,13 +100,18 @@ std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> DynUpNode::ge
   trunk_origin.pose.orientation.w = 1;
   trunk_origin.header.stamp = time;
 
+  l_hand_origin.header.frame_id = "l_hand";
+  l_hand_origin.pose.orientation.w = 1;
+  l_hand_origin.header.stamp = time;
+
   /* Transform both poses into the right foot frame */
-  geometry_msgs::PoseStamped l_foot_transformed, trunk_transformed;
+  geometry_msgs::PoseStamped l_foot_transformed, trunk_transformed, l_hand_transformed;
   try {
     tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole",
                          ros::Duration(0.2));
     tf_buffer_.transform(trunk_origin, trunk_transformed, "r_sole", ros::Duration(0.2));
-    return std::pair(l_foot_transformed.pose, trunk_transformed.pose);
+    tf_buffer_.transform(l_hand_origin, l_hand_transformed, "r_sole", ros::Duration(0.2));
+    return std::make_tuple(l_foot_transformed.pose, trunk_transformed.pose, l_hand_transformed.pose);
   } catch (tf2::TransformException &) {
     return std::nullopt;
   }
