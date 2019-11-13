@@ -43,16 +43,15 @@ WalkOdometry::WalkOdometry() {
 
   while (ros::ok()) {
     ros::spinOnce();
-    // only do something, if we received a support state
 
-    //check if first support state was received
+    //check if joint states were received, otherwise we can't provide odometry
     ros::Duration joints_delta_t = ros::Time::now() - joint_update_time_;
     if (joints_delta_t.toSec() > 0.05) {
       ROS_WARN_THROTTLE(10, "No joint states received. Will not provide odometry.");
     } else {
       // check if support state changed
       if (previous_support_state != current_support_state_) {
-        // check if step finished left->double or right->double support
+        // check if step finished, meaning left->double or right->double support
         if (current_support_state_ == 'd' && previous_support_state != 'n') {
           if (previous_support_state == 'l') {
             current_support_link = "l_sole";
@@ -82,7 +81,7 @@ WalkOdometry::WalkOdometry() {
         // remember the support state change
         previous_support_state = current_support_state_;
       }
-      //publish transform to baselink
+      //publish transform to base_link
       try {
         geometry_msgs::TransformStamped
             current_support_to_base_msg = tf_buffer.lookupTransform(current_support_link, "base_link", ros::Time(0));
@@ -118,4 +117,3 @@ int main(int argc, char **argv) {
 
   WalkOdometry o;
 }
-
