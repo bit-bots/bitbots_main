@@ -3,7 +3,9 @@
 namespace bitbots_quintic_walk {
 
 WalkStabilizer::WalkStabilizer() {
-  pid_trunk_pitch_.initParam("/dynamic_kick/pid_trunk");
+  ros::NodeHandle nh = ros::NodeHandle("/walking/pid_trunk");
+  pid_trunk_pitch_.init(nh, false);
+  //pid_trunk_pitch_.initParam("/walking/pid_trunk");
   reset();
 }
 

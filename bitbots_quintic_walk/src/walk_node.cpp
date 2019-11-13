@@ -185,16 +185,15 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
 }
 
 void WalkNode::imuCb(const sensor_msgs::Imu &msg) {
+  // the incoming geometry_msgs::Quaternion is transformed to a tf2::Quaternion
+  tf2::Quaternion quat;
+  tf2::convert(msg.orientation, quat);
+  // the tf2::Quaternion has a method to access roll pitch and yaw
+  double roll, pitch, yaw;
+  tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+  current_trunk_pitch_ = pitch;
+
   if (imu_active_) {
-    // the incoming geometry_msgs::Quaternion is transformed to a tf2::Quaternion
-    tf2::Quaternion quat;
-    tf2::convert(msg.orientation, quat);
-
-    // the tf2::Quaternion has a method to access roll pitch and yaw
-    double roll, pitch, yaw;
-    tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-    current_trunk_pitch_ = pitch;
-
     // compute the pitch offset to the currently wanted pitch of the engine
     double wanted_pitch = walk_engine_.getWantedTrunkPitch();
 
