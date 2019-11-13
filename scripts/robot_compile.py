@@ -301,7 +301,7 @@ def sync(target, package='', pre_clean=False):
         "rsync",
         "--checksum",
         "--archive",
-        "-v" if LOGLEVEL.current >= LOGLEVEL.DEBUG else "",
+        "-v" if LOGLEVEL.current >= LOGLEVEL.INFO else "",
         "--delete",
     ]
     cmd.extend(get_includes_from_file(target.sync_includes_file, package))
