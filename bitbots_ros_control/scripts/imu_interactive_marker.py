@@ -35,20 +35,19 @@ import copy
 import math
 
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
-from interactive_markers.menu_handler import MenuHandler
 from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, Marker
-from humanoid_league_msgs.msg import BallRelative, GoalRelative
 from geometry_msgs.msg import Pose, Point, Quaternion, Vector3
-from tf2_geometry_msgs import PointStamped
 from sensor_msgs.msg import Imu
-from tf.transformations import euler_from_quaternion
-import tf2_ros
-import numpy as np
 
 rospy.init_node("imu_interactive_marker")
 
-SIZE = 0.3
-
+def normalizeQuaternion( quaternion_msg ):
+    norm = quaternion_msg.x**2 + quaternion_msg.y**2 + quaternion_msg.z**2 + quaternion_msg.w**2
+    s = norm**(-0.5)
+    quaternion_msg.x *= s
+    quaternion_msg.y *= s
+    quaternion_msg.z *= s
+    quaternion_msg.w *= s
 
 class IMUMarker:
 
@@ -64,13 +63,14 @@ class IMUMarker:
         int_marker.pose = self.pose
         int_marker.scale = 1
         int_marker.name = self.marker_name
-        int_marker.description = "Rotate 3DOF to simulate IMU orientation"
+        int_marker.description = "Rotate 2DOF to simulate IMU orientation to ground"
 
         control = InteractiveMarkerControl()
         control.orientation.w = 1
         control.orientation.x = 1
         control.orientation.y = 0
         control.orientation.z = 0
+        normalizeQuaternion(control.orientation)
         control.name = "rotate_x"
         control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         control.always_visible = True
@@ -81,6 +81,7 @@ class IMUMarker:
         control.orientation.x = 0
         control.orientation.y = 0
         control.orientation.z = 1
+        normalizeQuaternion(control.orientation)
         control.name = "rotate_y"
         control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         int_marker.controls.append(control)
