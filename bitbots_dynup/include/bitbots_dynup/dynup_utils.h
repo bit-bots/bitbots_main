@@ -12,6 +12,7 @@ struct DynupRequest {
   bool front;
   geometry_msgs::Pose l_foot_pose;
   geometry_msgs::Pose trunk_pose;
+  geometry_msgs::Pose l_hand_pose;
 };
 
 #endif //BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_UTILS_H_
