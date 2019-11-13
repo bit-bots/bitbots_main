@@ -139,6 +139,8 @@ class WorldModelCapsule:
         except (tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
             try:
+                # retrying with latest time stamp available because the time stamp of the goal_odom.header
+                # seems to be to young and an extrapolation would be required.
                 left.header.stamp = rospy.Time(0)
                 left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
                 right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2)).point
