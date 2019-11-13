@@ -6,7 +6,7 @@ import math
 class AlignedToGoal(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(AlignedToGoal, self).__init__(blackboard, dsd, parameters)
-        self.orientation_threshold = 20.0  # [deg]
+        self.orientation_threshold = self.blackboard.config['goal_alignment_orientation_threshold']  # [deg]
 
     def perform(self, reevaluate=False):
         """ It is determined if the robot is correctly aligned to the orientation of the move_base goal within a
