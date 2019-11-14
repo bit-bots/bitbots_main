@@ -37,6 +37,7 @@
   <depend>moveit_ros_robot_interaction</depend>
 
   <test_depend>plotjuggler</test_depend>
+  <test_depend>bitbots_odometry</test_depend>
 
   <export>
     <bitbots_documentation>

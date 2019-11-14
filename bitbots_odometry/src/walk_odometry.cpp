@@ -95,7 +95,7 @@ WalkOdometry::WalkOdometry() {
         br.sendTransform(odom_to_base_link_msg);
       } catch (tf2::TransformException &ex) {
         ROS_WARN("%s", ex.what());
-        ros::Duration(1.0).sleep();
+        ros::Duration(0.1).sleep();
         continue;
       }
     }
