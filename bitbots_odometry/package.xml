@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_odometry</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>The bitbots_odometry package</description>
 
   <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
