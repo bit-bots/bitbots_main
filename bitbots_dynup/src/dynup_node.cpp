@@ -23,8 +23,19 @@ DynUpNode::DynUpNode() :
 void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level) {
   engine_rate_ = config.engine_rate;
 
-  DynUpConfig params = config;
-  //TODO set good default parameters
+  DynUpParams params = DynUpParams();
+  //TODO actually set parameters like
+  //params.leg_min_length = config.leg_min_length;
+  params.foot_distance = config.foot_distance;
+  params.rise_time = config.rise_time;
+  params.trunk_x = config.trunk_x;
+  params.trunk_height = config.trunk_height;
+  params.trunk_pitch = config.trunk_pitch;
+  params.time_hands_side = config.time_hands_side;
+  params.time_foot_close = config.time_foot_close;
+  params.time_hands_front = config.time_hands_front;
+  params.time_foot_ground = config.time_foot_ground;
+  params.time_torso_45 = config.time_torso_45;
 
   engine_.setParams(params);
 
@@ -87,7 +98,7 @@ void DynUpNode::loopEngine() {
 std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose>> DynUpNode::getCurrentPoses() {
   ros::Time time = ros::Time::now();
 
-  /* Construct zero-positions for both poses in their respective local frames */
+  /* Construct zero-positions for all poses in their respective local frames */
   geometry_msgs::PoseStamped l_foot_origin, trunk_origin, l_hand_origin;
   l_foot_origin.header.frame_id = "l_sole";
   l_foot_origin.pose.orientation.w = 1;
@@ -97,11 +108,11 @@ std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs
   trunk_origin.pose.orientation.w = 1;
   trunk_origin.header.stamp = time;
 
-  l_hand_origin.header.frame_id = "l_hand";
+  l_hand_origin.header.frame_id = "l_lower_arm";
   l_hand_origin.pose.orientation.w = 1;
   l_hand_origin.header.stamp = time;
 
-  /* Transform both poses into the right foot frame */
+  /* Transform all poses into the right foot frame */
   geometry_msgs::PoseStamped l_foot_transformed, trunk_transformed, l_hand_transformed;
   try {
     tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole",
