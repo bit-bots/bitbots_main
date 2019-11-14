@@ -13,6 +13,7 @@ void DynupIK::reset() {
   /* We have to set some good initial position in the goal state,
    * since we are using a gradient based method. Otherwise, the
    * first step will be not correct */
+  //TODO: add hands or replace with actual values?
   std::vector<std::string> names_vec = {"LHipPitch", "LKnee", "LAnklePitch", "RHipPitch", "RKnee", "RAnklePitch"};
   std::vector<double> pos_vec = {0.7, -1.0, -0.4, -0.7, 1.0, 0.4};
   for (int i = 0; i < names_vec.size(); ++i) {
