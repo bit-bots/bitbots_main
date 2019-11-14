@@ -62,7 +62,7 @@
         </include>
     </group>
     <group if="$(arg use_fake_vision)">
-        <node name="sim_fake_vision" pkg="bitbots_bringup" type="fake_vis_in_sim.py" output="screen" respawn="true"/>
+        <node name="sim_fake_vision" pkg="humanoid_league_visualization" type="fake_vision.py" output="screen" respawn="true"/>
     </group>
 
     <!-- launch transformer -->
