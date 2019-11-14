@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_ros_control</name>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <description>Hardware interface based the "dynamixel_workbench_ros_control" by Martin Oehler. It uses a modified version of the dynamixel_workbench to provide a higher update rate on the servo bus by using sync reads of multiple values. </description>
 
 

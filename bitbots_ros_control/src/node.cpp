@@ -1,6 +1,5 @@
 #include <ros/callback_queue.h>
 #include <controller_manager/controller_manager.h>
-#include <bitbots_ros_control/bitbots_ros_control_paramsConfig.h>
 #include <bitbots_ros_control/wolfgang_hardware_interface.h>
 
 
