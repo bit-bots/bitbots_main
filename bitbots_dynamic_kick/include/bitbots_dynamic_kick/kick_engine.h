@@ -23,6 +23,10 @@ struct KickParams {
   double kick_windup_distance;
   double trunk_height;
 
+  double trunk_roll;
+  double trunk_pitch;
+  double trunk_yaw;
+
   double move_trunk_time = 1;
   double raise_foot_time = 1;
   double move_to_ball_time = 1;

@@ -200,10 +200,16 @@ void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose, const 
   tf2::Matrix3x3(trunk_rotation).getRPY(trunk_r, trunk_p, trunk_y);
 
   trunk_spline_.roll()->addPoint(0, trunk_r);
+  trunk_spline_.roll()->addPoint(phase_timings_.raise_foot, kick_foot_sign * params_.trunk_roll);
+  trunk_spline_.roll()->addPoint(phase_timings_.lower_foot, kick_foot_sign * params_.trunk_roll);
   trunk_spline_.roll()->addPoint(phase_timings_.move_trunk_back, trunk_r);
   trunk_spline_.pitch()->addPoint(0, trunk_p);
+  trunk_spline_.pitch()->addPoint(phase_timings_.raise_foot, params_.trunk_pitch);
+  trunk_spline_.pitch()->addPoint(phase_timings_.lower_foot, params_.trunk_pitch);
   trunk_spline_.pitch()->addPoint(phase_timings_.move_trunk_back, trunk_p);
   trunk_spline_.yaw()->addPoint(0, trunk_y);
+  trunk_spline_.yaw()->addPoint(phase_timings_.raise_foot, kick_foot_sign * params_.trunk_yaw);
+  trunk_spline_.yaw()->addPoint(phase_timings_.lower_foot, kick_foot_sign * params_.trunk_yaw);
   trunk_spline_.yaw()->addPoint(phase_timings_.move_trunk_back, trunk_y);
 }
 
