@@ -13,7 +13,6 @@ import rospkg
 import tf2_ros
 import os
 from dynamic_reconfigure.server import Server
-from bitbots_ros_control.cfg import bitbots_ros_control_paramsConfig
 
 
 class PressureConverter:
