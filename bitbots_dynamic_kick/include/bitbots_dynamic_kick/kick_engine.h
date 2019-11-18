@@ -116,8 +116,8 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
 
   int getPercentDone() const override;
 
-  bitbots_splines::PoseSpline getFlyingSplines() const ;
-  bitbots_splines::PoseSpline getTrunkSplines() const ;
+  bitbots_splines::PoseSpline getFlyingSplines() const;
+  bitbots_splines::PoseSpline getTrunkSplines() const;
 
   void setParams(KickParams params);
 
@@ -170,7 +170,6 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
                              const geometry_msgs::Quaternion &kick_direction);
 
   geometry_msgs::Transform getTrunkPose();
-
 
   /**
    * Calculate the yaw of the kicking foot, so that it is turned
