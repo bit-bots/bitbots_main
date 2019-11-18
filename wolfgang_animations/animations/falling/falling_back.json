@@ -28,7 +28,7 @@
                 "RShoulderRoll": 0
             }, 
             "name": "walkready", 
-            "pause": 2.0
+            "pause": 0.0
         }
     ], 
     "last_edited": "2018-06-08 14:35:29.436275", 
