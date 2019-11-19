@@ -1,9 +1,9 @@
 ros_control:
 
-  control_loop_hz: 1000
+  control_loop_hz: 10
 
   port_info:
-    port_name: /dev/ttyDXLBOARD
+    port_name: /dev/ttyACM0
     baudrate: 2000000
     protocol_version: 2
 
@@ -15,8 +15,8 @@ ros_control:
   servos:
     # specifies which information should be read
     read_position: true
-    read_velocity: false
-    read_effort: false
+    read_velocity: true
+    read_effort: true
     read_volt_temp: true # this also corresponds for the error byte
 
     VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
@@ -53,64 +53,7 @@ ros_control:
       Feedforward_1st_Gain: 0 # [/4]
 
     device_info:
-      RShoulderPitch:
-        id: 1
-        model_number: 311
-      LShoulderPitch:
-        id: 2
-        model_number: 311
-      RShoulderRoll:
-        id: 3
-        model_number: 321
-      LShoulderRoll:
-        id: 4
-        model_number: 311
       RElbow:
         id: 5
         model_number: 321
-      LElbow:
-        id: 6
-        model_number: 311
-      RHipYaw:
-        id: 7
-        model_number: 321
-      LHipYaw:
-        id: 8
-        model_number: 321
-      RHipRoll:
-        id: 9
-        model_number: 321
-      LHipRoll:
-        id: 10
-        model_number: 321
-      RHipPitch:
-        id: 11
-        model_number: 321
-      LHipPitch:
-        id: 12
-        model_number: 321
-      RKnee:
-        id: 13
-        model_number: 321
-      LKnee:
-        id: 14
-        model_number: 321
-      RAnklePitch:
-        id: 15
-        model_number: 321
-      LAnklePitch:
-        id: 16
-        model_number: 321
-      RAnkleRoll:
-        id: 17
-        model_number: 321
-      LAnkleRoll:
-        id: 18
-        model_number: 321
-      HeadPan:
-        id: 19
-        model_number: 311
-      HeadTilt:
-        id: 20
-        model_number: 311
 
