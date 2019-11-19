@@ -7,5 +7,6 @@
     <node name="joint_goal_viz" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" respawn="false" output="screen" args="--walking"/>
     <node pkg="rviz" type="rviz" args="-d $(find bitbots_quintic_walk)/config/walk.rviz" name="walk_rviz"/>
     <node name="walk_odometry" pkg="bitbots_odometry" type="walk_odometry" respawn="true" output="screen"/>
+    <node name="odometry_fuser" pkg="bitbots_odometry" type="odometry_fuser" respawn="true" output="screen"/>
 
 </launch>

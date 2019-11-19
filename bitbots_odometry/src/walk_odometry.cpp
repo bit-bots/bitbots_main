@@ -5,6 +5,8 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2/utils.h>
+#include <nav_msgs/Odometry.h>
+
 
 class WalkOdometry {
  public:
@@ -14,13 +16,18 @@ class WalkOdometry {
   char current_support_state_;
   char previous_support_state_;
   sensor_msgs::JointState current_joint_states_;
+  nav_msgs::Odometry current_odom_msg_;
 
   void supportCallback(std_msgs::Char msg);
   void jointStateCb(const sensor_msgs::JointState &msg);
+  void odomCallback(nav_msgs::Odometry msg);
 };
 
 WalkOdometry::WalkOdometry() {
+  // todo think about if this node should be integrated into the walk node
   ros::NodeHandle n("~");
+  bool publish_walk_odom_tf;
+  n.param<bool>("/publish_walk_odom_tf", publish_walk_odom_tf, false);
   current_support_state_ = 'n';
   previous_support_state_ = 'n';
   std::string current_support_link = "r_sole";
@@ -29,6 +36,9 @@ WalkOdometry::WalkOdometry() {
       n.subscribe("/walk_support_state", 1, &WalkOdometry::supportCallback, this, ros::TransportHints().tcpNoDelay());
   ros::Subscriber joint_state_sub =
       n.subscribe("/joint_states", 1, &WalkOdometry::jointStateCb, this, ros::TransportHints().tcpNoDelay());
+  ros::Subscriber odom_subscriber = n.subscribe("/walk_odometry_engine", 1, &WalkOdometry::odomCallback, this);
+
+  ros::Publisher pub_odometry = n.advertise<nav_msgs::Odometry>("walk_odometry_engine", 1);
   tf2::Transform odometry_to_support_foot = tf2::Transform();
   odometry_to_support_foot.setOrigin({0, -0.1, 0});
   odometry_to_support_foot.setRotation(tf2::Quaternion(0, 0, 0, 1));
@@ -89,7 +99,7 @@ WalkOdometry::WalkOdometry() {
         previous_support_state_ = current_support_state_;
       }
 
-      //publish transform to base_link
+      //publish odometry and if wanted transform to base_link
       try {
         geometry_msgs::TransformStamped
             current_support_to_base_msg = tf_buffer.lookupTransform(current_support_link, "base_link", ros::Time(0));
@@ -101,7 +111,22 @@ WalkOdometry::WalkOdometry() {
         odom_to_base_link_msg.header.stamp = ros::Time::now();
         odom_to_base_link_msg.header.frame_id = "odom";
         odom_to_base_link_msg.child_frame_id = "base_link";
-        br.sendTransform(odom_to_base_link_msg);
+        if (publish_walk_odom_tf) {
+          br.sendTransform(odom_to_base_link_msg);
+        }
+
+        // odometry as message
+        nav_msgs::Odometry odom_msg;
+        odom_msg.header.stamp = ros::Time::now();
+        odom_msg.header.frame_id = "odom";
+        odom_msg.child_frame_id = "base_link";
+        odom_msg.pose.pose.position.x = odom_to_base_link_msg.transform.translation.x;
+        odom_msg.pose.pose.position.y = odom_to_base_link_msg.transform.translation.y;
+        odom_msg.pose.pose.position.z = odom_to_base_link_msg.transform.translation.z;
+        odom_msg.pose.pose.orientation = odom_to_base_link_msg.transform.rotation;
+        odom_msg.twist = current_odom_msg_.twist;
+        pub_odometry.publish(odom_msg);
+
       } catch (tf2::TransformException &ex) {
         ROS_WARN("%s", ex.what());
         ros::Duration(0.1).sleep();
@@ -115,7 +140,7 @@ void WalkOdometry::supportCallback(const std_msgs::Char msg) {
   current_support_state_ = msg.data;
 
   // remember if we recieved first support state, only remember left or right
-  if(previous_support_state_ == 'n' && current_support_state_ != 'd'){
+  if (previous_support_state_ == 'n' && current_support_state_ != 'd') {
     previous_support_state_ = current_support_state_;
   }
 }
@@ -124,6 +149,11 @@ void WalkOdometry::jointStateCb(const sensor_msgs::JointState &msg) {
   current_joint_states_ = msg;
   joint_update_time_ = ros::Time::now();
 }
+
+void WalkOdometry::odomCallback(nav_msgs::Odometry msg){
+  current_odom_msg_ = msg;
+}
+
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "bitbots_walk_odometry");

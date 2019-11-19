@@ -17,7 +17,7 @@ WalkNode::WalkNode() :
 
   /* init publisher and subscriber */
   pub_controller_command_ = nh_.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
-  pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("walk_odometry", 1);
+  pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("/walk_odometry_engine", 1);
   pub_support_ = nh_.advertise<std_msgs::Char>("walk_support_state", 1, true);
   cmd_vel_sub_ = nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
                                ros::TransportHints().tcpNoDelay());
