@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
     <name>bitbots_docs</name>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <description>Includes main Bit-Bots documentation and provides CMake helper functions to ease the creation of documentation</description>
 
     <maintainer email="7sell@finn-thorben.me">Finn-Thorben Sell</maintainer>
