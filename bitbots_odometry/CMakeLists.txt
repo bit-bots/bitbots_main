@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_geometry_msgs
   geometry_msgs
   roscpp
+  bitbots_docs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -159,6 +160,7 @@ target_link_libraries(walk_odometry
   ${catkin_LIBRARIES}
 )
 
+enable_bitbots_docs()
 #############
 ## Install ##
 #############

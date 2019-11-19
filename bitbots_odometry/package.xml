@@ -55,7 +55,7 @@
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>tf2</exec_depend>
-
+  <depend>bitbots_docs</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
