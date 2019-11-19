@@ -41,7 +41,8 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
 
   servos_ = DynamixelServoHardwareInterface(driver);
   imu_ = ImuHardwareInterface(driver);
-  right_foot_ = BitFootHardwareInterface(driver, 102, "/foot_pressure_right/raw");
+  left_foot_ = BitFootHardwareInterface(driver, 102, "/foot_pressure_left/raw");
+  right_foot_ = BitFootHardwareInterface(driver, 101, "/foot_pressure_right/raw");
   buttons_ = ButtonHardwareInterface(driver);
 
   // set the dynamic reconfigure and load standard params for servo interface
@@ -58,8 +59,8 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle& root_nh){
     imu_.setParent(this);
     success &= imu_.init(root_nh);
   }else if(only_pressure_){
+    success &= left_foot_.init(root_nh);
     success &= right_foot_.init(root_nh);
-
   }else {
     /* Hardware interfaces must be registered at the main RobotHW class.
      * Therefore, a pointer to this class is passed down to the RobotHW classes
@@ -68,8 +69,8 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle& root_nh){
     imu_.setParent(this);
     success &= servos_.init(root_nh);
     success &= imu_.init(root_nh);
+    success &= left_foot_.init(root_nh);
     success &= right_foot_.init(root_nh);
-
     success &= buttons_.init(root_nh);
   }
   if(success) {
@@ -87,13 +88,13 @@ bool WolfgangHardwareInterface::read()
   if(only_imu_){
     success &= imu_.read();
   }else if(only_pressure_){
+    success &= left_foot_.read();
     success &= right_foot_.read();
-
   }else{
     success &= servos_.read();
     success &= imu_.read();
+    success &= left_foot_.read();
     success &= right_foot_.read();
-
     success &= buttons_.read();
   }
   return success;

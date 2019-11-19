@@ -9,4 +9,29 @@ joint_state_controller:
 DynamixelController:
   type: bitbots_ros_control/DynamixelController
   joints:
+      - HeadPan
+      - HeadTilt
+      - LShoulderPitch
+      - LShoulderRoll
+      - LElbow
+      - RShoulderPitch
+      - RShoulderRoll
       - RElbow
+      - LHipYaw
+      - LHipRoll
+      - LHipPitch
+      - LKnee
+      - LAnklePitch
+      - LAnkleRoll
+      - RHipYaw
+      - RHipRoll
+      - RHipPitch
+      - RKnee
+      - RAnklePitch
+      - RAnkleRoll
+
+    © 2019 GitHub, Inc.
+    Terms
+    Privacy
+    Security
+    Status
