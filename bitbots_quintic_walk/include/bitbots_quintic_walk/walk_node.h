@@ -136,6 +136,8 @@ class WalkNode {
 
   int robot_state_;
 
+  char current_support_foot_;
+
   bitbots_quintic_walk_paramsConfig params_;
 
   /**
