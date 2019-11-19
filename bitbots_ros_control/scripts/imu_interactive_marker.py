@@ -13,13 +13,15 @@ from sensor_msgs.msg import Imu
 
 rospy.init_node("imu_interactive_marker")
 
-def normalizeQuaternion( quaternion_msg ):
-    norm = quaternion_msg.x**2 + quaternion_msg.y**2 + quaternion_msg.z**2 + quaternion_msg.w**2
-    s = norm**(-0.5)
+
+def normalize_quaternion(quaternion_msg):
+    norm = quaternion_msg.x ** 2 + quaternion_msg.y ** 2 + quaternion_msg.z ** 2 + quaternion_msg.w ** 2
+    s = norm ** (-0.5)
     quaternion_msg.x *= s
     quaternion_msg.y *= s
     quaternion_msg.z *= s
     quaternion_msg.w *= s
+
 
 class IMUMarker:
 
@@ -42,7 +44,7 @@ class IMUMarker:
         control.orientation.x = 1
         control.orientation.y = 0
         control.orientation.z = 0
-        normalizeQuaternion(control.orientation)
+        normalize_quaternion(control.orientation)
         control.name = "rotate_x"
         control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         control.always_visible = True
@@ -53,26 +55,25 @@ class IMUMarker:
         control.orientation.x = 0
         control.orientation.y = 0
         control.orientation.z = 1
-        normalizeQuaternion(control.orientation)
+        normalize_quaternion(control.orientation)
         control.name = "rotate_y"
         control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         int_marker.controls.append(control)
 
         # we want to use our special callback function
-        self.server.insert(int_marker, self.processFeedback)
+        self.server.insert(int_marker, self.process_feedback)
 
-    def processFeedback(self, feedback):
+    def process_feedback(self, feedback):
         self.pose = feedback.pose
 
     def publish_marker(self, e):
-        # create IMU message and publis
+        # create IMU message and publish
         imu_msg = Imu()
         imu_msg.header.stamp = rospy.get_rostime()
         imu_msg.header.frame_id = "imu"
         imu_msg.orientation = self.pose.orientation
 
         self.imu_publisher.publish(imu_msg)
-
 
 
 if __name__ == "__main__":
