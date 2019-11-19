@@ -2,7 +2,6 @@
 
 namespace bitbots_splines {
 
-
 geometry_msgs::Point PositionSpline::getGeometryMsgPosition(double time) {
   geometry_msgs::Point msg;
   tf2::Vector3 tf_vec = getPos(time);
@@ -27,7 +26,7 @@ tf2::Vector3 PositionSpline::getVel(double time) {
   vel[2] = z_.vel(time);
   return vel;
 }
-tf2::Vector3 PositionSpline::getAcc(double time){
+tf2::Vector3 PositionSpline::getAcc(double time) {
   tf2::Vector3 acc;
   acc[0] = x_.acc(time);
   acc[1] = y_.acc(time);
@@ -35,16 +34,15 @@ tf2::Vector3 PositionSpline::getAcc(double time){
   return acc;
 }
 
-
-SmoothSpline *PositionSpline::x(){
+SmoothSpline *PositionSpline::x() {
   return &x_;
 }
 
-SmoothSpline *PositionSpline::y(){
+SmoothSpline *PositionSpline::y() {
   return &y_;
 }
 
-SmoothSpline *PositionSpline::z(){
+SmoothSpline *PositionSpline::z() {
   return &z_;
 }
 

@@ -38,10 +38,10 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const
     cop_y_error = cop_y - positions.trunk_pose.position.y;
     cop_x_error_sum_ += cop_x_error;
     cop_y_error_sum_ += cop_y_error;
-    double x = positions.trunk_pose.position.x - cop_x*p_x_factor_ - i_x_factor_*cop_x_error_sum_
-                                - d_x_factor_*(cop_x_error - cop_x_error_);
-    double y = positions.trunk_pose.position.y - cop_y*p_y_factor_ - i_y_factor_*cop_y_error_sum_
-                                - d_y_factor_*(cop_y_error - cop_y_error_);
+    double x = positions.trunk_pose.position.x - cop_x * p_x_factor_ - i_x_factor_ * cop_x_error_sum_
+        - d_x_factor_ * (cop_x_error - cop_x_error_);
+    double y = positions.trunk_pose.position.y - cop_y * p_y_factor_ - i_y_factor_ * cop_y_error_sum_
+        - d_y_factor_ * (cop_y_error - cop_y_error_);
     cop_x_error_ = cop_x_error;
     cop_y_error_ = cop_y_error;
     /* Do not use control for height and rotation */

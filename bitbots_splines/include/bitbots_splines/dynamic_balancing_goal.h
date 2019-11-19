@@ -1,7 +1,7 @@
 // Walking, 2018, Philipp Ruppel
 
-#ifndef BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_DYNAMIC_BALANCING_GOAL_H_
-#define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_DYNAMIC_BALANCING_GOAL_H_
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_DYNAMIC_BALANCING_GOAL_H_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_DYNAMIC_BALANCING_GOAL_H_
 #include <vector>
 #include <string>
 #include <moveit/robot_model/robot_model.h>
@@ -77,15 +77,15 @@ class DynamicBalancingGoal : public bio_ik::Goal {
     for (size_t i = 0; i < balancing_context_->getLinkCount(); i++) {
       tf2::Vector3 center = balancing_context_->getLinkCenter(i); // m
       double mass = balancing_context_->getLinkMass(i);   // kg
-      const bio_ik::Frame &frame = reference_link*context.getLinkFrame(i);
+      const bio_ik::Frame &frame = reference_link * context.getLinkFrame(i);
       bio_ik::quat_mul_vec(frame.rot, center, center);
       center += frame.pos;
-      torque_g += (center - target_).cross(gravity_*mass); // m * N
+      torque_g += (center - target_).cross(gravity_ * mass); // m * N
     }
 
     double m = balancing_context_->getTotalMass();
-    return torque_g.length2()/(m*m*gravity_.length2());
+    return torque_g.length2() / (m * m * gravity_.length2());
   }
 };
 
-#endif  //BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_DYNAMIC_BALANCING_GOAL_H_
+#endif  //BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_DYNAMIC_BALANCING_GOAL_H_

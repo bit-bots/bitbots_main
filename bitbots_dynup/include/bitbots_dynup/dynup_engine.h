@@ -3,8 +3,8 @@
 
 #include <string>
 #include <optional>
-#include <bitbots_splines/SmoothSpline.hpp>
-#include <bitbots_splines/SplineContainer.hpp>
+#include <bitbots_splines/smooth_spline.h>
+#include <bitbots_splines/spline_container.h>
 #include <bitbots_splines/pose_spline.h>
 #include <bitbots_splines/abstract_engine.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
