@@ -92,7 +92,7 @@ OdometryFuser::OdometryFuser() {
       new_orientation.setRPY(imu_roll, imu_pitch, walking_yaw);
 
       // combine it all into a tf
-      tf.header.stamp = _imu_data.header.stamp;
+      tf.header.stamp = ros::Time::now();
       tf.header.frame_id = "odom";
       tf.child_frame_id = "base_link";
       tf.transform.translation.x = _odom_data.pose.pose.position.x;
