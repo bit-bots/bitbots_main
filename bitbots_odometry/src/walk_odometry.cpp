@@ -12,6 +12,7 @@ class WalkOdometry {
  private:
   ros::Time joint_update_time_;
   char current_support_state_;
+  char previous_support_state_;
   sensor_msgs::JointState current_joint_states_;
 
   void supportCallback(std_msgs::Char msg);
@@ -21,7 +22,7 @@ class WalkOdometry {
 WalkOdometry::WalkOdometry() {
   ros::NodeHandle n("~");
   current_support_state_ = 'n';
-  char previous_support_state = 'n';
+  previous_support_state_ = 'n';
   std::string current_support_link = "r_sole";
   std::string next_support_link;
   ros::Subscriber support_state_sub =
@@ -49,46 +50,45 @@ WalkOdometry::WalkOdometry() {
     if (joints_delta_t.toSec() > 0.05) {
       ROS_WARN_THROTTLE(10, "No joint states received. Will not provide odometry.");
     } else {
-      // check if support state changed
-      if (previous_support_state != current_support_state_) {
-        // check if step finished, meaning left->double or right->double support
-        if (current_support_state_ == 'd' && previous_support_state != 'n') {
-          if (previous_support_state == 'l') {
-            current_support_link = "l_sole";
-            next_support_link = "r_sole";
-          } else {
-            current_support_link = "r_sole";
-            next_support_link = "l_sole";
-          }
-
-          try {
-            // add the transform between current and next support link to the odometry transform
-            geometry_msgs::TransformStamped current_to_next_support_msg =
-                tf_buffer.lookupTransform(current_support_link, next_support_link, ros::Time(0));
-            tf2::Transform current_to_next_support = tf2::Transform();
-            tf2::fromMsg(current_to_next_support_msg.transform, current_to_next_support);
-            // setting translation in z axis, pitch and roll to zero to stop the robot from lifting up
-            current_to_next_support.setOrigin({
-              current_to_next_support.getOrigin().x(),
-              current_to_next_support.getOrigin().y(),
-              0});
-            tf2::Quaternion q;
-            q.setRPY(0, 0, tf2::getYaw(current_to_next_support.getRotation()));
-            current_to_next_support.setRotation(q);
-            odometry_to_support_foot = odometry_to_support_foot * current_to_next_support;
-          } catch (tf2::TransformException &ex) {
-            ROS_WARN("%s", ex.what());
-            ros::Duration(1.0).sleep();
-            continue;
-          }
-
-          // update current support link for transform from foot to base link
-          current_support_link = next_support_link;
+      // check if step finished, meaning left->right or right->left support. double support is skipped
+      if ((current_support_state_ == 'l' && previous_support_state_ == 'r') ||
+          (current_support_state_ == 'r' && previous_support_state_ == 'l')) {
+        if (previous_support_state_ == 'l') {
+          current_support_link = "l_sole";
+          next_support_link = "r_sole";
+        } else {
+          current_support_link = "r_sole";
+          next_support_link = "l_sole";
         }
 
+        try {
+          // add the transform between current and next support link to the odometry transform
+          geometry_msgs::TransformStamped current_to_next_support_msg =
+              tf_buffer.lookupTransform(current_support_link, next_support_link, ros::Time(0));
+          tf2::Transform current_to_next_support = tf2::Transform();
+          tf2::fromMsg(current_to_next_support_msg.transform, current_to_next_support);
+          // setting translation in z axis, pitch and roll to zero to stop the robot from lifting up
+          current_to_next_support.setOrigin({
+                                                current_to_next_support.getOrigin().x(),
+                                                current_to_next_support.getOrigin().y(),
+                                                0});
+          tf2::Quaternion q;
+          q.setRPY(0, 0, tf2::getYaw(current_to_next_support.getRotation()));
+          current_to_next_support.setRotation(q);
+          odometry_to_support_foot = odometry_to_support_foot * current_to_next_support;
+        } catch (tf2::TransformException &ex) {
+          ROS_WARN("%s", ex.what());
+          ros::Duration(1.0).sleep();
+          continue;
+        }
+
+        // update current support link for transform from foot to base link
+        current_support_link = next_support_link;
+
         // remember the support state change
-        previous_support_state = current_support_state_;
+        previous_support_state_ = current_support_state_;
       }
+
       //publish transform to base_link
       try {
         geometry_msgs::TransformStamped
@@ -113,6 +113,11 @@ WalkOdometry::WalkOdometry() {
 
 void WalkOdometry::supportCallback(const std_msgs::Char msg) {
   current_support_state_ = msg.data;
+
+  // remember if we recieved first support state, only remember left or right
+  if(previous_support_state_ == 'n' && current_support_state_ != 'd'){
+    previous_support_state_ = current_support_state_;
+  }
 }
 
 void WalkOdometry::jointStateCb(const sensor_msgs::JointState &msg) {
