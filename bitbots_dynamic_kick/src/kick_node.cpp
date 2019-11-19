@@ -29,14 +29,14 @@ KickNode::KickNode() :
 }
 
 void KickNode::copLCallback(const geometry_msgs::PointStamped &cop) {
-  if (cop.header.frame_id!="l_sole") {
+  if (cop.header.frame_id != "l_sole") {
     ROS_ERROR_STREAM("cop_l not in l_sole frame! Stabilizing will not work.");
   }
   stabilizer_.cop_left = cop.point;
 }
 
 void KickNode::copRCallback(const geometry_msgs::PointStamped &cop) {
-  if (cop.header.frame_id!="r_sole") {
+  if (cop.header.frame_id != "r_sole") {
     ROS_ERROR_STREAM("cop_r not in r_sole frame! Stabilizing will not work.");
   }
   stabilizer_.cop_right = cop.point;
@@ -49,6 +49,7 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.foot_rise = config.foot_rise;
   params.foot_distance = config.foot_distance;
   params.kick_windup_distance = config.kick_windup_distance;
+  params.trunk_height = config.trunk_height;
   params.move_trunk_time = config.move_trunk_time;
   params.raise_foot_time = config.raise_foot_time;
   params.move_to_ball_time = config.move_to_ball_time;
@@ -61,14 +62,9 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.choose_foot_corridor_width = config.choose_foot_corridor_width;
   engine_.setParams(params);
 
-  stabilizer_.useMinimalDisplacement(config.minimal_displacement);
-  stabilizer_.useStabilizing(config.stabilizing);
   stabilizer_.useCop(config.use_center_of_pressure);
-  stabilizer_.setTrunkHeight(config.trunk_height);
-  stabilizer_.setStabilizingWeight(config.stabilizing_weight);
+  stabilizer_.setTrunkWeight(config.trunk_weight);
   stabilizer_.setFlyingWeight(config.flying_weight);
-  stabilizer_.setTrunkOrientationWeight(config.trunk_orientation_weight);
-  stabilizer_.setTrunkHeightWeight(config.trunk_height_weight);
   stabilizer_.setPFactor(config.stabilizing_p_x, config.stabilizing_p_y);
   stabilizer_.setIFactor(config.stabilizing_i_x, config.stabilizing_i_y);
   stabilizer_.setDFactor(config.stabilizing_d_x, config.stabilizing_d_y);
@@ -84,50 +80,62 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   ROS_INFO("Accepted new goal");
   engine_.reset();
 
-  if (auto foot_poses = getFootPoses()) {
-
-    visualizer_.displayReceivedGoal(goal);
-
-    /* Set engines goal and start calculating */
-    KickGoals goals;
-    goals.ball_position = goal->ball_position;
-    goals.header = goal->header;
-    goals.kick_direction = goal->kick_direction;
-    goals.kick_speed = goal->kick_speed;
-    goals.r_foot_pose = foot_poses->first;
-    goals.l_foot_pose = foot_poses->second;
-
-    engine_.setGoals(goals);
-    stabilizer_.reset();
-    ik_.reset();
-    visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
-    visualizer_.displayFlyingSplines(engine_.getSplines(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
-    loopEngine();
-
-    /* Figure out the reason why loopEngine() returned and act accordingly */
-    if (server_.isPreemptRequested()) {
-      /* Confirm that we canceled the previous goal */
-      ROS_INFO("Cancelled old goal");
-      bitbots_msgs::KickResult result;
-      result.result = bitbots_msgs::KickResult::ABORTED;
-      server_.setPreempted(result);
-    } else {
-      /* Publish results */
-      ROS_INFO("Done kicking ball");
-      bitbots_msgs::KickResult result;
-      result.result = bitbots_msgs::KickResult::SUCCESS;
-      server_.setSucceeded(result);
-    }
-
-  } else {
-    /* Feet positions were not successfully retrieved */
+  std::pair<geometry_msgs::Pose, geometry_msgs::Pose> foot_poses;
+  try {
+    foot_poses = getFootPoses();
+  } catch (tf2::TransformException &e) {
+    ROS_ERROR("Could not process goal because current feet positions could not be transformed into base_link");
     bitbots_msgs::KickResult result;
     result.result = bitbots_msgs::KickResult::REJECTED;
     server_.setAborted(result, "Transformation of feet into base_link not possible");
   }
+
+  visualizer_.displayReceivedGoal(goal);
+
+  /* Set engines goal and start calculating */
+  KickGoals goals;
+  goals.ball_position = goal->ball_position;
+  goals.header = goal->header;
+  goals.kick_direction = goal->kick_direction;
+  goals.kick_speed = goal->kick_speed;
+  goals.r_foot_pose = foot_poses.first;
+  goals.l_foot_pose = foot_poses.second;
+
+  try {
+    engine_.setGoals(goals);
+  }
+  catch (tf2::TransformException &e) {
+    ROS_ERROR_STREAM("Could not transform goal to needed tf frames: " << e.what());
+    bitbots_msgs::KickResult result;
+    result.result = bitbots_msgs::KickResult::REJECTED;
+    server_.setAborted(result, "Could not transform goal to needed tf frames");
+    return;
+  }
+
+  stabilizer_.reset();
+  ik_.reset();
+  visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
+  visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
+  visualizer_.displayTrunkSplines(engine_.getTrunkSplines());
+  loopEngine();
+
+  /* Figure out the reason why loopEngine() returned and act accordingly */
+  if (server_.isPreemptRequested()) {
+    /* Confirm that we canceled the previous goal */
+    ROS_INFO("Cancelled old goal");
+    bitbots_msgs::KickResult result;
+    result.result = bitbots_msgs::KickResult::ABORTED;
+    server_.setPreempted(result);
+  } else {
+    /* Publish results */
+    ROS_INFO("Done kicking ball");
+    bitbots_msgs::KickResult result;
+    result.result = bitbots_msgs::KickResult::SUCCESS;
+    server_.setSucceeded(result);
+  }
 }
 
-std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> KickNode::getFootPoses() {
+std::pair<geometry_msgs::Pose, geometry_msgs::Pose> KickNode::getFootPoses() {
   ros::Time time = ros::Time::now();
 
   /* Construct zero-positions for both feet in their respective local frames */
@@ -143,7 +151,7 @@ std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> KickNode::get
   /* Transform both feet poses into the other foot's frame */
   geometry_msgs::PoseStamped r_foot_transformed, l_foot_transformed;
   tf_buffer_.transform(r_foot_origin, r_foot_transformed, "l_sole",
-                       ros::Duration(0.2)); // TODO lookup thrown exceptions in internet and catch
+                       ros::Duration(0.2));
   tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole", ros::Duration(0.2));
 
   return std::pair(r_foot_transformed.pose, l_foot_transformed.pose);
@@ -152,11 +160,9 @@ std::optional<std::pair<geometry_msgs::Pose, geometry_msgs::Pose>> KickNode::get
 void KickNode::loopEngine() {
   /* Do the loop as long as nothing cancels it */
   while (server_.isActive() && !server_.isPreemptRequested()) {
-    KickPositions positions = engine_.update(1.0/engine_rate_);
+    KickPositions positions = engine_.update(1.0 / engine_rate_);
     // TODO: should positions be an std::optional? how are errors represented?
     std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(positions);
-    visualizer_
-        .displayStabilizingPoint(stabilizer_.getStabilizingTarget(), positions.is_left_kick ? "r_sole" : "l_sole");
     bitbots_splines::JointGoals motor_goals = ik_.calculate(std::move(ik_goals));
 
     bitbots_msgs::KickFeedback feedback;
@@ -168,7 +174,7 @@ void KickNode::loopEngine() {
 
     publishSupportFoot(engine_.isLeftKick());
 
-    if (feedback.percent_done==100) {
+    if (feedback.percent_done == 100) {
       break;
     }
 

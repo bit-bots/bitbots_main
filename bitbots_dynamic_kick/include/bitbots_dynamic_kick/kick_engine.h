@@ -11,6 +11,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/convert.h>
 #include <tf2/utils.h>
+#include <tf2/exceptions.h>
 #include "stabilizer.h"
 #include "visualizer.h"
 
@@ -20,6 +21,7 @@ struct KickParams {
   double foot_rise;
   double foot_distance;
   double kick_windup_distance;
+  double trunk_height;
 
   double move_trunk_time = 1;
   double raise_foot_time = 1;
@@ -83,6 +85,8 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    * @param kick_speed Speed with which to kick the ball
    * @param r_foot_pose Current pose of right foot in l_sole frame
    * @param l_foot_pose Current pose of left foot in r_sole frame
+   *
+   * @throws tf2::TransformException when goal cannot be converted into needed tf frames
    */
   void setGoals(const KickGoals &goals) override;
 
@@ -108,7 +112,8 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
 
   int getPercentDone() const override;
 
-  bitbots_splines::PoseSpline getSplines() const ;
+  bitbots_splines::PoseSpline getFlyingSplines() const ;
+  bitbots_splines::PoseSpline getTrunkSplines() const ;
 
   void setParams(KickParams params);
 
@@ -122,8 +127,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   tf2::Quaternion kick_direction_;
   float kick_speed_;
   bool is_left_kick_;
-  bitbots_splines::PositionSpline support_point_spline_;
-  bitbots_splines::PoseSpline flying_foot_spline_;
+  bitbots_splines::PoseSpline flying_foot_spline_, trunk_spline_;
   KickParams params_;
   PhaseTimings phase_timings_;
   tf2::Vector3 windup_point_;
@@ -136,7 +140,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    *
    *  @param flying_foot_pose Current pose of the foot which is supposed to be the flying/kicking one
    */
-  void calcSplines(const geometry_msgs::Pose &flying_foot_pose);
+  void calcSplines(const geometry_msgs::Pose &flying_foot_pose, const geometry_msgs::Transform &trunk_pose);
 
   /**
    *  Calculate the point from which to perform the final kicking movement
@@ -152,14 +156,17 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    *
    * @param header Definition of frame and time in which the goals were published
    * @param ball_position Position where the ball is currently located
-   * @param kick_movement Direction into which the ball should be kicked
+   * @param kick_direction Direction into which the ball should be kicked
    * @return Whether the resulting kick should be performed with the left foot
+   *
+   * @throws tf2::TransformException when ball_position and kick_direction cannot be converted into base_footprint frame
    */
   bool calcIsLeftFootKicking(const std_msgs::Header &header,
                              const geometry_msgs::Vector3 &ball_position,
                              const geometry_msgs::Quaternion &kick_direction);
 
-  geometry_msgs::PoseStamped getCurrentPose(bitbots_splines::PoseSpline spline);
+  geometry_msgs::Transform getTrunkPose();
+
 
   /**
    * Calculate the yaw of the kicking foot, so that it is turned
@@ -174,8 +181,10 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    * @param ball_position Position of the ball
    * @param kick_direction Direction in which to kick the ball
    * @return pair of (transformed_pose, transformed_direction)
+   *
+   * @throws tf2::TransformException when goal cannot be transformed into support_foot_frame
    */
-  std::optional<std::pair<geometry_msgs::Point, geometry_msgs::Quaternion>> transformGoal(
+  std::pair<geometry_msgs::Point, geometry_msgs::Quaternion> transformGoal(
       const std::string &support_foot_frame,
       const std_msgs::Header &header,
       const geometry_msgs::Vector3 &ball_position,

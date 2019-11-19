@@ -11,8 +11,8 @@ namespace bitbots_dynamic_kick {
 
 struct KickPositions {
   bool is_left_kick = true;
-  geometry_msgs::Point support_point;
-  geometry_msgs::PoseStamped flying_foot_pose;
+  geometry_msgs::Pose trunk_pose;
+  geometry_msgs::Pose flying_foot_pose;
   bool cop_support_point = false;
 };
 
