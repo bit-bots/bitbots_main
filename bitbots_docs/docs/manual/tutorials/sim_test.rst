@@ -19,3 +19,9 @@ Test Motion
 
 - ``roslaunch bitbots_bringup simulator.launch``
 - ``roslaunch bitbots_bringup motion.launch sim:=true``
+
+
+Test Imu in RViz
+----------------
+
+``roslaunch bitbots_ros_control rviz_interactive_imu.launch``
