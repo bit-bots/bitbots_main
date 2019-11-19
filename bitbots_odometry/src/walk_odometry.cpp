@@ -4,6 +4,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2/utils.h>
 
 class WalkOdometry {
  public:
@@ -66,6 +67,14 @@ WalkOdometry::WalkOdometry() {
                 tf_buffer.lookupTransform(current_support_link, next_support_link, ros::Time(0));
             tf2::Transform current_to_next_support = tf2::Transform();
             tf2::fromMsg(current_to_next_support_msg.transform, current_to_next_support);
+            // setting translation in z axis, pitch and roll to zero to stop the robot from lifting up
+            current_to_next_support.setOrigin({
+              current_to_next_support.getOrigin().x(),
+              current_to_next_support.getOrigin().y(),
+              0});
+            tf2::Quaternion q;
+            q.setRPY(0, 0, tf2::getYaw(current_to_next_support.getRotation()));
+            current_to_next_support.setRotation(q);
             odometry_to_support_foot = odometry_to_support_foot * current_to_next_support;
           } catch (tf2::TransformException &ex) {
             ROS_WARN("%s", ex.what());
