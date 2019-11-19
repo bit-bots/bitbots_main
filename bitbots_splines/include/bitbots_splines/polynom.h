@@ -3,8 +3,8 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POLYNOM_HPP_
-#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POLYNOM_HPP_
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POLYNOM_H_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POLYNOM_H_
 
 #include <cstdlib>
 #include <vector>

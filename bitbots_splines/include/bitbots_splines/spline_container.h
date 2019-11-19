@@ -3,8 +3,8 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINE_CONTAINER_HPP_
-#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINE_CONTAINER_HPP_
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINE_CONTAINER_H_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINE_CONTAINER_H_
 
 #include <string>
 #include <map>
@@ -14,7 +14,7 @@ https://github.com/Rhoban/model/
 #include <set>
 #include <algorithm>
 #include <vector>
-#include <bitbots_splines/smooth_spline.hpp>
+#include <bitbots_splines/smooth_spline.h>
 
 namespace bitbots_splines {
 

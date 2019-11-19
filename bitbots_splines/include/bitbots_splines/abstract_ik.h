@@ -9,7 +9,7 @@ namespace bitbots_splines {
 
 typedef std::pair<std::vector<std::string>, std::vector<double>> JointGoals;
 
-class AbstractIk {
+class AbstractIK {
   /**
    * Initializes the class. This must be called before calculate() is called.
    * @param kinematic_model The MoveIt! kinematic model of the robot

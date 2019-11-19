@@ -3,11 +3,11 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_NEWTON_BINOMIAL_HPP_
-#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_NEWTON_BINOMIAL_HPP_
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_NEWTON_BINOMIAL_H_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_NEWTON_BINOMIAL_H_
 
-#include "combination.hpp"
-#include "polynom.hpp"
+#include "combination.h"
+#include "polynom.h"
 
 namespace bitbots_splines {
 
