@@ -16,7 +16,7 @@ namespace bitbots_splines {
  * Implementation of 5th order polynomial
  * splines trajectory known to minimize jerk
  */
-class smooth_spline : public Spline {
+class SmoothSpline : public Spline {
  public:
 
   /**

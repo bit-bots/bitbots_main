@@ -34,15 +34,15 @@ tf2::Vector3 PositionSpline::getAcc(double time) {
   return acc;
 }
 
-smooth_spline *PositionSpline::x() {
+SmoothSpline *PositionSpline::x() {
   return &x_;
 }
 
-smooth_spline *PositionSpline::y() {
+SmoothSpline *PositionSpline::y() {
   return &y_;
 }
 
-smooth_spline *PositionSpline::z() {
+SmoothSpline *PositionSpline::z() {
   return &z_;
 }
 

@@ -26,7 +26,7 @@ namespace bitbots_splines {
  * Implementation of implort/export from files
  */
 template<class T>
-class spline_container {
+class SplineContainer {
  public:
 
   /**
@@ -95,7 +95,7 @@ class spline_container {
     // go trough all splines
     for (const auto &sp : container_) {
       // go trough all points of the spline
-      for (const smooth_spline::Point &point : sp.second.points()) {
+      for (const SmoothSpline::Point &point : sp.second.points()) {
         times.insert(point.time);
       }
     }

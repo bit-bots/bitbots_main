@@ -10,21 +10,21 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_splines {
 
-void smooth_spline::addPoint(double time, double position,
-                             double velocity, double acceleration) {
+void SmoothSpline::addPoint(double time, double position,
+                            double velocity, double acceleration) {
   points_.push_back({time, position,
                      velocity, acceleration});
   computeSplines();
 }
 
-const std::vector<smooth_spline::Point> &smooth_spline::points() const {
+const std::vector<SmoothSpline::Point> &SmoothSpline::points() const {
   return points_;
 }
-std::vector<smooth_spline::Point> &smooth_spline::points() {
+std::vector<SmoothSpline::Point> &SmoothSpline::points() {
   return points_;
 }
 
-void smooth_spline::computeSplines() {
+void SmoothSpline::computeSplines() {
   Spline::splines_.clear();
   if (points_.size() < 2) {
     return;
@@ -55,7 +55,7 @@ void smooth_spline::computeSplines() {
   }
 }
 
-void smooth_spline::importCallBack() {
+void SmoothSpline::importCallBack() {
   size_t size = Spline::splines_.size();
   if (size == 0) {
     return;
@@ -101,9 +101,9 @@ void smooth_spline::importCallBack() {
                     });
 }
 
-Polynom smooth_spline::polynomFit(double t,
-                                  double pos_1, double vel_1, double acc_1,
-                                  double pos_2, double vel_2, double acc_2) const {
+Polynom SmoothSpline::polynomFit(double t,
+                                 double pos_1, double vel_1, double acc_1,
+                                 double pos_2, double vel_2, double acc_2) const {
   if (t <= 0.00001) {
     throw std::logic_error(
         "SmoothSpline invalid spline interval");
@@ -126,7 +126,7 @@ Polynom smooth_spline::polynomFit(double t,
   return p;
 }
 
-std::string smooth_spline::getDebugString() {
+std::string SmoothSpline::getDebugString() {
   std::string output;
   int i = 0;
   for (auto &p : points_) {

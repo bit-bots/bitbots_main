@@ -9,8 +9,8 @@
 #include <string>
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
-#include <bitbots_splines/SmoothSpline.hpp>
-#include <bitbots_splines/SplineContainer.hpp>
+#include <bitbots_splines/smooth_spline.h>
+#include <bitbots_splines/spline_container.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <tf2/LinearMath/Vector3.h>
 #include <bitbots_splines/abstract_visualizer.h>
