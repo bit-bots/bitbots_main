@@ -49,7 +49,7 @@ OdometryFuser::OdometryFuser()
 
     static tf2_ros::TransformBroadcaster br;
     ros::Duration imu_delta_t;
-    float msg_rate = 1.0;
+    float msg_rate = 10.0;
     // wait till connection with publishers has been established
     // so we do not immediately blast something the log output
     ros::Duration(0.5).sleep();
@@ -62,7 +62,7 @@ OdometryFuser::OdometryFuser()
         imu_delta_t = ros::Time::now() - _imu_update_time;
 
         bool imu_active = true;
-        if (imu_delta_t.toSec() > 0.05)
+        if (imu_delta_t.toSec() > 0.5)
         {
             ROS_WARN_THROTTLE(msg_rate, "IMU message outdated!");
             imu_active = false;
@@ -71,8 +71,8 @@ OdometryFuser::OdometryFuser()
 
         ros::Duration odom_delta_t = ros::Time::now() - _odom_update_time;
 
-        bool odom_active = false;
-        if (odom_delta_t.toSec() > 0.05)
+        bool odom_active = true;
+        if (odom_delta_t.toSec() > 0.5)
         {
             ROS_WARN_THROTTLE(msg_rate, "Odom message outdated!");
             odom_active = false;

@@ -38,7 +38,7 @@ WalkOdometry::WalkOdometry() {
       n.subscribe("/joint_states", 1, &WalkOdometry::jointStateCb, this, ros::TransportHints().tcpNoDelay());
   ros::Subscriber odom_subscriber = n.subscribe("/walk_odometry_engine", 1, &WalkOdometry::odomCallback, this);
 
-  ros::Publisher pub_odometry = n.advertise<nav_msgs::Odometry>("walk_odometry_engine", 1);
+  ros::Publisher pub_odometry = n.advertise<nav_msgs::Odometry>("/walk_odometry", 1);
   tf2::Transform odometry_to_support_foot = tf2::Transform();
   odometry_to_support_foot.setOrigin({0, -0.1, 0});
   odometry_to_support_foot.setRotation(tf2::Quaternion(0, 0, 0, 1));
@@ -112,6 +112,7 @@ WalkOdometry::WalkOdometry() {
         odom_to_base_link_msg.header.frame_id = "odom";
         odom_to_base_link_msg.child_frame_id = "base_link";
         if (publish_walk_odom_tf) {
+          ROS_WARN_ONCE("Sending Tf from walk odometry directly");
           br.sendTransform(odom_to_base_link_msg);
         }
 
@@ -133,6 +134,7 @@ WalkOdometry::WalkOdometry() {
         continue;
       }
     }
+    r.sleep();
   }
 }
 
