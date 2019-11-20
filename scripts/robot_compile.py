@@ -301,7 +301,7 @@ def sync(target, package='', pre_clean=False):
         "rsync",
         "--checksum",
         "--archive",
-        "-v" if LOGLEVEL.current >= LOGLEVEL.DEBUG else "",
+        "-v" if LOGLEVEL.current >= LOGLEVEL.INFO else "",
         "--delete",
     ]
     cmd.extend(get_includes_from_file(target.sync_includes_file, package))
@@ -364,7 +364,7 @@ def build(target, package='', pre_clean=False):
          "sync;"
          ).format(**{
             "workspace": target.workspace,
-            "cmd_clean": "cakin clean -y {};".format(package) if pre_clean else "",
+            "cmd_clean": "catkin clean -y {};".format(package) if pre_clean else "",
             "quiet_option": "> /dev/null" if LOGLEVEL.current < LOGLEVEL.INFO else "",
             "package": package
         })
@@ -449,4 +449,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print_err("Interrupted by user")
+        sys.exit(1)
