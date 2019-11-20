@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_dynamic_kick</name>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <description>
 	  The bitbots_dynamic_kick package implements a kick which is not based on keyframe animations.
 	  Instead it aims to dynamically reach it's movement goal while keeping the robot stable and controllable.
