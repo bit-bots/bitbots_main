@@ -113,4 +113,3 @@ ros_control:
       HeadTilt:
         id: 20
         model_number: 311
-

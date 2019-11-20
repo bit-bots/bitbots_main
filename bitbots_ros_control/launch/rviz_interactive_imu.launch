@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="rviz" type="rviz" args="-d $(find bitbots_ros_control)/config/rviz_interactive_imu.rviz" name="imu_rviz"/>
+    <node pkg="bitbots_ros_control" type="imu_interactive_marker.py" name="imu_interactive_marker" />
+</launch>
