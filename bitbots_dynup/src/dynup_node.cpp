@@ -31,6 +31,8 @@ void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t
   params.trunk_x = config.trunk_x;
   params.trunk_height = config.trunk_height;
   params.trunk_pitch = config.trunk_pitch;
+  params.arm_max_length = config.arm_max_length;
+  params.leg_min_length = config.leg_min_length;
   params.time_hands_side = config.time_hands_side;
   params.time_foot_close = config.time_foot_close;
   params.time_hands_front = config.time_hands_front;
@@ -105,7 +107,7 @@ std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs
   trunk_origin.pose.orientation.w = 1;
   trunk_origin.header.stamp = time;
 
-  l_hand_origin.header.frame_id = "l_lower_arm";
+  l_hand_origin.header.frame_id = "l_wrist";
   l_hand_origin.pose.orientation.w = 1;
   l_hand_origin.header.stamp = time;
 
