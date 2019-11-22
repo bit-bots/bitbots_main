@@ -56,6 +56,14 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
 
+  /*
+   * Helper method to extract the current pose of the left foot or the torso from the spline
+   * @param spline The spline to get the pose from
+   * @param foot true to get the left foot position, false to get the torso position
+   * @returns the requested pose relative to the right foot
+   */
+  geometry_msgs::PoseStamped getCurrentPose(bitbots_splines::PoseSpline spline, std::string frame_id);
+
   /* Calculate the splines to get from lying on the front to squatting:
    * - move arms to frint and pull legs
    * - get torso into 45°, pull foot under legs

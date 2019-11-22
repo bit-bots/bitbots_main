@@ -6,8 +6,9 @@
 
 struct DynupResponse {
   geometry_msgs::Point support_point;
-  tf2::Transform l_foot_pose;
-  tf2::Transform trunk_pose;
+  geometry_msgs::PoseStamped l_foot_goal_pose;
+  geometry_msgs::PoseStamped trunk_goal_pose;
+  geometry_msgs::PoseStamped l_hand_goal_pose;
 };
 
 struct DynupRequest {
