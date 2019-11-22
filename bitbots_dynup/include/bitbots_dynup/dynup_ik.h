@@ -18,11 +18,7 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
   void useStabilizing(bool use);
   void useMinimalDisplacement(bool use);
  private:
-  moveit::core::JointModelGroup *all_joints_group_;
-  moveit::core::JointModelGroup *l_arm_joints_group_;
-  moveit::core::JointModelGroup *l_leg_joints_group_;
-  moveit::core::JointModelGroup *r_arm_joints_group_;
-  moveit::core::JointModelGroup *r_leg_joints_group_;
+  moveit::core::JointModelGroupPtr all_joints_group_;
   robot_state::RobotStatePtr goal_state_;
   bool use_stabilizing_;
   bool use_minimal_displacement_;

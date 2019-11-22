@@ -41,34 +41,29 @@ void DynupEngine::publishDebug(ros::Publisher debug_publisher) {
 DynupResponse DynupEngine::update(double dt) {
   // TODO what happens when splines for foot and trunk are not present?
   /* Get should-be pose from planned splines (every axis) at current time */
-  tf2::Transform l_foot_pose = foot_spline_.getTfTransform(time_);
-  tf2::Transform r_foot_pose = r_foot_spline_.getTfTransform(time_);
-  tf2::Stamped<tf2::Transform> l_hand_to_base_link, r_hand_to_base_link;
-  tf2::fromMsg(tf_buffer_.lookupTransform("base_link", "r_wrist", ros::Time(0), ros::Duration(0.1)), r_hand_to_base_link);
-  tf2::fromMsg(tf_buffer_.lookupTransform("base_link", "l_wrist", ros::Time(0), ros::Duration(0.1)), l_hand_to_base_link);
-  tf2::Transform l_hand_pose = l_hand_spline_.getTfTransform(time_) * l_hand_to_base_link;
-  tf2::Transform r_hand_pose = r_hand_spline_.getTfTransform(time_) * r_hand_to_base_link;
+  geometry_msgs::PoseStamped l_foot_pose = getCurrentPose(foot_spline_, "l_sole");
+  geometry_msgs::PoseStamped trunk_pose = getCurrentPose(trunk_spline_, "torso");
+  geometry_msgs::PoseStamped hand_pose = getCurrentPose(hand_spline_, "l_wrist");
+  //geometry_msgs::PoseStamped l_hand_pose = get_current_pose(foot_trajectories_.value(), "l_hand");
+  //geometry_msgs::PoseStamped r_hand_pose = get_current_pose(foot_trajectories_.value(), "r_hand");
+
 
   time_ += dt;
   geometry_msgs::Point support_point; //TODO
 
 
   /* Stabilize and return result */
-  goals_.support_point = support_point;
-  goals_.l_foot_goal_pose = l_foot_pose;
-  goals_.r_foot_goal_pose = r_foot_pose;
-  goals_.l_hand_goal_pose = l_hand_pose;
-  goals_.r_hand_goal_pose = r_hand_pose;
-  return goals_;
+  DynupResponse goals;
+  goals.support_point = support_point;
+  goals.l_foot_goal_pose = l_foot_pose;
+  goals.trunk_goal_pose = trunk_pose;
+  goals.l_hand_goal_pose = hand_pose;
+  return goals;
 }
 
-geometry_msgs::PoseStamped DynupEngine::getCurrentPose(bitbots_splines::PoseSpline spline, bool foot) {
+geometry_msgs::PoseStamped DynupEngine::getCurrentPose(bitbots_splines::PoseSpline spline, std::string frame_id) {
   geometry_msgs::PoseStamped pose;
-  if (foot) {
-    pose.header.frame_id = "l_sole";
-  } else {
-    pose.header.frame_id = "torso";
-  }
+  pose.header.frame_id = frame_id;
   pose.header.stamp = ros::Time::now();
   pose.pose = spline.getGeometryMsgPose(time_);
   return pose;
