@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_move_base</name>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <description>The bitbots_move_base package contains config files and launch scripts for move_base which does planning
   and plan execution</description>
 
@@ -21,6 +21,7 @@
   <depend>humanoid_league_msgs</depend>
   <depend>rospy</depend>
   <depend>move_base</depend>
+  <depend>base_local_planner</depend>
 
   <export>
     <bitbots_documentation>
