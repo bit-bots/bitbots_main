@@ -39,6 +39,24 @@
         <joint name="RAnklePitch" />
         <joint name="RAnkleRoll" />
     </group>
+    <group name = "RightArm">
+        <joint name="RShoulderPitch"/>
+	<joint name="RShoulderRoll"/>
+        <joint name="RElbow"/>
+    </group>
+    <group name = "LeftArm">
+        <joint name="LShoulderPitch"/>
+	<joint name="LShoulderRoll"/>
+        <joint name="LElbow"/>
+    </group>
+    <group name = "Arms">
+        <joint name="RShoulderPitch"/>
+	<joint name="RShoulderRoll"/>
+        <joint name="RElbow"/>
+        <joint name="LShoulderPitch"/>
+	<joint name="LShoulderRoll"/>
+        <joint name="LElbow"/>
+    </group>
     <group name="Head">
         <joint name="HeadPan" />
         <joint name="HeadTilt" />

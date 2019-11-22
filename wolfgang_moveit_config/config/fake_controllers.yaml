@@ -29,6 +29,21 @@ controller_list:
       - RKnee
       - RAnklePitch
       - RAnkleRoll
+  - name: fake_LeftArm_controller
+      - LShoulderPitch
+      - LShoulderRoll
+      - LElbow
+  - name: fake_RightArm_controller
+      - RShoulderPitch
+      - RShoulderRoll
+      - RElbow
+  - name: fake_Arms_controller
+      - LShoulderPitch
+      - LShoulderRoll
+      - LElbow
+      - RShoulderPitch
+      - RShoulderRoll
+      - RElbow
   - name: fake_All_controller
     joints:
       - LHipYaw
