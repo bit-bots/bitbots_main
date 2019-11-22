@@ -24,7 +24,6 @@ enum MarkerIDs {
 };
 
 struct VisualizationParams {
-  bool force_enable;
   int spline_smoothness;
 };
 
@@ -52,9 +51,6 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
   std::string base_topic_;
   const std::string marker_ns_ = "bitbots_dynamic_kick";
   VisualizationParams params_;
-  bool param_debug_active_;
-
-  bool isEnabled();
 };
 }
 
