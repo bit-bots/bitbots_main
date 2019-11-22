@@ -148,7 +148,7 @@ private:
   bool read_position_;
   bool read_velocity_;
   bool read_effort_;
-  bool read_PWM_;
+  bool read_pwm_;
   bool read_volt_temp_;
   std::vector<double> current_position_;
   std::vector<double> current_velocity_;

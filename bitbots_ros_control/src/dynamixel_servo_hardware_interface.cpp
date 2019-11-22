@@ -149,7 +149,7 @@ bool DynamixelServoHardwareInterface::loadDynamixels(ros::NodeHandle& nh){
   nh.param("servos/read_position", read_position_, true);
   nh.param("servos/read_velocity", read_velocity_, false);
   nh.param("servos/read_effort", read_effort_, false);
-
+  nh.param("servos/read_pwm", read_pwm_, false);
 
   XmlRpc::XmlRpcValue dxls_xml;
   nh.getParam("servos/device_info", dxls_xml);
@@ -435,7 +435,7 @@ bool DynamixelServoHardwareInterface::read(){
       }
     }
 
-    if (read_PWM_) {
+    if (read_pwm_) {
       if (!syncReadPWMs()) {
         ROS_ERROR_THROTTLE(1.0, "Couldn't read current PWM!");
         driver_->reinitSyncReadHandler("Present_PWM");
@@ -709,7 +709,10 @@ bool DynamixelServoHardwareInterface::syncReadPWMs() {
     success = driver_->syncRead("Present_PWM", data);
     if(success){
       for (int i = 0; i < joint_count_; i++) {
-        current_pwm_[i] = data[i];
+        // the data is in int16
+        // 100% is a value of 885
+        // convert to range -1 to 1
+        current_pwm_[i] = ((int16_t)data[i]) / 885.0;
       }
     }
     free(data);
@@ -887,7 +890,7 @@ void DynamixelServoHardwareInterface::reconfCallback(bitbots_ros_control::dynami
   read_position_ = config.read_position;
   read_velocity_ = config.read_velocity;
   read_effort_ = config.read_effort;
-  read_PWM_ = config.read_pwm;
+  read_pwm_ = config.read_pwm;
   read_volt_temp_ = config.read_volt_temp;
   vt_update_rate_ = config.VT_update_rate;
   warn_temp_ = config.warn_temp;
