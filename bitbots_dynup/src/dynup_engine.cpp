@@ -17,8 +17,10 @@ DynupResponse DynupEngine::update(double dt) {
   /* Get should-be pose from planned splines (every axis) at current time */
   geometry_msgs::PoseStamped l_foot_pose = getCurrentPose(foot_spline_, "l_sole");
   geometry_msgs::PoseStamped trunk_pose = getCurrentPose(trunk_spline_, "torso");
-  geometry_msgs::PoseStamped l_hand_pose = getCurrentPose(l_hand_spline_, "l_wrist");
-  geometry_msgs::PoseStamped r_hand_pose = getCurrentPose(r_hand_spline_, "r_wrist");
+  geometry_msgs::PoseStamped hand_pose = getCurrentPose(hand_spline_, "l_wrist");
+  //geometry_msgs::PoseStamped l_hand_pose = get_current_pose(foot_trajectories_.value(), "l_hand");
+  //geometry_msgs::PoseStamped r_hand_pose = get_current_pose(foot_trajectories_.value(), "r_hand");
+
 
   time_ += dt;
   //TODO support point between feet
@@ -28,8 +30,7 @@ DynupResponse DynupEngine::update(double dt) {
   goals.support_point = support_point;
   goals.l_foot_goal_pose = l_foot_pose;
   goals.trunk_goal_pose = trunk_pose;
-  goals.l_hand_goal_pose = l_hand_pose;
-  goals.r_hand_goal_pose = r_hand_pose;
+  goals.l_hand_goal_pose = hand_pose;
   return goals;
 }
 
