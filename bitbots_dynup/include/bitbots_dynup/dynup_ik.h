@@ -12,9 +12,7 @@ class DynupIK : public bitbots_splines::AbstractIK {
   bitbots_splines::JointGoals calculateDirectly(DynupResponse &ik_goals);
   void reset() override;
  private:
-  robot_model::JointModelGroup *legs_joints_group_;
-  robot_model::JointModelGroup *left_leg_joints_group_;
-  robot_model::JointModelGroup *right_leg_joints_group_;
+  moveit::core::JointModelGroupPtr all_joints_group_;
   robot_state::RobotStatePtr goal_state_;
 };
 
