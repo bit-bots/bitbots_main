@@ -10,7 +10,7 @@ class WalkIK : public bitbots_splines::AbstractIK {
 
   bitbots_splines::JointGoals calculate(std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) override;
   void init(moveit::core::RobotModelPtr kinematic_model) override;
-  void reset();
+  void reset() override;
   void setBioIKTimeout(double timeout);
 
  private:

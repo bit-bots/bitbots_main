@@ -305,20 +305,32 @@ class RecordUI(Plugin):
         '''
         Saves all currently recorded frames into a json file
         '''
-        self.treeModeChanged(self._previousTreeMode)
-        self.set_metadata()
-        if not self._saveDir:
-            self._saveDir = QFileDialog.getExistingDirectory()
-        status = self._recorder.save_animation(self._saveDir, self._widget.lineAnimationName.text(), self._checkBoxesSave)
-        self._widget.statusBar.showMessage(status)
+        if self._recorder.get_animation_state():
+            self.treeModeChanged(self._previousTreeMode)
+            self.set_metadata()
+            if not self._saveDir:
+                rp = rospkg.RosPack()
+                #QFileDialogue throws a gtk warning, that can not be suppressed or fixed. Should be ignored.
+                self._saveDir = QFileDialog.getExistingDirectory(directory=str(rp.get_path('wolfgang_animations')+"/animations"))
+            status = self._recorder.save_animation(self._saveDir, self._widget.lineAnimationName.text(), self._checkBoxesSave)
+            self._widget.statusBar.showMessage(status)
+        else:
+            self._widget.statusBar.showMessage("There is nothing to save!")
+            return
 
     def save_as(self):
         '''
         Saves all currently recorded frames into a json file, which is saved at a user specified location
         '''
-        self.treeModeChanged(self._previousTreeMode)
-        self._saveDir = QFileDialog.getExistingDirectory()
-        self._recorder.save_animation(self._saveDir, self._widget.lineAnimationName.text(), self._checkBoxesSave)
+        if self._recorder.get_animation_state():
+            self.treeModeChanged(self._previousTreeMode)
+            rp = rospkg.RosPack()
+            self._saveDir = QFileDialog.getExistingDirectory(directory=str(rp.get_path('wolfgang_animations')+"/animations"))
+            self._recorder.save_animation(self._saveDir, self._widget.lineAnimationName.text(), self._checkBoxesSave)
+        else:
+            self._widget.statusBar.showMessage("There is nothing to save!")
+            return
+
 
     def set_metadata(self):
         status = self._recorder.set_meta_data(self._widget.lineAnimationName.text(),
@@ -335,7 +347,8 @@ class RecordUI(Plugin):
             sure = QMessageBox.question(self._widget, 'Sure?', message, QMessageBox.Yes | QMessageBox.No)
             if sure == QMessageBox.No:
                 return
-        my_file = QFileDialog.getOpenFileName()[0]
+        rp = rospkg.RosPack()
+        my_file = QFileDialog.getOpenFileName(directory=str(rp.get_path('wolfgang_animations')+"/animations"))[0]
         if my_file:
             status = self._recorder.load_animation(my_file)
             if status == "":

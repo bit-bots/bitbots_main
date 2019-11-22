@@ -14,14 +14,12 @@ Visualizer::Visualizer(const std::string &base_topic) :
   /* create necessary publishers */
   goal_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "received_goal",
       /* queue_size */ 5, /* latch */ true);
-  spline_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "flying_foot_spline",
+  foot_spline_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "flying_foot_spline",
+      /* queue_size */ 5, /* latch */ true);
+  trunk_spline_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "trunk_spline",
       /* queue_size */ 5, /* latch */ true);
   windup_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "kick_windup_point",
       /* queue_size */ 5, /* latch */ true);
-  stabilizing_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "kick_stabilizing_point",
-      /* queue_size */ 5, /* latch */ true);
-
-  node_handle_.getParam("/debug_active", param_debug_active_);
 }
 
 void Visualizer::setParams(VisualizationParams params) {
@@ -30,18 +28,27 @@ void Visualizer::setParams(VisualizationParams params) {
 
 void Visualizer::displayFlyingSplines(bitbots_splines::PoseSpline splines,
                                       const std::string &support_foot_frame) {
-  if (!isEnabled())
+  if (foot_spline_publisher_.getNumSubscribers() == 0)
     return;
 
-  visualization_msgs::Marker
-      path = getPath(splines, support_foot_frame, params_.spline_smoothness);
+  visualization_msgs::Marker path = getPath(splines, support_foot_frame, params_.spline_smoothness);
   path.color.g = 1;
 
-  spline_publisher_.publish(path);
+  foot_spline_publisher_.publish(path);
+}
+
+void Visualizer::displayTrunkSplines(bitbots_splines::PoseSpline splines) {
+  if (trunk_spline_publisher_.getNumSubscribers() == 0)
+    return;
+
+  visualization_msgs::Marker path = getPath(splines, "base_link", params_.spline_smoothness);
+  path.color.g = 1;
+
+  trunk_spline_publisher_.publish(path);
 }
 
 void Visualizer::displayReceivedGoal(const bitbots_msgs::KickGoalConstPtr &goal) {
-  if (!isEnabled())
+  if (goal_publisher_.getNumSubscribers() == 0)
     return;
 
   visualization_msgs::Marker
@@ -59,7 +66,7 @@ void Visualizer::displayReceivedGoal(const bitbots_msgs::KickGoalConstPtr &goal)
 }
 
 void Visualizer::displayWindupPoint(const tf2::Vector3 &kick_windup_point, const std::string &support_foot_frame) {
-  if (!isEnabled())
+  if (windup_publisher_.getNumSubscribers() == 0)
     return;
 
   visualization_msgs::Marker marker = getMarker(kick_windup_point, support_foot_frame);
@@ -69,24 +76,6 @@ void Visualizer::displayWindupPoint(const tf2::Vector3 &kick_windup_point, const
   marker.color.g = 1;
 
   windup_publisher_.publish(marker);
-}
-
-void Visualizer::displayStabilizingPoint(const tf2::Vector3 &kick_windup_point,
-                                         const std::string &support_foot_frame) {
-  if (!isEnabled())
-    return;
-
-  visualization_msgs::Marker marker = getMarker(kick_windup_point, support_foot_frame);
-
-  marker.ns = marker_ns_;
-  marker.id = MarkerIDs::KICK_STABILIZING_POINT;
-  marker.color.g = 1;
-
-  stabilizing_publisher_.publish(marker);
-}
-
-bool Visualizer::isEnabled() {
-  return params_.force_enable || param_debug_active_;
 }
 
 }

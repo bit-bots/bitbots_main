@@ -13,7 +13,7 @@ https://github.com/Rhoban/model/
 #include <bitbots_quintic_walk/bitbots_quintic_walk_engine_paramsConfig.h>
 
 #include "bitbots_splines/abstract_engine.h"
-#include "bitbots_splines/SmoothSpline.hpp"
+#include "bitbots_splines/smooth_spline.h"
 #include "bitbots_splines/pose_spline.h"
 
 #include "bitbots_quintic_walk/walk_utils.h"

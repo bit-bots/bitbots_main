@@ -1,5 +1,5 @@
-#ifndef BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_REFERENCE_GOALS_H_
-#define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_REFERENCE_GOALS_H_
+#ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_REFERENCE_GOALS_H_
+#define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_REFERENCE_GOALS_H_
 
 #include <bio_ik/goal.h>
 #include <ros/ros.h>
@@ -39,7 +39,7 @@ class ReferenceOrientationGoal : public ReferenceLinkGoalBase {
       : ReferenceLinkGoalBase(link_name, reference_link_name, weight), orientation_(orientation.normalized()) {}
   inline void setOrientation(const tf2::Quaternion &orientation) { orientation_ = orientation.normalized(); }
   double evaluate(const bio_ik::GoalContext &context) const override {
-    bio_ik::Frame reference_to_goal = bio_ik::inverse(getReferenceLinkFrame(context)*getLinkFrame(context));
+    bio_ik::Frame reference_to_goal = bio_ik::inverse(getReferenceLinkFrame(context) * getLinkFrame(context));
     return fmin((orientation_ - reference_to_goal.getOrientation()).length2(),
                 (orientation_ + reference_to_goal.getOrientation()).length2());
   }
@@ -59,7 +59,7 @@ class ReferencePoseGoal : public ReferenceLinkGoalBase {
   double evaluate(const bio_ik::GoalContext &context) const override {
     double e = 0.0;
 
-    bio_ik::Frame reference_to_goal = bio_ik::inverse(getReferenceLinkFrame(context))*getLinkFrame(context);
+    bio_ik::Frame reference_to_goal = bio_ik::inverse(getReferenceLinkFrame(context)) * getLinkFrame(context);
 
     e += reference_to_goal.getPosition().distance2(frame_.getPosition());
     e += fmin((frame_.getOrientation() - reference_to_goal.getOrientation()).length2(),
@@ -79,11 +79,11 @@ class ReferenceHeightGoal : public ReferenceLinkGoalBase {
       : ReferenceLinkGoalBase(link_name, reference_link_name, weight), height_(height) {}
   inline void setHeight(double height) { height_ = height; }
   double evaluate(const bio_ik::GoalContext &context) const override {
-    bio_ik::Frame reference_to_goal = bio_ik::inverse(getReferenceLinkFrame(context))*getLinkFrame(context);
+    bio_ik::Frame reference_to_goal = bio_ik::inverse(getReferenceLinkFrame(context)) * getLinkFrame(context);
     double height = reference_to_goal.getPosition().z();
     double e = abs(height - height_);
     return e;
   }
 };
 
-#endif //BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_REFERENCE_GOALS_H_
+#endif //BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_REFERENCE_GOALS_H_

@@ -9,8 +9,8 @@
 #include <string>
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
-#include <bitbots_splines/SmoothSpline.hpp>
-#include <bitbots_splines/SplineContainer.hpp>
+#include <bitbots_splines/smooth_spline.h>
+#include <bitbots_splines/spline_container.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <tf2/LinearMath/Vector3.h>
 #include <bitbots_splines/abstract_visualizer.h>
@@ -24,7 +24,6 @@ enum MarkerIDs {
 };
 
 struct VisualizationParams {
-  bool force_enable;
   int spline_smoothness;
 };
 
@@ -39,22 +38,19 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
 
   void displayFlyingSplines(bitbots_splines::PoseSpline splines, const std::string &support_foot_frame);
 
-  void displayWindupPoint(const tf2::Vector3 &kick_windup_point, const std::string &support_foot_frame);
+  void displayTrunkSplines(bitbots_splines::PoseSpline splines);
 
-  void displayStabilizingPoint(const tf2::Vector3 &kick_windup_point, const std::string &support_foot_frame);
+  void displayWindupPoint(const tf2::Vector3 &kick_windup_point, const std::string &support_foot_frame);
 
  private:
   ros::NodeHandle node_handle_;
   ros::Publisher goal_publisher_;
-  ros::Publisher spline_publisher_;
+  ros::Publisher foot_spline_publisher_;
+  ros::Publisher trunk_spline_publisher_;
   ros::Publisher windup_publisher_;
-  ros::Publisher stabilizing_publisher_;
   std::string base_topic_;
   const std::string marker_ns_ = "bitbots_dynamic_kick";
   VisualizationParams params_;
-  bool param_debug_active_;
-
-  bool isEnabled();
 };
 }
 

@@ -36,13 +36,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 
 set(SOURCES
-        src/Spline/Polynom.cpp
-        src/Spline/SmoothSpline.cpp
-        src/Spline/Spline.cpp
+		src/Spline/polynom.cpp
+        src/Spline/smooth_spline.cpp
+		src/Spline/spline.cpp
         src/Spline/pose_spline.cpp
         src/Spline/position_spline.cpp
-        src/Utils/NewtonBinomial.cpp
-        src/Utils/Combination.cpp
+		src/Utils/newton_binomial.cpp
+		src/Utils/combination.cpp
         include/bitbots_splines/abstract_engine.h
         include/bitbots_splines/abstract_stabilizer.h
         include/bitbots_splines/abstract_ik.h

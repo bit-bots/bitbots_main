@@ -45,7 +45,7 @@ tf2::Vector3 PoseSpline::getPositionVel(double time) {
   vel[2] = z_.vel(time);
   return vel;
 }
-tf2::Vector3 PoseSpline::getPositionAcc(double time){
+tf2::Vector3 PoseSpline::getPositionAcc(double time) {
   tf2::Vector3 acc;
   acc[0] = x_.acc(time);
   acc[1] = y_.acc(time);
@@ -53,21 +53,21 @@ tf2::Vector3 PoseSpline::getPositionAcc(double time){
   return acc;
 }
 
-tf2::Vector3 PoseSpline::getEulerAngles(double time){
+tf2::Vector3 PoseSpline::getEulerAngles(double time) {
   tf2::Vector3 pos;
   pos[0] = roll_.pos(time);
   pos[1] = pitch_.pos(time);
   pos[2] = yaw_.pos(time);
   return pos;
 }
-tf2::Vector3 PoseSpline::getEulerVel(double time){
+tf2::Vector3 PoseSpline::getEulerVel(double time) {
   tf2::Vector3 vel;
   vel[0] = roll_.vel(time);
   vel[1] = pitch_.vel(time);
   vel[2] = yaw_.vel(time);
   return vel;
 }
-tf2::Vector3 PoseSpline::getEulerAcc(double time){
+tf2::Vector3 PoseSpline::getEulerAcc(double time) {
   tf2::Vector3 acc;
   acc[0] = roll_.acc(time);
   acc[1] = pitch_.acc(time);
@@ -75,7 +75,7 @@ tf2::Vector3 PoseSpline::getEulerAcc(double time){
   return acc;
 }
 
-tf2::Quaternion PoseSpline::getOrientation(double time){
+tf2::Quaternion PoseSpline::getOrientation(double time) {
   tf2::Quaternion quat;
   tf2::Vector3 rpy = getEulerAngles(time);
   quat.setRPY(rpy[0], rpy[1], rpy[2]);
@@ -107,7 +107,7 @@ SmoothSpline *PoseSpline::yaw() {
   return &yaw_;
 }
 
-std::string PoseSpline::getDebugString(){
+std::string PoseSpline::getDebugString() {
   std::string output;
   output += "x:\n" + x_.getDebugString() + "\n";
   output += "y:\n" + y_.getDebugString() + "\n";
