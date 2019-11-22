@@ -10,7 +10,7 @@ class DynupIK : public bitbots_splines::AbstractIK {
   bitbots_splines::JointGoals calculate(std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) override;
   void reset() override;
  private:
-  moveit::core::JointModelGroupPtr legs_joints_group_;
+  moveit::core::JointModelGroupPtr all_joints_group_;
   robot_state::RobotStatePtr goal_state_;
 };
 

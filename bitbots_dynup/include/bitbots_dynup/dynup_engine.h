@@ -62,7 +62,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
    * @param foot true to get the left foot position, false to get the torso position
    * @returns the requested pose relative to the right foot
    */
-  geometry_msgs::PoseStamped getCurrentPose(bitbots_splines::PoseSpline spline, bool foot);
+  geometry_msgs::PoseStamped getCurrentPose(bitbots_splines::PoseSpline spline, std::string frame_id);
 
   /* Calculate the splines to get from lying on the front to squatting:
    * - move arms to frint and pull legs

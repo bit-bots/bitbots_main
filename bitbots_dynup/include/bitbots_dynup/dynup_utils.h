@@ -5,6 +5,7 @@ struct DynupResponse {
   geometry_msgs::Point support_point;
   geometry_msgs::PoseStamped l_foot_goal_pose;
   geometry_msgs::PoseStamped trunk_goal_pose;
+  geometry_msgs::PoseStamped l_hand_goal_pose;
 };
 
 struct DynupRequest {
