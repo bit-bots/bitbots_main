@@ -24,6 +24,6 @@ include_directories(
 add_executable(convenience_frames src/convenience_frames.cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(base_footprint
+target_link_libraries(convenience_frames
     ${catkin_LIBRARIES}
 )

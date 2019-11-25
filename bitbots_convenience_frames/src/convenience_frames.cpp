@@ -32,12 +32,14 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : tfBuffer(ros::Dur
     tf = geometry_msgs::TransformStamped();
     
     static tf2_ros::TransformBroadcaster br;
-    ros::Rate r(30.0);
+    ros::Rate r(100.0);
     while(ros::ok())
     {
         ros::spinOnce();
         geometry_msgs::TransformStamped tf_right, 
-                                        tf_left, 
+                                        tf_left,
+                                        tf_right_toe,
+                                        tf_left_toe,
                                         support_foot, 
                                         non_support_foot, 
                                         non_support_foot_in_support_foot_frame, 
@@ -48,6 +50,8 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : tfBuffer(ros::Dur
         try{
             tf_right = tfBuffer.lookupTransform("base_link", "r_sole", ros::Time::now(), ros::Duration(0.1));
             tf_left = tfBuffer.lookupTransform("base_link", "l_sole",  ros::Time::now(), ros::Duration(0.1));
+            tf_right_toe = tfBuffer.lookupTransform("base_link", "r_toe", ros::Time::now(), ros::Duration(0.1));
+            tf_left_toe = tfBuffer.lookupTransform("base_link", "l_toe", ros::Time::now(), ros::Duration(0.1));
 
             // compute support foot
             if(got_support_foot)
@@ -77,11 +81,11 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : tfBuffer(ros::Dur
 
             // check with foot is in front
             if(tf_right.transform.translation.x < tf_left.transform.translation.x){
-                front_foot = tf_left;
-                back_foot = tf_right;
+                front_foot = tf_left_toe;
+                back_foot = tf_right_toe;
             }else{
-                front_foot = tf_right;
-                back_foot = tf_left;
+                front_foot = tf_right_toe;
+                back_foot = tf_left_toe;
             }
 
             // get the position of the non support foot in the support frame, used for computing the barycenter
@@ -98,12 +102,23 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : tfBuffer(ros::Dur
             // x at front foot toes
             approach_frame.pose.position.x = front_foot.transform.translation.x;
             // y between foots
-            approach_frame.pose.position.y = non_support_foot_in_support_foot_frame.transform.translation.y/2;
+            tf2::Transform center_between_foot;
+            double y = non_support_foot_in_support_foot_frame.transform.translation.y / 2;
+            center_between_foot.setOrigin({0.0, y, 0.0});
+            center_between_foot.setRotation({0, 0, 0, 1});
+            tf2::Transform support_foot_tf;
+            tf2::fromMsg(support_foot.transform, support_foot_tf);
+            center_between_foot = support_foot_tf * center_between_foot;
+            approach_frame.pose.position.y = center_between_foot.getOrigin().y();
             // z at ground leven (support foot height)
-            approach_frame.pose.position.z = support_foot.pose.z;
+            approach_frame.pose.position.z = support_foot.transform.translation.z;
 
+            // roll and pitch of support foot
+            double roll, pitch, yaw;
+            tf2::Quaternion quat;
+            fromMsg(support_foot.transform.rotation, quat);
+            tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
             // yaw of front foot
-            double yaw;
             yaw = tf2::getYaw(front_foot.transform.rotation);
             
             // pitch and roll from support foot, yaw from base link
