@@ -36,7 +36,7 @@ WalkOdometry::WalkOdometry() {
       n.subscribe("/walk_support_state", 1, &WalkOdometry::supportCallback, this, ros::TransportHints().tcpNoDelay());
   ros::Subscriber joint_state_sub =
       n.subscribe("/joint_states", 1, &WalkOdometry::jointStateCb, this, ros::TransportHints().tcpNoDelay());
-  ros::Subscriber odom_subscriber = n.subscribe("/walk_odometry_engine", 1, &WalkOdometry::odomCallback, this);
+  ros::Subscriber odom_subscriber = n.subscribe("/walk_engine_odometry", 1, &WalkOdometry::odomCallback, this);
 
   ros::Publisher pub_odometry = n.advertise<nav_msgs::Odometry>("/walk_odometry", 1);
   tf2::Transform odometry_to_support_foot = tf2::Transform();
