@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>bitbots_convenience_frames</name>
+  <version>1.0.0</version>
+  <description>Publishes convenience frames for the Hamburg-BitBots code base.</description>
+
+  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospy</depend>
+  <depend>roscpp</depend>
+  <depend>rosconsole</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf_conversions</depend>
+  <depend>geometry_msgs</depend>
+  <depend>message_generation</depend>
+
+  <export>
+    <bitbots_documentation>
+      <language>python2</language>
+      <status>tested_integration</status>
+    </bitbots_documentation>
+    <rosdoc config="rosdoc.yaml"/>
+  </export>
+</package>
