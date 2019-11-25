@@ -40,6 +40,7 @@ WalkOdometry::WalkOdometry() {
 
   ros::Publisher pub_odometry = n.advertise<nav_msgs::Odometry>("/walk_odometry", 1);
   tf2::Transform odometry_to_support_foot = tf2::Transform();
+  // set the origin to the center of the robot which is placed -0.1m next to the right (initial) foot 
   odometry_to_support_foot.setOrigin({0, -0.1, 0});
   odometry_to_support_foot.setRotation(tf2::Quaternion(0, 0, 0, 1));
 
@@ -47,7 +48,7 @@ WalkOdometry::WalkOdometry() {
   tf2_ros::Buffer tf_buffer;
   tf2_ros::TransformListener tf_listener(tf_buffer);
   // wait till connection with publishers has been established
-  // so we do not immediately blast something the log output
+  // so we do not immediately blast something into the log output
   ros::Duration(0.5).sleep();
 
   ros::Rate r(200.0);
