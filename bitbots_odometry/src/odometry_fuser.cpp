@@ -47,6 +47,7 @@ OdometryFuser::OdometryFuser() {
 
   static tf2_ros::TransformBroadcaster br;
   ros::Duration imu_delta_t;
+  // This specifies the throttle of error messages
   float msg_rate = 10.0;
   // wait till connection with publishers has been established
   // so we do not immediately blast something the log output
