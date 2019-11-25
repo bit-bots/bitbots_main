@@ -1,0 +1,25 @@
+<launch>
+  <!-- Launch the vision on a remote device-->
+  <arg name="sim" default="false" doc="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
+  <arg name="camera" default="true" doc="true: launches an image provider to get images from a camera (unless sim:=true)" />
+  <arg name="basler" default="true" doc="true: launches the basler camera driver instead of the wolves image provider" />
+  <arg name="dummyball" default="false" doc="true: does not start the ball detection to save resources" />
+  <arg name="debug" default="false" doc="true: activates publishing of several debug images" />
+  <arg name="device" default="jetson" doc="name of the device the vision should be launched on" />
+  <arg name="host" default="nuc" doc="name of the ros master" />
+  <arg name="use_game_settings" default="false" doc="true: loads additional game settings" />
+
+  <node pkg="bitbots_bringup" type="launch_on_remote.sh"
+    args="$(arg device)
+          $(arg host)
+          bitbots_vision
+          vision_startup.launch
+          sim:=$(arg sim)
+          camera:=$(arg camera)
+          basler:=$(arg basler)
+          dummyball:=$(arg dummyball)
+          debug:=$(arg debug)
+          use_game_settings:=$(arg use_game_settings)"
+    name="vision_jetson_remote" output="screen">
+  </node>
+</launch>

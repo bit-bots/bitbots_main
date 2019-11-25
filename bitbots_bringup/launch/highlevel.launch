@@ -2,7 +2,7 @@
     <arg name="sim" default="false"/>
     <arg name="motion" default="true"/>
     <arg name="behave" default="true"/>
-    <arg name="vision" default="false"/>
+    <arg name="vision" default="true"/>
     <arg name="teamcom" default="false"/>
     <arg name="localization" default="false"/>
     <arg name="simple" default="false" doc="Whether to use the simple behavior" />
@@ -10,7 +10,7 @@
     <arg name="gamecontroller" default="true" doc="Sets whether the Gamecontroller should be started"/>
 
     <arg name="use_game_settings" default="true"/>
-    
+
     <arg name="sim_ns" default="/" />
 
     <group if="$(arg gamecontroller)">
@@ -20,9 +20,8 @@
     </group>
 
     <group if="$(arg vision)">
-        <include file="$(find bitbots_vision)/launch/vision_startup.launch">
+        <include file="$(find bitbots_bringup)/launch/remote_vision.launch">
             <arg name="sim" value="$(arg sim)" />
-            <arg name="debug" value="true" />
             <arg name="basler" value="$(arg basler)" />
             <arg name="use_game_settings" value="$(arg use_game_settings)"/>
         </include>
