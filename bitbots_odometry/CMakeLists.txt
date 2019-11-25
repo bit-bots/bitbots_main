@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_geometry_msgs
   geometry_msgs
   roscpp
+  bitbots_docs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -138,6 +139,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(odometry_fuser src/odometry_fuser.cpp)
+add_executable(walk_odometry src/walk_odometry.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -154,6 +156,11 @@ target_link_libraries(odometry_fuser
   ${catkin_LIBRARIES}
 )
 
+target_link_libraries(walk_odometry
+  ${catkin_LIBRARIES}
+)
+
+enable_bitbots_docs()
 #############
 ## Install ##
 #############

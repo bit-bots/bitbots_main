@@ -575,9 +575,14 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
   double support_sign = (is_left_support_foot_ ? 1.0 : -1.0);
 
   //Set double support phase
-  double is_double_support = (foot_in_idle_position ? 1.0 : 0.0);
-  is_double_support_spline_.addPoint(0.0, is_double_support);
-  is_double_support_spline_.addPoint(half_period, is_double_support);
+  is_double_support_spline_.addPoint(0.0, 1.0);
+  if (foot_in_idle_position) {
+    is_double_support_spline_.addPoint(half_period, 1.0);
+  }else {
+    is_double_support_spline_.addPoint(double_support_length, 1.0);
+    is_double_support_spline_.addPoint(double_support_length, 0.0);
+    is_double_support_spline_.addPoint(half_period, 0.0);
+  }
 
   //Set support foot
   is_left_support_foot_spline_.addPoint(0.0, is_left_support_foot_);

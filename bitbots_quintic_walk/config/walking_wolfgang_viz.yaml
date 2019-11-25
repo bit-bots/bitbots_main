@@ -71,7 +71,7 @@ walking:
 
   node:
     # update frequency of the engine
-    engine_freq: 200.0
+    engine_freq: 100.0
 
     # parameters for bioIK
     bio_ik_time: 0.01
@@ -96,6 +96,6 @@ walking:
     imu_roll_vel_threshold: 1.0
     pause_duration: 0.5
 
-    publish_odom_tf: True
+    publish_odom_tf: False
 
     first_step_swing_factor: 1.0
