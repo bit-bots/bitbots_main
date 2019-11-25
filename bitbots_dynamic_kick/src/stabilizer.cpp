@@ -65,7 +65,7 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const
 
   tf2::Transform flying_foot_goal;
   flying_foot_goal.setOrigin({positions.flying_foot_pose.position.x,
-                              positions.flying_foot_pose.position.y,
+                                positions.flying_foot_pose.position.y,
                               positions.flying_foot_pose.position.z});
   flying_foot_goal.setRotation({positions.flying_foot_pose.orientation.x,
                                 positions.flying_foot_pose.orientation.y,

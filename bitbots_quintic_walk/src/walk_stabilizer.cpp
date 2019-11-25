@@ -5,7 +5,6 @@ namespace bitbots_quintic_walk {
 WalkStabilizer::WalkStabilizer() {
   ros::NodeHandle nh = ros::NodeHandle("/walking/pid_trunk");
   pid_trunk_pitch_.init(nh, false);
-  //pid_trunk_pitch_.initParam("/walking/pid_trunk");
   reset();
 }
 
@@ -27,6 +26,7 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> WalkStabilizer::stabilize(c
   tf2::Matrix3x3(response.support_foot_to_trunk.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
   // first adapt trunk pitch value based on PID controller
   double corrected_pitch = pid_trunk_pitch_.computeCommand(goal_pitch - response.current_pitch, dt);
+  ROS_WARN("goal %f, current %f, correct %f, %f", goal_pitch, response.current_pitch, corrected_pitch, dt);
   tf2::Quaternion corrected_orientation;
   corrected_orientation.setRPY(goal_roll, corrected_pitch, goal_yaw);
 
