@@ -22,7 +22,7 @@ KickNode::KickNode() :
   ik_.init(kinematic_model);
 
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
-  support_foot_publisher_ = node_handle_.advertise<std_msgs::Char>("dynamic_kick_support_state", 1);
+  support_foot_publisher_ = node_handle_.advertise<std_msgs::Char>("dynamic_kick_support_state", 1, true);
   cop_l_subscriber_ = node_handle_.subscribe("cop_l", 1, &KickNode::copLCallback, this);
   cop_r_subscriber_ = node_handle_.subscribe("cop_r", 1, &KickNode::copRCallback, this);
   server_.start();
@@ -215,7 +215,11 @@ void KickNode::publishGoals(const bitbots_splines::JointGoals &goals) {
 void KickNode::publishSupportFoot(bool is_left_kick) {
   std_msgs::Char msg;
   msg.data = !is_left_kick ? 'l' : 'r';
-  support_foot_publisher_.publish(msg);
+  // only publish if there was a change
+  if(previous_support_foot_ != msg.data){
+    support_foot_publisher_.publish(msg);
+    previous_support_foot_ = msg.data;
+  }
 }
 
 }
