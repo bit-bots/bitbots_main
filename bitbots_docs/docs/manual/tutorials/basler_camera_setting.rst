@@ -25,7 +25,7 @@ The interesting parameters are:
 The main issue is to keep motion blur, noise and color errors low while maintaining enough brightness to operate.
 
 So if the image is too dark, turn up the exposure. If too much motion blur occurs, turn it a bit down and turn up the gain until too much noise occurs.
-You need to balance the exposure and gain a bit to trade-off blur and noise while remaining the correct brightness.
+You need to balance the exposure and gain a bit to trade-off blur and noise while keeping the correct brightness.
 
 If the image is too bright, turn down gain and exposure. Here you also need to trade off the different errors.
 
@@ -85,4 +85,3 @@ Do not switch the camera without changing the name of the calibration file and t
 Otherwise, the robot will not connect to the camera, which is resulting in a blind robot.
 
 This is implemented to fix cross over issues related to two robots being in the same network and both using their cameras over ethernet.
-
