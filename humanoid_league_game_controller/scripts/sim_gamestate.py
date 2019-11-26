@@ -2,13 +2,16 @@
 
 # This script was based on the teleop_twist_keyboard package
 # original code can be found at https://github.com/ros-teleop/teleop_twist_keyboard
-# The script provides a simple mechanism to test robot behaviour in different gamestates,
-# when no gamecontroller is running
+# The script provides a simple mechanism to test robot behaviour in different game states,
+# when no game controller is running
 
 import rospy
 from humanoid_league_msgs.msg import GameState as GameStateMsg
 
-import sys, select, termios, tty
+import sys
+import select
+import termios
+import tty
 
 msg = """
 Setting the GameState by entering a number:
@@ -27,20 +30,20 @@ CTRL-C to quit
 """
 
 
-def getKey():
+def get_key():
     tty.setraw(sys.stdin.fileno())
     select.select([sys.stdin], [], [], 0)
-    key = sys.stdin.read(1)
+    return_key = sys.stdin.read(1)
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
-    return key
+    return return_key
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     settings = termios.tcgetattr(sys.stdin)
 
     rospy.init_node('sim_gamestate')
 
-    state_publisher = rospy.Publisher('gamestate', GameStateMsg, queue_size=1)
+    state_publisher = rospy.Publisher('gamestate', GameStateMsg, queue_size=1, latch=True)
 
     gameState = GameStateMsg()
     gameState.header.stamp = rospy.Time.now()
@@ -48,7 +51,7 @@ if __name__=="__main__":
     try:
         print(msg)
         while True:
-            key = getKey()
+            key = get_key()
             if key == ' ':
                 gameState.allowedToMove = not gameState.allowedToMove
             elif key == '\x03':
@@ -56,14 +59,15 @@ if __name__=="__main__":
             elif key in ['0', '1', '2', '3', '4']:
                 int_key = int(key)
                 gameState.gameState = int_key
-            elif key == 'p':  # penalize/unpenalize
+            elif key == 'p':  # penalize / unpenalize
                 gameState.penalized = not gameState.penalized
 
             sys.stdout.write("\x1b[A")
             sys.stdout.write("\x1b[A")
             sys.stdout.write("\x1b[A")
             state_publisher.publish(gameState)
-            print ("Allowed to move:    " + str(gameState.allowedToMove) + "       \nGamestate:          " + str(gameState.gameState) + "       \nPenalized:          " + str(gameState.penalized) + "            ")
+            print("Allowed to move:    " + str(gameState.allowedToMove) + "       \nGamestate:          " + str(
+                gameState.gameState) + "       \nPenalized:          " + str(gameState.penalized) + "            ")
 
     except Exception as e:
         print(e)
@@ -72,5 +76,3 @@ if __name__=="__main__":
         print("\n")
 
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
-
-
