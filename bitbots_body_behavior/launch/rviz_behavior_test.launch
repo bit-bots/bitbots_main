@@ -4,10 +4,11 @@
         <arg name="wolfgang" value="true"/>
     </include>
 
-    <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch" />
-
-    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_viz.yaml" command="load"/>
+    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
     <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" respawn="true" output="screen"/>
+    <node name="walk_odometry" pkg="bitbots_odometry" type="walk_odometry" respawn="true" output="screen"/>
+    <node name="odometry_fuser" pkg="bitbots_odometry" type="odometry_fuser" respawn="true" output="screen"/>
+    <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch" />
 
     <include file="$(find bitbots_animation_server)/launch/animation.launch" />
     <include file="$(find bitbots_hcm)/launch/hcm.launch">
@@ -19,4 +20,6 @@
     <node name="motor_goals_viz_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py"/>
     <!-- TODO: replace this with the launch file when one exists -->
     <node name="dynamic_kick" pkg="bitbots_dynamic_kick" type="KickNode" output="screen" />
+
+    <include file="$(find bitbots_body_behavior)/launch/behavior.launch"/>
 </launch>
