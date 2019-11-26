@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_move_base</name>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <description>The bitbots_move_base package contains config files and launch scripts for move_base which does planning
   and plan execution</description>
 
