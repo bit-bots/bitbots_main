@@ -82,6 +82,6 @@ Important Notes!
 
 All robots have individual cameras!
 Do not switch the camera without changing the name of the calibration file and the name of the camera itself in the Pylon GUI.
-Otherwise, the robot will not connect to the camera, which is resulting in a blind robot.
+Otherwise, the robot will not connect to the camera, which results in a blind robot.
 
 This is implemented to fix cross over issues related to two robots being in the same network and both using their cameras over ethernet.
