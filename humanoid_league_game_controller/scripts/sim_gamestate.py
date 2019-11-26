@@ -40,7 +40,7 @@ if __name__=="__main__":
 
     rospy.init_node('sim_gamestate')
 
-    state_publisher = rospy.Publisher('gamestate', GameStateMsg, queue_size=1)
+    state_publisher = rospy.Publisher('gamestate', GameStateMsg, queue_size=1, latch=True)
 
     gameState = GameStateMsg()
     gameState.header.stamp = rospy.Time.now()
