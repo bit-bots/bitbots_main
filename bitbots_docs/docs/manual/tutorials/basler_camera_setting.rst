@@ -3,7 +3,7 @@ Camera Settings
 ===============
 
 In the case of bad or different lighting situations (e.g at an exhibition) the camera settings need to be adjusted.
-Our robots use a Basler ace in the ROS environment most of the time, so this tutorial focuses on this specific configuration.
+Our robots are using a Basler ace in the ROS environment most of the time, so this tutorial focuses on this specific configuration.
 
 .. warning::
 
