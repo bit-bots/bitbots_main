@@ -127,5 +127,5 @@ Currently, the Bit-Bots vision package supports two file types for color spaces:
   For large color spaces, loading of such files takes a while.
 
 - **```.pickle```**
-  Generally, this is a generated binary representation of color spaces to speed up the loading times of the ```.yaml``` format.
+  Generally, this is a generated binary representation of color spaces we use to prevent the long loading times of the ```.yaml``` format.
   We provide a script to generate these files (see [Vision Tools](#vision-tools)).
