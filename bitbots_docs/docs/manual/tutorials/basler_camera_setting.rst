@@ -57,7 +57,7 @@ This part should be tweaked after all brightness and gain settings because they 
 
 Our vision pipeline includes a white balancing node on the ROS level.
 Cameras need to adjust their white balance to correct the effects of different light temperatures.
-E.g. a light bulb casts a different light color as the sun.
+E.g. a light bulb casts a different light color than the sun.
 Most cameras do this automatically, but wrong values could result in unusable images for the vision.
 Therefore we set this value manually.
 
