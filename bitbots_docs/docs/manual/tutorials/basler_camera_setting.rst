@@ -69,7 +69,7 @@ E.g. a light bulb casts a different light color than the sun.
 Most cameras do this automatically, but wrong values could result in unusable images for the vision.
 Therefore we set this value manually.
 
-The light temperature can be set in the dynamic reconfigure UI of the *whiteblancer*.
+The light temperature can be set in the dynamic reconfigure UI of the *whitebalancer*.
 This should be used to find the best settings by tweaking the parameter a bit until the colors nearly look like the colors in real life.
 
 A good benchmark should be white objects in the image, which should be displayed white.
