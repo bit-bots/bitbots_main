@@ -66,6 +66,7 @@ void WalkNode::run() {
   WalkResponse response;
 
   while (ros::ok()) {
+    SWRI_PROFILE("node-run");
     ros::Rate loop_rate(engine_frequency_);
     double dt = getTimeDelta();
 
@@ -103,11 +104,12 @@ void WalkNode::run() {
 }
 
 void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
+  SWRI_PROFILE("calc and publish joints");
   // get bioIk goals from stabilizer
-  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response);
+  //std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response);
 
   // compute motor goals from IK
-  bitbots_splines::JointGoals motor_goals = ik_.calculate(std::move(ik_goals));
+  bitbots_splines::JointGoals motor_goals = ik_.calculateDirectly(response);
 
   // publish them
   publishGoals(motor_goals);
@@ -137,6 +139,7 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
 }
 
 double WalkNode::getTimeDelta() {
+  SWRI_PROFILE("get_time_delta");
   // compute time delta depended if we are currently in simulation or reality
   double dt;
   double current_ros_time = ros::Time::now().toSec();
@@ -156,6 +159,7 @@ double WalkNode::getTimeDelta() {
 }
 
 void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
+  SWRI_PROFILE("cmdvel-cb");
   // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
   // other axis.
 
@@ -188,6 +192,7 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
 }
 
 void WalkNode::imuCb(const sensor_msgs::Imu &msg) {
+  SWRI_PROFILE("imu-cb");
   if (imu_active_) {
     // the incoming geometry_msgs::Quaternion is transformed to a tf2::Quaternion
     tf2::Quaternion quat;

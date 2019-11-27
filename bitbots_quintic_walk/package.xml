@@ -35,6 +35,7 @@
   <depend>message_runtime</depend>
   <depend>bitbots_msgs</depend>
   <depend>moveit_ros_robot_interaction</depend>
+  <depend>swri_profiler</depend>
 
   <test_depend>plotjuggler</test_depend>
   <test_depend>bitbots_odometry</test_depend>

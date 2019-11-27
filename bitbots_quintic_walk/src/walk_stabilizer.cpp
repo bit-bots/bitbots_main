@@ -10,6 +10,7 @@ void WalkStabilizer::reset() {
 }
 
 std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> WalkStabilizer::stabilize(const WalkResponse &response) {
+  SWRI_PROFILE("stabilize");
   auto ik_options = std::make_unique<bio_ik::BioIKKinematicsQueryOptions>();
   ik_options->replace = true;
   ik_options->return_approximate_solution = true;

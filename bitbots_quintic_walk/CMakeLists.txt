@@ -31,6 +31,7 @@ find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         moveit_ros_robot_interaction
         bitbots_msgs
+        swri_profiler
         )
 
 find_package(Eigen3 REQUIRED)
@@ -65,7 +66,7 @@ include_directories(
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES ${PROJECT_NAME}
-        CATKIN_DEPENDS humanoid_league_msgs std_msgs geometry_msgs bitbots_splines message_runtime bitbots_msgs tf2 tf2_eigen tf2_geometry_msgs
+        CATKIN_DEPENDS humanoid_league_msgs std_msgs geometry_msgs bitbots_splines message_runtime bitbots_msgs tf2 tf2_eigen tf2_geometry_msgs swri_profiler
         DEPENDS EIGEN3
 )
 
