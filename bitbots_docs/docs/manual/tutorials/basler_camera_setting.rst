@@ -64,7 +64,7 @@ Therefore we set this value manually.
 The light temperature can be set in the dynamic reconfigure UI of the *whiteblancer*.
 This should be used to find the best settings by tweaking the parameter a bit until the colors nearly look like the colors in real life.
 
-A good orientation should bee white objects in the image, which should be displayed white.
+A good benchmark should be white objects in the image, which should be displayed white.
 
 Note: Sometimes human vision recognizes slightly blue-white tones whiter than the real white.
 So if the object appears unnaturally white, turn the setting a bit more in the warmer direction even if the white looks a bit grayish now. This is a brightness issue.
