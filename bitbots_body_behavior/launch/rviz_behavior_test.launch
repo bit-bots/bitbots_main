@@ -20,5 +20,4 @@
     <!-- TODO: replace this with the launch file when one exists -->
     <node name="dynamic_kick" pkg="bitbots_dynamic_kick" type="KickNode" output="screen" />
 
-    <include file="$(find bitbots_body_behavior)/launch/behavior.launch"/>
 </launch>
