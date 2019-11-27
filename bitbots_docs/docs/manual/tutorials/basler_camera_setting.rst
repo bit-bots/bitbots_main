@@ -50,7 +50,7 @@ Camera Calibration
 
 The camera calibration is loaded automatically depending on the robot's name. If you connect a camera locally a default calibration is loaded.
 
-The calibration files are name following the following pattern ``basler_drivers/pylon_camera/config/camera_calibration_<name>.yaml``.
+The calibration files names are following the pattern ``basler_drivers/pylon_camera/config/camera_calibration_<name>.yaml``.
 
 To create new calibration files see
 
