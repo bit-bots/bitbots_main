@@ -5,6 +5,14 @@ Camera Settings
 In the case of bad or different lighting situations (e.g at an exhibition) the camera settings need to be adjusted.
 Our robots use a Basler ace in the ROS environment most of the time, so this tutorial focuses on this specific configuration.
 
+.. warning::
+
+   All robots have individual cameras!
+   Do not switch the camera without changing the name of the calibration file and the name of the camera itself in the Pylon GUI.
+   Otherwise, the robot will not connect to the camera, which results in a blind robot.
+
+   This is implemented to fix cross over issues related to two robots being in the same network and both using their cameras over ethernet.
+
 Basler Camera Settings
 ----------------------
 
@@ -75,13 +83,3 @@ After tweaking the settings the estimated value can be written in the following 
 ``bitbots_vision/white_balancer/config/config.yaml``
 
 Some good indoor value should be something like 3000 K and for outdoor applications something about 6500 K.
-
-
-Important Notes!
-----------------
-
-All robots have individual cameras!
-Do not switch the camera without changing the name of the calibration file and the name of the camera itself in the Pylon GUI.
-Otherwise, the robot will not connect to the camera, which results in a blind robot.
-
-This is implemented to fix cross over issues related to two robots being in the same network and both using their cameras over ethernet.
