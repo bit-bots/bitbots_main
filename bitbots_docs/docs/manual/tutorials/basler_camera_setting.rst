@@ -23,7 +23,7 @@ These should not be adjusted! Even if some frames get dropped with an error mess
 
 The interesting parameters are:
 
-- *frame_rate*: This is due to vision runtime limitations kept at 10 FPS but could be increased if needed
+- *frame_rate*: This is kept at 10 FPS due to vision runtime limitations but could be increased if needed.
 - *exposure*: The exposure determines how long each image is exposed.
   If you increase the value the image gets brighter but it is also more impacted by motion blur.
   It is good to keep this value low to keep the image nice sharp.
