@@ -1,13 +1,15 @@
-Bit-Bots Vision  
-=============== 
+Bit-Bots Vision
+===============
 
 [![CodeFactor](https://www.codefactor.io/repository/github/bit-bots/bitbots_vision/badge)](https://www.codefactor.io/repository/github/bit-bots/bitbots_vision)
 &nbsp;&nbsp;
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-This is the vision package of the Hamburg Bit-Bots.
+This is the vision ROS package of the Hamburg Bit-Bots.
 
 The vision is able to detect lines, the field itself, the field boundary, goal posts, teammates, enemies and other obstacles.
+
+See the documentation of this package at our website: [doku.bit-bots.de](http://doku.bit-bots.de/meta/manual/software/vision.html)
 
 An earlier version of this pipeline is presented in our paper [An Open Source Vision Pipeline Approach for RoboCup Humanoid Soccer](https://robocup.informatik.uni-hamburg.de/wp-content/uploads/2019/06/vision_paper.pdf). 
 When you use this pipeline or parts of it, please cite it.
@@ -56,6 +58,8 @@ Vision Tools
 
 In the bitbots_vision_tools directory, special tools for debugging/introspection purposes are provided.
 
+TODO!
+
 White Balancer
 --------------
 
@@ -90,3 +94,38 @@ roslaunch bitbots_vision vision_startup.launch
 
 **bitbots_vision_tools**
 - *bitbots_vision_recordbag*: records a rosbag containing the camera image as image_raw and stores it as /tmp/tmpbag.bag
+
+
+Color space files
+-----------------
+
+The vision depends on the usage of color space files which define color lookup tables primarily to detect the green field color and therefore lines and the field boundary.
+These files are stored directly in the package directory in ```/config/color_spaces/```.
+We will provide a tool to generate these files from the camera stream in the future.
+
+Currently, the Bit-Bots vision package supports two file types for color spaces:
+
+- **```.yaml```**
+  This format provides a human readable representation of color spaces.
+  See below for a example representation.
+  ```
+  color_values:
+        greenField:
+            red: [r_1,r_2,..., r_n]
+            green: [g_1,g_2,..., g_n]
+            blue: [b_1,b_2,..., b_n]
+    ```
+
+  Assume the following RGB color value ```(0, 153, 51)``` is part of the color space.
+  The correct representation is:
+  ```
+    r_i = 0
+    g_i = 153
+    b_i = 51
+    ```
+
+  For large color spaces, loading of such files could take a while.
+
+- **```.pickle```**
+  Generally, this is a generated binary representation of color spaces to speed up the loading times of the ```.yaml``` format.
+  We provide a script to generate these files (see [Vision Tools](#vision-tools)).
