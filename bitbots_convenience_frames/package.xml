@@ -25,8 +25,8 @@
 
   <export>
     <bitbots_documentation>
-      <language>python2</language>
-      <status>tested_integration</status>
+      <language>c++</language>
+      <status>compiles</status>
     </bitbots_documentation>
     <rosdoc config="rosdoc.yaml"/>
   </export>

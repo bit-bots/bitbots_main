@@ -20,7 +20,7 @@ private:
     void supportFootCallback(const std_msgs::Char msg);
 };
 
-ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : tfBuffer(ros::Duration(10.0)),  tfListener(tfBuffer)
+ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : tfBuffer(ros::Duration(1.0)),  tfListener(tfBuffer)
 {
     //setup tf listener and broadcaster as class members
     
@@ -36,15 +36,15 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : tfBuffer(ros::Dur
     while(ros::ok())
     {
         ros::spinOnce();
-        geometry_msgs::TransformStamped tf_right, 
+        geometry_msgs::TransformStamped tf_right, // right foot in baselink frame
                                         tf_left,
-                                        tf_right_toe,
+                                        tf_right_toe, // right toes baselink frame
                                         tf_left_toe,
-                                        support_foot, 
+                                        support_foot, // support foot in baselink frame
                                         non_support_foot, 
                                         non_support_foot_in_support_foot_frame, 
                                         base_footprint_in_support_foot_frame,
-                                        front_foot,
+                                        front_foot, // foot that is currently in front of the other, in baselink frame
                                         back_foot;
 
         try{
@@ -101,7 +101,7 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : tfBuffer(ros::Dur
             geometry_msgs::PoseStamped approach_frame;
             // x at front foot toes
             approach_frame.pose.position.x = front_foot.transform.translation.x;
-            // y between foots
+            // y between feet
             tf2::Transform center_between_foot;
             double y = non_support_foot_in_support_foot_frame.transform.translation.y / 2;
             center_between_foot.setOrigin({0.0, y, 0.0});
@@ -137,7 +137,6 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : tfBuffer(ros::Dur
             br.sendTransform(tf);
 
         } catch(...){
-            //ROS_WARN_THROTTLE(2, "Can not publish base_footprint, check your tf tree");
             continue;
         }
 
