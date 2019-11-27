@@ -199,9 +199,9 @@ class GameStateReceiver(object):
             elif state.secondary_state == 'STATE_PENALTYSHOOT':
                 # we have penalty kick
                 if state.kick_of_team == self.team:
-                   msg.allowedToMove = True
+                    msg.allowedToMove = True
                 else:
-                   msg.allowedToMove = False
+                    msg.allowedToMove = False
             elif state.kick_of_team == self.team:
                 msg.allowedToMove = True
             else:
@@ -236,4 +236,3 @@ class GameStateReceiver(object):
 if __name__ == '__main__':
     rec = GameStateReceiver()
     rec.receive_forever()
-
