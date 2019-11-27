@@ -29,7 +29,7 @@ DWAPlannerROS:
   
   # dwa specific
   sim_time: 5                     # The amount of time to roll trajectories out for in seconds
-  sim_granularity: 0.25            # The granularity with which to check for collisions along each trajectory in meters
+  sim_granularity: 0.025            # The granularity with which to check for collisions along each trajectory in meters
   angular_sim_granularity: 0.1      # The granularity with which to check for collisions for rotations in radians
 
   path_distance_bias: 5          # The weight for the path distance part of the cost function
