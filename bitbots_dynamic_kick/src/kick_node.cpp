@@ -81,6 +81,7 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   // TODO: maybe switch to goal callback to be able to reject goals properly
   ROS_INFO("Accepted new goal");
   engine_.reset();
+  was_support_foot_published_ = false;
 
   std::pair<geometry_msgs::Pose, geometry_msgs::Pose> foot_poses;
   try {
@@ -215,10 +216,10 @@ void KickNode::publishGoals(const bitbots_splines::JointGoals &goals) {
 void KickNode::publishSupportFoot(bool is_left_kick) {
   std_msgs::Char msg;
   msg.data = !is_left_kick ? 'l' : 'r';
-  // only publish if there was a change
-  if(previous_support_foot_ != msg.data){
+  // only publish one time per kick
+  if(!was_support_foot_published_){
     support_foot_publisher_.publish(msg);
-    previous_support_foot_ = msg.data;
+    was_support_foot_published_ = true;
   }
 }
 
