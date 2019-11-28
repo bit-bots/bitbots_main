@@ -42,14 +42,15 @@ bitbots_splines::JointGoals WalkIK::calculateDirectly(const WalkResponse &ik_goa
     SWRI_PROFILE("IK-direct-call");
     success = goal_state_->setFromIK(left_leg_joints_group_,
                                      left_foot_goal_msg_const,
-                                     bio_ik_timeout_);
-
-    success = success && goal_state_->setFromIK(right_leg_joints_group_,
+                                     bio_ik_timeout_,
+                                     moveit::core::GroupStateValidityCallbackFn());
+    ROS_WARN("success1 %d", success);
+    success = goal_state_->setFromIK(right_leg_joints_group_,
                                                 right_foot_goal_msg_const,
                                                 bio_ik_timeout_);
+    ROS_WARN("success2 %d", success);
   }
-  ROS_WARN("success %d", success);
-  
+
   std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
   std::vector<double> joint_goals;
   goal_state_->copyJointGroupPositions(legs_joints_group_, joint_goals);
