@@ -11,8 +11,8 @@ Wenn `ROS Sourcen` angewendet wird, sollte dies nicht nötig sein.
 1. Settings --> Project:bitbots_meta --> Project Interpreter
 2. Zahnrad oben rechts neben dem Interpreter --> Show All
 3. Unterster Button auf der rechten Seite ("Show paths for the selected interpreter")
-4. Add --> `/opt/ros/melodic/lib/python3.7/site-packages`
-5. Add --> `<catkin_ws>/devel/lib/python3.7/site-packages`
+4. Add --> `/opt/ros/melodic/lib/python2.7/dist-packages`
+5. Add --> `<catkin_ws>/devel/lib/python2.7/dist-packages`
 
 ROS Sourcen
 ===========
@@ -25,7 +25,7 @@ PyCharm weiß somit genauso viel wie die Shell und kann theoretisch auch genauso
 
 2. ::
 
-    vim ~/local/share/applications/pycharm-with-ros.desktop
+    vim ~/.local/share/applications/pycharm-with-ros.desktop
 
 3. ::
 
