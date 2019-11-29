@@ -38,19 +38,48 @@ class HeadCapsule:
     # Head position #
     #################
 
-    def send_motor_goals(self, pan_position, tilt_position, pan_speed=1.5, tilt_speed=1.5, clip=True):
+    def _calculate_lower_speed(self, delta_fast_joint, delta_my_joint, speed):
+        """
+        Calculates the speed for the axis with the non maximum velocity.
+        :param delta_fast_joint: The radians delta of the faster joint.
+        :param delta_my_joint: The radians delta of the joint that should be slowed down.
+        :param speed: The speed of the faster joint.
+        :return: Speed of this slower joint.
+        """
+        estimated_time = delta_fast_joint / speed
+        # Prevent zero division if goal is reached
+        if estimated_time != 0:
+            return delta_my_joint / estimated_time
+        else:
+            return 0
+
+    def send_motor_goals(self, pan_position, tilt_position, pan_speed=1.5, tilt_speed=1.5, current_pan_position=None, current_tilt_position=None, clip=True):
         """
         :param pan_position: pan in radians
         :param tilt_position: tilt in radians
         :param pan_speed:
         :param tilt_speed:
         :param clip: clip the motor values at the maximum value. This should almost always be true.
+        :param current_pan_position: Current pan joint state for better interpolation (only active if both joints are set).
+        :param current_tilt_position: Current tilt joint state for better interpolation (only active if both joints are set).
         :return:
         """
         rospy.logdebug("target pan/tilt: {}/{}".format(pan_position, tilt_position))
 
         if clip:
             pan_position, tilt_position = self.pre_clip(pan_position, tilt_position)
+
+        # Check if we should use the better interpolation
+        if current_pan_position and current_tilt_position:
+            # Calculate the deltas
+            delta_pan = abs(current_pan_position - pan_position)
+            delta_tilt = abs(current_tilt_position - tilt_position)
+            # Check which speed should be lowred to achieve better interpolation
+            if delta_pan > delta_tilt:
+                tilt_speed = self._calculate_lower_speed(delta_pan, delta_tilt, pan_speed)
+            else:
+                pan_speed = self._calculate_lower_speed(delta_tilt, delta_pan, tilt_speed)
+
         self.pos_msg.positions = pan_position, tilt_position
         self.pos_msg.velocities = [pan_speed, tilt_speed]
         self.pos_msg.header.stamp = rospy.Time.now()
@@ -122,7 +151,7 @@ class HeadCapsule:
             output_points.append(point)
         return output_points
 
-    def generate_pattern(self, lineCount, maxHorizontalAngleLeft, maxHorizontalAngleRight, maxVerticalAngleUp, maxVerticalAngleDown, interpolation_steps=0):
+    def generate_pattern(self, lineCount, maxHorizontalAngleLeft, maxHorizontalAngleRight, maxVerticalAngleUp, maxVerticalAngleDown, reduce_last_scanline=1, interpolation_steps=0):
         """
         :param lineCount: Number of scanlines
         :param maxHorizontalAngleLeft: maximum look left angle
@@ -168,4 +197,10 @@ class HeadCapsule:
                     line -= 1
                 else:
                     line += 1
+
+        # Reduce the with of the last scanline if wanted.
+        for index, keyframe in enumerate(keyframes):
+            if keyframe[1] == maxVerticalAngleDown:
+                keyframes[index] = (keyframe[0] * reduce_last_scanline, maxVerticalAngleDown)
+
         return keyframes
