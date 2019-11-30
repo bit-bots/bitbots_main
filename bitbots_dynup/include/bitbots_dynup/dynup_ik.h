@@ -15,6 +15,8 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
   void reset() override;
  private:
   moveit::core::JointModelGroupPtr all_joints_group_;
+  moveit::core::JointModelGroupPtr arm_joints_group_;
+  moveit::core::JointModelGroupPtr leg_joints_group_;
   robot_state::RobotStatePtr goal_state_;
 };
 
