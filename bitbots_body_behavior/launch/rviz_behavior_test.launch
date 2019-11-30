@@ -5,7 +5,7 @@
     </include>
 
     <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
-    <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" respawn="true" output="screen"/>
+    <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode"  output="screen"/>
     <include file="$(find bitbots_odometry)/launch/odometry.launch" />
     <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch" />
 

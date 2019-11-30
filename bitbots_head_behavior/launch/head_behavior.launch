@@ -8,7 +8,7 @@
         <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
     </group>
 
-    <node name="bio_ik_service" pkg="bio_ik_service" type="bio_ik_service" respawn="true" output="screen"/>
+    <node name="bio_ik_service" pkg="bio_ik_service" type="bio_ik_service"  output="screen"/>
 
-    <node unless="$(arg depends_only)" name="head_behavior" pkg="bitbots_head_behavior" type="head_node.py" respawn="true" output="screen"/>
+    <node unless="$(arg depends_only)" name="head_behavior" pkg="bitbots_head_behavior" type="head_node.py"  output="screen"/>
 </launch>
