@@ -3,6 +3,9 @@ namespace bitbots_dynup {
 void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
   /* Extract joint groups from kinematics model */
   all_joints_group_.reset(kinematic_model->getJointModelGroup("All"));
+  arm_joints_group_.reset(kinematic_model->getJointModelGroup("Arms"));
+  leg_joints_group_.reset(kinematic_model->getJointModelGroup("Legs"));
+
 
 
   /* Reset kinematic goal to default */
@@ -66,12 +69,19 @@ bitbots_splines::JointGoals DynupIK::calculateDirectly(DynupResponse &positions)
 bitbots_splines::JointGoals DynupIK::calculate(std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
   //TODO: add arm IK!
   double bio_ik_timeout = 0.01;
-  bool success = goal_state_->setFromIK(all_joints_group_.get(),
+  bool success = goal_state_->setFromIK(arm_joints_group_.get(),
+                                        EigenSTL::vector_Isometry3d(),
+                                        std::vector<std::string>(),
+                                        bio_ik_timeout,
+                                        moveit::core::GroupStateValidityCallbackFn(),
+                                        *ik_goals) &&
+                 goal_state_->setFromIK(leg_joints_group_.get(),
                                         EigenSTL::vector_Isometry3d(),
                                         std::vector<std::string>(),
                                         bio_ik_timeout,
                                         moveit::core::GroupStateValidityCallbackFn(),
                                         *ik_goals);
+  ;
 
   if (success) {
     /* retrieve joint names and associated positions from  */
