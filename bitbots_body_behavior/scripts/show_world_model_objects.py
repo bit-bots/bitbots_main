@@ -45,7 +45,7 @@ class ShowWorldModelObjects:
         self.marker_ball.pose = position
         self.marker_ball.lifetime = rospy.Duration(nsecs=self.lifetime)
 
-        # init goal marker
+        # init goal markers
         self.marker_goal_left = Marker()  # type:Marker
         self.marker_goal_left.id = 1
         self.marker_goal_left.type = Marker.CYLINDER
