@@ -19,4 +19,7 @@
     <!-- TODO: replace this with the launch file when one exists -->
     <node name="dynamic_kick" pkg="bitbots_dynamic_kick" type="KickNode" output="screen" />
 
+    <node name="show_world_model_objects" pkg="bitbots_body_behavior" type="show_world_model_objects.py" output="screen"/>
+
+
 </launch>

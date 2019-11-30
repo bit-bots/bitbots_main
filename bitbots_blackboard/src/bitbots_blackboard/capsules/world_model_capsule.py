@@ -33,6 +33,10 @@ class WorldModelCapsule:
         self.field_length = field_length
         self.field_width = field_width
 
+        # Publisher for Visualisation in RViZ
+        self.ball_publisher = rospy.Publisher('/debug/viz_ball', PointStamped, queue_size=1)
+        self.goal_publisher = rospy.Publisher('/debug/viz_goal', GoalRelative, queue_size=1)
+
     def get_current_position(self):
         return self.position.pose.x, self.position.pose.y, self.position.pose.theta
 
@@ -81,6 +85,7 @@ class WorldModelCapsule:
             self.ball = ball_buffer
             self.ball_seen_time = rospy.Time.now()
             self.ball_seen = True
+        self.ball_publisher.publish(self.ball)
 
     def forget_ball(self):
         """Forget that we saw a ball"""
@@ -211,6 +216,7 @@ class WorldModelCapsule:
             self.goal_odom.left_post = goal_left_buffer.point
             self.goal_odom.right_post = goal_right_buffer.point
             self.goal_seen_time = rospy.Time.now()
+        self.goal_publisher.publish(self.goal_odom)
 
     #############
     # ## Common #
