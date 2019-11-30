@@ -1,36 +1,45 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_localization</name>
-  <version>0.0.2</version>
-  <description>The bitbots_localization package.
-    fake_pointcloud --> pointcloud2laserscan --> amcl
-    Field models can be created with the map_generator script in bitbots_tools. </description>
-
+  <version>0.1.0</version>
+  <description>The bitbots_localization package.</description>
   <maintainer email="2hartfil@informatik.uni-hamburg.de">Judith Hartfill</maintainer>
-  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-  <author email="2hartfil@informatik.uni-hamburg.de">Judith Hartfill</author>
-  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
   <license>MIT</license>
 
+  <!-- Use build_depend for packages you need at compile time: -->
+  <build_depend>message_generation</build_depend>
+  <!-- Use build_export_depend for packages you need in order to build against this package: -->
+  <!--   <build_export_depend>message_generation</build_export_depend> -->
+  <!-- Use exec_depend for packages you need at runtime: -->
+  <exec_depend>message_runtime</exec_depend>
+
   <buildtool_depend>catkin</buildtool_depend>
-
-  <exec_depend>amcl</exec_depend>
-
-  <depend>std_msgs</depend>
-  <depend>nav_msgs</depend>
-  <depend>sensor_msgs</depend>
-  <depend>map_server</depend>
-  <depend>robot_localization</depend>
-  <depend>pointcloud_to_laserscan</depend>
-  <depend>rospy</depend>
-  <depend>humanoid_league_msgs</depend>
-  <depend>geometry_msgs</depend>
-
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>particle_filter</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>humanoid_league_msgs</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+  <build_export_depend>geometry_msgs</build_export_depend>
+  <build_export_depend>particle_filter</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  <build_export_depend>visualization_msgs</build_export_depend>
+  <build_export_depend>humanoid_league_msgs</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>dynamic_reconfigure</build_export_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>particle_filter</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>humanoid_league_msgs</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>dynamic_reconfigure</exec_depend>
+  <depend>opencv</depend>
 
   <export>
-     <bitbots_documentation>
-      <language>python</language>
-      <status>unknown</status>
-    </bitbots_documentation>
+
   </export>
 </package>

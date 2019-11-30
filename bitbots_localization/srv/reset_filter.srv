@@ -1,0 +1,5 @@
+int64 init_mode
+int64 x
+int64 y
+---
+bool success

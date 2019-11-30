@@ -1,0 +1,103 @@
+
+  ########
+  # MISC #
+  ########
+
+  # the initial pose of the robot
+  initial_robot_x1: 2.5
+  initial_robot_y1: 3
+  initial_robot_t1: -1.5
+  initial_robot_x2: 2.5
+  initial_robot_y2: -3
+  initial_robot_t2: 1.57
+
+  initial_robot_x: -4.5
+  initial_robot_y: 0
+  initial_robot_t: 0
+
+  init_mode: 4
+ 
+  map_path_lines: '../models/lines_simulator.png'
+  map_path_goals: '../models/posts.png'
+  map_path_field_boundary: '../models/fieldboundary.png'
+
+  map_path_corners: '../models/corners.png'
+  map_path_crosses: '../models/crosses_simulator.png'
+  map_path_tcrossings: '../models/tcrossings.png'
+
+  #field size
+  field_x: 9 #5.45
+  field_y: 6 #3.88
+
+  # for field boundary map
+  field_padding: 0.7 #0.1
+
+  field_boundary_interpolation_steps: 1
+
+
+  #############
+  # ROS-Stuff #
+  #############
+
+  line_topic: 'line_relative'
+  non_line_topic: 'non_line_field_points_relative'
+  goal_topic: 'goals_simulated'
+  fieldboundary_topic: 'field_boundary_relative'
+  fieldboundary_in_image_topic: 'field_boundary_in_image'
+  corners_topic: 'corners'
+  tcrossings_topic: 'tcrossings'
+  crosses_topic: 'crosses'
+
+  publishing_frame: '/localization_estimate'
+
+  pose_publishing_topic: 'pose'
+
+  particle_publishing_topic: 'pose_particles'
+
+  publishing_frequency: 25
+
+  #################
+  # Visualization #
+  #################
+
+  debug_visualization: true
+
+
+  ###################
+  # Particle Filter #
+  ###################
+
+
+  particle_number: 500
+  resampling_interval: 15
+
+  use_lines: false
+  use_non_lines: false
+  use_goals: false
+  use_fieldboundary: false
+  use_corners: false
+  use_tcrossings : false
+  use_crosses: false
+
+  diffusion_x_std_dev: 0.8
+  diffusion_y_std_dev: 0.8
+  diffusion_t_std_dev: 0.5
+  diffusion_multiplicator: 0.05
+
+  min_weight: 0.01
+  min_resampling_weight: 0.5
+  percentage_best_particles: 5
+
+  distance_factor : 0.5
+  lines_factor: 1
+  non_lines_factor: 0
+  goal_factor: 1
+  field_boundary_factor: 1
+  corners_factor : 1
+  tcrossings_factor: 1
+  crosses_factor : 1
+
+  min_motion_linear: 0.0
+  min_motion_angular: 0.0
+  filter_only_with_motion: false
+
