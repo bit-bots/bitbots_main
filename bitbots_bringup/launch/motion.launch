@@ -19,7 +19,6 @@
             <arg name="torqueless_mode" value="$(arg torqueless_mode)" />
 
         </include>
-        <!--<include file="$(find bitbots_odometry)/launch/odometry_fuser.launch" />-->
         <node name="set_volume" pkg="bitbots_bringup" type="set_volume.sh" args="100%" />
         <include file="$(find bitbots_buttons)/launch/buttons.launch"/>
     </group>
@@ -43,6 +42,5 @@
     </include>
     <node if="$(arg dynamic_kick)" pkg="bitbots_dynamic_kick" name="dynamic_kick" type="KickNode" />
     <node pkg="bitbots_dynup" name="dynup" type="DynupNode" />
-    <include file="$(find bitbots_odometry)/launch/odometry_fuser.launch"/>
 
 </launch>
