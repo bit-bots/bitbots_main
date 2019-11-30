@@ -23,6 +23,10 @@ left_pressure = None
 right_pressure = None
 
 
+def print_warn(str):
+    print(bcolors.WARNING + str + bcolors.ENDC)
+
+
 def pressure_cb(msg, is_left=True):
     global left_pressure
     global right_pressure
@@ -45,18 +49,17 @@ def is_motion_started():
 
 def check_pressure(msg, min, max, foot_name):
     if min > msg.left_front > max:
-        print(bcolors.WARNING + "  " + foot_name + " left_front out of limits. Min %f, Max %f, Value %f" + bcolors.ENDC,
-              min, max, msg.left_front)
+        print_warn(
+            "  " + foot_name + " left_front out of limits. Min " + str(min) + " Max " + str(max) + " Value " + str(msg.left_front))
     if min > msg.left_back > max:
-        print(bcolors.WARNING + "  " + foot_name + " left_back out of limits. Min %f, Max %f, Value %f" + bcolors.ENDC,
-              min, max, msg.left_front)
+        print_warn(
+            "  " + foot_name + " left_back out of limits. Min " + min + " Max " + max + " Value " + msg.left_back)
     if min > msg.right_back > max:
-        print(bcolors.WARNING + "  " + foot_name + " right_back out of limits. Min %f, Max %f, Value %f" + bcolors.ENDC,
-              min, max, msg.left_front)
+        print_warn(
+            "  " + foot_name + " right_back out of limits. Min " + min + " Max " + max + " Value " + msg.right_back)
     if min > msg.right_front > max:
-        print(
-            bcolors.WARNING + "  " + foot_name + " right_front out of limits. Min %f, Max %f, Value %f" + bcolors.ENDC,
-            min, max, msg.left_front)
+        print_warn(
+            "  " + foot_name + " right_front out of limits. Min " + min + " Max " + max + " Value " + msg.right_fronts)
 
 
 if __name__ == '__main__':
@@ -91,12 +94,13 @@ if __name__ == '__main__':
     for topic in topics_to_check.keys():
         rate = rt.get_hz(topic)
         if rate < topics_to_check[topic]:
-            print(bcolors.WARNING + "  Topic %s: %f \n" + bcolors.ENDC, topic, rate)
+            print_warn("  Topic " + topic + ": " + str(rate) + "\n")
         else:
             print("  Topic %s: %f \n", topic, rate)
+    # todo check if some of the topics have very heterogene msg recieve times
 
     # check pressure values when robot in air
-    #todo maybe call zero service
+    # todo maybe call zero service
     print("\nWe will check the foot pressure sensors next\n")
     input("Please hold the robot in the air so that the feet don't touch the ground and press enter.")
     left_pressure_sub = rospy.Subscriber("/foot_pressure/left", FootPressure, pressure_cb, callback_args=True,
@@ -114,7 +118,6 @@ if __name__ == '__main__':
     input("Please put the robot standing on the ground and press enter")
     check_pressure(left_pressure, 20, 40, "left")
     check_pressure(right_pressure, 20, 40, "right")
-
 
     # check walk motion
 
