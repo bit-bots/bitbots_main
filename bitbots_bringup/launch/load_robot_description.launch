@@ -75,4 +75,5 @@
     </group>
 
     <include file="$(find humanoid_base_footprint)/launch/base_footprint.launch"/>
+    <include file="$(find bitbots_odometry)/launch/odometry.launch"/>
 </launch>
