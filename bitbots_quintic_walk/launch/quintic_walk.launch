@@ -16,8 +16,5 @@
         </group>
   </group>   
     
-  <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" respawn="true" output="screen"/>
-  <node name="walk_odometry" pkg="bitbots_odometry" type="walk_odometry" respawn="true" output="screen"/>
-
-
+  <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" output="screen"/>
 </launch>
