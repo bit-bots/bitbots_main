@@ -2,8 +2,8 @@
 // Created by judith on 09.03.19.
 //
 
-#ifndef HUMANOID_LEAGUE_LOCALIZATION_ROBOTSTATE_H
-#define HUMANOID_LEAGUE_LOCALIZATION_ROBOTSTATE_H
+#ifndef BITBOTS_LOCALIZATION_ROBOTSTATE_H
+#define BITBOTS_LOCALIZATION_ROBOTSTATE_H
 
 #include <cmath>
 #include <particle_filter/ParticleFilter.h>
@@ -73,4 +73,4 @@ private:
     double m_CosTheta;
 };
 
-#endif //HUMANOID_LEAGUE_LOCALIZATION_ROBOTSTATE_H
+#endif //BITBOTS_LOCALIZATION_ROBOTSTATE_H

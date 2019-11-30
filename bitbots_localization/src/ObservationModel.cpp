@@ -3,7 +3,7 @@
 //
 
 
-#include <humanoid_league_localization/ObservationModel.h>
+#include <bitbots_localization/ObservationModel.h>
 #include <humanoid_league_msgs/FieldBoundaryRelative.h>
 
 

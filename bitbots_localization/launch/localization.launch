@@ -1,8 +1,8 @@
 <launch>
-    <node pkg="humanoid_league_localization" type="localization" name="humanoid_league_localization" output="screen">
-        <rosparam command="load" file="$(find humanoid_league_localization)/config/config.yaml"/>
+    <node pkg="bitbots_localization" type="localization" name="bitbots_localization" output="screen">
+        <rosparam command="load" file="$(find bitbots_localization)/config/config.yaml"/>
     </node>
-    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find humanoid_league_localization)/models/lines_simulator.yaml">
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/lines_simulator.yaml">
         <param name="frame_id" value="map" ></param>
     </node>
     <node pkg="humanoid_league_transform" type="transformer" name="transformer" output="screen"/>

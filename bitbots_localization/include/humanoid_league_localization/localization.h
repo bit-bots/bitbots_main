@@ -2,8 +2,8 @@
 // Created by judith on 08.03.19.
 //
 
-#ifndef HUMANOID_LEAGUE_LOCALIZATION_LOCALIZATION_H
-#define HUMANOID_LEAGUE_LOCALIZATION_LOCALIZATION_H
+#ifndef BITBOTS_LOCALIZATION_LOCALIZATION_H
+#define BITBOTS_LOCALIZATION_LOCALIZATION_H
 
 
 #include <vector>
@@ -51,16 +51,16 @@
 #include <humanoid_league_msgs/FieldBoundaryRelative.h>
 #include <humanoid_league_msgs/FieldBoundaryInImage.h>
 
-#include <humanoid_league_localization/map.h>
-#include <humanoid_league_localization/LocalizationConfig.h>
-#include <humanoid_league_localization/ObservationModel.h>
-#include <humanoid_league_localization/MotionModel.h>
-#include <humanoid_league_localization/StateDistribution.h>
-#include <humanoid_league_localization/Resampling.h>
-#include <humanoid_league_localization/RobotState.h>
+#include <bitbots_localization/map.h>
+#include <bitbots_localization/LocalizationConfig.h>
+#include <bitbots_localization/ObservationModel.h>
+#include <bitbots_localization/MotionModel.h>
+#include <bitbots_localization/StateDistribution.h>
+#include <bitbots_localization/Resampling.h>
+#include <bitbots_localization/RobotState.h>
 
-#include <humanoid_league_localization/reset_filter.h>
-#include <humanoid_league_localization/Evaluation.h>
+#include <bitbots_localization/reset_filter.h>
+#include <bitbots_localization/Evaluation.h>
 
 
 #include <cv_bridge/cv_bridge.h>
@@ -68,7 +68,7 @@
 #include <sensor_msgs/image_encodings.h>
 
 
-namespace hll = humanoid_league_localization;
+namespace hll = bitbots_localization;
 namespace hlm = humanoid_league_msgs;
 namespace gm = geometry_msgs;
 namespace pf = particle_filter;
@@ -236,4 +236,4 @@ private:
 };
 
 
-#endif //HUMANOID_LEAGUE_LOCALIZATION_LOCALIZATION_H
+#endif //BITBOTS_LOCALIZATION_LOCALIZATION_H

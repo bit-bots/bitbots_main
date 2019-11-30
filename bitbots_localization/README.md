@@ -1,2 +1,2 @@
-# humanoid_league_localization
+# bitbots_localization
 

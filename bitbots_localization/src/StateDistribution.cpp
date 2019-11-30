@@ -2,7 +2,7 @@
 // Created by judith on 09.03.19.
 //
 
-#include "../include/humanoid_league_localization/StateDistribution.h"
+#include "../include/bitbots_localization/StateDistribution.h"
 
 RobotStateDistribution::RobotStateDistribution(particle_filter::CRandomNumberGenerator &random_number_generator,
                                                std::pair<double, double> initial_robot_pose,

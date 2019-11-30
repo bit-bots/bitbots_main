@@ -2,7 +2,7 @@
 // Created by judith on 08.03.19.
 //
 
-#include "humanoid_league_localization/localization.h"
+#include "bitbots_localization/localization.h"
 
 Localization::Localization() : line_points_(), tfListener(tfBuffer) {
     ROS_DEBUG("localization");
@@ -324,8 +324,8 @@ int main(int argc, char **argv) {
 
 
     // dynamic reconfigure
-    dynamic_reconfigure::Server<humanoid_league_localization::LocalizationConfig> dynamic_reconfigure_server;
-    dynamic_reconfigure::Server<humanoid_league_localization::LocalizationConfig>::CallbackType f = boost::bind(
+    dynamic_reconfigure::Server<bitbots_localization::LocalizationConfig> dynamic_reconfigure_server;
+    dynamic_reconfigure::Server<bitbots_localization::LocalizationConfig>::CallbackType f = boost::bind(
             &Localization::dynamic_reconfigure_callback, &localization, _1, _2);
     dynamic_reconfigure_server.setCallback(f); // automatically calls the callback once
 
@@ -506,7 +506,7 @@ void Localization::publish_pose() { //  and particles and map frame
         br.sendTransform(trans_mean);
 
         //fill and publish evaluation message
-        humanoid_league_localization::Evaluation estimateMsg;
+        bitbots_localization::Evaluation estimateMsg;
         estimateMsg.header.frame_id = config_.publishing_frame;
         estimateMsg.header.stamp = trans_best_estimate.header.stamp;
 

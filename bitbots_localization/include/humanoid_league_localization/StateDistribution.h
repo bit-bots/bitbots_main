@@ -2,14 +2,14 @@
 // Created by judith on 09.03.19.
 //
 
-#ifndef HUMANOID_LEAGUE_LOCALIZATION_STATEDISTRIBUTION_H
-#define HUMANOID_LEAGUE_LOCALIZATION_STATEDISTRIBUTION_H
+#ifndef BITBOTS_LOCALIZATION_STATEDISTRIBUTION_H
+#define BITBOTS_LOCALIZATION_STATEDISTRIBUTION_H
 
 #include <utility>
 
 #include <particle_filter/CRandomNumberGenerator.h>
 #include <particle_filter/StateDistribution.h>
-#include <humanoid_league_localization/RobotState.h>
+#include <bitbots_localization/RobotState.h>
 #include <ros/ros.h>
 
 class RobotStateDistribution : public particle_filter::StateDistribution<RobotState> {
@@ -149,4 +149,4 @@ private:
 };
 
 
-#endif //HUMANOID_LEAGUE_LOCALIZATION_STATEDISTRIBUTION_H
+#endif //BITBOTS_LOCALIZATION_STATEDISTRIBUTION_H

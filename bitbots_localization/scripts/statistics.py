@@ -2,7 +2,7 @@
 import rospy
 import tf2_ros
 from tf.transformations import euler_from_quaternion
-from humanoid_league_localization.msg import Evaluation
+from bitbots_localization.msg import Evaluation
 import csv
 import sys
 import math

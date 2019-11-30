@@ -2,13 +2,13 @@
 // Created by judith on 09.03.19.
 //
 
-#ifndef HUMANOID_LEAGUE_LOCALIZATION_OBSERVATIONMODEL_H
-#define HUMANOID_LEAGUE_LOCALIZATION_OBSERVATIONMODEL_H
+#ifndef BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H
+#define BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H
 
 #include <particle_filter/ParticleFilter.h>
-#include <humanoid_league_localization/RobotState.h>
-#include <humanoid_league_localization/map.h>
-#include <humanoid_league_localization/tools.h>
+#include <bitbots_localization/RobotState.h>
+#include <bitbots_localization/map.h>
+#include <bitbots_localization/tools.h>
 #include <humanoid_league_msgs/LineInformationRelative.h>
 #include <humanoid_league_msgs/GoalRelative.h>
 #include <humanoid_league_msgs/PixelsRelative.h>
@@ -114,4 +114,4 @@ double RobotPoseObservationModel::number_corners = 0;
 double RobotPoseObservationModel::number_tcrossings = 0;
 double RobotPoseObservationModel::number_crosses = 0;
 
-#endif //HUMANOID_LEAGUE_LOCALIZATION_OBSERVATIONMODEL_H
+#endif //BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H

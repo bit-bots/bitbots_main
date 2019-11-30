@@ -2,15 +2,15 @@
 // Created by judith on 08.03.19.
 //
 
-#ifndef HUMANOID_LEAGUE_LOCALIZATION_MAP_H
-#define HUMANOID_LEAGUE_LOCALIZATION_MAP_H
+#ifndef BITBOTS_LOCALIZATION_MAP_H
+#define BITBOTS_LOCALIZATION_MAP_H
 
 #include <ros/ros.h>
 #include <geometry_msgs/Point.h>
 
-#include <humanoid_league_localization/RobotState.h>
+#include <bitbots_localization/RobotState.h>
 #include <geometry_msgs/Point.h>
-#include <humanoid_league_localization/tools.h>
+#include <bitbots_localization/tools.h>
 
 
 #include <opencv2/opencv.hpp>
@@ -40,4 +40,4 @@ private:
 };
 
 
-#endif //HUMANOID_LEAGUE_LOCALIZATION_MAP_H
+#endif //BITBOTS_LOCALIZATION_MAP_H

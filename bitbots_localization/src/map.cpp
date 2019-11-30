@@ -2,7 +2,7 @@
 // Created by judith on 08.03.19.
 //
 
-#include "humanoid_league_localization/map.h"
+#include "bitbots_localization/map.h"
 
 
 Map::Map(std::string file_path){

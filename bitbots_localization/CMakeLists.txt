@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(humanoid_league_localization)
+project(bitbots_localization)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
@@ -117,7 +117,6 @@ generate_dynamic_reconfigure_options(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES humanoid_league_localization_lib
   CATKIN_DEPENDS geometry_msgs particle_filter roscpp std_msgs visualization_msgs humanoid_league_msgs dynamic_reconfigure
 #  DEPENDS system_lib
 )
@@ -132,22 +131,6 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
 )
-
-## Declare a C++ library
-add_library(${PROJECT_NAME}_lib
-        include/humanoid_league_localization/map.h
-        include/humanoid_league_localization/MotionModel.h
-        include/humanoid_league_localization/ObservationModel.h
-        include/humanoid_league_localization/RobotState.h
-        include/humanoid_league_localization/StateDistribution.h
-        include/humanoid_league_localization/tools.h
-        src/map.cpp
-        src/MotionModel.cpp
-        src/ObservationModel.cpp
-        src/RobotState.cpp
-        src/StateDistribution.cpp
-        src/tools.cpp
-        )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -215,7 +198,7 @@ target_link_libraries(localization
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_humanoid_league_localization.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_bitbots_localization.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

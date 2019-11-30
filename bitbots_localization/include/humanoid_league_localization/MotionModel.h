@@ -2,17 +2,17 @@
 // Created by judith on 09.03.19.
 //
 
-#ifndef HUMANOID_LEAGUE_LOCALIZATION_MOTIONMODEL_H
-#define HUMANOID_LEAGUE_LOCALIZATION_MOTIONMODEL_H
+#ifndef BITBOTS_LOCALIZATION_MOTIONMODEL_H
+#define BITBOTS_LOCALIZATION_MOTIONMODEL_H
 
 #include <memory>
 #include <stdlib.h>
 
 #include <particle_filter/MovementModel.h>
-#include <humanoid_league_localization/RobotState.h>
+#include <bitbots_localization/RobotState.h>
 #include <geometry_msgs/Vector3.h>
 #include <particle_filter/CRandomNumberGenerator.h>
-#include <humanoid_league_localization/tools.h>
+#include <bitbots_localization/tools.h>
 
 /**
  * @class MyMovementModel
@@ -66,4 +66,4 @@ private:
 };
 
 
-#endif //HUMANOID_LEAGUE_LOCALIZATION_MOTIONMODEL_H
+#endif //BITBOTS_LOCALIZATION_MOTIONMODEL_H
