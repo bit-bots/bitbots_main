@@ -58,7 +58,35 @@ Vision Tools
 
 In the bitbots_vision_tools directory, special tools for debugging/introspection purposes are provided.
 
-TODO!
+- **`color_space_tool.py`**
+  A small tool for color space enhancement.
+
+  The tool is able to find main clusters in the color space, interpolate defined distances, add brightness thresholds and convert a yaml encoded to an pickle encoded color space.
+  It also visualizes the color space in a browser based 3d graph.
+
+  This tool provides a help page `-h` for further details.
+
+- **`color_space_subtract.py`**
+  Another small tool for color space enhancement.
+
+  This tool is able to subtracts color values from one color space file from another.
+
+  For further details, see help page `-h`.
+
+- **`convert_to_image.py`**
+  This is a small script to convert `ImageWithRegionOfInterest` of fcnn to a `Image` message.
+
+- **`imageclean.sh`**
+  This is a small bash script, to quickly sort a directory of images using feh with shortcuts.
+  Start this inside the directory of images to sort.
+  
+  Press key:
+  - `1` -> move current image to **Trash** subdirectory
+  - `2` -> Move current image to **Balls** subdirectory
+  - `3` -> Move current image to **Goals** subdirectory
+
+- **`colorspace.cpp`**
+  *LEGACY* Same as colorspace_tool.py above, but no longer maintained.
 
 White Balancer
 --------------
@@ -75,12 +103,12 @@ To start the vision, use
 roslaunch bitbots_vision vision_startup.launch
 ```
 
-```sim:=true``` does activate simulation time, switch to simulation color settings and deactivate launching of an image provider
-```camera:=false``` does deactivate all image providers (e.g. for use with rosbags or in simulation)
-```basler:=false```does start wolves image provider instead of the basler camera driver
-```dummyball:=true``` does not start the ball detection to save resources
-```debug:=true``` does activate publishing of several debug images which can be inspected in the rqt image view
-```use_game_settings:=true``` does load additional game settings
+`sim:=true` does activate simulation time, switch to simulation color settings and deactivate launching of an image provider
+`camera:=false` does deactivate all image providers (e.g. for use with rosbags or in simulation)
+`basler:=false`does start wolves image provider instead of the basler camera driver
+`dummyball:=true` does not start the ball detection to save resources
+`debug:=true` does activate publishing of several debug images which can be inspected in the rqt image view
+`use_game_settings:=true` does load additional game settings
 
 **bitbots_vision**
 - *vision_startup*: starts the vision and a camera image provider
@@ -100,12 +128,12 @@ Color space files
 -----------------
 
 The vision depends on the usage of color space files which define color lookup tables primarily to detect the green field color and therefore lines and the field boundary.
-These files are stored directly in the package directory in ```/config/color_spaces/```.
+These files are stored directly in the package directory in `/config/color_spaces/`.
 We will provide a tool to generate these files from the camera stream in the future.
 
 Currently, the Bit-Bots vision package supports two file types for color spaces:
 
-- **```.yaml```**
+- **`.yaml`**
   This format provides a human readable representation of color spaces.
   See below for a example representation.
   ```
@@ -116,7 +144,7 @@ Currently, the Bit-Bots vision package supports two file types for color spaces:
             blue: [b_1,b_2,..., b_n]
     ```
 
-  Assume the following RGB color value ```(0, 153, 51)``` is part of the color space.
+  Assume the following RGB color value `(0, 153, 51)` is part of the color space.
   The correct representation is:
   ```
     r_i = 0
@@ -126,6 +154,6 @@ Currently, the Bit-Bots vision package supports two file types for color spaces:
 
   For large color spaces, loading of such files takes a while.
 
-- **```.pickle```**
-  Generally, this is a generated binary representation of color spaces we use to prevent the long loading times of the ```.yaml``` format.
+- **`.pickle`**
+  Generally, this is a generated binary representation of color spaces we use to prevent the long loading times of the `.yaml` format.
   We provide a script to generate these files (see [Vision Tools](#vision-tools)).
