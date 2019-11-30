@@ -82,6 +82,10 @@ class WorldModelCapsule:
             self.ball_seen_time = rospy.Time.now()
             self.ball_seen = True
 
+    def forget_ball(self):
+        """Forget that we saw a ball"""
+        self.ball_seen_time = rospy.Time(0)
+        self.ball = PointStamped()
 
     ###########
     # ## Goal #

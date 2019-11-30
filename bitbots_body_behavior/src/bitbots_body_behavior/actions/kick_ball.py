@@ -6,7 +6,13 @@ from tf.transformations import quaternion_from_euler
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
-class KickBallStatic(AbstractActionElement):
+class AbstractKickAction(AbstractActionElement):
+    def pop(self):
+        self.blackboard.world_model.forget_ball()
+        super(AbstractKickAction, self).pop()
+
+
+class KickBallStatic(AbstractKickAction):
     def __init__(self, blackboard, dsd, parameters=None):
         super(KickBallStatic, self).__init__(blackboard, dsd, parameters)
         if 'foot' not in parameters.keys():
@@ -17,20 +23,22 @@ class KickBallStatic(AbstractActionElement):
         elif 'left' == parameters['foot']:
             self.kick = 'kick_left'  # TODO get actual name of parameter from some config
         else:
-            rospy.logerr('The parameter \'{}\' could not be used to decide which foot should kick'.format(parameters['foot']))
+            rospy.logerr(
+                'The parameter \'{}\' could not be used to decide which foot should kick'.format(parameters['foot']))
 
     def perform(self, reevaluate=False):
         if not self.blackboard.animation.is_animation_busy():
             self.blackboard.animation.play_animation(self.kick)
 
 
-class KickBallDynamic(AbstractActionElement):
+class KickBallDynamic(AbstractKickAction):
     """
     Kick the ball using bitbots_dynamic_kick
     """
+
     def __init__(self, blackboard, dsd, parameters=None):
         super(KickBallDynamic, self).__init__(blackboard, dsd, parameters)
-        if  parameters.get('type', None) == 'penalty':
+        if parameters.get('type', None) == 'penalty':
             self.penalty_kick = True
         else:
             self.penalty_kick = False
@@ -44,7 +52,7 @@ class KickBallDynamic(AbstractActionElement):
             if not self._goal_sent:
                 goal = KickGoal()
                 goal.header.stamp = rospy.Time.now()
-                goal.header.frame_id = "base_footprint" # get_ball_uv() always returns ball in base_footprint
+                goal.header.frame_id = "base_footprint"  # get_ball_uv() always returns ball in base_footprint
                 # TODO evaluate whether the dynamic kick is good enough to actually use the ball position
                 # currently we use a tested left or right kick
                 goal.ball_position.x = 0.2
@@ -68,7 +76,7 @@ class KickBallDynamic(AbstractActionElement):
                 self.pop()
 
 
-class KickBallVeryHard(AbstractActionElement):
+class KickBallVeryHard(AbstractKickAction):
     def __init__(self, blackboard, dsd, parameters=None):
         super(KickBallVeryHard, self).__init__(blackboard, dsd, parameters)
         if 'foot' not in parameters.keys():
