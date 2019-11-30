@@ -90,11 +90,11 @@ OdometryFuser::OdometryFuser() {
 
       // combine orientations to new quaternion if IMU is active, use purely odom otherwise
       tf2::Quaternion new_orientation;
-      if(imu_active){
+      if (imu_active) {
         new_orientation.setRPY(imu_roll, imu_pitch, walking_yaw);
-       }else{
+      } else {
         new_orientation = odom_orientation;
-       }
+      }
 
       // combine it all into a tf
       tf.header.stamp = ros::Time::now();
