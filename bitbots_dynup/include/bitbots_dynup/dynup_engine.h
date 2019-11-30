@@ -54,7 +54,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   bitbots_splines::PoseSpline l_hand_spline_;
   bitbots_splines::PoseSpline trunk_spline_;
   bitbots_splines::PoseSpline r_hand_spline_;
-  DynUpConfig params_;
+  DynUpParams params_;
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
@@ -72,7 +72,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
    * - get torso into 45°, pull foot under legs
    * - get into crouch position
    */
-  void calcFrontSplines(geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose l_hand_pose);
+  void calcFrontSplines(geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose l_hand_pose, geometry_msgs::Pose r_hand_pose);
 
   /*
    * Calculate the splines to get from lying on the back to squatting
