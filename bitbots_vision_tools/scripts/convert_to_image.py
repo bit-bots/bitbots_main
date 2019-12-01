@@ -42,4 +42,3 @@ class Converter(object):
 
 if __name__ == "__main__":
     Converter()
-
