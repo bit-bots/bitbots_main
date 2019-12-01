@@ -39,7 +39,7 @@ MotionOdometry::MotionOdometry() {
       n.subscribe("/joint_states", 1, &MotionOdometry::jointStateCb, this, ros::TransportHints().tcpNoDelay());
   ros::Subscriber odom_subscriber = n.subscribe("/walk_engine_odometry", 1, &MotionOdometry::odomCallback, this);
 
-  ros::Publisher pub_odometry = n.advertise<nav_msgs::Odometry>("/walk_odometry", 1);
+  ros::Publisher pub_odometry = n.advertise<nav_msgs::Odometry>("/motion_odometry", 1);
   tf2::Transform odometry_to_support_foot = tf2::Transform();
   // set the origin to the center of the robot which is placed -0.1m next to the right (initial) foot 
   odometry_to_support_foot.setOrigin({0, -0.1, 0});
