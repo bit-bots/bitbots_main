@@ -35,9 +35,6 @@
 [submodule "bitbots_motion"]
 	path = bitbots_motion
 	url = git@github.com:bit-bots/bitbots_motion.git
-[submodule "davros_robot"]
-	path = davros_robot
-	url = git@github.com:bit-bots/davros_robot.git
 [submodule "bitbots_behavior"]
 	path = bitbots_behavior
 	url = git@github.com:bit-bots/bitbots_behavior.git
@@ -59,9 +56,6 @@
 [submodule "humanoid_league_msgs"]
 	path = humanoid_league_msgs
 	url = git@github.com:bit-bots/humanoid_league_msgs.git
-[submodule "wolves_image_provider"]
-	path = wolves_image_provider
-	url = git@github.com:bit-bots/wolves_image_provider.git
 [submodule "bitbots_msgs"]
 	path = bitbots_msgs
 	url = git@github.com:bit-bots/bitbots_msgs.git
@@ -82,3 +76,6 @@
 	path = lib/geometry2
 	url = https://github.com/ros/geometry2
     branch = melodic-devel
+[submodule "lib/particle_filter"]
+	path = lib/particle_filter
+	url = git@github.com:bit-bots/particle_filter.git
