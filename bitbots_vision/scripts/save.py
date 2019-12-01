@@ -15,6 +15,7 @@ debug_params = [
     'ball_fcnn_publish_debug_img',
     'vision_publish_debug_image',
     'vision_publish_field_mask_image',
+    'vision_publish_HSV_mask_image',
     'dynamic_color_space_publish_field_mask_image',
 ]
 
