@@ -6,6 +6,12 @@ import yaml
 import pickle
 import argparse
 
+"""
+Another small tool for color space enhancement.
+
+This tool is able to subtract color values from one color space file from another.
+"""
+
 def init_color_space(color_path):
     # type: (str) -> None
     """

@@ -10,9 +10,9 @@ import math
 from multiprocessing import Process, Manager
 
 """
-A small Tool for colospace enhancement.
+A small tool for color space enhancement.
 
-The Tool is able to find main clusters in the color space, interpolate defined distances,
+This tool is able to find main clusters in the color space, interpolate defined distances,
 add brightness thresholds and convert a yaml encoded to an pickle encoded color space.
 It also visualizes the color space in a browser based 3d graph.
 """

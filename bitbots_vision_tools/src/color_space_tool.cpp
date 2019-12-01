@@ -69,9 +69,9 @@ struct Cluster {
     Point max;
 };
 
-class ColorspaceTool {
+class ColorSpaceTool {
 public:
-    ColorspaceTool(double distance_threshold, int cluster_count, double interpolation_threshold);
+    ColorSpaceTool(double distance_threshold, int cluster_count, double interpolation_threshold);
     void load_colorspace_from_yaml(string filename);
     void interpolate();
     void save(string filename);
@@ -95,14 +95,14 @@ private:
     unordered_set<Point> _interpolated_points;
 };
 
-ColorspaceTool::ColorspaceTool(double distance_threshold, 
+ColorSpaceTool::ColorSpaceTool(double distance_threshold, 
                                int cluster_count,
                                double interpolation_threshold):
     _distance_threshold(distance_threshold),
     _cluster_count(cluster_count),
     _interpolation_threshold(interpolation_threshold) {}
 
-void ColorspaceTool::load_colorspace_from_yaml(string filename) {
+void ColorSpaceTool::load_colorspace_from_yaml(string filename) {
     cout << "Loading from " << filename << endl;
     ifstream file(filename);
     if (file.is_open()) {
@@ -123,11 +123,11 @@ void ColorspaceTool::load_colorspace_from_yaml(string filename) {
     cout << _points.size() << endl;
 }
 
-double ColorspaceTool::get_distance(int p_index1, int p_index2) {
+double ColorSpaceTool::get_distance(int p_index1, int p_index2) {
     return _distances[p_index2][p_index1];
 }
 
-void ColorspaceTool::all_distances() {
+void ColorSpaceTool::all_distances() {
     _distances = vector<vector<double>>(_points.size());
     fill(_distances.begin(), _distances.end(), vector<double>(_points.size()));
     for (int i = 0; i < _points.size(); ++i) {
@@ -139,7 +139,7 @@ void ColorspaceTool::all_distances() {
     }
 }
 
-void ColorspaceTool::cluster() {
+void ColorSpaceTool::cluster() {
     cout << "Calculating distances" << endl;
     all_distances();
     cout << "Start making sets" << endl;
@@ -166,7 +166,7 @@ void ColorspaceTool::cluster() {
     build_main_cluster();
 }
 
-void ColorspaceTool::merge_clusters() {
+void ColorSpaceTool::merge_clusters() {
     cout << "Merging sets" << endl;
     for (auto it1 = _clusters.begin(); it1 != _clusters.end(); ++it1) {
         for (auto it2 = _clusters.begin(); it2 != _clusters.end(); ++it2) {
@@ -188,7 +188,7 @@ void ColorspaceTool::merge_clusters() {
     }
 }
 
-void ColorspaceTool::build_main_cluster() {
+void ColorSpaceTool::build_main_cluster() {
     // Sort clusters descending by size
     std::sort(_clusters.begin(), _clusters.end(), [&](Cluster c1, Cluster c2) { return c1.point_indices.size() > c2.point_indices.size(); });
     // Build main cluster
@@ -202,7 +202,7 @@ void ColorspaceTool::build_main_cluster() {
     _main_cluster.unique();
 }
 
-void ColorspaceTool::interpolate() {
+void ColorSpaceTool::interpolate() {
     cout << "Interpolating points" << endl;
     for (auto outer_index = _main_cluster.begin(); outer_index != _main_cluster.end(); ++outer_index) {
         for (auto inner_index = next(outer_index); inner_index != _main_cluster.end(); ++inner_index) {
@@ -213,7 +213,7 @@ void ColorspaceTool::interpolate() {
     }
 }
 
-void ColorspaceTool::generate_interpolated_points(Point p1, Point p2) {
+void ColorSpaceTool::generate_interpolated_points(Point p1, Point p2) {
     if (p1 < p2) std::swap(p1, p2);
     PointDifference difference = p1 - p2;
     int max = difference.r;
@@ -228,7 +228,7 @@ void ColorspaceTool::generate_interpolated_points(Point p1, Point p2) {
     }
 }
 
-void ColorspaceTool::save(string filename) {
+void ColorSpaceTool::save(string filename) {
     cout << "Saving to " << filename << endl;
     ofstream file(filename);
     std::vector<int> red, blue, green;
@@ -289,7 +289,7 @@ int main(int argc, char* argv[]) {
         cerr << "Please specify an input file" << endl;
         return 1;
     }
-    ColorspaceTool tool(cluster_threshold, cluster_count, interpolation_threshold);
+    ColorSpaceTool tool(cluster_threshold, cluster_count, interpolation_threshold);
     tool.load_colorspace_from_yaml(filename);
     tool.cluster();
     tool.interpolate();
