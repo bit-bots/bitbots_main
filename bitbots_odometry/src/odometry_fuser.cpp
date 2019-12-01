@@ -41,7 +41,7 @@ OdometryFuser::OdometryFuser() {
   _imu_data.orientation = tf2::toMsg(dummy_orientation);
 
   ros::Subscriber imu_subscriber = n.subscribe("/imu/data", 1, &OdometryFuser::imuCallback, this);
-  ros::Subscriber odom_subscriber = n.subscribe("/walk_odometry", 1, &OdometryFuser::odomCallback, this);
+  ros::Subscriber odom_subscriber = n.subscribe("/motion_odometry", 1, &OdometryFuser::odomCallback, this);
 
   tf = geometry_msgs::TransformStamped();
 
