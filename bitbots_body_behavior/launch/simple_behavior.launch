@@ -1,3 +1,3 @@
 <launch>
-  <node name="simple_behavior" pkg="bitbots_body_behavior" type="backup_backup_behavior.py" respawn="true" output="screen" />
+  <node name="simple_behavior" pkg="bitbots_body_behavior" type="backup_backup_behavior.py"  output="screen" />
 </launch>
