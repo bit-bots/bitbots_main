@@ -88,6 +88,8 @@ In the bitbots_vision_tools directory, special tools for debugging/introspection
 - **`colorspace.cpp`**
   *LEGACY* Same as colorspace_tool.py above, but no longer maintained.
 
+  To build, run: `g++ color_space_tool.cpp -l yaml-cpp`
+
 White Balancer
 --------------
 
