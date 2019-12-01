@@ -22,6 +22,7 @@
 
     <node name="show_world_model_objects" pkg="bitbots_body_behavior" type="show_world_model_objects.py"
           output="screen"/>
+    <rosparam command="load" file="$(find bitbots_body_behavior)/config/body_behavior.yaml"/>
 
 
 </launch>
