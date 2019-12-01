@@ -87,9 +87,11 @@ class ShowWorldModelObjects:
     def goal_cb(self, msg):
         self.marker_goal_left.header = msg.header
         self.marker_goal_left.pose.position = msg.left_post
+        self.marker_goal_left.pose.position.z = 0.5 * self.post_height
         self.marker_goal_left.color.a = 0.5
         self.marker_goal_right.header = msg.header
         self.marker_goal_right.pose.position = msg.right_post
+        self.marker_goal_right.pose.position.z = 0.5 * self.post_height
         self.marker_goal_right.color.a = 0.5
         self.marker_publisher.publish(self.marker_goal_left)
         self.marker_publisher.publish(self.marker_goal_right)
