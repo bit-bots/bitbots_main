@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_vision_tools</name>
-  <version>0.0.0</version>
+  <version>0.0.2</version>
   <description>The vision_tools package</description>
 
   <maintainer email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</maintainer>
