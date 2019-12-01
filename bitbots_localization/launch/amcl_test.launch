@@ -7,12 +7,12 @@
     <param name="robot_description_semantic" textfile="$(find wolfgang_moveit_config)/config/wolfgang.srdf" />
     <param name="robot_type_name" value="Wolfgang"/>
     <!--include file="$(find humanoid_league_transform)/launch/transformer.launch" /-->
-    <node pkg="rosbag" type="play" name="player" output="screen" args="--topic /tf_static /cmd_vel /joint_states /image_raw /line_relative --clock /home/judith/Dokumente/BitBots/rosbags/2019-01-06-16-55-47.bag" respawn="true"/>
+    <node pkg="rosbag" type="play" name="player" output="screen" args="--topic /tf_static /cmd_vel /joint_states /image_raw /line_relative --clock /home/judith/Dokumente/BitBots/rosbags/2019-01-06-16-55-47.bag" />
     <!--no-walking.bag-->
 
 
-    <!--node name="rosbaglive" pkg="rosbaglive" type="play.py" args="/home/judith/Dokumente/BitBots/rosbags/init.bag" respawn="true"/-->
-    <!--<node name="rosbaglive" pkg="rosbaglive" type="play.py" args="/home/judith/Dokumente/BitBots/rosbags/mitTF/2018-05-09-11-59-29.bag" respawn="true"/>-->
+    <!--node name="rosbaglive" pkg="rosbaglive" type="play.py" args="/home/judith/Dokumente/BitBots/rosbags/init.bag" /-->
+    <!--<node name="rosbaglive" pkg="rosbaglive" type="play.py" args="/home/judith/Dokumente/BitBots/rosbags/mitTF/2018-05-09-11-59-29.bag" />-->
 
     <!--node pkg="tf" type="static_transform_publisher" name="odom_broadcaster" args="42 1 -8 0 0 1 0 odom base_link 100" /-->
 
@@ -68,6 +68,6 @@
     </node>
 
     <!-- hotfix nomotion update -->
-    <node name="amcl_nomotion_update" pkg="bitbots_localization" type="amcl_nomotion_update.py" respawn="true"/>
+    <node name="amcl_nomotion_update" pkg="bitbots_localization" type="amcl_nomotion_update.py" />
 
 </launch>
