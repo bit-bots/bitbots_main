@@ -13,7 +13,6 @@ include:
     - lib:
         - geometry2
         - vision_opencv
-    - wolves_image_provider
     - scripts
     - lib:
         - vision_opencv
