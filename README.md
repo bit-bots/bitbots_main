@@ -53,50 +53,6 @@ The field color space itself can be dynamically adapted in real-time using the d
 Therefore the vision gets more resistant in natural light conditions.
 
 
-Vision Tools
-------------
-
-In the bitbots_vision_tools directory, special tools for debugging/introspection purposes are provided.
-
-- **`color_space_tool.py`**
-  A small tool for color space enhancement.
-
-  The tool is able to find main clusters in the color space, interpolate defined distances, add brightness thresholds and convert a yaml encoded to an pickle encoded color space.
-  It also visualizes the color space in a browser based 3d graph.
-
-  This tool provides a help page `-h` for further details.
-
-- **`color_space_subtract.py`**
-  Another small tool for color space enhancement.
-
-  This tool is able to subtracts color values from one color space file from another.
-
-  For further details, see help page `-h`.
-
-- **`convert_to_image.py`**
-  This is a small script to convert `ImageWithRegionOfInterest` of fcnn to a `Image` message.
-
-- **`imageclean.sh`**
-  This is a small bash script, to quickly sort a directory of images using feh with shortcuts.
-  Start this inside the directory of images to sort.
-  
-  Press key:
-  - `1` -> move current image to **Trash** subdirectory
-  - `2` -> Move current image to **Balls** subdirectory
-  - `3` -> Move current image to **Goals** subdirectory
-
-- **`colorspace.cpp`**
-  *LEGACY* Same as colorspace_tool.py above, but no longer maintained.
-
-  To build, run: `g++ color_space_tool.cpp -l yaml-cpp`
-
-White Balancer
---------------
-
-This repository also includes the `white_balancer`.
-Its a ROS node that color-corrects incoming images with a predefined light temperature.
-
-
 Launchscripts
 -------------
 
@@ -159,3 +115,48 @@ Currently, the Bit-Bots vision package supports two file types for color spaces:
 - **`.pickle`**
   Generally, this is a generated binary representation of color spaces we use to prevent the long loading times of the `.yaml` format.
   We provide a script to generate these files (see [Vision Tools](#vision-tools)).
+
+
+White Balancer
+--------------
+
+This repository also includes the `white_balancer`.
+It is a ROS node that color-corrects incoming images with a predefined light temperature.
+
+
+Vision Tools
+------------
+
+In the bitbots_vision_tools directory, special tools for debugging/introspection purposes are provided.
+
+- **`/scripts/color_space_tool.py`**
+  A small tool for color space enhancement.
+
+  The tool is able to find main clusters in the color space, interpolate defined distances, add brightness thresholds and convert a yaml encoded to an pickle encoded color space.
+  It also visualizes the color space in a browser based 3d graph.
+
+  This tool provides a help page `-h` for further details.
+
+- **`/scripts/color_space_subtract.py`**
+  Another small tool for color space enhancement.
+
+  This tool is able to subtracts color values from one color space file from another.
+
+  For further details, see help page `-h`.
+
+- **`/scripts/convert_to_image.py`**
+  This is a small script to convert `ImageWithRegionOfInterest` of fcnn to an `Image` message for debug visualization.
+
+- **`/scripts/imageclean.sh`**
+  This is a small bash script, to quickly sort a directory of images using feh with shortcuts.
+  Start this inside the directory of images to sort.
+  
+  Press key:
+  - `1` -> move current image to **Trash** subdirectory
+  - `2` -> Move current image to **Balls** subdirectory
+  - `3` -> Move current image to **Goals** subdirectory
+
+- **`/src/colorspace.cpp`**
+  *LEGACY* Same as colorspace_tool.py above, but no longer maintained.
+
+  To build, run: `g++ color_space_tool.cpp -l yaml-cpp`
