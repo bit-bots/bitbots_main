@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>humanoid_league_team_communication</name>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <description>The humanoid_league_team_communication package provides a ROS wrapper for the MiteCom standard communication
   protocol developed by the FUmanoids. </description>
   

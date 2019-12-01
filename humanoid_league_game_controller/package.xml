@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>humanoid_league_game_controller</name>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <description>
       The humanoid_league_game_controller packages receives packets from the GameController and
       republishes them as humanoid_league_msgs/GameState ROS messages. It sends response packets
