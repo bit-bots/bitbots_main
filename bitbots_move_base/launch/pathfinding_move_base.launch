@@ -14,6 +14,8 @@
     <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/germanopen2019.yaml"/>
   </group>
 
+  <node pkg="bitbots_convenience_frames" type="convenience_frames" name="convenience_frames" respawn="true"/>
+
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <!--<rosparam file="$(find bitbots_move_base)/config/costmap_common_config.yaml" command="load" ns="global_costmap" />-->
     <!--<rosparam file="$(find bitbots_move_base)/config/costmap_common_config.yaml" command="load" ns="local_costmap" /> -->
