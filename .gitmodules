@@ -82,3 +82,6 @@
 	path = lib/geometry2
 	url = https://github.com/ros/geometry2
     branch = melodic-devel
+[submodule "lib/particle_filter"]
+	path = lib/particle_filter
+	url = git@github.com:bit-bots/particle_filter.git
