@@ -25,7 +25,7 @@
     The field color space itself can be dynamically adapted in real-time using the dynamic color space heuristic.
     Therefore the vision gets more resistant in natural light conditions.
   </description>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
 
   <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
