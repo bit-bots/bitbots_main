@@ -29,6 +29,10 @@ controller_list:
       - RKnee
       - RAnklePitch
       - RAnkleRoll
+  - name: fake_Head_controller
+    joints:
+      - HeadPan
+      - HeadTilt
   - name: fake_All_controller
     joints:
       - LHipYaw
@@ -51,7 +55,3 @@ controller_list:
       - RShoulderPitch
       - RShoulderRoll
       - RElbow
-  - name: fake_Head_controller
-    joints:
-      - HeadPan
-      - HeadTilt
