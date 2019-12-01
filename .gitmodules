@@ -35,9 +35,6 @@
 [submodule "bitbots_motion"]
 	path = bitbots_motion
 	url = git@github.com:bit-bots/bitbots_motion.git
-[submodule "davros_robot"]
-	path = davros_robot
-	url = git@github.com:bit-bots/davros_robot.git
 [submodule "bitbots_behavior"]
 	path = bitbots_behavior
 	url = git@github.com:bit-bots/bitbots_behavior.git
