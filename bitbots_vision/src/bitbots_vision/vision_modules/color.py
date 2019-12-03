@@ -90,6 +90,19 @@ class ColorDetector(object):
 
         return mask
 
+    def get_normalized_image_mask(self, optional_image=None):
+        # type: (np.array) -> np.array
+        """
+        Returns the image mask as described in `get_mask_image`, but the
+        range of the values is one or zero and the dtype is a float.
+
+        :param np.array optional_image: Optional input image
+        :return np.array: masked image
+        """
+        return np.floor_divide(
+            self.get_mask_image(optional_image),
+            255, dtype=np.int16)
+
     @abc.abstractmethod
     def _mask_image(self, image):
         # type: (np.array) -> np.array
