@@ -14,7 +14,7 @@ from humanoid_league_msgs.msg import BallsInImage, LineInformationInImage, \
     ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, \
     GoalPartsInImage, FieldBoundaryInImage, Speak
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
-    fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, yolo_handler, ros_utils
+    fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, yolo_handler, ros_utils, candidate
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config, ColorSpace
 try:
@@ -469,14 +469,17 @@ class Vision:
         # Ball #
         ########
 
-        # Grab ball candidates from ball detector
-        top_ball_candidate = self._ball_detector.get_top_ball_under_convex_field_boundary(self._field_boundary_detector, self._ball_candidate_y_offset)
-        # check whether ball candidates are over rating threshold
-        if top_ball_candidate and top_ball_candidate.get_rating() > self._ball_candidate_threshold:
-            # Build the ball message which will be embedded in the balls message
-            ball_msg = ros_utils.build_ball_msg(top_ball_candidate)
-            # Create a list of balls, currently only containing the top candidate
-            list_of_balls = [ball_msg]
+        # Get a number of top balls under the field boundary, which have an high enough rating
+        top_balls = \
+            candidate.Candidate.rating_threshold(
+                self._field_boundary_detector.candidates_under_convex_field_boundary(
+                    self._ball_detector.get_top_candidates(count=1),
+                    self._ball_candidate_y_offset),
+                self._ball_candidate_threshold)
+        # check whether there are ball candidates
+        if top_balls:
+            # Convert ball cancidate list to ball message list
+            list_of_balls = map(ros_utils.build_ball_msg, top_balls)
             # Create balls msg with the list of balls
             balls_msg = ros_utils.build_balls_msg(image_msg.header, list_of_balls)
             # Publish balls
@@ -654,16 +657,20 @@ class Vision:
         )
         # Draw possible ball candidates under the field boundary
         self._debug_image_creator.draw_ball_candidates(
-            self._ball_detector.get_sorted_top_balls_under_convex_field_boundary(
-                self._field_boundary_detector,
-                self._ball_candidate_y_offset),
+            candidate.Candidate.rating_threshold(
+                self._field_boundary_detector.candidates_under_convex_field_boundary(
+                    self._ball_detector.get_candidates(),
+                    self._ball_candidate_y_offset),
+                self._ball_candidate_threshold),
             (0, 255, 255)
         )
         # Draw top ball candidate
         self._debug_image_creator.draw_ball_candidates(
-            [self._ball_detector.get_top_ball_under_convex_field_boundary(
-                self._field_boundary_detector,
-                self._ball_candidate_y_offset)],
+            candidate.Candidate.rating_threshold(
+                self._field_boundary_detector.candidates_under_convex_field_boundary(
+                    self._ball_detector.get_top_candidates(count=1),
+                    self._ball_candidate_y_offset),
+                self._ball_candidate_threshold),
             (0, 255, 0)
         )
         # Draw line points

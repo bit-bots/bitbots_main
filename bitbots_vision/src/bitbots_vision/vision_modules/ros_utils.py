@@ -286,8 +286,8 @@ def build_goal_msg(goal_parts_msg):
     Builds a goal message with a right and left post. If there is only one post in the image, the right and left post are the same.
     This should be reworked! The vision should only publish posts and e.g. the worldmodel builds a goal out of this context.
 
-    :param top_ball_candidate: best rated ball candidate
-    :return: ball msg
+    :param goal_parts_msg: goal parts as ros message
+    :return: goal message
     """
     # Make new goal message
     goal_msg = GoalInImage()

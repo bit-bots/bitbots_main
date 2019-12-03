@@ -155,6 +155,16 @@ class Candidate:
         """
         return sorted(candidatelist, key = lambda candidate: candidate.get_rating(), reverse=True)
 
+    @staticmethod
+    def select_top_candidate(candidatelist):
+        if candidatelist:
+            return Candidate.sort_candidates(candidatelist)[0]
+        else:
+            return None
+
+    @staticmethod
+    def rating_threshold(candidatelist, threshold):
+        return [candidate for candidate in candidatelist if candidate.get_rating() > threshold]
 
     def __str__(self):
         return 'x1,y1: {0},{1} | width,height: {2},{3} | rating: {4}'.format(
@@ -200,35 +210,11 @@ class CandidateFinder(object):
         """
         Returns the best candidate.
 
-        :param count: Number of top-candidates to return
-        :return: the count top candidates
+        :return: the best candidate or nothing
         """
-        return self.get_top_candidates()[0] if self.get_top_candidates() else None
-
-    @staticmethod
-    def sort(candidates):
-        """
-        Sorts a list of candidates
-
-        :param candidates: The list of input candidates
-        :return: List of candidates sorted by rating
-        """
-        return sorted(candidates, key=lambda x: x.get_rating())
-
+        return Candidate.select_top_candidate(self.get_candidates())
 
 class BallDetector(CandidateFinder):
-    def get_top_ball_under_convex_field_boundary(self, field_boundary_detector, y_offset=0):
-        """
-        Returns the best candidate under the convex field boundary.
-
-        :return: top candidate or None if no candidate exists
-        """
-        # Get all balls
-        balls = CandidateFinder.sort(
-            field_boundary_detector.candidates_under_convex_field_boundary(
-                field_boundary_detector, y_offset))
-        # Check if there are any
-        if balls:
-            # Return the best
-            return balls[0]
+    def __init__(self):
+        pass
 
