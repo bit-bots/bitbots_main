@@ -332,7 +332,14 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   // The trunk trajectory is defined for a complete cycle to handle trunk phase shift Trunk phase shift is done due to
   // the length of the double support phase and can be adjusted optionally by a parameter 0.5 * half_period to be
   // acyclic to the feet, 0.5 * double_support_length to keep the double support phase centered between feet
-  double time_shift = -0.5 * half_period + 0.5 * double_support_length + params_.trunk_phase * half_period;
+  double trunk_phase;
+  if(start_movement || start_step){
+      trunk_phase = params_.first_step_trunk_phase;
+  }else{
+      trunk_phase = params_.trunk_phase;
+  }
+
+  double time_shift = -0.5 * half_period + 0.5 * double_support_length + trunk_phase * half_period;
 
 
   //Only move the trunk on the first half cycle after a walk enable
