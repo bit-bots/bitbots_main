@@ -110,6 +110,9 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   bool left_kick_requested_;
   bool right_kick_requested_;
 
+  bool phase_reset_;
+  double phase_reset_phase_;
+
   // Current support foot (left or right).
   bool is_left_support_foot_{};
 
@@ -122,13 +125,21 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   tf2::Transform left_in_world_;
   tf2::Transform right_in_world_;
 
-  //Trunk pose and orientation position, velocity and acceleration at half cycle start.
+  //Trunk pose and orientation position, velocity and acceleration at last half step start.
   tf2::Vector3 trunk_pos_at_foot_change_;
   tf2::Vector3 trunk_pos_vel_at_foot_change_;
   tf2::Vector3 trunk_pos_acc_at_foot_change_;
   tf2::Vector3 trunk_orientation_pos_at_last_foot_change_;
   tf2::Vector3 trunk_orientation_vel_at_last_foot_change_;
   tf2::Vector3 trunk_orientation_acc_at_foot_change_;
+
+  //Foot pose and orientation position, velocity and acceleration at last half step start.
+  tf2::Vector3 foot_pos_at_foot_change_;
+  tf2::Vector3 foot_pos_vel_at_foot_change_;
+  tf2::Vector3 foot_pos_acc_at_foot_change_;
+  tf2::Vector3 foot_orientation_pos_at_last_foot_change_;
+  tf2::Vector3 foot_orientation_vel_at_last_foot_change_;
+  tf2::Vector3 foot_orientation_acc_at_foot_change_;
 
   void updatePhase(double dt);
 
