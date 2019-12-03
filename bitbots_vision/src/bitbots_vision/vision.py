@@ -509,10 +509,14 @@ class Vision:
         # Goal #
         ########
 
+        goal_post = self._field_boundary_detector.candidates_under_convex_field_boundary(
+            self._goalpost_detector.get_candidates(),
+            self._ball_candidate_y_offset)
+
         # Get goalpost msgs and add them to the detected goal parts list
-        goal_parts = ros_utils.build_goalpost_msgs(self._goalpost_detector.get_candidates())
+        goal_posts_msg = ros_utils.build_goalpost_msgs(goal_post)
         # Create goalparts msg
-        goal_parts_msg = ros_utils.build_goal_parts_msg(image_msg.header, goal_parts)
+        goal_parts_msg = ros_utils.build_goal_parts_msg(image_msg.header, goal_posts_msg)
         # Check if there is a goal
         if goal_parts_msg:
             # If we have a goal, lets publish it
@@ -634,9 +638,17 @@ class Vision:
             (255, 0, 0),
             thickness=3
         )
-        # Draw goal posts
+        # Draw all goal posts
         self._debug_image_creator.draw_obstacle_candidates(
             self._goalpost_detector.get_candidates(),
+            (180, 180, 180),
+            thickness=3
+        )
+        # Draw goal posts which start in the field
+        self._debug_image_creator.draw_obstacle_candidates(
+            self._field_boundary_detector.candidates_under_convex_field_boundary(
+                self._goalpost_detector.get_candidates(),
+                self._ball_candidate_y_offset),
             (255, 255, 255),
             thickness=3
         )
@@ -671,7 +683,8 @@ class Vision:
                     self._ball_detector.get_top_candidates(count=1),
                     self._ball_candidate_y_offset),
                 self._ball_candidate_threshold),
-            (0, 255, 0)
+            (0, 255, 0),
+            thickness=2
         )
         # Draw line points
         if self._use_line_points:
