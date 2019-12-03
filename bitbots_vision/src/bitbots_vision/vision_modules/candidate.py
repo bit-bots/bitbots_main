@@ -157,6 +157,12 @@ class Candidate:
 
     @staticmethod
     def select_top_candidate(candidatelist):
+        """
+        Select the top candidate
+
+        :param candidatelist: List of candidate objects.
+        :return: Top candidate or None
+        """
         if candidatelist:
             return Candidate.sort_candidates(candidatelist)[0]
         else:
