@@ -36,9 +36,9 @@ class OdometryFuser {
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
 
-  void imuCallback(const sensor_msgs::Imu msg);
-  void odomCallback(const nav_msgs::Odometry msg);
-  void supportCallback(const std_msgs::Char msg);
+  void imuCallback(const sensor_msgs::Imu::ConstPtr& msg);
+  void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
+  void supportCallback(const std_msgs::Char::ConstPtr& msg);
   tf2::Transform getCurrentRotationPoint();
 
 };
@@ -154,15 +154,11 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
     rotation_point = tf_buffer_.lookupTransform("/base_link", "/cop", ros::Time(0));
   } catch (tf2::TransformException ex) {
     // otheriwse point of rotation is current support foot sole or center point of the soles if double support
-    if (current_support_state_ == 'r') {
+    if (current_support_state_ == 'r' || current_support_state_ == 'l') {
       try {
-        rotation_point = tf_buffer_.lookupTransform("/base_link", "/l_sole", ros::Time::now());
-      } catch (tf2::TransformException ex) {
-        ROS_ERROR("%s", ex.what());
-      }
-    } else if (current_support_state_ == 'l') {
-      try {
-        rotation_point = tf_buffer_.lookupTransform("/base_link", "/r_sole", ros::Time::now());
+        rotation_point = tf_buffer_.lookupTransform("/base_link",
+                                                    std::string("/") + current_support_state_ + "_sole", 
+                                                    ros::Time::now());
       } catch (tf2::TransformException ex) {
         ROS_ERROR("%s", ex.what());
       }
@@ -189,24 +185,24 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
 
       rotation_point_tf = base_to_l_sole_tf * l_to_center_tf;
     } else {
-      ROS_ERROR("unknwn support state %c", current_support_state_);
+      ROS_ERROR_THROTTLE(2, "cop not available and unknwn support state %c", current_support_state_);
     }
   }
   return rotation_point_tf;
 }
 
-void OdometryFuser::imuCallback(const sensor_msgs::Imu msg) {
-  _imu_data = msg;
+void OdometryFuser::imuCallback(const sensor_msgs::Imu::ConstPtr& msg) {
+  _imu_data = *msg;
   _imu_update_time = ros::Time::now();
 }
 
-void OdometryFuser::odomCallback(const nav_msgs::Odometry msg) {
-  _odom_data = msg;
+void OdometryFuser::odomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
+  _odom_data = *msg;
   _odom_update_time = ros::Time::now();
 }
 
-void OdometryFuser::supportCallback(const std_msgs::Char msg) {
-  current_support_state_ = msg.data;
+void OdometryFuser::supportCallback(const std_msgs::Char::ConstPtr& msg) {
+  current_support_state_ = msg->data;
 }
 
 int main(int argc, char **argv) {
