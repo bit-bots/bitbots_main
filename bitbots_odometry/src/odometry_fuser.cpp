@@ -42,6 +42,7 @@ class OdometryFuser {
 
 OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
   ros::NodeHandle n("~");
+  current_support_state_ = 'n';
 
   tf2::Quaternion dummy_orientation;
   dummy_orientation.setRPY(0, 0, 0);
@@ -148,15 +149,14 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
 
   // if center of pressure is available, it is the point of rotation
   try {
-    rotation_point = tf_buffer_.lookupTransform("/base_link", "/cop", ros::Time(0));
+    rotation_point = tf_buffer_.lookupTransform("cop", "base_link", ros::Time(0));
     fromMsg(rotation_point.transform, rotation_point_tf);
   } catch (tf2::TransformException ex) {
     // otherwise point of rotation is current support foot sole or center point of the soles if double support
     if (current_support_state_ == 'r' || current_support_state_ == 'l') {
       try {
-        rotation_point = tf_buffer_.lookupTransform("/base_link",
-                                                    std::string("/") + current_support_state_ + "_sole",
-                                                    ros::Time::now());
+        rotation_point = tf_buffer_.lookupTransform(std::string("") + current_support_state_ + "_sole", "base_link",
+                                                    ros::Time(0));
         fromMsg(rotation_point.transform, rotation_point_tf);
       } catch (tf2::TransformException ex) {
         ROS_ERROR("%s", ex.what());
@@ -164,9 +164,9 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
     } else if (current_support_state_ == 'd') {
       // use point between soles
       geometry_msgs::TransformStamped base_to_l_sole;
-      base_to_l_sole = tf_buffer_.lookupTransform("/base_link", "/l_sole", ros::Time::now());
+      base_to_l_sole = tf_buffer_.lookupTransform("l_sole", "base_link", ros::Time(0));
       geometry_msgs::TransformStamped l_to_r_sole;
-      l_to_r_sole = tf_buffer_.lookupTransform("/l_sole", "/r_sole", ros::Time::now());
+      l_to_r_sole = tf_buffer_.lookupTransform("r_sole", "l_sole", ros::Time(0));
       tf2::Transform base_to_l_sole_tf;
       tf2::fromMsg(base_to_l_sole.transform, base_to_l_sole_tf);
       tf2::Transform l_to_r_sole_tf;
@@ -181,9 +181,12 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
       rotation_matrix.getRPY(roll, pitch, yaw);
       tf2::Quaternion quat;
       quat.setRPY(roll / 2, pitch / 2, yaw / 2);
+      quat.normalize();
       l_to_center_tf.setRotation(quat);
 
       rotation_point_tf = base_to_l_sole_tf * l_to_center_tf;
+    } else if (current_support_state_ == 'n') {
+      ROS_WARN_THROTTLE(2, "odom fuser did not receive support state yet");
     } else {
       ROS_ERROR_THROTTLE(2, "cop not available and unknown support state %c", current_support_state_);
     }
