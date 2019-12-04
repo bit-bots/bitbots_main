@@ -118,7 +118,7 @@ class ShowWorldModelObjects:
         self.kick_area_info = [[kick_right_max_x, kick_right_max_y, kick_right_min_x, kick_right_min_y],
                                [kick_left_max_x, kick_left_max_y, kick_left_min_x, kick_left_min_y]]
 
-        # init tf listener to get current pose of the base_footprint for ball_kick_area_viz
+        # init tf listener for ball_kick_area_viz
         self.tfBuffer = tf2_ros.Buffer()
         listener = tf2_ros.TransformListener(self.tfBuffer)
 
