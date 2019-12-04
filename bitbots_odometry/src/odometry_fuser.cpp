@@ -47,6 +47,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
   tf2::Quaternion dummy_orientation;
   dummy_orientation.setRPY(0, 0, 0);
   _odom_data.pose.pose.orientation = tf2::toMsg(dummy_orientation);
+  _odom_data.pose.pose.position = geometry_msgs::Point();
   _imu_data.orientation = tf2::toMsg(dummy_orientation);
 
   ros::Subscriber imu_subscriber = n.subscribe("/imu/data", 1, &OdometryFuser::imuCallback, this);
@@ -66,6 +67,11 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
   // wait till connection with publishers has been established
   // so we do not immediately blast something the log output
   ros::Duration(0.5).sleep();
+
+  // wait for transforms from joints
+  while (!tf_buffer_.canTransform("l_sole", "base_link", ros::Time(0), ros::Duration(1)) && ros::ok()) {
+    ROS_WARN("Wainting for transforms from robot joints");
+  }
 
   ros::Rate r(200.0);
   while (ros::ok()) {
@@ -110,6 +116,15 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
       if (imu_active) {
         // compute the point of rotation (in base_link frame)
         tf2::Transform rotation_point_in_base = getCurrentRotationPoint();
+        // publish rotation point as debug
+        geometry_msgs::TransformStamped rotation_point_msg;
+        rotation_point_msg.header.stamp = ros::Time::now();
+        rotation_point_msg.header.frame_id = "base_link";
+        rotation_point_msg.child_frame_id = "rotation";
+        geometry_msgs::Transform rotation_point_transform_msg;
+        rotation_point_transform_msg = tf2::toMsg(rotation_point_in_base);
+        rotation_point_msg.transform = rotation_point_transform_msg;
+        br.sendTransform(rotation_point_msg);
         // get base_link in rotation point frame
         tf2::Transform base_link_in_rotation_point = rotation_point_in_base.inverse();
         // create transform that rotates around IMU roll,pitch and walk yaw
@@ -149,24 +164,24 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
 
   // if center of pressure is available, it is the point of rotation
   try {
-    rotation_point = tf_buffer_.lookupTransform("cop", "base_link", ros::Time(0));
+    rotation_point = tf_buffer_.lookupTransform("base_link", "cop", ros::Time(0));
     fromMsg(rotation_point.transform, rotation_point_tf);
   } catch (tf2::TransformException ex) {
     // otherwise point of rotation is current support foot sole or center point of the soles if double support
     if (current_support_state_ == 'r' || current_support_state_ == 'l') {
       try {
-        rotation_point = tf_buffer_.lookupTransform(std::string("") + current_support_state_ + "_sole", "base_link",
+        rotation_point = tf_buffer_.lookupTransform("base_link", std::string("") + current_support_state_ + "_sole",
                                                     ros::Time(0));
         fromMsg(rotation_point.transform, rotation_point_tf);
       } catch (tf2::TransformException ex) {
         ROS_ERROR("%s", ex.what());
       }
-    } else if (current_support_state_ == 'd') {
-      // use point between soles
+    } else if (current_support_state_ == 'd' || current_support_state_ == 'n') {
+      // use point between soles if double support or unknown support
       geometry_msgs::TransformStamped base_to_l_sole;
-      base_to_l_sole = tf_buffer_.lookupTransform("l_sole", "base_link", ros::Time(0));
+      base_to_l_sole = tf_buffer_.lookupTransform("base_link", "l_sole", ros::Time(0));
       geometry_msgs::TransformStamped l_to_r_sole;
-      l_to_r_sole = tf_buffer_.lookupTransform("r_sole", "l_sole", ros::Time(0));
+      l_to_r_sole = tf_buffer_.lookupTransform("l_sole", "r_sole", ros::Time(0));
       tf2::Transform base_to_l_sole_tf;
       tf2::fromMsg(base_to_l_sole.transform, base_to_l_sole_tf);
       tf2::Transform l_to_r_sole_tf;
@@ -185,8 +200,7 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
       l_to_center_tf.setRotation(quat);
 
       rotation_point_tf = base_to_l_sole_tf * l_to_center_tf;
-    } else if (current_support_state_ == 'n') {
-      ROS_WARN_THROTTLE(2, "odom fuser did not receive support state yet");
+      rotation_point_tf.setRotation(rotation_point_tf.getRotation().normalize());
     } else {
       ROS_ERROR_THROTTLE(2, "cop not available and unknown support state %c", current_support_state_);
     }
