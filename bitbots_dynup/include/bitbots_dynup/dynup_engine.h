@@ -20,6 +20,7 @@ struct DynUpParams {
   double time_hands_side;
   double time_foot_ground;
   double time_torso_45;
+  double time_to_squat;
 
   double foot_distance;
   double rise_time;
