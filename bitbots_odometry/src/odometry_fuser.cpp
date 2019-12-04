@@ -113,7 +113,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
         tf2::Transform base_link_in_rotation_point = rotation_point_in_base.inverse();
         // create transform that rotates around IMU roll,pitch and walk yaw
         tf2::Quaternion rotation_quat;
-        rotation_quat.setRPY(imu_roll, imu_pitch, walking_yaw);
+        rotation_quat.setRPY(imu_roll, imu_pitch, 0);
         tf2::Transform rotation;
         rotation.setRotation(rotation_quat);
         rotation.setOrigin({0, 0, 0});
