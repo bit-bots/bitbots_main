@@ -1,4 +1,7 @@
+import rospy
+
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from std_msgs.msg import String
 
 
 class BallKickArea(AbstractDecisionElement):
@@ -13,6 +16,7 @@ class BallKickArea(AbstractDecisionElement):
         self.left_kick_min_y = self.blackboard.config['left_kick_min_y']
         self.left_kick_max_x = self.blackboard.config['left_kick_max_x']
         self.left_kick_max_y = self.blackboard.config['left_kick_max_y']
+        self.viz_publisher = rospy.Publisher('/debug/viz_ball_kick_area', String, queue_size=1)
 
     def perform(self, reevaluate=False):
         ball_position = self.blackboard.world_model.get_ball_position_uv()
@@ -21,11 +25,14 @@ class BallKickArea(AbstractDecisionElement):
 
         if self.right_kick_min_x <= ball_position[0] <= self.right_kick_max_x and \
            self.right_kick_min_y <= ball_position[1] <= self.right_kick_max_y:
+            self.viz_publisher.publish('RIGHT')
             return 'RIGHT'
         if self.left_kick_min_x <= ball_position[0] <= self.left_kick_max_x and \
            self.left_kick_min_y <= ball_position[1] <= self.left_kick_max_y:
+            self.viz_publisher.publish('LEFT')
             return 'LEFT'
         # TODO: areas for TURN RIGHT/LEFT/AROUND might be useful.
+        self.viz_publisher.publish('FAR')
         return 'FAR'
 
     def get_reevaluate(self):
