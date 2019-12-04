@@ -190,7 +190,7 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
       // we only want to have the half transform to get the point between the feet
       tf2::Transform l_to_center_tf;
       l_to_center_tf
-          .setOrigin({l_to_r_sole_tf.getOrigin().x(), l_to_r_sole_tf.getOrigin().y(), l_to_r_sole_tf.getOrigin().z()});
+          .setOrigin({l_to_r_sole_tf.getOrigin().x() /2, l_to_r_sole_tf.getOrigin().y() /2, l_to_r_sole_tf.getOrigin().z() /2});
       tf2::Matrix3x3 rotation_matrix(l_to_r_sole_tf.getRotation());
       double roll, pitch, yaw;
       rotation_matrix.getRPY(roll, pitch, yaw);
