@@ -28,8 +28,8 @@ WalkEngine::WalkEngine() :
   dyn_reconf_server_->setCallback(f);
 
   // move left and right in world by foot distance for correct initilization
-  left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance /2, 0});
-  right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance /2, 0});
+  left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
+  right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance / 2, 0});
 }
 
 void WalkEngine::setGoals(const WalkRequest &goals) {
@@ -269,9 +269,9 @@ void WalkEngine::saveCurrentTrunkState() {
   // convert the velocities and accelerations in next support foot frame and save
   // we use a transformation with a 0 origin, since we only want to do rotation
   tf2::Transform rotation_to_next(support_to_next_);
-  rotation_to_next.setOrigin({0,0,0});
-  trunk_pos_vel_at_foot_change_  = rotation_to_next * trunk_pos_vel;
-  trunk_pos_acc_at_foot_change_  = rotation_to_next * trunk_pos_acc;
+  rotation_to_next.setOrigin({0, 0, 0});
+  trunk_pos_vel_at_foot_change_ = rotation_to_next * trunk_pos_vel;
+  trunk_pos_acc_at_foot_change_ = rotation_to_next * trunk_pos_acc;
   trunk_orientation_vel_at_last_foot_change_ = rotation_to_next * trunk_axis_vel;
   trunk_orientation_acc_at_foot_change_ = rotation_to_next * trunk_axis_acc;
 }
@@ -333,10 +333,10 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   // the length of the double support phase and can be adjusted optionally by a parameter 0.5 * half_period to be
   // acyclic to the feet, 0.5 * double_support_length to keep the double support phase centered between feet
   double trunk_phase;
-  if(start_movement || start_step){
-      trunk_phase = params_.first_step_trunk_phase;
-  }else{
-      trunk_phase = params_.trunk_phase;
+  if (start_movement || start_step) {
+    trunk_phase = params_.first_step_trunk_phase;
+  } else {
+    trunk_phase = params_.trunk_phase;
   }
 
   double time_shift = -0.5 * half_period + 0.5 * double_support_length + trunk_phase * half_period;
@@ -451,7 +451,7 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
       support_to_next_.getOrigin().x() / half_period;
 
   //Trunk position
-  if (start_step) {
+  if (start_movement || start_step) {
     trunk_spline_.x()->addPoint(0.0, 0.0, 0.0, 0.0);
   } else {
     trunk_spline_.x()->addPoint(0.0,
@@ -466,10 +466,14 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
                               trunk_apex_next.x(),
                               trunk_vel_next);
 
-  trunk_spline_.y()->addPoint(0.0,
-                              trunk_pos_at_foot_change_.y(),
-                              trunk_pos_vel_at_foot_change_.y(),
-                              trunk_pos_acc_at_foot_change_.y());
+  if (start_movement) {
+    trunk_spline_.y()->addPoint(0.0, trunk_point_middle.y(), 0.0, 0.0);
+  } else {
+    trunk_spline_.y()->addPoint(0.0,
+                                trunk_pos_at_foot_change_.y(),
+                                trunk_pos_vel_at_foot_change_.y(),
+                                trunk_pos_acc_at_foot_change_.y());
+  }
   if (start_step || start_movement) {
     trunk_spline_.y()->addPoint(half_period + time_shift - pause_length,
                                 trunk_point_middle.y() + trunk_vect.y() * params_.first_step_swing_factor);
@@ -585,7 +589,7 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
   is_double_support_spline_.addPoint(0.0, 1.0);
   if (foot_in_idle_position) {
     is_double_support_spline_.addPoint(half_period, 1.0);
-  }else {
+  } else {
     is_double_support_spline_.addPoint(double_support_length, 1.0);
     is_double_support_spline_.addPoint(double_support_length, 0.0);
     is_double_support_spline_.addPoint(half_period, 0.0);
