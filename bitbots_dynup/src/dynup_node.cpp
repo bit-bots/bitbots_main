@@ -40,6 +40,7 @@ void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t
   params.time_hands_front = config.time_hands_front;
   params.time_foot_ground = config.time_foot_ground;
   params.time_torso_45 = config.time_torso_45;
+  params.time_to_squat = config.time_to_squat;
 
   engine_.setParams(params);
 
