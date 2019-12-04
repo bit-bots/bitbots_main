@@ -10,6 +10,10 @@ imu (rX, rY)
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
+#include <tf2/LinearMath/Vector3.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Transform.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Char.h>
@@ -169,12 +173,21 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
       geometry_msgs::TransformStamped l_to_r_sole;
       l_to_r_sole = tf_buffer_.lookupTransform("/l_sole", "/r_sole", ros::Time::now());
       tf2::Transform base_to_l_sole_tf;
-      tf2::fromMsg(base_to_l_sole, base_to_l_sole_tf);
+      tf2::fromMsg(base_to_l_sole.transform, base_to_l_sole_tf);
       tf2::Transform l_to_r_sole_tf;
-      tf2::fromMsg(l_to_r_sole, l_to_r_sole_tf);
+      tf2::fromMsg(l_to_r_sole.transform, l_to_r_sole_tf);
 
-      //todo
-      //rotation_point = base_to_l_sole_tf * (0.5 * l_to_r_sole_tf);
+      // we only want to have the half transform to get the point between the feet
+      tf2::Transform l_to_center_tf;
+      l_to_center_tf.setOrigin({l_to_r_sole_tf.getOrigin().x(), l_to_r_sole_tf.getOrigin().y(), l_to_r_sole_tf.getOrigin().z()});
+      tf2::Matrix3x3 rotation_matrix(l_to_r_sole_tf.getRotation());
+      double roll, pitch, yaw;
+      rotation_matrix.getRPY(roll, pitch,yaw);
+      tf2::Quaternion quat;
+      quat.setRPY(roll/2, pitch/2, yaw/2);
+      l_to_center_tf.setRotation(quat);
+
+      rotation_point_tf = base_to_l_sole_tf * l_to_center_tf;
     } else {
       ROS_ERROR("unknwn support state %c", current_support_state_);
     }
