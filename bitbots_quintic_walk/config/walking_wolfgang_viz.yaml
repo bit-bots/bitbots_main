@@ -65,6 +65,9 @@ walking:
     # (in 1)
     trunk_pitch_p_coef_turn: 0.0
 
+    first_step_swing_factor: 1.0
+    first_step_trunk_phase: 0.0
+
     kick_length: 0.09
     kick_vel: 0.2
     kick_phase: 0.75
@@ -97,5 +100,3 @@ walking:
     pause_duration: 0.5
 
     publish_odom_tf: False
-
-    first_step_swing_factor: 1.0

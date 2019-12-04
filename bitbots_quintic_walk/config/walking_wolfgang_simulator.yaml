@@ -65,6 +65,9 @@ walking:
     # (in 1)
     trunk_pitch_p_coef_turn: 0.0
 
+    first_step_swing_factor: 1.0
+    first_step_trunk_phase: 0.0
+
   node:
     # update frequency of the engine
     engine_freq: 100.0
