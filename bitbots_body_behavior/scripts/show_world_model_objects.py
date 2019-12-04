@@ -80,8 +80,10 @@ class ShowWorldModelObjects:
         self.marker_kick_area_right.type = Marker.LINE_STRIP
         self.marker_kick_area_right.scale.x = 0.01
         self.kick_area_right_color = ColorRGBA()
-        self.kick_area_right_color.a = 1.0
-        self.kick_area_right_color.r = 1.0
+        self.kick_area_right_color.a = 0.5
+        self.kick_area_right_color.r = 0.8
+        self.kick_area_right_color.g = 0.8
+        self.kick_area_right_color.b = 0.8
         self.marker_kick_area_right.color = self.kick_area_right_color
         self.marker_kick_area_right.lifetime = rospy.Duration(nsecs=self.lifetime)
         self.marker_kick_area_right.pose.orientation.w = 1.0
@@ -91,8 +93,10 @@ class ShowWorldModelObjects:
         self.marker_kick_area_left.type = Marker.LINE_STRIP
         self.marker_kick_area_left.scale.x = 0.01
         self.kick_area_left_color = ColorRGBA()
-        self.kick_area_left_color.a = 1.0
-        self.kick_area_left_color.r = 1.0
+        self.kick_area_left_color.a = 0.5
+        self.kick_area_left_color.r = 0.8
+        self.kick_area_left_color.g = 0.8
+        self.kick_area_left_color.b = 0.8
         self.marker_kick_area_left.color = self.kick_area_left_color
         self.marker_kick_area_left.lifetime = rospy.Duration(nsecs=self.lifetime)
         self.marker_kick_area_left.pose.orientation.w = 1.0
@@ -121,6 +125,12 @@ class ShowWorldModelObjects:
         rospy.spin()
 
     def kick_area(self):
+        """
+        This method updates the pose of the markers of the ball_kick_areas according to the current location of the
+        base_footprint and sets back the color of the markers from green to grey when the last received message from the
+        kick_ball_area decision is older than one second.
+        :return: None
+        """
         while not rospy.is_shutdown():
             try:
                 current_base_link_pose = self.tfBuffer.lookup_transform('base_footprint', 'base_footprint', rospy.Time())
@@ -186,21 +196,32 @@ class ShowWorldModelObjects:
         self.marker_publisher.publish(self.marker_goal_right)
 
     def kick_area_cb(self, msg):
+        # set the marker for the right ball_kick_area to green and the left one to red as the behavior decided the ball
+        # is within this area
         if msg.data == 'RIGHT':
             self.marker_kick_area_right.color.r = 0.0
             self.marker_kick_area_right.color.g = 1.0
+            self.marker_kick_area_right.color.b = 0.0
             self.marker_kick_area_left.color.r = 1.0
             self.marker_kick_area_left.color.g = 0.0
+            self.marker_kick_area_left.color.b = 0.0
+        # set the marker for the left ball_kick_area to green and the right one to red as the behavior decided the ball
+        # is within this area
         elif msg.data == 'LEFT':
             self.marker_kick_area_left.color.r = 0.0
             self.marker_kick_area_left.color.g = 1.0
+            self.marker_kick_area_right.color.b = 0.0
             self.marker_kick_area_right.color.r = 1.0
             self.marker_kick_area_right.color.g = 0.0
+            self.marker_kick_area_left.color.b = 0.0
+        # set the color of both markers to red as the behavior decided the ball is not within one of the areas
         else:
             self.marker_kick_area_right.color.r = 1.0
             self.marker_kick_area_right.color.g = 0.0
+            self.marker_kick_area_right.color.b = 0.0
             self.marker_kick_area_left.color.r = 1.0
             self.marker_kick_area_left.color.g = 0.0
+            self.marker_kick_area_left.color.b = 0.0
         self.last_received_kick_info = rospy.Time.now()
 
 
