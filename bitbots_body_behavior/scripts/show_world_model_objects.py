@@ -21,7 +21,9 @@ class ShowWorldModelObjects:
 
         # object properties
         self.ball_diameter = 0.17
-        self.lifetime = int(5 * (10 ** 9))
+        self.lifetime_ball = rospy.get_param('behavior/body/ball_lost_time')
+        self.lifetime_goal = rospy.get_param('behavior/body/goal_lost_time')
+        self.lifetime_ball_kick_area = 1
         self.post_diameter = 0.15
         self.post_height = 1.10
         position = Pose()
@@ -45,7 +47,7 @@ class ShowWorldModelObjects:
         self.ball_color.g = 1.0
         self.marker_ball.color = self.ball_color
         self.marker_ball.pose = position
-        self.marker_ball.lifetime = rospy.Duration(nsecs=self.lifetime)
+        self.marker_ball.lifetime = rospy.Duration(self.lifetime_ball)
 
         # init goal markers
         self.marker_goal_left = Marker()  # type:Marker
@@ -59,7 +61,7 @@ class ShowWorldModelObjects:
         self.post_left_color.g = 1.0
         self.marker_goal_left.color = self.post_left_color
         self.marker_goal_left.pose = position
-        self.marker_goal_left.lifetime = rospy.Duration(nsecs=self.lifetime)
+        self.marker_goal_left.lifetime = rospy.Duration(self.lifetime_goal)
 
         self.marker_goal_right = Marker()  # type:Marker
         self.marker_goal_right.id = 2
@@ -72,7 +74,7 @@ class ShowWorldModelObjects:
         self.post_right_color.b = 1.0
         self.marker_goal_right.color = self.post_right_color
         self.marker_goal_right.pose = position
-        self.marker_goal_right.lifetime = rospy.Duration(nsecs=self.lifetime)
+        self.marker_goal_right.lifetime = rospy.Duration(self.lifetime_goal)
 
         # init ball kick area markers
         self.marker_kick_area_right = Marker()
@@ -85,7 +87,7 @@ class ShowWorldModelObjects:
         self.kick_area_right_color.g = 0.8
         self.kick_area_right_color.b = 0.8
         self.marker_kick_area_right.color = self.kick_area_right_color
-        self.marker_kick_area_right.lifetime = rospy.Duration(nsecs=self.lifetime)
+        self.marker_kick_area_right.lifetime = rospy.Duration(self.lifetime_ball_kick_area)
         self.marker_kick_area_right.pose.orientation.w = 1.0
 
         self.marker_kick_area_left = Marker()
@@ -98,7 +100,7 @@ class ShowWorldModelObjects:
         self.kick_area_left_color.g = 0.8
         self.kick_area_left_color.b = 0.8
         self.marker_kick_area_left.color = self.kick_area_left_color
-        self.marker_kick_area_left.lifetime = rospy.Duration(nsecs=self.lifetime)
+        self.marker_kick_area_left.lifetime = rospy.Duration(self.lifetime_ball_kick_area)
         self.marker_kick_area_left.pose.orientation.w = 1.0
 
         # init subscribers
