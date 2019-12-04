@@ -239,7 +239,7 @@ void WalkEngine::reset() {
   trunk_orientation_acc_at_foot_change_.setZero();
 }
 
-void WalkEngine::saveCurrentTrunkState() {
+void WalkEngine::saveCurrentRobotState() {
   //Evaluate current trunk state (position, velocity, acceleration) in next support foot frame
 
   // compute current point in time to save state
@@ -287,7 +287,7 @@ void WalkEngine::saveCurrentTrunkState() {
   tf2::Vector3 foot_axis_acc = foot_spline_.getEulerAcc(period_time);
 
   // Convert the pose in next support foot frame and save
-  tf2::Transform foot_pose_at_last = current_support_to_next_.inverse() * foot_pose;
+  tf2::Transform foot_pose_at_last = current_support_to_next_.inverse();
   foot_pos_at_foot_change_ = foot_pose_at_last.getOrigin();
   tf2::Matrix3x3(foot_pose_at_last.getRotation()).getRPY(roll, pitch, yaw);
   foot_orientation_pos_at_last_foot_change_ = tf2::Vector3(roll, pitch, yaw);
@@ -297,7 +297,6 @@ void WalkEngine::saveCurrentTrunkState() {
   foot_pos_acc_at_foot_change_ = rotation_to_next * foot_pos_acc;
   foot_orientation_vel_at_last_foot_change_ = rotation_to_next * foot_axis_vel;
   foot_orientation_acc_at_foot_change_ = rotation_to_next * foot_axis_acc;
-
 }
 
 void WalkEngine::buildNormalTrajectories() {
@@ -327,11 +326,14 @@ void WalkEngine::buildStopMovementTrajectories() {
 void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool kick_step) {
   // save the current trunk state to use it later and compute the next step position
   if (!start_movement) {
-    saveCurrentTrunkState();
+    saveCurrentRobotState();
     stepFromOrders(request_.orders);
   } else {
     // when we do start step, only transform the y coordinate since we stand still and only move trunk sideward
     trunk_pos_at_foot_change_[1] = trunk_pos_at_foot_change_.y() - support_to_next_.getOrigin().y();
+    foot_pos_at_foot_change_ = {0.0, support_to_next_.getOrigin().y() * -1, 0.0};
+    foot_pos_vel_at_foot_change_ = {0.0, 0.0, 0.0};
+    foot_pos_acc_at_foot_change_ = {0.0, 0.0, 0.0};
     stepFromOrders({0, 0, 0});
   }
 
@@ -587,7 +589,7 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
 
 void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
   // save the current trunk state to use it later
-  saveCurrentTrunkState();
+  saveCurrentRobotState();
   // update support foot and compute odometry
   stepFromOrders(request_.orders);
 

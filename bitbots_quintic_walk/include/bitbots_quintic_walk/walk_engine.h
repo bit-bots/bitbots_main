@@ -159,7 +159,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   void buildWalkDisableTrajectories(bool foot_in_idle_position);
 
-  void saveCurrentTrunkState();
+  void saveCurrentRobotState();
 
   /**
    * Compute current cartesian target from trajectories and assign it to given model through inverse kinematics.
