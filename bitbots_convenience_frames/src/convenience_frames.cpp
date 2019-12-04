@@ -1,7 +1,5 @@
 #include <ros/ros.h>
-#include <sensor_msgs/Imu.h>
 #include <std_msgs/Char.h>
-#include <std_msgs/Time.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -48,8 +46,7 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster()
         non_support_foot,
         non_support_foot_in_support_foot_frame,
         base_footprint_in_support_foot_frame,
-        front_foot, // foot that is currently in front of the other, in baselink frame
-        back_foot;
+        front_foot; // foot that is currently in front of the other, in baselink frame
 
     try {
       tf_right = tfBuffer.lookupTransform("base_link", "r_sole", ros::Time::now(), ros::Duration(0.1));
@@ -80,10 +77,8 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster()
       // check with foot is in front
       if (tf_right.transform.translation.x < tf_left.transform.translation.x) {
         front_foot = tf_left_toe;
-        back_foot = tf_right_toe;
       } else {
         front_foot = tf_right_toe;
-        back_foot = tf_left_toe;
       }
 
       // get the position of the non support foot in the support frame, used for computing the barycenter
