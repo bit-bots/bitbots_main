@@ -37,7 +37,7 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster()
                                                                      ros::TransportHints().tcpNoDelay());
 
   static tf2_ros::TransformBroadcaster br;
-  ros::Rate r(100.0);
+  ros::Rate r(200.0);
   while (ros::ok()) {
     ros::spinOnce();
     geometry_msgs::TransformStamped tf_right, // right foot in baselink frame
@@ -121,7 +121,7 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster()
 
       // pitch and roll from support foot, yaw from base link
       tf2::Quaternion rotation;
-      rotation.setRPY(0.0, 0.0, yaw);
+      rotation.setRPY(roll, pitch, yaw);
       approach_frame.pose.orientation = tf2::toMsg(rotation);
 
       // set the broadcasted transform to the position and orientation of the base footprint
@@ -133,11 +133,9 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster()
       tf.transform.translation.z = approach_frame.pose.position.z;
       tf.transform.rotation = approach_frame.pose.orientation;
       br.sendTransform(tf);
-
     } catch (...) {
       continue;
     }
-
     r.sleep();
   }
 }
@@ -149,7 +147,6 @@ void ConvenienceFramesBroadcaster::supportFootCallback(const std_msgs::Char::Con
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "convenience_frames");
-
   ConvenienceFramesBroadcaster b;
 }
 
