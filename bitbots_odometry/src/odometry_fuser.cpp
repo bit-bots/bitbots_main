@@ -106,11 +106,6 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
       tf2::Transform motion_odometry;
       tf2::fromMsg(_odom_data.pose.pose, motion_odometry);
 
-      // get yaw from walking odometry
-      tf2::Quaternion odom_orientation = motion_odometry.getRotation();
-      tf2::Matrix3x3 odom_rotation_matrix(odom_orientation);
-      odom_rotation_matrix.getRPY(placeholder, placeholder, walking_yaw);
-
       // combine orientations to new quaternion if IMU is active, use purely odom otherwise
       tf2::Transform fused_odometry;
       if (imu_active) {
@@ -133,10 +128,20 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
         tf2::Transform rotation;
         rotation.setRotation(rotation_quat);
         rotation.setOrigin({0, 0, 0});
+        
+        // get only translation and yaw from motion odometry
+        tf2::Quaternion odom_orientation = motion_odometry.getRotation();
+        tf2::Matrix3x3 odom_rotation_matrix(odom_orientation);
+        odom_rotation_matrix.getRPY(placeholder, placeholder, walking_yaw);
+        tf2::Transform motion_odometry_yaw;
+        tf2::Quaternion odom_orientation_yaw;
+        odom_orientation_yaw.setRPY(0, 0, walking_yaw);
+        motion_odometry_yaw.setRotation(odom_orientation_yaw);
+        motion_odometry_yaw.setOrigin(motion_odometry.getOrigin());
 
         // transformation chain to get correctly rotated odom frame
         // go to the rotation point in the odom frame. rotate the transform to the base link at this point
-        fused_odometry = motion_odometry * rotation_point_in_base * rotation * base_link_in_rotation_point;
+        fused_odometry = motion_odometry_yaw * rotation_point_in_base * rotation * base_link_in_rotation_point;
       } else {
         fused_odometry = motion_odometry;
       }
