@@ -13,7 +13,7 @@ from std_msgs.msg import String
 class ShowWorldModelObjects:
     """
     This class provides RViZ markers to visualize the position of the goal and the goalposts as known to the world model
-     of the behavior. Furthermore the ball_kick_are is published as RViZ Marker.
+    of the behavior. Furthermore the ball_kick_are is published as RViZ Marker.
     """
     def __init__(self):
         rospy.init_node("show_world_model_objects")
