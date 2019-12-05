@@ -328,6 +328,20 @@ class Vision:
                     self._goalpost_detector = yolo_handler.YoloGoalpostDetector(config, self._yolo)
                     rospy.loginfo(config['neural_network_type'] + " vision is running now", logger_name="vision_yolo")
 
+        # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
+        if config['neural_network_type'] in ['yolo_ncs2']:
+            if ros_utils.config_param_change(self._config, config, ['neural_network_type']):
+                # Build absolute model path
+                yolo_model_path = os.path.join(self._package_path, 'models', "test")
+                # Check if it exists
+                if not os.path.exists(os.path.join(yolo_model_path, "yolo.bin")):
+                    rospy.logerr('AAAAHHHH! The specified yolo model file doesn\'t exist! Maybe its an fcnn model?', logger_name="vision_yolo")
+                else:
+                    self._yolo = yolo_handler.YoloHandlerNCS2(config, yolo_model_path)
+                    self._ball_detector = yolo_handler.YoloBallDetector(config, self._yolo)
+                    self._goalpost_detector = yolo_handler.YoloGoalpostDetector(config, self._yolo)
+                    rospy.loginfo(config['neural_network_type'] + " vision is running now", logger_name="vision_yolo")
+
         self._register_or_update_all_subscribers(config)
 
         # Define Modules that should run their calculations (modules should exist, therefore its located here)
