@@ -20,7 +20,7 @@ parser.add_argument("-t", "--topic",  help="Image topic, prompted if not asked",
 args = parser.parse_args()
 try:
     bag = rosbag.Bag(args.inputfile, "r")
-except:
+except IOError:
     print("error opening bag")
     exit(1)
 
@@ -47,9 +47,9 @@ elif len(image_topics_and_info) == 1:
 else:
     print("Multiple topics with type sensor_msgs/Image:")
     specified_topic_in_topics = False
-    for i in range(len(image_topics_and_info)):
-        print("["+ str(i) + "] topic: " + str(image_topics_and_info[i][0]) + " \t message_count: " + str(image_topics_and_info[i][1].message_count))
-        if image_topics_and_info[i][0]:
+    for i, topic_touple in enumerate(image_topics_and_info):
+        print("["+ str(i) + "] topic: " + str(topic_touple[0]) + " \t message_count: " + str(topic_touple[1].message_count))
+        if topic_touple[0]:
             chosen_set_num = i
             specified_topic_in_topics = True
     if not specified_topic_in_topics:
@@ -95,9 +95,12 @@ for bag_msg in bag.read_messages(chosen_set[0]):
     img.is_bigendian = msg_from_bag.is_bigendian
     img.step = msg_from_bag.step
 
-    print(img.encoding)
     cv_image = bridge.imgmsg_to_cv2(img, desired_encoding="passthrough")
     cv2.imwrite(args.outputdir + "/img{:05d}".format(frame_number) + ".png", cv_image, )
     frame_number += 1
     if frame_number % 10 == 0:
         print("{}/{}".format(frame_number, chosen_set[1].message_count/n))
+
+print("{}/{}".format(frame_number, chosen_set[1].message_count / n))
+
+print("Image extraction complete.")
