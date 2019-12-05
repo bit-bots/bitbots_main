@@ -22,7 +22,7 @@ def run(dsd):
 
     :returns: Never
     """
-    rate = rospy.Rate(5)
+    rate = rospy.Rate(15)
     while not rospy.is_shutdown():
         dsd.update()
         rate.sleep()
