@@ -151,6 +151,9 @@ class Vision:
         """
         self._register_or_update_all_publishers(config)
 
+        # Set max number of balls
+        self._max_balls = 1
+
         # Set some thresholds
         # Brightness threshold which determines if the camera cap is on the camera.
         self._blind_threshold = config['vision_blind_threshold']
@@ -473,7 +476,7 @@ class Vision:
         top_balls = \
             candidate.Candidate.rating_threshold(
                 self._field_boundary_detector.candidates_under_convex_field_boundary(
-                    self._ball_detector.get_top_candidates(count=1),
+                    self._ball_detector.get_top_candidates(count=self._max_balls),
                     self._ball_candidate_y_offset),
                 self._ball_candidate_threshold)
         # check whether there are ball candidates
@@ -509,12 +512,13 @@ class Vision:
         # Goal #
         ########
 
-        goal_post = self._field_boundary_detector.candidates_under_convex_field_boundary(
+        # Get all goalposts under field boundary
+        goal_posts = self._field_boundary_detector.candidates_under_convex_field_boundary(
             self._goalpost_detector.get_candidates(),
             self._ball_candidate_y_offset)
 
         # Get goalpost msgs and add them to the detected goal parts list
-        goal_posts_msg = ros_utils.build_goalpost_msgs(goal_post)
+        goal_posts_msg = ros_utils.build_goalpost_msgs(goal_posts)
         # Create goalparts msg
         goal_parts_msg = ros_utils.build_goal_parts_msg(image_msg.header, goal_posts_msg)
         # Check if there is a goal
