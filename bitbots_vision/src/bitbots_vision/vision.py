@@ -161,6 +161,8 @@ class Vision:
         self._ball_candidate_threshold = config['ball_candidate_rating_threshold']
         # Maximum offset for balls over the convex field boundary
         self._ball_candidate_y_offset = config['ball_candidate_field_boundary_y_offset']
+        # Maximum offset for balls over the convex field boundary
+        self._goal_post_field_boundary_y_offset = config['goal_post_field_boundary_y_offset']
 
         self._use_dynamic_color_space = config['dynamic_color_space_active']
 
@@ -515,7 +517,7 @@ class Vision:
         # Get all goalposts under field boundary
         goal_posts = self._field_boundary_detector.candidates_under_convex_field_boundary(
             self._goalpost_detector.get_candidates(),
-            self._ball_candidate_y_offset)
+            self._goal_post_field_boundary_y_offset)
 
         # Get goalpost msgs and add them to the detected goal parts list
         goal_posts_msg = ros_utils.build_goalpost_msgs(goal_posts)
@@ -652,7 +654,7 @@ class Vision:
         self._debug_image_creator.draw_obstacle_candidates(
             self._field_boundary_detector.candidates_under_convex_field_boundary(
                 self._goalpost_detector.get_candidates(),
-                self._ball_candidate_y_offset),
+                self._goal_post_field_boundary_y_offset),
             (255, 255, 255),
             thickness=3
         )

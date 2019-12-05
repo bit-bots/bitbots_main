@@ -36,6 +36,8 @@ neural_network_type: 'yolo_darknet'  # The neural network type that should be us
 ball_candidate_field_boundary_y_offset: 0  # Threshold in which ball candidates over the field boundary are allowed.
 ball_candidate_rating_threshold: 0.5  # A threshold for the minimum candidate rating
 
+goal_post_field_boundary_y_offset: 10  # Maximum distance between field boundary and goal post
+
 field_color_detector_path: 'basler_f031.pickle'  # Color space for the field color detector
 field_color_detector_use_hsv: false
 
