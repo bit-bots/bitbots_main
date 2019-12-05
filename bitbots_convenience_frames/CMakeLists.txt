@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   geometry_msgs
   rospy
+  humanoid_league_msgs
 )
 
 catkin_package()

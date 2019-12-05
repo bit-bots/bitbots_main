@@ -4,25 +4,36 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/utils.h>
+#include <humanoid_league_msgs/BallRelative.h>
+#include <humanoid_league_msgs/GoalRelative.h>
+#include <humanoid_league_msgs/GoalPartsRelative.h>
+
+#include <utility>
 
 class ConvenienceFramesBroadcaster {
  public:
   ConvenienceFramesBroadcaster();
  private:
-  geometry_msgs::TransformStamped tf;
-  tf2_ros::Buffer tfBuffer;
-  tf2_ros::TransformListener tfListener;
-  bool is_left_support, got_support_foot;
+  tf2_ros::TransformBroadcaster broadcaster_;
+  geometry_msgs::TransformStamped tf_;
+  tf2_ros::Buffer tfBuffer_;
+  tf2_ros::TransformListener tfListener_;
+  bool is_left_support, got_support_foot_;
+  void publishTransform(std::string header_frame_id, std::string child_frame_id, double x, double y, double z);
   void supportFootCallback(const std_msgs::Char::ConstPtr &msg);
+  void ballCallback(const humanoid_league_msgs::BallRelative::ConstPtr &msg);
+  void goalCallback(const humanoid_league_msgs::GoalRelative::ConstPtr &msg);
+  void goalPartsCallback(const humanoid_league_msgs::GoalPartsRelative::ConstPtr &msg);
 };
 
 ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster()
-    : tfBuffer(ros::Duration(1.0)),
-      tfListener(tfBuffer),
+    : tfBuffer_(ros::Duration(1.0)),
+      tfListener_(tfBuffer_),
       is_left_support(false),
-      tf(geometry_msgs::TransformStamped()) {
+      tf_(geometry_msgs::TransformStamped()),
+      broadcaster_() {
   ros::NodeHandle n("~");
-  got_support_foot = false;
+  got_support_foot_ = false;
   ros::Subscriber walking_support_foot_subscriber = n.subscribe("/walk_support_state",
                                                                 1,
                                                                 &ConvenienceFramesBroadcaster::supportFootCallback,
@@ -33,8 +44,22 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster()
                                                                      &ConvenienceFramesBroadcaster::supportFootCallback,
                                                                      this,
                                                                      ros::TransportHints().tcpNoDelay());
+  ros::Subscriber ball_relative_subscriber = n.subscribe("/ball_relative",
+                                                         1,
+                                                         &ConvenienceFramesBroadcaster::ballCallback,
+                                                         this,
+                                                         ros::TransportHints().tcpNoDelay());
+  ros::Subscriber goal_relative_subscriber = n.subscribe("/goal_relative",
+                                                         1,
+                                                         &ConvenienceFramesBroadcaster::goalCallback,
+                                                         this,
+                                                         ros::TransportHints().tcpNoDelay());
+  ros::Subscriber goal_parts_relative_subscriber = n.subscribe("/goal_parts_relative",
+                                                               1,
+                                                               &ConvenienceFramesBroadcaster::goalPartsCallback,
+                                                               this,
+                                                               ros::TransportHints().tcpNoDelay());
 
-  static tf2_ros::TransformBroadcaster br;
   ros::Rate r(200.0);
   while (ros::ok()) {
     ros::spinOnce();
@@ -49,13 +74,13 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster()
         front_foot; // foot that is currently in front of the other, in baselink frame
 
     try {
-      tf_right = tfBuffer.lookupTransform("base_link", "r_sole", ros::Time::now(), ros::Duration(0.1));
-      tf_left = tfBuffer.lookupTransform("base_link", "l_sole", ros::Time::now(), ros::Duration(0.1));
-      tf_right_toe = tfBuffer.lookupTransform("base_link", "r_toe", ros::Time::now(), ros::Duration(0.1));
-      tf_left_toe = tfBuffer.lookupTransform("base_link", "l_toe", ros::Time::now(), ros::Duration(0.1));
+      tf_right = tfBuffer_.lookupTransform("base_link", "r_sole", ros::Time::now(), ros::Duration(0.1));
+      tf_left = tfBuffer_.lookupTransform("base_link", "l_sole", ros::Time::now(), ros::Duration(0.1));
+      tf_right_toe = tfBuffer_.lookupTransform("base_link", "r_toe", ros::Time::now(), ros::Duration(0.1));
+      tf_left_toe = tfBuffer_.lookupTransform("base_link", "l_toe", ros::Time::now(), ros::Duration(0.1));
 
       // compute support foot
-      if (got_support_foot) {
+      if (got_support_foot_) {
         if (is_left_support) {
           support_foot = tf_left;
           non_support_foot = tf_right;
@@ -82,14 +107,14 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster()
       }
 
       // get the position of the non support foot in the support frame, used for computing the barycenter
-      non_support_foot_in_support_foot_frame = tfBuffer.lookupTransform(support_foot.child_frame_id,
-                                                                        non_support_foot.child_frame_id,
-                                                                        support_foot.header.stamp,
-                                                                        ros::Duration(0.1));
+      non_support_foot_in_support_foot_frame = tfBuffer_.lookupTransform(support_foot.child_frame_id,
+                                                                         non_support_foot.child_frame_id,
+                                                                         support_foot.header.stamp,
+                                                                         ros::Duration(0.1));
 
-      geometry_msgs::TransformStamped support_to_base_link = tfBuffer.lookupTransform(support_foot.header.frame_id,
-                                                                                      support_foot.child_frame_id,
-                                                                                      support_foot.header.stamp);
+      geometry_msgs::TransformStamped support_to_base_link = tfBuffer_.lookupTransform(support_foot.header.frame_id,
+                                                                                       support_foot.child_frame_id,
+                                                                                       support_foot.header.stamp);
 
       geometry_msgs::PoseStamped approach_frame;
       // x at front foot toes
@@ -120,14 +145,14 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster()
       approach_frame.pose.orientation = tf2::toMsg(rotation);
 
       // set the broadcasted transform to the position and orientation of the base footprint
-      tf.header.stamp = ros::Time::now();
-      tf.header.frame_id = "base_link";
-      tf.child_frame_id = "approach_frame";
-      tf.transform.translation.x = approach_frame.pose.position.x;
-      tf.transform.translation.y = approach_frame.pose.position.y;
-      tf.transform.translation.z = approach_frame.pose.position.z;
-      tf.transform.rotation = approach_frame.pose.orientation;
-      br.sendTransform(tf);
+      tf_.header.stamp = ros::Time::now();
+      tf_.header.frame_id = "base_link";
+      tf_.child_frame_id = "approach_frame";
+      tf_.transform.translation.x = approach_frame.pose.position.x;
+      tf_.transform.translation.y = approach_frame.pose.position.y;
+      tf_.transform.translation.z = approach_frame.pose.position.z;
+      tf_.transform.rotation = approach_frame.pose.orientation;
+      broadcaster_.sendTransform(tf_);
     } catch (...) {
       continue;
     }
@@ -136,8 +161,49 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster()
 }
 
 void ConvenienceFramesBroadcaster::supportFootCallback(const std_msgs::Char::ConstPtr &msg) {
-  got_support_foot = true;
+  got_support_foot_ = true;
   is_left_support = (msg->data == 'l');
+}
+
+void ConvenienceFramesBroadcaster::ballCallback(const humanoid_league_msgs::BallRelative::ConstPtr &msg) {
+  publishTransform(msg->header.frame_id, "ball",
+                   msg->ball_relative.x, msg->ball_relative.y, msg->ball_relative.z);
+}
+
+void ConvenienceFramesBroadcaster::goalCallback(const humanoid_league_msgs::GoalRelative::ConstPtr &msg) {
+  publishTransform(msg->header.frame_id, "left_post",
+                   msg->left_post.x, msg->left_post.y, msg->left_post.z);
+  publishTransform(msg->header.frame_id, "right_post",
+                   msg->right_post.x, msg->right_post.y, msg->right_post.z);
+}
+
+void ConvenienceFramesBroadcaster::goalPartsCallback(const humanoid_league_msgs::GoalPartsRelative::ConstPtr &msg) {
+  for (long i = 0; i < msg->posts.size(); i++) {
+    publishTransform(msg->header.frame_id,
+                     "post_" + std::to_string(i),
+                     msg->posts[i].foot_point.x,
+                     msg->posts[i].foot_point.y,
+                     msg->posts[i].foot_point.z);
+  }
+}
+
+void ConvenienceFramesBroadcaster::publishTransform(std::string header_frame_id,
+                                                    std::string child_frame_id,
+                                                    double x,
+                                                    double y,
+                                                    double z) {
+  geometry_msgs::TransformStamped transform;
+  transform.header.stamp = ros::Time::now();
+  transform.header.frame_id = std::move(header_frame_id);
+  transform.child_frame_id = std::move(child_frame_id);
+  transform.transform.translation.x = x;
+  transform.transform.translation.y = y;
+  transform.transform.translation.z = z;
+  transform.transform.rotation.x = 0;
+  transform.transform.rotation.y = 0;
+  transform.transform.rotation.z = 0;
+  transform.transform.rotation.w = 1;
+  broadcaster_.sendTransform(transform);
 }
 
 int main(int argc, char **argv) {
