@@ -15,10 +15,11 @@ class ConvenienceFramesBroadcaster {
   ConvenienceFramesBroadcaster();
  private:
   tf2_ros::TransformBroadcaster broadcaster_;
-  geometry_msgs::TransformStamped tf_;
-  tf2_ros::Buffer tfBuffer_;
-  tf2_ros::TransformListener tfListener_;
-  bool is_left_support, got_support_foot_;
+  geometry_msgs::TransformStamped tf_{geometry_msgs::TransformStamped()};
+  tf2_ros::Buffer tfBuffer_{ros::Duration(1.0)};
+  tf2_ros::TransformListener tfListener_{tfBuffer_};
+  bool is_left_support{false};
+  bool got_support_foot_{false};
   void publishTransform(std::string header_frame_id, std::string child_frame_id, double x, double y, double z);
   void supportFootCallback(const std_msgs::Char::ConstPtr &msg);
   void ballCallback(const humanoid_league_msgs::BallRelative::ConstPtr &msg);
@@ -26,12 +27,7 @@ class ConvenienceFramesBroadcaster {
   void goalPartsCallback(const humanoid_league_msgs::GoalPartsRelative::ConstPtr &msg);
 };
 
-ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster()
-    : tfBuffer_(ros::Duration(1.0)),
-      tfListener_(tfBuffer_),
-      is_left_support(false),
-      tf_(geometry_msgs::TransformStamped()),
-      broadcaster_() {
+ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() {
   ros::NodeHandle n("~");
   got_support_foot_ = false;
   ros::Subscriber walking_support_foot_subscriber = n.subscribe("/walk_support_state",
