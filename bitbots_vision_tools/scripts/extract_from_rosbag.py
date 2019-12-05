@@ -12,10 +12,10 @@ import numpy as np
 parser = argparse.ArgumentParser("Extract images from a rosbag")
 
 parser.add_argument("-o", "--out-dir", required=True, help="Output directory for the images", dest="outputdir")
-parser.add_argument("-i", "--input-bag", required=True,  help="Input rosbag", dest="inputfile")
-parser.add_argument("-n", "--nth-image",  help="Every n-th image will be saved, prompted if not specified", dest="n", type=int)
-parser.add_argument("-t", "--topic",  help="Image topic, prompted if not asked", dest="topic")
-
+parser.add_argument("-i", "--input-bag", required=True, help="Input rosbag", dest="inputfile")
+parser.add_argument("-n", "--nth-image", help="Every n-th image will be saved, prompted if not specified", dest="n",
+                    type=int)
+parser.add_argument("-t", "--topic", help="Image topic, prompted if not asked", dest="topic")
 
 args = parser.parse_args()
 try:
@@ -29,14 +29,17 @@ image_topics_and_info = []
 
 for topic, info in topics_and_type.topics.items():
     if info.msg_type == "sensor_msgs/Image":
-        image_topics_and_info.append([topic,info])
+        image_topics_and_info.append([topic, info])
 
 print(image_topics_and_info)
 if len(image_topics_and_info) == 0:
     print("No messages of type sensor_msgs/Image found in the provided rosbag")
     exit()
 elif len(image_topics_and_info) == 1:
-    print("Found exactly one topic ({0}) of type sensor_msgs/Image with {1} messages".format(image_topics_and_info[0][0], image_topics_and_info[0][1].message_count))
+    print(
+        "Found exactly one topic ({0}) of type sensor_msgs/Image with {1} messages".format(image_topics_and_info[0][0],
+                                                                                           image_topics_and_info[0][
+                                                                                               1].message_count))
     if image_topics_and_info[0][0] == args.topic:
         chosen_set_num = 0
     else:
@@ -48,7 +51,8 @@ else:
     print("Multiple topics with type sensor_msgs/Image:")
     specified_topic_in_topics = False
     for i, topic_touple in enumerate(image_topics_and_info):
-        print("["+ str(i) + "] topic: " + str(topic_touple[0]) + " \t message_count: " + str(topic_touple[1].message_count))
+        print("[" + str(i) + "] topic: " + str(topic_touple[0]) + " \t message_count: " + str(
+            topic_touple[1].message_count))
         if topic_touple[0]:
             chosen_set_num = i
             specified_topic_in_topics = True
@@ -99,7 +103,7 @@ for bag_msg in bag.read_messages(chosen_set[0]):
     cv2.imwrite(args.outputdir + "/img{:05d}".format(frame_number) + ".png", cv_image, )
     frame_number += 1
     if frame_number % 10 == 0:
-        print("{}/{}".format(frame_number, chosen_set[1].message_count/n))
+        print("{}/{}".format(frame_number, chosen_set[1].message_count / n))
 
 print("{}/{}".format(frame_number, chosen_set[1].message_count / n))
 
