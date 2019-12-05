@@ -284,7 +284,7 @@ class Vision:
 
         # If dummy ball detection is activated, set the dummy ballfinder as ball detector
         if config['neural_network_type'] == 'dummy':
-            self._ball_detector = dummy_ballfinder.DummyBallDetector()
+            self._ball_detector = candidate.DummyCandidateFinder()
             # If we don't use YOLO set the conventional goalpost detector.
             self._goalpost_detector = obstacle.WhiteObstacleDetector(self._obstacle_detector)
 
