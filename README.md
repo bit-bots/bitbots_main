@@ -38,7 +38,7 @@ The camera drivers are not included in this package but can be auto launched.
 
 If you want the vision to run without starting a camera driver simply set the cli launch parameter `camera:=false`.
 Every image source, that publishes a `sensor_msgs/Image messages` message is also supported.
-The ROS topics and many other parameters are defined in the `visioparams.yaml` config file.
+The ROS topics and many other parameters are defined in the `visionparams.yaml` config file.
 All used parameters are also changeable during run-time using ros dynamic reconfigure.
 For simulation usage, different parameters can be defined in the ``simparam.yaml`` which overrides the normal params.
 The debug mode with special debug output can be activated using ``debug:=true``.
