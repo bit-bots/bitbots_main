@@ -10,7 +10,7 @@ import threading
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-r","--rate", help="Publish rate", dest="rate", type=int, default=200)
+parser.add_argument("-r", "--rate", help="Publish rate", dest="rate", type=int, default=200)
 parser.add_argument("-n", "--noise", help="Amount of noise on the signal", type=float, default=1e6)
 parser.add_argument("-s", "--seed", help="random seed for zero and scale", dest="seed")
 
@@ -26,13 +26,11 @@ for i in range(8):
         m = 1
     else:
         m = -1
-    scales.append((random.random() * 2e7 + 1e7) * m) # random value between 1e7 and 3e7 or -1e7 and -3e7
+    scales.append((random.random() * 2e7 + 1e7) * m)  # random value between 1e7 and 3e7 or -1e7 and -3e7
+
+force_values = [0] * 8
 
 
-
-
-
-force_values = [0]*8
 # this is ugly but I dont have patience to make it properly
 
 
@@ -67,22 +65,33 @@ def update_force_6(force):
 def update_force_7(force):
     force_values[7] = float(force)
 
+
 force_functions = [update_force_0, update_force_1, update_force_2, update_force_3,
                    update_force_4, update_force_5, update_force_6, update_force_7]
 master = tkinter.Tk()
 master.title = "Foot Pressure test gui"
-labels = ["l_l_back","l_l_front","l_r_back","l_r_front","r_l_back","r_l_front","r_r_back","r_r_front",]
+labels = ["l_l_back", "l_l_front", "l_r_back", "l_r_front", "r_l_back", "r_l_front", "r_r_back", "r_r_front", ]
+scalers = []
 for i in range(8):
-    w = tkinter.Scale(master,
-                      from_=-0.2,
-                      to=10,
-                      orient=tkinter.HORIZONTAL,
-                      resolution=0.05,
-                      label=labels[i],
-                      length=300,
-                      width=30,
-                      command=force_functions[i])
-    w.pack()
+    scalers.append(tkinter.Scale(master,
+                                 from_=-0.2,
+                                 to=10,
+                                 orient=tkinter.HORIZONTAL,
+                                 resolution=0.05,
+                                 label=labels[i],
+                                 length=300,
+                                 width=30,
+                                 command=force_functions[i]))
+    scalers[i].pack()
+
+
+def zero():
+    for s in scalers:
+        s.set(0.0)
+
+
+b = tkinter.Button(master, command=zero, text="Zero")
+b.pack()
 
 rospy.init_node("foot_pressure_tester")
 pub_r = rospy.Publisher("/foot_pressure_right/raw", FootPressure, queue_size=1, tcp_nodelay=True)
@@ -108,6 +117,6 @@ def publish(timer):
     pub_r.publish(msg_r)
 
 
-rospy.Timer(rospy.Duration(1)/args.rate, publish)
+rospy.Timer(rospy.Duration(1) / args.rate, publish)
 tkinter.mainloop()
 rospy.signal_shutdown("gui closed")
