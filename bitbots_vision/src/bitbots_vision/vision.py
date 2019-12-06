@@ -152,7 +152,7 @@ class Vision:
         self._register_or_update_all_publishers(config)
 
         # Set max number of balls
-        self._max_balls = 1
+        self._max_balls = config['ball_candidate_max_count']
 
         # Set some thresholds
         # Brightness threshold which determines if the camera cap is on the camera.
