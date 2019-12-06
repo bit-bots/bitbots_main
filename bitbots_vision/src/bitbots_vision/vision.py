@@ -14,7 +14,7 @@ from humanoid_league_msgs.msg import BallsInImage, LineInformationInImage, \
     ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, \
     GoalPartsInImage, FieldBoundaryInImage, Speak
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
-    fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, yolo_handler, ros_utils, candidate
+    fcnn_handler, live_fcnn_03, obstacle, yolo_handler, ros_utils, candidate
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config, ColorSpace
 try:
