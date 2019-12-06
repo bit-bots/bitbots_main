@@ -35,10 +35,12 @@ class ObstaclePublisher:
             rospy.sleep(0.1)
 
             obs = list()
-            if self.ball is not None:
+            if self.ball is not None and rospy.Time.now() - self.ball.header.stamp < rospy.Duration(1):
+                # publish ball only if it was seen recently
+                # todo maybe rather use information from the world model for this
                 obs.append([self.ball.ball_relative.x, self.ball.ball_relative.y, self.ball.ball_relative.z])
 
-            if self.obstacles is not None:
+            if self.obstacles is not None and rospy.Time.now() - self.obstacles.header.stamp < rospy.Duration(1):
                 obs.extend([o.position.x, o.position.y, o.position.z] for o in self.obstacles.obstacles)
 
             if self.obstacles is not None or self.ball is not None:
