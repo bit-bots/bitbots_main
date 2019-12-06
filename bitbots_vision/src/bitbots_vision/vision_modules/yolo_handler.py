@@ -3,7 +3,7 @@ import os
 import abc
 import rospy
 import numpy as np
-from math import exp as exp
+from math import exp
 try:
     from pydarknet import Detector, Image
 except ImportError:
@@ -618,7 +618,6 @@ class YoloGoalpostDetector(CandidateFinder):
         Runs the yolo network
         """
         self._yolo.predict()
-
 
 
 
