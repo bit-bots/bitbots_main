@@ -269,7 +269,7 @@ class YoloHandlerOpenCV(YoloHandler):
 
 class YoloHandlerNCS2(YoloHandler):
     """
-    This Code is based on a code example form the Intel documentation under following licensing:
+    This Code is based on a code example from the Intel documentation under following licensing:
 
     Copyright (C) 2018-2019 Intel Corporation
 
@@ -618,6 +618,5 @@ class YoloGoalpostDetector(CandidateFinder):
         Runs the yolo network
         """
         self._yolo.predict()
-
 
 
