@@ -415,7 +415,7 @@ class YoloHandlerNCS2(YoloHandler):
                     h_exp = exp(predictions[box_index + 3 * side_square])
                 except OverflowError:
                     continue
-                # Depends on topology we need to normalize sizes by feature maps (up to YOLOv3) or by input shape (YOLOv3)
+                # Depending on topology we need to normalize sizes by feature maps (up to YOLOv3) or by input shape (YOLOv3)
                 w = w_exp * params.anchors[2 * n] / (resized_image_w if params.isYoloV3 else params.side)
                 h = h_exp * params.anchors[2 * n + 1] / (resized_image_h if params.isYoloV3 else params.side)
                 for j in range(params.classes):
@@ -618,7 +618,6 @@ class YoloGoalpostDetector(CandidateFinder):
         Runs the yolo network
         """
         self._yolo.predict()
-
 
 
 
