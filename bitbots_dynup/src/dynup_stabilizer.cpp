@@ -54,6 +54,13 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const
   bio_ik_l_foot_goal->setWeight(1.0);
   bio_ik_l_foot_goal->setReferenceLinkName("r_sole");
 
+  /*auto *bio_ik_r_foot_goal = new ReferencePoseGoal();
+  bio_ik_r_foot_goal->setPosition(tf_l_foot.getOrigin());
+  bio_ik_r_foot_goal->setOrientation(tf_l_foot.getRotation());
+  bio_ik_r_foot_goal->setLinkName("r_sole");
+  bio_ik_r_foot_goal->setWeight(1.0);
+  bio_ik_r_foot_goal->setReferenceLinkName("torso");*/
+
   auto *bio_ik_trunk_goal = new ReferencePoseGoal();
   bio_ik_trunk_goal->setPosition(tf_trunk.getOrigin());
   bio_ik_trunk_goal->setOrientation(tf_trunk.getRotation());
@@ -66,14 +73,14 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const
   bio_ik_l_hand_goal->setOrientation(tf_l_hand.getRotation());
   bio_ik_l_hand_goal->setLinkName("l_wrist");
   bio_ik_l_hand_goal->setWeight(1.0);
-  bio_ik_l_hand_goal->setReferenceLinkName("r_sole");
+  bio_ik_l_hand_goal->setReferenceLinkName("torso");
 
   auto *bio_ik_r_hand_goal = new ReferencePoseGoal();
   bio_ik_r_hand_goal->setPosition(tf_r_hand.getOrigin());
   bio_ik_r_hand_goal->setOrientation(tf_r_hand.getRotation());
   bio_ik_r_hand_goal->setLinkName("r_wrist");
   bio_ik_r_hand_goal->setWeight(1.0);
-  bio_ik_r_hand_goal->setReferenceLinkName("r_sole");
+  bio_ik_r_hand_goal->setReferenceLinkName("torso");
 
   tf2::Vector3 stabilizing_target = {response.support_point.x, response.support_point.y, response.support_point.z};
   auto *bio_ik_balancing_context = new DynamicBalancingContext(kinematic_model_);
@@ -82,6 +89,7 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const
   bio_ik_balance_goal->setReferenceLink("base_link");
 
   ik_options->goals.emplace_back(bio_ik_l_foot_goal);
+  //ik_options->goals.emplace_back(bio_ik_r_foot_goal);
   ik_options->goals.emplace_back(bio_ik_trunk_goal);
   ik_options->goals.emplace_back(bio_ik_r_hand_goal);
   ik_options->goals.emplace_back(bio_ik_l_hand_goal);
