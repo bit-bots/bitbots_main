@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_head_behavior</name>
-  <version>0.2.5</version>
+  <version>0.2.6</version>
   <description>The bitbots_head_behavior package is used to control the behavior of the head.
       The head searches for balls, goals and lines and tracks them. The head behavior can be
       controlled by the /head_duty topic and publishes the head motion in the /head_motor_goals topic.

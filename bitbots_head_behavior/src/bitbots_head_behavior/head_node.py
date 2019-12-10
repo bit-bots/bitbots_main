@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 This is the ROS-Node which contains the head behavior, starts the appropriate DSD, initializes the HeadBlackboard
 and subscribes to head_behavior specific ROS-Topics.
