@@ -20,12 +20,17 @@ void DynupIK::reset() {
    * since we are using a gradient based method. Otherwise, the
    * first step will be not correct */
   //TODO: add hands or replace with actual values
-  std::vector<std::string> names_vec = {"HeadPan", "HeadTilt", "LElbow", "LShoulderPitch", "LShoulderRoll", "RElbow", "RShoulderPitch", "RShoulderRoll", "LHipYaw", "LHipRoll", "LHipPitch", "LKnee", "LAnklePitch", "LAnkleRoll", "RHipYaw", "RHipRoll", "RHipPitch", "RKnee", "RAnklePitch", "RAnkleRoll"};
-  std::vector<double> pos_vec = {0, 0, 0.8, 0, 0, -0.8, 0, 0, 0, 0.1, 0.5, -1.0, -0.4, 0.1, 0, -0.1, -0.5, -1.0, 0.4, -0.1};
-  for (int i = 0; i < names_vec.size(); ++i) {
+  std::vector<std::string> names_vec =
+      {"HeadPan", "HeadTilt", "LAnklePitch", "LAnkleRoll", "LElbow", "LHipPitch", "LHipRoll", "LHipYaw", "LKnee",
+       "LShoulderPitch", "LShoulderRoll", "RAnklePitch", "RAnkleRoll", "RElbow", "RHipPitch", "RHipRoll", "RHipYaw",
+       "RKnee", "RShoulderPitch", "RShoulderRoll"};
+  std::vector<double> pos_vec = {0, 47, -80, 0, -88, 65, -7, 2, -157, 11, -14, 80, 1, 97, -63, -3, 0, 157, -14, 14};
+  for (double &pos: pos_vec) {
+    pos = pos / 180.0 * M_PI;
+  }
+  for (int i = 0; i < names_vec.size(); i++) {
     goal_state_->setJointPositions(names_vec[i], &pos_vec[i]);
   }
-
 }
 
 bitbots_splines::JointGoals DynupIK::calculate(std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
