@@ -43,7 +43,10 @@ include:
         - DynamixelSDK
         - dynamixel-workbench
         - dynamixel-workbench-msgs
+        - geometry2
+        - orocos_kinematics_dynamics
         - pointcloud_to_laserscan
+        - vision_opencv
     - scripts
     - udp_bridge
     - wolfgang_robot:
