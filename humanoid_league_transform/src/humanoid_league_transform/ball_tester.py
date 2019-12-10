@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 """
 Command line tool to publish balls on the /ball_in_image topic
 """
