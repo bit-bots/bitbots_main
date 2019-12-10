@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 import rospy
 from bitbots_msgs.msg import FootPressure

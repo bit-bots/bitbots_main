@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_teleop</name>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <description>The bitbots_teleop takes messages from the joy node and converts them to messages for /cmd_vel.</description>
 
   <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
