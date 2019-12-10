@@ -126,8 +126,8 @@ std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs
     tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole",
                          ros::Duration(0.2));
     tf_buffer_.transform(trunk_origin, trunk_transformed, "r_sole", ros::Duration(0.2));
-    tf_buffer_.transform(l_hand_origin, l_hand_transformed, "r_sole", ros::Duration(0.2));
-    tf_buffer_.transform(r_hand_origin, r_hand_transformed, "r_sole", ros::Duration(0.2));
+    tf_buffer_.transform(l_hand_origin, l_hand_transformed, "torso", ros::Duration(0.2));
+    tf_buffer_.transform(r_hand_origin, r_hand_transformed, "torso", ros::Duration(0.2));
     return std::make_tuple(l_foot_transformed.pose, trunk_transformed.pose, l_hand_transformed.pose, r_hand_transformed.pose);
   } catch (tf2::TransformException &) {
     return std::nullopt;
