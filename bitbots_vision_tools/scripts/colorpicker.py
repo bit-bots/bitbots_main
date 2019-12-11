@@ -67,6 +67,7 @@ To undo a step press 'u'.\n\
 To save the color space press <s> followed by the path and <enter>.\n\
 Exit using <esc>.\n\n\n", logger_name="colorpicker")
 
+
 def image_callback(msg):
 	"""
 	Image message callback
