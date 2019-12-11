@@ -178,10 +178,10 @@ while not rospy.is_shutdown():
 
 	# Increase selection size
 	if key == ord("+"):
-		box_size += int(box_size * 0.2)
+		box_size += int(box_size * 0.2) + 1
 	# Reduce selection size
 	if key == ord("-") and box_size > 1:
-		box_size -= int(box_size * 0.2)
+		box_size -= int(box_size * 0.2) - 1
 	# Undo
 	if key == ord("u") and len(history) > 1:
 		del history[-1]
