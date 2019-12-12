@@ -471,7 +471,7 @@ class YoloHandlerNCS2(YoloHandler):
 
             rospy.logdebug("Starting inference...")
 
-            # Set request id
+            # Set request id for the stick. Since we only make one call at a time, we use a static parameter.
             request_id = 1
             # Resize image to yolo input size
             in_frame = cv2.resize(self._image, (self._w, self._h))
@@ -618,4 +618,3 @@ class YoloGoalpostDetector(CandidateFinder):
         Runs the yolo network
         """
         self._yolo.predict()
-
