@@ -210,6 +210,9 @@ class Colorpicker(object):
         return save
 
     def _save(self):
+        """
+        Saves the current colorspace in a pickle file.
+        """
         # Get user input
         input_path = input("Enter color space path: ")
 
