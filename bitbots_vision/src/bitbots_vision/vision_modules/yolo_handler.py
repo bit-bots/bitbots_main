@@ -485,7 +485,7 @@ class YoloHandlerNCS2(YoloHandler):
 
             # Collecting object detection results
             objects = list()
-            # Create barrier
+            # Create barrier. This lets all following processing steps wait until the prediction is calculated.
             if self._exec_net.requests[request_id].wait(-1) == 0:
                 # Get output
                 output = self._exec_net.requests[request_id].outputs
@@ -618,5 +618,4 @@ class YoloGoalpostDetector(CandidateFinder):
         Runs the yolo network
         """
         self._yolo.predict()
-
 
