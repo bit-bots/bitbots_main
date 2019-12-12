@@ -71,7 +71,7 @@ sub create_catkin_workspace() {
     mkdir $location;
     chdir $location;
     mkdir $location . "/src";
-    system "bash -c \"source $ROS_WORKSPACE/setup.bash && catkin init && catkin build\"";
+    system "bash -c \"source $ROS_WORKSPACE/setup.bash && catkin init && catkin config -DPYTHON_VERSION=3 && catkin build\"";
 }
 
 sub link_bitbots_meta() {
