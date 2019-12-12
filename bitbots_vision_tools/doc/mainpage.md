@@ -15,4 +15,4 @@ Example:
 ~~~
 rosrun bitbots_vision_tools extract_from_rosbag.py -i testdata.bag -o testdataset -t /image_raw -n 3
 ~~~
-Will extract every third image from the testdata.bag on the /image_raw topic into the folder $PWD/testdata
+Will extract every third image from the testdata.bag on the /image_raw topic into the folder $PWD/testdataset
