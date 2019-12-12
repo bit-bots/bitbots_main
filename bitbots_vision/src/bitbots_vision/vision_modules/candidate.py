@@ -155,6 +155,22 @@ class Candidate:
         """
         return sorted(candidatelist, key = lambda candidate: candidate.get_rating(), reverse=True)
 
+    @staticmethod
+    def select_top_candidate(candidatelist):
+        """
+        Select the top candidate
+
+        :param candidatelist: List of candidate objects.
+        :return: Top candidate or None
+        """
+        if candidatelist:
+            return Candidate.sort_candidates(candidatelist)[0]
+        else:
+            return None
+
+    @staticmethod
+    def rating_threshold(candidatelist, threshold):
+        return [candidate for candidate in candidatelist if candidate.get_rating() > threshold]
 
     def __str__(self):
         return 'x1,y1: {0},{1} | width,height: {2},{3} | rating: {4}'.format(
@@ -200,42 +216,51 @@ class CandidateFinder(object):
         """
         Returns the best candidate.
 
-        :param count: Number of top-candidates to return
-        :return: the count top candidates
+        :return: the best candidate or nothing
         """
-        return self.get_top_candidates()[0] if self.get_top_candidates() else None
+        return Candidate.select_top_candidate(self.get_candidates())
 
 
-class BallDetector(CandidateFinder):
-    def get_top_ball_under_convex_field_boundary(self, field_boundary_detector, y_offset=0):
+class DummyCandidateFinder(CandidateFinder):
+    """
+    Dummy candidate detector that we use if we want to run the vision without neural network to e.g. save computation time for debugging.
+    """
+    def __init__(self):
+        self._detected_candidates = []
+        self._sorted_candidates = []
+        self._top_candidate = None
+
+    def set_image(self, image):
         """
-        Returns the best candidate under the convex field boundary.
+        Method to satisfy the interface.
+        Actually does nothing.
 
-        :return: top candidate or None if no candidate exists
+        :param image: current vision image
         """
-        # Get all balls
-        balls = self.get_sorted_top_balls_under_convex_field_boundary(field_boundary_detector, y_offset)
-        # Check if there are any
-        if balls:
-            # Return the best
-            return balls[0]
+        pass
 
-    def get_sorted_top_balls_under_convex_field_boundary(self, field_boundary_detector, y_offset=0):
+    def compute(self):
         """
-        Returns the best candidates under the convex field boundary.
-
-        :return: list of top candidates sorted by rating
+        Method to satisfy the interface.
+        Actually does nothing, except the extrem complicated command 'pass'.
         """
+        pass
 
-        # Get candidates
-        ball_candidates = self.get_candidates()
-        # Check if there are any ball candidates
-        if ball_candidates:
-            # Only take candidates under the convex field boundary
-            balls_under_field_boundary = field_boundary_detector.candidates_under_convex_field_boundary(ball_candidates, y_offset)
-            # Check if there are still candidates left
-            if balls_under_field_boundary:
-                # Sort candidates and take the one which has the biggest confidence
-                sorted_rated_candidates = sorted(balls_under_field_boundary, key=lambda x: x.get_rating())
-                return sorted_rated_candidates
-        return list()
+    def get_candidates(self):
+        """
+        Method to satisfy the interface.
+        Actually does something. It returns an empty list.
+
+        :return: a empty list
+        """
+        return self._detected_candidates
+
+    def get_top_candidates(self, count=1):
+        """
+        Method to satisfy the interface.
+        It returns an empty list.
+
+        :param count: how many of zero top candidates do you want?
+        :return: a empty list
+        """
+        return self._sorted_candidates
