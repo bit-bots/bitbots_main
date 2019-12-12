@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>wolfgang_animations</name>
-  <version>0.0.0</version>
+  <version>1.0.1</version>
   <description>Animation files for the wolfgang robot</description>
 
   <maintainer email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</maintainer>
