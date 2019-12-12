@@ -9,6 +9,11 @@ import cv2
 from cv_bridge import CvBridge
 import numpy as np
 
+try:
+    input = raw_input
+except NameError:
+    pass
+
 parser = argparse.ArgumentParser("Extract images from a rosbag")
 
 parser.add_argument("-o", "--out-dir", required=True, help="Output directory for the images", dest="outputdir")
