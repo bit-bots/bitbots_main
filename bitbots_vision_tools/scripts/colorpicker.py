@@ -246,7 +246,7 @@ class Colorpicker(object):
         """
         save = self.ui_loop()
 
-        if save: # TODO
+        if save:
             self._save()
 
 
