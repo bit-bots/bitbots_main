@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_body_behavior</name>
-  <version>0.9.5</version>
+  <version>0.9.6</version>
   <description>The bitbots_body_behavior package determines the
         behavior of the robot including strategy decisions and
         kick or walk actions. The node controls the walking indirecty via
