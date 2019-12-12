@@ -7,7 +7,7 @@ try:
 except ImportError:
     rospy.logerr("Not able to run Darknet YOLO! Its only executable under python3 with yolo34py or yolo34py-gpu installed.", logger_name="vision_yolo")
 import numpy as np
-from .candidate import CandidateFinder, CandidateFinder, Candidate
+from .candidate import CandidateFinder, Candidate
 
 
 class YoloHandler():
@@ -328,4 +328,3 @@ class YoloGoalpostDetector(CandidateFinder):
         Runs the yolo network
         """
         self._yolo.predict()
-
