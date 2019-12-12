@@ -215,7 +215,7 @@ if save:
     # Get the color values
     color_indices = np.where(history[-1] == 1)
 
-    # Create data struckture for the file
+    # Create data structure for the file
     data = dict(
         red=color_indices[0].tolist(),
         green=color_indices[1].tolist(),
@@ -227,4 +227,3 @@ if save:
         pickle.dump(data, outfile, protocol=2)
 
     rospy.loginfo("Output saved to '{}'.".format(input_path), logger_name="colorpicker")
-
