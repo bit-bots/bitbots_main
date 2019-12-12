@@ -68,14 +68,38 @@ class FieldBoundaryDetector(object):
         self._convex_field_boundary_points = None
         self._mask = None
 
-    def get_mask(self):
+    def get_mask(self, offset=0):
         # type: () -> np.array
         """
+        :param offest: A vertical field boundary offset shift
         :return: np.array
         """
         # Compute mask (cached)
         self._compute_mask()
-        return self._mask
+        return self._shift_field_boundary_mask(self._mask, offset)
+
+    def _shift_field_boundary_mask(self, mask, offset):
+        shape = mask.shape
+
+        if offset == 0:
+            return mask
+
+        elif offset < 0:
+            # Shift mask downwards
+            offset = min(-offset, shape[0]-1)
+            frame = np.zeros(shape, dtype=np.uint8)
+            # Add mask with offset
+            frame[offset:shape[0]-1] = mask[0:shape[0]-1-offset]
+
+        elif offset > 0:
+            # Shift mask upwards
+            offset = min(offset, shape[0]-1)
+            frame = np.ones(shape, dtype=np.uint8)
+            frame = frame * 255
+            # Add mask with offset
+            frame[0:shape[0]-1-offset] = mask[offset:shape[0]-1]
+
+        return frame
 
     def _compute_mask(self):
         # type: () -> None
