@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_imageloader</name>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <description>loads images from a path specified in config and publishes them to </description>
 
   <maintainer email="git@nfiedler.de">Niklas Fiedler</maintainer>
