@@ -48,7 +48,7 @@ elif len(image_topics_and_info) == 1:
     if image_topics_and_info[0][0] == args.topic:
         chosen_set_num = 0
     else:
-        selection = raw_input("Do you want to extract images from this topic? y/n: ")
+        selection = input("Do you want to extract images from this topic? y/n: ")
         if selection != "y":
             exit()
         chosen_set_num = 0
@@ -63,7 +63,7 @@ else:
             specified_topic_in_topics = True
     if not specified_topic_in_topics:
         try:
-            chosen_set_num = int(raw_input("Make a selection [0-{}] or q: ".format(len(image_topics_and_info) - 1)))
+            chosen_set_num = int(input("Make a selection [0-{}] or q: ".format(len(image_topics_and_info) - 1)))
         except ValueError:
             exit()
 
@@ -72,7 +72,7 @@ chosen_set = image_topics_and_info[chosen_set_num]
 print("The dataset you have selected has a frequency of {0}".format(chosen_set[1].frequency))
 if args.n is None:
     try:
-        n = int(raw_input("Every n-th image will be saved. Please specify n:"))
+        n = int(input("Every n-th image will be saved. Please specify n:"))
     except ValueError:
         exit()
 else:
@@ -83,7 +83,7 @@ print("Extracting every {}th image".format(n))
 try:
     os.mkdir(args.outputdir)
 except OSError:
-    answer = raw_input("Directory already exists, continue? y/n: ")
+    answer = input("Directory already exists, continue? y/n: ")
     if answer != "y":
         exit()
 
