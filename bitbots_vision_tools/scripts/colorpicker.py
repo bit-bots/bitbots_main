@@ -56,7 +56,7 @@ class Colorpicker(object):
         :param param: Some unused parameter
         """
         if flags == (cv2.EVENT_FLAG_SHIFTKEY + cv2.EVENT_FLAG_LBUTTON):
-            # Substracts colors
+            # Subtracts colors
             self._undo_click = True
         elif event == cv2.EVENT_LBUTTONUP:
             # Adds colors
