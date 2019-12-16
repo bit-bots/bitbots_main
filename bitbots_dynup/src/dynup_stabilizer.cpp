@@ -25,7 +25,7 @@ void Stabilizer::reset() {
       {"HeadPan", "HeadTilt", "LAnklePitch", "LAnkleRoll", "LElbow", "LHipPitch", "LHipRoll", "LHipYaw", "LKnee",
        "LShoulderPitch", "LShoulderRoll", "RAnklePitch", "RAnkleRoll", "RElbow", "RHipPitch", "RHipRoll", "RHipYaw",
        "RKnee", "RShoulderPitch", "RShoulderRoll"};
-  std::vector<double> pos_vec = {0, 47, -80, 0, -88, 65, -7, 2, -157, 11, -14, 80, 1, 97, -63, -3, 0, 157, -14, 14};
+  std::vector<double> pos_vec = {0, 0, -25, 4, 45, 27, 4, -1, -58, 0, 25, -4, 45, -37, -4, 1, 0, 58, 0, 0};
   for (double &pos: pos_vec) {
     pos = pos / 180.0 * M_PI;
   }
