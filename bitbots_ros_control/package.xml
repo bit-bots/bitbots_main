@@ -29,6 +29,7 @@
   <depend>bitbots_buttons</depend>
   <depend>transmission_interface</depend>
   <depend>realtime_tools</depend>
+  <depend>yaml-cpp</depend>
 
   <exec_depend>imu_complementary_filter</exec_depend>
   <exec_depend>imu_sensor_controller</exec_depend>
