@@ -1,0 +1,4 @@
+left_topic: "/foot_pressure_left"
+right_topic: "/foot_pressure_right"
+average: 20
+scale_and_zero_average: 50
