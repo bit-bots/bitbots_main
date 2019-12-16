@@ -19,12 +19,11 @@ void DynupIK::reset() {
   /* We have to set some good initial position in the goal state,
    * since we are using a gradient based method. Otherwise, the
    * first step will be not correct */
-  //TODO: add hands or replace with actual values
   std::vector<std::string> names_vec =
       {"HeadPan", "HeadTilt", "LAnklePitch", "LAnkleRoll", "LElbow", "LHipPitch", "LHipRoll", "LHipYaw", "LKnee",
        "LShoulderPitch", "LShoulderRoll", "RAnklePitch", "RAnkleRoll", "RElbow", "RHipPitch", "RHipRoll", "RHipYaw",
        "RKnee", "RShoulderPitch", "RShoulderRoll"};
-  std::vector<double> pos_vec = {0, 47, -80, 0, -88, 65, -7, 2, -157, 11, -14, 80, 1, 97, -63, -3, 0, 157, -14, 14};
+  std::vector<double> pos_vec = {0, 0, -25, 4, 45, 27, 4, -1, -58, 0, 25, -4, 45, -37, -4, 1, 0, 58, 0, 0};
   for (double &pos: pos_vec) {
     pos = pos / 180.0 * M_PI;
   }
@@ -76,7 +75,6 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 }
 
 bitbots_splines::JointGoals DynupIK::calculate(std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
-  //TODO: add arm IK!
   double bio_ik_timeout = 0.01;
   bool success = goal_state_->setFromIK(arm_joints_group_.get(),
                                         EigenSTL::vector_Isometry3d(),

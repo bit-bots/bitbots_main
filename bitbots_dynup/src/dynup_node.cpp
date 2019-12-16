@@ -83,8 +83,8 @@ void DynUpNode::loopEngine() {
   /* Do the loop as long as nothing cancels it */
   while (server_.isActive() && !server_.isPreemptRequested()) {
     DynupResponse response = engine_.update(1.0 / engine_rate_);
-    DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(1.0 / engine_rate_)); //TODO: Stabilizing has to be replaced!!!
-    bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
+    std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_options = stabilizer_.stabilize(response);
+    bitbots_splines::JointGoals goals = ik_.calculate(std::move(ik_options));
     bitbots_msgs::DynUpFeedback feedback;
     feedback.percent_done = engine_.getPercentDone();
     server_.publishFeedback(feedback);
@@ -93,7 +93,7 @@ void DynUpNode::loopEngine() {
       failed_tick_counter++;
     }
     if (feedback.percent_done == 100) {
-      ROS_ERROR("Completed dynup with %d failed ticks.", failed_tick_counter);
+      ROS_WARN("Completed dynup with %d failed ticks.", failed_tick_counter);
       break;
     }
 
