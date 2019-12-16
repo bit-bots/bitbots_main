@@ -74,18 +74,21 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
 }
 
 void DynUpNode::loopEngine() {
+  int failed_tick_counter = 0;
   /* Do the loop as long as nothing cancels it */
   while (server_.isActive() && !server_.isPreemptRequested()) {
     DynupResponse response = engine_.update(1.0 / engine_rate_);
-    DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(1.0 / engine_rate_));
-    bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
-    // TODO: add counter for failed ticks
+    std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_options = stabilizer_.stabilize(response);
+    bitbots_splines::JointGoals goals = ik_.calculate(std::move(ik_options));
     bitbots_msgs::DynUpFeedback feedback;
     feedback.percent_done = engine_.getPercentDone();
     server_.publishFeedback(feedback);
     publishGoals(goals);
-
+    if(goals.first.empty()) {
+      failed_tick_counter++;
+    }
     if (feedback.percent_done == 100) {
+      ROS_WARN("Completed dynup with %d failed ticks.", failed_tick_counter);
       break;
     }
 
