@@ -281,6 +281,15 @@ class YoloHandlerNCS2(YoloHandler):
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+
+    Following changes were made:
+        - Different class handeling
+        - Modifications for our framework
+        - Different NMS approach
+
+    Used parts of the original code:
+        - Parts of the comunication with the NCS stick
+        - Output extraction for the Yolo network output
     """
     class _YoloParams:
         """
