@@ -30,12 +30,27 @@ pipeline {
             }
         }
 
-		stage('Install') {
+		stage('Build') {
             agent { docker image: 'registry.bit-bots.de:5000/bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000', alwaysPull: true, args: '--volume /srv/shared_catkin_install_space:/srv/catkin_install' }
             steps {
                 linkCatkinWorkspace()
                 catkinBuild()
+
+				sh 'cp -r /catkin_ws/install/bitbots_docs ./installed'
+				stash name: 'bitbots_docs_installed', includes: 'installed/**'
+				sh 'rm -r ./installed'
             }
+		}
+
+		stage('Install') {
+            agent { docker image: 'registry.bit-bots.de:5000/bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000', alwaysPull: true, args: '--volume /srv/shared_catkin_install_space:/srv/catkin_install' }
+			steps {
+				lock('shared_catkin_install_space') {
+					unstash 'bitbots_docs_installed'
+					sh 'rsync -rv --ignore-missing-args ./installed/lib ./installed/share ./installed/bin ./installed/include /srv/shared_catkin_install_space'
+					sh 'rm -r ./installed'
+				}
+			}
 		}
 
         stage('Deploy') {
