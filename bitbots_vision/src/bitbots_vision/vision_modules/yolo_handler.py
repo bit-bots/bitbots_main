@@ -282,6 +282,30 @@ class YoloHandlerNCS2(YoloHandler):
     See the License for the specific language governing permissions and
     limitations under the License.
     """
+    class _YoloParams:
+        """
+        Class to store params of yolo layers
+        """
+        def __init__(self, param, side):
+            self.num = 3 if 'num' not in param else int(param['num'])
+            self.coords = 4 if 'coords' not in param else int(param['coords'])
+            self.classes = 2 if 'classes' not in param else int(param['classes'])
+            self.anchors = [10.0, 13.0, 16.0, 30.0, 33.0, 23.0, 30.0, 61.0, 62.0, 45.0, 59.0, 119.0, 116.0, 90.0, 156.0,
+                            198.0,
+                            373.0, 326.0] if 'anchors' not in param else [float(a) for a in param['anchors'].split(',')]
+
+            if 'mask' in param:
+                mask = [int(idx) for idx in param['mask'].split(',')]
+                self.num = len(mask)
+
+                maskedAnchors = []
+                for idx in mask:
+                    maskedAnchors += [self.anchors[idx * 2], self.anchors[idx * 2 + 1]]
+                self.anchors = maskedAnchors
+
+            self.side = side
+            self.isYoloV3 = 'mask' in param  # Weak way to determine but the only one.
+
 
     def __init__(self, config, model_path):
         # Create model file paths
@@ -525,29 +549,6 @@ class YoloHandlerNCS2(YoloHandler):
                         )
 
 
-class YoloParams:
-        """
-        Class to store params of yolo layers
-        """
-        def __init__(self, param, side):
-            self.num = 3 if 'num' not in param else int(param['num'])
-            self.coords = 4 if 'coords' not in param else int(param['coords'])
-            self.classes = 2 if 'classes' not in param else int(param['classes'])
-            self.anchors = [10.0, 13.0, 16.0, 30.0, 33.0, 23.0, 30.0, 61.0, 62.0, 45.0, 59.0, 119.0, 116.0, 90.0, 156.0,
-                            198.0,
-                            373.0, 326.0] if 'anchors' not in param else [float(a) for a in param['anchors'].split(',')]
-
-            if 'mask' in param:
-                mask = [int(idx) for idx in param['mask'].split(',')]
-                self.num = len(mask)
-
-                maskedAnchors = []
-                for idx in mask:
-                    maskedAnchors += [self.anchors[idx * 2], self.anchors[idx * 2 + 1]]
-                self.anchors = maskedAnchors
-
-            self.side = side
-            self.isYoloV3 = 'mask' in param  # Weak way to determine but the only one.
 
 
 class YoloBallDetector(BallDetector):
