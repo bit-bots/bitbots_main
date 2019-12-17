@@ -254,12 +254,9 @@ class YoloHandlerOpenCV(YoloHandler):
                 # Get box
                 box = boxes[i]
                 # Convert the box position/size to int
-                x = int(box[0])
-                y = int(box[1])
-                w = int(box[2])
-                h = int(box[3])
+                box = list(map(int, box))
                 # Create the candidate
-                c = Candidate(x, y, w, h, confidences[i])
+                c = Candidate(*box, confidences[i])
                 # Append candidate to the right list depending on the class
                 class_id = class_ids[i]
                 if class_id == 0:
