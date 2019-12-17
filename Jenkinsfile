@@ -38,7 +38,7 @@ pipeline {
 
 				sh 'cp -r /catkin_ws/install/bitbots_docs ./installed'
 				stash name: 'bitbots_docs_installed', includes: 'installed/**'
-				sh 'rm -r ./installed'
+				cleanWs()
             }
 		}
 
@@ -48,7 +48,7 @@ pipeline {
 				lock('shared_catkin_install_space') {
 					unstash 'bitbots_docs_installed'
 					sh 'rsync -rv --ignore-missing-args ./installed/lib ./installed/share ./installed/bin ./installed/include /srv/shared_catkin_install_space'
-					sh 'rm -r ./installed'
+					cleanWs()
 				}
 			}
 		}
