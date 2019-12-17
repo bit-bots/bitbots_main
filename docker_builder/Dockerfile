@@ -1,5 +1,5 @@
 # Use upstream melodic images as base
-FROM ros:melodic-ros-base-bionic AS bitbots-builder
+FROM docker.io/ros:melodic-ros-base-bionic AS bitbots-builder
 
 # Install system dependencies
 RUN apt-get update && \
@@ -13,21 +13,35 @@ RUN apt-get update && \
 ADD sudoers /etc/sudoers
 
 # Add user
-RUN useradd -M -d /catkin_ws -s /bin/bash -u 1001 builder
+ARG UID=1001
+RUN useradd -M -d /catkin_ws -s /bin/bash -u $UID builder
 
-# Setup rosdep
-RUN rosdep update
+# Build empty install space in shared install space
+ARG SHARED_INSTALL_SPACE="/srv/catkin_install"
+RUN . /opt/ros/melodic/setup.sh && \
+	mkdir -p /catkin_ws/src && cd /catkin_ws && \
+	catkin init >/dev/null && \
+	catkin config --install --merge-install --install-space $SHARED_INSTALL_SPACE >/dev/null && \
+	catkin build && \
+	chown -R builder:builder $SHARED_INSTALL_SPACE && \
+	rm -r /catkin_ws && \
+	cd /
 
 # Setup catkin workspace
 RUN . /opt/ros/melodic/setup.sh && \
     mkdir -p /catkin_ws/src; cd /catkin_ws && \
     catkin init && \
+	catkin config --extend $SHARED_INSTALL_SPACE --install --isolate-install && \
     catkin build && \
 	chown -R builder:builder /catkin_ws && \
     chmod -R 740 /catkin_ws
 
-# Setup entrypoint
+# Setup rosdep
+RUN su -c "rosdep update" builder
+
+# Setup runtime
+VOLUME ["/srv/catkin_install"]
 USER builder:builder
-COPY entrypoint.bash /entrypoint.bash
-ENTRYPOINT ["/entrypoint.bash"]
+COPY entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
