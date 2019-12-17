@@ -9,7 +9,6 @@ pipeline {
 
     stages {
         stage('Build docker container') {
-            when { branch 'master' }
             steps {
                 sh 'docker build -t registry.bit-bots.de:5000/bitbots_builder --no-cache docker_builder'
                 sh 'docker push registry.bit-bots.de:5000/bitbots_builder'
@@ -47,7 +46,8 @@ pipeline {
 			steps {
 				lock('shared_catkin_install_space') {
 					unstash 'bitbots_docs_installed'
-					sh 'rsync -rv --ignore-missing-args ./installed/lib ./installed/share ./installed/bin ./installed/include /srv/shared_catkin_install_space'
+					sh 'cp -r installed/lib /srv/catkin_install'
+					sh 'cp -r installed/share /srv/catkin_install'
 					cleanWs()
 				}
 			}
