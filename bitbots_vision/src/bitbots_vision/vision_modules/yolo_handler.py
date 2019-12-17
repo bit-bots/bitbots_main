@@ -340,9 +340,8 @@ class YoloHandlerNCS2(YoloHandler):
         self._exec_net = ie.load_network(network=self._net, num_requests=2, device_name=device)
 
         # Params TODO
-        self._prob_threshold = 0.5
-
-        self._iou_threshold = 0.4
+        self._nms_threshold = 0.4
+        self._confidence_threshold = 0.5
 
         self._image = None
         self._caching = True
@@ -370,28 +369,6 @@ class YoloHandlerNCS2(YoloHandler):
         loc = location % side_power_2
         return int(side_power_2 * (n * (coord + classes + 1) + entry) + loc)
 
-    def _scale_bbox(self, x, y, h, w, class_id, confidence, h_scale, w_scale):
-        """
-        Scales bounding box to original image size and
-        changes its representation from x, y, h, w to xmin, xmax, ymin, ymax.
-
-        :param x: x position in yolo image shape
-        :param y: y position in yolo image shape
-        :param h: height in yolo image shape
-        :param w: width in yolo image shape
-        :param class_id: Id of the class
-        :param confidence: Confidence of the bounding box
-        :param h_scale: Scale from the yolo image shape to the original image shape in vertical direction
-        :param w_scale: Scale from the yolo image shape to the original image shape in horizontal direction
-        :return: Bounding box as dict with keys 'xmin', 'xmax', 'ymin', 'ymax', 'class_id', 'confidence'.
-        """
-
-        xmin = int((x - w / 2) * w_scale)
-        ymin = int((y - h / 2) * h_scale)
-        xmax = int(xmin + w * w_scale)
-        ymax = int(ymin + h * h_scale)
-        return dict(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, class_id=class_id, confidence=confidence)
-
     def _parse_yolo_region(self, blob, resized_image_shape, original_im_shape, params, threshold):
         """
         Parses bounding boxes out of an yolo output layer.
@@ -414,7 +391,7 @@ class YoloHandlerNCS2(YoloHandler):
         resized_image_h, resized_image_w = resized_image_shape
         objects = list()
         predictions = blob.flatten()
-        side_square = params.side * params.side
+        side_square = params.side ** 2
 
         # Parsing YOLO Region output
         for i in range(side_square):
@@ -439,50 +416,19 @@ class YoloHandlerNCS2(YoloHandler):
                 # Depends on topology we need to normalize sizes by feature maps (up to YOLOv3) or by input shape (YOLOv3)
                 w = w_exp * params.anchors[2 * n] / (resized_image_w if params.isYoloV3 else params.side)
                 h = h_exp * params.anchors[2 * n + 1] / (resized_image_h if params.isYoloV3 else params.side)
+                # Iterate over classes
                 for j in range(params.classes):
                     class_index = self._entry_index(params.side, params.coords, params.classes, n * side_square + i,
                                             params.coords + 1 + j)
                     confidence = scale * predictions[class_index]
                     if confidence < threshold:
                         continue
-                    objects.append(self._scale_bbox(x=x, y=y, h=h, w=w, class_id=j, confidence=confidence,
-                                            h_scale=orig_im_h, w_scale=orig_im_w))
+                    h = h * orig_im_h
+                    w = w * orig_im_w
+                    x = x * orig_im_w - w / 2
+                    y = y * orig_im_h - h / 2
+                    objects.append([[x, y, h, w], confidence, j])
         return objects
-
-    def _intersection_over_union(self, box_1, box_2):
-        """
-        Calculates an iou of two bounding boxes.
-
-        :param box_1: first bounding box
-        :param box_2: second bounding box
-        :return: iou value
-        """
-        # Calculate overlap
-        width_of_overlap_area = min(box_1['xmax'], box_2['xmax']) - max(box_1['xmin'], box_2['xmin'])
-        height_of_overlap_area = min(box_1['ymax'], box_2['ymax']) - max(box_1['ymin'], box_2['ymin'])
-        if width_of_overlap_area < 0 or height_of_overlap_area < 0:
-            area_of_overlap = 0
-        else:
-            area_of_overlap = width_of_overlap_area * height_of_overlap_area
-        # Calculate areas
-        box_1_area = (box_1['ymax'] - box_1['ymin']) * (box_1['xmax'] - box_1['xmin'])
-        box_2_area = (box_2['ymax'] - box_2['ymin']) * (box_2['xmax'] - box_2['xmin'])
-        # Calculate union
-        area_of_union = box_1_area + box_2_area - area_of_overlap
-        # Catch divide by zero
-        if area_of_union == 0:
-            return 0
-        # Return iou
-        return area_of_overlap / area_of_union
-
-    def _scaled_bbox_to_candidate(self, bbox):
-        return Candidate(
-            int(bbox['xmin']),
-            int(bbox['ymin']),
-            int(bbox['xmax']) - int(bbox['xmin']),
-            int(bbox['ymax']) - int(bbox['ymin']),
-            bbox['confidence']
-            )
 
     def predict(self):
         if (self._ball_candidates is None and self._goalpost_candidates is None) or not self._caching:
@@ -505,7 +451,7 @@ class YoloHandlerNCS2(YoloHandler):
             self._exec_net.start_async(request_id=request_id, inputs={self._input_blob: in_frame})
 
             # Collecting object detection results
-            objects = list()
+            detections = list()
             # Create barrier
             if self._exec_net.requests[request_id].wait(-1) == 0:
                 # Get output
@@ -515,40 +461,35 @@ class YoloHandlerNCS2(YoloHandler):
                     # Reshape output layer
                     out_blob = out_blob.reshape(self._net.layers[self._net.layers[layer_name].parents[0]].shape)
                     # Create layer params object
-                    layer_params = YoloParams(self._net.layers[layer_name].params, out_blob.shape[2])
+                    layer_params = self._YoloParams(self._net.layers[layer_name].params, out_blob.shape[2])
                     # Parse yolo bounding boxes out of output blob
-                    objects.extend(
+                    detections.extend(
                         self._parse_yolo_region(
                             out_blob,
                             in_frame.shape[2:],
                             self._image.shape[:-1],
                             layer_params,
-                            self._prob_threshold))
-
-            # Filtering overlapping boxes
-            objects = sorted(objects, key=lambda obj : obj['confidence'], reverse=True)
-            for i in range(len(objects)):
-                if objects[i]['confidence'] == 0:
-                    continue
-                for j in range(i + 1, len(objects)):
-                    if self._intersection_over_union(objects[i], objects[j]) > self._iou_threshold:
-                        objects[j]['confidence'] = 0
-
-            # Convert objects to candidates
-            for yolo_object in objects:
-                # Drop out mostly 0 confidence objects
-                if yolo_object['confidence'] > self._prob_threshold:
-                    # Sort detections in classes
-                    if yolo_object['class_id'] == 0:
-                        self._ball_candidates.append(
-                            self._scaled_bbox_to_candidate(yolo_object)
-                        )
-                    if yolo_object['class_id'] == 1:
-                        self._goalpost_candidates.append(
-                            self._scaled_bbox_to_candidate(yolo_object)
-                        )
-
-
+                            self._confidence_threshold))
+            # Transpose detections
+            boxes, confidences, class_ids = list(map(list, zip(*detections)))
+            # Non-maximum Suppression
+            box_indices = cv2.dnn.NMSBoxes(boxes, confidences, self._confidence_threshold, self._nms_threshold)
+            # Iterate over filtered boxes
+            for i in box_indices:
+                # Get id
+                i = i[0]
+                # Get box
+                box = boxes[i]
+                # Convert the box position/size to int
+                box = list(map(int, box))
+                # Create the candidate
+                c = Candidate(*box, confidences[i])
+                # Append candidate to the right list depending on the class
+                class_id = class_ids[i]
+                if class_id == 0:
+                    self._ball_candidates.append(c)
+                if class_id == 1:
+                    self._goalpost_candidates.append(c)
 
 
 class YoloBallDetector(BallDetector):
