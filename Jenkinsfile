@@ -30,6 +30,14 @@ pipeline {
             }
         }
 
+		stage('Install') {
+            agent { docker image: 'registry.bit-bots.de:5000/bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000', alwaysPull: true, args: '--volume /srv/shared_catkin_install_space:/srv/catkin_install' }
+            steps {
+                linkCatkinWorkspace()
+                catkinBuild()
+            }
+		}
+
         stage('Deploy') {
             agent { label 'webserver' }
             when { branch 'master' }
