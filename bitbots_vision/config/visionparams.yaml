@@ -32,7 +32,7 @@ ball_fcnn_candidate_refinement_iteration_count: 1  # Number of iterations of ref
 ball_fcnn_publish_output: false  # Publish the output of the ball fcnn as ImageWithRegionOfInterest
 ball_fcnn_publish_field_boundary_offset: 5  # The offset added to the field_boundary when cropping the fcnn output for publication in pixels
 
-neural_network_type: 'yolo_ncs2'  # The neural network type that should be used (fcnn, yolo_opencv, yolo_darknet or dummy)
+neural_network_type: 'yolo_ncs2'  # The neural network type that should be used (fcnn, yolo_opencv, yolo_darknet, yolo_ncs2 or dummy)
 ball_candidate_field_boundary_y_offset: 0  # Threshold in which ball candidates over the field boundary are allowed.
 ball_candidate_rating_threshold: 0.5  # A threshold for the minimum candidate rating
 
@@ -104,4 +104,3 @@ ball_fcnn_publish_debug_img: false  # Publish the fcnn heatmap image for debug p
 vision_publish_HSV_mask_image: false  # Publish all three HSV color detector mask image messages for debug purposes
 vision_publish_field_mask_image: false  # Publish field mask image message for debug purposes
 caching: true  # Used to deactivate caching for profiling reasons
-

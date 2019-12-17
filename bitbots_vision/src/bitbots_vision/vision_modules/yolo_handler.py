@@ -3,7 +3,7 @@ import os
 import abc
 import rospy
 import numpy as np
-from math import exp as exp
+from math import exp
 try:
     from pydarknet import Detector, Image
 except ImportError:
@@ -266,7 +266,7 @@ class YoloHandlerOpenCV(YoloHandler):
 
 class YoloHandlerNCS2(YoloHandler):
     """
-    This Code is based on a code example form the Intel documentation under following licensing:
+    The following code is based on a code example from the Intel documentation under following licensing:
 
     Copyright (C) 2018-2019 Intel Corporation
 
@@ -422,7 +422,7 @@ class YoloHandlerNCS2(YoloHandler):
                     h_exp = exp(predictions[box_index + 3 * side_square])
                 except OverflowError:
                     continue
-                # Depends on topology we need to normalize sizes by feature maps (up to YOLOv3) or by input shape (YOLOv3)
+                # Depending on topology we need to normalize sizes by feature maps (up to YOLOv3) or by input shape (YOLOv3)
                 w = w_exp * params.anchors[2 * n] / (resized_image_w if params.isYoloV3 else params.side)
                 h = h_exp * params.anchors[2 * n + 1] / (resized_image_h if params.isYoloV3 else params.side)
                 # Iterate over classes
@@ -447,7 +447,7 @@ class YoloHandlerNCS2(YoloHandler):
 
             rospy.logdebug("Starting inference...")
 
-            # Set request id
+            # Set request id for the stick. Since we only make one call at a time, we use a static parameter.
             request_id = 1
             # Resize image to yolo input size
             in_frame = cv2.resize(self._image, (self._w, self._h))
@@ -461,7 +461,7 @@ class YoloHandlerNCS2(YoloHandler):
 
             # Collecting object detection results
             detections = list()
-            # Create barrier
+            # Create barrier. This lets all following processing steps wait until the prediction is calculated.
             if self._exec_net.requests[request_id].wait(-1) == 0:
                 # Get output
                 output = self._exec_net.requests[request_id].outputs
@@ -566,8 +566,3 @@ class YoloGoalpostDetector(CandidateFinder):
         Runs the yolo network
         """
         self._yolo.predict()
-
-
-
-
-
