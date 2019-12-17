@@ -13,7 +13,7 @@ RUN apt-get update && \
 ADD sudoers /etc/sudoers
 
 # Add user
-ARG UID=1001
+ARG UID=150
 RUN useradd -M -d /catkin_ws -s /bin/bash -u $UID builder
 
 # Build empty install space in shared install space
