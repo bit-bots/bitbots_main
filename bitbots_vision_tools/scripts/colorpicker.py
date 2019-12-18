@@ -229,9 +229,9 @@ class Colorpicker(object):
 
         # Create data structure for the file
         data = dict(
-            red=color_indices[0].tolist(),
+            red=color_indices[2].tolist(),
             green=color_indices[1].tolist(),
-            blue=color_indices[2].tolist()
+            blue=color_indices[0].tolist()
         )
 
         # Save
