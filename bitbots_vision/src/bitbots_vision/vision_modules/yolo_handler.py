@@ -432,11 +432,13 @@ class YoloHandlerNCS2(YoloHandler):
                     confidence = scale * predictions[class_index]
                     if confidence < threshold:
                         continue
-                    h = h * orig_im_h
-                    w = w * orig_im_w
-                    x = x * orig_im_w - w / 2
-                    y = y * orig_im_h - h / 2
-                    objects.append([[x, y, h, w], confidence, j])
+                    h = int(h * orig_im_h)
+                    w = int(w * orig_im_w)
+                    x = x * orig_im_w - h / 2
+                    y = y * orig_im_h - w / 2
+                    list_of_coordinates = [int(x), int(y), int(h), int(w)]
+                    # Convert to int
+                    objects.append([list_of_coordinates, float(confidence), j])
         return objects
 
     def predict(self):
@@ -479,26 +481,28 @@ class YoloHandlerNCS2(YoloHandler):
                             self._image.shape[:-1],
                             layer_params,
                             self._confidence_threshold))
-            # Transpose detections
-            boxes, confidences, class_ids = list(map(list, zip(*detections)))
-            # Non-maximum Suppression
-            box_indices = cv2.dnn.NMSBoxes(boxes, confidences, self._confidence_threshold, self._nms_threshold)
-            # Iterate over filtered boxes
-            for i in box_indices:
-                # Get id
-                i = i[0]
-                # Get box
-                box = boxes[i]
-                # Convert the box position/size to int
-                box = list(map(int, box))
-                # Create the candidate
-                c = Candidate(*box, confidences[i])
-                # Append candidate to the right list depending on the class
-                class_id = class_ids[i]
-                if class_id == 0:
-                    self._ball_candidates.append(c)
-                if class_id == 1:
-                    self._goalpost_candidates.append(c)
+
+            if detections:
+                # Transpose detections
+                boxes, confidences, class_ids = list(map(list, zip(*detections)))
+                # Non-maximum Suppression
+                box_indices = cv2.dnn.NMSBoxes(boxes, confidences, self._confidence_threshold, self._nms_threshold)
+                # Iterate over filtered boxes
+                for i in box_indices:
+                    # Get id
+                    i = i[0]
+                    # Get box
+                    box = boxes[i]
+                    # Convert the box position/size to int
+                    box = list(map(int, box))
+                    # Create the candidate
+                    c = Candidate(*box, confidences[i])
+                    # Append candidate to the right list depending on the class
+                    class_id = class_ids[i]
+                    if class_id == 0:
+                        self._ball_candidates.append(c)
+                    if class_id == 1:
+                        self._goalpost_candidates.append(c)
 
 
 class YoloBallDetector(BallDetector):
