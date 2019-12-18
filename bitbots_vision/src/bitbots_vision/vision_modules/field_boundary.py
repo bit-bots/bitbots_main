@@ -71,7 +71,7 @@ class FieldBoundaryDetector(object):
     def get_mask(self, offset=0):
         # type: () -> np.array
         """
-        :param offest: A vertical field boundary offset shift
+        :param offset: A vertical field boundary offset shift
         :return: np.array
         """
         # Compute mask (cached)
