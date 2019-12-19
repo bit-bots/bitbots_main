@@ -1,18 +1,91 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+import os
+import cv2
 import rosbag
 import argparse
-import os
-from sensor_msgs.msg import Image
-import cv_bridge
-import cv2
-from cv_bridge import CvBridge
 import numpy as np
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
 
 try:
     input = raw_input
 except NameError:
     pass
+
+def yes_or_no_input(question, default=None):
+    # type: (str) -> bool
+    """
+    Prints a yes or no question and returns the answer.
+    
+    :param str question: Yes or no question
+    :param bool default: Default answer, if empty answer
+    :return bool: Input answer
+    """
+    answer = None
+    reply = None
+    extention = None
+
+    if default is None:
+        extention = " [y|n]"
+    elif default == True:
+        extention = " [Y|n]"
+    elif default == False:
+        extention = " [y|N]"
+
+    while answer is None:
+        reply = str(input(question + extention + ": ")).lower().strip()
+        if default is not None and reply == "":
+            answer = default
+        elif reply[:1] == 'y':
+            answer = True
+        elif reply[:1] == 'n':
+            answer =  False
+    return answer
+
+def int_input(question, min_int=None, max_int=None):
+    # type: (str, int, int) -> int
+    """
+    Prints a question about a int value and returns the answer.
+    
+    :param str question: Int question
+    :param int min_int: Minimum input value to be accepted
+    :param int max_int: Maximum input value to be accepted
+    :return int: Input answer
+    """
+    answer = None
+    reply = None
+    extention = None
+
+    # Construct full question with min and max
+    if min_int is not None and max_int is None:
+        extention = " [MIN: {}]".format(min_int)
+    elif min_int is None and max_int is not None:
+        extention = " [MAX: {}]".format(max_int)
+    elif min_int is not None and max_int is not None:
+        if not min_int <= max_int:
+            raise ValueError("min_int must be smaller or equal to max_int.")
+        else:
+            extention = " [{} - {}]: ".format(min_int, max_int)
+
+    while answer is None:
+        try:
+            reply = int(input(question + extention + ": ").strip())
+        except ValueError:
+            pass
+
+        # Check for min and max conditions
+        if reply is not None:
+            if min_int is None and max_int is None:
+                answer = reply
+            elif min_int is not None and max_int is None and min_int <= reply:
+                answer = reply
+            elif min_int is None and max_int is not None and reply >= max_int:
+                answer = reply
+            elif min_int and max_int and min_int <= reply <= max_int:
+                answer = reply
+    return answer
 
 parser = argparse.ArgumentParser("Extract images from a rosbag")
 
@@ -26,7 +99,7 @@ args = parser.parse_args()
 try:
     bag = rosbag.Bag(args.inputfile, "r")
 except IOError:
-    print("error opening bag")
+    print("Error while opening bag")
     exit(1)
 
 topics_and_type = bag.get_type_and_topic_info()
@@ -36,55 +109,47 @@ for topic, info in topics_and_type.topics.items():
     if info.msg_type == "sensor_msgs/Image":
         image_topics_and_info.append([topic, info])
 
-print(image_topics_and_info)
 if len(image_topics_and_info) == 0:
     print("No messages of type sensor_msgs/Image found in the provided rosbag")
     exit()
 elif len(image_topics_and_info) == 1:
     print(
-        "Found exactly one topic ({0}) of type sensor_msgs/Image with {1} messages".format(image_topics_and_info[0][0],
-                                                                                           image_topics_and_info[0][
-                                                                                               1].message_count))
+        "Found exactly one topic ({0}) of type sensor_msgs/Image with {1} messages".format(
+            image_topics_and_info[0][0],
+            image_topics_and_info[0][1].message_count))
     if image_topics_and_info[0][0] == args.topic:
         chosen_set_num = 0
     else:
-        selection = input("Do you want to extract images from this topic? y/n: ")
-        if selection != "y":
+        selection = yes_or_no_input("Do you want to extract images from this topic?", default=True)
+        if not selection:
             exit()
         chosen_set_num = 0
 else:
     print("Multiple topics with type sensor_msgs/Image:")
     specified_topic_in_topics = False
-    for i, topic_touple in enumerate(image_topics_and_info):
-        print("[" + str(i) + "] topic: " + str(topic_touple[0]) + " \t message_count: " + str(
-            topic_touple[1].message_count))
-        if topic_touple[0]:
+    for i, topic_tuple in enumerate(image_topics_and_info):
+        print("[" + str(i) + "] topic: " + str(topic_tuple[0]) + " \t message_count: " + str(
+            topic_tuple[1].message_count))
+        if topic_tuple[0] == args.topic:
             chosen_set_num = i
             specified_topic_in_topics = True
     if not specified_topic_in_topics:
-        try:
-            chosen_set_num = int(input("Make a selection [0-{}] or q: ".format(len(image_topics_and_info) - 1)))
-        except ValueError:
-            exit()
+        chosen_set_num = int_input("Make a selection", min_int=0, max_int=len(image_topics_and_info) - 1)
 
 chosen_set = image_topics_and_info[chosen_set_num]
 
 print("The dataset you have selected has a frequency of {0}".format(chosen_set[1].frequency))
 if args.n is None:
-    try:
-        n = int(input("Every n-th image will be saved. Please specify n:"))
-    except ValueError:
-        exit()
+    n = int_input("Every n-th image will be saved. Please specify n ", min_int=1)
 else:
     n = args.n
 
-print("Extracting every {}th image".format(n))
+print("Extracting every {}-th image.".format(n))
 
 try:
     os.mkdir(args.outputdir)
 except OSError:
-    answer = input("Directory already exists, continue? y/n: ")
-    if answer != "y":
+    if not yes_or_no_input("Directory already exists, continue?" ,default=True):
         exit()
 
 i = 0
@@ -108,8 +173,8 @@ for bag_msg in bag.read_messages(chosen_set[0]):
     cv2.imwrite(args.outputdir + "/img{:05d}".format(frame_number) + ".png", cv_image)
     frame_number += 1
     if frame_number % 10 == 0:
-        print("{}/{}".format(frame_number, chosen_set[1].message_count / n))
+        print("\r{}/{}".format(frame_number, chosen_set[1].message_count // n), end="")
 
-print("{}/{}".format(frame_number, chosen_set[1].message_count / n))
+print("\r{}/{}".format(frame_number, chosen_set[1].message_count // n))
 
 print("Image extraction complete.")
