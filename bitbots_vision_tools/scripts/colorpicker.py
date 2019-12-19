@@ -13,7 +13,7 @@ from sensor_msgs.msg import Image
 
 class Colorpicker(object):
     """
-    The bitbots_colorpicker node. Which is used to select colors that occur in the field.
+    The bitbots_colorpicker node, which is used to select colors that occur in the field.
     """
     def __init__(self):
         rospy.init_node('bitbots_colorpicker')
