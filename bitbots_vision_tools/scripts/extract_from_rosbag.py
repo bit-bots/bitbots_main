@@ -105,7 +105,7 @@ for bag_msg in bag.read_messages(chosen_set[0]):
     img.step = msg_from_bag.step
 
     cv_image = bridge.imgmsg_to_cv2(img, desired_encoding="passthrough")
-    cv2.imwrite(args.outputdir + "/img{:05d}".format(frame_number) + ".png", cv_image, )
+    cv2.imwrite(args.outputdir + "/img{:05d}".format(frame_number) + ".png", cv_image)
     frame_number += 1
     if frame_number % 10 == 0:
         print("{}/{}".format(frame_number, chosen_set[1].message_count / n))
