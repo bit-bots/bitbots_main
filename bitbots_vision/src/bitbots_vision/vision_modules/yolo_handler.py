@@ -434,9 +434,9 @@ class YoloHandlerNCS2(YoloHandler):
                         continue
                     h = int(h * orig_im_h)
                     w = int(w * orig_im_w)
-                    x = x * orig_im_w - h / 2
-                    y = y * orig_im_h - w / 2
-                    list_of_coordinates = [int(x), int(y), int(h), int(w)]
+                    x = x * orig_im_w - w / 2
+                    y = y * orig_im_h - h / 2
+                    list_of_coordinates = [int(x), int(y), int(w), int(h)]
                     # Convert to int
                     objects.append([list_of_coordinates, float(confidence), j])
         return objects
