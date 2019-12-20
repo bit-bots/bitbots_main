@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" />
+  <include file="$(find bitbots_animation_server)/launch/animation.launch" />
+  <node name="DynupNode" pkg="bitbots_dynup" type="DynupNode" output="screen" />
+</launch>
