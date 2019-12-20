@@ -79,7 +79,7 @@ class Colorpicker(object):
         colored_image = np.zeros_like(image)
         colored_image[:, :] = tuple(np.multiply(color, opacity).astype(np.uint8))
 
-        # Compose debug image with lines
+        # Compose debug image
         return cv2.add(cv2.bitwise_and(image, image, mask=255-mask),
                 cv2.add(colored_image*opacity, image*(1-opacity), mask=mask).astype(np.uint8))
 
