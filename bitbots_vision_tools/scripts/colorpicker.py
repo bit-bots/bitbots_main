@@ -242,7 +242,7 @@ class Colorpicker(object):
 
     def run(self):
         """
-        This function runs the program
+        Run the Colorpicker.
         """
         save = self.ui_loop()
 
