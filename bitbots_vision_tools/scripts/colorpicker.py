@@ -148,7 +148,7 @@ class Colorpicker(object):
                         selected_matrix[:,2]] = 0
                 # Check if we add stuff
                 elif self._left_click:
-                    # Set values for colors in color space
+                    # Add color values to color space
                     color_space[
                         selected_matrix[:,0],
                         selected_matrix[:,1],
