@@ -61,6 +61,80 @@ bitbots_splines::JointGoals WalkIK::calculateDirectly(const WalkResponse &ik_goa
   return result;
 }
 
+std::vector<double> solve_ik(tf2::Transform goal, bool left_leg) {
+  // the goal is the position of the sole link in the frame of the base_link
+
+  // load URDF
+  //todo do in init
+  urdf::JointConstSharedPtr hip_yaw_joint, hip_pitch_joint, ankle_pitch_joint;
+  urdf::Model model;
+  //load URDF
+  if (model.initParam("/robot_description") == 0) {
+    ROS_ERROR("Loading URDF failed");
+  }
+  if (left_leg) {
+    hip_yaw_joint = model.getJoint("LHipYaw");
+    hip_pitch_joint = model.getJoint("LHipPitch");
+    ankle_pitch_joint = model.getJoint("LAnklePitch");
+  } else {
+    hip_yaw_joint = model.getJoint("RHipYaw");
+    hip_pitch_joint = model.getJoint("RHipPitch");
+    ankle_pitch_joint = model.getJoint("RAnklePitch");
+  }
+
+  // first do static transform from base link to hip yaw
+  tf2::Transform goal_in_hip_yaw;
+
+  tf2::Transform trunk_to_hip_yaw;
+  trunk_to_hip_yaw.setOrigin({hip_yaw_joint->parent_to_joint_origin_transform.position.x,
+                              hip_yaw_joint->parent_to_joint_origin_transform.position.y,
+                              hip_yaw_joint->parent_to_joint_origin_transform.position.z});
+  trunk_to_hip_yaw.setRotation({0, 0, 0, 1});
+  // goal in new frame
+  goal_in_hip_yaw = goal * trunk_to_hip_yaw.inverse();
+
+  // hip yaw is the only way to do yaw rotation, so it has to be the same as the goal
+  double roll_goal, pitch_goal, yaw_goal;
+  tf2::Matrix3x3(goal_in_hip_yaw.getRotation()).getRPY(roll_goal, pitch_goal, yaw_goal);
+  float hip_yaw = yaw_goal;
+
+  // since the axises do not cross in the hip, we are rotating the leg on a half circle
+  // with the angle yaw and the radius of the distance between hip yaw and hip pitch
+  // get the hip_pitch in the hip_yaw frame
+  tf2::Transform hip_pitch_in_hip_yaw;
+  hip_pitch_in_hip_yaw.setOrigin({hip_pitch_joint->parent_to_joint_origin_transform.position.x
+                                      - hip_yaw_joint->parent_to_joint_origin_transform.position.x,
+                                  hip_pitch_joint->parent_to_joint_origin_transform.position.y
+                                      - hip_yaw_joint->parent_to_joint_origin_transform.position.y,
+                                  hip_pitch_joint->parent_to_joint_origin_transform.position.z
+                                      - hip_yaw_joint->parent_to_joint_origin_transform.position.z});
+  hip_pitch_in_hip_yaw.setRotation({0, 0, 0, 1});
+  // create rotation transform for yaw
+  tf2::Transform yaw_rotation;
+  yaw_rotation.setOrigin({0, 0, 0});
+  tf2::Quaternion yaw_rotation_quat;
+  yaw_rotation_quat.setRPY(0, 0, yaw_goal);
+  yaw_rotation.setRotation(yaw_rotation_quat);
+  // rotate the hip pitch in yaw transform
+  tf2::Transform rotated_hip_pitch_in_hip_yaw = hip_pitch_in_hip_yaw * yaw_rotation;
+  // get the goal in the new rotated frame of the hip pitch servo
+  // we know that goal_in_hip_yaw = goal_in_hip_pitch * rotated_hip_pitch_in_hip_yaw
+  // therefore
+  tf2::Transform goal_in_hip_pitch = goal_in_hip_yaw * rotated_hip_pitch_in_hip_yaw.inverse();
+
+  // now we need to substract the static transform from the last joint to the foot sole from the goal
+  tf2::Transform goal_in_ankle_pitch;
+  tf2::Transform ankle_goal_in_hip_pitch = goal_in_hip_pitch * goal_in_ankle_pitch.inverse();
+
+  // now we can solve the remaining joint
+  // we know that the knee only bends in one direction
+
+  //todo remember to use the center point of the joint axis not where the motor horn is
+  //todo check if forward kinematic equal to result
+  //todo check if joint limits are okay
+  //
+}
+
 bitbots_splines::JointGoals WalkIK::calculate(const std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
   SWRI_PROFILE("IK");
   bool success;
