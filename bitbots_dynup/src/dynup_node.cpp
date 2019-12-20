@@ -55,7 +55,7 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   if (std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose>> poses = getCurrentPoses()) {
     DynupRequest request;
     request.l_foot_pose = std::get<0>(poses.value());
-    request.front = true;
+    request.front = goal->front;
     request.trunk_pose = std::get<1>(poses.value());
     request.l_hand_pose = std::get<2>(poses.value());
     request.r_hand_pose = std::get<3>(poses.value());
@@ -88,7 +88,7 @@ void DynUpNode::loopEngine() {
       failed_tick_counter++;
     }
     if (feedback.percent_done == 100) {
-      ROS_WARN("Completed dynup with %d failed ticks.", failed_tick_counter);
+      ROS_ERROR("Completed dynup with %d failed ticks.", failed_tick_counter);
       break;
     }
 
