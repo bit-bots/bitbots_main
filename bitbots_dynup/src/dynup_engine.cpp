@@ -309,7 +309,6 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
   initializeSplines(goals.l_hand_pose, l_hand_spline_);
   initializeSplines(goals.r_hand_pose, r_hand_spline_);
   if(goals.front){
-  //TODO decide on which side we are lying on
      calcFrontSplines();
   }else{
      calcBackSplines();
