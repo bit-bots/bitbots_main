@@ -89,7 +89,7 @@ class Colorpicker(object):
         Prints some usage information.
         """
         rospy.loginfo(
-            "Welcome to the Colorpicker\n"
+            "Welcome to the Colorpicker.\n"
             "Click to select the colors in the OpenCV window.\n"
             "Use <shift> and <left click> to remove colors.\n"
             "To undo a step press 'u'.\n"
