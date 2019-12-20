@@ -115,7 +115,7 @@ class Colorpicker(object):
         while not rospy.is_shutdown():
             # Copy image for the canvas
             canvas = self._image.copy()
-            # Get the mouse self._mouse_coordinates
+            # Get the mouse coordinates
             x, y = self._mouse_coord
 
             # Get the values for the selection box
