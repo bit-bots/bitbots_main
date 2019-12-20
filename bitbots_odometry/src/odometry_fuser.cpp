@@ -41,7 +41,7 @@ OdometryFuser::OdometryFuser() {
   _imu_data.orientation = tf2::toMsg(dummy_orientation);
 
   ros::Subscriber imu_subscriber = n.subscribe("/imu/data", 1, &OdometryFuser::imuCallback, this);
-  ros::Subscriber odom_subscriber = n.subscribe("/walk_odometry", 1, &OdometryFuser::odomCallback, this);
+  ros::Subscriber odom_subscriber = n.subscribe("/motion_odometry", 1, &OdometryFuser::odomCallback, this);
 
   tf = geometry_msgs::TransformStamped();
 
@@ -90,11 +90,11 @@ OdometryFuser::OdometryFuser() {
 
       // combine orientations to new quaternion if IMU is active, use purely odom otherwise
       tf2::Quaternion new_orientation;
-      if(imu_active){
+      if (imu_active) {
         new_orientation.setRPY(imu_roll, imu_pitch, walking_yaw);
-       }else{
+      } else {
         new_orientation = odom_orientation;
-       }
+      }
 
       // combine it all into a tf
       tf.header.stamp = ros::Time::now();

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_hcm</name>
-  <version>1.0.0</version>
+  <version>1.0.2</version>
   <description>The bitbots_hcm package provides a state machine which controlls the current state of the robot.
   It will perform falling and standing-up handling by its own. It will also decide which other nodes can write motor
   goal positions.</description>

@@ -22,7 +22,7 @@ KickNode::KickNode() :
   ik_.init(kinematic_model);
 
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
-  support_foot_publisher_ = node_handle_.advertise<std_msgs::Char>("dynamic_kick_support_state", 1);
+  support_foot_publisher_ = node_handle_.advertise<std_msgs::Char>("dynamic_kick_support_state", 1, /* latch = */ true);
   cop_l_subscriber_ = node_handle_.subscribe("cop_l", 1, &KickNode::copLCallback, this);
   cop_r_subscriber_ = node_handle_.subscribe("cop_r", 1, &KickNode::copRCallback, this);
   server_.start();
@@ -81,6 +81,7 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   // TODO: maybe switch to goal callback to be able to reject goals properly
   ROS_INFO("Accepted new goal");
   engine_.reset();
+  was_support_foot_published_ = false;
 
   std::pair<geometry_msgs::Pose, geometry_msgs::Pose> foot_poses;
   try {
@@ -215,7 +216,11 @@ void KickNode::publishGoals(const bitbots_splines::JointGoals &goals) {
 void KickNode::publishSupportFoot(bool is_left_kick) {
   std_msgs::Char msg;
   msg.data = !is_left_kick ? 'l' : 'r';
-  support_foot_publisher_.publish(msg);
+  // only publish one time per kick
+  if(!was_support_foot_published_){
+    support_foot_publisher_.publish(msg);
+    was_support_foot_published_ = true;
+  }
 }
 
 }

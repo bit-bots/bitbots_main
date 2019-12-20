@@ -13,10 +13,10 @@
             <group if="$(arg use_game_settings)">
                 <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
             </group>
-        <node name="hcm" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" respawn="true">
+        <node name="hcm" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" >
         </node>
     </group>
 
-    <node name="pause" pkg="bitbots_hcm" type="pause.py" respawn="true"/>
+    <node name="pause" pkg="bitbots_hcm" type="pause.py" />
 
 </launch>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_animation_server</name>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <description>The bitbots_animation_server package provides an action server which interpolates keyframe animations and
   sends the next motor values to the hardware control manager.</description>
 

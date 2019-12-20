@@ -8,9 +8,9 @@
 #include <nav_msgs/Odometry.h>
 
 
-class WalkOdometry {
+class MotionOdometry {
  public:
-  WalkOdometry();
+  MotionOdometry();
  private:
   ros::Time joint_update_time_;
   char current_support_state_;
@@ -23,8 +23,7 @@ class WalkOdometry {
   void odomCallback(nav_msgs::Odometry msg);
 };
 
-WalkOdometry::WalkOdometry() {
-  // todo think about if this node should be integrated into the walk node
+MotionOdometry::MotionOdometry() {
   ros::NodeHandle n("~");
   bool publish_walk_odom_tf;
   n.param<bool>("/publish_walk_odom_tf", publish_walk_odom_tf, false);
@@ -32,13 +31,15 @@ WalkOdometry::WalkOdometry() {
   previous_support_state_ = 'n';
   std::string current_support_link = "r_sole";
   std::string next_support_link;
-  ros::Subscriber support_state_sub =
-      n.subscribe("/walk_support_state", 1, &WalkOdometry::supportCallback, this, ros::TransportHints().tcpNoDelay());
+  ros::Subscriber walk_support_state_sub =
+      n.subscribe("/walk_support_state", 1, &MotionOdometry::supportCallback, this, ros::TransportHints().tcpNoDelay());
+  ros::Subscriber kick_support_state_sub =
+      n.subscribe("/dynamic_kick_support_state", 1, &MotionOdometry::supportCallback, this, ros::TransportHints().tcpNoDelay());
   ros::Subscriber joint_state_sub =
-      n.subscribe("/joint_states", 1, &WalkOdometry::jointStateCb, this, ros::TransportHints().tcpNoDelay());
-  ros::Subscriber odom_subscriber = n.subscribe("/walk_engine_odometry", 1, &WalkOdometry::odomCallback, this);
+      n.subscribe("/joint_states", 1, &MotionOdometry::jointStateCb, this, ros::TransportHints().tcpNoDelay());
+  ros::Subscriber odom_subscriber = n.subscribe("/walk_engine_odometry", 1, &MotionOdometry::odomCallback, this);
 
-  ros::Publisher pub_odometry = n.advertise<nav_msgs::Odometry>("/walk_odometry", 1);
+  ros::Publisher pub_odometry = n.advertise<nav_msgs::Odometry>("/motion_odometry", 1);
   tf2::Transform odometry_to_support_foot = tf2::Transform();
   // set the origin to the center of the robot which is placed -0.1m next to the right (initial) foot 
   odometry_to_support_foot.setOrigin({0, -0.1, 0});
@@ -139,7 +140,7 @@ WalkOdometry::WalkOdometry() {
   }
 }
 
-void WalkOdometry::supportCallback(const std_msgs::Char msg) {
+void MotionOdometry::supportCallback(const std_msgs::Char msg) {
   current_support_state_ = msg.data;
 
   // remember if we recieved first support state, only remember left or right
@@ -148,12 +149,12 @@ void WalkOdometry::supportCallback(const std_msgs::Char msg) {
   }
 }
 
-void WalkOdometry::jointStateCb(const sensor_msgs::JointState &msg) {
+void MotionOdometry::jointStateCb(const sensor_msgs::JointState &msg) {
   current_joint_states_ = msg;
   joint_update_time_ = ros::Time::now();
 }
 
-void WalkOdometry::odomCallback(nav_msgs::Odometry msg){
+void MotionOdometry::odomCallback(nav_msgs::Odometry msg){
   current_odom_msg_ = msg;
 }
 
@@ -161,5 +162,5 @@ void WalkOdometry::odomCallback(nav_msgs::Odometry msg){
 int main(int argc, char **argv) {
   ros::init(argc, argv, "bitbots_walk_odometry");
 
-  WalkOdometry o;
+  MotionOdometry o;
 }
