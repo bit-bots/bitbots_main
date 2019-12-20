@@ -99,7 +99,7 @@ class Colorpicker(object):
 
     def _image_callback(self, msg):
         """
-        Image message callback
+        Image message callback.
 
         :param msg: Image message
         """
