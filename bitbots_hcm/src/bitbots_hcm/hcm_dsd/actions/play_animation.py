@@ -153,7 +153,7 @@ class PlayAnimationMotorOff(AbstractPlayAnimation):
 class PlayAnimationDynup(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(PlayAnimationDynup, self).__init__(blackboard, dsd, parameters=None)
-        self.front = parameters.get('front')
+        self.front = parameters.get('front', 0)
         self.first_perform = True
 
     def perform(self, reevaluate=False):
@@ -202,10 +202,7 @@ class PlayAnimationDynup(AbstractActionElement):
                 rospy.logwarn("Dynup server did not start.")
                 return False
         goal = bitbots_msgs.msg.DynUpGoal()
-        if self.front == "True":
-            goal.front = 1
-        elif self.front == "False":
-            goal.front = 0
+        goal.front = self.front
         self.blackboard.dynup_action_client.send_goal(goal)
         return True
 
