@@ -141,7 +141,7 @@ class Colorpicker(object):
 
                 # Check if we do or or undo
                 if self._undo_click:
-                    # Remove values in color space
+                    # Remove color values from color space
                     color_space[
                         selected_matrix[:,0],
                         selected_matrix[:,1],
