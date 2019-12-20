@@ -202,7 +202,10 @@ class PlayAnimationDynup(AbstractActionElement):
                 rospy.logwarn("Dynup server did not start.")
                 return False
         goal = bitbots_msgs.msg.DynUpGoal()
-        goal.front = bool(self.front)
+        if self.front == "True":
+            goal.front = 1
+        elif self.front == "False":
+            goal.front = 0
         self.blackboard.dynup_action_client.send_goal(goal)
         return True
 
