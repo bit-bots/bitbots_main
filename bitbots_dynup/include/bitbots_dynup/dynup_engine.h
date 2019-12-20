@@ -3,6 +3,7 @@
 
 #include <string>
 #include <optional>
+#include <cmath>
 #include <bitbots_splines/SmoothSpline.hpp>
 #include <bitbots_splines/SplineContainer.hpp>
 #include <bitbots_splines/pose_spline.h>
