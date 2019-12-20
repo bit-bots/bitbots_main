@@ -221,7 +221,7 @@ class Colorpicker(object):
             # Set to default
             input_path = "~/.ros/color_space.pickle"
 
-        # Create abs path
+        # Create absolute path
         input_path = os.path.abspath(os.path.expanduser(input_path))
 
         # Get the color values
