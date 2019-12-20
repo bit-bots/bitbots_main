@@ -5,10 +5,10 @@ $Falling
     FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront
     FALLING_BACK --> @CancelGoals, @PlayAnimationFallingBack
     NOT_FALLING --> $Fallen
-        FALLEN_FRONT --> @CancelGoals, @PlayAnimationDynup
-        FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationDynup
-        FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight, @PlayAnimationDynup
-        FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft, @PlayAnimationDynup
+        FALLEN_FRONT --> @CancelGoals, @PlayAnimationDynup + front:True
+        FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationDynup + front:False
+        FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight
+        FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft
         NOT_FALLEN --> $ExternalAnimation
             ANIMATION_RUNNING --> @StayAnimationRunning
             FREE --> $Walking
