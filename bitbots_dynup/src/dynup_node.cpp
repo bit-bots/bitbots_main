@@ -25,22 +25,8 @@ DynUpNode::DynUpNode() :
 void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level) {
   engine_rate_ = config.engine_rate;
 
-  DynUpParams params = DynUpParams();
-  //TODO actually set parameters like
-  //params.leg_min_length = config.leg_min_length;
-  params.foot_distance = config.foot_distance;
-  params.rise_time = config.rise_time;
-  params.trunk_x = config.trunk_x;
-  params.trunk_height = config.trunk_height;
-  params.trunk_pitch = config.trunk_pitch;
-  params.arm_max_length = config.arm_max_length;
-  params.leg_min_length = config.leg_min_length;
-  params.time_hands_side = config.time_hands_side;
-  params.time_foot_close = config.time_foot_close;
-  params.time_hands_front = config.time_hands_front;
-  params.time_foot_ground = config.time_foot_ground;
-  params.time_torso_45 = config.time_torso_45;
-  params.time_to_squat = config.time_to_squat;
+  DynUpConfig params = config;
+  //TODO set good default parameters
 
   engine_.setParams(params);
 
