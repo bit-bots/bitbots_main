@@ -9,28 +9,12 @@
 #include <bitbots_splines/pose_spline.h>
 #include <bitbots_splines/abstract_engine.h>
 #include <bitbots_dynup/DynUpConfig.h>
-#include <tf2/convert.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include "dynup_stabilizer.h"
 
 namespace bitbots_dynup {
 
-struct DynUpParams {
-  double leg_min_length;
-  double arm_max_length;
-  double time_foot_close;
-  double time_hands_front;
-  double time_hands_side;
-  double time_foot_ground;
-  double time_torso_45;
-  double time_to_squat;
 
-  double foot_distance;
-  double rise_time;
-  double trunk_x;
-  double trunk_height;
-  double trunk_pitch;
-};
 
 class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupResponse> {
  public:
@@ -62,7 +46,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   bitbots_splines::PoseSpline l_hand_spline_;
   bitbots_splines::PoseSpline trunk_spline_;
   bitbots_splines::PoseSpline r_hand_spline_;
-  DynUpParams params_;
+  DynUpConfig params_;
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
