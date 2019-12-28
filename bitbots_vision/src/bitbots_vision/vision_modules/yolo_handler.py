@@ -325,7 +325,7 @@ class YoloHandlerNCS2(YoloHandler):
         rospy.loginfo("Creating Inference Engine...")
 
         try:
-        ie = IECore()
+            ie = IECore()
         except NameError:
             rospy.logerr("Please install/source OpenVino environment to use the NCS2 YOLO Handler.", logger_name="vision_yolo")
             raise
