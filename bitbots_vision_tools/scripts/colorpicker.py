@@ -140,7 +140,7 @@ class Colorpicker(object):
                 # Copy the latest color space
                 color_space = self._history[-1].copy()
 
-                # Check if we do or or undo
+                # Check for left click or shift + left click
                 if self._undo_click:
                     # Remove color values from color space
                     color_space[
