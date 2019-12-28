@@ -55,12 +55,8 @@ class Colorpicker(object):
         :param flags: Callback flags
         :param param: Some unused parameter
         """
-        if flags == (cv2.EVENT_FLAG_SHIFTKEY + cv2.EVENT_FLAG_LBUTTON):
-            # Subtracts colors
-            self._undo_click = True
-        elif event == cv2.EVENT_LBUTTONUP:
-            # Adds colors
-            self._left_click = True
+        self._undo_click = (flags == (cv2.EVENT_FLAG_SHIFTKEY + cv2.EVENT_FLAG_LBUTTON))
+        self._left_click = (not self._undo_click and event == cv2.EVENT_LBUTTONUP)
 
         # Set self._mouse_coordinates
         self._mouse_coord = (x, y)
@@ -181,7 +177,6 @@ class Colorpicker(object):
 
             # Show canvas
             cv2.imshow("Colorpicker", canvas)
-
 
             # Key checks for UI events
             key = cv2.waitKey(1) & 0xFF
