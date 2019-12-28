@@ -167,13 +167,10 @@ class Colorpicker(object):
 
             # Draw selection area
             cv2.rectangle(canvas,
-                (
-                    box_min_x,
-                    box_min_y
-                ), (
-                    box_max_x,
-                    box_max_y,),
-                (0, 255, 0), 2)
+                (box_min_x, box_min_y),
+                (box_max_x, box_max_y),
+                (0, 255, 0),
+                2)
 
             # Show canvas
             cv2.imshow("Colorpicker", canvas)
