@@ -208,7 +208,8 @@ class Colorpicker(object):
         Saves the current colorspace in a pickle file.
         """
         # Get user input
-        input_path = input("Enter color space file path: ")
+        input_path = input( "Press enter to save look up table to '{}' "
+                            "or enter output file path: ".format(self._default_path))
 
         # Check if the user entered something
         if input_path == "":
