@@ -260,7 +260,7 @@ class PixelListColorDetector(ColorDetector):
         'field_color_detector_path'
     """
 
-    def __init__(self, config, package_path):
+    def __init__(self, config, package_path, color_space_path_param='field_color_detector_path'):
         # type:(dict, str) -> None
         """
         Initialization of PixelListColorDetector.
@@ -270,6 +270,8 @@ class PixelListColorDetector(ColorDetector):
         :return: None
         """
         self._package_path = package_path
+
+        self.color_space_path_param = color_space_path_param
 
         # Initialization of parent ColorDetector.
         super(PixelListColorDetector, self).__init__(config)
@@ -287,10 +289,10 @@ class PixelListColorDetector(ColorDetector):
 
         super(PixelListColorDetector, self).update_config(config)
 
-        if ros_utils.config_param_change(tmp_config, config, 'field_color_detector_path'):
+        if ros_utils.config_param_change(tmp_config, config, self.color_space_path_param):
             # concatenate path to file containing the accepted colors of base color space
-            path = os.path.join(self._package_path, 'config/color_spaces')
-            color_space_path = os.path.join(path, config['field_color_detector_path'])
+            path = os.path.join(self._package_path, 'config', 'color_spaces')
+            color_space_path = os.path.join(path, config[self.color_space_path_param])
             self._color_space = self._init_color_space(color_space_path)
 
     def _init_color_space(self, color_path):
