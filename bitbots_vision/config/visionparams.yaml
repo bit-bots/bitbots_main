@@ -23,6 +23,7 @@ ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'  # ROS 
 
 fcnn_model_path: '2019_06_timon_basler'  # Name of the ball fcnn model
 yolo_darknet_model_path: '2019_07_03_jonas_yolo'  # Name of the yolo model
+yolo_openvino_model_path: 'test'  # Name of the yolo model
 ball_fcnn_threshold: .6  # Minimal activation for a pixel in the fcnn heatmap to be considered
 ball_fcnn_expand_stepsize: 4  # Expand stepsize for the ball fcnn clustering
 ball_fcnn_pointcloud_stepsize: 10  # Pointcloud stepsize for the ball fcnn clustering
