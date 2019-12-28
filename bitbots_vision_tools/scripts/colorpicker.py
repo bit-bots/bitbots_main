@@ -178,10 +178,10 @@ class Colorpicker(object):
             # Key checks for UI events
             key = cv2.waitKey(1) & 0xFF
 
-            # Increase selection size
+            # Increase selection box size
             if key == ord("+"):
                 self._box_size += int(self._box_size * 0.2) + 1
-            # Reduce selection size
+            # Reduce selection box size
             if key == ord("-") and self._box_size > 1:
                 self._box_size -= int(self._box_size * 0.2) - 1
             # Undo
