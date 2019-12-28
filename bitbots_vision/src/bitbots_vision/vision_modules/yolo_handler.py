@@ -4,6 +4,7 @@ import abc
 import rospy
 import numpy as np
 from math import exp
+from .candidate import CandidateFinder, Candidate
 try:
     from pydarknet import Detector, Image
 except ImportError:
@@ -12,7 +13,6 @@ try:
     from openvino.inference_engine import IENetwork, IECore
 except ImportError:
     rospy.logerr("Not able to run YOLO on the Intel NCS2 TPU! The OpenVINO SDK should be installed to run this hardware acceleration", logger_name="vision_yolo")
-from .candidate import CandidateFinder, BallDetector, Candidate
 
 
 class YoloHandler():
@@ -25,18 +25,33 @@ class YoloHandler():
         """
         self._ball_candidates = None
         self._goalpost_candidates = None
+        self._image = None
+        # Set config
+        self.set_config(config)
 
+    def set_config(self, config):
+        """
+        Set a new config dict, for parameter adjestments
+
+        :param dict: dict with config values
+        """
         # Set if values should be cached
         self._caching = config['caching']
+        self._nms_threshold = config['yolo_nms_threshold']
+        self._confidence_threshold = config['yolo_confidence_threshold']
+        self._config = config
 
-    @abc.abstractmethod
     def set_image(self, img):
         """
-        Image setter abstact method. (Cached)
+        Set a image for yolo. This also resets the caches.
 
-        :param img: Image
+        :param image: current vision image
         """
-        raise NotImplementedError
+        # Set image
+        self._image = img
+        # Reset cached stuff
+        self._goalpost_candidates = None
+        self._ball_candidates = None
 
     @abc.abstractmethod
     def predict(self):
@@ -88,9 +103,6 @@ class YoloHandlerDarknet(YoloHandler):
 
         # Setup detector
         self._net = Detector(bytes(configpath, encoding="utf-8"), bytes(weightpath, encoding="utf-8"), 0.5, bytes(datapath, encoding="utf-8"))
-        # Set cached stuff
-        self._image = None
-        self._results = None
         super(YoloHandlerDarknet, self).__init__(config, model_path)
 
     def _generate_dummy_obj_data_file(self, obj_name_path):
@@ -106,50 +118,35 @@ class YoloHandlerDarknet(YoloHandler):
         with open('/tmp/obj.data', 'w') as f:
             f.write(obj_data)
 
-    def set_image(self, image):
-        """
-        Set a image for yolo. This also resets the caches.
-
-        :param image: current vision image
-        """
-        # Check if image has been processed
-        if np.array_equal(image, self._image):
-            return
-        # Set image
-        self._image = image
-        # Reset cached stuff
-        self._results = None
-        self._goalpost_candidates = None
-        self._ball_candidates = None
-
     def predict(self):
         """
         Runs the neural network
         """
         # Check if cached
-        if self._results is None or not self._caching:
+        if self._ball_candidates is None or self._goalpost_candidates is None or not self._caching:
             # Run neural network
-            self._results = self._net.detect(Image(self._image))
+            results = self._net.detect(Image(self._image))
             # Init lists
             self._ball_candidates = []
             self._goalpost_candidates = []
             # Go through results
-            for out in self._results:
+            for out in results:
                 # Get class id
                 class_id = out[0]
                 # Get confidence
                 confidence = out[1]
-                # Get candidate position and size
-                x, y, w, h = out[2]
-                x = x - int(w // 2)
-                y = y - int(h // 2)
-                # Create candidate
-                c = Candidate(int(x), int(y), int(w), int(h), confidence)
-                # Append candidate to the right list depending on the class
-                if class_id == b"ball":
-                    self._ball_candidates.append(c)
-                if class_id == b"goalpost":
-                    self._goalpost_candidates.append(c)
+                if confidence > self._confidence_threshold:
+                    # Get candidate position and size
+                    x, y, w, h = out[2]
+                    x = x - int(w // 2)
+                    y = y - int(h // 2)
+                    # Create candidate
+                    c = Candidate(int(x), int(y), int(w), int(h), confidence)
+                    # Append candidate to the right list depending on the class
+                    if class_id == b"ball":
+                        self._ball_candidates.append(c)
+                    if class_id == b"goalpost":
+                        self._goalpost_candidates.append(c)
 
 class YoloHandlerOpenCV(YoloHandler):
     """
@@ -159,18 +156,10 @@ class YoloHandlerOpenCV(YoloHandler):
         # Build paths
         weightpath = os.path.join(model_path, "yolo_weights.weights")
         configpath = os.path.join(model_path, "config.cfg")
-        # Set config
-        self._config = config
-        # Settings
-        self._nms_threshold = 0.4
-        self._confidence_threshold = 0.5
         # Setup neural network
         self._net = cv2.dnn.readNet(weightpath, configpath)
         # Set default state to all cached values
         self._image = None
-        self._blob = None
-        self._outs = None
-        self._results = None
         super(YoloHandlerOpenCV, self).__init__(config, model_path)
 
     def _get_output_layers(self):
@@ -183,34 +172,17 @@ class YoloHandlerOpenCV(YoloHandler):
 
         return output_layers
 
-    def set_image(self, image):
-        """
-        Set a image for yolo. This also resets the caches.
-
-        :param image: current vision image
-        """
-        # Check if image has been processed
-        if np.array_equal(image, self._image):
-            return
-        # Set image
-        self._image = image
-        self._width = image.shape[1]
-        self._height = image.shape[0]
-        # Create blob
-        self._blob = cv2.dnn.blobFromImage(image, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
-        # Reset cached stuff
-        self._outs = None
-        self._goalpost_candidates = None
-        self._ball_candidates = None
-
     def predict(self):
         """
         Runs the neural network
         """
         # Check if cached
-        if self._outs is None or not self._caching:
+        if self._ball_candidates is None or self._goalpost_candidates is None or not self._caching:
             # Set image
-            self._net.setInput(self._blob)
+            blob = cv2.dnn.blobFromImage(self._image, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
+            self._net.setInput(blob)
+            self._width = self._image.shape[1]
+            self._height = self._image.shape[0]
             # Run net
             self._outs = self._net.forward(self._get_output_layers())
             # Create lists
@@ -228,8 +200,8 @@ class YoloHandlerOpenCV(YoloHandler):
                     class_id = np.argmax(scores)
                     # Get confidence from score
                     confidence = scores[class_id]
-                    # Static threshold
-                    if confidence > 0.5:
+                    # First threshold to decrease candidate count and inscrease performance
+                    if confidence > self._confidence_threshold:
                         # Get center point of the candidate
                         center_x = int(detection[0] * self._width)
                         center_y = int(detection[1] * self._height)
@@ -510,7 +482,7 @@ class YoloHandlerNCS2(YoloHandler):
                         self._goalpost_candidates.append(c)
 
 
-class YoloBallDetector(BallDetector):
+class YoloBallDetector(CandidateFinder):
     """
     A ball detector using the yolo neural network
     """

@@ -14,7 +14,7 @@ from humanoid_league_msgs.msg import BallsInImage, LineInformationInImage, \
     ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, \
     GoalPartsInImage, FieldBoundaryInImage, Speak
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
-    fcnn_handler, live_fcnn_03, dummy_ballfinder, obstacle, yolo_handler, ros_utils
+    fcnn_handler, live_fcnn_03, obstacle, yolo_handler, ros_utils, candidate
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config, ColorSpace
 try:
@@ -151,6 +151,9 @@ class Vision:
         """
         self._register_or_update_all_publishers(config)
 
+        # Set max number of balls
+        self._max_balls = config['ball_candidate_max_count']
+
         # Set some thresholds
         # Brightness threshold which determines if the camera cap is on the camera.
         self._blind_threshold = config['vision_blind_threshold']
@@ -158,6 +161,8 @@ class Vision:
         self._ball_candidate_threshold = config['ball_candidate_rating_threshold']
         # Maximum offset for balls over the convex field boundary
         self._ball_candidate_y_offset = config['ball_candidate_field_boundary_y_offset']
+        # Maximum offset for balls over the convex field boundary
+        self._goal_post_field_boundary_y_offset = config['goal_post_field_boundary_y_offset']
 
         self._use_dynamic_color_space = config['dynamic_color_space_active']
 
@@ -281,7 +286,7 @@ class Vision:
 
         # If dummy ball detection is activated, set the dummy ballfinder as ball detector
         if config['neural_network_type'] == 'dummy':
-            self._ball_detector = dummy_ballfinder.DummyBallDetector()
+            self._ball_detector = candidate.DummyCandidateFinder()
             # If we don't use YOLO set the conventional goalpost detector.
             self._goalpost_detector = obstacle.WhiteObstacleDetector(self._obstacle_detector)
 
@@ -327,6 +332,9 @@ class Vision:
                     self._ball_detector = yolo_handler.YoloBallDetector(config, self._yolo)
                     self._goalpost_detector = yolo_handler.YoloGoalpostDetector(config, self._yolo)
                     rospy.loginfo(config['neural_network_type'] + " vision is running now", logger_name="vision_yolo")
+            # For other changes only modify the config
+            elif ros_utils.config_param_change(self._config, config, r'yolo_'):
+                self._yolo.set_config(config)
 
         # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
         if config['neural_network_type'] in ['yolo_ncs2']:
@@ -484,14 +492,17 @@ class Vision:
         # Ball #
         ########
 
-        # Grab ball candidates from ball detector
-        top_ball_candidate = self._ball_detector.get_top_ball_under_convex_field_boundary(self._field_boundary_detector, self._ball_candidate_y_offset)
-        # check whether ball candidates are over rating threshold
-        if top_ball_candidate and top_ball_candidate.get_rating() > self._ball_candidate_threshold:
-            # Build the ball message which will be embedded in the balls message
-            ball_msg = ros_utils.build_ball_msg(top_ball_candidate)
-            # Create a list of balls, currently only containing the top candidate
-            list_of_balls = [ball_msg]
+        # Get a number of top balls under the field boundary, which have an high enough rating
+        top_balls = \
+            candidate.Candidate.rating_threshold(
+                self._field_boundary_detector.candidates_under_convex_field_boundary(
+                    self._ball_detector.get_top_candidates(count=self._max_balls),
+                    self._ball_candidate_y_offset),
+                self._ball_candidate_threshold)
+        # check whether there are ball candidates
+        if top_balls:
+            # Convert ball cancidate list to ball message list
+            list_of_balls = map(ros_utils.build_ball_msg, top_balls)
             # Create balls msg with the list of balls
             balls_msg = ros_utils.build_balls_msg(image_msg.header, list_of_balls)
             # Publish balls
@@ -521,10 +532,15 @@ class Vision:
         # Goal #
         ########
 
+        # Get all goalposts under field boundary
+        goal_posts = self._field_boundary_detector.candidates_under_convex_field_boundary(
+            self._goalpost_detector.get_candidates(),
+            self._goal_post_field_boundary_y_offset)
+
         # Get goalpost msgs and add them to the detected goal parts list
-        goal_parts = ros_utils.build_goalpost_msgs(self._goalpost_detector.get_candidates())
+        goal_posts_msg = ros_utils.build_goalpost_msgs(goal_posts)
         # Create goalparts msg
-        goal_parts_msg = ros_utils.build_goal_parts_msg(image_msg.header, goal_parts)
+        goal_parts_msg = ros_utils.build_goal_parts_msg(image_msg.header, goal_posts_msg)
         # Check if there is a goal
         if goal_parts_msg:
             # If we have a goal, lets publish it
@@ -646,9 +662,17 @@ class Vision:
             (255, 0, 0),
             thickness=3
         )
-        # Draw goal posts
+        # Draw all goal posts
         self._debug_image_creator.draw_obstacle_candidates(
             self._goalpost_detector.get_candidates(),
+            (180, 180, 180),
+            thickness=3
+        )
+        # Draw goal posts which start in the field
+        self._debug_image_creator.draw_obstacle_candidates(
+            self._field_boundary_detector.candidates_under_convex_field_boundary(
+                self._goalpost_detector.get_candidates(),
+                self._goal_post_field_boundary_y_offset),
             (255, 255, 255),
             thickness=3
         )
@@ -669,17 +693,22 @@ class Vision:
         )
         # Draw possible ball candidates under the field boundary
         self._debug_image_creator.draw_ball_candidates(
-            self._ball_detector.get_sorted_top_balls_under_convex_field_boundary(
-                self._field_boundary_detector,
-                self._ball_candidate_y_offset),
+            candidate.Candidate.rating_threshold(
+                self._field_boundary_detector.candidates_under_convex_field_boundary(
+                    self._ball_detector.get_candidates(),
+                    self._ball_candidate_y_offset),
+                self._ball_candidate_threshold),
             (0, 255, 255)
         )
         # Draw top ball candidate
         self._debug_image_creator.draw_ball_candidates(
-            [self._ball_detector.get_top_ball_under_convex_field_boundary(
-                self._field_boundary_detector,
-                self._ball_candidate_y_offset)],
-            (0, 255, 0)
+            candidate.Candidate.rating_threshold(
+                self._field_boundary_detector.candidates_under_convex_field_boundary(
+                    self._ball_detector.get_top_candidates(count=1),
+                    self._ball_candidate_y_offset),
+                self._ball_candidate_threshold),
+            (0, 255, 0),
+            thickness=2
         )
         # Draw line points
         if self._use_line_points:

@@ -193,13 +193,13 @@ class DynamicColorSpace:
         :return np.array: array of new dynamic color values
         """
         # Masks new image with current color space
-        mask_image = self._color_detector.get_mask_image()
+        normalized_image_mask = self._color_detector.get_normalized_image_mask()
         # Get mask from field_boundary detector
         self._field_boundary_detector.set_image(image)
         mask = self._field_boundary_detector.get_mask()
         if mask is not None:
             # Get array of pixel coordinates of color candidates
-            pixel_coordinates = self._pointfinder.get_coordinates_of_color_candidates(mask_image)
+            pixel_coordinates = self._pointfinder.get_coordinates_of_color_candidates(normalized_image_mask)
             # Get unique color values from the candidate pixels
             color_candidates = self._get_unique_color_values(image, pixel_coordinates)
             # Filters the colors using the heuristic.
@@ -268,20 +268,17 @@ class Pointfinder():
         # In case the value of this pixel is 1, it's value in the sum_array would be 0
         self._kernel[int(np.size(self._kernel, 0) / 2), int(np.size(self._kernel, 1) / 2)] = - self._kernel.size
 
-    def get_coordinates_of_color_candidates(self, masked_image):
+    def get_coordinates_of_color_candidates(self, normalized_image_mask):
         # type (np.array) -> np.array
         """
         Returns array of pixel coordinates of color candidates.
         Color candidates are false-color pixels with a higher true-color/ false-color ratio as threshold in their surrounding in masked image.
 
-        :param np.array masked_image: masked image
+        :param np.array normalized_image_mask: masked image with values between 1 and 0
         :return np.array: list of indices
         """
-        # Normalizes the masked image to values of 1 or 0
-        normalized_image = np.floor_divide(masked_image, 255, dtype=np.int16)
-
         # Calculates the count of neighbors for each pixel
-        sum_array = cv2.filter2D(normalized_image, -1, self._kernel, borderType=0)
+        sum_array = cv2.filter2D(normalized_image_mask, -1, self._kernel, borderType=0)
         # Returns all pixels with a higher true-color / false-color ratio than the threshold
         return np.array(np.where(sum_array > self._threshold * (self._kernel.size - 1)))
 
