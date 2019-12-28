@@ -350,6 +350,9 @@ class Vision:
                     self._ball_detector = yolo_handler.YoloBallDetector(config, self._yolo)
                     self._goalpost_detector = yolo_handler.YoloGoalpostDetector(config, self._yolo)
                     rospy.loginfo(config['neural_network_type'] + " vision is running now", logger_name="vision_yolo")
+            # For other changes only modify the config
+            elif ros_utils.config_param_change(self._config, config, r'yolo_'):
+                self._yolo.set_config(config)
 
         self._register_or_update_all_subscribers(config)
 
