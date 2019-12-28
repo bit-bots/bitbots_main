@@ -93,6 +93,7 @@ class Colorpicker(object):
             "Click to select the colors in the OpenCV window.\n"
             "Use <shift> and <left click> to remove colors.\n"
             "To undo a step press 'u'.\n"
+            "To increase the size of the selection box press '+', to decrease press '-' \n\"
             "To save the color space press 's' followed by the path and <enter>.\n"
             "Exit using <esc>.\n\n\n", logger_name="colorpicker")
 
