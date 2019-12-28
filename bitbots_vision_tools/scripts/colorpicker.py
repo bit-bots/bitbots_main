@@ -36,6 +36,7 @@ class Colorpicker(object):
         cv2.setMouseCallback("Colorpicker", self._mouse_callback)
         self._mouse_coord = (0,0)
         self._left_click, self._undo_click = False, False
+        self._default_path = "~/.ros/color_space.pickle"
         color_space = np.zeros((256, 256, 256), dtype=np.uint8)
 
         # Default box size
@@ -212,7 +213,7 @@ class Colorpicker(object):
         # Check if the user entered something
         if input_path == "":
             # Set to default
-            input_path = "~/.ros/color_space.pickle"
+            input_path = self._default_path
 
         # Create absolute path
         input_path = os.path.abspath(os.path.expanduser(input_path))
