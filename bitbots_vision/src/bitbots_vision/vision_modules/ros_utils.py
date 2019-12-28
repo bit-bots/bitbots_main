@@ -475,7 +475,7 @@ def set_general_parameters(params):
     """
     general_parameters.extend(params)
 
-def config_param_change(old_config, new_config, params, check_generals=True):
+def config_param_change(old_config, new_config, params_expressions, check_generals=True):
     # type: (dict, dict, [str]) -> bool
     """
     Checks whether some of the specified config params have changed.
@@ -487,14 +487,21 @@ def config_param_change(old_config, new_config, params, check_generals=True):
     :return bool: True if parameter has changed
     """
     # Make regex instead of list possible
-    if not isinstance(params, list):
+    if not isinstance(params_expressions, list):
+        params_expressions = [params_expressions]
+
+    # Matching parameters
+    params = []
+    # Iterate over expressions
+    for param in params_expressions:
         # Build regex
-        regex = re.compile(params)
+        regex = re.compile(param)
         # Filter parameter names by regex
-        params = list(filter(regex.search, list(new_config.keys())))
-        # Check if parameters matching this regex exist
-        if len(params) == 0:
-            raise KeyError('Regex \'{}\' has no matches in dict.'.format(params))
+        params.extend(list(filter(regex.search, list(new_config.keys()))))
+
+    # Check if parameters matching this regex exist
+    if len(params) == 0:
+        raise KeyError('Regex \'{}\' has no matches in dict.'.format(params))
 
     # Add general params to parameters
     if check_generals:
