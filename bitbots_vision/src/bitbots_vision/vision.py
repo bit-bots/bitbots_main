@@ -314,6 +314,7 @@ class Vision:
 
         # Check if the yolo ball/goalpost detector is activated. No matter which implementation is used.
         if config['neural_network_type'] in ['yolo_opencv', 'yolo_darknet']:
+            # Check if a reload of the handler is needed
             if ros_utils.config_param_change(self._config, config, ['yolo_model_path', 'neural_network_type']):
                 # Build absolute model path
                 yolo_model_path = os.path.join(self._package_path, 'models', config['yolo_model_path'])
@@ -332,6 +333,9 @@ class Vision:
                     self._ball_detector = yolo_handler.YoloBallDetector(config, self._yolo)
                     self._goalpost_detector = yolo_handler.YoloGoalpostDetector(config, self._yolo)
                     rospy.loginfo(config['neural_network_type'] + " vision is running now", logger_name="vision_yolo")
+            # For other changes only modify the config
+            elif ros_utils.config_param_change(self._config, config, r'yolo_'):
+                self._yolo.set_config(config)
 
         self._register_or_update_all_subscribers(config)
 

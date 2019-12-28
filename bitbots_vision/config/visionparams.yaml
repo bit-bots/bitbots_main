@@ -23,6 +23,9 @@ ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'  # ROS 
 
 fcnn_model_path: '2019_06_timon_basler'  # Name of the ball fcnn model
 yolo_model_path: '2019_07_03_jonas_yolo'  # Name of the yolo model
+yolo_nms_threshold: 0.4  # Non maximum suppression threshold
+yolo_confidence_threshold: 0.5  # Yolo: confidence threshold
+
 ball_fcnn_threshold: .6  # Minimal activation for a pixel in the fcnn heatmap to be considered
 ball_fcnn_expand_stepsize: 4  # Expand stepsize for the ball fcnn clustering
 ball_fcnn_pointcloud_stepsize: 10  # Pointcloud stepsize for the ball fcnn clustering
@@ -107,4 +110,3 @@ ball_fcnn_publish_debug_img: false  # Publish the fcnn heatmap image for debug p
 vision_publish_HSV_mask_image: false  # Publish all three HSV color detector mask image messages for debug purposes
 vision_publish_field_mask_image: false  # Publish field mask image message for debug purposes
 caching: true  # Used to deactivate caching for profiling reasons
-
