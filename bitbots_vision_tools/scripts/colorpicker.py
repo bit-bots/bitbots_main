@@ -6,6 +6,7 @@ import time
 import pickle
 import os
 import rospy
+import rospkg
 import VisionExtensions
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
@@ -18,8 +19,11 @@ class Colorpicker(object):
     def __init__(self):
         rospy.init_node('bitbots_colorpicker')
         rospy.loginfo('Initializing colorpicker...', logger_name="colorpicker")
+        rospack = rospkg.RosPack()
+        self._package_path = rospack.get_path('bitbots_vision_tools')
         self._cv_bridge = CvBridge()
-        self._image = np.zeros((300,300,3), dtype=np.uint8)
+        # Load default image
+        self._image = cv2.imread(os.path.join(self._package_path, "img", "Colorpicker.png"))
 
         # Subscribe to Image-message
         self._sub_image_msg = rospy.Subscriber(
