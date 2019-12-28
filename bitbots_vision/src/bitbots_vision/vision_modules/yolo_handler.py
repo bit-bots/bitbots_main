@@ -130,17 +130,18 @@ class YoloHandlerDarknet(YoloHandler):
                 class_id = out[0]
                 # Get confidence
                 confidence = out[1]
-                # Get candidate position and size
-                x, y, w, h = out[2]
-                x = x - int(w // 2)
-                y = y - int(h // 2)
-                # Create candidate
-                c = Candidate(int(x), int(y), int(w), int(h), confidence)
-                # Append candidate to the right list depending on the class
-                if class_id == b"ball":
-                    self._ball_candidates.append(c)
-                if class_id == b"goalpost":
-                    self._goalpost_candidates.append(c)
+                if confidence > self._confidence_threshold:
+                    # Get candidate position and size
+                    x, y, w, h = out[2]
+                    x = x - int(w // 2)
+                    y = y - int(h // 2)
+                    # Create candidate
+                    c = Candidate(int(x), int(y), int(w), int(h), confidence)
+                    # Append candidate to the right list depending on the class
+                    if class_id == b"ball":
+                        self._ball_candidates.append(c)
+                    if class_id == b"goalpost":
+                        self._goalpost_candidates.append(c)
 
 class YoloHandlerOpenCV(YoloHandler):
     """
