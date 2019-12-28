@@ -194,20 +194,21 @@ class YoloHandlerOpenCV(YoloHandler):
                     class_id = np.argmax(scores)
                     # Get confidence from score
                     confidence = scores[class_id]
-                    # Static threshold
-                    # Get center point of the candidate
-                    center_x = int(detection[0] * self._width)
-                    center_y = int(detection[1] * self._height)
-                    # Get the heigh/width
-                    w = int(detection[2] * self._width)
-                    h = int(detection[3] * self._height)
-                    # Calc the upper left point
-                    x = center_x - w / 2
-                    y = center_y - h / 2
-                    # Append result
-                    class_ids.append(class_id)
-                    confidences.append(float(confidence))
-                    boxes.append([x, y, w, h])
+                    # First threshold to decrease candidate count and inscrease performance
+                    if confidence > self._confidence_threshold:
+                        # Get center point of the candidate
+                        center_x = int(detection[0] * self._width)
+                        center_y = int(detection[1] * self._height)
+                        # Get the heigh/width
+                        w = int(detection[2] * self._width)
+                        h = int(detection[3] * self._height)
+                        # Calc the upper left point
+                        x = center_x - w / 2
+                        y = center_y - h / 2
+                        # Append result
+                        class_ids.append(class_id)
+                        confidences.append(float(confidence))
+                        boxes.append([x, y, w, h])
 
             # Merge boxes
             indices = cv2.dnn.NMSBoxes(boxes, confidences, self._confidence_threshold, self._nms_threshold)
