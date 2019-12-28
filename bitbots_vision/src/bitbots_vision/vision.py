@@ -212,7 +212,10 @@ class Vision:
 
         # Set the white color detector
         if ros_utils.config_param_change(self._config, config, r'^white_color_detector_'):
-            self._white_color_detector = color.HsvSpaceColorDetector(config, "white")
+            if config['white_color_detector_use_color_space']:
+                self._white_color_detector = color.PixelListColorDetector(config, self._package_path, 'white_color_detector_color_space_path')
+            else:
+                self._white_color_detector = color.HsvSpaceColorDetector(config, "white")
 
         # Set the red color detector
         if ros_utils.config_param_change(self._config, config, r'^red_color_detector_'):
