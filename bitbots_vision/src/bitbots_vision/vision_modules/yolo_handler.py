@@ -322,7 +322,7 @@ class YoloHandlerNCS2(YoloHandler):
         model_bin = os.path.join(model_path, "yolo.bin")
 
         # Plugin initialization
-        rospy.loginfo("Creating Inference Engine...")
+        rospy.loginfo("Creating Inference Engine...", logger_name="vision_yolo")
 
         try:
             ie = IECore()
@@ -350,7 +350,7 @@ class YoloHandlerNCS2(YoloHandler):
         device = "MYRIAD"
 
         # Loading model to the plugin
-        rospy.loginfo("Loading model to the plugin")
+        rospy.loginfo("Loading model to the plugin", logger_name="vision_yolo")
         self._exec_net = ie.load_network(network=self._net, num_requests=2, device_name=device)
 
         # Params TODO
@@ -452,7 +452,7 @@ class YoloHandlerNCS2(YoloHandler):
             self._ball_candidates = list()
             self._goalpost_candidates = list()
 
-            rospy.logdebug("Starting inference...")
+            rospy.logdebug("Starting inference...", logger_name="vision_yolo")
 
             # Set request id for the stick. Since we only make one call at a time, we use a static parameter.
             request_id = 1
