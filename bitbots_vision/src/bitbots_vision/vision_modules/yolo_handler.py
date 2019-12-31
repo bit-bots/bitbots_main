@@ -255,7 +255,7 @@ class YoloHandlerNCS2(YoloHandler):
     limitations under the License.
 
     Following changes were made:
-        - Different class handeling
+        - Different class handling
         - Modifications for our framework
         - Different NMS approach
 
