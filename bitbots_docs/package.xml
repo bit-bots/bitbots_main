@@ -11,7 +11,7 @@
 
     <buildtool_depend>catkin</buildtool_depend>
     <build_depend>python3-sphinx-rtd-theme</build_depend>
-    <build_depend>python-breathe</build_depend>
+	<!--build_depend>python-breathe</build_depend--> <!-- we would need python3-breathe -->
 
     <export>
         <bitbots_documentation>
