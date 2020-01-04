@@ -1,15 +1,15 @@
 function(enable_bitbots_docs)
     # create directories neccessary for sphinx
     file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/docs)
-	file(COPY ${CMAKE_INSTALL_PREFIX}/@CATKIN_PACKAGE_SHARE_DESTINATION@/files/_static DESTINATION ${CMAKE_SOURCE_DIR}/docs)
+	file(COPY @CMAKE_INSTALL_PREFIX@/@CATKIN_PACKAGE_SHARE_DESTINATION@/files/_static DESTINATION ${CMAKE_SOURCE_DIR}/docs)
 
     # copy default configuration files from bitbots_docs into target package
     # but only do so when the target does not yet exist to prevent overriding of manual edits
     if(NOT EXISTS ${CMAKE_SOURCE_DIR}/docs/index.rst)
-        file(COPY ${CMAKE_INSTALL_PREFIX}/@CATKIN_PACKAGE_SHARE_DESTINATION@/files/index.rst DESTINATION ${CMAKE_SOURCE_DIR}/docs)
+        file(COPY @CMAKE_INSTALL_PREFIX@/@CATKIN_PACKAGE_SHARE_DESTINATION@/files/index.rst DESTINATION ${CMAKE_SOURCE_DIR}/docs)
     endif()
     if(NOT EXISTS ${CMAKE_SOURCE_DIR}/docs/conf.py)
-        file(COPY ${CMAKE_INSTALL_PREFIX}/@CATKIN_PACKAGE_SHARE_DESTINATION@/files/conf.py DESTINATION ${CMAKE_SOURCE_DIR}/docs)
+        file(COPY @CMAKE_INSTALL_PREFIX@/@CATKIN_PACKAGE_SHARE_DESTINATION@/files/conf.py DESTINATION ${CMAKE_SOURCE_DIR}/docs)
     endif()
 
     # figure out if we have python files in the current package and only do sphinx-apidoc if we do
