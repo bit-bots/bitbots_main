@@ -31,7 +31,7 @@ pipeline {
             steps {
                 linkCatkinWorkspace("bitbots_docs")
                 catkinBuild("bitbots_docs")
-				installPackage("bitbots_docs")
+				catkinInstall("bitbots_docs")
 				cleanWs()
             }
 		}
