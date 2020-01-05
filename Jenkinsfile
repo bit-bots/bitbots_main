@@ -31,7 +31,6 @@ pipeline {
             steps {
                 linkCatkinWorkspace("bitbots_docs")
                 catkinBuild("bitbots_docs")
-				catkinInstall("bitbots_docs")
 				cleanWs()
             }
 		}
@@ -52,6 +51,25 @@ pipeline {
 				catkinBuild("bitbots_docs", "Documentation")
 				
 				stash name: "bitbots_docs_docs", includes: "bitbots_docs/docs/_out/**"
+				cleanWs()
+			}
+		}
+
+		stage("Install package bitbots_docs") {
+            agent { 
+				docker {
+					image "registry.bit-bots.de:5000/bitbots_builder"
+					registryUrl "http://registry.bit-bots.de:5000"
+					alwaysPull true
+					args "--volume /srv/shared_catkin_install_space:/srv/catkin_install"
+				}
+			}
+
+			steps {
+				linkCatkinWorkspace("bitbots_docs")
+				installRosdeps("bitbots_docs")
+				catkinClean()
+				catkinInstall("bitbots_docs")
 				cleanWs()
 			}
 		}
