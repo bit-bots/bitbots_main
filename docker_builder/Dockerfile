@@ -31,7 +31,8 @@ RUN . /opt/ros/melodic/setup.sh && \
 RUN . /opt/ros/melodic/setup.sh && \
     mkdir -p /catkin_ws/src; cd /catkin_ws && \
     catkin init && \
-	catkin config --extend $SHARED_INSTALL_SPACE --install --isolate-install && \
+	catkin config --profile default --extend $SHARED_INSTALL_SPACE --install --isolate-install && \
+	catkin config --profile install --extend $SHARED_INSTALL_SPACE --install --merge-install --install-space $SHARED_INSTALL_SPACE && \
     catkin build && \
 	chown -R builder:builder /catkin_ws && \
     chmod -R 740 /catkin_ws
