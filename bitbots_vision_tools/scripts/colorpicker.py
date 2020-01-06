@@ -69,7 +69,7 @@ class Colorpicker(object):
 
     def _draw_mask(self, image, mask, color, opacity=0.5):
         """
-        Draws the mask on an image
+        Draws the mask on an image.
 
         :param image: The image canvas
         :param mask: The binary mask
