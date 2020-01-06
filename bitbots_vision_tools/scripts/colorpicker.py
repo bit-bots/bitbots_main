@@ -35,7 +35,7 @@ class Colorpicker(object):
             tcp_nodelay=False)
 
         # Init
-        self._init_text()
+        self._output_usage_info()
         cv2.namedWindow("Colorpicker")
         cv2.setMouseCallback("Colorpicker", self._mouse_callback)
         self._mouse_coord = (0,0)
