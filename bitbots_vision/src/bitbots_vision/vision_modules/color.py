@@ -3,7 +3,6 @@ import cv2
 import yaml
 import pickle
 import rospy
-import VisionExtensions
 import numpy as np
 import os
 from cv_bridge import CvBridge
@@ -325,7 +324,7 @@ class PixelListColorDetector(ColorDetector):
                 length == len(color_values['blue']):
             # setting colors from yaml file to True in color space
             for x in range(length):
-                color_space[color_values['blue'][x], color_values['green'][x], color_values['red'][x]] = 1
+                color_space[color_values['blue'][x], color_values['green'][x], color_values['red'][x]] = 255
         return color_space
 
     def match_pixel(self, pixel):
@@ -347,8 +346,16 @@ class PixelListColorDetector(ColorDetector):
         :param np.array image: input image
         :return np.array: masked image
         """
-        return VisionExtensions.maskImg(image, self._color_space)
+        image_reshape = image.reshape(-1,3).transpose()
+        mask = self._color_space[
+                image_reshape[0],
+                image_reshape[1],
+                image_reshape[2],
 
+            ].reshape(
+                image.shape[0],
+                image.shape[1])
+        return mask
 
 class DynamicPixelListColorDetector(PixelListColorDetector):
     """
@@ -425,7 +432,15 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
             global _dyn_color_space
             color_space = _dyn_color_space
 
-        return VisionExtensions.maskImg(image, color_space)
+        image_reshape = image.reshape(-1,3).transpose()
+        mask = self._color_space[
+                image_reshape[0],
+                image_reshape[1],
+                image_reshape[2],
+            ].reshape(
+                image.shape[0],
+                image.shape[1])
+        return mask
 
     def color_space_callback(self, msg):
         # type: (ColorSpace) -> None
@@ -454,7 +469,7 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         color_space_temp[
             msg.blue,
             msg.green,
-            msg.red] = 1
+            msg.red] = 255
 
         # Switches the reference to the new color space
         global _dyn_color_space
