@@ -95,7 +95,7 @@ class Colorpicker(object):
             "Use <shift> and <left click> to remove colors.\n"
             "To undo a step press 'u'.\n"
             "To increase the size of the selection box press '+', to decrease press '-' \n"
-            "To save the color space press 's' followed by the path and <enter>.\n"
+            "To save the color space press 's', then enter the path for the output file in the terminal and confirm with <enter>.\n"
             "Exit using <esc>.\n\n\n", logger_name="colorpicker")
 
 
