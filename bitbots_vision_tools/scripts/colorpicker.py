@@ -111,7 +111,7 @@ class Colorpicker(object):
         """
         Runs the UI window.
 
-        :return: Does the user exit the loop with a save flag set?
+        :return bool: Does the user exit the loop with a save flag set?
         """
         save = False
         while not rospy.is_shutdown():
