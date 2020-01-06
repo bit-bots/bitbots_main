@@ -85,7 +85,7 @@ class Colorpicker(object):
                 cv2.add(colored_image*opacity, image*(1-opacity), mask=mask).astype(np.uint8))
 
 
-    def _init_text(self):
+    def _output_usage_info(self):
         """
         Prints some usage information.
         """
