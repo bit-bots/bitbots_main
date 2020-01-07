@@ -51,6 +51,8 @@ pipeline {
                     catkinBuild("bitbots_docs", "Documentation")
 
                     stash name: "bitbots_docs_docs", includes: "bitbots_docs/docs/_out/**"
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: "bitbots_docs/docs/_out/",
+                            reportFiles: "index.html", reportName: "Built Documentation", reportTitles: ""])
                     cleanWs()
             }
         }
@@ -82,8 +84,6 @@ pipeline {
             steps {
                 unstash "bitbots_docs_docs"
                     deployDocs("bitbots_docs")
-                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: "bitbots_docs/docs/_out/",
-                            reportFiles: "index.html", reportName: "Built Documentation", reportTitles: ""])
             }
         }
     }
