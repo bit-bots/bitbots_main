@@ -34,19 +34,35 @@ void DynupIK::reset() {
 
 bitbots_splines::JointGoals DynupIK::calculate(std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
   double bio_ik_timeout = 0.01;
+
+  auto ik_options_arms = std::make_unique<bio_ik::BioIKKinematicsQueryOptions>();
+  ik_options_arms->replace = true;
+  ik_options_arms->return_approximate_solution = true;
+  auto ik_options_legs = std::make_unique<bio_ik::BioIKKinematicsQueryOptions>();
+  ik_options_legs->replace = true;
+  ik_options_legs->return_approximate_solution = true;
+
+  ik_options_legs->goals.emplace_back(ik_goals->goals[0].release());
+  ik_options_legs->goals.emplace_back(ik_goals->goals[1].release());
+  ik_options_arms->goals.emplace_back(ik_goals->goals[2].release());
+  ik_options_arms->goals.emplace_back(ik_goals->goals[3].release());
+  ik_options_legs->goals.emplace_back(ik_goals->goals[4].release());
+  //TODO displacement goal
+  //TODO what happens if one of the goals is missing?
+
   bool success = goal_state_->setFromIK(arm_joints_group_.get(),
                                         EigenSTL::vector_Isometry3d(),
                                         std::vector<std::string>(),
                                         bio_ik_timeout,
                                         moveit::core::GroupStateValidityCallbackFn(),
-                                        *ik_goals) &&
+                                        *ik_options_arms) &&
                  goal_state_->setFromIK(leg_joints_group_.get(),
                                         EigenSTL::vector_Isometry3d(),
                                         std::vector<std::string>(),
                                         bio_ik_timeout,
                                         moveit::core::GroupStateValidityCallbackFn(),
-                                        *ik_goals);
-  ;
+                                        *ik_options_legs);
+  
 
   if (success) {
     /* retrieve joint names and associated positions from  */
