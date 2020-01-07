@@ -56,6 +56,7 @@ pipeline {
         }
 
         stage("Install package bitbots_docs") {
+            when { branch "master" }
             agent { 
                 docker {
                     image "registry.bit-bots.de:5000/bitbots_builder"
