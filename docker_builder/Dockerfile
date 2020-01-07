@@ -19,22 +19,21 @@ RUN useradd -M -d /catkin_ws -s /bin/bash -u $UID builder
 # Build empty install space in shared install space
 ARG SHARED_INSTALL_SPACE="/srv/catkin_install"
 RUN . /opt/ros/melodic/setup.sh && \
-	mkdir -p /catkin_ws/src && cd /catkin_ws && \
-	catkin init >/dev/null && \
-	catkin config --install --merge-install --install-space $SHARED_INSTALL_SPACE >/dev/null && \
-	catkin build && \
-	chown -R builder:builder $SHARED_INSTALL_SPACE && \
-	rm -r /catkin_ws && \
-	cd /
+    mkdir -p /catkin_ws/src && cd /catkin_ws && \
+    catkin init >/dev/null && \
+    catkin config --install --merge-install --install-space $SHARED_INSTALL_SPACE >/dev/null && \
+    catkin build && \
+    chown -R builder:builder $SHARED_INSTALL_SPACE && \
+    rm -r /catkin_ws
 
 # Setup catkin workspace
 RUN . /opt/ros/melodic/setup.sh && \
     mkdir -p /catkin_ws/src; cd /catkin_ws && \
     catkin init && \
-	catkin config --profile default --extend $SHARED_INSTALL_SPACE --install --isolate-install && \
-	catkin config --profile install --extend $SHARED_INSTALL_SPACE --install --merge-install --install-space $SHARED_INSTALL_SPACE && \
-	catkin build && \
-	chown -R builder:builder /catkin_ws && \
+    catkin config --profile default --extend $SHARED_INSTALL_SPACE --install --isolate-install && \
+    catkin config --profile install --extend $SHARED_INSTALL_SPACE --install --merge-install --install-space $SHARED_INSTALL_SPACE && \
+    catkin build && \
+    chown -R builder:builder /catkin_ws && \
     chmod -R 740 /catkin_ws
 
 # Setup rosdep
