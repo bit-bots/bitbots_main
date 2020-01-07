@@ -1,6 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
 import os
 import cv2
 import rosbag
@@ -8,11 +7,6 @@ import argparse
 import numpy as np
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
-
-try:
-    input = raw_input
-except NameError:
-    pass
 
 def yes_or_no_input(question, default=None):
     # type: (str) -> bool
@@ -25,17 +19,17 @@ def yes_or_no_input(question, default=None):
     """
     answer = None
     reply = None
-    extention = None
+    extension = None
 
     if default is None:
-        extention = " [y|n]"
+        extension = " [y|n]"
     elif default == True:
-        extention = " [Y|n]"
+        extension = " [Y|n]"
     elif default == False:
-        extention = " [y|N]"
+        extension = " [y|N]"
 
     while answer is None:
-        reply = str(input(question + extention + ": ")).lower().strip()
+        reply = str(input(question + extension + ": ")).lower().strip()
         if default is not None and reply == "":
             answer = default
         elif reply[:1] == 'y':
@@ -56,34 +50,31 @@ def int_input(question, min_int=None, max_int=None):
     """
     answer = None
     reply = None
-    extention = None
+    extension = None
 
     # Construct full question with min and max
     if min_int is not None and max_int is None:
-        extention = " [MIN: {}]".format(min_int)
+        extension = " [MIN: {}]".format(min_int)
     elif min_int is None and max_int is not None:
-        extention = " [MAX: {}]".format(max_int)
+        extension = " [MAX: {}]".format(max_int)
     elif min_int is not None and max_int is not None:
         if not min_int <= max_int:
             raise ValueError("min_int must be smaller or equal to max_int.")
         else:
-            extention = " [{} - {}]: ".format(min_int, max_int)
+            extension = " [{} - {}]: ".format(min_int, max_int)
 
     while answer is None:
         try:
-            reply = int(input(question + extention + ": ").strip())
+            reply = int(input(question + extension + ": ").strip())
         except ValueError:
             pass
 
         # Check for min and max conditions
         if reply is not None:
-            if min_int is None and max_int is None:
-                answer = reply
-            elif min_int is not None and max_int is None and min_int <= reply:
-                answer = reply
-            elif min_int is None and max_int is not None and reply >= max_int:
-                answer = reply
-            elif min_int and max_int and min_int <= reply <= max_int:
+            if min_int is None and max_int is None or \
+                    min_int is not None and max_int is None and min_int <= reply or \
+                    min_int is None and max_int is not None and reply >= max_int or \
+                    min_int is not None and max_int is not None and min_int <= reply <= max_int:
                 answer = reply
     return answer
 
@@ -109,10 +100,10 @@ for topic, info in topics_and_type.topics.items():
     if info.msg_type == "sensor_msgs/Image":
         image_topics_and_info.append([topic, info])
 
-if len(image_topics_and_info) == 0:
+if len(image_topics_and_info) == 0:  # 0 topic found
     print("No messages of type sensor_msgs/Image found in the provided rosbag")
     exit()
-elif len(image_topics_and_info) == 1:
+elif len(image_topics_and_info) == 1:  # 1 topic found
     print(
         "Found exactly one topic ({0}) of type sensor_msgs/Image with {1} messages".format(
             image_topics_and_info[0][0],
@@ -124,23 +115,23 @@ elif len(image_topics_and_info) == 1:
         if not selection:
             exit()
         chosen_set_num = 0
-else:
-    print("Multiple topics with type sensor_msgs/Image:")
-    specified_topic_in_topics = False
-    for i, topic_tuple in enumerate(image_topics_and_info):
-        print("[" + str(i) + "] topic: " + str(topic_tuple[0]) + " \t message_count: " + str(
-            topic_tuple[1].message_count))
-        if topic_tuple[0] == args.topic:
-            chosen_set_num = i
-            specified_topic_in_topics = True
-    if not specified_topic_in_topics:
+else:  # Multiple topics found
+    if args.topic in image_topics_and_info:  # Topic already specified in argument
+        for i, topic_tuple in enumerate(image_topics_and_info):
+            if topic_tuple[0] == args.topic:
+                chosen_set = image_topics_and_info[i]
+    else:  # Multiple topics, but not specified yet
+        print("Multiple topics with type sensor_msgs/Image:")
+        for i, topic_tuple in enumerate(image_topics_and_info):
+            print("[" + str(i) + "] topic: " + str(topic_tuple[0]) + " \t message_count: " + str(
+                topic_tuple[1].message_count))
         chosen_set_num = int_input("Make a selection", min_int=0, max_int=len(image_topics_and_info) - 1)
 
 chosen_set = image_topics_and_info[chosen_set_num]
 
 print("The dataset you have selected has a frequency of {0}".format(chosen_set[1].frequency))
 if args.n is None:
-    n = int_input("Every n-th image will be saved. Please specify n ", min_int=1)
+    n = int_input("Every n-th image will be saved. Please specify n", min_int=1)
 else:
     n = args.n
 
