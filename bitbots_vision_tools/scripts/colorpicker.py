@@ -34,7 +34,7 @@ class Colorpicker(object):
             tcp_nodelay=False)
 
         # Init
-        self._init_text()
+        self._output_usage_info()
         cv2.namedWindow("Colorpicker")
         cv2.setMouseCallback("Colorpicker", self._mouse_callback)
         self._mouse_coord = (0,0)
@@ -87,7 +87,7 @@ class Colorpicker(object):
 
     def _draw_mask(self, image, mask, color, opacity=0.5):
         """
-        Draws the mask on an image
+        Draws the mask on an image.
 
         :param image: The image canvas
         :param mask: The binary mask
@@ -102,19 +102,18 @@ class Colorpicker(object):
         return cv2.add(cv2.bitwise_and(image, image, mask=255-mask),
                 cv2.add(colored_image*opacity, image*(1-opacity), mask=mask).astype(np.uint8))
 
-    def _init_text(self):
+    def _output_usage_info(self):
         """
         Prints some usage information.
         """
         rospy.loginfo(
-            "Welcome to the Colorpicker.\n"
+            "Welcome to the Bit-Bots Colorpicker.\n"
             "Click to select the colors in the OpenCV window.\n"
             "Use <shift> and <left click> to remove colors.\n"
             "To undo a step press 'u'.\n"
             "To increase the size of the selection box press '+', to decrease press '-' \n"
-            "To save the color space press 's' followed by the path and <enter>.\n"
+            "To save the color space press 's', then enter the path for the output file in the terminal and confirm with <enter>.\n"
             "Exit using <esc>.\n\n\n", logger_name="colorpicker")
-
 
     def _image_callback(self, msg):
         """
@@ -128,7 +127,7 @@ class Colorpicker(object):
         """
         Runs the UI window.
 
-        :return: Does the user exit the loop with a save flag set?
+        :return bool: Does the user exit the loop with a save flag set?
         """
         save = False
         while not rospy.is_shutdown():
