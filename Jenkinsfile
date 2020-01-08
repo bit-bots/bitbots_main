@@ -11,8 +11,8 @@ pipeline {
         stage("Build docker container") {
             when { branch "master" }
             steps {
-                sh "docker build -t registry.bit-bots.de:5000/bitbots_builder --no-cache docker_builder"
-                    sh "docker push registry.bit-bots.de:5000/bitbots_builder"
+                sh "docker build -t registry.bit-bots.de/bitbots_builder --no-cache docker_builder"
+                    sh "docker push registry.bit-bots.de/bitbots_builder"
                     sh "docker image prune -f"
                     sh "docker container prune -f"
             }
@@ -21,8 +21,8 @@ pipeline {
         stage("Build package bitbots_docs") {
             agent { 
                 docker {
-                    image "registry.bit-bots.de:5000/bitbots_builder"
-                        registryUrl "http://registry.bit-bots.de:5000"
+                    image "registry.bit-bots.de/bitbots_builder"
+                        registryUrl "http://registry.bit-bots.de"
                         alwaysPull true
                         args "--volume /srv/shared_catkin_install_space:/srv/catkin_install"
                 }
@@ -38,8 +38,8 @@ pipeline {
         stage("Build main documentation") {
             agent { 
                 docker {
-                    image "registry.bit-bots.de:5000/bitbots_builder"
-                        registryUrl "http://registry.bit-bots.de:5000"
+                    image "registry.bit-bots.de/bitbots_builder"
+                        registryUrl "http://registry.bit-bots.de"
                         alwaysPull true
                         args "--volume /srv/shared_catkin_install_space:/srv/catkin_install:ro"
                 }
@@ -61,8 +61,8 @@ pipeline {
             when { branch "master" }
             agent { 
                 docker {
-                    image "registry.bit-bots.de:5000/bitbots_builder"
-                        registryUrl "http://registry.bit-bots.de:5000"
+                    image "registry.bit-bots.de/bitbots_builder"
+                        registryUrl "http://registry.bit-bots.de"
                         alwaysPull true
                         args "--volume /srv/shared_catkin_install_space:/srv/catkin_install"
                 }
