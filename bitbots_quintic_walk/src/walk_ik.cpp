@@ -11,6 +11,8 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
 
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
   goal_state_->setToDefaultValues();
+  //without this magic line, IK will not work
+  const Eigen::Isometry3d& end_effector_state = goal_state_->getGlobalLinkTransform("r_sole");
 
   reset();
 }
@@ -31,23 +33,27 @@ bitbots_splines::JointGoals WalkIK::calculateDirectly(const WalkResponse &ik_goa
     tf2::toMsg(trunk_to_support_foot_goal, left_foot_goal_msg);
     tf2::toMsg(trunk_to_flying_foot_goal, right_foot_goal_msg);
   } else {
-    tf2::toMsg(trunk_to_support_foot_goal, left_foot_goal_msg);
-    tf2::toMsg(trunk_to_flying_foot_goal, right_foot_goal_msg);
+    tf2::toMsg(trunk_to_support_foot_goal, right_foot_goal_msg);
+    tf2::toMsg(trunk_to_flying_foot_goal, left_foot_goal_msg);
   }
-  const geometry_msgs::Pose left_foot_goal_msg_const = left_foot_goal_msg_const;
-  const geometry_msgs::Pose right_foot_goal_msg_const = right_foot_goal_msg_const;
 
   bool success;
   {
     SWRI_PROFILE("IK-direct-call");
+    goal_state_->updateLinkTransforms();
+
     success = goal_state_->setFromIK(left_leg_joints_group_,
-                                     left_foot_goal_msg_const,
-                                     bio_ik_timeout_);
-    ROS_WARN("success1 %d", success);
+                                     left_foot_goal_msg,
+                                     bio_ik_timeout_,
+                                     moveit::core::GroupStateValidityCallbackFn());
+    //ROS_WARN("success1 %d", success);
+    goal_state_->updateLinkTransforms();
+
     success = goal_state_->setFromIK(right_leg_joints_group_,
-                                     right_foot_goal_msg_const,
-                                     bio_ik_timeout_);
-    ROS_WARN("success2 %d", success);
+                                     right_foot_goal_msg,
+                                     bio_ik_timeout_,
+                                     moveit::core::GroupStateValidityCallbackFn());
+    //ROS_WARN("success2 %d", success);
   }
 
   std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
