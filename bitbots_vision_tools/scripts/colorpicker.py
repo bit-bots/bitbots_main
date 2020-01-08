@@ -7,7 +7,6 @@ import pickle
 import os
 import rospy
 import rospkg
-import VisionExtensions
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 
@@ -49,6 +48,26 @@ class Colorpicker(object):
         # Init history
         self._history = [color_space]
 
+    def _mask_image(self, image, color_space):
+        # type: (np.array, np.array) -> np.array
+        """
+        Returns the color mask of the image.
+        (0 for not in color range and 255 for in color range)
+        [Taken from https://github.com/bit-bots/bitbots_vision/blob/master/bitbots_vision/src/bitbots_vision/vision_modules/color.py]
+
+        :param np.array image: input image
+        :param np.array color_space: color space
+        :return np.array: masked image
+        """
+        image_reshape = image.reshape(-1,3).transpose()
+        mask = color_space[
+                image_reshape[0],
+                image_reshape[1],
+                image_reshape[2],
+            ].reshape(
+                image.shape[0],
+                image.shape[1])
+        return mask
 
     def _mouse_callback(self, event, x, y, flags, param):
         """
@@ -66,7 +85,6 @@ class Colorpicker(object):
         # Set self._mouse_coordinates
         self._mouse_coord = (x, y)
 
-
     def _draw_mask(self, image, mask, color, opacity=0.5):
         """
         Draws the mask on an image
@@ -83,7 +101,6 @@ class Colorpicker(object):
         # Compose debug image
         return cv2.add(cv2.bitwise_and(image, image, mask=255-mask),
                 cv2.add(colored_image*opacity, image*(1-opacity), mask=mask).astype(np.uint8))
-
 
     def _init_text(self):
         """
@@ -165,7 +182,7 @@ class Colorpicker(object):
                 self._left_click, self._undo_click = False, False
 
             # Mask the image with the current color space
-            mask = VisionExtensions.maskImg(self._image, self._history[-1])
+            mask = self._mask_image(self._image, self._history[-1])
 
             # Draw the mask on the canvas
             canvas = self._draw_mask(canvas, mask, (255,0,255), opacity=0.8)
