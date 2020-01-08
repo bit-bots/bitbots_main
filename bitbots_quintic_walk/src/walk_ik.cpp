@@ -141,6 +141,94 @@ std::vector<double> solve_ik(tf2::Transform goal, bool left_leg) {
   //
 }
 
+bitbots_splines::JointGoals WalkIK::calculateSeperate(const WalkResponse &ik_goals) {
+  SWRI_PROFILE("calculateSeperate");
+
+  //trunk goal
+  auto ik_options_trunk = std::make_unique<bio_ik::BioIKKinematicsQueryOptions>();
+  ik_options_trunk->replace = true;
+  ik_options_trunk->return_approximate_solution = true;
+
+  auto *trunk_goal = new ReferencePoseGoal();
+  trunk_goal->setPosition(ik_goals.support_foot_to_trunk.getOrigin());
+  trunk_goal->setOrientation(ik_goals.support_foot_to_trunk.getRotation());
+  trunk_goal->setLinkName("base_link");
+  if (ik_goals.is_left_support_foot) {
+    trunk_goal->setReferenceLinkName("l_sole");
+  } else {
+    trunk_goal->setReferenceLinkName("r_sole");
+  }
+  trunk_goal->setWeight(1);
+  ik_options_trunk->goals.emplace_back(trunk_goal);
+
+  // flying foot goal
+  auto ik_options_foot = std::make_unique<bio_ik::BioIKKinematicsQueryOptions>();
+  ik_options_foot->replace = true;
+  ik_options_foot->return_approximate_solution = true;
+
+  auto *fly_goal = new ReferencePoseGoal();
+  fly_goal->setPosition(ik_goals.support_foot_to_flying_foot.getOrigin());
+  fly_goal->setOrientation(ik_goals.support_foot_to_flying_foot.getRotation());
+  if (ik_goals.is_left_support_foot) {
+    fly_goal->setLinkName("r_sole");
+    fly_goal->setReferenceLinkName("l_sole");
+  } else {
+    fly_goal->setLinkName("l_sole");
+    fly_goal->setReferenceLinkName("r_sole");
+  }
+  fly_goal->setWeight(1);
+  ik_options_foot->goals.emplace_back(fly_goal);
+
+  bool success = true;
+  {
+    SWRI_PROFILE("IK-call");
+    if(ik_goals.is_left_support_foot){
+        success = success && goal_state_->setFromIK(left_leg_joints_group_,
+                                     EigenSTL::vector_Isometry3d(),
+                                     std::vector<std::string>(),
+                                     bio_ik_timeout_,
+                                     moveit::core::GroupStateValidityCallbackFn(),
+                                     *ik_options_trunk);
+        success = success && goal_state_->setFromIK(right_leg_joints_group_,
+                                     EigenSTL::vector_Isometry3d(),
+                                     std::vector<std::string>(),
+                                     bio_ik_timeout_,
+                                     moveit::core::GroupStateValidityCallbackFn(),
+                                     *ik_options_foot);
+    }else{
+        success = success && goal_state_->setFromIK(right_leg_joints_group_,
+                                     EigenSTL::vector_Isometry3d(),
+                                     std::vector<std::string>(),
+                                     bio_ik_timeout_,
+                                     moveit::core::GroupStateValidityCallbackFn(),
+                                     *ik_options_trunk);
+        success = success &&  goal_state_->setFromIK(left_leg_joints_group_,
+                                     EigenSTL::vector_Isometry3d(),
+                                     std::vector<std::string>(),
+                                     bio_ik_timeout_,
+                                     moveit::core::GroupStateValidityCallbackFn(),
+                                     *ik_options_foot);
+    }
+  }
+
+  if (success) {
+    /* retrieve joint names and associated positions from  */
+    std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
+    std::vector<double> joint_goals;
+    goal_state_->copyJointGroupPositions(legs_joints_group_, joint_goals);
+
+    /* construct result object */
+    bitbots_splines::JointGoals result;
+    result.first = joint_names;
+    result.second = joint_goals;
+    return result;
+  } else {
+    /* maybe do something better here? */
+    ROS_WARN("ik fail");
+    return bitbots_splines::JointGoals();
+  }
+}
+
 bitbots_splines::JointGoals WalkIK::calculate(const std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
   SWRI_PROFILE("IK");
   bool success;

@@ -106,10 +106,12 @@ void WalkNode::run() {
 void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
   SWRI_PROFILE("calc and publish joints");
   // get bioIk goals from stabilizer
-  //std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response);
+  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response);
 
+  //bitbots_splines::JointGoals motor_goals = ik_.calculate(std::move(ik_goals));
   // compute motor goals from IK
-  bitbots_splines::JointGoals motor_goals = ik_.calculateDirectly(response);
+  //bitbots_splines::JointGoals motor_goals = ik_.calculateDirectly(response);
+  bitbots_splines::JointGoals motor_goals = ik_.calculateSeperate(response);
 
   // publish them
   publishGoals(motor_goals);
