@@ -98,7 +98,7 @@ class Colorpicker(object):
         colored_image = np.zeros_like(image)
         colored_image[:, :] = tuple(np.multiply(color, opacity).astype(np.uint8))
 
-        # Compose debug image
+        # Compose preview image
         return cv2.add(cv2.bitwise_and(image, image, mask=255-mask),
                 cv2.add(colored_image*opacity, image*(1-opacity), mask=mask).astype(np.uint8))
 
@@ -171,14 +171,13 @@ class Colorpicker(object):
                         selected_matrix[:,0],
                         selected_matrix[:,1],
                         selected_matrix[:,2]] = 1
-                else:
-                    print("This should never happen")
 
                 # Append new color space to self._history
                 self._history.append(color_space)
 
                 # Reset events
-                self._left_click, self._undo_click = False, False
+                self._left_click = False
+                self._undo_click = False
 
             # Mask the image with the current color space
             mask = self._mask_image(self._image, self._history[-1])
