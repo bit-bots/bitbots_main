@@ -61,7 +61,7 @@ def int_input(question, min_int=None, max_int=None):
         if not min_int <= max_int:
             raise ValueError("min_int must be smaller or equal to max_int.")
         else:
-            extension = " [{} - {}]: ".format(min_int, max_int)
+            extension = " [{} - {}] ".format(min_int, max_int)
 
     while answer is None:
         try:
