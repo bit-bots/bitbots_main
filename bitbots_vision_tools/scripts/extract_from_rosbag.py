@@ -100,7 +100,7 @@ for topic, info in topics_and_type.topics.items():
     if info.msg_type == "sensor_msgs/Image":
         image_topics_and_info.append([topic, info])
 
-if len(image_topics_and_info) == 0:  # 0 topic found
+if len(image_topics_and_info) == 0:  # no topics found
     print("No messages of type sensor_msgs/Image found in the provided rosbag")
     exit()
 elif len(image_topics_and_info) == 1:  # 1 topic found
