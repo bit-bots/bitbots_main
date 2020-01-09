@@ -33,6 +33,7 @@ WalkEngine::WalkEngine() :
 }
 
 void WalkEngine::setGoals(const WalkRequest &goals) {
+  SWRI_PROFILE("engine set goals");
   request_ = goals;
 }
 

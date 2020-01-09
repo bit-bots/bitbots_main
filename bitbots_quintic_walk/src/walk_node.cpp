@@ -98,8 +98,12 @@ void WalkNode::run() {
       publishOdometry(response);
       odom_counter = 0;
     }
-    ros::spinOnce();
-    loop_rate.sleep();
+
+    {
+      SWRI_PROFILE("sleep");
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
   }
 }
 
@@ -110,8 +114,8 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
 
   //bitbots_splines::JointGoals motor_goals = ik_.calculate(std::move(ik_goals));
   // compute motor goals from IK
-  //bitbots_splines::JointGoals motor_goals = ik_.calculateDirectly(response);
-  bitbots_splines::JointGoals motor_goals = ik_.calculateSeperate(response);
+  bitbots_splines::JointGoals motor_goals = ik_.calculateDirectly(response);
+  //bitbots_splines::JointGoals motor_goals = ik_.calculateSeperate(response);
 
   // publish them
   publishGoals(motor_goals);
@@ -128,6 +132,7 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
 
   // publish if foot changed
   if(current_support_foot_ != support_state.data){
+    SWRI_PROFILE("publish support");
     pub_support_.publish(support_state);
     current_support_foot_ = support_state.data;
   }
@@ -135,6 +140,7 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
 
   // publish debug information
   if (debug_active_) {
+    SWRI_PROFILE("publish debug");
     visualizer_.publishIKDebug(response, current_state_, motor_goals);
     visualizer_.publishWalkMarkers(response);
   }
@@ -325,6 +331,8 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
 // todo this is the same method as in kick, maybe put it into a utility class - Yes - still needs to be discussed
 // currently the spline package is quiet ros agnostic, this would not work with this method
 void WalkNode::publishGoals(const bitbots_splines::JointGoals &goals) {
+  SWRI_PROFILE("publish goals");
+
   /* Construct JointCommand message */
   bitbots_msgs::JointCommand command;
   command.header.stamp = ros::Time::now();
@@ -346,10 +354,14 @@ void WalkNode::publishGoals(const bitbots_splines::JointGoals &goals) {
   command.accelerations = accs;
   command.max_currents = pwms;
 
-  pub_controller_command_.publish(command);
+  {
+    SWRI_PROFILE("publish");
+    pub_controller_command_.publish(command);
+  }
 }
 
 void WalkNode::publishOdometry(WalkResponse response) {
+  SWRI_PROFILE("publish odometry");
   // odometry to trunk is transform to support foot * transform from support to trunk
   tf2::Transform support_foot_tf;
   if (walk_engine_.isLeftSupport()) {
