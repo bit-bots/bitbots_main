@@ -1,6 +1,6 @@
 function(enable_bitbots_docs)
     # create directories neccessary for sphinx
-    file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/docs)
+    file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/docs/_build/doxyoutput)
 	file(COPY @CMAKE_INSTALL_PREFIX@/@CATKIN_PACKAGE_SHARE_DESTINATION@/files/_static DESTINATION ${CMAKE_SOURCE_DIR}/docs)
 
     # copy default configuration files from bitbots_docs into target package
