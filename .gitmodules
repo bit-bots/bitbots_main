@@ -79,3 +79,6 @@
 [submodule "lib/particle_filter"]
 	path = lib/particle_filter
 	url = git@github.com:bit-bots/particle_filter.git
+[submodule "lib/orocos_kinematics_dynamics"]
+	path = lib/orocos_kinematics_dynamics
+	url = https://github.com/orocos/orocos_kinematics_dynamics.git
