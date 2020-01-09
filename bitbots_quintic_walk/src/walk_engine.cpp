@@ -33,12 +33,10 @@ WalkEngine::WalkEngine() :
 }
 
 void WalkEngine::setGoals(const WalkRequest &goals) {
-  SWRI_PROFILE("engine set goals");
   request_ = goals;
 }
 
 WalkResponse WalkEngine::update(double dt) {
-  SWRI_PROFILE("engine-update");
   // check if orders are zero, since we don't want to walk on the spot
   bool orders_zero = request_.orders.x() == 0 && request_.orders.y() == 0 && request_.orders.z() == 0;
 
@@ -303,7 +301,6 @@ void WalkEngine::buildStopMovementTrajectories() {
 }
 
 void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool kick_step) {
-  SWRI_PROFILE("build trajectory");
   // save the current trunk state to use it later and compute the next step position
   if (!start_movement) {
     saveCurrentTrunkState();

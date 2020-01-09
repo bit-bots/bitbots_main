@@ -31,7 +31,6 @@ find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         moveit_ros_robot_interaction
         bitbots_msgs
-        swri_profiler
         )
 
 find_package(Eigen3 REQUIRED)
@@ -66,7 +65,7 @@ include_directories(
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES ${PROJECT_NAME}
-        CATKIN_DEPENDS humanoid_league_msgs std_msgs geometry_msgs bitbots_splines message_runtime bitbots_msgs tf2 tf2_eigen tf2_geometry_msgs swri_profiler
+        CATKIN_DEPENDS humanoid_league_msgs std_msgs geometry_msgs bitbots_splines message_runtime bitbots_msgs tf2 tf2_eigen tf2_geometry_msgs
         DEPENDS EIGEN3
 )
 
@@ -82,8 +81,3 @@ add_executable(WalkNode ${SOURCES})
 add_dependencies(WalkNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 
 target_link_libraries(WalkNode ${catkin_LIBRARIES} ${CODE_LIBRARIES})
-
-add_executable(test src/test_ik.cpp)
-add_dependencies(test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(test ${catkin_LIBRARIES} ${CODE_LIBRARIES})
-

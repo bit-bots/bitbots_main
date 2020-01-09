@@ -66,7 +66,6 @@ void WalkNode::run() {
   WalkResponse response;
 
   while (ros::ok()) {
-    SWRI_PROFILE("node-run");
     ros::Rate loop_rate(engine_frequency_);
     double dt = getTimeDelta();
 
@@ -99,27 +98,14 @@ void WalkNode::run() {
       odom_counter = 0;
     }
 
-    {
-          SWRI_PROFILE("spin");
     ros::spinOnce();
-    }
-
-    {
-      SWRI_PROFILE("sleep");
-      loop_rate.sleep();
-    }
+    loop_rate.sleep();
   }
 }
 
 void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
-  SWRI_PROFILE("calc and publish joints");
-  // get bioIk goals from stabilizer
-  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response);
-
-  //bitbots_splines::JointGoals motor_goals = ik_.calculate(std::move(ik_goals));
   // compute motor goals from IK
   bitbots_splines::JointGoals motor_goals = ik_.calculateDirectly(response);
-  //bitbots_splines::JointGoals motor_goals = ik_.calculateSeperate(response);
 
   // publish them
   publishGoals(motor_goals);
@@ -136,7 +122,6 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
 
   // publish if foot changed
   if(current_support_foot_ != support_state.data){
-    SWRI_PROFILE("publish support");
     pub_support_.publish(support_state);
     current_support_foot_ = support_state.data;
   }
@@ -144,14 +129,12 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
 
   // publish debug information
   if (debug_active_) {
-    SWRI_PROFILE("publish debug");
     visualizer_.publishIKDebug(response, current_state_, motor_goals);
     visualizer_.publishWalkMarkers(response);
   }
 }
 
 double WalkNode::getTimeDelta() {
-  SWRI_PROFILE("get_time_delta");
   // compute time delta depended if we are currently in simulation or reality
   double dt;
   double current_ros_time = ros::Time::now().toSec();
@@ -171,7 +154,6 @@ double WalkNode::getTimeDelta() {
 }
 
 void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
-  SWRI_PROFILE("cmdvel-cb");
   // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
   // other axis.
 
@@ -204,7 +186,6 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
 }
 
 void WalkNode::imuCb(const sensor_msgs::Imu &msg) {
-  SWRI_PROFILE("imu-cb");
   if (imu_active_) {
     // the incoming geometry_msgs::Quaternion is transformed to a tf2::Quaternion
     tf2::Quaternion quat;
@@ -292,7 +273,6 @@ void WalkNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {
 }
 
 void WalkNode::jointStateCb(const sensor_msgs::JointState &msg) {
-  SWRI_PROFILE("joint-cb");
   std::vector<std::string> names_vec = msg.name;
   std::string *names = names_vec.data();
 
@@ -304,7 +284,6 @@ void WalkNode::kickCb(const std_msgs::BoolConstPtr &msg) {
 }
 
 void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level) {
-  SWRI_PROFILE("reconf-cb");
   params_ = config;
 
   ik_.setBioIKTimeout(config.bio_ik_time);
@@ -337,8 +316,6 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
 // todo this is the same method as in kick, maybe put it into a utility class - Yes - still needs to be discussed
 // currently the spline package is quiet ros agnostic, this would not work with this method
 void WalkNode::publishGoals(const bitbots_splines::JointGoals &goals) {
-  SWRI_PROFILE("publish goals");
-
   /* Construct JointCommand message */
   bitbots_msgs::JointCommand command;
   command.header.stamp = ros::Time::now();
@@ -360,14 +337,10 @@ void WalkNode::publishGoals(const bitbots_splines::JointGoals &goals) {
   command.accelerations = accs;
   command.max_currents = pwms;
 
-  {
-    SWRI_PROFILE("publish");
-    pub_controller_command_.publish(command);
-  }
+  pub_controller_command_.publish(command);
 }
 
 void WalkNode::publishOdometry(WalkResponse response) {
-  SWRI_PROFILE("publish odometry");
   // odometry to trunk is transform to support foot * transform from support to trunk
   tf2::Transform support_foot_tf;
   if (walk_engine_.isLeftSupport()) {

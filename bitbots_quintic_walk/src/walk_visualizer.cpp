@@ -16,7 +16,6 @@ void WalkVisualizer::init(robot_model::RobotModelPtr kinematic_model){
 }
 
 void WalkVisualizer::publishEngineDebug(WalkResponse response) {
-  SWRI_PROFILE("viz publish debug");
   //only do something if someone is listing
   if (pub_engine_debug_.getNumSubscribers() == 0 && pub_debug_marker_.getNumSubscribers() == 0) {
     return;
