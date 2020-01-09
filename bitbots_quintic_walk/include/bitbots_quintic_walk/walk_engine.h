@@ -15,7 +15,6 @@ https://github.com/Rhoban/model/
 #include "bitbots_splines/abstract_engine.h"
 #include "bitbots_splines/smooth_spline.h"
 #include "bitbots_splines/pose_spline.h"
-#include "swri_profiler/profiler.h"
 
 #include "bitbots_quintic_walk/walk_utils.h"
 

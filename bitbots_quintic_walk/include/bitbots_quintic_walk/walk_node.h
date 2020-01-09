@@ -49,7 +49,6 @@ https://github.com/Rhoban/model/
 #include "bitbots_splines/abstract_ik.h"
 #include "bitbots_quintic_walk/walk_visualizer.h"
 
-#include "swri_profiler/profiler.h"
 namespace bitbots_quintic_walk {
 
 class WalkNode {

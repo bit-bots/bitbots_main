@@ -10,7 +10,6 @@
 #include "bitbots_splines/dynamic_balancing_goal.h"
 #include "bitbots_splines/reference_goals.h"
 
-#include "swri_profiler/profiler.h"
 
 namespace bitbots_quintic_walk {
 
