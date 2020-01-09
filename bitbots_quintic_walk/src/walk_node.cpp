@@ -100,8 +100,12 @@ void WalkNode::run() {
     }
 
     {
+          SWRI_PROFILE("spin");
+    ros::spinOnce();
+    }
+
+    {
       SWRI_PROFILE("sleep");
-      ros::spinOnce();
       loop_rate.sleep();
     }
   }
@@ -288,6 +292,7 @@ void WalkNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {
 }
 
 void WalkNode::jointStateCb(const sensor_msgs::JointState &msg) {
+  SWRI_PROFILE("joint-cb");
   std::vector<std::string> names_vec = msg.name;
   std::string *names = names_vec.data();
 
@@ -299,6 +304,7 @@ void WalkNode::kickCb(const std_msgs::BoolConstPtr &msg) {
 }
 
 void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level) {
+  SWRI_PROFILE("reconf-cb");
   params_ = config;
 
   ik_.setBioIKTimeout(config.bio_ik_time);
