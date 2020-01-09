@@ -11,7 +11,7 @@ The vision is able to detect lines, the field itself, the field boundary, goal p
 
 See the documentation of this package at our website: [doku.bit-bots.de](http://doku.bit-bots.de/meta/manual/software/vision.html)
 
-An earlier version of this pipeline is presented in our paper [An Open Source Vision Pipeline Approach for RoboCup Humanoid Soccer](https://robocup.informatik.uni-hamburg.de/wp-content/uploads/2019/06/vision_paper.pdf). 
+An earlier version of this pipeline is presented in our paper [An Open Source Vision Pipeline Approach for RoboCup Humanoid Soccer](https://robocup.informatik.uni-hamburg.de/wp-content/uploads/2019/06/vision_paper.pdf).
 When you use this pipeline or parts of it, please cite it.
 ```
 @inproceedings{vision2019,
@@ -38,7 +38,7 @@ The camera drivers are not included in this package but can be auto launched.
 
 If you want the vision to run without starting a camera driver simply set the cli launch parameter `camera:=false`.
 Every image source, that publishes a `sensor_msgs/Image messages` message is also supported.
-The ROS topics and many other parameters are defined in the `visioparams.yaml` config file.
+The ROS topics and many other parameters are defined in the `visionparams.yaml` config file.
 All used parameters are also changeable during run-time using ros dynamic reconfigure.
 For simulation usage, different parameters can be defined in the ``simparam.yaml`` which overrides the normal params.
 The debug mode with special debug output can be activated using ``debug:=true``.
@@ -129,6 +129,9 @@ Vision Tools
 
 In the bitbots_vision_tools directory, special tools for debugging/introspection purposes are provided.
 
+- **`/scripts/colorpicker.py`**
+  A tool to create color space files out of an video stream.
+
 - **`/scripts/color_space_tool.py`**
   A small tool for color space enhancement.
 
@@ -150,7 +153,7 @@ In the bitbots_vision_tools directory, special tools for debugging/introspection
 - **`/scripts/imageclean.sh`**
   This is a small bash script, to quickly sort a directory of images using feh with shortcuts.
   Start this inside the directory of images to sort.
-  
+
   Press key:
   - `1` -> move current image to **Trash** subdirectory
   - `2` -> Move current image to **Balls** subdirectory

@@ -23,6 +23,9 @@ ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'  # ROS 
 
 fcnn_model_path: '2019_06_timon_basler'  # Name of the ball fcnn model
 yolo_model_path: '2019_07_03_jonas_yolo'  # Name of the yolo model
+yolo_nms_threshold: 0.4  # Non maximum suppression threshold
+yolo_confidence_threshold: 0.5  # Yolo: confidence threshold
+
 ball_fcnn_threshold: .6  # Minimal activation for a pixel in the fcnn heatmap to be considered
 ball_fcnn_expand_stepsize: 4  # Expand stepsize for the ball fcnn clustering
 ball_fcnn_pointcloud_stepsize: 10  # Pointcloud stepsize for the ball fcnn clustering
@@ -35,6 +38,9 @@ ball_fcnn_publish_field_boundary_offset: 5  # The offset added to the field_boun
 neural_network_type: 'yolo_darknet'  # The neural network type that should be used (fcnn, yolo_opencv, yolo_darknet or dummy)
 ball_candidate_field_boundary_y_offset: 0  # Threshold in which ball candidates over the field boundary are allowed.
 ball_candidate_rating_threshold: 0.5  # A threshold for the minimum candidate rating
+ball_candidate_max_count: 1  # The maximum number of balls that should be published
+
+goal_post_field_boundary_y_offset: 10  # Maximum distance between field boundary and goal post
 
 field_color_detector_path: 'basler_f031.pickle'  # Color space for the field color detector
 field_color_detector_use_hsv: false
@@ -104,4 +110,3 @@ ball_fcnn_publish_debug_img: false  # Publish the fcnn heatmap image for debug p
 vision_publish_HSV_mask_image: false  # Publish all three HSV color detector mask image messages for debug purposes
 vision_publish_field_mask_image: false  # Publish field mask image message for debug purposes
 caching: true  # Used to deactivate caching for profiling reasons
-

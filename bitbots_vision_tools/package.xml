@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_vision_tools</name>
-  <version>0.1.2</version>
+  <version>0.1.4</version>
   <description>The vision_tools package</description>
 
   <maintainer email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</maintainer>
@@ -23,7 +23,6 @@
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <exec_depend>rospy</exec_depend>
-  <depend>bitbots_vision</depend>
   <depend>image_transport</depend>
   <depend>message_runtime</depend>
 

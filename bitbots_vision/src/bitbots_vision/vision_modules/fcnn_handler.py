@@ -2,14 +2,14 @@ import cv2
 from cv_bridge import CvBridge
 import VisionExtensions
 import numpy as np
-from .candidate import Candidate, BallDetector
+from .candidate import Candidate, CandidateFinder
 import itertools
 import random
 import rospy
 from .live_fcnn_03 import FCNN03
 
 
-class FcnnHandler(BallDetector):
+class FcnnHandler(CandidateFinder):
     """
     This handles FCNNs, meaning it finds and rates candidates in their output.
     """
