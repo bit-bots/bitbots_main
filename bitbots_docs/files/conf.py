@@ -12,6 +12,8 @@ import os
 import sys
 import catkin_pkg.package
 
+from exhale import utils
+
 package_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 catkin_package = catkin_pkg.package.parse_package(
     os.path.join(package_dir, catkin_pkg.package.PACKAGE_MANIFEST_FILENAME))
@@ -115,12 +117,28 @@ if num_files_cpp > 0:
     }
     breathe_default_project = project
 
+    def specifications_for_kind(kind):
+        # Show all members for classes and structs
+        if kind == "class" or kind == "struct":
+            return [
+              ":members:",
+              ":protected-members:",
+              ":private-members:",
+              ":undoc-members:"
+            ]
+        # An empty list signals to Exhale to use the defaults
+        else:
+            return []
+
     exhale_args = {
         # These arguments are required
         "containmentFolder": "cppapi",
         "rootFileName": "library_root.rst",
         "rootFileTitle": "C++ Library API",
         "doxygenStripFromPath": "..",
+        "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
+            specifications_for_kind
+        ),
         # Suggested optional arguments
         "createTreeView": True,
         "exhaleExecutesDoxygen": True,
