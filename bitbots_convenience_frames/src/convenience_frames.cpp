@@ -14,7 +14,7 @@ class ConvenienceFramesBroadcaster {
  public:
   ConvenienceFramesBroadcaster();
  private:
-  tf2_ros::TransformBroadcaster broadcaster_;
+  tf2_ros::TransformBroadcaster broadcaster_{tf2_ros::TransformBroadcaster()};
   geometry_msgs::TransformStamped tf_{geometry_msgs::TransformStamped()};
   tf2_ros::Buffer tfBuffer_{ros::Duration(1.0)};
   tf2_ros::TransformListener tfListener_{tfBuffer_};
