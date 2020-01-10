@@ -1,5 +1,9 @@
-The HCM
-=======
+Welcome to |project|'s documentation!
+================================================
+
+Description
+-----------
+
 
 The HCM is the part of our software stack which handles all reflexlike behaviour of the robot, e.g. falling.
 It helps abstracting from the fact that the robot has legs and can fall.
@@ -19,6 +23,7 @@ Tasks of the HCM
 ----------------
 
 The HCM performs 6 tasks to abstract from the robot type:
+
 1. Handling hardware problems
     If a problem with servos or sensors is detected the robot goes in a safe state and stop moving.
 2. Manual stop
@@ -66,3 +71,17 @@ What to do when it does not work
 3. The visualization of the DSD is possible with the standard DSD visualization using the rqt plugin.
    There you can see exactly which decision is responsible for the current behavior and then you can look into the code.
 
+
+.. toctree::
+   :maxdepth: 2
+
+   cppapi/library_root
+   pyapi/modules
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* |modindex|
+* :ref:`search`
