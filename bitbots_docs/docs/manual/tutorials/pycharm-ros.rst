@@ -1,23 +1,24 @@
 ============================
-PyCharm mit ROS Integration
+PyCharm with ROS Integration
 ============================
 
-Paketpfad einrichten
-====================
-Hiermit werden ROS-Pakete zum PYTHONPATH hinzugefügt, wodurch diese von PyCharm indexiert werden und somit
-Autovervolständigung möglich wird.
-Wenn `ROS Sourcen` angewendet wird, sollte dies nicht nötig sein.
+Setup Package Path
+===================
+When following these steps ROS-packages will be added to your PYTHONPATH.
+This leads to PyCharm indexing them and thus you can use auto completion.
+If you use `Source ROS`, this is not necessary.
 
 1. Settings --> Project:bitbots_meta --> Project Interpreter
-2. Zahnrad oben rechts neben dem Interpreter --> Show All
-3. Unterster Button auf der rechten Seite ("Show paths for the selected interpreter")
+2. Cog at the top right next to the Interpreter --> Show All
+3. Lowest button on the right side ("Show paths for the selected interpreter")
 4. Add --> `/opt/ros/melodic/lib/python2.7/dist-packages`
 5. Add --> `<catkin_ws>/devel/lib/python2.7/dist-packages`
 
-ROS Sourcen
+`Source ROS`
 ===========
-Hierdurch wird ROS beim starten von PyCharm gesourced wodurch alle ROS-Commands und Pfade automatisch bekannt werden.
-PyCharm weiß somit genauso viel wie die Shell und kann theoretisch auch genauso viel machen.
+When using this method, ROS will be sourced when starting PyCharm.
+This means all ROS-commands and paths are known to PyCharm.
+This means PyCharm knows just as much as your Shell and can theoretically do the same things.
 
 1. ::
 
@@ -29,17 +30,16 @@ PyCharm weiß somit genauso viel wie die Shell und kann theoretisch auch genauso
 
 3. ::
 
-    Name ändern, da sonst der globale PyCharm starter überschrieben wird
+    Change the name, otherwise you overwrite the global PyCharm starter.
 
 4. ::
 
     Exec=bash -c "source <catkin_ws>/devel/setup.bash; /usr/bin/pycharm %f"
 
-
-Launch-Dateien anpassen
+Change Launch-files
 =======================
-Um Nodes effektiv mit PyCharm zu testen/debuggen kann ein Argument `depends_only` zur Launch-Datei hinzugefügt werden,
-wodurch nur konditional die zu testende Node gestartet wird.
+To test/debug nodes in an efficient way with PyCharm you can add the argument `depends_only` to your launch-file.
+This menas only the node you want to test will be started.
 
-Nachdem dann extern mit `roslaunch` diese Datei gelauncht wurde kann PyCharm die eigentliche Node einfach
-ausführen und debuggen.
+After you have started the node externally using `roslaunch`, PyCharm will be able to start this node and you can debug.
+
