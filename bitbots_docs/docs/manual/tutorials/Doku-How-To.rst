@@ -91,7 +91,7 @@ Sobald die Doku das erste Mal gebaut wird, wird automatisch ein neuer Unterordne
 Dieser soll von nun an die Dokumentation beherbergen.
 
 
-Diese allgemeine Dokumentation kann mit dem Command ``catkin build bitbots_docs
+Diese allgemeine Dokumentation (die mit Tutorials inklusive dieser Seite) kann mit dem Command ``catkin build bitbots_docs
 --no-deps --make-args Documentation`` gebaut werden.
 
 Für ein anderes Paket, bei dem die Doku wie oben beschrieben aktiviert wurde, kann sie mit
