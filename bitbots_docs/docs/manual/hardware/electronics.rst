@@ -21,8 +21,12 @@ DXLBoard
 
 The DXLBoard is developed by Rhoban from Bordeaux. It communicates with the Servo bus over RS485 or TTL and the NUC via USB.
 
-Documentation about the Hardware is available at [https://github.com/Rhoban/DXLBoard](https://github.com/Rhoban/DXLBoard).
-We use a custom firmware to support Dynamixel Protocol 2.0 which can be found here: [https://github.com/bit-bots/DXLBoard/tree/protocol2_single_bus](https://github.com/bit-bots/DXLBoard/tree/protocol2_single_bus)
+Documentation about the Hardware is available here_. 
+We use a custom firmware to support Dynamixel Protocol 2.0 which can be found on our fork_.
+
+.. _here: https://github.com/Rhoban/DXLBoard
+.. _fork: https://github.com/bit-bots/DXLBoard/tree/protocol2_single_bus
+
 
 Wolfgang Core
 =============
