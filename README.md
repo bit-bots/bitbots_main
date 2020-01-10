@@ -169,7 +169,7 @@ In the bitbots_vision_tools directory, special tools for debugging/introspection
   ```
   rosrun bitbots_vision extract_from_rosbag.py -i testdata.bag -o testdataset -t /image_raw -n 3
   ```
-  This will extract every third image from the testdata.bag on the /image_raw topic into the folder $PWD/testdataset.
+  This will extract every third image from the `testdata.bag` on the `/image_raw` message topic into the folder `$PWD/testdataset`.
 
   This tool provides a help page `-h` for further details.
 
