@@ -24,12 +24,16 @@ except ImportError:
 
 
 class Vision:
+    """
+    The Vision is the main ROS-node for handling all tasks related to image processing.
+
+    This class defines the whole image processing pipeline, which uses the modules from the `vision_modules`.
+    It also handles the dynamic reconfiguration of the bitbots_vision.
+    """
     def __init__(self):
         # type () -> None
         """
-        Vision is the main ROS-node for handling all tasks related to image processing.
         Initiating 'bitbots_vision' node.
-
         :return: None
         """
         rospack = rospkg.RosPack()
