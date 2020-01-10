@@ -60,6 +60,8 @@ Um die Dokumentation eines Bit-Bots Pakets zu aktivieren sind folgende Änderung
     
     .. todo:: Jenkins Dokument referenzieren
 
+    .. note:: Nur `<package-name>` muss geändert werden:
+
     .. code-block:: groovy
 
         @Library('bitbots_jenkins_library') import de.bitbots.jenkins.PackageDefinition
