@@ -86,7 +86,7 @@ Furthermore add the `ADS126X library`_ to the ArduinoIDE under Sketch..Include l
 
 .. _ADS126X library: https://github.com/Molorius/ADS126X
 
-For the left foot, the DXL_ID should be set to 100, for the right foot, it should be 101.
+For the left foot, the DXL_ID should be set to 102, for the right foot, it should be 101.
 
 Firstly compile your sketch. When the compilation is finished, press the reset button on the board
 and the press upload button in the Arduino IDE immediately.
