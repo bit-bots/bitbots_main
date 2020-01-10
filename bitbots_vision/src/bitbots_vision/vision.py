@@ -33,7 +33,8 @@ class Vision:
     def __init__(self):
         # type () -> None
         """
-        Initiating 'bitbots_vision' node.
+        Inits 'bitbots_vision' node.
+
         :return: None
         """
         rospack = rospkg.RosPack()
