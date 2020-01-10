@@ -16,14 +16,6 @@ class ColorDetector(object):
     ColorDetectors are used e.g. to check, if a pixel matches the defined color space or to create masked binary images.
     As many of the modules rely on the color classification of pixels to generate their output, the color detector module matches their color to a given color space.
     These color spaces are configured for the colors of the field or objects like goalposts and team markers.
-    Two types of color spacedefinitions are implemented:
-
-    Either it is defined by minimum and maximum values of all three HSV channels or by predefined lookup tables (provided asa Pickle file or YAML, a data-serialization language).
-    The HSV color model is used for the representation of white and the robot marker colors, red and blue.
-    The values of the HSV channels can be easily adjusted by a human before a competition to match the white of the lines and goal or the team colors of the enemy team respectively.
-    This is necessary as teams may have different tones of red or blue as their marker color.
-    On the other hand, the color of the field is provided as a YAML or
-    Pickle file to include more various and nuanced tones of green.
     """
 
     def __init__(self, config):
@@ -191,6 +183,9 @@ class HsvSpaceColorDetector(ColorDetector):
     """
     HsvSpaceColorDetector is a ColorDetector, that is based on the HSV-color space.
     The HSV-color space is adjustable by setting min- and max-values for hue, saturation and value.
+
+    The values of the HSV channels can be easily adjusted by a human before a competition to match the white of the lines and goal or the team colors of the enemy team respectively.
+    This is necessary as teams may have different tones of red or blue as their marker color.
     """
     def __init__(self, config, color_str):
         # type: (dict, str) -> None

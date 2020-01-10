@@ -5,8 +5,13 @@ import numpy as np
 class DebugImage:
     """
     Draws the debug image for the Vision.
-    The debug module creates useful debug information using cv2 if *debug* is set to *true* when starting the vision or debugging options are selected in dynamic reconfigure.
-    It is capable of displaying the normal and convex field boundary (red and yellow lines), the best and discarded ball candidates (green and red circles), the goalposts (white bounding boxes), and different obstacles (black: unknown, red: red robot, blue: blue robot).
+
+    The debug module creates useful debug information if *debug* is set to *true*
+    when starting the vision or debugging options are selected in dynamic reconfigure.
+
+    It is capable of displaying the normal and convex field boundary (red and yellow lines),
+    the best and discarded ball candidates (green and red circles),
+    the goalposts (white bounding boxes), and different obstacles (black: unknown, red: red robot, blue: blue robot).
     """
     def __init__(self):
         """

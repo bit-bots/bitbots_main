@@ -12,7 +12,9 @@ from .candidate import CandidateFinder, Candidate
 
 class YoloHandler():
     """
-    Defines an abstract YoloHandler
+    Defines an abstract YoloHandler, which runs/manages the YOLO inference.
+
+    Our YOLO is currently abel to detect goalpost and ball candidates.
     """
     def __init__(self, config, model_path):
         """
@@ -244,6 +246,8 @@ class YoloHandlerOpenCV(YoloHandler):
 class YoloBallDetector(CandidateFinder):
     """
     A ball detector using the yolo neural network.
+    This layer connects a single YOLO network with multiple candidate finders for the different classes,
+    in this case the ball class.
     """
     def __init__(self, config, yolo):
         """
@@ -280,7 +284,8 @@ class YoloBallDetector(CandidateFinder):
 class YoloGoalpostDetector(CandidateFinder):
     """
     A goalpost detector using the yolo neural network.
-    The obstacle post detection module is a CandidateFinder.
+    This layer connects a single YOLO network with multiple candidate finders for the different classes,
+    in this case the goalpost class.
     """
     def __init__(self, config, yolo):
         """
