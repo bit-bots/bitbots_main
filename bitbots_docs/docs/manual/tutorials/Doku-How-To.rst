@@ -77,14 +77,14 @@ Um die Dokumentation eines Bit-Bots Pakets zu aktivieren sind folgende Änderung
     Da wir Doku bauen wollen, muss das 2. Argument auf true gesetzt werden.
 
 
-Orderstruktur
--------------
+Ordnerstruktur
+--------------
 
 Fertige Dokumentation kann unter ``docs/_out/index.html`` lokal abgerufen werden.
 
 .. todo:: Genauer beschreiben. Vor allem, welche Dateien wie wiederhergestellt werden
 
-Doku selbster bauen
+Doku selber bauen
 -------------------
 
 Sobald die Doku das erste Mal gebaut wird, wird automatisch ein neuer Unterordner `docs` im Paket erstellt. 
