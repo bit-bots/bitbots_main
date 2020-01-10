@@ -7,9 +7,22 @@ import rospy
 
 class ObstacleDetector(CandidateFinder):
     """
-    Obstacle detector that uses gaps in the field boundary
+    The obstacle detection module is a CandidateFinder that is capable of finding obstructions like robots.
+    Its ability to detect goalposts was replaced by the neural network.
+    In order to perform its task it uses the FieldBoundaryDetector or more specifically the field_boundary and/or convex_field_boundary depending on the method used.
+    Given that the field_boundary contains dents where objects obstruct the edge of the field and consists of a list of points, the obstacle detection module can find these objects by comparing the height of adjacent field_boundary-points.
+    Alternatively objects can be found by measuring the distance between the ordinary field_boundary and the convex field_boundary which is a slightly less efficient but more accurate method.
     """
     def __init__(self, config, red_color_detector, blue_color_detector, white_color_detector, field_boundary_detector):
+        """
+        Initialization of the ObstacleDetector.
+
+        :param config: the configuration contained in visionparams.yaml
+        :param red_color_detector: checks whether a color is part of the red color mask
+        :param blue_color_detector: checks whether a color is part of the blue color mask
+        :param white_color_detector: checks whether a color is part of the white color mask
+        :param field_boundary_detector: locates the field_boundary
+        """
         # type: (dict, ColorDetector, ColorDetector, ColorDetector, FieldBoundaryDetector) -> None
         # Set used detectors
         self._red_color_detector = red_color_detector
@@ -394,7 +407,7 @@ class RedObstacleDetector(CandidateFinder):
     def __init__(self, obstacle_detector):
         # type: (ObstacleDetector) -> None
         """
-        Init red obstacle detector.
+        Initialization of the red obstacle detector.
 
         :param obstacle_detector: obstacle_detector instance held by the vision
         """
@@ -431,7 +444,7 @@ class BlueObstacleDetector(CandidateFinder):
     def __init__(self, obstacle_detector):
         # type: (ObstacleDetector) -> None
         """
-        Init blue obstacle detector.
+        Initialization of the blue obstacle detector.
 
         :param obstacle_detector: obstacle_detector instance held by the vision
         """
@@ -468,7 +481,7 @@ class WhiteObstacleDetector(CandidateFinder):
     def __init__(self, obstacle_detector):
         # type: (ObstacleDetector) -> None
         """
-        Init white obstacle detector.
+        Initialization of the white obstacle detector.
 
         :param obstacle_detector: obstacle_detector instance held by the vision
         """
@@ -505,7 +518,7 @@ class UnknownObstacleDetector(CandidateFinder):
     def __init__(self, obstacle_detector):
         # type: (ObstacleDetector) -> None
         """
-        Init unknown obstacle detector.
+        Initialization of the unknown obstacle detector.
 
         :param obstacle_detector: obstacle_detector instance held by the vision
         """

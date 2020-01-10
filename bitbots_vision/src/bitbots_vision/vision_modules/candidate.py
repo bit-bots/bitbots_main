@@ -3,7 +3,22 @@ import rospy
 
 
 class Candidate:
+    """
+    The CandidateFinder is an abstract class that requires its subclasses to contain the methods *get_candidates()* and *get_top_candidates()*.
+    Examples of subclasses are *ObstacleDetector*, *FcnnHandler* and *YoloBallDetector*.
+    They usually produce a set of so called *Candidates* which are instances of the *Candidate* class.
+    It provides different getters for different properties of the candidate.
+    """
     def __init__(self, x1=0, y1=0, width=0, height=0, rating=None):
+        """
+        Constructor of the Candidate class.
+
+        :param x1: horizontal part of the coordinate of the top left corner of the candidate.
+        :param y1: vertical part of the coordinate of the top left corner of the candidate.
+        :param width: horizontal size
+        :param height: vertical size
+        :param rating: accuracy of the candidate
+        """
         self._x1 = x1
         self._y1 = y1
         self._width = width
@@ -224,8 +239,14 @@ class CandidateFinder(object):
 class DummyCandidateFinder(CandidateFinder):
     """
     Dummy candidate detector that we use if we want to run the vision without neural network to e.g. save computation time for debugging.
+    This CandidateFinder returns an empty set of ball candidates and therefore replaces the ordinary ball detection.
+    It is only used if the *dummyball* parameter is set to *true* when starting the vision.
+    The DummyCandidateFinder is useful for debugging as you don't always want the ball detection to slow down the vision and create unnecessary debug info.
     """
     def __init__(self):
+        """
+        Constructor of the DummyCandidateFinder.
+        """
         self._detected_candidates = []
         self._sorted_candidates = []
         self._top_candidate = None

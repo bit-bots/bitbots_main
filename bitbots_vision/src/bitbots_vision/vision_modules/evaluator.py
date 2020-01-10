@@ -5,12 +5,16 @@ from collections import deque
 
 
 class RuntimeEvaluator:
+    """
+    This module calculates the average time a method (e.g. get_candidates) needs to work on a single image.
+    It thereby allows improved evaluation and comparison of different methods.
+    In order to use it you need to import the RuntimeEvaluator to your class and call *self._runtime_evaluator.start_timer()* before and *self._runtime_evaluator.stop_timer()* after the method you want to test.
+    Use *self._runtime_evaluator.print_timer()* to receive the result.
+    """
     def __init__(self, name="Runtime", queue_size=100):
         # type: (str, int) -> None
         """
-        Calculates the average time a method (e.g. get_candidates) takes to work on an image.
-        Allows improved evaluation and comparison of different methods.
-
+        Initialization of RuntimeEvaluator.
         :param name: name of the evaluator, allow the identification of the printed results
         :param queue_size: amount of measurements used to calculate the average
         """

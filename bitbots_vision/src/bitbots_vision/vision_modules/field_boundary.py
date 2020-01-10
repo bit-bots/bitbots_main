@@ -10,10 +10,21 @@ from operator import itemgetter
 
 
 class FieldBoundaryDetector(object):
+    """
+    This is the abctract class for the field boundary detector.
+    The task of the field boundary detector module is the localisation of the edges of the field.
+    It returns a list of points that form this so called field boundary.
+    It requires the ColorDetector to find the green pixels that resemble the field in the picture.
+    The green pixels of the ordinary FieldBoundary are found by traversing the picture from left to right and from top to bottom in steps of a given length.
+    Because obstacles obscure the edges of the field however, sometimes the first green pixel from the top of the picture is found at the bottom of the respective obstacle.
+    Therefore not all of the points lie in a straight line and the FieldBoundary contains multiple dents.
+    Additionally white field markings and green pixels in the field that are falsely not part of the field color set can rarely create small dents too.
+    Besides the normal FieldBoundary, the FieldBoundaryDetector can also create a convex FieldBoundary that forms a convex hull over the dents of the normal FieldBoundary and is therefore completely straight (with the exception of the corners of the field).
+    """
     def __init__(self, config, field_color_detector):
         # type: (dict, ColorDetector) -> None
         """
-        This is the abctract class for the field boundary detector.
+        Initialization of the FieldBoundaryDetector.
 
         :param config: the configuration contained in visionparams.yaml
         :param field_color_detector: checks whether a color is part of the field colors
@@ -347,10 +358,13 @@ class FieldBoundaryDetector(object):
 
 
 class IterationFieldBoundaryDetector(FieldBoundaryDetector):
+    """
+    This is the iteration field boundary detector.
+    It uses the iteration detection method and finds the field boundary via scan lines running down from top to bottom.
+    """
     def __init__(self, config, field_color_detector):
         """
-        This is the iteration field boundary detector.
-        It uses the iteration detection method and finds the field boundary via scan lines running down from top to bottom.
+        Initialization of the IterationFieldBoundaryDetector.
 
         :param config: the configuration contained in visionparams.yaml
         :param field_color_detector: checks whether a color is part of the field colors
@@ -374,10 +388,13 @@ class IterationFieldBoundaryDetector(FieldBoundaryDetector):
 
 
 class BinaryFieldBoundaryDetector(FieldBoundaryDetector):
+    """
+    This is the binary search field boundary detector.
+    It uses the binary detection method and finds the field boundary via binary search.
+    """
     def __init__(self, config, field_color_detector):
         """
-        This is the binary search field boundary detector.
-        It uses the binary detection method and finds the field boundary via binary search.
+        Initialization of the BinaryFieldBoundaryDetector.
 
         :param config: the configuration contained in visionparams.yaml
         :param field_color_detector: checks whether a color is part of the field colors
@@ -401,10 +418,13 @@ class BinaryFieldBoundaryDetector(FieldBoundaryDetector):
 
 
 class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
+    """
+    This is the reversed iteration field boundary detector.
+    It uses the reversed detection method and finds the field boundary via scan lines running up from bottom to top.
+    """
     def __init__(self, config, field_color_detector):
         """
-        This is the reversed iteration field boundary detector.
-        It uses the reversed detection method and finds the field boundary via scan lines running up from bottom to top.
+        Initialization of the ReversedFieldBoundaryDetector.
 
         :param config: the configuration contained in visionparams.yaml
         :param field_color_detector: checks whether a color is part of the field colors
@@ -428,10 +448,13 @@ class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
 
 
 class DownsamplingReversedFieldBoundaryDetector(FieldBoundaryDetector):
+    """
+    This is the reversed iteration field boundary detector implemented in OpenCV.
+    It uses the reversed detection method and finds the field boundary via scan lines running up from bottom to top.
+    """
     def __init__(self, config, field_color_detector):
         """
-        This is the reversed iteration field boundary detector implemented in OpenCV.
-        It uses the reversed detection method and finds the field boundary via scan lines running up from bottom to top.
+        Initialization of the DownsamplingReversedFieldBoundaryDetector.
 
         :param config: the configuration contained in visionparams.yaml
         :param field_color_detector: checks whether a color is part of the field colors
@@ -455,11 +478,15 @@ class DownsamplingReversedFieldBoundaryDetector(FieldBoundaryDetector):
 
 
 class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
+    """
+    This is the dynamic field boundary detector.
+    It switches between the iteration and reversed iteration method.
+    It depends on how much the robot head is tilted.
+    This improves performance (iteration) and enables operation with two field next to each other (reversed).
+    """
     def __init__(self, config, field_color_detector):
         """
-        This is the dynamic field boundary detector.
-        It switches between the iteration and reversed iteration method. It depends on how much the robot head is tilted.
-        This improves performance (iteration) and enables operation with two field next to each other (reversed).
+        Initialization of the DynamicFieldBoundaryDetector
 
         :param config: the configuration contained in visionparams.yaml
         :param field_color_detector: checks whether a color is part of the field colors
@@ -531,7 +558,7 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
 
 class FieldBoundaryAlgorithm():
     """
-    Definition of the interface for an field boundary algorithm
+    Definition of the interface for a field boundary algorithm.
     """
     @abc.abstractmethod
     def _calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
@@ -690,7 +717,6 @@ class DownsamplingReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
         field_boundary_points[0] = (0, field_boundary_points[0][1])
         field_boundary_points[-1] = (field_mask.shape[1]-1, field_boundary_points[-1][1])
         return field_boundary_points
-
 
 
 class BinaryFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
