@@ -5,7 +5,7 @@ Elektronik
 Powerboard
 ==========
 
-The Powerboard allows to connect either and external power supply or a battery. It has a switch to turn on and off the power to the servos.
+The Powerboard allows to connect either an external power supply or a battery. It has a switch to turn on and off the power to the servos.
 
 * Schematic :download:`pdf <elektronik/wolfgang_power.pdf>`
 * PCB combined :download:`pdf <elektronik/wolfgang_power_pcb.pdf>`
@@ -34,7 +34,7 @@ Wolfgang Core
 Wolfgang Core (COntrolling and Regulating Electronics) is currently in the testing phase.
 
 * 4 buses with up to 10 MBaud (highest for Dynamixel MX and X servos is 4 MBaud)
-* power swiching with switch and software
+* power switching with switch and software
 * voltage regulation (9V 1A, 5V 5A)
 * voltage sensing
 * current sensing
@@ -44,8 +44,7 @@ Wolfgang Core (COntrolling and Regulating Electronics) is currently in the testi
 Bit Foot
 ========
 
-Der Bit Foot is a board to read 4 load cells on the foot of the robot and communicate over the dynamixel bus.
+The Bit Foot is a board to read 4 load cells on the foot of the robot and communicate over the dynamixel bus.
 
 * Schaltplan :download:`pdf <elektronik/bitfoot.pdf>`
 * PCB :download:`pdf <elektronik/bitfoot_pcb.pdf>`
-
