@@ -66,12 +66,12 @@ Um die Dokumentation eines Bit-Bots Pakets zu aktivieren sind folgende Änderung
 
         @Library('bitbots_jenkins_library') import de.bitbots.jenkins.PackageDefinition
 
-        bitbtosPipeline([
+        bitbotsPipeline([
             new PackageDefinition("<package-name>", true)
         ] as PackageDefinition[])
 
 
-    Damit wird unsere Jenkins Bibliothek eingebunden und danach die ``bitbtosPipeline`` gestartet.
+    Damit wird unsere Jenkins Bibliothek eingebunden und danach die ``bitbotsPipeline`` gestartet.
     Diese braucht ein Array an Paketdefinitionen.
     Der Konstruktor akzeptiert den Paketnamen und dann, ob Doku gebaut werden soll.
     Da wir Doku bauen wollen, muss das 2. Argument auf true gesetzt werden.
