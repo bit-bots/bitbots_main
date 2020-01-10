@@ -2,7 +2,7 @@
 How to Test
 ===========
 
-General remarks
+General Remarks
 ===============
 
 We want to test our software in a sensible manner because it is important that our software reliably works in a game.
@@ -15,7 +15,7 @@ In robotics, the hardware and the connection to reality have to be considered as
 So additionally to the usual problems, the Reality Gap influences the testing process.
 The term Reality Gap describes the difference between simulation and reality.
 Because of this, in simulation tested software may not necessarily work on the robot.
-Still, it is sensible to use classical test methods and tests in simulation at the beginning before testing on the robot.
+Still, it makes sense to use classical test methods and tests in simulation at the beginning before testing on the robot.
 This saves time and protects the hardware.
 Moreover, lots of mistakes can be found with this.
 But it is essential to know that not all mistakes can be found with this method.
@@ -23,7 +23,7 @@ But it is essential to know that not all mistakes can be found with this method.
 Our software is organized in packages.
 Each one has a status tag which shows the current test status.
 The test status of all packages is visualized in the architecture diagram.
-By the different levels an orientation is given about what has to be tested.
+Through the different levels an orientation is given about what has to be tested and which software already works well.
 In the following, this will be explained in more detail.
 
 
@@ -31,12 +31,12 @@ Unit vs. Integration Testing
 ============================
 
 In general, it is possible to test a package on its own, e.g., only the walking, or to test the integration of a package with several others, e.g., walking together with path planning.
-Hereby, it is sensible to test at first if each single component works.
+Hereby, it makes sense to test first if each single component works.
 After that, the integration of the components should be tested pairwise.
 If this has been done successfully, the whole software stack can be tested.
-This represents a bottom-up approach.
+This is a bottom-up approach.
 Using this has the advantage that for surfacing errors it is clear which package caused them.
-Another not recommended approach would be the top-down approach.
+Another, not recommended, approach would be the top-down approach.
 With this approach the whole software stack is started right at the beginning.
 
 
@@ -138,7 +138,7 @@ By our definition software is considered stable if it has been used in multiple 
 
 What to do when changing a package?
 ====================================================
-Even when only small changes are merged to the master branch, the package has to be tested again to keep its test status.
+Even when only small changes are applied to the master branch, the package has to be tested again to keep its test status.
 If the package is not tested again or only partially tested the test status has to be adapted to 'unknown' or the reached test state.
 
 
