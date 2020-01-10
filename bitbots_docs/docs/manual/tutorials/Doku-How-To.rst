@@ -51,7 +51,8 @@ Um die Dokumentation eines Bit-Bots Pakets zu aktivieren sind folgende Änderung
         # auto-generated documentation
         **/docs/_build
         **/docs/_out
-        **/docs/conf.py
+        **/docs/cppapi
+        **/docs/pyapi
 
 Anschliesend wurde ein neuer Unterordner `docs` im Paket erstellt. Dieser soll von nun an die
 Dokumentation beherbergen.
