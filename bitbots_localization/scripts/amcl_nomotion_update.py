@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 import rospy
 import tf2_ros
 from std_srvs.srv import Empty
