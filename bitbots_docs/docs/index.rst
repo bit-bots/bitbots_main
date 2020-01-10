@@ -15,6 +15,13 @@ The main repository is `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`
 
     manual/tutorials/*
 
+.. toctree::
+    :maxdepth: 1
+    :glob:
+    :caption: Testing:
+
+    manual/testing/*
+
 
 .. toctree::
     :maxdepth: 1
