@@ -51,22 +51,47 @@ Um die Dokumentation eines Bit-Bots Pakets zu aktivieren sind folgende Änderung
         # auto-generated documentation
         **/docs/_build
         **/docs/_out
-        **/docs/conf.py
+        **/docs/cppapi
+        **/docs/pyapi
 
-Anschliesend wurde ein neuer Unterordner `docs` im Paket erstellt. Dieser soll von nun an die
-Dokumentation beherbergen.
+#) ``Jenkinsfile``:
+    Die Jenkinsfile ist nicht für die Doku an sich notwendig jedoch steuert sie unsere CI und damit das automatische Bauen der Doku.
+    Die Jenkinsfile ist in groovy zu schreiben, was ähnlich wie Java ist.
+    
+    .. todo:: Jenkins Dokument referenzieren
 
-Orderstruktur
--------------
+    .. note:: Nur `<package-name>` muss geändert werden:
+
+    .. code-block:: groovy
+
+        @Library('bitbots_jenkins_library') import de.bitbots.jenkins.PackageDefinition
+
+        bitbotsPipeline([
+            new PackageDefinition("<package-name>", true)
+        ] as PackageDefinition[])
+
+
+    Damit wird unsere Jenkins Bibliothek eingebunden und danach die ``bitbotsPipeline`` gestartet.
+    Diese braucht ein Array an Paketdefinitionen.
+    Der Konstruktor akzeptiert den Paketnamen und dann, ob Doku gebaut werden soll.
+    Da wir Doku bauen wollen, muss das 2. Argument auf true gesetzt werden.
+
+
+Ordnerstruktur
+--------------
 
 Fertige Dokumentation kann unter ``docs/_out/index.html`` lokal abgerufen werden.
 
 .. todo:: Genauer beschreiben. Vor allem, welche Dateien wie wiederhergestellt werden
 
-Doku selbster bauen
+Doku selber bauen
 -------------------
 
-Diese allgemeine Dokumentation kann mit dem Command ``catkin build bitbots_docs
+Sobald die Doku das erste Mal gebaut wird, wird automatisch ein neuer Unterordner `docs` im Paket erstellt. 
+Dieser soll von nun an die Dokumentation beherbergen.
+
+
+Diese allgemeine Dokumentation (die mit Tutorials inklusive dieser Seite) kann mit dem Command ``catkin build bitbots_docs
 --no-deps --make-args Documentation`` gebaut werden.
 
 Für ein anderes Paket, bei dem die Doku wie oben beschrieben aktiviert wurde, kann sie mit
