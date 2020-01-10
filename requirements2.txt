@@ -1,4 +1,0 @@
-pip
-setuptools
-rospkg
-tensorflow
