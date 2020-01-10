@@ -5,47 +5,43 @@ Elektronik
 Powerboard
 ==========
 
-Das Powerboard regelt die Stromversorgung durch zwei Dioden (in einem Package), regelt die Stromversorgung der Motoren durch einen Mechanischen Schalter, und verteilt den Strom auf mehrere Stecker.
+The Powerboard allows to connect either and external power supply or a battery. It has a switch to turn on and off the power to the servos.
 
-* Schaltplan :download:`pdf <elektronik/wolfgang_power.pdf>`
+* Schematic :download:`pdf <elektronik/wolfgang_power.pdf>`
 * PCB combined :download:`pdf <elektronik/wolfgang_power_pcb.pdf>`
 * PCB Top :download:`pdf <elektronik/wolfgang_power_pcb_top.pdf>`
 * PCB Bottom :download:`pdf <elektronik/wolfgang_power_pcb_bottom.pdf>`
 * PCB Silk :download:`pdf <elektronik/wolfgang_power_pcb_silk.pdf>`
 
+The footprint of the mosfet is currently wrong, but since the Wolfgang Core board integrates the functionality of this board, it will not be changed.
+
+
 DXLBoard
 ========
 
-Das DXL Board schreibt die Kommandos welches es von bitbots_ros_control bekommt auf den Dynamixel Bus. Enwickelt wurde es von RHoban
+The DXLBoard is developed by Rhoban from Bordeaux. It communicates with the Servo bus over RS485 or TTL and the NUC via USB.
 
-* Schaltplan :download:`pdf <elektronik/dxlboard.pdf>`
-* PCB :download:`pdf <elektronik/dxlboard_pcb.pdf>`
+Documentation about the Hardware is available at [https://github.com/Rhoban/DXLBoard](https://github.com/Rhoban/DXLBoard).
+We use a custom firmware to support Dynamixel Protocol 2.0 which can be found here: [https://github.com/bit-bots/DXLBoard/tree/protocol2_single_bus](https://github.com/bit-bots/DXLBoard/tree/protocol2_single_bus)
 
 Wolfgang Core
 =============
 
-Wolfgang Core (COntrolling and Regulating Electronics) befindet sich derzeit in Entwicklung. Es wird das DXLBoard und das Powerboard ersetzten.
-Folgende Features sind geplant:
+Wolfgang Core (COntrolling and Regulating Electronics) is currently in the testing phase.
 
-* Bus mit einer höheren Taktrate betreiben
-* 3 Busse für jeweils die beine und den Rest des Roboters haben
-* Anschlüsse für bis zu 2 IMUs
-* GPIO (Buttons, LEDs etc.) über einen I2C Bus an dem ein Arduino hängt (sowie die beiden IMUs)
-* Stromregulierung für 5V komponenten (Odroid, Verstärker)
-* Softwareseitige Motorstromsteuerung
+* 4 buses with up to 10 MBaud (highest for Dynamixel MX and X servos is 4 MBaud)
+* power swiching with switch and software
+* voltage regulation (9V 1A, 5V 5A)
+* voltage sensing
+* current sensing
+* 3 RGB status leds
 
-Due Date ist ende Dezember 2019
 
 Bit Foot
 ========
 
-Der Bit Foot ist ein verbesserter fußandrucksensor basierend auf dem Rhoban ForceFoot.
+Der Bit Foot is a board to read 4 load cells on the foot of the robot and communicate over the dynamixel bus.
 
 * Schaltplan :download:`pdf <elektronik/bitfoot.pdf>`
 * PCB :download:`pdf <elektronik/bitfoot_pcb.pdf>`
 
-Auf der ursprüngliche Variante des Boards ist der DXL Bus an USART3 angeschlossen. Die alte version sinde grüne Boards, die aktuelle (V 1.0) sind schwarze Boards.
-
-Derzeit werden die Dioden (D1 und D2) und R9 nicht bestückt.
-
-R11 und R15 werden nur bestückt wenn TTL statt RS485 als BUS verwendet wird.
