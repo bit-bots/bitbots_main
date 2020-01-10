@@ -28,7 +28,7 @@ class ObstaclePublisher:
 
         self.ball = None
         self.obstacles = None
-        r = rospy.Rate(3.0)
+        r = rospy.Rate(5.0)
 
         while not rospy.is_shutdown():
             self.clearer()
