@@ -12,6 +12,8 @@ ebenfalls mit `chrony` immer eine synchronisierte Zeit.
 
 Nuc-Konfiguration
 ~~~~~~~~~~~~~~~~~
+Die Konfigurationsdatei ist ``/etc/chrony/chrony.conf``
+
 :code:`local stratum 10` lässt Chrony als NTP-Server mit einem Stratum von 10 (ganz weit weg von Realzeit und nicht zuverlässig) laufen
 
 :code:`allow 192.168.17.0/24` erlaubt Zugriff auf den Server vom gesamten internen Roboternetz (nuc, odroid, jetson)
@@ -20,9 +22,9 @@ Jetson-Konfiguration
 ~~~~~~~~~~~~~~~~~~~~
 :code:`server nuc iburst` stellt den lokalen Nuc als Server ein (`iburst` erhöht Zuverlässigkeit beim Start)
 
-:code:`makestep x y` erlaubt hartes Setzen der Zeit (ohne  slew), wenn die Differenz > `x` und nur währen der ersten `y` Anfragen
+:code:`makestep x y` erlaubt hartes Setzen der Zeit (ohne  slew), wenn die Differenz > `x` und nur während der ersten `y` Anfragen
 
-Auserdem wird der `chrony` Service auf der Jetson mit Delay gestart, weil die Synchronisierung sonst nicht richtig funcktioniert.
+Auserdem wird der `chrony` Service auf der Jetson mit Delay gestart, weil die Synchronisierung sonst nicht richtig funktioniert.
 Mit :code:`systemctl edit chrony.service` kann ein Teil der Service-Definition überschrieben werden. Bei uns::
 
     [Service]
