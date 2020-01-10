@@ -2,27 +2,32 @@
 Colorpicker
 ===========
 
-Vorraussetzungen
-================
-Das Repository  Bit-Bots/wolves_colorpicker ist aus dem Gogs geclont worden.
-
-Aufnehmen eines Colorspaces
+How to Record a Color Space
 ===========================
-1. Anschließen einer Kamera an den Computer
-2. Hat der Computer eine eingebaute Kamera, setze in bitbots_meta/wolves_image_provider/config/camera_settings.yaml unter camera_v4l den Configwert device auf /dev/video1
-3. Starte den Colorpicker: roslaunch colorpicker colorpicker_startup.launch
-4. Wechsle in das Fenster, wo man das Bild der Kamera sieht
-5. Vergrößere die Größe des blauen Markierungsblockes mittels der Leiste unten im Fenster. Es erscheint im Bild ein blauer Kasten, wenn man mit der Maus drauf geht. Der rote Kasten ist irrelevant.
-6. Markiere das Spielfeld durch Klicken auf die grünen Flächen im Bild. Dabei wird immer der Bereich ausgewählt, der in dem blauen Kasten zu sehen ist. Der Kasten sollte ausschließlich grün, also nur Gras enthalten.
-7. Es erscheinen grüne Punkte auf den Bild. Wiederhole Schritt 6 solange bis das ganze Feld, außer die Linine, von grünen Punkten übersät ist. Achte darauf, das Feld aus verschiedenen Blickwinkeln mit der Kamera aufzunehmen.
-8. Wechsele zurück in die Shell und drücke w zum Speichern
+
+Robot Camera
+------------
+1. Connect your PC to the Jetson in the robot.
+2. Run `roslaunch bitbots_bringup basler_camera.launch` on the robot.
+3. Check if too many images are dropped. If this is the case, check your MTU size.
+4. Set `ROS_IP` and `ROS_MASTER_URI` in your local ros environment. `export ROS_MASTER_URI=http://<Robot_NUC_IP>:11311/` and `export ROS_IP=<your_IP>`
+5. Run `rosrun bitbots_vision colorpicker.py` to run the colorpicker on your PC.
+6. Now select all field colors, excluding the lines by clicking on them in the appearing window. For further usage look at the terminal window.
 
 
-Was tun mit dem aufgenommenen Colorspace?
-==========================================
-1. Der Colorspace ist gespeichert in der Datei ~/.ros/yamlColor.yaml
-2. Verschiebe die Datei nach bitbots_meta/bitbots_vision/bitbots_vision/config/color_spaces
-3. Benenne die Datei sinnvoll (z.B. Veranstaltungsname)
-4. Interpolation-tool ausführen: ./bitbots_meta/bitbots_vision/bitbots_vision_tools/scripts/colospacetool.py -y path_to_inputfile -o
-5. Passe den Configparameter field_color_detector_path in bitbots_vision/bitbots_vision/config/visionparams.yaml an
-6. Pushen
+External Camera
+---------------
+1. Connect your PC with the Camera using a POE adapter.
+2. Run `roslaunch bitbots_bringup basler_camera.launch` in your local ROS environment.
+3. Check if too many images are dropped. If this is the case, check your MTU size.
+4. Run `rosrun bitbots_vision colorpicker.py` to run the colorpicker on your PC.
+5. Now select all field colors, excluding the lines by clicking on them in the appearing window. For further usage look at the terminal window.
+
+If you use another generic USB camera, make sure it's driver publishes to `/image_raw` or use the `wolves_image_provider`.
+
+What's next?
+============
+1. Move the just saved `.pickle` file to `bitbots_meta/bitbots_vision/bitbots_vision/config/color_spaces`.
+2. Find a usefull name. Normally the files are names like that: `<camera_type>_<room_or_location>_<special_attributes>.pickle`.
+3. Select the color space via dynamic reconfigure or change the parameter in the visionparams.yaml.
+4. Win the RoboCup.
