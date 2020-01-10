@@ -1,5 +1,5 @@
 ==========
-Elektronik
+Electronics
 ==========
 
 Powerboard
