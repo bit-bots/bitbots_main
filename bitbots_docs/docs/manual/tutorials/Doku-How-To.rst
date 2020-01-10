@@ -54,8 +54,26 @@ Um die Dokumentation eines Bit-Bots Pakets zu aktivieren sind folgende Änderung
         **/docs/cppapi
         **/docs/pyapi
 
-Anschliesend wurde ein neuer Unterordner `docs` im Paket erstellt. Dieser soll von nun an die
-Dokumentation beherbergen.
+#) ``Jenkinsfile``:
+    Die Jenkinsfile ist nicht für die Doku an sich notwendig jedoch steuert sie unsere CI und damit das automatische Bauen der Doku.
+    Die Jenkinsfile ist in groovy zu schreiben, was ähnlich wie Java ist.
+    
+    .. todo:: Jenkins Dokument referenzieren
+
+    .. code-block:: groovy
+
+        @Library('bitbots_jenkins_library') import de.bitbots.jenkins.PackageDefinition
+
+        bitbtosPipeline([
+            new PackageDefinition("<package-name>", true)
+        ] as PackageDefinition[])
+
+
+    Damit wird unsere Jenkins Bibliothek eingebunden und danach die ``bitbtosPipeline`` gestartet.
+    Diese braucht ein Array an Paketdefinitionen.
+    Der Konstruktor akzeptiert den Paketnamen und dann, ob Doku gebaut werden soll.
+    Da wir Doku bauen wollen, muss das 2. Argument auf true gesetzt werden.
+
 
 Orderstruktur
 -------------
@@ -66,6 +84,10 @@ Fertige Dokumentation kann unter ``docs/_out/index.html`` lokal abgerufen werden
 
 Doku selbster bauen
 -------------------
+
+Sobald die Doku das erste Mal gebaut wird, wird automatisch ein neuer Unterordner `docs` im Paket erstellt. 
+Dieser soll von nun an die Dokumentation beherbergen.
+
 
 Diese allgemeine Dokumentation kann mit dem Command ``catkin build bitbots_docs
 --no-deps --make-args Documentation`` gebaut werden.
