@@ -19,7 +19,7 @@ class Colorpicker(object):
         rospy.init_node('bitbots_colorpicker')
         rospy.loginfo('Initializing colorpicker...', logger_name="colorpicker")
         rospack = rospkg.RosPack()
-        self._package_path = rospack.get_path('bitbots_vision_tools')
+        self._package_path = rospack.get_path('bitbots_vision')
         self._cv_bridge = CvBridge()
         # Load default image
         self._image = cv2.imread(os.path.join(self._package_path, "img", "Colorpicker.png"))
