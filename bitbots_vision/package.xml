@@ -63,7 +63,6 @@
   <depend>bitbots_bringup</depend>
   <depend>bitbots_docs</depend>
   <depend>tf2</depend>
-  <!-- <depend>python3-rosbag</depend> This is needed for the extract_from_rosbag.py script -->
 
 
   <export>
