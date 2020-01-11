@@ -3,7 +3,6 @@ setuptools
 tensorflow
 rospkg
 rosdep
-rosbag
 rosinstall_generator
 rosinstall
 numpy
