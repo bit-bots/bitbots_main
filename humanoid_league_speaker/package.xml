@@ -19,6 +19,7 @@
   <depend>dynamic_reconfigure</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>espeak</depend>
+  <depend>bitbots_docs</depend>
 
   <export>
     <bitbots_documentation>
