@@ -17,7 +17,6 @@
   <depend>roscpp</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
-  <depend>OpenCV</depend>
   <depend>cv_bridge</depend>
 
   <export>

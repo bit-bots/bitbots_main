@@ -5,7 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <dynamic_reconfigure/server.h>
-#include <white_balancer/WhiteBalanceConfig.h>
+#include <white_balancer/WhiteBalancerConfig.h>
 #include <boost/bind.hpp>
 
 
@@ -14,7 +14,7 @@ class WhiteBalancer
 public:
     WhiteBalancer();
     // Dynamic reconfigure callback
-    void callbackRC(white_balancer::WhiteBalanceConfig &config, uint32_t level);
+    void callbackRC(white_balancer::WhiteBalancerConfig &config, uint32_t level);
 private:
     image_transport::Publisher pub;
     // Color temp to rgb convertion table
@@ -143,8 +143,8 @@ private:
 WhiteBalancer::WhiteBalancer()
 {
     // Dynamic reconfigure stuff
-    dynamic_reconfigure::Server<white_balancer::WhiteBalanceConfig> server;
-    dynamic_reconfigure::Server<white_balancer::WhiteBalanceConfig>::CallbackType f;
+    dynamic_reconfigure::Server<white_balancer::WhiteBalancerConfig> server;
+    dynamic_reconfigure::Server<white_balancer::WhiteBalancerConfig>::CallbackType f;
     f = boost::bind(&WhiteBalancer::callbackRC, this, _1, _2);
     server.setCallback(f);
 
@@ -216,7 +216,7 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
     
 }
 
-void WhiteBalancer::callbackRC(white_balancer::WhiteBalanceConfig &config, uint32_t level) {
+void WhiteBalancer::callbackRC(white_balancer::WhiteBalancerConfig &config, uint32_t level) {
     // Set color temperature
     WhiteBalancer::set_temp(config.temp);
     // Set timestamp delay
