@@ -15,8 +15,9 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Pose2D.h>
 #include <geometry_msgs/Point.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/utils.h>
 #include "mitecom.hpp"
-#include <tf/transform_datatypes.h>
 
 /*
  * This node provides ROS connections to a mitecom object. Two threads are started, one for receiving information

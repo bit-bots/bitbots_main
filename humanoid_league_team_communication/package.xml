@@ -19,6 +19,8 @@
   <depend>humanoid_league_msgs</depend>
   <depend>roscpp</depend>
   <depend>geometry_msgs</depend>
+  <depend>tf2</depend>
+  <depend>bitbots_docs</depend>
 
   <export>
     <bitbots_documentation>

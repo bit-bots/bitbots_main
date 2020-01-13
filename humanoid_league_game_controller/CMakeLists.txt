@@ -4,8 +4,11 @@ project(humanoid_league_game_controller)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   humanoid_league_msgs
+  bitbots_docs
 )
 
 catkin_python_setup()
 
 catkin_package()
+
+enable_bitbots_docs()
