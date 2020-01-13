@@ -443,11 +443,9 @@ void TeamCommunication::worldCallback(const humanoid_league_msgs::Model& msg){
   //conversion from m (ROS message) to mm (self.mitecom)
   position_x_ = static_cast<uint64_t>(msg.position.pose.pose.position.x * 1000);
   position_y_ = static_cast<uint64_t>(msg.position.pose.pose.position.y * 1000);
-  tf::Quaternion quaternion(msg.position.pose.pose.orientation.x, msg.position.pose.pose.orientation.y,
-                            msg.position.pose.pose.orientation.z, msg.position.pose.pose.orientation.w);
-  tf::Matrix3x3 matrix_quaternion(quaternion);
-  double roll, pitch, yaw;
-  matrix_quaternion.getRPY(roll, pitch, yaw);
+  tf2::Quaternion quaternion(msg.position.pose.pose.orientation.x, msg.position.pose.pose.orientation.y,
+                             msg.position.pose.pose.orientation.z, msg.position.pose.pose.orientation.w);
+  double yaw = tf2::getYaw(quaternion);
   position_orientation_ = static_cast<uint64_t>(yaw * 1000.0);
   // convert covariance matrix to confidence, so Mitecom can send it as int
   double sum = 0;
