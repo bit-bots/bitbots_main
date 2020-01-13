@@ -29,7 +29,7 @@ pipeline {
             }
 
             steps {
-                linkCatkinWorkspace("bitbots_docs")
+                linkCatkinWorkspace("bitbots_docs", "bitbots_docs")
                     catkinBuild("bitbots_docs")
                     cleanWs()
             }
@@ -46,7 +46,7 @@ pipeline {
             }
 
             steps {
-                linkCatkinWorkspace("bitbots_docs")
+                linkCatkinWorkspace("bitbots_docs", "bitbots_docs")
                     installRosdeps("bitbots_docs")
                     catkinBuild("bitbots_docs", "Documentation")
 
@@ -69,7 +69,7 @@ pipeline {
             }
 
             steps {
-                linkCatkinWorkspace("bitbots_docs")
+                linkCatkinWorkspace("bitbots_docs", "bitbots_docs")
                     installRosdeps("bitbots_docs")
                     catkinClean()
                     catkinInstall("bitbots_docs")
