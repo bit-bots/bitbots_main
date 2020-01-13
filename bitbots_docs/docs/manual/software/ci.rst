@@ -5,7 +5,7 @@ We have a Jenkins instance running at `ci.bit-bots.de <http://ci.bit-bots.de>`_ 
 documentation located at `doku.bit-bots.de <http://doku.bit-bots.de>`_.
 
 
-Jenkins System configuration
+Jenkins System Configuration
 ============================
 Jenkins is configured in two levels.
 One is the System-Configuration which is done via the Web-UI but contains only the bare minimum.
