@@ -46,5 +46,5 @@ Bit Foot
 
 The Bit Foot is a board to read 4 load cells on the foot of the robot and communicate over the dynamixel bus.
 
-* Schaltplan :download:`pdf <elektronik/bitfoot.pdf>`
+* Schematics :download:`pdf <elektronik/bitfoot.pdf>`
 * PCB :download:`pdf <elektronik/bitfoot_pcb.pdf>`
