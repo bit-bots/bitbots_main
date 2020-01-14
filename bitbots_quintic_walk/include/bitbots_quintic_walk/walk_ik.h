@@ -14,7 +14,7 @@ class WalkIK : public bitbots_splines::AbstractIK {
   bitbots_splines::JointGoals calculateDirectly(const WalkResponse &ik_goals);
   void init(moveit::core::RobotModelPtr kinematic_model) override;
   void reset() override;
-  void setBioIKTimeout(double timeout);
+  void setIKTimeout(double timeout);
 
  private:
   robot_state::RobotStatePtr goal_state_;
@@ -23,7 +23,7 @@ class WalkIK : public bitbots_splines::AbstractIK {
   const moveit::core::JointModelGroup *right_leg_joints_group_;
 
 
-  double bio_ik_timeout_;
+  double ik_timeout_;
 
 };
 }

@@ -43,13 +43,13 @@ bitbots_splines::JointGoals WalkIK::calculateDirectly(const WalkResponse &ik_goa
 
     success = goal_state_->setFromIK(left_leg_joints_group_,
                                      left_foot_goal_msg,
-                                     bio_ik_timeout_,
+                                     ik_timeout_,
                                      moveit::core::GroupStateValidityCallbackFn());
     goal_state_->updateLinkTransforms();
 
     success = goal_state_->setFromIK(right_leg_joints_group_,
                                      right_foot_goal_msg,
-                                     bio_ik_timeout_,
+                                     ik_timeout_,
                                      moveit::core::GroupStateValidityCallbackFn());
 
 
@@ -82,8 +82,8 @@ void WalkIK::reset() {
   }
 }
 
-void WalkIK::setBioIKTimeout(double timeout) {
-  bio_ik_timeout_ = timeout;
+void WalkIK::setIKTimeout(double timeout) {
+  ik_timeout_ = timeout;
 };
 
 }
