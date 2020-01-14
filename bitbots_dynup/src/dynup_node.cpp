@@ -50,7 +50,7 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     request.trunk_pose = std::get<1>(poses.value());
     request.l_hand_pose = std::get<2>(poses.value());
     request.r_hand_pose = std::get<3>(poses.value());
-    engine_.setGoals(request); //todo we are currently only getting up from squad
+    engine_.setGoals(request);
     stabilizer_.reset();
     loopEngine();
     bitbots_msgs::DynUpResult r;
