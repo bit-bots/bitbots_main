@@ -33,6 +33,7 @@ void DynupIK::reset() {
 bitbots_splines::JointGoals DynupIK::calculate(std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
   double bio_ik_timeout = 0.01;
 
+  /*Splits ik goals into two goals for arms and legs. There is probably a better way to do this. (TODO)*/
   auto ik_options_arms = std::make_unique<bio_ik::BioIKKinematicsQueryOptions>();
   ik_options_arms->replace = true;
   ik_options_arms->return_approximate_solution = true;
@@ -40,13 +41,18 @@ bitbots_splines::JointGoals DynupIK::calculate(std::unique_ptr<bio_ik::BioIKKine
   ik_options_legs->replace = true;
   ik_options_legs->return_approximate_solution = true;
 
-  ik_options_legs->goals.emplace_back(ik_goals->goals[0].release());
-  ik_options_legs->goals.emplace_back(ik_goals->goals[1].release());
-  ik_options_arms->goals.emplace_back(ik_goals->goals[2].release());
-  ik_options_arms->goals.emplace_back(ik_goals->goals[3].release());
-  ik_options_legs->goals.emplace_back(ik_goals->goals[4].release());
-  //TODO displacement goal
-  //TODO what happens if one of the goals is missing?
+  ik_options_legs->goals.emplace_back(ik_goals->goals[0].release()); //l_foot_goal
+  ik_options_legs->goals.emplace_back(ik_goals->goals[1].release()); //trunk_goal
+  ik_options_arms->goals.emplace_back(ik_goals->goals[2].release()); //r_hand_goal
+  ik_options_arms->goals.emplace_back(ik_goals->goals[3].release()); //l_hand_goal
+  if(use_stabilizing_) {
+    ik_options_legs->goals.emplace_back(ik_goals->goals[4].release()); //stabilizing_goal
+  }
+  if(use_minimal_displacement_) {
+    auto displacementgoal = ik_goals->goals[5].release();
+    ik_options_arms->goals.emplace_back(std::make_unique<bio_ik::Goal>(*displacementgoal)); //minimal_displacement_goal
+    ik_options_legs->goals.emplace_back(std::make_unique<bio_ik::Goal>(*displacementgoal)); //minimal_displacement_goal
+  }
 
   bool success = goal_state_->setFromIK(arm_joints_group_.get(),
                                         EigenSTL::vector_Isometry3d(),
@@ -77,5 +83,11 @@ bitbots_splines::JointGoals DynupIK::calculate(std::unique_ptr<bio_ik::BioIKKine
     return {};
   }
 }
+void DynupIK::useStabilizing(bool use) {
+  use_stabilizing_ = use;
+}
 
+void DynupIK::useMinimalDisplacement(bool use) {
+  use_minimal_displacement_ = use;
+}
 }

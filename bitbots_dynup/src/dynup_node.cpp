@@ -31,6 +31,9 @@ void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t
   stabilizer_.useMinimalDisplacement(config.minimal_displacement);
   stabilizer_.useStabilizing(config.stabilizing);
   stabilizer_.setStabilizingWeight(config.stabilizing_weight);
+
+  ik_.useMinimalDisplacement(config.minimal_displacement);
+  ik_.useStabilizing(config.stabilizing);
 }
 
 void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
@@ -45,14 +48,14 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     request.trunk_pose = std::get<1>(poses.value());
     request.l_hand_pose = std::get<2>(poses.value());
     request.r_hand_pose = std::get<3>(poses.value());
-    engine_.setGoals(request); //todo we are currently only getting up from squad
+    engine_.setGoals(request);
     stabilizer_.reset();
     loopEngine();
     bitbots_msgs::DynUpResult r;
     r.successful = true;
     server_.setSucceeded(r);
   } else {
-    ROS_ERROR_STREAM("Could not determine foot positions! Aborting standup.");
+    ROS_ERROR_STREAM("Could not determine positions! Aborting standup.");
     bitbots_msgs::DynUpResult r;
     r.successful = false;
     server_.setAborted(r);
