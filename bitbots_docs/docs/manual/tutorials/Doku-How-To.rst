@@ -89,6 +89,15 @@ Datei angelegt.
         **/docs/cppapi
         **/docs/pyapi
 
+#) ``Jenkinsfile``:
+    Die Jenkinsfile ist nicht für die Doku an sich notwendig jedoch steuert sie unsere CI und damit das automatische Bauen der Doku.
+    Die Jenkinsfile ist in groovy zu schreiben, was ähnlich wie Java ist.
+
+    .. seealso:: :doc:`../software/ci` for a more detailed description of how our CI works.
+
+    .. note:: Nur `<package-name>` muss geändert werden:
+
+    .. code-block:: groovy
 
 CI für ein Repository aktivieren
 ================================
