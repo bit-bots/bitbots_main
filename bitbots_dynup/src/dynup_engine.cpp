@@ -23,6 +23,9 @@ DynupResponse DynupEngine::update(double dt) {
   time_ += dt;
   //TODO support point between feet
   geometry_msgs::Point support_point;
+  support_point.x = l_foot_pose.pose.position.x;
+  support_point.y = l_foot_pose.pose.position.y - params_.foot_distance/2;
+  support_point.z = l_foot_pose.pose.position.z;
   /* Stabilize and return result */
   DynupResponse goals;
   goals.support_point = support_point;
@@ -117,11 +120,11 @@ void DynupEngine::calcFrontSplines() {
    * Foot under body
    */
   double time_foot_ground = params_.time_foot_ground;
-  trunk_spline_.x()->addPoint(time_foot_ground, -params_.leg_min_length);
+  trunk_spline_.x()->addPoint(time_foot_ground, cos(90) * params_.leg_min_length);
   trunk_spline_.y()->addPoint(time_foot_ground, params_.foot_distance / 2);
-  trunk_spline_.z()->addPoint(time_foot_ground, 0);
+  trunk_spline_.z()->addPoint(time_foot_ground, sin(90) * params_.leg_min_length);
   trunk_spline_.roll()->addPoint(time_foot_ground, 0);
-  trunk_spline_.pitch()->addPoint(time_foot_ground, M_PI/2 - params_.foot_rotation);
+  trunk_spline_.pitch()->addPoint(time_foot_ground, M_PI/2);
   trunk_spline_.yaw()->addPoint(time_foot_ground, 0);
   foot_spline_.x()->addPoint(time_foot_ground, 0);
   foot_spline_.y()->addPoint(time_foot_ground, params_.foot_distance);
