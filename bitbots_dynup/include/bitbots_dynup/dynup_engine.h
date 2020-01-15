@@ -35,6 +35,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   void reset() override;
  private:
   double time_;
+  double duration_;
 
   bitbots_splines::PoseSpline foot_spline_;
   bitbots_splines::PoseSpline l_hand_spline_;
@@ -75,7 +76,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   *  - slowly stand up with stabilization
   *  - move arms in finish position
   */
-  void calcSquatSplines();
+  void calcSquatSplines(double time);
 };
 
 }

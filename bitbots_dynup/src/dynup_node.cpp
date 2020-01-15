@@ -109,7 +109,7 @@ std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs
   r_hand_origin.pose.orientation.w = 1;
   r_hand_origin.header.stamp = time;
 
-  /* Transform all poses into the right foot frame */
+  /* Transform all poses into the right foot or torso frame */
   geometry_msgs::PoseStamped l_foot_transformed, trunk_transformed, l_hand_transformed, r_hand_transformed;
   try {
     tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole",
