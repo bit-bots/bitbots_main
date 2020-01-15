@@ -81,7 +81,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   *  - slowly stand up with stabilization
   *  - move arms in finish position
   */
-  void calcSquatSplines();
+  void calcSquatSplines(double time);
 };
 
 }
