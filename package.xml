@@ -18,6 +18,7 @@
   <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>bitbots_docs</depend>
 
   <build_depend>message_generation</build_depend>
   <build_depend>actionlib_msgs</build_depend>
