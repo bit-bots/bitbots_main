@@ -69,6 +69,9 @@ walking:
     kick_vel: 0.2
     kick_phase: 0.75
 
+    first_step_swing_factor: 1.0
+    first_step_trunk_phase: 0.0
+
   node:
     # update frequency of the engine
     engine_freq: 1000.0
@@ -97,9 +100,6 @@ walking:
     pause_duration: 3.0
 
     publish_odom_tf: False
-
-    first_step_swing_factor: 1.0
-    startMovements: 1
 
   pid_trunk:
     p: 1
