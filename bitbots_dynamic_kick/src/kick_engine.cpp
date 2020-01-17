@@ -36,8 +36,8 @@ KickPositions KickEngine::update(double dt) {
   /* Only do an actual update when splines are present */
   KickPositions positions;
   /* Get should-be pose from planned splines (every axis) at current time */
-  positions.trunk_pose = trunk_spline_.getGeometryMsgPose(time_);
-  positions.flying_foot_pose = flying_foot_spline_.getGeometryMsgPose(time_);
+  positions.trunk_pose = trunk_spline_.getTfTransform(time_);
+  positions.flying_foot_pose = flying_foot_spline_.getTfTransform(time_);
   positions.is_left_kick = is_left_kick_;
 
   /* calculate if we want to use center-of-pressure in the current phase
