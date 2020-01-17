@@ -888,5 +888,5 @@ tf2::Transform WalkEngine::getRight() {
   return right_in_world_;
 }
 
-}
+} // namespace bitbots_quintic_walk
 

@@ -26,6 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
         moveit_core
         moveit_ros_move_group
         bitbots_splines
+        control_toolbox
         message_generation
         message_runtime
         geometry_msgs

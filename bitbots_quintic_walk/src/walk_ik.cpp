@@ -12,7 +12,7 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
   goal_state_->setToDefaultValues();
   //without this magic line, IK will not work
-  const Eigen::Isometry3d& end_effector_state = goal_state_->getGlobalLinkTransform("r_sole");
+  const Eigen::Isometry3d &end_effector_state = goal_state_->getGlobalLinkTransform("r_sole");
 
   reset();
 }
@@ -38,20 +38,19 @@ bitbots_splines::JointGoals WalkIK::calculateDirectly(const WalkResponse &ik_goa
   // call IK two times, since we have two legs
   bool success;
 
-    // we have to do this otherwise there is an error
-    goal_state_->updateLinkTransforms();
+  // we have to do this otherwise there is an error
+  goal_state_->updateLinkTransforms();
 
-    success = goal_state_->setFromIK(left_leg_joints_group_,
-                                     left_foot_goal_msg,
-                                     ik_timeout_,
-                                     moveit::core::GroupStateValidityCallbackFn());
-    goal_state_->updateLinkTransforms();
+  success = goal_state_->setFromIK(left_leg_joints_group_,
+                                   left_foot_goal_msg,
+                                   ik_timeout_,
+                                   moveit::core::GroupStateValidityCallbackFn());
+  goal_state_->updateLinkTransforms();
 
-    success = goal_state_->setFromIK(right_leg_joints_group_,
-                                     right_foot_goal_msg,
-                                     ik_timeout_,
-                                     moveit::core::GroupStateValidityCallbackFn());
-
+  success &= goal_state_->setFromIK(right_leg_joints_group_,
+                                    right_foot_goal_msg,
+                                    ik_timeout_,
+                                    moveit::core::GroupStateValidityCallbackFn());
 
   std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
   std::vector<double> joint_goals;
@@ -64,12 +63,10 @@ bitbots_splines::JointGoals WalkIK::calculateDirectly(const WalkResponse &ik_goa
   return result;
 }
 
-
 bitbots_splines::JointGoals WalkIK::calculate(const std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
-    //todo this method doesn't do anything and needs to be refactored
-    return bitbots_splines::JointGoals();
+  //todo this method doesn't do anything and needs to be refactored
+  return bitbots_splines::JointGoals();
 }
-
 
 void WalkIK::reset() {
   // we have to set some good initial position in the goal state, since we are using a gradient
@@ -86,4 +83,4 @@ void WalkIK::setIKTimeout(double timeout) {
   ik_timeout_ = timeout;
 };
 
-}
+} // namespace bitbots_quintic_walk

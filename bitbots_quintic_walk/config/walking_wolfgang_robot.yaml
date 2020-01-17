@@ -100,3 +100,13 @@ walking:
     pause_duration: 3.0
 
     publish_odom_tf: False
+
+  pid_trunk:
+    p: 1
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True

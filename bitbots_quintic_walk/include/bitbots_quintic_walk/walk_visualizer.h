@@ -48,6 +48,6 @@ class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
   ros::Publisher pub_debug_marker_;
   robot_model::RobotModelPtr kinematic_model_;
 };
-}
+} // namespace bitbots_quintic_walk
 
 #endif //BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_VISUALIZER_H_
