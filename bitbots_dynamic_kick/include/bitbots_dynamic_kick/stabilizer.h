@@ -25,8 +25,7 @@ class Stabilizer :
    * @return BioIK Options that can be used by an instance of AbstractIK
    */
 
-  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> stabilize(const KickPositions &positions)
-  override;
+  KickPositions stabilize(const KickPositions &positions, const ros::Duration &dt) override;
   void reset()
   override;
   void useCop(bool use);

@@ -101,7 +101,7 @@ class WalkNode {
   /**
    * This method computes the next motor goals and publishes them.
    */
-  void calculateAndPublishJointGoals(const WalkResponse &response);
+  void calculateAndPublishJointGoals(const WalkResponse &response, double dt);
 
   double getTimeDelta();
 
@@ -187,8 +187,10 @@ class WalkNode {
   WalkIK ik_;
   WalkVisualizer visualizer_;
 
+  double current_trunk_pitch_;
+
 };
 
-}
+} // namespace bitbots_quintic_walk
 
-#endif
+#endif // BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_NODE_H_
