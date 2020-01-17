@@ -14,8 +14,8 @@ void DynupEngine::reset() {
 DynupResponse DynupEngine::update(double dt) {
   // TODO what happens when splines for foot and trunk are not present?
   /* Get should-be pose from planned splines (every axis) at current time */
-  geometry_msgs::PoseStamped l_foot_pose = getCurrentPose(foot_spline_, true);
-  geometry_msgs::PoseStamped trunk_pose = getCurrentPose(trunk_spline_, false);
+  tf2::Transform l_foot_pose = foot_spline_.getTfTransform(time_);
+  tf2::Transform trunk_pose = trunk_spline_.getTfTransform(time_);
   //geometry_msgs::PoseStamped l_hand_pose = get_current_pose(foot_trajectories_.value(), "l_hand");
   //geometry_msgs::PoseStamped r_hand_pose = get_current_pose(foot_trajectories_.value(), "r_hand");
 
@@ -26,21 +26,9 @@ DynupResponse DynupEngine::update(double dt) {
   /* Stabilize and return result */
   DynupResponse goals;
   goals.support_point = support_point;
-  goals.l_foot_goal_pose = l_foot_pose;
-  goals.trunk_goal_pose = trunk_pose;
+  goals.l_foot_pose = l_foot_pose;
+  goals.trunk_pose = trunk_pose;
   return goals;
-}
-
-geometry_msgs::PoseStamped DynupEngine::getCurrentPose(bitbots_splines::PoseSpline spline, bool foot) {
-  geometry_msgs::PoseStamped pose;
-  if (foot) {
-    pose.header.frame_id = "l_sole";
-  } else {
-    pose.header.frame_id = "torso";
-  }
-  pose.header.stamp = ros::Time::now();
-  pose.pose = spline.getGeometryMsgPose(time_);
-  return pose;
 }
 
 void DynupEngine::calcFrontSplines() {
