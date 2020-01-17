@@ -26,4 +26,4 @@ WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const ros::
 
   return stabilized_response;
 }
-}
+} // namespace bitbots_quintic_walk

@@ -86,4 +86,4 @@ void WalkIK::setIKTimeout(double timeout) {
   ik_timeout_ = timeout;
 };
 
-}
+} // namespace bitbots_quintic_walk

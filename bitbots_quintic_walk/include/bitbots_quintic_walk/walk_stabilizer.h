@@ -23,6 +23,6 @@ class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> 
  private:
    control_toolbox::Pid pid_trunk_pitch_;
 };
-}
+} // namespace bitbots_quintic_walk
 
 #endif //BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_STABILIZER_H_

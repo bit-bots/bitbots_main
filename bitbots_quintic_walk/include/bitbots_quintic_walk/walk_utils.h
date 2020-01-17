@@ -92,6 +92,6 @@ inline double angleDistance(double angle_src, double angle_dst) {
     }
   }
 }
-}
+} // namespace bitbots_quintic_walk
 
 #endif //BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_UTILS_H_

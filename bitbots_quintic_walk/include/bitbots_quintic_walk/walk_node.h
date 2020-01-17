@@ -191,6 +191,6 @@ class WalkNode {
 
 };
 
-}
+} // namespace bitbots_quintic_walk
 
-#endif
+#endif // BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_NODE_H_

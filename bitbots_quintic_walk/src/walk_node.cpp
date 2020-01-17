@@ -400,7 +400,7 @@ void WalkNode::initializeEngine() {
   walk_engine_.reset();
 }
 
-}
+} // namespace bitbots_quintic_walk
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "quintic_walking");
