@@ -59,7 +59,6 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>message_generation</build_depend>
   <depend>rospy</depend>
-  <depend>python-rospkg</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
@@ -71,11 +70,8 @@
   <depend>humanoid_league_msgs</depend>
   <depend>bitbots_msgs</depend>
   <depend>dynamic_reconfigure</depend>
-  <depend>wolves_image_provider</depend>
   <depend>python3-numpy</depend>
   <depend>python3-opencv</depend>
-  <depend>python3-tensorflow</depend>
-  <depend>pylon_camera</depend>
   <depend>white_balancer</depend>
   <depend>bitbots_bringup</depend>
   <depend>bitbots_docs</depend>
