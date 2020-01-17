@@ -69,12 +69,15 @@ walking:
     kick_vel: 0.2
     kick_phase: 0.75
 
+    first_step_swing_factor: 1.0
+    first_step_trunk_phase: 0.0
+
   node:
     # update frequency of the engine
-    engine_freq: 200.0
+    engine_freq: 1000.0
 
     # parameters for bioIK
-    bio_ik_time: 0.01
+    ik_timeout: 0.01
 
     debug_active: True
 
@@ -98,5 +101,12 @@ walking:
 
     publish_odom_tf: False
 
-    first_step_swing_factor: 1.0
-    startMovements: 1
+  pid_trunk:
+    p: 1
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True

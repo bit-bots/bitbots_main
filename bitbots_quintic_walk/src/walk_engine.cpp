@@ -358,7 +358,14 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   // The trunk trajectory is defined for a complete cycle to handle trunk phase shift Trunk phase shift is done due to
   // the length of the double support phase and can be adjusted optionally by a parameter 0.5 * half_period to be
   // acyclic to the feet, 0.5 * double_support_length to keep the double support phase centered between feet
-  double time_shift = -0.5 * half_period + 0.5 * double_support_length + params_.trunk_phase * half_period;
+  double trunk_phase;
+  if (start_movement || start_step) {
+    trunk_phase = params_.first_step_trunk_phase;
+  } else {
+    trunk_phase = params_.trunk_phase;
+  }
+
+  double time_shift = -0.5 * half_period + 0.5 * double_support_length + trunk_phase * half_period;
 
 
   //Only move the trunk on the first half cycle after a walk enable
@@ -482,7 +489,7 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
       support_to_next_.getOrigin().x() / half_period;
 
   //Trunk position
-  if (start_step) {
+  if (start_movement || start_step) {
     trunk_spline_.x()->addPoint(0.0, 0.0, 0.0, 0.0);
   } else {
     trunk_spline_.x()->addPoint(0.0,
@@ -497,10 +504,14 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
                               trunk_apex_next.x(),
                               trunk_vel_next);
 
-  trunk_spline_.y()->addPoint(0.0,
-                              trunk_pos_at_foot_change_.y(),
-                              trunk_pos_vel_at_foot_change_.y(),
-                              trunk_pos_acc_at_foot_change_.y());
+  if (start_movement) {
+    trunk_spline_.y()->addPoint(0.0, trunk_point_middle.y(), 0.0, 0.0);
+  } else {
+    trunk_spline_.y()->addPoint(0.0,
+                                trunk_pos_at_foot_change_.y(),
+                                trunk_pos_vel_at_foot_change_.y(),
+                                trunk_pos_acc_at_foot_change_.y());
+  }
   if (start_step || start_movement) {
     trunk_spline_.y()->addPoint(half_period + time_shift - pause_length,
                                 trunk_point_middle.y() + trunk_vect.y() * params_.first_step_swing_factor);
@@ -877,5 +888,5 @@ tf2::Transform WalkEngine::getRight() {
   return right_in_world_;
 }
 
-}
+} // namespace bitbots_quintic_walk
 

@@ -15,14 +15,10 @@ void Stabilizer::reset() {
   cop_y_error_sum_ = 0.0;
 }
 
-std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const KickPositions &positions) {
-  /* ik options is basically the command which we send to bio_ik and which describes what we want to do */
-  auto ik_options = std::make_unique<bio_ik::BioIKKinematicsQueryOptions>();
-  ik_options->replace = true;
-  ik_options->return_approximate_solution = true;
-
-  tf2::Transform trunk_goal;
+KickPositions Stabilizer::stabilize(const KickPositions &positions, const ros::Duration &dt) {
+  KickPositions stabilized_positions = positions;
   if (positions.cop_support_point && use_cop_) {
+    // TODO use existing PID library
     /* calculate stabilizing target from center of pressure
      * the cop is in corresponding sole frame
      * optimal stabilizing would be centered above sole center */
@@ -34,60 +30,21 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const
       cop_x = cop_left.x;
       cop_y = cop_left.y;
     }
-    cop_x_error = cop_x - positions.trunk_pose.position.x;
-    cop_y_error = cop_y - positions.trunk_pose.position.y;
+    cop_x_error = cop_x - positions.trunk_pose.getOrigin().getX();
+    cop_y_error = cop_y - positions.trunk_pose.getOrigin().getY();
     cop_x_error_sum_ += cop_x_error;
     cop_y_error_sum_ += cop_y_error;
-    double x = positions.trunk_pose.position.x - cop_x * p_x_factor_ - i_x_factor_ * cop_x_error_sum_
+    double x = positions.trunk_pose.getOrigin().getX() - cop_x * p_x_factor_ - i_x_factor_ * cop_x_error_sum_
         - d_x_factor_ * (cop_x_error - cop_x_error_);
-    double y = positions.trunk_pose.position.y - cop_y * p_y_factor_ - i_y_factor_ * cop_y_error_sum_
+    double y = positions.trunk_pose.getOrigin().getY() - cop_y * p_y_factor_ - i_y_factor_ * cop_y_error_sum_
         - d_y_factor_ * (cop_y_error - cop_y_error_);
     cop_x_error_ = cop_x_error;
     cop_y_error_ = cop_y_error;
     /* Do not use control for height and rotation */
-    trunk_goal.setOrigin({x, y, positions.trunk_pose.position.z});
-    trunk_goal.setRotation({positions.trunk_pose.orientation.x, positions.trunk_pose.orientation.y,
-                            positions.trunk_pose.orientation.z, positions.trunk_pose.orientation.w});
-  } else {
-    tf2::convert(positions.trunk_pose, trunk_goal);
+    stabilized_positions.trunk_pose.setOrigin({x, y, positions.trunk_pose.getOrigin().getZ()});
   }
-  auto *bio_ik_trunk_goal = new ReferencePoseGoal();
-  bio_ik_trunk_goal->setWeight(trunk_weight_);
-  bio_ik_trunk_goal->setPosition(trunk_goal.getOrigin());
-  bio_ik_trunk_goal->setOrientation(trunk_goal.getRotation());
-  bio_ik_trunk_goal->setLinkName("base_link");
-  if (positions.is_left_kick) {
-    bio_ik_trunk_goal->setReferenceLinkName("r_sole");
-  } else {
-    bio_ik_trunk_goal->setReferenceLinkName("l_sole");
-  }
-  ik_options->goals.emplace_back(bio_ik_trunk_goal);
 
-  tf2::Transform flying_foot_goal;
-  flying_foot_goal.setOrigin({positions.flying_foot_pose.position.x,
-                              positions.flying_foot_pose.position.y,
-                              positions.flying_foot_pose.position.z});
-  flying_foot_goal.setRotation({positions.flying_foot_pose.orientation.x,
-                                positions.flying_foot_pose.orientation.y,
-                                positions.flying_foot_pose.orientation.z,
-                                positions.flying_foot_pose.orientation.w});
-
-
-  /* construct the bio_ik Pose object which tells bio_ik what we want to achieve */
-  auto *bio_ik_flying_foot_goal = new ReferencePoseGoal();
-  bio_ik_flying_foot_goal->setPosition(flying_foot_goal.getOrigin());
-  bio_ik_flying_foot_goal->setOrientation(flying_foot_goal.getRotation());
-  if (positions.is_left_kick) {
-    bio_ik_flying_foot_goal->setLinkName("l_sole");
-    bio_ik_flying_foot_goal->setReferenceLinkName("r_sole");
-  } else {
-    bio_ik_flying_foot_goal->setLinkName("r_sole");
-    bio_ik_flying_foot_goal->setReferenceLinkName("l_sole");
-  }
-  bio_ik_flying_foot_goal->setWeight(flying_weight_);
-
-  ik_options->goals.emplace_back(bio_ik_flying_foot_goal);
-  return std::move(ik_options);
+  return stabilized_positions;
 }
 
 void Stabilizer::useCop(bool use) {

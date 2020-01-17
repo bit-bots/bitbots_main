@@ -404,6 +404,15 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: true
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: InteractiveMarkers
+      Show Axes: true
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /interactive_imu/update
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

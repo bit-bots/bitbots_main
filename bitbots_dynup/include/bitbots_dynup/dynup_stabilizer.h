@@ -17,7 +17,7 @@ namespace bitbots_dynup {
 class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
  public:
   void init(moveit::core::RobotModelPtr kinematic_model);
-  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> stabilize(const DynupResponse &response) override;
+  DynupResponse stabilize(const DynupResponse &response, const ros::Duration &dt) override;
   void useStabilizing(bool use);
   void useMinimalDisplacement(bool use);
   void setStabilizingWeight(double weight);

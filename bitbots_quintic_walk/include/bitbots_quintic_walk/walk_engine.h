@@ -188,6 +188,6 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
 };
 
-}
+} // namespace bitbots_quintic_walk
 
 #endif
