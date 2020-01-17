@@ -76,4 +76,5 @@
 
     <include file="$(find humanoid_base_footprint)/launch/base_footprint.launch"/>
     <include file="$(find bitbots_odometry)/launch/odometry.launch"/>
+    <include file="$(find bitbots_convenience_frames)/launch/convenience_frames.launch"/>
 </launch>

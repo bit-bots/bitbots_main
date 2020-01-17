@@ -3,13 +3,10 @@ project(bitbots_convenience_frames)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  rosconsole
   std_msgs
-  sensor_msgs
   tf2
   tf2_geometry_msgs
-  tf_conversions
-  message_generation
+  tf2_ros
   geometry_msgs
   rospy
   humanoid_league_msgs
@@ -19,6 +16,7 @@ catkin_package()
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  include
 )
 
 ## Declare a C++ executable

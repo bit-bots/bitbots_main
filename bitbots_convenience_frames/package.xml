@@ -14,19 +14,17 @@
 
   <depend>rospy</depend>
   <depend>roscpp</depend>
-  <depend>rosconsole</depend>
   <depend>std_msgs</depend>
-  <depend>sensor_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
-  <depend>tf_conversions</depend>
+  <depend>tf2_ros</depend>
   <depend>geometry_msgs</depend>
-  <depend>message_generation</depend>
+  <depend>humanoid_league_msgs</depend>
 
   <export>
     <bitbots_documentation>
       <language>c++</language>
-      <status>compiles</status>
+      <status>tested_robot</status>
     </bitbots_documentation>
     <rosdoc config="rosdoc.yaml"/>
   </export>
