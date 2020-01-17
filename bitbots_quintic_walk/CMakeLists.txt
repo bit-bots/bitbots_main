@@ -32,12 +32,14 @@ find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         moveit_ros_robot_interaction
         bitbots_msgs
+        bitbots_docs
         )
 
 find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 catkin_python_setup()
+enable_bitbots_docs()
 
 add_message_files(
         FILES
