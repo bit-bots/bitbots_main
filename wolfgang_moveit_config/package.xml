@@ -1,7 +1,7 @@
 <package format="2">
 
   <name>wolfgang_moveit_config</name>
-  <version>0.4.1</version>
+  <version>0.4.2</version>
   <description>
      An automatically generated package with all the configuration and launch files for using the wolfgang with the MoveIt! Motion Planning Framework
   </description>
