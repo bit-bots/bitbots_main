@@ -20,6 +20,7 @@
   <depend>actionlib</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>bitbots_splines</depend>
+  <depend>bitbots_docs</depend>
 
   <export>
     <bitbots_documentation>
