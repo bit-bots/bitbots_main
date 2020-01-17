@@ -11,13 +11,14 @@
 #include "bitbots_splines/dynamic_balancing_goal.h"
 #include "bitbots_splines/reference_goals.h"
 
+
 namespace bitbots_quintic_walk {
 
 class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> {
  public:
   WalkStabilizer();
   virtual void reset();
-  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> stabilize(const WalkResponse &response, const ros::Duration &dt) override;
+  WalkResponse stabilize(const WalkResponse &response, const ros::Duration &dt) override;
 
  private:
    control_toolbox::Pid pid_trunk_pitch_;

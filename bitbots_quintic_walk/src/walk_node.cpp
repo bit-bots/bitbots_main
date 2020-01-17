@@ -18,8 +18,8 @@ WalkNode::WalkNode() :
 
   /* init publisher and subscriber */
   pub_controller_command_ = nh_.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
-  pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("walk_odometry", 1);
-  pub_support_ = nh_.advertise<std_msgs::Char>("walk_support_state", 1);
+  pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("/walk_engine_odometry", 1);
+  pub_support_ = nh_.advertise<std_msgs::Char>("walk_support_state", 1, true);
   cmd_vel_sub_ = nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
                                ros::TransportHints().tcpNoDelay());
   robot_state_sub_ = nh_.subscribe("robot_state", 1, &WalkNode::robStateCb, this,
@@ -100,6 +100,7 @@ void WalkNode::run() {
       publishOdometry(response);
       odom_counter = 0;
     }
+
     ros::spinOnce();
     loop_rate.sleep();
   }
@@ -107,10 +108,10 @@ void WalkNode::run() {
 
 void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, double dt) {
   // get bioIk goals from stabilizer
-  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response, ros::Duration(dt));
+  WalkResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
 
   // compute motor goals from IK
-  bitbots_splines::JointGoals motor_goals = ik_.calculate(std::move(ik_goals));
+  bitbots_splines::JointGoals motor_goals = ik_.calculateDirectly(stabilized_response);
 
   // publish them
   publishGoals(motor_goals);
@@ -124,7 +125,13 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, doubl
   } else {
     support_state.data = 'r';
   }
-  pub_support_.publish(support_state);
+
+  // publish if foot changed
+  if(current_support_foot_ != support_state.data){
+    pub_support_.publish(support_state);
+    current_support_foot_ = support_state.data;
+  }
+
 
   // publish debug information
   if (debug_active_) {
@@ -285,7 +292,7 @@ void WalkNode::kickCb(const std_msgs::BoolConstPtr &msg) {
 void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level) {
   params_ = config;
 
-  ik_.setBioIKTimeout(config.bio_ik_time);
+  ik_.setIKTimeout(config.ik_timeout);
 
   debug_active_ = config.debug_active;
   engine_frequency_ = config.engine_freq;
