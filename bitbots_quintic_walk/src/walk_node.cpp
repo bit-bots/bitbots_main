@@ -97,17 +97,15 @@ void WalkNode::run() {
       publishOdometry(response);
       odom_counter = 0;
     }
+
     ros::spinOnce();
     loop_rate.sleep();
   }
 }
 
 void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
-  // get bioIk goals from stabilizer
-  std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response);
-
   // compute motor goals from IK
-  bitbots_splines::JointGoals motor_goals = ik_.calculate(std::move(ik_goals));
+  bitbots_splines::JointGoals motor_goals = ik_.calculateDirectly(response);
 
   // publish them
   publishGoals(motor_goals);
@@ -288,7 +286,7 @@ void WalkNode::kickCb(const std_msgs::BoolConstPtr &msg) {
 void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level) {
   params_ = config;
 
-  ik_.setBioIKTimeout(config.bio_ik_time);
+  ik_.setIKTimeout(config.ik_timeout);
 
   debug_active_ = config.debug_active;
   engine_frequency_ = config.engine_freq;

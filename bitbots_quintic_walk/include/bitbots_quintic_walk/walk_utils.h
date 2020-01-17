@@ -7,6 +7,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/Vector3.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 namespace bitbots_quintic_walk {
 
