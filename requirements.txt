@@ -1,4 +1,7 @@
 PyQt5
+PyYAML
+breathe
+construct
 matplotlib
 numpy
 opencv
