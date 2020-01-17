@@ -19,7 +19,7 @@ WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const ros::
   // first adapt trunk pitch value based on PID controller
   double corrected_pitch = pid_trunk_pitch_.computeCommand(goal_pitch - response.current_pitch, dt);
   tf2::Quaternion corrected_orientation;
-  corrected_orientation.setRPY(goal_roll, corrected_pitch, goal_yaw);
+  corrected_orientation.setRPY(goal_roll, goal_pitch + corrected_pitch, goal_yaw);
 
   WalkResponse stabilized_response = response;
   stabilized_response.support_foot_to_trunk.setRotation(corrected_orientation);
