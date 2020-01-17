@@ -8,6 +8,7 @@ include:
         - bitbots_ros_control
     - bitbots_misc:
         - bitbots_bringup
+        - bitbots_convenience_frames
         - bitbots_teleop
         - system_monitor
     - bitbots_motion:
