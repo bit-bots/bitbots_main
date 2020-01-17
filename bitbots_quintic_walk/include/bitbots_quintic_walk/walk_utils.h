@@ -7,6 +7,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/Vector3.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 namespace bitbots_quintic_walk {
 
@@ -42,6 +43,8 @@ struct WalkResponse {
 
   tf2::Transform support_to_last;
   tf2::Transform support_to_next;
+
+  double current_pitch;
 };
 
 /**
@@ -89,6 +92,6 @@ inline double angleDistance(double angle_src, double angle_dst) {
     }
   }
 }
-}
+} // namespace bitbots_quintic_walk
 
 #endif //BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_UTILS_H_

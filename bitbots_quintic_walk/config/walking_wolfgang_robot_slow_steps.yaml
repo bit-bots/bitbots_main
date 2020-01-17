@@ -65,6 +65,9 @@ walking:
     # (in 1)
     trunk_pitch_p_coef_turn: 0.0
 
+    first_step_swing_factor: 1.0
+    first_step_trunk_phase: 0.0
+
     kick_length: 0.08
     kick_vel: 0.0
     kick_phase: 0.75
@@ -74,7 +77,7 @@ walking:
     engine_freq: 200.0
 
     # parameters for bioIK
-    bio_ik_time: 0.01
+    ik_timeout: 0.01
 
     debug_active: True
 

@@ -2,38 +2,70 @@
 
 namespace bitbots_quintic_walk {
 
-WalkIK::WalkIK() : bio_ik_timeout_(0.01) {}
+WalkIK::WalkIK() : ik_timeout_(0.01) {}
 
 void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   legs_joints_group_ = kinematic_model->getJointModelGroup("Legs");
+  left_leg_joints_group_ = kinematic_model->getJointModelGroup("LeftLeg");
+  right_leg_joints_group_ = kinematic_model->getJointModelGroup("RightLeg");
+
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
   goal_state_->setToDefaultValues();
+  //without this magic line, IK will not work
+  const Eigen::Isometry3d &end_effector_state = goal_state_->getGlobalLinkTransform("r_sole");
 
   reset();
 }
 
-bitbots_splines::JointGoals WalkIK::calculate(const std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
-  bool success = goal_state_->setFromIK(legs_joints_group_,
-                                        EigenSTL::vector_Isometry3d(),
-                                        std::vector<std::string>(),
-                                        bio_ik_timeout_,
-                                        moveit::core::GroupStateValidityCallbackFn(),
-                                        *ik_goals);
-  if (success) {
-    /* retrieve joint names and associated positions from  */
-    std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
-    std::vector<double> joint_goals;
-    goal_state_->copyJointGroupPositions(legs_joints_group_, joint_goals);
+bitbots_splines::JointGoals WalkIK::calculateDirectly(const WalkResponse &ik_goals) {
+  // change goals from support foot based coordinate system to trunk based coordinate system
+  tf2::Transform trunk_to_support_foot_goal = ik_goals.support_foot_to_trunk.inverse();
+  tf2::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * ik_goals.support_foot_to_flying_foot;
 
-    /* construct result object */
-    bitbots_splines::JointGoals result;
-    result.first = joint_names;
-    result.second = joint_goals;
-    return result;
+  // make pose msg for calling IK
+  geometry_msgs::Pose left_foot_goal_msg;
+  geometry_msgs::Pose right_foot_goal_msg;
+
+  // decide which foot is which
+  if (ik_goals.is_left_support_foot) {
+    tf2::toMsg(trunk_to_support_foot_goal, left_foot_goal_msg);
+    tf2::toMsg(trunk_to_flying_foot_goal, right_foot_goal_msg);
   } else {
-    /* maybe do something better here? */
-    return bitbots_splines::JointGoals();
+    tf2::toMsg(trunk_to_support_foot_goal, right_foot_goal_msg);
+    tf2::toMsg(trunk_to_flying_foot_goal, left_foot_goal_msg);
   }
+
+  // call IK two times, since we have two legs
+  bool success;
+
+  // we have to do this otherwise there is an error
+  goal_state_->updateLinkTransforms();
+
+  success = goal_state_->setFromIK(left_leg_joints_group_,
+                                   left_foot_goal_msg,
+                                   ik_timeout_,
+                                   moveit::core::GroupStateValidityCallbackFn());
+  goal_state_->updateLinkTransforms();
+
+  success &= goal_state_->setFromIK(right_leg_joints_group_,
+                                    right_foot_goal_msg,
+                                    ik_timeout_,
+                                    moveit::core::GroupStateValidityCallbackFn());
+
+  std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
+  std::vector<double> joint_goals;
+  goal_state_->copyJointGroupPositions(legs_joints_group_, joint_goals);
+
+  /* construct result object */
+  bitbots_splines::JointGoals result;
+  result.first = joint_names;
+  result.second = joint_goals;
+  return result;
+}
+
+bitbots_splines::JointGoals WalkIK::calculate(const std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
+  //todo this method doesn't do anything and needs to be refactored
+  return bitbots_splines::JointGoals();
 }
 
 void WalkIK::reset() {
@@ -47,8 +79,8 @@ void WalkIK::reset() {
   }
 }
 
-void WalkIK::setBioIKTimeout(double timeout) {
-  bio_ik_timeout_ = timeout;
+void WalkIK::setIKTimeout(double timeout) {
+  ik_timeout_ = timeout;
 };
 
-}
+} // namespace bitbots_quintic_walk
