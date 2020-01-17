@@ -1,3 +1,5 @@
+#include <bitbots_odometry/odometry_fuser.h>
+
 /*
 odom -> baselink
 walking (X, Y, Z, rZ)
