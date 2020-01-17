@@ -40,7 +40,7 @@ The walking consists of three main parts:
    It uses internally a finite state machine to track the state of the walking.
 3. The inverse kinematic which computes the necessary joint values to reach the computed cartesian poses. We use BioIK or KDL for this through the MoveIt! interface.
 
-.. image:: approach.png
+.. image:: _static/approach.png
 
 
 
@@ -68,11 +68,11 @@ When the next step is computed, the last positions, velocities and accelerations
 Since these trajectories are only build when doing a new double step, changes in parameters or walking commands are only shown when the current double step is finished.
 The method which computes the poses at a given time point only takes the prebuild splines and computes the values for each of the splines using the methematical spline interpolation.
 
-.. image:: FSM.png
+.. image:: _static/FSM.png
 
-.. image:: engine_step.png
+.. image:: _static/engine_step.png
 
-.. image:: engine_params.png
+.. image:: _static/engine_params.png
 
 
 
