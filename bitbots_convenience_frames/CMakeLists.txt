@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_convenience_frames)
 
 find_package(catkin REQUIRED COMPONENTS
+  bitbots_docs
   roscpp
   std_msgs
   tf2
@@ -26,3 +27,5 @@ add_executable(convenience_frames src/convenience_frames.cpp)
 target_link_libraries(convenience_frames
     ${catkin_LIBRARIES}
 )
+
+enable_bitbots_docs()
