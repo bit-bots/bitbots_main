@@ -1,8 +1,9 @@
-.. You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to |project|'s documentation!
-========================================
+================================================
+
+Description
+-----------
+
 
 The HCM is the part of our software stack which handles all reflexlike behaviour of the robot, e.g. falling.
 It helps abstracting from the fact that the robot has legs and can fall.
@@ -71,12 +72,16 @@ What to do when it does not work
    There you can see exactly which decision is responsible for the current behavior and then you can look into the code.
 
 
+.. toctree::
+   :maxdepth: 2
+
+   cppapi/library_root
+   pyapi/modules
 
 
 Indices and tables
 ==================
 
-* `Messages <./index-msg.html>`_
 * :ref:`genindex`
-* :ref:`modindex`
+* |modindex|
 * :ref:`search`
