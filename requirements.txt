@@ -4,7 +4,7 @@ breathe
 construct
 matplotlib
 numpy
-opencv
+opencv-python
 pip
 psutil
 pydot
