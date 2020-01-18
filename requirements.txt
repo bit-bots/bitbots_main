@@ -14,4 +14,3 @@ rospkg
 setuptools
 silx
 tensorflow
-yaml
