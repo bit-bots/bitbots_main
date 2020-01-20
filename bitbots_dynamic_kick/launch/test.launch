@@ -6,6 +6,7 @@
   <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
 
   <node name="dynamic_kick" pkg="bitbots_dynamic_kick" type="KickNode" output="screen" launch-prefix="$(arg taskset)">
-        <remap from="/kick_motor_goals" to="/DynamixelController/command"/>
+    <remap from="/kick_motor_goals" to="/DynamixelController/command"/>
+    <rosparam command="load" file="$(find bitbots_dynamic_kick)/config/kick_config.yaml" />
   </node>
 </launch>
