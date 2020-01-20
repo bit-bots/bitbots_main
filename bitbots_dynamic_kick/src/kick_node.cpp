@@ -66,11 +66,6 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   engine_.setParams(params);
 
   stabilizer_.useCop(config.use_center_of_pressure);
-  stabilizer_.setTrunkWeight(config.trunk_weight);
-  stabilizer_.setFlyingWeight(config.flying_weight);
-  stabilizer_.setPFactor(config.stabilizing_p_x, config.stabilizing_p_y);
-  stabilizer_.setIFactor(config.stabilizing_i_x, config.stabilizing_i_y);
-  stabilizer_.setDFactor(config.stabilizing_d_x, config.stabilizing_d_y);
 
   VisualizationParams viz_params = VisualizationParams();
   viz_params.spline_smoothness = config.spline_smoothness;

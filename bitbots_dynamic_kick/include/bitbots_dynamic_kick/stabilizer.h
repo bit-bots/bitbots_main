@@ -5,6 +5,7 @@
 #include <moveit/robot_state/robot_state.h>
 #include <geometry_msgs/Pose.h>
 #include <tf2_ros/transform_listener.h>
+#include <control_toolbox/pid.h>
 #include <bitbots_splines/abstract_stabilizer.h>
 #include "kick_utils.h"
 #include "visualizer.h"
@@ -26,31 +27,15 @@ class Stabilizer :
    */
 
   KickPositions stabilize(const KickPositions &positions, const ros::Duration &dt) override;
-  void reset()
-  override;
+  void reset() override;
   void useCop(bool use);
-  void setFlyingWeight(double weight);
-  void setTrunkWeight(double weight);
-  void setPFactor(double factor_x, double factor_y);
-  void setIFactor(double factor_x, double factor_y);
-  void setDFactor(double factor_x, double factor_y);
   void setRobotModel(moveit::core::RobotModelPtr model);
  private:
   moveit::core::RobotModelPtr kinematic_model_;
-  double cop_x_error_sum_;
-  double cop_y_error_sum_;
-  double cop_x_error_;
-  double cop_y_error_;
+  control_toolbox::Pid pid_x_;
+  control_toolbox::Pid pid_y_;
 
   bool use_cop_;
-  double flying_weight_;
-  double trunk_weight_;
-  double p_x_factor_;
-  double p_y_factor_;
-  double i_x_factor_;
-  double i_y_factor_;
-  double d_x_factor_;
-  double d_y_factor_;
 };
 }
 

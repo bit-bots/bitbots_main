@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
         visualization_msgs
         nav_msgs
         bitbots_docs
+        control_toolbox
         )
 
 generate_dynamic_reconfigure_options(
