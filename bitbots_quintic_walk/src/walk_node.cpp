@@ -111,7 +111,7 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, doubl
   WalkResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
 
   // compute motor goals from IK
-  bitbots_splines::JointGoals motor_goals = ik_.calculateDirectly(stabilized_response);
+  bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_response);
 
   // publish them
   publishGoals(motor_goals);

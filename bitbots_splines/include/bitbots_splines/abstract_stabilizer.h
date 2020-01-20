@@ -1,7 +1,7 @@
 #ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_ABSTRACT_STABILIZER_H_
 #define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_ABSTRACT_STABILIZER_H_
 
-#include <bio_ik/goal.h>
+#include <ros/duration.h>
 
 namespace bitbots_splines {
 

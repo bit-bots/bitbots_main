@@ -5,15 +5,16 @@
 #include <moveit/planning_scene/planning_scene.h>
 #include <bitbots_splines/abstract_ik.h>
 #include <bitbots_dynamic_kick/kick_utils.h>
+#include <tf2/convert.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 namespace bitbots_dynamic_kick {
 
-class KickIK : public bitbots_splines::AbstractIK {
+class KickIK : public bitbots_splines::AbstractIK<KickPositions> {
  public:
   KickIK() = default;
   void init(moveit::core::RobotModelPtr kinematic_model) override;
-  bitbots_splines::JointGoals calculate(std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) override;
-  bitbots_splines::JointGoals calculateDirectly(KickPositions &positions);
+  bitbots_splines::JointGoals calculate(const KickPositions &positions) override;
   void reset() override;
 
  private:

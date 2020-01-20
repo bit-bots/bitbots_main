@@ -68,7 +68,7 @@ void DynUpNode::loopEngine() {
   while (server_.isActive() && !server_.isPreemptRequested()) {
     DynupResponse response = engine_.update(1.0 / engine_rate_);
     DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(1.0 / engine_rate_));
-    bitbots_splines::JointGoals goals = ik_.calculateDirectly(stabilized_response);
+    bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
     // TODO: add counter for failed ticks
     bitbots_msgs::DynUpFeedback feedback;
     feedback.percent_done = engine_.getPercentDone();

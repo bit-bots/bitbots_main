@@ -1,5 +1,4 @@
 #include "bitbots_dynamic_kick/kick_ik.h"
-#include <bitbots_splines/dynamic_balancing_goal.h>
 
 namespace bitbots_dynamic_kick {
 
@@ -28,7 +27,7 @@ void KickIK::reset() {
   }
 }
 
-bitbots_splines::JointGoals KickIK::calculateDirectly(KickPositions &positions) {
+bitbots_splines::JointGoals KickIK::calculate(const KickPositions &positions) {
   // change goals from support foot based coordinate system to trunk based coordinate system
   tf2::Transform trunk_to_support_foot_goal = positions.trunk_pose.inverse();
   tf2::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * positions.flying_foot_pose;
@@ -72,42 +71,6 @@ bitbots_splines::JointGoals KickIK::calculateDirectly(KickPositions &positions) 
   result.first = joint_names;
   result.second = joint_goals;
   return result;
-}
-
-bitbots_splines::JointGoals KickIK::calculate(const std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
-  double bio_ik_timeout = 0.01;
-  bool success = goal_state_->setFromIK(legs_joints_group_,
-                                        EigenSTL::vector_Isometry3d(),
-                                        std::vector<std::string>(),
-                                        bio_ik_timeout,
-                                        moveit::core::GroupStateValidityCallbackFn(),
-                                        *ik_goals);
-
-  collision_detection::CollisionRequest req;
-  collision_detection::CollisionResult res;
-  collision_detection::AllowedCollisionMatrix acm = planning_scene_->getAllowedCollisionMatrix();
-  planning_scene_->checkCollision(req, res, *goal_state_, acm);
-  if (res.collision) {
-    ROS_ERROR_STREAM("Aborting due to self collision!");
-    success = false;
-  }
-
-  if (success) {
-    /* retrieve joint names and associated positions from  */
-    std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
-    std::vector<double> joint_goals;
-    goal_state_->copyJointGroupPositions(legs_joints_group_, joint_goals);
-
-    /* construct result object */
-    bitbots_splines::JointGoals result;
-    result.first = joint_names;
-    result.second = joint_goals;
-    return result;
-  } else {
-    /* maybe do something better here? */
-    return bitbots_splines::JointGoals();
-  }
-
 }
 
 }

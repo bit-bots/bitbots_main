@@ -1,6 +1,9 @@
 #ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_UTILS_H_
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_UTILS_H_
 
+#include <tf2/LinearMath/Transform.h>
+#include <geometry_msgs/Pose.h>
+
 struct DynupResponse {
   geometry_msgs::Point support_point;
   tf2::Transform l_foot_pose;

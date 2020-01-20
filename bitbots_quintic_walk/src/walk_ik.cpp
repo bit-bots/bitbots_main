@@ -17,7 +17,7 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   reset();
 }
 
-bitbots_splines::JointGoals WalkIK::calculateDirectly(const WalkResponse &ik_goals) {
+bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
   // change goals from support foot based coordinate system to trunk based coordinate system
   tf2::Transform trunk_to_support_foot_goal = ik_goals.support_foot_to_trunk.inverse();
   tf2::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * ik_goals.support_foot_to_flying_foot;
@@ -61,11 +61,6 @@ bitbots_splines::JointGoals WalkIK::calculateDirectly(const WalkResponse &ik_goa
   result.first = joint_names;
   result.second = joint_goals;
   return result;
-}
-
-bitbots_splines::JointGoals WalkIK::calculate(const std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
-  //todo this method doesn't do anything and needs to be refactored
-  return bitbots_splines::JointGoals();
 }
 
 void WalkIK::reset() {

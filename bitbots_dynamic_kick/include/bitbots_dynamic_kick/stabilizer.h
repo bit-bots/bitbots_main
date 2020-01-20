@@ -2,7 +2,7 @@
 #define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_STABILIZER_H_
 
 #include <optional>
-#include <bio_ik/bio_ik.h>
+#include <moveit/robot_state/robot_state.h>
 #include <geometry_msgs/Pose.h>
 #include <tf2_ros/transform_listener.h>
 #include <bitbots_splines/abstract_stabilizer.h>

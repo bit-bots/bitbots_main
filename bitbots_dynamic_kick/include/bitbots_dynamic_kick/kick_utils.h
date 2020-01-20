@@ -6,6 +6,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/Vector3.h>
+#include <tf2/LinearMath/Transform.h>
 
 namespace bitbots_dynamic_kick {
 

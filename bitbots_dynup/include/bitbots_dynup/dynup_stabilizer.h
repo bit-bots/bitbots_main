@@ -2,8 +2,8 @@
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_STABILIZER_H_
 
 #include <optional>
+#include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
-#include <bio_ik/bio_ik.h>
 #include <geometry_msgs/Pose.h>
 #include <tf2_ros/transform_listener.h>
 #include <bitbots_splines/abstract_stabilizer.h>
@@ -11,9 +11,6 @@
 
 namespace bitbots_dynup {
 
-/**
- * The stabilizer is basically a wrapper around bio_ik and moveit
- */
 class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
  public:
   void init(moveit::core::RobotModelPtr kinematic_model);

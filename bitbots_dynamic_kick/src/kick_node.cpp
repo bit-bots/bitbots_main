@@ -166,7 +166,7 @@ void KickNode::loopEngine() {
     KickPositions positions = engine_.update(1.0 / engine_rate_);
     // TODO: should positions be an std::optional? how are errors represented?
     KickPositions stabilized_positions = stabilizer_.stabilize(positions, ros::Duration(1.0 / engine_rate_));
-    bitbots_splines::JointGoals motor_goals = ik_.calculateDirectly(stabilized_positions);
+    bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_positions);
 
     bitbots_msgs::KickFeedback feedback;
     feedback.percent_done = engine_.getPercentDone();
