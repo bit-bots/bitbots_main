@@ -44,9 +44,11 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   bitbots_splines::PoseSpline foot_spline_;
   bitbots_splines::PoseSpline l_hand_spline_;
-  bitbots_splines::PoseSpline trunk_spline_;
+  bitbots_splines::PoseSpline r_foot_spline_;
   bitbots_splines::PoseSpline r_hand_spline_;
   DynUpConfig params_;
+
+  DynupResponse goals_;
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;

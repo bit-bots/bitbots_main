@@ -40,9 +40,9 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const
   ik_options->replace = true;
   ik_options->return_approximate_solution = true;
 
-  tf2::Stamped<tf2::Transform> tf_l_foot, tf_trunk, tf_r_hand, tf_l_hand;
+  tf2::Stamped<tf2::Transform> tf_l_foot, tf_r_foot, tf_r_hand, tf_l_hand;
   tf2::convert(response.l_foot_goal_pose, tf_l_foot);
-  tf2::convert(response.trunk_goal_pose, tf_trunk);
+  tf2::convert(response.r_foot_goal_pose, tf_r_foot);
   tf2::convert(response.r_hand_goal_pose, tf_r_hand);
   tf2::convert(response.l_hand_goal_pose, tf_l_hand);
 
@@ -54,12 +54,12 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const
   bio_ik_l_foot_goal->setWeight(1.0);
   bio_ik_l_foot_goal->setReferenceLinkName("r_sole");
 
-  auto *bio_ik_trunk_goal = new ReferencePoseGoal();
-  bio_ik_trunk_goal->setPosition(tf_trunk.getOrigin());
-  bio_ik_trunk_goal->setOrientation(tf_trunk.getRotation());
-  bio_ik_trunk_goal->setLinkName("torso");
-  bio_ik_trunk_goal->setWeight(1.0);
-  bio_ik_trunk_goal->setReferenceLinkName("r_sole");
+  auto *bio_ik_r_foot_goal = new ReferencePoseGoal();
+  bio_ik_r_foot_goal->setPosition(tf_r_foot.getOrigin());
+  bio_ik_r_foot_goal->setOrientation(tf_r_foot.getRotation());
+  bio_ik_r_foot_goal->setLinkName("r_sole");
+  bio_ik_r_foot_goal->setWeight(1.0);
+  bio_ik_r_foot_goal->setReferenceLinkName("torso");
 
   auto *bio_ik_l_hand_goal = new ReferencePoseGoal();
   bio_ik_l_hand_goal->setPosition(tf_l_hand.getOrigin());
@@ -82,7 +82,7 @@ std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> Stabilizer::stabilize(const
   bio_ik_balance_goal->setReferenceLink("base_link");
 
   ik_options->goals.emplace_back(bio_ik_l_foot_goal);
-  ik_options->goals.emplace_back(bio_ik_trunk_goal);
+  ik_options->goals.emplace_back(bio_ik_r_foot_goal);
   ik_options->goals.emplace_back(bio_ik_r_hand_goal);
   ik_options->goals.emplace_back(bio_ik_l_hand_goal);
 

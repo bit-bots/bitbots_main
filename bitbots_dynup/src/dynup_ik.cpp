@@ -44,7 +44,7 @@ bitbots_splines::JointGoals DynupIK::calculate(std::unique_ptr<bio_ik::BioIKKine
   ik_options_legs->return_approximate_solution = true;
 
   ik_options_legs->goals.emplace_back(ik_goals->goals[0].release()); //l_foot_goal
-  ik_options_legs->goals.emplace_back(ik_goals->goals[1].release()); //trunk_goal
+  ik_options_legs->goals.emplace_back(ik_goals->goals[1].release()); //r_foot_goal
   ik_options_arms->goals.emplace_back(ik_goals->goals[2].release()); //r_hand_goal
   ik_options_arms->goals.emplace_back(ik_goals->goals[3].release()); //l_hand_goal
   if(use_stabilizing_) {
