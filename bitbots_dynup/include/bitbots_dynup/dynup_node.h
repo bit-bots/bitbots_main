@@ -35,6 +35,7 @@ typedef actionlib::SimpleActionServer<bitbots_msgs::DynUpAction> ActionServer;
 class DynUpNode {
  public:
   DynUpNode();
+  ros::Publisher debug_publisher_;
 
   /** Callback for dynamic reconfigure */
   void reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level);
@@ -49,6 +50,7 @@ class DynUpNode {
   ros::NodeHandle node_handle_;
   ros::Publisher joint_goal_publisher_;
   ros::Publisher support_foot_publisher_;
+
   ActionServer server_;
   DynupEngine engine_;
   Stabilizer stabilizer_;
