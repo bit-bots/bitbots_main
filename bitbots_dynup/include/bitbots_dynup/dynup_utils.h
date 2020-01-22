@@ -7,7 +7,7 @@
 struct DynupResponse {
   geometry_msgs::Point support_point;
   geometry_msgs::PoseStamped l_foot_goal_pose;
-  geometry_msgs::PoseStamped trunk_goal_pose;
+  geometry_msgs::PoseStamped r_foot_goal_pose;
   geometry_msgs::PoseStamped l_hand_goal_pose;
   geometry_msgs::PoseStamped r_hand_goal_pose;
 };
@@ -16,7 +16,7 @@ struct DynupRequest {
   /* Whether the robot should stand up from the front or back */
   bool front;
   geometry_msgs::Pose l_foot_pose;
-  geometry_msgs::Pose trunk_pose;
+  geometry_msgs::Pose r_foot_pose;
   geometry_msgs::Pose l_hand_pose;
   geometry_msgs::Pose r_hand_pose;
 };
