@@ -105,7 +105,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    *      JointGoals
    * @param dt Passed delta-time between last call to update() and now. Measured in seconds
    * @return New motor goals only if a goal is currently set, position extractions from splines was possible and
-   *      bio_ik was able to compute valid motor positions
+   *      IK was able to compute valid motor positions
    */
   KickPositions update(double dt) override;
 

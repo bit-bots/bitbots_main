@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_dynup</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>todo
   </description>
 
@@ -18,7 +18,6 @@
   <depend>actionlib</depend>
   <depend>bitbots_msgs</depend>
   <depend>bitbots_splines</depend>
-  <depend>bio_ik</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_geometry_msgs</depend>

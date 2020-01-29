@@ -5,7 +5,6 @@
 
 #include <optional>
 #include <control_toolbox/pid.h>
-#include <bio_ik/bio_ik.h>
 #include <bitbots_splines/abstract_stabilizer.h>
 #include "bitbots_quintic_walk/walk_utils.h"
 #include "bitbots_splines/dynamic_balancing_goal.h"
@@ -17,7 +16,7 @@ namespace bitbots_quintic_walk {
 class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> {
  public:
   WalkStabilizer();
-  virtual void reset();
+  void reset() override;
   WalkResponse stabilize(const WalkResponse &response, const ros::Duration &dt) override;
 
  private:

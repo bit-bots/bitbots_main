@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_dynamic_kick</name>
-  <version>0.1.3</version>
+  <version>0.1.4</version>
   <description>
 	  The bitbots_dynamic_kick package implements a kick which is not based on keyframe animations.
 	  Instead it aims to dynamically reach it's movement goal while keeping the robot stable and controllable.
@@ -30,7 +30,6 @@
   <depend>tf2_ros</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>bitbots_splines</depend>
-  <depend>bio_ik</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
