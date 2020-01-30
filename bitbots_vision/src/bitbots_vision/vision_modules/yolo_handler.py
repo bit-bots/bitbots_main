@@ -352,7 +352,7 @@ class YoloHandlerNCS2(YoloHandler):
                                         "".format(out_blob_h, out_blob_w)
 
         # Extracting layer parameters
-        orig_im_h, orig_im_w = original_im_shape
+        original_image_height, original_image_width = original_im_shape
         resized_image_h, resized_image_w = resized_image_shape
         objects = list()
         predictions = blob.flatten()
@@ -388,10 +388,10 @@ class YoloHandlerNCS2(YoloHandler):
                     confidence = scale * predictions[class_index]
                     if confidence < threshold:
                         continue
-                    h = int(h * orig_im_h)
-                    w = int(w * orig_im_w)
-                    x = x * orig_im_w - w / 2
-                    y = y * orig_im_h - h / 2
+                    h = int(h * original_image_height)
+                    w = int(w * original_image_width)
+                    x = x * original_image_width - w / 2
+                    y = y * original_image_height - h / 2
                     list_of_coordinates = [int(x), int(y), int(w), int(h)]
                     # Convert to int
                     objects.append([list_of_coordinates, float(confidence), j])
