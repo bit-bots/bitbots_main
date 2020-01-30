@@ -389,7 +389,7 @@ class YoloHandlerNCS2(YoloHandler):
                 # Scale it to relative coordinates.
                 x = (col + predictions[box_index + 0 * side_square]) / params.side
                 y = (row + predictions[box_index + 1 * side_square]) / params.side
-                # Value for exp is very big number in some cases so following construction is using here
+                # Value for exp might be a very large number, so the following construction is used here
                 try:
                     w_exp = exp(predictions[box_index + 2 * side_square])
                     h_exp = exp(predictions[box_index + 3 * side_square])
