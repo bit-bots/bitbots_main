@@ -325,10 +325,6 @@ class YoloHandlerNCS2(YoloHandler):
         rospy.loginfo("Loading model to the plugin", logger_name="vision_yolo")
         self._exec_net = ie.load_network(network=self._net, num_requests=2, device_name=device)
 
-        # Params TODO
-        self._nms_threshold = 0.4
-        self._confidence_threshold = 0.5
-
         self._image = None
         self._caching = True
 
