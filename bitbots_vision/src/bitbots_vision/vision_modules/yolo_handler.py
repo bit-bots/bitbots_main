@@ -341,7 +341,7 @@ class YoloHandlerNCS2(YoloHandler):
         :param blob: Yolo layer output blob
         :param resized_image_shape: Yolo input image shape
         :param original_im_shape: Vision image shape
-        :params: Layer parameters
+        :param params: Layer parameters
         :param threshold: Yolo bounding box threshold
         :return: List of bounding boxes
         """
