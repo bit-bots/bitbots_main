@@ -325,23 +325,6 @@ class YoloHandlerNCS2(YoloHandler):
         rospy.loginfo("Loading model to the plugin", logger_name="vision_yolo")
         self._exec_net = ie.load_network(network=self._net, num_requests=2, device_name=device)
 
-        self._image = None
-        self._caching = True
-
-    def set_image(self, image):
-        """
-        Set a image for yolo. This also resets the caches.
-
-        :param image: current vision image
-        """
-        # Check if image has been processed
-        if np.array_equal(image, self._image):
-            return
-        # Set image
-        self._image = image
-        self._goalpost_candidates = None
-        self._ball_candidates = None
-
     def _entry_index(self, side, coord, classes, location, entry):
         """
         Calculates the index of a yolo object.
