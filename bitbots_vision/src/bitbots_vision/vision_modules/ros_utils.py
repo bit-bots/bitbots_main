@@ -143,7 +143,7 @@ def add_model_enums(cfg_type, package_path):
                 'name': folder,
                 'value': folder,
                 'description': 'fcnn {}'.format(folder)})
-        # Is this model an yolo darknet model
+        # Is this model a yolo darknet model
         elif os.path.exists(os.path.join(models_directory, folder, "yolo_weights.weights")):
             # Append list with a new enum item
             yolo_darknet_paths.append({
