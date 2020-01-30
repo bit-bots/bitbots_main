@@ -349,7 +349,7 @@ class Vision:
                 # Check if it exists
                 if not os.path.exists(os.path.join(yolo_openvino_model_path, "yolo.bin")) \
                         or not os.path.exists(os.path.join(yolo_openvino_model_path, "yolo.xml")):
-                    rospy.logerr('AAAAHHHH! The specified yolo openvino model file doesn\'t exist! Maybe its an fcnn model?', logger_name="vision_yolo")
+                    rospy.logerr('The specified yolo openvino model file doesn\'t exist! Maybe its a fcnn model?', logger_name="vision_yolo")
                 else:
                     self._yolo = yolo_handler.YoloHandlerNCS2(config, yolo_openvino_model_path)
                     self._ball_detector = yolo_handler.YoloBallDetector(config, self._yolo)
