@@ -365,6 +365,7 @@ class YoloHandlerNCS2(YoloHandler):
             for n in range(params.num):
                 obj_index = self._entry_index(params.side, params.coords, params.classes, n * side_square + i, params.coords)
                 scale = predictions[obj_index]
+                # Skip unrealistic boxes
                 if scale < threshold:
                     continue
                 box_index = self._entry_index(params.side, params.coords, params.classes, n * side_square + i, 0)
@@ -386,6 +387,7 @@ class YoloHandlerNCS2(YoloHandler):
                     class_index = self._entry_index(params.side, params.coords, params.classes, n * side_square + i,
                                             params.coords + 1 + j)
                     confidence = scale * predictions[class_index]
+                    # Skip box if confidence in class is too low
                     if confidence < threshold:
                         continue
                     h = int(h * original_image_height)
