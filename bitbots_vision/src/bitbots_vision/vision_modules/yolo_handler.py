@@ -330,7 +330,7 @@ class YoloHandlerNCS2(YoloHandler):
 
     def set_image(self, image):
         """
-        Set a image for yolo. This also resets the caches.
+        Set an image for yolo. This also resets the caches.
 
         :param image: current vision image
         """
