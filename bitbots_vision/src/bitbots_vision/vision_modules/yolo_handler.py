@@ -446,17 +446,17 @@ class YoloHandlerNCS2(YoloHandler):
                 # Non-maximum Suppression
                 box_indices = cv2.dnn.NMSBoxes(boxes, confidences, self._confidence_threshold, self._nms_threshold)
                 # Iterate over filtered boxes
-                for i in box_indices:
+                for index in box_indices:
                     # Get id
-                    i = i[0]
+                    index = index[0]
                     # Get box
-                    box = boxes[i]
+                    box = boxes[index]
                     # Convert the box position/size to int
                     box = list(map(int, box))
                     # Create the candidate
-                    c = Candidate(*box, confidences[i])
+                    c = Candidate(*box, confidences[index])
                     # Append candidate to the right list depending on the class
-                    class_id = class_ids[i]
+                    class_id = class_ids[index]
                     if class_id == 0:
                         self._ball_candidates.append(c)
                     if class_id == 1:
