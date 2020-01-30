@@ -364,7 +364,7 @@ class YoloHandlerNCS2(YoloHandler):
         """
         # Validating output parameters
         _, _, out_blob_h, out_blob_w = blob.shape
-        assert out_blob_w == out_blob_h, "Invalid size of output blob. It sould be in NCHW layout and height should " \
+        assert out_blob_w == out_blob_h, "Invalid size of output blob. It should be in NCHW layout and height should " \
                                         "be equal to width. Current height = {}, current width = {}" \
                                         "".format(out_blob_h, out_blob_w)
 
