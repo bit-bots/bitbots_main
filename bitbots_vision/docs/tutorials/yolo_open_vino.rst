@@ -17,7 +17,7 @@ Otherwise visit the `OpenVINO Install Page <https://docs.openvinotoolkit.org/lat
 Convert weights to Tensorflow format
 ------------------------------------
 1. Clone `GibHub:tensorflow-yolo-v3 <https://github.com/mystic123/tensorflow-yolo-v3>`_ to your PC (no OpenVINO needed).
-2. Go to commit `ed60b90` if you have Problems.
+2. Checkout commit `ed60b90` if you have problems.
 3. Run the command
 
 `python3 convert_weights_pb.py --class_names names.names --data_format NHWC --weights_file <PATH_TO_YOUR_CURRENT_YOLO_WEIGHTS_FILE> --tiny`
