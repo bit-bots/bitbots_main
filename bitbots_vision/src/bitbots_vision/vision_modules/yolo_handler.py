@@ -12,7 +12,7 @@ except ImportError:
 try:
     from openvino.inference_engine import IENetwork, IECore
 except ImportError:
-    rospy.logerr("Not able to run YOLO on the Intel NCS2 TPU! The OpenVINO SDK should be installed to run this hardware acceleration", logger_name="vision_yolo")
+    rospy.logerr("Not able to run YOLO on the Intel NCS2 TPU! The OpenVINO SDK should be installed if you intend to run YOLO on the TPU", logger_name="vision_yolo")
 
 
 class YoloHandler():
