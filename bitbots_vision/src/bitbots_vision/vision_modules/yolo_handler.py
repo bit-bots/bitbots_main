@@ -443,7 +443,7 @@ class YoloHandlerNCS2(YoloHandler):
             if detections:
                 # Transpose detections
                 boxes, confidences, class_ids = list(map(list, zip(*detections)))
-                # Non-maximum Suppression
+                # Non-maximum Suppression. This effectively chooses one bounding box if multiple are laying over each other
                 box_indices = cv2.dnn.NMSBoxes(boxes, confidences, self._confidence_threshold, self._nms_threshold)
                 # Iterate over filtered boxes
                 for index in box_indices:
