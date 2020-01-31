@@ -4,11 +4,11 @@
 #include <tf2/LinearMath/Transform.h>
 
 struct DynupResponse {
-  geometry_msgs::Point support_point;
-  geometry_msgs::PoseStamped l_foot_goal_pose;
-  geometry_msgs::PoseStamped r_foot_goal_pose;
-  geometry_msgs::PoseStamped l_hand_goal_pose;
-  geometry_msgs::PoseStamped r_hand_goal_pose;
+  geometry_msgs::Point support_point; //TODO: This does not work anymore...
+  tf2::Transform l_foot_goal_pose;
+  tf2::Transform r_foot_goal_pose;
+  tf2::Transform l_hand_goal_pose;
+  tf2::Transform r_hand_goal_pose;
 };
 
 struct DynupRequest {

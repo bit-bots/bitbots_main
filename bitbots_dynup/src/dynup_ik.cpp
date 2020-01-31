@@ -2,11 +2,11 @@
 namespace bitbots_dynup {
 void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
   /* Extract joint groups from kinematics model */
-  all_joints_group_.reset(kinematic_model->getJointModelGroup("All"));
-  arm_joints_group_.reset(kinematic_model->getJointModelGroup("Arms"));
-  leg_joints_group_.reset(kinematic_model->getJointModelGroup("Legs"));
-
-
+  l_leg_joints_group_ = kinematic_model->getJointModelGroup("LeftLeg");
+  r_leg_joints_group_ = kinematic_model->getJointModelGroup("RightLeg");
+  l_arm_joints_group_ = kinematic_model->getJointModelGroup("LeftArm");
+  r_arm_joints_group_ = kinematic_model->getJointModelGroup("RightArm");
+  all_joints_group_ = kinematic_model->getJointModelGroup("All");
 
   /* Reset kinematic goal to default */
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
@@ -32,49 +32,60 @@ void DynupIK::reset() {
   }
 }
 
-bitbots_splines::JointGoals DynupIK::calculate(std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) {
-  double bio_ik_timeout = 0.01;
+bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
-  /*Splits ik goals into two goals for arms and legs. There is probably a better way to do this. (TODO)*/
-  auto ik_options_arms = std::make_unique<bio_ik::BioIKKinematicsQueryOptions>();
-  ik_options_arms->replace = true;
-  ik_options_arms->return_approximate_solution = true;
-  auto ik_options_legs = std::make_unique<bio_ik::BioIKKinematicsQueryOptions>();
-  ik_options_legs->replace = true;
-  ik_options_legs->return_approximate_solution = true;
+  tf2::Transform right_foot_goal = ik_goals.r_foot_goal_pose;
+  tf2::Transform left_foot_goal = ik_goals.l_foot_goal_pose * ik_goals.r_foot_goal_pose;
+  tf2::Transform left_hand_goal = ik_goals.l_hand_goal_pose;
+  tf2::Transform right_hand_goal = ik_goals.r_hand_goal_pose;
 
-  ik_options_legs->goals.emplace_back(ik_goals->goals[0].release()); //l_foot_goal
-  ik_options_legs->goals.emplace_back(ik_goals->goals[1].release()); //r_foot_goal
-  ik_options_arms->goals.emplace_back(ik_goals->goals[2].release()); //r_hand_goal
-  ik_options_arms->goals.emplace_back(ik_goals->goals[3].release()); //l_hand_goal
-  if(use_stabilizing_) {
-    ik_options_legs->goals.emplace_back(ik_goals->goals[4].release()); //stabilizing_goal
-  }
-  if(use_minimal_displacement_) {
-    auto displacementgoal = ik_goals->goals[5].release();
-    ik_options_arms->goals.emplace_back(std::make_unique<bio_ik::Goal>(*displacementgoal)); //minimal_displacement_goal
-    ik_options_legs->goals.emplace_back(std::make_unique<bio_ik::Goal>(*displacementgoal)); //minimal_displacement_goal
-  }
+  geometry_msgs::Pose right_foot_goal_msg, left_foot_goal_msg, right_hand_goal_msg, left_hand_goal_msg;
 
-  bool success = goal_state_->setFromIK(arm_joints_group_.get(),
-                                        EigenSTL::vector_Isometry3d(),
-                                        std::vector<std::string>(),
-                                        bio_ik_timeout,
-                                        moveit::core::GroupStateValidityCallbackFn(),
-                                        *ik_options_arms) &&
-                 goal_state_->setFromIK(leg_joints_group_.get(),
-                                        EigenSTL::vector_Isometry3d(),
-                                        std::vector<std::string>(),
-                                        bio_ik_timeout,
-                                        moveit::core::GroupStateValidityCallbackFn(),
-                                        *ik_options_legs);
+  tf2::toMsg(right_foot_goal, right_foot_goal_msg);
+  //ROS_ERROR("%f, %f, %f", right_foot_goal_msg.position.x, right_foot_goal_msg.position.y, right_foot_goal_msg.position.z);
+  tf2::toMsg(left_foot_goal, left_foot_goal_msg);
+  //ROS_ERROR("%f, %f, %f", left_foot_goal_msg.position.x, left_foot_goal_msg.position.y, left_foot_goal_msg.position.z);
+  tf2::toMsg(right_hand_goal, right_hand_goal_msg);
+  tf2::toMsg(left_hand_goal, left_hand_goal_msg);
+
+
+  bool success;
+
+  goal_state_->updateLinkTransforms();
+
+  success = goal_state_->setFromIK(l_leg_joints_group_,
+                                   left_foot_goal_msg,
+                                   0.01,
+                                   moveit::core::GroupStateValidityCallbackFn());
+  goal_state_->updateLinkTransforms();
+  //ROS_ERROR("1 %d", success);
+
+  success &= goal_state_->setFromIK(r_leg_joints_group_,
+                                   right_foot_goal_msg,
+                                   0.01,
+                                   moveit::core::GroupStateValidityCallbackFn());
+  goal_state_->updateLinkTransforms();
+  //ROS_ERROR("2 %d", success);
+
+  /*success &= goal_state_->setFromIK(l_arm_joints_group_,
+                                   left_hand_goal_msg,
+                                   0.01,
+                                   moveit::core::GroupStateValidityCallbackFn());
+  goal_state_->updateLinkTransforms();
+  ROS_ERROR("3 %d", success);
+
+  success &= goal_state_->setFromIK(r_arm_joints_group_,
+                                   right_hand_goal_msg,
+                                   0.01,
+                                   moveit::core::GroupStateValidityCallbackFn());
+  ROS_ERROR("4 %d", success);*/
   
 
   if (success) {
     /* retrieve joint names and associated positions from  */
     std::vector<std::string> joint_names = all_joints_group_->getActiveJointModelNames();
     std::vector<double> joint_goals;
-    goal_state_->copyJointGroupPositions(all_joints_group_.get(), joint_goals);
+    goal_state_->copyJointGroupPositions(all_joints_group_, joint_goals);
 
     /* construct result object */
     bitbots_splines::JointGoals result;
