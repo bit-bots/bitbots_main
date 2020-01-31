@@ -341,7 +341,7 @@ class Vision:
             elif ros_utils.config_param_change(self._config, config, r'yolo_'):
                 self._yolo.set_config(config)
 
-        # Check if the yolo ball/goalpost detector is activated and the tpu version is used
+        # Check if  tpu version of yolo ball/goalpost detector is used
         if config['neural_network_type'] in ['yolo_ncs2']:
             if ros_utils.config_param_change(self._config, config, ['neural_network_type']):
                 # Build absolute model path
