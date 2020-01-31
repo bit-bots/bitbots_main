@@ -2,10 +2,12 @@
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_IK_H_
 
 #include <bitbots_splines/abstract_ik.h>
-#include <moveit/robot_state/robot_state.h>
 #include <tf2/convert.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include "dynup_utils.h"
+#include <moveit/robot_model_loader/robot_model_loader.h>
+#include <moveit/robot_state/robot_state.h>
+
 
 namespace bitbots_dynup {
 class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
@@ -16,9 +18,11 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
   void useStabilizing(bool use);
   void useMinimalDisplacement(bool use);
  private:
-  moveit::core::JointModelGroupPtr all_joints_group_;
-  moveit::core::JointModelGroupPtr arm_joints_group_;
-  moveit::core::JointModelGroupPtr leg_joints_group_;
+  moveit::core::JointModelGroup *all_joints_group_;
+  moveit::core::JointModelGroup *l_arm_joints_group_;
+  moveit::core::JointModelGroup *l_leg_joints_group_;
+  moveit::core::JointModelGroup *r_arm_joints_group_;
+  moveit::core::JointModelGroup *r_leg_joints_group_;
   robot_state::RobotStatePtr goal_state_;
   bool use_stabilizing_;
   bool use_minimal_displacement_;

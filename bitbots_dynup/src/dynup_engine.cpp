@@ -17,7 +17,7 @@ void DynupEngine::publishDebug(ros::Publisher debug_publisher) {
   visualization_msgs::Marker marker;
   marker.header.stamp = ros::Time::now();
   marker.id = 0;
-  marker.header.frame_id = "/torso";
+  marker.header.frame_id = "/base_link";
   marker.type = visualization_msgs::Marker::SPHERE;
 
   marker.pose.position.x = goals_.support_point.x;
@@ -41,16 +41,14 @@ void DynupEngine::publishDebug(ros::Publisher debug_publisher) {
 DynupResponse DynupEngine::update(double dt) {
   // TODO what happens when splines for foot and trunk are not present?
   /* Get should-be pose from planned splines (every axis) at current time */
-  geometry_msgs::PoseStamped l_foot_pose = getCurrentPose(foot_spline_, "l_sole");
-  geometry_msgs::PoseStamped r_foot_pose = getCurrentPose(r_foot_spline_, "r_sole");
-  geometry_msgs::PoseStamped l_hand_pose = getCurrentPose(l_hand_spline_, "l_wrist");
-  geometry_msgs::PoseStamped r_hand_pose = getCurrentPose(r_hand_spline_, "r_wrist");
+  tf2::Transform l_foot_pose = foot_spline_.getTfTransform(time_);
+  tf2::Transform r_foot_pose = r_foot_spline_.getTfTransform(time_);
+  tf2::Transform l_hand_pose = l_hand_spline_.getTfTransform(time_);
+  tf2::Transform r_hand_pose = r_hand_spline_.getTfTransform(time_);
 
   time_ += dt;
-  geometry_msgs::Point support_point;
-  support_point.x = r_foot_pose.pose.position.x;
-  support_point.y = r_foot_pose.pose.position.y + params_.foot_distance/2;
-  support_point.z = r_foot_pose.pose.position.z;
+  geometry_msgs::Point support_point; //TODO
+
 
   /* Stabilize and return result */
   goals_.support_point = support_point;

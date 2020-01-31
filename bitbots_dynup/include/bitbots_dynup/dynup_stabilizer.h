@@ -8,6 +8,8 @@
 #include <tf2_ros/transform_listener.h>
 #include <bitbots_splines/abstract_stabilizer.h>
 #include "dynup_utils.h"
+#include <moveit/robot_state/robot_state.h>
+
 
 namespace bitbots_dynup {
 
@@ -18,6 +20,7 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
   void useStabilizing(bool use);
   void useMinimalDisplacement(bool use);
   void setStabilizingWeight(double weight);
+  void setRobotModel(moveit::core::RobotModelPtr model); 
   void reset() override;
  private:
   robot_state::RobotStatePtr goal_state_;
