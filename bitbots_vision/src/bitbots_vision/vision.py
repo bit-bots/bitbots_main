@@ -317,7 +317,7 @@ class Vision:
                 # If we don't use YOLO set the conventional goalpost detector.
                 self._goalpost_detector = obstacle.WhiteObstacleDetector(self._obstacle_detector)
 
-        # Check if the yolo ball/goalpost detector is activated and the non tpu version is used
+        # Check if the yolo ball/goalpost detector is activated and if the non tpu version is used
         if config['neural_network_type'] in ['yolo_opencv', 'yolo_darknet']:
             if ros_utils.config_param_change(self._config, config, ['yolo_darknet_model_path', 'neural_network_type']):
                 # Build absolute model path
