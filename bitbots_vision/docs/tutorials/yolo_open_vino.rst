@@ -12,7 +12,7 @@ You can skip this step, if you have OpenVINO installed or access to a robot.
 Otherwise visit the `OpenVINO Install Page <https://docs.openvinotoolkit.org/latest/_docs_install_guides_installing_openvino_linux.html>`_ and follow the instructions.
 
 
-.. Tip:: If you use some other sytem like "Arch Linux" there is also a OpenVINO Docker container provided by Intel.
+.. Tip:: If you do not use Ubuntu, e.g. "Arch Linux", there is also a OpenVINO Docker container provided by Intel.
 
 Convert weights to Tensorflow format
 ------------------------------------
