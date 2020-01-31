@@ -36,7 +36,7 @@ Convert Tensorflow format to OpenVINO
 Example json config
 ===================
 
-In Darkent this config files are located in the `.cfg` files.
+In Darkent this values are located in the `.cfg` files.
 
 .. code-block:: json
 
