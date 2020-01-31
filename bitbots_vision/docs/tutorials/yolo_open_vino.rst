@@ -2,7 +2,7 @@
 OpenVINO
 =========
 
-Convert Darkent to OpenVINO models
+Convert Darknet to OpenVINO models
 ==================================
 
 Install OpenVINO
@@ -61,5 +61,4 @@ In Darkent this values are located in the `.cfg` files.
         }
     }
     ]
-
 
