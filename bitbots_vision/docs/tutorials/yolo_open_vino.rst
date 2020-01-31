@@ -2,7 +2,7 @@
 OpenVINO
 =========
 
-Convert Darkent to OpenVINO models
+Convert Darknet to OpenVINO models
 ==================================
 
 Install OpenVINO
@@ -43,7 +43,7 @@ Convert Tensorflow format to OpenVINO
 Example `.json` config
 ----------------------
 
-In Darkent this values are located in the `.cfg` files.
+In Darkent these values are located in the `.cfg` files.
 
 .. code-block:: json
 
@@ -61,5 +61,3 @@ In Darkent this values are located in the `.cfg` files.
         }
     }
     ]
-
-
