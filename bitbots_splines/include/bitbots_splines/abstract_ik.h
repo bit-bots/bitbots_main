@@ -3,12 +3,13 @@
 
 #include <vector>
 #include <string>
-#include <bio_ik/bio_ik.h>
+#include <moveit/robot_model/robot_model.h>
 
 namespace bitbots_splines {
 
 typedef std::pair<std::vector<std::string>, std::vector<double>> JointGoals;
 
+template<typename Positions>
 class AbstractIK {
   /**
    * Initializes the class. This must be called before calculate() is called.
@@ -20,7 +21,7 @@ class AbstractIK {
    * @param ik_goals
    * @return
    */
-  virtual JointGoals calculate(std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals) = 0;
+  virtual JointGoals calculate(const Positions &positions) = 0;
   /**
    * Reset the IK to its initial state.
    */

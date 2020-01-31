@@ -6,15 +6,16 @@ DynUpNode::DynUpNode() :
     server_(node_handle_, "dynup", boost::bind(&DynUpNode::executeCb, this, _1), false),
     robot_model_loader_("/robot_description", false),
     listener_(tf_buffer_) {
-  /* load MoveIt! model */
+
   robot_model_loader_.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
   robot_model::RobotModelPtr kinematic_model = robot_model_loader_.getModel();
   if (!kinematic_model) {
-    ROS_FATAL("No robot model loaded, killing dynup.");
+    ROS_FATAL("No robot model loaded, killing dynamic kick.");
     exit(1);
   }
-  stabilizer_.init(kinematic_model);
+  stabilizer_.setRobotModel(kinematic_model);
   ik_.init(kinematic_model);
+  stabilizer_.init(kinematic_model);
 
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("animation_motor_goals", 1);
   debug_publisher_ = node_handle_.advertise<visualization_msgs::Marker>("debug_markers", 1);
@@ -68,8 +69,8 @@ void DynUpNode::loopEngine() {
   /* Do the loop as long as nothing cancels it */
   while (server_.isActive() && !server_.isPreemptRequested()) {
     DynupResponse response = engine_.update(1.0 / engine_rate_);
-    std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_options = stabilizer_.stabilize(response);
-    bitbots_splines::JointGoals goals = ik_.calculate(std::move(ik_options));
+    DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(1.0 / engine_rate_)); //TODO: Stabilizing has to be replaced!!!
+    bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
     bitbots_msgs::DynUpFeedback feedback;
     feedback.percent_done = engine_.getPercentDone();
     server_.publishFeedback(feedback);
@@ -111,14 +112,14 @@ std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs
   r_hand_origin.pose.orientation.w = 1;
   r_hand_origin.header.stamp = time;
 
-  /* Transform all poses into the right foot or torso frame */
+  /* Transform all poses into the right foot or base_link frame */
   geometry_msgs::PoseStamped l_foot_transformed, r_foot_transformed, l_hand_transformed, r_hand_transformed;
   try {
     tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole",
                          ros::Duration(0.2));
-    tf_buffer_.transform(r_foot_origin, r_foot_transformed, "torso", ros::Duration(0.2));
-    tf_buffer_.transform(l_hand_origin, l_hand_transformed, "torso", ros::Duration(0.2));
-    tf_buffer_.transform(r_hand_origin, r_hand_transformed, "torso", ros::Duration(0.2));
+    tf_buffer_.transform(r_foot_origin, r_foot_transformed, "base_link", ros::Duration(0.2));
+    tf_buffer_.transform(l_hand_origin, l_hand_transformed, "base_link", ros::Duration(0.2));
+    tf_buffer_.transform(r_hand_origin, r_hand_transformed, "base_link", ros::Duration(0.2));
     return std::make_tuple(l_foot_transformed.pose, r_foot_transformed.pose, l_hand_transformed.pose, r_hand_transformed.pose);
   } catch (tf2::TransformException &) {
     return std::nullopt;
