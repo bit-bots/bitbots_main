@@ -30,7 +30,7 @@ Convert weights to Tensorflow format
 Convert Tensorflow format to OpenVINO
 -------------------------------------
 1. Source OpenVINO in your shell. Run `source /opt/intel/openvino/bin/setupvars.sh`.
-2. Create an config like the `Example json config` below.
+2. Create a config like the `Example json config` below.
 3. Run
 
 `sudo python3 /opt/intel/openvino/deployment_tools/model_optimizer/mo_tf.py --input_model <PATH_TO_YOUR_FROZEN_TENSORFLOW_MODEL> --output_dir <YOUR_OUTPUT_DIR> --data_type FP16 --batch 1 --tensorflow_use_custom_operations_config <PATH_TO_YOUR_CONFIG_JSON>`
