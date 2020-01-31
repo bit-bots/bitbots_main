@@ -25,7 +25,7 @@ Convert weights to Tensorflow format
    - The required `names.names` file consists of all class names, with each one in its own line.
    - The `<PATH_TO_YOUR_CURRENT_YOLO_WEIGHTS_FILE>` represents the Darknet `.weights` file.
    - The `--tiny` setting stands for `tiny-yolo` which is the currently used architecture.
-   - The output file will be written in the current folder as a `frozen_darknet_yolov3_model.pb` names file.
+   - The output file will be written to the current folder as a `frozen_darknet_yolov3_model.pb` file.
 
 Convert Tensorflow format to OpenVINO
 -------------------------------------
