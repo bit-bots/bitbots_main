@@ -289,6 +289,9 @@ class YoloHandlerNCS2(YoloHandler):
 
 
     def __init__(self, config, model_path):
+        # Init parent constructor
+        super(YoloHandlerNCS2, self).__init__(config, model_path)
+
         # Create model file paths
         model_xml = os.path.join(model_path, "yolo.xml")
         model_bin = os.path.join(model_path, "yolo.bin")
