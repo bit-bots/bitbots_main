@@ -22,7 +22,8 @@ ROS_field_mask_image_msg_topic: 'field_mask'  # ROS topic of the field mask debu
 ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'  # ROS topic of the dynamic color space field mask debug image message
 
 fcnn_model_path: '2019_06_timon_basler'  # Name of the ball fcnn model
-yolo_model_path: '2019_07_03_jonas_yolo'  # Name of the yolo model
+yolo_darknet_model_path: '2019_07_03_jonas_yolo'  # Name of the yolo model
+yolo_openvino_model_path: 'test'  # Name of the yolo model
 yolo_nms_threshold: 0.4  # Non maximum suppression threshold
 yolo_confidence_threshold: 0.5  # Yolo: confidence threshold
 
@@ -35,7 +36,7 @@ ball_fcnn_candidate_refinement_iteration_count: 1  # Number of iterations of ref
 ball_fcnn_publish_output: false  # Publish the output of the ball fcnn as ImageWithRegionOfInterest
 ball_fcnn_publish_field_boundary_offset: 5  # The offset added to the field_boundary when cropping the fcnn output for publication in pixels
 
-neural_network_type: 'yolo_darknet'  # The neural network type that should be used (fcnn, yolo_opencv, yolo_darknet or dummy)
+neural_network_type: 'yolo_darknet'  # The neural network type that should be used (fcnn, yolo_opencv, yolo_darknet, yolo_ncs2 or dummy)
 ball_candidate_field_boundary_y_offset: 0  # Threshold in which ball candidates over the field boundary are allowed.
 ball_candidate_rating_threshold: 0.5  # A threshold for the minimum candidate rating
 ball_candidate_max_count: 1  # The maximum number of balls that should be published
