@@ -11,7 +11,7 @@ from operator import itemgetter
 
 class FieldBoundaryDetector(object):
     """
-    This is the abctract class for the field boundary detector.
+    This is the abstract class for the field boundary detector.
     The task of the field boundary detector module is the localisation of the edges of the field.
     It returns a list of points that form this so called field boundary.
     It requires the ColorDetector to find the green pixels that resemble the field in the picture.
