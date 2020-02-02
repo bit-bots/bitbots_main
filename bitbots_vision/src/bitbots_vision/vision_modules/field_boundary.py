@@ -14,7 +14,7 @@ class FieldBoundaryDetector(object):
     This is the abstract class for the field boundary detector.
     The task of the field boundary detector module is the localisation of the edges of the field.
     It returns a list of points that form this so called field boundary.
-    It requires the ColorDetector to find the green pixels that resemble the field in the picture.
+    It requires the ColorDetector to find the green pixels that are used to identify the field in the picture.
     The green pixels of the ordinary FieldBoundary are found by traversing the picture from left to right and from top to bottom in steps of a given length.
     Because obstacles obscure the edges of the field however, sometimes the first green pixel from the top of the picture is found at the bottom of the respective obstacle.
     Therefore not all of the points lie in a straight line and the FieldBoundary contains multiple dents.
