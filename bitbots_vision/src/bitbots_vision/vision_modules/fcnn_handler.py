@@ -12,7 +12,7 @@ from .live_fcnn_03 import FCNN03
 class FcnnHandler(CandidateFinder):
     """
     This handles FCNNs, meaning it finds and rates candidates in their output.
-    The FCNN handler runs the FCNN neural network and manages its predictions.
+    The FCNN handler runs the FCNN and manages its predictions.
     """
 
     def __init__(self, config, fcnn):
