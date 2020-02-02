@@ -10,7 +10,7 @@ class DebugImage:
     when starting the vision or debugging options are selected in dynamic reconfigure.
 
     It is capable of displaying the normal and convex field boundary (red and yellow lines),
-    the best and discarded ball candidates (green and red circles),
+    the best and discarded ball candidates (green and red circles respectively),
     the goalposts (white bounding boxes), and different obstacles (black: unknown, red: red robot, blue: blue robot).
     """
     def __init__(self):
