@@ -17,7 +17,7 @@ class Candidate:
         :param y1: vertical part of the coordinate of the top left corner of the candidate.
         :param width: horizontal size
         :param height: vertical size
-        :param rating: accuracy of the candidate
+        :param rating: confidence of the candidate
         """
         self._x1 = x1
         self._y1 = y1
