@@ -14,7 +14,7 @@ from bitbots_vision.vision_modules import field_boundary, color, ros_utils
 
 class DynamicColorSpace:
     """
-    The DynamicColorSpace is a Heuristic used to adopt the look up table of the field color detector
+    The DynamicColorSpace uses a heuristic used to adapt the look up table of the field color detector
     to color changes which happen in the field during a game.
     It adds only colors that only occur under the current field boundary and are surrounded by the current field colors.
     """
