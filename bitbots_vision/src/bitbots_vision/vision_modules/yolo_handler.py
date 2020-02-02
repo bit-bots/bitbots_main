@@ -14,7 +14,7 @@ class YoloHandler():
     """
     Defines an abstract YoloHandler, which runs/manages the YOLO inference.
 
-    Our YOLO is currently abel to detect goalpost and ball candidates.
+    Our YOLO is currently able to detect goalpost and ball candidates.
     """
     def __init__(self, config, model_path):
         """
