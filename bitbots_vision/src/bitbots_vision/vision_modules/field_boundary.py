@@ -481,7 +481,7 @@ class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
     """
     This is the dynamic field boundary detector.
     It switches between the iteration and reversed iteration method.
-    It depends on how much the robot head is tilted.
+    Depending on how much the robot head is tilted.
     This improves performance (iteration) and enables operation with two field next to each other (reversed).
     """
     def __init__(self, config, field_color_detector):
