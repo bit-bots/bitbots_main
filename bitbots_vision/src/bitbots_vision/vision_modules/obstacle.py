@@ -7,7 +7,7 @@ import rospy
 
 class ObstacleDetector(CandidateFinder):
     """
-    The obstacle detection module is a CandidateFinder that is capable of finding obstructions like robots.
+    The obstacle detection module is a CandidateFinder that finds obstructions like robots.
     In order to perform its task it uses the FieldBoundaryDetector or more specifically the field_boundary and/or
     convex_field_boundary depending on the method used.
     Given that the field_boundary contains dents where objects obstruct the edge of the field and consists of a list of points,
