@@ -1,0 +1,16 @@
+PyQt5
+PyYAML
+breathe
+construct
+matplotlib
+numpy
+opencv-python
+pip
+psutil
+pydot
+pyopencl
+rosdep
+rospkg
+setuptools
+silx
+tensorflow
