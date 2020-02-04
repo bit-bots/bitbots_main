@@ -1,4 +1,5 @@
 include:
+    - basler_drivers
     - bitbots_behavior:
         - bitbots_blackboard
         - bitbots_body_behavior
@@ -54,6 +55,10 @@ include:
         - wolfgang_animations
         - wolfgang_description
         - wolfgang_moveit_config
+    - bitbots_vision:
+        - bitbots_vision
+        - python_extensions
+        - white_balancer
 exclude:
     - "*.bag"
     - "*.pyc"
