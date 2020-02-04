@@ -17,8 +17,8 @@ Diese müssen entsprechend in den richtigen Versionen installiert werden.
 .. code-block:: bash
 
         sudo apt remove python-sphinx
-        sudo apt install python3-sphinx python3-sphinx-rtd_theme python3-breathe
-        pip3 install -u exhale
+        sudo apt install python3-sphinx python3-sphinx-rtd-theme python3-breathe
+        pip3 install exhale --user
 
 
 Existierende Doku bauen
