@@ -105,5 +105,5 @@ add_dependencies(localization ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPOR
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(localization
-  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
+    ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME}_lib
 )
