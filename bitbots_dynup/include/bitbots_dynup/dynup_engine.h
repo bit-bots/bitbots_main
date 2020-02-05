@@ -9,6 +9,7 @@
 #include <bitbots_splines/pose_spline.h>
 #include <bitbots_splines/abstract_engine.h>
 #include <bitbots_dynup/DynUpConfig.h>
+#include <tf2/convert.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include "dynup_stabilizer.h"
 
