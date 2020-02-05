@@ -43,8 +43,11 @@ DynupResponse DynupEngine::update(double dt) {
   /* Get should-be pose from planned splines (every axis) at current time */
   tf2::Transform l_foot_pose = foot_spline_.getTfTransform(time_);
   tf2::Transform r_foot_pose = r_foot_spline_.getTfTransform(time_);
-  tf2::Transform l_hand_pose = l_hand_spline_.getTfTransform(time_);
-  tf2::Transform r_hand_pose = r_hand_spline_.getTfTransform(time_);
+  tf2::Stamped<tf2::Transform> l_hand_to_base_link, r_hand_to_base_link;
+  tf2::fromMsg(tf_buffer_.lookupTransform("base_link", "r_wrist", ros::Time(0), ros::Duration(0.1)), r_hand_to_base_link);
+  tf2::fromMsg(tf_buffer_.lookupTransform("base_link", "l_wrist", ros::Time(0), ros::Duration(0.1)), l_hand_to_base_link);
+  tf2::Transform l_hand_pose = l_hand_spline_.getTfTransform(time_) * l_hand_to_base_link;
+  tf2::Transform r_hand_pose = r_hand_spline_.getTfTransform(time_) * r_hand_to_base_link;
 
   time_ += dt;
   geometry_msgs::Point support_point; //TODO
