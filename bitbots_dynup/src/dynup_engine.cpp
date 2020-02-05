@@ -44,10 +44,10 @@ DynupResponse DynupEngine::update(double dt) {
   tf2::Transform l_foot_pose = foot_spline_.getTfTransform(time_);
   tf2::Transform r_foot_pose = r_foot_spline_.getTfTransform(time_);
   tf2::Stamped<tf2::Transform> l_hand_to_base_link, r_hand_to_base_link;
-  tf2::fromMsg(tf_buffer_.lookupTransform("base_link", "r_wrist", ros::Time(0), ros::Duration(0.1)), r_hand_to_base_link);
-  tf2::fromMsg(tf_buffer_.lookupTransform("base_link", "l_wrist", ros::Time(0), ros::Duration(0.1)), l_hand_to_base_link);
-  tf2::Transform l_hand_pose = l_hand_spline_.getTfTransform(time_) * l_hand_to_base_link;
-  tf2::Transform r_hand_pose = r_hand_spline_.getTfTransform(time_) * r_hand_to_base_link;
+  //tf2::fromMsg(tf_buffer_.lookupTransform("base_link", "r_wrist", ros::Time(0), ros::Duration(0.1)), r_hand_to_base_link);
+  //tf2::fromMsg(tf_buffer_.lookupTransform("base_link", "l_wrist", ros::Time(0), ros::Duration(0.1)), l_hand_to_base_link);
+  tf2::Transform l_hand_pose = l_hand_spline_.getTfTransform(time_); //* l_hand_to_base_link;
+  tf2::Transform r_hand_pose = r_hand_spline_.getTfTransform(time_); //* r_hand_to_base_link;
 
   time_ += dt;
   geometry_msgs::Point support_point; //TODO
@@ -95,13 +95,13 @@ void DynupEngine::calcFrontSplines() {
    */
   double time = params_.time_hands_side;
   l_hand_spline_.x()->addPoint(time, 0);
-  l_hand_spline_.y()->addPoint(time, params_.arm_max_length - params_.arm_offset_y);
+  l_hand_spline_.y()->addPoint(time, params_.arm_max_length + params_.arm_offset_y);
   l_hand_spline_.z()->addPoint(time, params_.arm_offset_z);
   l_hand_spline_.roll()->addPoint(time, M_PI/2);
   l_hand_spline_.pitch()->addPoint(time, 0);
   l_hand_spline_.yaw()->addPoint(time, M_PI/2);
   r_hand_spline_.x()->addPoint(time, 0);
-  r_hand_spline_.y()->addPoint(time, -params_.arm_max_length + params_.arm_offset_y);
+  r_hand_spline_.y()->addPoint(time, -params_.arm_max_length - params_.arm_offset_y);
   r_hand_spline_.z()->addPoint(time, params_.arm_offset_z);
   r_hand_spline_.roll()->addPoint(time, -M_PI/2);
   r_hand_spline_.pitch()->addPoint(time, 0);

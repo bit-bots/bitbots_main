@@ -53,37 +53,37 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
   success = goal_state_->setFromIK(l_leg_joints_group_,
                                    left_foot_goal_msg,
-                                   0.01,
+                                   0.1,
                                    moveit::core::GroupStateValidityCallbackFn());
   goal_state_->updateLinkTransforms();
   //ROS_ERROR("1 %d", success);
 
   success &= goal_state_->setFromIK(r_leg_joints_group_,
                                    right_foot_goal_msg,
-                                   0.01,
+                                   0.1,
                                    moveit::core::GroupStateValidityCallbackFn());
   goal_state_->updateLinkTransforms();
   //ROS_ERROR("2 %d", success);
   
-  //ROS_ERROR("3p %f, %f, %f", left_hand_goal_msg.position.x, left_hand_goal_msg.position.y, left_hand_goal_msg.position.z);
-  //double r, p, y;
-  //tf2::Matrix3x3(left_hand_goal.getRotation()).getRPY(r, p, y);
-  //ROS_ERROR("3o %f, %f, %f", r, p, y); 
+  ROS_ERROR("3p %f, %f, %f", left_hand_goal_msg.position.x, left_hand_goal_msg.position.y, left_hand_goal_msg.position.z);
+  double r, p, y;
+  tf2::Matrix3x3(left_hand_goal.getRotation()).getRPY(r, p, y);
+  ROS_ERROR("3o %f, %f, %f", r, p, y); 
   success &= goal_state_->setFromIK(l_arm_joints_group_,
                                    left_hand_goal_msg,
-                                   0.01,
+                                   0.1,
                                    moveit::core::GroupStateValidityCallbackFn());
   goal_state_->updateLinkTransforms();
-  //ROS_ERROR("3 %d", success);
+  ROS_ERROR("3 %d", success);
 
-  //ROS_ERROR("4p %f, %f, %f", right_hand_goal_msg.position.x, right_hand_goal_msg.position.y, right_hand_goal_msg.position.z);
-  //tf2::Matrix3x3(left_hand_goal.getRotation()).getRPY(r, p, y);
-  //ROS_ERROR("4o %f, %f, %f", r, p, y); 
+  ROS_ERROR("4p %f, %f, %f", right_hand_goal_msg.position.x, right_hand_goal_msg.position.y, right_hand_goal_msg.position.z);
+  tf2::Matrix3x3(left_hand_goal.getRotation()).getRPY(r, p, y);
+  ROS_ERROR("4o %f, %f, %f", r, p, y); 
   success &= goal_state_->setFromIK(r_arm_joints_group_,
                                    right_hand_goal_msg,
-                                   0.01,
+                                   0.1,
                                    moveit::core::GroupStateValidityCallbackFn());
-  //ROS_ERROR("4 %d", success);
+  ROS_ERROR("4 %d", success);
   
 
   if (success) {
