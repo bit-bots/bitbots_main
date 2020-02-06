@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
     tf2_ros
     tf2_geometry_msgs
     std_msgs
+    visualization_msgs
 )
 
 generate_dynamic_reconfigure_options(
@@ -34,6 +35,7 @@ set(SOURCES
     src/dynup_engine.cpp
     src/dynup_stabilizer.cpp
     src/dynup_ik.cpp
+    src/visualizer.cpp
 )
 
 add_executable(DynupNode ${SOURCES})

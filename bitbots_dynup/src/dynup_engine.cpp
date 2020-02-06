@@ -355,6 +355,22 @@ int DynupEngine::getPercentDone() const {
   return int(time_ / duration_ * 100);
 }
 
+bitbots_splines::PoseSpline DynupEngine::getLFootSplines() const {
+  return foot_spline_;
+}
+
+bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const {
+  return r_foot_spline_;
+}
+
+bitbots_splines::PoseSpline DynupEngine::getLHandSplines() const {
+  return l_hand_spline_;
+}
+
+bitbots_splines::PoseSpline DynupEngine::getRHandSplines() const {
+  return r_hand_spline_;
+}
+
 void DynupEngine::setParams(DynUpConfig params) {
   params_ = params;
 }
