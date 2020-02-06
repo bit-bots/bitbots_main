@@ -4,6 +4,8 @@ namespace bitbots_dynup {
 
 DynUpNode::DynUpNode() :
     server_(node_handle_, "dynup", boost::bind(&DynUpNode::executeCb, this, _1), false),
+    engine_(),
+    visualizer_("/debug/dynup"),
     robot_model_loader_("/robot_description", false),
     listener_(tf_buffer_) {
 
@@ -36,13 +38,16 @@ void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t
 
   ik_.useMinimalDisplacement(config.minimal_displacement);
   ik_.useStabilizing(config.stabilizing);
+
+  VisualizationParams viz_params = VisualizationParams();
+  viz_params.spline_smoothness = config.spline_smoothness;
+  visualizer_.setParams(viz_params);
 }
 
 void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   // TODO: maybe switch to goal callback to be able to reject goals properly
   ROS_INFO("Accepted new goal");
   engine_.reset();
-
   if (std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose>> poses = getCurrentPoses()) {
     DynupRequest request;
     request.l_foot_pose = std::get<0>(poses.value());
@@ -52,6 +57,10 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     request.r_hand_pose = std::get<3>(poses.value());
     engine_.setGoals(request);
     stabilizer_.reset();
+    visualizer_.displaySplines(engine_.getRFootSplines(), "base_link", 0);
+    visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole", 1);
+    visualizer_.displaySplines(engine_.getLHandSplines(), "base_link", 2);
+    visualizer_.displaySplines(engine_.getRHandSplines(), "base_link", 3);
     loopEngine();
     bitbots_msgs::DynUpResult r;
     r.successful = true;

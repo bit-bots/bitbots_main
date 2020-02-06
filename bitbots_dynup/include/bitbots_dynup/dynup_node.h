@@ -13,6 +13,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <bitbots_msgs/DynUpAction.h>
 #include <bitbots_msgs/JointCommand.h>
+#include "bitbots_dynup/visualizer.h"
 #include <bitbots_dynup/DynUpConfig.h>
 #include "bitbots_dynup/dynup_engine.h"
 #include "bitbots_dynup/dynup_ik.h"
@@ -54,6 +55,7 @@ class DynUpNode {
   ActionServer server_;
   DynupEngine engine_;
   Stabilizer stabilizer_;
+  Visualizer visualizer_;
   DynupIK ik_;
   int engine_rate_;
   tf2_ros::Buffer tf_buffer_;

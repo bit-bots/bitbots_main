@@ -36,6 +36,14 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   int getPercentDone() const override;
 
+  bitbots_splines::PoseSpline getLHandSplines() const;
+
+  bitbots_splines::PoseSpline getRHandSplines() const;
+
+  bitbots_splines::PoseSpline getLFootSplines() const;
+
+  bitbots_splines::PoseSpline getRFootSplines() const;
+
   void setParams(DynUpConfig params);
 
   void reset() override;
