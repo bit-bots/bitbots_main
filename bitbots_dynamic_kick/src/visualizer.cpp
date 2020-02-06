@@ -14,9 +14,9 @@ Visualizer::Visualizer(const std::string &base_topic) :
   /* create necessary publishers */
   goal_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "received_goal",
       /* queue_size */ 5, /* latch */ true);
-  foot_spline_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "flying_foot_spline",
+  foot_spline_publisher_ = node_handle_.advertise<visualization_msgs::MarkerArray>(base_topic_ + "flying_foot_spline",
       /* queue_size */ 5, /* latch */ true);
-  trunk_spline_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "trunk_spline",
+  trunk_spline_publisher_ = node_handle_.advertise<visualization_msgs::MarkerArray>(base_topic_ + "trunk_spline",
       /* queue_size */ 5, /* latch */ true);
   windup_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "kick_windup_point",
       /* queue_size */ 5, /* latch */ true);
@@ -31,8 +31,8 @@ void Visualizer::displayFlyingSplines(bitbots_splines::PoseSpline splines,
   if (foot_spline_publisher_.getNumSubscribers() == 0)
     return;
 
-  visualization_msgs::Marker path = getPath(splines, support_foot_frame, params_.spline_smoothness);
-  path.color.g = 1;
+  visualization_msgs::MarkerArray path = getPath(splines, support_foot_frame, params_.spline_smoothness);
+  path.markers[0].color.g = 1;
 
   foot_spline_publisher_.publish(path);
 }
@@ -41,8 +41,8 @@ void Visualizer::displayTrunkSplines(bitbots_splines::PoseSpline splines) {
   if (trunk_spline_publisher_.getNumSubscribers() == 0)
     return;
 
-  visualization_msgs::Marker path = getPath(splines, "base_link", params_.spline_smoothness);
-  path.color.g = 1;
+  visualization_msgs::MarkerArray path = getPath(splines, "base_link", params_.spline_smoothness);
+  path.markers[0].color.g = 1;
 
   trunk_spline_publisher_.publish(path);
 }

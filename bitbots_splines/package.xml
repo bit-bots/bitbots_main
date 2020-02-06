@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_splines</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>This package provides a library for splines which is based on the code by team Rhoban FC</description>
 
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
