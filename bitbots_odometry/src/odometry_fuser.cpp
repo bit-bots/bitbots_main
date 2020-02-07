@@ -63,13 +63,13 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
     }
 
     if (imu_active || odom_active) {
-      double placeholder, imu_roll, imu_pitch, walking_yaw;
+      double placeholder, imu_roll, imu_pitch, walking_yaw, imu_yaw;
 
       // get roll an pitch from imu
       tf2::Quaternion imu_orientation;
       tf2::fromMsg(_imu_data.orientation, imu_orientation);
       tf2::Matrix3x3 imu_rotation_matrix(imu_orientation);
-      imu_rotation_matrix.getRPY(imu_roll, imu_pitch, placeholder);
+      imu_rotation_matrix.getRPY(imu_roll, imu_pitch, imu_yaw);
 
       // get motion_odom transform
       tf2::Transform motion_odometry;
@@ -93,7 +93,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
         tf2::Transform base_link_in_rotation_point = rotation_point_in_base.inverse();
         // create transform that rotates around IMU roll,pitch and walk yaw
         tf2::Quaternion rotation_quat;
-        rotation_quat.setRPY(imu_roll, imu_pitch, 0);
+        rotation_quat.setRPY(imu_roll, imu_pitch, imu_yaw);
         tf2::Transform rotation;
         rotation.setRotation(rotation_quat);
         rotation.setOrigin({0, 0, 0});
@@ -110,7 +110,15 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
 
         // transformation chain to get correctly rotated odom frame
         // go to the rotation point in the odom frame. rotate the transform to the base link at this point
-        fused_odometry = motion_odometry_yaw * rotation_point_in_base * rotation * base_link_in_rotation_point;
+        //fused_odometry = motion_odometry_yaw * rotation_point_in_base * rotation * base_link_in_rotation_point;
+        fused_odometry = rotation_point_in_base * rotation * base_link_in_rotation_point; // * motion_odometry_yaw;
+        double roll, pitch, yaw;
+        tf2::Matrix3x3 m(fused_odometry.getRotation());
+        m.getRPY(roll, pitch, yaw);
+        tf2::Quaternion q;
+        q.setRPY(roll, pitch, 0);
+        fused_odometry.setRotation(q);
+        fused_odometry *=  motion_odometry_yaw;
       } else {
         fused_odometry = motion_odometry;
       }
