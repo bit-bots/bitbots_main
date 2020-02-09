@@ -75,19 +75,47 @@ geometry_msgs::PoseStamped DynupEngine::getCurrentPose(bitbots_splines::PoseSpli
   pose.pose = spline.getGeometryMsgPose(time_);
   return pose;
 }
-void DynupEngine::initializeSplines(geometry_msgs::Pose pose, bitbots_splines::PoseSpline spline) {
+//TODO: Simplify
+void DynupEngine::initializeSplines(geometry_msgs::Pose l_hand_pose, geometry_msgs::Pose r_hand_pose, geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose r_foot_pose) {
   double time_start = 0.0;
   double r,p,y;
   tf2::Quaternion q;
 
-  spline.x()->addPoint(time_start, pose.position.x);
-  spline.y()->addPoint(time_start, pose.position.y);
-  spline.z()->addPoint(time_start, pose.position.z);
-  tf2::convert(pose.orientation, q);
+  l_hand_spline_.x()->addPoint(time_start, l_hand_pose.position.x);
+  l_hand_spline_.y()->addPoint(time_start, l_hand_pose.position.y);
+  l_hand_spline_.z()->addPoint(time_start, l_hand_pose.position.z);
+  tf2::convert(l_hand_pose.orientation, q);
   tf2::Matrix3x3(q).getRPY(r, p, y);
-  spline.roll()->addPoint(time_start, r);
-  spline.pitch()->addPoint(time_start, p);
-  spline.yaw()->addPoint(time_start, y);
+  l_hand_spline_.roll()->addPoint(time_start, r);
+  l_hand_spline_.pitch()->addPoint(time_start, p);
+  l_hand_spline_.yaw()->addPoint(time_start, y);
+
+  r_hand_spline_.x()->addPoint(time_start, r_hand_pose.position.x);
+  r_hand_spline_.y()->addPoint(time_start, r_hand_pose.position.y);
+  r_hand_spline_.z()->addPoint(time_start, r_hand_pose.position.z);
+  tf2::convert(r_hand_pose.orientation, q);
+  tf2::Matrix3x3(q).getRPY(r, p, y);
+  r_hand_spline_.roll()->addPoint(time_start, r);
+  r_hand_spline_.pitch()->addPoint(time_start, p);
+  r_hand_spline_.yaw()->addPoint(time_start, y);
+
+  foot_spline_.x()->addPoint(time_start, l_foot_pose.position.x);
+  foot_spline_.y()->addPoint(time_start, l_foot_pose.position.y);
+  foot_spline_.z()->addPoint(time_start, l_foot_pose.position.z);
+  tf2::convert(l_foot_pose.orientation, q);
+  tf2::Matrix3x3(q).getRPY(r, p, y);
+  foot_spline_.roll()->addPoint(time_start, r);
+  foot_spline_.pitch()->addPoint(time_start, p);
+  foot_spline_.yaw()->addPoint(time_start, y);
+
+  r_foot_spline_.x()->addPoint(time_start, r_foot_pose.position.x);
+  r_foot_spline_.y()->addPoint(time_start, r_foot_pose.position.y);
+  r_foot_spline_.z()->addPoint(time_start, r_foot_pose.position.z);
+  tf2::convert(r_foot_pose.orientation, q);
+  tf2::Matrix3x3(q).getRPY(r, p, y);
+  r_foot_spline_.roll()->addPoint(time_start, r);
+  r_foot_spline_.pitch()->addPoint(time_start, p);
+  r_foot_spline_.yaw()->addPoint(time_start, y);
 
 }
 
@@ -335,10 +363,7 @@ void DynupEngine::calcSquatSplines(double time) {
 }
 
 void DynupEngine::setGoals(const DynupRequest &goals) {
-  initializeSplines(goals.l_foot_pose, foot_spline_);
-  initializeSplines(goals.r_foot_pose, r_foot_spline_);
-  initializeSplines(goals.l_hand_pose, l_hand_spline_);
-  initializeSplines(goals.r_hand_pose, r_hand_spline_);
+  initializeSplines(goals.l_hand_pose, goals.r_hand_pose, goals.l_foot_pose, goals.r_foot_pose);
   if(goals.front){
      duration_ = params_.time_hands_side + 
                  params_.time_foot_close + 
