@@ -78,7 +78,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   /*
    * Creates starting positions for the splines.
    */
-  void initializeSplines(geometry_msgs::Pose pose, bitbots_splines::PoseSpline spline);
+  void initializeSplines(geometry_msgs::Pose l_hand_pose, geometry_msgs::Pose r_hand_pose, geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose r_foot_pose);
 
   /* Calculate the splines to get from lying on the front to squatting:
    * - move arms to frint and pull legs
