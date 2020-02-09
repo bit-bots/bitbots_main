@@ -15,6 +15,13 @@ DynUpNode::DynUpNode() :
     ROS_FATAL("No robot model loaded, killing dynamic kick.");
     exit(1);
   }
+  double arm_max_length = kinematic_model->getLinkModel("r_upper_arm")->getShapeExtentsAtOrigin().x() +
+                          kinematic_model->getLinkModel("r_lower_arm")->getShapeExtentsAtOrigin().x();
+  geometry_msgs::PoseStamped shoulder_origin, shoulder_tf;
+  shoulder_origin.header.frame_id="r_upper_arm";
+  tf_buffer_.transform(shoulder_origin, shoulder_tf, "base_link",
+                         ros::Duration(0.2));                
+  engine_.init(arm_max_length, shoulder_tf.pose.position.y, shoulder_tf.pose.position.z);
   stabilizer_.setRobotModel(kinematic_model);
   ik_.init(kinematic_model);
   stabilizer_.init(kinematic_model);
@@ -57,10 +64,10 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     request.r_hand_pose = std::get<3>(poses.value());
     engine_.setGoals(request);
     stabilizer_.reset();
-    visualizer_.displaySplines(engine_.getRFootSplines(), "base_link", 0);
-    visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole", 1);
-    visualizer_.displaySplines(engine_.getLHandSplines(), "base_link", 2);
-    visualizer_.displaySplines(engine_.getRHandSplines(), "base_link", 3);
+    visualizer_.displaySplines(engine_.getRFootSplines(), "base_link");
+    visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole");
+    visualizer_.displaySplines(engine_.getLHandSplines(), "base_link");
+    visualizer_.displaySplines(engine_.getRHandSplines(), "base_link");
     loopEngine();
     bitbots_msgs::DynUpResult r;
     r.successful = true;
