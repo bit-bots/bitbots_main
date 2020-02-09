@@ -11,7 +11,7 @@ Visualizer::Visualizer(const std::string &base_topic) :
     }
 
     /* create necessary publishers */
-    spline_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "received_goal",
+    spline_publisher_ = node_handle_.advertise<visualization_msgs::MarkerArray>(base_topic_ + "received_goal",
             /* queue_size */ 5, /* latch */ true);
     }
 
@@ -20,17 +20,11 @@ Visualizer::Visualizer(const std::string &base_topic) :
     }
 
     void Visualizer::displaySplines(bitbots_splines::PoseSpline splines,
-                                    const std::string &frame, const int id) {
+                                    const std::string &frame) {
         //if (spline_publisher_.getNumSubscribers() == 0)
         //    return;
 
-        visualization_msgs::Marker path = getPath(splines, frame, params_.spline_smoothness);
-        if(id==0) {path.color.g = 1;}
-        else if(id==1) {path.color.r = 1;}
-        else if(id==2) {path.color.b = 1;}
-        else{path.color.r=0.5; path.color.g=0.5;}
-
-        path.id = id;
+        visualization_msgs::MarkerArray path = getPath(splines, frame, params_.spline_smoothness);
 
         spline_publisher_.publish(path);
     }

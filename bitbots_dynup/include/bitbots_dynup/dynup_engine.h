@@ -21,6 +21,8 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
  public:
   DynupEngine();
 
+  void init(double arm_max_length, double arm_offset_y, double arm_offset_z);
+
   DynupResponse update(double dt) override;
 
   /*
@@ -50,6 +52,9 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
  private:
   double time_;
   double duration_;
+  double arm_max_length_;
+  double arm_offset_y_;
+  double arm_offset_z_;
 
   bitbots_splines::PoseSpline foot_spline_;
   bitbots_splines::PoseSpline l_hand_spline_;

@@ -3,7 +3,7 @@
 
 #include <string>
 #include <ros/ros.h>
-#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <bitbots_splines/smooth_spline.h>
 #include <bitbots_splines/spline_container.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -23,7 +23,7 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
 
   void setParams(VisualizationParams params);
 
-  void displaySplines(bitbots_splines::PoseSpline splines, const std::string &frame, const int id);
+  void displaySplines(bitbots_splines::PoseSpline splines, const std::string &frame);
 
  private:
   ros::NodeHandle node_handle_;
