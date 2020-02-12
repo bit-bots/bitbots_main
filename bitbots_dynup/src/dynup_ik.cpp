@@ -34,6 +34,9 @@ void DynupIK::reset() {
 
 bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
+  auto ik_options = kinematics::KinematicsQueryOptions();
+  ik_options.return_approximate_solution = true;
+
   tf2::Transform right_foot_goal = ik_goals.r_foot_goal_pose;
   tf2::Transform left_foot_goal = ik_goals.l_foot_goal_pose * ik_goals.r_foot_goal_pose;
   tf2::Transform left_hand_goal = ik_goals.l_hand_goal_pose;
@@ -53,15 +56,17 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
   success = goal_state_->setFromIK(l_leg_joints_group_,
                                    left_foot_goal_msg,
-                                   0.1,
-                                   moveit::core::GroupStateValidityCallbackFn());
+                                   0.01,
+                                   moveit::core::GroupStateValidityCallbackFn(),
+                                   ik_options);
   goal_state_->updateLinkTransforms();
   //ROS_ERROR("1 %d", success);
 
   success |= goal_state_->setFromIK(r_leg_joints_group_,
                                    right_foot_goal_msg,
-                                   0.1,
-                                   moveit::core::GroupStateValidityCallbackFn());
+                                   0.01,
+                                   moveit::core::GroupStateValidityCallbackFn(),
+                                   ik_options);
   goal_state_->updateLinkTransforms();
   //ROS_ERROR("2 %d", success);
   
@@ -71,8 +76,9 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
   //ROS_ERROR("3o %f, %f, %f", r, p, y); 
   success |= goal_state_->setFromIK(l_arm_joints_group_,
                                    left_hand_goal_msg,
-                                   0.1,
-                                   moveit::core::GroupStateValidityCallbackFn());
+                                   0.01,
+                                   moveit::core::GroupStateValidityCallbackFn(),
+                                   ik_options);
   goal_state_->updateLinkTransforms();
   //ROS_ERROR("3 %d", success);
 
@@ -81,8 +87,9 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
   //ROS_ERROR("4o %f, %f, %f", r, p, y); 
   success |= goal_state_->setFromIK(r_arm_joints_group_,
                                    right_hand_goal_msg,
-                                   0.1,
-                                   moveit::core::GroupStateValidityCallbackFn());
+                                   0.01,
+                                   moveit::core::GroupStateValidityCallbackFn(),
+                                   ik_options);
   //ROS_ERROR("4 %d", success);
   
 
