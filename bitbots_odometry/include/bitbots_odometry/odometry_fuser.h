@@ -28,10 +28,13 @@ class OdometryFuser {
   char current_support_state_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
+  tf2::Quaternion last_quat_;
+  tf2::Quaternion last_quat_imu_;
 
   void imuCallback(const sensor_msgs::Imu::ConstPtr &msg);
   void odomCallback(const nav_msgs::Odometry::ConstPtr &msg);
   void supportCallback(const std_msgs::Char::ConstPtr &msg);
-  tf2::Quaternion getCurrentZImuRotation(tf2::Quaternion imu_rotation);
+  tf2::Quaternion getCurrentMotionOdomYaw(tf2::Quaternion motion_odom_rotation);
+  tf2::Quaternion getCurrentImuRotationWithoutYaw(tf2::Quaternion imu_rotation);
   tf2::Transform getCurrentRotationPoint();
 };

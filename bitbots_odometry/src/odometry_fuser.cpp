@@ -91,32 +91,24 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
         br.sendTransform(rotation_point_msg);
         // get base_link in rotation point frame
         tf2::Transform base_link_in_rotation_point = rotation_point_in_base.inverse();
-        // create transform that rotates around IMU roll,pitch and walk yaw
-        tf2::Transform rotation;
-        rotation.setRotation(imu_orientation);
-        rotation.setOrigin({0, 0, 0});
-
 
         // get only translation and yaw from motion odometry
-        tf2::Quaternion odom_orientation = motion_odometry.getRotation();
-        tf2::Matrix3x3 odom_rotation_matrix(odom_orientation);
-        odom_rotation_matrix.getRPY(placeholder, placeholder, walking_yaw);
+        tf2::Quaternion odom_orientation_yaw = getCurrentMotionOdomYaw(
+          motion_odometry.getRotation());
         tf2::Transform motion_odometry_yaw;
-        tf2::Quaternion odom_orientation_yaw;
-        odom_orientation_yaw.setRPY(0, 0, walking_yaw);
         motion_odometry_yaw.setRotation(odom_orientation_yaw);
         motion_odometry_yaw.setOrigin(motion_odometry.getOrigin());
 
-        tf2::Quaternion aaaaa = getCurrentZImuRotation(imu_orientation);;
-
-        tf2::Transform imu_y;
-        imu_y.setRotation(aaaaa);
-        imu_y.setOrigin({0, 0, 0});
+        // get imu transform without yaw
+        tf2::Quaternion imu_orientation_without_yaw_component = getCurrentImuRotationWithoutYaw(imu_orientation);
+        tf2::Transform imu_without_yaw_component;
+        imu_without_yaw_component.setRotation(imu_orientation_without_yaw_component);
+        imu_without_yaw_component.setOrigin({0, 0, 0});
 
         // transformation chain to get correctly rotated odom frame
         // go to the rotation point in the odom frame. rotate the transform to the base link at this point
         // fused_odometry = motion_odometry_yaw * rotation_point_in_base * rotation * base_link_in_rotation_point;
-        fused_odometry = motion_odometry_yaw  * rotation_point_in_base * imu_y * base_link_in_rotation_point ;
+        fused_odometry = motion_odometry_yaw * rotation_point_in_base * imu_without_yaw_component * base_link_in_rotation_point ;
       } else {
         fused_odometry = motion_odometry;
       }
@@ -138,37 +130,49 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
   }
 }
 
-tf2::Quaternion OdometryFuser::getCurrentZImuRotation(tf2::Quaternion imu_rotation)
+tf2::Quaternion OdometryFuser::getCurrentMotionOdomYaw(tf2::Quaternion motion_odom_rotation)
 {
-  double placeholder, pitch;
-  tf2::Vector3 world_plane_Z_normal = tf2::Vector3(0,0,1);
-  tf2::Vector3 world_front = tf2::Vector3(1,0,0);
-
-  tf2::Vector3 robot_vector = tf2::Vector3(0,0,1);
-
-  tf2::Vector3 robot_vector_rotated =  robot_vector.rotate(imu_rotation.getAxis(), imu_rotation.getAngle()).normalize();
-
-  double dist = robot_vector_rotated.dot(world_plane_Z_normal);
-
-  tf2::Vector3 point_in_plane = robot_vector_rotated - dist * world_plane_Z_normal;
-
-  double z_angle = point_in_plane.angle(world_front);
-
-  double dot = point_in_plane.dot(world_front);
-  double det = point_in_plane.x()*world_front.y() - world_front.x()*point_in_plane.y();
-  z_angle = -atan2(det, dot);
-
-
+  // Convert tf to eigen quaternion
   Eigen::Quaterniond eigen_quat, out;
+  tf2::convert(motion_odom_rotation, eigen_quat);
+
+  // Extract yaw rotation
+  double yaw = rot_conv::EYawOfQuat(eigen_quat);
+
+  tf2::Quaternion odom_orientation_yaw;
+  odom_orientation_yaw.setRPY(0, 0, yaw);
+
+  return odom_orientation_yaw;
+}
+
+tf2::Quaternion OdometryFuser::getCurrentImuRotationWithoutYaw(tf2::Quaternion imu_rotation)
+{
+  // Calculate robot orientation vector
+  tf2::Vector3 robot_vector = tf2::Vector3(0,0,1);
+  tf2::Vector3 robot_vector_rotated = robot_vector.rotate(imu_rotation.getAxis(), imu_rotation.getAngle()).normalize();
+
+  // Check if the robots orientation is near the yaw singulateri
+  if (robot_vector_rotated.z() < 0.2)
+  {
+    // Use ony a IMU offset during the singulateri
+    return last_quat_ + ( imu_rotation - last_quat_imu_);
+  }
+
+  // Convert tf to eigen quaternion
+  Eigen::Quaterniond eigen_quat, eigen_quat_out;
   tf2::convert(imu_rotation, eigen_quat);
 
-  rot_conv::QuatNoEYaw(eigen_quat, out);
+  // Remove yaw from quaternion
+  rot_conv::QuatNoEYaw(eigen_quat, eigen_quat_out);
 
-  tf2::Quaternion a;
+  // Convert eigen to tf quaternion
+  tf2::Quaternion tf_quat_out;
 
-  tf2::convert(out, a);
+  tf2::convert(eigen_quat_out, tf_quat_out);
 
-  return a;
+  last_quat_ = tf_quat_out;
+  last_quat_imu_ = imu_rotation;
+  return tf_quat_out;
 }
 
 tf2::Transform OdometryFuser::getCurrentRotationPoint() {
@@ -204,10 +208,12 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
       tf2::Transform l_to_center_tf;
       l_to_center_tf
           .setOrigin({l_to_r_sole_tf.getOrigin().x() /2, l_to_r_sole_tf.getOrigin().y() /2, l_to_r_sole_tf.getOrigin().z() /2});
-      // Set 0 rotation, because the rotation measurement is done by the imu
+
+      // Set to zero rotation, because the rotation measurement is done by the imu
       tf2::Quaternion zero_rotation;
       zero_rotation.setRPY(0,0,0);
       l_to_center_tf.setRotation(zero_rotation);
+
       rotation_point_tf = base_to_l_sole_tf * l_to_center_tf;
       rotation_point_tf.setRotation(zero_rotation);
     } else {
