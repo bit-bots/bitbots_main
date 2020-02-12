@@ -16,7 +16,8 @@ DynUpNode::DynUpNode() :
     exit(1);
   }
   double arm_max_length = kinematic_model->getLinkModel("r_upper_arm")->getShapeExtentsAtOrigin().x() +
-                          kinematic_model->getLinkModel("r_lower_arm")->getShapeExtentsAtOrigin().x();
+                          kinematic_model->getLinkModel("r_lower_arm")->getShapeExtentsAtOrigin().x() +
+                          kinematic_model->getLinkModel("r_shoulder")->getShapeExtentsAtOrigin().x();
   geometry_msgs::PoseStamped shoulder_origin, shoulder_tf;
   shoulder_origin.header.frame_id="r_upper_arm";
   tf_buffer_.transform(shoulder_origin, shoulder_tf, "base_link",
