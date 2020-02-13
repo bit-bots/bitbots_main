@@ -184,7 +184,7 @@ void DynupEngine::calcFrontSplines() {
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -sin(90) * params_.leg_min_length);
   r_foot_spline_.roll()->addPoint(time, 0);
-  r_foot_spline_.pitch()->addPoint(time, -M_PI/2);
+  r_foot_spline_.pitch()->addPoint(time, -M_PI/2  + params_.foot_rotation);
   r_foot_spline_.yaw()->addPoint(time, 0);
   foot_spline_.x()->addPoint(time, 0);
   foot_spline_.y()->addPoint(time, params_.foot_distance);
