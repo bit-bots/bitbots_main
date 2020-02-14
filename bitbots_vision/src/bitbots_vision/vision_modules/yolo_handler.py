@@ -79,7 +79,7 @@ class YoloHandler():
 
 class YoloHandlerDarknet(YoloHandler):
     """
-    Yolo34py library implementation of our yolo model
+    Yolo34py library implementation of our yolo model.
     """
     def __init__(self, config, model_path):
         """
@@ -147,7 +147,7 @@ class YoloHandlerDarknet(YoloHandler):
 
 class YoloHandlerOpenCV(YoloHandler):
     """
-    Opencv library implementation of our yolo model
+    Opencv library implementation of our yolo model.
     """
     def __init__(self, config, model_path):
         """

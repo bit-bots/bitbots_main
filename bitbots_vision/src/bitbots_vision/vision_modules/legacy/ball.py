@@ -1,5 +1,5 @@
-from .candidate import Candidate
 import cv2
+from bitbots_vision.vision_modules.candidate import Candidate
 
 
 class BallFinder():

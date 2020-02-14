@@ -24,10 +24,12 @@ except ImportError:
 
 
 class Vision:
+    """
+    Vision is the main ROS-node for handling all tasks related to image processing.
+    """
     def __init__(self):
         # type () -> None
         """
-        Vision is the main ROS-node for handling all tasks related to image processing.
         Initiating 'bitbots_vision' node.
 
         :return: None

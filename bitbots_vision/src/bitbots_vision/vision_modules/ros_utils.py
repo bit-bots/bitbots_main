@@ -11,7 +11,7 @@ from bitbots_msgs.msg import Config
 
 """
 This module provides some methods needed for the ros environment,
-e.g. methods to convert candidates to ros msgs or methods to modify the dynamic reconfigure objects.
+e.g. methods to convert candidates to ROS messages or methods to modify the dynamic reconfigure objects.
 """
 
 _cv_bridge = CvBridge()

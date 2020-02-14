@@ -7,13 +7,12 @@ import rospy
 
 class ObstacleDetector(CandidateFinder):
     """
-    The obstacle detection module is a CandidateFinder that finds obstructions like robots.
-    In order to perform its task it uses the FieldBoundaryDetector or more specifically the field_boundary and/or
-    convex_field_boundary depending on the method used.
-    Given that the field_boundary contains dents where objects obstruct the edge of the field and consists of a list of points,
-    the obstacle detection module can find these objects by comparing the height of adjacent field_boundary-points.
-    Alternatively objects can be found by measuring the distance between the ordinary field_boundary and
-    the convex field_boundary which is a slightly less efficient but more accurate method.
+    The obstacle detection module is a :class:`bitbots_vision.vision_modules.candidate.CandidateFinder` that finds obstructions like robots.
+    In order to perform its task it uses the normal or convex field_boundary of a :class:`bitbots_vision.vision_modules.field_boundary.FieldBoundaryDetector` depending on the method used.
+    Given that the field boundary contains dents where objects obstruct the edge of the field and consists of a list of points,
+    the obstacle detection module can find these objects by comparing the height of adjacent field boundary-points.
+    Alternatively objects can be found by measuring the distance between the ordinary field boundary and
+    the convex field boundary which is a slightly less efficient but more accurate method.
     """
     def __init__(self, config, red_color_detector, blue_color_detector, white_color_detector, field_boundary_detector):
         """
@@ -404,7 +403,7 @@ class ObstacleDetector(CandidateFinder):
 
 class RedObstacleDetector(CandidateFinder):
     """
-    Detects red obstacles. Using the normal obstacle detector as a backend.
+    Detects red obstacles.
     """
     def __init__(self, obstacle_detector):
         # type: (ObstacleDetector) -> None
@@ -441,7 +440,7 @@ class RedObstacleDetector(CandidateFinder):
 
 class BlueObstacleDetector(CandidateFinder):
     """
-    Detects blue obstacles. Using the normal obstacle detector as a backend.
+    Detects blue obstacles.
     """
     def __init__(self, obstacle_detector):
         # type: (ObstacleDetector) -> None
@@ -478,7 +477,7 @@ class BlueObstacleDetector(CandidateFinder):
 
 class WhiteObstacleDetector(CandidateFinder):
     """
-    Detects white obstacles. Using the normal obstacle detector as a backend.
+    Detects white obstacles.
     """
     def __init__(self, obstacle_detector):
         # type: (ObstacleDetector) -> None
@@ -515,7 +514,7 @@ class WhiteObstacleDetector(CandidateFinder):
 
 class UnknownObstacleDetector(CandidateFinder):
     """
-    Detects unidentified obstacles. Using the normal obstacle detector as a backend.
+    Detects unidentified obstacles.
     """
     def __init__(self, obstacle_detector):
         # type: (ObstacleDetector) -> None

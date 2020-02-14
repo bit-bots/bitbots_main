@@ -12,16 +12,14 @@ from bitbots_vision.vision_modules import ros_utils
 
 class ColorDetector(object):
     """
-    The ColorDetector is an abstract super-class of specialized sub-classes.
-    ColorDetectors are used e.g. to check, if a pixel matches the defined color space or to create masked binary images.
+    The abstract class :class:`.ColorDetector` defines a representation of valid colors e.g. the soccer field colors.
+    It is used e.g. to check, if a pixel's color matches the defined color space or to create masked binary images.
     As many of the modules rely on the color classification of pixels to generate their output, the color detector module matches their color to a given color space.
-    These color spaces are configured for the colors of the field or objects like goalposts and team markers.
     """
-
     def __init__(self, config):
         # type: (dict) -> None
         """
-        Initialization of the ColorDetector.
+        Initialization of :class:`.ColorDetector`.
 
         :param dict config: dictionary of the vision node configuration parameters
         :return: None
@@ -181,10 +179,12 @@ class ColorDetector(object):
 
 class HsvSpaceColorDetector(ColorDetector):
     """
-    HsvSpaceColorDetector is a ColorDetector, that is based on the HSV-color space.
-    The HSV-color space is adjustable by setting min- and max-values for hue, saturation and value.
+    The :class:`.HsvSpaceColorDetector` is a :class:`bitbots_vision.vision_modules.color.ColorDetector`
+    that is based on the HSV-color space.
+    The HSV-color space is adjustable by setting min- and max-values for each hue, saturation and value.
 
-    The values of the HSV channels can be easily adjusted by a human before a competition to match the white of the lines and goal or the team colors of the enemy team respectively.
+    The values of the HSV channels can easily be adjusted by a human before a competition to match
+    e.g. the white of the lines and goal or the team colors of the enemy team respectively.
     This is necessary as teams may have different tones of red or blue as their marker color.
     """
     def __init__(self, config, color_str):
@@ -256,14 +256,10 @@ class HsvSpaceColorDetector(ColorDetector):
 
 class PixelListColorDetector(ColorDetector):
     """
-    PixelListColorDetector is a ColorDetector, that is based on a lookup table of color values.
-    The color space is loaded from color-space-file at color_path (in config).
-    The color space is represented by boolean-values for RGB-color-values.
-
-    The following parameters of the config dict are needed:
-        'field_color_detector_path'
+    The :class:`.PixelListColorDetector` is a :class:`bitbots_vision.vision_modules.color.ColorDetector`
+    that is based on a lookup table of color values.
+    The color space is loaded from color-space-file defined in config.
     """
-
     def __init__(self, config, package_path):
         # type:(dict, str) -> None
         """
@@ -356,10 +352,9 @@ class PixelListColorDetector(ColorDetector):
 
 class DynamicPixelListColorDetector(PixelListColorDetector):
     """
-    DynamicPixelListColorDetector is a ColorDetector, that is based on a lookup table of color values.
-    The color space is initially loaded from color-space-file at color_path (in config)
+    The :class:`.DynamicPixelListColorDetector` is a :class:`bitbots_vision.vision_modules.color.ColorDetector`
+    The color space is initially loaded from color-space-file defined in config
     and optionally adjustable to changing color conditions (dynamic color space).
-    The color space is represented by boolean-values for RGB-color-values.
     """
     def __init__(self, config, package_path):
         # type:(dict, str) -> None
