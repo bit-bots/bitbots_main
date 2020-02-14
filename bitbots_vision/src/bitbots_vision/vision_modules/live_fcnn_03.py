@@ -5,7 +5,6 @@ import rospy
 
 class FCNN03:
     """
-    Defines the FCNN neural network.
     Tensorflow network definition of the FCNN03 model.
     """
     def __init__(self, load_path):

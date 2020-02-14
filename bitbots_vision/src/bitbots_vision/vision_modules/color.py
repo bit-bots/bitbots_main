@@ -179,8 +179,7 @@ class ColorDetector(object):
 
 class HsvSpaceColorDetector(ColorDetector):
     """
-    The :class:`.HsvSpaceColorDetector` is a :class:`bitbots_vision.vision_modules.color.ColorDetector`
-    that is based on the HSV-color space.
+    The :class:`.HsvSpaceColorDetector` is based on the HSV-color space.
     The HSV-color space is adjustable by setting min- and max-values for each hue, saturation and value.
 
     The values of the HSV channels can easily be adjusted by a human before a competition to match
@@ -256,8 +255,7 @@ class HsvSpaceColorDetector(ColorDetector):
 
 class PixelListColorDetector(ColorDetector):
     """
-    The :class:`.PixelListColorDetector` is a :class:`bitbots_vision.vision_modules.color.ColorDetector`
-    that is based on a lookup table of color values.
+    The :class:`.PixelListColorDetector` is based on a lookup table of color values.
     The color space is loaded from color-space-file defined in config.
     """
     def __init__(self, config, package_path):
@@ -352,8 +350,7 @@ class PixelListColorDetector(ColorDetector):
 
 class DynamicPixelListColorDetector(PixelListColorDetector):
     """
-    The :class:`.DynamicPixelListColorDetector` is a :class:`bitbots_vision.vision_modules.color.ColorDetector`
-    The color space is initially loaded from color-space-file defined in config
+    The :class:`.DynamicPixelListColorDetector`'s color space is initially loaded from color-space-file defined in config
     and optionally adjustable to changing color conditions (dynamic color space).
     """
     def __init__(self, config, package_path):

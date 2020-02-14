@@ -3,6 +3,9 @@ from bitbots_vision.vision_modules.candidate import Candidate
 
 
 class BallFinder():
+    """
+    Deprecated BallFinder class.
+    """
     def __init__(self, config, cascade):
         # type: (dict, cv2.CascadeClassifier) -> None
         self._candidates = None

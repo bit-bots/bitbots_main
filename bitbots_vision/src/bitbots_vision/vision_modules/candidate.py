@@ -262,7 +262,7 @@ class CandidateFinder(object):
 class DummyCandidateFinder(CandidateFinder):
     """
     Dummy candidate detector that is used to run the vision pipeline without a neural network e.g. to save computation time for debugging.
-    This CandidateFinder returns an empty set of candidates and therefore replaces the ordinary detection.
+    This implementation returns an empty set of candidates and therefore replaces the ordinary detection.
     """
     def __init__(self):
         """
