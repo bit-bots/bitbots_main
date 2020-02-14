@@ -42,7 +42,6 @@ bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   hardware_interface::ImuSensorHandle imu_handle(imu_name, imu_frame, orientation_, orientation_covariance_, angular_velocity_, angular_velocity_covariance_, linear_acceleration_, linear_acceleration_covariance_);
   imu_interface_.registerHandle(imu_handle);
   parent_->registerInterface(&imu_interface_);
-
   return true;
 }
 
@@ -50,10 +49,10 @@ bool ImuHardwareInterface::read(){
   /**
    * Reads the IMU
    */
-  uint8_t *data = (uint8_t *) malloc(110 * sizeof(uint8_t));
+  uint8_t *data = (uint8_t *) malloc(24 * sizeof(uint8_t));
 
-    if(driver_->readMultipleRegisters(241, 36, 32, data)){
-        uint32_t highest_seq_number = 0;
+    if(driver_->readMultipleRegisters(241, 36, 24, data)){
+        /*uint32_t highest_seq_number = 0;
         uint32_t new_value_index=0;
         uint32_t current_seq_number= 0;
         // imu gives us 2 values at the same time, lets see which one is the newest
@@ -74,7 +73,16 @@ bool ImuHardwareInterface::read(){
       angular_velocity_[0] = (((short) dxlMakeword(data[16*new_value_index + 6], data[16*new_value_index + 7])) / 14.375) * M_PI/180 * -1;
       angular_velocity_[1] = (((short) dxlMakeword(data[16*new_value_index + 8], data[16*new_value_index + 9])) / 14.375) * M_PI/180 * -1;
       angular_velocity_[2] = (((short) dxlMakeword(data[16*new_value_index + 10], data[16*new_value_index + 11])) / 14.375) * M_PI/180 * 1;
-      return true;
+      */
+     angular_velocity_[0] = dxlMakeFloat(data + 0);
+     angular_velocity_[1] = dxlMakeFloat(data + 4);
+     angular_velocity_[2] = dxlMakeFloat(data + 8);
+
+     linear_acceleration_[0] = dxlMakeFloat(data + 12);
+     linear_acceleration_[1] = dxlMakeFloat(data + 16);
+     linear_acceleration_[2] = dxlMakeFloat(data + 20);
+     ROS_WARN_STREAM("x: " << linear_acceleration_[0] << "\ty: " << linear_acceleration_[1] << "\tz: " << linear_acceleration_[2]);
+     return true;
     }else {
       ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
       return false;

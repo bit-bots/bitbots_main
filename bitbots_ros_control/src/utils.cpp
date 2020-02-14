@@ -19,4 +19,12 @@ namespace bitbots_ros_control {
     uint32_t dxlMakedword(uint64_t a, uint64_t b) {
       return uint32_t(uint16_t(a & 0xffff) | uint32_t(uint16_t(b & 0xffff) << 16));
     }
+
+    float dxlMakeFloat(uint8_t *data)
+    { 
+      float f;
+      uint32_t b = dxlMakedword(dxlMakeword(data[0], data[1]), dxlMakeword(data[2], data[3]));
+      memcpy(&f, &b, sizeof(f));
+      return f;
+    }
 }
