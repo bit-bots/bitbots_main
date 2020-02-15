@@ -128,7 +128,8 @@ def add_model_enums(cfg_type, package_path):
     model_names = os.listdir(models_directory)
 
     fcnn_paths = []
-    yolo_paths = []
+    yolo_darknet_paths = []
+    yolo_openvino_paths = []
 
     # Sort models alphabetically
     model_names.sort()
@@ -142,10 +143,17 @@ def add_model_enums(cfg_type, package_path):
                 'name': folder,
                 'value': folder,
                 'description': 'fcnn {}'.format(folder)})
-        # Is this model an yolo model
+        # Is this model a yolo darknet model
         elif os.path.exists(os.path.join(models_directory, folder, "yolo_weights.weights")):
             # Append list with a new enum item
-            yolo_paths.append({
+            yolo_darknet_paths.append({
+                'name': folder,
+                'value': folder,
+                'description': 'yolo {}'.format(folder)})
+        # Is this model an yolo openvino model
+        elif os.path.exists(os.path.join(models_directory, folder, "yolo.bin")):
+            # Append list with a new enum item
+            yolo_openvino_paths.append({
                 'name': folder,
                 'value': folder,
                 'description': 'yolo {}'.format(folder)})
@@ -153,7 +161,8 @@ def add_model_enums(cfg_type, package_path):
             rospy.logwarn("Directory '{}' contains unknown model type. Please remove all non model directories from the 'models' directory!".format(folder), logger_name="vision_ros_utils")
     # Add enums to configuration
     _change_enum_items(cfg_type, 'fcnn_model_path', fcnn_paths)
-    _change_enum_items(cfg_type, 'yolo_model_path', yolo_paths)
+    _change_enum_items(cfg_type, 'yolo_darknet_model_path', yolo_darknet_paths)
+    _change_enum_items(cfg_type, 'yolo_openvino_model_path', yolo_openvino_paths)
 
 def add_color_space_enum(cfg_type, package_path):
     """

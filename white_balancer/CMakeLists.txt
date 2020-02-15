@@ -16,11 +16,12 @@ find_package(catkin REQUIRED COMPONENTS
   rosconsole
   message_generation
   cv_bridge
+  bitbots_docs
 )
 
 # dynamic reconfigure
 generate_dynamic_reconfigure_options(
-    cfg/white_balancer.cfg
+    cfg/WhiteBalancer.cfg
 )
 
 catkin_package()
@@ -38,3 +39,5 @@ add_dependencies(white_balancer ${PROJECT_NAME}_gencfg)
 target_link_libraries(white_balancer
     ${catkin_LIBRARIES}
 )
+
+enable_bitbots_docs()

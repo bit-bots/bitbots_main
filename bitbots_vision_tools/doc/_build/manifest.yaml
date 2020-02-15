@@ -1,0 +1,28 @@
+actions: []
+authors: Niklas Fiedler <git@nfiedler.de>
+brief: ''
+bugtracker: ''
+depends:
+- dynamic_reconfigure
+- bitbots_vision
+- message_runtime
+- catkin
+- std_msgs
+- sensor_msgs
+- trajectory_msgs
+- python-numpy
+- image_transport
+- python-rospkg
+- geometry_msgs
+- python-opencv
+- message_generation
+- rospy
+- humanoid_league_msgs
+description: The vision_tools package
+license: MIT
+maintainers: Niklas Fiedler <git@nfiedler.de>, Hamburg Bit-Bots <info@bit-bots.de>
+msgs: []
+package_type: package
+repo_url: ''
+srvs: []
+url: ''
