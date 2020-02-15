@@ -107,7 +107,6 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
 
         // transformation chain to get correctly rotated odom frame
         // go to the rotation point in the odom frame. rotate the transform to the base link at this point
-        // fused_odometry = motion_odometry_yaw * rotation_point_in_base * rotation * base_link_in_rotation_point;
         fused_odometry = motion_odometry_yaw * rotation_point_in_base * imu_without_yaw_component * base_link_in_rotation_point ;
       } else {
         fused_odometry = motion_odometry;
