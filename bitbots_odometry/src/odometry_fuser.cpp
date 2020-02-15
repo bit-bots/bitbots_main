@@ -164,7 +164,7 @@ tf2::Quaternion OdometryFuser::getCurrentImuRotationWithoutYaw(tf2::Quaternion i
   if (robot_vector_rotated.z() < 0.2)
   {
     // Use ony a IMU offset during the singulateri
-    return last_quat_ + ( imu_rotation - last_quat_imu_);
+    return imu_rotation;
   }
 
   // Convert tf to eigen quaternion
