@@ -90,6 +90,17 @@ void WalkNode::run() {
       if (walk_engine_.getState() != WalkState::IDLE) {
         // add IMU pitch information
         response.current_pitch = current_trunk_pitch_;
+        response.roll_vel = roll_vel_;
+        response.pitch_vel = pitch_vel_;
+
+        if(walk_engine_.isLeftSupport()){
+          response.sup_cop_x = cop_left_x_;
+          response.sup_cop_y = cop_left_y_;
+        }else{
+          response.sup_cop_x = cop_right_x_;
+          response.sup_cop_y = cop_right_y_;
+        }
+
         calculateAndPublishJointGoals(response, dt);
       }
     }
@@ -112,6 +123,22 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, doubl
 
   // compute motor goals from IK
   bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_response);
+
+  // use PID controller to correct joints
+  motor_goals["LeftAnklePitch"] += pid_left_x_.computeCommand(cop_left_x_, ros::Duration(dt));
+  motor_goals["LeftAnkleRoll"] += pid_left_y_.computeCommand(cop_left_y_, ros::Duration(dt));
+  motor_goals["RightAnklePitch"] += pid_right_x_.computeCommand(cop_right_x_, ros::Duration(dt));
+  motor_goals["RighttAnkleRoll"] += pid_right_y_.computeCommand(cop_right_y_, ros::Duration(dt));
+
+
+  double goal_pitch, goal_roll, goal_yaw;
+  tf2::Matrix3x3(response.support_foot_to_trunk.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
+  double hip_pitch_correction = pid_hip_pitch_.computeCommand(goal_pitch - response.current_pitch, ros::Duration(dt));
+  double hip_roll_correction = pid_hip_roll_.computeCommand(goal_roll - response.current_roll, ros::Duration(dt));
+  motor_goals["LeftHipPitch"] += hip_pitch_correction;
+  motor_goals["RightHipPitch"] += hip_pitch_correction;
+  motor_goals["LeftHipRoll"] += hip_roll_correction;
+  motor_goals["RightHipRoll"] += hip_roll_correction;
 
   // publish them
   publishGoals(motor_goals);
@@ -199,24 +226,27 @@ void WalkNode::imuCb(const sensor_msgs::Imu &msg) {
   double roll, pitch, yaw;
   tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
   current_trunk_pitch_ = pitch;
+  current_trunk_roll_ = roll;
+  current_trunk_fused_pitch_ = fused_pitch;
+  current_trunk_fused_roll_ = fused_roll;
+
+  // get angular velocities
+  roll_vel_ = msg.angular_velocity.x;
+  pitch_vel_ = msg.angular_velocity.y;
 
   if (imu_active_) {
     // compute the pitch offset to the currently wanted pitch of the engine
     double wanted_pitch = walk_engine_.getWantedTrunkPitch();
 
     double pitch_delta = pitch - wanted_pitch;
-
-    // get angular velocities
-    double roll_vel = msg.angular_velocity.x;
-    double pitch_vel = msg.angular_velocity.y;
     if (abs(roll) > imu_roll_threshold_ || abs(pitch_delta) > imu_pitch_threshold_ ||
-        abs(pitch_vel) > imu_pitch_vel_threshold_ || abs(roll_vel) > imu_roll_vel_threshold_) {
+        abs(pitch_vel_) > imu_pitch_vel_threshold_ || abs(roll_vel_) > imu_roll_vel_threshold_) {
       walk_engine_.requestPause();
       if (abs(roll) > imu_roll_threshold_) {
         ROS_WARN("imu roll angle stop");
       } else if (abs(pitch_delta) > imu_pitch_threshold_) {
         ROS_WARN("imu pitch angle stop");
-      } else if (abs(pitch_vel) > imu_pitch_vel_threshold_) {
+      } else if (abs(pitch_vel_) > imu_pitch_vel_threshold_) {
         ROS_WARN("imu roll vel stop");
       } else {
         ROS_WARN("imu pitch vel stop");
@@ -264,6 +294,8 @@ void WalkNode::copLeftCb(geometry_msgs::PointStamped msg) {
       (msg.point.y > cop_y_threshold_ || abs(msg.point.x) > cop_x_threshold_)) {
     walk_engine_.requestPause();
   }
+  cop_left_x_ = msg.point.x;
+  cop_left_y_ = msg.point.y;
 }
 
 void WalkNode::copRightCb(geometry_msgs::PointStamped msg) {
@@ -272,6 +304,9 @@ void WalkNode::copRightCb(geometry_msgs::PointStamped msg) {
       (msg.point.y < -1 * cop_y_threshold_ || abs(msg.point.x) > cop_x_threshold_)) {
     walk_engine_.requestPause();
   }
+
+  cop_right_x_ = msg.point.x;
+  cop_right_y_ = msg.point.y;
 }
 
 void WalkNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {

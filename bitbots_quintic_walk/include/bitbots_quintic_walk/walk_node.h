@@ -188,6 +188,26 @@ class WalkNode {
   WalkVisualizer visualizer_;
 
   double current_trunk_pitch_;
+  double current_trunk_roll_;
+  double current_trunk_fused_pitch_;
+  double current_trunk_fused_roll_;
+
+  double cop_left_x_;
+  double cop_left_y_;
+  double cop_right_x_;
+  double cop_right_y_;
+
+  double roll_vel_;
+  double pitch_vel_;
+
+  control_toolbox::Pid pid_left_x_;
+  control_toolbox::Pid pid_left_y_;
+  control_toolbox::Pid pid_right_x_;
+  control_toolbox::Pid pid_right_y_;
+
+  control_toolbox::Pid pid_hip_pitch_;
+  control_toolbox::Pid pid_hip_roll_;
+
 
 };
 

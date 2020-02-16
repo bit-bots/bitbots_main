@@ -45,6 +45,15 @@ struct WalkResponse {
   tf2::Transform support_to_next;
 
   double current_pitch;
+  double current_fused_pitch;
+  double current_roll;
+  double current_fused_roll;
+
+  double roll_vel;
+  double pitch_vel;
+
+  double sup_cop_x;
+  double sup_cop_y;
 };
 
 /**
