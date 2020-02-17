@@ -36,6 +36,7 @@
   <depend>bitbots_msgs</depend>
   <depend>moveit_ros_robot_interaction</depend>
   <depend>bitbots_docs</depend>
+  <depend>rotconv</depend>
 
   <test_depend>plotjuggler</test_depend>
   <test_depend>bitbots_odometry</test_depend>
