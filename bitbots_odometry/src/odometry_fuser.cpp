@@ -64,10 +64,10 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
 
     if (imu_active || odom_active) {
       double walking_yaw, placeholder;
+
       // get roll an pitch from imu
       tf2::Quaternion imu_orientation;
       tf2::fromMsg(_imu_data.orientation, imu_orientation);
-      tf2::Matrix3x3 imu_rotation_matrix(imu_orientation);
 
       // get motion_odom transform
       tf2::Transform motion_odometry;
