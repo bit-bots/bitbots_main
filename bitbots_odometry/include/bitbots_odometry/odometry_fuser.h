@@ -14,6 +14,8 @@
 #include <tf2/LinearMath/Scalar.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
+#include <Eigen/Geometry>
+#include <rot_conv/rot_conv.h>
 
 
 class OdometryFuser {

@@ -1,6 +1,4 @@
 #include <bitbots_odometry/odometry_fuser.h>
-#include <rot_conv/rot_conv.h>
-#include <Eigen/Geometry>
 
 /*
 odom -> baselink
