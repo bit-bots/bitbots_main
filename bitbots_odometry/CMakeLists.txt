@@ -13,11 +13,14 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   tf2_geometry_msgs
+  tf2_eigen
   geometry_msgs
   roscpp
   bitbots_docs
+  rotconv
 )
 
+find_package(Eigen3 REQUIRED)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -110,7 +113,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES bitbots_odometry
-   CATKIN_DEPENDS nav_msgs sensor_msgs tf2
+   CATKIN_DEPENDS nav_msgs sensor_msgs tf2 rotconv
 #  DEPENDS system_lib
 )
 
@@ -123,6 +126,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${Eigen3_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -154,6 +158,7 @@ add_executable(motion_odometry src/motion_odometry.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(odometry_fuser
   ${catkin_LIBRARIES}
+  ${Eigen3_LIBRARIES}
 )
 
 target_link_libraries(motion_odometry
