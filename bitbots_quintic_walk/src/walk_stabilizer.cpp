@@ -25,14 +25,17 @@ WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const ros::
   double goal_pitch, goal_roll, goal_yaw;
   tf2::Matrix3x3(response.support_foot_to_trunk.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
 
+  Eigen::Quaterniond goal_orientation_eigen;
+  tf2::convert(response.support_foot_to_trunk.getRotation(), goal_orientation_eigen);
+
   // compute orientation with fused angles for PID control
-  //TODO
+  rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
 
   // adapt trunk values based on PID controllers
   double corrected_pitch = pid_trunk_pitch_.computeCommand(goal_pitch - response.current_pitch, dt);
-  double corrected_fused_pitch = pid_trunk_fused_pitch_.computeCommand(goal_fused_pitch - response.current_fused_pitch, dt);
+  double corrected_fused_pitch = pid_trunk_fused_pitch_.computeCommand(goal_fused.fusedPitch - response.current_fused_pitch, dt);
   double corrected_roll = pid_trunk_roll_.computeCommand(goal_roll - response.current_roll, dt);
-  double corrected_fused_roll = pid_trunk_fused_roll_.computeCommand(goal_fused_roll - response.current_fused_roll, dt);
+  double corrected_fused_roll = pid_trunk_fused_roll_.computeCommand(goal_fused.fusedRoll - response.current_fused_roll, dt);
   double corrected_roll_vel = pid_trunk_roll_vel_.computeCommand(response.roll_vel, dt);
   double corrected_pitch_vel = pid_trunk_roll_vel_.computeCommand(response.pitch_vel, dt);
 

@@ -9,7 +9,10 @@
 #include "bitbots_quintic_walk/walk_utils.h"
 #include "bitbots_splines/dynamic_balancing_goal.h"
 #include "bitbots_splines/reference_goals.h"
-
+#include <rot_conv/rot_conv.h>
+#include <Eigen/Geometry>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_eigen/tf2_eigen.h>
 
 namespace bitbots_quintic_walk {
 

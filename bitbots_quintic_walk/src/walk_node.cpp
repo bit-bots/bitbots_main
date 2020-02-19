@@ -93,10 +93,10 @@ void WalkNode::run() {
         response.roll_vel = roll_vel_;
         response.pitch_vel = pitch_vel_;
 
-        if(walk_engine_.isLeftSupport()){
+        if (walk_engine_.isLeftSupport()) {
           response.sup_cop_x = cop_left_x_;
           response.sup_cop_y = cop_left_y_;
-        }else{
+        } else {
           response.sup_cop_x = cop_right_x_;
           response.sup_cop_y = cop_right_y_;
         }
@@ -124,21 +124,26 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, doubl
   // compute motor goals from IK
   bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_response);
 
-  // use PID controller to correct joints
-  motor_goals["LeftAnklePitch"] += pid_left_x_.computeCommand(cop_left_x_, ros::Duration(dt));
-  motor_goals["LeftAnkleRoll"] += pid_left_y_.computeCommand(cop_left_y_, ros::Duration(dt));
-  motor_goals["RightAnklePitch"] += pid_right_x_.computeCommand(cop_right_x_, ros::Duration(dt));
-  motor_goals["RighttAnkleRoll"] += pid_right_y_.computeCommand(cop_right_y_, ros::Duration(dt));
-
-
   double goal_pitch, goal_roll, goal_yaw;
   tf2::Matrix3x3(response.support_foot_to_trunk.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
   double hip_pitch_correction = pid_hip_pitch_.computeCommand(goal_pitch - response.current_pitch, ros::Duration(dt));
   double hip_roll_correction = pid_hip_roll_.computeCommand(goal_roll - response.current_roll, ros::Duration(dt));
-  motor_goals["LeftHipPitch"] += hip_pitch_correction;
-  motor_goals["RightHipPitch"] += hip_pitch_correction;
-  motor_goals["LeftHipRoll"] += hip_roll_correction;
-  motor_goals["RightHipRoll"] += hip_roll_correction;
+
+  for (int i = 0; i < motor_goals.first.size(); ++i) {
+    if (motor_goals.first.at(i) == "LeftAnklePitch") {
+      motor_goals.second.at(i) += pid_left_x_.computeCommand(cop_left_x_, ros::Duration(dt));
+    } else if (motor_goals.first.at(i) == "RightAnklePitch") {
+      motor_goals.second.at(i) += pid_right_x_.computeCommand(cop_right_x_, ros::Duration(dt));
+    } else if (motor_goals.first.at(i) == "LeftAnkleRoll") {
+      motor_goals.second.at(i) += pid_left_y_.computeCommand(cop_left_y_, ros::Duration(dt));
+    } else if (motor_goals.first.at(i) == "RightAnkleRoll") {
+      motor_goals.second.at(i) += pid_right_y_.computeCommand(cop_right_y_, ros::Duration(dt));
+    } else if (motor_goals.first.at(i) == "LeftHipPitch" || motor_goals.first.at(i) == "RightHipPitch") {
+      motor_goals.second.at(i) += hip_pitch_correction;
+    } else if (motor_goals.first.at(i) == "LeftHipRoll" || motor_goals.first.at(i) == "RightHipRoll") {
+      motor_goals.second.at(i) += hip_roll_correction;
+    }
+  }
 
   // publish them
   publishGoals(motor_goals);
@@ -154,7 +159,7 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, doubl
   }
 
   // publish if foot changed
-  if(current_support_foot_ != support_state.data){
+  if (current_support_foot_ != support_state.data) {
     pub_support_.publish(support_state);
     current_support_foot_ = support_state.data;
   }
@@ -227,8 +232,13 @@ void WalkNode::imuCb(const sensor_msgs::Imu &msg) {
   tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
   current_trunk_pitch_ = pitch;
   current_trunk_roll_ = roll;
-  current_trunk_fused_pitch_ = fused_pitch;
-  current_trunk_fused_roll_ = fused_roll;
+
+  Eigen::Quaterniond imu_orientation_eigen;
+  tf2::convert(quat, imu_orientation_eigen);
+  rot_conv::FusedAngles imu_fused = rot_conv::FusedFromQuat(imu_orientation_eigen);
+
+  current_trunk_fused_pitch_ = imu_fused.fusedPitch;
+  current_trunk_fused_roll_ = imu_fused.fusedRoll;
 
   // get angular velocities
   roll_vel_ = msg.angular_velocity.x;
