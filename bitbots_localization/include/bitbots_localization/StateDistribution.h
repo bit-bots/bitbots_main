@@ -17,9 +17,7 @@ class RobotStateDistribution : public particle_filter::StateDistribution<RobotSt
   RobotStateDistribution(particle_filter::CRandomNumberGenerator &random_number_generator,
                          std::pair<double, double> initial_robot_pose, std::pair<double, double> field_size);
 
-  ~RobotStateDistribution() {};
-
-  const RobotState draw() const;
+  const RobotState draw() const override;
 
  private:
   particle_filter::CRandomNumberGenerator random_number_generator_;
@@ -40,9 +38,7 @@ class RobotStateDistributionStartLeft : public particle_filter::StateDistributio
                                   double initial_theta2,
                                   std::pair<double, double> field_size);
 
-  ~RobotStateDistributionStartLeft() {};
-
-  const RobotState draw() const;
+  const RobotState draw() const override;
 
  private:
   particle_filter::CRandomNumberGenerator random_number_generator_;
@@ -62,9 +58,7 @@ class RobotStateDistributionStartRight : public particle_filter::StateDistributi
                                    double initial_theta2,
                                    std::pair<double, double> field_size);
 
-  ~RobotStateDistributionStartRight() {};
-
-  const RobotState draw() const;
+  const RobotState draw() const override;
 
  private:
   particle_filter::CRandomNumberGenerator random_number_generator_;
@@ -80,9 +74,7 @@ class RobotStateDistributionLeftHalf : public particle_filter::StateDistribution
   RobotStateDistributionLeftHalf(particle_filter::CRandomNumberGenerator &random_number_generator,
                                  std::pair<double, double> field_size);
 
-  ~RobotStateDistributionLeftHalf() {};
-
-  const RobotState draw() const;
+  const RobotState draw() const override;
 
  private:
   particle_filter::CRandomNumberGenerator random_number_generator_;
@@ -98,9 +90,7 @@ class RobotStateDistributionRightHalf : public particle_filter::StateDistributio
   RobotStateDistributionRightHalf(particle_filter::CRandomNumberGenerator &random_number_generator,
                                   std::pair<double, double> field_size);
 
-  ~RobotStateDistributionRightHalf() {};
-
-  const RobotState draw() const;
+  const RobotState draw() const override;
 
  private:
   particle_filter::CRandomNumberGenerator random_number_generator_;
@@ -117,9 +107,7 @@ class RobotStateDistributionPosition : public particle_filter::StateDistribution
                                  double x,
                                  double y);
 
-  ~RobotStateDistributionPosition() {};
-
-  const RobotState draw() const;
+  const RobotState draw() const override;
 
  private:
   particle_filter::CRandomNumberGenerator random_number_generator_;
@@ -135,9 +123,7 @@ class RobotStateDistributionPose : public particle_filter::StateDistribution<Rob
                              double y,
                              double t);
 
-  ~RobotStateDistributionPose() {};
-
-  const RobotState draw() const;
+  const RobotState draw() const override;
 
  private:
   particle_filter::CRandomNumberGenerator random_number_generator_;

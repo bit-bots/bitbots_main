@@ -4,7 +4,7 @@
 
 #include "../include/bitbots_localization/MotionModel.h"
 
-RobotMotionModel::RobotMotionModel(particle_filter::CRandomNumberGenerator &random_number_generator,
+RobotMotionModel::RobotMotionModel(const particle_filter::CRandomNumberGenerator &random_number_generator,
                                    double xStdDev,
                                    double yStdDev,
                                    double tStdDev,
@@ -15,9 +15,6 @@ RobotMotionModel::RobotMotionModel(particle_filter::CRandomNumberGenerator &rand
                                                            tStdDev_(tStdDev),
                                                            multiplicator_(multiplicator) {
 
-}
-
-RobotMotionModel::~RobotMotionModel() {
 }
 
 void RobotMotionModel::drift(RobotState &state,

@@ -23,9 +23,6 @@ RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_li
 
 }
 
-RobotPoseObservationModel::~RobotPoseObservationModel() {
-}
-
 double RobotPoseObservationModel::measure(const RobotState &state) const {
 
   std::vector<double> lineRatings;
@@ -225,5 +222,4 @@ void RobotPoseObservationModel::clear_measurement() {
 bool RobotPoseObservationModel::measurements_available() {
   return (!last_measurement_lines_.empty());
 }
-
 

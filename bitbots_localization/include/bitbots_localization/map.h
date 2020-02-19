@@ -21,7 +21,7 @@ namespace gm = geometry_msgs;
 
 class Map {
  public:
-  Map(std::string file_path);
+  explicit Map(const std::string& file_path);
 
   cv::Mat map;
 

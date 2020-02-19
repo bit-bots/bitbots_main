@@ -394,7 +394,7 @@ void Localization::getMotion() {
     }
 
   }
-  catch (tf2::TransformException ex) {
+  catch (const tf2::TransformException &ex) {
     ROS_WARN("get_motion: %s", ex.what());
   }
 

@@ -22,9 +22,6 @@ RobotState::RobotState(double x, double y, double T) :
 
 }
 
-RobotState::~RobotState() {
-}
-
 RobotState RobotState::operator*(float factor) const {
   RobotState newState;
   newState.m_XPos = m_XPos * factor;

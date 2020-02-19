@@ -5,7 +5,7 @@
 #ifndef IMPORTANCERESAMPLINGWE_H
 #define IMPORTANCERESAMPLINGWE_H
 
-#include <assert.h>
+#include <cassert>
 #include "particle_filter/ImportanceResampling.h"
 #include "particle_filter/CRandomNumberGenerator.h"
 
@@ -26,11 +26,6 @@ class ImportanceResamplingWE
   ImportanceResamplingWE<StateType>(int explorer_count,
                                     std::shared_ptr<particle_filter::StateDistribution<StateType>>
                                     distribution);
-
-  /**
-   * The destructor is empty.
-   */
-  virtual ~ImportanceResamplingWE();
 
   /**
    * This is the main method of ImportanceResampling. It takes two references
@@ -67,9 +62,6 @@ ImportanceResamplingWE<StateType>::ImportanceResamplingWE(int explorer_count,
   particle_filter::ImportanceResampling<StateType>();
 }
 
-template<class StateType>
-ImportanceResamplingWE<StateType>::~ImportanceResamplingWE() {}
-
 // resampling based on the cumulative distribution function (CDF)
 // this is an implementation of the algorithm presented in Propabilistic
 // Robotics by Sebastian Thrun et al.
@@ -80,7 +72,7 @@ void ImportanceResamplingWE<StateType>::resample(const ParticleList &sourceList,
   // some particles (most of them usually) get resampled and explorer_count
   // particles get assigned a random state
   int resample_max = sourceList.size() - explorer_count_;
-  double inverseNum = 1.0f / resample_max;
+  double inverseNum = 1.0f / float(resample_max);
   double start = m_RNG.getUniform() * inverseNum;  // random start in CDF
   double cumulativeWeight = 0.0f;
   unsigned int sourceIndex = 0;  // index to draw from

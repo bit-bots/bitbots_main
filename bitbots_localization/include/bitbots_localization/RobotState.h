@@ -26,7 +26,6 @@ class RobotState {
  public:
   RobotState();
   RobotState(double x, double y, double T);
-  ~RobotState();
 
   RobotState operator*(float factor) const;
 

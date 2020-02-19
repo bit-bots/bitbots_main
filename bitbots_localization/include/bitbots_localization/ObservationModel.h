@@ -28,16 +28,11 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
                             std::shared_ptr<Map> map_t_crossings, std::shared_ptr<Map> map_crosses);
 
   /**
-   * empty
-   */
-  ~RobotPoseObservationModel();
-
-  /**
    *
    * @param state Reference to the state that has to be weightened.
    * @return weight for the given state.
    */
-  double measure(const RobotState &state) const;
+  double measure(const RobotState &state) const override;
 
   void set_measurement_lines(hlm::LineInformationRelative measurement);
 
@@ -72,11 +67,11 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   void set_min_weight(double min_weight);
 
-  double get_min_weight() const;
+  double get_min_weight() const override;
 
   void clear_measurement();
 
-  bool measurements_available();
+  bool measurements_available() override;
 
  private:
 

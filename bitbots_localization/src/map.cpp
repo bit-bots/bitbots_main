@@ -4,7 +4,7 @@
 
 #include "bitbots_localization/map.h"
 
-Map::Map(std::string file_path) {
+Map::Map(const std::string& file_path) {
   map = cv::imread(file_path, CV_LOAD_IMAGE_GRAYSCALE);
 
   if (!map.data) {
@@ -23,8 +23,8 @@ double Map::get_occupancy(double x, double y) {
   y = y * 100;
 
   // ursprung in feldmitte
-  x = std::round(x + mapWidth / 2); //assuming lines are centered on map
-  y = std::round(y + mapHeight / 2);
+  x = std::round(x + mapWidth / 2.0); //assuming lines are centered on map
+  y = std::round(y + mapHeight / 2.0);
   double occupancy = -10; // punish points outside the map
 
   if (x < mapWidth && x >= 0 && y < mapHeight && y >= 0) {
@@ -40,7 +40,6 @@ std::vector<double> Map::provideRating(const RobotState &state,
   for (const std::pair<double, double> &observation : observations) {
     //lines are in polar form!
     std::pair<double, double> lineRelative;
-    double distance_rating = 0;
 
     // get rating per line
     lineRelative = observationRelative(observation, state.getXPos(), state.getYPos(), state.getTheta());

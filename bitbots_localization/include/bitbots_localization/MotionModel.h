@@ -6,7 +6,7 @@
 #define BITBOTS_LOCALIZATION_MOTIONMODEL_H
 
 #include <memory>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include <particle_filter/MovementModel.h>
 #include <bitbots_localization/RobotState.h>
@@ -30,29 +30,24 @@ class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
    * empty
 
    */
-  RobotMotionModel(particle_filter::CRandomNumberGenerator &random_number_generator,
+  RobotMotionModel(const particle_filter::CRandomNumberGenerator &random_number_generator,
                    double xStdDev,
                    double yStdDev,
                    double tStdDev,
                    double multiplicator);
 
   /**
-   * empty
-   */
-  ~RobotMotionModel();
-
-  /**
    * The drift method is empty in this example.
    * @param state Pointer to the state that has to be manipulated.
    */
-  void drift(RobotState &state, geometry_msgs::Vector3 linear, geometry_msgs::Vector3 angular) const;
+  void drift(RobotState &state, geometry_msgs::Vector3 linear, geometry_msgs::Vector3 angular) const override;
 
   /**
    * The diffusion consists of a very small gaussian jitter on the
    * state's variable.
    * @param state Pointer to the state that has to be manipulated.
    */
-  void diffuse(RobotState &state) const;
+  void diffuse(RobotState &state) const override;
 
  protected:
 
