@@ -3,21 +3,27 @@
 namespace bitbots_quintic_walk {
 
 WalkStabilizer::WalkStabilizer() {
-  ros::NodeHandle nh = ros::NodeHandle("/walking/pid_trunk");
-  pid_trunk_pitch_.init(nh, false);
-  pid_trunk_roll_.init(nh, false);
-  pid_trunk_fused_pitch_.init(nh, false);
-  pid_trunk_fused_roll_.init(nh, false);
-  pid_trunk_roll_vel_.init(nh, false);
-  pid_trunk_pitch_vel_.init(nh, false);
-  pid_cop_x_.init(nh, false);
-  pid_cop_y_.init(nh, false);
+  pid_trunk_pitch_.init(ros::NodeHandle("/walking/pid_trunk_pitch"), false);
+  pid_trunk_roll_.init(ros::NodeHandle("/walking/pid_trunk_roll"), false);
+  pid_trunk_fused_pitch_.init(ros::NodeHandle("/walking/pid_trunk_fused_pitch"), false);
+  pid_trunk_fused_roll_.init(ros::NodeHandle("/walking/pid_trunk_fused_roll"), false);
+  pid_trunk_roll_vel_.init(ros::NodeHandle("/walking/pid_trunk_gyro_roll"), false);
+  pid_trunk_pitch_vel_.init(ros::NodeHandle("/walking/pid_trunk_gyro_pitch"), false);
+  pid_cop_x_.init(ros::NodeHandle("/walking/pid_cop_x"), false);
+  pid_cop_y_.init(ros::NodeHandle("/walking/pid_cop_y"), false);
 
   reset();
 }
 
 void WalkStabilizer::reset() {
   pid_trunk_pitch_.reset();
+  pid_trunk_roll_.reset();
+  pid_trunk_fused_pitch_.reset();
+  pid_trunk_fused_roll_.reset();
+  pid_trunk_roll_vel_.reset();
+  pid_trunk_pitch_vel_.reset();
+  pid_cop_x_.reset();
+  pid_cop_y_.reset();
 }
 
 WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const ros::Duration &dt) {

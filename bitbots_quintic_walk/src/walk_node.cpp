@@ -10,6 +10,13 @@ WalkNode::WalkNode() :
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLABLE;
   current_request_.orders = {0, 0, 0};
   current_trunk_pitch_ = 0;
+  current_trunk_roll_ = 0;
+  cop_right_x_ = 0;
+  cop_right_y_ = 0;
+  cop_left_x_ = 0;
+  cop_left_y_ = 0;
+  roll_vel_ = 0;
+  pitch_vel_ = 0;
 
   // read config
   nh_.param<double>("engine_frequency", engine_frequency_, 100.0);
@@ -60,6 +67,20 @@ WalkNode::WalkNode() :
   f = boost::bind(&bitbots_quintic_walk::WalkNode::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
 
+  // initilize PIDs
+  pid_left_x_.init(ros::NodeHandle("/walking/pid_ankle_left_pitch"), false);
+  pid_left_y_.init(ros::NodeHandle("/walking/pid_ankle_left_roll"), false);
+  pid_right_x_.init(ros::NodeHandle("/walking/pid_ankle_right_pitch"), false);
+  pid_right_y_.init(ros::NodeHandle("/walking/pid_ankle_right_roll"), false);
+  pid_hip_pitch_.init(ros::NodeHandle("/walking/pid_hip_pitch"), false);
+  pid_hip_roll_.init(ros::NodeHandle("/walking/pid_hip_roll"), false);
+
+  pid_left_x_.reset();
+  pid_left_y_.reset();
+  pid_right_x_.reset();
+  pid_right_y_.reset();
+  pid_hip_pitch_.reset();
+  pid_hip_roll_.reset();
 }
 
 void WalkNode::run() {
@@ -73,6 +94,12 @@ void WalkNode::run() {
     if (robot_state_ == humanoid_league_msgs::RobotControlState::FALLING) {
       // the robot fell, we have to reset everything and do nothing else
       walk_engine_.reset();
+      pid_left_x_.reset();
+      pid_left_y_.reset();
+      pid_right_x_.reset();
+      pid_right_y_.reset();
+      pid_hip_pitch_.reset();
+      pid_hip_roll_.reset();
     } else {
       // we don't want to walk, even if we have orders, if we are not in the right state
       /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
