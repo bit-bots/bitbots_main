@@ -97,7 +97,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
         motion_odometry_yaw.setRotation(odom_orientation_yaw);
         motion_odometry_yaw.setOrigin(motion_odometry.getOrigin());
 
-        // get imu transform without yaw // TODO !!!!! IMU to base_link transform
+        // Get the rotation offset between the IMU and the baselink
         tf2::Transform imu_mounting_offset;
         try {
           geometry_msgs::TransformStamped imu_mounting_transform = tf_buffer_.lookupTransform(
@@ -107,6 +107,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
           ROS_ERROR("Not able to use the IMU%s", ex.what());
         }
 
+        // get imu transform without yaw
         tf2::Quaternion imu_orientation_without_yaw_component = getCurrentImuRotationWithoutYaw(
           imu_orientation * imu_mounting_offset.getRotation());
         tf2::Transform imu_without_yaw_component;
