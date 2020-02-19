@@ -39,6 +39,7 @@ include:
     - humanoid_league_visualization:
         - humanoid_league_rviz_marker
     - lib:
+        - rot_conv_lib
         - bio_ik
         - bio_ik_service
         - dwa_local_planner

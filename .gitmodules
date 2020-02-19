@@ -82,3 +82,6 @@
 [submodule "lib/orocos_kinematics_dynamics"]
 	path = lib/orocos_kinematics_dynamics
 	url = https://github.com/orocos/orocos_kinematics_dynamics.git
+[submodule "lib/rot_conv_lib"]
+	path = lib/rot_conv_lib
+	url = git@github.com:bit-bots/rot_conv_lib.git
