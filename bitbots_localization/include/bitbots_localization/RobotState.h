@@ -22,55 +22,55 @@
 * @li <b>speed</b> the forward speed of the car
 * @li <b>rotationSpeed</b> the speed with which the car rotates.
 */
-class RobotState
-{
-public:
-    RobotState();
-    RobotState(double x, double y, double T);
-    ~RobotState();
+class RobotState {
+ public:
+  RobotState();
+  RobotState(double x, double y, double T);
+  ~RobotState();
 
-    RobotState operator*(float factor) const;
+  RobotState operator*(float factor) const;
 
-    RobotState& operator+=(const RobotState& other);
+  RobotState &operator+=(const RobotState &other);
 
+  double getXPos() const;
 
-    double getXPos() const;
+  double getYPos() const;
 
-    double getYPos() const;
+  double getTheta() const;
 
-    double getTheta() const;
+  double getSinTheta() const;
 
-    double getSinTheta() const;
+  double getCosTheta() const;
 
-    double getCosTheta() const;
+  void setXPos(double x);
 
-    void setXPos(double x);
+  void setYPos(double y);
 
-    void setYPos(double y);
+  void setTheta(double t);
 
-    void setTheta(double t);
+  void setSinTheta(double t);
 
-    void setSinTheta(double t);
+  void setCosTheta(double t);
 
-    void setCosTheta(double t);
+  double calcDistance(const RobotState &state) const;
 
-    double calcDistance(const RobotState& state) const;
+  static void convertParticleListToEigen(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
+                                         Eigen::MatrixXd &matrix,
+                                         const bool ignore_explorers);
 
-    static void convertParticleListToEigen(const std::vector<particle_filter::Particle<RobotState>*>& particle_list,
-                                                Eigen::MatrixXd& matrix,
-                                                const bool ignore_explorers);
+  bool is_explorer_;
 
-    bool is_explorer_;
+  visualization_msgs::Marker renderMarker(std::string n_space,
+                                          std::string frame,
+                                          ros::Duration lifetime,
+                                          std_msgs::ColorRGBA color) const;
 
-    visualization_msgs::Marker renderMarker(std::string n_space, std::string frame, ros::Duration lifetime, std_msgs::ColorRGBA color) const;
+ private:
 
-
-private:
-
-    double m_XPos;
-    double m_YPos;
-    double m_SinTheta;
-    double m_CosTheta;
+  double m_XPos;
+  double m_YPos;
+  double m_SinTheta;
+  double m_CosTheta;
 };
 
 #endif //BITBOTS_LOCALIZATION_ROBOTSTATE_H

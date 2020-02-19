@@ -25,45 +25,47 @@
  */
 class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
 
-public:
-    /**
-     * empty
+ public:
+  /**
+   * empty
 
-     */
-    RobotMotionModel(particle_filter::CRandomNumberGenerator& random_number_generator, double xStdDev, double yStdDev, double tStdDev, double multiplicator);
+   */
+  RobotMotionModel(particle_filter::CRandomNumberGenerator &random_number_generator,
+                   double xStdDev,
+                   double yStdDev,
+                   double tStdDev,
+                   double multiplicator);
 
-    /**
-     * empty
-     */
-    ~RobotMotionModel();
+  /**
+   * empty
+   */
+  ~RobotMotionModel();
 
-    /**
-     * The drift method is empty in this example.
-     * @param state Pointer to the state that has to be manipulated.
-     */
-    void drift(RobotState& state, geometry_msgs::Vector3 linear, geometry_msgs::Vector3 angular) const;
+  /**
+   * The drift method is empty in this example.
+   * @param state Pointer to the state that has to be manipulated.
+   */
+  void drift(RobotState &state, geometry_msgs::Vector3 linear, geometry_msgs::Vector3 angular) const;
 
+  /**
+   * The diffusion consists of a very small gaussian jitter on the
+   * state's variable.
+   * @param state Pointer to the state that has to be manipulated.
+   */
+  void diffuse(RobotState &state) const;
 
-    /**
-     * The diffusion consists of a very small gaussian jitter on the
-     * state's variable.
-     * @param state Pointer to the state that has to be manipulated.
-     */
-    void diffuse(RobotState& state) const;
+ protected:
 
-protected:
+ private:
 
-private:
+  // The random number generator
+  particle_filter::CRandomNumberGenerator random_number_generator_;
 
-    // The random number generator
-    particle_filter::CRandomNumberGenerator random_number_generator_;
+  // standard deviations and multiplicator for the diffuse step
+  double xStdDev_, yStdDev_, tStdDev_, multiplicator_;
 
-    // standard deviations and multiplicator for the diffuse step
-    double xStdDev_, yStdDev_, tStdDev_,  multiplicator_;
-
-    double sample(double b) const;
+  double sample(double b) const;
 
 };
-
 
 #endif //BITBOTS_LOCALIZATION_MOTIONMODEL_H

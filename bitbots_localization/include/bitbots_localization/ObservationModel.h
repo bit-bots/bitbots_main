@@ -18,92 +18,90 @@ namespace hlm = humanoid_league_msgs;
 
 class RobotPoseObservationModel : public particle_filter::ObservationModel<RobotState> {
 
-public:
+ public:
 
-    /**
-     * empty
-     */
-    RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
-                              std::shared_ptr<Map> map_field_boundary, std::shared_ptr<Map> map_corners,
-                              std::shared_ptr<Map> map_t_crossings, std::shared_ptr<Map> map_crosses);
+  /**
+   * empty
+   */
+  RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
+                            std::shared_ptr<Map> map_field_boundary, std::shared_ptr<Map> map_corners,
+                            std::shared_ptr<Map> map_t_crossings, std::shared_ptr<Map> map_crosses);
 
-    /**
-     * empty
-     */
-    ~RobotPoseObservationModel();
+  /**
+   * empty
+   */
+  ~RobotPoseObservationModel();
 
-    /**
-     *
-     * @param state Reference to the state that has to be weightened.
-     * @return weight for the given state.
-     */
-    double measure(const RobotState &state) const;
+  /**
+   *
+   * @param state Reference to the state that has to be weightened.
+   * @return weight for the given state.
+   */
+  double measure(const RobotState &state) const;
 
-    void set_measurement_lines(hlm::LineInformationRelative measurement);
+  void set_measurement_lines(hlm::LineInformationRelative measurement);
 
-    void set_measurement_goal(hlm::GoalRelative measurement);
+  void set_measurement_goal(hlm::GoalRelative measurement);
 
-    void set_measurement_field_boundary(hlm::FieldBoundaryRelative measurement);
+  void set_measurement_field_boundary(hlm::FieldBoundaryRelative measurement);
 
-    void set_measurement_corners(hlm::PixelsRelative measurement);
+  void set_measurement_corners(hlm::PixelsRelative measurement);
 
-    void set_measurement_t_crossings(hlm::PixelsRelative measurement);
+  void set_measurement_t_crossings(hlm::PixelsRelative measurement);
 
-    void set_measurement_crosses(hlm::PixelsRelative measurement);
+  void set_measurement_crosses(hlm::PixelsRelative measurement);
 
-    std::vector<std::pair<double, double>> get_measurement_lines() const;
+  std::vector<std::pair<double, double>> get_measurement_lines() const;
 
-    std::vector<std::pair<double, double>> get_measurement_goals() const;
+  std::vector<std::pair<double, double>> get_measurement_goals() const;
 
-    std::vector<std::pair<double, double>> get_measurement_field_boundary() const;
+  std::vector<std::pair<double, double>> get_measurement_field_boundary() const;
 
-    std::vector<std::pair<double, double>> get_measurement_corners() const;
+  std::vector<std::pair<double, double>> get_measurement_corners() const;
 
-    std::vector<std::pair<double, double>> get_measurement_t_crossings() const;
+  std::vector<std::pair<double, double>> get_measurement_t_crossings() const;
 
-    std::vector<std::pair<double, double>> get_measurement_crosses() const;
+  std::vector<std::pair<double, double>> get_measurement_crosses() const;
 
-    static double number_lines;
-    static double number_goals;
-    static double number_fb_points;
-    static double number_corners;
-    static double number_tcrossings;
-    static double number_crosses;
+  static double number_lines;
+  static double number_goals;
+  static double number_fb_points;
+  static double number_corners;
+  static double number_tcrossings;
+  static double number_crosses;
 
+  void set_min_weight(double min_weight);
 
-    void set_min_weight(double min_weight);
+  double get_min_weight() const;
 
-    double get_min_weight() const;
+  void clear_measurement();
 
-    void clear_measurement();
+  bool measurements_available();
 
-    bool measurements_available();
+ private:
 
+  std::vector<std::pair<double, double>> last_measurement_lines_;
 
-private:
+  std::vector<std::pair<double, double>> last_measurement_non_lines_;
 
-    std::vector<std::pair<double, double>> last_measurement_lines_;
+  std::vector<std::pair<double, double>> last_measurement_goal_;
 
-    std::vector<std::pair<double, double>> last_measurement_non_lines_;
+  std::vector<std::pair<double, double>> last_measurement_field_boundary_;
 
-    std::vector<std::pair<double, double>> last_measurement_goal_;
+  std::vector<std::pair<double, double>> last_measurement_corners_;
 
-    std::vector<std::pair<double, double>> last_measurement_field_boundary_;
+  std::vector<std::pair<double, double>> last_measurement_t_crossings_;
 
-    std::vector<std::pair<double, double>> last_measurement_corners_;
+  std::vector<std::pair<double, double>> last_measurement_crosses_;
 
-    std::vector<std::pair<double, double>> last_measurement_t_crossings_;
+  double min_weight_ = 0;
 
-    std::vector<std::pair<double, double>> last_measurement_crosses_;
-
-    double min_weight_ = 0;
-
-    std::shared_ptr<Map> map_lines_;
-    std::shared_ptr<Map> map_goals_;
-    std::shared_ptr<Map> map_field_boundary_;
-    std::shared_ptr<Map> map_corners_;
-    std::shared_ptr<Map> map_t_crossings_;
-    std::shared_ptr<Map> map_crosses_;
+  std::shared_ptr<Map> map_lines_;
+  std::shared_ptr<Map> map_goals_;
+  std::shared_ptr<Map> map_field_boundary_;
+  std::shared_ptr<Map> map_corners_;
+  std::shared_ptr<Map> map_t_crossings_;
+  std::shared_ptr<Map> map_crosses_;
 
 };
 

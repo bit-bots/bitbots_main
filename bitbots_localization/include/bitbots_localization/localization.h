@@ -5,7 +5,6 @@
 #ifndef BITBOTS_LOCALIZATION_LOCALIZATION_H
 #define BITBOTS_LOCALIZATION_LOCALIZATION_H
 
-
 #include <vector>
 #include <memory>
 #include <iterator>
@@ -62,178 +61,169 @@
 #include <bitbots_localization/reset_filter.h>
 #include <bitbots_localization/Evaluation.h>
 
-
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/image_encodings.h>
-
 
 namespace hll = bitbots_localization;
 namespace hlm = humanoid_league_msgs;
 namespace gm = geometry_msgs;
 namespace pf = particle_filter;
 
-
 class Localization {
 
-public:
-    Localization();
+ public:
+  Localization();
 
-    bool reset_filter_callback(hll::reset_filter::Request &req,
-                               hll::reset_filter::Response &res);
+  bool reset_filter_callback(hll::reset_filter::Request &req,
+                             hll::reset_filter::Response &res);
 
-    void dynamic_reconfigure_callback(hll::LocalizationConfig &config, uint32_t config_level);
+  void dynamic_reconfigure_callback(hll::LocalizationConfig &config, uint32_t config_level);
 
-    void LineCallback(const hlm::LineInformationRelative &msg);
+  void LineCallback(const hlm::LineInformationRelative &msg);
 
-    void NonLineCallback(const hlm::LineInformationRelative &msg);
+  void NonLineCallback(const hlm::LineInformationRelative &msg);
 
-    void GoalCallback(const hlm::GoalRelative &msg);
+  void GoalCallback(const hlm::GoalRelative &msg);
 
-    void FieldboundaryCallback(const hlm::FieldBoundaryRelative &msg);
+  void FieldboundaryCallback(const hlm::FieldBoundaryRelative &msg);
 
-    void CornerCallback(const hlm::PixelsRelative &msg);
+  void CornerCallback(const hlm::PixelsRelative &msg);
 
-    void TCrossingsCallback(const hlm::PixelsRelative &msg);
+  void TCrossingsCallback(const hlm::PixelsRelative &msg);
 
-    void CrossesCallback(const hlm::PixelsRelative &msg);
+  void CrossesCallback(const hlm::PixelsRelative &msg);
 
-    void CamInfoCallback(const sensor_msgs::CameraInfo &msg);
+  void CamInfoCallback(const sensor_msgs::CameraInfo &msg);
 
-    void FieldBoundaryInImageCallback(const hlm::FieldBoundaryInImage &msg);
+  void FieldBoundaryInImageCallback(const hlm::FieldBoundaryInImage &msg);
 
+  void init();
 
-    void init();
+  void reset_filter(int distribution);
 
-    void reset_filter(int distribution);
+  void reset_filter(int distribution, double x, double y);
 
-    void reset_filter(int distribution, double x, double y);
+  ros::NodeHandle nh_;
 
-    ros::NodeHandle nh_;
+ private:
+  ros::Subscriber line_subscriber_;
+  ros::Subscriber non_line_subscriber_;
+  ros::Subscriber goal_subscriber_;
+  ros::Subscriber fieldboundary_subscriber_;
+  ros::Subscriber corners_subscriber_;
+  ros::Subscriber t_crossings_subscriber_;
+  ros::Subscriber crosses_subscriber_;
+  ros::Subscriber cam_info_subscriber_;
+  ros::Subscriber fieldboundary_in_image_subscriber_;
 
+  ros::Publisher pose_publisher_;
+  ros::Publisher pose_with_covariance_publisher_;
+  ros::Publisher pose_particles_publisher_;
+  ros::Publisher lines_publisher_;
+  ros::Publisher line_ratings_publisher_;
+  ros::Publisher goal_ratings_publisher_;
+  ros::Publisher fieldboundary_ratings_publisher_;
+  ros::Publisher corner_ratings_publisher_;
+  ros::Publisher t_crossings_ratings_publisher_;
+  ros::Publisher crosses_ratings_publisher_;
+  ros::Publisher non_line_ratings_publisher_;
 
-private:
-    ros::Subscriber line_subscriber_;
-    ros::Subscriber non_line_subscriber_;
-    ros::Subscriber goal_subscriber_;
-    ros::Subscriber fieldboundary_subscriber_;
-    ros::Subscriber corners_subscriber_;
-    ros::Subscriber t_crossings_subscriber_;
-    ros::Subscriber crosses_subscriber_;
-    ros::Subscriber cam_info_subscriber_;
-    ros::Subscriber fieldboundary_in_image_subscriber_;
+  ros::ServiceServer service_;
+  ros::Timer publishing_timer_;
+  tf2_ros::Buffer tfBuffer;
+  tf2_ros::TransformListener tfListener;
+  tf2_ros::TransformBroadcaster br;
 
+  std::shared_ptr<pf::ImportanceResampling<RobotState>> resampling_;
+  std::shared_ptr<RobotPoseObservationModel> robot_pose_observation_model_;
+  std::shared_ptr<RobotMotionModel> robot_motion_model_;
+  //std::shared_ptr<RobotStateDistribution> robot_state_distribution_;
+  std::shared_ptr<RobotStateDistributionStartLeft> robot_state_distribution_start_left_;
+  std::shared_ptr<RobotStateDistributionStartRight> robot_state_distribution_start_right_;
+  std::shared_ptr<RobotStateDistributionRightHalf> robot_state_distribution_right_half_;
+  std::shared_ptr<RobotStateDistributionLeftHalf> robot_state_distribution_left_half_;
+  std::shared_ptr<RobotStateDistributionPosition> robot_state_distribution_position_;
+  std::shared_ptr<RobotStateDistributionPose> robot_state_distribution_pose_;
+  std::shared_ptr<particle_filter::ParticleFilter<RobotState>> robot_pf_;
+  RobotState best_estimate_;
+  RobotState best_estimate_5_;
+  RobotState best_estimate_10_;
+  RobotState best_estimate_20_;
+  RobotState best_estimate_mean_;
 
-    ros::Publisher pose_publisher_;
-    ros::Publisher pose_with_covariance_publisher_;
-    ros::Publisher pose_particles_publisher_;
-    ros::Publisher lines_publisher_;
-    ros::Publisher line_ratings_publisher_;
-    ros::Publisher goal_ratings_publisher_;
-    ros::Publisher fieldboundary_ratings_publisher_;
-    ros::Publisher corner_ratings_publisher_;
-    ros::Publisher t_crossings_ratings_publisher_;
-    ros::Publisher crosses_ratings_publisher_;
-    ros::Publisher non_line_ratings_publisher_;
+  int resampled = 0;
 
-    ros::ServiceServer service_;
-    ros::Timer publishing_timer_;
-    tf2_ros::Buffer tfBuffer;
-    tf2_ros::TransformListener tfListener;
-    tf2_ros::TransformBroadcaster br;
+  hlm::LineInformationRelative line_information_relative_;
+  hlm::LineInformationRelative non_line_information_relative_;
+  hlm::GoalRelative goal_relative_;
+  hlm::FieldBoundaryRelative fieldboundary_relative_;
+  hlm::PixelsRelative corners_;
+  hlm::PixelsRelative t_crossings_;
+  hlm::PixelsRelative crosses_;
+  sensor_msgs::CameraInfo cam_info_;
+  std::vector<hlm::FieldBoundaryInImage> fieldboundary_in_image_;
 
+  ros::Time last_stamp_lines = ros::Time(0);
+  ros::Time last_stamp_goals = ros::Time(0);
+  ros::Time last_stamp_fb_points = ros::Time(0);
+  ros::Time last_stamp_corners = ros::Time(0);
+  ros::Time last_stamp_tcrossings = ros::Time(0);
+  ros::Time last_stamp_crosses = ros::Time(0);
 
-    std::shared_ptr<pf::ImportanceResampling<RobotState>> resampling_;
-    std::shared_ptr<RobotPoseObservationModel> robot_pose_observation_model_;
-    std::shared_ptr<RobotMotionModel> robot_motion_model_;
-    //std::shared_ptr<RobotStateDistribution> robot_state_distribution_;
-    std::shared_ptr<RobotStateDistributionStartLeft> robot_state_distribution_start_left_;
-    std::shared_ptr<RobotStateDistributionStartRight> robot_state_distribution_start_right_;
-    std::shared_ptr<RobotStateDistributionRightHalf> robot_state_distribution_right_half_;
-    std::shared_ptr<RobotStateDistributionLeftHalf> robot_state_distribution_left_half_;
-    std::shared_ptr<RobotStateDistributionPosition> robot_state_distribution_position_;
-    std::shared_ptr<RobotStateDistributionPose> robot_state_distribution_pose_;
-    std::shared_ptr<particle_filter::ParticleFilter<RobotState>> robot_pf_;
-    RobotState best_estimate_;
-    RobotState best_estimate_5_;
-    RobotState best_estimate_10_;
-    RobotState best_estimate_20_;
-    RobotState best_estimate_mean_;
+  std::vector<gm::Point> interpolateFieldboundaryPoints(gm::Point point1, gm::Point point2);
 
-    int resampled = 0;
+  void publishing_timer_callback(const ros::TimerEvent &e);
 
-    hlm::LineInformationRelative line_information_relative_;
-    hlm::LineInformationRelative non_line_information_relative_;
-    hlm::GoalRelative goal_relative_;
-    hlm::FieldBoundaryRelative fieldboundary_relative_;
-    hlm::PixelsRelative corners_;
-    hlm::PixelsRelative t_crossings_;
-    hlm::PixelsRelative crosses_;
-    sensor_msgs::CameraInfo cam_info_;
-    std::vector<hlm::FieldBoundaryInImage> fieldboundary_in_image_;
+  std::shared_ptr<Map> lines_;
+  std::shared_ptr<Map> goals_;
+  std::shared_ptr<Map> field_boundary_;
+  std::shared_ptr<Map> corner_;
+  std::shared_ptr<Map> t_crossings_map_;
+  std::shared_ptr<Map> crosses_map_;
 
-    ros::Time last_stamp_lines = ros::Time(0);
-    ros::Time last_stamp_goals = ros::Time(0);
-    ros::Time last_stamp_fb_points = ros::Time(0);
-    ros::Time last_stamp_corners = ros::Time(0);
-    ros::Time last_stamp_tcrossings = ros::Time(0);
-    ros::Time last_stamp_crosses = ros::Time(0);
+  gmms::GaussianMixtureModel pose_gmm_;
+  std::vector<gm::Point> line_points_;
+  std::vector<gm::Point> non_line_points_;
+  particle_filter::CRandomNumberGenerator random_number_generator_;
+  hll::LocalizationConfig config_;
+  std_msgs::ColorRGBA marker_color;
+  bool valid_configuration_ = false;
 
-    std::vector<gm::Point> interpolateFieldboundaryPoints(gm::Point point1, gm::Point point2);
+  void publish_pose();
 
-    void publishing_timer_callback(const ros::TimerEvent &e);
+  void publish_pose_with_covariance();
 
-    std::shared_ptr<Map> lines_;
-    std::shared_ptr<Map> goals_;
-    std::shared_ptr<Map> field_boundary_;
-    std::shared_ptr<Map> corner_;
-    std::shared_ptr<Map> t_crossings_map_;
-    std::shared_ptr<Map> crosses_map_;
+  void publish_lines();
 
+  void publish_line_ratings();
 
-    gmms::GaussianMixtureModel pose_gmm_;
-    std::vector<gm::Point> line_points_;
-    std::vector<gm::Point> non_line_points_;
-    particle_filter::CRandomNumberGenerator random_number_generator_;
-    hll::LocalizationConfig config_;
-    std_msgs::ColorRGBA marker_color;
-    bool valid_configuration_ = false;
+  void publish_goal_ratings();
 
-    void publish_pose();
+  void publish_field_boundary_ratings();
 
-    void publish_pose_with_covariance();
+  void publish_corner_ratings();
 
-    void publish_lines();
+  void publish_t_crossings_ratings();
 
-    void publish_line_ratings();
+  void publish_crosses_ratings();
 
-    void publish_goal_ratings();
+  void publish_non_line_ratings();
 
-    void publish_field_boundary_ratings();
+  void publish_lines_map();
 
-    void publish_corner_ratings();
+  void publish_map();
 
-    void publish_t_crossings_ratings();
+  geometry_msgs::TransformStamped transformOdomBaseLink;
+  bool initialization = true;
 
-    void publish_crosses_ratings();
+  void getMotion();
 
-    void publish_non_line_ratings();
-
-    void publish_lines_map();
-
-    void publish_map();
-
-    geometry_msgs::TransformStamped transformOdomBaseLink;
-    bool initialization = true;
-
-    void getMotion();
-
-    geometry_msgs::Vector3 movement_;
-    geometry_msgs::Vector3 movement2_;
-    bool new_linepoints_ = false;
-    bool robot_moved = false;
-    int timer_callback_count = 0;
+  geometry_msgs::Vector3 movement_;
+  geometry_msgs::Vector3 movement2_;
+  bool new_linepoints_ = false;
+  bool robot_moved = false;
+  int timer_callback_count = 0;
 };
-
 
 #endif //BITBOTS_LOCALIZATION_LOCALIZATION_H
