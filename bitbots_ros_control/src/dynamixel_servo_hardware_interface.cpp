@@ -435,20 +435,19 @@ bool DynamixelServoHardwareInterface::read(){
       }
     }
 
-    if (read_pwm_) {
-      if (!syncReadPWMs()) {
-        ROS_ERROR_THROTTLE(1.0, "Couldn't read current PWM!");
-        driver_->reinitSyncReadHandler("Present_PWM");
-      }else{
-        sensor_msgs::JointState pwm_state = sensor_msgs::JointState();
-        pwm_state.header.stamp = ros::Time::now();
-        pwm_state.name = joint_names_;
-        pwm_state.effort = current_pwm_;
-        pwm_pub_.publish(pwm_state);
-      }
-    }
-    }
+  }
 
+  if (read_pwm_) {
+    if (!syncReadPWMs()) {
+      driver_->reinitSyncReadHandler("Present_PWM");
+    }else{
+      sensor_msgs::JointState pwm_state = sensor_msgs::JointState();
+      pwm_state.header.stamp = ros::Time::now();
+      pwm_state.name = joint_names_;
+      pwm_state.effort = current_pwm_;
+      pwm_pub_.publish(pwm_state);
+    }
+  }
 
   if (read_volt_temp_){
     if (read_vt_counter_ + 1 == vt_update_rate_){
