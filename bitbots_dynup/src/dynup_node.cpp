@@ -34,6 +34,7 @@ DynUpNode::DynUpNode() :
 
 void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level) {
   engine_rate_ = config.engine_rate;
+  debug_ = config.display_debug;
 
   DynUpConfig params = config;
   //TODO set good default parameters
@@ -60,6 +61,7 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   // TODO: maybe switch to goal callback to be able to reject goals properly
   ROS_INFO("Accepted new goal");
   engine_.reset();
+  ik_.reset();
   if (std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose>> poses = getCurrentPoses()) {
     DynupRequest request;
     request.l_foot_pose = std::get<0>(poses.value());
@@ -70,10 +72,12 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     engine_.setGoals(request);
     stabilizer_.reset();
     stabilizer_.setCoP(engine_.getCoP());
-    visualizer_.displaySplines(engine_.getRFootSplines(), "base_link");
-    visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole");
-    visualizer_.displaySplines(engine_.getLHandSplines(), "base_link");
-    visualizer_.displaySplines(engine_.getRHandSplines(), "base_link");
+    if(debug_) {
+      visualizer_.displaySplines(engine_.getRFootSplines(), "base_link");
+      //visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole");
+      //visualizer_.displaySplines(engine_.getLHandSplines(), "base_link");
+      //visualizer_.displaySplines(engine_.getRHandSplines(), "base_link");
+    }
     loopEngine();
     bitbots_msgs::DynUpResult r;
     r.successful = true;
@@ -93,7 +97,7 @@ void DynUpNode::loopEngine() {
     DynupResponse response = engine_.update(1.0 / engine_rate_);
     stabilizer_.setStabilizeNow(engine_.isStabilizingNeeded());
     stabilizer_.setTransforms(tf_buffer_.lookupTransform("r_sole", "base_link", ros::Time(0)), tf_buffer_.lookupTransform("base_link", "r_sole", ros::Time(0)));
-    DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(1.0 / engine_rate_)); //TODO: Stabilizing has to be replaced!!
+    DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(1.0 / engine_rate_));
     bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
     bitbots_msgs::DynUpFeedback feedback;
     feedback.percent_done = engine_.getPercentDone();
