@@ -4,9 +4,17 @@ import numpy as np
 
 class DebugImage:
     """
-    Draws the debug image for the Vision
+    :class:`.DebugImage` draws the images with information of the vision pipeline for debug purposes.
+
+    It is capable of displaying the detected and convex field boundary (red and yellow lines respectively),
+    the best and discarded ball candidates (green and red circles respectively),
+    the goalposts (white bounding boxes) and
+    different obstacles (black: unknown, red: red robot, blue: blue robot).
     """
     def __init__(self):
+        """
+        Initialization of :class:`.DebugImage`.
+        """
         self._debug_image = None
 
     def set_image(self, image):
@@ -108,7 +116,7 @@ class DebugImage:
 
     def draw(self, debug_image_description, image=None):
         """
-        Draws a debug image description, that contains the style and the date for each object/class that we debug
+        Draws a debug image description, that contains the style and the data for each object/class that we debug
         E.g.:
         {
             'type': 'field_boundary',

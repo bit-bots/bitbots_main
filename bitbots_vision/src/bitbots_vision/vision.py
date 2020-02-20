@@ -33,7 +33,7 @@ class Vision:
     def __init__(self):
         # type () -> None
         """
-        Inits 'bitbots_vision' node.
+        Initiating 'bitbots_vision' node.
 
         :return: None
         """

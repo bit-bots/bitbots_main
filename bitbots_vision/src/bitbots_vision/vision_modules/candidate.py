@@ -3,7 +3,22 @@ import rospy
 
 
 class Candidate:
+    """
+    A :class:`.Candidate` is a representation of an arbitrary object in an image.
+    It is very similar to bounding boxes but with an additional rating.
+
+    This class provides several getters for different properties of the candidate.
+    """
     def __init__(self, x1=0, y1=0, width=0, height=0, rating=None):
+        """
+        Initialization of :class:`.Candidate`.
+
+        :param int x1: Horizontal part of the coordinate of the top left corner of the candidate
+        :param int y1: Vertical part of the coordinate of the top left corner of the candidate
+        :param int width: Horizontal size
+        :param int height: Vertical size
+        :param float rating: Confidence of the candidate
+        """
         self._x1 = x1
         self._y1 = y1
         self._width = width
@@ -150,18 +165,18 @@ class Candidate:
         Returns a sorted list of the candidates.
         The first list element is the highest rated candidate.
 
-        :param candidatelist: List of candidate objects.
-        :return: Sorted list of candidate objects.
+        :param [Candidate] candidatelist: List of candidates
+        :return: List of candidates sorted by rating, in descending order
         """
         return sorted(candidatelist, key = lambda candidate: candidate.get_rating(), reverse=True)
 
     @staticmethod
     def select_top_candidate(candidatelist):
         """
-        Select the top candidate
+        Returns the highest rated candidate.
 
-        :param candidatelist: List of candidate objects.
-        :return: Top candidate or None
+        :param candidatelist: List of candidates
+        :return Candidate: Top candidate
         """
         if candidatelist:
             return Candidate.sort_candidates(candidatelist)[0]
@@ -170,9 +185,21 @@ class Candidate:
 
     @staticmethod
     def rating_threshold(candidatelist, threshold):
+        """
+        Returns list of all candidates with rating above given threshold.
+        
+        :param [Candidate] candidatelist: List of candidates to filter
+        :param float threshold: Filter threshold
+        :return [Candidate]: Filtered list of candidates
+        """
         return [candidate for candidate in candidatelist if candidate.get_rating() > threshold]
 
     def __str__(self):
+        """
+        Returns string representation of candidate.
+        
+        :return str: String represeatation of candidate
+        """
         return 'x1,y1: {0},{1} | width,height: {2},{3} | rating: {4}'.format(
             self.get_upper_left_x(),
             self.get_upper_left_y(),
@@ -183,25 +210,44 @@ class Candidate:
 
 class CandidateFinder(object):
     """
-    Abstract definition of a CandidateFinder.
+    The abstract class :class:`.CandidateFinder` requires its subclasses to implement the methods
+    :meth:`.get_candidates` and :meth:`.compute`.
+
+    Examples of such subclasses are :class:`bitbots_vision.vision_modules.obstcle.ObstacleDetector` and
+    :class:`bibtots_vision.vision_modules.fcnn_handler.FcnnHandler`.
+    They produce a set of so called *Candidates* which are instances of the class :class:`bitbots_vision.vision_modules.candidate.Candidate`.
     """
+    def __init__(self):
+        """
+        Initialization of :class:`.CandidateFinder`.
+        """
+        super(CandidateFinder, self).__init__()
+
     def get_top_candidates(self, count=1):
         """
-        Returns the count best candidates.
+        Returns the count highest rated candidates.
 
-        :param count: Number of top-candidates to return
-        :return: the count top candidates
+        :param int count: Number of top-candidates to return
+        :return [Candidate]: The count top-candidates
         """
-        ball_candidates = self.get_candidates()
-        ball_candidates = Candidate.sort_candidates(ball_candidates)
-        return ball_candidates[:count]
+        candidates = self.get_candidates()
+        candidates = Candidate.sort_candidates(candidates)
+        return candidates[:count]
+
+    def get_top_candidate(self):
+        """
+        Returns the highest rated candidate.
+
+        :return Candidate: Top candidate or None
+        """
+        return Candidate.select_top_candidate(self.get_candidates())
 
     @abc.abstractmethod
     def get_candidates(self):
         """
-        Returns a list of all candidates. Their type is Candidate.
+        Returns a list of all candidates.
 
-        :return: the count top candidates
+        :return [Candidate]: Candidates
         """
         raise NotImplementedError
 
@@ -212,20 +258,16 @@ class CandidateFinder(object):
         """
         raise NotImplementedError
 
-    def get_top_candidate(self):
-        """
-        Returns the best candidate.
-
-        :return: the best candidate or nothing
-        """
-        return Candidate.select_top_candidate(self.get_candidates())
-
 
 class DummyCandidateFinder(CandidateFinder):
     """
-    Dummy candidate detector that we use if we want to run the vision without neural network to e.g. save computation time for debugging.
+    Dummy candidate detector that is used to run the vision pipeline without a neural network e.g. to save computation time for debugging.
+    This implementation returns an empty set of candidates and thus replaces the ordinary detection.
     """
     def __init__(self):
+        """
+        Initialization of :class:`.DummyCandidateFinder`.
+        """
         self._detected_candidates = []
         self._sorted_candidates = []
         self._top_candidate = None
