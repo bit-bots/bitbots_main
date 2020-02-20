@@ -7,7 +7,7 @@ import rospy
 
 class ObstacleDetector(CandidateFinder):
     """
-    The obstacle detection module is a :class:`bitbots_vision.vision_modules.candidate.CandidateFinder` that finds obstructions like robots.
+    The obstacle detection module is a :class:`bitbots_vision.vision_modules.candidate.CandidateFinder` that finds obstructions, e.g. robots.
     In order to perform its task it uses the normal or convex field_boundary of a :class:`bitbots_vision.vision_modules.field_boundary.FieldBoundaryDetector` depending on the method used.
     Given that the field boundary contains dents where objects obstruct the edge of the field and consists of a list of points,
     the obstacle detection module can find these objects by comparing the height of adjacent field boundary-points.
@@ -18,7 +18,7 @@ class ObstacleDetector(CandidateFinder):
         """
         Initialization of the ObstacleDetector.
 
-        :param config: the configuration contained in visionparams.yaml
+        :param config: Configuration as defined in visionparams.yaml
         :param red_color_detector: checks whether a color is part of the red color mask
         :param blue_color_detector: checks whether a color is part of the blue color mask
         :param white_color_detector: checks whether a color is part of the white color mask

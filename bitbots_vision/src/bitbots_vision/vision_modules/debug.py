@@ -4,7 +4,7 @@ import numpy as np
 
 class DebugImage:
     """
-    :class:`.DebugImage` draws the images with information of the vision pipeline for debug porposes.
+    :class:`.DebugImage` draws the images with information of the vision pipeline for debug purposes.
 
     It is capable of displaying the detected and convex field boundary (red and yellow lines respectively),
     the best and discarded ball candidates (green and red circles respectively),

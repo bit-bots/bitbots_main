@@ -590,7 +590,7 @@ class FieldBoundaryAlgorithm():
         :type _field_color_detector: :class:`bitbots_vision.vision_module.color.ColorDetector`
         :param int _x_steps: Number of horizontal steps
         :param int _y_steps: Number of vertical steps
-        :param int _roi_height: Heigth of Region Of Interest in which we are looking for green
+        :param int _roi_height: Height of Region Of Interest in which we are looking for green
         :param int _roi_width: Width of Region Of Interest in which we are looking for green
         :param int _roi_increase: Value that increases the region of interest, if it is located lower in the image
         :param int _green_threshold: Threshold of green in the area covered by the kernel

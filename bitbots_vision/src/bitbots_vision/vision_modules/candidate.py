@@ -4,8 +4,8 @@ import rospy
 
 class Candidate:
     """
-    A :class:`.Candidate` is a representation of a arbitrary object in an image
-    very similar to bounding box but with an additional rating.
+    A :class:`.Candidate` is a representation of an arbitrary object in an image.
+    It is very similar to bounding boxes but with an additional rating.
 
     This class provides several getters for different properties of the candidate.
     """
@@ -166,7 +166,7 @@ class Candidate:
         The first list element is the highest rated candidate.
 
         :param [Candidate] candidatelist: List of candidates
-        :return: List of candidates sorted by rating
+        :return: List of candidates sorted by rating, in descending order
         """
         return sorted(candidatelist, key = lambda candidate: candidate.get_rating(), reverse=True)
 
@@ -176,7 +176,7 @@ class Candidate:
         Returns the highest rated candidate.
 
         :param candidatelist: List of candidates
-        :return Candidiate: Top candidate
+        :return Candidate: Top candidate
         """
         if candidatelist:
             return Candidate.sort_candidates(candidatelist)[0]
@@ -186,7 +186,7 @@ class Candidate:
     @staticmethod
     def rating_threshold(candidatelist, threshold):
         """
-        Retruns list of all candidates with rating above given threshold.
+        Returns list of all candidates with rating above given threshold.
         
         :param [Candidate] candidatelist: List of candidates to filter
         :param float threshold: Filter threshold
@@ -225,10 +225,10 @@ class CandidateFinder(object):
 
     def get_top_candidates(self, count=1):
         """
-        Returns the count-th highest ratet candidates.
+        Returns the count highest rated candidates.
 
         :param int count: Number of top-candidates to return
-        :return [Candidate]: The count-th top-candidates
+        :return [Candidate]: The count top-candidates
         """
         candidates = self.get_candidates()
         candidates = Candidate.sort_candidates(candidates)
@@ -236,9 +236,9 @@ class CandidateFinder(object):
 
     def get_top_candidate(self):
         """
-        Returns the highest ratet candidate.
+        Returns the highest rated candidate.
 
-        :return Candidate: Top candidate or nothing
+        :return Candidate: Top candidate or None
         """
         return Candidate.select_top_candidate(self.get_candidates())
 
@@ -262,7 +262,7 @@ class CandidateFinder(object):
 class DummyCandidateFinder(CandidateFinder):
     """
     Dummy candidate detector that is used to run the vision pipeline without a neural network e.g. to save computation time for debugging.
-    This implementation returns an empty set of candidates and therefore replaces the ordinary detection.
+    This implementation returns an empty set of candidates and thus replaces the ordinary detection.
     """
     def __init__(self):
         """

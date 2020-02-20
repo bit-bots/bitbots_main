@@ -11,7 +11,7 @@ from .live_fcnn_03 import FCNN03
 
 class FcnnHandler(CandidateFinder):
     """
-    The :class:`.FcnnHandler` handles FCNNs, meaning it finds and rates candidates in their output.
+    The :class:`.FcnnHandler` handles Fully Convolutional Neural Networks, meaning it finds and rates candidates in their output.
     The FCNN handler runs the FCNN and manages its predictions.
     """
 

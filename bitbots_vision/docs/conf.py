@@ -40,7 +40,7 @@ def count_files():
 # -- Project information -----------------------------------------------------
 
 project = catkin_package.name
-copyright = '2019, Bit-Bots'
+copyright = '2020, Bit-Bots'
 author = ", ".join([a.name for a in catkin_package.authors])
 
 # The short X.Y version
