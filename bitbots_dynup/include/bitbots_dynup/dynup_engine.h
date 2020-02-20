@@ -38,6 +38,8 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   int getPercentDone() const override;
 
+  bool isStabilizingNeeded() const;
+
   bitbots_splines::PoseSpline getLHandSplines() const;
 
   bitbots_splines::PoseSpline getRHandSplines() const;
@@ -45,6 +47,8 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   bitbots_splines::PoseSpline getLFootSplines() const;
 
   bitbots_splines::PoseSpline getRFootSplines() const;
+
+  geometry_msgs::Point getCoP();
 
   void setParams(DynUpConfig params);
 
@@ -55,6 +59,9 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   double arm_max_length_;
   double arm_offset_y_;
   double arm_offset_z_;
+  geometry_msgs::Point cop_;
+
+  bool front_;
 
   bitbots_splines::PoseSpline foot_spline_;
   bitbots_splines::PoseSpline l_hand_spline_;

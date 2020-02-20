@@ -44,6 +44,10 @@ void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t
   stabilizer_.useStabilizing(config.stabilizing);
   stabilizer_.setStabilizingWeight(config.stabilizing_weight);
 
+  stabilizer_.setPFactor(config.stabilizing_p_x, config.stabilizing_p_y);
+  stabilizer_.setIFactor(config.stabilizing_i_x, config.stabilizing_i_y);
+  stabilizer_.setDFactor(config.stabilizing_d_x, config.stabilizing_d_y);
+
   ik_.useMinimalDisplacement(config.minimal_displacement);
   ik_.useStabilizing(config.stabilizing);
 
@@ -65,6 +69,7 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     request.r_hand_pose = std::get<3>(poses.value());
     engine_.setGoals(request);
     stabilizer_.reset();
+    stabilizer_.setCoP(engine_.getCoP());
     visualizer_.displaySplines(engine_.getRFootSplines(), "base_link");
     visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole");
     visualizer_.displaySplines(engine_.getLHandSplines(), "base_link");
@@ -86,7 +91,9 @@ void DynUpNode::loopEngine() {
   /* Do the loop as long as nothing cancels it */
   while (server_.isActive() && !server_.isPreemptRequested()) {
     DynupResponse response = engine_.update(1.0 / engine_rate_);
-    DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(1.0 / engine_rate_)); //TODO: Stabilizing has to be replaced!!!
+    stabilizer_.setStabilizeNow(engine_.isStabilizingNeeded());
+    stabilizer_.setTransforms(tf_buffer_.lookupTransform("r_sole", "base_link", ros::Time(0)), tf_buffer_.lookupTransform("base_link", "r_sole", ros::Time(0)));
+    DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(1.0 / engine_rate_)); //TODO: Stabilizing has to be replaced!!
     bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
     bitbots_msgs::DynUpFeedback feedback;
     feedback.percent_done = engine_.getPercentDone();
