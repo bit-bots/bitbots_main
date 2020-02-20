@@ -11,6 +11,8 @@ WalkNode::WalkNode() :
   current_request_.orders = {0, 0, 0};
   current_trunk_pitch_ = 0;
   current_trunk_roll_ = 0;
+  current_trunk_fused_pitch_ = 0;
+  current_trunk_fused_roll_ = 0;
   cop_right_x_ = 0;
   cop_right_y_ = 0;
   cop_left_x_ = 0;

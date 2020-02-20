@@ -135,6 +135,10 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   point.y = 0;
   point.z = 0;
   pose.position = point;
+  pose.orientation.x = 0;
+  pose.orientation.y = 0;
+  pose.orientation.z = 0;
+  pose.orientation.w = 1;
   publishArrowMarker("trunk_result", "base_link", pose, r, g, b, a);
 
   pub_engine_debug_.publish(msg);
