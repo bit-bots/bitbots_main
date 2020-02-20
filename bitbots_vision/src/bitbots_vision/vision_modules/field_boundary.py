@@ -20,7 +20,9 @@ class FieldBoundaryDetector(object):
     Because obstacles can obscure the edges of the field, sometimes the first green pixel from the top of the picture is found at the bottom of the respective obstacle.
     Therefore not all of the points are located in a straight line and the field boundary contains multiple dents.
     Additionally white field markings and green pixels in the field that are false negatives can create small dents too.
-    Besides the normal field boundary, the :class:`.FieldBoundaryDetector` can also create a convex field boundary that forms a convex hull over the dents of the detected field boundary and is therefore completely straight (with the exception of the corners of the field).
+    Besides the normal field boundary, the :class:`.FieldBoundaryDetector` can also create a convex field boundary
+    that forms a convex hull over the dents of the detected field boundary
+    and is therefore completely straight (with the exception of the corners of the field).
     """
     def __init__(self, config, field_color_detector):
         # type: (dict, ColorDetector) -> None
@@ -471,7 +473,8 @@ class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
 
 class DownsamplingReversedFieldBoundaryDetector(FieldBoundaryDetector):
     """
-    The :class:`.DownsamplingReversedFieldBoundaryDetector` uses the reversed detection method and finds the field boundary via scan lines running up from bottom to top.
+    The :class:`.DownsamplingReversedFieldBoundaryDetector` samples the resolution down
+    and uses the reversed detection method and finds the field boundary via scan lines running up from bottom to top.
     """
     def __init__(self, config, field_color_detector):
         """
