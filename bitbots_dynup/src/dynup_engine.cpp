@@ -26,9 +26,9 @@ void DynupEngine::publishDebug(ros::Publisher debug_publisher) {
   marker.header.frame_id = "/base_link";
   marker.type = visualization_msgs::Marker::SPHERE;
 
-  marker.pose.position.x = goals_.support_point.x;
-  marker.pose.position.y = goals_.support_point.y;
-  marker.pose.position.z = goals_.support_point.z;
+  marker.pose.position.x = cop_.x;
+  marker.pose.position.y = cop_.y;
+  marker.pose.position.z = cop_.z;
 
   marker.pose.orientation.x = 0.0;
   marker.pose.orientation.y = 0.0;
@@ -372,18 +372,30 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
                  params_.time_torso_45 + 
                  params_.time_to_squat + 
                  params_.rise_time;
+     front_ = true;
      calcFrontSplines();
   }else{
      duration_ = params_.time_hands_down + 
                  params_.time_hands_back + 
                  params_.time_to_squat + 
                  params_.rise_time;
+     front_ = false;
      calcBackSplines();
   }
 }
 
 int DynupEngine::getPercentDone() const {
   return int(time_ / duration_ * 100);
+}
+
+/*Calculates if we are at a point of the animation where stabilizing should be applied. */ //TODO: make this nice
+bool DynupEngine::isStabilizingNeeded() const {
+    if((front_ && time_ >= params_.time_hands_side + params_.time_foot_close + params_.time_hands_front +
+        params_.time_foot_ground + params_.time_torso_45) || (!front_ && time_ >= params_.time_hands_down +
+        params_.time_hands_back )) {
+            return true;
+    }
+    return false;
 }
 
 bitbots_splines::PoseSpline DynupEngine::getLFootSplines() const {
@@ -400,6 +412,14 @@ bitbots_splines::PoseSpline DynupEngine::getLHandSplines() const {
 
 bitbots_splines::PoseSpline DynupEngine::getRHandSplines() const {
   return r_hand_spline_;
+}
+
+geometry_msgs::Point DynupEngine::getCoP() {
+
+    cop_.x = -params_.trunk_x;
+    cop_.y = 0.0;
+    cop_.z = -params_.trunk_height;
+    return cop_;
 }
 
 void DynupEngine::setParams(DynUpConfig params) {

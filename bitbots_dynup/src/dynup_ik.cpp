@@ -34,20 +34,16 @@ void DynupIK::reset() {
 
 bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
+  /* ik options is basicaly the command which we send to bio_ik and which describes what we want to do */
   auto ik_options = kinematics::KinematicsQueryOptions();
   ik_options.return_approximate_solution = true;
 
-  tf2::Transform right_foot_goal = ik_goals.r_foot_goal_pose;
-  tf2::Transform left_foot_goal = ik_goals.l_foot_goal_pose * ik_goals.r_foot_goal_pose;
-  tf2::Transform left_hand_goal = ik_goals.l_hand_goal_pose;
-  tf2::Transform right_hand_goal = ik_goals.r_hand_goal_pose;
-  
   geometry_msgs::Pose right_foot_goal_msg, left_foot_goal_msg, right_hand_goal_msg, left_hand_goal_msg;
   
-  tf2::toMsg(right_foot_goal, right_foot_goal_msg);
-  tf2::toMsg(left_foot_goal, left_foot_goal_msg);
-  tf2::toMsg(right_hand_goal, right_hand_goal_msg);
-  tf2::toMsg(left_hand_goal, left_hand_goal_msg);
+  tf2::toMsg(ik_goals.r_foot_goal_pose, right_foot_goal_msg);
+  tf2::toMsg(ik_goals.l_foot_goal_pose, left_foot_goal_msg);
+  tf2::toMsg(ik_goals.r_hand_goal_pose, right_hand_goal_msg);
+  tf2::toMsg(ik_goals.l_hand_goal_pose, left_hand_goal_msg);
 
 
   bool success;
@@ -60,7 +56,6 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
                                    ik_options);
 
   goal_state_->updateLinkTransforms();
-  //ROS_ERROR("1 %d", success);
 
   success |= goal_state_->setFromIK(r_leg_joints_group_,
                                    right_foot_goal_msg,
@@ -69,12 +64,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
                                    ik_options);
 
   goal_state_->updateLinkTransforms();
-  //ROS_ERROR("2 %d", success);
-  
-  //ROS_ERROR("3p %f, %f, %f", left_hand_goal_msg.position.x, left_hand_goal_msg.position.y, left_hand_goal_msg.position.z);
-  double r, p, y;
-  tf2::Matrix3x3(left_hand_goal.getRotation()).getRPY(r, p, y);
-  //ROS_ERROR("3o %f, %f, %f", r, p, y); 
+
   success |= goal_state_->setFromIK(l_arm_joints_group_,
                                    left_hand_goal_msg,
                                    0.001,
@@ -82,17 +72,12 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
                                    ik_options);
 
   goal_state_->updateLinkTransforms();
-  //ROS_ERROR("3 %d", success);
 
-  //ROS_ERROR("4p %f, %f, %f", right_hand_goal_msg.position.x, right_hand_goal_msg.position.y, right_hand_goal_msg.position.z);
-  tf2::Matrix3x3(left_hand_goal.getRotation()).getRPY(r, p, y);
-  //ROS_ERROR("4o %f, %f, %f", r, p, y); 
   success |= goal_state_->setFromIK(r_arm_joints_group_,
                                    right_hand_goal_msg,
                                    0.001,
                                    moveit::core::GroupStateValidityCallbackFn(),
                                    ik_options);
-  //ROS_ERROR("4 %d", success);
 
   if (success) {
     /* retrieve joint names and associated positions from  */
