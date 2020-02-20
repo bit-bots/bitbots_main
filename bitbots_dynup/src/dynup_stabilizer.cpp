@@ -13,8 +13,6 @@ void Stabilizer::init(moveit::core::RobotModelPtr kinematic_model) {
   /* Reset kinematic goal to default */
   goal_state_.reset(new robot_state::RobotState(kinematic_model_));
   goal_state_->setToDefaultValues();
-
-  //TODO: This is not used!
 }
 
 void Stabilizer::reset() {

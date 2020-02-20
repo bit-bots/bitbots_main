@@ -58,6 +58,7 @@ class DynUpNode {
   Visualizer visualizer_;
   DynupIK ik_;
   int engine_rate_;
+  bool debug_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
   robot_model_loader::RobotModelLoader robot_model_loader_;
