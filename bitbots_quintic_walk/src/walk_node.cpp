@@ -353,10 +353,12 @@ void WalkNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {
 }
 
 void WalkNode::jointStateCb(const sensor_msgs::JointState &msg) {
-  std::vector<std::string> names_vec = msg.name;
-  std::string *names = names_vec.data();
-
-  current_state_->setJointPositions(*names, msg.position.data());
+  std::vector<std::string> names = msg.name;
+  std::vector<double> goals = msg.position;
+  for (int i = 0; i < names.size(); i++) {
+    // besides its name, this method only changes a single joint position...
+    current_state_->setJointPositions(names[i], &goals[i]);
+  }
 }
 
 void WalkNode::kickCb(const std_msgs::BoolConstPtr &msg) {
@@ -477,7 +479,7 @@ void WalkNode::initializeEngine() {
 } // namespace bitbots_quintic_walk
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "quintic_walking");
+  ros::init(argc, argv, "walking");
   // init node
   bitbots_quintic_walk::WalkNode node;
 
