@@ -1,6 +1,6 @@
 ---
 name: "\U0001F41B Bug report"
-about: Report a missbehavior or other bug
+about: Report a misbehavior or other bug
 title: ''
 labels: 'bug'
 assignees: ''
