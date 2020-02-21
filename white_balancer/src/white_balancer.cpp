@@ -7,7 +7,8 @@
 #include <dynamic_reconfigure/server.h>
 #include <white_balancer/WhiteBalancerConfig.h>
 #include <boost/bind.hpp>
-
+#include <nodelet/nodelet.h>
+#include <pluginlib/class_list_macros.h>
 
 class WhiteBalancer
 {
@@ -182,7 +183,7 @@ void WhiteBalancer::set_delay(double timestamp_offset)
 {
     ros::Duration timestamp_offset_duration = ros::Duration(timestamp_offset);
     // Check timestamp offset diff
-    if (WhiteBalancer::timestamp_offset != timestamp_offset_duration) 
+    if (WhiteBalancer::timestamp_offset != timestamp_offset_duration)
     {
         // Set timestamp offset
         WhiteBalancer::timestamp_offset = timestamp_offset_duration;
@@ -197,13 +198,13 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
         // Get RGB value for current temperature
         std::vector <int> white_value = WhiteBalancer::kelvin.at(WhiteBalancer::temp);
 
-        // Get image 
+        // Get image
         cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
-        
+
         cv::multiply(cv_ptr->image, cv::Scalar( (float)(255.0/white_value[2]),
                                                 (float)(255.0/white_value[1]),
                                                 (float)(255.0/white_value[0])), cv_ptr->image);
-        
+
         cv_ptr->header.stamp = cv_ptr->header.stamp + WhiteBalancer::timestamp_offset;
 
         // Publish white balanced image
@@ -213,7 +214,7 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
     {
         ROS_ERROR_THROTTLE(60, "Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
     }
-    
+
 }
 
 void WhiteBalancer::callbackRC(white_balancer::WhiteBalancerConfig &config, uint32_t level) {
@@ -222,7 +223,8 @@ void WhiteBalancer::callbackRC(white_balancer::WhiteBalancerConfig &config, uint
     // Set timestamp delay
     WhiteBalancer::set_delay(config.timestamp_offset);
 }
-  
+
+
 int main(int argc, char **argv)
 {
     // Init
@@ -231,3 +233,22 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
+namespace white_balancer
+{
+    class WhiteBalanceNodelet : public nodelet::Nodelet
+    {
+        public:
+            WhiteBalanceNodelet()
+            {}
+
+        private:
+            virtual void onInit()
+            {
+                // Init
+                WhiteBalancer w;
+            }
+    };
+}
+
+PLUGINLIB_EXPORT_CLASS(white_balancer::WhiteBalanceNodelet, nodelet::Nodelet)
