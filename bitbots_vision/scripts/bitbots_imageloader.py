@@ -5,6 +5,7 @@ import cv2
 import os
 import sys
 import rospy
+# Check if progressbar is installed
 try:
     import progressbar
     progressbar_installed = True
@@ -18,45 +19,65 @@ class LoadImages:
     def __init__(self, path, frame="/camera_link", topic="image_raw", fps=10, loop=False, pgbar=False):
         rospy.init_node("bitbots_imageloader")
         rospy.loginfo("Started imageloader", logger_name="imageloader")
+
+        # Register publisher
         self.pub_im = rospy.Publisher(topic, Image, queue_size=1)
+
+        # Create CV bridge
         self.bridge = CvBridge()
 
+        # List images in dir
         listdir = list(os.listdir(path))
 
+        # Set fps
         rate = rospy.Rate(fps)
 
+        # Make generator to determin if the loop runs once or infinite times
         if loop:
+            # Infinite generator
             loop_generator = iter(int, 1)
         else:
+            # One step generator
             loop_generator = range(1)
 
+        # Set progressbar if we want so
         if pgbar:
+            # Make progresbar iterator function
             add_progress_bar = lambda lst: progressbar.progressbar(lst)
         else:
+            # Make normal iterator function
             add_progress_bar = lambda lst: lst
 
+        # Iterate one or infinite times
         for i in loop_generator:
+            # Iterate over all images
             for im in add_progress_bar(sorted(listdir)):
                 rospy.logdebug(im, logger_name="imageloader")
 
+                # Build path of the current image
                 image_path = os.path.join(path, im)
-
+                # Load image
                 image = cv2.imread(image_path)
 
-                msg = self.bridge.cv2_to_imgmsg(image, "bgr8")
-                msg.header.frame_id = "/camera_link"
-                msg.header.stamp = rospy.get_rostime()
+                # Check if this is a valid image
+                if image:
+                    # Build image message
+                    msg = self.bridge.cv2_to_imgmsg(image, "bgr8")
+                    msg.header.frame_id = "/camera_link"
+                    msg.header.stamp = rospy.get_rostime()
 
-                self.pub_im.publish(msg)
-
+                    # Publish it
+                    self.pub_im.publish(msg)
+                    # Wait
+                    rate.sleep()
                 if rospy.is_shutdown():
                     break
-                rate.sleep()
             if rospy.is_shutdown():
                 break
 
 
 if __name__ == "__main__":
+    # Parse cli
     parser = argparse.ArgumentParser("Publish a image set as ros messages.")
 
     parser.add_argument("-p", "--path", help="Input directory for the images", dest="path", type=str)
@@ -70,12 +91,14 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # Check if a path has been set or if we should use the current working dir as path
     if args.path:
         path = args.path
     else:
         path = os.getcwd()
         print("Using the launch dir as path: {}".format(path))
 
+    # Check if the progressbar is installed
     if progressbar_installed:
         display_pgb = args.progressbar
     else:
