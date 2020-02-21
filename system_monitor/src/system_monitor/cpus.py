@@ -9,6 +9,7 @@ _prev_busy = defaultdict(int)
 def collect_all():
     """
     parse /proc/stat and calculate total and busy time
+
     (more specific USER_HZ see man 5 proc for further information )
     """
     msgs = []
@@ -37,7 +38,8 @@ def _get_cpu_stats():
     processes = -1
     with open('/proc/stat', 'r') as file_obj:
         for line in file_obj:
-            if line.startswith('cpu'):
+            # only evaluate lines like cpu0, cpu1, cpu2, ...
+            if line.startswith('cpu') and line.strip().split()[0] != 'cpu':
                 line = line.strip().split()
                 timings[line[0]] = [int(x) for x in line[1:]]
 
