@@ -143,14 +143,14 @@ private:
 
 WhiteBalancer::WhiteBalancer()
 {
+    // Register image messages
+    ros::NodeHandle nh;
     // Dynamic reconfigure stuff
-    dynamic_reconfigure::Server<white_balancer::WhiteBalancerConfig> server;
+    dynamic_reconfigure::Server<white_balancer::WhiteBalancerConfig> server(nh);
     dynamic_reconfigure::Server<white_balancer::WhiteBalancerConfig>::CallbackType f;
     f = boost::bind(&WhiteBalancer::callbackRC, this, _1, _2);
     server.setCallback(f);
 
-    // Register image messages
-    ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
 
     ros::Duration(2.0).sleep();
@@ -223,7 +223,6 @@ void WhiteBalancer::callbackRC(white_balancer::WhiteBalancerConfig &config, uint
     // Set timestamp delay
     WhiteBalancer::set_delay(config.timestamp_offset);
 }
-
 
 int main(int argc, char **argv)
 {
