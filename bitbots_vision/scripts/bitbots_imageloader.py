@@ -60,7 +60,7 @@ class LoadImages:
                 image = cv2.imread(image_path)
 
                 # Check if this is a valid image
-                if image:
+                if image is not None:
                     # Build image message
                     msg = self.bridge.cv2_to_imgmsg(image, "bgr8")
                     msg.header.frame_id = "/camera_link"
