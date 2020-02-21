@@ -8,13 +8,15 @@
         <remap from="~camera_info" to="/camera_info" />
     </node>
     <group if="$(arg resize)">
-        <node pkg="nodelet" type="nodelet" args="standalone image_proc/debayer" name="debayer">
+        <node pkg="nodelet" type="nodelet" name="standalone_nodelet"  args="manager"/>
+
+        <node pkg="nodelet" type="nodelet" args="load image_proc/debayer standalone_nodelet" name="debayer">
             <remap from="image_raw"  to="/pylon_camera_node/image_raw" />
             <remap from="image_color" to="debayered_image" />
             <param name="height" value="20" />
             <param name="width" value="30" />
         </node>
-        <node pkg="nodelet" type="nodelet" args="standalone image_proc/resize" name="resizer">
+        <node pkg="nodelet" type="nodelet" args="load image_proc/resize standalone_nodelet" name="resizer">
             <remap from="/image"  to="debayered_image" />
             <remap from="~image" to="/image_resized" />
             <param name="use_scale" type="int" value="0" />
