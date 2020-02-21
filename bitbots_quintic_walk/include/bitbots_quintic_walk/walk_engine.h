@@ -34,17 +34,17 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   WalkResponse update(double dt) override;
   void setGoals(const WalkRequest &goals) override;
   void reset() override;
-  int getPercentDone() const override;
+  [[nodiscard]] int getPercentDone() const override;
 
   /**
    * Return current walk phase between 0 and 1
    */
-  double getPhase() const;
+  [[nodiscard]] double getPhase() const;
 
   /**
    * Return current time between 0 and half period for trajectories evaluation
    */
-  double getTrajsTime() const;
+  [[nodiscard]] double getTrajsTime() const;
 
   /**
    * Return if true if left is current support foot
@@ -103,18 +103,15 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   // pause handling
   double time_paused_;
-  double pause_duration_{};
+  double pause_duration_;
   bool pause_requested_;
 
   // kick handling
   bool left_kick_requested_;
   bool right_kick_requested_;
 
-  bool phase_reset_;
-  double phase_reset_phase_;
-
   // Current support foot (left or right).
-  bool is_left_support_foot_{};
+  bool is_left_support_foot_;
 
   // Pose diff [dx, dy, dtheta] from support foot to flying foot last and next position.
   tf2::Transform support_to_last_;

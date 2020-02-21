@@ -14,6 +14,8 @@ WalkEngine::WalkEngine() :
     left_kick_requested_(false),
     right_kick_requested_(false),
     time_paused_(0.0),
+    pause_duration_(0.0),
+    is_left_support_foot_(false),
     engine_state_(WalkState::IDLE) {
   left_in_world_.setIdentity();
   right_in_world_.setIdentity();

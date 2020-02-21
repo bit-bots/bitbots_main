@@ -88,6 +88,7 @@ WalkNode::WalkNode() :
 void WalkNode::run() {
   int odom_counter = 0;
   WalkResponse response;
+  walk_engine_.reset();
 
   while (ros::ok()) {
     ros::Rate loop_rate(engine_frequency_);
