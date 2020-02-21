@@ -28,6 +28,8 @@
             <param name="width" type="int" value="620" />
             <param name="height" type="int" value="480" />
         </node>
+        <node pkg="nodelet" type="nodelet" args="standalone white_balancer/WhiteBalanceNodelet" name="white_balancer">
+            <rosparam command="load" file="$(find white_balancer)/config/config.yaml"/> <!-- Fix reconf problems!!! TODO -->
+        </node>
     </group>
-    <include file="$(find white_balancer)/launch/white_balance.launch" />
 </launch>
