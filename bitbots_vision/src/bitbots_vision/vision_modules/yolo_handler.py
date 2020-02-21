@@ -17,11 +17,13 @@ except ImportError:
 
 class YoloHandler():
     """
-    Defines an abstract YoloHandler
+    Defines an abstract YoloHandler, which runs/manages the YOLO inference.
+
+    Our YOLO is currently able to detect goalpost and ball candidates.
     """
     def __init__(self, config, model_path):
         """
-        Init abstract YoloHandler.
+        Initialization of the abstract YoloHandler.
         """
         self._ball_candidates = None
         self._goalpost_candidates = None
@@ -82,11 +84,11 @@ class YoloHandler():
 
 class YoloHandlerDarknet(YoloHandler):
     """
-    Yolo34py library implementation of our yolo model
+    Yolo34py library implementation of our yolo model.
     """
     def __init__(self, config, model_path):
         """
-        Yolo constructor
+        Initialization of the YoloHandlerDarknet
 
         :param config: vision config dict
         :param model_path: path to the yolo model
@@ -150,9 +152,15 @@ class YoloHandlerDarknet(YoloHandler):
 
 class YoloHandlerOpenCV(YoloHandler):
     """
-    Opencv library implementation of our yolo model
+    Opencv library implementation of our yolo model.
     """
     def __init__(self, config, model_path):
+        """
+        Initialization of the YoloHandlerOpenCV
+
+        :param config:
+        :param model_path:
+        """
         # Build paths
         weightpath = os.path.join(model_path, "yolo_weights.weights")
         configpath = os.path.join(model_path, "config.cfg")
@@ -468,10 +476,14 @@ class YoloHandlerNCS2(YoloHandler):
 
 class YoloBallDetector(CandidateFinder):
     """
-    A ball detector using the yolo neural network
+    A ball detector using the yolo neural network.
+    This layer connects a single YOLO network with multiple candidate finders for the different classes,
+    in this case the ball class.
     """
     def __init__(self, config, yolo):
         """
+        Constructor for the YoloBallDetector.
+
         :param config: The vision config
         :param yolo: An YoloHandler implementation that runs the yolo network
         """
@@ -502,10 +514,14 @@ class YoloBallDetector(CandidateFinder):
 
 class YoloGoalpostDetector(CandidateFinder):
     """
-    A goalpost detector using the yolo neural network
+    A goalpost detector using the yolo neural network.
+    This layer connects a single YOLO network with multiple candidate finders for the different classes,
+    in this case the goalpost class.
     """
     def __init__(self, config, yolo):
         """
+        Constructor for the YoloGoalpostDetector.
+
         :param config: The vision config
         :param yolo: An YoloHandler implementation that runs the yolo network
         """

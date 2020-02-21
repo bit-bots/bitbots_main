@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-from .candidate import Candidate, CandidateFinder
+from bitbots_vision.vision_modules.candidate import Candidate, CandidateFinder
 
 
 class ClassifierHandler(CandidateFinder):
