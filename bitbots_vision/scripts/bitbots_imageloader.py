@@ -16,7 +16,7 @@ from cv_bridge import CvBridge, CvBridgeError
 
 
 class LoadImages:
-    def __init__(self, path, frame="/camera_link", topic="image_raw", fps=10, loop=False, pgbar=False):
+    def __init__(self, path, frame="/camera_optical_frame", topic="image_raw", fps=10, loop=False, pgbar=False):
         rospy.init_node("bitbots_imageloader")
         rospy.loginfo("Started imageloader", logger_name="imageloader")
 
@@ -63,7 +63,7 @@ class LoadImages:
                 if image is not None:
                     # Build image message
                     msg = self.bridge.cv2_to_imgmsg(image, "bgr8")
-                    msg.header.frame_id = "/camera_link"
+                    msg.header.frame_id = frame
                     msg.header.stamp = rospy.get_rostime()
 
                     # Publish it
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     parser.add_argument("-fps", "--frames-per-second", help="Playback speed.", default=10, dest="fps", type=int)
     parser.add_argument("-t", "--topic", help="ROS topic where the images are published to.", default="image_raw",
         dest="topic", type=str)
-    parser.add_argument("-f", "--frame", help="The tf frame where the image should be published.", default="/camera_link",
+    parser.add_argument("-f", "--frame", help="The tf frame where the image should be published.", default="/camera_optical_frame",
         dest="frame", type=str)
     parser.add_argument("-nl", "--no-loop", help="Should the image sequence not be looped.", dest="loop", action='store_false')
     parser.add_argument("-np", "--no-progressbar", help="Hides the progressbar.", dest="progressbar", action='store_false')
