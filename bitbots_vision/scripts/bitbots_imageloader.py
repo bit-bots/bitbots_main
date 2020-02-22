@@ -43,7 +43,7 @@ class LoadImages:
         # Set progressbar if we want so
         if pgbar:
             # Make progresbar iterator function
-            add_progress_bar = lambda lst: progressbar.progressbar(lst)
+            add_progress_bar = progressbar.progressbar
         else:
             # Make normal iterator function
             add_progress_bar = lambda lst: lst
