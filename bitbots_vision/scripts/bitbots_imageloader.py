@@ -78,7 +78,7 @@ class LoadImages:
 
 if __name__ == "__main__":
     # Parse cli
-    parser = argparse.ArgumentParser("Publish a image set as ros messages.")
+    parser = argparse.ArgumentParser("Publish an image set as ROS messages.")
 
     parser.add_argument("-p", "--path", help="Input directory for the images", dest="path", type=str)
     parser.add_argument("-fps", "--frames-per-second", help="Playback speed.", default=10, dest="fps", type=int)
