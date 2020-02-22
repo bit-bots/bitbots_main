@@ -86,7 +86,7 @@ if __name__ == "__main__":
         dest="topic", type=str)
     parser.add_argument("-f", "--frame", help="The tf frame where the image should be published.", default="/camera_link",
         dest="frame", type=str)
-    parser.add_argument("-nl", "--no-loop", help="Should the image sequence not be looped.", dest="loop", action='store_false')
+    parser.add_argument("-nl", "--no-loop", help="Set this flag, if the image sequence should not be looped.", dest="loop", action='store_false')
     parser.add_argument("-np", "--no-progressbar", help="Hides the progressbar.", dest="progressbar", action='store_false')
 
     args = parser.parse_args()
