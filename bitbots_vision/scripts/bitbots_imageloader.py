@@ -32,7 +32,7 @@ class LoadImages:
         # Set fps
         rate = rospy.Rate(fps)
 
-        # Make generator to determin if the loop runs once or infinite times
+        # Make generator to determine if the loop runs once or infinite times
         if loop:
             # Infinite generator
             loop_generator = iter(int, 1)
@@ -78,15 +78,15 @@ class LoadImages:
 
 if __name__ == "__main__":
     # Parse cli
-    parser = argparse.ArgumentParser("Publish a image set as ros messages.")
+    parser = argparse.ArgumentParser("Publish an image set as ROS messages.")
 
-    parser.add_argument("-p", "--path", help="Input directory for the images", dest="path", type=str)
+    parser.add_argument("-p", "--path", help="Input relative or absolute directory for the images. If none specified, current directory will be assumed", dest="path", type=str)
     parser.add_argument("-fps", "--frames-per-second", help="Playback speed.", default=10, dest="fps", type=int)
     parser.add_argument("-t", "--topic", help="ROS topic where the images are published to.", default="image_raw",
         dest="topic", type=str)
     parser.add_argument("-f", "--frame", help="The tf frame where the image should be published.", default="/camera_optical_frame",
         dest="frame", type=str)
-    parser.add_argument("-nl", "--no-loop", help="Should the image sequence not be looped.", dest="loop", action='store_false')
+    parser.add_argument("-nl", "--no-loop", help="Set this flag, if the image sequence should not be looped.", dest="loop", action='store_false')
     parser.add_argument("-np", "--no-progressbar", help="Hides the progressbar.", dest="progressbar", action='store_false')
 
     args = parser.parse_args()
