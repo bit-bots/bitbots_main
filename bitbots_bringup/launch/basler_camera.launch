@@ -16,7 +16,7 @@
         </node>
         <node pkg="nodelet" type="nodelet" args="load image_proc/resize standalone_nodelet" name="resizer">
             <remap from="/image"  to="debayered_image" />
-            <remap from="~image" to="/image_resized" />
+            <remap from="~image" to="image_resized" />
             <rosparam command="load" file="$(find bitbots_bringup)/config/resizer.yaml"/>
         </node>
         <node pkg="nodelet" type="nodelet" args="load white_balancer/WhiteBalanceNodelet standalone_nodelet" name="white_balancer">
