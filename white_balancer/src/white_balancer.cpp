@@ -245,7 +245,7 @@ namespace white_balancer
             virtual void onInit()
             {
                 // Init
-                WhiteBalancer w(getNodeHandle(), getPrivateNodeHandle());
+                WhiteBalancer w(getMTNodeHandle(), getMTPrivateNodeHandle());
             }
     };
 }
