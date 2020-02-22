@@ -1,4 +1,0 @@
-<launch>
-    <rosparam file="$(find bitbots_imageloader)/config/imageloader_config.yaml" command="load"/>
-    <node name="bitbots_imageloader" pkg="bitbots_imageloader" type="bitbots_imageloader.py"/>
-</launch>
