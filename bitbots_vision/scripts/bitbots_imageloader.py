@@ -32,7 +32,7 @@ class LoadImages:
         # Set fps
         rate = rospy.Rate(fps)
 
-        # Make generator to determin if the loop runs once or infinite times
+        # Make generator to determine if the loop runs once or infinite times
         if loop:
             # Infinite generator
             loop_generator = iter(int, 1)
