@@ -13,7 +13,7 @@
 class WhiteBalancer
 {
 public:
-    WhiteBalancer();
+    WhiteBalancer(ros::NodeHandle nh, ros::NodeHandle pnh);
     // Dynamic reconfigure callback
     void callbackRC(white_balancer::WhiteBalancerConfig &config, uint32_t level);
 private:
@@ -141,29 +141,28 @@ private:
     void set_delay(double delay);
 };
 
-WhiteBalancer::WhiteBalancer()
+WhiteBalancer::WhiteBalancer(ros::NodeHandle nh, ros::NodeHandle pnh)
 {
-    // Register image messages
-    ros::NodeHandle nh;
     // Dynamic reconfigure stuff
-    dynamic_reconfigure::Server<white_balancer::WhiteBalancerConfig> server(nh);
+    dynamic_reconfigure::Server<white_balancer::WhiteBalancerConfig> server(pnh);
     dynamic_reconfigure::Server<white_balancer::WhiteBalancerConfig>::CallbackType f;
     f = boost::bind(&WhiteBalancer::callbackRC, this, _1, _2);
     server.setCallback(f);
 
+    // Register image messages
     image_transport::ImageTransport it(nh);
 
     ros::Duration(2.0).sleep();
 
     std::string ROS_output_topic, ROS_input_topic;
-    if (nh.getParam("/white_balancer/ROS_output_topic", ROS_output_topic)) {
+    if (pnh.getParam("/white_balancer/ROS_output_topic", ROS_output_topic)) {
         WhiteBalancer::pub = it.advertise(ROS_output_topic, 1);
     } else {
         ROS_ERROR("No output topic set");
         exit(2);
     }
     image_transport::Subscriber sub;
-    if (nh.getParam("/white_balancer/ROS_input_topic", ROS_input_topic)) {
+    if (pnh.getParam("/white_balancer/ROS_input_topic", ROS_input_topic)) {
          sub = it.subscribe(ROS_input_topic, 1, &WhiteBalancer::imageCallback, this);
     } else {
         ROS_ERROR("No input topic set");
@@ -228,7 +227,8 @@ int main(int argc, char **argv)
 {
     // Init
     ros::init(argc, argv, "white_balancer");
-    WhiteBalancer w;
+    ros::NodeHandle nh;
+    WhiteBalancer w(nh, nh);
 
     return 0;
 }
@@ -245,7 +245,7 @@ namespace white_balancer
             virtual void onInit()
             {
                 // Init
-                WhiteBalancer w;
+                WhiteBalancer w(getNodeHandle(), getPrivateNodeHandle());
             }
     };
 }
