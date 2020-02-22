@@ -13,23 +13,14 @@
         <node pkg="nodelet" type="nodelet" args="load image_proc/debayer standalone_nodelet" name="debayer">
             <remap from="image_raw"  to="/pylon_camera_node/image_raw" />
             <remap from="image_color" to="debayered_image" />
-            <param name="height" value="20" />
-            <param name="width" value="30" />
         </node>
         <node pkg="nodelet" type="nodelet" args="load image_proc/resize standalone_nodelet" name="resizer">
             <remap from="/image"  to="debayered_image" />
             <remap from="~image" to="/image_resized" />
-            <param name="use_scale" type="int" value="0" />
-            <param name="width" type="int" value="620" />
-            <param name="height" type="int" value="480" />
-        </node>
-        <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters resizer">
-            <param name="use_scale" type="int" value="0" />
-            <param name="width" type="int" value="620" />
-            <param name="height" type="int" value="480" />
+            <rosparam command="load" file="$(find bitbots_bringup)/config/resizer.yaml"/>
         </node>
         <node pkg="nodelet" type="nodelet" args="load white_balancer/WhiteBalanceNodelet standalone_nodelet" name="white_balancer">
-            <rosparam command="load" file="$(find white_balancer)/config/config.yaml"/> <!-- Fix reconf problems!!! TODO -->
+            <rosparam command="load" file="$(find white_balancer)/config/config.yaml"/>
         </node>
     </group>
 </launch>
