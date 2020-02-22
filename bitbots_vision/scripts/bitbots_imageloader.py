@@ -80,7 +80,7 @@ if __name__ == "__main__":
     # Parse cli
     parser = argparse.ArgumentParser("Publish an image set as ROS messages.")
 
-    parser.add_argument("-p", "--path", help="Input directory for the images", dest="path", type=str)
+    parser.add_argument("-p", "--path", help="Input relative or absolute directory for the images. If none specified, current directory will be assumed", dest="path", type=str)
     parser.add_argument("-fps", "--frames-per-second", help="Playback speed.", default=10, dest="fps", type=int)
     parser.add_argument("-t", "--topic", help="ROS topic where the images are published to.", default="image_raw",
         dest="topic", type=str)
