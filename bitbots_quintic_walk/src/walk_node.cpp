@@ -197,8 +197,8 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, doubl
 
   // publish debug information
   if (debug_active_) {
-    visualizer_.publishIKDebug(response, current_state_, motor_goals);
-    visualizer_.publishWalkMarkers(response);
+    visualizer_.publishIKDebug(stabilized_response, current_state_, motor_goals);
+    visualizer_.publishWalkMarkers(stabilized_response);
   }
 }
 
