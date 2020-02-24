@@ -8,6 +8,12 @@ import cv2
 class LineDetector:
     """
     Detecting field lines in the image.
+    The line detection module is responsible for finding the white field markings
+    that are especially important for the localisation of the robot.
+    It mainly uses the ColorDetector and FieldBoundaryDetector because white lines
+    should only be found on the field (and therefore under the field boundary).
+    It is able to output a sparse output (line points) or a whole mask of the image,
+    which marks the line points.
     """
     def __init__(self, config, white_detector, field_color_detector, field_boundary_detector):
         # type: (dict, ColorDetector, ColorDetector, FieldBoundaryDetector) -> None
@@ -145,7 +151,7 @@ class LineDetector:
             # Invert and scale the field mask
             not_green_mask = np.ones_like(green_mask) - (np.floor_divide(green_mask, 255))
             # Get part under the field boundary as white mask
-            field_boundary_mask = self._field_boundary_detector.get_mask()
+            field_boundary_mask = self._field_boundary_detector.get_mask(offset=self._field_boundary_offset)
             # Get not green points under field boundary
             possible_line_locations = cv2.bitwise_and(not_green_mask, not_green_mask, mask=field_boundary_mask)
             # Get white points that are not above the field boundary or in the green field

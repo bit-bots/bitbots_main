@@ -9,9 +9,9 @@ This is the vision ROS package of the Hamburg Bit-Bots.
 
 The vision is able to detect lines, the field itself, the field boundary, goal posts, teammates, enemies and other obstacles.
 
-See the documentation of this package at our website: [doku.bit-bots.de](http://doku.bit-bots.de/meta/manual/software/vision.html)
+See the documentation of this package at our website: [doku.bit-bots.de](http://doku.bit-bots.de/package/bitbots_vision/latest/index.html)
 
-An earlier version of this pipeline is presented in our paper [An Open Source Vision Pipeline Approach for RoboCup Humanoid Soccer](https://robocup.informatik.uni-hamburg.de/wp-content/uploads/2019/06/vision_paper.pdf). 
+An earlier version of this pipeline is presented in our paper [An Open Source Vision Pipeline Approach for RoboCup Humanoid Soccer](https://robocup.informatik.uni-hamburg.de/wp-content/uploads/2019/06/vision_paper.pdf).
 When you use this pipeline or parts of it, please cite it.
 ```
 @inproceedings{vision2019,
@@ -129,6 +129,11 @@ Vision Tools
 
 In the bitbots_vision_tools directory, special tools for debugging/introspection purposes are provided.
 
+- **`/scripts/colorpicker.py`**
+  A tool to create color space files out of an video stream.
+
+  This tool provides usage information on launch.
+
 - **`/scripts/color_space_tool.py`**
   A small tool for color space enhancement.
 
@@ -145,18 +150,36 @@ In the bitbots_vision_tools directory, special tools for debugging/introspection
   For further details, see help page `-h`.
 
 - **`/scripts/convert_to_image.py`**
-  This is a small script to convert `ImageWithRegionOfInterest` of fcnn to an `Image` message for debug visualization.
+  This is a small script to convert `ImageWithRegionOfInterest` of FCNNs to an `Image` message for debug visualization.
+
+- **`scripts/extract_from_rosbag.py`**
+  This tool extracts `Image` messages of rosbags.
+
+  Usage: 
+  ```
+  rosrun bitbots_vision extract_from_rosbag.py -i /path/to/rosbag.bag -o /output/folder/
+  ```
+
+  The tool will guide you through the workflow.
+  Optional parameters are prompted when not specified:
+  - `-n N`: To select the frequency, every `n`-th image will be saved
+  - `-t TOPIC`: Topic of the `image` message
+  
+  Example:
+  ```
+  rosrun bitbots_vision extract_from_rosbag.py -i testdata.bag -o testdataset -t /image_raw -n 3
+  ```
+  This will extract every third image from the `testdata.bag` on the `/image_raw` message topic into the folder `$PWD/testdataset`.
+
+  This tool provides a help page `-h` for further details.
 
 - **`/scripts/imageclean.sh`**
   This is a small bash script, to quickly sort a directory of images using feh with shortcuts.
   Start this inside the directory of images to sort.
-  
+
   Press key:
   - `1` -> move current image to **Trash** subdirectory
   - `2` -> Move current image to **Balls** subdirectory
   - `3` -> Move current image to **Goals** subdirectory
 
-- **`/src/colorspace.cpp`**
-  *LEGACY* Same as colorspace_tool.py above, but no longer maintained.
 
-  To build, run: `g++ color_space_tool.cpp -l yaml-cpp`

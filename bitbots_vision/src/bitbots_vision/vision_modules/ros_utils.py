@@ -11,7 +11,7 @@ from bitbots_msgs.msg import Config
 
 """
 This module provides some methods needed for the ros environment,
-e.g. methods to convert candidates to ros msgs or methods to modify the dynamic reconfigure objects.
+e.g. methods to convert candidates to ROS messages or methods to modify the dynamic reconfigure objects.
 """
 
 _cv_bridge = CvBridge()
@@ -128,7 +128,8 @@ def add_model_enums(cfg_type, package_path):
     model_names = os.listdir(models_directory)
 
     fcnn_paths = []
-    yolo_paths = []
+    yolo_darknet_paths = []
+    yolo_openvino_paths = []
 
     # Sort models alphabetically
     model_names.sort()
@@ -142,10 +143,17 @@ def add_model_enums(cfg_type, package_path):
                 'name': folder,
                 'value': folder,
                 'description': 'fcnn {}'.format(folder)})
-        # Is this model an yolo model
+        # Is this model a yolo darknet model
         elif os.path.exists(os.path.join(models_directory, folder, "yolo_weights.weights")):
             # Append list with a new enum item
-            yolo_paths.append({
+            yolo_darknet_paths.append({
+                'name': folder,
+                'value': folder,
+                'description': 'yolo {}'.format(folder)})
+        # Is this model an yolo openvino model
+        elif os.path.exists(os.path.join(models_directory, folder, "yolo.bin")):
+            # Append list with a new enum item
+            yolo_openvino_paths.append({
                 'name': folder,
                 'value': folder,
                 'description': 'yolo {}'.format(folder)})
@@ -153,7 +161,8 @@ def add_model_enums(cfg_type, package_path):
             rospy.logwarn("Directory '{}' contains unknown model type. Please remove all non model directories from the 'models' directory!".format(folder), logger_name="vision_ros_utils")
     # Add enums to configuration
     _change_enum_items(cfg_type, 'fcnn_model_path', fcnn_paths)
-    _change_enum_items(cfg_type, 'yolo_model_path', yolo_paths)
+    _change_enum_items(cfg_type, 'yolo_darknet_model_path', yolo_darknet_paths)
+    _change_enum_items(cfg_type, 'yolo_openvino_model_path', yolo_openvino_paths)
 
 def add_color_space_enum(cfg_type, package_path):
     """
@@ -476,7 +485,7 @@ def set_general_parameters(params):
     """
     general_parameters.extend(params)
 
-def config_param_change(old_config, new_config, params, check_generals=True):
+def config_param_change(old_config, new_config, params_expressions, check_generals=True):
     # type: (dict, dict, [str]) -> bool
     """
     Checks whether some of the specified config params have changed.
@@ -488,14 +497,21 @@ def config_param_change(old_config, new_config, params, check_generals=True):
     :return bool: True if parameter has changed
     """
     # Make regex instead of list possible
-    if not isinstance(params, list):
+    if not isinstance(params_expressions, list):
+        params_expressions = [params_expressions]
+
+    # Matching parameters
+    params = []
+    # Iterate over expressions
+    for param in params_expressions:
         # Build regex
-        regex = re.compile(params)
+        regex = re.compile(param)
         # Filter parameter names by regex
-        params = list(filter(regex.search, list(new_config.keys())))
-        # Check if parameters matching this regex exist
-        if len(params) == 0:
-            raise KeyError('Regex \'{}\' has no matches in dict.'.format(params))
+        params.extend(list(filter(regex.search, list(new_config.keys()))))
+
+    # Check if parameters matching this regex exist
+    if len(params) == 0:
+        raise KeyError('Regex \'{}\' has no matches in dict.'.format(params))
 
     # Add general params to parameters
     if check_generals:

@@ -13,6 +13,6 @@ Trash="unusable"
 Balls="balls"
 Goals="goalposts"
 
-mkdir $Trash $Balls $Goals
+mkdir -p $Trash $Balls $Goals
 
 feh -Z -F -d --action1 "mv '%f' $Trash" --action2 "mv '%f' $Balls" --action3 "mv '%f' $Goals"
