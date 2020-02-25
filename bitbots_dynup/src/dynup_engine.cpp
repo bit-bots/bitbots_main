@@ -369,9 +369,9 @@ void DynupEngine::calcSquatSplines(double time) {
   foot_spline_.pitch()->addPoint(time, 0);
   foot_spline_.yaw()->addPoint(time, 0);
 
-  r_foot_spline_.x()->addPoint(time, params_.trunk_x*2);//TODO: Calculate this from trunk_pitch
+  r_foot_spline_.x()->addPoint(time, params_.trunk_x * 2.0);//TODO: Calculate this from trunk_pitch
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2.0);
-  r_foot_spline_.z()->addPoint(time, -params_.trunk_height - params_.trunk_x*2);//TODO: hacky hack
+  r_foot_spline_.z()->addPoint(time, -params_.trunk_height - params_.trunk_x * 2.0); //TODO: hacky hack
   r_foot_spline_.roll()->addPoint(time, 0);
   r_foot_spline_.pitch()->addPoint(time, params_.trunk_pitch);
   r_foot_spline_.yaw()->addPoint(time, 0);
