@@ -50,10 +50,6 @@ void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t
 
   stabilizer_.useMinimalDisplacement(config.minimal_displacement);
   stabilizer_.useStabilizing(config.stabilizing);
-  stabilizer_.setStabilizingWeight(config.stabilizing_weight);
-
-  stabilizer_.pid_trunk_roll_.setGains(params.stabilizing_p_r, params.stabilizing_i_r, params.stabilizing_d_r, params.stabilizing_i_r, params.stabilizing_i_r);
-  stabilizer_.pid_trunk_pitch_.setGains(params.stabilizing_p_p, params.stabilizing_i_p, params.stabilizing_d_p, params.stabilizing_i_p, params.stabilizing_i_p);
 
   ik_.useMinimalDisplacement(config.minimal_displacement);
   ik_.useStabilizing(config.stabilizing);

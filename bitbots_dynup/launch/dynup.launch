@@ -1,3 +1,4 @@
 <launch>
-  <node pkg="bitbots_dynup" name="DynupNode" type="DynupNode" output="screen" />
+    <rosparam file="$(find bitbots_dynup)/config/pid_config.yaml" command="load"/>
+    <node pkg="bitbots_dynup" name="dynup" type="DynupNode" output="screen"/>
 </launch>
