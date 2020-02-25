@@ -6,7 +6,7 @@
 
 Localization::Localization() : line_points_(), tfListener(tfBuffer) {
   ROS_DEBUG("localization");
-
+  
 }
 
 void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config, uint32_t config_level) {
@@ -343,8 +343,6 @@ void Localization::getMotion() {
   robot_moved = false;
   //get transforms
   ros::Time now = ros::Time(0);
-  ros::Time past = ros::Time::now() -
-      ros::Duration(0.04);
 
   geometry_msgs::TransformStamped transformStampedPast;
   geometry_msgs::TransformStamped transformStampedNow;
@@ -355,8 +353,11 @@ void Localization::getMotion() {
 
   try {
 
-    transformStampedPast = tfBuffer.lookupTransform("odom", "base_footprint", past);
     transformStampedNow = tfBuffer.lookupTransform("odom", "base_footprint", now);
+
+    ros::Time past = transformStampedNow.header.stamp - ros::Duration(0.04);  //TODO better param
+
+    transformStampedPast = tfBuffer.lookupTransform("odom", "base_footprint", past);
 
     geometry_msgs::Vector3 past_;
     geometry_msgs::Vector3 now_;
