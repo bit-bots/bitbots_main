@@ -52,37 +52,15 @@ bool ImuHardwareInterface::read(){
   uint8_t *data = (uint8_t *) malloc(24 * sizeof(uint8_t));
 
     if(driver_->readMultipleRegisters(241, 36, 24, data)){
-        /*uint32_t highest_seq_number = 0;
-        uint32_t new_value_index=0;
-        uint32_t current_seq_number= 0;
-        // imu gives us 2 values at the same time, lets see which one is the newest
-        for(int i =0; i < 2; i++){
-            //the sequence number are the bytes 12 to 15 for each of the two 16 Bytes
-            current_seq_number = dxlMakedword(dxlMakeword(data[16*i + 12], data[16*i + 13]),
-                                              dxlMakeword(data[16*i + 14], data[16*i + 15]));
-          if(current_seq_number>highest_seq_number){
-              highest_seq_number=current_seq_number;
-              new_value_index=i;
-            }
-        }
-      // linear acceleration are two signed bytes with 256 LSB per g
-      linear_acceleration_[0] = (((short) dxlMakeword(data[16*new_value_index], data[16*new_value_index + 1])) / 256.0 ) * gravity * -1;
-      linear_acceleration_[1] = (((short) dxlMakeword(data[16*new_value_index + 2], data[16*new_value_index + 3])) / 256.0 ) * gravity * -1;
-      linear_acceleration_[2] = (((short) dxlMakeword(data[16*new_value_index + 4], data[16*new_value_index + 5])) / 256.0 ) * gravity * 1;
-      // angular velocity are two signed bytes with 14.375 per deg/s
-      angular_velocity_[0] = (((short) dxlMakeword(data[16*new_value_index + 6], data[16*new_value_index + 7])) / 14.375) * M_PI/180 * -1;
-      angular_velocity_[1] = (((short) dxlMakeword(data[16*new_value_index + 8], data[16*new_value_index + 9])) / 14.375) * M_PI/180 * -1;
-      angular_velocity_[2] = (((short) dxlMakeword(data[16*new_value_index + 10], data[16*new_value_index + 11])) / 14.375) * M_PI/180 * 1;
-      */
-     angular_velocity_[0] = dxlMakeFloat(data + 0);
-     angular_velocity_[1] = dxlMakeFloat(data + 4);
-     angular_velocity_[2] = dxlMakeFloat(data + 8);
+      angular_velocity_[0] = dxlMakeFloat(data + 0);
+      angular_velocity_[1] = dxlMakeFloat(data + 4);
+      angular_velocity_[2] = dxlMakeFloat(data + 8);
 
-     linear_acceleration_[0] = dxlMakeFloat(data + 12);
-     linear_acceleration_[1] = dxlMakeFloat(data + 16);
-     linear_acceleration_[2] = dxlMakeFloat(data + 20);
-     ROS_WARN_STREAM("x: " << linear_acceleration_[0] << "\ty: " << linear_acceleration_[1] << "\tz: " << linear_acceleration_[2]);
-     return true;
+      linear_acceleration_[0] = dxlMakeFloat(data + 12);
+      linear_acceleration_[1] = dxlMakeFloat(data + 16);
+      linear_acceleration_[2] = dxlMakeFloat(data + 20);
+      
+      return true;
     }else {
       ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
       return false;
