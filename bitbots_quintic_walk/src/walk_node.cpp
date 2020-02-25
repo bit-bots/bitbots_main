@@ -122,6 +122,8 @@ void WalkNode::run() {
         response.current_pitch = current_trunk_pitch_;
         response.roll_vel = roll_vel_;
         response.pitch_vel = pitch_vel_;
+        response.current_fused_roll = current_trunk_fused_roll_;
+        response.current_fused_pitch = current_trunk_fused_pitch_;
 
         if (walk_engine_.isLeftSupport()) {
           response.sup_cop_x = cop_left_x_;

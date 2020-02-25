@@ -43,7 +43,7 @@ WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const ros::
   double corrected_roll = pid_trunk_roll_.computeCommand(goal_roll - response.current_roll, dt);
   double corrected_fused_roll = pid_trunk_fused_roll_.computeCommand(goal_fused.fusedRoll - response.current_fused_roll, dt);
   double corrected_roll_vel = pid_trunk_roll_vel_.computeCommand(response.roll_vel, dt);
-  double corrected_pitch_vel = pid_trunk_roll_vel_.computeCommand(response.pitch_vel, dt);
+  double corrected_pitch_vel = pid_trunk_pitch_vel_.computeCommand(response.pitch_vel, dt);
 
   tf2::Quaternion corrected_orientation;
   corrected_orientation.setRPY(goal_roll + corrected_roll + corrected_fused_roll + corrected_roll_vel, goal_pitch + corrected_pitch + corrected_fused_pitch + corrected_pitch_vel, goal_yaw);
