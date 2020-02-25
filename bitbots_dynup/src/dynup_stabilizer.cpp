@@ -10,11 +10,10 @@ namespace bitbots_dynup {
 
 void Stabilizer::init(moveit::core::RobotModelPtr kinematic_model) {
   kinematic_model_ = std::move(kinematic_model);
-  ros::NodeHandle nh = ros::NodeHandle("/dynup/pid");
-  pid_trunk_pitch_.init(nh, false);
-  pid_trunk_pitch_.reset();
-  pid_trunk_roll_.init(nh, false);
-  pid_trunk_roll_.reset();
+  ros::NodeHandle nhr = ros::NodeHandle("/dynup/pid_trunk_roll");
+  ros::NodeHandle nhp = ros::NodeHandle("/dynup/pid_trunk_pitch");
+  pid_trunk_pitch_.init(nhr, false);
+  pid_trunk_roll_.init(nhp, false);
 
   /* Reset kinematic goal to default */
   goal_state_.reset(new robot_state::RobotState(kinematic_model_));
@@ -36,6 +35,8 @@ void Stabilizer::reset() {
   for (int i = 0; i < names_vec.size(); i++) {
     goal_state_->setJointPositions(names_vec[i], &pos_vec[i]);
   }
+  pid_trunk_pitch_.reset();
+  pid_trunk_roll_.reset();
 }
 
 DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Duration &dt) {
@@ -83,10 +84,6 @@ void Stabilizer::setStabilizeNow(bool now) {
 
 void Stabilizer::useMinimalDisplacement(bool use) {
   use_minimal_displacement_ = use;
-}
-
-void Stabilizer::setStabilizingWeight(double weight) {
-  stabilizing_weight_ = weight;
 }
 
 void Stabilizer::setRobotModel(moveit::core::RobotModelPtr model) {
