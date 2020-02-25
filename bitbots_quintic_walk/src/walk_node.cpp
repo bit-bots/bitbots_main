@@ -83,6 +83,7 @@ WalkNode::WalkNode() :
   pid_right_y_.reset();
   pid_hip_pitch_.reset();
   pid_hip_roll_.reset();
+  walk_engine_ = WalkEngine();
 }
 
 void WalkNode::run() {
@@ -120,6 +121,7 @@ void WalkNode::run() {
       if (walk_engine_.getState() != WalkState::IDLE) {
         // add IMU pitch information
         response.current_pitch = current_trunk_pitch_;
+        response.current_roll = current_trunk_roll_;
         response.roll_vel = roll_vel_;
         response.pitch_vel = pitch_vel_;
         response.current_fused_roll = current_trunk_fused_roll_;
@@ -157,22 +159,22 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, doubl
   bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_response);
 
   double goal_pitch, goal_roll, goal_yaw;
-  tf2::Matrix3x3(response.support_foot_to_trunk.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
+  tf2::Matrix3x3(stabilized_response.support_foot_to_trunk.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
   double hip_pitch_correction = pid_hip_pitch_.computeCommand(goal_pitch - response.current_pitch, ros::Duration(dt));
   double hip_roll_correction = pid_hip_roll_.computeCommand(goal_roll - response.current_roll, ros::Duration(dt));
 
   for (int i = 0; i < motor_goals.first.size(); ++i) {
-    if (motor_goals.first.at(i) == "LeftAnklePitch") {
+    if (motor_goals.first.at(i) == "LAnklePitch") {
       motor_goals.second.at(i) += pid_left_x_.computeCommand(cop_left_x_, ros::Duration(dt));
-    } else if (motor_goals.first.at(i) == "RightAnklePitch") {
+    } else if (motor_goals.first.at(i) == "RAnklePitch") {
       motor_goals.second.at(i) += pid_right_x_.computeCommand(cop_right_x_, ros::Duration(dt));
-    } else if (motor_goals.first.at(i) == "LeftAnkleRoll") {
+    } else if (motor_goals.first.at(i) == "LAnkleRoll") {
       motor_goals.second.at(i) += pid_left_y_.computeCommand(cop_left_y_, ros::Duration(dt));
-    } else if (motor_goals.first.at(i) == "RightAnkleRoll") {
+    } else if (motor_goals.first.at(i) == "RAnkleRoll") {
       motor_goals.second.at(i) += pid_right_y_.computeCommand(cop_right_y_, ros::Duration(dt));
-    } else if (motor_goals.first.at(i) == "LeftHipPitch" || motor_goals.first.at(i) == "RightHipPitch") {
+    } else if (motor_goals.first.at(i) == "LHipPitch" || motor_goals.first.at(i) == "RHipPitch") {
       motor_goals.second.at(i) += hip_pitch_correction;
-    } else if (motor_goals.first.at(i) == "LeftHipRoll" || motor_goals.first.at(i) == "RightHipRoll") {
+    } else if (motor_goals.first.at(i) == "LHipRoll" || motor_goals.first.at(i) == "RHipRoll") {
       motor_goals.second.at(i) += hip_roll_correction;
     }
   }
