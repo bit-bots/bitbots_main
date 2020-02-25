@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
     tf2_geometry_msgs
     std_msgs
     visualization_msgs
+    control_toolbox
 )
 
 generate_dynamic_reconfigure_options(

@@ -48,8 +48,6 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   bitbots_splines::PoseSpline getRFootSplines() const;
 
-  geometry_msgs::Point getCoP();
-
   void setParams(DynUpConfig params);
 
   void reset() override;
@@ -59,8 +57,6 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   double arm_max_length_;
   double arm_offset_y_;
   double arm_offset_z_;
-  geometry_msgs::Point cop_;
-
   bool front_;
 
   bitbots_splines::PoseSpline foot_spline_;

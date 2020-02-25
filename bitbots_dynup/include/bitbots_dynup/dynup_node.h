@@ -19,6 +19,7 @@
 #include "bitbots_dynup/dynup_ik.h"
 #include "bitbots_dynup/dynup_stabilizer.h"
 #include <std_msgs/Char.h>
+#include <sensor_msgs/Imu.h>
 
 namespace bitbots_dynup {
 
@@ -47,10 +48,13 @@ class DynUpNode {
    */
   void executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal);
 
+  void copCallback(const sensor_msgs::Imu &cop);
+
  private:
   ros::NodeHandle node_handle_;
   ros::Publisher joint_goal_publisher_;
   ros::Publisher support_foot_publisher_;
+  ros::Subscriber cop_subscriber_;
 
   ActionServer server_;
   DynupEngine engine_;

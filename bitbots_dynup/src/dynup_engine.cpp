@@ -26,9 +26,9 @@ void DynupEngine::publishDebug(ros::Publisher debug_publisher) {
   marker.header.frame_id = "/base_link";
   marker.type = visualization_msgs::Marker::SPHERE;
 
-  marker.pose.position.x = cop_.x;
-  marker.pose.position.y = cop_.y;
-  marker.pose.position.z = cop_.z;
+  marker.pose.position.x = 0;
+  marker.pose.position.y = 0;
+  marker.pose.position.z = 0;
 
   marker.pose.orientation.x = 0.0;
   marker.pose.orientation.y = 0.0;
@@ -248,11 +248,11 @@ void DynupEngine::calcFrontSplines() {
   foot_spline_.roll()->addPoint(time, 0);
   foot_spline_.pitch()->addPoint(time, 0);
   foot_spline_.yaw()->addPoint(time, 0);
-  r_foot_spline_.x()->addPoint(time, 0);
+  r_foot_spline_.x()->addPoint(time, params_.trunk_x);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -params_.leg_min_length);
   r_foot_spline_.roll()->addPoint(time, 0);
-  r_foot_spline_.pitch()->addPoint(time,0);
+  r_foot_spline_.pitch()->addPoint(time, params_.trunk_pitch);
   r_foot_spline_.yaw()->addPoint(time, 0);
 
 
@@ -347,11 +347,11 @@ void DynupEngine::calcBackSplines() {
   foot_spline_.roll()->addPoint(time, 0);
   foot_spline_.pitch()->addPoint(time, 0);
   foot_spline_.yaw()->addPoint(time, 0);
-  r_foot_spline_.x()->addPoint(time, 0);
+  r_foot_spline_.x()->addPoint(time, params_.trunk_x);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
-  r_foot_spline_.z()->addPoint(time, -params_.leg_min_length);
+  r_foot_spline_.z()->addPoint(time, -params_.leg_min_length + params_.trunk_x);
   r_foot_spline_.roll()->addPoint(time, 0);
-  r_foot_spline_.pitch()->addPoint(time, 0);
+  r_foot_spline_.pitch()->addPoint(time, params_.trunk_pitch);
   r_foot_spline_.yaw()->addPoint(time, 0); 
 
   calcSquatSplines(time);
@@ -369,9 +369,9 @@ void DynupEngine::calcSquatSplines(double time) {
   foot_spline_.pitch()->addPoint(time, 0);
   foot_spline_.yaw()->addPoint(time, 0);
 
-  r_foot_spline_.x()->addPoint(time, cos(params_.trunk_pitch * 180/M_PI)*-params_.trunk_height);
+  r_foot_spline_.x()->addPoint(time, params_.trunk_x*2);//TODO: Calculate this from trunk_pitch
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2.0);
-  r_foot_spline_.z()->addPoint(time, sin(params_.trunk_pitch * 180/M_PI)*-params_.trunk_height);
+  r_foot_spline_.z()->addPoint(time, -params_.trunk_height - params_.trunk_x*2);//TODO: hacky hack
   r_foot_spline_.roll()->addPoint(time, 0);
   r_foot_spline_.pitch()->addPoint(time, params_.trunk_pitch);
   r_foot_spline_.yaw()->addPoint(time, 0);
@@ -428,14 +428,6 @@ bitbots_splines::PoseSpline DynupEngine::getLHandSplines() const {
 
 bitbots_splines::PoseSpline DynupEngine::getRHandSplines() const {
   return r_hand_spline_;
-}
-
-geometry_msgs::Point DynupEngine::getCoP() {
-
-    cop_.x = -params_.trunk_x;
-    cop_.y = 0.0;
-    cop_.z = -params_.trunk_height;
-    return cop_;
 }
 
 void DynupEngine::setParams(DynUpConfig params) {

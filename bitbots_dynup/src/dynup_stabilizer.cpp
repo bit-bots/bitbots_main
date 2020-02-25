@@ -5,10 +5,16 @@
 #include <bitbots_splines/dynamic_balancing_goal.h>
 #include <bitbots_splines/reference_goals.h>
 
+
 namespace bitbots_dynup {
 
 void Stabilizer::init(moveit::core::RobotModelPtr kinematic_model) {
   kinematic_model_ = std::move(kinematic_model);
+  ros::NodeHandle nh = ros::NodeHandle("/dynup/pid");
+  pid_trunk_pitch_.init(nh, false);
+  pid_trunk_pitch_.reset();
+  pid_trunk_roll_.init(nh, false);
+  pid_trunk_roll_.reset();
 
   /* Reset kinematic goal to default */
   goal_state_.reset(new robot_state::RobotState(kinematic_model_));
@@ -30,10 +36,6 @@ void Stabilizer::reset() {
   for (int i = 0; i < names_vec.size(); i++) {
     goal_state_->setJointPositions(names_vec[i], &pos_vec[i]);
   }
-  cop_x_error_ = 0;
-  cop_y_error_ = 0;
-  cop_x_error_sum_ = 0;
-  cop_y_error_sum_ = 0;
 }
 
 DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Duration &dt) {
@@ -43,18 +45,15 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
 
     if(use_stabilizing_) {
         if(stabilize_now_) {
-            double cop_x_error, cop_y_error;
-            cop_x_error = cop_.x - trunk_goal.getOrigin().getX();
-            cop_y_error = cop_.y - trunk_goal.getOrigin().getY();
-            cop_x_error_sum_ += cop_x_error;
-            cop_y_error_sum_ += cop_y_error;
-            double x = trunk_goal.getOrigin().getX() - cop_.x * p_x_factor_ - i_x_factor_ * cop_x_error_sum_ -
-                       d_x_factor_ * (cop_x_error - cop_x_error_);
-            double y = trunk_goal.getOrigin().getY() - cop_.y * p_y_factor_ - i_y_factor_ * cop_y_error_sum_ -
-                       d_y_factor_ * (cop_y_error - cop_y_error_);
-            cop_x_error_ = cop_x_error;
-            cop_y_error_ = cop_y_error;
-            trunk_goal.setOrigin({x, y, trunk_goal.getOrigin().getZ()});
+            double goal_pitch, goal_roll, goal_yaw;
+            tf2::Matrix3x3(trunk_goal.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
+            // first adapt trunk pitch value based on PID controller
+            double corrected_pitch = pid_trunk_pitch_.computeCommand(goal_pitch - cop_.x, dt);
+            double corrected_roll = pid_trunk_roll_.computeCommand(goal_roll - cop_.y, dt);
+            tf2::Quaternion corrected_orientation;
+            corrected_orientation.setRPY(goal_roll + corrected_roll, goal_pitch + corrected_pitch, goal_yaw);
+
+            trunk_goal.setRotation(corrected_orientation);
         }
     }
 
@@ -80,25 +79,6 @@ void Stabilizer::useStabilizing(bool use) {
 
 void Stabilizer::setStabilizeNow(bool now) {
     stabilize_now_ = now;
-}
-
-void Stabilizer::setCoP(geometry_msgs::Point cop) {
-    cop_ = cop;
-}
-
-void Stabilizer::setPFactor(double factor_x, double factor_y) {
-    p_x_factor_ = factor_x;
-    p_y_factor_ = factor_y;
-}
-
-void Stabilizer::setIFactor(double factor_x, double factor_y) {
-    i_x_factor_ = factor_x;
-    i_y_factor_ = factor_y;
-}
-
-void Stabilizer::setDFactor(double factor_x, double factor_y) {
-    d_x_factor_ = factor_x;
-    d_y_factor_ = factor_y;
 }
 
 void Stabilizer::useMinimalDisplacement(bool use) {

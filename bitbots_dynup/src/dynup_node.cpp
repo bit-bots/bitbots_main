@@ -12,7 +12,7 @@ DynUpNode::DynUpNode() :
   robot_model_loader_.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
   robot_model::RobotModelPtr kinematic_model = robot_model_loader_.getModel();
   if (!kinematic_model) {
-    ROS_FATAL("No robot model loaded, killing dynamic kick.");
+    ROS_FATAL("No robot model loaded, killing dynamic up.");
     exit(1);
   }
   double arm_max_length = kinematic_model->getLinkModel("r_upper_arm")->getShapeExtentsAtOrigin().x() +
@@ -29,7 +29,14 @@ DynUpNode::DynUpNode() :
 
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("animation_motor_goals", 1);
   debug_publisher_ = node_handle_.advertise<visualization_msgs::Marker>("debug_markers", 1);
+  cop_subscriber_ = node_handle_.subscribe("imu/data", 1, &DynUpNode::copCallback, this);
   server_.start();
+}
+
+void DynUpNode::copCallback(const sensor_msgs::Imu &cop) {
+  stabilizer_.cop_.x = cop.orientation.x;
+  stabilizer_.cop_.y = cop.orientation.y;
+  stabilizer_.cop_.z = 0;
 }
 
 void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level) {
@@ -45,9 +52,8 @@ void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t
   stabilizer_.useStabilizing(config.stabilizing);
   stabilizer_.setStabilizingWeight(config.stabilizing_weight);
 
-  stabilizer_.setPFactor(config.stabilizing_p_x, config.stabilizing_p_y);
-  stabilizer_.setIFactor(config.stabilizing_i_x, config.stabilizing_i_y);
-  stabilizer_.setDFactor(config.stabilizing_d_x, config.stabilizing_d_y);
+  stabilizer_.pid_trunk_roll_.setGains(params.stabilizing_p_r, params.stabilizing_i_r, params.stabilizing_d_r, params.stabilizing_i_r, params.stabilizing_i_r);
+  stabilizer_.pid_trunk_pitch_.setGains(params.stabilizing_p_p, params.stabilizing_i_p, params.stabilizing_d_p, params.stabilizing_i_p, params.stabilizing_i_p);
 
   ik_.useMinimalDisplacement(config.minimal_displacement);
   ik_.useStabilizing(config.stabilizing);
@@ -71,7 +77,6 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     request.r_hand_pose = std::get<3>(poses.value());
     engine_.setGoals(request);
     stabilizer_.reset();
-    stabilizer_.setCoP(engine_.getCoP());
     if(debug_) {
       visualizer_.displaySplines(engine_.getRFootSplines(), "base_link");
       //visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole");
