@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   particle_filter
   roscpp
+  roslib
   std_msgs
   visualization_msgs
   dynamic_reconfigure
@@ -55,7 +56,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   INCLUDE_DIRS include
         LIBRARIES bitbots_localization_lib
-        CATKIN_DEPENDS geometry_msgs particle_filter roscpp std_msgs visualization_msgs humanoid_league_msgs dynamic_reconfigure
+        CATKIN_DEPENDS geometry_msgs particle_filter roscpp roslib std_msgs visualization_msgs humanoid_league_msgs dynamic_reconfigure
 #  DEPENDS system_lib
 )
 
@@ -105,5 +106,5 @@ add_dependencies(localization ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPOR
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(localization
-    ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME}_lib
+    ${OpenCV_LIBRARIES} ${PROJECT_NAME}_lib ${catkin_LIBRARIES}
 )
