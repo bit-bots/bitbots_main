@@ -39,6 +39,7 @@ KickPositions KickEngine::update(double dt) {
   positions.trunk_pose = trunk_spline_.getTfTransform(time_);
   positions.flying_foot_pose = flying_foot_spline_.getTfTransform(time_);
   positions.is_left_kick = is_left_kick_;
+  positions.engine_time = time_;
 
   /* calculate if we want to use center-of-pressure in the current phase
    * use COP based support point only when the weight is on the support foot

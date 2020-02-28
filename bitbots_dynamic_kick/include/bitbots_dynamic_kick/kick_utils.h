@@ -15,6 +15,7 @@ struct KickPositions {
   tf2::Transform trunk_pose;
   tf2::Transform flying_foot_pose;
   bool cop_support_point = false;
+  double engine_time;
 };
 
 struct KickGoals {

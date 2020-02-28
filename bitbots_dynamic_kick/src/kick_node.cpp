@@ -21,6 +21,9 @@ KickNode::KickNode() :
   stabilizer_.setRobotModel(kinematic_model);
   ik_.init(kinematic_model);
 
+  /* this debug variable represents the current state of the robot */
+  current_state_.reset(new robot_state::RobotState(kinematic_model));
+
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
   support_foot_publisher_ = node_handle_.advertise<std_msgs::Char>("dynamic_kick_support_state", 1, /* latch = */ true);
   cop_l_subscriber_ = node_handle_.subscribe("cop_l", 1, &KickNode::copLCallback, this);
@@ -188,6 +191,12 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
     // TODO: should positions be an std::optional? how are errors represented?
     KickPositions stabilized_positions = stabilizer_.stabilize(positions, ros::Duration(dt));
     bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_positions);
+
+    /* visualization of the values calculated above */
+    for (int i = 0; i < motor_goals.first.size(); ++i) {
+      current_state_->setJointPositions(motor_goals.first[i], &motor_goals.second[i]);
+    }
+    visualizer_.publishGoals(positions, stabilized_positions, current_state_);
 
     bitbots_msgs::KickFeedback feedback;
     feedback.percent_done = engine_.getPercentDone();

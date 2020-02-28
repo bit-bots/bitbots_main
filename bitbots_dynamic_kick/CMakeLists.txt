@@ -18,10 +18,23 @@ find_package(catkin REQUIRED COMPONENTS
         nav_msgs
         bitbots_docs
         control_toolbox
-        )
+        message_generation
+        message_runtime
+)
 
 generate_dynamic_reconfigure_options(
         cfg/bitbots_dynamic_kick_params.cfg
+)
+
+add_message_files(
+        FILES
+        KickDebug.msg
+)
+
+generate_messages(
+        DEPENDENCIES
+        geometry_msgs
+        std_msgs
 )
 
 catkin_package(
@@ -44,6 +57,6 @@ set(SOURCES
 
 add_executable(KickNode ${SOURCES})
 
-add_dependencies(KickNode ${PROJECT_NAME}_gencfg)
+add_dependencies(KickNode ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages)
 
 target_link_libraries(KickNode ${catkin_LIBRARIES})
