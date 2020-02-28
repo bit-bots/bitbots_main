@@ -16,14 +16,14 @@
   initial_robot_t: 0
 
   init_mode: 4
- 
-  map_path_lines: '../models/lines_simulator.png'
-  map_path_goals: '../models/posts.png'
-  map_path_field_boundary: '../models/fieldboundary.png'
 
-  map_path_corners: '../models/corners.png'
-  map_path_crosses: '../models/crosses_simulator.png'
-  map_path_tcrossings: '../models/tcrossings.png'
+  map_path_lines: 'models/lines_feldraum.png'
+  map_path_goals: 'models/posts.png'
+  map_path_field_boundary: 'models/fieldboundary.png'
+
+  map_path_corners: 'models/corners.png'
+  map_path_crosses: 'models/crosses_simulator.png'
+  map_path_tcrossings: 'models/tcrossings.png'
 
   #field size
   field_x: 9 #5.45
