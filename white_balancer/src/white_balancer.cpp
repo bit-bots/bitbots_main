@@ -13,6 +13,7 @@
 class WhiteBalancer
 {
 public:
+    // Params: (public node handler (for e.g. callbacks), private node handle (for e.g. dynamic reconfigure))
     WhiteBalancer(ros::NodeHandle nh, ros::NodeHandle pnh);
     // Dynamic reconfigure callback
     void callbackRC(white_balancer::WhiteBalancerConfig &config, uint32_t level);
