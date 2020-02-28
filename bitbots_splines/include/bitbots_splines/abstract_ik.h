@@ -17,7 +17,7 @@ typedef std::pair<std::vector<std::string>, std::vector<double>> JointGoals;
  * @param values New values for the previously defined joint names
  * @return new joint goals with updated values
  */
-JointGoals joint_goals_update(const JointGoals &goals,
+inline JointGoals joint_goals_update(const JointGoals &goals,
                               const std::vector<std::string> &names,
                               const std::vector<double> &values) {
   JointGoals result = goals;
@@ -45,7 +45,7 @@ JointGoals joint_goals_update(const JointGoals &goals,
  * @param diffs Differences to be applied to the previously defined joint names
  * @return new joint goals with updated values
  */
-JointGoals joint_goals_update_diff(const JointGoals &goals,
+inline JointGoals joint_goals_update_diff(const JointGoals &goals,
                                    const std::vector<std::string> &names,
                                    const std::vector<double> &diffs) {
   JointGoals result = goals;
