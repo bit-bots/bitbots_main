@@ -6,14 +6,14 @@ import copy
 
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
-from humanoid_league_msgs.msg import Speak
+from humanoid_league_msgs.msg import Speak, HeadMode
 import humanoid_league_msgs.msg
 from sensor_msgs.msg import JointState
 from bitbots_msgs.msg import JointCommand
 
 
 class JoyNode(object):
-    """ This node controls the roboter via Gamepad. 
+    """ This node controls the roboter via Gamepad.
     """
 
     #TODO read max values from config
@@ -40,16 +40,21 @@ class JoyNode(object):
         self.walk_msg.linear.x = 0.0
         self.walk_msg.linear.y = 0.0
         self.walk_msg.linear.z = 0.0
-        
+
         self.walk_msg.angular.x = 0.0
         self.walk_msg.angular.y = 0.0
         self.walk_msg.angular.z = 0.0
-        
+
         self.head_pub = rospy.Publisher("/head_motor_goals", JointCommand, queue_size=1)
+
+        self.head_mode_pub = rospy.Publisher("/head_mode", HeadMode, queue_size=1)
+
         self.head_msg = JointCommand()
         self.head_msg.max_currents = [-1] * 2
         self.head_msg.velocities = [5] * 2
         self.head_msg.accelerations = [40] * 2
+
+        self.head_modes = HeadMode()
 
         # --- init animation action ---
         self.anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
@@ -57,7 +62,7 @@ class JoyNode(object):
         self.anim_goal.hcm = False
 
         first_try = self.anim_client.wait_for_server(rospy.Duration(1))
-        
+
         if not first_try:
             rospy.logerr(
                 "Animation Action Server not running! Teleop can not work without animation action server. "
@@ -72,13 +77,13 @@ class JoyNode(object):
         self.anim_goal.animation = name
         self.anim_client.send_goal(self.anim_goal)
         self.anim_client.wait_for_result()
-    
+
     def send_text(self, text):
         self.speak_msg.text = text
         self.speak_pub.publish(self.speak_msg)
         # don't send it multiple times
         rospy.sleep(0.1)
-    
+
     def joint_state_cb(self, msg):
         i = 0
         for joint_name in msg.name:
@@ -89,6 +94,11 @@ class JoyNode(object):
             i+=1
         self.head_pan_pos = msg.position[pan_number]
         self.head_tilt_pos = msg.position[tilt_number]
+
+    def set_head_mode(self, mode):
+        msg = HeadMode()
+        msg.headMode = mode
+        self.head_mode_pub.publish(msg)
 
     def joy_cb(self, msg):
         # forward and sideward walking with left joystick
@@ -153,10 +163,10 @@ class JoyNode(object):
             self.play_animation("cheering")
         elif msg.buttons[1]:
             # 2
-            self.send_text("Button not in use")
+            self.set_head_mode(self.head_modes.BALL_MODE)
         elif msg.buttons[2]:
             # 3
-            self.send_text("Button not in use")
+            self.set_head_mode(self.head_modes.FIELD_FEATURES)
         elif msg.buttons[3]:
             # 4
             self.send_text("Button not in use")
