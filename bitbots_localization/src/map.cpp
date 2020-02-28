@@ -3,18 +3,17 @@
 //
 
 #include "bitbots_localization/map.h"
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 
 Map::Map(const std::string& file_path) {
-  //create char buffers
-  char file_path_chars[file_path.length()];
-  char absolute_file_path_chars[file_path.length()];
-  //copy string in char array
-  strcpy(file_path_chars, file_path.c_str());
-  //convert char array to absolute path
-  realpath(file_path_chars, absolute_file_path_chars);
+  //make boost path
+  fs::path map_path = fs::path(file_path);
+  //convert to absolute path
+  fs::path absolute_map_path = fs::absolute(map_path);
   //load map
-  map = cv::imread(absolute_file_path_chars, CV_LOAD_IMAGE_GRAYSCALE);
-  
+  map = cv::imread(absolute_map_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
+
   if (!map.data) {
     printf("No image data \n");
   }
