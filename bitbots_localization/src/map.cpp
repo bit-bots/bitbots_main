@@ -5,8 +5,16 @@
 #include "bitbots_localization/map.h"
 
 Map::Map(const std::string& file_path) {
-  map = cv::imread(file_path, CV_LOAD_IMAGE_GRAYSCALE);
-
+  //create char buffers
+  char file_path_chars[file_path.length()];
+  char absolute_file_path_chars[file_path.length()];
+  //copy string in char array
+  strcpy(file_path_chars, file_path.c_str());
+  //convert char array to absolute path
+  realpath(file_path_chars, absolute_file_path_chars);
+  //load map
+  map = cv::imread(absolute_file_path_chars, CV_LOAD_IMAGE_GRAYSCALE);
+  
   if (!map.data) {
     printf("No image data \n");
   }
