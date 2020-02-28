@@ -19,11 +19,16 @@
   <depend>std_msgs</depend>
   <depend>cv_bridge</depend>
   <depend>bitbots_docs</depend>
+  <build_depend>pluginlib</build_depend>
+  <build_depend>nodelet</build_depend>
+  <exec_depend>pluginlib</exec_depend>
+  <exec_depend>nodelet</exec_depend>
 
   <export>
     <bitbots_documentation>
       <language>c++</language>
       <status>tested_robot</status>
     </bitbots_documentation>
+    <nodelet plugin="${prefix}/nodelets.xml"/>
   </export>
 </package>
