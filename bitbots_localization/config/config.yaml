@@ -11,23 +11,23 @@
   initial_robot_y2: -3
   initial_robot_t2: 1.57
 
-  initial_robot_x: -4.5
+  initial_robot_x: -2
   initial_robot_y: 0
   initial_robot_t: 0
 
   init_mode: 4
- 
-  map_path_lines: '../models/lines_simulator.png'
-  map_path_goals: '../models/posts.png'
-  map_path_field_boundary: '../models/fieldboundary.png'
 
-  map_path_corners: '../models/corners.png'
-  map_path_crosses: '../models/crosses_simulator.png'
-  map_path_tcrossings: '../models/tcrossings.png'
+  map_path_lines: 'models/lines_feldraum.png'
+  map_path_goals: 'models/posts.png'
+  map_path_field_boundary: 'models/fieldboundary.png'
+
+  map_path_corners: 'models/corners.png'
+  map_path_crosses: 'models/crosses_simulator.png'
+  map_path_tcrossings: 'models/tcrossings.png'
 
   #field size
-  field_x: 9 #5.45
-  field_y: 6 #3.88
+  field_x: 5.45
+  field_y: 3.88
 
   # for field boundary map
   field_padding: 0.7 #0.1
@@ -71,7 +71,7 @@
   particle_number: 500
   resampling_interval: 15
 
-  use_lines: false
+  use_lines: true
   use_non_lines: false
   use_goals: false
   use_fieldboundary: false
@@ -82,7 +82,7 @@
   diffusion_x_std_dev: 0.8
   diffusion_y_std_dev: 0.8
   diffusion_t_std_dev: 0.5
-  diffusion_multiplicator: 0.05
+  diffusion_multiplicator: 0.03
 
   min_weight: 0.01
   min_resampling_weight: 0.5

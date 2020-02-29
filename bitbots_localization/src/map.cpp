@@ -3,12 +3,23 @@
 //
 
 #include "bitbots_localization/map.h"
+#include <boost/filesystem.hpp>
+#include <ros/package.h>
+
+namespace fs = boost::filesystem;
 
 Map::Map(const std::string& file_path) {
-  map = cv::imread(file_path, CV_LOAD_IMAGE_GRAYSCALE);
+  //get package path
+  std::string package_path = ros::package::getPath("bitbots_localization");
+  //make boost path
+  fs::path map_path = fs::path(file_path);
+  //convert to absolute path
+  fs::path absolute_map_path = fs::absolute(map_path, package_path);
+  //load map
+  map = cv::imread(absolute_map_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
 
   if (!map.data) {
-    printf("No image data \n");
+    printf("No image data '%s'\n", map_path.filename().c_str());
   }
 
 }
