@@ -510,6 +510,19 @@ void Localization::publish_pose() { //  and particles and map frame
     trans_mean.transform.rotation.w = qmean.w();
     br.sendTransform(trans_mean);
 
+    geometry_msgs::TransformStamped map_odom_transform;
+    geometry_msgs::TransformStamped odom_transform = tfBuffer.lookupTransform("odom", "base_footprint", ros::Time(0));
+    map_odom_transform.header.stamp = odom_transform.header.stamp;
+    map_odom_transform.header.frame_id = "/map";
+    map_odom_transform.child_frame_id = "/odom";
+    tf2::Transform odom_transform_tf, trans_mean_tf, map_tf;
+    tf2::fromMsg(odom_transform.transform, odom_transform_tf);
+    tf2::fromMsg(trans_mean.transform, trans_mean_tf);
+    map_tf = trans_mean_tf * odom_transform_tf.inverse();
+    map_odom_transform.transform = tf2::toMsg(map_tf);
+
+    br.sendTransform(map_odom_transform);
+
     //fill and publish evaluation message
     bitbots_localization::Evaluation estimateMsg;
     estimateMsg.header.frame_id = config_.publishing_frame;
