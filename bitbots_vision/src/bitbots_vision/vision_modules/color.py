@@ -291,7 +291,7 @@ class PixelListColorDetector(ColorDetector):
         if ros_utils.config_param_change(tmp_config, config, self._color_space_path_param):
             # concatenate path to file containing the accepted colors of base color space
             path = os.path.join(self._package_path, 'config', 'color_spaces')
-            color_space_path = os.path.join(path, config[self.color_space_path_param])
+            color_space_path = os.path.join(path, config[self._color_space_path_param])
             self._color_space = self._init_color_space(color_space_path)
 
     def _init_color_space(self, color_path):
