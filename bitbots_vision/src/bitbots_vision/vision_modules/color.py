@@ -270,7 +270,7 @@ class PixelListColorDetector(ColorDetector):
         """
         self._package_path = package_path
 
-        self.color_space_path_param = color_space_path_param
+        self._color_space_path_param = color_space_path_param
 
         # Initialization of parent ColorDetector.
         super(PixelListColorDetector, self).__init__(config)
