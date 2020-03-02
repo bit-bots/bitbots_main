@@ -1,0 +1,46 @@
+############
+# Feldraum #
+############
+
+# Settings override for the f-031 test field
+
+#############################
+# Initial pose of the robot #
+#############################
+
+# Initialize at sideline
+# TODO better parameters
+initial_robot_x1: 2.5
+initial_robot_y1: 3
+initial_robot_t1: -1.5
+initial_robot_x2: 2.5
+initial_robot_y2: -3
+initial_robot_t2: 1.57
+
+# Inertial single point position
+initial_robot_x: -2.0
+initial_robot_y: 0
+initial_robot_t: 0
+
+########
+# Maps #
+########
+
+map_path_lines: 'models/lines_feldraum.png'
+# TODO create feldraum maps for the following ones
+map_path_goals: 'models/posts.png'
+map_path_field_boundary: 'models/fieldboundary.png'
+map_path_corners: 'models/corners.png'
+map_path_crosses: 'models/crosses_simulator.png'
+map_path_tcrossings: 'models/tcrossings.png'
+
+##################
+# Field settings #
+##################
+
+# Field size
+field_x: 5.45
+field_y: 3.88
+
+# Padding
+field_padding: 0.7 #0.1
