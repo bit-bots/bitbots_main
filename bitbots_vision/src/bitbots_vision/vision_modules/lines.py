@@ -155,7 +155,10 @@ class LineDetector:
             # Get not green points under field boundary
             possible_line_locations = cv2.bitwise_and(not_green_mask, not_green_mask, mask=field_boundary_mask)
             # Get white points that are not above the field boundary or in the green field
-            self._white_mask = self._white_detector.mask_bitwise(possible_line_locations)
+            white_mask = self._white_detector.mask_bitwise(possible_line_locations)
+
+            # Filter out outliers
+            self._white_mask = cv2.medianBlur(white_mask, 3)
         return self._white_mask
 
 

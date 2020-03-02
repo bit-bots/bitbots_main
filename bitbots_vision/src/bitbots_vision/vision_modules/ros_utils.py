@@ -180,10 +180,11 @@ def add_color_space_enum(cfg_type, package_path):
     # Get all files in this directory
     color_space_files = [file for file in color_spaces if os.path.isfile(os.path.join(color_spaces_path, file))]
     # Create list with a new enum item for each file
-    field_color_space_enum = [{'name': cs_file, 'value': cs_file, 'description': 'color space {}'.format(cs_file)} for cs_file in color_space_files]
+    color_space_enum = [{'name': cs_file, 'value': cs_file, 'description': 'color space {}'.format(cs_file)} for cs_file in color_space_files]
 
     # Add enums to configuration
-    _change_enum_items(cfg_type, 'field_color_detector_path', field_color_space_enum)
+    _change_enum_items(cfg_type, 'field_color_detector_path', color_space_enum)
+    _change_enum_items(cfg_type, 'white_color_detector_color_space_path', color_space_enum)
 
 def create_or_update_publisher(old_config, new_config, publisher_object, topic_key, data_class, subscriber_listener=None, tcp_nodelay=False, latch=False, headers=None, queue_size=1):
     """
