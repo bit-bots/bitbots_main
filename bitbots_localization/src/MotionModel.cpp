@@ -18,16 +18,30 @@ RobotMotionModel::RobotMotionModel(const particle_filter::CRandomNumberGenerator
 }
 
 void RobotMotionModel::drift(RobotState &state,
-                             geometry_msgs::Vector3 movement,
-                             geometry_msgs::Vector3 movement2) const {
-  // sample_motion_model_odometry
-  double deltaRot1New = movement.x - sample(0.001 * abs(movement.x) + 0.001 * movement.y);
-  double deltaTransNew = movement.y - sample(0.001 * movement.y + 0.001 * (abs(movement.x) + abs(movement.z)));
-  double deltaRot2New = movement.z - sample(0.001 * abs(movement.z) + 0.001 * movement.y);
+                             geometry_msgs::Vector3 linear_movement,
+                             geometry_msgs::Vector3 rotational_movement) const {
 
-  state.setXPos(state.getXPos() + deltaTransNew * cos(state.getTheta() + deltaRot1New));
-  state.setYPos(state.getYPos() + deltaTransNew * sin(state.getTheta() + deltaRot1New));
-  double theta = state.getTheta() + deltaRot1New + deltaRot2New;
+  // Convert katesian coordinates to polarcoordinates with an orientation
+  double polar_rot, polar_dist, orientation;
+  polar_rot, polar_dist = cartesianToPolar(linear_movement.x, linear_movement.y);
+  orientation = rotational_movement.z - polar_rot;
+
+  // Apply sample drift for odom data
+  double deltaRot1_with_offset = polar_rot - sample(0.001 * abs(polar_rot) + 0.001 * polar_dist);
+  double deltaTrans_with_offset = polar_dist - sample(0.001 * polar_dist + 0.001 * (abs(polar_rot) + abs(orientation)));
+  double deltaRot2_with_offset = orientation - sample(0.001 * abs(orientation) + 0.001 * polar_dist);
+
+  // Convert polar coordinates with offset back to katesian ones
+  double katesian_with_offset_x, katesian_with_offset_y;
+  katesian_with_offset_x, katesian_with_offset_y = polarToCartesian(
+    state.getTheta() + deltaRot1_with_offset,
+    deltaTrans_with_offset);
+
+  // Apply new values onto state
+  state.setXPos(state.getXPos() + katesian_with_offset_x));
+  state.setYPos(state.getYPos() + katesian_with_offset_y));
+  double theta = state.getTheta() + deltaRot1_with_offset + deltaRot2_with_offset;
+
   if (theta > M_PI) {
     theta = -M_PI + (theta - M_PI);
   } else if (theta < -M_PI) {
