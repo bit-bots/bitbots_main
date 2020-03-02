@@ -1,0 +1,9 @@
+<library path="lib/libtest_nodelet">
+  <class name="white_balancer/WhiteBalanceNodelet"
+         type="white_balancer::WhiteBalanceNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Node to nodelet test
+    </description>
+  </class>
+</library>

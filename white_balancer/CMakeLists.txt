@@ -17,6 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   cv_bridge
   bitbots_docs
+  pluginlib
+  nodelet
 )
 
 # dynamic reconfigure
@@ -39,5 +41,10 @@ add_dependencies(white_balancer ${PROJECT_NAME}_gencfg)
 target_link_libraries(white_balancer
     ${catkin_LIBRARIES}
 )
+
+# Nodelet library
+add_library(test_nodelet src/white_balancer.cpp)
+add_dependencies(test_nodelet ${PROJECT_NAME})
+target_link_libraries(test_nodelet ${catkin_LIBRARIES})
 
 enable_bitbots_docs()
