@@ -42,7 +42,8 @@
     Therefore the vision gets more resistant in natural light conditions.
 
   </description>
-  <version>1.1.8</version>
+
+  <version>1.1.9</version>
 
   <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
   <maintainer email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</maintainer>
