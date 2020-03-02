@@ -23,7 +23,7 @@ ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'  # ROS 
 
 fcnn_model_path: '2019_06_timon_basler'  # Name of the ball fcnn model
 yolo_darknet_model_path: '2019_07_03_jonas_yolo'  # Name of the yolo model
-yolo_openvino_model_path: 'test'  # Name of the yolo model
+yolo_openvino_model_path: '2020_02_flo_yolo_openvino'  # Name of the yolo model
 yolo_nms_threshold: 0.4  # Non maximum suppression threshold
 yolo_confidence_threshold: 0.5  # Yolo: confidence threshold
 
