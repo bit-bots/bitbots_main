@@ -391,113 +391,44 @@ void Localization::publish_pose() { //  and particles and map frame
     pose_particles_publisher_.publish(robot_pf_->renderMarkerArray("pose_marker", "/map",
                                                                    ros::Duration(1),
                                                                    red));
-    //get estimates and covariances
-    best_estimate_ = robot_pf_->getBestXPercentEstimate(0.2); // best particle
-    best_estimate_5_ = robot_pf_->getBestXPercentEstimate(5);
-    std::vector<double> cov_estimate_5 = robot_pf_->getCovariance(5);
-    best_estimate_10_ = robot_pf_->getBestXPercentEstimate(10);
-    std::vector<double> cov_estimate_10 = robot_pf_->getCovariance(10);
-    best_estimate_20_ = robot_pf_->getBestXPercentEstimate(20);
-    std::vector<double> cov_estimate_20 = robot_pf_->getCovariance(20);
-    best_estimate_mean_ = robot_pf_->getBestXPercentEstimate(100);
-    std::vector<double> cov_mean = robot_pf_->getCovariance(100);
+    //get estimate and covariance
+    estimate_ = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
+    std::vector<double> estimate_cov_ = robot_pf_->getCovariance(config_.percentage_best_particles);
 
-    //calculate quaternions
+    //calculate quaternion
     tf2::Quaternion q;
-    q.setRPY(0, 0, best_estimate_.getTheta());
+    q.setRPY(0, 0, estimate_.getTheta());
     q.normalize();
 
-    tf2::Quaternion q5;
-    q5.setRPY(0, 0, best_estimate_5_.getTheta());
-    q5.normalize();
+    //////////////////////
+    //publish transforms//
+    //////////////////////
 
-    tf2::Quaternion q10;
-    q10.setRPY(0, 0, best_estimate_10_.getTheta());
-    q10.normalize();
+    //publish debug localization tf, not the odom offset
+    geometry_msgs::TransformStamped localization_transform;
+    localization_transform.header.stamp = ros::Time::now();
+    localization_transform.header.frame_id = "/map";
+    localization_transform.child_frame_id = "/localization_raw";
+    localization_transform.transform.translation.x = estimate_.getXPos();
+    localization_transform.transform.translation.y = estimate_.getYPos();
+    localization_transform.transform.translation.z = 0.0;
+    localization_transform.transform.rotation.x = q.x();
+    localization_transform.transform.rotation.y = q.y();
+    localization_transform.transform.rotation.z = q.z();
+    localization_transform.transform.rotation.w = q.w();
+    br.sendTransform(localization_transform);
 
-    tf2::Quaternion q20;
-    q20.setRPY(0, 0, best_estimate_20_.getTheta());
-    q20.normalize();
 
-    tf2::Quaternion qmean;
-    qmean.setRPY(0, 0, best_estimate_mean_.getTheta());
-    qmean.normalize();
-
-    //publish transforms
-    geometry_msgs::TransformStamped trans_best_estimate;
-    trans_best_estimate.header.stamp = ros::Time::now();
-    trans_best_estimate.header.frame_id = "/map";
-    trans_best_estimate.child_frame_id = "/best_estimate";
-    trans_best_estimate.transform.translation.x = best_estimate_.getXPos();
-    trans_best_estimate.transform.translation.y = best_estimate_.getYPos();
-    trans_best_estimate.transform.translation.z = 0.0;
-    trans_best_estimate.transform.rotation.x = q.x();
-    trans_best_estimate.transform.rotation.y = q.y();
-    trans_best_estimate.transform.rotation.z = q.z();
-    trans_best_estimate.transform.rotation.w = q.w();
-    br.sendTransform(trans_best_estimate);
-
-    geometry_msgs::TransformStamped trans_best_estimate_5;
-    trans_best_estimate_5.header.stamp = ros::Time::now();
-    trans_best_estimate_5.header.frame_id = "/map";
-    trans_best_estimate_5.child_frame_id = "/best_estimate_5";
-    trans_best_estimate_5.transform.translation.x = best_estimate_5_.getXPos();
-    trans_best_estimate_5.transform.translation.y = best_estimate_5_.getYPos();
-    trans_best_estimate_5.transform.translation.z = 0.0;
-    trans_best_estimate_5.transform.rotation.x = q5.x();
-    trans_best_estimate_5.transform.rotation.y = q5.y();
-    trans_best_estimate_5.transform.rotation.z = q5.z();
-    trans_best_estimate_5.transform.rotation.w = q5.w();
-    br.sendTransform(trans_best_estimate_5);
-
-    geometry_msgs::TransformStamped trans_best_estimate_10;
-    trans_best_estimate_10.header.stamp = ros::Time::now();
-    trans_best_estimate_10.header.frame_id = "/map";
-    trans_best_estimate_10.child_frame_id = config_.publishing_frame; // localization_estimate
-    trans_best_estimate_10.transform.translation.x = best_estimate_10_.getXPos();
-    trans_best_estimate_10.transform.translation.y = best_estimate_10_.getYPos();
-    trans_best_estimate_10.transform.translation.z = 0.0;
-    trans_best_estimate_10.transform.rotation.x = q10.x();
-    trans_best_estimate_10.transform.rotation.y = q10.y();
-    trans_best_estimate_10.transform.rotation.z = q10.z();
-    trans_best_estimate_10.transform.rotation.w = q10.w();
-    br.sendTransform(trans_best_estimate_10);
-
-    geometry_msgs::TransformStamped trans_best_estimate_20;
-    trans_best_estimate_20.header.stamp = ros::Time::now();
-    trans_best_estimate_20.header.frame_id = "/map";
-    trans_best_estimate_20.child_frame_id = "/best_estimate_20";
-    trans_best_estimate_20.transform.translation.x = best_estimate_20_.getXPos();
-    trans_best_estimate_20.transform.translation.y = best_estimate_20_.getYPos();
-    trans_best_estimate_20.transform.translation.z = 0.0;
-    trans_best_estimate_20.transform.rotation.x = q20.x();
-    trans_best_estimate_20.transform.rotation.y = q20.y();
-    trans_best_estimate_20.transform.rotation.z = q20.z();
-    trans_best_estimate_20.transform.rotation.w = q20.w();
-    br.sendTransform(trans_best_estimate_20);
-
-    geometry_msgs::TransformStamped trans_mean;
-    trans_mean.header.stamp = ros::Time::now();
-    trans_mean.header.frame_id = "/map";
-    trans_mean.child_frame_id = "/mean";
-    trans_mean.transform.translation.x = best_estimate_mean_.getXPos();
-    trans_mean.transform.translation.y = best_estimate_mean_.getYPos();
-    trans_mean.transform.translation.z = 0.0;
-    trans_mean.transform.rotation.x = qmean.x();
-    trans_mean.transform.rotation.y = qmean.y();
-    trans_mean.transform.rotation.z = qmean.z();
-    trans_mean.transform.rotation.w = qmean.w();
-    br.sendTransform(trans_mean);
-
+    //publish odom localisation offset
     geometry_msgs::TransformStamped map_odom_transform;
     geometry_msgs::TransformStamped odom_transform = tfBuffer.lookupTransform("odom", "base_footprint", ros::Time(0));
     map_odom_transform.header.stamp = odom_transform.header.stamp;
     map_odom_transform.header.frame_id = "/map";
     map_odom_transform.child_frame_id = "/odom";
-    tf2::Transform odom_transform_tf, trans_mean_tf, map_tf;
+    tf2::Transform odom_transform_tf, localization_transform_tf, map_tf;
     tf2::fromMsg(odom_transform.transform, odom_transform_tf);
-    tf2::fromMsg(trans_mean.transform, trans_mean_tf);
-    map_tf = trans_mean_tf * odom_transform_tf.inverse();
+    tf2::fromMsg(localization_transform.transform, localization_transform_tf);
+    map_tf = localization_transform_tf * odom_transform_tf.inverse();
     map_odom_transform.transform = tf2::toMsg(map_tf);
 
     br.sendTransform(map_odom_transform);
@@ -505,13 +436,10 @@ void Localization::publish_pose() { //  and particles and map frame
     //fill and publish evaluation message
     bitbots_localization::Evaluation estimateMsg;
     estimateMsg.header.frame_id = config_.publishing_frame;
-    estimateMsg.header.stamp = trans_best_estimate.header.stamp;
+    estimateMsg.header.stamp = localization_transform.header.stamp;
 
     for (int i = 0; i < 36; i++) {
-      estimateMsg.cov_estimate_5[i] = cov_estimate_5[i];
-      estimateMsg.cov_estimate_10[i] = cov_estimate_10[i];
-      estimateMsg.cov_estimate_20[i] = cov_estimate_20[i];
-      estimateMsg.cov_mean[i] = cov_mean[i];
+      estimateMsg.cov_estimate[i] = estimate_cov_[i];
     }
 
     estimateMsg.lines = RobotPoseObservationModel::number_lines;
@@ -559,7 +487,7 @@ void Localization::publish_pose_with_covariance() {
 void Localization::publish_line_ratings() {
   if (config_.debug_visualization) {
     std::vector<std::pair<double, double>> lines = robot_pose_observation_model_->get_measurement_lines();
-    best_estimate_ = robot_pf_->getBestState();
+    RobotState best_estimate = robot_pf_->getBestState();
     double rating = 0;
 
     visualization_msgs::Marker marker;
@@ -576,8 +504,8 @@ void Localization::publish_line_ratings() {
       //lines are in polar form!
       std::pair<double, double> lineRelative;
 
-      lineRelative = lines_->observationRelative(line, best_estimate_.getXPos(), best_estimate_.getYPos(),
-                                                 best_estimate_.getTheta());
+      lineRelative = lines_->observationRelative(line, best_estimate.getXPos(), best_estimate.getYPos(),
+                                                 best_estimate.getTheta());
       double occupancy = lines_->get_occupancy(lineRelative.first, lineRelative.second);
 
       geometry_msgs::Point point;
@@ -603,7 +531,7 @@ void Localization::publish_line_ratings() {
 void Localization::publish_goal_ratings() {
   if (config_.debug_visualization) {
     std::vector<std::pair<double, double>> goals = robot_pose_observation_model_->get_measurement_goals();
-    best_estimate_ = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
+    RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
     double rating = 0;
 
     visualization_msgs::Marker marker;
@@ -621,8 +549,8 @@ void Localization::publish_goal_ratings() {
       //lines are in polar form!
       std::pair<double, double> goalRelative;
 
-      goalRelative = goals_->observationRelative(goal, best_estimate_.getXPos(), best_estimate_.getYPos(),
-                                                 best_estimate_.getTheta());
+      goalRelative = goals_->observationRelative(goal, best_estimate.getXPos(), best_estimate.getYPos(),
+                                                 best_estimate.getTheta());
       double occupancy = goals_->get_occupancy(goalRelative.first, goalRelative.second);
 
       geometry_msgs::Point point;
@@ -648,7 +576,7 @@ void Localization::publish_goal_ratings() {
 void Localization::publish_field_boundary_ratings() {
   if (config_.debug_visualization) {
     std::vector<std::pair<double, double>> fb_points = robot_pose_observation_model_->get_measurement_field_boundary();
-    best_estimate_ = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
+    RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
     double rating = 0;
 
     visualization_msgs::Marker marker;
@@ -666,8 +594,8 @@ void Localization::publish_field_boundary_ratings() {
       //lines are in polar form!
       std::pair<double, double> fbRelative;
 
-      fbRelative = field_boundary_->observationRelative(fb, best_estimate_.getXPos(), best_estimate_.getYPos(),
-                                                        best_estimate_.getTheta());
+      fbRelative = field_boundary_->observationRelative(fb, best_estimate.getXPos(), best_estimate.getYPos(),
+                                                        best_estimate.getTheta());
       double occupancy = field_boundary_->get_occupancy(fbRelative.first, fbRelative.second);
       geometry_msgs::Point point;
       point.x = fbRelative.first;
@@ -692,7 +620,7 @@ void Localization::publish_field_boundary_ratings() {
 void Localization::publish_corner_ratings() {
   if (config_.debug_visualization) {
     std::vector<std::pair<double, double>> corners = robot_pose_observation_model_->get_measurement_corners();
-    best_estimate_ = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
+    RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
     double rating = 0;
 
     visualization_msgs::Marker marker;
@@ -710,8 +638,8 @@ void Localization::publish_corner_ratings() {
       //lines are in polar form!
       std::pair<double, double> cornerRelative;
 
-      cornerRelative = corner_->observationRelative(corner, best_estimate_.getXPos(), best_estimate_.getYPos(),
-                                                    best_estimate_.getTheta());
+      cornerRelative = corner_->observationRelative(corner, best_estimate.getXPos(), best_estimate.getYPos(),
+                                                    best_estimate.getTheta());
       double occupancy = corner_->get_occupancy(cornerRelative.first, cornerRelative.second);
       geometry_msgs::Point point;
       point.x = cornerRelative.first;
@@ -736,7 +664,7 @@ void Localization::publish_corner_ratings() {
 void Localization::publish_t_crossings_ratings() {
   if (config_.debug_visualization) {
     std::vector<std::pair<double, double>> tcrossings = robot_pose_observation_model_->get_measurement_t_crossings();
-    best_estimate_ = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
+    RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
     double rating = 0;
 
     visualization_msgs::Marker marker;
@@ -754,9 +682,9 @@ void Localization::publish_t_crossings_ratings() {
       //lines are in polar form!
       std::pair<double, double> tcrossingRelative;
 
-      tcrossingRelative = t_crossings_map_->observationRelative(tcrossing, best_estimate_.getXPos(),
-                                                                best_estimate_.getYPos(),
-                                                                best_estimate_.getTheta());
+      tcrossingRelative = t_crossings_map_->observationRelative(tcrossing, best_estimate.getXPos(),
+                                                                best_estimate.getYPos(),
+                                                                best_estimate.getTheta());
       double occupancy = t_crossings_map_->get_occupancy(tcrossingRelative.first, tcrossingRelative.second);
       geometry_msgs::Point point;
       point.x = tcrossingRelative.first;
@@ -781,7 +709,7 @@ void Localization::publish_t_crossings_ratings() {
 void Localization::publish_crosses_ratings() {
   if (config_.debug_visualization) {
     std::vector<std::pair<double, double>> corners = robot_pose_observation_model_->get_measurement_crosses();
-    best_estimate_ = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
+    RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
     double rating = 0;
 
     visualization_msgs::Marker marker;
@@ -799,9 +727,9 @@ void Localization::publish_crosses_ratings() {
       //lines are in polar form!
       std::pair<double, double> cornerRelative;
 
-      cornerRelative = crosses_map_->observationRelative(corner, best_estimate_.getXPos(),
-                                                         best_estimate_.getYPos(),
-                                                         best_estimate_.getTheta());
+      cornerRelative = crosses_map_->observationRelative(corner, best_estimate.getXPos(),
+                                                         best_estimate.getYPos(),
+                                                         best_estimate.getTheta());
       double occupancy = crosses_map_->get_occupancy(cornerRelative.first, cornerRelative.second);
 
       geometry_msgs::Point point;
