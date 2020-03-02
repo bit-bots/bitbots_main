@@ -6,7 +6,7 @@
 
 Localization::Localization() : line_points_(), tfListener(tfBuffer) {
   ROS_DEBUG("localization");
-  
+
 }
 
 void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config, uint32_t config_level) {
@@ -148,7 +148,7 @@ void Localization::publishing_timer_callback(const ros::TimerEvent &e) {
 
   if ((config_.filter_only_with_motion and robot_moved) or (!config_.filter_only_with_motion)) {
 
-    robot_pf_->drift(movement_, movement2_);
+    robot_pf_->drift(katesian_movement_, rotational_movement_);
     robot_pf_->diffuse();
   }
 
@@ -347,51 +347,28 @@ void Localization::getMotion() {
   geometry_msgs::TransformStamped transformStampedPast;
   geometry_msgs::TransformStamped transformStampedNow;
 
-  movement2_.x = 0;
-  movement2_.y = 0;
-  movement2_.z = 0;
-
   try {
 
     transformStampedNow = tfBuffer.lookupTransform("odom", "base_footprint", now);
 
-    ros::Time past = transformStampedNow.header.stamp - ros::Duration(0.04);  //TODO better param
+    ros::Time past = transformStampedNow.header.stamp - ros::Duration(1 / config_.publishing_frequency);
 
     transformStampedPast = tfBuffer.lookupTransform("odom", "base_footprint", past);
 
-    geometry_msgs::Vector3 past_;
-    geometry_msgs::Vector3 now_;
+    //linear movement
+    katesian_movement_.x = transformStampedNow.transform.translation.x - transformStampedPast.transform.translation.x;
+    katesian_movement_.y = transformStampedNow.transform.translation.y - transformStampedPast.transform.translation.y;
+    katesian_movement_.z =
+        transformStampedNow.transform.translation.z - transformStampedPast.transform.translation.z;
 
-    past_.x = transformStampedPast.transform.translation.x;
-    past_.y = transformStampedPast.transform.translation.y;
-    past_.z = tf::getYaw(transformStampedPast.transform.rotation);
-
-    now_.x = transformStampedNow.transform.translation.x;
-    now_.y = transformStampedNow.transform.translation.y;
-    now_.z = tf::getYaw(transformStampedNow.transform.rotation);
-
-    movement_.x = atan2(now_.y - past_.y, now_.x - past_.x) - past_.z; //deltaRot1
-    movement_.y = hypot(past_.x - now_.x, past_.y - now_.y); //deltaTrans
-    movement_.z = now_.z - past_.z - movement_.x; // deltaRot2
-
-    //rotational movement
-    geometry_msgs::Vector3 rotation_;
-    geometry_msgs::Vector3 translation_;
-    rotation_.x = 0;
-    rotation_.y = 0;
-    rotation_.z = tf::getYaw(transformStampedNow.transform.rotation) -
+    rotational_movement_.x = 0;
+    rotational_movement_.y = 0;
+    rotational_movement_.z = tf::getYaw(transformStampedNow.transform.rotation) -
         tf::getYaw(transformStampedPast.transform.rotation);
 
-    //linear movement
-    translation_.x = transformStampedNow.transform.translation.x - transformStampedPast.transform.translation.x;
-    translation_.y = transformStampedNow.transform.translation.y - transformStampedPast.transform.translation.y;
-    translation_.z =
-        transformStampedNow.transform.translation.z - transformStampedPast.transform.translation.z; // oder 0?
-
-    if (translation_.x > config_.min_motion_linear or translation_.y > config_.min_motion_linear or
-        rotation_.z > config_.min_motion_angular) {
+    if (katesian_movement_.x > config_.min_motion_linear or katesian_movement_.y > config_.min_motion_linear or
+        rotational_movement_.z > config_.min_motion_angular) {
       robot_moved = true;
-      // ROS_INFO_STREAM("robot moved");
     }
 
   }

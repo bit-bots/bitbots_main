@@ -219,8 +219,8 @@ class Localization {
 
   void getMotion();
 
-  geometry_msgs::Vector3 movement_;
-  geometry_msgs::Vector3 movement2_;
+  geometry_msgs::Vector3 katesian_movement_;
+  geometry_msgs::Vector3 rotational_movement_;
   bool new_linepoints_ = false;
   bool robot_moved = false;
   int timer_callback_count = 0;
