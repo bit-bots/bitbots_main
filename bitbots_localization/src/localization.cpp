@@ -361,11 +361,13 @@ void Localization::getMotion() {
     cartesian_movement_.z =
         transformStampedNow.transform.translation.z - transformStampedPast.transform.translation.z;
 
+    //rotational movement
     rotational_movement_.x = 0;
     rotational_movement_.y = 0;
     rotational_movement_.z = tf::getYaw(transformStampedNow.transform.rotation) -
         tf::getYaw(transformStampedPast.transform.rotation);
 
+    //check if robot moved
     if (cartesian_movement_.x > config_.min_motion_linear or cartesian_movement_.y > config_.min_motion_linear or
         rotational_movement_.z > config_.min_motion_angular) {
       robot_moved = true;
