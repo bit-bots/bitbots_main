@@ -46,8 +46,6 @@
     <option name="BLANK_LINES_AROUND_METHOD" value="0" />
     <option name="BLANK_LINES_AROUND_METHOD_IN_INTERFACE" value="0" />
     <option name="ALIGN_MULTILINE_BINARY_OPERATION" value="false" />
-    <option name="SPACE_AROUND_EQUALITY_OPERATORS" value="false" />
-    <option name="SPACE_AROUND_MULTIPLICATIVE_OPERATORS" value="false" />
     <option name="METHOD_CALL_CHAIN_WRAP" value="1" />
     <option name="BINARY_OPERATION_SIGN_ON_NEXT_LINE" value="true" />
     <option name="FOR_STATEMENT_WRAP" value="1" />
