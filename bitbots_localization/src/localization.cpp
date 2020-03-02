@@ -148,7 +148,7 @@ void Localization::publishing_timer_callback(const ros::TimerEvent &e) {
 
   if ((config_.filter_only_with_motion and robot_moved) or (!config_.filter_only_with_motion)) {
 
-    robot_pf_->drift(katesian_movement_, rotational_movement_);
+    robot_pf_->drift(cartesian_movement_, rotational_movement_);
     robot_pf_->diffuse();
   }
 
@@ -356,9 +356,9 @@ void Localization::getMotion() {
     transformStampedPast = tfBuffer.lookupTransform("odom", "base_footprint", past);
 
     //linear movement
-    katesian_movement_.x = transformStampedNow.transform.translation.x - transformStampedPast.transform.translation.x;
-    katesian_movement_.y = transformStampedNow.transform.translation.y - transformStampedPast.transform.translation.y;
-    katesian_movement_.z =
+    cartesian_movement_.x = transformStampedNow.transform.translation.x - transformStampedPast.transform.translation.x;
+    cartesian_movement_.y = transformStampedNow.transform.translation.y - transformStampedPast.transform.translation.y;
+    cartesian_movement_.z =
         transformStampedNow.transform.translation.z - transformStampedPast.transform.translation.z;
 
     rotational_movement_.x = 0;
@@ -366,7 +366,7 @@ void Localization::getMotion() {
     rotational_movement_.z = tf::getYaw(transformStampedNow.transform.rotation) -
         tf::getYaw(transformStampedPast.transform.rotation);
 
-    if (katesian_movement_.x > config_.min_motion_linear or katesian_movement_.y > config_.min_motion_linear or
+    if (cartesian_movement_.x > config_.min_motion_linear or cartesian_movement_.y > config_.min_motion_linear or
         rotational_movement_.z > config_.min_motion_angular) {
       robot_moved = true;
     }
