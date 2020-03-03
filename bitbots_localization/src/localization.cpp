@@ -351,7 +351,7 @@ void Localization::getMotion() {
 
     transformStampedNow = tfBuffer.lookupTransform("odom", "base_footprint", now);
 
-    ros::Time past = transformStampedNow.header.stamp - ros::Duration(1 / config_.publishing_frequency);
+    ros::Time past = transformStampedNow.header.stamp - ros::Duration(1.0/(float)config_.publishing_frequency);
 
     transformStampedPast = tfBuffer.lookupTransform("odom", "base_footprint", past);
 
