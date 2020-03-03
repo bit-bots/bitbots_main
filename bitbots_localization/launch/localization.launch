@@ -10,7 +10,7 @@
         <rosparam command="load" file="$(find bitbots_localization)/config/fields/$(fieldname).yaml"/>
     </node>
     <!-- load the map for rviz-->
-    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/lines_$(fieldparam).yaml">
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/lines_$(fieldname).yaml">
         <param name="frame_id" value="map" />
     </node>
 </launch>
