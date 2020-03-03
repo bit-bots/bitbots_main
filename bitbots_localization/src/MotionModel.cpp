@@ -26,19 +26,19 @@ void RobotMotionModel::drift(RobotState &state,
   double orientation = rotational_movement.z - polar_rot;
 
   // Apply sample drift for odom data
-  double deltaRot1_with_offset = polar_rot - sample(0.001 * abs(polar_rot) + 0.001 * polar_dist);
-  double deltaTrans_with_offset = polar_dist - sample(0.001 * polar_dist + 0.001 * (abs(polar_rot) + abs(orientation)));
-  double deltaRot2_with_offset = orientation - sample(0.001 * abs(orientation) + 0.001 * polar_dist);
+  double polar_rot_with_drift = polar_rot - sample(0.001 * abs(polar_rot) + 0.001 * polar_dist);
+  double polar_dist_with_drift = polar_dist - sample(0.001 * polar_dist + 0.001 * (abs(polar_rot) + abs(orientation)));
+  double orientation_with_drift = orientation - sample(0.001 * abs(orientation) + 0.001 * polar_dist);
 
   // Convert polar coordinates with offset back to cartesian ones
   auto [cartesian_with_offset_x, cartesian_with_offset_y] = polarToCartesian(
-    state.getTheta() + deltaRot1_with_offset,
-    deltaTrans_with_offset);
+    state.getTheta() + polar_rot_with_drift,
+    polar_dist_with_drift);
 
   // Apply new values onto state
   state.setXPos(state.getXPos() + cartesian_with_offset_x);
   state.setYPos(state.getYPos() + cartesian_with_offset_y);
-  double theta = state.getTheta() + deltaRot1_with_offset + deltaRot2_with_offset;
+  double theta = state.getTheta() + polar_rot_with_drift + orientation_with_drift;
 
   if (theta > M_PI) {
     theta = -M_PI + (theta - M_PI);
