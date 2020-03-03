@@ -247,9 +247,11 @@ class TransformBall(object):
 
         # Transform goal posts
         for goal_post_in_image in msg.posts:
+            # Check if footpoint is not in the bottom area of the image, to filter out goal posts without visible footpoint
             image_vertical_resolution =  self._camera_info.height / self._camera_info.binning_y
             if goal_post_in_image.foot_point.y < image_vertical_resolution - self._goalpost_footpoint_out_of_image_threshold:
-                relative_foot_point = self._transform(goal_post_in_image.foot_point, field, msg.header.stamp)
+                # Transform footpoint
+                relative_foot_point = self._transform(goal_post_in_image.foot_point, field, msg.header.stamp)   
                 if relative_foot_point is None:
                     rospy.logwarn_throttle(5.0, rospy.get_name() +
                                         ": Got a post with foot point ({},{}) I could not transform.".format(
