@@ -1,10 +1,16 @@
 <launch>
-    <node pkg="bitbots_localization" type="localization" name="bitbots_localization" output="screen">
-        <rosparam command="load" file="$(find bitbots_localization)/config/config.yaml"/>
-    </node>
-    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/lines_feldraum.yaml">
-        <param name="frame_id" value="map" ></param>
-    </node> <!--TODO parameter-->
-    <node pkg="humanoid_league_transform" type="transformer" name="transformer" output="screen"/>
+    <!-- define parameters -->
+    <arg name="fieldname" default="feldraum" doc="Loads field settings, e.g. for the feldraum (f-031)." />
 
+    <!-- load localization -->
+    <node pkg="bitbots_localization" type="localization" name="bitbots_localization" output="screen">
+        <!-- load base parameters -->
+        <rosparam command="load" file="$(find bitbots_localization)/config/config.yaml"/>
+        <!-- load field specific paramters -->
+        <rosparam command="load" file="$(find bitbots_localization)/config/fields/$(fieldname).yaml"/>
+    </node>
+    <!-- load the map for rviz-->
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/lines_$(fieldname).yaml">
+        <param name="frame_id" value="map" />
+    </node>
 </launch>
