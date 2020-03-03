@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Part of the code was taken from orginal author: Ryu Woon Jung (Leon)
 # original code can be found at: https://github.com/ROBOTIS-GIT/DynamixelSDK/tree/master/python

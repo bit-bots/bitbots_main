@@ -35,13 +35,13 @@ catkin_package(
   dynamic_reconfigure
   humanoid_league_msgs
   wolves_image_provider
-  python-cv_bridge
-  python-pyopencl
-  python-numpy
-  python-silx
-  python-opencv
-  python-yaml
-  python-matplotlib
+  python3-cv_bridge
+  python3-pyopencl
+  python3-numpy
+  python3-silx
+  python3-opencv
+  python3-yaml
+  python3-matplotlib
 )
 
 include_directories(

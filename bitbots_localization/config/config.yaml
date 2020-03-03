@@ -3,34 +3,7 @@
   # MISC #
   ########
 
-  # the initial pose of the robot
-  initial_robot_x1: 2.5
-  initial_robot_y1: 3
-  initial_robot_t1: -1.5
-  initial_robot_x2: 2.5
-  initial_robot_y2: -3
-  initial_robot_t2: 1.57
-
-  initial_robot_x: -2
-  initial_robot_y: 0
-  initial_robot_t: 0
-
   init_mode: 4
-
-  map_path_lines: 'models/lines_feldraum.png'
-  map_path_goals: 'models/posts.png'
-  map_path_field_boundary: 'models/fieldboundary.png'
-
-  map_path_corners: 'models/corners.png'
-  map_path_crosses: 'models/crosses_simulator.png'
-  map_path_tcrossings: 'models/tcrossings.png'
-
-  #field size
-  field_x: 5.45
-  field_y: 3.88
-
-  # for field boundary map
-  field_padding: 0.7 #0.1
 
   field_boundary_interpolation_steps: 1
 
