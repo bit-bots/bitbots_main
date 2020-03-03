@@ -26,7 +26,7 @@ class TransformBall(object):
         self._bar_height = rospy.get_param("~goal_parts/bar_height", 2.0)
         self._publish_frame = rospy.get_param("~publish_frame", "base_footprint")
         self._goalpost_footpoint_out_of_image_threshold = \
-            rospy.get_param("~_goalpost_footpoint_out_of_image_threshold", 30)
+            rospy.get_param("~goal_parts/footpoint_out_of_image_threshold", 30)
 
         camera_info_topic = rospy.get_param("~camera_info/camera_info_topic", "/camera_info")
         balls_in_image_topic = rospy.get_param("~ball/ball_topic", "/balls_in_image")
