@@ -219,7 +219,7 @@ class Localization {
 
   void getMotion();
 
-  geometry_msgs::Vector3 cartesian_movement_;
+  geometry_msgs::Vector3 linear_movement_;
   geometry_msgs::Vector3 rotational_movement_;
   bool new_linepoints_ = false;
   bool robot_moved = false;
