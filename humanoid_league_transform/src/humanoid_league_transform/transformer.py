@@ -371,9 +371,9 @@ class TransformBall(object):
         camera_projection_matrix = self._camera_info.K
 
         # calculate a point on a projection plane 1 m (for convenience) away
-        # (point - image center) / focal length
-        x = (point.x - camera_projection_matrix[2]) / camera_projection_matrix[0]
-        y = (point.y - camera_projection_matrix[5]) / camera_projection_matrix[4]
+        # (point - image center / binning) / (focal length /binning)
+        x = (point.x - camera_projection_matrix[2] / self._camera_info.binning_x) / (camera_projection_matrix[0] / self._camera_info.binning_x)
+        y = (point.y - camera_projection_matrix[5] / self._camera_info.binning_y) / (camera_projection_matrix[4] / self._camera_info.binning_y)
         z = 1.0
         point_on_image = np.array([x, y, z])
 
