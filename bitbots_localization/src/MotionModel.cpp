@@ -23,22 +23,29 @@ void RobotMotionModel::drift(RobotState &state,
 
   // Convert cartesian coordinates to polarcoordinates with an orientation
   auto [polar_rot, polar_dist] = cartesianToPolar(linear_movement.x, linear_movement.y);
-  double orientation = rotational_movement.z - polar_rot;
+  double orientation = rotational_movement.z;
+
+  float cov[3][2] {
+    // Standard dev of applied drift related to
+    // distance, rotation
+      {0.0000  , 0.0000},  // Values affecting walking direction
+      {0.0000  , 0.0000},  // Values affecting walking distance
+      {0.0000  , 0.0000}}; // Values affecting orientation
 
   // Apply sample drift for odom data
-  double polar_rot_with_drift = polar_rot - sample(0.001 * abs(polar_rot) + 0.001 * polar_dist);
-  double polar_dist_with_drift = polar_dist - sample(0.001 * polar_dist + 0.001 * (abs(polar_rot) + abs(orientation)));
-  double orientation_with_drift = orientation - sample(0.001 * abs(orientation) + 0.001 * polar_dist);
+  //no need for abs polar distance, because its positive every time
+  double polar_rot_with_drift   = polar_rot   - sample(cov[0][0] * polar_dist + cov[0][1] * abs(orientation));
+  double polar_dist_with_drift  = polar_dist  - sample(cov[1][0] * polar_dist + cov[1][0] * abs(orientation));
+  double orientation_with_drift = orientation - sample(cov[2][0] * polar_dist + cov[2][0] * abs(orientation));
 
   // Convert polar coordinates with offset back to cartesian ones
   auto [cartesian_with_offset_x, cartesian_with_offset_y] = polarToCartesian(
-    state.getTheta() + polar_rot_with_drift,
-    polar_dist_with_drift);
+    polar_rot_with_drift, polar_dist_with_drift);
 
   // Apply new values onto state
   state.setXPos(state.getXPos() + cartesian_with_offset_x);
   state.setYPos(state.getYPos() + cartesian_with_offset_y);
-  double theta = state.getTheta() + polar_rot_with_drift + orientation_with_drift;
+  double theta = state.getTheta() + orientation_with_drift;
 
   if (theta > M_PI) {
     theta = -M_PI + (theta - M_PI);
