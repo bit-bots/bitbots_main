@@ -3,7 +3,6 @@
 #include <memory>
 #include <utility>
 #include <bitbots_splines/dynamic_balancing_goal.h>
-#include <bitbots_splines/reference_goals.h>
 
 
 namespace bitbots_dynup {
@@ -61,7 +60,7 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
     tf2::Transform from_trunk_tf;
     tf2::fromMsg(from_trunk_.transform, from_trunk_tf);
     tf2::Transform right_foot_goal = trunk_goal * from_trunk_tf;
-    tf2::Transform left_foot_goal = ik_goals.l_foot_goal_pose * ik_goals.r_foot_goal_pose;
+    tf2::Transform left_foot_goal = ik_goals.l_foot_goal_pose * right_foot_goal;
     tf2::Transform left_hand_goal = ik_goals.l_hand_goal_pose;
     tf2::Transform right_hand_goal = ik_goals.r_hand_goal_pose;
 

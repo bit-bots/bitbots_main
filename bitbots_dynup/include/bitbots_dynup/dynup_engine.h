@@ -40,12 +40,6 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   bool isStabilizingNeeded() const;
 
-  bitbots_splines::PoseSpline getLHandSplines() const;
-
-  bitbots_splines::PoseSpline getRHandSplines() const;
-
-  bitbots_splines::PoseSpline getLFootSplines() const;
-
   bitbots_splines::PoseSpline getRFootSplines() const;
 
   void setParams(DynUpConfig params);
