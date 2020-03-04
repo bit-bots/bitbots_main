@@ -42,6 +42,12 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   bitbots_splines::PoseSpline getRFootSplines() const;
 
+  bitbots_splines::PoseSpline getLHandSplines() const;
+
+  bitbots_splines::PoseSpline getRHandSplines() const;
+
+  bitbots_splines::PoseSpline getLFootSplines() const;
+
   void setParams(DynUpConfig params);
 
   void reset() override;
@@ -95,6 +101,8 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   *  - move arms in finish position
   */
   void calcSquatSplines(double time);
+
+
 };
 
 }
