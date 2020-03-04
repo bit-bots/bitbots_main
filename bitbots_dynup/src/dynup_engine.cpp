@@ -46,33 +46,23 @@ void DynupEngine::publishDebug(ros::Publisher debug_publisher) {
 
 DynupResponse DynupEngine::update(double dt) {
   // TODO what happens when splines for foot and trunk are not present?
+
   /* Get should-be pose from planned splines (every axis) at current time */
   tf2::Transform l_foot_pose = foot_spline_.getTfTransform(time_);
   tf2::Transform r_foot_pose = r_foot_spline_.getTfTransform(time_);
-  tf2::Stamped<tf2::Transform> l_hand_to_base_link, r_hand_to_base_link;
-  //tf2::fromMsg(tf_buffer_.lookupTransform("base_link", "r_wrist", ros::Time(0), ros::Duration(0.1)), r_hand_to_base_link);
-  //tf2::fromMsg(tf_buffer_.lookupTransform("base_link", "l_wrist", ros::Time(0), ros::Duration(0.1)), l_hand_to_base_link);
-  tf2::Transform l_hand_pose = l_hand_spline_.getTfTransform(time_); //* l_hand_to_base_link;
-  tf2::Transform r_hand_pose = r_hand_spline_.getTfTransform(time_); //* r_hand_to_base_link;
+  tf2::Transform l_hand_pose = l_hand_spline_.getTfTransform(time_);
+  tf2::Transform r_hand_pose = r_hand_spline_.getTfTransform(time_);
 
-  time_ += dt;
-
-
-  /* Stabilize and return result */
   goals_.l_foot_goal_pose = l_foot_pose;
   goals_.r_foot_goal_pose = r_foot_pose;
   goals_.l_hand_goal_pose = l_hand_pose;
   goals_.r_hand_goal_pose = r_hand_pose;
+
+  time_ += dt;
+
   return goals_;
 }
 
-geometry_msgs::PoseStamped DynupEngine::getCurrentPose(bitbots_splines::PoseSpline spline, std::string frame_id) {
-  geometry_msgs::PoseStamped pose;
-  pose.header.frame_id = frame_id;
-  pose.header.stamp = ros::Time::now();
-  pose.pose = spline.getGeometryMsgPose(time_);
-  return pose;
-}
 //TODO: Simplify
 void DynupEngine::initializeSplines(geometry_msgs::Pose l_hand_pose, geometry_msgs::Pose r_hand_pose, geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose r_foot_pose) {
   double time_start = 0.0;
@@ -406,28 +396,14 @@ int DynupEngine::getPercentDone() const {
 
 /*Calculates if we are at a point of the animation where stabilizing should be applied. */ //TODO: make this nice
 bool DynupEngine::isStabilizingNeeded() const {
-    if((front_ && time_ >= params_.time_hands_side + params_.time_foot_close + params_.time_hands_front +
-        params_.time_foot_ground + params_.time_torso_45) || (!front_ && time_ >= params_.time_hands_down +
-        params_.time_hands_back )) {
-            return true;
-    }
-    return false;
-}
-
-bitbots_splines::PoseSpline DynupEngine::getLFootSplines() const {
-  return foot_spline_;
+    return (front_ && time_ >= params_.time_hands_side + params_.time_foot_close + params_.time_hands_front +
+                               params_.time_foot_ground + params_.time_torso_45) ||
+           (!front_ && time_ >= params_.time_hands_down +
+                                params_.time_hands_back);
 }
 
 bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const {
   return r_foot_spline_;
-}
-
-bitbots_splines::PoseSpline DynupEngine::getLHandSplines() const {
-  return l_hand_spline_;
-}
-
-bitbots_splines::PoseSpline DynupEngine::getRHandSplines() const {
-  return r_hand_spline_;
 }
 
 void DynupEngine::setParams(DynUpConfig params) {
