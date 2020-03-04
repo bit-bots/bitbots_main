@@ -10,7 +10,7 @@ void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
 
   /* Reset kinematic goal to default */
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
-  goal_state_->setToDefaultValues();
+  //goal_state_->setToDefaultValues();
 
   const Eigen::Isometry3d &end_effector_state = goal_state_->getGlobalLinkTransform("r_sole");
 }
@@ -19,11 +19,11 @@ void DynupIK::reset() {
   /* We have to set some good initial position in the goal state,
    * since we are using a gradient based method. Otherwise, the
    * first step will be not correct */
-  std::vector<std::string> names_vec =
-      {"HeadPan", "HeadTilt", "LAnklePitch", "LAnkleRoll", "LElbow", "LHipPitch", "LHipRoll", "LHipYaw", "LKnee",
-       "LShoulderPitch", "LShoulderRoll", "RAnklePitch", "RAnkleRoll", "RElbow", "RHipPitch", "RHipRoll", "RHipYaw",
-       "RKnee", "RShoulderPitch", "RShoulderRoll"};
-  std::vector<double> pos_vec = {0, 0, -25, 4, 45, 27, 4, -1, -58, 0, 25, -4, 45, -37, -4, 1, 0, 58, 0, 0};
+    std::vector<std::string> names_vec =
+            {"HeadPan", "HeadTilt", "LAnklePitch", "LAnkleRoll", "LElbow", "LHipPitch", "LHipRoll", "LHipYaw", "LKnee",
+             "LShoulderPitch", "LShoulderRoll", "RAnklePitch", "RAnkleRoll", "RElbow", "RHipPitch", "RHipRoll", "RHipYaw",
+             "RKnee", "RShoulderPitch", "RShoulderRoll"};
+    std::vector<double> pos_vec = {0, 0, -36, 4, 45, -11, 4, 6, -13, 78, 36, -4, -45, 11, -4, 6, 0, 13, -78, 0};
   for (double &pos: pos_vec) {
     pos = pos / 180.0 * M_PI;
   }

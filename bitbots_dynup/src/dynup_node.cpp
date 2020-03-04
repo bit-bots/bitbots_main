@@ -75,9 +75,9 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     stabilizer_.reset();
     if(debug_) {
       visualizer_.displaySplines(engine_.getRFootSplines(), "base_link");
-      //visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole");
-      //visualizer_.displaySplines(engine_.getLHandSplines(), "base_link");
-      //visualizer_.displaySplines(engine_.getRHandSplines(), "base_link");
+      visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole");
+      visualizer_.displaySplines(engine_.getLHandSplines(), "base_link");
+      visualizer_.displaySplines(engine_.getRHandSplines(), "base_link");
     }
     loopEngine();
     bitbots_msgs::DynUpResult r;
