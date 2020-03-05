@@ -60,12 +60,12 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
   robot_pose_observation_model_->set_min_weight(config_.min_weight);
 
   Eigen::Matrix<double, 3, 2> drift_cov;
-   drift_cov <<
+  drift_cov <<
     // Standard dev of applied drift related to
     // distance, rotation
-    0.500  , 0.0000,  // Values affecting walking direction
-    0.0500 , 0.0000,  // Values affecting walking distance
-    0.05000, 0.0000; // Values affecting orientation
+    config.drift_distance_to_direction, config.drift_roation_to_direction,
+    config.drift_distance_to_distance,  config.drift_roation_to_distance,
+    config.drift_distance_to_rotation,  config.drift_rotation_to_rotation;
 
   drift_cov /= config.publishing_frequency;
 
