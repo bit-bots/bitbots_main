@@ -35,7 +35,7 @@ class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
                   double diffuse_yStdDev,
                   double diffuse_tStdDev,
                   double diffuse_multiplicator,
-                  std::array <std::array<double, 2>, 3>);
+                  Eigen::Matrix<double, 3, 2> drift_cov);
 
   /**
    * The drift method is empty in this example.
@@ -59,7 +59,7 @@ class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
 
   // standard deviations and multiplicator for the diffuse step
   double diffuse_xStdDev_, diffuse_yStdDev_, diffuse_tStdDev_, diffuse_multiplicator_;
-  std::array <std::array<double, 2>, 3>  drift_cov_;
+  Eigen::Matrix<double, 3, 2>  drift_cov_;
 
   double sample(double b) const;
 

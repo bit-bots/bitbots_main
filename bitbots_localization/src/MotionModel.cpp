@@ -10,7 +10,7 @@ RobotMotionModel::RobotMotionModel(
   double diffuse_yStdDev,
   double diffuse_tStdDev,
   double diffuse_multiplicator,
-  std::array <std::array<double, 2>, 3> drift_cov
+  Eigen::Matrix<double, 3, 2>  drift_cov
   ) : particle_filter::MovementModel<RobotState>(),
       random_number_generator_(random_number_generator),
       diffuse_xStdDev_(diffuse_xStdDev),

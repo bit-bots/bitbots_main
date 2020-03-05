@@ -59,7 +59,8 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
       new RobotPoseObservationModel(lines_, goals_, field_boundary_, corner_, t_crossings_map_, crosses_map_));
   robot_pose_observation_model_->set_min_weight(config_.min_weight);
 
-  std::array <std::array<double, 2>, 3>  drift_cov {{
+  Eigen::Matrix<double, 3, 2> drift_cov;
+   drift_cov <<
     // Standard dev of applied drift related to
     // distance, rotation
       {config.publishing_frequency * 1.500    ,config.publishing_frequency * 0.0000},  // Values affecting walking direction
@@ -364,7 +365,7 @@ void Localization::getMotion() {
     transformStampedPast = tfBuffer.lookupTransform("odom", "base_footprint", past);
 
     //linear movement
-    double global_diff_x global_diff_y;
+    double global_diff_x, global_diff_y;
     global_diff_x = transformStampedNow.transform.translation.x - transformStampedPast.transform.translation.x;
     global_diff_y = transformStampedNow.transform.translation.y - transformStampedPast.transform.translation.y;
 
