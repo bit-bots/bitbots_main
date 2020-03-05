@@ -63,9 +63,11 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
    drift_cov <<
     // Standard dev of applied drift related to
     // distance, rotation
-    config.publishing_frequency * 0.500, config.publishing_frequency * 0.0000,  // Values affecting walking direction
-    config.publishing_frequency * 0.0500, config.publishing_frequency * 0.0000,  // Values affecting walking distance
-    config.publishing_frequency * 0.05000, config.publishing_frequency * 0.0000; // Values affecting orientation
+    0.500  , 0.0000,  // Values affecting walking direction
+    0.0500 , 0.0000,  // Values affecting walking distance
+    0.05000, 0.0000; // Values affecting orientation
+
+  drift_cov /= config.publishing_frequency;
 
   robot_motion_model_.reset(
       new RobotMotionModel(random_number_generator_, config.diffusion_x_std_dev, config.diffusion_y_std_dev,
