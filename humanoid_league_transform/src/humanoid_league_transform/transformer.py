@@ -25,6 +25,8 @@ class TransformBall(object):
         self._ball_height = rospy.get_param("~ball/ball_radius", 0.075)
         self._bar_height = rospy.get_param("~goal_parts/bar_height", 2.0)
         self._publish_frame = rospy.get_param("~publish_frame", "base_footprint")
+        self._goalpost_footpoint_out_of_image_threshold = \
+            rospy.get_param("~goal_parts/footpoint_out_of_image_threshold", 30)
 
         camera_info_topic = rospy.get_param("~camera_info/camera_info_topic", "/camera_info")
         balls_in_image_topic = rospy.get_param("~ball/ball_topic", "/balls_in_image")
@@ -245,17 +247,21 @@ class TransformBall(object):
 
         # Transform goal posts
         for goal_post_in_image in msg.posts:
-            relative_foot_point = self._transform(goal_post_in_image.foot_point, field, msg.header.stamp)
-            if relative_foot_point is None:
-                rospy.logwarn_throttle(5.0, rospy.get_name() +
-                                       ": Got a post with foot point ({},{}) I could not transform.".format(
-                                           goal_post_in_image.foot_point.x,
-                                           goal_post_in_image.foot_point.y))
-            else:
-                post_relative = GoalPostRelative()
-                post_relative.foot_point = relative_foot_point
-                post_relative.confidence = goal_post_in_image.confidence
-                goal_parts_relative_msg.posts.append(post_relative)
+            # Check if footpoint is not in the bottom area of the image, to filter out goal posts without visible footpoint
+            image_vertical_resolution =  self._camera_info.height / self._camera_info.binning_y
+            if goal_post_in_image.foot_point.y < image_vertical_resolution - self._goalpost_footpoint_out_of_image_threshold:
+                # Transform footpoint
+                relative_foot_point = self._transform(goal_post_in_image.foot_point, field, msg.header.stamp)   
+                if relative_foot_point is None:
+                    rospy.logwarn_throttle(5.0, rospy.get_name() +
+                                        ": Got a post with foot point ({},{}) I could not transform.".format(
+                                            goal_post_in_image.foot_point.x,
+                                            goal_post_in_image.foot_point.y))
+                else:
+                    post_relative = GoalPostRelative()
+                    post_relative.foot_point = relative_foot_point
+                    post_relative.confidence = goal_post_in_image.confidence
+                    goal_parts_relative_msg.posts.append(post_relative)
 
         # Transform goal bars
         for goal_bar_in_image in msg.bars:
