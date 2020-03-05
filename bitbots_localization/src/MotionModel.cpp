@@ -31,9 +31,9 @@ void RobotMotionModel::drift(RobotState &state,
   double orientation = signedAngle(rotational_movement.z);
   // Apply sample drift for odom data
   //no need for abs polar distance, because its positive every time
-  double polar_rot_with_drift   = polar_rot   - sample(drift_cov_[0][0] * polar_dist + drift_cov_[0][1] * abs(orientation));
-  double polar_dist_with_drift  = polar_dist  - sample(drift_cov_[1][0] * polar_dist + drift_cov_[1][0] * abs(orientation));
-  double orientation_with_drift = orientation - sample(drift_cov_[2][0] * polar_dist + drift_cov_[2][0] * abs(orientation));
+  double polar_rot_with_drift   = polar_rot   - sample(drift_cov_(0, 0) * polar_dist + drift_cov_(0, 1) * abs(orientation));
+  double polar_dist_with_drift  = polar_dist  - sample(drift_cov_(1, 0) * polar_dist + drift_cov_(1, 0) * abs(orientation));
+  double orientation_with_drift = orientation - sample(drift_cov_(2, 0) * polar_dist + drift_cov_(2, 0) * abs(orientation));
 
   // Convert polar coordinates with offset back to cartesian ones, while transforming it into the local frame of each particle
   auto [cartesian_with_offset_x, cartesian_with_offset_y] = polarToCartesian(
