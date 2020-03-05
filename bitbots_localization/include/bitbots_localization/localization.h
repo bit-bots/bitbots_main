@@ -61,6 +61,7 @@
 
 #include <bitbots_localization/reset_filter.h>
 #include <bitbots_localization/Evaluation.h>
+#include <bitbots_localization/tools.h>
 
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>

@@ -364,10 +364,17 @@ void Localization::getMotion() {
     transformStampedPast = tfBuffer.lookupTransform("odom", "base_footprint", past);
 
     //linear movement
-    linear_movement_.x = transformStampedNow.transform.translation.x - transformStampedPast.transform.translation.x;
-    linear_movement_.y = transformStampedNow.transform.translation.y - transformStampedPast.transform.translation.y;
-    linear_movement_.z =
-        transformStampedNow.transform.translation.z - transformStampedPast.transform.translation.z;
+    double global_diff_x global_diff_y;
+    global_diff_x = transformStampedNow.transform.translation.x - transformStampedPast.transform.translation.x;
+    global_diff_y = transformStampedNow.transform.translation.y - transformStampedPast.transform.translation.y;
+
+    // Convert to local frame
+    auto [polar_rot, polar_dist] = cartesianToPolar(global_diff_x, global_diff_y);
+    auto [local_movement_x, local_movement_y] = polarToCartesian(
+      polar_rot - tf::getYaw(transformStampedPast.transform.rotation), polar_dist);
+    linear_movement_.x = local_movement_x;
+    linear_movement_.y = local_movement_y;
+    linear_movement_.z = 0;
 
     //rotational movement
     rotational_movement_.x = 0;
