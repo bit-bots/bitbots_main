@@ -27,8 +27,8 @@ void RobotMotionModel::drift(RobotState &state,
 
   // Convert cartesian coordinates to polarcoordinates with an orientation
   auto [polar_rot, polar_dist] = cartesianToPolar(linear_movement.x, linear_movement.y);
-  double orientation = rotational_movement.z;
-
+  // get the minimal absolute
+  double orientation = signedAngle(rotational_movement.z);
   // Apply sample drift for odom data
   //no need for abs polar distance, because its positive every time
   double polar_rot_with_drift   = polar_rot   - sample(drift_cov_[0][0] * polar_dist + drift_cov_[0][1] * abs(orientation));
