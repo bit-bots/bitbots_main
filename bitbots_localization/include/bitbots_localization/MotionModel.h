@@ -38,8 +38,9 @@ class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
                   Eigen::Matrix<double, 3, 2> drift_cov);
 
   /**
-   * The drift method is empty in this example.
    * @param state Pointer to the state that has to be manipulated.
+   * @param linear Linear movement relative to the base footprint in cartesian space
+   * @param angular Anular movement of of the robot in its z-axis, therefore only the z axis needs to be set
    */
   void drift(RobotState &state, geometry_msgs::Vector3 linear, geometry_msgs::Vector3 angular) const override;
 
