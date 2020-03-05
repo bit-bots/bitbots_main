@@ -12,6 +12,7 @@
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
 #include <dynamic_reconfigure/server.h>
+#include <Eigen/Core>
 
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>

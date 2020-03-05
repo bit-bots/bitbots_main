@@ -2,18 +2,22 @@
 // Created by judith on 09.03.19.
 //
 
-#include "../include/bitbots_localization/MotionModel.h"
+#include <bitbots_localization/MotionModel.h>
 
-RobotMotionModel::RobotMotionModel(const particle_filter::CRandomNumberGenerator &random_number_generator,
-                                   double xStdDev,
-                                   double yStdDev,
-                                   double tStdDev,
-                                   double multiplicator) : particle_filter::MovementModel<RobotState>(),
-                                                           random_number_generator_(random_number_generator),
-                                                           xStdDev_(xStdDev),
-                                                           yStdDev_(yStdDev),
-                                                           tStdDev_(tStdDev),
-                                                           multiplicator_(multiplicator) {
+RobotMotionModel::RobotMotionModel(
+  const particle_filter::CRandomNumberGenerator &random_number_generator,
+  double diffuse_xStdDev,
+  double diffuse_yStdDev,
+  double diffuse_tStdDev,
+  double diffuse_multiplicator,
+  std::array <std::array<double, 2>, 3> drift_cov
+  ) : particle_filter::MovementModel<RobotState>(),
+      random_number_generator_(random_number_generator),
+      diffuse_xStdDev_(diffuse_xStdDev),
+      diffuse_yStdDev_(diffuse_yStdDev),
+      diffuse_tStdDev_(diffuse_tStdDev),
+      diffuse_multiplicator_(diffuse_multiplicator),
+      drift_cov_(drift_cov) {
 
 }
 
@@ -25,22 +29,15 @@ void RobotMotionModel::drift(RobotState &state,
   auto [polar_rot, polar_dist] = cartesianToPolar(linear_movement.x, linear_movement.y);
   double orientation = rotational_movement.z;
 
-  float cov[3][2] {
-    // Standard dev of applied drift related to
-    // distance, rotation
-      {0.0000  , 0.0000},  // Values affecting walking direction
-      {0.0000  , 0.0000},  // Values affecting walking distance
-      {0.0000  , 0.0000}}; // Values affecting orientation
-
   // Apply sample drift for odom data
   //no need for abs polar distance, because its positive every time
-  double polar_rot_with_drift   = polar_rot   - sample(cov[0][0] * polar_dist + cov[0][1] * abs(orientation));
-  double polar_dist_with_drift  = polar_dist  - sample(cov[1][0] * polar_dist + cov[1][0] * abs(orientation));
-  double orientation_with_drift = orientation - sample(cov[2][0] * polar_dist + cov[2][0] * abs(orientation));
+  double polar_rot_with_drift   = polar_rot   - sample(drift_cov_[0][0] * polar_dist + drift_cov_[0][1] * abs(orientation));
+  double polar_dist_with_drift  = polar_dist  - sample(drift_cov_[1][0] * polar_dist + drift_cov_[1][0] * abs(orientation));
+  double orientation_with_drift = orientation - sample(drift_cov_[2][0] * polar_dist + drift_cov_[2][0] * abs(orientation));
 
-  // Convert polar coordinates with offset back to cartesian ones
+  // Convert polar coordinates with offset back to cartesian ones, while transforming it into the local frame of each particle
   auto [cartesian_with_offset_x, cartesian_with_offset_y] = polarToCartesian(
-    polar_rot_with_drift, polar_dist_with_drift);
+    state.getTheta() + polar_rot_with_drift, polar_dist_with_drift);
 
   // Apply new values onto state
   state.setXPos(state.getXPos() + cartesian_with_offset_x);
@@ -58,9 +55,9 @@ void RobotMotionModel::drift(RobotState &state,
 
 void RobotMotionModel::diffuse(RobotState &state) const {
 
-  state.setXPos(state.getXPos() + sample(xStdDev_) * multiplicator_);
-  state.setYPos(state.getYPos() + sample(yStdDev_) * multiplicator_);
-  double theta = state.getTheta() + sample(tStdDev_) * multiplicator_;
+  state.setXPos(state.getXPos() + sample(diffuse_xStdDev_) * diffuse_multiplicator_);
+  state.setYPos(state.getYPos() + sample(diffuse_yStdDev_) * diffuse_multiplicator_);
+  double theta = state.getTheta() + sample(diffuse_tStdDev_) * diffuse_multiplicator_;
   if (theta > M_PI) {
     theta = -M_PI + (theta - M_PI);
   } else if (theta < -M_PI) {

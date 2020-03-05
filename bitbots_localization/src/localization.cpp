@@ -59,10 +59,18 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
       new RobotPoseObservationModel(lines_, goals_, field_boundary_, corner_, t_crossings_map_, crosses_map_));
   robot_pose_observation_model_->set_min_weight(config_.min_weight);
 
+  std::array <std::array<double, 2>, 3>  drift_cov {{
+    // Standard dev of applied drift related to
+    // distance, rotation
+      {config.publishing_frequency * 1.500    ,config.publishing_frequency * 0.0000},  // Values affecting walking direction
+      {config.publishing_frequency * 0.0500   ,config.publishing_frequency * 0.0000},  // Values affecting walking distance
+      {config.publishing_frequency * 0.3000   ,config.publishing_frequency * 0.0000}}}; // Values affecting orientation
+
   robot_motion_model_.reset(
       new RobotMotionModel(random_number_generator_, config.diffusion_x_std_dev, config.diffusion_y_std_dev,
                            config.diffusion_t_std_dev,
-                           config.diffusion_multiplicator));
+                           config.diffusion_multiplicator,
+                           drift_cov));
   robot_state_distribution_start_left_.reset(new RobotStateDistributionStartLeft(random_number_generator_,
                                                                                  std::make_pair(config.initial_robot_x1,
                                                                                                 config

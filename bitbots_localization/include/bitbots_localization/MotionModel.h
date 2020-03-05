@@ -31,10 +31,11 @@ class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
 
    */
   RobotMotionModel(const particle_filter::CRandomNumberGenerator &random_number_generator,
-                   double xStdDev,
-                   double yStdDev,
-                   double tStdDev,
-                   double multiplicator);
+                  double diffuse_xStdDev,
+                  double diffuse_yStdDev,
+                  double diffuse_tStdDev,
+                  double diffuse_multiplicator,
+                  std::array <std::array<double, 2>, 3>);
 
   /**
    * The drift method is empty in this example.
@@ -57,7 +58,8 @@ class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
   particle_filter::CRandomNumberGenerator random_number_generator_;
 
   // standard deviations and multiplicator for the diffuse step
-  double xStdDev_, yStdDev_, tStdDev_, multiplicator_;
+  double diffuse_xStdDev_, diffuse_yStdDev_, diffuse_tStdDev_, diffuse_multiplicator_;
+  std::array <std::array<double, 2>, 3>  drift_cov_;
 
   double sample(double b) const;
 
