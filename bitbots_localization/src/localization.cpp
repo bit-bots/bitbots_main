@@ -59,10 +59,22 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
       new RobotPoseObservationModel(lines_, goals_, field_boundary_, corner_, t_crossings_map_, crosses_map_));
   robot_pose_observation_model_->set_min_weight(config_.min_weight);
 
+  Eigen::Matrix<double, 3, 2> drift_cov;
+  drift_cov <<
+    // Standard dev of applied drift related to
+    // distance, rotation
+    config.drift_distance_to_direction, config.drift_roation_to_direction,
+    config.drift_distance_to_distance,  config.drift_roation_to_distance,
+    config.drift_distance_to_rotation,  config.drift_rotation_to_rotation;
+
+  // Scale drift form drift per second to drift per filter iteration
+  drift_cov /= config.publishing_frequency;
+
   robot_motion_model_.reset(
       new RobotMotionModel(random_number_generator_, config.diffusion_x_std_dev, config.diffusion_y_std_dev,
                            config.diffusion_t_std_dev,
-                           config.diffusion_multiplicator));
+                           config.diffusion_multiplicator,
+                           drift_cov));
   robot_state_distribution_start_left_.reset(new RobotStateDistributionStartLeft(random_number_generator_,
                                                                                  std::make_pair(config.initial_robot_x1,
                                                                                                 config
@@ -148,7 +160,7 @@ void Localization::publishing_timer_callback(const ros::TimerEvent &e) {
 
   if ((config_.filter_only_with_motion and robot_moved) or (!config_.filter_only_with_motion)) {
 
-    robot_pf_->drift(cartesian_movement_, rotational_movement_);
+    robot_pf_->drift(linear_movement_, rotational_movement_);
     robot_pf_->diffuse();
   }
 
@@ -351,15 +363,22 @@ void Localization::getMotion() {
 
     transformStampedNow = tfBuffer.lookupTransform("odom", "base_footprint", now);
 
-    ros::Time past = transformStampedNow.header.stamp - ros::Duration(1 / config_.publishing_frequency);
+    ros::Time past = transformStampedNow.header.stamp - ros::Duration(1.0/(float)config_.publishing_frequency);
 
     transformStampedPast = tfBuffer.lookupTransform("odom", "base_footprint", past);
 
     //linear movement
-    cartesian_movement_.x = transformStampedNow.transform.translation.x - transformStampedPast.transform.translation.x;
-    cartesian_movement_.y = transformStampedNow.transform.translation.y - transformStampedPast.transform.translation.y;
-    cartesian_movement_.z =
-        transformStampedNow.transform.translation.z - transformStampedPast.transform.translation.z;
+    double global_diff_x, global_diff_y;
+    global_diff_x = transformStampedNow.transform.translation.x - transformStampedPast.transform.translation.x;
+    global_diff_y = transformStampedNow.transform.translation.y - transformStampedPast.transform.translation.y;
+
+    // Convert to local frame
+    auto [polar_rot, polar_dist] = cartesianToPolar(global_diff_x, global_diff_y);
+    auto [local_movement_x, local_movement_y] = polarToCartesian(
+      polar_rot - tf::getYaw(transformStampedPast.transform.rotation), polar_dist);
+    linear_movement_.x = local_movement_x;
+    linear_movement_.y = local_movement_y;
+    linear_movement_.z = 0;
 
     //rotational movement
     rotational_movement_.x = 0;
@@ -368,7 +387,7 @@ void Localization::getMotion() {
         tf::getYaw(transformStampedPast.transform.rotation);
 
     //check if robot moved
-    if (cartesian_movement_.x > config_.min_motion_linear or cartesian_movement_.y > config_.min_motion_linear or
+    if (linear_movement_.x > config_.min_motion_linear or linear_movement_.y > config_.min_motion_linear or
         rotational_movement_.z > config_.min_motion_angular) {
       robot_moved = true;
     }
@@ -418,20 +437,28 @@ void Localization::publish_pose() { //  and particles and map frame
     localization_transform.transform.rotation.w = q.w();
     br.sendTransform(localization_transform);
 
+    try{
+      //publish odom localisation offset
+      geometry_msgs::TransformStamped odom_transform = tfBuffer.lookupTransform("odom", "base_footprint", ros::Time(0));
+      geometry_msgs::TransformStamped map_odom_transform;
 
-    //publish odom localisation offset
-    geometry_msgs::TransformStamped map_odom_transform;
-    geometry_msgs::TransformStamped odom_transform = tfBuffer.lookupTransform("odom", "base_footprint", ros::Time(0));
-    map_odom_transform.header.stamp = odom_transform.header.stamp;
-    map_odom_transform.header.frame_id = "/map";
-    map_odom_transform.child_frame_id = "/odom";
-    tf2::Transform odom_transform_tf, localization_transform_tf, map_tf;
-    tf2::fromMsg(odom_transform.transform, odom_transform_tf);
-    tf2::fromMsg(localization_transform.transform, localization_transform_tf);
-    map_tf = localization_transform_tf * odom_transform_tf.inverse();
-    map_odom_transform.transform = tf2::toMsg(map_tf);
+      map_odom_transform.header.stamp = odom_transform.header.stamp;
+      map_odom_transform.header.frame_id = "/map";
+      map_odom_transform.child_frame_id = "/odom";
 
-    br.sendTransform(map_odom_transform);
+      //calculate odom offset
+      tf2::Transform odom_transform_tf, localization_transform_tf, map_tf;
+      tf2::fromMsg(odom_transform.transform, odom_transform_tf);
+      tf2::fromMsg(localization_transform.transform, localization_transform_tf);
+      map_tf = localization_transform_tf * odom_transform_tf.inverse();
+
+      map_odom_transform.transform = tf2::toMsg(map_tf);
+
+      br.sendTransform(map_odom_transform);
+    }
+    catch (const tf2::TransformException &ex) {
+      ROS_WARN("Odom not available, therefore odom offset can not be published: %s", ex.what());
+    }
 
     //fill and publish evaluation message
     bitbots_localization::Evaluation estimateMsg;

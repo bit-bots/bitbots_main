@@ -12,6 +12,7 @@
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
 #include <dynamic_reconfigure/server.h>
+#include <Eigen/Core>
 
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -60,6 +61,7 @@
 
 #include <bitbots_localization/reset_filter.h>
 #include <bitbots_localization/Evaluation.h>
+#include <bitbots_localization/tools.h>
 
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
@@ -215,7 +217,7 @@ class Localization {
 
   void getMotion();
 
-  geometry_msgs::Vector3 cartesian_movement_;
+  geometry_msgs::Vector3 linear_movement_;
   geometry_msgs::Vector3 rotational_movement_;
   bool new_linepoints_ = false;
   bool robot_moved = false;

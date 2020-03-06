@@ -55,7 +55,14 @@
   diffusion_x_std_dev: 0.8
   diffusion_y_std_dev: 0.8
   diffusion_t_std_dev: 0.5
-  diffusion_multiplicator: 0.03
+  diffusion_multiplicator: 0.005
+
+  drift_distance_to_direction: 0.5
+  drift_roation_to_direction: 0.0
+  drift_distance_to_distance: 0.05
+  drift_roation_to_distance: 0.0
+  drift_distance_to_rotation: 0.05
+  drift_rotation_to_rotation: 0.0
 
   min_weight: 0.01
   min_resampling_weight: 0.5
