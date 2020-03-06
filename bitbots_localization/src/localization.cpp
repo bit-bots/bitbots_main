@@ -67,6 +67,7 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
     config.drift_distance_to_distance,  config.drift_roation_to_distance,
     config.drift_distance_to_rotation,  config.drift_rotation_to_rotation;
 
+  // Scale drift form drift per second to drift per filter iteration
   drift_cov /= config.publishing_frequency;
 
   robot_motion_model_.reset(
