@@ -16,19 +16,8 @@ void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
 }
 
 void DynupIK::reset() {
-  /* We have to set some good initial position in the goal state,
-   * since we are using a gradient based method. Otherwise, the
-   * first step will be not correct */
-    std::vector<std::string> names_vec =
-            {"HeadPan", "HeadTilt", "LAnklePitch", "LAnkleRoll", "LElbow", "LHipPitch", "LHipRoll", "LHipYaw", "LKnee",
-             "LShoulderPitch", "LShoulderRoll", "RAnklePitch", "RAnkleRoll", "RElbow", "RHipPitch", "RHipRoll", "RHipYaw",
-             "RKnee", "RShoulderPitch", "RShoulderRoll"};
-    std::vector<double> pos_vec = {0, 0, -36, 4, 45, -11, 4, 6, -13, 78, 36, -4, -45, 11, -4, 6, 0, 13, -78, 0};
-  for (double &pos: pos_vec) {
-    pos = pos / 180.0 * M_PI;
-  }
-  for (int i = 0; i < names_vec.size(); i++) {
-    goal_state_->setJointPositions(names_vec[i], &pos_vec[i]);
+  for (int i = 0; i < currentJointStates.name.size(); i++) {
+      goal_state_->setJointPositions(currentJointStates.name[i], &currentJointStates.position[i]);
   }
 }
 

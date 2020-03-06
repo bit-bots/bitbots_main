@@ -27,7 +27,6 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
   void reset() override;
   geometry_msgs::Point cop_;
   control_toolbox::Pid pid_trunk_pitch_;
-  control_toolbox::Pid pid_trunk_roll_;
 
  private:
   robot_state::RobotStatePtr goal_state_;
@@ -37,8 +36,6 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
   bool stabilize_now_;
 
   bool use_stabilizing_;
-  bool use_minimal_displacement_;
-  double stabilizing_weight_;
 };
 
 }
