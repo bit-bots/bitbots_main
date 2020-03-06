@@ -20,6 +20,7 @@
 #include "bitbots_dynup/dynup_stabilizer.h"
 #include <std_msgs/Char.h>
 #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/JointState.h>
 
 namespace bitbots_dynup {
 
@@ -50,11 +51,14 @@ class DynUpNode {
 
   void copCallback(const sensor_msgs::Imu &cop);
 
+  void jointStateCallback(const sensor_msgs::JointState &jointstates);
+
  private:
   ros::NodeHandle node_handle_;
   ros::Publisher joint_goal_publisher_;
   ros::Publisher support_foot_publisher_;
   ros::Subscriber cop_subscriber_;
+  ros::Subscriber joint_state_subscriber_;
 
   ActionServer server_;
   DynupEngine engine_;

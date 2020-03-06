@@ -9,10 +9,8 @@ namespace bitbots_dynup {
 
 void Stabilizer::init(moveit::core::RobotModelPtr kinematic_model) {
   kinematic_model_ = std::move(kinematic_model);
-  ros::NodeHandle nhr = ros::NodeHandle("/dynup/pid_trunk_roll");
   ros::NodeHandle nhp = ros::NodeHandle("/dynup/pid_trunk_pitch");
-  pid_trunk_pitch_.init(nhr, false);
-  pid_trunk_roll_.init(nhp, false);
+  pid_trunk_pitch_.init(nhp, false);
 
   /* Reset kinematic goal to default */
   goal_state_.reset(new robot_state::RobotState(kinematic_model_));
@@ -20,22 +18,7 @@ void Stabilizer::init(moveit::core::RobotModelPtr kinematic_model) {
 }
 
 void Stabilizer::reset() {
-  /* We have to set some good initial position in the goal state,
-   * since we are using a gradient based method. Otherwise, the
-   * first step will be not correct */
-    std::vector<std::string> names_vec =
-            {"HeadPan", "HeadTilt", "LAnklePitch", "LAnkleRoll", "LElbow", "LHipPitch", "LHipRoll", "LHipYaw", "LKnee",
-             "LShoulderPitch", "LShoulderRoll", "RAnklePitch", "RAnkleRoll", "RElbow", "RHipPitch", "RHipRoll", "RHipYaw",
-             "RKnee", "RShoulderPitch", "RShoulderRoll"};
-    std::vector<double> pos_vec = {0, 0, -36, 4, 45, -11, 4, 6, -13, 78, 36, -4, -45, 11, -4, 6, 0, 13, -78, 0};
-    for (double &pos: pos_vec) {
-        pos = pos / 180.0 * M_PI;
-    }
-    for (int i = 0; i < names_vec.size(); i++) {
-        goal_state_->setJointPositions(names_vec[i], &pos_vec[i]);
-    }
   pid_trunk_pitch_.reset();
-  pid_trunk_roll_.reset();
 }
 
 DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Duration &dt) {
@@ -49,9 +32,8 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
             tf2::Matrix3x3(trunk_goal.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
             // first adapt trunk pitch value based on PID controller
             double corrected_pitch = pid_trunk_pitch_.computeCommand(goal_pitch - cop_.x, dt);
-            double corrected_roll = pid_trunk_roll_.computeCommand(goal_roll - cop_.y, dt);
             tf2::Quaternion corrected_orientation;
-            corrected_orientation.setRPY(goal_roll + corrected_roll, goal_pitch + corrected_pitch, goal_yaw);
+            corrected_orientation.setRPY(goal_roll, goal_pitch + corrected_pitch, goal_yaw);
 
             trunk_goal.setRotation(corrected_orientation);
         }

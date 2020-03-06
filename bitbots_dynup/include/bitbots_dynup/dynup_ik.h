@@ -17,6 +17,7 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
   void reset() override;
   void useStabilizing(bool use);
   void useMinimalDisplacement(bool use);
+  sensor_msgs::JointState currentJointStates;
  private:
   moveit::core::JointModelGroup *all_joints_group_;
   moveit::core::JointModelGroup *l_arm_joints_group_;
