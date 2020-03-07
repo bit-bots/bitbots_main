@@ -86,8 +86,4 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 void DynupIK::useStabilizing(bool use) {
   use_stabilizing_ = use;
 }
-
-void DynupIK::useMinimalDisplacement(bool use) {
-  use_minimal_displacement_ = use;
-}
 }

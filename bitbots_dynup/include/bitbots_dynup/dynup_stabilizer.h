@@ -21,8 +21,6 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
   void setStabilizeNow(bool now);
   void setTransforms(geometry_msgs::TransformStamped to_trunk, geometry_msgs::TransformStamped from_trunk);
   void useStabilizing(bool use);
-  void useMinimalDisplacement(bool use);
-  void setStabilizingWeight(double weight);
   void setRobotModel(moveit::core::RobotModelPtr model); 
   void reset() override;
   geometry_msgs::Point cop_;
