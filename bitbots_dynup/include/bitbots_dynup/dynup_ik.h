@@ -16,7 +16,6 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
   bitbots_splines::JointGoals calculate(const DynupResponse &ik_goals) override;
   void reset() override;
   void useStabilizing(bool use);
-  void useMinimalDisplacement(bool use);
   sensor_msgs::JointState currentJointStates;
  private:
   moveit::core::JointModelGroup *all_joints_group_;

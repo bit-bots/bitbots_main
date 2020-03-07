@@ -54,10 +54,8 @@ void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t
 
   engine_.setParams(params);
 
-  stabilizer_.useMinimalDisplacement(config.minimal_displacement);
   stabilizer_.useStabilizing(config.stabilizing);
 
-  ik_.useMinimalDisplacement(config.minimal_displacement);
   ik_.useStabilizing(config.stabilizing);
 
   VisualizationParams viz_params = VisualizationParams();

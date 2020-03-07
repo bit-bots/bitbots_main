@@ -63,9 +63,6 @@ void Stabilizer::setStabilizeNow(bool now) {
     stabilize_now_ = now;
 }
 
-void Stabilizer::useMinimalDisplacement(bool use) {
-  use_minimal_displacement_ = use;
-}
 
 void Stabilizer::setRobotModel(moveit::core::RobotModelPtr model) {
   kinematic_model_ = std::move(model);
