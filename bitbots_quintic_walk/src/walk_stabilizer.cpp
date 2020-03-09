@@ -38,6 +38,7 @@ WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const ros::
   rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
 
   // adapt trunk values based on PID controllers
+  //TODO rename from "corrected" to something else
   double corrected_pitch = pid_trunk_pitch_.computeCommand(goal_pitch - response.current_pitch, dt);
   double corrected_fused_pitch = pid_trunk_fused_pitch_.computeCommand(goal_fused.fusedPitch - response.current_fused_pitch, dt);
   double corrected_roll = pid_trunk_roll_.computeCommand(goal_roll - response.current_roll, dt);
@@ -46,7 +47,17 @@ WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const ros::
   double corrected_pitch_vel = pid_trunk_pitch_vel_.computeCommand(response.pitch_vel, dt);
 
   tf2::Quaternion corrected_orientation;
-  corrected_orientation.setRPY(goal_roll + corrected_roll + corrected_fused_roll + corrected_roll_vel, goal_pitch + corrected_pitch + corrected_fused_pitch + corrected_pitch_vel, goal_yaw);
+  //TODO remove this hack
+  if(corrected_fused_pitch == 0 && corrected_fused_roll == 0) {
+    corrected_orientation.setRPY(goal_roll + corrected_roll + corrected_roll_vel,
+                                 goal_pitch + corrected_pitch + corrected_pitch_vel,
+                                 goal_yaw);
+  }else{
+    goal_fused.fusedRoll += corrected_fused_roll;
+    goal_fused.fusedPitch += corrected_fused_pitch;
+    Eigen::Quaterniond goal_orientation_eigen_corrected = rot_conv::QuatFromFused(goal_fused);
+    tf2::convert(goal_orientation_eigen_corrected, corrected_orientation);
+  }
 
   WalkResponse stabilized_response = response;
   stabilized_response.support_foot_to_trunk.setRotation(corrected_orientation);
