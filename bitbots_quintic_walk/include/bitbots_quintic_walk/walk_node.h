@@ -84,7 +84,7 @@ class WalkNode {
 
   void imuCb(const sensor_msgs::Imu &msg);
 
-  void checkPhaseReset(bitbots_msgs::FootPressure msg);
+  void checkPhaseReset();
   void pressureRightCb(bitbots_msgs::FootPressure msg);
   void pressureLeftCb(bitbots_msgs::FootPressure msg);
 
@@ -196,6 +196,8 @@ class WalkNode {
   double cop_left_y_;
   double cop_right_x_;
   double cop_right_y_;
+
+  double current_fly_pressure_;
 
   double roll_vel_;
   double pitch_vel_;

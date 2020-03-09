@@ -19,6 +19,7 @@ WalkNode::WalkNode() :
   cop_left_y_ = 0;
   roll_vel_ = 0;
   pitch_vel_ = 0;
+  current_fly_pressure_ = 0;
 
   // read config
   nh_.param<double>("engine_frequency", engine_frequency_, 100.0);
@@ -114,6 +115,7 @@ void WalkNode::run() {
           robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
       // update walk engine response
       walk_engine_.setGoals(current_request_);
+      checkPhaseReset();
       response = walk_engine_.update(dt);
       visualizer_.publishEngineDebug(response);
 
@@ -172,7 +174,10 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, doubl
       motor_goals.second.at(i) += pid_left_y_.computeCommand(cop_left_y_, ros::Duration(dt));
     } else if (motor_goals.first.at(i) == "RAnkleRoll") {
       motor_goals.second.at(i) += pid_right_y_.computeCommand(cop_right_y_, ros::Duration(dt));
-    } else if (motor_goals.first.at(i) == "LHipPitch" || motor_goals.first.at(i) == "RHipPitch") {
+    } else if (motor_goals.first.at(i) == "RHipPitch"){
+      // pitch servos have inverted sign, therefore substract
+      motor_goals.second.at(i) -= hip_pitch_correction;
+    } else if(motor_goals.first.at(i) == "LHipPitch") {
       motor_goals.second.at(i) += hip_pitch_correction;
     } else if (motor_goals.first.at(i) == "LHipRoll" || motor_goals.first.at(i) == "RHipRoll") {
       motor_goals.second.at(i) += hip_roll_correction;
@@ -302,27 +307,25 @@ void WalkNode::imuCb(const sensor_msgs::Imu &msg) {
 void WalkNode::pressureLeftCb(const bitbots_msgs::FootPressure msg) {
   // only check if this foot is not the current support foot
   if (!walk_engine_.isLeftSupport()) {
-    checkPhaseReset(msg);
+    current_fly_pressure_ = msg.left_back + msg.left_front + msg.right_back + msg.right_front;
   }
 }
 
 void WalkNode::pressureRightCb(const bitbots_msgs::FootPressure msg) {
   // only check if this foot is not the current support foot
   if (walk_engine_.isLeftSupport()) {
-    checkPhaseReset(msg);
+    current_fly_pressure_ = msg.left_back + msg.left_front + msg.right_back + msg.right_front;
   }
 }
 
-void WalkNode::checkPhaseReset(bitbots_msgs::FootPressure msg) {
+void WalkNode::checkPhaseReset() {
   /**
    * This method checks, if the foot made contact to the ground and ends step earlier, by resetting the phase.
    */
-  double pressure_sum = msg.left_back + msg.left_front + msg.right_back + msg.right_front;
-
   // phase has to be far enough (almost at end of step) to have right foot lifted foot has to have ground contact
   double phase = walk_engine_.getPhase();
   if (phase_reset_active_ && ((phase > 0.5 - phase_reset_phase_ && phase < 0.5) || (phase > 1 - phase_reset_phase_)) &&
-      pressure_sum > ground_min_pressure_) {
+      current_fly_pressure_ > ground_min_pressure_) {
     ROS_WARN("Phase resetted!");
     walk_engine_.endStep();
   }
