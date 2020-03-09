@@ -148,11 +148,7 @@ class Localization {
   std::shared_ptr<RobotStateDistributionPosition> robot_state_distribution_position_;
   std::shared_ptr<RobotStateDistributionPose> robot_state_distribution_pose_;
   std::shared_ptr<particle_filter::ParticleFilter<RobotState>> robot_pf_;
-  RobotState best_estimate_;
-  RobotState best_estimate_5_;
-  RobotState best_estimate_10_;
-  RobotState best_estimate_20_;
-  RobotState best_estimate_mean_;
+  RobotState estimate_;
 
   int resampled = 0;
 

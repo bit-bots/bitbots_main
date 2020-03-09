@@ -1,10 +1,6 @@
 std_msgs/Header header
 
-float64[36] cov_estimate_best
-float64[36] cov_estimate_5
-float64[36] cov_estimate_10
-float64[36] cov_estimate_20
-float64[36] cov_mean
+float64[36] cov_estimate
 
 int32 resampled
 
