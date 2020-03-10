@@ -27,8 +27,10 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
   void reset() override;
   geometry_msgs::Point cop_;
   control_toolbox::Pid pid_trunk_pitch_;
+  control_toolbox::Pid pid_trunk_roll_;
 
- private:
+
+private:
   robot_state::RobotStatePtr goal_state_;
   robot_model::RobotModelPtr kinematic_model_;
   geometry_msgs::TransformStamped to_trunk_, from_trunk_;

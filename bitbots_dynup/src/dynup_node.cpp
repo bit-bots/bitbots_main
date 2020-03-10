@@ -68,6 +68,7 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   ROS_INFO("Accepted new goal");
   engine_.reset();
   ik_.reset();
+  stabilizer_.reset();
   if (std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose>> poses = getCurrentPoses()) {
     DynupRequest request;
     request.l_foot_pose = std::get<0>(poses.value());
@@ -76,7 +77,6 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     request.l_hand_pose = std::get<2>(poses.value());
     request.r_hand_pose = std::get<3>(poses.value());
     engine_.setGoals(request);
-    stabilizer_.reset();
     if(debug_) {
       visualizer_.displaySplines(engine_.getRFootSplines(), "base_link");
       visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole");

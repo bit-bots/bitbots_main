@@ -1,4 +1,13 @@
 dynup:
+    pid_trunk_roll:
+        p: 0.00
+        i: 0.00
+        d: 0.00
+        i_clamp: 0
+        i_clamp_min: 0
+        i_clamp_max: 0
+        antiwindup: True
+        publish_state: True
     pid_trunk_pitch:
         p: 0.36
         i: 0.02
