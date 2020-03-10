@@ -414,9 +414,10 @@ int DynupEngine::getPercentDone() const {
 /*Calculates if we are at a point of the animation where stabilizing should be applied. */ //TODO: make this nice
 bool DynupEngine::isStabilizingNeeded() const {
     return (front_ && time_ >= params_.time_hands_side + params_.time_foot_close + params_.time_hands_front +
-                               params_.time_foot_ground + params_.time_torso_45) ||
+                               params_.time_foot_ground + params_.time_torso_45 + params_.time_to_squat) ||
            (!front_ && time_ >= params_.time_hands_down +
-                                params_.time_hands_back);
+                                params_.time_hands_back +
+                                params_.time_to_squat);
 }
 
 bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const {

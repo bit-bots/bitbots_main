@@ -10,7 +10,10 @@ namespace bitbots_dynup {
 void Stabilizer::init(moveit::core::RobotModelPtr kinematic_model) {
   kinematic_model_ = std::move(kinematic_model);
   ros::NodeHandle nhp = ros::NodeHandle("/dynup/pid_trunk_pitch");
+  ros::NodeHandle nhr = ros::NodeHandle("/dynup/pid_trunk_roll");
+
   pid_trunk_pitch_.init(nhp, false);
+  pid_trunk_roll_.init(nhr, false);
 
   /* Reset kinematic goal to default */
   goal_state_.reset(new robot_state::RobotState(kinematic_model_));
@@ -19,6 +22,8 @@ void Stabilizer::init(moveit::core::RobotModelPtr kinematic_model) {
 
 void Stabilizer::reset() {
   pid_trunk_pitch_.reset();
+  pid_trunk_roll_.reset();
+
 }
 
 DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Duration &dt) {
@@ -32,8 +37,9 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
             tf2::Matrix3x3(trunk_goal.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
             // first adapt trunk pitch value based on PID controller
             double corrected_pitch = pid_trunk_pitch_.computeCommand(goal_pitch - cop_.x, dt);
+            double corrected_roll = pid_trunk_roll_.computeCommand(goal_roll - cop_.y, dt);
             tf2::Quaternion corrected_orientation;
-            corrected_orientation.setRPY(goal_roll, goal_pitch + corrected_pitch, goal_yaw);
+            corrected_orientation.setRPY(goal_roll + corrected_roll, goal_pitch + corrected_pitch, goal_yaw);
 
             trunk_goal.setRotation(corrected_orientation);
         }

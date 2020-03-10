@@ -78,6 +78,12 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
     bitbots_splines::JointGoals result;
     result.first = joint_names;
     result.second = joint_goals;
+    for(int i = 0; i  < result.first.size(); i++)
+    {
+        if(result.first[i] == "HeadPan"||result.first[i] ==  "HeadTilt") {
+            result.second[i] = 0;
+        }
+    }
     return result;
   } else {
     return {};
