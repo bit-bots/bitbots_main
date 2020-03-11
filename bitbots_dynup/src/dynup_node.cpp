@@ -50,7 +50,6 @@ void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t
   debug_ = config.display_debug;
 
   DynUpConfig params = config;
-  //TODO set good default parameters
 
   engine_.setParams(params);
 
