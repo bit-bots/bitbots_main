@@ -258,19 +258,6 @@ void DynupEngine::calcBackSplines() {
    * pull legs to body
    */
   double time = params_.time_hands_down;
-  l_hand_spline_.x()->addPoint(time, -arm_max_length_/2);
-  l_hand_spline_.y()->addPoint(time, -arm_offset_y_);
-  l_hand_spline_.z()->addPoint(time, 0);
-  l_hand_spline_.roll()->addPoint(time, 0);
-  l_hand_spline_.pitch()->addPoint(time, M_PI/2);
-  l_hand_spline_.yaw()->addPoint(time, 0);
-  r_hand_spline_.x()->addPoint(time, -arm_max_length_/2);
-  r_hand_spline_.y()->addPoint(time, arm_offset_y_);
-  r_hand_spline_.z()->addPoint(time, 0);
-  r_hand_spline_.roll()->addPoint(time, 0);
-  r_hand_spline_.pitch()->addPoint(time, M_PI/2);
-  r_hand_spline_.yaw()->addPoint(time, 0);
-
   r_foot_spline_.x()->addPoint(time, 0);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -params_.leg_min_length);
@@ -284,10 +271,25 @@ void DynupEngine::calcBackSplines() {
   foot_spline_.pitch()->addPoint(time, 0);
   foot_spline_.yaw()->addPoint(time, 0);
 
+  l_hand_spline_.x()->addPoint(time, -arm_max_length_/2);
+  l_hand_spline_.y()->addPoint(time, -arm_offset_y_);
+  l_hand_spline_.z()->addPoint(time, 0);
+  l_hand_spline_.roll()->addPoint(time, 0);
+  l_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  l_hand_spline_.yaw()->addPoint(time, 0);
+  r_hand_spline_.x()->addPoint(time, -arm_max_length_/2);
+  r_hand_spline_.y()->addPoint(time, arm_offset_y_);
+  r_hand_spline_.z()->addPoint(time, 0);
+  r_hand_spline_.roll()->addPoint(time, 0);
+  r_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  r_hand_spline_.yaw()->addPoint(time, 0);
+
   /*
    * Foot under body
    */
   time += params_.time_foot_ground;
+
+
   r_foot_spline_.x()->addPoint(time, -sin(70) * params_.leg_min_length);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -cos(70) * params_.leg_min_length);
@@ -300,10 +302,25 @@ void DynupEngine::calcBackSplines() {
   foot_spline_.pitch()->addPoint(time, 0);
   foot_spline_.yaw()->addPoint(time, 0);
 
+  l_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
+  l_hand_spline_.y()->addPoint(time, -arm_offset_y_);
+  l_hand_spline_.z()->addPoint(time, arm_offset_z_);
+  l_hand_spline_.roll()->addPoint(time, 0);
+  l_hand_spline_.pitch()->addPoint(time, M_PI*0.75);
+  l_hand_spline_.yaw()->addPoint(time, 0);
+  r_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
+  r_hand_spline_.y()->addPoint(time, arm_offset_y_ );
+  r_hand_spline_.z()->addPoint(time, arm_offset_z_);
+  r_hand_spline_.roll()->addPoint(time, 0);
+  r_hand_spline_.pitch()->addPoint(time, M_PI*0.75);
+  r_hand_spline_.yaw()->addPoint(time, 0);
+
+
+
   /*
    * To squat
    */
-  time += params_.time_to_squat;
+  time += params_.time_squat_push;
   l_hand_spline_.x()->addPoint(time, -arm_max_length_);
   l_hand_spline_.y()->addPoint(time, -arm_offset_y_);
   l_hand_spline_.z()->addPoint(time, arm_offset_z_);
@@ -349,7 +366,7 @@ void DynupEngine::calcBackSplines() {
 
   l_hand_spline_.x()->addPoint(time, 0);
   l_hand_spline_.y()->addPoint(time, -arm_offset_y_);
-  l_hand_spline_.z()->addPoint(time, -arm_max_length_ +arm_offset_z_);
+  l_hand_spline_.z()->addPoint(time, -arm_max_length_ + arm_offset_z_);
   l_hand_spline_.roll()->addPoint(time, 0);
   l_hand_spline_.pitch()->addPoint(time, M_PI/2);
   l_hand_spline_.yaw()->addPoint(time, 0);
