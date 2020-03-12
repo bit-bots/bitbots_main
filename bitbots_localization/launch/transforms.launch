@@ -1,0 +1,30 @@
+<launch>
+
+<node pkg="tf" type="static_transform_publisher" name="cornerTL" args="-4.5 3 0 0 0 0 1 map cornerTL 100" />
+<node pkg="tf" type="static_transform_publisher" name="cornerBL" args="-4.5 -3 0 0 0 0 1 map cornerBL 100" />
+<node pkg="tf" type="static_transform_publisher" name="cornerTR" args=" 4.5 3 0 0 0 0 1 map cornerTR 100" />
+<node pkg="tf" type="static_transform_publisher" name="cornerBR" args=" 4.5 -3 0 0 0 0 1 map cornerBR 100" />
+<node pkg="tf" type="static_transform_publisher" name="cornerGTL" args="-3.5 2.5 0 0 0 0 1 map cornerGTL 100" />
+<node pkg="tf" type="static_transform_publisher" name="cornerGBL" args="-3.5 -2.5 0 0 0 0 1 map cornerGBL 100" />
+<node pkg="tf" type="static_transform_publisher" name="cornerGTR" args="3.5 2.5 0 0 0 0 1 map cornerGTR 100" />
+<node pkg="tf" type="static_transform_publisher" name="cornerGBR" args="3.5 -2.5 0 0 0 0 1 map cornerGBR 100" />
+
+<node pkg="tf" type="static_transform_publisher" name="tcrossingTL" args="-4.5 2.5 0 0 0 0 1 map tcrossingTL 100" />
+<node pkg="tf" type="static_transform_publisher" name="tcrossingBL" args="-4.5 -2.5 0 0 0 0 1 map tcrossingBL 100" />
+<node pkg="tf" type="static_transform_publisher" name="tcrossingTM" args="0 3 0 0 0 0 1 map tcrossingTM 100" />
+<node pkg="tf" type="static_transform_publisher" name="tcrossingBM" args="0 -3 0 0 0 0 1 map tcrossingBM 100" />
+<node pkg="tf" type="static_transform_publisher" name="tcrossingTR" args="4.5 2.5 0 0 0 0 1 map tcrossingTR 100" />
+<node pkg="tf" type="static_transform_publisher" name="tcrossingBR" args="4.5 -2.5 0 0 0 0 1 map tcrossingBR 100" />
+
+<node pkg="tf" type="static_transform_publisher" name="crossL" args="-2.4 0 0 0 0 0 1 map crossL 100" />
+<node pkg="tf" type="static_transform_publisher" name="crossR" args="2.4 0 0 0 0 0 1 map crossR 100" />
+<node pkg="tf" type="static_transform_publisher" name="crossTM" args="0 0.75 0 0 0 0 1 map crossTM 100" />
+<node pkg="tf" type="static_transform_publisher" name="crossMM" args="0 0 0 0 0 0 1 map crossMM 100" />
+<node pkg="tf" type="static_transform_publisher" name="crossBM" args="0 -0.75 0 0 0 0 1 map crossBM 100" />
+
+<node pkg="tf" type="static_transform_publisher" name="goalLB" args="-4.5 -1.3 0 0 0 0 1 map goalLB 100" />
+<node pkg="tf" type="static_transform_publisher" name="goalLT" args="-4.5 1.3 0 0 0 0 1 map goalLT 100" />
+<node pkg="tf" type="static_transform_publisher" name="goalRB" args="4.5 -1.3 0 0 0 0 1 map goalRB 100" />
+<node pkg="tf" type="static_transform_publisher" name="goalRT" args="4.5 1.3 0 0 0 0 1 map goalRT 100" />
+
+</launch>
