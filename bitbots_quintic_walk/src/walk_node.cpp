@@ -302,9 +302,6 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   phase_reset_active_ = config.phase_reset_active;
   phase_reset_phase_ = config.phase_reset_phase;
   ground_min_pressure_ = config.ground_min_pressure;
-  cop_stop_active_ = config.cop_stop_active;
-  cop_x_threshold_ = config.cop_x_threshold;
-  cop_y_threshold_ = config.cop_y_threshold;
   params_.pause_duration = config.pause_duration;
   walk_engine_.setPauseDuration(params_.pause_duration);
 }
