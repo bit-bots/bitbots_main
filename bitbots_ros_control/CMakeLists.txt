@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   transmission_interface
   realtime_tools
   bitbots_msgs
+  tf2_ros
 )
 find_package(yaml-cpp REQUIRED)
 

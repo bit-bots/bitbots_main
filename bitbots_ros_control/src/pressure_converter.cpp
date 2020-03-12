@@ -20,12 +20,19 @@ PressureConverter::PressureConverter(ros::NodeHandle &pnh, char side) {
   scale_lr_ += side;
   zero_lr_ = "zero_";
   zero_lr_ += side;
+  cop_lr_ = "cop_";
+  cop_lr_ += side;
+  sole_lr_ = side;
+  sole_lr_ += "_sole";
 
   if (!pnh.getParam(zero_lr_, zero_))
     ROS_ERROR_STREAM(ros::this_node::getName() << ": " << zero_lr_ << " not specified");
 
   if (!pnh.getParam(scale_lr_, scale_))
-    ROS_ERROR_STREAM(ros::this_node::getName() << ": " << scale_lr_ << "not specified");
+    ROS_ERROR_STREAM(ros::this_node::getName() << ": " << scale_lr_ << " not specified");
+
+  if (!pnh.getParam(cop_threshold_, "cop_threshold"))
+    ROS_ERROR_STREAM(ros::this_node::getName() << ": cop_threshold not specified");
 
   side_ = side;
   pnh_ = pnh;
@@ -47,7 +54,8 @@ PressureConverter::PressureConverter(ros::NodeHandle &pnh, char side) {
                         1,
                         &PressureConverter::pressureCallback,
                         this/*, ros::TransportHints().tcpNoDelay()*/);
-  pub_ = pnh_.advertise<bitbots_msgs::FootPressure>(topic + "/filtered", 1);
+  filtered_pub_ = pnh_.advertise<bitbots_msgs::FootPressure>(topic + "/filtered", 1);
+  cop_pub_ = pnh_.advertise<geometry_msgs::PointStamped>("/" + cop_lr_, 1);
   scale_service_ = pnh_.advertiseService(topic + "/set_foot_scale", &PressureConverter::scaleCallback, this);
   zero_service_ = pnh_.advertiseService(topic + "/set_foot_zero", &PressureConverter::zeroCallback, this);
 }
@@ -66,7 +74,7 @@ void PressureConverter::pressureCallback(const bitbots_msgs::FootPressureConstPt
   filtered_msg.left_back = std::accumulate(previous_values_[1].begin(), previous_values_[1].end(), 0.0) / average_;
   filtered_msg.right_front = std::accumulate(previous_values_[2].begin(), previous_values_[2].end(), 0.0) / average_;
   filtered_msg.right_back = std::accumulate(previous_values_[3].begin(), previous_values_[3].end(), 0.0) / average_;
-  pub_.publish(filtered_msg);
+  filtered_pub_.publish(filtered_msg);
   current_index_ = (current_index_ + 1) % average_;
 
   if (save_zero_and_scale_values_) {
@@ -75,6 +83,34 @@ void PressureConverter::pressureCallback(const bitbots_msgs::FootPressureConstPt
     zero_and_scale_values_[2].push_back(pressure_raw->right_front);
     zero_and_scale_values_[3].push_back(pressure_raw->right_back);
   }
+
+  // publish center of pressure
+  double pos_x = 0.085, pos_y = 0.045;
+  geometry_msgs::PointStamped cop;
+  cop.header.frame_id = sole_lr_;
+  cop.header.stamp = pressure_raw->header.stamp;
+  double sum_of_forces =
+      filtered_msg.left_front + filtered_msg.left_back + filtered_msg.right_back + filtered_msg.right_front;
+  if (sum_of_forces > cop_threshold_) {
+    cop.point.x =
+        (filtered_msg.left_front + filtered_msg.right_front - filtered_msg.left_back - filtered_msg.right_back) * pos_x
+            / sum_of_forces;
+    cop.point.y =
+        (filtered_msg.left_front + filtered_msg.left_back - filtered_msg.right_front - filtered_msg.right_back) * pos_y
+            / sum_of_forces;
+  } else {
+    cop.point.x = 0;
+    cop.point.y = 0;
+  }
+  cop_pub_.publish(cop);
+
+  geometry_msgs::TransformStamped cop_tf;
+  cop_tf.header = cop.header;
+  cop_tf.child_frame_id = cop_lr_;
+  cop_tf.transform.translation.x = cop.point.x;
+  cop_tf.transform.translation.y = cop.point.y;
+  cop_tf.transform.rotation.w = 1;
+  tf_broadcaster_.sendTransform(cop_tf);
 }
 
 void PressureConverter::resetZeroAndScaleValues() {
