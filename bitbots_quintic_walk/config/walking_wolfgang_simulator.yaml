@@ -92,4 +92,8 @@ walking:
     imu_pitch_threshold: 1
     imu_roll_threshold: 1
 
+    phase_reset_active: False
+    ground_min_pressure: 1.5
+    phase_reset_phase: 0.25
+
     publish_odom_tf: False

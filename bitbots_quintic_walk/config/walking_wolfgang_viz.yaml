@@ -99,27 +99,11 @@ walking:
     imu_roll_vel_threshold: 1.0
     pause_duration: 0.5
 
+    phase_reset_active: True
+    ground_min_pressure: 1.5
+    phase_reset_phase: 0.25
+
     publish_odom_tf: False
-
-  pid_trunk_pitch:
-    p: 0
-    i: 0
-    d: 0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: False
-    publish_state: True
-
-  pid_trunk_roll:
-    p: 0
-    i: 0
-    d: 0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: False
-    publish_state: True
 
   pid_trunk_fused_pitch:
     p: 0
@@ -132,106 +116,6 @@ walking:
     publish_state: True
 
   pid_trunk_fused_roll:
-    p: 0
-    i: 0
-    d: 0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: False
-    publish_state: True
-
-  pid_trunk_gyro_roll:
-    p: 0
-    i: 0
-    d: 0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: False
-    publish_state: True
-
-  pid_trunk_gyro_pitch:
-    p: 0
-    i: 0
-    d: 0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: False
-    publish_state: True
-
-  pid_cop_x:
-    p: 0
-    i: 0
-    d: 0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: False
-    publish_state: True
-
-  pid_cop_y:
-    p: 0
-    i: 0
-    d: 0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: False
-    publish_state: True
-
-  pid_ankle_left_pitch:
-    p: 0
-    i: 0
-    d: 0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: False
-    publish_state: True
-
-  pid_ankle_right_pitch:
-    p: 0
-    i: 0
-    d: 0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: False
-    publish_state: True
-
-  pid_ankle_left_roll:
-    p: 0
-    i: 0
-    d: 0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: False
-    publish_state: True
-
-  pid_ankle_right_roll:
-    p: 0
-    i: 0
-    d: 0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: False
-    publish_state: True
-
-  pid_hip_pitch:
-    p: 0
-    i: 0
-    d: 0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: False
-    publish_state: True
-
-  pid_hip_roll:
     p: 0
     i: 0
     d: 0
