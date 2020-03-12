@@ -9,16 +9,8 @@ WalkNode::WalkNode() :
   // init variables
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLABLE;
   current_request_.orders = {0, 0, 0};
-  current_trunk_pitch_ = 0;
-  current_trunk_roll_ = 0;
   current_trunk_fused_pitch_ = 0;
   current_trunk_fused_roll_ = 0;
-  cop_right_x_ = 0;
-  cop_right_y_ = 0;
-  cop_left_x_ = 0;
-  cop_left_y_ = 0;
-  roll_vel_ = 0;
-  pitch_vel_ = 0;
   current_fly_pressure_ = 0;
 
   // read config
@@ -42,9 +34,6 @@ WalkNode::WalkNode() :
                                      ros::TransportHints().tcpNoDelay());
   pressure_sub_right_ = nh_.subscribe("foot_pressure_right/filtered", 1, &WalkNode::pressureRightCb, this,
                                       ros::TransportHints().tcpNoDelay());
-  cop_l_sub_ = nh_.subscribe("cop_l", 1, &WalkNode::copLeftCb, this, ros::TransportHints().tcpNoDelay());
-  cop_r_sub_ = nh_.subscribe("cop_r", 1, &WalkNode::copRightCb, this, ros::TransportHints().tcpNoDelay());
-
 
   //load MoveIt! model
   robot_model_loader_.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
@@ -70,20 +59,6 @@ WalkNode::WalkNode() :
   f = boost::bind(&bitbots_quintic_walk::WalkNode::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
 
-  // initilize PIDs
-  pid_left_x_.init(ros::NodeHandle("/walking/pid_ankle_left_pitch"), false);
-  pid_left_y_.init(ros::NodeHandle("/walking/pid_ankle_left_roll"), false);
-  pid_right_x_.init(ros::NodeHandle("/walking/pid_ankle_right_pitch"), false);
-  pid_right_y_.init(ros::NodeHandle("/walking/pid_ankle_right_roll"), false);
-  pid_hip_pitch_.init(ros::NodeHandle("/walking/pid_hip_pitch"), false);
-  pid_hip_roll_.init(ros::NodeHandle("/walking/pid_hip_roll"), false);
-
-  pid_left_x_.reset();
-  pid_left_y_.reset();
-  pid_right_x_.reset();
-  pid_right_y_.reset();
-  pid_hip_pitch_.reset();
-  pid_hip_roll_.reset();
   walk_engine_ = WalkEngine();
 }
 
@@ -99,12 +74,7 @@ void WalkNode::run() {
     if (robot_state_ == humanoid_league_msgs::RobotControlState::FALLING) {
       // the robot fell, we have to reset everything and do nothing else
       walk_engine_.reset();
-      pid_left_x_.reset();
-      pid_left_y_.reset();
-      pid_right_x_.reset();
-      pid_right_y_.reset();
-      pid_hip_pitch_.reset();
-      pid_hip_roll_.reset();
+      stabilizer_.reset();
     } else {
       // we don't want to walk, even if we have orders, if we are not in the right state
       /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
@@ -121,21 +91,8 @@ void WalkNode::run() {
 
       // only calculate joint goals from this if the engine is not idle
       if (walk_engine_.getState() != WalkState::IDLE) {
-        // add IMU pitch information
-        response.current_pitch = current_trunk_pitch_;
-        response.current_roll = current_trunk_roll_;
-        response.roll_vel = roll_vel_;
-        response.pitch_vel = pitch_vel_;
         response.current_fused_roll = current_trunk_fused_roll_;
         response.current_fused_pitch = current_trunk_fused_pitch_;
-
-        if (walk_engine_.isLeftSupport()) {
-          response.sup_cop_x = cop_left_x_;
-          response.sup_cop_y = cop_left_y_;
-        } else {
-          response.sup_cop_x = cop_right_x_;
-          response.sup_cop_y = cop_right_y_;
-        }
 
         calculateAndPublishJointGoals(response, dt);
       }
@@ -159,30 +116,6 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, doubl
 
   // compute motor goals from IK
   bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_response);
-
-  double goal_pitch, goal_roll, goal_yaw;
-  tf2::Matrix3x3(stabilized_response.support_foot_to_trunk.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
-  double hip_pitch_correction = pid_hip_pitch_.computeCommand(goal_pitch - response.current_pitch, ros::Duration(dt));
-  double hip_roll_correction = pid_hip_roll_.computeCommand(goal_roll - response.current_roll, ros::Duration(dt));
-
-  for (int i = 0; i < motor_goals.first.size(); ++i) {
-    if (motor_goals.first.at(i) == "LAnklePitch") {
-      motor_goals.second.at(i) += pid_left_x_.computeCommand(cop_left_x_, ros::Duration(dt));
-    } else if (motor_goals.first.at(i) == "RAnklePitch") {
-      motor_goals.second.at(i) += pid_right_x_.computeCommand(cop_right_x_, ros::Duration(dt));
-    } else if (motor_goals.first.at(i) == "LAnkleRoll") {
-      motor_goals.second.at(i) += pid_left_y_.computeCommand(cop_left_y_, ros::Duration(dt));
-    } else if (motor_goals.first.at(i) == "RAnkleRoll") {
-      motor_goals.second.at(i) += pid_right_y_.computeCommand(cop_right_y_, ros::Duration(dt));
-    } else if (motor_goals.first.at(i) == "RHipPitch"){
-      // pitch servos have inverted sign, therefore substract
-      motor_goals.second.at(i) -= hip_pitch_correction;
-    } else if(motor_goals.first.at(i) == "LHipPitch") {
-      motor_goals.second.at(i) += hip_pitch_correction;
-    } else if (motor_goals.first.at(i) == "LHipRoll" || motor_goals.first.at(i) == "RHipRoll") {
-      motor_goals.second.at(i) += hip_roll_correction;
-    }
-  }
 
   // publish them
   publishGoals(motor_goals);
@@ -269,8 +202,6 @@ void WalkNode::imuCb(const sensor_msgs::Imu &msg) {
   // the tf2::Quaternion has a method to access roll pitch and yaw
   double roll, pitch, yaw;
   tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-  current_trunk_pitch_ = pitch;
-  current_trunk_roll_ = roll;
 
   Eigen::Quaterniond imu_orientation_eigen;
   tf2::convert(quat, imu_orientation_eigen);
@@ -329,31 +260,6 @@ void WalkNode::checkPhaseReset() {
     ROS_WARN("Phase resetted!");
     walk_engine_.endStep();
   }
-}
-
-void WalkNode::copLeftCb(geometry_msgs::PointStamped msg) {
-  // Since CoP is only published as something else than 0 if the foot is on the ground, we don't have to check
-  // if this is the current support foot, or if it is double support.
-  // The CoP should not go to the outside edge of the foot. This is the left side for the left foot (y is positive).
-  // The inside edge is okay, since it is necessary to shift the CoM dynamically between feet.
-  // To prevent falling to the front and back, the x position of the CoP is also taken into account.
-  if (cop_stop_active_ &&
-      (msg.point.y > cop_y_threshold_ || abs(msg.point.x) > cop_x_threshold_)) {
-    walk_engine_.requestPause();
-  }
-  cop_left_x_ = msg.point.x;
-  cop_left_y_ = msg.point.y;
-}
-
-void WalkNode::copRightCb(geometry_msgs::PointStamped msg) {
-  // The CoP should not go to the outside edge of the foot. This is the right side for the right foot (y is negative).
-  if (cop_stop_active_ &&
-      (msg.point.y < -1 * cop_y_threshold_ || abs(msg.point.x) > cop_x_threshold_)) {
-    walk_engine_.requestPause();
-  }
-
-  cop_right_x_ = msg.point.x;
-  cop_right_y_ = msg.point.y;
 }
 
 void WalkNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {
