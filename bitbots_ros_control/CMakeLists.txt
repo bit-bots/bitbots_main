@@ -49,7 +49,4 @@ add_dependencies(node ${PROJECT_NAME}_gencfg)
 target_link_libraries(node ${catkin_LIBRARIES})
 
 add_executable(pressure_converter src/pressure_converter.cpp)
-add_dependencies(pressure_converter ${PROJECT_NAME}_gencfg)
 target_link_libraries(pressure_converter ${catkin_LIBRARIES} yaml-cpp)
-
-
