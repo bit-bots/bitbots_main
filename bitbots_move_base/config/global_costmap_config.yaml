@@ -2,8 +2,10 @@ global_costmap:
   plugins:
     - {name: obstacle_layer,        type: "costmap_2d::VoxelLayer"}
   # Set map origin to have the origin in the map center
-  origin_x: -5.0
-  origin_y: -5.0
+  origin_x: -7.5
+  origin_y: -7.5
+  robot_base_frame: /base_footprint
+  global_frame: /map
 
   update_frequency: 5.0
   publish_frequency: 5.0
@@ -21,7 +23,8 @@ global_costmap:
         data_type: PointCloud2
         topic: obstacles
         marking: true
-        clearing: true
+        clearing: false
         min_obstacle_height: 0.0
         max_obstacle_height: 100
         obstacle_range: 100
+        observation_persistence: 0.0 #only most recent readings
