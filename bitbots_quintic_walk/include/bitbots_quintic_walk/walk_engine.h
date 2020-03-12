@@ -34,17 +34,17 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   WalkResponse update(double dt) override;
   void setGoals(const WalkRequest &goals) override;
   void reset() override;
-  [[nodiscard]] int getPercentDone() const override;
+  int getPercentDone() const override;
 
   /**
    * Return current walk phase between 0 and 1
    */
-  [[nodiscard]] double getPhase() const;
+  double getPhase() const;
 
   /**
    * Return current time between 0 and half period for trajectories evaluation
    */
-  [[nodiscard]] double getTrajsTime() const;
+  double getTrajsTime() const;
 
   /**
    * Return if true if left is current support foot
