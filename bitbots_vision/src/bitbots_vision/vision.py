@@ -122,7 +122,9 @@ class Vision:
             # Check if a new image is avalabile
             elif self._transfer_image_msg is not None:
                 # Copy image from shared memory
+                self._transfer_image_msg_read_flag = True
                 image_msg = deepcopy(self._transfer_image_msg)
+                self._transfer_image_msg_read_flag = False
                 self._transfer_image_msg = None
                 # Run the vision pipeline
                 self._handle_image(image_msg)
