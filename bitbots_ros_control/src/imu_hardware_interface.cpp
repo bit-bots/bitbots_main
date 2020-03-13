@@ -49,9 +49,9 @@ bool ImuHardwareInterface::read(){
   /**
    * Reads the IMU
    */
-  uint8_t *data = (uint8_t *) malloc(24 * sizeof(uint8_t));
+  uint8_t *data = (uint8_t *) malloc(40 * sizeof(uint8_t));
 
-    if(driver_->readMultipleRegisters(241, 36, 24, data)){
+    if(driver_->readMultipleRegisters(241, 36, 40, data)){
       angular_velocity_[0] = dxlMakeFloat(data + 0);
       angular_velocity_[1] = dxlMakeFloat(data + 4);
       angular_velocity_[2] = dxlMakeFloat(data + 8);
@@ -59,7 +59,11 @@ bool ImuHardwareInterface::read(){
       linear_acceleration_[0] = dxlMakeFloat(data + 12);
       linear_acceleration_[1] = dxlMakeFloat(data + 16);
       linear_acceleration_[2] = dxlMakeFloat(data + 20);
-      
+
+      orientation_[0] = dxlMakeFloat(data + 24);
+      orientation_[1] = dxlMakeFloat(data + 28);
+      orientation_[2] = dxlMakeFloat(data + 32);
+      orientation_[3] = dxlMakeFloat(data + 36);
       return true;
     }else {
       ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");

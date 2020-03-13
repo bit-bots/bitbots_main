@@ -29,7 +29,7 @@
   <depend>bitbots_buttons</depend>
   <depend>transmission_interface</depend>
   <depend>realtime_tools</depend>
-
+  <depend>ros_control</depend>
   <exec_depend>imu_complementary_filter</exec_depend>
   <exec_depend>imu_sensor_controller</exec_depend>
   <exec_depend>joint_state_controller</exec_depend>
