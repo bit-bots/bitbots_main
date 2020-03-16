@@ -68,6 +68,7 @@ void RobotState::setYPos(double y) {
 }
 
 void RobotState::setTheta(double t) {
+  t = signedAngle(t);
   m_SinTheta = sin(t);
   m_CosTheta = cos(t);
 }
