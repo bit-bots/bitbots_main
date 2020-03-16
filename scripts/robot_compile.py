@@ -406,6 +406,23 @@ def check_rosdeps(target):
     print_success("Rosdeps on {} installed successfully".format(target.hostname))
 
 
+def configure_wifi(target):
+    """
+    Configure default wifi network on given target.
+
+    :type target: Target
+    """
+    print_info("Configuring Wifi")
+
+    _execute_on_target(target, "nmcli connection show").check_returncode()
+    connection_id = input("UUID of connection which should be enabled [leave unchanged]: ")
+
+    if connection_id != "":
+        _execute_on_target(target, "nmcli connection up {}".format(connection_id)).check_returncode()
+        _execute_on_target(target, "nmcli connection modify {} connection.autoconnect TRUE".format(connection_id)).check_returncode()
+        _execute_on_target(target, "nmcli connection modify {} connection.autoconnect-priority 100".format(connection_id)).check_returncode()
+
+
 def main():
     args = parse_arguments()
 
@@ -446,6 +463,7 @@ def main():
             print_info("Running game-settings script for {}".format(target.hostname))
             game_settings.main()
             sync_gamesettings(target)
+            configure_wifi(target)
 
 
 if __name__ == "__main__":
