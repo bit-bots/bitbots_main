@@ -503,7 +503,7 @@ void Localization::publish_pose_with_covariance() {
       estimateMsg.pose.covariance[i] = cov_mat[i];
     }
 
-    estimateMsg.header.frame_id = "mean";
+    estimateMsg.header.frame_id = "localization_raw";
 
     pose_with_covariance_publisher_.publish(estimateMsg);
   }
