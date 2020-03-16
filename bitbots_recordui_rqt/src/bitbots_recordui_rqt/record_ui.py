@@ -143,7 +143,7 @@ class RecordUI(Plugin):
 
         self.update_time = rospy.Duration(0.1)
 
-        for k,v in self.ids.iteritems():
+        for k,v in self.ids.items():
             rospy.loginfo(k)
             self._initial_joints.name.append(k)
             self._initial_joints.position.append(0)
@@ -215,7 +215,8 @@ class RecordUI(Plugin):
             slider.setTickInterval(1)
             slider.setMinimum(-181)
             slider.setMaximum(181)
-            slider.valueChanged.connect(self.slider_update)
+            slider.sliderMoved.connect(self.slider_update) //This has to  be a sliderMoved signal, since valueChanged is
+                                                           //triggered by other sources than user action.
             self._sliders[k] = slider
 
             textfield = QLineEdit()
@@ -436,9 +437,9 @@ class RecordUI(Plugin):
         self.set_all_joints_stiff()
 
         if self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
-            for k, v in self._workingValues.iteritems():
+            for k, v in self._workingValues.items():
                 self._workingValues[k] = 0.0
-        for k, v in self._currentGoals.iteritems():
+        for k, v in self._currentGoals.items():
             self._currentGoals[k] = 0.0
         self.set_sliders_and_text_fields(manual=False)
 
@@ -664,7 +665,6 @@ class RecordUI(Plugin):
             self._selected_frame = None
 
 
-
             for v in self._recorder.get_animation_state():
                 if v["name"] == selected_frame_name:
                     self._selected_frame = v
@@ -712,7 +712,6 @@ class RecordUI(Plugin):
                 self._textFields[k].setEnabled(v)
                 self._sliders[k].setEnabled(v)
 
-        self.set_sliders_and_text_fields(manual=False)
         self.box_ticked()
 
     def motor_switcher(self):
@@ -843,6 +842,7 @@ class RecordUI(Plugin):
         Updates the text fields and sliders in self._sliders and self._textfields and also frame name and duration and pause 
         to the values in self._workingValues. 
         '''
+        print(self._workingValues)
         for k, v in self._workingValues.items():
             try:
                 if not self._treeItems[k].checkState(0) == 0:
