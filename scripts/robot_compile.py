@@ -278,6 +278,23 @@ def get_includes_from_file(file_path, package=''):
     return includes
 
 
+def _execute_on_target(target, command):
+    """
+    Execute a command on the given target over ssh
+
+    :type target: Target
+    :type command: str
+    :rtype: subprocess.CompletedProcess
+    """
+    real_cmd = [
+        "ssh",
+        "bitbots@{}".format(target.ssh_target),
+        command
+    ]
+    print_debug("Calling {}".format(" ".join(real_cmd)))
+    return subprocess.run(real_cmd)
+
+
 def sync(target, package='', pre_clean=False):
     """
     :type target: Target
@@ -286,13 +303,7 @@ def sync(target, package='', pre_clean=False):
     """
     if pre_clean:
         print_info("Pre-cleaning on {}".format(target.hostname))
-        cmd = [
-            "ssh",
-            "bitbots@{}".format(target.hostname),
-            "rm -rf {}/src/*".format(target.workspace)
-        ]
-        print_debug("Calling {}".format(" ".join(cmd)))
-        clean_result = subprocess.run(cmd)
+        clean_result = _execute_on_target(target, "rm -rf {}/src/*".format(target.workspace))
         if clean_result.returncode != 0:
             print_warn("Cleaning of source directory on {} failed. Continuing anyways".format(target.hostname))
 
@@ -352,26 +363,21 @@ def build(target, package='', pre_clean=False):
     """
     print_info("Building on {}".format(target.hostname))
 
-    cmd = [
-        "ssh",
-        "bitbots@{}".format(target.ssh_target),
-        ("sync;"
-         "cd {workspace};"
-         "source devel/setup.zsh;"
-         "{cmd_clean}"
-         "catkin build --force-color {package} {quiet_option} --continue-on-failure --summary || exit 1;"
-         "./src/scripts/repair.sh {quiet_option};"
-         "sync;"
-         ).format(**{
-            "workspace": target.workspace,
-            "cmd_clean": "catkin clean -y {};".format(package) if pre_clean else "",
-            "quiet_option": "> /dev/null" if LOGLEVEL.current < LOGLEVEL.INFO else "",
-            "package": package
-        })
-    ]
+    cmd = ("sync;"
+               "cd {workspace};"
+               "source devel/setup.zsh;"
+               "{cmd_clean}"
+               "catkin build --force-color {package} {quiet_option} --continue-on-failure --summary || exit 1;"
+               "./src/scripts/repair.sh {quiet_option};"
+               "sync;"
+               ).format(**{
+        "workspace": target.workspace,
+        "cmd_clean": "catkin clean -y {};".format(package) if pre_clean else "",
+        "quiet_option": "> /dev/null" if LOGLEVEL.current < LOGLEVEL.INFO else "",
+        "package": package
+    })
 
-    print_debug("Calling {}".format(" ".join(cmd)))
-    build_result = subprocess.run(cmd)
+    build_result = _execute_on_target(target, cmd)
     if build_result.returncode != 0:
         print_err("Build on {} failed".format(target.hostname))
         sys.exit(build_result.returncode)
@@ -387,18 +393,12 @@ def check_rosdeps(target):
     """
     print_info("Checking installed rosdeps on {}".format(target.hostname))
 
-    cmd = [
-        "ssh",
-        "bitbots@{}".format(target.ssh_target),
-        "rosdep check {} --ignore-src --from-paths {}".format(
-            "" if LOGLEVEL.current >= LOGLEVEL.INFO else "-q",
-            os.path.join(target.workspace, "src")
-        ),
-    ]
+    cmd = "rosdep check {} --ignore-src --from-paths {}".format(
+        "" if LOGLEVEL.current >= LOGLEVEL.INFO else "-q",
+        os.path.join(target.workspace, "src")
+    )
 
-    print_debug("Calling {}".format(" ".join(cmd)))
-
-    rosdep_result = subprocess.run(cmd)
+    rosdep_result = _execute_on_target(target, cmd)
     if rosdep_result.returncode != 0:
         print_warn("rosdep check on {} had non-zero exit code. Check its output for more info"
                    .format(target.hostname))
