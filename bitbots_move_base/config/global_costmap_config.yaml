@@ -1,6 +1,7 @@
 global_costmap:
   plugins:
     - {name: obstacle_layer,        type: "costmap_2d::VoxelLayer"}
+    - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}
   # Set map origin to have the origin in the map center
   origin_x: -7.5
   origin_y: -7.5
@@ -21,10 +22,15 @@ global_costmap:
     observation_sources: obstacles
     obstacles:
         data_type: PointCloud2
-        topic: obstacles
+        topic: "/obstacles"
         marking: true
         clearing: false
         min_obstacle_height: 0.0
         max_obstacle_height: 100
         obstacle_range: 100
         observation_persistence: 0.0 #only most recent readings
+    
+  inflation_layer:
+    enabled:              true
+    cost_scaling_factor:  5.0  # exponential rate at which the obstacle cost drops off (default: 10)
+    inflation_radius:     0.5  # max. distance from an obstacle at which costs are incurred for planning paths.
