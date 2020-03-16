@@ -129,7 +129,7 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
 
 void Localization::publishing_timer_callback(const ros::TimerEvent &e) {
   timer_callback_count++;
-  resampled = 0;
+  resampled = 0; // TODO do boolean TODO UNDERSCORE 
 
   if (config_.use_lines && line_information_relative_.header.stamp != last_stamp_lines) {
     robot_pose_observation_model_->set_measurement_lines(line_information_relative_);
@@ -149,6 +149,8 @@ void Localization::publishing_timer_callback(const ros::TimerEvent &e) {
   if (config_.use_crosses && crosses_.header.stamp != last_stamp_crosses) {
     robot_pose_observation_model_->set_measurement_crosses(crosses_);
   }
+
+  // Set timestamps to mark past messages
   last_stamp_lines = line_information_relative_.header.stamp;
   last_stamp_goals = goal_relative_.header.stamp;
   last_stamp_fb_points = fieldboundary_relative_.header.stamp;
@@ -156,24 +158,31 @@ void Localization::publishing_timer_callback(const ros::TimerEvent &e) {
   last_stamp_tcrossings = t_crossings_.header.stamp;
   last_stamp_crosses = crosses_.header.stamp;
 
+  // Get the odometry offset since the last cycle
   getMotion();
 
   if ((config_.filter_only_with_motion and robot_moved) or (!config_.filter_only_with_motion)) {
-
     robot_pf_->drift(linear_movement_, rotational_movement_);
     robot_pf_->diffuse();
   }
 
+  // Apply ratings corresponding to the observations compared with each partice position
   robot_pf_->measure();
 
+  // Check if its resampling time!
   if (timer_callback_count % config_.resampling_interval == 0) {
     robot_pf_->resample();
     timer_callback_count = 0;
     resampled = 1;
   }
+
+  // Publish transforms 
   publish_pose();
+  // Publish covariance message
   publish_pose_with_covariance();
 
+  // Publish ratings
+  // TODO check if debug
   if (config_.use_lines) {
     publish_line_ratings();
   }
@@ -333,7 +342,7 @@ void Localization::init() {
   }
   ROS_INFO("init");
 
-  reset_filter(config_.init_mode); // right half
+  reset_filter(config_.init_mode);
 }
 
 int main(int argc, char **argv) {
@@ -353,15 +362,12 @@ int main(int argc, char **argv) {
 
 void Localization::getMotion() {
   robot_moved = false;
-  //get transforms
-  ros::Time now = ros::Time(0);
-
   geometry_msgs::TransformStamped transformStampedPast;
   geometry_msgs::TransformStamped transformStampedNow;
 
   try {
 
-    transformStampedNow = tfBuffer.lookupTransform("odom", "base_footprint", now);
+    transformStampedNow = tfBuffer.lookupTransform("odom", "base_footprint", ros::Time(0));
 
     ros::Time past = transformStampedNow.header.stamp - ros::Duration(1.0/(float)config_.publishing_frequency);
 
@@ -394,14 +400,20 @@ void Localization::getMotion() {
 
   }
   catch (const tf2::TransformException &ex) {
-    ROS_WARN("get_motion: %s", ex.what());
+    ROS_WARN("Could not aquire motion for odom transforms: %s", ex.what());
   }
-
 }
 
-void Localization::publish_pose() { //  and particles and map frame
+void Localization::publish_pose() { // TODO better name and particles and map frame
+
+  //get estimate and covariance
+  estimate_ = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
+  std::vector<double> estimate_cov_ = robot_pf_->getCovariance(config_.percentage_best_particles);
+  
+  // TODO move debug to own method  that is called afterwards
   if (config_.debug_visualization) {
-    //publish particles
+
+    //publish particle markers
     std_msgs::ColorRGBA red;
     red.r = 1;
     red.g = 0;
@@ -410,55 +422,6 @@ void Localization::publish_pose() { //  and particles and map frame
     pose_particles_publisher_.publish(robot_pf_->renderMarkerArray("pose_marker", "/map",
                                                                    ros::Duration(1),
                                                                    red));
-    //get estimate and covariance
-    estimate_ = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
-    std::vector<double> estimate_cov_ = robot_pf_->getCovariance(config_.percentage_best_particles);
-
-    //calculate quaternion
-    tf2::Quaternion q;
-    q.setRPY(0, 0, estimate_.getTheta());
-    q.normalize();
-
-    //////////////////////
-    //publish transforms//
-    //////////////////////
-
-    //publish debug localization tf, not the odom offset
-    geometry_msgs::TransformStamped localization_transform;
-    localization_transform.header.stamp = ros::Time::now();
-    localization_transform.header.frame_id = "/map";
-    localization_transform.child_frame_id = "/localization_raw";
-    localization_transform.transform.translation.x = estimate_.getXPos();
-    localization_transform.transform.translation.y = estimate_.getYPos();
-    localization_transform.transform.translation.z = 0.0;
-    localization_transform.transform.rotation.x = q.x();
-    localization_transform.transform.rotation.y = q.y();
-    localization_transform.transform.rotation.z = q.z();
-    localization_transform.transform.rotation.w = q.w();
-    br.sendTransform(localization_transform);
-
-    try{
-      //publish odom localisation offset
-      geometry_msgs::TransformStamped odom_transform = tfBuffer.lookupTransform("odom", "base_footprint", ros::Time(0));
-      geometry_msgs::TransformStamped map_odom_transform;
-
-      map_odom_transform.header.stamp = odom_transform.header.stamp;
-      map_odom_transform.header.frame_id = "/map";
-      map_odom_transform.child_frame_id = "/odom";
-
-      //calculate odom offset
-      tf2::Transform odom_transform_tf, localization_transform_tf, map_tf;
-      tf2::fromMsg(odom_transform.transform, odom_transform_tf);
-      tf2::fromMsg(localization_transform.transform, localization_transform_tf);
-      map_tf = localization_transform_tf * odom_transform_tf.inverse();
-
-      map_odom_transform.transform = tf2::toMsg(map_tf);
-
-      br.sendTransform(map_odom_transform);
-    }
-    catch (const tf2::TransformException &ex) {
-      ROS_WARN("Odom not available, therefore odom offset can not be published: %s", ex.what());
-    }
 
     //fill and publish evaluation message
     bitbots_localization::Evaluation estimateMsg;
@@ -480,36 +443,79 @@ void Localization::publish_pose() { //  and particles and map frame
 
     pose_publisher_.publish(estimateMsg);
   }
+
+  //calculate quaternion
+  tf2::Quaternion q;
+  q.setRPY(0, 0, estimate_.getTheta());
+  q.normalize();
+
+  //////////////////////
+  //publish transforms//
+  //////////////////////
+
+  //publish localization tf, not the odom offset
+  geometry_msgs::TransformStamped localization_transform;
+  localization_transform.header.stamp = ros::Time::now();
+  localization_transform.header.frame_id = "/map";
+  localization_transform.child_frame_id = "/localization_raw";
+  localization_transform.transform.translation.x = estimate_.getXPos();
+  localization_transform.transform.translation.y = estimate_.getYPos();
+  localization_transform.transform.translation.z = 0.0;
+  localization_transform.transform.rotation.x = q.x();
+  localization_transform.transform.rotation.y = q.y();
+  localization_transform.transform.rotation.z = q.z();
+  localization_transform.transform.rotation.w = q.w();
+  br.sendTransform(localization_transform);
+
+  try{
+    //publish odom localisation offset
+    geometry_msgs::TransformStamped odom_transform = tfBuffer.lookupTransform("odom", "base_footprint", ros::Time(0));
+    geometry_msgs::TransformStamped map_odom_transform;
+
+    map_odom_transform.header.stamp = odom_transform.header.stamp;
+    map_odom_transform.header.frame_id = "/map";
+    map_odom_transform.child_frame_id = "/odom";
+
+    //calculate odom offset
+    tf2::Transform odom_transform_tf, localization_transform_tf, map_tf;
+    tf2::fromMsg(odom_transform.transform, odom_transform_tf);
+    tf2::fromMsg(localization_transform.transform, localization_transform_tf);
+    map_tf = localization_transform_tf * odom_transform_tf.inverse();
+
+    map_odom_transform.transform = tf2::toMsg(map_tf);
+
+    br.sendTransform(map_odom_transform);
+  }
+  catch (const tf2::TransformException &ex) {
+    ROS_WARN("Odom not available, therefore odom offset can not be published: %s", ex.what());
+  }
 }
 
 void Localization::publish_pose_with_covariance() {
 
-  if (config_.debug_visualization) {
+  std::vector<double> cov_mat = robot_pf_->getCovariance(config_.percentage_best_particles);
 
-    std::vector<double> cov_mat = robot_pf_->getCovariance(100);
+  gm::PoseWithCovarianceStamped estimateMsg;
 
-    gm::PoseWithCovarianceStamped estimateMsg;
+  estimateMsg.pose.pose.orientation.w = 1;
+  estimateMsg.pose.pose.orientation.x = 0;
+  estimateMsg.pose.pose.orientation.y = 0;
+  estimateMsg.pose.pose.orientation.z = 0;
+  estimateMsg.pose.pose.position.x = 0;
+  estimateMsg.pose.pose.position.y = 0;
 
-    estimateMsg.pose.pose.orientation.w = 1;
-    estimateMsg.pose.pose.orientation.x = 0;
-    estimateMsg.pose.pose.orientation.y = 0;
-    estimateMsg.pose.pose.orientation.z = 0;
-    estimateMsg.pose.pose.position.x = 0;
-    estimateMsg.pose.pose.position.y = 0;
+  std::vector<double> covariance;
 
-    std::vector<double> covariance;
-
-    for (int i = 0; i < 36; i++) {
-      estimateMsg.pose.covariance[i] = cov_mat[i];
-    }
-
-    estimateMsg.header.frame_id = "mean";
-
-    pose_with_covariance_publisher_.publish(estimateMsg);
+  for (int i = 0; i < 36; i++) {
+    estimateMsg.pose.covariance[i] = cov_mat[i];
   }
+
+  estimateMsg.header.frame_id = "mean";
+
+  pose_with_covariance_publisher_.publish(estimateMsg);
 }
 
-// todo refactor all publish ratings functions and move to debug class
+// todo refactor all publish ratings functions and move to debug class and move debug check outwards
 
 void Localization::publish_line_ratings() {
   if (config_.debug_visualization) {

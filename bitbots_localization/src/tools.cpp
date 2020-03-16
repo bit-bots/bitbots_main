@@ -7,9 +7,7 @@ std::pair<double,double> cartesianToPolar(double x, double y)
     double t = atan2(y, x);
 
     return std::make_pair(t, r);
-
-
-    }
+}
 
 std::pair<double, double> polarToCartesian(double t, double r)
 {

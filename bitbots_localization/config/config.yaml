@@ -44,7 +44,7 @@
   particle_number: 500
   resampling_interval: 15
 
-  use_lines: true
+  use_lines: true    # TODO use only weights
   use_non_lines: false
   use_goals: false
   use_fieldboundary: false
@@ -69,7 +69,7 @@
   percentage_best_particles: 50
 
   distance_factor : 0.5
-  lines_factor: 1
+  lines_factor: 1         # TODO use these params
   non_lines_factor: 0
   goal_factor: 1
   field_boundary_factor: 1

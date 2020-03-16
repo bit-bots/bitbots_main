@@ -84,9 +84,9 @@ class Localization {
 
   void LineCallback(const hlm::LineInformationRelative &msg);
 
-  void NonLineCallback(const hlm::LineInformationRelative &msg);
+  void NonLineCallback(const hlm::LineInformationRelative &msg); //TODO
 
-  void GoalCallback(const hlm::GoalRelative &msg);
+  void GoalCallback(const hlm::GoalRelative &msg); //TODO
 
   void FieldboundaryCallback(const hlm::FieldBoundaryRelative &msg);
 
@@ -96,9 +96,9 @@ class Localization {
 
   void CrossesCallback(const hlm::PixelsRelative &msg);
 
-  void CamInfoCallback(const sensor_msgs::CameraInfo &msg);
+  void CamInfoCallback(const sensor_msgs::CameraInfo &msg); //TODO remove
 
-  void FieldBoundaryInImageCallback(const hlm::FieldBoundaryInImage &msg);
+  void FieldBoundaryInImageCallback(const hlm::FieldBoundaryInImage &msg); //TODO
 
   void init();
 
@@ -171,7 +171,7 @@ class Localization {
 
   std::vector<gm::Point> interpolateFieldboundaryPoints(gm::Point point1, gm::Point point2);
 
-  void publishing_timer_callback(const ros::TimerEvent &e);
+  void publishing_timer_callback(const ros::TimerEvent &e);  // TODO rename
 
   std::shared_ptr<Map> lines_;
   std::shared_ptr<Map> goals_;
@@ -186,9 +186,9 @@ class Localization {
   particle_filter::CRandomNumberGenerator random_number_generator_;
   hll::LocalizationConfig config_;
   std_msgs::ColorRGBA marker_color;
-  bool valid_configuration_ = false;
+  bool valid_configuration_ = false;   // TODO rename to first config
 
-  void publish_pose();
+  void publish_pose(); // TODO rename
 
   void publish_pose_with_covariance();
 
