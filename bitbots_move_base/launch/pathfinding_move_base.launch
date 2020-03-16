@@ -11,7 +11,7 @@
 
   <group unless="$(arg localization)">
     <node name="tf_odom_to_map" pkg="bitbots_move_base" type="tf_map_odom.py" output="screen"/>
-    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/germanopen2019.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/field2019.yaml"/>
   </group>
 
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
