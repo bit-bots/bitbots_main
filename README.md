@@ -3,6 +3,8 @@ Bit-Bots Vision
 
 [![CodeFactor](https://www.codefactor.io/repository/github/bit-bots/bitbots_vision/badge)](https://www.codefactor.io/repository/github/bit-bots/bitbots_vision)
 &nbsp;&nbsp;
+[![Build Status](http://ci.bit-bots.de/buildStatus/icon?job=Bit-Bots%2Fbitbots_vision%2Fmaster)](http://ci.bit-bots.de/job/Bit-Bots/job/bitbots_vision/job/master/)
+&nbsp;&nbsp;
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 This is the vision ROS package of the Hamburg Bit-Bots.
