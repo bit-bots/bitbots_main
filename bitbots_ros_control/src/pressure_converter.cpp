@@ -31,7 +31,7 @@ PressureConverter::PressureConverter(ros::NodeHandle &pnh, char side) {
   if (!pnh.getParam(scale_lr_, scale_))
     ROS_ERROR_STREAM(ros::this_node::getName() << ": " << scale_lr_ << " not specified");
 
-  if (!pnh.getParam(cop_threshold_, "cop_threshold"))
+  if (!pnh.getParam("cop_threshold", cop_threshold_))
     ROS_ERROR_STREAM(ros::this_node::getName() << ": cop_threshold not specified");
 
   side_ = side;
