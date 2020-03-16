@@ -536,8 +536,16 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
                               trunk_pos_at_foot_change_.z(),
                               trunk_pos_vel_at_foot_change_.z(),
                               trunk_pos_acc_at_foot_change_.z());
+  trunk_spline_.z()->addPoint(double_support_length + time_shift,
+                              params_.trunk_height);
+  trunk_spline_.z()->addPoint(double_support_length + time_shift + params_.trunk_z_apex,
+                              params_.trunk_height + params_.trunk_z_movement);
   trunk_spline_.z()->addPoint(half_period + time_shift,
                               params_.trunk_height);
+  trunk_spline_.z()->addPoint(half_period + double_support_length + time_shift,
+                              params_.trunk_height);
+  trunk_spline_.z()->addPoint(half_period + double_support_length + time_shift + params_.trunk_z_apex,
+                              params_.trunk_height + params_.trunk_z_movement);
   trunk_spline_.z()->addPoint(period + time_shift,
                               params_.trunk_height);
 
