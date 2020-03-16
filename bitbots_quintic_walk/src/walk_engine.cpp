@@ -476,7 +476,7 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   tf2::Vector3 trunk_vect =
       trunk_point_support - trunk_point_middle;
   //Apply swing amplitude ratio
-  trunk_vect[1] *= params_.trunkSwing;
+  trunk_vect[1] *= params_.trunk_swing;
   //Trunk support and next apex position
   tf2::Vector3 trunk_apex_support =
       trunk_point_middle + trunk_vect;

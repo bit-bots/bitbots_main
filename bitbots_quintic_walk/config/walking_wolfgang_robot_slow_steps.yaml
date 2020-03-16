@@ -48,7 +48,7 @@ walking:
     trunk_y_offset: 0.0
     # Trunk lateral oscillation amplitude ratio
     # (ratio, >= 0)
-    trunkSwing: 0.7
+    trunk_swing: 0.7
     # Trunk swing pause length in phase at apex
     # (half cycle ratio, [0:1])
     trunk_pause: 0.0
