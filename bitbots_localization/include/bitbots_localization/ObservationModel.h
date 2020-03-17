@@ -77,8 +77,6 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   std::vector<std::pair<double, double>> last_measurement_lines_;
 
-  std::vector<std::pair<double, double>> last_measurement_non_lines_;
-
   std::vector<std::pair<double, double>> last_measurement_goal_;
 
   std::vector<std::pair<double, double>> last_measurement_field_boundary_;

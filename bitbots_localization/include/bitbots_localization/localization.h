@@ -60,7 +60,6 @@
 #include <bitbots_localization/RobotState.h>
 
 #include <bitbots_localization/reset_filter.h>
-#include <bitbots_localization/Evaluation.h>
 #include <bitbots_localization/tools.h>
 
 #include <cv_bridge/cv_bridge.h>
@@ -84,9 +83,7 @@ class Localization {
 
   void LineCallback(const hlm::LineInformationRelative &msg);
 
-  void NonLineCallback(const hlm::LineInformationRelative &msg);
-
-  void GoalCallback(const hlm::GoalRelative &msg);
+  void GoalCallback(const hlm::GoalRelative &msg); //TODO
 
   void FieldboundaryCallback(const hlm::FieldBoundaryRelative &msg);
 
@@ -96,11 +93,7 @@ class Localization {
 
   void CrossesCallback(const hlm::PixelsRelative &msg);
 
-  void CamInfoCallback(const sensor_msgs::CameraInfo &msg);
-
   void FieldBoundaryInImageCallback(const hlm::FieldBoundaryInImage &msg);
-
-  void init();
 
   void reset_filter(int distribution);
 
@@ -110,13 +103,11 @@ class Localization {
 
  private:
   ros::Subscriber line_subscriber_;
-  ros::Subscriber non_line_subscriber_;
   ros::Subscriber goal_subscriber_;
   ros::Subscriber fieldboundary_subscriber_;
   ros::Subscriber corners_subscriber_;
   ros::Subscriber t_crossings_subscriber_;
   ros::Subscriber crosses_subscriber_;
-  ros::Subscriber cam_info_subscriber_;
   ros::Subscriber fieldboundary_in_image_subscriber_;
 
   ros::Publisher pose_publisher_;
@@ -129,7 +120,6 @@ class Localization {
   ros::Publisher corner_ratings_publisher_;
   ros::Publisher t_crossings_ratings_publisher_;
   ros::Publisher crosses_ratings_publisher_;
-  ros::Publisher non_line_ratings_publisher_;
 
   ros::ServiceServer service_;
   ros::Timer publishing_timer_;
@@ -150,10 +140,9 @@ class Localization {
   std::shared_ptr<particle_filter::ParticleFilter<RobotState>> robot_pf_;
   RobotState estimate_;
 
-  int resampled = 0;
+  bool resampled_ = false;
 
   hlm::LineInformationRelative line_information_relative_;
-  hlm::LineInformationRelative non_line_information_relative_;
   hlm::GoalRelative goal_relative_;
   hlm::FieldBoundaryRelative fieldboundary_relative_;
   hlm::PixelsRelative corners_;
@@ -171,7 +160,7 @@ class Localization {
 
   std::vector<gm::Point> interpolateFieldboundaryPoints(gm::Point point1, gm::Point point2);
 
-  void publishing_timer_callback(const ros::TimerEvent &e);
+  void run_filter_one_step(const ros::TimerEvent &e);
 
   std::shared_ptr<Map> lines_;
   std::shared_ptr<Map> goals_;
@@ -182,17 +171,20 @@ class Localization {
 
   gmms::GaussianMixtureModel pose_gmm_;
   std::vector<gm::Point> line_points_;
-  std::vector<gm::Point> non_line_points_;
   particle_filter::CRandomNumberGenerator random_number_generator_;
   hll::LocalizationConfig config_;
   std_msgs::ColorRGBA marker_color;
-  bool valid_configuration_ = false;
+  bool first_configuration_ = true;
 
-  void publish_pose();
+  void publish_transforms();
 
   void publish_pose_with_covariance();
 
-  void publish_lines();
+  void publish_debug();
+
+  void publish_particle_markers();
+
+  void publish_ratings();
 
   void publish_line_ratings();
 
@@ -206,22 +198,16 @@ class Localization {
 
   void publish_crosses_ratings();
 
-  void publish_non_line_ratings();
-
-  void publish_lines_map();
-
-  void publish_map();
+  void getMotion();
 
   geometry_msgs::TransformStamped transformOdomBaseLink;
   bool initialization = true;
-
-  void getMotion();
 
   geometry_msgs::Vector3 linear_movement_;
   geometry_msgs::Vector3 rotational_movement_;
   bool new_linepoints_ = false;
   bool robot_moved = false;
-  int timer_callback_count = 0;
+  int timer_callback_count_ = 0;
 };
 
 #endif //BITBOTS_LOCALIZATION_LOCALIZATION_H

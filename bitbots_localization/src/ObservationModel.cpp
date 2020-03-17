@@ -107,10 +107,12 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
   number_tcrossings = last_measurement_t_crossings_.size();
   number_crosses = last_measurement_crosses_.size();
 
+
+  // TODO use config params
   double weight = (number_of_effective_measurements == 0) ? 0 : (
       (particle_weight_lines * 1 + particle_weight_goal * 1 + particle_weight_field_boundary * 1 +
           particle_weight_corners * 1 + particle_weight_t_crossings * 1 + particle_weight_crosses * 1) /
-          number_of_effective_measurements);
+          number_of_effective_measurements); // TODO evaluate this devision
   if (weight < min_weight_) {
     weight = min_weight_;
   }

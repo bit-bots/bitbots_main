@@ -1,9 +1,0 @@
-<launch>
-    <node pkg="bitbots_localization" type="localization" name="bitbots_localization" output="screen">
-        <rosparam command="load" file="$(find bitbots_localization)/config/config.yaml"/>
-    </node>
- <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/lines_simulator.yaml">
-        <param name="frame_id" value="map" ></param>
-    </node>
-
-</launch>
