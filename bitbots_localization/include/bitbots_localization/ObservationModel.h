@@ -78,6 +78,9 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
  private:
 
+  double calculate_weight_for_class(const RobotState &state, 
+    const std::vector<std::pair<double, double>> &last_messurement);
+
   std::vector<std::pair<double, double>> last_measurement_lines_;
 
   std::vector<std::pair<double, double>> last_measurement_goal_;
@@ -91,6 +94,8 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
   std::vector<std::pair<double, double>> last_measurement_crosses_;
 
   double min_weight_ = 0;
+
+  int number_of_effective_measurements_ = 0;
 
   std::shared_ptr<Map> map_lines_;
   std::shared_ptr<Map> map_goals_;

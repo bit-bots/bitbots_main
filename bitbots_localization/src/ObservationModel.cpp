@@ -24,82 +24,29 @@ RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_li
 
 }
 
+double RobotPoseObservationModel::calculate_weight_for_class(
+    const RobotState &state, 
+    const std::vector<std::pair<double, double>> &last_messurement) {
+  double particle_weight_for_class = 0;
+  if (!last_messurement.empty()) {
+    number_of_effective_measurements_ += 1;
+    std::vector<double> ratings = map_lines_->Map::provideRating(state, last_messurement);
+    for (double rating : ratings) {
+      particle_weight_for_class += rating;
+    }
+    particle_weight_for_class /= ratings.size();
+  }
+  return particle_weight_for_class;
+}
+
 double RobotPoseObservationModel::measure(const RobotState &state) const {
 
-  std::vector<double> lineRatings;
-  std::vector<double> goalRatings;
-  std::vector<double> fieldBoundaryRatings;
-  std::vector<double> cornersRating;
-  std::vector<double> tCrossingsRating;
-  std::vector<double> crossesRating;
-
-  double particle_weight_lines = 0;
-  double particle_weight_goal = 0;
-  double particle_weight_field_boundary = 0;
-  double particle_weight_corners = 0;
-  double particle_weight_t_crossings = 0;
-  double particle_weight_crosses = 0;
-
-  int number_of_effective_measurements = 0;
-
-  if (!last_measurement_lines_.empty()) {
-    number_of_effective_measurements += 1;
-    lineRatings = map_lines_->Map::provideRating(state, last_measurement_lines_);
-    for (double rating : lineRatings) {
-      particle_weight_lines += rating;
-    }
-    particle_weight_lines = particle_weight_lines /
-        lineRatings.size();
-  }
-
-  if (!last_measurement_goal_.empty()) {
-    number_of_effective_measurements += 1;
-    goalRatings = map_goals_->Map::provideRating(state, last_measurement_goal_);
-    for (double rating : goalRatings) {
-      particle_weight_goal += rating;
-    }
-    particle_weight_goal = particle_weight_goal / goalRatings.size();
-
-  }
-
-  if (!last_measurement_field_boundary_.empty()) {
-    number_of_effective_measurements += 1;
-    fieldBoundaryRatings = map_field_boundary_->Map::provideRating(state, last_measurement_field_boundary_);
-    for (double rating : fieldBoundaryRatings) {
-      particle_weight_field_boundary += rating;
-    }
-    particle_weight_field_boundary = particle_weight_field_boundary / fieldBoundaryRatings.size();
-  }
-
-  if (!last_measurement_corners_.empty()) {
-    number_of_effective_measurements += 1;
-    cornersRating = map_corners_->Map::provideRating(state, last_measurement_corners_);
-    for (double rating : cornersRating) {
-      particle_weight_corners += rating;
-    }
-    particle_weight_corners = particle_weight_corners / cornersRating.size();
-
-  }
-
-  if (!last_measurement_t_crossings_.empty()) {
-    number_of_effective_measurements += 1;
-    tCrossingsRating = map_t_crossings_->Map::provideRating(state, last_measurement_t_crossings_);
-    for (double rating : tCrossingsRating) {
-      particle_weight_t_crossings += rating;
-    }
-    particle_weight_t_crossings = particle_weight_t_crossings / tCrossingsRating.size();
-
-  }
-
-  if (!last_measurement_crosses_.empty()) {
-    number_of_effective_measurements += 1;
-    crossesRating = map_crosses_->Map::provideRating(state, last_measurement_crosses_);
-    for (double rating : crossesRating) {
-      particle_weight_crosses += rating;
-    }
-    particle_weight_crosses = particle_weight_crosses / crossesRating.size();
-
-  }
+  double particle_weight_lines = calculate_weight_for_class(state, last_measurement_lines_);
+  double particle_weight_goal = calculate_weight_for_class(state, last_measurement_goal_);
+  double particle_weight_field_boundary = calculate_weight_for_class(state, last_measurement_field_boundary_);
+  double particle_weight_corners = calculate_weight_for_class(state, last_measurement_corners_);
+  double particle_weight_t_crossings = calculate_weight_for_class(state, last_measurement_t_crossings_);
+  double particle_weight_crosses = calculate_weight_for_class(state, last_measurement_crosses_);
 
   number_lines = last_measurement_lines_.size();
   number_goals = last_measurement_goal_.size();
@@ -108,18 +55,16 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
   number_tcrossings = last_measurement_t_crossings_.size();
   number_crosses = last_measurement_crosses_.size();
 
-
-  // TODO use config params
-  double weight = (number_of_effective_measurements == 0) ? 0 : (
+  double weight = (number_of_effective_measurements_ == 0) ? 0 : (
       ( particle_weight_lines * config_.lines_factor + 
         particle_weight_goal * config_.goal_factor + 
         particle_weight_field_boundary * config_.field_boundary_factor +
         particle_weight_corners * config_.corners_factor + 
         particle_weight_t_crossings * config_.tcrossings_factor + 
         particle_weight_crosses * config_.crosses_factor) /
-          number_of_effective_measurements); // TODO evaluate this devision
+          number_of_effective_measurements_); // TODO evaluate this devision
   if (weight < min_weight_) {
-    weight = min_weight_;
+    weight = min_weight_;   
   }
   return weight; //exponential?
 }
