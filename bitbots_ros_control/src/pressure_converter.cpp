@@ -117,9 +117,12 @@ void PressureConverter::pressureCallback(const bitbots_msgs::FootPressureConstPt
     cop.point.x =
         (filtered_msg.left_front + filtered_msg.right_front - filtered_msg.left_back - filtered_msg.right_back) * pos_x
             / sum_of_forces;
+    cop.point.x = std::max(std::min(cop.point.x, pos_x), -pos_x);
+
     cop.point.y =
         (filtered_msg.left_front + filtered_msg.left_back - filtered_msg.right_front - filtered_msg.right_back) * pos_y
             / sum_of_forces;
+    cop.point.y = std::max(std::min(cop.point.y, pos_y), -pos_y);
   } else {
     cop.point.x = 0;
     cop.point.y = 0;
