@@ -117,7 +117,7 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
   if (!valid_configuration_) {
     valid_configuration_ = true;
     ROS_INFO("Trying to initialize particle filter...");
-    init();
+    reset_filter(config_.init_mode);
   }
 
   publishing_timer_ = nh_.createTimer(static_cast<double>(config.publishing_frequency),
@@ -310,18 +310,6 @@ void Localization::reset_filter(int distribution, double x, double y) {
     robot_pf_->drawAllFromDistribution(robot_state_distribution_position_);
   }
 
-}
-
-void Localization::init() {
-  if (!valid_configuration_) {
-    ROS_ERROR(
-        "You tried to initialize the particle filter with an invalid configuration!\n "
-        "The dynamic_reconfigure_callback has to be called at least once with a valid configuration before initializing the particle filter!");
-    return;
-  }
-  ROS_INFO("init");
-
-  reset_filter(config_.init_mode);
 }
 
 int main(int argc, char **argv) {

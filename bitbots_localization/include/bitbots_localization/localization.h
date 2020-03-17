@@ -99,8 +99,6 @@ class Localization {
 
   void FieldBoundaryInImageCallback(const hlm::FieldBoundaryInImage &msg); //TODO
 
-  void init();
-
   void reset_filter(int distribution);
 
   void reset_filter(int distribution, double x, double y);
