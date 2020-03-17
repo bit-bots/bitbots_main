@@ -122,7 +122,12 @@ void MotionOdometry::supportCallback(const std_msgs::Char msg) {
 
   // remember if we recieved first support state, only remember left or right
   if (previous_support_state_ == 'n' && current_support_state_ != 'd') {
-    previous_support_state_ = current_support_state_;
+    if (current_support_state_ == 'l') {
+      previous_support_state_ = 'r';
+    } else {
+      previous_support_state_ = 'l';
+    }
+
   }
 }
 
@@ -131,10 +136,9 @@ void MotionOdometry::jointStateCb(const sensor_msgs::JointState &msg) {
   joint_update_time_ = ros::Time::now();
 }
 
-void MotionOdometry::odomCallback(nav_msgs::Odometry msg){
+void MotionOdometry::odomCallback(nav_msgs::Odometry msg) {
   current_odom_msg_ = msg;
 }
-
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "bitbots_walk_odometry");
