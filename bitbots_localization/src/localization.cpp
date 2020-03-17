@@ -175,7 +175,7 @@ void Localization::publishing_timer_callback(const ros::TimerEvent &e) {
   }
 
   // Publish transforms 
-  publish_pose();
+  publish_transforms();
   // Publish covariance message
   publish_pose_with_covariance();
 
@@ -402,7 +402,7 @@ void Localization::getMotion() {
   }
 }
 
-void Localization::publish_pose() { // TODO better name and particles and map frame
+void Localization::publish_transforms() { // TODO and particles and map frame
 
   //get estimate and covariance
   estimate_ = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);

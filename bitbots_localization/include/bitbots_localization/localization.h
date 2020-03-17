@@ -187,7 +187,7 @@ class Localization {
   std_msgs::ColorRGBA marker_color;
   bool valid_configuration_ = false;   // TODO rename to first config
 
-  void publish_pose(); // TODO rename
+  void publish_transforms(); // TODO rename
 
   void publish_pose_with_covariance();
 
