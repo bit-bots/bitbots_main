@@ -1,15 +1,13 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 78
+    Help Height: 75
     Name: Displays
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Status1
-        - /RobotModel1
-        - /TF1
+        - /Grid1/Offset1
         - /TF1/Frames1
-      Splitter Ratio: 0.5
+      Splitter Ratio: 0.6515151262283325
     Tree Height: 709
   - Class: rviz/Selection
     Name: Selection
@@ -19,7 +17,7 @@ Panels:
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.588679016
+    Splitter Ratio: 0.5886790156364441
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -30,16 +28,20 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: ""
+Preferences:
+  PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
     - Alpha: 0.5
       Cell Size: 1
       Class: rviz/Grid
-      Color: 160; 160; 164
+      Color: 99; 99; 99
       Enabled: true
       Line Style:
-        Line Width: 0.0299999993
+        Line Width: 0.029999999329447746
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -48,7 +50,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 10
+      Plane Cell Count: 25
       Reference Frame: <Fixed Frame>
       Value: true
     - Alpha: 1
@@ -61,151 +63,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        camera:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        camera_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        head:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        imu_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        l_ankle:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_foot:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_hip_1:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_hip_2:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_lower_arm:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_lower_leg:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_shoulder:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_sole:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        l_toe:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        l_upper_arm:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_upper_leg:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_wrist:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        neck:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_ankle:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_foot:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_hip_1:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_hip_2:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_lower_arm:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_lower_leg:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_shoulder:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_sole:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        r_toe:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        r_upper_arm:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_upper_leg:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_wrist:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        torso:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -213,134 +70,239 @@ Visualization Manager:
       Value: true
       Visual Enabled: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
-        All Enabled: true
-        base_footprint:
-          Value: true
-        base_link:
-          Value: true
-        camera:
-          Value: true
-        camera_optical_frame:
-          Value: true
-        head:
-          Value: true
-        imu_frame:
-          Value: true
-        l_ankle:
-          Value: true
-        l_foot:
-          Value: true
-        l_hip_1:
-          Value: true
-        l_hip_2:
-          Value: true
-        l_lower_arm:
-          Value: true
-        l_lower_leg:
-          Value: true
-        l_shoulder:
-          Value: true
-        l_sole:
-          Value: true
-        l_toe:
-          Value: true
-        l_upper_arm:
-          Value: true
-        l_upper_leg:
-          Value: true
-        l_wrist:
-          Value: true
-        neck:
-          Value: true
-        r_ankle:
-          Value: true
-        r_foot:
-          Value: true
-        r_hip_1:
-          Value: true
-        r_hip_2:
-          Value: true
-        r_lower_arm:
-          Value: true
-        r_lower_leg:
-          Value: true
-        r_shoulder:
-          Value: true
-        r_sole:
-          Value: true
-        r_toe:
-          Value: true
-        r_upper_arm:
-          Value: true
-        r_upper_leg:
-          Value: true
-        r_wrist:
-          Value: true
-        torso:
-          Value: true
-      Marker Scale: 0.200000003
+        All Enabled: false
+      Marker Scale: 1
       Name: TF
-      Show Arrows: true
+      Show Arrows: false
       Show Axes: true
       Show Names: true
       Tree:
-        base_link:
-          base_footprint:
-            {}
-          l_hip_1:
-            l_hip_2:
-              l_upper_leg:
-                l_lower_leg:
-                  l_ankle:
-                    l_foot:
-                      l_sole:
-                        l_cleat_l_back:
-                          {}
-                        l_cleat_l_front:
-                          {}
-                        l_cleat_r_back:
-                          {}
-                        l_cleat_r_front:
-                          {}
-                        l_toe:
-                          {}
-          r_hip_1:
-            r_hip_2:
-              r_upper_leg:
-                r_lower_leg:
-                  r_ankle:
-                    r_foot:
-                      r_sole:
-                        r_toe:
-                          {}
-          torso:
-            imu_frame:
-              {}
-            l_shoulder:
-              l_upper_arm:
-                l_lower_arm:
-                  l_wrist:
-                    {}
-            neck:
-              head:
-                camera:
-                  camera_optical_frame:
-                    {}
-            r_shoulder:
-              r_upper_arm:
-                r_lower_arm:
-                  r_wrist:
-                    {}
+        {}
       Update Interval: 0
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /robocup_markers
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
       Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: false
+      Name: Map
+      Topic: /map
+      Unreliable: false
+      Use Timestamp: false
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 3
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic: /line_relative_pc
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.10000000149011612
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: false
+      Head Length: 0.30000001192092896
+      Head Radius: 0.10000000149011612
+      Name: Pose
+      Shaft Length: 1
+      Shaft Radius: 0.05000000074505806
+      Shape: Arrow
+      Topic: ""
+      Unreliable: false
+      Value: false
+    - Class: rviz/Image
+      Enabled: false
+      Image Topic: /image_raw
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Image
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: false
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 0.699999988079071
+          Class: rviz/Map
+          Color Scheme: map
+          Draw Behind: false
+          Enabled: true
+          Name: playing_field
+          Topic: /map
+          Unreliable: false
+          Use Timestamp: false
+          Value: true
+        - Alpha: 0.699999988079071
+          Class: rviz/Map
+          Color Scheme: costmap
+          Draw Behind: false
+          Enabled: true
+          Name: global_costmap
+          Topic: /move_base/local_costmap/costmap
+          Unreliable: false
+          Use Timestamp: false
+          Value: true
+        - Alpha: 0.699999988079071
+          Class: rviz/Map
+          Color Scheme: costmap
+          Draw Behind: false
+          Enabled: true
+          Name: local_costmap
+          Topic: /move_base/local_costmap/costmap
+          Unreliable: false
+          Use Timestamp: false
+          Value: true
+        - Alpha: 1
+          Buffer Length: 1
+          Class: rviz/Path
+          Color: 25; 255; 0
+          Enabled: true
+          Head Diameter: 0.30000001192092896
+          Head Length: 0.20000000298023224
+          Length: 0
+          Line Style: Billboards
+          Line Width: 0.029999999329447746
+          Name: global_path
+          Offset:
+            X: 0
+            Y: 0
+            Z: 0
+          Pose Color: 255; 85; 255
+          Pose Style: None
+          Radius: 0.029999999329447746
+          Shaft Diameter: 0.10000000149011612
+          Shaft Length: 0.10000000149011612
+          Topic: /move_base/NavfnROS/plan
+          Unreliable: false
+          Value: true
+        - Alpha: 1
+          Buffer Length: 1
+          Class: rviz/Path
+          Color: 255; 0; 0
+          Enabled: true
+          Head Diameter: 0.30000001192092896
+          Head Length: 0.20000000298023224
+          Length: 0.30000001192092896
+          Line Style: Billboards
+          Line Width: 0.029999999329447746
+          Name: local_path
+          Offset:
+            X: 0
+            Y: 0
+            Z: 0
+          Pose Color: 255; 85; 255
+          Pose Style: None
+          Radius: 0.029999999329447746
+          Shaft Diameter: 0.10000000149011612
+          Shaft Length: 0.10000000149011612
+          Topic: /move_base/DWAPlannerROS/local_plan
+          Unreliable: false
+          Value: true
+      Enabled: true
+      Name: move_base
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: false
+      Name: InteractiveMarkers
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /basic_controls/update
+      Value: false
+    - Alpha: 1
+      Arrow Width: 0.5
+      Class: rviz/WrenchStamped
+      Enabled: false
+      Force Arrow Scale: 0.20000000298023224
+      Force Color: 204; 51; 51
+      Hide Small Values: true
+      History Length: 1
+      Name: WrenchStamped
+      Topic: /wrenchcop_r
+      Torque Arrow Scale: 2
+      Torque Color: 204; 204; 51
+      Unreliable: false
+      Value: false
+    - Alpha: 1
+      Arrow Width: 0.5
+      Class: rviz/WrenchStamped
+      Enabled: false
+      Force Arrow Scale: 0.20000000298023224
+      Force Color: 204; 51; 51
+      Hide Small Values: true
+      History Length: 1
+      Name: WrenchStamped
+      Topic: /wrenchcop_l
+      Torque Arrow Scale: 2
+      Torque Color: 204; 204; 51
+      Unreliable: false
+      Value: false
+    - Acceleration properties:
+        Acc. vector alpha: 1
+        Acc. vector color: 255; 0; 0
+        Acc. vector scale: 1
+        Derotate acceleration: true
+        Enable acceleration: false
+      Axes properties:
+        Axes scale: 1
+        Enable axes: true
+      Box properties:
+        Box alpha: 1
+        Box color: 255; 0; 0
+        Enable box: false
+        x_scale: 1
+        y_scale: 1
+        z_scale: 1
+      Class: rviz_imu_plugin/Imu
+      Enabled: true
+      Name: Imu
+      Topic: ""
+      Unreliable: false
+      Value: true
+      fixed_frame_orientation: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: base_link
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -351,7 +313,10 @@ Visualization Manager:
     - Class: rviz/FocusCamera
     - Class: rviz/Measure
     - Class: rviz/SetInitialPose
+      Theta std deviation: 0.2617993950843811
       Topic: /initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
     - Class: rviz/SetGoal
       Topic: /move_base_simple/goal
     - Class: rviz/PublishPoint
@@ -360,34 +325,36 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 1.47960186
+      Class: rviz/ThirdPersonFollower
+      Distance: 7.140570640563965
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.0599999987
+        Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.0457810238
-        Y: -0.173107609
-        Z: -0.278841466
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.0500000007
+        X: -0.5172811150550842
+        Y: 0.3652212619781494
+        Z: -7.5006573752034456e-6
+      Focal Shape Fixed Size: false
+      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
-      Near Clip Distance: 0.00999999978
-      Pitch: 0.355399311
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.6952035427093506
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 1.68040085
+      Value: ThirdPersonFollower (rviz)
+      Yaw: 1.6067750453948975
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
   Height: 1016
   Hide Left Dock: false
-  Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000016f00000355fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000004000000355000000d800fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f00000355fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000004000000355000000af00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d0065010000000000000780000002cd00fffffffb0000000800540069006d00650100000000000004500000000000000000000004f60000035500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Hide Right Dock: true
+  Image:
+    collapsed: false
+  QMainWindow State: 000000ff00000000fd0000000400000000000003bf00000352fc020000000dfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005e00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000000c00430061006d0065007200610200000022000000d20000038400000348fc0000004000000352000000ce00fffffffa000000010100000002fb0000000c00430061006d0065007200610000000000ffffffff0000000000000000fb000000100044006900730070006c0061007900730100000000000002540000015600fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d006500720061020000035500000096000002ab000002b0fb0000000a0049006d00610067006500000002530000013e0000000000000000fb0000000c00430061006d00650072006102fffffff90000000c000007860000042cfb0000000a0049006d0061006700650000000221000001700000001800ffffff000000010000010f00000355fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000004000000355000000ac00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000078000000040fc0100000002fb0000000800540069006d00650100000000000007800000025700fffffffb0000000800540069006d00650100000000000004500000000000000000000003bb0000035200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -395,7 +362,7 @@ Window Geometry:
   Tool Properties:
     collapsed: false
   Views:
-    collapsed: false
+    collapsed: true
   Width: 1920
   X: 0
   Y: 27
