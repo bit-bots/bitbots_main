@@ -1,6 +1,6 @@
 local_costmap:
   plugins:
-    - {name: obstacle_layer,        type: "costmap_2d::VoxelLayer"}
+    - {name: obstacle_layer,        type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
     - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}
   # Set map origin to have the origin in the map center
   origin_x: 0
@@ -11,26 +11,7 @@ local_costmap:
   update_frequency: 5.0
   publish_frequency: 1.0
   transform_tolerance: 1.0
-  static_map: false
   rolling_window: true
   width: 8.0
   height: 8.0
-  robot_radius: 0.17
-
-  obstacle_layer:
-    enable: true
-    observation_sources: obstacles
-    obstacles:
-        data_type: PointCloud2
-        topic: "/obstacles"
-        marking: true
-        clearing: false
-        min_obstacle_height: 0.0
-        max_obstacle_height: 100
-        obstacle_range: 100
-        observation_persistence: 0.5 #only most recent readings
-
-  inflation_layer:
-    enabled:              true
-    cost_scaling_factor:  5.0  # exponential rate at which the obstacle cost drops off (default: 10)
-    inflation_radius:     0.5  # max. distance from an obstacle at which costs are incurred for planning paths.
+  robot_radius: 0.2

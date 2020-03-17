@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_move_base</name>
-  <version>0.1.3</version>
+  <version>0.1.4</version>
   <description>The bitbots_move_base package contains config files and launch scripts for move_base which does planning
   and plan execution</description>
 
@@ -22,7 +22,7 @@
   <depend>rospy</depend>
   <depend>move_base</depend>
   <depend>base_local_planner</depend>
-
+  <depend>spatio_temporal_voxel_layer</depend>
   <export>
     <bitbots_documentation>
       <language>-</language>

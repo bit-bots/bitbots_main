@@ -26,39 +26,13 @@ class ObstaclePublisher:
 
         self.obstacle_publisher = rospy.Publisher("obstacles", PointCloud2, queue_size=10)
 
-        self.ball = None
-        self.obstacles = None
-        r = rospy.Rate(5.0)
-
-        while not rospy.is_shutdown():
-            self.clearer()
-            rospy.sleep(0.1)
-
-            obs = list()
-            if self.ball is not None and rospy.Time.now() - self.ball.header.stamp < rospy.Duration(1):
-                # publish ball only if it was seen recently
-                # todo maybe rather use information from the world model for this
-                obs.append([self.ball.ball_relative.x, self.ball.ball_relative.y, self.ball.ball_relative.z])
-
-            if self.obstacles is not None and rospy.Time.now() - self.obstacles.header.stamp < rospy.Duration(1):
-                obs.extend([o.position.x, o.position.y, o.position.z] for o in self.obstacles.obstacles)
-
-            if self.obstacles is not None or self.ball is not None:
-                h = Header()
-                h.stamp = rospy.get_rostime()
-                # TODO check if frameids are the same
-                if self.ball is not None:
-                    h.frame_id = self.ball.header.frame_id
-                else:
-                    h.frame_id = self.obstacles.header.frame_id
-                self.obstacle_publisher.publish(create_cloud_xyz32(h, obs))
-            r.sleep()
+        rospy.spin()
 
     def _ball_callback(self, msg):
-        self.ball = msg
+        self.obstacle_publisher.publish(create_cloud_xyz32(msg.header, [[msg.ball_relative.x, msg.ball_relative.y, msg.ball_relative.z]]))
 
     def _obstacle_callback(self, msg):
-        self.obstacles = msg
+        self.obstacle_publisher.publish(create_cloud_xyz32(msg.header, [[o.position.x, o.position.y, o.position.z] for o in msg.obstacles]))
 
 if __name__ == "__main__":
     ObstaclePublisher()
