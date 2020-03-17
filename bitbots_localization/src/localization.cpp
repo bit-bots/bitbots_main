@@ -18,7 +18,6 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
   corners_subscriber_ = nh_.subscribe(config.corners_topic, 1, &Localization::CornerCallback, this);
   t_crossings_subscriber_ = nh_.subscribe(config.tcrossings_topic, 1, &Localization::TCrossingsCallback, this);
   crosses_subscriber_ = nh_.subscribe(config.crosses_topic, 1, &Localization::CrossesCallback, this);
-  cam_info_subscriber_ = nh_.subscribe(config.cam_info_topic, 1, &Localization::CamInfoCallback, this);
   fieldboundary_in_image_subscriber_ = nh_.subscribe(config.fieldboundary_in_image_topic, 1,
                                                      &Localization::FieldBoundaryInImageCallback, this);
 
@@ -233,11 +232,6 @@ void Localization::TCrossingsCallback(const hlm::PixelsRelative &msg) {
 
 void Localization::CrossesCallback(const hlm::PixelsRelative &msg) {
   crosses_ = msg;
-}
-
-void Localization::CamInfoCallback(const sensor_msgs::CameraInfo &msg) {
-  cam_info_ = msg;
-
 }
 
 void Localization::FieldBoundaryInImageCallback(const hlm::FieldBoundaryInImage &msg) {

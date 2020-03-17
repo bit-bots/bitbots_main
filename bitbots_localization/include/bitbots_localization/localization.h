@@ -95,9 +95,7 @@ class Localization {
 
   void CrossesCallback(const hlm::PixelsRelative &msg);
 
-  void CamInfoCallback(const sensor_msgs::CameraInfo &msg); //TODO remove
-
-  void FieldBoundaryInImageCallback(const hlm::FieldBoundaryInImage &msg); //TODO
+  void FieldBoundaryInImageCallback(const hlm::FieldBoundaryInImage &msg);
 
   void reset_filter(int distribution);
 
