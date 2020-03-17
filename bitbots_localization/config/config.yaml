@@ -64,7 +64,7 @@
   goal_factor: 0
   field_boundary_factor: 0
   corners_factor : 0
-  tcrossings_factor: 0
+  t_crossings_factor: 0
   crosses_factor : 0
 
   min_motion_linear: 0.0

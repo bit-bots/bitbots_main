@@ -60,7 +60,7 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
         particle_weight_goal * config_.goal_factor + 
         particle_weight_field_boundary * config_.field_boundary_factor +
         particle_weight_corners * config_.corners_factor + 
-        particle_weight_t_crossings * config_.tcrossings_factor + 
+        particle_weight_t_crossings * config_.t_crossings_factor + 
         particle_weight_crosses * config_.crosses_factor) /
           number_of_effective_measurements_); // TODO evaluate this devision
   if (weight < min_weight_) {

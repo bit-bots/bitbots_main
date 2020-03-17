@@ -306,7 +306,7 @@ void Localization::updateMeasurements() {
   if (config_.corners_factor && corners_.header.stamp != last_stamp_corners) {
     robot_pose_observation_model_->set_measurement_corners(corners_);
   }
-  if (config_.tcrossings_factor && t_crossings_.header.stamp != last_stamp_tcrossings) {
+  if (config_.t_crossings_factor && t_crossings_.header.stamp != last_stamp_tcrossings) {
     robot_pose_observation_model_->set_measurement_t_crossings(t_crossings_);
   }
   if (config_.crosses_factor && crosses_.header.stamp != last_stamp_crosses) {
@@ -475,7 +475,7 @@ void Localization::publish_ratings() {
   if (config_.corners_factor) {
     publish_corner_ratings();
   }
-  if (config_.tcrossings_factor) {
+  if (config_.t_crossings_factor) {
     publish_t_crossings_ratings();
   }
   if (config_.crosses_factor) {
