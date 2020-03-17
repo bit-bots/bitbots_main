@@ -201,7 +201,7 @@ class Recorder(object):
         }
 
         for kf in anim['keyframes']:
-            for k, v in kf['goals'].iteritems():
+            for k, v in kf['goals'].items():
                 kf['goals'][k] = int(math.degrees(v))
 
         with open(path, "w") as fp:
@@ -249,7 +249,7 @@ class Recorder(object):
                         kf['name'] = 'frame'+str(i)
                         i += 1
                 for kf in data['keyframes']:
-                    for k, v in kf['goals'].iteritems():
+                    for k, v in kf['goals'].items():
                         kf['goals'][k] = math.radians(v)
             except ValueError as e:
                 rospy.logerr("Animation %s is corrupt:\n %s" %
@@ -263,7 +263,7 @@ class Recorder(object):
 
         self.save_step("Loading of animation named %s" % path)
 
-        self.current_state.anim_steps = data[u'keyframes']
+        self.current_state.anim_steps = data['keyframes']
 
     def play(self, anim_path, until_frame=None):
         ''' Record command, start playing an animation
@@ -289,7 +289,7 @@ class Recorder(object):
                 "keyframes": deepcopy(self.current_state.anim_steps[0:n])
             }
             for kf in anim_dict['keyframes']:
-                for k, v in kf['goals'].iteritems():
+                for k, v in kf['goals'].items():
                     kf['goals'][k] = int(math.degrees(v))
 
             rospy.loginfo("playing %d frames..." % len(anim_dict['keyframes']))
