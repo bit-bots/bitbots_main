@@ -68,6 +68,8 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
   static double number_tcrossings;
   static double number_crosses;
 
+  static int number_of_effective_measurements_;
+
   void set_min_weight(double min_weight);
 
   double get_min_weight() const override;
@@ -79,7 +81,7 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
  private:
 
   double calculate_weight_for_class(const RobotState &state, 
-    const std::vector<std::pair<double, double>> &last_messurement);
+    const std::vector<std::pair<double, double>> &last_messurement) const;
 
   std::vector<std::pair<double, double>> last_measurement_lines_;
 
@@ -94,8 +96,6 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
   std::vector<std::pair<double, double>> last_measurement_crosses_;
 
   double min_weight_ = 0;
-
-  int number_of_effective_measurements_ = 0;
 
   std::shared_ptr<Map> map_lines_;
   std::shared_ptr<Map> map_goals_;
@@ -114,5 +114,6 @@ double RobotPoseObservationModel::number_fb_points = 0;
 double RobotPoseObservationModel::number_corners = 0;
 double RobotPoseObservationModel::number_tcrossings = 0;
 double RobotPoseObservationModel::number_crosses = 0;
+int RobotPoseObservationModel::number_of_effective_measurements_ = 0;
 
 #endif //BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H
