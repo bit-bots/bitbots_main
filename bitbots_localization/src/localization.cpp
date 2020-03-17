@@ -4,6 +4,21 @@
 
 #include "bitbots_localization/localization.h"
 
+
+int main(int argc, char **argv) {
+  ros::init(argc, argv, "localization");
+  Localization localization;
+
+  // dynamic reconfigure
+  dynamic_reconfigure::Server<bitbots_localization::LocalizationConfig> dynamic_reconfigure_server;
+  dynamic_reconfigure::Server<bitbots_localization::LocalizationConfig>::CallbackType f = boost::bind(
+      &Localization::dynamic_reconfigure_callback, &localization, _1, _2);
+  dynamic_reconfigure_server.setCallback(f); // automatically calls the callback once
+
+  ros::spin();
+  return 0;
+}
+
 Localization::Localization() : line_points_(), tfListener(tfBuffer) {
   ROS_DEBUG("localization");
   nh_ = ros::NodeHandle("/bitbots_localization");
@@ -298,20 +313,6 @@ void Localization::reset_filter(int distribution, double x, double y) {
     robot_pf_->drawAllFromDistribution(robot_state_distribution_position_);
   }
 
-}
-
-int main(int argc, char **argv) {
-  ros::init(argc, argv, "localization");
-  Localization localization;
-
-  // dynamic reconfigure
-  dynamic_reconfigure::Server<bitbots_localization::LocalizationConfig> dynamic_reconfigure_server;
-  dynamic_reconfigure::Server<bitbots_localization::LocalizationConfig>::CallbackType f = boost::bind(
-      &Localization::dynamic_reconfigure_callback, &localization, _1, _2);
-  dynamic_reconfigure_server.setCallback(f); // automatically calls the callback once
-
-  ros::spin();
-  return 0;
 }
 
 void Localization::getMotion() {
