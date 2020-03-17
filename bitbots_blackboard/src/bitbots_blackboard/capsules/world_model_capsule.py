@@ -58,6 +58,13 @@ class WorldModelCapsule:
     def get_ball_position_uv(self):
         return self.ball.point.x, self.ball.point.y
 
+    def get_ball_position_uv_approach_frame(self):
+        try:
+            ball_position = self.tf_buffer.transform(self.ball, 'approach_frame', timeout=rospy.Duration(0.3))
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
+        return ball_position.point.x, ball_position.point.y
+
     def get_ball_distance(self):
         u, v = self.get_ball_position_uv()
         return math.sqrt(u ** 2 + v ** 2)

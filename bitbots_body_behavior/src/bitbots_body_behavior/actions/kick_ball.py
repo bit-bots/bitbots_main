@@ -52,11 +52,11 @@ class KickBallDynamic(AbstractKickAction):
             if not self._goal_sent:
                 goal = KickGoal()
                 goal.header.stamp = rospy.Time.now()
-                goal.header.frame_id = "base_footprint"  # get_ball_uv() always returns ball in base_footprint
+                goal.header.frame_id = "approach_frame"  # the ball position is stated in this frame
                 # TODO evaluate whether the dynamic kick is good enough to actually use the ball position
                 # currently we use a tested left or right kick
                 goal.ball_position.x = 0.2
-                ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
+                ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv_approach_frame()
                 if ball_v > 0:
                     # left side
                     goal.ball_position.y = 0.09

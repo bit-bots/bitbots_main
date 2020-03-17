@@ -19,7 +19,7 @@ class BallKickArea(AbstractDecisionElement):
         self.viz_publisher = rospy.Publisher('/debug/viz_ball_kick_area', String, queue_size=1)
 
     def perform(self, reevaluate=False):
-        ball_position = self.blackboard.world_model.get_ball_position_uv()
+        ball_position = self.blackboard.world_model.get_ball_position_uv_approach_frame()
 
         self.publish_debug_data("ball_position", {"u": ball_position[0], "v": ball_position[1]})
 
