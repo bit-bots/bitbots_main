@@ -42,7 +42,6 @@ double Map::get_occupancy(double x, double y) {
     occupancy = 100 - map.at<uchar>(y, x); //0 = schwarz, 100 = weiß
   }
   return occupancy;
-  // punish false positives
 }
 
 std::vector<double> Map::provideRating(const RobotState &state,

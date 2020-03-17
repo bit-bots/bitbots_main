@@ -141,32 +141,8 @@ void Localization::run_filter_one_step(const ros::TimerEvent &e) {
   timer_callback_count_++;
   resampled_ = false;
 
-  if (config_.use_lines && line_information_relative_.header.stamp != last_stamp_lines) {
-    robot_pose_observation_model_->set_measurement_lines(line_information_relative_);
-  }
-  if (config_.use_goals && goal_relative_.header.stamp != last_stamp_goals) {
-    robot_pose_observation_model_->set_measurement_goal(goal_relative_);
-  }
-  if (config_.use_fieldboundary && fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
-    robot_pose_observation_model_->set_measurement_field_boundary(fieldboundary_relative_);
-  }
-  if (config_.use_corners && corners_.header.stamp != last_stamp_corners) {
-    robot_pose_observation_model_->set_measurement_corners(corners_);
-  }
-  if (config_.use_tcrossings && t_crossings_.header.stamp != last_stamp_tcrossings) {
-    robot_pose_observation_model_->set_measurement_t_crossings(t_crossings_);
-  }
-  if (config_.use_crosses && crosses_.header.stamp != last_stamp_crosses) {
-    robot_pose_observation_model_->set_measurement_crosses(crosses_);
-  }
-
-  // Set timestamps to mark past messages
-  last_stamp_lines = line_information_relative_.header.stamp;
-  last_stamp_goals = goal_relative_.header.stamp;
-  last_stamp_fb_points = fieldboundary_relative_.header.stamp;
-  last_stamp_corners = corners_.header.stamp;
-  last_stamp_tcrossings = t_crossings_.header.stamp;
-  last_stamp_crosses = crosses_.header.stamp;
+  // Set the messurements in the observation model
+  updateMessurements();
 
   // Get the odometry offset since the last cycle
   getMotion();
@@ -313,6 +289,36 @@ void Localization::reset_filter(int distribution, double x, double y) {
     robot_pf_->drawAllFromDistribution(robot_state_distribution_position_);
   }
 
+}
+
+void Localization::updateMessurements() {
+  // Sets the messurements in the oservation model
+  if (config_.use_lines && line_information_relative_.header.stamp != last_stamp_lines) {
+    robot_pose_observation_model_->set_measurement_lines(line_information_relative_);
+  }
+  if (config_.use_goals && goal_relative_.header.stamp != last_stamp_goals) {
+    robot_pose_observation_model_->set_measurement_goal(goal_relative_);
+  }
+  if (config_.use_fieldboundary && fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
+    robot_pose_observation_model_->set_measurement_field_boundary(fieldboundary_relative_);
+  }
+  if (config_.use_corners && corners_.header.stamp != last_stamp_corners) {
+    robot_pose_observation_model_->set_measurement_corners(corners_);
+  }
+  if (config_.use_tcrossings && t_crossings_.header.stamp != last_stamp_tcrossings) {
+    robot_pose_observation_model_->set_measurement_t_crossings(t_crossings_);
+  }
+  if (config_.use_crosses && crosses_.header.stamp != last_stamp_crosses) {
+    robot_pose_observation_model_->set_measurement_crosses(crosses_);
+  }
+
+  // Set timestamps to mark past messages
+  last_stamp_lines = line_information_relative_.header.stamp;
+  last_stamp_goals = goal_relative_.header.stamp;
+  last_stamp_fb_points = fieldboundary_relative_.header.stamp;
+  last_stamp_corners = corners_.header.stamp;
+  last_stamp_tcrossings = t_crossings_.header.stamp;
+  last_stamp_crosses = crosses_.header.stamp;
 }
 
 void Localization::getMotion() {

@@ -198,6 +198,8 @@ class Localization {
 
   void publish_crosses_ratings();
 
+  void updateMessurements();
+
   void getMotion();
 
   geometry_msgs::TransformStamped transformOdomBaseLink;
