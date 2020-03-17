@@ -57,14 +57,12 @@ PressureConverter::PressureConverter(ros::NodeHandle &pnh, char side) {
   filtered_pub_ = pnh_.advertise<bitbots_msgs::FootPressure>(topic + "/filtered", 1);
   cop_pub_ = pnh_.advertise<geometry_msgs::PointStamped>("/" + cop_lr_, 1);
   std::string wrench_topics[] = {"l_front", "l_back", "r_front", "r_back", "cop"};
-  for (int i = 0; i<5; i++)
-  {
+  for (int i = 0; i < 5; i++) {
     std::stringstream single_wrench_topic;
     single_wrench_topic << topic << "/wrench/" << wrench_topics[i];
     wrench_pubs_.push_back(pnh_.advertise<geometry_msgs::WrenchStamped>(single_wrench_topic.str(), 1));
   }
-  for (int i = 0; i<4; i++)
-  {
+  for (int i = 0; i < 4; i++) {
     std::stringstream single_wrench_frame;
     single_wrench_frame << side << "_" << "cleat_" << wrench_topics[i];
     wrench_frames_.push_back(single_wrench_frame.str());
@@ -88,9 +86,9 @@ void PressureConverter::pressureCallback(const bitbots_msgs::FootPressureConstPt
   filtered_msg.right_front = std::accumulate(previous_values_[2].begin(), previous_values_[2].end(), 0.0) / average_;
   filtered_msg.right_back = std::accumulate(previous_values_[3].begin(), previous_values_[3].end(), 0.0) / average_;
   current_index_ = (current_index_ + 1) % average_;
-  std::vector<double> forces_list = {filtered_msg.left_front, filtered_msg.left_back, filtered_msg.right_front, filtered_msg.right_back};
-  for(int i = 0; i < 4; i++)
-  {
+  std::vector<double> forces_list =
+      {filtered_msg.left_front, filtered_msg.left_back, filtered_msg.right_front, filtered_msg.right_back};
+  for (int i = 0; i < 4; i++) {
     geometry_msgs::WrenchStamped w;
     w.header.frame_id = wrench_frames_[i];
     w.header.stamp = pressure_raw->header.stamp;
