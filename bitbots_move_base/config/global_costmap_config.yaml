@@ -1,7 +1,7 @@
 global_costmap:
   plugins:
-    - {name: obstacle_layer,        type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
-    - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}
+    - {name: obstacle_layer, type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
+    - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
   # Set map origin to have the origin in the map center
   origin_x: -7.5
   origin_y: -7.5
@@ -15,5 +15,3 @@ global_costmap:
   width: 15.0
   height: 15.0
   robot_radius: 0.2
-
-  

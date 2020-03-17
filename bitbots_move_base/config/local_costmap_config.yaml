@@ -1,7 +1,7 @@
 local_costmap:
   plugins:
-    - {name: obstacle_layer,        type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
-    - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}
+    - {name: obstacle_layer, type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
+    - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
   # Set map origin to have the origin in the map center
   origin_x: 0
   origin_y: 0
