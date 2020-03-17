@@ -29,12 +29,6 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenCV)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   Evaluation.msg
- )
-
 ## Generate services in the 'srv' folder
 add_service_files(
    FILES
