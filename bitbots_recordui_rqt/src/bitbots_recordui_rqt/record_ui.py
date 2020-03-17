@@ -215,8 +215,8 @@ class RecordUI(Plugin):
             slider.setTickInterval(1)
             slider.setMinimum(-181)
             slider.setMaximum(181)
-            slider.sliderMoved.connect(self.slider_update) //This has to  be a sliderMoved signal, since valueChanged is
-                                                           //triggered by other sources than user action.
+            slider.sliderMoved.connect(self.slider_update) # This has to  be a sliderMoved signal, since valueChanged is
+                                                           # triggered by other sources than user action.
             self._sliders[k] = slider
 
             textfield = QLineEdit()
@@ -842,7 +842,6 @@ class RecordUI(Plugin):
         Updates the text fields and sliders in self._sliders and self._textfields and also frame name and duration and pause 
         to the values in self._workingValues. 
         '''
-        print(self._workingValues)
         for k, v in self._workingValues.items():
             try:
                 if not self._treeItems[k].checkState(0) == 0:
