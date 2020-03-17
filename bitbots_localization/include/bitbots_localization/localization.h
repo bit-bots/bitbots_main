@@ -170,7 +170,7 @@ class Localization {
 
   std::vector<gm::Point> interpolateFieldboundaryPoints(gm::Point point1, gm::Point point2);
 
-  void publishing_timer_callback(const ros::TimerEvent &e);  // TODO rename
+  void run_filter_one_step(const ros::TimerEvent &e);  // TODO rename
 
   std::shared_ptr<Map> lines_;
   std::shared_ptr<Map> goals_;

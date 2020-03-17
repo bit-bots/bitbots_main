@@ -121,11 +121,11 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
   }
 
   publishing_timer_ = nh_.createTimer(static_cast<double>(config.publishing_frequency),
-                                      &Localization::publishing_timer_callback, this);
+                                      &Localization::run_filter_one_step, this);
 
 }
 
-void Localization::publishing_timer_callback(const ros::TimerEvent &e) {
+void Localization::run_filter_one_step(const ros::TimerEvent &e) {
   timer_callback_count_++;
   resampled_ = false; // TODO do boolean TODO UNDERSCORE 
 
