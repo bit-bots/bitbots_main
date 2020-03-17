@@ -1,5 +1,3 @@
-<!--- Provide a general summary of your changes in the Title above -->
-
 ## Proposed changes
 <!--- Describe your changes and why they are necessary. -->
 
@@ -10,9 +8,10 @@
 
 ## Necessary checks
 - [ ] Update package version
-- [ ] Run linters
 - [ ] Run `catkin build`
 - [ ] Write documentation
+- [ ] Create issues for future work
 - [ ] Test on your machine
 - [ ] Test on the robot
+- [ ] Put the PR on our Project board
 
