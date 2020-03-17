@@ -13,7 +13,6 @@
   #############
 
   line_topic: 'line_relative'
-  non_line_topic: 'non_line_field_points_relative'
   goal_topic: 'goals_simulated'
   fieldboundary_topic: 'field_boundary_relative'
   fieldboundary_in_image_topic: 'field_boundary_in_image'
@@ -45,7 +44,6 @@
   resampling_interval: 15
 
   use_lines: true    # TODO use only weights
-  use_non_lines: false
   use_goals: false
   use_fieldboundary: false
   use_corners: false
@@ -70,7 +68,6 @@
 
   distance_factor : 0.5
   lines_factor: 1         # TODO use these params
-  non_lines_factor: 0
   goal_factor: 1
   field_boundary_factor: 1
   corners_factor : 1

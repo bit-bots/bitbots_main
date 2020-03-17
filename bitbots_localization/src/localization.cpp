@@ -11,7 +11,6 @@ Localization::Localization() : line_points_(), tfListener(tfBuffer) {
 
 void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config, uint32_t config_level) {
   line_subscriber_ = nh_.subscribe(config.line_topic, 1, &Localization::LineCallback, this);
-  non_line_subscriber_ = nh_.subscribe(config.non_line_topic, 1, &Localization::NonLineCallback, this);
   goal_subscriber_ = nh_.subscribe(config.goal_topic, 1, &Localization::GoalCallback, this);
   fieldboundary_subscriber_ = nh_.subscribe(config.fieldboundary_topic, 1, &Localization::FieldboundaryCallback,
                                             this);
@@ -28,7 +27,6 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
   line_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("line_ratings", 1);
   goal_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("goal_ratings", 1);
   fieldboundary_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("field_boundary_ratings", 1);
-  non_line_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("non_line_ratings", 1);
   corner_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("corner_ratings", 1);
   t_crossings_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("t_crossings_ratings", 1);
   crosses_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("crosses_ratings", 1);
@@ -187,10 +185,6 @@ void Localization::run_filter_one_step(const ros::TimerEvent &e) {
 
 void Localization::LineCallback(const hlm::LineInformationRelative &msg) {
   line_information_relative_ = msg;
-}
-
-void Localization::NonLineCallback(const hlm::LineInformationRelative &msg) {
-  non_line_information_relative_ = msg;
 }
 
 void Localization::GoalCallback(const hlm::GoalRelative &msg) {
@@ -481,7 +475,7 @@ void Localization::publish_ratings() {
   }
 }
 
-// todo refactor all publish ratings functions and move to debug class and move debug check outwards
+// todo refactor all publish ratings functions and move to debug class
 void Localization::publish_line_ratings() {
   std::vector<std::pair<double, double>> lines = robot_pose_observation_model_->get_measurement_lines();
   RobotState best_estimate = robot_pf_->getBestState();

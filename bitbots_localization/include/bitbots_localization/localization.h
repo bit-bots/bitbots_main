@@ -83,8 +83,6 @@ class Localization {
 
   void LineCallback(const hlm::LineInformationRelative &msg);
 
-  void NonLineCallback(const hlm::LineInformationRelative &msg); //TODO
-
   void GoalCallback(const hlm::GoalRelative &msg); //TODO
 
   void FieldboundaryCallback(const hlm::FieldBoundaryRelative &msg);
@@ -105,13 +103,11 @@ class Localization {
 
  private:
   ros::Subscriber line_subscriber_;
-  ros::Subscriber non_line_subscriber_;
   ros::Subscriber goal_subscriber_;
   ros::Subscriber fieldboundary_subscriber_;
   ros::Subscriber corners_subscriber_;
   ros::Subscriber t_crossings_subscriber_;
   ros::Subscriber crosses_subscriber_;
-  ros::Subscriber cam_info_subscriber_;
   ros::Subscriber fieldboundary_in_image_subscriber_;
 
   ros::Publisher pose_publisher_;
@@ -124,7 +120,6 @@ class Localization {
   ros::Publisher corner_ratings_publisher_;
   ros::Publisher t_crossings_ratings_publisher_;
   ros::Publisher crosses_ratings_publisher_;
-  ros::Publisher non_line_ratings_publisher_;
 
   ros::ServiceServer service_;
   ros::Timer publishing_timer_;
@@ -148,7 +143,6 @@ class Localization {
   bool resampled_ = false;
 
   hlm::LineInformationRelative line_information_relative_;
-  hlm::LineInformationRelative non_line_information_relative_;
   hlm::GoalRelative goal_relative_;
   hlm::FieldBoundaryRelative fieldboundary_relative_;
   hlm::PixelsRelative corners_;
@@ -177,7 +171,6 @@ class Localization {
 
   gmms::GaussianMixtureModel pose_gmm_;
   std::vector<gm::Point> line_points_;
-  std::vector<gm::Point> non_line_points_;
   particle_filter::CRandomNumberGenerator random_number_generator_;
   hll::LocalizationConfig config_;
   std_msgs::ColorRGBA marker_color;
@@ -204,8 +197,6 @@ class Localization {
   void publish_t_crossings_ratings();
 
   void publish_crosses_ratings();
-
-  void publish_non_line_ratings();
 
   void getMotion();
 
