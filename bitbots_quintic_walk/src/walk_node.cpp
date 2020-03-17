@@ -59,6 +59,7 @@ WalkNode::WalkNode() :
   f = boost::bind(&bitbots_quintic_walk::WalkNode::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
 
+  // this has to be done to prevent strange initilization bugs
   walk_engine_ = WalkEngine();
 }
 
