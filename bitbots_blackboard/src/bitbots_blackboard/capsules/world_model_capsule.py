@@ -1,8 +1,8 @@
 """
-WorldModellCapsule
+WorldModelCapsule
 ^^^^^^^^^^^^^^^^^^
 
-Provides informations about the world model.
+Provides information about the world model.
 
 """
 import math
