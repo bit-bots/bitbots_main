@@ -191,7 +191,11 @@ class Localization {
 
   void publish_pose_with_covariance();
 
-  void publish_lines();
+  void publish_debug();
+
+  void publish_particle_markers();
+
+  void publish_ratings();
 
   void publish_line_ratings();
 
@@ -207,14 +211,10 @@ class Localization {
 
   void publish_non_line_ratings();
 
-  void publish_lines_map();
-
-  void publish_map();
+  void getMotion();
 
   geometry_msgs::TransformStamped transformOdomBaseLink;
   bool initialization = true;
-
-  void getMotion();
 
   geometry_msgs::Vector3 linear_movement_;
   geometry_msgs::Vector3 rotational_movement_;
