@@ -66,7 +66,7 @@
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/image_encodings.h>
 
-namespace hll = bitbots_localization;
+namespace bl = bitbots_localization;
 namespace hlm = humanoid_league_msgs;
 namespace gm = geometry_msgs;
 namespace pf = particle_filter;
@@ -76,10 +76,10 @@ class Localization {
  public:
   Localization();
 
-  bool reset_filter_callback(hll::reset_filter::Request &req,
-                             hll::reset_filter::Response &res);
+  bool reset_filter_callback(bl::reset_filter::Request &req,
+                             bl::reset_filter::Response &res);
 
-  void dynamic_reconfigure_callback(hll::LocalizationConfig &config, uint32_t config_level);
+  void dynamic_reconfigure_callback(bl::LocalizationConfig &config, uint32_t config_level);
 
   void LineCallback(const hlm::LineInformationRelative &msg);
 

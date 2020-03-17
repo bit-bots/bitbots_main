@@ -24,7 +24,7 @@ Localization::Localization() : line_points_(), tfListener(tfBuffer) {
   nh_ = ros::NodeHandle("/bitbots_localization");
 }
 
-void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config, uint32_t config_level) {
+void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, uint32_t config_level) {
   line_subscriber_ = nh_.subscribe(config.line_topic, 1, &Localization::LineCallback, this);
   goal_subscriber_ = nh_.subscribe(config.goal_topic, 1, &Localization::GoalCallback, this);
   fieldboundary_subscriber_ = nh_.subscribe(config.fieldboundary_topic, 1, &Localization::FieldboundaryCallback,
