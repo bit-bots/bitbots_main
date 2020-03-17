@@ -44,11 +44,6 @@ void RobotMotionModel::drift(RobotState &state,
   state.setYPos(state.getYPos() + cartesian_with_offset_y);
   double theta = state.getTheta() + orientation_with_drift;
 
-  if (theta > M_PI) {
-    theta = -M_PI + (theta - M_PI);
-  } else if (theta < -M_PI) {
-    theta = M_PI + (theta + M_PI);
-  }
   state.setTheta(theta);
 
 }
@@ -58,11 +53,6 @@ void RobotMotionModel::diffuse(RobotState &state) const {
   state.setXPos(state.getXPos() + sample(diffuse_xStdDev_) * diffuse_multiplicator_);
   state.setYPos(state.getYPos() + sample(diffuse_yStdDev_) * diffuse_multiplicator_);
   double theta = state.getTheta() + sample(diffuse_tStdDev_) * diffuse_multiplicator_;
-  if (theta > M_PI) {
-    theta = -M_PI + (theta - M_PI);
-  } else if (theta < -M_PI) {
-    theta = M_PI + (theta + M_PI);
-  }
   state.setTheta(theta);
 }
 
