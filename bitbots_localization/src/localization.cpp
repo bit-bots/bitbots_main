@@ -66,7 +66,8 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   crosses_.header.stamp = ros::Time(0);
 
   robot_pose_observation_model_.reset(
-      new RobotPoseObservationModel(lines_, goals_, field_boundary_, corner_, t_crossings_map_, crosses_map_));
+      new RobotPoseObservationModel(
+        lines_, goals_, field_boundary_, corner_, t_crossings_map_, crosses_map_, config_));
   robot_pose_observation_model_->set_min_weight(config_.min_weight);
 
   Eigen::Matrix<double, 3, 2> drift_cov;
@@ -244,8 +245,8 @@ std::vector<gm::Point> Localization::interpolateFieldboundaryPoints(gm::Point po
   return pointsInterpolated;
 }
 
-bool Localization::reset_filter_callback(hll::reset_filter::Request &req,
-                                         hll::reset_filter::Response &res) {
+bool Localization::reset_filter_callback(bl::reset_filter::Request &req,
+                                         bl::reset_filter::Response &res) {
   if (req.init_mode == 3) {
     reset_filter(req.init_mode, req.x, req.y);
   } else {
@@ -293,22 +294,22 @@ void Localization::reset_filter(int distribution, double x, double y) {
 
 void Localization::updateMessurements() {
   // Sets the messurements in the oservation model
-  if (config_.use_lines && line_information_relative_.header.stamp != last_stamp_lines) {
+  if (config_.lines_factor && line_information_relative_.header.stamp != last_stamp_lines) {
     robot_pose_observation_model_->set_measurement_lines(line_information_relative_);
   }
-  if (config_.use_goals && goal_relative_.header.stamp != last_stamp_goals) {
+  if (config_.goal_factor && goal_relative_.header.stamp != last_stamp_goals) {
     robot_pose_observation_model_->set_measurement_goal(goal_relative_);
   }
-  if (config_.use_fieldboundary && fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
+  if (config_.field_boundary_factor && fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
     robot_pose_observation_model_->set_measurement_field_boundary(fieldboundary_relative_);
   }
-  if (config_.use_corners && corners_.header.stamp != last_stamp_corners) {
+  if (config_.corners_factor && corners_.header.stamp != last_stamp_corners) {
     robot_pose_observation_model_->set_measurement_corners(corners_);
   }
-  if (config_.use_tcrossings && t_crossings_.header.stamp != last_stamp_tcrossings) {
+  if (config_.tcrossings_factor && t_crossings_.header.stamp != last_stamp_tcrossings) {
     robot_pose_observation_model_->set_measurement_t_crossings(t_crossings_);
   }
-  if (config_.use_crosses && crosses_.header.stamp != last_stamp_crosses) {
+  if (config_.crosses_factor && crosses_.header.stamp != last_stamp_crosses) {
     robot_pose_observation_model_->set_measurement_crosses(crosses_);
   }
 
@@ -462,22 +463,22 @@ void Localization::publish_particle_markers() {
 }
 
 void Localization::publish_ratings() {
-  if (config_.use_lines) {
+  if (config_.lines_factor) {
     publish_line_ratings();
   }
-  if (config_.use_goals) {
+  if (config_.goal_factor) {
     publish_goal_ratings();
   }
-  if (config_.use_fieldboundary) {
+  if (config_.field_boundary_factor) {
     publish_field_boundary_ratings();
   }
-  if (config_.use_corners) {
+  if (config_.corners_factor) {
     publish_corner_ratings();
   }
-  if (config_.use_tcrossings) {
+  if (config_.tcrossings_factor) {
     publish_t_crossings_ratings();
   }
-  if (config_.use_crosses) {
+  if (config_.crosses_factor) {
     publish_crosses_ratings();
   }
 }

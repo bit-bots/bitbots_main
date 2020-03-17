@@ -172,7 +172,7 @@ class Localization {
   gmms::GaussianMixtureModel pose_gmm_;
   std::vector<gm::Point> line_points_;
   particle_filter::CRandomNumberGenerator random_number_generator_;
-  hll::LocalizationConfig config_;
+  bl::LocalizationConfig config_;
   std_msgs::ColorRGBA marker_color;
   bool first_configuration_ = true;
 

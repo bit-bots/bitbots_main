@@ -9,11 +9,13 @@
 #include <bitbots_localization/RobotState.h>
 #include <bitbots_localization/map.h>
 #include <bitbots_localization/tools.h>
+#include <bitbots_localization/LocalizationConfig.h>
 #include <humanoid_league_msgs/LineInformationRelative.h>
 #include <humanoid_league_msgs/GoalRelative.h>
 #include <humanoid_league_msgs/PixelsRelative.h>
 #include <humanoid_league_msgs/FieldBoundaryRelative.h>
 
+namespace bl = bitbots_localization;
 namespace hlm = humanoid_league_msgs;
 
 class RobotPoseObservationModel : public particle_filter::ObservationModel<RobotState> {
@@ -25,7 +27,8 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
    */
   RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
                             std::shared_ptr<Map> map_field_boundary, std::shared_ptr<Map> map_corners,
-                            std::shared_ptr<Map> map_t_crossings, std::shared_ptr<Map> map_crosses);
+                            std::shared_ptr<Map> map_t_crossings, std::shared_ptr<Map> map_crosses,
+                            bl::LocalizationConfig &config);
 
   /**
    *
@@ -95,6 +98,8 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
   std::shared_ptr<Map> map_corners_;
   std::shared_ptr<Map> map_t_crossings_;
   std::shared_ptr<Map> map_crosses_;
+
+  bl::LocalizationConfig config_;
 
 };
 

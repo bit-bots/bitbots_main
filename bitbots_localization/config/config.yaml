@@ -43,13 +43,6 @@
   particle_number: 500
   resampling_interval: 15
 
-  use_lines: true    # TODO use only weights
-  use_goals: false
-  use_fieldboundary: false
-  use_corners: false
-  use_tcrossings : false
-  use_crosses: false
-
   diffusion_x_std_dev: 0.8
   diffusion_y_std_dev: 0.8
   diffusion_t_std_dev: 0.5
@@ -67,12 +60,12 @@
   percentage_best_particles: 50
 
   distance_factor : 0.5
-  lines_factor: 1         # TODO use these params
-  goal_factor: 1
-  field_boundary_factor: 1
-  corners_factor : 1
-  tcrossings_factor: 1
-  crosses_factor : 1
+  lines_factor: 1
+  goal_factor: 0
+  field_boundary_factor: 0
+  corners_factor : 0
+  tcrossings_factor: 0
+  crosses_factor : 0
 
   min_motion_linear: 0.0
   min_motion_angular: 0.0

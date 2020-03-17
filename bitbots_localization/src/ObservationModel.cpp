@@ -4,14 +4,14 @@
 
 
 #include <bitbots_localization/ObservationModel.h>
-#include <humanoid_league_msgs/FieldBoundaryRelative.h>
 
 RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_lines,
                                                      std::shared_ptr<Map> map_goals,
                                                      std::shared_ptr<Map> map_field_boundary,
                                                      std::shared_ptr<Map> map_corners,
                                                      std::shared_ptr<Map> map_t_crossings,
-                                                     std::shared_ptr<Map> map_crosses) // todo config!
+                                                     std::shared_ptr<Map> map_crosses,
+                                                     bl::LocalizationConfig &config)
     : particle_filter::ObservationModel<RobotState>() {
   map_lines_ = map_lines;
   map_goals_ = map_goals;
@@ -19,6 +19,7 @@ RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_li
   map_corners_ = map_corners;
   map_t_crossings_ = map_t_crossings;
   map_crosses_ = map_crosses;
+  config_ = config;
   particle_filter::ObservationModel<RobotState>::accumulate_weights_ = true;
 
 }
@@ -110,8 +111,12 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
 
   // TODO use config params
   double weight = (number_of_effective_measurements == 0) ? 0 : (
-      (particle_weight_lines * 1 + particle_weight_goal * 1 + particle_weight_field_boundary * 1 +
-          particle_weight_corners * 1 + particle_weight_t_crossings * 1 + particle_weight_crosses * 1) /
+      ( particle_weight_lines * config_.lines_factor + 
+        particle_weight_goal * config_.goal_factor + 
+        particle_weight_field_boundary * config_.field_boundary_factor +
+        particle_weight_corners * config_.corners_factor + 
+        particle_weight_t_crossings * config_.tcrossings_factor + 
+        particle_weight_crosses * config_.crosses_factor) /
           number_of_effective_measurements); // TODO evaluate this devision
   if (weight < min_weight_) {
     weight = min_weight_;
