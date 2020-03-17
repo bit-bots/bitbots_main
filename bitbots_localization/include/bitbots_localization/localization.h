@@ -160,7 +160,7 @@ class Localization {
 
   std::vector<gm::Point> interpolateFieldboundaryPoints(gm::Point point1, gm::Point point2);
 
-  void run_filter_one_step(const ros::TimerEvent &e);  // TODO rename
+  void run_filter_one_step(const ros::TimerEvent &e);
 
   std::shared_ptr<Map> lines_;
   std::shared_ptr<Map> goals_;
@@ -176,7 +176,7 @@ class Localization {
   std_msgs::ColorRGBA marker_color;
   bool first_configuration_ = true;
 
-  void publish_transforms(); // TODO rename
+  void publish_transforms();
 
   void publish_pose_with_covariance();
 
