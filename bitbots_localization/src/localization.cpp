@@ -6,7 +6,7 @@
 
 Localization::Localization() : line_points_(), tfListener(tfBuffer) {
   ROS_DEBUG("localization");
-
+  nh_ = ros::NodeHandle("/bitbots_localization");
 }
 
 void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config, uint32_t config_level) {
@@ -346,7 +346,6 @@ void Localization::init() {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "localization");
   Localization localization;
-
 
   // dynamic reconfigure
   dynamic_reconfigure::Server<bitbots_localization::LocalizationConfig> dynamic_reconfigure_server;
