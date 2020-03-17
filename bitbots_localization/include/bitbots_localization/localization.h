@@ -198,7 +198,7 @@ class Localization {
 
   void publish_crosses_ratings();
 
-  void updateMessurements();
+  void updateMeasurements();
 
   void getMotion();
 
