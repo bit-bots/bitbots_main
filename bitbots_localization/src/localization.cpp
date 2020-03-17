@@ -410,39 +410,6 @@ void Localization::publish_pose() { // TODO better name and particles and map fr
   estimate_ = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
   std::vector<double> estimate_cov_ = robot_pf_->getCovariance(config_.percentage_best_particles);
   
-  // TODO move debug to own method  that is called afterwards
-  if (config_.debug_visualization) {
-
-    //publish particle markers
-    std_msgs::ColorRGBA red;
-    red.r = 1;
-    red.g = 0;
-    red.b = 0;
-    red.a = 1;
-    pose_particles_publisher_.publish(robot_pf_->renderMarkerArray("pose_marker", "/map",
-                                                                   ros::Duration(1),
-                                                                   red));
-
-    //fill and publish evaluation message
-    bitbots_localization::Evaluation estimateMsg;
-    estimateMsg.header.frame_id = config_.publishing_frame;
-    estimateMsg.header.stamp = localization_transform.header.stamp;
-
-    for (int i = 0; i < 36; i++) {
-      estimateMsg.cov_estimate[i] = estimate_cov_[i];
-    }
-
-    estimateMsg.lines = RobotPoseObservationModel::number_lines;
-    estimateMsg.goals = RobotPoseObservationModel::number_goals;
-    estimateMsg.fb_points = RobotPoseObservationModel::number_fb_points;
-    estimateMsg.corners = RobotPoseObservationModel::number_corners;
-    estimateMsg.tcrossings = RobotPoseObservationModel::number_tcrossings;
-    estimateMsg.crosses = RobotPoseObservationModel::number_corners;
-
-    estimateMsg.resampled = resampled;
-
-    pose_publisher_.publish(estimateMsg);
-  }
 
   //calculate quaternion
   tf2::Quaternion q;
@@ -488,6 +455,40 @@ void Localization::publish_pose() { // TODO better name and particles and map fr
   }
   catch (const tf2::TransformException &ex) {
     ROS_WARN("Odom not available, therefore odom offset can not be published: %s", ex.what());
+  }
+  
+  // TODO move debug to own method  that is called afterwards
+  if (config_.debug_visualization) {
+
+    //publish particle markers
+    std_msgs::ColorRGBA red;
+    red.r = 1;
+    red.g = 0;
+    red.b = 0;
+    red.a = 1;
+    pose_particles_publisher_.publish(robot_pf_->renderMarkerArray("pose_marker", "/map",
+                                                                   ros::Duration(1),
+                                                                   red));
+
+    //fill and publish evaluation message
+    bitbots_localization::Evaluation estimateMsg;
+    estimateMsg.header.frame_id = config_.publishing_frame;
+    estimateMsg.header.stamp = localization_transform.header.stamp;
+
+    for (int i = 0; i < 36; i++) {
+      estimateMsg.cov_estimate[i] = estimate_cov_[i];
+    }
+
+    estimateMsg.lines = RobotPoseObservationModel::number_lines;
+    estimateMsg.goals = RobotPoseObservationModel::number_goals;
+    estimateMsg.fb_points = RobotPoseObservationModel::number_fb_points;
+    estimateMsg.corners = RobotPoseObservationModel::number_corners;
+    estimateMsg.tcrossings = RobotPoseObservationModel::number_tcrossings;
+    estimateMsg.crosses = RobotPoseObservationModel::number_corners;
+
+    estimateMsg.resampled = resampled;
+
+    pose_publisher_.publish(estimateMsg);
   }
 }
 
