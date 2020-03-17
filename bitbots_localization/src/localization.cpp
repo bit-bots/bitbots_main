@@ -126,8 +126,8 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
 }
 
 void Localization::publishing_timer_callback(const ros::TimerEvent &e) {
-  timer_callback_count++;
-  resampled = 0; // TODO do boolean TODO UNDERSCORE 
+  timer_callback_count_++;
+  resampled_ = false; // TODO do boolean TODO UNDERSCORE 
 
   if (config_.use_lines && line_information_relative_.header.stamp != last_stamp_lines) {
     robot_pose_observation_model_->set_measurement_lines(line_information_relative_);
@@ -168,10 +168,10 @@ void Localization::publishing_timer_callback(const ros::TimerEvent &e) {
   robot_pf_->measure();
 
   // Check if its resampling time!
-  if (timer_callback_count % config_.resampling_interval == 0) {
+  if (timer_callback_count_ % config_.resampling_interval == 0) {
     robot_pf_->resample();
-    timer_callback_count = 0;
-    resampled = 1;
+    timer_callback_count_ = 0;
+    resampled_ = true;
   }
 
   // Publish transforms 

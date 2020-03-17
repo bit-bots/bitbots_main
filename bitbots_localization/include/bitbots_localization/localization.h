@@ -149,7 +149,7 @@ class Localization {
   std::shared_ptr<particle_filter::ParticleFilter<RobotState>> robot_pf_;
   RobotState estimate_;
 
-  int resampled = 0;
+  bool resampled_ = false;
 
   hlm::LineInformationRelative line_information_relative_;
   hlm::LineInformationRelative non_line_information_relative_;
@@ -220,7 +220,7 @@ class Localization {
   geometry_msgs::Vector3 rotational_movement_;
   bool new_linepoints_ = false;
   bool robot_moved = false;
-  int timer_callback_count = 0;
+  int timer_callback_count_ = 0;
 };
 
 #endif //BITBOTS_LOCALIZATION_LOCALIZATION_H
