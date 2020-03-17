@@ -61,7 +61,7 @@
 
   distance_factor : 0.5
   lines_factor: 1
-  goal_factor: 0
+  goals_factor: 0
   field_boundary_factor: 0
   corners_factor : 0
   t_crossings_factor: 0

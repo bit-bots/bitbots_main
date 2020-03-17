@@ -57,7 +57,7 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
 
   double weight = (number_of_effective_measurements_ == 0) ? 0 : (
       ( particle_weight_lines * config_.lines_factor + 
-        particle_weight_goal * config_.goal_factor + 
+        particle_weight_goal * config_.goals_factor + 
         particle_weight_field_boundary * config_.field_boundary_factor +
         particle_weight_corners * config_.corners_factor + 
         particle_weight_t_crossings * config_.t_crossings_factor + 

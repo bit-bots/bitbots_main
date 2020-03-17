@@ -297,7 +297,7 @@ void Localization::updateMeasurements() {
   if (config_.lines_factor && line_information_relative_.header.stamp != last_stamp_lines) {
     robot_pose_observation_model_->set_measurement_lines(line_information_relative_);
   }
-  if (config_.goal_factor && goal_relative_.header.stamp != last_stamp_goals) {
+  if (config_.goals_factor && goal_relative_.header.stamp != last_stamp_goals) {
     robot_pose_observation_model_->set_measurement_goal(goal_relative_);
   }
   if (config_.field_boundary_factor && fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
@@ -466,7 +466,7 @@ void Localization::publish_ratings() {
   if (config_.lines_factor) {
     publish_line_ratings();
   }
-  if (config_.goal_factor) {
+  if (config_.goals_factor) {
     publish_goal_ratings();
   }
   if (config_.field_boundary_factor) {
