@@ -114,8 +114,8 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
   resampling_.reset(new pf::ImportanceResampling<RobotState>());
 
   config_ = config;
-  if (!valid_configuration_) {
-    valid_configuration_ = true;
+  if (first_configuration_) {
+    first_configuration_ = false;
     ROS_INFO("Trying to initialize particle filter...");
     reset_filter(config_.init_mode);
   }

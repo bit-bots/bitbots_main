@@ -183,7 +183,7 @@ class Localization {
   particle_filter::CRandomNumberGenerator random_number_generator_;
   hll::LocalizationConfig config_;
   std_msgs::ColorRGBA marker_color;
-  bool valid_configuration_ = false;   // TODO rename to first config
+  bool first_configuration_ = true;
 
   void publish_transforms(); // TODO rename
 
