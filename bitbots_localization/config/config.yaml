@@ -12,17 +12,15 @@
   # ROS-Stuff #
   #############
 
-  line_topic: 'line_relative'
-  goal_topic: 'goals_simulated'
-  fieldboundary_topic: 'field_boundary_relative'
-  fieldboundary_in_image_topic: 'field_boundary_in_image'
-  corners_topic: 'corners'
-  tcrossings_topic: 'tcrossings'
-  crosses_topic: 'crosses'
+  line_topic: '/line_relative'
+  goal_topic: '/goals_simulated'
+  fieldboundary_topic: '/field_boundary_relative'
+  fieldboundary_in_image_topic: '/field_boundary_in_image'
+  corners_topic: '/corners'
+  tcrossings_topic: '/tcrossings'
+  crosses_topic: '/crosses'
 
-  publishing_frame: '/localization_estimate'
-
-  pose_publishing_topic: 'pose'
+  publishing_frame: '/localization_raw'
 
   particle_publishing_topic: 'pose_particles'
 

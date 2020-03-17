@@ -387,7 +387,7 @@ void Localization::publish_transforms() {
   geometry_msgs::TransformStamped localization_transform;
   localization_transform.header.stamp = ros::Time::now();
   localization_transform.header.frame_id = "/map";
-  localization_transform.child_frame_id = "/localization_raw";
+  localization_transform.child_frame_id = config_.publishing_frame;
   localization_transform.transform.translation.x = estimate_.getXPos();
   localization_transform.transform.translation.y = estimate_.getYPos();
   localization_transform.transform.translation.z = 0.0;
@@ -440,7 +440,7 @@ void Localization::publish_pose_with_covariance() {
     estimateMsg.pose.covariance[i] = cov_mat[i];
   }
 
-  estimateMsg.header.frame_id = "localization_raw";
+  estimateMsg.header.frame_id = config_.publishing_frame;
 
   pose_with_covariance_publisher_.publish(estimateMsg);
 }
