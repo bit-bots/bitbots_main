@@ -19,6 +19,10 @@ behavior:
     #  - [30, -7]
     #  - [-30, -7]
 
+    look_at:
+        tilt_speed: 3
+        pan_speed: 3
+
     # Search pattern for ball
     search_pattern:
         # Speed search pattern
