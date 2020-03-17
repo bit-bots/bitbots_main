@@ -81,6 +81,9 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   // Scale drift form drift per second to drift per filter iteration
   drift_cov /= config.publishing_frequency;
 
+  drift_cov.col(0) *= (1 / (config.max_translation / config.publishing_frequency));
+  drift_cov.col(1) *= (1 / (config.max_rotation / config.publishing_frequency));
+
   robot_motion_model_.reset(
       new RobotMotionModel(random_number_generator_, config.diffusion_x_std_dev, config.diffusion_y_std_dev,
                            config.diffusion_t_std_dev,
@@ -162,7 +165,6 @@ void Localization::run_filter_one_step(const ros::TimerEvent &e) {
     timer_callback_count_ = 0;
     resampled_ = true;
   }
-
   // Publish transforms 
   publish_transforms();
   // Publish covariance message
