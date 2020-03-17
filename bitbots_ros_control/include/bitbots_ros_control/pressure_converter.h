@@ -7,6 +7,7 @@
 #include <yaml-cpp/yaml.h>
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/WrenchStamped.h>
 #include <std_srvs/Empty.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <bitbots_msgs/FootPressure.h>
@@ -15,6 +16,8 @@
 class PressureConverter {
  private:
   ros::Publisher filtered_pub_, cop_pub_;
+  std::vector<ros::Publisher> wrench_pubs_;
+  std::vector<std::string> wrench_frames_;
   ros::Subscriber sub_;
   tf2_ros::TransformBroadcaster tf_broadcaster_;
   ros::NodeHandle pnh_;
