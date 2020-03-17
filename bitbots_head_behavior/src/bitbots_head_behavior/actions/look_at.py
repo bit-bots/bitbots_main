@@ -26,6 +26,10 @@ class AbstractLookAt(AbstractActionElement):
         self.request.look_at_goals[0].weight = 1
         self.request.look_at_goals[0].axis.x = 1
 
+        self.pan_speed = self.blackboard.config['look_at']['pan_speed']
+        self.tilt_speed = self.blackboard.config['look_at']['tilt_speed']
+
+
     def get_motor_goals_from_point(self, point):
         """Call the look at service to calculate head motor goals"""
 
@@ -63,7 +67,7 @@ class AbstractLookAt(AbstractActionElement):
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
         if abs(current_head_pan - head_pan) >= math.radians(min_pan_delta) or \
                 abs(current_head_tilt - head_tilt) >= math.radians(min_tilt_delta):
-            self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, pan_speed=3.0, tilt_speed=3.0)
+            self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, pan_speed=self.pan_speed, tilt_speed=self.tilt_speed)
 
 
 class LookDirection(AbstractLookAt):
