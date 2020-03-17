@@ -41,7 +41,7 @@ double RobotPoseObservationModel::calculate_weight_for_class(
 
 double RobotPoseObservationModel::measure(const RobotState &state) const {
   number_of_effective_measurements_ = 0;
-  
+
   double particle_weight_lines = calculate_weight_for_class(state, last_measurement_lines_);
   double particle_weight_goal = calculate_weight_for_class(state, last_measurement_goal_);
   double particle_weight_field_boundary = calculate_weight_for_class(state, last_measurement_field_boundary_);
@@ -89,9 +89,7 @@ void RobotPoseObservationModel::set_measurement_goal(hlm::GoalRelative measureme
       std::pair<double, double> postTwoPolar = cartesianToPolar(measurement.right_post.x, measurement.right_post.y);
       last_measurement_goal_.push_back(postTwoPolar);
     }
-
   }
-
 }
 
 void RobotPoseObservationModel::set_measurement_field_boundary(hlm::FieldBoundaryRelative measurement) {

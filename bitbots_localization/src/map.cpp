@@ -21,7 +21,6 @@ Map::Map(const std::string& file_path) {
   if (!map.data) {
     printf("No image data '%s'\n", map_path.filename().c_str());
   }
-
 }
 
 double Map::get_occupancy(double x, double y) {
@@ -36,10 +35,10 @@ double Map::get_occupancy(double x, double y) {
   // ursprung in feldmitte
   x = std::round(x + mapWidth / 2.0); //assuming lines are centered on map
   y = std::round(y + mapHeight / 2.0);
-  double occupancy = -10; // punish points outside the map
+  double occupancy = -0.1; // punish points outside the map
 
   if (x < mapWidth && x >= 0 && y < mapHeight && y >= 0) {
-    occupancy = 100 - map.at<uchar>(y, x); //0 = schwarz, 100 = weiß
+    occupancy = 1 - (map.at<uchar>(y, x) / 100);
   }
   return occupancy;
 }
