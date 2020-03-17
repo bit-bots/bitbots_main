@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_body_behavior</name>
-  <version>0.9.7</version>
+  <version>0.9.8</version>
   <description>The bitbots_body_behavior package determines the
         behavior of the robot including strategy decisions and
         kick or walk actions. The node controls the walking indirectly via
@@ -23,12 +23,14 @@
   <exec_depend>bitbots_blackboard</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>tf2</exec_depend>
+  <exec_depend>bitbots_convenience_frames</exec_depend>
+
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
     <bitbots_documentation>
       <status>starts</status>
-      <language>python2</language>
+      <language>python3</language>
     </bitbots_documentation>
   </export>
 </package>
