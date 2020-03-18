@@ -248,7 +248,7 @@ class TransformBall(object):
         # Transform goal posts
         for goal_post_in_image in msg.posts:
             # Check if footpoint is not in the bottom area of the image, to filter out goal posts without visible footpoint
-            image_vertical_resolution =  self._camera_info.height / self._camera_info.binning_y
+            image_vertical_resolution =  self._camera_info.height / max(self._camera_info.binning_y, 1)
             if goal_post_in_image.foot_point.y < image_vertical_resolution - self._goalpost_footpoint_out_of_image_threshold:
                 # Transform footpoint
                 relative_foot_point = self._transform(goal_post_in_image.foot_point, field, msg.header.stamp)   
@@ -378,8 +378,8 @@ class TransformBall(object):
 
         # calculate a point on a projection plane 1 m (for convenience) away
         # (point - image center / binning) / (focal length /binning)
-        x = (point.x - camera_projection_matrix[2] / self._camera_info.binning_x) / (camera_projection_matrix[0] / self._camera_info.binning_x)
-        y = (point.y - camera_projection_matrix[5] / self._camera_info.binning_y) / (camera_projection_matrix[4] / self._camera_info.binning_y)
+        x = (point.x - camera_projection_matrix[2] / max(self._camera_info.binning_x, 1)) / (camera_projection_matrix[0] / max(self._camera_info.binning_x, 1))
+        y = (point.y - camera_projection_matrix[5] / max(self._camera_info.binning_y, 1)) / (camera_projection_matrix[4] / max(self._camera_info.binning_y, 1))
         z = 1.0
         point_on_image = np.array([x, y, z])
 
