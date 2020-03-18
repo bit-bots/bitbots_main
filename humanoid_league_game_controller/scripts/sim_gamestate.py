@@ -22,8 +22,23 @@ Setting the GameState by entering a number:
 3: GAMESTATE_PLAYING=3
 4: GAMESTATE_FINISHED=4
 
+Set the secondary game state by entering:
+
+a: STATE_NORMAL = 0
+b: STATE_PENALTYSHOOT = 1
+c: STATE_OVERTIME = 2
+d: STATE_TIMEOUT = 3
+e: STATE_DIRECT_FREEKICK = 4
+f: STATE_INDIRECT_FREEKICK = 5
+g: STATE_PENALTYKICK = 6
+h: STATE_CORNER_KICK = 7
+i: STATE_GOAL_KICK = 8
+j: STATE_THROW_IN = 9
+
+
 p:     toggle penalized
 space: toggle allowed_to_move
+t:     toggle secondary state team
 
 CTRL-C to quit
 
@@ -48,6 +63,8 @@ if __name__ == "__main__":
     gameState = GameStateMsg()
     gameState.header.stamp = rospy.Time.now()
 
+    # init secondary state team to our teamID
+    gameState.secondaryStateTeam = 8  # this is the default TeamID in the behavior
     try:
         print(msg)
         while True:
@@ -61,13 +78,24 @@ if __name__ == "__main__":
                 gameState.gameState = int_key
             elif key == 'p':  # penalize / unpenalize
                 gameState.penalized = not gameState.penalized
+            elif key in [chr(ord('a')+x) for x in range(10)]:
+                gameState.secondaryState = ord(key) - ord('a')
+            elif key == 't':
+                if gameState.secondaryStateTeam == 8:
+                    gameState.secondaryStateTeam = 9
+                else:
+                    gameState.secondaryStateTeam = 8
 
+            sys.stdout.write("\x1b[A")
+            sys.stdout.write("\x1b[A")
             sys.stdout.write("\x1b[A")
             sys.stdout.write("\x1b[A")
             sys.stdout.write("\x1b[A")
             state_publisher.publish(gameState)
             print("Allowed to move:    " + str(gameState.allowedToMove) + "       \nGamestate:          " + str(
-                gameState.gameState) + "       \nPenalized:          " + str(gameState.penalized) + "            ")
+                gameState.gameState) + "       \nSecondary State:          " + str(
+                gameState.secondaryState) + "       \nSecondary State Team:          " + str(
+                gameState.secondaryStateTeam) + "       \nPenalized:          " + str(gameState.penalized) + "            ")
 
     except Exception as e:
         print(e)
