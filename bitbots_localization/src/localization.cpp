@@ -67,7 +67,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
 
   robot_pose_observation_model_.reset(
       new RobotPoseObservationModel(
-        lines_, goals_, field_boundary_, corner_, t_crossings_map_, crosses_map_, config_));
+        lines_, goals_, field_boundary_, corner_, t_crossings_map_, crosses_map_, config));
   robot_pose_observation_model_->set_min_weight(config_.min_weight);
 
   Eigen::Matrix<double, 3, 2> drift_cov;
@@ -165,7 +165,7 @@ void Localization::run_filter_one_step(const ros::TimerEvent &e) {
     timer_callback_count_ = 0;
     resampled_ = true;
   }
-  // Publish transforms 
+  // Publish transforms
   publish_transforms();
   // Publish covariance message
   publish_pose_with_covariance();

@@ -16,7 +16,7 @@ Map::Map(const std::string& file_path, const bl::LocalizationConfig &config) {
   //make boost path
   fs::path map_path = fs::path(file_path);
   //convert to absolute path
-  fs::path absolute_map_path = fs::absolute(map_path, package_path);  
+  fs::path absolute_map_path = fs::absolute(map_path, package_path);
   //load map
   map = cv::imread(absolute_map_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
 
