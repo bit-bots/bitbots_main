@@ -26,11 +26,12 @@ RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_li
 
 double RobotPoseObservationModel::calculate_weight_for_class(
     const RobotState &state, 
-    const std::vector<std::pair<double, double>> &last_measurement) const {
+    const std::vector<std::pair<double, double>> &last_measurement,
+    std::shared_ptr<Map> map) const {
   double particle_weight_for_class = 0;
   if (!last_measurement.empty()) {
     number_of_effective_measurements_ += 1;
-    std::vector<double> ratings = map_lines_->Map::provideRating(state, last_measurement);
+    std::vector<double> ratings = map->Map::provideRating(state, last_measurement);
     for (double rating : ratings) {
       particle_weight_for_class += rating;
     }
@@ -42,12 +43,12 @@ double RobotPoseObservationModel::calculate_weight_for_class(
 double RobotPoseObservationModel::measure(const RobotState &state) const {
   number_of_effective_measurements_ = 0;
 
-  double particle_weight_lines = calculate_weight_for_class(state, last_measurement_lines_);
-  double particle_weight_goal = calculate_weight_for_class(state, last_measurement_goal_);
-  double particle_weight_field_boundary = calculate_weight_for_class(state, last_measurement_field_boundary_);
-  double particle_weight_corners = calculate_weight_for_class(state, last_measurement_corners_);
-  double particle_weight_t_crossings = calculate_weight_for_class(state, last_measurement_t_crossings_);
-  double particle_weight_crosses = calculate_weight_for_class(state, last_measurement_crosses_);
+  double particle_weight_lines = calculate_weight_for_class(state, last_measurement_lines_, map_lines_);
+  double particle_weight_goal = calculate_weight_for_class(state, last_measurement_goal_, map_goals_);
+  double particle_weight_field_boundary = calculate_weight_for_class(state, last_measurement_field_boundary_, map_field_boundary_);
+  double particle_weight_corners = calculate_weight_for_class(state, last_measurement_corners_, map_corners_);
+  double particle_weight_t_crossings = calculate_weight_for_class(state, last_measurement_t_crossings_, map_t_crossings_);
+  double particle_weight_crosses = calculate_weight_for_class(state, last_measurement_crosses_, map_crosses_);
 
   number_lines = last_measurement_lines_.size();
   number_goals = last_measurement_goal_.size();
