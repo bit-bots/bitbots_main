@@ -5,7 +5,8 @@ find_package(catkin REQUIRED COMPONENTS
     message_generation
     humanoid_league_msgs
     rospy
-    move_base)
+    move_base
+    spatio_temporal_voxel_layer)
 
 
 catkin_python_setup()
