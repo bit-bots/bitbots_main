@@ -50,13 +50,13 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
 
   service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
 
-  lines_.reset(new Map(config.map_path_lines));
   ROS_INFO_STREAM("Setting path to " << config.map_path_lines);
-  goals_.reset(new Map(config.map_path_goals));
-  field_boundary_.reset(new Map(config.map_path_field_boundary));
-  corner_.reset(new Map(config.map_path_corners));
-  t_crossings_map_.reset(new Map(config.map_path_tcrossings));
-  crosses_map_.reset(new Map(config.map_path_crosses));
+  lines_.reset(new Map(config.map_path_lines, config));
+  goals_.reset(new Map(config.map_path_goals, config));
+  field_boundary_.reset(new Map(config.map_path_field_boundary, config));
+  corner_.reset(new Map(config.map_path_corners, config));
+  t_crossings_map_.reset(new Map(config.map_path_tcrossings, config));
+  crosses_map_.reset(new Map(config.map_path_crosses, config));
 
   line_information_relative_.header.stamp = ros::Time(0);
   goal_relative_.header.stamp = ros::Time(0);

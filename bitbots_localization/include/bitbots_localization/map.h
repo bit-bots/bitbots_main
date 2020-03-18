@@ -9,6 +9,7 @@
 #include <geometry_msgs/Point.h>
 
 #include <bitbots_localization/RobotState.h>
+#include <bitbots_localization/LocalizationConfig.h>
 #include <geometry_msgs/Point.h>
 #include <bitbots_localization/tools.h>
 
@@ -18,10 +19,11 @@
 #include <sensor_msgs/PointCloud2.h>
 
 namespace gm = geometry_msgs;
+namespace bl = bitbots_localization;
 
 class Map {
  public:
-  explicit Map(const std::string& file_path);
+  explicit Map(const std::string& file_path, const bl::LocalizationConfig &config);
 
   cv::Mat map;
 
@@ -36,6 +38,7 @@ class Map {
                                                 double stateT);
 
  private:
+     bl::LocalizationConfig config_;
 
 };
 

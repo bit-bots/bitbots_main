@@ -8,13 +8,15 @@
 
 namespace fs = boost::filesystem;
 
-Map::Map(const std::string& file_path) {
+Map::Map(const std::string& file_path, const bl::LocalizationConfig &config) {
+  // Set config
+   config_ = config;
   //get package path
   std::string package_path = ros::package::getPath("bitbots_localization");
   //make boost path
   fs::path map_path = fs::path(file_path);
   //convert to absolute path
-  fs::path absolute_map_path = fs::absolute(map_path, package_path);
+  fs::path absolute_map_path = fs::absolute(map_path, package_path);  
   //load map
   map = cv::imread(absolute_map_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
 
@@ -35,7 +37,8 @@ double Map::get_occupancy(double x, double y) {
   // ursprung in feldmitte
   x = std::round(x + mapWidth / 2.0); //assuming lines are centered on map
   y = std::round(y + mapHeight / 2.0);
-  double occupancy = -0.1; // punish points outside the map
+
+  double occupancy = -config_.messurement_out_of_map_punishment; // punish points outside the map
 
   if (x < mapWidth && x >= 0 && y < mapHeight && y >= 0) {
     occupancy = 1 - (map.at<uchar>(y, x) / 100);
