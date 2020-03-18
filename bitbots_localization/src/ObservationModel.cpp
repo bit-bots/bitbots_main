@@ -172,6 +172,13 @@ void RobotPoseObservationModel::clear_measurement() {
 }
 
 bool RobotPoseObservationModel::measurements_available() {
-  return (!last_measurement_lines_.empty());
+  bool available = false;
+  available |= !last_measurement_lines_.empty();
+  available |= !last_measurement_goal_.empty();
+  available |= !last_measurement_field_boundary_.empty();
+  available |= !last_measurement_corners_.empty();
+  available |= !last_measurement_t_crossings_.empty();
+  available |= !last_measurement_crosses_.empty();
+  return available;
 }
 
