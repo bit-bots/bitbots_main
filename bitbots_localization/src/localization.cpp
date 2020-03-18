@@ -145,7 +145,7 @@ void Localization::run_filter_one_step(const ros::TimerEvent &e) {
   timer_callback_count_++;
   resampled_ = false;
 
-  // Set the messurements in the observation model
+  // Set the measurements in the observation model
   updateMeasurements();
 
   // Get the odometry offset since the last cycle
@@ -295,7 +295,7 @@ void Localization::reset_filter(int distribution, double x, double y) {
 }
 
 void Localization::updateMeasurements() {
-  // Sets the messurements in the oservation model
+  // Sets the measurements in the oservation model
   if (config_.lines_factor && line_information_relative_.header.stamp != last_stamp_lines) {
     robot_pose_observation_model_->set_measurement_lines(line_information_relative_);
   }

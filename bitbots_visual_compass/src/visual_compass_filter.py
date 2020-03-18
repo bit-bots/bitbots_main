@@ -56,7 +56,7 @@ class VisualCompassFilter:
         # Count too low confidences as zeros
         limitedConfidence = self._cutAtThreshold(confidence)
 
-        # Tf messurement to base_footprint
+        # Tf measurement to base_footprint
         relativeYawAngle = self._getYawOrientationInBasefootprintFrame(angle, stamp)
         relativeYawVector = self._angleToVector(relativeYawAngle, limitedConfidence)
 

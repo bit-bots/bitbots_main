@@ -26,11 +26,11 @@ RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_li
 
 double RobotPoseObservationModel::calculate_weight_for_class(
     const RobotState &state, 
-    const std::vector<std::pair<double, double>> &last_messurement) const {
+    const std::vector<std::pair<double, double>> &last_measurement) const {
   double particle_weight_for_class = 0;
-  if (!last_messurement.empty()) {
+  if (!last_measurement.empty()) {
     number_of_effective_measurements_ += 1;
-    std::vector<double> ratings = map_lines_->Map::provideRating(state, last_messurement);
+    std::vector<double> ratings = map_lines_->Map::provideRating(state, last_measurement);
     for (double rating : ratings) {
       particle_weight_for_class += rating;
     }
