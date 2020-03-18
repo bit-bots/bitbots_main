@@ -41,7 +41,7 @@ double Map::get_occupancy(double x, double y) {
   double occupancy = -config_.measurement_out_of_map_punishment; // punish points outside the map
 
   if (x < mapWidth && x >= 0 && y < mapHeight && y >= 0) {
-    occupancy = 1 - (map.at<uchar>(y, x) / 100);
+    occupancy = 100 - map.at<uchar>(y, x);
   }
   return occupancy;
 }

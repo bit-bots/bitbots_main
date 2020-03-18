@@ -72,5 +72,4 @@
   min_motion_angular: 0.0
   filter_only_with_motion: false
 
-  measurement_out_of_map_punishment: 0.1
-
+  measurement_out_of_map_punishment: 10.0
