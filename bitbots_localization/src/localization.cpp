@@ -24,7 +24,7 @@ Localization::Localization() : line_points_(), tfListener(tfBuffer) {
   nh_ = ros::NodeHandle("/bitbots_localization");
 }
 
-void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config, uint32_t config_level) {
+void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, uint32_t config_level) {
   line_subscriber_ = nh_.subscribe(config.line_topic, 1, &Localization::LineCallback, this);
   goal_subscriber_ = nh_.subscribe(config.goal_topic, 1, &Localization::GoalCallback, this);
   fieldboundary_subscriber_ = nh_.subscribe(config.fieldboundary_topic, 1, &Localization::FieldboundaryCallback,
@@ -50,13 +50,13 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
 
   service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
 
-  lines_.reset(new Map(config.map_path_lines));
   ROS_INFO_STREAM("Setting path to " << config.map_path_lines);
-  goals_.reset(new Map(config.map_path_goals));
-  field_boundary_.reset(new Map(config.map_path_field_boundary));
-  corner_.reset(new Map(config.map_path_corners));
-  t_crossings_map_.reset(new Map(config.map_path_tcrossings));
-  crosses_map_.reset(new Map(config.map_path_crosses));
+  lines_.reset(new Map(config.map_path_lines, config));
+  goals_.reset(new Map(config.map_path_goals, config));
+  field_boundary_.reset(new Map(config.map_path_field_boundary, config));
+  corner_.reset(new Map(config.map_path_corners, config));
+  t_crossings_map_.reset(new Map(config.map_path_tcrossings, config));
+  crosses_map_.reset(new Map(config.map_path_crosses, config));
 
   line_information_relative_.header.stamp = ros::Time(0);
   goal_relative_.header.stamp = ros::Time(0);
@@ -66,7 +66,8 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
   crosses_.header.stamp = ros::Time(0);
 
   robot_pose_observation_model_.reset(
-      new RobotPoseObservationModel(lines_, goals_, field_boundary_, corner_, t_crossings_map_, crosses_map_));
+      new RobotPoseObservationModel(
+        lines_, goals_, field_boundary_, corner_, t_crossings_map_, crosses_map_, config));
   robot_pose_observation_model_->set_min_weight(config_.min_weight);
 
   Eigen::Matrix<double, 3, 2> drift_cov;
@@ -79,6 +80,9 @@ void Localization::dynamic_reconfigure_callback(hll::LocalizationConfig &config,
 
   // Scale drift form drift per second to drift per filter iteration
   drift_cov /= config.publishing_frequency;
+
+  drift_cov.col(0) *= (1 / (config.max_translation / config.publishing_frequency));
+  drift_cov.col(1) *= (1 / (config.max_rotation / config.publishing_frequency));
 
   robot_motion_model_.reset(
       new RobotMotionModel(random_number_generator_, config.diffusion_x_std_dev, config.diffusion_y_std_dev,
@@ -141,32 +145,8 @@ void Localization::run_filter_one_step(const ros::TimerEvent &e) {
   timer_callback_count_++;
   resampled_ = false;
 
-  if (config_.use_lines && line_information_relative_.header.stamp != last_stamp_lines) {
-    robot_pose_observation_model_->set_measurement_lines(line_information_relative_);
-  }
-  if (config_.use_goals && goal_relative_.header.stamp != last_stamp_goals) {
-    robot_pose_observation_model_->set_measurement_goal(goal_relative_);
-  }
-  if (config_.use_fieldboundary && fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
-    robot_pose_observation_model_->set_measurement_field_boundary(fieldboundary_relative_);
-  }
-  if (config_.use_corners && corners_.header.stamp != last_stamp_corners) {
-    robot_pose_observation_model_->set_measurement_corners(corners_);
-  }
-  if (config_.use_tcrossings && t_crossings_.header.stamp != last_stamp_tcrossings) {
-    robot_pose_observation_model_->set_measurement_t_crossings(t_crossings_);
-  }
-  if (config_.use_crosses && crosses_.header.stamp != last_stamp_crosses) {
-    robot_pose_observation_model_->set_measurement_crosses(crosses_);
-  }
-
-  // Set timestamps to mark past messages
-  last_stamp_lines = line_information_relative_.header.stamp;
-  last_stamp_goals = goal_relative_.header.stamp;
-  last_stamp_fb_points = fieldboundary_relative_.header.stamp;
-  last_stamp_corners = corners_.header.stamp;
-  last_stamp_tcrossings = t_crossings_.header.stamp;
-  last_stamp_crosses = crosses_.header.stamp;
+  // Set the measurements in the observation model
+  updateMeasurements();
 
   // Get the odometry offset since the last cycle
   getMotion();
@@ -185,8 +165,7 @@ void Localization::run_filter_one_step(const ros::TimerEvent &e) {
     timer_callback_count_ = 0;
     resampled_ = true;
   }
-
-  // Publish transforms 
+  // Publish transforms
   publish_transforms();
   // Publish covariance message
   publish_pose_with_covariance();
@@ -268,8 +247,8 @@ std::vector<gm::Point> Localization::interpolateFieldboundaryPoints(gm::Point po
   return pointsInterpolated;
 }
 
-bool Localization::reset_filter_callback(hll::reset_filter::Request &req,
-                                         hll::reset_filter::Response &res) {
+bool Localization::reset_filter_callback(bl::reset_filter::Request &req,
+                                         bl::reset_filter::Response &res) {
   if (req.init_mode == 3) {
     reset_filter(req.init_mode, req.x, req.y);
   } else {
@@ -313,6 +292,36 @@ void Localization::reset_filter(int distribution, double x, double y) {
     robot_pf_->drawAllFromDistribution(robot_state_distribution_position_);
   }
 
+}
+
+void Localization::updateMeasurements() {
+  // Sets the measurements in the oservation model
+  if (config_.lines_factor && line_information_relative_.header.stamp != last_stamp_lines) {
+    robot_pose_observation_model_->set_measurement_lines(line_information_relative_);
+  }
+  if (config_.goals_factor && goal_relative_.header.stamp != last_stamp_goals) {
+    robot_pose_observation_model_->set_measurement_goal(goal_relative_);
+  }
+  if (config_.field_boundary_factor && fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
+    robot_pose_observation_model_->set_measurement_field_boundary(fieldboundary_relative_);
+  }
+  if (config_.corners_factor && corners_.header.stamp != last_stamp_corners) {
+    robot_pose_observation_model_->set_measurement_corners(corners_);
+  }
+  if (config_.t_crossings_factor && t_crossings_.header.stamp != last_stamp_tcrossings) {
+    robot_pose_observation_model_->set_measurement_t_crossings(t_crossings_);
+  }
+  if (config_.crosses_factor && crosses_.header.stamp != last_stamp_crosses) {
+    robot_pose_observation_model_->set_measurement_crosses(crosses_);
+  }
+
+  // Set timestamps to mark past messages
+  last_stamp_lines = line_information_relative_.header.stamp;
+  last_stamp_goals = goal_relative_.header.stamp;
+  last_stamp_fb_points = fieldboundary_relative_.header.stamp;
+  last_stamp_corners = corners_.header.stamp;
+  last_stamp_tcrossings = t_crossings_.header.stamp;
+  last_stamp_crosses = crosses_.header.stamp;
 }
 
 void Localization::getMotion() {
@@ -378,7 +387,7 @@ void Localization::publish_transforms() {
   geometry_msgs::TransformStamped localization_transform;
   localization_transform.header.stamp = ros::Time::now();
   localization_transform.header.frame_id = "/map";
-  localization_transform.child_frame_id = "/localization_raw";
+  localization_transform.child_frame_id = config_.publishing_frame;
   localization_transform.transform.translation.x = estimate_.getXPos();
   localization_transform.transform.translation.y = estimate_.getYPos();
   localization_transform.transform.translation.z = 0.0;
@@ -431,7 +440,7 @@ void Localization::publish_pose_with_covariance() {
     estimateMsg.pose.covariance[i] = cov_mat[i];
   }
 
-  estimateMsg.header.frame_id = "localization_raw";
+  estimateMsg.header.frame_id = config_.publishing_frame;
 
   pose_with_covariance_publisher_.publish(estimateMsg);
 }
@@ -456,22 +465,22 @@ void Localization::publish_particle_markers() {
 }
 
 void Localization::publish_ratings() {
-  if (config_.use_lines) {
+  if (config_.lines_factor) {
     publish_line_ratings();
   }
-  if (config_.use_goals) {
+  if (config_.goals_factor) {
     publish_goal_ratings();
   }
-  if (config_.use_fieldboundary) {
+  if (config_.field_boundary_factor) {
     publish_field_boundary_ratings();
   }
-  if (config_.use_corners) {
+  if (config_.corners_factor) {
     publish_corner_ratings();
   }
-  if (config_.use_tcrossings) {
+  if (config_.t_crossings_factor) {
     publish_t_crossings_ratings();
   }
-  if (config_.use_crosses) {
+  if (config_.crosses_factor) {
     publish_crosses_ratings();
   }
 }

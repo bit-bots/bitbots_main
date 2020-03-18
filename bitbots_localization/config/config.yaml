@@ -12,17 +12,15 @@
   # ROS-Stuff #
   #############
 
-  line_topic: 'line_relative'
-  goal_topic: 'goals_simulated'
-  fieldboundary_topic: 'field_boundary_relative'
-  fieldboundary_in_image_topic: 'field_boundary_in_image'
-  corners_topic: 'corners'
-  tcrossings_topic: 'tcrossings'
-  crosses_topic: 'crosses'
+  line_topic: '/line_relative'
+  goal_topic: '/goals_simulated'
+  fieldboundary_topic: '/field_boundary_relative'
+  fieldboundary_in_image_topic: '/field_boundary_in_image'
+  corners_topic: '/corners'
+  tcrossings_topic: '/tcrossings'
+  crosses_topic: '/crosses'
 
-  publishing_frame: '/localization_estimate'
-
-  pose_publishing_topic: 'pose'
+  publishing_frame: '/localization_raw'
 
   particle_publishing_topic: 'pose_particles'
 
@@ -43,38 +41,35 @@
   particle_number: 500
   resampling_interval: 15
 
-  use_lines: true    # TODO use only weights
-  use_goals: false
-  use_fieldboundary: false
-  use_corners: false
-  use_tcrossings : false
-  use_crosses: false
-
   diffusion_x_std_dev: 0.8
   diffusion_y_std_dev: 0.8
   diffusion_t_std_dev: 0.5
   diffusion_multiplicator: 0.005
 
-  drift_distance_to_direction: 0.5
+  drift_distance_to_direction: 3.0
   drift_roation_to_direction: 0.0
-  drift_distance_to_distance: 0.05
-  drift_roation_to_distance: 0.0
-  drift_distance_to_rotation: 0.05
-  drift_rotation_to_rotation: 0.0
+  drift_distance_to_distance: 0.3
+  drift_roation_to_distance: 0.5
+  drift_distance_to_rotation: 0.0
+  drift_rotation_to_rotation: 3.0
+
+  max_rotation: 0.45
+  max_translation: 0.09
 
   min_weight: 0.01
   min_resampling_weight: 0.5
   percentage_best_particles: 50
 
   distance_factor : 0.5
-  lines_factor: 1         # TODO use these params
-  goal_factor: 1
-  field_boundary_factor: 1
-  corners_factor : 1
-  tcrossings_factor: 1
-  crosses_factor : 1
+  lines_factor: 1
+  goals_factor: 0
+  field_boundary_factor: 0
+  corners_factor : 0
+  t_crossings_factor: 0
+  crosses_factor : 0
 
   min_motion_linear: 0.0
   min_motion_angular: 0.0
   filter_only_with_motion: false
 
+  measurement_out_of_map_punishment: 10.0

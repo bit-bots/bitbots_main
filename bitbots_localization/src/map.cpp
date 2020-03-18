@@ -8,7 +8,9 @@
 
 namespace fs = boost::filesystem;
 
-Map::Map(const std::string& file_path) {
+Map::Map(const std::string& file_path, const bl::LocalizationConfig &config) {
+  // Set config
+   config_ = config;
   //get package path
   std::string package_path = ros::package::getPath("bitbots_localization");
   //make boost path
@@ -21,7 +23,6 @@ Map::Map(const std::string& file_path) {
   if (!map.data) {
     printf("No image data '%s'\n", map_path.filename().c_str());
   }
-
 }
 
 double Map::get_occupancy(double x, double y) {
@@ -36,13 +37,13 @@ double Map::get_occupancy(double x, double y) {
   // ursprung in feldmitte
   x = std::round(x + mapWidth / 2.0); //assuming lines are centered on map
   y = std::round(y + mapHeight / 2.0);
-  double occupancy = -10; // punish points outside the map
+
+  double occupancy = -config_.measurement_out_of_map_punishment; // punish points outside the map
 
   if (x < mapWidth && x >= 0 && y < mapHeight && y >= 0) {
-    occupancy = 100 - map.at<uchar>(y, x); //0 = schwarz, 100 = weiß
+    occupancy = 100 - map.at<uchar>(y, x);
   }
   return occupancy;
-  // punish false positives
 }
 
 std::vector<double> Map::provideRating(const RobotState &state,
