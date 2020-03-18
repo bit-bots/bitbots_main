@@ -38,7 +38,7 @@ double Map::get_occupancy(double x, double y) {
   x = std::round(x + mapWidth / 2.0); //assuming lines are centered on map
   y = std::round(y + mapHeight / 2.0);
 
-  double occupancy = -config_.messurement_out_of_map_punishment; // punish points outside the map
+  double occupancy = -config_.measurement_out_of_map_punishment; // punish points outside the map
 
   if (x < mapWidth && x >= 0 && y < mapHeight && y >= 0) {
     occupancy = 1 - (map.at<uchar>(y, x) / 100);
