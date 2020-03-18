@@ -28,6 +28,9 @@ class GameStatusCapsule:
     def get_secondary_state(self):
         return self.gamestate.secondaryState
 
+    def get_secondary_team(self):
+        return self.gamestate.secondaryStateTeam
+
     def has_kickoff(self):
         return self.gamestate.hasKickOff
 
