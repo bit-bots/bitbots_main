@@ -35,12 +35,16 @@ h: STATE_CORNER_KICK = 7
 i: STATE_GOAL_KICK = 8
 j: STATE_THROW_IN = 9
 
-
 p:     toggle penalized
 space: toggle allowed_to_move
 t:     toggle secondary state team
 
 CTRL-C to quit
+
+
+
+
+
 
 """
 
@@ -92,10 +96,11 @@ if __name__ == "__main__":
             sys.stdout.write("\x1b[A")
             sys.stdout.write("\x1b[A")
             state_publisher.publish(gameState)
-            print("Allowed to move:    " + str(gameState.allowedToMove) + "       \nGamestate:          " + str(
-                gameState.gameState) + "       \nSecondary State:          " + str(
-                gameState.secondaryState) + "       \nSecondary State Team:          " + str(
-                gameState.secondaryStateTeam) + "       \nPenalized:          " + str(gameState.penalized) + "            ")
+            print("Allowed to move:      " + str(gameState.allowedToMove) + "       \nGamestate:            " + str(
+                gameState.gameState) + "       \nSecondary State:      " + str(
+                gameState.secondaryState) + "       \nSecondary State Team: " + str(
+                gameState.secondaryStateTeam) + " \nPenalized:            " + str(gameState.penalized) +
+                  "            ")
 
     except Exception as e:
         print(e)
