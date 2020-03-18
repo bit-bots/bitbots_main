@@ -40,8 +40,7 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         if self.team_id == self.blackboard.gamestate.get_secondary_team():
             return 'OUR'
-        else:
-            return 'OTHER'
+        return 'OTHER'
 
     def get_reevaluate(self):
         """Secondary state Team can change during the game"""
