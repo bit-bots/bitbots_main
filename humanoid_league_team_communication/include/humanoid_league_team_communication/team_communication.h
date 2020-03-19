@@ -3,7 +3,6 @@
 
 #include <pthread.h>
 #include <vector>
-#include "humanoid_league_msgs/BallRelative.h"
 #include "humanoid_league_msgs/TeamData.h"
 #include "humanoid_league_msgs/GoalRelative.h"
 #include "humanoid_league_msgs/ObstaclesRelative.h"
@@ -15,6 +14,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Pose2D.h>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/utils.h>
 #include "mitecom.hpp"
@@ -38,7 +38,7 @@ class TeamCommunication{
   void strategyCallback(humanoid_league_msgs::Strategy msg);
   void robotStateCallback(humanoid_league_msgs::RobotControlState msg);
   void positionCallback(const humanoid_league_msgs::Position2D& msg);
-  void ballCallback(const humanoid_league_msgs::BallRelative& msg);
+  void ballCallback(const geometry_msgs::PoseWithCovarianceStamped& msg);
   void goalCallback(const humanoid_league_msgs::GoalRelative& msg);
   void obstaclesCallback(const humanoid_league_msgs::ObstaclesRelative& msg);
   void worldCallback(const humanoid_league_msgs::Model& msg);

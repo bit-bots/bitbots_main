@@ -191,7 +191,7 @@ void TeamCommunication::publishData(const MiTeCom::TeamRobotData& team_data){
   std::vector<uint8_t> states;
   std::vector<geometry_msgs::Pose2D> own_position;
   //std::vector<uint8_t> own_position_beliefs;   unnecessary because of TeamData.msg
-  std::vector<humanoid_league_msgs::Position2D> ball_relative;
+  std::vector<geometry_msgs::PoseWithCovariance> ball_relative;
   //std::vector<humanoid_league_msgs::Position2D> oppgoal_relative;
   std::vector<humanoid_league_msgs::Position2D> opponent_robot_a;
   std::vector<humanoid_league_msgs::Position2D> opponent_robot_b;
@@ -225,10 +225,10 @@ void TeamCommunication::publishData(const MiTeCom::TeamRobotData& team_data){
     //own_position_beliefs.push_back(rob_data.get_absolute_belief() / 255.0);   unnecessary because of TeamData.msg
 
     //ball
-    humanoid_league_msgs::Position2D ball_msg;
-    ball_msg.pose.x = rob_data.get_relative_ball_x() / 1000.0;
-    ball_msg.pose.y = rob_data.get_relative_ball_y() / 1000.0;
-    ball_msg.confidence = rob_data.get_ball_belief() / 255.0;
+    geometry_msgs::PoseWithCovariance ball_msg;
+    ball_msg.pose.position.x = rob_data.get_relative_ball_x() / 1000.0;
+    ball_msg.pose.position.y = rob_data.get_relative_ball_y() / 1000.0;
+    // ball_msg.confidence = rob_data.get_ball_belief() / 255.0; TODO Conversion needed
     ball_relative.push_back(ball_msg);
 
     /*//oppgoal
@@ -363,14 +363,14 @@ void TeamCommunication::positionCallback(const humanoid_league_msgs::Position2D&
   position_exists_ = msg.header.stamp.sec;
 }
 
-void TeamCommunication::ballCallback(const humanoid_league_msgs::BallRelative& msg){
+void TeamCommunication::ballCallback(const geometry_msgs::PoseWithCovarianceStamped& msg){
   //conversion from m (ROS message) to mm (self.mitecom)
-  ball_relative_x_ = static_cast<uint64_t>(msg.ball_relative.x * 1000.0);
-  ball_relative_y_ = static_cast<uint64_t>(msg.ball_relative.y * 1000.0);
+  ball_relative_x_ = static_cast<uint64_t>(msg.pose.position.x * 1000.0);
+  ball_relative_y_ = static_cast<uint64_t>(msg.pose.position.y * 1000.0);
   //the scale is different in mitecom_, so we have to transfer from 0...1 to 0...255
-  ball_belief_ = static_cast<uint64_t>(msg.confidence * 255.0);
+  //ball_belief_ = static_cast<uint64_t>(msg.confidence * 255.0); TODO transformation
   //use pythagoras to compute time to ball
-  time_to_position_at_ball_ = static_cast<uint64_t>((sqrt((pow(msg.ball_relative.x, 2.0) + pow(msg.ball_relative.y, 2.0))) * 1000.0) / avg_walking_speed_);
+  time_to_position_at_ball_ = static_cast<uint64_t>((sqrt((pow(msg.pose.position.x, 2.0) + pow(msg.pose.position.y, 2.0))) * 1000.0) / avg_walking_speed_);
   time_to_position_at_ball_set_ = true;
   ball_exists_ = msg.header.stamp.sec;
 }
